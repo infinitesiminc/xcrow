@@ -353,21 +353,21 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-background">
       {/* Hero */}
-      <div className="flex flex-col items-center justify-center px-4 pt-24 pb-16 md:pt-32 md:pb-24">
+      <div className="flex flex-col items-center justify-center px-4 pt-12 pb-10 md:pt-16 md:pb-14">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
           className="text-center max-w-2xl mx-auto"
         >
-          <span className="inline-block mb-4 px-3 py-1 text-xs font-medium tracking-wide uppercase rounded-full bg-accent text-accent-foreground">
+          <span className="inline-block mb-3 px-3 py-1 text-xs font-medium tracking-wide uppercase rounded-full bg-accent text-accent-foreground">
             AI Impact Analyzer
           </span>
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold font-display tracking-tight text-foreground leading-tight">
             How is AI changing{" "}
             <span className="text-primary">your job</span>?
           </h1>
-          <p className="mt-5 text-lg text-muted-foreground max-w-lg mx-auto leading-relaxed">
+          <p className="mt-3 text-lg text-muted-foreground max-w-lg mx-auto leading-relaxed">
             Get a task-level breakdown of AI's impact — and a personalized plan to stay ahead.
           </p>
         </motion.div>
@@ -377,7 +377,7 @@ const Index = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.15 }}
-          className="mt-8 flex rounded-lg border border-border bg-card p-1 gap-1"
+          className="mt-5 flex rounded-lg border border-border bg-card p-1 gap-1"
         >
           <button
             onClick={() => setMode("individual")}
@@ -430,7 +430,7 @@ const Index = () => {
               exit={{ opacity: 0, y: -10 }}
               transition={{ duration: 0.3 }}
               onSubmit={handleSubmit}
-              className="mt-8 w-full max-w-md space-y-3"
+              className="mt-5 w-full max-w-md space-y-3"
             >
               {/* Company website — hidden when JD URL provides it */}
               {!companyFromJdUrl && (
