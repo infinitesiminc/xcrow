@@ -351,37 +351,66 @@ const Index = () => {
 
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Hero */}
-      <div className="flex flex-col items-center justify-center px-4 pt-12 pb-10 md:pt-16 md:pb-14">
+    <div className="h-[calc(100vh-3.5rem)] bg-background flex">
+      {/* Left: Hero + How it works */}
+      <div className="hidden lg:flex flex-col justify-center flex-1 px-8 xl:px-16">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="text-center max-w-2xl mx-auto"
+          className="max-w-xl"
         >
           <span className="inline-block mb-3 px-3 py-1 text-xs font-medium tracking-wide uppercase rounded-full bg-accent text-accent-foreground">
             Infinite Sim
           </span>
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold font-display tracking-tight text-foreground leading-tight">
+          <h1 className="text-3xl xl:text-4xl 2xl:text-5xl font-bold font-display tracking-tight text-foreground leading-tight">
             Understand how AI transforms your role —{" "}
             <span className="text-primary">then practice thriving in it</span>
           </h1>
-          <p className="mt-3 text-lg text-muted-foreground max-w-lg mx-auto leading-relaxed">
+          <p className="mt-3 text-base text-muted-foreground max-w-md leading-relaxed">
             Task-level AI impact analysis for any job, plus hands-on simulations to sharpen the skills that matter.
           </p>
+
+          {/* How it works — inline on desktop */}
+          <div className="mt-8 grid grid-cols-3 gap-4">
+            {steps.map((step, i) => (
+              <motion.div
+                key={step.title}
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, delay: 0.3 + i * 0.1 }}
+              >
+                <div className="flex items-center gap-2 mb-1">
+                  <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-accent text-accent-foreground">
+                    <step.icon className="h-3.5 w-3.5" />
+                  </div>
+                  <h3 className="font-display font-semibold text-sm text-foreground">{step.title}</h3>
+                </div>
+                <p className="text-xs text-muted-foreground pl-9">{step.description}</p>
+              </motion.div>
+            ))}
+          </div>
         </motion.div>
+      </div>
+
+      {/* Right: Form */}
+      <div className="flex flex-col items-center justify-center flex-1 lg:max-w-md xl:max-w-lg px-4 lg:pr-8 xl:pr-16 lg:border-l lg:border-border">
+        {/* Mobile-only headline */}
+        <div className="lg:hidden text-center mb-4">
+          <h1 className="text-2xl sm:text-3xl font-bold font-display tracking-tight text-foreground leading-tight">
+            Analyze AI impact.{" "}
+            <span className="text-primary">Practice what's next.</span>
+          </h1>
+          <p className="mt-1.5 text-sm text-muted-foreground">
+            Task-level analysis & hands-on simulations for any job.
+          </p>
+        </div>
 
         {/* Mode toggle */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.15 }}
-          className="mt-5 flex rounded-lg border border-border bg-card p-1 gap-1"
-        >
+        <div className="flex rounded-lg border border-border bg-card p-1 gap-1 mb-3">
           <button
             onClick={() => setMode("individual")}
-            className={`flex items-center gap-1.5 px-4 py-2 text-sm font-medium rounded-md transition-colors ${
+            className={`flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
               mode === "individual" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
             }`}
           >
@@ -389,57 +418,48 @@ const Index = () => {
           </button>
           <button
             onClick={() => setMode("team")}
-            className={`flex items-center gap-1.5 px-4 py-2 text-sm font-medium rounded-md transition-colors ${
+            className={`flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
               mode === "team" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
             }`}
           >
             <Users className="h-3.5 w-3.5" /> Team
           </button>
-        </motion.div>
+        </div>
 
         {/* Last analyzed chip */}
         {lastAnalysis && lastAnalysis.jobTitle && (
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3, delay: 0.2 }}
-            className="mt-4"
+          <button
+            type="button"
+            onClick={() => {
+              const params = new URLSearchParams({ company: lastAnalysis.company, title: lastAnalysis.jobTitle });
+              navigate(`/analysis?${params.toString()}`);
+            }}
+            className="inline-flex items-center gap-2 px-3 py-1 text-xs font-medium rounded-full border border-border bg-card text-muted-foreground hover:text-foreground hover:border-primary/30 transition-colors mb-3"
           >
-            <button
-              type="button"
-              onClick={() => {
-                const params = new URLSearchParams({ company: lastAnalysis.company, title: lastAnalysis.jobTitle });
-                navigate(`/analysis?${params.toString()}`);
-              }}
-              className="inline-flex items-center gap-2 px-3 py-1.5 text-xs font-medium rounded-full border border-border bg-card text-muted-foreground hover:text-foreground hover:border-primary/30 transition-colors"
-            >
-              <Search className="h-3 w-3" />
-              Re-analyze: <span className="text-foreground font-semibold">{lastAnalysis.jobTitle}</span>
-              {lastAnalysis.company && <span className="text-muted-foreground">@ {lastAnalysis.company}</span>}
-              <ArrowRight className="h-3 w-3" />
-            </button>
-          </motion.div>
+            <Search className="h-3 w-3" />
+            Re-analyze: <span className="text-foreground font-semibold">{lastAnalysis.jobTitle}</span>
+            <ArrowRight className="h-3 w-3" />
+          </button>
         )}
 
         <AnimatePresence mode="wait">
           {mode === "individual" ? (
             <motion.form
               key="individual"
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
               transition={{ duration: 0.3 }}
               onSubmit={handleSubmit}
-              className="mt-5 w-full max-w-md space-y-3"
+              className="w-full max-w-sm space-y-2.5"
             >
-              {/* Company website — hidden when JD URL provides it */}
               {!companyFromJdUrl && (
                 <div>
                   <Input
                     placeholder="Company website (optional) — e.g. example.com"
                     value={website}
                     onChange={(e) => { setWebsite(e.target.value); setWebsiteError(""); }}
-                    className={`h-12 bg-card border-border ${websiteError ? "border-destructive" : ""}`}
+                    className={`h-10 bg-card border-border text-sm ${websiteError ? "border-destructive" : ""}`}
                   />
                   {websiteError && <p className="text-xs text-destructive mt-1">{websiteError}</p>}
                 </div>
@@ -449,219 +469,114 @@ const Index = () => {
                 value={jobTitle}
                 onChange={(e) => setJobTitle(e.target.value)}
                 required={!hasJdContent}
-                className="h-12 bg-card border-border"
+                className="h-10 bg-card border-border text-sm"
               />
 
               {/* JD input toggles */}
               <div className="flex gap-2">
-                <button
-                  type="button"
-                  onClick={() => toggleJdInput("paste")}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md border transition-colors ${
-                    jdInputType === "paste"
-                      ? "border-primary/50 bg-primary/10 text-primary"
-                      : "border-border text-muted-foreground hover:text-foreground hover:border-border/80"
-                  }`}
-                >
-                  <FileText className="h-3 w-3" /> Paste JD
-                </button>
-                <button
-                  type="button"
-                  onClick={() => toggleJdInput("url")}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md border transition-colors ${
-                    jdInputType === "url"
-                      ? "border-primary/50 bg-primary/10 text-primary"
-                      : "border-border text-muted-foreground hover:text-foreground hover:border-border/80"
-                  }`}
-                >
-                  <Link className="h-3 w-3" /> JD URL
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (jdInputType === "file") {
-                      toggleJdInput("file");
-                    } else {
-                      setJdInputType("file");
-                    }
-                  }}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md border transition-colors ${
-                    jdInputType === "file"
-                      ? "border-primary/50 bg-primary/10 text-primary"
-                      : "border-border text-muted-foreground hover:text-foreground hover:border-border/80"
-                  }`}
-                >
-                  <Upload className="h-3 w-3" /> Upload
-                </button>
+                <button type="button" onClick={() => toggleJdInput("paste")}
+                  className={`flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-md border transition-colors ${
+                    jdInputType === "paste" ? "border-primary/50 bg-primary/10 text-primary" : "border-border text-muted-foreground hover:text-foreground hover:border-border/80"
+                  }`}><FileText className="h-3 w-3" /> Paste JD</button>
+                <button type="button" onClick={() => toggleJdInput("url")}
+                  className={`flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-md border transition-colors ${
+                    jdInputType === "url" ? "border-primary/50 bg-primary/10 text-primary" : "border-border text-muted-foreground hover:text-foreground hover:border-border/80"
+                  }`}><Link className="h-3 w-3" /> JD URL</button>
+                <button type="button" onClick={() => { jdInputType === "file" ? toggleJdInput("file") : setJdInputType("file"); }}
+                  className={`flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-md border transition-colors ${
+                    jdInputType === "file" ? "border-primary/50 bg-primary/10 text-primary" : "border-border text-muted-foreground hover:text-foreground hover:border-border/80"
+                  }`}><Upload className="h-3 w-3" /> Upload</button>
               </div>
 
-              {/* JD paste area */}
+              {/* JD input areas */}
               <AnimatePresence>
                 {jdInputType === "paste" && (
-                  <motion.div
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: "auto" }}
-                    exit={{ opacity: 0, height: 0 }}
-                    transition={{ duration: 0.2 }}
-                  >
+                  <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} transition={{ duration: 0.2 }}>
                     <textarea
                       placeholder="Paste the full job description here..."
                       value={jdText}
                       onChange={(e) => setJdText(e.target.value)}
-                      className="w-full min-h-[120px] max-h-[240px] px-3 py-2 text-sm bg-card border border-border rounded-md resize-y focus:outline-none focus:ring-2 focus:ring-ring text-foreground placeholder:text-muted-foreground"
+                      className="w-full min-h-[80px] max-h-[140px] px-3 py-2 text-sm bg-card border border-border rounded-md resize-y focus:outline-none focus:ring-2 focus:ring-ring text-foreground placeholder:text-muted-foreground"
                     />
-                    <p className="text-[10px] text-muted-foreground mt-1">
+                    <p className="text-[10px] text-muted-foreground mt-0.5">
                       {jdText.length > 0 ? `${jdText.length.toLocaleString()} chars` : "Adding a JD makes the analysis much more accurate"}
                     </p>
                   </motion.div>
                 )}
                 {jdInputType === "url" && (
-                  <motion.div
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: "auto" }}
-                    exit={{ opacity: 0, height: 0 }}
-                    transition={{ duration: 0.2 }}
-                  >
-                    <Input
-                      placeholder="https://jobs.example.com/role/12345"
-                      value={jdUrl}
-                      onChange={(e) => setJdUrl(e.target.value)}
-                      className="h-11 bg-card border-border"
-                    />
-                    <p className="text-[10px] text-muted-foreground mt-1">We'll scrape the job posting for a more accurate analysis</p>
+                  <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} transition={{ duration: 0.2 }}>
+                    <Input placeholder="https://jobs.example.com/role/12345" value={jdUrl} onChange={(e) => setJdUrl(e.target.value)} className="h-10 bg-card border-border text-sm" />
+                    <p className="text-[10px] text-muted-foreground mt-0.5">We'll scrape the job posting for a more accurate analysis</p>
                   </motion.div>
                 )}
                 {jdInputType === "file" && (
-                  <motion.div
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: "auto" }}
-                    exit={{ opacity: 0, height: 0 }}
-                    transition={{ duration: 0.2 }}
-                  >
+                  <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} transition={{ duration: 0.2 }}>
                     {jdFileParsing ? (
-                      <motion.div
-                        className="flex flex-col items-center justify-center gap-2 py-8 px-4 rounded-xl border-2 border-primary/30 bg-primary/5"
-                        animate={{ opacity: [0.7, 1, 0.7] }}
-                        transition={{ duration: 1.5, repeat: Infinity }}
-                      >
-                        <Loader2 className="h-6 w-6 animate-spin text-primary" />
-                        <span className="text-sm text-primary font-medium">Extracting text from {jdFile?.name}...</span>
+                      <motion.div className="flex items-center gap-2 py-4 px-3 rounded-lg border border-primary/30 bg-primary/5" animate={{ opacity: [0.7, 1, 0.7] }} transition={{ duration: 1.5, repeat: Infinity }}>
+                        <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                        <span className="text-xs text-primary font-medium">Extracting text from {jdFile?.name}...</span>
                       </motion.div>
                     ) : jdFileText ? (
-                      <div className="flex items-center gap-2 px-4 py-3 bg-card border border-primary/20 rounded-xl">
-                        <FileText className="h-4 w-4 text-primary shrink-0" />
+                      <div className="flex items-center gap-2 px-3 py-2 bg-card border border-primary/20 rounded-lg">
+                        <FileText className="h-3.5 w-3.5 text-primary shrink-0" />
                         <span className="text-sm text-foreground truncate flex-1">{jdFile?.name}</span>
                         <span className="text-[10px] text-muted-foreground shrink-0">{jdFileText.length.toLocaleString()} chars</span>
                         <button type="button" onClick={() => { setJdFile(null); setJdFileText(""); setJdInputType("none"); }} className="text-muted-foreground hover:text-foreground">
-                          <X className="h-3.5 w-3.5" />
+                          <X className="h-3 w-3" />
                         </button>
                       </div>
                     ) : (
-                      <motion.div
+                      <div
                         onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
                         onDragLeave={() => setIsDragging(false)}
                         onDrop={(e) => {
-                          e.preventDefault();
-                          setIsDragging(false);
+                          e.preventDefault(); setIsDragging(false);
                           const file = e.dataTransfer.files?.[0];
-                          if (file) {
-                            const dt = new DataTransfer();
-                            dt.items.add(file);
-                            if (fileInputRef.current) {
-                              fileInputRef.current.files = dt.files;
-                              fileInputRef.current.dispatchEvent(new Event("change", { bubbles: true }));
-                            }
-                          }
+                          if (file) { const dt = new DataTransfer(); dt.items.add(file); if (fileInputRef.current) { fileInputRef.current.files = dt.files; fileInputRef.current.dispatchEvent(new Event("change", { bubbles: true })); } }
                         }}
                         onClick={() => fileInputRef.current?.click()}
-                        animate={isDragging ? { scale: 1.02, borderColor: "hsl(var(--primary))" } : { scale: 1 }}
-                        transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                        className={`flex flex-col items-center justify-center gap-2 py-10 px-4 rounded-xl border-2 border-dashed cursor-pointer transition-colors ${
-                          isDragging
-                            ? "border-primary bg-primary/10"
-                            : "border-border hover:border-primary/40 hover:bg-accent/30"
+                        className={`flex items-center justify-center gap-2 py-5 px-4 rounded-lg border-2 border-dashed cursor-pointer transition-colors ${
+                          isDragging ? "border-primary bg-primary/10" : "border-border hover:border-primary/40 hover:bg-accent/30"
                         }`}
                       >
-                        <motion.div
-                          animate={isDragging ? { y: -4, scale: 1.1 } : { y: 0, scale: 1 }}
-                          transition={{ type: "spring", stiffness: 300, damping: 15 }}
-                        >
-                          <Upload className={`h-8 w-8 ${isDragging ? "text-primary" : "text-muted-foreground"}`} />
-                        </motion.div>
-                        <p className="text-sm font-medium text-foreground">
-                          {isDragging ? "Drop your file here" : "Drag & drop or click to upload"}
+                        <Upload className={`h-5 w-5 ${isDragging ? "text-primary" : "text-muted-foreground"}`} />
+                        <p className="text-sm text-muted-foreground">
+                          {isDragging ? "Drop here" : "Drop file or click to upload"}
                         </p>
-                        <p className="text-[11px] text-muted-foreground">PDF, DOCX, TXT, or MD — max 5MB</p>
-                        <input
-                          ref={fileInputRef}
-                          type="file"
-                          accept=".pdf,.docx,.doc,.txt,.md"
-                          className="hidden"
-                          onChange={(e) => {
-                            setJdInputType("file");
-                            handleFileChange(e);
-                          }}
-                        />
-                      </motion.div>
+                        <input ref={fileInputRef} type="file" accept=".pdf,.docx,.doc,.txt,.md" className="hidden"
+                          onChange={(e) => { setJdInputType("file"); handleFileChange(e); }} />
+                      </div>
                     )}
                   </motion.div>
                 )}
               </AnimatePresence>
 
-              <Button type="submit" size="lg" className="w-full h-12 text-base font-semibold gap-2">
+              <Button type="submit" size="lg" className="w-full h-10 text-sm font-semibold gap-2">
                 Analyze My Role
                 <ArrowRight className="w-4 h-4" />
               </Button>
             </motion.form>
           ) : (
-            /* Team form — unchanged */
             <motion.div
               key="team"
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
               transition={{ duration: 0.3 }}
-              className="mt-8 w-full max-w-lg"
+              className="w-full max-w-sm"
             >
-              <div className="space-y-3 mb-4">
-                {/* Compact chip view for roles with inline add button */}
-                <div className="flex flex-wrap gap-1.5 max-h-[280px] overflow-y-auto p-3 rounded-lg border border-border bg-card/50">
+              <div className="space-y-2 mb-3">
+                <div className="flex flex-wrap gap-1.5 max-h-[160px] overflow-y-auto p-2.5 rounded-lg border border-border bg-card/50">
                   {roles.map((role) => (
-                    <div
-                      key={role.id}
-                      className="group inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-accent/40 border border-border/50 text-sm hover:border-border transition-colors max-w-[280px]"
-                    >
-                      {role.jdFileName && (
-                        <span title={`JD: ${role.jdFileName}`}>
-                          <FileText className="h-3 w-3 text-primary shrink-0" />
-                        </span>
-                      )}
-                      <input
-                        className="bg-transparent border-none outline-none text-foreground placeholder:text-muted-foreground text-sm w-full min-w-[80px]"
-                        value={role.title}
-                        onChange={(e) => updateRole(role.id, e.target.value)}
-                        placeholder="Job title"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => removeRole(role.id)}
-                        className="text-muted-foreground/50 hover:text-foreground shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
-                      >
-                        <X className="h-3 w-3" />
-                      </button>
+                    <div key={role.id} className="group inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-accent/40 border border-border/50 text-sm hover:border-border transition-colors max-w-[240px]">
+                      {role.jdFileName && <span title={`JD: ${role.jdFileName}`}><FileText className="h-3 w-3 text-primary shrink-0" /></span>}
+                      <input className="bg-transparent border-none outline-none text-foreground placeholder:text-muted-foreground text-sm w-full min-w-[70px]" value={role.title} onChange={(e) => updateRole(role.id, e.target.value)} placeholder="Job title" />
+                      <button type="button" onClick={() => removeRole(role.id)} className="text-muted-foreground/50 hover:text-foreground shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"><X className="h-3 w-3" /></button>
                     </div>
                   ))}
-                  <button
-                    type="button"
-                    onClick={addRole}
-                    disabled={roles.length >= 100}
-                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md border border-dashed border-border/60 text-xs text-muted-foreground hover:text-foreground hover:border-border transition-colors disabled:opacity-40"
-                  >
-                    <Plus className="h-3 w-3" /> Add role
+                  <button type="button" onClick={addRole} disabled={roles.length >= 100} className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md border border-dashed border-border/60 text-xs text-muted-foreground hover:text-foreground hover:border-border transition-colors disabled:opacity-40">
+                    <Plus className="h-3 w-3" /> Add
                   </button>
-                  {roles.length === 0 && (
-                    <span className="text-xs text-muted-foreground py-1">Upload a file or add roles manually</span>
-                  )}
                 </div>
                 <div className="flex items-center justify-between text-[10px] text-muted-foreground px-1">
                   <span>{roles.filter(r => r.title.trim()).length} roles{roles.some(r => r.jdFileName) && ` · ${roles.filter(r => r.jdFileName).length} with JDs`}</span>
@@ -669,60 +584,33 @@ const Index = () => {
                 </div>
               </div>
 
-              {/* Parsing indicator */}
               {teamJdParsing && (
-                <div className="flex items-center gap-2 mb-3 px-3 py-2 rounded-md bg-accent/30 border border-border">
+                <div className="flex items-center gap-2 mb-2 px-3 py-1.5 rounded-md bg-accent/30 border border-border">
                   <Loader2 className="h-3.5 w-3.5 animate-spin text-primary" />
                   <span className="text-xs text-muted-foreground">Parsing JD files...</span>
                 </div>
               )}
 
-              {/* Drag & drop upload zone */}
-              <motion.div
+              <div
                 onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
                 onDragLeave={() => setIsDragging(false)}
                 onDrop={(e) => {
-                  e.preventDefault();
-                  setIsDragging(false);
+                  e.preventDefault(); setIsDragging(false);
                   const files = e.dataTransfer.files;
-                  if (files?.length && fileInputRef.current) {
-                    const dt = new DataTransfer();
-                    Array.from(files).forEach(f => dt.items.add(f));
-                    teamFileInputRef.current.files = dt.files;
-                    teamFileInputRef.current.dispatchEvent(new Event("change", { bubbles: true }));
-                  }
+                  if (files?.length && teamFileInputRef.current) { const dt = new DataTransfer(); Array.from(files).forEach(f => dt.items.add(f)); teamFileInputRef.current.files = dt.files; teamFileInputRef.current.dispatchEvent(new Event("change", { bubbles: true })); }
                 }}
                 onClick={() => teamFileInputRef.current?.click()}
-                animate={isDragging ? { scale: 1.02, borderColor: "hsl(var(--primary))" } : { scale: 1 }}
-                transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                className={`flex flex-col items-center justify-center gap-2 py-8 px-4 rounded-xl border-2 border-dashed cursor-pointer transition-colors mb-3 ${
-                  isDragging
-                    ? "border-primary bg-primary/10"
-                    : "border-border hover:border-primary/40 hover:bg-accent/30"
+                className={`flex items-center justify-center gap-2 py-5 px-4 rounded-lg border-2 border-dashed cursor-pointer transition-colors mb-2.5 ${
+                  isDragging ? "border-primary bg-primary/10" : "border-border hover:border-primary/40 hover:bg-accent/30"
                 }`}
               >
-                <motion.div
-                  animate={isDragging ? { y: -4, scale: 1.1 } : { y: 0, scale: 1 }}
-                  transition={{ type: "spring", stiffness: 300, damping: 15 }}
-                >
-                  <Upload className={`h-7 w-7 ${isDragging ? "text-primary" : "text-muted-foreground"}`} />
-                </motion.div>
-                <p className="text-sm font-medium text-foreground">
-                  {isDragging ? "Drop files here" : "Drag & drop or click to upload"}
-                </p>
-                <p className="text-[11px] text-muted-foreground">CSV/XLSX for job lists, or PDF/DOCX for job descriptions</p>
-                <input
-                  ref={teamFileInputRef}
-                  type="file"
-                  accept=".csv,.txt,.tsv,.xlsx,.xls,.pdf,.docx,.doc,.md"
-                  multiple
-                  className="hidden"
-                  onChange={handleFilesUpload}
-                  disabled={teamJdParsing}
-                />
-              </motion.div>
+                <Upload className={`h-5 w-5 ${isDragging ? "text-primary" : "text-muted-foreground"}`} />
+                <p className="text-sm text-muted-foreground">{isDragging ? "Drop files here" : "Drop files or click to upload"}</p>
+                <p className="text-[10px] text-muted-foreground">CSV/XLSX or PDF/DOCX</p>
+                <input ref={teamFileInputRef} type="file" accept=".csv,.txt,.tsv,.xlsx,.xls,.pdf,.docx,.doc,.md" multiple className="hidden" onChange={handleFilesUpload} disabled={teamJdParsing} />
+              </div>
 
-              <Button onClick={handleTeamAnalyze} disabled={teamLoading || teamJdParsing} className="gap-2 w-full h-12 text-base font-semibold">
+              <Button onClick={handleTeamAnalyze} disabled={teamLoading || teamJdParsing} className="gap-2 w-full h-10 text-sm font-semibold">
                 {teamLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <BarChart3 className="h-4 w-4" />}
                 {teamLoading ? "Analyzing..." : "Analyze Team"}
               </Button>
@@ -730,35 +618,6 @@ const Index = () => {
           )}
         </AnimatePresence>
       </div>
-
-
-      {/* How it works (individual mode only) */}
-      {mode === "individual" && (
-        <div className="px-4 pb-24">
-          <div className="max-w-3xl mx-auto">
-            <h2 className="text-center text-sm font-medium uppercase tracking-widest text-muted-foreground mb-10">
-              How it works
-            </h2>
-            <div className="grid md:grid-cols-3 gap-8">
-              {steps.map((step, i) => (
-                <motion.div
-                  key={step.title}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.4, delay: 0.3 + i * 0.1 }}
-                  className="text-center"
-                >
-                  <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-accent text-accent-foreground">
-                    <step.icon className="h-5 w-5" />
-                  </div>
-                  <h3 className="font-display font-semibold text-foreground">{step.title}</h3>
-                  <p className="mt-1.5 text-sm text-muted-foreground">{step.description}</p>
-                </motion.div>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };
