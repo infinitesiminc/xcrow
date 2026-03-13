@@ -1,11 +1,11 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   ArrowLeft, TrendingUp, Minus, AlertTriangle, Zap, Bot, ExternalLink,
   Building2, Users, MapPin, Calendar,
   Wrench, Heart, Sparkles, Save, User, ChevronDown,
-  ShieldAlert, GraduationCap, Rocket, Play,
+  ShieldAlert, GraduationCap, Rocket, Play, CheckCircle2, LogIn,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -15,6 +15,8 @@ import { JobAnalysisResult, TaskState, TrendDirection, AIImpactLevel, SkillCateg
 import { findPrebuiltRole } from "@/data/prebuilt-roles";
 import { analyzeJobWithAI } from "@/lib/ai-analysis";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 
 import SimulatorModal from "@/components/SimulatorModal";
 
