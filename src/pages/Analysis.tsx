@@ -70,6 +70,8 @@ const Analysis = () => {
   const isMobile = useIsMobile();
   const company = searchParams.get("company") || "";
   const jobTitle = searchParams.get("title") || "";
+  const jdParam = searchParams.get("jd") || "";
+  const jdUrlParam = searchParams.get("jdUrl") || "";
   const [result, setResult] = useState<JobAnalysisResult | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -83,14 +85,14 @@ const Analysis = () => {
       setLoading(true);
       setError(null);
       const prebuilt = findPrebuiltRole(jobTitle);
-      if (prebuilt) {
+      if (prebuilt && !jdParam && !jdUrlParam) {
         await new Promise((r) => setTimeout(r, 1200));
         setResult({ ...prebuilt, company });
         setLoading(false);
         return;
       }
       try {
-        const aiResult = await analyzeJobWithAI(jobTitle, company);
+        const aiResult = await analyzeJobWithAI(jobTitle, company, jdParam || undefined, jdUrlParam || undefined);
         setResult(aiResult);
       } catch (err) {
         setError("Unable to analyze this role right now. Please try again.");

@@ -1,6 +1,11 @@
 import { JobAnalysisResult } from "@/types/analysis";
 
-export async function analyzeJobWithAI(jobTitle: string, company: string): Promise<JobAnalysisResult> {
+export async function analyzeJobWithAI(
+  jobTitle: string,
+  company: string,
+  jobDescription?: string,
+  jdUrl?: string,
+): Promise<JobAnalysisResult> {
   const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
   const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 
@@ -14,7 +19,7 @@ export async function analyzeJobWithAI(jobTitle: string, company: string): Promi
       "Content-Type": "application/json",
       Authorization: `Bearer ${supabaseKey}`,
     },
-    body: JSON.stringify({ jobTitle, company }),
+    body: JSON.stringify({ jobTitle, company, jobDescription, jdUrl }),
   });
 
   if (!response.ok) {

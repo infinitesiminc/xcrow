@@ -6,9 +6,11 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-const systemPrompt = `You are an AI job impact analyst. Given a job title and optional company name, analyze how AI is transforming that role at the task level.
+const systemPrompt = `You are an AI job impact analyst. Given a job title, optional company name, and optional job description, analyze how AI is transforming that role at the task level.
 
 You MUST respond by calling the "job_analysis" function with structured data. Do not return plain text.
+
+If a job description is provided, use it as the PRIMARY source for identifying tasks. Extract real responsibilities from the JD rather than guessing generic ones.
 
 Be specific and realistic. Consider current AI capabilities and near-term trends (1-3 years).
 For each task:
@@ -36,7 +38,7 @@ serve(async (req) => {
   }
 
   try {
-    const { jobTitle, company } = await req.json();
+    const { jobTitle, company, jobDescription, jdUrl } = await req.json();
 
     if (!jobTitle) {
       return new Response(JSON.stringify({ error: "Job title is required" }), {
@@ -53,9 +55,53 @@ serve(async (req) => {
       });
     }
 
-    const userPrompt = company
-      ? `Analyze the role of "${jobTitle}" at "${company}". Consider the specific industry and company context.`
-      : `Analyze the role of "${jobTitle}". Consider typical responsibilities across industries.`;
+    // If jdUrl is provided, scrape it to get the JD text
+    let resolvedJd = jobDescription || "";
+    if (!resolvedJd && jdUrl) {
+      const apiKey = Deno.env.get("FIRECRAWL_API_KEY");
+      if (apiKey) {
+        try {
+          let formattedUrl = jdUrl.trim();
+          if (!formattedUrl.startsWith("http://") && !formattedUrl.startsWith("https://")) {
+            formattedUrl = `https://${formattedUrl}`;
+          }
+          console.log("Scraping JD URL:", formattedUrl);
+          const scrapeRes = await fetch("https://api.firecrawl.dev/v1/scrape", {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${apiKey}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              url: formattedUrl,
+              formats: ["markdown"],
+              onlyMainContent: true,
+            }),
+          });
+          if (scrapeRes.ok) {
+            const scrapeData = await scrapeRes.json();
+            resolvedJd = scrapeData.data?.markdown || scrapeData.markdown || "";
+            console.log("Scraped JD length:", resolvedJd.length);
+          } else {
+            console.error("Failed to scrape JD URL:", scrapeRes.status);
+          }
+        } catch (e) {
+          console.error("Error scraping JD URL:", e);
+        }
+      }
+    }
+
+    // Truncate JD to avoid token limits
+    const truncatedJd = resolvedJd.slice(0, 6000);
+
+    let userPrompt = "";
+    if (truncatedJd) {
+      userPrompt = `Analyze the role of "${jobTitle}"${company ? ` at "${company}"` : ""}.\n\nHere is the actual job description — use it to identify the real tasks and responsibilities:\n\n---\n${truncatedJd}\n---`;
+    } else if (company) {
+      userPrompt = `Analyze the role of "${jobTitle}" at "${company}". Consider the specific industry and company context.`;
+    } else {
+      userPrompt = `Analyze the role of "${jobTitle}". Consider typical responsibilities across industries.`;
+    }
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",

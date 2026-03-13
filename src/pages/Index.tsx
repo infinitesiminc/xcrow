@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowRight, Briefcase, BarChart3, BookOpen, Users, Plus, X, Sparkles, Loader2 } from "lucide-react";
+import { ArrowRight, Briefcase, BarChart3, BookOpen, Users, Plus, X, Sparkles, Loader2, FileText, Link } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
@@ -25,6 +25,7 @@ const categoryLabels: Record<SkillCategory, string> = {
 };
 
 type Mode = "individual" | "team";
+type JdInputType = "none" | "paste" | "url";
 
 interface RoleEntry {
   id: string;
@@ -36,6 +37,9 @@ const Index = () => {
   const [jobTitle, setJobTitle] = useState("");
   const [websiteError, setWebsiteError] = useState("");
   const [mode, setMode] = useState<Mode>("individual");
+  const [jdInputType, setJdInputType] = useState<JdInputType>("none");
+  const [jdText, setJdText] = useState("");
+  const [jdUrl, setJdUrl] = useState("");
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -61,8 +65,23 @@ const Index = () => {
       return;
     }
     setWebsiteError("");
+
     const companyParam = website.trim();
-    navigate(`/analysis?company=${encodeURIComponent(companyParam)}&title=${encodeURIComponent(jobTitle.trim())}`);
+    const jdParam = jdInputType === "paste" ? jdText.trim() : "";
+    const jdUrlParam = jdInputType === "url" ? jdUrl.trim() : "";
+
+    const params = new URLSearchParams({
+      company: companyParam,
+      title: jobTitle.trim(),
+    });
+    if (jdParam) params.set("jd", jdParam);
+    if (jdUrlParam) params.set("jdUrl", jdUrlParam);
+
+    navigate(`/analysis?${params.toString()}`);
+  };
+
+  const toggleJdInput = (type: JdInputType) => {
+    setJdInputType((prev) => (prev === type ? "none" : type));
   };
 
   // Team handlers
@@ -196,12 +215,78 @@ const Index = () => {
                 required
                 className="h-12 bg-card border-border"
               />
+
+              {/* JD input toggles */}
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => toggleJdInput("paste")}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md border transition-colors ${
+                    jdInputType === "paste"
+                      ? "border-primary/50 bg-primary/10 text-primary"
+                      : "border-border text-muted-foreground hover:text-foreground hover:border-border/80"
+                  }`}
+                >
+                  <FileText className="h-3 w-3" /> Paste JD
+                </button>
+                <button
+                  type="button"
+                  onClick={() => toggleJdInput("url")}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md border transition-colors ${
+                    jdInputType === "url"
+                      ? "border-primary/50 bg-primary/10 text-primary"
+                      : "border-border text-muted-foreground hover:text-foreground hover:border-border/80"
+                  }`}
+                >
+                  <Link className="h-3 w-3" /> JD URL
+                </button>
+              </div>
+
+              {/* JD paste area */}
+              <AnimatePresence>
+                {jdInputType === "paste" && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    exit={{ opacity: 0, height: 0 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <textarea
+                      placeholder="Paste the full job description here..."
+                      value={jdText}
+                      onChange={(e) => setJdText(e.target.value)}
+                      className="w-full min-h-[120px] max-h-[240px] px-3 py-2 text-sm bg-card border border-border rounded-md resize-y focus:outline-none focus:ring-2 focus:ring-ring text-foreground placeholder:text-muted-foreground"
+                    />
+                    <p className="text-[10px] text-muted-foreground mt-1">
+                      {jdText.length > 0 ? `${jdText.length.toLocaleString()} chars` : "Adding a JD makes the analysis much more accurate"}
+                    </p>
+                  </motion.div>
+                )}
+                {jdInputType === "url" && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    exit={{ opacity: 0, height: 0 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <Input
+                      placeholder="https://jobs.example.com/role/12345"
+                      value={jdUrl}
+                      onChange={(e) => setJdUrl(e.target.value)}
+                      className="h-11 bg-card border-border"
+                    />
+                    <p className="text-[10px] text-muted-foreground mt-1">We'll scrape the job posting for a more accurate analysis</p>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
               <Button type="submit" size="lg" className="w-full h-12 text-base font-semibold gap-2">
                 Analyze My Role
                 <ArrowRight className="w-4 h-4" />
               </Button>
             </motion.form>
           ) : (
+            /* Team form — unchanged */
             <motion.div
               key="team"
               initial={{ opacity: 0, y: 20 }}
@@ -254,7 +339,6 @@ const Index = () => {
       {mode === "team" && teamAnalyzed && teamResults.length > 0 && (
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="px-4 pb-24">
           <div className="max-w-2xl mx-auto space-y-8">
-            {/* Summary */}
             <div>
               <h2 className="font-display font-semibold text-foreground mb-4">Team Overview</h2>
               <div className="grid grid-cols-3 gap-4">
@@ -273,7 +357,6 @@ const Index = () => {
               </div>
             </div>
 
-            {/* Per-role bars */}
             <div>
               <h2 className="font-display font-semibold text-foreground mb-4">AI Impact by Role</h2>
               <div className="space-y-3">
@@ -291,7 +374,6 @@ const Index = () => {
               </div>
             </div>
 
-            {/* Shared skill gaps */}
             {sharedSkills.length > 0 && (
               <div>
                 <div className="flex items-center gap-2 mb-4">
@@ -318,7 +400,6 @@ const Index = () => {
               </div>
             )}
 
-            {/* Role-specific skills */}
             {uniqueSkills.length > 0 && (
               <div>
                 <h2 className="font-display font-semibold text-foreground mb-4">Role-Specific Skills</h2>
