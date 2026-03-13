@@ -32,8 +32,9 @@ interface RoleEntry {
 }
 
 const Index = () => {
-  const [company, setCompany] = useState("");
+  const [website, setWebsite] = useState("");
   const [jobTitle, setJobTitle] = useState("");
+  const [websiteError, setWebsiteError] = useState("");
   const [mode, setMode] = useState<Mode>("individual");
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -47,10 +48,21 @@ const Index = () => {
   const [teamLoading, setTeamLoading] = useState(false);
   const [teamAnalyzed, setTeamAnalyzed] = useState(false);
 
+  const isValidWebsite = (url: string) => {
+    if (!url) return true;
+    return /^(https?:\/\/)?([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}(\/.*)?$/.test(url.trim());
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!jobTitle.trim()) return;
-    navigate(`/analysis?company=${encodeURIComponent(company.trim())}&title=${encodeURIComponent(jobTitle.trim())}`);
+    if (website && !isValidWebsite(website)) {
+      setWebsiteError("Please enter a valid website (e.g. example.com)");
+      return;
+    }
+    setWebsiteError("");
+    const companyParam = website.trim();
+    navigate(`/analysis?company=${encodeURIComponent(companyParam)}&title=${encodeURIComponent(jobTitle.trim())}`);
   };
 
   // Team handlers
@@ -168,12 +180,15 @@ const Index = () => {
               onSubmit={handleSubmit}
               className="mt-8 w-full max-w-md space-y-3"
             >
-              <Input
-                placeholder="Company name (optional)"
-                value={company}
-                onChange={(e) => setCompany(e.target.value)}
-                className="h-12 bg-card border-border"
-              />
+              <div>
+                <Input
+                  placeholder="Company website (optional) — e.g. example.com"
+                  value={website}
+                  onChange={(e) => { setWebsite(e.target.value); setWebsiteError(""); }}
+                  className={`h-12 bg-card border-border ${websiteError ? "border-destructive" : ""}`}
+                />
+                {websiteError && <p className="text-xs text-destructive mt-1">{websiteError}</p>}
+              </div>
               <Input
                 placeholder="Your job title *"
                 value={jobTitle}
