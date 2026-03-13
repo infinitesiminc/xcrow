@@ -12,11 +12,18 @@ export interface TaskAnalysis {
   description: string;
 }
 
+export interface ToolResource {
+  name: string;
+  url: string;
+  summary: string;
+}
+
 export interface SkillRecommendation {
   name: string;
   priority: SkillPriority;
   category: SkillCategory;
   description: string;
+  resources?: ToolResource[];
 }
 
 export interface JobAnalysisResult {

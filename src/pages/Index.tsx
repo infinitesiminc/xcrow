@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowRight, Briefcase, BarChart3, BookOpen } from "lucide-react";
+import { ArrowRight, Briefcase, BarChart3, BookOpen, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -70,6 +70,17 @@ const Index = () => {
             <ArrowRight className="w-4 h-4" />
           </Button>
         </motion.form>
+
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.4 }}
+          className="mt-4 text-center"
+        >
+          <Button variant="ghost" size="sm" onClick={() => navigate("/team")} className="text-muted-foreground gap-1.5">
+            <Users className="h-4 w-4" /> Analyze your whole team instead
+          </Button>
+        </motion.div>
       </div>
 
       {/* How it works */}
