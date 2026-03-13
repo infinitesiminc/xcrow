@@ -5,7 +5,7 @@ import {
   ArrowLeft, TrendingUp, Minus, AlertTriangle, Zap, Bot, ExternalLink,
   Building2, Users, DollarSign, MapPin, Calendar, Tag,
   Wrench, Heart, Sparkles, Save, User, ChevronDown,
-  ShieldAlert, GraduationCap, Rocket,
+  ShieldAlert, GraduationCap, Rocket, Play,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -16,6 +16,7 @@ import { findPrebuiltRole } from "@/data/prebuilt-roles";
 import { analyzeJobWithAI } from "@/lib/ai-analysis";
 import { useToast } from "@/hooks/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
+import SimulatorModal from "@/components/SimulatorModal";
 
 interface CompanySnapshot {
   success: boolean;
@@ -81,7 +82,7 @@ const Analysis = () => {
   const [snapshot, setSnapshot] = useState<CompanySnapshot | null>(null);
   const [snapshotLoading, setSnapshotLoading] = useState(false);
   const [selectedTaskIndex, setSelectedTaskIndex] = useState<number | null>(null);
-
+  const [simTask, setSimTask] = useState<string | null>(null);
   useEffect(() => {
     if (!jobTitle) { navigate("/"); return; }
     const analyze = async () => {
@@ -342,6 +343,15 @@ const Analysis = () => {
                                   <TrendIcon className="h-2.5 w-2.5" />
                                   {trend.label}
                                 </span>
+                                {/* Practice button */}
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="ml-auto h-6 px-2 text-[10px] gap-1 text-primary hover:bg-primary/10"
+                                  onClick={(e) => { e.stopPropagation(); setSimTask(task.name); }}
+                                >
+                                  <Play className="h-2.5 w-2.5" /> Practice
+                                </Button>
                               </div>
                             </div>
                           </div>
@@ -422,6 +432,15 @@ const Analysis = () => {
             </CardContent>
           </Card>
         </motion.div>
+
+        {/* Simulator Modal */}
+        <SimulatorModal
+          open={!!simTask}
+          onClose={() => setSimTask(null)}
+          taskName={simTask || ""}
+          jobTitle={result.jobTitle}
+          company={result.company}
+        />
       </div>
     </div>
   );
