@@ -395,24 +395,40 @@ const Index = () => {
             Task-level AI impact analysis for any job, plus hands-on simulations to sharpen the skills that matter.
           </p>
 
-          {/* How it works — inline on desktop */}
-          <div className="mt-8 grid grid-cols-3 gap-4">
-            {steps.map((step, i) => (
-              <motion.div
-                key={step.title}
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4, delay: 0.3 + i * 0.1 }}
-              >
-                <div className="flex items-center gap-2 mb-1">
-                  <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-accent text-accent-foreground">
-                    <step.icon className="h-3.5 w-3.5" />
+          {/* Hot Roles */}
+          <div className="mt-6">
+            <div className="flex items-center gap-2 mb-3">
+              <TrendingUp className="h-4 w-4 text-primary" />
+              <h2 className="text-sm font-semibold text-foreground">Popular roles — explore free</h2>
+            </div>
+            <div className="grid grid-cols-3 gap-3">
+              {hotRoles.map((role, i) => (
+                <motion.button
+                  key={role.title}
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4, delay: 0.3 + i * 0.1 }}
+                  onClick={() => navigate(`/analysis?title=${encodeURIComponent(role.title)}&company=`)}
+                  className="group relative overflow-hidden rounded-xl aspect-[3/4] cursor-pointer text-left"
+                >
+                  <img src={role.image} alt={role.title} className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                  <div className="absolute top-2 left-2">
+                    <span className="inline-block px-2 py-0.5 text-[10px] font-medium rounded-full bg-primary/90 text-primary-foreground">
+                      {role.tag}
+                    </span>
                   </div>
-                  <h3 className="font-display font-semibold text-sm text-foreground">{step.title}</h3>
-                </div>
-                <p className="text-xs text-muted-foreground pl-9">{step.description}</p>
-              </motion.div>
-            ))}
+                  <div className="absolute bottom-0 left-0 right-0 p-3">
+                    <h3 className="text-sm font-semibold text-white leading-tight">{role.title}</h3>
+                    <div className="flex items-center gap-2 mt-1">
+                      <span className="text-[10px] text-white/80">{role.augmented}% AI-augmented</span>
+                      <span className="text-[10px] text-white/60">·</span>
+                      <span className="text-[10px] text-white/80">{role.risk}% at risk</span>
+                    </div>
+                  </div>
+                </motion.button>
+              ))}
+            </div>
           </div>
         </motion.div>
       </div>
