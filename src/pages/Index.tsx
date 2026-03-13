@@ -1,13 +1,14 @@
 import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowRight, Briefcase, BarChart3, BookOpen, Users, Plus, X, Loader2, FileText, Link, Upload, Search } from "lucide-react";
+import { ArrowRight, Briefcase, BarChart3, BookOpen, Users, Plus, X, Loader2, FileText, Link, Upload, Search, User, LayoutDashboard } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { JobAnalysisResult } from "@/types/analysis";
 import { findPrebuiltRole } from "@/data/prebuilt-roles";
 import { analyzeJobWithAI } from "@/lib/ai-analysis";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
 
 const steps = [
   { icon: BarChart3, title: "Analyze", description: "See exactly how AI reshapes every task in your role" },
@@ -39,6 +40,7 @@ const getLastAnalysis = (): LastAnalysis | null => {
 };
 
 const Index = () => {
+  const { user } = useAuth();
   const lastAnalysis = getLastAnalysis();
   const [website, setWebsite] = useState("");
   const [jobTitle, setJobTitle] = useState("");
@@ -351,7 +353,26 @@ const Index = () => {
 
 
   return (
-    <div className="h-[calc(100vh-3.5rem)] bg-background flex">
+    <div className="h-screen bg-background flex flex-col">
+      {/* Minimal top bar */}
+      <div className="flex items-center justify-between px-4 sm:px-6 py-2 shrink-0">
+        <div className="flex items-center gap-2 font-heading text-sm font-bold tracking-tight text-foreground">
+          <BarChart3 className="h-4 w-4 text-primary" />
+          Infinite Sim
+        </div>
+        <div className="flex items-center gap-1">
+          {user ? (
+            <Button variant="ghost" size="sm" className="text-xs h-7" onClick={() => navigate("/dashboard")}>
+              <LayoutDashboard className="mr-1 h-3.5 w-3.5" /> Dashboard
+            </Button>
+          ) : (
+            <Button variant="ghost" size="sm" className="text-xs h-7" onClick={() => navigate("/auth")}>
+              <User className="mr-1 h-3.5 w-3.5" /> Sign in
+            </Button>
+          )}
+        </div>
+      </div>
+      <div className="flex flex-1 min-h-0">
       {/* Left: Hero + How it works */}
       <div className="hidden lg:flex flex-col justify-center flex-1 px-8 xl:px-16">
         <motion.div
@@ -617,6 +638,7 @@ const Index = () => {
             </motion.div>
           )}
         </AnimatePresence>
+      </div>
       </div>
     </div>
   );
