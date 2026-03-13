@@ -13,10 +13,10 @@ import { analyzeJobWithAI } from "@/lib/ai-analysis";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 
-const steps = [
-  { icon: BarChart3, title: "Analyze", description: "See exactly how AI reshapes every task in your role" },
-  { icon: Briefcase, title: "Simulate", description: "Practice working alongside AI in realistic job scenarios" },
-  { icon: BookOpen, title: "Adapt", description: "Build the skills that keep you ahead of automation" },
+const hotRoles = [
+  { title: "Software Engineer", image: roleSoftwareEngineer, augmented: 72, risk: 15, tag: "High AI Augmentation" },
+  { title: "Marketing Manager", image: roleMarketingManager, augmented: 68, risk: 25, tag: "Rapid AI Growth" },
+  { title: "Accountant", image: roleAccountant, augmented: 60, risk: 35, tag: "Automation Risk" },
 ];
 
 type Mode = "individual" | "team";
