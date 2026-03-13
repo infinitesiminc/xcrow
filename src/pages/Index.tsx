@@ -556,7 +556,9 @@ const Index = () => {
                       className="group inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-accent/40 border border-border/50 text-sm hover:border-border transition-colors max-w-[280px]"
                     >
                       {role.jdFileName && (
-                        <FileText className="h-3 w-3 text-primary shrink-0" title={`JD: ${role.jdFileName}`} />
+                        <span title={`JD: ${role.jdFileName}`}>
+                          <FileText className="h-3 w-3 text-primary shrink-0" />
+                        </span>
                       )}
                       <input
                         className="bg-transparent border-none outline-none text-foreground placeholder:text-muted-foreground text-sm w-full min-w-[80px]"
