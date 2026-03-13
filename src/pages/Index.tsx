@@ -418,7 +418,30 @@ const Index = () => {
           </button>
         </motion.div>
 
-        {/* Individual Form */}
+        {/* Last analyzed chip */}
+        {lastAnalysis && lastAnalysis.jobTitle && mode === "individual" && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, delay: 0.2 }}
+            className="mt-4"
+          >
+            <button
+              type="button"
+              onClick={() => {
+                const params = new URLSearchParams({ company: lastAnalysis.company, title: lastAnalysis.jobTitle });
+                navigate(`/analysis?${params.toString()}`);
+              }}
+              className="inline-flex items-center gap-2 px-3 py-1.5 text-xs font-medium rounded-full border border-border bg-card text-muted-foreground hover:text-foreground hover:border-primary/30 transition-colors"
+            >
+              <Search className="h-3 w-3" />
+              Re-analyze: <span className="text-foreground font-semibold">{lastAnalysis.jobTitle}</span>
+              {lastAnalysis.company && <span className="text-muted-foreground">@ {lastAnalysis.company}</span>}
+              <ArrowRight className="h-3 w-3" />
+            </button>
+          </motion.div>
+        )}
+
         <AnimatePresence mode="wait">
           {mode === "individual" ? (
             <motion.form
