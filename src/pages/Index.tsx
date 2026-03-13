@@ -32,8 +32,9 @@ interface RoleEntry {
 }
 
 const Index = () => {
-  const [company, setCompany] = useState("");
+  const [website, setWebsite] = useState("");
   const [jobTitle, setJobTitle] = useState("");
+  const [websiteError, setWebsiteError] = useState("");
   const [mode, setMode] = useState<Mode>("individual");
   const navigate = useNavigate();
   const { toast } = useToast();
