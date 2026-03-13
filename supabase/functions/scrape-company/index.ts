@@ -44,7 +44,27 @@ serve(async (req) => {
       },
       body: JSON.stringify({
         url: formattedUrl,
-        formats: ["summary", "branding"],
+        formats: [
+          "branding",
+          {
+            type: "json",
+            schema: {
+              type: "object",
+              properties: {
+                companyName: { type: "string", description: "Official company name" },
+                industry: { type: "string", description: "Primary industry or sector (e.g. Fintech, SaaS, Healthcare)" },
+                companyType: { type: "string", description: "Company type (e.g. Public, Private, Startup, Non-profit)" },
+                employeeRange: { type: "string", description: "Approximate employee count range (e.g. 1-50, 51-200, 201-1000, 1000-5000, 5000+)" },
+                revenueScale: { type: "string", description: "Revenue scale if known (e.g. Pre-revenue, <$10M, $10M-$100M, $100M-$1B, $1B+)" },
+                founded: { type: "string", description: "Year founded if available" },
+                headquarters: { type: "string", description: "HQ location (city, country)" },
+                tagline: { type: "string", description: "Short one-line company description or tagline" },
+              },
+              required: ["companyName", "industry", "tagline"],
+            },
+            prompt: "Extract company profile information from this website. Infer industry, scale, and type from context clues if not explicitly stated. Use null for truly unknown fields.",
+          },
+        ],
         onlyMainContent: true,
       }),
     });
@@ -65,17 +85,20 @@ serve(async (req) => {
       );
     }
 
-    // Extract useful info
-    const summary = data.data?.summary || data.summary || null;
-    const metadata = data.data?.metadata || data.metadata || {};
     const branding = data.data?.branding || data.branding || null;
+    const extracted = data.data?.json || data.json || {};
 
     const snapshot = {
       success: true,
-      name: metadata.title || metadata.ogTitle || null,
-      description: metadata.description || metadata.ogDescription || null,
-      summary,
-      logo: branding?.logo || branding?.images?.logo || metadata.ogImage || null,
+      companyName: extracted.companyName || null,
+      industry: extracted.industry || null,
+      companyType: extracted.companyType || null,
+      employeeRange: extracted.employeeRange || null,
+      revenueScale: extracted.revenueScale || null,
+      founded: extracted.founded || null,
+      headquarters: extracted.headquarters || null,
+      tagline: extracted.tagline || null,
+      logo: branding?.logo || branding?.images?.logo || null,
       url: formattedUrl,
     };
 
