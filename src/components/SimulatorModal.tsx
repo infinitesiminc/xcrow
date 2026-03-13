@@ -181,9 +181,13 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company }: Simulato
     scrollToBottom();
 
     try {
-      const reply = await chatTurn(newMessages, 1, turnCount + 1, jobTitle);
+      const reply = await chatTurn(newMessages, roundCount, roundCount, jobTitle);
       setMessages((prev) => [...prev, { role: "assistant", content: reply }]);
-      setTurnCount((c) => c + 1);
+      // Increment round when user answers yes to continue
+      const lowerInput = input.trim().toLowerCase();
+      if (lowerInput === "yes" || lowerInput === "y" || lowerInput === "yeah" || lowerInput === "sure") {
+        setRoundCount((c) => c + 1);
+      }
       scrollToBottom();
     } catch (err) {
       console.error("Chat error:", err);
