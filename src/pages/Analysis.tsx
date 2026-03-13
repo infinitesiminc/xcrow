@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import {
   ArrowLeft, TrendingUp, Minus, AlertTriangle, Zap, Bot, Globe, ExternalLink,
   Building2, Users, DollarSign, MapPin, Calendar, Tag,
-  Wrench, Heart, Sparkles, Save, Link2,
+  Wrench, Heart, Sparkles, Save,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
