@@ -174,9 +174,9 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company }: Simulato
                       : "bg-secondary text-secondary-foreground rounded-bl-md"
                   }`}
                 >
-                  <ReactMarkdown className="prose prose-sm dark:prose-invert max-w-none [&>p]:m-0">
-                    {msg.content}
-                  </ReactMarkdown>
+                  <div className="prose prose-sm dark:prose-invert max-w-none [&>p]:m-0">
+                    <ReactMarkdown>{msg.content}</ReactMarkdown>
+                  </div>
                 </div>
               </motion.div>
             ))}
