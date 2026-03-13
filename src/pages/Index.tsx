@@ -430,7 +430,7 @@ const Index = () => {
               exit={{ opacity: 0, y: -10 }}
               transition={{ duration: 0.3 }}
               onSubmit={handleSubmit}
-              className="mt-8 w-full max-w-md space-y-3"
+              className="mt-5 w-full max-w-md space-y-3"
             >
               {/* Company website — hidden when JD URL provides it */}
               {!companyFromJdUrl && (
