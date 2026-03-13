@@ -146,6 +146,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, onComplete
     setError(null);
     setMessages([]);
     setRoundCount(1);
+    setAnsweredQuestions([]);
     try {
       const compiled = await compileSession(taskName, jobTitle, company, 3);
       setSession(compiled);
