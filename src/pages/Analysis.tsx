@@ -121,15 +121,35 @@ const Analysis = () => {
   const saveAnalysisHistory = useCallback(async (analysisResult: JobAnalysisResult) => {
     if (!user) return;
     try {
-      await supabase.from("analysis_history").upsert({
-        user_id: user.id,
-        job_title: analysisResult.jobTitle,
-        company: analysisResult.company || null,
-        tasks_count: analysisResult.tasks.length,
-        augmented_percent: analysisResult.summary.augmentedPercent,
-        automation_risk_percent: analysisResult.summary.automationRiskPercent,
-        analyzed_at: new Date().toISOString(),
-      }, { onConflict: "user_id,job_title,company" });
+      // Check if entry already exists
+      let query = supabase.from("analysis_history")
+        .select("id")
+        .eq("user_id", user.id)
+        .eq("job_title", analysisResult.jobTitle);
+      if (analysisResult.company) {
+        query = query.eq("company", analysisResult.company);
+      } else {
+        query = query.is("company", null);
+      }
+      const { data: existing } = await query.maybeSingle();
+
+      if (existing) {
+        await supabase.from("analysis_history").update({
+          tasks_count: analysisResult.tasks.length,
+          augmented_percent: analysisResult.summary.augmentedPercent,
+          automation_risk_percent: analysisResult.summary.automationRiskPercent,
+          analyzed_at: new Date().toISOString(),
+        }).eq("id", existing.id);
+      } else {
+        await supabase.from("analysis_history").insert({
+          user_id: user.id,
+          job_title: analysisResult.jobTitle,
+          company: analysisResult.company || null,
+          tasks_count: analysisResult.tasks.length,
+          augmented_percent: analysisResult.summary.augmentedPercent,
+          automation_risk_percent: analysisResult.summary.automationRiskPercent,
+        });
+      }
     } catch (err) {
       console.error("Failed to save analysis history:", err);
     }
