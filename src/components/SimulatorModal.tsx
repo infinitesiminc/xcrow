@@ -262,7 +262,10 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, onComplete
             {(phase === "chat" || phase === "done") && !error && (
               <>
                 {phase === "chat" && <TipsToggle tips={session?.tips || []} />}
-                {messages.map((msg, i) => (
+                {messages.map((msg, i) => {
+                  // Hide single-letter user answers (shown via highlighted buttons instead)
+                  if (msg.role === "user" && /^[A-D]$/.test(msg.content.trim())) return null;
+                  return (
                   <motion.div
                     key={i}
                     initial={{ opacity: 0, y: 6 }}
