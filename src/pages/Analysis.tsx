@@ -103,6 +103,19 @@ const Analysis = () => {
   const [snapshotLoading, setSnapshotLoading] = useState(false);
   const [selectedTaskIndex, setSelectedTaskIndex] = useState<number | null>(null);
   const [simTask, setSimTask] = useState<string | null>(null);
+  const [completedTasks, setCompletedTasks] = useState<Set<string>>(new Set());
+  const { user } = useAuth();
+
+  const fetchCompletions = useCallback(async () => {
+    if (!user) return;
+    const { data } = await supabase
+      .from("completed_simulations")
+      .select("task_name")
+      .eq("user_id", user.id);
+    if (data) setCompletedTasks(new Set(data.map((d: any) => d.task_name)));
+  }, [user]);
+
+  useEffect(() => { fetchCompletions(); }, [fetchCompletions]);
   useEffect(() => {
     if (!jobTitle && !hasJd) { navigate("/"); return; }
     const analyze = async () => {
