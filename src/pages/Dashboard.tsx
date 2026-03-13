@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, CheckCircle2, Calendar, Briefcase, Loader2, Play } from "lucide-react";
+import { ArrowLeft, CheckCircle2, Calendar, Briefcase, Loader2, Play, BarChart3, Bot, ShieldAlert, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -17,10 +18,21 @@ interface CompletedSim {
   completed_at: string;
 }
 
+interface AnalysisEntry {
+  id: string;
+  job_title: string;
+  company: string | null;
+  tasks_count: number;
+  augmented_percent: number;
+  automation_risk_percent: number;
+  analyzed_at: string;
+}
+
 const Dashboard = () => {
   const { user, loading: authLoading, signOut } = useAuth();
   const navigate = useNavigate();
   const [completions, setCompletions] = useState<CompletedSim[]>([]);
+  const [analyses, setAnalyses] = useState<AnalysisEntry[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -31,16 +43,16 @@ const Dashboard = () => {
 
   useEffect(() => {
     if (!user) return;
-    const fetchCompletions = async () => {
-      const { data } = await supabase
-        .from("completed_simulations")
-        .select("*")
-        .eq("user_id", user.id)
-        .order("completed_at", { ascending: false });
-      setCompletions((data as CompletedSim[]) || []);
+    const fetchData = async () => {
+      const [simRes, analysisRes] = await Promise.all([
+        supabase.from("completed_simulations").select("*").eq("user_id", user.id).order("completed_at", { ascending: false }),
+        supabase.from("analysis_history").select("*").eq("user_id", user.id).order("analyzed_at", { ascending: false }),
+      ]);
+      setCompletions((simRes.data as CompletedSim[]) || []);
+      setAnalyses((analysisRes.data as AnalysisEntry[]) || []);
       setLoading(false);
     };
-    fetchCompletions();
+    fetchData();
   }, [user]);
 
   if (authLoading || !user) {
@@ -73,9 +85,9 @@ const Dashboard = () => {
         {/* Stats */}
         <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="grid grid-cols-3 gap-4 mb-8">
           {[
-            { label: "Sessions", value: completions.length, icon: CheckCircle2 },
+            { label: "Jobs Analyzed", value: analyses.length, icon: BarChart3 },
             { label: "Tasks Practiced", value: uniqueTasks, icon: Play },
-            { label: "Roles Explored", value: uniqueRoles, icon: Briefcase },
+            { label: "Sessions", value: completions.length, icon: CheckCircle2 },
           ].map((stat) => (
             <Card key={stat.label}>
               <CardContent className="p-4 text-center">
@@ -87,8 +99,75 @@ const Dashboard = () => {
           ))}
         </motion.div>
 
+        {/* Analyzed Jobs */}
+        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} className="mb-8">
+          <h2 className="text-xs font-medium uppercase tracking-widest text-muted-foreground mb-3">Analyzed Jobs</h2>
+          {analyses.length === 0 ? (
+            <Card>
+              <CardContent className="p-6 text-center">
+                <p className="text-sm text-muted-foreground mb-3">No analyses yet</p>
+                <Button size="sm" onClick={() => navigate("/")}>Analyze a Role</Button>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="grid gap-3 md:grid-cols-2">
+              {analyses.map((a, i) => (
+                <motion.div key={a.id} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 + i * 0.04 }}>
+                  <Card
+                    className="cursor-pointer hover:border-primary/20 hover:shadow-md transition-all"
+                    onClick={() => {
+                      const params = new URLSearchParams({ title: a.job_title });
+                      if (a.company) params.set("company", a.company);
+                      navigate(`/analysis?${params.toString()}`);
+                    }}
+                  >
+                    <CardContent className="p-4">
+                      <div className="flex items-start justify-between mb-3">
+                        <div className="min-w-0 flex-1">
+                          <p className="text-sm font-semibold text-foreground truncate">{a.job_title}</p>
+                          {a.company && <p className="text-xs text-muted-foreground truncate">{a.company}</p>}
+                        </div>
+                        <ArrowRight className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
+                      </div>
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-2">
+                          <Bot className="h-3 w-3 text-primary shrink-0" />
+                          <div className="flex-1">
+                            <div className="flex justify-between text-[10px] mb-0.5">
+                              <span className="text-muted-foreground">AI-augmented</span>
+                              <span className="font-medium text-foreground">{a.augmented_percent}%</span>
+                            </div>
+                            <Progress value={a.augmented_percent} className="h-1" />
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <ShieldAlert className="h-3 w-3 text-destructive shrink-0" />
+                          <div className="flex-1">
+                            <div className="flex justify-between text-[10px] mb-0.5">
+                              <span className="text-muted-foreground">Automation risk</span>
+                              <span className="font-medium text-foreground">{a.automation_risk_percent}%</span>
+                            </div>
+                            <Progress value={a.automation_risk_percent} className="h-1" />
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-between mt-3 pt-2 border-t border-border">
+                        <Badge variant="secondary" className="text-[10px]">{a.tasks_count} tasks</Badge>
+                        <span className="text-[10px] text-muted-foreground flex items-center gap-1">
+                          <Calendar className="h-2.5 w-2.5" />
+                          {new Date(a.analyzed_at).toLocaleDateString()}
+                        </span>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              ))}
+            </div>
+          )}
+        </motion.div>
+
         {/* Completion list */}
-        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
+        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}>
           <h2 className="text-xs font-medium uppercase tracking-widest text-muted-foreground mb-3">Practice History</h2>
           {loading ? (
             <div className="flex justify-center py-8">
