@@ -368,39 +368,64 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, onComplete
             {(() => {
               const lastAi = [...messages].reverse().find(m => m.role === "assistant");
               if (!lastAi || sending) return null;
+              // Don't show buttons if this question was already answered
+              const lastAiIndex = messages.lastIndexOf(lastAi);
+              const alreadyAnswered = answeredQuestions.some(q => q.messageIndex === lastAiIndex);
+              if (alreadyAnswered) return null;
               const opts = lastAi.content.match(/^[A-D][).]\s*.+/gm);
               if (!opts || opts.length < 2) return null;
+              const parsedOpts = opts.slice(0, 4).map(opt => ({
+                letter: opt.charAt(0),
+                text: opt.replace(/^[A-D][).]\s*/, "").trim(),
+              }));
               return (
                 <div className="flex flex-col gap-1.5">
-                  {opts.slice(0, 4).map((opt, i) => {
-                    const letter = opt.charAt(0);
-                    const text = opt.replace(/^[A-D][).]\s*/, "").trim();
-                    return (
-                      <Button
-                        key={i}
-                        variant="outline"
-                        size="sm"
-                        className="w-full justify-start text-left h-auto py-2 px-3 text-sm font-normal hover:bg-primary/5 hover:border-primary/30"
-                        onClick={() => {
-                          const fakeMsg: SimMessage = { role: "user", content: letter };
-                          const newMsgs = [...messages, fakeMsg];
-                          setMessages(newMsgs);
-                          setInput("");
-                          setSending(true);
+                  {parsedOpts.map((opt, i) => (
+                    <Button
+                      key={i}
+                      variant="outline"
+                      size="sm"
+                      className="w-full justify-start text-left h-auto py-2 px-3 text-sm font-normal hover:bg-primary/5 hover:border-primary/30"
+                      onClick={() => {
+                        const questionMsgIndex = lastAiIndex;
+                        const fakeMsg: SimMessage = { role: "user", content: opt.letter };
+                        const newMsgs = [...messages, fakeMsg];
+                        setMessages(newMsgs);
+                        setInput("");
+                        setSending(true);
+                        scrollToBottom();
+                        chatTurn(newMsgs, roundCount, roundCount, jobTitle).then(reply => {
+                          // Parse correct answer from feedback
+                          let correctLetter: string | null = null;
+                          if (reply.includes("✅")) {
+                            correctLetter = opt.letter; // user was correct
+                          } else if (reply.includes("❌")) {
+                            // Try to find the correct answer letter from feedback like "B)" or "**B)**"
+                            const correctMatch = reply.match(/\*\*([A-D])\)/);
+                            if (correctMatch) correctLetter = correctMatch[1];
+                            else {
+                              // Try "option B" or just look for bold letter
+                              const altMatch = reply.match(/\b([A-D])\)\s/);
+                              if (altMatch && altMatch[1] !== opt.letter) correctLetter = altMatch[1];
+                            }
+                          }
+                          setAnsweredQuestions(prev => [...prev, {
+                            options: parsedOpts,
+                            selectedLetter: opt.letter,
+                            correctLetter,
+                            messageIndex: questionMsgIndex,
+                          }]);
+                          setMessages(prev => [...prev, { role: "assistant", content: reply }]);
                           scrollToBottom();
-                          chatTurn(newMsgs, roundCount, roundCount, jobTitle).then(reply => {
-                            setMessages(prev => [...prev, { role: "assistant", content: reply }]);
-                            scrollToBottom();
-                          }).catch(() => {
-                            setMessages(prev => [...prev, { role: "assistant", content: "Sorry, something went wrong. Try again." }]);
-                          }).finally(() => setSending(false));
-                        }}
-                      >
-                        <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-primary/10 text-primary text-xs font-bold mr-2 shrink-0">{letter}</span>
-                        {text}
-                      </Button>
-                    );
-                  })}
+                        }).catch(() => {
+                          setMessages(prev => [...prev, { role: "assistant", content: "Sorry, something went wrong. Try again." }]);
+                        }).finally(() => setSending(false));
+                      }}
+                    >
+                      <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-primary/10 text-primary text-xs font-bold mr-2 shrink-0">{opt.letter}</span>
+                      {opt.text}
+                    </Button>
+                  ))}
                 </div>
               );
             })()}
