@@ -52,6 +52,7 @@ const Index = () => {
   const [jdFileParsing, setJdFileParsing] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const teamFileInputRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
 
