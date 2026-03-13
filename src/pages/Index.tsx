@@ -389,7 +389,7 @@ const Index = () => {
             <span className="inline-block mb-2 px-3 py-1 text-xs font-medium tracking-wide uppercase rounded-full bg-accent text-accent-foreground">
               Infinite Sim
             </span>
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold font-display tracking-tight text-foreground leading-tight">
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold font-display tracking-tight text-foreground leading-tight">
               Understand how AI transforms your role —{" "}
               <span className="text-primary">then practice thriving in it</span>
             </h1>
@@ -398,43 +398,44 @@ const Index = () => {
             </p>
           </motion.div>
 
-          {/* Form area */}
+          {/* Form strip */}
           <div className="flex flex-col items-center mb-8">
-            {/* Mode toggle */}
-            <div className="flex rounded-lg border border-border bg-card p-1 gap-1 mb-3">
-              <button
-                onClick={() => setMode("individual")}
-                className={`flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
-                  mode === "individual" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                <Briefcase className="h-3.5 w-3.5" /> Individual
-              </button>
-              <button
-                onClick={() => setMode("team")}
-                className={`flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
-                  mode === "team" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                <Users className="h-3.5 w-3.5" /> Team
-              </button>
-            </div>
+            {/* Top row: mode toggle + re-analyze */}
+            <div className="flex items-center gap-3 mb-3 flex-wrap justify-center">
+              <div className="flex rounded-lg border border-border bg-card p-1 gap-1">
+                <button
+                  onClick={() => setMode("individual")}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
+                    mode === "individual" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  <Briefcase className="h-3.5 w-3.5" /> Individual
+                </button>
+                <button
+                  onClick={() => setMode("team")}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
+                    mode === "team" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  <Users className="h-3.5 w-3.5" /> Team
+                </button>
+              </div>
 
-            {/* Last analyzed chip */}
-            {lastAnalysis && lastAnalysis.jobTitle && (
-              <button
-                type="button"
-                onClick={() => {
-                  const params = new URLSearchParams({ company: lastAnalysis.company, title: lastAnalysis.jobTitle });
-                  navigate(`/analysis?${params.toString()}`);
-                }}
-                className="inline-flex items-center gap-2 px-3 py-1 text-xs font-medium rounded-full border border-border bg-card text-muted-foreground hover:text-foreground hover:border-primary/30 transition-colors mb-3"
-              >
-                <Search className="h-3 w-3" />
-                Re-analyze: <span className="text-foreground font-semibold">{lastAnalysis.jobTitle}</span>
-                <ArrowRight className="h-3 w-3" />
-              </button>
-            )}
+              {lastAnalysis && lastAnalysis.jobTitle && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    const params = new URLSearchParams({ company: lastAnalysis.company, title: lastAnalysis.jobTitle });
+                    navigate(`/analysis?${params.toString()}`);
+                  }}
+                  className="inline-flex items-center gap-2 px-3 py-1.5 text-xs font-medium rounded-full border border-border bg-card text-muted-foreground hover:text-foreground hover:border-primary/30 transition-colors"
+                >
+                  <Search className="h-3 w-3" />
+                  Re-analyze: <span className="text-foreground font-semibold">{lastAnalysis.jobTitle}</span>
+                  <ArrowRight className="h-3 w-3" />
+                </button>
+              )}
+            </div>
 
             <AnimatePresence mode="wait">
               {mode === "individual" ? (
@@ -445,47 +446,51 @@ const Index = () => {
                   exit={{ opacity: 0, y: -10 }}
                   transition={{ duration: 0.3 }}
                   onSubmit={handleSubmit}
-                  className="w-full max-w-sm space-y-2.5"
+                  className="w-full max-w-2xl"
                 >
-                  {!companyFromJdUrl && (
-                    <div>
+                  {/* Single strip: inputs + JD toggles + button */}
+                  <div className="flex items-center gap-2 p-2 rounded-xl border border-border bg-card shadow-sm flex-wrap">
+                    {!companyFromJdUrl && (
                       <Input
-                        placeholder="Company website (optional) — e.g. example.com"
+                        placeholder="Company website (optional)"
                         value={website}
                         onChange={(e) => { setWebsite(e.target.value); setWebsiteError(""); }}
-                        className={`h-10 bg-card border-border text-sm ${websiteError ? "border-destructive" : ""}`}
+                        className={`h-9 border-0 bg-transparent text-sm shadow-none focus-visible:ring-0 flex-1 min-w-[140px] ${websiteError ? "text-destructive" : ""}`}
                       />
-                      {websiteError && <p className="text-xs text-destructive mt-1">{websiteError}</p>}
+                    )}
+                    <div className="w-px h-6 bg-border hidden sm:block" />
+                    <Input
+                      placeholder={hasJdContent ? "Job title (optional)" : "Your job title *"}
+                      value={jobTitle}
+                      onChange={(e) => setJobTitle(e.target.value)}
+                      required={!hasJdContent}
+                      className="h-9 border-0 bg-transparent text-sm shadow-none focus-visible:ring-0 flex-1 min-w-[120px]"
+                    />
+                    <div className="w-px h-6 bg-border hidden sm:block" />
+                    <div className="flex items-center gap-1">
+                      <button type="button" onClick={() => toggleJdInput("paste")}
+                        className={`p-1.5 rounded-md transition-colors ${
+                          jdInputType === "paste" ? "bg-primary/10 text-primary" : "text-muted-foreground hover:text-foreground"
+                        }`} title="Paste JD"><FileText className="h-4 w-4" /></button>
+                      <button type="button" onClick={() => toggleJdInput("url")}
+                        className={`p-1.5 rounded-md transition-colors ${
+                          jdInputType === "url" ? "bg-primary/10 text-primary" : "text-muted-foreground hover:text-foreground"
+                        }`} title="JD URL"><Link className="h-4 w-4" /></button>
+                      <button type="button" onClick={() => { jdInputType === "file" ? toggleJdInput("file") : setJdInputType("file"); }}
+                        className={`p-1.5 rounded-md transition-colors ${
+                          jdInputType === "file" ? "bg-primary/10 text-primary" : "text-muted-foreground hover:text-foreground"
+                        }`} title="Upload"><Upload className="h-4 w-4" /></button>
                     </div>
-                  )}
-                  <Input
-                    placeholder={hasJdContent ? "Job title (optional — extracted from JD)" : "Your job title *"}
-                    value={jobTitle}
-                    onChange={(e) => setJobTitle(e.target.value)}
-                    required={!hasJdContent}
-                    className="h-10 bg-card border-border text-sm"
-                  />
-
-                  {/* JD input toggles */}
-                  <div className="flex gap-2">
-                    <button type="button" onClick={() => toggleJdInput("paste")}
-                      className={`flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-md border transition-colors ${
-                        jdInputType === "paste" ? "border-primary/50 bg-primary/10 text-primary" : "border-border text-muted-foreground hover:text-foreground hover:border-border/80"
-                      }`}><FileText className="h-3 w-3" /> Paste JD</button>
-                    <button type="button" onClick={() => toggleJdInput("url")}
-                      className={`flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-md border transition-colors ${
-                        jdInputType === "url" ? "border-primary/50 bg-primary/10 text-primary" : "border-border text-muted-foreground hover:text-foreground hover:border-border/80"
-                      }`}><Link className="h-3 w-3" /> JD URL</button>
-                    <button type="button" onClick={() => { jdInputType === "file" ? toggleJdInput("file") : setJdInputType("file"); }}
-                      className={`flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-md border transition-colors ${
-                        jdInputType === "file" ? "border-primary/50 bg-primary/10 text-primary" : "border-border text-muted-foreground hover:text-foreground hover:border-border/80"
-                      }`}><Upload className="h-3 w-3" /> Upload</button>
+                    <Button type="submit" size="sm" className="h-9 px-4 text-sm font-semibold gap-1.5 shrink-0">
+                      Analyze <ArrowRight className="w-3.5 h-3.5" />
+                    </Button>
                   </div>
+                  {websiteError && <p className="text-xs text-destructive mt-1 px-2">{websiteError}</p>}
 
-                  {/* JD input areas */}
+                  {/* Expandable JD input areas */}
                   <AnimatePresence>
                     {jdInputType === "paste" && (
-                      <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} transition={{ duration: 0.2 }}>
+                      <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} transition={{ duration: 0.2 }} className="mt-2">
                         <textarea
                           placeholder="Paste the full job description here..."
                           value={jdText}
@@ -498,13 +503,13 @@ const Index = () => {
                       </motion.div>
                     )}
                     {jdInputType === "url" && (
-                      <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} transition={{ duration: 0.2 }}>
+                      <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} transition={{ duration: 0.2 }} className="mt-2">
                         <Input placeholder="https://jobs.example.com/role/12345" value={jdUrl} onChange={(e) => setJdUrl(e.target.value)} className="h-10 bg-card border-border text-sm" />
                         <p className="text-[10px] text-muted-foreground mt-0.5">We'll scrape the job posting for a more accurate analysis</p>
                       </motion.div>
                     )}
                     {jdInputType === "file" && (
-                      <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} transition={{ duration: 0.2 }}>
+                      <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} transition={{ duration: 0.2 }} className="mt-2">
                         {jdFileParsing ? (
                           <motion.div className="flex items-center gap-2 py-4 px-3 rounded-lg border border-primary/30 bg-primary/5" animate={{ opacity: [0.7, 1, 0.7] }} transition={{ duration: 1.5, repeat: Infinity }}>
                             <Loader2 className="h-4 w-4 animate-spin text-primary" />
@@ -544,11 +549,6 @@ const Index = () => {
                       </motion.div>
                     )}
                   </AnimatePresence>
-
-                  <Button type="submit" size="lg" className="w-full h-10 text-sm font-semibold gap-2">
-                    Analyze My Role
-                    <ArrowRight className="w-4 h-4" />
-                  </Button>
                 </motion.form>
               ) : (
                 <motion.div
