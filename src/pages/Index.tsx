@@ -547,37 +547,40 @@ const Index = () => {
               transition={{ duration: 0.3 }}
               className="mt-8 w-full max-w-lg"
             >
-              <div className="space-y-2 mb-4">
-                <AnimatePresence>
-                  {roles.map((role, i) => (
-                    <motion.div
+              <div className="space-y-3 mb-4">
+                {/* Compact chip view for roles */}
+                <div className="flex flex-wrap gap-1.5 max-h-[280px] overflow-y-auto p-3 rounded-lg border border-border bg-card/50">
+                  {roles.map((role) => (
+                    <div
                       key={role.id}
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: "auto" }}
-                      exit={{ opacity: 0, height: 0 }}
-                      className="flex gap-2 items-center"
+                      className="group inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-accent/40 border border-border/50 text-sm hover:border-border transition-colors max-w-[280px]"
                     >
-                      <div className="flex-1 relative">
-                        <Input
-                          placeholder={`Role ${i + 1} — e.g. Software Engineer`}
-                          value={role.title}
-                          onChange={(e) => updateRole(role.id, e.target.value)}
-                          className={`h-11 bg-card border-border ${role.jdText ? "pr-8" : ""}`}
-                        />
-                        {role.jdFileName && (
-                          <span className="absolute right-2 top-1/2 -translate-y-1/2" title={`JD: ${role.jdFileName}`}>
-                            <FileText className="h-3.5 w-3.5 text-primary" />
-                          </span>
-                        )}
-                      </div>
-                      {roles.length > 2 && (
-                        <Button variant="ghost" size="icon" onClick={() => removeRole(role.id)} className="shrink-0 text-muted-foreground h-8 w-8">
-                          <X className="h-4 w-4" />
-                        </Button>
+                      {role.jdFileName && (
+                        <FileText className="h-3 w-3 text-primary shrink-0" title={`JD: ${role.jdFileName}`} />
                       )}
-                    </motion.div>
+                      <input
+                        className="bg-transparent border-none outline-none text-foreground placeholder:text-muted-foreground text-sm w-full min-w-[80px]"
+                        value={role.title}
+                        onChange={(e) => updateRole(role.id, e.target.value)}
+                        placeholder="Job title"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => removeRole(role.id)}
+                        className="text-muted-foreground/50 hover:text-foreground shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    </div>
                   ))}
-                </AnimatePresence>
+                  {roles.length === 0 && (
+                    <span className="text-xs text-muted-foreground py-1">Upload a file or add roles manually</span>
+                  )}
+                </div>
+                <div className="flex items-center justify-between text-[10px] text-muted-foreground px-1">
+                  <span>{roles.filter(r => r.title.trim()).length} roles{roles.some(r => r.jdFileName) && ` · ${roles.filter(r => r.jdFileName).length} with JDs`}</span>
+                  <span>Max 100</span>
+                </div>
               </div>
 
               {/* Parsing indicator */}
@@ -589,7 +592,7 @@ const Index = () => {
               )}
 
               <div className="flex flex-wrap gap-2">
-                <Button variant="outline" size="sm" onClick={addRole} disabled={roles.length >= 10} className="gap-1">
+                <Button variant="outline" size="sm" onClick={addRole} disabled={roles.length >= 100} className="gap-1">
                   <Plus className="h-3.5 w-3.5" /> Add role
                 </Button>
                 <label className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md border border-border text-muted-foreground hover:text-foreground hover:border-border/80 cursor-pointer transition-colors">
