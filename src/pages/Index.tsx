@@ -361,6 +361,34 @@ const Index = () => {
                     <p className="text-[10px] text-muted-foreground mt-1">We'll scrape the job posting for a more accurate analysis</p>
                   </motion.div>
                 )}
+                {jdInputType === "file" && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    exit={{ opacity: 0, height: 0 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <div className="flex items-center gap-2 px-3 py-2.5 bg-card border border-border rounded-md">
+                      {jdFileParsing ? (
+                        <>
+                          <Loader2 className="h-3.5 w-3.5 animate-spin text-primary" />
+                          <span className="text-sm text-muted-foreground">Extracting text from {jdFile?.name}...</span>
+                        </>
+                      ) : jdFileText ? (
+                        <>
+                          <FileText className="h-3.5 w-3.5 text-primary" />
+                          <span className="text-sm text-foreground truncate flex-1">{jdFile?.name}</span>
+                          <span className="text-[10px] text-muted-foreground shrink-0">{jdFileText.length.toLocaleString()} chars</span>
+                          <button type="button" onClick={() => { setJdFile(null); setJdFileText(""); setJdInputType("none"); }} className="text-muted-foreground hover:text-foreground">
+                            <X className="h-3 w-3" />
+                          </button>
+                        </>
+                      ) : (
+                        <span className="text-sm text-muted-foreground">Select a PDF, DOCX, or text file</span>
+                      )}
+                    </div>
+                  </motion.div>
+                )}
               </AnimatePresence>
 
               <Button type="submit" size="lg" className="w-full h-12 text-base font-semibold gap-2">
