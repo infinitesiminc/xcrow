@@ -712,7 +712,7 @@ const Index = () => {
                 </p>
                 <p className="text-[11px] text-muted-foreground">CSV/XLSX for job lists, or PDF/DOCX for job descriptions</p>
                 <input
-                  ref={fileInputRef}
+                  ref={teamFileInputRef}
                   type="file"
                   accept=".csv,.txt,.tsv,.xlsx,.xls,.pdf,.docx,.doc,.md"
                   multiple
