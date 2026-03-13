@@ -71,16 +71,25 @@ async function handleCompile(payload: any, apiKey: string) {
 
   const difficultyLabel = difficulty <= 2 ? "easy" : difficulty <= 4 ? "moderate" : "challenging";
 
-  const prompt = `You are designing a realistic job simulation scenario. Create a practice scenario for someone preparing for this role:
+  const prompt = `You are designing a realistic job simulation scenario for someone who has ZERO experience in this industry. They want to explore what this job actually feels like day-to-day.
 
 Role: ${jobTitle}${company ? ` at ${company}` : ""}
 Task to practice: ${taskName}
 Difficulty: ${difficultyLabel}
 
-Generate a JSON response with:
-1. "systemPrompt": A detailed system prompt for the AI interviewer/simulator that will roleplay as a colleague, manager, or stakeholder presenting a realistic work scenario related to the task. The simulator should ask follow-up questions, provide context when asked, and behave like a real person in a workplace setting. Keep it to 3-4 sentences.
-2. "openingMessage": The first message from the simulator that sets up the scenario and asks the candidate to respond. Make it feel like a real workplace conversation. 2-3 sentences max.
-3. "scenario": { "title": a short title, "description": a 1-sentence description }
+Generate a JSON response with these fields:
+
+1. "briefing": A 3-4 sentence explanation for a complete beginner. Cover: what this task involves in plain language, why it matters in this role, and what a good outcome looks like. Use simple language — no jargon without explanation.
+
+2. "tips": An array of 2-3 short, actionable tips the user can reference during the simulation. Each tip should be 1 sentence and help a beginner navigate the conversation (e.g. "Ask clarifying questions before jumping to solutions" or "In this field, stakeholders usually expect you to present options, not just one answer").
+
+3. "keyTerms": An array of 3-4 objects with "term" and "definition" keys — industry-specific words the user will encounter during the simulation, explained simply.
+
+4. "systemPrompt": A detailed system prompt for the AI simulator. The simulator should roleplay as a colleague/manager presenting a realistic scenario. It should naturally weave in context and explain things as if onboarding a new team member. 3-4 sentences.
+
+5. "openingMessage": The first message from the simulator (2-3 sentences). It should set up the scenario while naturally providing context a beginner would need. For example, instead of "We need to review the TPS reports", say "We need to review the TPS reports — those are the weekly status summaries each team sends to leadership."
+
+6. "scenario": { "title": a short title, "description": a 1-sentence description }
 
 Respond ONLY with valid JSON, no markdown.`;
 
@@ -88,17 +97,25 @@ Respond ONLY with valid JSON, no markdown.`;
 
   let parsed;
   try {
-    // Try to extract JSON from possible markdown code blocks
     const jsonMatch = result.match(/```(?:json)?\s*([\s\S]*?)```/) || [null, result];
     parsed = JSON.parse(jsonMatch[1].trim());
   } catch {
     throw new Error("Failed to parse AI response for scenario generation");
   }
 
+  // Build briefing with key terms appended
+  let briefing = parsed.briefing || `This task involves ${taskName} as part of the ${jobTitle} role.`;
+  if (parsed.keyTerms && Array.isArray(parsed.keyTerms) && parsed.keyTerms.length > 0) {
+    briefing += "\n\n**Key terms you'll encounter:**\n" +
+      parsed.keyTerms.map((kt: any) => `• **${kt.term}**: ${kt.definition}`).join("\n");
+  }
+
   return new Response(JSON.stringify({
     sessionId: crypto.randomUUID(),
     systemPrompt: parsed.systemPrompt,
     openingMessage: parsed.openingMessage,
+    briefing,
+    tips: parsed.tips || [],
     scenario: {
       id: crypto.randomUUID(),
       title: parsed.scenario?.title || taskName,
@@ -112,11 +129,19 @@ Respond ONLY with valid JSON, no markdown.`;
 }
 
 async function handleChat(payload: any, apiKey: string) {
-  const { messages, role, taskName } = payload;
+  const { messages, role } = payload;
 
   const systemMsg = {
     role: "system",
-    content: `You are simulating a realistic workplace conversation for someone practicing the role of ${role}. Stay in character as a colleague/manager. Ask probing follow-up questions. Be realistic and professional. Keep responses concise (2-4 sentences). Don't break character or mention this is a simulation.`,
+    content: `You are simulating a realistic workplace conversation for someone exploring the role of ${role}. You are their patient, supportive mentor — not a harsh evaluator.
+
+Your goals:
+- Stay in character as a colleague or manager in this role's industry.
+- Naturally explain industry jargon and context when it comes up — treat the user like a smart new hire on their first week.
+- If the user seems unsure or gives a vague answer, gently guide them: "In our field, we'd typically approach this by..." or "A good next step here would be to..."
+- Ask follow-up questions that help the user think through the problem step-by-step.
+- Keep responses concise (2-4 sentences) but rich with context so the user learns how this job works by doing it.
+- Don't break character or mention this is a simulation.`,
   };
 
   const aiMessages = [systemMsg, ...messages];
@@ -134,16 +159,18 @@ async function handleScore(payload: any, apiKey: string) {
     .map((m: any) => `${m.role === "user" ? "Candidate" : "Simulator"}: ${m.content}`)
     .join("\n\n");
 
-  const prompt = `Evaluate this job simulation conversation. The candidate was practicing: "${scenario?.title || "a work task"}".
+  const prompt = `Evaluate this job simulation conversation. The candidate was practicing: "${scenario?.title || "a work task"}". They may be a complete beginner exploring this career.
 
 Conversation:
 ${conversationText}
 
 Score the candidate on these categories (0-100 each):
-1. Communication Clarity
-2. Problem-Solving Approach  
-3. Professional Judgment
-4. Domain Knowledge
+1. Communication Clarity - How well did they express their thoughts?
+2. Problem-Solving Approach - Did they ask good questions and think through the problem?
+3. Professional Judgment - Did they make reasonable decisions given the context?
+4. Learning & Adaptability - Did they pick up on new concepts and apply guidance?
+
+Be encouraging but honest. Acknowledge that they're learning and highlight what they did well alongside areas to improve.
 
 Respond with ONLY valid JSON:
 {
@@ -152,9 +179,9 @@ Respond with ONLY valid JSON:
     {"name": "Communication Clarity", "score": <0-100>, "feedback": "<1 sentence>"},
     {"name": "Problem-Solving Approach", "score": <0-100>, "feedback": "<1 sentence>"},
     {"name": "Professional Judgment", "score": <0-100>, "feedback": "<1 sentence>"},
-    {"name": "Domain Knowledge", "score": <0-100>, "feedback": "<1 sentence>"}
+    {"name": "Learning & Adaptability", "score": <0-100>, "feedback": "<1 sentence>"}
   ],
-  "summary": "<2-3 sentence overall feedback with specific improvement suggestions>"
+  "summary": "<2-3 sentence overall feedback. Be encouraging, mention what they learned, and give specific improvement suggestions>"
 }`;
 
   const result = await callAI(apiKey, [{ role: "user", content: prompt }], 0.3);

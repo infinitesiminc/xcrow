@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Send, Loader2, Trophy, RotateCcw, Play } from "lucide-react";
+import { X, Send, Loader2, Trophy, RotateCcw, Play, Lightbulb, BookOpen, ChevronDown, ChevronUp } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -19,7 +19,7 @@ import {
   type SimScore,
 } from "@/lib/simulator";
 
-type Phase = "loading" | "chat" | "scoring" | "results";
+type Phase = "loading" | "briefing" | "chat" | "scoring" | "results";
 
 interface SimulatorModalProps {
   open: boolean;
@@ -31,6 +31,107 @@ interface SimulatorModalProps {
 
 const MAX_TURNS = 10;
 
+/* ── Briefing Screen ── */
+const BriefingScreen = ({
+  session,
+  onStart,
+}: {
+  session: SimSession;
+  onStart: () => void;
+}) => (
+  <motion.div
+    key="briefing"
+    initial={{ opacity: 0, y: 12 }}
+    animate={{ opacity: 1, y: 0 }}
+    exit={{ opacity: 0 }}
+    className="flex flex-col gap-5 py-2"
+  >
+    <div className="text-center">
+      <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-primary/10 mb-3">
+        <BookOpen className="h-5 w-5 text-primary" />
+      </div>
+      <h3 className="text-lg font-bold text-foreground">{session.scenario.title}</h3>
+      <p className="text-xs text-muted-foreground mt-1">{session.scenario.description}</p>
+    </div>
+
+    {/* Briefing */}
+    <Card className="bg-accent/20 border-accent/30">
+      <CardContent className="p-4">
+        <h4 className="text-xs font-semibold text-foreground mb-2 flex items-center gap-1.5">
+          <BookOpen className="h-3.5 w-3.5 text-primary" /> What you need to know
+        </h4>
+        <div className="text-sm text-foreground/90 leading-relaxed prose prose-sm dark:prose-invert max-w-none [&>p]:mb-2">
+          <ReactMarkdown>{session.briefing}</ReactMarkdown>
+        </div>
+      </CardContent>
+    </Card>
+
+    {/* Tips */}
+    {session.tips && session.tips.length > 0 && (
+      <Card className="border-primary/20 bg-primary/5">
+        <CardContent className="p-4">
+          <h4 className="text-xs font-semibold text-foreground mb-2 flex items-center gap-1.5">
+            <Lightbulb className="h-3.5 w-3.5 text-primary" /> Tips for success
+          </h4>
+          <ul className="space-y-1.5">
+            {session.tips.map((tip, i) => (
+              <li key={i} className="text-sm text-foreground/80 flex items-start gap-2">
+                <span className="text-primary font-bold text-xs mt-0.5">{i + 1}.</span>
+                {tip}
+              </li>
+            ))}
+          </ul>
+        </CardContent>
+      </Card>
+    )}
+
+    <Button onClick={onStart} className="gap-2 mx-auto">
+      <Play className="h-4 w-4" /> Start Simulation
+    </Button>
+  </motion.div>
+);
+
+/* ── Tips Toggle (during chat) ── */
+const TipsToggle = ({ tips }: { tips: string[] }) => {
+  const [open, setOpen] = useState(false);
+  if (!tips || tips.length === 0) return null;
+
+  return (
+    <div className="mb-2">
+      <button
+        onClick={() => setOpen(!open)}
+        className="flex items-center gap-1.5 text-[11px] text-muted-foreground hover:text-foreground transition-colors"
+      >
+        <Lightbulb className="h-3 w-3" />
+        {open ? "Hide tips" : "Show tips"}
+        {open ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
+      </button>
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            className="overflow-hidden"
+          >
+            <div className="mt-1.5 p-2.5 rounded-lg bg-primary/5 border border-primary/10">
+              <ul className="space-y-1">
+                {tips.map((tip, i) => (
+                  <li key={i} className="text-[11px] text-foreground/70 flex items-start gap-1.5">
+                    <span className="text-primary font-bold">{i + 1}.</span>
+                    {tip}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+};
+
+/* ── Main Modal ── */
 const SimulatorModal = ({ open, onClose, taskName, jobTitle, company }: SimulatorModalProps) => {
   const [phase, setPhase] = useState<Phase>("loading");
   const [session, setSession] = useState<SimSession | null>(null);
@@ -46,8 +147,6 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company }: Simulato
     setTimeout(() => scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" }), 50);
   }, []);
 
-  
-
   const startSession = useCallback(async () => {
     setPhase("loading");
     setError(null);
@@ -57,8 +156,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company }: Simulato
     try {
       const compiled = await compileSession(taskName, jobTitle, company, 3);
       setSession(compiled);
-      setMessages([{ role: "assistant", content: compiled.openingMessage }]);
-      setPhase("chat");
+      setPhase("briefing");
     } catch (err) {
       console.error("Failed to start simulation:", err);
       setError("Couldn't start the simulation. The simulator may not have scenarios for this role yet.");
@@ -69,6 +167,12 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company }: Simulato
   useEffect(() => {
     if (open) startSession();
   }, [open, startSession]);
+
+  const beginChat = () => {
+    if (!session) return;
+    setMessages([{ role: "assistant", content: session.openingMessage }]);
+    setPhase("chat");
+  };
 
   const handleSend = async () => {
     if (!input.trim() || sending) return;
@@ -139,11 +243,15 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company }: Simulato
             {phase === "loading" && (
               <motion.div key="loading" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex flex-col items-center justify-center h-full gap-3">
                 <Loader2 className="h-8 w-8 text-primary animate-spin" />
-                <p className="text-sm text-muted-foreground">Setting up your simulation...</p>
+                <p className="text-sm text-muted-foreground">Preparing your briefing...</p>
               </motion.div>
             )}
 
-            {error && phase !== "loading" && (
+            {phase === "briefing" && session && (
+              <BriefingScreen session={session} onStart={beginChat} />
+            )}
+
+            {error && phase !== "loading" && phase !== "briefing" && (
               <motion.div key="error" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
                 <Card className="border-warning/30 bg-warning/5">
                   <CardContent className="p-4 text-center">
@@ -154,26 +262,31 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company }: Simulato
               </motion.div>
             )}
 
-            {phase === "chat" && !error && messages.map((msg, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, y: 6 }}
-                animate={{ opacity: 1, y: 0 }}
-                className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
-              >
-                <div
-                  className={`max-w-[80%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed ${
-                    msg.role === "user"
-                      ? "bg-primary text-primary-foreground rounded-br-md"
-                      : "bg-secondary text-secondary-foreground rounded-bl-md"
-                  }`}
-                >
-                  <div className="prose prose-sm dark:prose-invert max-w-none [&>p]:m-0">
-                    <ReactMarkdown>{msg.content}</ReactMarkdown>
-                  </div>
-                </div>
-              </motion.div>
-            ))}
+            {phase === "chat" && !error && (
+              <>
+                <TipsToggle tips={session?.tips || []} />
+                {messages.map((msg, i) => (
+                  <motion.div
+                    key={i}
+                    initial={{ opacity: 0, y: 6 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
+                  >
+                    <div
+                      className={`max-w-[80%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed ${
+                        msg.role === "user"
+                          ? "bg-primary text-primary-foreground rounded-br-md"
+                          : "bg-secondary text-secondary-foreground rounded-bl-md"
+                      }`}
+                    >
+                      <div className="prose prose-sm dark:prose-invert max-w-none [&>p]:m-0">
+                        <ReactMarkdown>{msg.content}</ReactMarkdown>
+                      </div>
+                    </div>
+                  </motion.div>
+                ))}
+              </>
+            )}
 
             {sending && (
               <motion.div key="typing" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex justify-start">
@@ -196,7 +309,6 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company }: Simulato
 
             {phase === "results" && score && (
               <motion.div key="results" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="space-y-4 py-4">
-                {/* Overall score */}
                 <div className="text-center">
                   <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-primary/10 mb-3">
                     <Trophy className="h-8 w-8 text-primary" />
@@ -205,7 +317,6 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company }: Simulato
                   <p className="text-sm text-muted-foreground mt-1">Overall Score</p>
                 </div>
 
-                {/* Category scores */}
                 <div className="space-y-3">
                   {score.categories?.map((cat, i) => (
                     <Card key={i}>
@@ -221,7 +332,6 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company }: Simulato
                   ))}
                 </div>
 
-                {/* Summary */}
                 {score.summary && (
                   <Card className="bg-accent/30">
                     <CardContent className="p-4">

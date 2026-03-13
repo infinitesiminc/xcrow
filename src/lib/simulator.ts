@@ -12,6 +12,8 @@ export interface SimSession {
   sessionId: string;
   systemPrompt: string;
   openingMessage: string;
+  briefing: string;
+  tips: string[];
   scenario: SimScenario;
 }
 
