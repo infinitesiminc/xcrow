@@ -48,10 +48,21 @@ const Index = () => {
   const [teamLoading, setTeamLoading] = useState(false);
   const [teamAnalyzed, setTeamAnalyzed] = useState(false);
 
+  const isValidWebsite = (url: string) => {
+    if (!url) return true;
+    return /^(https?:\/\/)?([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}(\/.*)?$/.test(url.trim());
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!jobTitle.trim()) return;
-    navigate(`/analysis?company=${encodeURIComponent(company.trim())}&title=${encodeURIComponent(jobTitle.trim())}`);
+    if (website && !isValidWebsite(website)) {
+      setWebsiteError("Please enter a valid website (e.g. example.com)");
+      return;
+    }
+    setWebsiteError("");
+    const companyParam = website.trim();
+    navigate(`/analysis?company=${encodeURIComponent(companyParam)}&title=${encodeURIComponent(jobTitle.trim())}`);
   };
 
   // Team handlers
