@@ -8,6 +8,7 @@ import { JobAnalysisResult } from "@/types/analysis";
 import { findPrebuiltRole } from "@/data/prebuilt-roles";
 import { analyzeJobWithAI } from "@/lib/ai-analysis";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
 
 const steps = [
   { icon: BarChart3, title: "Analyze", description: "See exactly how AI reshapes every task in your role" },
