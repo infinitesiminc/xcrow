@@ -81,7 +81,7 @@ const Analysis = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const isMobile = useIsMobile();
+  
   const company = searchParams.get("company") || "";
   const jobTitle = searchParams.get("title") || "";
   const jdMarker = searchParams.get("jd") || "";
