@@ -117,6 +117,13 @@ const TipsToggle = ({ tips }: { tips: string[] }) => {
 };
 
 /* ── Main Modal ── */
+interface AnsweredQuestion {
+  options: { letter: string; text: string }[];
+  selectedLetter: string;
+  correctLetter: string | null; // parsed from AI feedback
+  messageIndex: number; // index of the AI message that had the question
+}
+
 const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, onCompleted }: SimulatorModalProps) => {
   const [phase, setPhase] = useState<Phase>("loading");
   const [session, setSession] = useState<SimSession | null>(null);
@@ -125,6 +132,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, onComplete
   const [sending, setSending] = useState(false);
   const [roundCount, setRoundCount] = useState(1);
   const [error, setError] = useState<string | null>(null);
+  const [answeredQuestions, setAnsweredQuestions] = useState<AnsweredQuestion[]>([]);
   const scrollRef = useRef<HTMLDivElement>(null);
   const { user } = useAuth();
   const { toast } = useToast();
