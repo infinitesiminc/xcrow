@@ -221,7 +221,7 @@ const Index = () => {
           const workbook = XLSX.read(arrayBuffer, { type: "array" });
           const sheet = workbook.Sheets[workbook.SheetNames[0]];
           const rows: string[][] = XLSX.utils.sheet_to_json(sheet, { header: 1 });
-          allLines.push(...rows.map((row) => (row[0] || "").toString().trim()).filter(Boolean));
+          allLines.push(...rows.map((row) => (row[0] || "").toString().trim()).filter(Boolean).filter((l) => !isHeaderRow(l)));
         } else {
           const text = await file.text();
           allLines.push(...text.split(/\r?\n/).map((l) => l.trim()).filter(Boolean));
