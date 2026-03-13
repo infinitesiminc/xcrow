@@ -3,7 +3,7 @@ import { useSearchParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   ArrowLeft, TrendingUp, Minus, AlertTriangle, Zap, Bot, ExternalLink,
-  Building2, Users, DollarSign, MapPin, Calendar, Tag,
+  Building2, Users, MapPin, Calendar,
   Wrench, Heart, Sparkles, Save, User, ChevronDown,
   ShieldAlert, GraduationCap, Rocket, Play,
 } from "lucide-react";
