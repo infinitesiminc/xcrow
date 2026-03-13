@@ -46,11 +46,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company }: Simulato
     setTimeout(() => scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" }), 50);
   }, []);
 
-  // Build a slug from job title + task
-  const buildSlug = useCallback(() => {
-    const base = company ? `${company}-${jobTitle}` : jobTitle;
-    return base.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
-  }, [company, jobTitle]);
+  
 
   const startSession = useCallback(async () => {
     setPhase("loading");
