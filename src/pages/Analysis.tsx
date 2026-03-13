@@ -252,9 +252,9 @@ const Analysis = () => {
             <div className="bg-primary transition-all" style={{ width: `${result.summary.automationRiskPercent}%` }} />
           </div>
           <div className="flex justify-between mt-2 text-xs text-muted-foreground">
-            <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-success" /> Human-driven</span>
-            <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-warning" /> AI-augmented</span>
-            <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-primary" /> AI-driven</span>
+            <span className="flex items-center gap-1.5"><User className="h-3 w-3" /> Human-driven</span>
+            <span className="flex items-center gap-1.5"><Users className="h-3 w-3" /> AI-augmented</span>
+            <span className="flex items-center gap-1.5"><Bot className="h-3 w-3" /> AI-driven</span>
           </div>
         </motion.div>
 
