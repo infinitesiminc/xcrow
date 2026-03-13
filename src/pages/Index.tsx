@@ -70,14 +70,21 @@ const Index = () => {
     setWebsiteError("");
 
     const companyParam = website.trim();
-    const jdParam = jdInputType === "paste" ? jdText.trim() : "";
+    const jdParam = jdInputType === "paste" ? jdText.trim() : jdInputType === "file" ? jdFileText.trim() : "";
     const jdUrlParam = jdInputType === "url" ? jdUrl.trim() : "";
+
+    // Store JD in sessionStorage to avoid URL length limits
+    if (jdParam) {
+      sessionStorage.setItem("jd_text", jdParam);
+    } else {
+      sessionStorage.removeItem("jd_text");
+    }
 
     const params = new URLSearchParams({
       company: companyParam,
       title: jobTitle.trim(),
     });
-    if (jdParam) params.set("jd", jdParam);
+    if (jdParam) params.set("jd", "session");
     if (jdUrlParam) params.set("jdUrl", jdUrlParam);
 
     navigate(`/analysis?${params.toString()}`);
@@ -85,6 +92,61 @@ const Index = () => {
 
   const toggleJdInput = (type: JdInputType) => {
     setJdInputType((prev) => (prev === type ? "none" : type));
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const maxSize = 5 * 1024 * 1024;
+    if (file.size > maxSize) {
+      toast({ title: "File too large", description: "Max file size is 5MB.", variant: "destructive" });
+      return;
+    }
+
+    const name = file.name.toLowerCase();
+    const validExts = [".pdf", ".docx", ".doc", ".txt", ".md"];
+    if (!validExts.some((ext) => name.endsWith(ext))) {
+      toast({ title: "Unsupported file", description: "Upload PDF, DOCX, TXT, or MD files.", variant: "destructive" });
+      return;
+    }
+
+    setJdFile(file);
+    setJdFileText("");
+
+    // Plain text files — read client-side
+    if (name.endsWith(".txt") || name.endsWith(".md")) {
+      const text = await file.text();
+      setJdFileText(text);
+      return;
+    }
+
+    // PDF/DOCX — send to edge function
+    setJdFileParsing(true);
+    try {
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+      const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const res = await fetch(`${supabaseUrl}/functions/v1/parse-jd`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${supabaseKey}` },
+        body: formData,
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        toast({ title: "Parse failed", description: data.error || "Could not extract text.", variant: "destructive" });
+        return;
+      }
+      setJdFileText(data.text || "");
+    } catch (err) {
+      console.error("File parse error:", err);
+      toast({ title: "Parse failed", description: "Could not process file.", variant: "destructive" });
+    } finally {
+      setJdFileParsing(false);
+    }
   };
 
   // Team handlers
