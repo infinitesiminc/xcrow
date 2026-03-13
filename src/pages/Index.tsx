@@ -52,6 +52,7 @@ const Index = () => {
   const [jdFileParsing, setJdFileParsing] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const teamFileInputRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -623,7 +624,7 @@ const Index = () => {
               className="mt-8 w-full max-w-lg"
             >
               <div className="space-y-3 mb-4">
-                {/* Compact chip view for roles */}
+                {/* Compact chip view for roles with inline add button */}
                 <div className="flex flex-wrap gap-1.5 max-h-[280px] overflow-y-auto p-3 rounded-lg border border-border bg-card/50">
                   {roles.map((role) => (
                     <div
@@ -650,6 +651,14 @@ const Index = () => {
                       </button>
                     </div>
                   ))}
+                  <button
+                    type="button"
+                    onClick={addRole}
+                    disabled={roles.length >= 100}
+                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md border border-dashed border-border/60 text-xs text-muted-foreground hover:text-foreground hover:border-border transition-colors disabled:opacity-40"
+                  >
+                    <Plus className="h-3 w-3" /> Add role
+                  </button>
                   {roles.length === 0 && (
                     <span className="text-xs text-muted-foreground py-1">Upload a file or add roles manually</span>
                   )}
@@ -668,20 +677,55 @@ const Index = () => {
                 </div>
               )}
 
-              <div className="flex flex-wrap gap-2">
-                <Button variant="outline" size="sm" onClick={addRole} disabled={roles.length >= 100} className="gap-1">
-                  <Plus className="h-3.5 w-3.5" /> Add role
-                </Button>
-                <label className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md border border-border text-muted-foreground hover:text-foreground hover:border-border/80 cursor-pointer transition-colors">
-                  <Upload className="h-3 w-3" /> Upload files
-                  <input type="file" accept=".csv,.txt,.tsv,.xlsx,.xls,.pdf,.docx,.doc,.md" multiple className="hidden" onChange={handleFilesUpload} disabled={teamJdParsing} />
-                </label>
-                <Button onClick={handleTeamAnalyze} disabled={teamLoading || teamJdParsing} className="gap-2 ml-auto">
-                  {teamLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <BarChart3 className="h-4 w-4" />}
-                  {teamLoading ? "Analyzing..." : "Analyze Team"}
-                </Button>
-              </div>
-              <p className="text-[10px] text-muted-foreground mt-2">Upload CSV/XLSX for job title lists, or PDF/DOCX files for job descriptions — mix and match.</p>
+              {/* Drag & drop upload zone */}
+              <motion.div
+                onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
+                onDragLeave={() => setIsDragging(false)}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  setIsDragging(false);
+                  const files = e.dataTransfer.files;
+                  if (files?.length && fileInputRef.current) {
+                    const dt = new DataTransfer();
+                    Array.from(files).forEach(f => dt.items.add(f));
+                    teamFileInputRef.current.files = dt.files;
+                    teamFileInputRef.current.dispatchEvent(new Event("change", { bubbles: true }));
+                  }
+                }}
+                onClick={() => teamFileInputRef.current?.click()}
+                animate={isDragging ? { scale: 1.02, borderColor: "hsl(var(--primary))" } : { scale: 1 }}
+                transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                className={`flex flex-col items-center justify-center gap-2 py-8 px-4 rounded-xl border-2 border-dashed cursor-pointer transition-colors mb-3 ${
+                  isDragging
+                    ? "border-primary bg-primary/10"
+                    : "border-border hover:border-primary/40 hover:bg-accent/30"
+                }`}
+              >
+                <motion.div
+                  animate={isDragging ? { y: -4, scale: 1.1 } : { y: 0, scale: 1 }}
+                  transition={{ type: "spring", stiffness: 300, damping: 15 }}
+                >
+                  <Upload className={`h-7 w-7 ${isDragging ? "text-primary" : "text-muted-foreground"}`} />
+                </motion.div>
+                <p className="text-sm font-medium text-foreground">
+                  {isDragging ? "Drop files here" : "Drag & drop or click to upload"}
+                </p>
+                <p className="text-[11px] text-muted-foreground">CSV/XLSX for job lists, or PDF/DOCX for job descriptions</p>
+                <input
+                  ref={teamFileInputRef}
+                  type="file"
+                  accept=".csv,.txt,.tsv,.xlsx,.xls,.pdf,.docx,.doc,.md"
+                  multiple
+                  className="hidden"
+                  onChange={handleFilesUpload}
+                  disabled={teamJdParsing}
+                />
+              </motion.div>
+
+              <Button onClick={handleTeamAnalyze} disabled={teamLoading || teamJdParsing} className="gap-2 w-full h-12 text-base font-semibold">
+                {teamLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <BarChart3 className="h-4 w-4" />}
+                {teamLoading ? "Analyzing..." : "Analyze Team"}
+              </Button>
             </motion.div>
           )}
         </AnimatePresence>
