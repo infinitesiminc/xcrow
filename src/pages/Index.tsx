@@ -1,10 +1,22 @@
 import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowRight, Briefcase, BarChart3, BookOpen, Users, Plus, X, Loader2, FileText, Link, Upload, Search, User, LayoutDashboard, TrendingUp } from "lucide-react";
+import { ArrowRight, Briefcase, BarChart3, BookOpen, Users, Plus, X, Loader2, FileText, Link, Upload, Search, User, LayoutDashboard, TrendingUp, ChevronLeft, ChevronRight } from "lucide-react";
 import roleSoftwareEngineer from "@/assets/role-software-engineer.jpg";
 import roleMarketingManager from "@/assets/role-marketing-manager.jpg";
 import roleAccountant from "@/assets/role-accountant.jpg";
+import roleDataScientist from "@/assets/role-data-scientist.jpg";
+import roleProductManager from "@/assets/role-product-manager.jpg";
+import roleFinancialAnalyst from "@/assets/role-financial-analyst.jpg";
+import roleInvestmentBanker from "@/assets/role-investment-banker.jpg";
+import roleContentStrategist from "@/assets/role-content-strategist.jpg";
+import roleSeoSpecialist from "@/assets/role-seo-specialist.jpg";
+import roleProjectManager from "@/assets/role-project-manager.jpg";
+import roleHrManager from "@/assets/role-hr-manager.jpg";
+import roleSupplyChainManager from "@/assets/role-supply-chain-manager.jpg";
+import roleCorporateLawyer from "@/assets/role-corporate-lawyer.jpg";
+import roleComplianceOfficer from "@/assets/role-compliance-officer.jpg";
+import roleParalegal from "@/assets/role-paralegal.jpg";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { JobAnalysisResult } from "@/types/analysis";
@@ -13,10 +25,55 @@ import { analyzeJobWithAI } from "@/lib/ai-analysis";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 
-const hotRoles = [
-  { title: "Software Engineer", image: roleSoftwareEngineer, augmented: 72, risk: 15, tag: "High AI Augmentation" },
-  { title: "Marketing Manager", image: roleMarketingManager, augmented: 68, risk: 25, tag: "Rapid AI Growth" },
-  { title: "Accountant", image: roleAccountant, augmented: 60, risk: 35, tag: "Automation Risk" },
+interface RoleCard {
+  title: string;
+  image: string;
+  augmented: number;
+  risk: number;
+  tag: string;
+}
+
+const roleCategories: { label: string; roles: RoleCard[] }[] = [
+  {
+    label: "Tech",
+    roles: [
+      { title: "Software Engineer", image: roleSoftwareEngineer, augmented: 72, risk: 15, tag: "High AI Augmentation" },
+      { title: "Data Scientist", image: roleDataScientist, augmented: 78, risk: 12, tag: "AI-Native Role" },
+      { title: "Product Manager", image: roleProductManager, augmented: 65, risk: 18, tag: "Strategic AI Use" },
+    ],
+  },
+  {
+    label: "Finance",
+    roles: [
+      { title: "Accountant", image: roleAccountant, augmented: 60, risk: 35, tag: "Automation Risk" },
+      { title: "Financial Analyst", image: roleFinancialAnalyst, augmented: 70, risk: 28, tag: "High AI Augmentation" },
+      { title: "Investment Banker", image: roleInvestmentBanker, augmented: 55, risk: 20, tag: "Moderate Change" },
+    ],
+  },
+  {
+    label: "Marketing",
+    roles: [
+      { title: "Marketing Manager", image: roleMarketingManager, augmented: 68, risk: 25, tag: "Rapid AI Growth" },
+      { title: "Content Strategist", image: roleContentStrategist, augmented: 74, risk: 30, tag: "High AI Augmentation" },
+      { title: "SEO Specialist", image: roleSeoSpecialist, augmented: 72, risk: 40, tag: "Automation Risk" },
+    ],
+  },
+  {
+    label: "Operations",
+    roles: [
+      { title: "Project Manager", image: roleProjectManager, augmented: 62, risk: 22, tag: "Moderate Change" },
+      { title: "HR Manager", image: roleHrManager, augmented: 58, risk: 30, tag: "Automation Risk" },
+      { title: "Supply Chain Manager", image: roleSupplyChainManager, augmented: 65, risk: 28, tag: "High AI Augmentation" },
+    ],
+  },
+  {
+    label: "Legal",
+    roles: [
+      { title: "Corporate Lawyer", image: roleCorporateLawyer, augmented: 55, risk: 18, tag: "Strategic AI Use" },
+      { title: "Compliance Officer", image: roleComplianceOfficer, augmented: 60, risk: 32, tag: "Automation Risk" },
+      { title: "Paralegal", image: roleParalegal, augmented: 68, risk: 45, tag: "High Automation Risk" },
+    ],
+  },
 ];
 
 type Mode = "individual" | "team";
