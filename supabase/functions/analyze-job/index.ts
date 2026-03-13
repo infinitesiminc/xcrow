@@ -40,8 +40,8 @@ serve(async (req) => {
   try {
     const { jobTitle, company, jobDescription, jdUrl } = await req.json();
 
-    if (!jobTitle) {
-      return new Response(JSON.stringify({ error: "Job title is required" }), {
+    if (!jobTitle && !jobDescription && !jdUrl) {
+      return new Response(JSON.stringify({ error: "Job title or job description is required" }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
