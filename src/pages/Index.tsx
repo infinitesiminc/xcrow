@@ -355,22 +355,6 @@ const Index = () => {
     }
   };
 
-  // Team aggregates
-  const avgAugmented = teamResults.length ? Math.round(teamResults.reduce((s, r) => s + r.summary.augmentedPercent, 0) / teamResults.length) : 0;
-  const avgAutomation = teamResults.length ? Math.round(teamResults.reduce((s, r) => s + r.summary.automationRiskPercent, 0) / teamResults.length) : 0;
-  const avgNewSkills = teamResults.length ? Math.round(teamResults.reduce((s, r) => s + r.summary.newSkillsPercent, 0) / teamResults.length) : 0;
-
-  const skillFreq = new Map<string, { count: number; category: SkillCategory; description: string }>();
-  teamResults.forEach((r) => {
-    r.skills.forEach((s) => {
-      const existing = skillFreq.get(s.name);
-      if (existing) existing.count++;
-      else skillFreq.set(s.name, { count: 1, category: s.category, description: s.description });
-    });
-  });
-  const sortedSkills = [...skillFreq.entries()].sort((a, b) => b[1].count - a[1].count);
-  const sharedSkills = sortedSkills.filter(([, v]) => v.count > 1);
-  const uniqueSkills = sortedSkills.filter(([, v]) => v.count === 1).slice(0, 8);
 
   return (
     <div className="min-h-screen bg-background">
