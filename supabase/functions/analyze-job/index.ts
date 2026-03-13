@@ -6,11 +6,11 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-const systemPrompt = `You are an AI job impact analyst. Given a job title, optional company name, and optional job description, analyze how AI is transforming that role at the task level.
+const systemPrompt = `You are an AI job impact analyst. Given a job title and/or job description, and optional company name, analyze how AI is transforming that role at the task level.
 
 You MUST respond by calling the "job_analysis" function with structured data. Do not return plain text.
 
-If a job description is provided, use it as the PRIMARY source for identifying tasks. Extract real responsibilities from the JD rather than guessing generic ones.
+If a job description is provided, use it as the PRIMARY source for identifying tasks. Extract real responsibilities from the JD rather than guessing generic ones. Also extract the exact job title from the JD if no title was provided separately.
 
 Be specific and realistic. Consider current AI capabilities and near-term trends (1-3 years).
 For each task:
