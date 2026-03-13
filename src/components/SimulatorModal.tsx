@@ -117,6 +117,13 @@ const TipsToggle = ({ tips }: { tips: string[] }) => {
 };
 
 /* ── Main Modal ── */
+interface AnsweredQuestion {
+  options: { letter: string; text: string }[];
+  selectedLetter: string;
+  correctLetter: string | null; // parsed from AI feedback
+  messageIndex: number; // index of the AI message that had the question
+}
+
 const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, onCompleted }: SimulatorModalProps) => {
   const [phase, setPhase] = useState<Phase>("loading");
   const [session, setSession] = useState<SimSession | null>(null);
@@ -125,6 +132,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, onComplete
   const [sending, setSending] = useState(false);
   const [roundCount, setRoundCount] = useState(1);
   const [error, setError] = useState<string | null>(null);
+  const [answeredQuestions, setAnsweredQuestions] = useState<AnsweredQuestion[]>([]);
   const scrollRef = useRef<HTMLDivElement>(null);
   const { user } = useAuth();
   const { toast } = useToast();
@@ -138,6 +146,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, onComplete
     setError(null);
     setMessages([]);
     setRoundCount(1);
+    setAnsweredQuestions([]);
     try {
       const compiled = await compileSession(taskName, jobTitle, company, 3);
       setSession(compiled);
@@ -253,7 +262,10 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, onComplete
             {(phase === "chat" || phase === "done") && !error && (
               <>
                 {phase === "chat" && <TipsToggle tips={session?.tips || []} />}
-                {messages.map((msg, i) => (
+                {messages.map((msg, i) => {
+                  // Hide single-letter user answers (shown via highlighted buttons instead)
+                  if (msg.role === "user" && /^[A-D]$/.test(msg.content.trim())) return null;
+                  return (
                   <motion.div
                     key={i}
                     initial={{ opacity: 0, y: 6 }}
@@ -269,14 +281,41 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, onComplete
                     >
                       <div className="prose prose-sm dark:prose-invert max-w-none [&>p]:m-0">
                         <ReactMarkdown>{
-                          msg.role === "assistant" && i === messages.length - 1 && !sending
+                          msg.role === "assistant"
                             ? msg.content.replace(/^[A-D][).]\s*.+$/gm, "").trim()
                             : msg.content
                         }</ReactMarkdown>
                       </div>
                     </div>
+                    {/* Show answered question buttons inline after the AI message */}
+                    {msg.role === "assistant" && (() => {
+                      const aq = answeredQuestions.find(q => q.messageIndex === i);
+                      if (!aq) return null;
+                      return (
+                        <motion.div initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} className="mt-2 flex flex-col gap-1.5 max-w-[80%]">
+                          {aq.options.map((opt) => {
+                            const isSelected = opt.letter === aq.selectedLetter;
+                            const isCorrect = opt.letter === aq.correctLetter;
+                            let style = "border-border bg-card text-muted-foreground opacity-60";
+                            if (isCorrect) style = "border-success/50 bg-success/10 text-success";
+                            if (isSelected && !isCorrect) style = "border-destructive/50 bg-destructive/10 text-destructive";
+                            return (
+                              <div key={opt.letter} className={`flex items-center gap-2 px-3 py-2 text-sm rounded-lg border ${style} transition-all`}>
+                                <span className={`inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold shrink-0 ${
+                                  isCorrect ? "bg-success/20 text-success" : isSelected ? "bg-destructive/20 text-destructive" : "bg-muted text-muted-foreground"
+                                }`}>
+                                  {isCorrect ? "✓" : isSelected ? "✗" : opt.letter}
+                                </span>
+                                <span className="text-sm">{opt.text}</span>
+                              </div>
+                            );
+                          })}
+                        </motion.div>
+                      );
+                    })()}
                   </motion.div>
-                ))}
+                  );
+                })}
               </>
             )}
 
@@ -333,39 +372,64 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, onComplete
             {(() => {
               const lastAi = [...messages].reverse().find(m => m.role === "assistant");
               if (!lastAi || sending) return null;
+              // Don't show buttons if this question was already answered
+              const lastAiIndex = messages.lastIndexOf(lastAi);
+              const alreadyAnswered = answeredQuestions.some(q => q.messageIndex === lastAiIndex);
+              if (alreadyAnswered) return null;
               const opts = lastAi.content.match(/^[A-D][).]\s*.+/gm);
               if (!opts || opts.length < 2) return null;
+              const parsedOpts = opts.slice(0, 4).map(opt => ({
+                letter: opt.charAt(0),
+                text: opt.replace(/^[A-D][).]\s*/, "").trim(),
+              }));
               return (
                 <div className="flex flex-col gap-1.5">
-                  {opts.slice(0, 4).map((opt, i) => {
-                    const letter = opt.charAt(0);
-                    const text = opt.replace(/^[A-D][).]\s*/, "").trim();
-                    return (
-                      <Button
-                        key={i}
-                        variant="outline"
-                        size="sm"
-                        className="w-full justify-start text-left h-auto py-2 px-3 text-sm font-normal hover:bg-primary/5 hover:border-primary/30"
-                        onClick={() => {
-                          const fakeMsg: SimMessage = { role: "user", content: letter };
-                          const newMsgs = [...messages, fakeMsg];
-                          setMessages(newMsgs);
-                          setInput("");
-                          setSending(true);
+                  {parsedOpts.map((opt, i) => (
+                    <Button
+                      key={i}
+                      variant="outline"
+                      size="sm"
+                      className="w-full justify-start text-left h-auto py-2 px-3 text-sm font-normal hover:bg-primary/5 hover:border-primary/30"
+                      onClick={() => {
+                        const questionMsgIndex = lastAiIndex;
+                        const fakeMsg: SimMessage = { role: "user", content: opt.letter };
+                        const newMsgs = [...messages, fakeMsg];
+                        setMessages(newMsgs);
+                        setInput("");
+                        setSending(true);
+                        scrollToBottom();
+                        chatTurn(newMsgs, roundCount, roundCount, jobTitle).then(reply => {
+                          // Parse correct answer from feedback
+                          let correctLetter: string | null = null;
+                          if (reply.includes("✅")) {
+                            correctLetter = opt.letter; // user was correct
+                          } else if (reply.includes("❌")) {
+                            // Try to find the correct answer letter from feedback like "B)" or "**B)**"
+                            const correctMatch = reply.match(/\*\*([A-D])\)/);
+                            if (correctMatch) correctLetter = correctMatch[1];
+                            else {
+                              // Try "option B" or just look for bold letter
+                              const altMatch = reply.match(/\b([A-D])\)\s/);
+                              if (altMatch && altMatch[1] !== opt.letter) correctLetter = altMatch[1];
+                            }
+                          }
+                          setAnsweredQuestions(prev => [...prev, {
+                            options: parsedOpts,
+                            selectedLetter: opt.letter,
+                            correctLetter,
+                            messageIndex: questionMsgIndex,
+                          }]);
+                          setMessages(prev => [...prev, { role: "assistant", content: reply }]);
                           scrollToBottom();
-                          chatTurn(newMsgs, roundCount, roundCount, jobTitle).then(reply => {
-                            setMessages(prev => [...prev, { role: "assistant", content: reply }]);
-                            scrollToBottom();
-                          }).catch(() => {
-                            setMessages(prev => [...prev, { role: "assistant", content: "Sorry, something went wrong. Try again." }]);
-                          }).finally(() => setSending(false));
-                        }}
-                      >
-                        <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-primary/10 text-primary text-xs font-bold mr-2 shrink-0">{letter}</span>
-                        {text}
-                      </Button>
-                    );
-                  })}
+                        }).catch(() => {
+                          setMessages(prev => [...prev, { role: "assistant", content: "Sorry, something went wrong. Try again." }]);
+                        }).finally(() => setSending(false));
+                      }}
+                    >
+                      <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-primary/10 text-primary text-xs font-bold mr-2 shrink-0">{opt.letter}</span>
+                      {opt.text}
+                    </Button>
+                  ))}
                 </div>
               );
             })()}
