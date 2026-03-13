@@ -181,8 +181,84 @@ const Index = () => {
     setRoles(roles.map((r) => (r.id === id ? { ...r, title } : r)));
   };
 
+  // Upload a CSV/TXT with one job title per line
+  const handleJobListUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const text = await file.text();
+    const lines = text.split(/\r?\n/).map((l) => l.trim()).filter(Boolean).slice(0, 10);
+    if (lines.length === 0) {
+      toast({ title: "Empty file", description: "No job titles found.", variant: "destructive" });
+      return;
+    }
+    setRoles(lines.map((title) => ({ id: crypto.randomUUID(), title })));
+    toast({ title: `${lines.length} roles imported`, description: "Review and click Analyze Team." });
+    e.target.value = "";
+  };
+
+  // Upload multiple JD files — parse each and create role entries
+  const handleBatchJdUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []).slice(0, 10);
+    if (files.length === 0) return;
+
+    setTeamJdParsing(true);
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+    const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+
+    const newRoles: RoleEntry[] = [];
+
+    for (const file of files) {
+      const name = file.name.toLowerCase();
+      let jdText = "";
+
+      if (name.endsWith(".txt") || name.endsWith(".md")) {
+        jdText = await file.text();
+      } else if (name.endsWith(".pdf") || name.endsWith(".docx") || name.endsWith(".doc")) {
+        try {
+          const formData = new FormData();
+          formData.append("file", file);
+          const res = await fetch(`${supabaseUrl}/functions/v1/parse-jd`, {
+            method: "POST",
+            headers: { Authorization: `Bearer ${supabaseKey}` },
+            body: formData,
+          });
+          const data = await res.json();
+          if (res.ok && data.text) jdText = data.text;
+        } catch (err) {
+          console.error(`Failed to parse ${file.name}:`, err);
+        }
+      }
+
+      if (jdText.trim()) {
+        // Use filename (without extension) as a placeholder title
+        const baseName = file.name.replace(/\.[^.]+$/, "").replace(/[-_]/g, " ");
+        newRoles.push({
+          id: crypto.randomUUID(),
+          title: baseName,
+          jdText: jdText.trim(),
+          jdFileName: file.name,
+        });
+      }
+    }
+
+    setTeamJdParsing(false);
+
+    if (newRoles.length === 0) {
+      toast({ title: "No JDs extracted", description: "Could not parse any files.", variant: "destructive" });
+      return;
+    }
+
+    setRoles((prev) => {
+      const existing = prev.filter((r) => r.title.trim());
+      const combined = [...existing, ...newRoles].slice(0, 10);
+      return combined.length >= 2 ? combined : [...combined, ...Array(2 - combined.length).fill(null).map(() => ({ id: crypto.randomUUID(), title: "" }))];
+    });
+    toast({ title: `${newRoles.length} JDs parsed`, description: "Titles extracted from filenames. Edit if needed, then analyze." });
+    e.target.value = "";
+  };
+
   const handleTeamAnalyze = async () => {
-    const filledRoles = roles.filter((r) => r.title.trim());
+    const filledRoles = roles.filter((r) => r.title.trim() || r.jdText);
     if (filledRoles.length < 2) {
       toast({ title: "Add at least 2 roles", description: "Enter job titles for your team members." });
       return;
@@ -191,9 +267,11 @@ const Index = () => {
     setTeamAnalyzed(false);
     try {
       const promises = filledRoles.map(async (role) => {
-        const prebuilt = findPrebuiltRole(role.title);
-        if (prebuilt) return { ...prebuilt, company: "" };
-        return analyzeJobWithAI(role.title, "");
+        if (!role.jdText) {
+          const prebuilt = findPrebuiltRole(role.title);
+          if (prebuilt) return { ...prebuilt, company: "" };
+        }
+        return analyzeJobWithAI(role.title, "", role.jdText || undefined);
       });
       const allResults = await Promise.all(promises);
       setTeamResults(allResults);
