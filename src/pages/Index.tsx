@@ -389,7 +389,7 @@ const Index = () => {
             <span className="inline-block mb-2 px-3 py-1 text-xs font-medium tracking-wide uppercase rounded-full bg-accent text-accent-foreground">
               Infinite Sim
             </span>
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold font-display tracking-tight text-foreground leading-tight">
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold font-display tracking-tight text-foreground leading-tight">
               Understand how AI transforms your role —{" "}
               <span className="text-primary">then practice thriving in it</span>
             </h1>
