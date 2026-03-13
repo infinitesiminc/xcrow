@@ -59,9 +59,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company }: Simulato
     setTurnCount(0);
     setScore(null);
     try {
-      // Use the task name as a scenario context
-      const slug = buildSlug();
-      const compiled = await compileSession(slug, 3);
+      const compiled = await compileSession(taskName, jobTitle, company, 3);
       setSession(compiled);
       setMessages([{ role: "assistant", content: compiled.openingMessage }]);
       setPhase("chat");
