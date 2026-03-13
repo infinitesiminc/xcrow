@@ -1,10 +1,4 @@
-const SIM_API = "https://zwwyomcqvthlgjvphwym.supabase.co/functions/v1/sim-api";
-const SIM_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp3d3lvbWNxdnRobGdqdnBod3ltIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA5MDI2MDgsImV4cCI6MjA4NjQ3ODYwOH0.bo9-sl3w1hOYY6UTXme8BEgrrw_UubuxwjwemTZMo8c";
-
-const headers = {
-  "Content-Type": "application/json",
-  apikey: SIM_ANON_KEY,
-};
+import { supabase } from "@/integrations/supabase/client";
 
 export interface SimScenario {
   id: string;
@@ -33,24 +27,20 @@ export interface SimScore {
 }
 
 async function simFetch<T>(action: string, payload: Record<string, unknown>): Promise<T> {
-  const res = await fetch(SIM_API, {
-    method: "POST",
-    headers,
-    body: JSON.stringify({ action, payload }),
+  const { data, error } = await supabase.functions.invoke("sim-chat", {
+    body: { action, payload },
   });
-  if (!res.ok) {
-    const text = await res.text();
-    throw new Error(`Simulator error (${res.status}): ${text}`);
-  }
-  return res.json();
+  if (error) throw new Error(`Simulator error: ${error.message}`);
+  return data as T;
 }
 
-export async function fetchScenarios(slug: string): Promise<SimScenario[]> {
-  return simFetch("scenarios", { slug });
-}
-
-export async function compileSession(scenarioId: string, difficulty = 3): Promise<SimSession> {
-  return simFetch("compile", { scenarioId, difficulty });
+export async function compileSession(
+  taskName: string,
+  jobTitle: string,
+  company?: string,
+  difficulty = 3,
+): Promise<SimSession> {
+  return simFetch("compile", { taskName, jobTitle, company, difficulty });
 }
 
 export async function chatTurn(
@@ -59,16 +49,12 @@ export async function chatTurn(
   turnCount: number,
   role: string,
 ): Promise<string> {
-  const res = await fetch(SIM_API, {
-    method: "POST",
-    headers,
-    body: JSON.stringify({ action: "chat", payload: { messages, round, turnCount, role } }),
+  const { data, error } = await supabase.functions.invoke("sim-chat", {
+    body: { action: "chat", payload: { messages, round, turnCount, role } },
   });
-  if (!res.ok) throw new Error(`Chat error: ${res.status}`);
-  
-  // Handle streaming or plain text
-  const text = await res.text();
-  return text;
+  if (error) throw new Error(`Chat error: ${error.message}`);
+  // Response is plain text
+  return typeof data === "string" ? data : JSON.stringify(data);
 }
 
 export async function scoreTranscript(
