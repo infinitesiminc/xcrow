@@ -235,10 +235,7 @@ const Index = () => {
     const allFiles = [...listFiles, ...jdFiles];
     setTeamJdParsing(true);
 
-  // Upload multiple JD files — parse each and create role entries
-  const handleBatchJdUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || []).slice(0, 10);
-    if (files.length === 0) return;
+    for (const file of allFiles) {
 
     setTeamJdParsing(true);
     const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
