@@ -314,7 +314,8 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, onComplete
                       );
                     })()}
                   </motion.div>
-                ))}
+                  );
+                })}
               </>
             )}
 
