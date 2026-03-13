@@ -223,7 +223,7 @@ const Analysis = () => {
 
   const statCards = [
     {
-      label: "AI-Augmented",
+      label: `${result.summary.augmentedPercent}% of tasks will involve AI tools`,
       value: result.summary.augmentedPercent,
       icon: Bot,
       iconBg: "bg-primary/10",
@@ -231,7 +231,7 @@ const Analysis = () => {
       barColor: "bg-primary",
     },
     {
-      label: "Automation Risk",
+      label: `${result.summary.automationRiskPercent}% could be fully automated`,
       value: result.summary.automationRiskPercent,
       icon: ShieldAlert,
       iconBg: "bg-destructive/10",
@@ -239,7 +239,7 @@ const Analysis = () => {
       barColor: "bg-destructive",
     },
     {
-      label: "New Skills Needed",
+      label: `${result.summary.newSkillsPercent}% require learning new skills`,
       value: result.summary.newSkillsPercent,
       icon: GraduationCap,
       iconBg: "bg-warning/10",
