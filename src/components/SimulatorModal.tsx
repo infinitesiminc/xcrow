@@ -219,7 +219,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company }: Simulato
 
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
-      <DialogContent className="max-w-2xl w-[95vw] h-[85vh] p-0 flex flex-col overflow-hidden gap-0">
+      <DialogContent className="max-w-4xl w-[95vw] h-[90vh] p-0 flex flex-col overflow-hidden gap-0 text-base">
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-3 border-b border-border bg-card shrink-0">
           <div className="min-w-0">
