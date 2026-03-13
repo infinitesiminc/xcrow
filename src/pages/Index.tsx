@@ -10,9 +10,9 @@ import { analyzeJobWithAI } from "@/lib/ai-analysis";
 import { useToast } from "@/hooks/use-toast";
 
 const steps = [
-  { icon: Briefcase, title: "Enter your role", description: "Tell us your company and job title" },
-  { icon: BarChart3, title: "Get your analysis", description: "See how AI impacts each task in your role" },
-  { icon: BookOpen, title: "Bridge the gap", description: "Get personalized skill recommendations" },
+  { icon: BarChart3, title: "Analyze", description: "See exactly how AI reshapes every task in your role" },
+  { icon: Briefcase, title: "Simulate", description: "Practice working alongside AI in realistic job scenarios" },
+  { icon: BookOpen, title: "Adapt", description: "Build the skills that keep you ahead of automation" },
 ];
 
 type Mode = "individual" | "team";
