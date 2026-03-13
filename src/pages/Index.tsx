@@ -361,14 +361,14 @@ const Index = () => {
           className="text-center max-w-2xl mx-auto"
         >
           <span className="inline-block mb-3 px-3 py-1 text-xs font-medium tracking-wide uppercase rounded-full bg-accent text-accent-foreground">
-            AI Impact Analyzer
+            Infinite Sim
           </span>
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold font-display tracking-tight text-foreground leading-tight">
-            How is AI changing{" "}
-            <span className="text-primary">your job</span>?
+            Understand how AI transforms your role —{" "}
+            <span className="text-primary">then practice thriving in it</span>
           </h1>
           <p className="mt-3 text-lg text-muted-foreground max-w-lg mx-auto leading-relaxed">
-            Get a task-level breakdown of AI's impact — and a personalized plan to stay ahead.
+            Task-level AI impact analysis for any job, plus hands-on simulations to sharpen the skills that matter.
           </p>
         </motion.div>
 
