@@ -126,6 +126,7 @@ serve(async (req) => {
               parameters: {
                 type: "object",
                 properties: {
+                  extractedJobTitle: { type: "string", description: "The job title extracted from the JD or confirmed from input" },
                   summary: {
                     type: "object",
                     properties: {
