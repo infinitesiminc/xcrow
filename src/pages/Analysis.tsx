@@ -163,9 +163,6 @@ const Analysis = () => {
     fetchSnapshot();
   }, [company]);
 
-  const handleSave = () => {
-    toast({ title: "Coming soon!", description: "Sign up to save your learning path and track progress." });
-  };
 
   const handleTaskClick = (index: number) => {
     setSelectedTaskIndex((prev) => (prev === index ? null : index));
