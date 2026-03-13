@@ -293,7 +293,7 @@ const Index = () => {
 
     setRoles((prev) => {
       const existing = prev.filter((r) => r.title.trim());
-      const combined = [...existing, ...newRoles].slice(0, 10);
+      const combined = [...existing, ...newRoles].slice(0, 100);
       return combined.length >= 2 ? combined : [...combined, ...Array(2 - combined.length).fill(null).map(() => ({ id: crypto.randomUUID(), title: "" }))];
     });
     toast({ title: `${newRoles.length} JDs parsed`, description: "Titles extracted from filenames. Edit if needed, then analyze." });
