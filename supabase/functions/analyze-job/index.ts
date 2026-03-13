@@ -230,7 +230,7 @@ serve(async (req) => {
     const analysis = JSON.parse(toolCall.function.arguments);
 
     const result = {
-      jobTitle,
+      jobTitle: jobTitle || analysis.extractedJobTitle || "Unknown Role",
       company: company || "",
       summary: analysis.summary,
       tasks: analysis.tasks,
