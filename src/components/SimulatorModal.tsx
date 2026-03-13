@@ -231,9 +231,6 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company }: Simulato
                 {turnCount}/{MAX_TURNS} turns
               </Badge>
             )}
-            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={onClose}>
-              <X className="h-4 w-4" />
-            </Button>
           </div>
         </div>
 
