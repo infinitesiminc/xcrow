@@ -181,6 +181,13 @@ const Index = () => {
     setRoles(roles.map((r) => (r.id === id ? { ...r, title } : r)));
   };
 
+  // Detect common header strings to skip
+  const isHeaderRow = (val: string) => {
+    const lower = val.toLowerCase().trim();
+    const headers = ["job title", "jobtitle", "title", "role", "position", "job name", "role name", "position title", "job role", "#", "no", "no.", "s.no", "sr", "sr."];
+    return headers.includes(lower);
+  };
+
   // Single smart upload: spreadsheets/CSVs → job title list; documents → JD entries
   const handleFilesUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []).slice(0, 100);
@@ -214,10 +221,10 @@ const Index = () => {
           const workbook = XLSX.read(arrayBuffer, { type: "array" });
           const sheet = workbook.Sheets[workbook.SheetNames[0]];
           const rows: string[][] = XLSX.utils.sheet_to_json(sheet, { header: 1 });
-          allLines.push(...rows.map((row) => (row[0] || "").toString().trim()).filter(Boolean));
+          allLines.push(...rows.map((row) => (row[0] || "").toString().trim()).filter(Boolean).filter((l) => !isHeaderRow(l)));
         } else {
           const text = await file.text();
-          allLines.push(...text.split(/\r?\n/).map((l) => l.trim()).filter(Boolean));
+          allLines.push(...text.split(/\r?\n/).map((l) => l.trim()).filter(Boolean).filter((l) => !isHeaderRow(l)));
         }
       }
       allLines = allLines.slice(0, 100);
