@@ -379,10 +379,14 @@ const Analysis = () => {
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="w-full h-7 text-xs gap-1.5 text-primary hover:bg-primary/10"
+                        className={`w-full h-7 text-xs gap-1.5 ${completedTasks.has(task.name) ? "text-success hover:bg-success/10" : "text-primary hover:bg-primary/10"}`}
                         onClick={(e) => { e.stopPropagation(); setSimTask(task.name); }}
                       >
-                        <Play className="h-3 w-3" /> Practice
+                        {completedTasks.has(task.name) ? (
+                          <><CheckCircle2 className="h-3 w-3" /> Practiced</>
+                        ) : (
+                          <><Play className="h-3 w-3" /> Practice</>
+                        )}
                       </Button>
                     </CardContent>
                   </Card>
