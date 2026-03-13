@@ -223,7 +223,7 @@ const Analysis = () => {
 
   const statCards = [
     {
-      label: "AI-Augmented",
+      label: `${result.summary.augmentedPercent}% of tasks will involve AI tools`,
       value: result.summary.augmentedPercent,
       icon: Bot,
       iconBg: "bg-primary/10",
@@ -231,7 +231,7 @@ const Analysis = () => {
       barColor: "bg-primary",
     },
     {
-      label: "Automation Risk",
+      label: `${result.summary.automationRiskPercent}% could be fully automated`,
       value: result.summary.automationRiskPercent,
       icon: ShieldAlert,
       iconBg: "bg-destructive/10",
@@ -239,7 +239,7 @@ const Analysis = () => {
       barColor: "bg-destructive",
     },
     {
-      label: "New Skills Needed",
+      label: `${result.summary.newSkillsPercent}% require learning new skills`,
       value: result.summary.newSkillsPercent,
       icon: GraduationCap,
       iconBg: "bg-warning/10",
@@ -297,13 +297,12 @@ const Analysis = () => {
                 <motion.div key={stat.label} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 + i * 0.07 }}>
                   <Card className="relative overflow-hidden border-border hover:border-primary/20 transition-colors">
                     <CardContent className="p-5">
-                      <div className="flex items-start justify-between mb-3">
-                        <div className={`flex items-center justify-center w-10 h-10 rounded-xl ${stat.iconBg}`}>
+                      <div className="flex items-center gap-3 mb-3">
+                        <div className={`flex items-center justify-center w-10 h-10 rounded-xl shrink-0 ${stat.iconBg}`}>
                           <Icon className={`h-5 w-5 ${stat.iconColor}`} />
                         </div>
-                        <span className="text-3xl font-display font-bold text-foreground">{stat.value}%</span>
+                        <p className="text-sm font-semibold text-foreground leading-snug">{stat.label}</p>
                       </div>
-                      <p className="text-sm font-medium text-muted-foreground mb-2">{stat.label}</p>
                       <div className="w-full h-1.5 rounded-full bg-secondary overflow-hidden">
                         <div className={`h-full rounded-full ${stat.barColor} transition-all duration-700`} style={{ width: `${stat.value}%` }} />
                       </div>
