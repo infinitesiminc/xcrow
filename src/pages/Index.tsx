@@ -1,10 +1,22 @@
 import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowRight, Briefcase, BarChart3, BookOpen, Users, Plus, X, Loader2, FileText, Link, Upload, Search, User, LayoutDashboard, TrendingUp } from "lucide-react";
+import { ArrowRight, Briefcase, BarChart3, BookOpen, Users, Plus, X, Loader2, FileText, Link, Upload, Search, User, LayoutDashboard, TrendingUp, ChevronLeft, ChevronRight } from "lucide-react";
 import roleSoftwareEngineer from "@/assets/role-software-engineer.jpg";
 import roleMarketingManager from "@/assets/role-marketing-manager.jpg";
 import roleAccountant from "@/assets/role-accountant.jpg";
+import roleDataScientist from "@/assets/role-data-scientist.jpg";
+import roleProductManager from "@/assets/role-product-manager.jpg";
+import roleFinancialAnalyst from "@/assets/role-financial-analyst.jpg";
+import roleInvestmentBanker from "@/assets/role-investment-banker.jpg";
+import roleContentStrategist from "@/assets/role-content-strategist.jpg";
+import roleSeoSpecialist from "@/assets/role-seo-specialist.jpg";
+import roleProjectManager from "@/assets/role-project-manager.jpg";
+import roleHrManager from "@/assets/role-hr-manager.jpg";
+import roleSupplyChainManager from "@/assets/role-supply-chain-manager.jpg";
+import roleCorporateLawyer from "@/assets/role-corporate-lawyer.jpg";
+import roleComplianceOfficer from "@/assets/role-compliance-officer.jpg";
+import roleParalegal from "@/assets/role-paralegal.jpg";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { JobAnalysisResult } from "@/types/analysis";
@@ -13,10 +25,55 @@ import { analyzeJobWithAI } from "@/lib/ai-analysis";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 
-const hotRoles = [
-  { title: "Software Engineer", image: roleSoftwareEngineer, augmented: 72, risk: 15, tag: "High AI Augmentation" },
-  { title: "Marketing Manager", image: roleMarketingManager, augmented: 68, risk: 25, tag: "Rapid AI Growth" },
-  { title: "Accountant", image: roleAccountant, augmented: 60, risk: 35, tag: "Automation Risk" },
+interface RoleCard {
+  title: string;
+  image: string;
+  augmented: number;
+  risk: number;
+  tag: string;
+}
+
+const roleCategories: { label: string; roles: RoleCard[] }[] = [
+  {
+    label: "Tech",
+    roles: [
+      { title: "Software Engineer", image: roleSoftwareEngineer, augmented: 72, risk: 15, tag: "High AI Augmentation" },
+      { title: "Data Scientist", image: roleDataScientist, augmented: 78, risk: 12, tag: "AI-Native Role" },
+      { title: "Product Manager", image: roleProductManager, augmented: 65, risk: 18, tag: "Strategic AI Use" },
+    ],
+  },
+  {
+    label: "Finance",
+    roles: [
+      { title: "Accountant", image: roleAccountant, augmented: 60, risk: 35, tag: "Automation Risk" },
+      { title: "Financial Analyst", image: roleFinancialAnalyst, augmented: 70, risk: 28, tag: "High AI Augmentation" },
+      { title: "Investment Banker", image: roleInvestmentBanker, augmented: 55, risk: 20, tag: "Moderate Change" },
+    ],
+  },
+  {
+    label: "Marketing",
+    roles: [
+      { title: "Marketing Manager", image: roleMarketingManager, augmented: 68, risk: 25, tag: "Rapid AI Growth" },
+      { title: "Content Strategist", image: roleContentStrategist, augmented: 74, risk: 30, tag: "High AI Augmentation" },
+      { title: "SEO Specialist", image: roleSeoSpecialist, augmented: 72, risk: 40, tag: "Automation Risk" },
+    ],
+  },
+  {
+    label: "Operations",
+    roles: [
+      { title: "Project Manager", image: roleProjectManager, augmented: 62, risk: 22, tag: "Moderate Change" },
+      { title: "HR Manager", image: roleHrManager, augmented: 58, risk: 30, tag: "Automation Risk" },
+      { title: "Supply Chain Manager", image: roleSupplyChainManager, augmented: 65, risk: 28, tag: "High AI Augmentation" },
+    ],
+  },
+  {
+    label: "Legal",
+    roles: [
+      { title: "Corporate Lawyer", image: roleCorporateLawyer, augmented: 55, risk: 18, tag: "Strategic AI Use" },
+      { title: "Compliance Officer", image: roleComplianceOfficer, augmented: 60, risk: 32, tag: "Automation Risk" },
+      { title: "Paralegal", image: roleParalegal, augmented: 68, risk: 45, tag: "High Automation Risk" },
+    ],
+  },
 ];
 
 type Mode = "individual" | "team";
@@ -609,38 +666,42 @@ const Index = () => {
             </AnimatePresence>
           </div>
 
-          {/* Hot Roles — Airbnb-style */}
-          <div>
-            <div className="flex items-center gap-2 mb-3">
+          {/* Categorized Role Rows */}
+          <div className="space-y-6">
+            <div className="flex items-center gap-2">
               <TrendingUp className="h-4 w-4 text-primary" />
               <h2 className="text-sm font-semibold text-foreground">Popular roles — explore free</h2>
-              <ArrowRight className="h-3.5 w-3.5 text-muted-foreground" />
             </div>
-            <div className="grid grid-cols-3 gap-4">
-              {hotRoles.map((role, i) => (
-                <motion.button
-                  key={role.title}
-                  initial={{ opacity: 0, y: 12 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.4, delay: 0.3 + i * 0.1 }}
-                  onClick={() => navigate(`/analysis?title=${encodeURIComponent(role.title)}&company=`)}
-                  className="group cursor-pointer text-left"
-                >
-                  <div className="relative overflow-hidden rounded-xl aspect-[4/3] mb-2">
-                    <img src={role.image} alt={role.title} className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" />
-                    <div className="absolute top-2 left-2">
-                      <span className="inline-block px-2 py-0.5 text-[10px] font-medium rounded-full bg-card/90 text-foreground backdrop-blur-sm shadow-sm">
-                        {role.tag}
-                      </span>
-                    </div>
-                  </div>
-                  <h3 className="text-sm font-semibold text-foreground leading-tight">{role.title}</h3>
-                  <p className="text-xs text-muted-foreground mt-0.5">
-                    {role.augmented}% AI-augmented · {role.risk}% at risk
-                  </p>
-                </motion.button>
-              ))}
-            </div>
+            {roleCategories.map((category, catIdx) => (
+              <div key={category.label}>
+                <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">{category.label}</h3>
+                <div className="flex gap-4 overflow-x-auto pb-2 -mx-4 px-4 scrollbar-hide">
+                  {category.roles.map((role, i) => (
+                    <motion.button
+                      key={role.title}
+                      initial={{ opacity: 0, y: 12 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.4, delay: 0.1 + i * 0.08 }}
+                      onClick={() => navigate(`/analysis?title=${encodeURIComponent(role.title)}&company=`)}
+                      className="group cursor-pointer text-left shrink-0 w-[180px]"
+                    >
+                      <div className="relative overflow-hidden rounded-xl aspect-[4/3] mb-2">
+                        <img src={role.image} alt={role.title} className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" />
+                        <div className="absolute top-2 left-2">
+                          <span className="inline-block px-2 py-0.5 text-[10px] font-medium rounded-full bg-card/90 text-foreground backdrop-blur-sm shadow-sm">
+                            {role.tag}
+                          </span>
+                        </div>
+                      </div>
+                      <h3 className="text-sm font-semibold text-foreground leading-tight">{role.title}</h3>
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        {role.augmented}% AI-augmented · {role.risk}% at risk
+                      </p>
+                    </motion.button>
+                  ))}
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </div>
