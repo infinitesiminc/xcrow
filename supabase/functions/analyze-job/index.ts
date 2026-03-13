@@ -26,6 +26,8 @@ For each skill, also provide 1-3 top tools or resources with:
 - url: a real URL to the tool or resource
 - summary: a one-sentence description of what it does and why it's useful
 
+For each skill, include "relatedTasks" — an array of task names (matching the task names you defined) that this skill helps address. Each skill should map to 1-3 tasks.
+
 Provide 6-8 tasks and 5-7 skills. Be specific to the role, not generic.`;
 
 serve(async (req) => {
@@ -123,8 +125,13 @@ serve(async (req) => {
                             additionalProperties: false,
                           },
                         },
+                        relatedTasks: {
+                          type: "array",
+                          items: { type: "string", description: "Name of a task this skill helps address" },
+                          description: "1-3 task names this skill maps to",
+                        },
                       },
-                      required: ["name", "priority", "category", "description", "resources"],
+                      required: ["name", "priority", "category", "description", "resources", "relatedTasks"],
                       additionalProperties: false,
                     },
                   },

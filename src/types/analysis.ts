@@ -24,6 +24,7 @@ export interface SkillRecommendation {
   category: SkillCategory;
   description: string;
   resources?: ToolResource[];
+  relatedTasks?: string[];
 }
 
 export interface JobAnalysisResult {
