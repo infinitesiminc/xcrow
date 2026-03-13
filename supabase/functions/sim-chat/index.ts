@@ -81,13 +81,16 @@ Generate a JSON response with these fields:
 
 1. "briefing": A 3-4 sentence explanation for a complete beginner. Cover: what this task involves in plain language, why it matters in this role, and what a good outcome looks like. Use simple language — no jargon without explanation.
 
-2. "tips": An array of 2-3 short, actionable tips the user can reference during the simulation. Each tip should be 1 sentence and help a beginner navigate the conversation (e.g. "Ask clarifying questions before jumping to solutions" or "In this field, stakeholders usually expect you to present options, not just one answer").
+2. "tips": An array of 2-3 short, actionable tips the user can reference during the simulation. Each tip should be 1 sentence and help a beginner navigate the conversation.
 
 3. "keyTerms": An array of 3-4 objects with "term" and "definition" keys — industry-specific words the user will encounter during the simulation, explained simply.
 
-4. "systemPrompt": A detailed system prompt for the AI simulator. The simulator should roleplay as a colleague/manager presenting a realistic scenario. It should naturally weave in context and explain things as if onboarding a new team member. 3-4 sentences.
+4. "systemPrompt": A system prompt for the AI simulator (not shown to user). 3-4 sentences describing the mentor character.
 
-5. "openingMessage": The first message from the simulator (3-4 sentences). It should proactively TEACH — introduce the scenario, explain relevant context, and then pose a specific situational question to check understanding. Do NOT ask open-ended questions like "Where should we start?" Instead say something like "Let me walk you through how this works... [explanation]. Now, given what I just told you, how would you handle [specific situation]?"
+5. "openingMessage": The first message that starts Round 1. Follow this EXACT structure:
+   - Start with a brief, friendly concept introduction (2-3 sentences explaining one aspect of the task in plain language, with real-world context).
+   - Then present a multiple-choice question with exactly 4 options labeled A, B, C, D. Format them clearly on separate lines.
+   - Example format: "**📖 Concept: [Topic]**\\n\\n[Explanation of the concept]\\n\\n**🤔 Quick Check:**\\nWhich of the following...?\\n\\nA) ...\\nB) ...\\nC) ...\\nD) ..."
 
 6. "scenario": { "title": a short title, "description": a 1-sentence description }
 
@@ -129,24 +132,30 @@ Respond ONLY with valid JSON, no markdown.`;
 }
 
 async function handleChat(payload: any, apiKey: string) {
-  const { messages, role } = payload;
+  const { messages, role, round } = payload;
 
   const systemMsg = {
     role: "system",
-    content: `You are a patient, knowledgeable mentor onboarding someone into the role of ${role}. Your job is to TEACH, not to test.
+    content: `You are a patient, knowledgeable mentor onboarding someone into the role of ${role}. Your job is to TEACH through structured rounds.
 
-Your approach:
-- Lead the conversation. Present information, explain concepts, and walk the user through real scenarios step-by-step.
-- Don't ask open-ended questions like "Where should we start?" — instead, proactively explain things: "Let me walk you through how this works..."
-- After explaining something, check understanding with specific questions: "Based on what I just explained, what would you do if...?"
-- When the user responds, give constructive feedback: explain what they got right, correct misconceptions gently, and add context they missed.
-- Use concrete examples from the industry to make abstract concepts tangible.
-- Keep responses concise (3-5 sentences) but packed with real knowledge the user can learn from.
-- Stay in character as a colleague/manager. Don't break character or mention this is a simulation.`,
+Each round follows this EXACT structure:
+1. **FEEDBACK on the user's answer**: If the user just answered a multiple-choice question, start by telling them if they're correct or not. Use ✅ for correct or ❌ for incorrect. Explain WHY the correct answer is right and why wrong answers are wrong. Add real-world context. (Skip this step only on the very first message of a round.)
+2. **CONTINUE PROMPT**: After giving feedback, ask: "🔄 **Want to see another example?** (yes/no)". Wait for their response.
+3. **NEW ROUND** (only if user said yes): Start with "**📖 Concept: [New Topic]**" — introduce a NEW concept related to the job task (2-3 sentences of plain-language explanation with real-world context). Then present a multiple-choice question with exactly 4 options (A, B, C, D) formatted clearly.
+
+Current round: ${round || 1}
+
+Rules:
+- ALWAYS present exactly 4 multiple-choice options labeled A, B, C, D on separate lines.
+- Make questions scenario-based and realistic — not textbook trivia.
+- Each round should teach a DIFFERENT aspect of the task.
+- If user says "no" to continuing, respond warmly: "Great session! 🎉 You've learned about [brief summary of topics covered]. Click 'Finish' whenever you're ready for your score!"
+- Keep explanations beginner-friendly. Define jargon inline.
+- Stay in character as a colleague/manager.`,
   };
 
   const aiMessages = [systemMsg, ...messages];
-  const reply = await callAI(apiKey, aiMessages, 0.8);
+  const reply = await callAI(apiKey, aiMessages, 0.7);
 
   return new Response(reply, {
     headers: { ...corsHeaders, "Content-Type": "text/plain" },

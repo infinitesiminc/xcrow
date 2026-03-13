@@ -28,8 +28,7 @@ interface SimulatorModalProps {
   jobTitle: string;
   company?: string;
 }
-
-const MAX_TURNS = 10;
+const MAX_ROUNDS = 10;
 
 /* ── Briefing Screen ── */
 const BriefingScreen = ({
@@ -136,7 +135,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company }: Simulato
   const [messages, setMessages] = useState<SimMessage[]>([]);
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
-  const [turnCount, setTurnCount] = useState(0);
+  const [roundCount, setRoundCount] = useState(1);
   const [score, setScore] = useState<SimScore | null>(null);
   const [error, setError] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -149,7 +148,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company }: Simulato
     setPhase("loading");
     setError(null);
     setMessages([]);
-    setTurnCount(0);
+    setRoundCount(1);
     setScore(null);
     try {
       const compiled = await compileSession(taskName, jobTitle, company, 3);
@@ -182,9 +181,13 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company }: Simulato
     scrollToBottom();
 
     try {
-      const reply = await chatTurn(newMessages, 1, turnCount + 1, jobTitle);
+      const reply = await chatTurn(newMessages, roundCount, roundCount, jobTitle);
       setMessages((prev) => [...prev, { role: "assistant", content: reply }]);
-      setTurnCount((c) => c + 1);
+      // Increment round when user answers yes to continue
+      const lowerInput = input.trim().toLowerCase();
+      if (lowerInput === "yes" || lowerInput === "y" || lowerInput === "yeah" || lowerInput === "sure") {
+        setRoundCount((c) => c + 1);
+      }
       scrollToBottom();
     } catch (err) {
       console.error("Chat error:", err);
@@ -224,9 +227,9 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company }: Simulato
             <p className="text-xs text-muted-foreground truncate">{jobTitle}{company ? ` at ${company}` : ""}</p>
           </div>
           <div className="flex items-center gap-2 shrink-0">
-            {phase === "chat" && turnCount > 0 && (
+            {phase === "chat" && (
               <Badge variant="outline" className="text-[10px]">
-                {turnCount}/{MAX_TURNS} turns
+                Round {roundCount}
               </Badge>
             )}
           </div>
@@ -354,26 +357,19 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company }: Simulato
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
-                placeholder="Type your response..."
+                placeholder="Type your answer (A, B, C, or D) or a message..."
                 rows={1}
                 className="flex-1 resize-none rounded-xl border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-ring min-h-[38px] max-h-[120px]"
               />
               <div className="flex gap-1.5 shrink-0">
-                {turnCount >= 2 && (
-                  <Button variant="outline" size="sm" onClick={handleFinish} className="gap-1 text-xs h-[38px]">
-                    <Trophy className="h-3.5 w-3.5" /> Finish
-                  </Button>
-                )}
+                <Button variant="outline" size="sm" onClick={handleFinish} className="gap-1 text-xs h-[38px]">
+                  <Trophy className="h-3.5 w-3.5" /> Finish
+                </Button>
                 <Button size="sm" onClick={handleSend} disabled={!input.trim() || sending} className="h-[38px] w-[38px] p-0">
                   <Send className="h-4 w-4" />
                 </Button>
               </div>
             </div>
-            {turnCount >= MAX_TURNS - 2 && (
-              <p className="text-[10px] text-muted-foreground mt-1.5 text-center">
-                {MAX_TURNS - turnCount} turns remaining
-              </p>
-            )}
           </div>
         )}
       </DialogContent>
