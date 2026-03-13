@@ -278,20 +278,23 @@ const Index = () => {
               onSubmit={handleSubmit}
               className="mt-8 w-full max-w-md space-y-3"
             >
-              <div>
-                <Input
-                  placeholder="Company website (optional) — e.g. example.com"
-                  value={website}
-                  onChange={(e) => { setWebsite(e.target.value); setWebsiteError(""); }}
-                  className={`h-12 bg-card border-border ${websiteError ? "border-destructive" : ""}`}
-                />
-                {websiteError && <p className="text-xs text-destructive mt-1">{websiteError}</p>}
-              </div>
+              {/* Company website — hidden when JD URL provides it */}
+              {!companyFromJdUrl && (
+                <div>
+                  <Input
+                    placeholder="Company website (optional) — e.g. example.com"
+                    value={website}
+                    onChange={(e) => { setWebsite(e.target.value); setWebsiteError(""); }}
+                    className={`h-12 bg-card border-border ${websiteError ? "border-destructive" : ""}`}
+                  />
+                  {websiteError && <p className="text-xs text-destructive mt-1">{websiteError}</p>}
+                </div>
+              )}
               <Input
-                placeholder="Your job title *"
+                placeholder={hasJdContent ? "Job title (optional — extracted from JD)" : "Your job title *"}
                 value={jobTitle}
                 onChange={(e) => setJobTitle(e.target.value)}
-                required
+                required={!hasJdContent}
                 className="h-12 bg-card border-border"
               />
 
