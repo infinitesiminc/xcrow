@@ -34,7 +34,21 @@ interface RoleEntry {
   jdFileName?: string;
 }
 
+interface LastAnalysis {
+  jobTitle: string;
+  company: string;
+  timestamp: number;
+}
+
+const getLastAnalysis = (): LastAnalysis | null => {
+  try {
+    const raw = localStorage.getItem("last_analysis");
+    return raw ? JSON.parse(raw) : null;
+  } catch { return null; }
+};
+
 const Index = () => {
+  const lastAnalysis = getLastAnalysis();
   const [website, setWebsite] = useState("");
   const [jobTitle, setJobTitle] = useState("");
   const [websiteError, setWebsiteError] = useState("");
