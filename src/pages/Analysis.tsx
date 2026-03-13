@@ -402,7 +402,7 @@ const Analysis = () => {
                   </div>
                   <div className="space-y-2">
                     {skills.map((skill, si) => (
-                      <CompactSkill key={si} skill={skill} showResources />
+                      <CompactSkill key={si} skill={skill} />
                     ))}
                   </div>
                 </div>
