@@ -148,7 +148,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company }: Simulato
     setPhase("loading");
     setError(null);
     setMessages([]);
-    setTurnCount(0);
+    setRoundCount(1);
     setScore(null);
     try {
       const compiled = await compileSession(taskName, jobTitle, company, 3);
