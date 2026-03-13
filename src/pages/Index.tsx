@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowRight, Briefcase, BarChart3, BookOpen, Users, Plus, X, Sparkles, Loader2, FileText, Link } from "lucide-react";
+import { ArrowRight, Briefcase, BarChart3, BookOpen, Users, Plus, X, Sparkles, Loader2, FileText, Link, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
@@ -25,7 +25,7 @@ const categoryLabels: Record<SkillCategory, string> = {
 };
 
 type Mode = "individual" | "team";
-type JdInputType = "none" | "paste" | "url";
+type JdInputType = "none" | "paste" | "url" | "file";
 
 interface RoleEntry {
   id: string;
@@ -40,6 +40,9 @@ const Index = () => {
   const [jdInputType, setJdInputType] = useState<JdInputType>("none");
   const [jdText, setJdText] = useState("");
   const [jdUrl, setJdUrl] = useState("");
+  const [jdFile, setJdFile] = useState<File | null>(null);
+  const [jdFileText, setJdFileText] = useState("");
+  const [jdFileParsing, setJdFileParsing] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -67,14 +70,21 @@ const Index = () => {
     setWebsiteError("");
 
     const companyParam = website.trim();
-    const jdParam = jdInputType === "paste" ? jdText.trim() : "";
+    const jdParam = jdInputType === "paste" ? jdText.trim() : jdInputType === "file" ? jdFileText.trim() : "";
     const jdUrlParam = jdInputType === "url" ? jdUrl.trim() : "";
+
+    // Store JD in sessionStorage to avoid URL length limits
+    if (jdParam) {
+      sessionStorage.setItem("jd_text", jdParam);
+    } else {
+      sessionStorage.removeItem("jd_text");
+    }
 
     const params = new URLSearchParams({
       company: companyParam,
       title: jobTitle.trim(),
     });
-    if (jdParam) params.set("jd", jdParam);
+    if (jdParam) params.set("jd", "session");
     if (jdUrlParam) params.set("jdUrl", jdUrlParam);
 
     navigate(`/analysis?${params.toString()}`);
@@ -82,6 +92,61 @@ const Index = () => {
 
   const toggleJdInput = (type: JdInputType) => {
     setJdInputType((prev) => (prev === type ? "none" : type));
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const maxSize = 5 * 1024 * 1024;
+    if (file.size > maxSize) {
+      toast({ title: "File too large", description: "Max file size is 5MB.", variant: "destructive" });
+      return;
+    }
+
+    const name = file.name.toLowerCase();
+    const validExts = [".pdf", ".docx", ".doc", ".txt", ".md"];
+    if (!validExts.some((ext) => name.endsWith(ext))) {
+      toast({ title: "Unsupported file", description: "Upload PDF, DOCX, TXT, or MD files.", variant: "destructive" });
+      return;
+    }
+
+    setJdFile(file);
+    setJdFileText("");
+
+    // Plain text files — read client-side
+    if (name.endsWith(".txt") || name.endsWith(".md")) {
+      const text = await file.text();
+      setJdFileText(text);
+      return;
+    }
+
+    // PDF/DOCX — send to edge function
+    setJdFileParsing(true);
+    try {
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+      const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const res = await fetch(`${supabaseUrl}/functions/v1/parse-jd`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${supabaseKey}` },
+        body: formData,
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        toast({ title: "Parse failed", description: data.error || "Could not extract text.", variant: "destructive" });
+        return;
+      }
+      setJdFileText(data.text || "");
+    } catch (err) {
+      console.error("File parse error:", err);
+      toast({ title: "Parse failed", description: "Could not process file.", variant: "destructive" });
+    } finally {
+      setJdFileParsing(false);
+    }
   };
 
   // Team handlers
@@ -240,6 +305,24 @@ const Index = () => {
                 >
                   <Link className="h-3 w-3" /> JD URL
                 </button>
+                <label
+                  className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md border transition-colors cursor-pointer ${
+                    jdInputType === "file"
+                      ? "border-primary/50 bg-primary/10 text-primary"
+                      : "border-border text-muted-foreground hover:text-foreground hover:border-border/80"
+                  }`}
+                >
+                  <Upload className="h-3 w-3" /> Upload
+                  <input
+                    type="file"
+                    accept=".pdf,.docx,.doc,.txt,.md"
+                    className="hidden"
+                    onChange={(e) => {
+                      setJdInputType("file");
+                      handleFileChange(e);
+                    }}
+                  />
+                </label>
               </div>
 
               {/* JD paste area */}
@@ -276,6 +359,34 @@ const Index = () => {
                       className="h-11 bg-card border-border"
                     />
                     <p className="text-[10px] text-muted-foreground mt-1">We'll scrape the job posting for a more accurate analysis</p>
+                  </motion.div>
+                )}
+                {jdInputType === "file" && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    exit={{ opacity: 0, height: 0 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <div className="flex items-center gap-2 px-3 py-2.5 bg-card border border-border rounded-md">
+                      {jdFileParsing ? (
+                        <>
+                          <Loader2 className="h-3.5 w-3.5 animate-spin text-primary" />
+                          <span className="text-sm text-muted-foreground">Extracting text from {jdFile?.name}...</span>
+                        </>
+                      ) : jdFileText ? (
+                        <>
+                          <FileText className="h-3.5 w-3.5 text-primary" />
+                          <span className="text-sm text-foreground truncate flex-1">{jdFile?.name}</span>
+                          <span className="text-[10px] text-muted-foreground shrink-0">{jdFileText.length.toLocaleString()} chars</span>
+                          <button type="button" onClick={() => { setJdFile(null); setJdFileText(""); setJdInputType("none"); }} className="text-muted-foreground hover:text-foreground">
+                            <X className="h-3 w-3" />
+                          </button>
+                        </>
+                      ) : (
+                        <span className="text-sm text-muted-foreground">Select a PDF, DOCX, or text file</span>
+                      )}
+                    </div>
                   </motion.div>
                 )}
               </AnimatePresence>
