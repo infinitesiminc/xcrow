@@ -4,12 +4,11 @@ import { motion } from "framer-motion";
 import {
   ArrowLeft, TrendingUp, Minus, AlertTriangle, Zap, Bot, Globe, ExternalLink,
   Building2, Users, DollarSign, MapPin, Calendar, Tag,
-  Wrench, Heart, Sparkles, Save, Link2,
+  Wrench, Heart, Sparkles, Save,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
 import { JobAnalysisResult, TaskState, TrendDirection, AIImpactLevel, SkillCategory, SkillPriority } from "@/types/analysis";
 import { findPrebuiltRole } from "@/data/prebuilt-roles";
@@ -258,125 +257,147 @@ const Analysis = () => {
           </div>
         </motion.div>
 
-        {/* Task Breakdown */}
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="mb-14">
-          <h2 className="text-sm font-medium uppercase tracking-widest text-muted-foreground mb-4">Task-Level Breakdown</h2>
-          <Card className="border-border overflow-hidden">
-            <Table>
-              <TableHeader>
-                <TableRow className="hover:bg-transparent">
-                  <TableHead className="font-medium">Task</TableHead>
-                  <TableHead className="font-medium">Current State</TableHead>
-                  <TableHead className="font-medium">Trend</TableHead>
-                  <TableHead className="font-medium text-right">Impact</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {result.tasks.map((task, i) => {
-                  const state = stateLabels[task.currentState];
-                  const trend = trendIcons[task.trend];
-                  const TrendIcon = trend.icon;
-                  return (
-                    <TableRow key={i}>
-                      <TableCell>
-                        <div className="font-medium text-foreground">{task.name}</div>
-                        <div className="text-xs text-muted-foreground mt-0.5 max-w-xs">{task.description}</div>
-                      </TableCell>
-                      <TableCell><Badge variant="outline" className={state.className}>{state.label}</Badge></TableCell>
-                      <TableCell>
-                        <span className="flex items-center gap-1 text-sm text-muted-foreground">
-                          <TrendIcon className="h-3.5 w-3.5" /> {trend.label}
-                        </span>
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <span className={`text-sm font-medium capitalize ${impactColors[task.impactLevel]}`}>{task.impactLevel}</span>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
-          </Card>
-        </motion.div>
+        {/* Integrated Task & Skills Breakdown */}
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="mb-10">
+          <h2 className="text-sm font-medium uppercase tracking-widest text-muted-foreground mb-4">Task-Level Breakdown & Recommendations</h2>
+          <div className="space-y-4">
+            {result.tasks.map((task, i) => {
+              const state = stateLabels[task.currentState];
+              const trend = trendIcons[task.trend];
+              const TrendIcon = trend.icon;
+              // Find skills related to this task
+              const relatedSkills = result.skills.filter(
+                (s) => s.relatedTasks?.some((rt) => rt.toLowerCase() === task.name.toLowerCase())
+              );
 
-        {/* Divider */}
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.25 }} className="mb-10">
-          <div className="border-t border-border" />
-        </motion.div>
-
-        {/* Skill Recommendations */}
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="mb-10">
-          <h2 className="text-2xl font-display font-bold text-foreground mb-1">Skill Recommendations</h2>
-          <p className="text-muted-foreground mb-8">Personalized skills to stay ahead based on the task analysis above.</p>
-        </motion.div>
-
-        {(["ai_tools", "human_skills", "new_capabilities"] as SkillCategory[]).map((cat, catIndex) => {
-          const config = categoryConfig[cat];
-          const skills = grouped[cat] || [];
-          if (!skills.length) return null;
-          const Icon = config.icon;
-
-          return (
-            <motion.div
-              key={cat}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.35 + catIndex * 0.08 }}
-              className="mb-8"
-            >
-              <div className="flex items-center gap-2 mb-1">
-                <Icon className="h-4 w-4 text-primary" />
-                <h3 className="font-display font-semibold text-foreground">{config.label}</h3>
-              </div>
-              <p className="text-sm text-muted-foreground mb-4">{config.description}</p>
-
-              <div className="space-y-3">
-                {skills.map((skill, i) => (
-                  <Card key={i} className="border-border">
-                    <CardContent className="p-4">
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="flex-1">
-                          <h4 className="font-medium text-foreground">{skill.name}</h4>
-                          <p className="text-sm text-muted-foreground mt-1">{skill.description}</p>
-
-                          {skill.relatedTasks && skill.relatedTasks.length > 0 && (
-                            <div className="mt-2 flex flex-wrap items-center gap-1.5">
-                              <Link2 className="h-3 w-3 text-muted-foreground shrink-0" />
-                              {skill.relatedTasks.map((task, ti) => (
-                                <span key={ti} className="text-xs px-2 py-0.5 rounded bg-muted text-muted-foreground">{task}</span>
-                              ))}
-                            </div>
-                          )}
-
-                          {skill.resources && skill.resources.length > 0 && (
-                            <div className="mt-3 flex flex-wrap gap-2">
-                              {skill.resources.map((resource, ri) => (
-                                <a
-                                  key={ri}
-                                  href={resource.url}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  title={resource.summary}
-                                  className="inline-flex items-center gap-1 text-xs px-2.5 py-1.5 rounded-md bg-accent text-accent-foreground hover:bg-accent/80 transition-colors"
-                                >
-                                  <ExternalLink className="h-3 w-3" />
-                                  {resource.name}
-                                </a>
-                              ))}
-                            </div>
-                          )}
+              return (
+                <motion.div
+                  key={i}
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.25 + i * 0.04 }}
+                >
+                  <Card className="border-border overflow-hidden">
+                    <CardContent className="p-0">
+                      {/* Task header */}
+                      <div className="p-4 flex items-start justify-between gap-3">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <h3 className="font-medium text-foreground">{task.name}</h3>
+                            <Badge variant="outline" className={state.className}>{state.label}</Badge>
+                          </div>
+                          <p className="text-sm text-muted-foreground mt-1">{task.description}</p>
+                          <div className="flex items-center gap-4 mt-2">
+                            <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                              <TrendIcon className="h-3 w-3" /> {trend.label}
+                            </span>
+                            <span className={`text-xs font-medium capitalize ${impactColors[task.impactLevel]}`}>
+                              {task.impactLevel} impact
+                            </span>
+                          </div>
                         </div>
-                        <Badge variant="outline" className={`shrink-0 capitalize ${priorityStyles[skill.priority]}`}>
-                          {skill.priority}
-                        </Badge>
                       </div>
+
+                      {/* Related skills */}
+                      {relatedSkills.length > 0 && (
+                        <div className="border-t border-border bg-accent/30 px-4 py-3">
+                          <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground mb-2">Recommended skills</p>
+                          <div className="space-y-2">
+                            {relatedSkills.map((skill, si) => {
+                              const catConf = categoryConfig[skill.category];
+                              const CatIcon = catConf.icon;
+                              return (
+                                <div key={si} className="flex items-start gap-2">
+                                  <CatIcon className="h-3.5 w-3.5 text-primary mt-0.5 shrink-0" />
+                                  <div className="flex-1 min-w-0">
+                                    <div className="flex items-center gap-2">
+                                      <span className="text-sm font-medium text-foreground">{skill.name}</span>
+                                      <Badge variant="outline" className={`text-[10px] px-1.5 py-0 capitalize ${priorityStyles[skill.priority]}`}>
+                                        {skill.priority}
+                                      </Badge>
+                                    </div>
+                                    <p className="text-xs text-muted-foreground mt-0.5">{skill.description}</p>
+                                    {skill.resources && skill.resources.length > 0 && (
+                                      <div className="mt-1.5 flex flex-wrap gap-1.5">
+                                        {skill.resources.map((resource, ri) => (
+                                          <a
+                                            key={ri}
+                                            href={resource.url}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            title={resource.summary}
+                                            className="inline-flex items-center gap-1 text-[11px] px-2 py-1 rounded bg-background text-muted-foreground hover:text-foreground border border-border transition-colors"
+                                          >
+                                            <ExternalLink className="h-2.5 w-2.5" />
+                                            {resource.name}
+                                          </a>
+                                        ))}
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
                     </CardContent>
                   </Card>
-                ))}
+                </motion.div>
+              );
+            })}
+          </div>
+        </motion.div>
+
+        {/* Orphan skills not linked to any task */}
+        {(() => {
+          const linkedSkills = new Set(
+            result.skills
+              .filter((s) => s.relatedTasks?.some((rt) =>
+                result.tasks.some((t) => t.name.toLowerCase() === rt.toLowerCase())
+              ))
+              .map((s) => s.name)
+          );
+          const orphans = result.skills.filter((s) => !linkedSkills.has(s.name));
+          if (!orphans.length) return null;
+          return (
+            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }} className="mb-10">
+              <h2 className="text-sm font-medium uppercase tracking-widest text-muted-foreground mb-4">Additional Skills</h2>
+              <div className="space-y-3">
+                {orphans.map((skill, i) => {
+                  const catConf = categoryConfig[skill.category];
+                  const CatIcon = catConf.icon;
+                  return (
+                    <Card key={i} className="border-border">
+                      <CardContent className="p-4">
+                        <div className="flex items-start gap-2">
+                          <CatIcon className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2">
+                              <span className="font-medium text-foreground">{skill.name}</span>
+                              <Badge variant="outline" className={`capitalize ${priorityStyles[skill.priority]}`}>{skill.priority}</Badge>
+                            </div>
+                            <p className="text-sm text-muted-foreground mt-1">{skill.description}</p>
+                            {skill.resources && skill.resources.length > 0 && (
+                              <div className="mt-2 flex flex-wrap gap-2">
+                                {skill.resources.map((resource, ri) => (
+                                  <a key={ri} href={resource.url} target="_blank" rel="noopener noreferrer" title={resource.summary}
+                                    className="inline-flex items-center gap-1 text-xs px-2.5 py-1.5 rounded-md bg-accent text-accent-foreground hover:bg-accent/80 transition-colors">
+                                    <ExternalLink className="h-3 w-3" /> {resource.name}
+                                  </a>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
               </div>
             </motion.div>
           );
-        })}
+        })()}
 
         {/* Save CTA */}
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }} className="mt-12 text-center pb-8">
