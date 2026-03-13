@@ -6,11 +6,11 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-const systemPrompt = `You are an AI job impact analyst. Given a job title, optional company name, and optional job description, analyze how AI is transforming that role at the task level.
+const systemPrompt = `You are an AI job impact analyst. Given a job title and/or job description, and optional company name, analyze how AI is transforming that role at the task level.
 
 You MUST respond by calling the "job_analysis" function with structured data. Do not return plain text.
 
-If a job description is provided, use it as the PRIMARY source for identifying tasks. Extract real responsibilities from the JD rather than guessing generic ones.
+If a job description is provided, use it as the PRIMARY source for identifying tasks. Extract real responsibilities from the JD rather than guessing generic ones. Also extract the exact job title from the JD if no title was provided separately.
 
 Be specific and realistic. Consider current AI capabilities and near-term trends (1-3 years).
 For each task:
@@ -40,8 +40,8 @@ serve(async (req) => {
   try {
     const { jobTitle, company, jobDescription, jdUrl } = await req.json();
 
-    if (!jobTitle) {
-      return new Response(JSON.stringify({ error: "Job title is required" }), {
+    if (!jobTitle && !jobDescription && !jdUrl) {
+      return new Response(JSON.stringify({ error: "Job title or job description is required" }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -95,8 +95,10 @@ serve(async (req) => {
     const truncatedJd = resolvedJd.slice(0, 6000);
 
     let userPrompt = "";
-    if (truncatedJd) {
+    if (truncatedJd && jobTitle) {
       userPrompt = `Analyze the role of "${jobTitle}"${company ? ` at "${company}"` : ""}.\n\nHere is the actual job description — use it to identify the real tasks and responsibilities:\n\n---\n${truncatedJd}\n---`;
+    } else if (truncatedJd) {
+      userPrompt = `Analyze the role described in the following job description${company ? ` at "${company}"` : ""}. Extract the job title from it.\n\n---\n${truncatedJd}\n---`;
     } else if (company) {
       userPrompt = `Analyze the role of "${jobTitle}" at "${company}". Consider the specific industry and company context.`;
     } else {
@@ -124,6 +126,7 @@ serve(async (req) => {
               parameters: {
                 type: "object",
                 properties: {
+                  extractedJobTitle: { type: "string", description: "The job title extracted from the JD or confirmed from input" },
                   summary: {
                     type: "object",
                     properties: {
@@ -182,7 +185,7 @@ serve(async (req) => {
                     },
                   },
                 },
-                required: ["summary", "tasks", "skills"],
+                required: ["extractedJobTitle", "summary", "tasks", "skills"],
                 additionalProperties: false,
               },
             },
@@ -227,7 +230,7 @@ serve(async (req) => {
     const analysis = JSON.parse(toolCall.function.arguments);
 
     const result = {
-      jobTitle,
+      jobTitle: jobTitle || analysis.extractedJobTitle || "Unknown Role",
       company: company || "",
       summary: analysis.summary,
       tasks: analysis.tasks,
