@@ -168,7 +168,7 @@ const Index = () => {
 
   // Team handlers
   const addRole = () => {
-    if (roles.length >= 10) return;
+    if (roles.length >= 100) return;
     setRoles([...roles, { id: crypto.randomUUID(), title: "" }]);
   };
 
