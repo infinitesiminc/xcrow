@@ -17,6 +17,21 @@ import roleSupplyChainManager from "@/assets/role-supply-chain-manager.jpg";
 import roleCorporateLawyer from "@/assets/role-corporate-lawyer.jpg";
 import roleComplianceOfficer from "@/assets/role-compliance-officer.jpg";
 import roleParalegal from "@/assets/role-paralegal.jpg";
+import roleDevopsEngineer from "@/assets/role-devops-engineer.jpg";
+import roleUxDesigner from "@/assets/role-ux-designer.jpg";
+import roleCybersecurityAnalyst from "@/assets/role-cybersecurity-analyst.jpg";
+import roleTaxAdvisor from "@/assets/role-tax-advisor.jpg";
+import roleRiskManager from "@/assets/role-risk-manager.jpg";
+import roleAuditor from "@/assets/role-auditor.jpg";
+import roleSocialMediaManager from "@/assets/role-social-media-manager.jpg";
+import roleBrandStrategist from "@/assets/role-brand-strategist.jpg";
+import roleBusinessAnalyst from "@/assets/role-business-analyst.jpg";
+import roleOperationsManager from "@/assets/role-operations-manager.jpg";
+import roleCustomerSuccessManager from "@/assets/role-customer-success-manager.jpg";
+import roleContractAttorney from "@/assets/role-contract-attorney.jpg";
+import roleIpSpecialist from "@/assets/role-ip-specialist.jpg";
+import roleLegalOpsManager from "@/assets/role-legal-ops-manager.jpg";
+import roleQaManager from "@/assets/role-qa-manager.jpg";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { JobAnalysisResult } from "@/types/analysis";
@@ -40,6 +55,9 @@ const roleCategories: { label: string; roles: RoleCard[] }[] = [
       { title: "Software Engineer", image: roleSoftwareEngineer, augmented: 72, risk: 15, tag: "High AI Augmentation" },
       { title: "Data Scientist", image: roleDataScientist, augmented: 78, risk: 12, tag: "AI-Native Role" },
       { title: "Product Manager", image: roleProductManager, augmented: 65, risk: 18, tag: "Strategic AI Use" },
+      { title: "DevOps Engineer", image: roleDevopsEngineer, augmented: 70, risk: 20, tag: "High AI Augmentation" },
+      { title: "UX Designer", image: roleUxDesigner, augmented: 60, risk: 22, tag: "Moderate Change" },
+      { title: "Cybersecurity Analyst", image: roleCybersecurityAnalyst, augmented: 68, risk: 16, tag: "Strategic AI Use" },
     ],
   },
   {
@@ -48,6 +66,9 @@ const roleCategories: { label: string; roles: RoleCard[] }[] = [
       { title: "Accountant", image: roleAccountant, augmented: 60, risk: 35, tag: "Automation Risk" },
       { title: "Financial Analyst", image: roleFinancialAnalyst, augmented: 70, risk: 28, tag: "High AI Augmentation" },
       { title: "Investment Banker", image: roleInvestmentBanker, augmented: 55, risk: 20, tag: "Moderate Change" },
+      { title: "Tax Advisor", image: roleTaxAdvisor, augmented: 62, risk: 38, tag: "Automation Risk" },
+      { title: "Risk Manager", image: roleRiskManager, augmented: 66, risk: 24, tag: "Strategic AI Use" },
+      { title: "Auditor", image: roleAuditor, augmented: 58, risk: 42, tag: "High Automation Risk" },
     ],
   },
   {
@@ -56,6 +77,9 @@ const roleCategories: { label: string; roles: RoleCard[] }[] = [
       { title: "Marketing Manager", image: roleMarketingManager, augmented: 68, risk: 25, tag: "Rapid AI Growth" },
       { title: "Content Strategist", image: roleContentStrategist, augmented: 74, risk: 30, tag: "High AI Augmentation" },
       { title: "SEO Specialist", image: roleSeoSpecialist, augmented: 72, risk: 40, tag: "Automation Risk" },
+      { title: "Social Media Manager", image: roleSocialMediaManager, augmented: 70, risk: 35, tag: "Automation Risk" },
+      { title: "Brand Strategist", image: roleBrandStrategist, augmented: 55, risk: 15, tag: "Strategic AI Use" },
+      { title: "Business Analyst", image: roleBusinessAnalyst, augmented: 67, risk: 26, tag: "Moderate Change" },
     ],
   },
   {
@@ -64,6 +88,9 @@ const roleCategories: { label: string; roles: RoleCard[] }[] = [
       { title: "Project Manager", image: roleProjectManager, augmented: 62, risk: 22, tag: "Moderate Change" },
       { title: "HR Manager", image: roleHrManager, augmented: 58, risk: 30, tag: "Automation Risk" },
       { title: "Supply Chain Manager", image: roleSupplyChainManager, augmented: 65, risk: 28, tag: "High AI Augmentation" },
+      { title: "Operations Manager", image: roleOperationsManager, augmented: 60, risk: 25, tag: "Moderate Change" },
+      { title: "Customer Success Manager", image: roleCustomerSuccessManager, augmented: 55, risk: 20, tag: "Strategic AI Use" },
+      { title: "QA Manager", image: roleQaManager, augmented: 64, risk: 32, tag: "Automation Risk" },
     ],
   },
   {
@@ -72,6 +99,9 @@ const roleCategories: { label: string; roles: RoleCard[] }[] = [
       { title: "Corporate Lawyer", image: roleCorporateLawyer, augmented: 55, risk: 18, tag: "Strategic AI Use" },
       { title: "Compliance Officer", image: roleComplianceOfficer, augmented: 60, risk: 32, tag: "Automation Risk" },
       { title: "Paralegal", image: roleParalegal, augmented: 68, risk: 45, tag: "High Automation Risk" },
+      { title: "Contract Attorney", image: roleContractAttorney, augmented: 65, risk: 40, tag: "Automation Risk" },
+      { title: "IP Specialist", image: roleIpSpecialist, augmented: 52, risk: 15, tag: "Strategic AI Use" },
+      { title: "Legal Ops Manager", image: roleLegalOpsManager, augmented: 63, risk: 28, tag: "Moderate Change" },
     ],
   },
 ];
@@ -435,7 +465,7 @@ const Index = () => {
 
       {/* Single column centered content */}
       <div className="flex-1 min-h-0 overflow-y-auto">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 py-6">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6">
           {/* Hero */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -675,7 +705,7 @@ const Index = () => {
             {roleCategories.map((category, catIdx) => (
               <div key={category.label}>
                 <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">{category.label}</h3>
-                <div className="flex gap-4 overflow-x-auto pb-2 -mx-4 px-4 scrollbar-hide">
+                <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3">
                   {category.roles.map((role, i) => (
                     <motion.button
                       key={role.title}
@@ -683,7 +713,7 @@ const Index = () => {
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.4, delay: 0.1 + i * 0.08 }}
                       onClick={() => navigate(`/analysis?title=${encodeURIComponent(role.title)}&company=`)}
-                      className="group cursor-pointer text-left shrink-0 w-[180px]"
+                      className="group cursor-pointer text-left"
                     >
                       <div className="relative overflow-hidden rounded-xl aspect-[4/3] mb-2">
                         <img src={role.image} alt={role.title} className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" />
