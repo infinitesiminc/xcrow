@@ -181,48 +181,63 @@ const Index = () => {
     setRoles(roles.map((r) => (r.id === id ? { ...r, title } : r)));
   };
 
-  // Upload a CSV/TXT/XLSX with one job title per line/row
-  const handleJobListUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    let lines: string[] = [];
-    const name = file.name.toLowerCase();
-
-    if (name.endsWith(".xlsx") || name.endsWith(".xls")) {
-      const XLSX = await import("xlsx");
-      const arrayBuffer = await file.arrayBuffer();
-      const workbook = XLSX.read(arrayBuffer, { type: "array" });
-      const sheet = workbook.Sheets[workbook.SheetNames[0]];
-      const rows: string[][] = XLSX.utils.sheet_to_json(sheet, { header: 1 });
-      lines = rows.map((row) => (row[0] || "").toString().trim()).filter(Boolean);
-    } else {
-      const text = await file.text();
-      lines = text.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
-    }
-
-    lines = lines.slice(0, 10);
-    if (lines.length === 0) {
-      toast({ title: "Empty file", description: "No job titles found.", variant: "destructive" });
-      return;
-    }
-    setRoles(lines.map((title) => ({ id: crypto.randomUUID(), title })));
-    toast({ title: `${lines.length} roles imported`, description: "Review and click Analyze Team." });
-    e.target.value = "";
-  };
-
-  // Upload multiple JD files — parse each and create role entries
-  const handleBatchJdUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Single smart upload: spreadsheets/CSVs → job title list; documents → JD entries
+  const handleFilesUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []).slice(0, 10);
     if (files.length === 0) return;
 
-    setTeamJdParsing(true);
-    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-    const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+    const listExts = [".csv", ".tsv"];
+    const spreadsheetExts = [".xlsx", ".xls"];
+    const docExts = [".pdf", ".docx", ".doc", ".txt", ".md"];
 
-    const newRoles: RoleEntry[] = [];
+    // Categorize files
+    const listFiles: File[] = [];
+    const jdFiles: File[] = [];
 
     for (const file of files) {
+      const name = file.name.toLowerCase();
+      if (spreadsheetExts.some((ext) => name.endsWith(ext)) || listExts.some((ext) => name.endsWith(ext))) {
+        listFiles.push(file);
+      } else if (docExts.some((ext) => name.endsWith(ext))) {
+        jdFiles.push(file);
+      }
+    }
+
+    // If only list-type files, extract titles
+    if (listFiles.length > 0 && jdFiles.length === 0) {
+      let allLines: string[] = [];
+      for (const file of listFiles) {
+        const name = file.name.toLowerCase();
+        if (name.endsWith(".xlsx") || name.endsWith(".xls")) {
+          const XLSX = await import("xlsx");
+          const arrayBuffer = await file.arrayBuffer();
+          const workbook = XLSX.read(arrayBuffer, { type: "array" });
+          const sheet = workbook.Sheets[workbook.SheetNames[0]];
+          const rows: string[][] = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+          allLines.push(...rows.map((row) => (row[0] || "").toString().trim()).filter(Boolean));
+        } else {
+          const text = await file.text();
+          allLines.push(...text.split(/\r?\n/).map((l) => l.trim()).filter(Boolean));
+        }
+      }
+      allLines = allLines.slice(0, 10);
+      if (allLines.length === 0) {
+        toast({ title: "Empty file", description: "No job titles found.", variant: "destructive" });
+      } else {
+        setRoles(allLines.map((title) => ({ id: crypto.randomUUID(), title })));
+        toast({ title: `${allLines.length} roles imported`, description: "Review and click Analyze Team." });
+      }
+      e.target.value = "";
+      return;
+    }
+
+    // Otherwise treat everything as JD files (documents + spreadsheets as JD content)
+    const allFiles = [...listFiles, ...jdFiles];
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+    const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+    const newRoles: RoleEntry[] = [];
+
+    for (const file of allFiles) {
       const name = file.name.toLowerCase();
       let jdText = "";
 
@@ -578,19 +593,15 @@ const Index = () => {
                   <Plus className="h-3.5 w-3.5" /> Add role
                 </Button>
                 <label className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md border border-border text-muted-foreground hover:text-foreground hover:border-border/80 cursor-pointer transition-colors">
-                  <Upload className="h-3 w-3" /> Import list
-                  <input type="file" accept=".csv,.txt,.tsv,.xlsx,.xls" className="hidden" onChange={handleJobListUpload} />
-                </label>
-                <label className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md border border-border text-muted-foreground hover:text-foreground hover:border-border/80 cursor-pointer transition-colors">
-                  <FileText className="h-3 w-3" /> Upload JDs
-                  <input type="file" accept=".pdf,.docx,.doc,.txt,.md,.xlsx,.xls" multiple className="hidden" onChange={handleBatchJdUpload} disabled={teamJdParsing} />
+                  <Upload className="h-3 w-3" /> Upload files
+                  <input type="file" accept=".csv,.txt,.tsv,.xlsx,.xls,.pdf,.docx,.doc,.md" multiple className="hidden" onChange={handleFilesUpload} disabled={teamJdParsing} />
                 </label>
                 <Button onClick={handleTeamAnalyze} disabled={teamLoading || teamJdParsing} className="gap-2 ml-auto">
                   {teamLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <BarChart3 className="h-4 w-4" />}
                   {teamLoading ? "Analyzing..." : "Analyze Team"}
                 </Button>
               </div>
-              <p className="text-[10px] text-muted-foreground mt-2">Import list: CSV/TXT with one title per line. Upload JDs: multiple PDF/DOCX files, one per role.</p>
+              <p className="text-[10px] text-muted-foreground mt-2">Upload CSV/XLSX for job title lists, or PDF/DOCX files for job descriptions — mix and match.</p>
             </motion.div>
           )}
         </AnimatePresence>
