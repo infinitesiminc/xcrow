@@ -22,12 +22,6 @@ export interface SimMessage {
   content: string;
 }
 
-export interface SimScore {
-  overall: number;
-  categories: { name: string; score: number; feedback: string }[];
-  summary: string;
-}
-
 async function simFetch<T>(action: string, payload: Record<string, unknown>): Promise<T> {
   const { data, error } = await supabase.functions.invoke("sim-chat", {
     body: { action, payload },
@@ -56,11 +50,4 @@ export async function chatTurn(
   });
   if (error) throw new Error(`Chat error: ${error.message}`);
   return typeof data === "string" ? data : JSON.stringify(data);
-}
-
-export async function scoreTranscript(
-  transcript: SimMessage[],
-  scenario: SimScenario,
-): Promise<SimScore> {
-  return simFetch("score", { transcript, scenario });
 }

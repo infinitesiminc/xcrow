@@ -1,11 +1,11 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   ArrowLeft, TrendingUp, Minus, AlertTriangle, Zap, Bot, ExternalLink,
   Building2, Users, MapPin, Calendar,
   Wrench, Heart, Sparkles, Save, User, ChevronDown,
-  ShieldAlert, GraduationCap, Rocket, Play,
+  ShieldAlert, GraduationCap, Rocket, Play, CheckCircle2, LogIn,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -15,6 +15,8 @@ import { JobAnalysisResult, TaskState, TrendDirection, AIImpactLevel, SkillCateg
 import { findPrebuiltRole } from "@/data/prebuilt-roles";
 import { analyzeJobWithAI } from "@/lib/ai-analysis";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 
 import SimulatorModal from "@/components/SimulatorModal";
 
@@ -101,6 +103,19 @@ const Analysis = () => {
   const [snapshotLoading, setSnapshotLoading] = useState(false);
   const [selectedTaskIndex, setSelectedTaskIndex] = useState<number | null>(null);
   const [simTask, setSimTask] = useState<string | null>(null);
+  const [completedTasks, setCompletedTasks] = useState<Set<string>>(new Set());
+  const { user } = useAuth();
+
+  const fetchCompletions = useCallback(async () => {
+    if (!user) return;
+    const { data } = await supabase
+      .from("completed_simulations")
+      .select("task_name")
+      .eq("user_id", user.id);
+    if (data) setCompletedTasks(new Set(data.map((d: any) => d.task_name)));
+  }, [user]);
+
+  useEffect(() => { fetchCompletions(); }, [fetchCompletions]);
   useEffect(() => {
     if (!jobTitle && !hasJd) { navigate("/"); return; }
     const analyze = async () => {
@@ -148,9 +163,6 @@ const Analysis = () => {
     fetchSnapshot();
   }, [company]);
 
-  const handleSave = () => {
-    toast({ title: "Coming soon!", description: "Sign up to save your learning path and track progress." });
-  };
 
   const handleTaskClick = (index: number) => {
     setSelectedTaskIndex((prev) => (prev === index ? null : index));
@@ -364,10 +376,14 @@ const Analysis = () => {
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="w-full h-7 text-xs gap-1.5 text-primary hover:bg-primary/10"
+                        className={`w-full h-7 text-xs gap-1.5 ${completedTasks.has(task.name) ? "text-success hover:bg-success/10" : "text-primary hover:bg-primary/10"}`}
                         onClick={(e) => { e.stopPropagation(); setSimTask(task.name); }}
                       >
-                        <Play className="h-3 w-3" /> Practice
+                        {completedTasks.has(task.name) ? (
+                          <><CheckCircle2 className="h-3 w-3" /> Practiced</>
+                        ) : (
+                          <><Play className="h-3 w-3" /> Practice</>
+                        )}
                       </Button>
                     </CardContent>
                   </Card>
@@ -424,11 +440,15 @@ const Analysis = () => {
                 <Rocket className="h-6 w-6 text-primary" />
               </div>
               <div className="flex-1 text-center sm:text-left">
-                <h3 className="text-base font-display font-bold text-foreground mb-0.5">Save your learning path</h3>
-                <p className="text-sm text-muted-foreground">Track your progress and get personalized skill recommendations</p>
+                <h3 className="text-base font-display font-bold text-foreground mb-0.5">
+                  {user ? "View your dashboard" : "Track your progress"}
+                </h3>
+                <p className="text-sm text-muted-foreground">
+                  {user ? "See all your practiced tasks and progress" : "Sign in to save practice completions across sessions"}
+                </p>
               </div>
-              <Button onClick={handleSave} size="sm" className="gap-1.5 shrink-0">
-                <Save className="w-3.5 h-3.5" /> Save My Path
+              <Button onClick={() => navigate(user ? "/dashboard" : "/auth")} size="sm" className="gap-1.5 shrink-0">
+                {user ? <><CheckCircle2 className="w-3.5 h-3.5" /> Dashboard</> : <><LogIn className="w-3.5 h-3.5" /> Sign In</>}
               </Button>
             </CardContent>
           </Card>
@@ -441,6 +461,7 @@ const Analysis = () => {
           taskName={simTask || ""}
           jobTitle={result.jobTitle}
           company={result.company}
+          onCompleted={fetchCompletions}
         />
       </div>
     </div>
