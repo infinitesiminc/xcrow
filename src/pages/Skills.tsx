@@ -138,6 +138,21 @@ const Skills = () => {
                           <h3 className="font-medium text-foreground">{skill.name}</h3>
                           <p className="text-sm text-muted-foreground mt-1">{skill.description}</p>
 
+                          {/* Related Tasks */}
+                          {skill.relatedTasks && skill.relatedTasks.length > 0 && (
+                            <div className="mt-2 flex flex-wrap items-center gap-1.5">
+                              <Link2 className="h-3 w-3 text-muted-foreground shrink-0" />
+                              {skill.relatedTasks.map((task, ti) => (
+                                <span
+                                  key={ti}
+                                  className="text-xs px-2 py-0.5 rounded bg-muted text-muted-foreground"
+                                >
+                                  {task}
+                                </span>
+                              ))}
+                            </div>
+                          )}
+
                           {/* Learning Resources */}
                           {skill.resources && skill.resources.length > 0 && (
                             <div className="mt-3 flex flex-wrap gap-2">
