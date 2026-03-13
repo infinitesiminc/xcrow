@@ -116,6 +116,25 @@ const Analysis = () => {
   }, [user]);
 
   useEffect(() => { fetchCompletions(); }, [fetchCompletions]);
+
+  // Save analysis to history
+  const saveAnalysisHistory = useCallback(async (analysisResult: JobAnalysisResult) => {
+    if (!user) return;
+    try {
+      await supabase.from("analysis_history").upsert({
+        user_id: user.id,
+        job_title: analysisResult.jobTitle,
+        company: analysisResult.company || null,
+        tasks_count: analysisResult.tasks.length,
+        augmented_percent: analysisResult.summary.augmentedPercent,
+        automation_risk_percent: analysisResult.summary.automationRiskPercent,
+        analyzed_at: new Date().toISOString(),
+      }, { onConflict: "user_id,job_title,company" });
+    } catch (err) {
+      console.error("Failed to save analysis history:", err);
+    }
+  }, [user]);
+
   useEffect(() => {
     if (!jobTitle && !hasJd) { navigate("/"); return; }
     const analyze = async () => {
@@ -124,13 +143,16 @@ const Analysis = () => {
       const prebuilt = jobTitle ? findPrebuiltRole(jobTitle) : null;
       if (prebuilt && !hasJd) {
         await new Promise((r) => setTimeout(r, 1200));
-        setResult({ ...prebuilt, company });
+        const r = { ...prebuilt, company };
+        setResult(r);
+        saveAnalysisHistory(r);
         setLoading(false);
         return;
       }
       try {
         const aiResult = await analyzeJobWithAI(jobTitle, company, jdText || undefined, jdUrlParam || undefined);
         setResult(aiResult);
+        saveAnalysisHistory(aiResult);
       } catch (err) {
         setError("Unable to analyze this role right now. Please try again.");
         console.error(err);
