@@ -666,38 +666,42 @@ const Index = () => {
             </AnimatePresence>
           </div>
 
-          {/* Hot Roles — Airbnb-style */}
-          <div>
-            <div className="flex items-center gap-2 mb-3">
+          {/* Categorized Role Rows */}
+          <div className="space-y-6">
+            <div className="flex items-center gap-2">
               <TrendingUp className="h-4 w-4 text-primary" />
               <h2 className="text-sm font-semibold text-foreground">Popular roles — explore free</h2>
-              <ArrowRight className="h-3.5 w-3.5 text-muted-foreground" />
             </div>
-            <div className="grid grid-cols-3 gap-4">
-              {hotRoles.map((role, i) => (
-                <motion.button
-                  key={role.title}
-                  initial={{ opacity: 0, y: 12 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.4, delay: 0.3 + i * 0.1 }}
-                  onClick={() => navigate(`/analysis?title=${encodeURIComponent(role.title)}&company=`)}
-                  className="group cursor-pointer text-left"
-                >
-                  <div className="relative overflow-hidden rounded-xl aspect-[4/3] mb-2">
-                    <img src={role.image} alt={role.title} className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" />
-                    <div className="absolute top-2 left-2">
-                      <span className="inline-block px-2 py-0.5 text-[10px] font-medium rounded-full bg-card/90 text-foreground backdrop-blur-sm shadow-sm">
-                        {role.tag}
-                      </span>
-                    </div>
-                  </div>
-                  <h3 className="text-sm font-semibold text-foreground leading-tight">{role.title}</h3>
-                  <p className="text-xs text-muted-foreground mt-0.5">
-                    {role.augmented}% AI-augmented · {role.risk}% at risk
-                  </p>
-                </motion.button>
-              ))}
-            </div>
+            {roleCategories.map((category, catIdx) => (
+              <div key={category.label}>
+                <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">{category.label}</h3>
+                <div className="flex gap-4 overflow-x-auto pb-2 -mx-4 px-4 scrollbar-hide">
+                  {category.roles.map((role, i) => (
+                    <motion.button
+                      key={role.title}
+                      initial={{ opacity: 0, y: 12 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.4, delay: 0.1 + i * 0.08 }}
+                      onClick={() => navigate(`/analysis?title=${encodeURIComponent(role.title)}&company=`)}
+                      className="group cursor-pointer text-left shrink-0 w-[180px]"
+                    >
+                      <div className="relative overflow-hidden rounded-xl aspect-[4/3] mb-2">
+                        <img src={role.image} alt={role.title} className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" />
+                        <div className="absolute top-2 left-2">
+                          <span className="inline-block px-2 py-0.5 text-[10px] font-medium rounded-full bg-card/90 text-foreground backdrop-blur-sm shadow-sm">
+                            {role.tag}
+                          </span>
+                        </div>
+                      </div>
+                      <h3 className="text-sm font-semibold text-foreground leading-tight">{role.title}</h3>
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        {role.augmented}% AI-augmented · {role.risk}% at risk
+                      </p>
+                    </motion.button>
+                  ))}
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </div>
