@@ -278,12 +278,38 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, onComplete
                     >
                       <div className="prose prose-sm dark:prose-invert max-w-none [&>p]:m-0">
                         <ReactMarkdown>{
-                          msg.role === "assistant" && i === messages.length - 1 && !sending
+                          msg.role === "assistant"
                             ? msg.content.replace(/^[A-D][).]\s*.+$/gm, "").trim()
                             : msg.content
                         }</ReactMarkdown>
                       </div>
                     </div>
+                    {/* Show answered question buttons inline after the AI message */}
+                    {msg.role === "assistant" && (() => {
+                      const aq = answeredQuestions.find(q => q.messageIndex === i);
+                      if (!aq) return null;
+                      return (
+                        <motion.div initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} className="mt-2 flex flex-col gap-1.5 max-w-[80%]">
+                          {aq.options.map((opt) => {
+                            const isSelected = opt.letter === aq.selectedLetter;
+                            const isCorrect = opt.letter === aq.correctLetter;
+                            let style = "border-border bg-card text-muted-foreground opacity-60";
+                            if (isCorrect) style = "border-success/50 bg-success/10 text-success";
+                            if (isSelected && !isCorrect) style = "border-destructive/50 bg-destructive/10 text-destructive";
+                            return (
+                              <div key={opt.letter} className={`flex items-center gap-2 px-3 py-2 text-sm rounded-lg border ${style} transition-all`}>
+                                <span className={`inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold shrink-0 ${
+                                  isCorrect ? "bg-success/20 text-success" : isSelected ? "bg-destructive/20 text-destructive" : "bg-muted text-muted-foreground"
+                                }`}>
+                                  {isCorrect ? "✓" : isSelected ? "✗" : opt.letter}
+                                </span>
+                                <span className="text-sm">{opt.text}</span>
+                              </div>
+                            );
+                          })}
+                        </motion.div>
+                      );
+                    })()}
                   </motion.div>
                 ))}
               </>
