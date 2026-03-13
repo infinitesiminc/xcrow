@@ -29,7 +29,6 @@ interface CompanySnapshot {
   url: string;
 }
 
-const stateLabels: Record<TaskState, { label: string; className: string }> = {
 const stateLabels: Record<TaskState, { label: string; className: string; icon: typeof Bot }> = {
   mostly_human: { label: "Mostly Human", className: "bg-success/10 text-success border-success/20", icon: User },
   human_ai: { label: "Human + AI", className: "bg-warning/10 text-warning border-warning/20", icon: Users },
