@@ -15,12 +15,6 @@ const steps = [
   { icon: BookOpen, title: "Bridge the gap", description: "Get personalized skill recommendations" },
 ];
 
-const categoryLabels: Record<SkillCategory, string> = {
-  ai_tools: "AI Tools",
-  human_skills: "Human Skills",
-  new_capabilities: "New Capabilities",
-};
-
 type Mode = "individual" | "team";
 type JdInputType = "none" | "paste" | "url" | "file";
 
