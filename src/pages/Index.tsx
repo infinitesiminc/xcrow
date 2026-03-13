@@ -30,6 +30,8 @@ type JdInputType = "none" | "paste" | "url" | "file";
 interface RoleEntry {
   id: string;
   title: string;
+  jdText?: string;
+  jdFileName?: string;
 }
 
 const Index = () => {
@@ -54,6 +56,7 @@ const Index = () => {
   const [teamResults, setTeamResults] = useState<JobAnalysisResult[]>([]);
   const [teamLoading, setTeamLoading] = useState(false);
   const [teamAnalyzed, setTeamAnalyzed] = useState(false);
+  const [teamJdParsing, setTeamJdParsing] = useState(false);
 
   const isValidWebsite = (url: string) => {
     if (!url) return true;
@@ -178,8 +181,84 @@ const Index = () => {
     setRoles(roles.map((r) => (r.id === id ? { ...r, title } : r)));
   };
 
+  // Upload a CSV/TXT with one job title per line
+  const handleJobListUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const text = await file.text();
+    const lines = text.split(/\r?\n/).map((l) => l.trim()).filter(Boolean).slice(0, 10);
+    if (lines.length === 0) {
+      toast({ title: "Empty file", description: "No job titles found.", variant: "destructive" });
+      return;
+    }
+    setRoles(lines.map((title) => ({ id: crypto.randomUUID(), title })));
+    toast({ title: `${lines.length} roles imported`, description: "Review and click Analyze Team." });
+    e.target.value = "";
+  };
+
+  // Upload multiple JD files — parse each and create role entries
+  const handleBatchJdUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []).slice(0, 10);
+    if (files.length === 0) return;
+
+    setTeamJdParsing(true);
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+    const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+
+    const newRoles: RoleEntry[] = [];
+
+    for (const file of files) {
+      const name = file.name.toLowerCase();
+      let jdText = "";
+
+      if (name.endsWith(".txt") || name.endsWith(".md")) {
+        jdText = await file.text();
+      } else if (name.endsWith(".pdf") || name.endsWith(".docx") || name.endsWith(".doc")) {
+        try {
+          const formData = new FormData();
+          formData.append("file", file);
+          const res = await fetch(`${supabaseUrl}/functions/v1/parse-jd`, {
+            method: "POST",
+            headers: { Authorization: `Bearer ${supabaseKey}` },
+            body: formData,
+          });
+          const data = await res.json();
+          if (res.ok && data.text) jdText = data.text;
+        } catch (err) {
+          console.error(`Failed to parse ${file.name}:`, err);
+        }
+      }
+
+      if (jdText.trim()) {
+        // Use filename (without extension) as a placeholder title
+        const baseName = file.name.replace(/\.[^.]+$/, "").replace(/[-_]/g, " ");
+        newRoles.push({
+          id: crypto.randomUUID(),
+          title: baseName,
+          jdText: jdText.trim(),
+          jdFileName: file.name,
+        });
+      }
+    }
+
+    setTeamJdParsing(false);
+
+    if (newRoles.length === 0) {
+      toast({ title: "No JDs extracted", description: "Could not parse any files.", variant: "destructive" });
+      return;
+    }
+
+    setRoles((prev) => {
+      const existing = prev.filter((r) => r.title.trim());
+      const combined = [...existing, ...newRoles].slice(0, 10);
+      return combined.length >= 2 ? combined : [...combined, ...Array(2 - combined.length).fill(null).map(() => ({ id: crypto.randomUUID(), title: "" }))];
+    });
+    toast({ title: `${newRoles.length} JDs parsed`, description: "Titles extracted from filenames. Edit if needed, then analyze." });
+    e.target.value = "";
+  };
+
   const handleTeamAnalyze = async () => {
-    const filledRoles = roles.filter((r) => r.title.trim());
+    const filledRoles = roles.filter((r) => r.title.trim() || r.jdText);
     if (filledRoles.length < 2) {
       toast({ title: "Add at least 2 roles", description: "Enter job titles for your team members." });
       return;
@@ -188,9 +267,11 @@ const Index = () => {
     setTeamAnalyzed(false);
     try {
       const promises = filledRoles.map(async (role) => {
-        const prebuilt = findPrebuiltRole(role.title);
-        if (prebuilt) return { ...prebuilt, company: "" };
-        return analyzeJobWithAI(role.title, "");
+        if (!role.jdText) {
+          const prebuilt = findPrebuiltRole(role.title);
+          if (prebuilt) return { ...prebuilt, company: "" };
+        }
+        return analyzeJobWithAI(role.title, "", role.jdText || undefined);
       });
       const allResults = await Promise.all(promises);
       setTeamResults(allResults);
@@ -423,7 +504,7 @@ const Index = () => {
               transition={{ duration: 0.3 }}
               className="mt-8 w-full max-w-lg"
             >
-              <div className="space-y-3 mb-4">
+              <div className="space-y-2 mb-4">
                 <AnimatePresence>
                   {roles.map((role, i) => (
                     <motion.div
@@ -431,16 +512,23 @@ const Index = () => {
                       initial={{ opacity: 0, height: 0 }}
                       animate={{ opacity: 1, height: "auto" }}
                       exit={{ opacity: 0, height: 0 }}
-                      className="flex gap-2"
+                      className="flex gap-2 items-center"
                     >
-                      <Input
-                        placeholder={`Role ${i + 1} — e.g. Software Engineer`}
-                        value={role.title}
-                        onChange={(e) => updateRole(role.id, e.target.value)}
-                        className="h-11 bg-card border-border"
-                      />
+                      <div className="flex-1 relative">
+                        <Input
+                          placeholder={`Role ${i + 1} — e.g. Software Engineer`}
+                          value={role.title}
+                          onChange={(e) => updateRole(role.id, e.target.value)}
+                          className={`h-11 bg-card border-border ${role.jdText ? "pr-8" : ""}`}
+                        />
+                        {role.jdFileName && (
+                          <span className="absolute right-2 top-1/2 -translate-y-1/2" title={`JD: ${role.jdFileName}`}>
+                            <FileText className="h-3.5 w-3.5 text-primary" />
+                          </span>
+                        )}
+                      </div>
                       {roles.length > 2 && (
-                        <Button variant="ghost" size="icon" onClick={() => removeRole(role.id)} className="shrink-0 text-muted-foreground">
+                        <Button variant="ghost" size="icon" onClick={() => removeRole(role.id)} className="shrink-0 text-muted-foreground h-8 w-8">
                           <X className="h-4 w-4" />
                         </Button>
                       )}
@@ -449,15 +537,32 @@ const Index = () => {
                 </AnimatePresence>
               </div>
 
-              <div className="flex gap-3">
+              {/* Parsing indicator */}
+              {teamJdParsing && (
+                <div className="flex items-center gap-2 mb-3 px-3 py-2 rounded-md bg-accent/30 border border-border">
+                  <Loader2 className="h-3.5 w-3.5 animate-spin text-primary" />
+                  <span className="text-xs text-muted-foreground">Parsing JD files...</span>
+                </div>
+              )}
+
+              <div className="flex flex-wrap gap-2">
                 <Button variant="outline" size="sm" onClick={addRole} disabled={roles.length >= 10} className="gap-1">
                   <Plus className="h-3.5 w-3.5" /> Add role
                 </Button>
-                <Button onClick={handleTeamAnalyze} disabled={teamLoading} className="gap-2">
+                <label className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md border border-border text-muted-foreground hover:text-foreground hover:border-border/80 cursor-pointer transition-colors">
+                  <Upload className="h-3 w-3" /> Import list
+                  <input type="file" accept=".csv,.txt,.tsv" className="hidden" onChange={handleJobListUpload} />
+                </label>
+                <label className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md border border-border text-muted-foreground hover:text-foreground hover:border-border/80 cursor-pointer transition-colors">
+                  <FileText className="h-3 w-3" /> Upload JDs
+                  <input type="file" accept=".pdf,.docx,.doc,.txt,.md" multiple className="hidden" onChange={handleBatchJdUpload} disabled={teamJdParsing} />
+                </label>
+                <Button onClick={handleTeamAnalyze} disabled={teamLoading || teamJdParsing} className="gap-2 ml-auto">
                   {teamLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <BarChart3 className="h-4 w-4" />}
                   {teamLoading ? "Analyzing..." : "Analyze Team"}
                 </Button>
               </div>
+              <p className="text-[10px] text-muted-foreground mt-2">Import list: CSV/TXT with one title per line. Upload JDs: multiple PDF/DOCX files, one per role.</p>
             </motion.div>
           )}
         </AnimatePresence>
