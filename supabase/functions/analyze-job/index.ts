@@ -21,6 +21,11 @@ For skill recommendations, categorize into:
 - "human_skills": uniquely human skills to strengthen
 - "new_capabilities": new emerging skills to develop
 
+For each skill, also provide 1-3 top tools or resources with:
+- name: the tool/course/resource name
+- url: a real URL to the tool or resource
+- summary: a one-sentence description of what it does and why it's useful
+
 Provide 6-8 tasks and 5-7 skills. Be specific to the role, not generic.`;
 
 serve(async (req) => {
@@ -105,8 +110,21 @@ serve(async (req) => {
                         priority: { type: "string", enum: ["high", "medium", "low"] },
                         category: { type: "string", enum: ["ai_tools", "human_skills", "new_capabilities"] },
                         description: { type: "string" },
+                        resources: {
+                          type: "array",
+                          items: {
+                            type: "object",
+                            properties: {
+                              name: { type: "string", description: "Tool or resource name" },
+                              url: { type: "string", description: "URL to the tool or resource" },
+                              summary: { type: "string", description: "One-sentence description" },
+                            },
+                            required: ["name", "url", "summary"],
+                            additionalProperties: false,
+                          },
+                        },
                       },
-                      required: ["name", "priority", "category", "description"],
+                      required: ["name", "priority", "category", "description", "resources"],
                       additionalProperties: false,
                     },
                   },

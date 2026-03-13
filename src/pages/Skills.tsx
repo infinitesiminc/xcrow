@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, Wrench, Heart, Sparkles, Save } from "lucide-react";
+import { ArrowLeft, Wrench, Heart, Sparkles, Save, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -137,6 +137,25 @@ const Skills = () => {
                         <div className="flex-1">
                           <h3 className="font-medium text-foreground">{skill.name}</h3>
                           <p className="text-sm text-muted-foreground mt-1">{skill.description}</p>
+
+                          {/* Learning Resources */}
+                          {skill.resources && skill.resources.length > 0 && (
+                            <div className="mt-3 flex flex-wrap gap-2">
+                              {skill.resources.map((resource, ri) => (
+                                <a
+                                  key={ri}
+                                  href={resource.url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  title={resource.summary}
+                                  className="inline-flex items-center gap-1 text-xs px-2.5 py-1.5 rounded-md bg-accent text-accent-foreground hover:bg-accent/80 transition-colors"
+                                >
+                                  <ExternalLink className="h-3 w-3" />
+                                  {resource.name}
+                                </a>
+                              ))}
+                            </div>
+                          )}
                         </div>
                         <Badge variant="outline" className={`shrink-0 capitalize ${priorityStyles[skill.priority]}`}>
                           {skill.priority}
