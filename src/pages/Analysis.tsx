@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
-  ArrowLeft, TrendingUp, Minus, AlertTriangle, Zap, Bot, Globe, ExternalLink,
+  ArrowLeft, TrendingUp, Minus, AlertTriangle, Zap, Bot, ExternalLink,
   Building2, Users, DollarSign, MapPin, Calendar, Tag,
   Wrench, Heart, Sparkles, Save, User,
 } from "lucide-react";
@@ -31,27 +31,27 @@ interface CompanySnapshot {
 }
 
 const stateLabels: Record<TaskState, { label: string; className: string; icon: typeof Bot }> = {
-  mostly_human: { label: "Mostly Human", className: "bg-success/10 text-success border-success/20", icon: User },
-  human_ai: { label: "Human + AI", className: "bg-warning/10 text-warning border-warning/20", icon: Users },
-  mostly_ai: { label: "Mostly AI", className: "bg-primary/10 text-primary border-primary/20", icon: Bot },
+  mostly_human: { label: "Human", className: "bg-success/10 text-success border-success/20", icon: User },
+  human_ai: { label: "Human+AI", className: "bg-warning/10 text-warning border-warning/20", icon: Users },
+  mostly_ai: { label: "AI", className: "bg-primary/10 text-primary border-primary/20", icon: Bot },
 };
 
-const trendIcons: Record<TrendDirection, { icon: typeof Minus; label: string }> = {
-  stable: { icon: Minus, label: "Stable" },
-  increasing_ai: { icon: TrendingUp, label: "More AI" },
-  fully_ai_soon: { icon: Bot, label: "Fully AI Soon" },
+const trendIcons: Record<TrendDirection, { icon: typeof Minus; className: string }> = {
+  stable: { icon: Minus, className: "text-muted-foreground" },
+  increasing_ai: { icon: TrendingUp, className: "text-warning" },
+  fully_ai_soon: { icon: Bot, className: "text-destructive" },
 };
 
-const impactColors: Record<AIImpactLevel, string> = {
-  low: "text-success",
-  medium: "text-warning",
-  high: "text-destructive",
+const impactDot: Record<AIImpactLevel, string> = {
+  low: "bg-success",
+  medium: "bg-warning",
+  high: "bg-destructive",
 };
 
-const categoryConfig: Record<SkillCategory, { label: string; icon: typeof Wrench; description: string }> = {
-  ai_tools: { label: "AI Tools to Learn", icon: Wrench, description: "Master these tools to boost your productivity" },
-  human_skills: { label: "Human Skills to Strengthen", icon: Heart, description: "Double down on what makes you irreplaceable" },
-  new_capabilities: { label: "New Capabilities to Build", icon: Sparkles, description: "Develop these emerging skills to stay ahead" },
+const categoryConfig: Record<SkillCategory, { label: string; icon: typeof Wrench }> = {
+  ai_tools: { label: "Tools", icon: Wrench },
+  human_skills: { label: "Human", icon: Heart },
+  new_capabilities: { label: "New", icon: Sparkles },
 };
 
 const priorityStyles: Record<SkillPriority, string> = {
@@ -132,7 +132,6 @@ const Analysis = () => {
     setSelectedTaskIndex((prev) => (prev === index ? null : index));
   };
 
-  // Get skills for the right panel
   const getDisplayedSkills = () => {
     if (!result) return [];
     if (selectedTaskIndex === null) return result.skills;
@@ -147,17 +146,17 @@ const Analysis = () => {
   if (loading) {
     return (
       <div className="min-h-screen bg-background px-4 py-16">
-        <div className="max-w-3xl mx-auto">
+        <div className="max-w-4xl mx-auto">
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center mb-12">
-            <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-accent">
-              <Zap className="h-6 w-6 text-primary animate-pulse" />
+            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-accent">
+              <Zap className="h-5 w-5 text-primary animate-pulse" />
             </div>
-            <h1 className="text-2xl font-display font-bold text-foreground">Analyzing {jobTitle}...</h1>
-            <p className="mt-2 text-muted-foreground">Evaluating how AI impacts each task in your role</p>
+            <h1 className="text-xl font-display font-bold text-foreground">Analyzing {jobTitle}...</h1>
+            <p className="mt-1 text-sm text-muted-foreground">Evaluating AI impact on your role</p>
           </motion.div>
-          <div className="space-y-4">
-            {[1, 2, 3, 4].map((i) => (
-              <Skeleton key={i} className="h-16 w-full rounded-lg" />
+          <div className="space-y-3">
+            {[1, 2, 3].map((i) => (
+              <Skeleton key={i} className="h-14 w-full rounded-lg" />
             ))}
           </div>
         </div>
@@ -168,12 +167,12 @@ const Analysis = () => {
   if (error || !result) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center px-4">
-        <div className="text-center max-w-md">
-          <AlertTriangle className="mx-auto h-10 w-10 text-warning mb-4" />
-          <h1 className="text-xl font-display font-bold text-foreground mb-2">Analysis Failed</h1>
-          <p className="text-muted-foreground mb-6">{error || "Something went wrong."}</p>
-          <Button onClick={() => navigate("/")} variant="outline">
-            <ArrowLeft className="w-4 h-4 mr-2" /> Try Again
+        <div className="text-center max-w-sm">
+          <AlertTriangle className="mx-auto h-8 w-8 text-warning mb-3" />
+          <h1 className="text-lg font-display font-bold text-foreground mb-1">Analysis Failed</h1>
+          <p className="text-sm text-muted-foreground mb-4">{error || "Something went wrong."}</p>
+          <Button onClick={() => navigate("/")} variant="outline" size="sm">
+            <ArrowLeft className="w-3 h-3 mr-1" /> Try Again
           </Button>
         </div>
       </div>
@@ -190,111 +189,79 @@ const Analysis = () => {
     {} as Record<SkillCategory, typeof result.skills>,
   );
 
-  // For mobile: get related skills for inline display
   const getRelatedSkills = (taskName: string) =>
     result.skills.filter((s) => s.relatedTasks?.some((rt) => rt.toLowerCase() === taskName.toLowerCase()));
 
-  // Orphan skills for mobile
-  const linkedSkillNames = new Set(
-    result.skills
-      .filter((s) => s.relatedTasks?.some((rt) => result.tasks.some((t) => t.name.toLowerCase() === rt.toLowerCase())))
-      .map((s) => s.name)
-  );
-  const orphanSkills = result.skills.filter((s) => !linkedSkillNames.has(s.name));
-
   return (
-    <div className="min-h-screen bg-background px-4 py-12">
-      <div className="max-w-6xl mx-auto">
-        {/* Header */}
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mb-10">
-          <Button variant="ghost" size="sm" onClick={() => navigate("/")} className="mb-6 -ml-2 text-muted-foreground">
-            <ArrowLeft className="w-4 h-4 mr-1" /> New analysis
+    <div className="min-h-screen bg-background px-4 py-8">
+      <div className="max-w-5xl mx-auto">
+        {/* Header — compact */}
+        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="mb-6">
+          <Button variant="ghost" size="sm" onClick={() => navigate("/")} className="mb-4 -ml-2 text-muted-foreground h-7 text-xs">
+            <ArrowLeft className="w-3 h-3 mr-1" /> New analysis
           </Button>
-          <h1 className="text-3xl font-display font-bold text-foreground">{result.jobTitle}</h1>
-          {result.company && <p className="mt-1 text-muted-foreground">at {result.company}</p>}
+          <div className="flex items-baseline gap-3 flex-wrap">
+            <h1 className="text-2xl font-display font-bold text-foreground">{result.jobTitle}</h1>
+            {result.company && <span className="text-sm text-muted-foreground">at {result.company}</span>}
+          </div>
         </motion.div>
 
-        {/* Company Snapshot */}
+        {/* Company Snapshot — inline compact */}
         {(snapshotLoading || snapshot) && (
-          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }} className="mb-10">
+          <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }} className="mb-6">
             {snapshotLoading ? (
-              <Skeleton className="h-28 w-full rounded-lg" />
+              <Skeleton className="h-16 w-full rounded-lg" />
             ) : snapshot ? (
-              <Card className="border-border bg-accent/20">
-                <CardContent className="p-5">
-                  <div className="flex items-start gap-4">
-                    {snapshot.logo && (
-                      <img
-                        src={snapshot.logo}
-                        alt={snapshot.companyName || "Company logo"}
-                        className="h-10 w-10 rounded-lg object-contain shrink-0 bg-card"
-                        onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
-                      />
-                    )}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-2">
-                        <h3 className="font-display font-semibold text-foreground text-sm truncate">
-                          {snapshot.companyName || snapshot.url}
-                        </h3>
-                        <a href={snapshot.url} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground transition-colors shrink-0">
-                          <ExternalLink className="h-3 w-3" />
-                        </a>
-                      </div>
-                      {snapshot.tagline && <p className="text-sm text-muted-foreground mb-3">{snapshot.tagline}</p>}
-                      <div className="flex flex-wrap gap-x-4 gap-y-2">
-                        {snapshot.industry && <span className="flex items-center gap-1.5 text-xs text-muted-foreground"><Building2 className="h-3 w-3 shrink-0" /> {snapshot.industry}</span>}
-                        {snapshot.companyType && <span className="flex items-center gap-1.5 text-xs text-muted-foreground"><Tag className="h-3 w-3 shrink-0" /> {snapshot.companyType}</span>}
-                        {snapshot.employeeRange && <span className="flex items-center gap-1.5 text-xs text-muted-foreground"><Users className="h-3 w-3 shrink-0" /> {snapshot.employeeRange} employees</span>}
-                        {snapshot.revenueScale && <span className="flex items-center gap-1.5 text-xs text-muted-foreground"><DollarSign className="h-3 w-3 shrink-0" /> {snapshot.revenueScale}</span>}
-                        {snapshot.headquarters && <span className="flex items-center gap-1.5 text-xs text-muted-foreground"><MapPin className="h-3 w-3 shrink-0" /> {snapshot.headquarters}</span>}
-                        {snapshot.founded && <span className="flex items-center gap-1.5 text-xs text-muted-foreground"><Calendar className="h-3 w-3 shrink-0" /> Est. {snapshot.founded}</span>}
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+              <div className="flex items-center gap-3 px-4 py-3 rounded-lg bg-accent/20 border border-border">
+                {snapshot.logo && (
+                  <img src={snapshot.logo} alt="" className="h-8 w-8 rounded-md object-contain shrink-0 bg-card"
+                    onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
+                )}
+                <div className="flex items-center gap-3 flex-wrap text-xs text-muted-foreground min-w-0">
+                  <span className="font-medium text-foreground text-sm">{snapshot.companyName || snapshot.url}</span>
+                  {snapshot.industry && <span className="flex items-center gap-1"><Building2 className="h-3 w-3" />{snapshot.industry}</span>}
+                  {snapshot.employeeRange && <span className="flex items-center gap-1"><Users className="h-3 w-3" />{snapshot.employeeRange}</span>}
+                  {snapshot.headquarters && <span className="flex items-center gap-1"><MapPin className="h-3 w-3" />{snapshot.headquarters}</span>}
+                  {snapshot.founded && <span className="flex items-center gap-1"><Calendar className="h-3 w-3" />{snapshot.founded}</span>}
+                  <a href={snapshot.url} target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">
+                    <ExternalLink className="h-3 w-3" />
+                  </a>
+                </div>
+              </div>
             ) : null}
           </motion.div>
         )}
 
-        {/* Summary Stats */}
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="grid grid-cols-3 gap-4 mb-10">
-          {[
-            { label: "Tasks augmented by AI", value: result.summary.augmentedPercent, color: "primary" },
-            { label: "At risk of full automation", value: result.summary.automationRiskPercent, color: "destructive" },
-            { label: "Requiring new skills", value: result.summary.newSkillsPercent, color: "warning" },
-          ].map((stat) => (
-            <Card key={stat.label} className="border-border">
-              <CardContent className="p-4 text-center">
-                <div className={`text-2xl font-display font-bold text-${stat.color}`}>{stat.value}%</div>
-                <p className="mt-1 text-xs text-muted-foreground leading-tight">{stat.label}</p>
-              </CardContent>
-            </Card>
-          ))}
-        </motion.div>
-
-        {/* AI Distribution Bar */}
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} className="mb-10">
-          <h2 className="text-sm font-medium uppercase tracking-widest text-muted-foreground mb-3">Human vs AI Task Distribution</h2>
-          <div className="flex rounded-lg overflow-hidden h-3">
+        {/* Stats row — condensed */}
+        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="mb-6">
+          <div className="flex items-center gap-6 px-4 py-3 rounded-lg border border-border">
+            {[
+              { label: "AI-augmented", value: result.summary.augmentedPercent, color: "text-primary" },
+              { label: "Automation risk", value: result.summary.automationRiskPercent, color: "text-destructive" },
+              { label: "New skills needed", value: result.summary.newSkillsPercent, color: "text-warning" },
+            ].map((stat, i) => (
+              <div key={stat.label} className="flex items-center gap-2">
+                {i > 0 && <div className="w-px h-6 bg-border -ml-3 mr-0" />}
+                <span className={`text-lg font-display font-bold ${stat.color}`}>{stat.value}%</span>
+                <span className="text-xs text-muted-foreground">{stat.label}</span>
+              </div>
+            ))}
+          </div>
+          {/* Distribution bar */}
+          <div className="flex rounded-full overflow-hidden h-1.5 mt-3">
             <div className="bg-success transition-all" style={{ width: `${100 - result.summary.augmentedPercent}%` }} />
             <div className="bg-warning transition-all" style={{ width: `${result.summary.augmentedPercent - result.summary.automationRiskPercent}%` }} />
             <div className="bg-primary transition-all" style={{ width: `${result.summary.automationRiskPercent}%` }} />
           </div>
-          <div className="flex justify-between mt-2 text-xs text-muted-foreground">
-            <span className="flex items-center gap-1.5"><User className="h-3 w-3" /> Human-driven</span>
-            <span className="flex items-center gap-1.5"><Users className="h-3 w-3" /> AI-augmented</span>
-            <span className="flex items-center gap-1.5"><Bot className="h-3 w-3" /> AI-driven</span>
-          </div>
         </motion.div>
 
-        {/* Two-Column Layout (desktop) / Single Column (mobile) */}
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-10">
-            {/* LEFT COLUMN — Tasks */}
-            <div>
-              <h2 className="text-sm font-medium uppercase tracking-widest text-muted-foreground mb-4">Task-Level Breakdown</h2>
-              <div className="space-y-3">
+        {/* Two-Column Layout */}
+        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}>
+          <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 mb-8">
+            {/* LEFT — Tasks (3/5 width) */}
+            <div className="lg:col-span-3">
+              <h2 className="text-xs font-medium uppercase tracking-widest text-muted-foreground mb-3">Tasks</h2>
+              <div className="space-y-2">
                 {result.tasks.map((task, i) => {
                   const state = stateLabels[task.currentState];
                   const trend = trendIcons[task.trend];
@@ -303,84 +270,62 @@ const Analysis = () => {
                   const relatedSkills = getRelatedSkills(task.name);
 
                   return (
-                    <motion.div
-                      key={i}
-                      initial={{ opacity: 0, y: 8 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.25 + i * 0.04 }}
-                    >
-                      <Card
-                        className={`border-border cursor-pointer transition-all hover:border-primary/40 ${isSelected ? "ring-2 ring-primary/30 border-primary/50" : ""}`}
+                    <div key={i}>
+                      <div
+                        className={`flex items-center gap-3 px-3 py-2.5 rounded-lg border transition-all cursor-pointer group
+                          ${isSelected
+                            ? "border-primary/50 bg-primary/5 ring-1 ring-primary/20"
+                            : "border-border hover:border-primary/30 bg-card"
+                          }`}
                         onClick={() => !isMobile && handleTaskClick(i)}
                       >
-                        <CardContent className="p-4">
-                          <div className="flex items-center gap-2 flex-wrap mb-1">
-                            <h3 className="font-medium text-foreground">{task.name}</h3>
-                            <Badge variant="outline" className={`gap-1 ${state.className}`}>
-                              {(() => { const StateIcon = state.icon; return <StateIcon className="h-3 w-3" />; })()}
-                              {state.label}
-                            </Badge>
-                          </div>
-                          <p className="text-sm text-muted-foreground">{task.description}</p>
-                          <div className="flex items-center gap-4 mt-2">
-                            <span className="flex items-center gap-1 text-xs text-muted-foreground">
-                              <TrendIcon className="h-3 w-3" /> {trend.label}
-                            </span>
-                            <span className={`text-xs font-medium capitalize ${impactColors[task.impactLevel]}`}>
-                              {task.impactLevel} impact
-                            </span>
-                          </div>
-                        </CardContent>
-                      </Card>
+                        {/* Impact dot */}
+                        <div className={`w-2 h-2 rounded-full shrink-0 ${impactDot[task.impactLevel]}`} />
 
-                      {/* Mobile: inline skills under each task */}
+                        {/* Task info */}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm font-medium text-foreground truncate">{task.name}</span>
+                            <TrendIcon className={`h-3 w-3 shrink-0 ${trend.className}`} />
+                          </div>
+                        </div>
+
+                        {/* State badge */}
+                        <Badge variant="outline" className={`gap-1 text-[10px] px-1.5 py-0 shrink-0 ${state.className}`}>
+                          {(() => { const StateIcon = state.icon; return <StateIcon className="h-2.5 w-2.5" />; })()}
+                          {state.label}
+                        </Badge>
+                      </div>
+
+                      {/* Mobile: inline skills */}
                       {isMobile && relatedSkills.length > 0 && (
-                        <div className="mt-2 ml-3 border-l-2 border-border pl-4 space-y-2">
+                        <div className="ml-5 mt-1 mb-2 space-y-1">
                           {relatedSkills.map((skill, si) => (
-                            <SkillItem key={si} skill={skill} />
+                            <CompactSkill key={si} skill={skill} />
                           ))}
                         </div>
                       )}
-                    </motion.div>
+                    </div>
                   );
                 })}
               </div>
-
-              {/* Mobile: orphan skills */}
-              {isMobile && orphanSkills.length > 0 && (
-                <div className="mt-6">
-                  <h2 className="text-sm font-medium uppercase tracking-widest text-muted-foreground mb-4">Additional Skills</h2>
-                  <div className="space-y-3">
-                    {orphanSkills.map((skill, i) => (
-                      <Card key={i} className="border-border">
-                        <CardContent className="p-4">
-                          <SkillItem skill={skill} />
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
-                </div>
-              )}
             </div>
 
-            {/* RIGHT COLUMN — Skills Panel (desktop only) */}
+            {/* RIGHT — Skills (2/5 width, desktop only) */}
             {!isMobile && (
-              <div className="lg:sticky lg:top-6 lg:self-start">
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-sm font-medium uppercase tracking-widest text-muted-foreground">
-                    {selectedTaskIndex !== null
-                      ? `Skills for: ${result.tasks[selectedTaskIndex]?.name}`
-                      : "All Recommended Skills"
-                    }
+              <div className="lg:col-span-2 lg:sticky lg:top-4 lg:self-start">
+                <div className="flex items-center justify-between mb-3">
+                  <h2 className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
+                    {selectedTaskIndex !== null ? "Related Skills" : "Skills"}
                   </h2>
                   {selectedTaskIndex !== null && (
-                    <Button variant="ghost" size="sm" onClick={() => setSelectedTaskIndex(null)} className="text-xs text-muted-foreground h-auto py-1">
+                    <button onClick={() => setSelectedTaskIndex(null)} className="text-[10px] text-muted-foreground hover:text-foreground transition-colors">
                       Show all
-                    </Button>
+                    </button>
                   )}
                 </div>
 
-                <div className="space-y-6">
+                <div className="space-y-4">
                   {(Object.keys(categoryConfig) as SkillCategory[]).map((cat) => {
                     const skills = groupedSkills[cat];
                     if (!skills?.length) return null;
@@ -389,17 +334,13 @@ const Analysis = () => {
 
                     return (
                       <div key={cat}>
-                        <div className="flex items-center gap-2 mb-3">
-                          <CatIcon className="h-4 w-4 text-primary" />
-                          <h3 className="text-sm font-semibold text-foreground">{config.label}</h3>
+                        <div className="flex items-center gap-1.5 mb-2">
+                          <CatIcon className="h-3 w-3 text-primary" />
+                          <span className="text-xs font-semibold text-foreground">{config.label}</span>
                         </div>
-                        <div className="space-y-3">
+                        <div className="space-y-1.5">
                           {skills.map((skill, si) => (
-                            <Card key={si} className="border-border">
-                              <CardContent className="p-3">
-                                <SkillItem skill={skill} />
-                              </CardContent>
-                            </Card>
+                            <CompactSkill key={si} skill={skill} showResources />
                           ))}
                         </div>
                       </div>
@@ -411,61 +352,41 @@ const Analysis = () => {
           </div>
         </motion.div>
 
-        {/* Save CTA */}
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }} className="mt-12 text-center pb-8">
-          <Card className="border-border bg-accent/30">
-            <CardContent className="p-6">
-              <h3 className="font-display font-semibold text-foreground mb-2">Save your learning path</h3>
-              <p className="text-sm text-muted-foreground mb-4">
-                Create a free account to save your analysis, track progress, and revisit your skills roadmap.
-              </p>
-              <Button onClick={handleSave} className="gap-2">
-                <Save className="w-4 h-4" /> Save My Path
-              </Button>
-            </CardContent>
-          </Card>
+        {/* Save CTA — minimal */}
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }} className="text-center py-6 border-t border-border">
+          <p className="text-sm text-muted-foreground mb-3">Save your analysis and track your learning path</p>
+          <Button onClick={handleSave} size="sm" className="gap-1.5">
+            <Save className="w-3.5 h-3.5" /> Save My Path
+          </Button>
         </motion.div>
       </div>
     </div>
   );
 };
 
-/* Extracted reusable skill item */
-const SkillItem = ({ skill }: { skill: JobAnalysisResult["skills"][number] }) => {
-  const catConf = categoryConfig[skill.category];
-  const CatIcon = catConf.icon;
-
-  return (
-    <div className="flex items-start gap-2">
-      <CatIcon className="h-3.5 w-3.5 text-primary mt-0.5 shrink-0" />
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2">
-          <span className="text-sm font-medium text-foreground">{skill.name}</span>
-          <Badge variant="outline" className={`text-[10px] px-1.5 py-0 capitalize ${priorityStyles[skill.priority]}`}>
-            {skill.priority}
-          </Badge>
-        </div>
-        <p className="text-xs text-muted-foreground mt-0.5">{skill.description}</p>
-        {skill.resources && skill.resources.length > 0 && (
-          <div className="mt-1.5 flex flex-wrap gap-1.5">
-            {skill.resources.map((resource, ri) => (
-              <a
-                key={ri}
-                href={resource.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                title={resource.summary}
-                className="inline-flex items-center gap-1 text-[11px] px-2 py-1 rounded bg-background text-muted-foreground hover:text-foreground border border-border transition-colors"
-              >
-                <ExternalLink className="h-2.5 w-2.5" />
-                {resource.name}
-              </a>
-            ))}
-          </div>
-        )}
+/* Compact skill row */
+const CompactSkill = ({ skill, showResources = false }: { skill: JobAnalysisResult["skills"][number]; showResources?: boolean }) => (
+  <div className="flex items-start gap-2 px-2.5 py-2 rounded-md bg-accent/30 border border-border/50">
+    <div className="flex-1 min-w-0">
+      <div className="flex items-center gap-1.5">
+        <span className="text-xs font-medium text-foreground truncate">{skill.name}</span>
+        <Badge variant="outline" className={`text-[9px] px-1 py-0 capitalize leading-tight ${priorityStyles[skill.priority]}`}>
+          {skill.priority}
+        </Badge>
       </div>
+      <p className="text-[11px] text-muted-foreground mt-0.5 line-clamp-1">{skill.description}</p>
+      {showResources && skill.resources && skill.resources.length > 0 && (
+        <div className="mt-1 flex flex-wrap gap-1">
+          {skill.resources.slice(0, 2).map((r, ri) => (
+            <a key={ri} href={r.url} target="_blank" rel="noopener noreferrer" title={r.summary}
+              className="inline-flex items-center gap-0.5 text-[10px] text-muted-foreground hover:text-foreground transition-colors">
+              <ExternalLink className="h-2 w-2" />{r.name}
+            </a>
+          ))}
+        </div>
+      )}
     </div>
-  );
-};
+  </div>
+);
 
 export default Analysis;
