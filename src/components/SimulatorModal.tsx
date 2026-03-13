@@ -351,13 +351,68 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company }: Simulato
 
         {/* Input bar */}
         {phase === "chat" && !error && (
-          <div className="shrink-0 border-t border-border bg-card px-4 py-3">
+          <div className="shrink-0 border-t border-border bg-card px-4 py-3 space-y-2">
+            {/* Multiple choice buttons */}
+            {(() => {
+              const lastAi = [...messages].reverse().find(m => m.role === "assistant");
+              if (!lastAi || sending) return null;
+              const opts = lastAi.content.match(/^[A-D][).]\s*.+/gm);
+              if (!opts || opts.length < 2) return null;
+              return (
+                <div className="flex flex-col gap-1.5">
+                  {opts.slice(0, 3).map((opt, i) => {
+                    const letter = opt.charAt(0);
+                    const text = opt.replace(/^[A-D][).]\s*/, "").trim();
+                    return (
+                      <Button
+                        key={i}
+                        variant="outline"
+                        size="sm"
+                        className="w-full justify-start text-left h-auto py-2 px-3 text-sm font-normal hover:bg-primary/5 hover:border-primary/30"
+                        onClick={() => { setInput(letter); setTimeout(() => { const fakeMsg: SimMessage = { role: "user", content: letter }; const newMsgs = [...messages, fakeMsg]; setMessages(newMsgs); setInput(""); setSending(true); scrollToBottom(); chatTurn(session!, newMsgs).then(reply => { setMessages(prev => [...prev, { role: "assistant", content: reply }]); const isYesNo = reply.toLowerCase().includes("want to see another example") || reply.toLowerCase().includes("want another"); if (!isYesNo) { const nextRound = roundCount + 1; if (nextRound > MAX_ROUNDS) { handleFinish(); } } scrollToBottom(); }).catch(() => { setMessages(prev => [...prev, { role: "assistant", content: "Sorry, something went wrong. Try again." }]); }).finally(() => setSending(false)); }, 0); }}
+                      >
+                        <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-primary/10 text-primary text-xs font-bold mr-2 shrink-0">{letter}</span>
+                        {text}
+                      </Button>
+                    );
+                  })}
+                </div>
+              );
+            })()}
+
+            {/* Continue / end buttons after feedback */}
+            {(() => {
+              const lastAi = [...messages].reverse().find(m => m.role === "assistant");
+              if (!lastAi || sending) return null;
+              const askContinue = lastAi.content.toLowerCase().includes("want to see another example") || lastAi.content.toLowerCase().includes("want another");
+              if (!askContinue) return null;
+              return (
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex-1 hover:bg-success/5 hover:border-success/30"
+                    onClick={() => { setInput("yes"); setTimeout(() => { const fakeMsg: SimMessage = { role: "user", content: "yes" }; const newMsgs = [...messages, fakeMsg]; setMessages(newMsgs); setInput(""); setSending(true); setRoundCount(prev => prev + 1); scrollToBottom(); chatTurn(session!, newMsgs).then(reply => { setMessages(prev => [...prev, { role: "assistant", content: reply }]); scrollToBottom(); }).catch(() => { setMessages(prev => [...prev, { role: "assistant", content: "Sorry, something went wrong." }]); }).finally(() => setSending(false)); }, 0); }}
+                  >
+                    Yes, show me more
+                  </Button>
+                  <Button
+                    size="sm"
+                    className="flex-1"
+                    onClick={handleFinish}
+                  >
+                    <Trophy className="h-3.5 w-3.5 mr-1.5" /> Finish & Score
+                  </Button>
+                </div>
+              );
+            })()}
+
             <div className="flex items-end gap-2">
               <textarea
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
-                placeholder="Type your answer (A, B, C, or D) or a message..."
+                placeholder="Type your answer or a message..."
                 rows={1}
                 className="flex-1 resize-none rounded-xl border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-ring min-h-[38px] max-h-[120px]"
               />
