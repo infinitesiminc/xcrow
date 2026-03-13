@@ -56,6 +56,7 @@ const Index = () => {
   const [teamResults, setTeamResults] = useState<JobAnalysisResult[]>([]);
   const [teamLoading, setTeamLoading] = useState(false);
   const [teamAnalyzed, setTeamAnalyzed] = useState(false);
+  const [teamJdParsing, setTeamJdParsing] = useState(false);
 
   const isValidWebsite = (url: string) => {
     if (!url) return true;
