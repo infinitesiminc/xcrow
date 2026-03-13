@@ -46,11 +46,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company }: Simulato
     setTimeout(() => scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" }), 50);
   }, []);
 
-  // Build a slug from job title + task
-  const buildSlug = useCallback(() => {
-    const base = company ? `${company}-${jobTitle}` : jobTitle;
-    return base.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
-  }, [company, jobTitle]);
+  
 
   const startSession = useCallback(async () => {
     setPhase("loading");
@@ -59,9 +55,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company }: Simulato
     setTurnCount(0);
     setScore(null);
     try {
-      // Use the task name as a scenario context
-      const slug = buildSlug();
-      const compiled = await compileSession(slug, 3);
+      const compiled = await compileSession(taskName, jobTitle, company, 3);
       setSession(compiled);
       setMessages([{ role: "assistant", content: compiled.openingMessage }]);
       setPhase("chat");
@@ -70,7 +64,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company }: Simulato
       setError("Couldn't start the simulation. The simulator may not have scenarios for this role yet.");
       setPhase("chat");
     }
-  }, [buildSlug]);
+  }, [taskName, jobTitle, company]);
 
   useEffect(() => {
     if (open) startSession();
