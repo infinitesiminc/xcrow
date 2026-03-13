@@ -579,7 +579,7 @@ const Index = () => {
                 </Button>
                 <label className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md border border-border text-muted-foreground hover:text-foreground hover:border-border/80 cursor-pointer transition-colors">
                   <Upload className="h-3 w-3" /> Import list
-                  <input type="file" accept=".csv,.txt,.tsv" className="hidden" onChange={handleJobListUpload} />
+                  <input type="file" accept=".csv,.txt,.tsv,.xlsx,.xls" className="hidden" onChange={handleJobListUpload} />
                 </label>
                 <label className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md border border-border text-muted-foreground hover:text-foreground hover:border-border/80 cursor-pointer transition-colors">
                   <FileText className="h-3 w-3" /> Upload JDs
