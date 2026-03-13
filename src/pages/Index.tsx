@@ -377,7 +377,7 @@ const Index = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.15 }}
-          className="mt-8 flex rounded-lg border border-border bg-card p-1 gap-1"
+          className="mt-5 flex rounded-lg border border-border bg-card p-1 gap-1"
         >
           <button
             onClick={() => setMode("individual")}
