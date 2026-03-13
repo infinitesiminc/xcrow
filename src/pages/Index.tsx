@@ -1,13 +1,10 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowRight, Briefcase, BarChart3, BookOpen, Users, Plus, X, Sparkles, Loader2, FileText, Link, Upload, Search } from "lucide-react";
+import { ArrowRight, Briefcase, BarChart3, BookOpen, Users, Plus, X, Loader2, FileText, Link, Upload, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
-import { JobAnalysisResult, SkillCategory } from "@/types/analysis";
+import { JobAnalysisResult } from "@/types/analysis";
 import { findPrebuiltRole } from "@/data/prebuilt-roles";
 import { analyzeJobWithAI } from "@/lib/ai-analysis";
 import { useToast } from "@/hooks/use-toast";
@@ -17,12 +14,6 @@ const steps = [
   { icon: BarChart3, title: "Get your analysis", description: "See how AI impacts each task in your role" },
   { icon: BookOpen, title: "Bridge the gap", description: "Get personalized skill recommendations" },
 ];
-
-const categoryLabels: Record<SkillCategory, string> = {
-  ai_tools: "AI Tools",
-  human_skills: "Human Skills",
-  new_capabilities: "New Capabilities",
-};
 
 type Mode = "individual" | "team";
 type JdInputType = "none" | "paste" | "url" | "file";
@@ -67,9 +58,7 @@ const Index = () => {
     { id: crypto.randomUUID(), title: "" },
     { id: crypto.randomUUID(), title: "" },
   ]);
-  const [teamResults, setTeamResults] = useState<JobAnalysisResult[]>([]);
   const [teamLoading, setTeamLoading] = useState(false);
-  const [teamAnalyzed, setTeamAnalyzed] = useState(false);
   const [teamJdParsing, setTeamJdParsing] = useState(false);
 
   const isValidWebsite = (url: string) => {
@@ -335,7 +324,6 @@ const Index = () => {
       return;
     }
     setTeamLoading(true);
-    setTeamAnalyzed(false);
     try {
       const promises = filledRoles.map(async (role) => {
         if (!role.jdText) {
@@ -345,8 +333,12 @@ const Index = () => {
         return analyzeJobWithAI(role.title, "", role.jdText || undefined);
       });
       const allResults = await Promise.all(promises);
-      setTeamResults(allResults);
-      setTeamAnalyzed(true);
+      // Store results in sessionStorage and navigate to dedicated page
+      sessionStorage.setItem("team_results", JSON.stringify(allResults));
+      sessionStorage.setItem("team_roles", JSON.stringify(
+        filledRoles.map(r => ({ title: r.title, jdText: r.jdText }))
+      ));
+      navigate("/team-analysis");
     } catch {
       toast({ title: "Analysis failed", description: "Some roles couldn't be analyzed. Please try again.", variant: "destructive" });
     } finally {
@@ -354,22 +346,6 @@ const Index = () => {
     }
   };
 
-  // Team aggregates
-  const avgAugmented = teamResults.length ? Math.round(teamResults.reduce((s, r) => s + r.summary.augmentedPercent, 0) / teamResults.length) : 0;
-  const avgAutomation = teamResults.length ? Math.round(teamResults.reduce((s, r) => s + r.summary.automationRiskPercent, 0) / teamResults.length) : 0;
-  const avgNewSkills = teamResults.length ? Math.round(teamResults.reduce((s, r) => s + r.summary.newSkillsPercent, 0) / teamResults.length) : 0;
-
-  const skillFreq = new Map<string, { count: number; category: SkillCategory; description: string }>();
-  teamResults.forEach((r) => {
-    r.skills.forEach((s) => {
-      const existing = skillFreq.get(s.name);
-      if (existing) existing.count++;
-      else skillFreq.set(s.name, { count: 1, category: s.category, description: s.description });
-    });
-  });
-  const sortedSkills = [...skillFreq.entries()].sort((a, b) => b[1].count - a[1].count);
-  const sharedSkills = sortedSkills.filter(([, v]) => v.count > 1);
-  const uniqueSkills = sortedSkills.filter(([, v]) => v.count === 1).slice(0, 8);
 
   return (
     <div className="min-h-screen bg-background">
@@ -663,110 +639,6 @@ const Index = () => {
         </AnimatePresence>
       </div>
 
-      {/* Team Results */}
-      {mode === "team" && teamAnalyzed && teamResults.length > 0 && (
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="px-4 pb-24">
-          <div className="max-w-2xl mx-auto space-y-8">
-            <div>
-              <h2 className="font-display font-semibold text-foreground mb-4">Team Overview</h2>
-              <div className="grid grid-cols-3 gap-4">
-                {[
-                  { label: "Avg. Augmented", value: avgAugmented },
-                  { label: "Avg. Automation Risk", value: avgAutomation },
-                  { label: "Avg. New Skills Needed", value: avgNewSkills },
-                ].map((stat) => (
-                  <Card key={stat.label} className="border-border">
-                    <CardContent className="p-4 text-center">
-                      <p className="text-2xl font-bold text-foreground">{stat.value}%</p>
-                      <p className="text-xs text-muted-foreground mt-1">{stat.label}</p>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            </div>
-
-            <div>
-              <h2 className="font-display font-semibold text-foreground mb-4">AI Impact by Role</h2>
-              <div className="space-y-3">
-                {teamResults.map((r, idx) => {
-                  const matchingRole = roles.find(role => role.title === r.jobTitle || role.jdText);
-                  return (
-                    <Card key={r.jobTitle + idx} className="border-border">
-                      <CardContent className="p-4">
-                        <div className="flex items-center justify-between mb-2">
-                          <span className="font-medium text-foreground text-sm">{r.jobTitle}</span>
-                          <div className="flex items-center gap-2">
-                            <span className="text-xs text-muted-foreground">{r.summary.automationRiskPercent}% automation risk</span>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="h-7 text-xs gap-1 text-primary hover:text-primary"
-                              onClick={() => {
-                                // Store JD text if available from the role entry
-                                const roleEntry = roles[idx] || matchingRole;
-                                if (roleEntry?.jdText) {
-                                  sessionStorage.setItem("jd_text", roleEntry.jdText);
-                                } else {
-                                  sessionStorage.removeItem("jd_text");
-                                }
-                                const params = new URLSearchParams({ title: r.jobTitle, company: r.company || "" });
-                                if (roleEntry?.jdText) params.set("jd", "session");
-                                navigate(`/analysis?${params.toString()}`);
-                              }}
-                            >
-                              <Search className="h-3 w-3" /> Deep dive
-                            </Button>
-                          </div>
-                        </div>
-                        <Progress value={r.summary.augmentedPercent} className="h-2" />
-                      </CardContent>
-                    </Card>
-                  );
-                })}
-              </div>
-            </div>
-
-            {sharedSkills.length > 0 && (
-              <div>
-                <div className="flex items-center gap-2 mb-4">
-                  <Sparkles className="h-4 w-4 text-primary" />
-                  <h2 className="font-display font-semibold text-foreground">Shared Skill Gaps</h2>
-                </div>
-                <p className="text-sm text-muted-foreground mb-4">Skills needed across multiple roles — high-impact training investments.</p>
-                <div className="space-y-2">
-                  {sharedSkills.map(([name, data]) => (
-                    <Card key={name} className="border-border">
-                      <CardContent className="p-3 flex items-center justify-between">
-                        <div>
-                          <span className="font-medium text-foreground text-sm">{name}</span>
-                          <p className="text-xs text-muted-foreground">{data.description}</p>
-                        </div>
-                        <div className="flex items-center gap-2 shrink-0">
-                          <Badge variant="outline" className="text-xs">{categoryLabels[data.category]}</Badge>
-                          <Badge className="bg-primary/10 text-primary border-primary/20 text-xs">{data.count} roles</Badge>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {uniqueSkills.length > 0 && (
-              <div>
-                <h2 className="font-display font-semibold text-foreground mb-4">Role-Specific Skills</h2>
-                <div className="flex flex-wrap gap-2">
-                  {uniqueSkills.map(([name, data]) => (
-                    <Badge key={name} variant="outline" className="text-xs py-1.5" title={data.description}>
-                      {name}
-                    </Badge>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-        </motion.div>
-      )}
 
       {/* How it works (individual mode only) */}
       {mode === "individual" && (
