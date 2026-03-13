@@ -55,7 +55,6 @@ export async function chatTurn(
     body: { action: "chat", payload: { messages, round, turnCount, role } },
   });
   if (error) throw new Error(`Chat error: ${error.message}`);
-  // Response is plain text
   return typeof data === "string" ? data : JSON.stringify(data);
 }
 
