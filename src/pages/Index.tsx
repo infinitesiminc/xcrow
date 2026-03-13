@@ -583,7 +583,7 @@ const Index = () => {
                 </label>
                 <label className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md border border-border text-muted-foreground hover:text-foreground hover:border-border/80 cursor-pointer transition-colors">
                   <FileText className="h-3 w-3" /> Upload JDs
-                  <input type="file" accept=".pdf,.docx,.doc,.txt,.md" multiple className="hidden" onChange={handleBatchJdUpload} disabled={teamJdParsing} />
+                  <input type="file" accept=".pdf,.docx,.doc,.txt,.md,.xlsx,.xls" multiple className="hidden" onChange={handleBatchJdUpload} disabled={teamJdParsing} />
                 </label>
                 <Button onClick={handleTeamAnalyze} disabled={teamLoading || teamJdParsing} className="gap-2 ml-auto">
                   {teamLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <BarChart3 className="h-4 w-4" />}
