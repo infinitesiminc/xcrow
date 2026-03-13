@@ -110,3 +110,19 @@
     font-family: 'Space Grotesk', 'Inter', system-ui, sans-serif;
   }
 }
+
+/* Task carousel scrollbar */
+.task-carousel::-webkit-scrollbar {
+  height: 6px;
+}
+.task-carousel::-webkit-scrollbar-track {
+  background: hsl(var(--muted));
+  border-radius: 3px;
+}
+.task-carousel::-webkit-scrollbar-thumb {
+  background: hsl(var(--border));
+  border-radius: 3px;
+}
+.task-carousel::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--muted-foreground) / 0.4);
+}

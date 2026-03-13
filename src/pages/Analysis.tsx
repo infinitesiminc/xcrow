@@ -297,121 +297,105 @@ const Analysis = () => {
           </div>
         </motion.div>
 
-        {/* Two-Column Layout */}
-        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}>
-          <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 mb-8">
-            {/* LEFT — Tasks */}
-            <div className="lg:col-span-3">
-              <h2 className="text-xs font-medium uppercase tracking-widest text-muted-foreground mb-3">Tasks</h2>
-              <div className="space-y-3">
-                {result.tasks.map((task, i) => {
-                  const state = stateLabels[task.currentState];
-                  const trend = trendConfig[task.trend];
-                  const TrendIcon = trend.icon;
-                  const StateIcon = state.icon;
-                  const isSelected = selectedTaskIndex === i;
-                  const relatedSkills = getRelatedSkills(task.name);
+        {/* Task Carousel */}
+        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }} className="mb-8">
+          <h2 className="text-xs font-medium uppercase tracking-widest text-muted-foreground mb-3">Tasks</h2>
+          <div className="task-carousel flex overflow-x-auto gap-4 snap-x snap-mandatory pb-4">
+            {result.tasks.map((task, i) => {
+              const state = stateLabels[task.currentState];
+              const trend = trendConfig[task.trend];
+              const TrendIcon = trend.icon;
+              const isSelected = selectedTaskIndex === i;
+              const heroGradient = heroGradients[task.impactLevel];
+              const HeroIcon = heroIcons[task.impactLevel];
 
-                  return (
-                    <motion.div key={i} initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.25 + i * 0.04 }}>
-                      <Card
-                        className={`border-l-4 ${impactBorder[task.impactLevel]} cursor-pointer transition-all hover:shadow-md ${
-                          isSelected ? "ring-1 ring-primary/30 shadow-md" : ""
-                        }`}
-                        onClick={() => !isMobile && handleTaskClick(i)}
-                      >
-                        <CardContent className="p-4">
-                          <div className="flex items-start gap-3">
-                            {/* State icon in circle */}
-                            <div className={`flex items-center justify-center w-9 h-9 rounded-lg shrink-0 ${state.bg}`}>
-                              <StateIcon className={`h-4 w-4 ${state.className.split(" ")[1]}`} />
-                            </div>
+              return (
+                <motion.div
+                  key={i}
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.25 + i * 0.05 }}
+                  className="snap-start shrink-0"
+                  style={{ width: 280 }}
+                >
+                  <Card
+                    className={`h-full cursor-pointer transition-all hover:shadow-lg overflow-hidden ${
+                      isSelected ? "ring-2 ring-primary shadow-lg" : "hover:ring-1 hover:ring-primary/20"
+                    }`}
+                    onClick={() => handleTaskClick(i)}
+                  >
+                    {/* Hero gradient header */}
+                    <div className={`relative h-32 ${heroGradient} flex items-center justify-center overflow-hidden`}>
+                      <HeroIcon className="h-16 w-16 text-primary-foreground/30" strokeWidth={1} />
+                      <div className="absolute inset-0 bg-gradient-to-t from-card/60 to-transparent" />
+                    </div>
 
-                            <div className="flex-1 min-w-0">
-                              <div className="flex items-center gap-2 mb-0.5">
-                                <span className="text-sm font-semibold text-foreground truncate">{task.name}</span>
-                              </div>
-                              <p className="text-xs text-muted-foreground line-clamp-1 mb-2">{task.description}</p>
+                    <CardContent className="p-4">
+                      <h3 className="text-sm font-display font-bold text-foreground mb-1 line-clamp-2 leading-snug">{task.name}</h3>
+                      <p className="text-xs text-muted-foreground line-clamp-2 mb-3">{task.description}</p>
 
-                              <div className="flex items-center gap-2 flex-wrap">
-                                {/* State badge */}
-                                <Badge variant="outline" className={`text-[10px] px-1.5 py-0.5 ${state.className}`}>
-                                  {state.label}
-                                </Badge>
-                                {/* Trend chip */}
-                                <span className={`inline-flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded-md ${trend.className}`}>
-                                  <TrendIcon className="h-2.5 w-2.5" />
-                                  {trend.label}
-                                </span>
-                                {/* Practice button */}
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  className="ml-auto h-6 px-2 text-[10px] gap-1 text-primary hover:bg-primary/10"
-                                  onClick={(e) => { e.stopPropagation(); setSimTask(task.name); }}
-                                >
-                                  <Play className="h-2.5 w-2.5" /> Practice
-                                </Button>
-                              </div>
-                            </div>
-                          </div>
-
-                          {/* Mobile: inline skills */}
-                          {isMobile && relatedSkills.length > 0 && (
-                            <div className="mt-3 pt-3 border-t border-border space-y-2">
-                              {relatedSkills.map((skill, si) => (
-                                <CompactSkill key={si} skill={skill} />
-                              ))}
-                            </div>
-                          )}
-                        </CardContent>
-                      </Card>
-                    </motion.div>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* RIGHT — Skills */}
-            {!isMobile && (
-              <div className="lg:col-span-2 lg:sticky lg:top-4 lg:self-start">
-                <div className="flex items-center justify-between mb-3">
-                  <h2 className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
-                    {selectedTaskIndex !== null ? "Related Skills" : "Skills to Learn"}
-                  </h2>
-                  {selectedTaskIndex !== null && (
-                    <button onClick={() => setSelectedTaskIndex(null)} className="text-[10px] text-muted-foreground hover:text-foreground transition-colors">
-                      Show all
-                    </button>
-                  )}
-                </div>
-
-                <div className="space-y-5">
-                  {(Object.keys(categoryConfig) as SkillCategory[]).map((cat) => {
-                    const skills = groupedSkills[cat];
-                    if (!skills?.length) return null;
-                    const config = categoryConfig[cat];
-                    const CatIcon = config.icon;
-
-                    return (
-                      <div key={cat}>
-                        <div className="flex items-center gap-2 mb-2.5">
-                          <div className={`flex items-center justify-center w-7 h-7 rounded-lg ${config.bg}`}>
-                            <CatIcon className={`h-3.5 w-3.5 ${config.iconColor}`} />
-                          </div>
-                          <span className="text-xs font-bold text-foreground uppercase tracking-wide">{config.label}</span>
-                        </div>
-                        <div className="space-y-2">
-                          {skills.map((skill, si) => (
-                            <CompactSkill key={si} skill={skill} showResources />
-                          ))}
-                        </div>
+                      <div className="flex items-center gap-2 flex-wrap mb-3">
+                        <Badge variant="outline" className={`text-[10px] px-1.5 py-0.5 ${state.className}`}>
+                          {state.label}
+                        </Badge>
+                        <span className={`inline-flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded-md ${trend.className}`}>
+                          <TrendIcon className="h-2.5 w-2.5" />
+                          {trend.label}
+                        </span>
                       </div>
-                    );
-                  })}
-                </div>
-              </div>
+
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="w-full h-7 text-xs gap-1.5 text-primary hover:bg-primary/10"
+                        onClick={(e) => { e.stopPropagation(); setSimTask(task.name); }}
+                      >
+                        <Play className="h-3 w-3" /> Practice
+                      </Button>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              );
+            })}
+          </div>
+        </motion.div>
+
+        {/* Skills Grid */}
+        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }} className="mb-8">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
+              {selectedTaskIndex !== null ? `Skills for "${result.tasks[selectedTaskIndex]?.name}"` : "Skills to Learn"}
+            </h2>
+            {selectedTaskIndex !== null && (
+              <button onClick={() => setSelectedTaskIndex(null)} className="text-[10px] text-muted-foreground hover:text-foreground transition-colors">
+                Show all
+              </button>
             )}
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {(Object.keys(categoryConfig) as SkillCategory[]).map((cat) => {
+              const skills = groupedSkills[cat];
+              if (!skills?.length) return null;
+              const config = categoryConfig[cat];
+              const CatIcon = config.icon;
+
+              return (
+                <div key={cat}>
+                  <div className="flex items-center gap-2 mb-2.5">
+                    <div className={`flex items-center justify-center w-7 h-7 rounded-lg ${config.bg}`}>
+                      <CatIcon className={`h-3.5 w-3.5 ${config.iconColor}`} />
+                    </div>
+                    <span className="text-xs font-bold text-foreground uppercase tracking-wide">{config.label}</span>
+                  </div>
+                  <div className="space-y-2">
+                    {skills.map((skill, si) => (
+                      <CompactSkill key={si} skill={skill} showResources />
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </motion.div>
 
