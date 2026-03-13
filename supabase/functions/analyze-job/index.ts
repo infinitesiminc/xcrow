@@ -95,8 +95,10 @@ serve(async (req) => {
     const truncatedJd = resolvedJd.slice(0, 6000);
 
     let userPrompt = "";
-    if (truncatedJd) {
+    if (truncatedJd && jobTitle) {
       userPrompt = `Analyze the role of "${jobTitle}"${company ? ` at "${company}"` : ""}.\n\nHere is the actual job description — use it to identify the real tasks and responsibilities:\n\n---\n${truncatedJd}\n---`;
+    } else if (truncatedJd) {
+      userPrompt = `Analyze the role described in the following job description${company ? ` at "${company}"` : ""}. Extract the job title from it.\n\n---\n${truncatedJd}\n---`;
     } else if (company) {
       userPrompt = `Analyze the role of "${jobTitle}" at "${company}". Consider the specific industry and company context.`;
     } else {
