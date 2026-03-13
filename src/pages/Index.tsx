@@ -599,19 +599,15 @@ const Index = () => {
                   <Plus className="h-3.5 w-3.5" /> Add role
                 </Button>
                 <label className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md border border-border text-muted-foreground hover:text-foreground hover:border-border/80 cursor-pointer transition-colors">
-                  <Upload className="h-3 w-3" /> Import list
-                  <input type="file" accept=".csv,.txt,.tsv,.xlsx,.xls" className="hidden" onChange={handleJobListUpload} />
-                </label>
-                <label className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md border border-border text-muted-foreground hover:text-foreground hover:border-border/80 cursor-pointer transition-colors">
-                  <FileText className="h-3 w-3" /> Upload JDs
-                  <input type="file" accept=".pdf,.docx,.doc,.txt,.md,.xlsx,.xls" multiple className="hidden" onChange={handleBatchJdUpload} disabled={teamJdParsing} />
+                  <Upload className="h-3 w-3" /> Upload files
+                  <input type="file" accept=".csv,.txt,.tsv,.xlsx,.xls,.pdf,.docx,.doc,.md" multiple className="hidden" onChange={handleFilesUpload} disabled={teamJdParsing} />
                 </label>
                 <Button onClick={handleTeamAnalyze} disabled={teamLoading || teamJdParsing} className="gap-2 ml-auto">
                   {teamLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <BarChart3 className="h-4 w-4" />}
                   {teamLoading ? "Analyzing..." : "Analyze Team"}
                 </Button>
               </div>
-              <p className="text-[10px] text-muted-foreground mt-2">Import list: CSV/TXT with one title per line. Upload JDs: multiple PDF/DOCX files, one per role.</p>
+              <p className="text-[10px] text-muted-foreground mt-2">Upload CSV/XLSX for job title lists, or PDF/DOCX files for job descriptions — mix and match.</p>
             </motion.div>
           )}
         </AnimatePresence>
