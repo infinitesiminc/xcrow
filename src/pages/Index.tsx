@@ -393,9 +393,6 @@ const Index = () => {
               Understand how AI transforms your role —{" "}
               <span className="text-primary">then practice thriving in it</span>
             </h1>
-            <p className="mt-2 text-sm sm:text-base text-muted-foreground max-w-lg mx-auto">
-              Task-level AI impact analysis for any job, plus hands-on simulations to sharpen the skills that matter.
-            </p>
           </motion.div>
 
           {/* Form strip */}
