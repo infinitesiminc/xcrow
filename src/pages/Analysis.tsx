@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, ArrowRight, TrendingUp, Minus, AlertTriangle, Zap, Bot, Globe, ExternalLink } from "lucide-react";
+import { ArrowLeft, ArrowRight, TrendingUp, Minus, AlertTriangle, Zap, Bot, Globe, ExternalLink, Building2, Users, DollarSign, MapPin, Calendar, Tag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
