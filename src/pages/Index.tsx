@@ -111,6 +111,13 @@ const Index = () => {
       sessionStorage.removeItem("jd_text");
     }
 
+    // Cache last analysis for quick re-selection
+    localStorage.setItem("last_analysis", JSON.stringify({
+      jobTitle: jobTitle.trim(),
+      company: effectiveCompany,
+      timestamp: Date.now(),
+    }));
+
     const params = new URLSearchParams({
       company: effectiveCompany,
       title: jobTitle.trim(),
