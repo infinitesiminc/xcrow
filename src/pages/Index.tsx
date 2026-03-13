@@ -353,7 +353,7 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-background">
       {/* Hero */}
-      <div className="flex flex-col items-center justify-center px-4 pt-24 pb-16 md:pt-32 md:pb-24">
+      <div className="flex flex-col items-center justify-center px-4 pt-12 pb-10 md:pt-16 md:pb-14">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
