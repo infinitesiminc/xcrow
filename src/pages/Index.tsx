@@ -333,7 +333,6 @@ const Index = () => {
       return;
     }
     setTeamLoading(true);
-    setTeamAnalyzed(false);
     try {
       const promises = filledRoles.map(async (role) => {
         if (!role.jdText) {
