@@ -367,7 +367,7 @@ const Index = () => {
             How is AI changing{" "}
             <span className="text-primary">your job</span>?
           </h1>
-          <p className="mt-5 text-lg text-muted-foreground max-w-lg mx-auto leading-relaxed">
+          <p className="mt-3 text-lg text-muted-foreground max-w-lg mx-auto leading-relaxed">
             Get a task-level breakdown of AI's impact — and a personalized plan to stay ahead.
           </p>
         </motion.div>
