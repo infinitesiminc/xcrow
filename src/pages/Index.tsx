@@ -40,6 +40,9 @@ const Index = () => {
   const [jdInputType, setJdInputType] = useState<JdInputType>("none");
   const [jdText, setJdText] = useState("");
   const [jdUrl, setJdUrl] = useState("");
+  const [jdFile, setJdFile] = useState<File | null>(null);
+  const [jdFileText, setJdFileText] = useState("");
+  const [jdFileParsing, setJdFileParsing] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
