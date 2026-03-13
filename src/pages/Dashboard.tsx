@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, CheckCircle2, Calendar, Briefcase, Loader2, Play } from "lucide-react";
+import { ArrowLeft, CheckCircle2, Calendar, Briefcase, Loader2, Play, BarChart3, Bot, ShieldAlert, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -17,10 +18,21 @@ interface CompletedSim {
   completed_at: string;
 }
 
+interface AnalysisEntry {
+  id: string;
+  job_title: string;
+  company: string | null;
+  tasks_count: number;
+  augmented_percent: number;
+  automation_risk_percent: number;
+  analyzed_at: string;
+}
+
 const Dashboard = () => {
   const { user, loading: authLoading, signOut } = useAuth();
   const navigate = useNavigate();
   const [completions, setCompletions] = useState<CompletedSim[]>([]);
+  const [analyses, setAnalyses] = useState<AnalysisEntry[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -31,16 +43,16 @@ const Dashboard = () => {
 
   useEffect(() => {
     if (!user) return;
-    const fetchCompletions = async () => {
-      const { data } = await supabase
-        .from("completed_simulations")
-        .select("*")
-        .eq("user_id", user.id)
-        .order("completed_at", { ascending: false });
-      setCompletions((data as CompletedSim[]) || []);
+    const fetchData = async () => {
+      const [simRes, analysisRes] = await Promise.all([
+        supabase.from("completed_simulations").select("*").eq("user_id", user.id).order("completed_at", { ascending: false }),
+        supabase.from("analysis_history").select("*").eq("user_id", user.id).order("analyzed_at", { ascending: false }),
+      ]);
+      setCompletions((simRes.data as CompletedSim[]) || []);
+      setAnalyses((analysisRes.data as AnalysisEntry[]) || []);
       setLoading(false);
     };
-    fetchCompletions();
+    fetchData();
   }, [user]);
 
   if (authLoading || !user) {
