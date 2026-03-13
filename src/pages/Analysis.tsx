@@ -5,7 +5,7 @@ import {
   ArrowLeft, TrendingUp, Minus, AlertTriangle, Zap, Bot, ExternalLink,
   Building2, Users, DollarSign, MapPin, Calendar, Tag,
   Wrench, Heart, Sparkles, Save, User, ChevronDown,
-  ShieldAlert, GraduationCap, Rocket,
+  ShieldAlert, GraduationCap, Rocket, Play,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -16,6 +16,7 @@ import { findPrebuiltRole } from "@/data/prebuilt-roles";
 import { analyzeJobWithAI } from "@/lib/ai-analysis";
 import { useToast } from "@/hooks/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
+import SimulatorModal from "@/components/SimulatorModal";
 
 interface CompanySnapshot {
   success: boolean;
