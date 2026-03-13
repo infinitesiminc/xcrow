@@ -15,7 +15,7 @@ import { JobAnalysisResult, TaskState, TrendDirection, AIImpactLevel, SkillCateg
 import { findPrebuiltRole } from "@/data/prebuilt-roles";
 import { analyzeJobWithAI } from "@/lib/ai-analysis";
 import { useToast } from "@/hooks/use-toast";
-import { useIsMobile } from "@/hooks/use-mobile";
+
 import SimulatorModal from "@/components/SimulatorModal";
 
 interface CompanySnapshot {
