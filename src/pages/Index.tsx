@@ -637,17 +637,41 @@ const Index = () => {
             <div>
               <h2 className="font-display font-semibold text-foreground mb-4">AI Impact by Role</h2>
               <div className="space-y-3">
-                {teamResults.map((r) => (
-                  <Card key={r.jobTitle} className="border-border">
-                    <CardContent className="p-4">
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="font-medium text-foreground text-sm">{r.jobTitle}</span>
-                        <span className="text-xs text-muted-foreground">{r.summary.automationRiskPercent}% automation risk</span>
-                      </div>
-                      <Progress value={r.summary.augmentedPercent} className="h-2" />
-                    </CardContent>
-                  </Card>
-                ))}
+                {teamResults.map((r, idx) => {
+                  const matchingRole = roles.find(role => role.title === r.jobTitle || role.jdText);
+                  return (
+                    <Card key={r.jobTitle + idx} className="border-border">
+                      <CardContent className="p-4">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="font-medium text-foreground text-sm">{r.jobTitle}</span>
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs text-muted-foreground">{r.summary.automationRiskPercent}% automation risk</span>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-7 text-xs gap-1 text-primary hover:text-primary"
+                              onClick={() => {
+                                // Store JD text if available from the role entry
+                                const roleEntry = roles[idx] || matchingRole;
+                                if (roleEntry?.jdText) {
+                                  sessionStorage.setItem("jd_text", roleEntry.jdText);
+                                } else {
+                                  sessionStorage.removeItem("jd_text");
+                                }
+                                const params = new URLSearchParams({ title: r.jobTitle, company: r.company || "" });
+                                if (roleEntry?.jdText) params.set("jd", "session");
+                                navigate(`/analysis?${params.toString()}`);
+                              }}
+                            >
+                              <Search className="h-3 w-3" /> Deep dive
+                            </Button>
+                          </div>
+                        </div>
+                        <Progress value={r.summary.augmentedPercent} className="h-2" />
+                      </CardContent>
+                    </Card>
+                  );
+                })}
               </div>
             </div>
 
