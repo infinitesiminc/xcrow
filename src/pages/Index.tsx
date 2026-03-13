@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowRight, Briefcase, BarChart3, BookOpen, Users, Plus, X, Loader2, FileText, Link, Upload, Search } from "lucide-react";
@@ -50,6 +50,8 @@ const Index = () => {
   const [jdFile, setJdFile] = useState<File | null>(null);
   const [jdFileText, setJdFileText] = useState("");
   const [jdFileParsing, setJdFileParsing] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -473,24 +475,23 @@ const Index = () => {
                 >
                   <Link className="h-3 w-3" /> JD URL
                 </button>
-                <label
-                  className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md border transition-colors cursor-pointer ${
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (jdInputType === "file") {
+                      toggleJdInput("file");
+                    } else {
+                      setJdInputType("file");
+                    }
+                  }}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md border transition-colors ${
                     jdInputType === "file"
                       ? "border-primary/50 bg-primary/10 text-primary"
                       : "border-border text-muted-foreground hover:text-foreground hover:border-border/80"
                   }`}
                 >
                   <Upload className="h-3 w-3" /> Upload
-                  <input
-                    type="file"
-                    accept=".pdf,.docx,.doc,.txt,.md"
-                    className="hidden"
-                    onChange={(e) => {
-                      setJdInputType("file");
-                      handleFileChange(e);
-                    }}
-                  />
-                </label>
+                </button>
               </div>
 
               {/* JD paste area */}
@@ -536,25 +537,72 @@ const Index = () => {
                     exit={{ opacity: 0, height: 0 }}
                     transition={{ duration: 0.2 }}
                   >
-                    <div className="flex items-center gap-2 px-3 py-2.5 bg-card border border-border rounded-md">
-                      {jdFileParsing ? (
-                        <>
-                          <Loader2 className="h-3.5 w-3.5 animate-spin text-primary" />
-                          <span className="text-sm text-muted-foreground">Extracting text from {jdFile?.name}...</span>
-                        </>
-                      ) : jdFileText ? (
-                        <>
-                          <FileText className="h-3.5 w-3.5 text-primary" />
-                          <span className="text-sm text-foreground truncate flex-1">{jdFile?.name}</span>
-                          <span className="text-[10px] text-muted-foreground shrink-0">{jdFileText.length.toLocaleString()} chars</span>
-                          <button type="button" onClick={() => { setJdFile(null); setJdFileText(""); setJdInputType("none"); }} className="text-muted-foreground hover:text-foreground">
-                            <X className="h-3 w-3" />
-                          </button>
-                        </>
-                      ) : (
-                        <span className="text-sm text-muted-foreground">Select a PDF, DOCX, or text file</span>
-                      )}
-                    </div>
+                    {jdFileParsing ? (
+                      <motion.div
+                        className="flex flex-col items-center justify-center gap-2 py-8 px-4 rounded-xl border-2 border-primary/30 bg-primary/5"
+                        animate={{ opacity: [0.7, 1, 0.7] }}
+                        transition={{ duration: 1.5, repeat: Infinity }}
+                      >
+                        <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                        <span className="text-sm text-primary font-medium">Extracting text from {jdFile?.name}...</span>
+                      </motion.div>
+                    ) : jdFileText ? (
+                      <div className="flex items-center gap-2 px-4 py-3 bg-card border border-primary/20 rounded-xl">
+                        <FileText className="h-4 w-4 text-primary shrink-0" />
+                        <span className="text-sm text-foreground truncate flex-1">{jdFile?.name}</span>
+                        <span className="text-[10px] text-muted-foreground shrink-0">{jdFileText.length.toLocaleString()} chars</span>
+                        <button type="button" onClick={() => { setJdFile(null); setJdFileText(""); setJdInputType("none"); }} className="text-muted-foreground hover:text-foreground">
+                          <X className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
+                    ) : (
+                      <motion.div
+                        onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
+                        onDragLeave={() => setIsDragging(false)}
+                        onDrop={(e) => {
+                          e.preventDefault();
+                          setIsDragging(false);
+                          const file = e.dataTransfer.files?.[0];
+                          if (file) {
+                            const dt = new DataTransfer();
+                            dt.items.add(file);
+                            if (fileInputRef.current) {
+                              fileInputRef.current.files = dt.files;
+                              fileInputRef.current.dispatchEvent(new Event("change", { bubbles: true }));
+                            }
+                          }
+                        }}
+                        onClick={() => fileInputRef.current?.click()}
+                        animate={isDragging ? { scale: 1.02, borderColor: "hsl(var(--primary))" } : { scale: 1 }}
+                        transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                        className={`flex flex-col items-center justify-center gap-2 py-10 px-4 rounded-xl border-2 border-dashed cursor-pointer transition-colors ${
+                          isDragging
+                            ? "border-primary bg-primary/10"
+                            : "border-border hover:border-primary/40 hover:bg-accent/30"
+                        }`}
+                      >
+                        <motion.div
+                          animate={isDragging ? { y: -4, scale: 1.1 } : { y: 0, scale: 1 }}
+                          transition={{ type: "spring", stiffness: 300, damping: 15 }}
+                        >
+                          <Upload className={`h-8 w-8 ${isDragging ? "text-primary" : "text-muted-foreground"}`} />
+                        </motion.div>
+                        <p className="text-sm font-medium text-foreground">
+                          {isDragging ? "Drop your file here" : "Drag & drop or click to upload"}
+                        </p>
+                        <p className="text-[11px] text-muted-foreground">PDF, DOCX, TXT, or MD — max 5MB</p>
+                        <input
+                          ref={fileInputRef}
+                          type="file"
+                          accept=".pdf,.docx,.doc,.txt,.md"
+                          className="hidden"
+                          onChange={(e) => {
+                            setJdInputType("file");
+                            handleFileChange(e);
+                          }}
+                        />
+                      </motion.div>
+                    )}
                   </motion.div>
                 )}
               </AnimatePresence>
