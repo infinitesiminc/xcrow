@@ -31,7 +31,7 @@ export default function Navbar() {
           className="flex items-center gap-2 font-heading text-lg font-bold tracking-tight text-foreground hover:opacity-80 transition-opacity"
         >
           <BarChart3 className="h-5 w-5 text-primary" />
-          <span className="hidden sm:inline">AI Role Analyzer</span>
+          <span className="hidden sm:inline">Infinite Sim</span>
         </button>
 
         {/* Nav links */}
