@@ -82,7 +82,7 @@ const Analysis = () => {
   const [snapshot, setSnapshot] = useState<CompanySnapshot | null>(null);
   const [snapshotLoading, setSnapshotLoading] = useState(false);
   const [selectedTaskIndex, setSelectedTaskIndex] = useState<number | null>(null);
-
+  const [simTask, setSimTask] = useState<string | null>(null);
   useEffect(() => {
     if (!jobTitle) { navigate("/"); return; }
     const analyze = async () => {
