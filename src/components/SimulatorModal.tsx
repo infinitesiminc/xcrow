@@ -1,0 +1,285 @@
+import { useState, useRef, useEffect, useCallback } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { X, Send, Loader2, Trophy, RotateCcw, Play } from "lucide-react";
+import ReactMarkdown from "react-markdown";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
+import {
+  Dialog,
+  DialogContent,
+} from "@/components/ui/dialog";
+import {
+  compileSession,
+  chatTurn,
+  scoreTranscript,
+  type SimMessage,
+  type SimSession,
+  type SimScore,
+} from "@/lib/simulator";
+
+type Phase = "loading" | "chat" | "scoring" | "results";
+
+interface SimulatorModalProps {
+  open: boolean;
+  onClose: () => void;
+  taskName: string;
+  jobTitle: string;
+  company?: string;
+}
+
+const MAX_TURNS = 10;
+
+const SimulatorModal = ({ open, onClose, taskName, jobTitle, company }: SimulatorModalProps) => {
+  const [phase, setPhase] = useState<Phase>("loading");
+  const [session, setSession] = useState<SimSession | null>(null);
+  const [messages, setMessages] = useState<SimMessage[]>([]);
+  const [input, setInput] = useState("");
+  const [sending, setSending] = useState(false);
+  const [turnCount, setTurnCount] = useState(0);
+  const [score, setScore] = useState<SimScore | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  const scrollToBottom = useCallback(() => {
+    setTimeout(() => scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" }), 50);
+  }, []);
+
+  // Build a slug from job title + task
+  const buildSlug = useCallback(() => {
+    const base = company ? `${company}-${jobTitle}` : jobTitle;
+    return base.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+  }, [company, jobTitle]);
+
+  const startSession = useCallback(async () => {
+    setPhase("loading");
+    setError(null);
+    setMessages([]);
+    setTurnCount(0);
+    setScore(null);
+    try {
+      // Use the task name as a scenario context
+      const slug = buildSlug();
+      const compiled = await compileSession(slug, 3);
+      setSession(compiled);
+      setMessages([{ role: "assistant", content: compiled.openingMessage }]);
+      setPhase("chat");
+    } catch (err) {
+      console.error("Failed to start simulation:", err);
+      setError("Couldn't start the simulation. The simulator may not have scenarios for this role yet.");
+      setPhase("chat");
+    }
+  }, [buildSlug]);
+
+  useEffect(() => {
+    if (open) startSession();
+  }, [open, startSession]);
+
+  const handleSend = async () => {
+    if (!input.trim() || sending) return;
+    const userMsg: SimMessage = { role: "user", content: input.trim() };
+    const newMessages = [...messages, userMsg];
+    setMessages(newMessages);
+    setInput("");
+    setSending(true);
+    scrollToBottom();
+
+    try {
+      const reply = await chatTurn(newMessages, 1, turnCount + 1, jobTitle);
+      setMessages((prev) => [...prev, { role: "assistant", content: reply }]);
+      setTurnCount((c) => c + 1);
+      scrollToBottom();
+    } catch (err) {
+      console.error("Chat error:", err);
+      setMessages((prev) => [...prev, { role: "assistant", content: "Sorry, I encountered an error. Please try again." }]);
+    }
+    setSending(false);
+  };
+
+  const handleFinish = async () => {
+    if (!session) return;
+    setPhase("scoring");
+    try {
+      const result = await scoreTranscript(messages, session.scenario);
+      setScore(result);
+      setPhase("results");
+    } catch (err) {
+      console.error("Scoring error:", err);
+      setError("Couldn't score the session.");
+      setPhase("results");
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleSend();
+    }
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
+      <DialogContent className="max-w-2xl w-[95vw] h-[85vh] p-0 flex flex-col overflow-hidden gap-0">
+        {/* Header */}
+        <div className="flex items-center justify-between px-5 py-3 border-b border-border bg-card shrink-0">
+          <div className="min-w-0">
+            <h2 className="text-sm font-bold text-foreground truncate">Practice: {taskName}</h2>
+            <p className="text-xs text-muted-foreground truncate">{jobTitle}{company ? ` at ${company}` : ""}</p>
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            {phase === "chat" && turnCount > 0 && (
+              <Badge variant="outline" className="text-[10px]">
+                {turnCount}/{MAX_TURNS} turns
+              </Badge>
+            )}
+            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={onClose}>
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+
+        {/* Body */}
+        <div ref={scrollRef} className="flex-1 overflow-y-auto px-5 py-4 space-y-3">
+          <AnimatePresence mode="popLayout">
+            {phase === "loading" && (
+              <motion.div key="loading" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex flex-col items-center justify-center h-full gap-3">
+                <Loader2 className="h-8 w-8 text-primary animate-spin" />
+                <p className="text-sm text-muted-foreground">Setting up your simulation...</p>
+              </motion.div>
+            )}
+
+            {error && phase !== "loading" && (
+              <motion.div key="error" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
+                <Card className="border-warning/30 bg-warning/5">
+                  <CardContent className="p-4 text-center">
+                    <p className="text-sm text-warning font-medium mb-3">{error}</p>
+                    <Button variant="outline" size="sm" onClick={onClose}>Close</Button>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            )}
+
+            {phase === "chat" && !error && messages.map((msg, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
+              >
+                <div
+                  className={`max-w-[80%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed ${
+                    msg.role === "user"
+                      ? "bg-primary text-primary-foreground rounded-br-md"
+                      : "bg-secondary text-secondary-foreground rounded-bl-md"
+                  }`}
+                >
+                  <ReactMarkdown className="prose prose-sm dark:prose-invert max-w-none [&>p]:m-0">
+                    {msg.content}
+                  </ReactMarkdown>
+                </div>
+              </motion.div>
+            ))}
+
+            {sending && (
+              <motion.div key="typing" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex justify-start">
+                <div className="bg-secondary rounded-2xl rounded-bl-md px-4 py-3">
+                  <div className="flex gap-1">
+                    <span className="w-1.5 h-1.5 bg-muted-foreground/50 rounded-full animate-bounce [animation-delay:0ms]" />
+                    <span className="w-1.5 h-1.5 bg-muted-foreground/50 rounded-full animate-bounce [animation-delay:150ms]" />
+                    <span className="w-1.5 h-1.5 bg-muted-foreground/50 rounded-full animate-bounce [animation-delay:300ms]" />
+                  </div>
+                </div>
+              </motion.div>
+            )}
+
+            {phase === "scoring" && (
+              <motion.div key="scoring" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col items-center justify-center py-12 gap-3">
+                <Loader2 className="h-8 w-8 text-primary animate-spin" />
+                <p className="text-sm text-muted-foreground">Evaluating your performance...</p>
+              </motion.div>
+            )}
+
+            {phase === "results" && score && (
+              <motion.div key="results" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="space-y-4 py-4">
+                {/* Overall score */}
+                <div className="text-center">
+                  <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-primary/10 mb-3">
+                    <Trophy className="h-8 w-8 text-primary" />
+                  </div>
+                  <h3 className="text-2xl font-bold text-foreground">{score.overall}/100</h3>
+                  <p className="text-sm text-muted-foreground mt-1">Overall Score</p>
+                </div>
+
+                {/* Category scores */}
+                <div className="space-y-3">
+                  {score.categories?.map((cat, i) => (
+                    <Card key={i}>
+                      <CardContent className="p-3">
+                        <div className="flex items-center justify-between mb-1.5">
+                          <span className="text-xs font-semibold text-foreground">{cat.name}</span>
+                          <span className="text-xs font-bold text-primary">{cat.score}/100</span>
+                        </div>
+                        <Progress value={cat.score} className="h-1.5 mb-2" />
+                        <p className="text-[11px] text-muted-foreground">{cat.feedback}</p>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+
+                {/* Summary */}
+                {score.summary && (
+                  <Card className="bg-accent/30">
+                    <CardContent className="p-4">
+                      <p className="text-sm text-foreground leading-relaxed">{score.summary}</p>
+                    </CardContent>
+                  </Card>
+                )}
+
+                <div className="flex gap-2 justify-center pt-2">
+                  <Button variant="outline" size="sm" onClick={startSession} className="gap-1.5">
+                    <RotateCcw className="h-3.5 w-3.5" /> Try Again
+                  </Button>
+                  <Button size="sm" onClick={onClose}>Done</Button>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+
+        {/* Input bar */}
+        {phase === "chat" && !error && (
+          <div className="shrink-0 border-t border-border bg-card px-4 py-3">
+            <div className="flex items-end gap-2">
+              <textarea
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={handleKeyDown}
+                placeholder="Type your response..."
+                rows={1}
+                className="flex-1 resize-none rounded-xl border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-ring min-h-[38px] max-h-[120px]"
+              />
+              <div className="flex gap-1.5 shrink-0">
+                {turnCount >= 2 && (
+                  <Button variant="outline" size="sm" onClick={handleFinish} className="gap-1 text-xs h-[38px]">
+                    <Trophy className="h-3.5 w-3.5" /> Finish
+                  </Button>
+                )}
+                <Button size="sm" onClick={handleSend} disabled={!input.trim() || sending} className="h-[38px] w-[38px] p-0">
+                  <Send className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+            {turnCount >= MAX_TURNS - 2 && (
+              <p className="text-[10px] text-muted-foreground mt-1.5 text-center">
+                {MAX_TURNS - turnCount} turns remaining
+              </p>
+            )}
+          </div>
+        )}
+      </DialogContent>
+    </Dialog>
+  );
+};
+
+export default SimulatorModal;
