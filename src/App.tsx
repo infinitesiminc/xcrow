@@ -22,14 +22,13 @@ const App = () => (
         <Toaster />
         <Sonner />
         <BrowserRouter>
-          <Navbar />
           <Routes>
             <Route path="/" element={<Index />} />
-            <Route path="/analysis" element={<Analysis />} />
-            <Route path="/team-analysis" element={<TeamAnalysis />} />
-            <Route path="/auth" element={<Auth />} />
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/settings" element={<Settings />} />
+            <Route path="/analysis" element={<><Navbar /><Analysis /></>} />
+            <Route path="/team-analysis" element={<><Navbar /><TeamAnalysis /></>} />
+            <Route path="/auth" element={<><Navbar /><Auth /></>} />
+            <Route path="/dashboard" element={<><Navbar /><Dashboard /></>} />
+            <Route path="/settings" element={<><Navbar /><Settings /></>} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
