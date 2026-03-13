@@ -345,8 +345,12 @@ const Index = () => {
         return analyzeJobWithAI(role.title, "", role.jdText || undefined);
       });
       const allResults = await Promise.all(promises);
-      setTeamResults(allResults);
-      setTeamAnalyzed(true);
+      // Store results in sessionStorage and navigate to dedicated page
+      sessionStorage.setItem("team_results", JSON.stringify(allResults));
+      sessionStorage.setItem("team_roles", JSON.stringify(
+        filledRoles.map(r => ({ title: r.title, jdText: r.jdText }))
+      ));
+      navigate("/team-analysis");
     } catch {
       toast({ title: "Analysis failed", description: "Some roles couldn't be analyzed. Please try again.", variant: "destructive" });
     } finally {
