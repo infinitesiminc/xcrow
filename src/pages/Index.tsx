@@ -30,6 +30,8 @@ type JdInputType = "none" | "paste" | "url" | "file";
 interface RoleEntry {
   id: string;
   title: string;
+  jdText?: string;
+  jdFileName?: string;
 }
 
 const Index = () => {
