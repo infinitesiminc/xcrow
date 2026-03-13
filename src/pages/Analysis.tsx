@@ -344,7 +344,7 @@ const Analysis = () => {
                   >
                     {/* Hero gradient header */}
                     <div className={`relative h-32 ${heroGradient} flex items-center justify-center overflow-hidden`}>
-                      <HeroIcon className="h-16 w-16 text-primary-foreground/30" strokeWidth={1} />
+                      <HeroIcon className={`h-16 w-16 ${heroIconColors[task.impactLevel]} opacity-40`} strokeWidth={1.5} />
                       <div className="absolute inset-0 bg-gradient-to-t from-card/60 to-transparent" />
                     </div>
 
