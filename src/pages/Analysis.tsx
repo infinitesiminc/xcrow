@@ -284,7 +284,7 @@ const Analysis = () => {
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 flex-wrap">
                             <h3 className="font-medium text-foreground">{task.name}</h3>
-                            <Badge variant="outline" className={state.className}>{state.label}</Badge>
+                            <Badge variant="outline" className={`gap-1 ${state.className}`}>{(() => { const StateIcon = state.icon; return <StateIcon className="h-3 w-3" />; })()}{state.label}</Badge>
                           </div>
                           <p className="text-sm text-muted-foreground mt-1">{task.description}</p>
                           <div className="flex items-center gap-4 mt-2">
