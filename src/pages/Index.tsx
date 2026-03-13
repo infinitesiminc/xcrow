@@ -224,7 +224,7 @@ const Index = () => {
           allLines.push(...rows.map((row) => (row[0] || "").toString().trim()).filter(Boolean).filter((l) => !isHeaderRow(l)));
         } else {
           const text = await file.text();
-          allLines.push(...text.split(/\r?\n/).map((l) => l.trim()).filter(Boolean));
+          allLines.push(...text.split(/\r?\n/).map((l) => l.trim()).filter(Boolean).filter((l) => !isHeaderRow(l)));
         }
       }
       allLines = allLines.slice(0, 100);
