@@ -1,16 +1,24 @@
 import { useEffect, useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, ArrowRight, TrendingUp, Minus, AlertTriangle, CheckCircle, Zap, Bot } from "lucide-react";
+import { ArrowLeft, ArrowRight, TrendingUp, Minus, AlertTriangle, Zap, Bot, Globe, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
 import { JobAnalysisResult, TaskState, TrendDirection, AIImpactLevel } from "@/types/analysis";
 import { findPrebuiltRole } from "@/data/prebuilt-roles";
 import { analyzeJobWithAI } from "@/lib/ai-analysis";
+
+interface CompanySnapshot {
+  success: boolean;
+  name: string | null;
+  description: string | null;
+  summary: string | null;
+  logo: string | null;
+  url: string;
+}
 
 const stateLabels: Record<TaskState, { label: string; className: string }> = {
   mostly_human: { label: "Mostly Human", className: "bg-success/10 text-success border-success/20" },
@@ -30,6 +38,10 @@ const impactColors: Record<AIImpactLevel, string> = {
   high: "text-destructive",
 };
 
+const isWebsite = (value: string) => {
+  return /^(https?:\/\/)?([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}(\/.*)?$/.test(value.trim());
+};
+
 const Analysis = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -38,6 +50,8 @@ const Analysis = () => {
   const [result, setResult] = useState<JobAnalysisResult | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [snapshot, setSnapshot] = useState<CompanySnapshot | null>(null);
+  const [snapshotLoading, setSnapshotLoading] = useState(false);
 
   useEffect(() => {
     if (!jobTitle) {
@@ -49,16 +63,14 @@ const Analysis = () => {
       setLoading(true);
       setError(null);
 
-      // Check prebuilt first
       const prebuilt = findPrebuiltRole(jobTitle);
       if (prebuilt) {
-        await new Promise((r) => setTimeout(r, 1200)); // Simulate brief loading
+        await new Promise((r) => setTimeout(r, 1200));
         setResult({ ...prebuilt, company });
         setLoading(false);
         return;
       }
 
-      // Use AI for niche roles
       try {
         const aiResult = await analyzeJobWithAI(jobTitle, company);
         setResult(aiResult);
@@ -71,6 +83,37 @@ const Analysis = () => {
 
     analyze();
   }, [jobTitle, company, navigate]);
+
+  // Fetch company snapshot if company looks like a website
+  useEffect(() => {
+    if (!company || !isWebsite(company)) return;
+
+    const fetchSnapshot = async () => {
+      setSnapshotLoading(true);
+      try {
+        const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+        const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+        const res = await fetch(`${supabaseUrl}/functions/v1/scrape-company`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${supabaseKey}`,
+          },
+          body: JSON.stringify({ url: company }),
+        });
+        const data = await res.json();
+        if (data.success) {
+          setSnapshot(data);
+        }
+      } catch (err) {
+        console.error("Failed to fetch company snapshot:", err);
+      } finally {
+        setSnapshotLoading(false);
+      }
+    };
+
+    fetchSnapshot();
+  }, [company]);
 
   if (loading) {
     return (
@@ -120,6 +163,54 @@ const Analysis = () => {
           {result.company && <p className="mt-1 text-muted-foreground">at {result.company}</p>}
         </motion.div>
 
+        {/* Company Snapshot */}
+        {(snapshotLoading || snapshot) && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.05 }}
+            className="mb-10"
+          >
+            {snapshotLoading ? (
+              <Skeleton className="h-28 w-full rounded-lg" />
+            ) : snapshot ? (
+              <Card className="border-border bg-accent/20">
+                <CardContent className="p-5">
+                  <div className="flex items-start gap-4">
+                    {snapshot.logo && (
+                      <img
+                        src={snapshot.logo}
+                        alt={snapshot.name || "Company logo"}
+                        className="h-10 w-10 rounded-lg object-contain shrink-0 bg-card"
+                        onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+                      />
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <Globe className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                        <h3 className="font-display font-semibold text-foreground text-sm truncate">
+                          {snapshot.name || snapshot.url}
+                        </h3>
+                        <a
+                          href={snapshot.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-muted-foreground hover:text-foreground transition-colors shrink-0"
+                        >
+                          <ExternalLink className="h-3 w-3" />
+                        </a>
+                      </div>
+                      <p className="text-sm text-muted-foreground leading-relaxed line-clamp-3">
+                        {snapshot.summary || snapshot.description || "No description available."}
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ) : null}
+          </motion.div>
+        )}
+
         {/* Summary Stats */}
         <motion.div
           initial={{ opacity: 0, y: 10 }}
@@ -152,29 +243,14 @@ const Analysis = () => {
             Human vs AI Task Distribution
           </h2>
           <div className="flex rounded-lg overflow-hidden h-3">
-            <div
-              className="bg-success transition-all"
-              style={{ width: `${100 - result.summary.augmentedPercent}%` }}
-            />
-            <div
-              className="bg-warning transition-all"
-              style={{ width: `${result.summary.augmentedPercent - result.summary.automationRiskPercent}%` }}
-            />
-            <div
-              className="bg-primary transition-all"
-              style={{ width: `${result.summary.automationRiskPercent}%` }}
-            />
+            <div className="bg-success transition-all" style={{ width: `${100 - result.summary.augmentedPercent}%` }} />
+            <div className="bg-warning transition-all" style={{ width: `${result.summary.augmentedPercent - result.summary.automationRiskPercent}%` }} />
+            <div className="bg-primary transition-all" style={{ width: `${result.summary.automationRiskPercent}%` }} />
           </div>
           <div className="flex justify-between mt-2 text-xs text-muted-foreground">
-            <span className="flex items-center gap-1.5">
-              <span className="h-2 w-2 rounded-full bg-success" /> Human-driven
-            </span>
-            <span className="flex items-center gap-1.5">
-              <span className="h-2 w-2 rounded-full bg-warning" /> AI-augmented
-            </span>
-            <span className="flex items-center gap-1.5">
-              <span className="h-2 w-2 rounded-full bg-primary" /> AI-driven
-            </span>
+            <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-success" /> Human-driven</span>
+            <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-warning" /> AI-augmented</span>
+            <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-primary" /> AI-driven</span>
           </div>
         </motion.div>
 
