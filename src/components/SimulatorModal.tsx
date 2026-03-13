@@ -227,9 +227,9 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company }: Simulato
             <p className="text-xs text-muted-foreground truncate">{jobTitle}{company ? ` at ${company}` : ""}</p>
           </div>
           <div className="flex items-center gap-2 shrink-0">
-            {phase === "chat" && turnCount > 0 && (
+            {phase === "chat" && (
               <Badge variant="outline" className="text-[10px]">
-                {turnCount}/{MAX_TURNS} turns
+                Round {roundCount}
               </Badge>
             )}
           </div>
