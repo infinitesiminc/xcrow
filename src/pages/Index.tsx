@@ -10,9 +10,9 @@ import { analyzeJobWithAI } from "@/lib/ai-analysis";
 import { useToast } from "@/hooks/use-toast";
 
 const steps = [
-  { icon: Briefcase, title: "Enter your role", description: "Tell us your company and job title" },
-  { icon: BarChart3, title: "Get your analysis", description: "See how AI impacts each task in your role" },
-  { icon: BookOpen, title: "Bridge the gap", description: "Get personalized skill recommendations" },
+  { icon: BarChart3, title: "Analyze", description: "See exactly how AI reshapes every task in your role" },
+  { icon: Briefcase, title: "Simulate", description: "Practice working alongside AI in realistic job scenarios" },
+  { icon: BookOpen, title: "Adapt", description: "Build the skills that keep you ahead of automation" },
 ];
 
 type Mode = "individual" | "team";
@@ -361,14 +361,14 @@ const Index = () => {
           className="text-center max-w-2xl mx-auto"
         >
           <span className="inline-block mb-3 px-3 py-1 text-xs font-medium tracking-wide uppercase rounded-full bg-accent text-accent-foreground">
-            AI Impact Analyzer
+            Infinite Sim
           </span>
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold font-display tracking-tight text-foreground leading-tight">
-            How is AI changing{" "}
-            <span className="text-primary">your job</span>?
+            Understand how AI transforms your role —{" "}
+            <span className="text-primary">then practice thriving in it</span>
           </h1>
           <p className="mt-3 text-lg text-muted-foreground max-w-lg mx-auto leading-relaxed">
-            Get a task-level breakdown of AI's impact — and a personalized plan to stay ahead.
+            Task-level AI impact analysis for any job, plus hands-on simulations to sharpen the skills that matter.
           </p>
         </motion.div>
 
