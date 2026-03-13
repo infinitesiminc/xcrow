@@ -67,9 +67,7 @@ const Index = () => {
     { id: crypto.randomUUID(), title: "" },
     { id: crypto.randomUUID(), title: "" },
   ]);
-  const [teamResults, setTeamResults] = useState<JobAnalysisResult[]>([]);
   const [teamLoading, setTeamLoading] = useState(false);
-  const [teamAnalyzed, setTeamAnalyzed] = useState(false);
   const [teamJdParsing, setTeamJdParsing] = useState(false);
 
   const isValidWebsite = (url: string) => {
