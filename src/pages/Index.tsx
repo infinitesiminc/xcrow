@@ -181,12 +181,27 @@ const Index = () => {
     setRoles(roles.map((r) => (r.id === id ? { ...r, title } : r)));
   };
 
-  // Upload a CSV/TXT with one job title per line
+  // Upload a CSV/TXT/XLSX with one job title per line/row
   const handleJobListUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    const text = await file.text();
-    const lines = text.split(/\r?\n/).map((l) => l.trim()).filter(Boolean).slice(0, 10);
+
+    let lines: string[] = [];
+    const name = file.name.toLowerCase();
+
+    if (name.endsWith(".xlsx") || name.endsWith(".xls")) {
+      const XLSX = await import("xlsx");
+      const arrayBuffer = await file.arrayBuffer();
+      const workbook = XLSX.read(arrayBuffer, { type: "array" });
+      const sheet = workbook.Sheets[workbook.SheetNames[0]];
+      const rows: string[][] = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+      lines = rows.map((row) => (row[0] || "").toString().trim()).filter(Boolean);
+    } else {
+      const text = await file.text();
+      lines = text.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
+    }
+
+    lines = lines.slice(0, 10);
     if (lines.length === 0) {
       toast({ title: "Empty file", description: "No job titles found.", variant: "destructive" });
       return;
