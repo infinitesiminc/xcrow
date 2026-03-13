@@ -185,16 +185,15 @@ const Analysis = () => {
                     {snapshot.logo && (
                       <img
                         src={snapshot.logo}
-                        alt={snapshot.name || "Company logo"}
+                        alt={snapshot.companyName || "Company logo"}
                         className="h-10 w-10 rounded-lg object-contain shrink-0 bg-card"
                         onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
                       />
                     )}
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        <Globe className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                      <div className="flex items-center gap-2 mb-2">
                         <h3 className="font-display font-semibold text-foreground text-sm truncate">
-                          {snapshot.name || snapshot.url}
+                          {snapshot.companyName || snapshot.url}
                         </h3>
                         <a
                           href={snapshot.url}
@@ -205,9 +204,41 @@ const Analysis = () => {
                           <ExternalLink className="h-3 w-3" />
                         </a>
                       </div>
-                      <p className="text-sm text-muted-foreground leading-relaxed line-clamp-3">
-                        {snapshot.summary || snapshot.description || "No description available."}
-                      </p>
+                      {snapshot.tagline && (
+                        <p className="text-sm text-muted-foreground mb-3">{snapshot.tagline}</p>
+                      )}
+                      <div className="flex flex-wrap gap-x-4 gap-y-2">
+                        {snapshot.industry && (
+                          <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                            <Building2 className="h-3 w-3 shrink-0" /> {snapshot.industry}
+                          </span>
+                        )}
+                        {snapshot.companyType && (
+                          <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                            <Tag className="h-3 w-3 shrink-0" /> {snapshot.companyType}
+                          </span>
+                        )}
+                        {snapshot.employeeRange && (
+                          <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                            <Users className="h-3 w-3 shrink-0" /> {snapshot.employeeRange} employees
+                          </span>
+                        )}
+                        {snapshot.revenueScale && (
+                          <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                            <DollarSign className="h-3 w-3 shrink-0" /> {snapshot.revenueScale}
+                          </span>
+                        )}
+                        {snapshot.headquarters && (
+                          <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                            <MapPin className="h-3 w-3 shrink-0" /> {snapshot.headquarters}
+                          </span>
+                        )}
+                        {snapshot.founded && (
+                          <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                            <Calendar className="h-3 w-3 shrink-0" /> Est. {snapshot.founded}
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </CardContent>
