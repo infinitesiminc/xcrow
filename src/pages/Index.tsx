@@ -181,35 +181,59 @@ const Index = () => {
     setRoles(roles.map((r) => (r.id === id ? { ...r, title } : r)));
   };
 
-  // Upload a CSV/TXT/XLSX with one job title per line/row
-  const handleJobListUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  // Single smart upload: spreadsheets/CSVs → job title list; documents → JD entries
+  const handleFilesUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []).slice(0, 10);
+    if (files.length === 0) return;
 
-    let lines: string[] = [];
-    const name = file.name.toLowerCase();
+    const listExts = [".csv", ".tsv"];
+    const spreadsheetExts = [".xlsx", ".xls"];
+    const docExts = [".pdf", ".docx", ".doc", ".txt", ".md"];
 
-    if (name.endsWith(".xlsx") || name.endsWith(".xls")) {
-      const XLSX = await import("xlsx");
-      const arrayBuffer = await file.arrayBuffer();
-      const workbook = XLSX.read(arrayBuffer, { type: "array" });
-      const sheet = workbook.Sheets[workbook.SheetNames[0]];
-      const rows: string[][] = XLSX.utils.sheet_to_json(sheet, { header: 1 });
-      lines = rows.map((row) => (row[0] || "").toString().trim()).filter(Boolean);
-    } else {
-      const text = await file.text();
-      lines = text.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
+    // Categorize files
+    const listFiles: File[] = [];
+    const jdFiles: File[] = [];
+
+    for (const file of files) {
+      const name = file.name.toLowerCase();
+      if (spreadsheetExts.some((ext) => name.endsWith(ext)) || listExts.some((ext) => name.endsWith(ext))) {
+        listFiles.push(file);
+      } else if (docExts.some((ext) => name.endsWith(ext))) {
+        jdFiles.push(file);
+      }
     }
 
-    lines = lines.slice(0, 10);
-    if (lines.length === 0) {
-      toast({ title: "Empty file", description: "No job titles found.", variant: "destructive" });
+    // If only list-type files, extract titles
+    if (listFiles.length > 0 && jdFiles.length === 0) {
+      let allLines: string[] = [];
+      for (const file of listFiles) {
+        const name = file.name.toLowerCase();
+        if (name.endsWith(".xlsx") || name.endsWith(".xls")) {
+          const XLSX = await import("xlsx");
+          const arrayBuffer = await file.arrayBuffer();
+          const workbook = XLSX.read(arrayBuffer, { type: "array" });
+          const sheet = workbook.Sheets[workbook.SheetNames[0]];
+          const rows: string[][] = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+          allLines.push(...rows.map((row) => (row[0] || "").toString().trim()).filter(Boolean));
+        } else {
+          const text = await file.text();
+          allLines.push(...text.split(/\r?\n/).map((l) => l.trim()).filter(Boolean));
+        }
+      }
+      allLines = allLines.slice(0, 10);
+      if (allLines.length === 0) {
+        toast({ title: "Empty file", description: "No job titles found.", variant: "destructive" });
+      } else {
+        setRoles(allLines.map((title) => ({ id: crypto.randomUUID(), title })));
+        toast({ title: `${allLines.length} roles imported`, description: "Review and click Analyze Team." });
+      }
+      e.target.value = "";
       return;
     }
-    setRoles(lines.map((title) => ({ id: crypto.randomUUID(), title })));
-    toast({ title: `${lines.length} roles imported`, description: "Review and click Analyze Team." });
-    e.target.value = "";
-  };
+
+    // Otherwise treat everything as JD files (documents + spreadsheets as JD content)
+    const allFiles = [...listFiles, ...jdFiles];
+    setTeamJdParsing(true);
 
   // Upload multiple JD files — parse each and create role entries
   const handleBatchJdUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
