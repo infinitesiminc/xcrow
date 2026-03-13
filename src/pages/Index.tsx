@@ -639,6 +639,7 @@ const Index = () => {
           )}
         </AnimatePresence>
       </div>
+      </div>
     </div>
   );
 };
