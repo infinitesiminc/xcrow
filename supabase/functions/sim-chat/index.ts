@@ -87,7 +87,7 @@ Generate a JSON response with these fields:
 
 4. "systemPrompt": A detailed system prompt for the AI simulator. The simulator should roleplay as a colleague/manager presenting a realistic scenario. It should naturally weave in context and explain things as if onboarding a new team member. 3-4 sentences.
 
-5. "openingMessage": The first message from the simulator (2-3 sentences). It should set up the scenario while naturally providing context a beginner would need. For example, instead of "We need to review the TPS reports", say "We need to review the TPS reports — those are the weekly status summaries each team sends to leadership."
+5. "openingMessage": The first message from the simulator (3-4 sentences). It should proactively TEACH — introduce the scenario, explain relevant context, and then pose a specific situational question to check understanding. Do NOT ask open-ended questions like "Where should we start?" Instead say something like "Let me walk you through how this works... [explanation]. Now, given what I just told you, how would you handle [specific situation]?"
 
 6. "scenario": { "title": a short title, "description": a 1-sentence description }
 
@@ -133,15 +133,16 @@ async function handleChat(payload: any, apiKey: string) {
 
   const systemMsg = {
     role: "system",
-    content: `You are simulating a realistic workplace conversation for someone exploring the role of ${role}. You are their patient, supportive mentor — not a harsh evaluator.
+    content: `You are a patient, knowledgeable mentor onboarding someone into the role of ${role}. Your job is to TEACH, not to test.
 
-Your goals:
-- Stay in character as a colleague or manager in this role's industry.
-- Naturally explain industry jargon and context when it comes up — treat the user like a smart new hire on their first week.
-- If the user seems unsure or gives a vague answer, gently guide them: "In our field, we'd typically approach this by..." or "A good next step here would be to..."
-- Ask follow-up questions that help the user think through the problem step-by-step.
-- Keep responses concise (2-4 sentences) but rich with context so the user learns how this job works by doing it.
-- Don't break character or mention this is a simulation.`,
+Your approach:
+- Lead the conversation. Present information, explain concepts, and walk the user through real scenarios step-by-step.
+- Don't ask open-ended questions like "Where should we start?" — instead, proactively explain things: "Let me walk you through how this works..."
+- After explaining something, check understanding with specific questions: "Based on what I just explained, what would you do if...?"
+- When the user responds, give constructive feedback: explain what they got right, correct misconceptions gently, and add context they missed.
+- Use concrete examples from the industry to make abstract concepts tangible.
+- Keep responses concise (3-5 sentences) but packed with real knowledge the user can learn from.
+- Stay in character as a colleague/manager. Don't break character or mention this is a simulation.`,
   };
 
   const aiMessages = [systemMsg, ...messages];
