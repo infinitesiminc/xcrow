@@ -70,6 +70,17 @@ const Index = () => {
             <ArrowRight className="w-4 h-4" />
           </Button>
         </motion.form>
+
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.4 }}
+          className="mt-4 text-center"
+        >
+          <Button variant="ghost" size="sm" onClick={() => navigate("/team")} className="text-muted-foreground gap-1.5">
+            <Users className="h-4 w-4" /> Analyze your whole team instead
+          </Button>
+        </motion.div>
       </div>
 
       {/* How it works */}
