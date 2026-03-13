@@ -406,7 +406,22 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company }: Simulato
                     variant="outline"
                     size="sm"
                     className="flex-1 hover:bg-success/5 hover:border-success/30"
-                    onClick={() => { setInput("yes"); setTimeout(() => { const fakeMsg: SimMessage = { role: "user", content: "yes" }; const newMsgs = [...messages, fakeMsg]; setMessages(newMsgs); setInput(""); setSending(true); setRoundCount(prev => prev + 1); scrollToBottom(); chatTurn(session!, newMsgs).then(reply => { setMessages(prev => [...prev, { role: "assistant", content: reply }]); scrollToBottom(); }).catch(() => { setMessages(prev => [...prev, { role: "assistant", content: "Sorry, something went wrong." }]); }).finally(() => setSending(false)); }, 0); }}
+                    onClick={() => {
+                      const fakeMsg: SimMessage = { role: "user", content: "yes" };
+                      const newMsgs = [...messages, fakeMsg];
+                      setMessages(newMsgs);
+                      setInput("");
+                      setSending(true);
+                      const nextRound = roundCount + 1;
+                      setRoundCount(nextRound);
+                      scrollToBottom();
+                      chatTurn(newMsgs, nextRound, nextRound, jobTitle).then(reply => {
+                        setMessages(prev => [...prev, { role: "assistant", content: reply }]);
+                        scrollToBottom();
+                      }).catch(() => {
+                        setMessages(prev => [...prev, { role: "assistant", content: "Sorry, something went wrong." }]);
+                      }).finally(() => setSending(false));
+                    }}
                   >
                     Yes, show me more
                   </Button>
