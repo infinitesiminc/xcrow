@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import {
   ArrowLeft, TrendingUp, Minus, AlertTriangle, Zap, Bot, Globe, ExternalLink,
   Building2, Users, DollarSign, MapPin, Calendar, Tag,
-  Wrench, Heart, Sparkles, Save,
+  Wrench, Heart, Sparkles, Save, User,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -29,10 +29,10 @@ interface CompanySnapshot {
   url: string;
 }
 
-const stateLabels: Record<TaskState, { label: string; className: string }> = {
-  mostly_human: { label: "Mostly Human", className: "bg-success/10 text-success border-success/20" },
-  human_ai: { label: "Human + AI", className: "bg-warning/10 text-warning border-warning/20" },
-  mostly_ai: { label: "Mostly AI", className: "bg-primary/10 text-primary border-primary/20" },
+const stateLabels: Record<TaskState, { label: string; className: string; icon: typeof Bot }> = {
+  mostly_human: { label: "Mostly Human", className: "bg-success/10 text-success border-success/20", icon: User },
+  human_ai: { label: "Human + AI", className: "bg-warning/10 text-warning border-warning/20", icon: Users },
+  mostly_ai: { label: "Mostly AI", className: "bg-primary/10 text-primary border-primary/20", icon: Bot },
 };
 
 const trendIcons: Record<TrendDirection, { icon: typeof Minus; label: string }> = {
@@ -251,9 +251,9 @@ const Analysis = () => {
             <div className="bg-primary transition-all" style={{ width: `${result.summary.automationRiskPercent}%` }} />
           </div>
           <div className="flex justify-between mt-2 text-xs text-muted-foreground">
-            <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-success" /> Human-driven</span>
-            <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-warning" /> AI-augmented</span>
-            <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-primary" /> AI-driven</span>
+            <span className="flex items-center gap-1.5"><User className="h-3 w-3" /> Human-driven</span>
+            <span className="flex items-center gap-1.5"><Users className="h-3 w-3" /> AI-augmented</span>
+            <span className="flex items-center gap-1.5"><Bot className="h-3 w-3" /> AI-driven</span>
           </div>
         </motion.div>
 
@@ -284,7 +284,7 @@ const Analysis = () => {
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 flex-wrap">
                             <h3 className="font-medium text-foreground">{task.name}</h3>
-                            <Badge variant="outline" className={state.className}>{state.label}</Badge>
+                            <Badge variant="outline" className={`gap-1 ${state.className}`}>{(() => { const StateIcon = state.icon; return <StateIcon className="h-3 w-3" />; })()}{state.label}</Badge>
                           </div>
                           <p className="text-sm text-muted-foreground mt-1">{task.description}</p>
                           <div className="flex items-center gap-4 mt-2">
