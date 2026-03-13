@@ -443,11 +443,15 @@ const Analysis = () => {
                 <Rocket className="h-6 w-6 text-primary" />
               </div>
               <div className="flex-1 text-center sm:text-left">
-                <h3 className="text-base font-display font-bold text-foreground mb-0.5">Save your learning path</h3>
-                <p className="text-sm text-muted-foreground">Track your progress and get personalized skill recommendations</p>
+                <h3 className="text-base font-display font-bold text-foreground mb-0.5">
+                  {user ? "View your dashboard" : "Track your progress"}
+                </h3>
+                <p className="text-sm text-muted-foreground">
+                  {user ? "See all your practiced tasks and progress" : "Sign in to save practice completions across sessions"}
+                </p>
               </div>
-              <Button onClick={handleSave} size="sm" className="gap-1.5 shrink-0">
-                <Save className="w-3.5 h-3.5" /> Save My Path
+              <Button onClick={() => navigate(user ? "/dashboard" : "/auth")} size="sm" className="gap-1.5 shrink-0">
+                {user ? <><CheckCircle2 className="w-3.5 h-3.5" /> Dashboard</> : <><LogIn className="w-3.5 h-3.5" /> Sign In</>}
               </Button>
             </CardContent>
           </Card>
@@ -460,6 +464,7 @@ const Analysis = () => {
           taskName={simTask || ""}
           jobTitle={result.jobTitle}
           company={result.company}
+          onCompleted={fetchCompletions}
         />
       </div>
     </div>
