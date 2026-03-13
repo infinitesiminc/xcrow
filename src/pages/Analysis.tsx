@@ -287,9 +287,16 @@ const Analysis = () => {
       <div className="max-w-5xl mx-auto">
         {/* Header */}
         <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="mb-6">
-          <Button variant="ghost" size="sm" onClick={() => navigate("/")} className="mb-4 -ml-2 text-muted-foreground h-7 text-xs">
-            <ArrowLeft className="w-3 h-3 mr-1" /> New analysis
-          </Button>
+          <div className="flex items-center gap-2 mb-4">
+            <Button variant="ghost" size="sm" onClick={() => navigate("/")} className="-ml-2 text-muted-foreground h-7 text-xs">
+              <ArrowLeft className="w-3 h-3 mr-1" /> New analysis
+            </Button>
+            {user && (
+              <Button variant="ghost" size="sm" onClick={() => navigate("/dashboard")} className="text-muted-foreground h-7 text-xs">
+                Dashboard
+              </Button>
+            )}
+          </div>
           <div className="flex items-baseline gap-3 flex-wrap">
             <h1 className="text-2xl font-display font-bold text-foreground">{result.jobTitle}</h1>
             {result.company && <span className="text-sm text-muted-foreground">at {result.company}</span>}
