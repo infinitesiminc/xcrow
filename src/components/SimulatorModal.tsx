@@ -278,7 +278,12 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company }: Simulato
                       }`}
                     >
                       <div className="prose prose-sm dark:prose-invert max-w-none [&>p]:m-0">
-                        <ReactMarkdown>{msg.content}</ReactMarkdown>
+                        <ReactMarkdown>{
+                          // Strip multiple-choice lines from the last assistant message if they'll be shown as buttons
+                          msg.role === "assistant" && i === messages.length - 1 && !sending
+                            ? msg.content.replace(/^[A-D][).]\s*.+$/gm, "").trim()
+                            : msg.content
+                        }</ReactMarkdown>
                       </div>
                     </div>
                   </motion.div>
