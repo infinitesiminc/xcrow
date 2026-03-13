@@ -60,20 +60,34 @@ const Index = () => {
     return /^(https?:\/\/)?([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}(\/.*)?$/.test(url.trim());
   };
 
+  const hasJdContent = (jdInputType === "paste" && jdText.trim().length > 0) ||
+    (jdInputType === "url" && jdUrl.trim().length > 0) ||
+    (jdInputType === "file" && jdFileText.trim().length > 0);
+
+  // Auto-extract company domain from JD URL
+  const companyFromJdUrl = (() => {
+    if (jdInputType !== "url" || !jdUrl.trim()) return "";
+    try {
+      let u = jdUrl.trim();
+      if (!u.startsWith("http")) u = `https://${u}`;
+      return new URL(u).hostname.replace(/^www\./, "");
+    } catch { return ""; }
+  })();
+
+  const effectiveCompany = website.trim() || companyFromJdUrl;
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!jobTitle.trim()) return;
+    if (!jobTitle.trim() && !hasJdContent) return;
     if (website && !isValidWebsite(website)) {
       setWebsiteError("Please enter a valid website (e.g. example.com)");
       return;
     }
     setWebsiteError("");
 
-    const companyParam = website.trim();
     const jdParam = jdInputType === "paste" ? jdText.trim() : jdInputType === "file" ? jdFileText.trim() : "";
     const jdUrlParam = jdInputType === "url" ? jdUrl.trim() : "";
 
-    // Store JD in sessionStorage to avoid URL length limits
     if (jdParam) {
       sessionStorage.setItem("jd_text", jdParam);
     } else {
@@ -81,7 +95,7 @@ const Index = () => {
     }
 
     const params = new URLSearchParams({
-      company: companyParam,
+      company: effectiveCompany,
       title: jobTitle.trim(),
     });
     if (jdParam) params.set("jd", "session");
