@@ -180,12 +180,15 @@ const Index = () => {
               onSubmit={handleSubmit}
               className="mt-8 w-full max-w-md space-y-3"
             >
-              <Input
-                placeholder="Company name (optional)"
-                value={company}
-                onChange={(e) => setCompany(e.target.value)}
-                className="h-12 bg-card border-border"
-              />
+              <div>
+                <Input
+                  placeholder="Company website (optional) — e.g. example.com"
+                  value={website}
+                  onChange={(e) => { setWebsite(e.target.value); setWebsiteError(""); }}
+                  className={`h-12 bg-card border-border ${websiteError ? "border-destructive" : ""}`}
+                />
+                {websiteError && <p className="text-xs text-destructive mt-1">{websiteError}</p>}
+              </div>
               <Input
                 placeholder="Your job title *"
                 value={jobTitle}
