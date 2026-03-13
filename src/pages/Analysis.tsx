@@ -84,11 +84,11 @@ const Analysis = () => {
   const [selectedTaskIndex, setSelectedTaskIndex] = useState<number | null>(null);
   const [simTask, setSimTask] = useState<string | null>(null);
   useEffect(() => {
-    if (!jobTitle) { navigate("/"); return; }
+    if (!jobTitle && !hasJd) { navigate("/"); return; }
     const analyze = async () => {
       setLoading(true);
       setError(null);
-      const prebuilt = findPrebuiltRole(jobTitle);
+      const prebuilt = jobTitle ? findPrebuiltRole(jobTitle) : null;
       if (prebuilt && !hasJd) {
         await new Promise((r) => setTimeout(r, 1200));
         setResult({ ...prebuilt, company });
@@ -105,7 +105,7 @@ const Analysis = () => {
       setLoading(false);
     };
     analyze();
-  }, [jobTitle, company, navigate]);
+  }, [jobTitle, company, hasJd, navigate]);
 
   useEffect(() => {
     if (!company || !isWebsite(company)) return;
