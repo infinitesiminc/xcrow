@@ -47,9 +47,7 @@ const BriefingScreen = ({
     className="flex flex-col gap-5 py-2"
   >
     <div className="text-center">
-      <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-primary/10 mb-3">
-        <BookOpen className="h-5 w-5 text-primary" />
-      </div>
+      <div className="text-4xl mb-2">🎯</div>
       <h3 className="text-lg font-bold text-foreground">{session.scenario.title}</h3>
       <p className="text-xs text-muted-foreground mt-1">{session.scenario.description}</p>
     </div>
@@ -57,8 +55,8 @@ const BriefingScreen = ({
     {/* Briefing */}
     <Card className="bg-accent/20 border-accent/30">
       <CardContent className="p-4">
-        <h4 className="text-xs font-semibold text-foreground mb-2 flex items-center gap-1.5">
-          <BookOpen className="h-3.5 w-3.5 text-primary" /> What you need to know
+        <h4 className="text-xs font-semibold text-foreground mb-2">
+          📚 What you need to know
         </h4>
         <div className="text-sm text-foreground/90 leading-relaxed prose prose-sm dark:prose-invert max-w-none [&>p]:mb-2">
           <ReactMarkdown>{session.briefing}</ReactMarkdown>
@@ -70,13 +68,13 @@ const BriefingScreen = ({
     {session.tips && session.tips.length > 0 && (
       <Card className="border-primary/20 bg-primary/5">
         <CardContent className="p-4">
-          <h4 className="text-xs font-semibold text-foreground mb-2 flex items-center gap-1.5">
-            <Lightbulb className="h-3.5 w-3.5 text-primary" /> Tips for success
+          <h4 className="text-xs font-semibold text-foreground mb-2">
+            💡 Tips for success
           </h4>
           <ul className="space-y-1.5">
             {session.tips.map((tip, i) => (
               <li key={i} className="text-sm text-foreground/80 flex items-start gap-2">
-                <span className="text-primary font-bold text-xs mt-0.5">{i + 1}.</span>
+                <span className="text-sm">{["✅", "🔍", "💬"][i % 3]}</span>
                 {tip}
               </li>
             ))}
@@ -86,7 +84,7 @@ const BriefingScreen = ({
     )}
 
     <Button onClick={onStart} className="gap-2 mx-auto">
-      <Play className="h-4 w-4" /> Start Simulation
+      🚀 Start Simulation
     </Button>
   </motion.div>
 );
