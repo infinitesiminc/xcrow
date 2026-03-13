@@ -343,6 +343,15 @@ const Analysis = () => {
                                   <TrendIcon className="h-2.5 w-2.5" />
                                   {trend.label}
                                 </span>
+                                {/* Practice button */}
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="ml-auto h-6 px-2 text-[10px] gap-1 text-primary hover:bg-primary/10"
+                                  onClick={(e) => { e.stopPropagation(); setSimTask(task.name); }}
+                                >
+                                  <Play className="h-2.5 w-2.5" /> Practice
+                                </Button>
                               </div>
                             </div>
                           </div>
