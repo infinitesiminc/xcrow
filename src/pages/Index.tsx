@@ -475,24 +475,23 @@ const Index = () => {
                 >
                   <Link className="h-3 w-3" /> JD URL
                 </button>
-                <label
-                  className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md border transition-colors cursor-pointer ${
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (jdInputType === "file") {
+                      toggleJdInput("file");
+                    } else {
+                      setJdInputType("file");
+                    }
+                  }}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md border transition-colors ${
                     jdInputType === "file"
                       ? "border-primary/50 bg-primary/10 text-primary"
                       : "border-border text-muted-foreground hover:text-foreground hover:border-border/80"
                   }`}
                 >
                   <Upload className="h-3 w-3" /> Upload
-                  <input
-                    type="file"
-                    accept=".pdf,.docx,.doc,.txt,.md"
-                    className="hidden"
-                    onChange={(e) => {
-                      setJdInputType("file");
-                      handleFileChange(e);
-                    }}
-                  />
-                </label>
+                </button>
               </div>
 
               {/* JD paste area */}
