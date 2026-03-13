@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import {
   ArrowLeft, TrendingUp, Minus, AlertTriangle, Zap, Bot, ExternalLink,
   Building2, Users, DollarSign, MapPin, Calendar, Tag,
-  Wrench, Heart, Sparkles, Save, User,
+  Wrench, Heart, Sparkles, Save, User, ChevronDown,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -368,29 +368,63 @@ const Analysis = () => {
   );
 };
 
-/* Compact skill row */
-const CompactSkill = ({ skill, showResources = false }: { skill: JobAnalysisResult["skills"][number]; showResources?: boolean }) => (
-  <div className="flex items-start gap-2 px-2.5 py-2 rounded-md bg-accent/30 border border-border/50">
-    <div className="flex-1 min-w-0">
+/* Expandable skill row — compact by default, click to reveal full details */
+const CompactSkill = ({ skill, showResources = false }: { skill: JobAnalysisResult["skills"][number]; showResources?: boolean }) => {
+  const [expanded, setExpanded] = useState(false);
+
+  return (
+    <button
+      type="button"
+      onClick={() => showResources && setExpanded(!expanded)}
+      className={`w-full text-left px-2.5 py-2 rounded-md border transition-all ${
+        expanded
+          ? "bg-accent/50 border-border"
+          : "bg-accent/30 border-border/50 hover:border-border"
+      } ${showResources ? "cursor-pointer" : ""}`}
+    >
       <div className="flex items-center gap-1.5">
-        <span className="text-xs font-medium text-foreground truncate">{skill.name}</span>
-        <Badge variant="outline" className={`text-[9px] px-1 py-0 capitalize leading-tight ${priorityStyles[skill.priority]}`}>
+        <span className="text-xs font-medium text-foreground">{skill.name}</span>
+        <Badge variant="outline" className={`text-[9px] px-1 py-0 capitalize leading-tight shrink-0 ${priorityStyles[skill.priority]}`}>
           {skill.priority}
         </Badge>
+        {showResources && (
+          <ChevronDown className={`h-3 w-3 ml-auto text-muted-foreground shrink-0 transition-transform ${expanded ? "rotate-180" : ""}`} />
+        )}
       </div>
-      <p className="text-[11px] text-muted-foreground mt-0.5 line-clamp-1">{skill.description}</p>
-      {showResources && skill.resources && skill.resources.length > 0 && (
-        <div className="mt-1 flex flex-wrap gap-1">
-          {skill.resources.slice(0, 2).map((r, ri) => (
-            <a key={ri} href={r.url} target="_blank" rel="noopener noreferrer" title={r.summary}
-              className="inline-flex items-center gap-0.5 text-[10px] text-muted-foreground hover:text-foreground transition-colors">
-              <ExternalLink className="h-2 w-2" />{r.name}
-            </a>
-          ))}
+
+      {/* Collapsed: one-line preview */}
+      {!expanded && (
+        <p className="text-[11px] text-muted-foreground mt-0.5 line-clamp-1">{skill.description}</p>
+      )}
+
+      {/* Expanded: full description + all resources */}
+      {expanded && (
+        <div className="mt-1.5">
+          <p className="text-[11px] text-muted-foreground leading-relaxed">{skill.description}</p>
+          {skill.resources && skill.resources.length > 0 && (
+            <div className="mt-2 space-y-1.5">
+              {skill.resources.map((r, ri) => (
+                <a
+                  key={ri}
+                  href={r.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={(e) => e.stopPropagation()}
+                  className="flex items-start gap-1.5 text-[11px] group"
+                >
+                  <ExternalLink className="h-2.5 w-2.5 mt-0.5 shrink-0 text-primary" />
+                  <div className="min-w-0">
+                    <span className="font-medium text-foreground group-hover:underline">{r.name}</span>
+                    <p className="text-muted-foreground leading-snug">{r.summary}</p>
+                  </div>
+                </a>
+              ))}
+            </div>
+          )}
         </div>
       )}
-    </div>
-  </div>
-);
+    </button>
+  );
+};
 
 export default Analysis;
