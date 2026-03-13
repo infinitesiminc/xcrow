@@ -85,9 +85,9 @@ const Dashboard = () => {
         {/* Stats */}
         <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="grid grid-cols-3 gap-4 mb-8">
           {[
-            { label: "Sessions", value: completions.length, icon: CheckCircle2 },
+            { label: "Jobs Analyzed", value: analyses.length, icon: BarChart3 },
             { label: "Tasks Practiced", value: uniqueTasks, icon: Play },
-            { label: "Roles Explored", value: uniqueRoles, icon: Briefcase },
+            { label: "Sessions", value: completions.length, icon: CheckCircle2 },
           ].map((stat) => (
             <Card key={stat.label}>
               <CardContent className="p-4 text-center">
