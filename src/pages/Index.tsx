@@ -228,6 +228,19 @@ const Index = () => {
 
       if (name.endsWith(".txt") || name.endsWith(".md")) {
         jdText = await file.text();
+      } else if (name.endsWith(".xlsx") || name.endsWith(".xls")) {
+        try {
+          const XLSX = await import("xlsx");
+          const arrayBuffer = await file.arrayBuffer();
+          const workbook = XLSX.read(arrayBuffer, { type: "array" });
+          const sheet = workbook.Sheets[workbook.SheetNames[0]];
+          jdText = XLSX.utils.sheet_to_json(sheet, { header: 1 })
+            .map((row: any) => (Array.isArray(row) ? row.join(" ") : "").trim())
+            .filter(Boolean)
+            .join("\n");
+        } catch (err) {
+          console.error(`Failed to parse ${file.name}:`, err);
+        }
       } else if (name.endsWith(".pdf") || name.endsWith(".docx") || name.endsWith(".doc")) {
         try {
           const formData = new FormData();
