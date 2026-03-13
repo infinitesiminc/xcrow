@@ -443,54 +443,36 @@ const Analysis = () => {
 };
 
 /* Skill card with expand/collapse */
-const CompactSkill = ({ skill, showResources = false }: { skill: JobAnalysisResult["skills"][number]; showResources?: boolean }) => {
-  const [expanded, setExpanded] = useState(false);
-
+const CompactSkill = ({ skill }: { skill: JobAnalysisResult["skills"][number] }) => {
   return (
-    <Card
-      className={`transition-all ${showResources ? "cursor-pointer" : ""} ${
-        expanded ? "shadow-sm border-primary/20" : "hover:border-primary/10"
-      }`}
-      onClick={() => showResources && setExpanded(!expanded)}
-    >
+    <Card className="transition-all hover:border-primary/10">
       <CardContent className="p-3">
         <div className="flex items-center gap-2">
           <Badge variant="outline" className={`text-[9px] px-1.5 py-0 capitalize shrink-0 ${priorityStyles[skill.priority]}`}>
             {skill.priority}
           </Badge>
           <span className="text-xs font-semibold text-foreground truncate">{skill.name}</span>
-          {showResources && (
-            <ChevronDown className={`h-3 w-3 ml-auto text-muted-foreground shrink-0 transition-transform ${expanded ? "rotate-180" : ""}`} />
-          )}
         </div>
 
-        {!expanded && (
-          <p className="text-[11px] text-muted-foreground mt-1 line-clamp-1">{skill.description}</p>
-        )}
+        <p className="text-[11px] text-muted-foreground mt-1 leading-relaxed">{skill.description}</p>
 
-        {expanded && (
-          <div className="mt-2">
-            <p className="text-[11px] text-muted-foreground leading-relaxed">{skill.description}</p>
-            {skill.resources && skill.resources.length > 0 && (
-              <div className="mt-2.5 space-y-2">
-                {skill.resources.map((r, ri) => (
-                  <a
-                    key={ri}
-                    href={r.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onClick={(e) => e.stopPropagation()}
-                    className="flex items-start gap-2 p-2 rounded-md bg-accent/30 border border-border/50 hover:border-primary/20 transition-colors group"
-                  >
-                    <ExternalLink className="h-3 w-3 mt-0.5 shrink-0 text-primary" />
-                    <div className="min-w-0">
-                      <span className="text-[11px] font-medium text-foreground group-hover:underline">{r.name}</span>
-                      <p className="text-[10px] text-muted-foreground leading-snug">{r.summary}</p>
-                    </div>
-                  </a>
-                ))}
-              </div>
-            )}
+        {skill.resources && skill.resources.length > 0 && (
+          <div className="mt-2.5 space-y-2">
+            {skill.resources.map((r, ri) => (
+              <a
+                key={ri}
+                href={r.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-start gap-2 p-2 rounded-md bg-accent/30 border border-border/50 hover:border-primary/20 transition-colors group"
+              >
+                <ExternalLink className="h-3 w-3 mt-0.5 shrink-0 text-primary" />
+                <div className="min-w-0">
+                  <span className="text-[11px] font-medium text-foreground group-hover:underline">{r.name}</span>
+                  <p className="text-[10px] text-muted-foreground leading-snug">{r.summary}</p>
+                </div>
+              </a>
+            ))}
           </div>
         )}
       </CardContent>
