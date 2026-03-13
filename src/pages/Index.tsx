@@ -25,7 +25,7 @@ const categoryLabels: Record<SkillCategory, string> = {
 };
 
 type Mode = "individual" | "team";
-type JdInputType = "none" | "paste" | "url";
+type JdInputType = "none" | "paste" | "url" | "file";
 
 interface RoleEntry {
   id: string;
