@@ -14,6 +14,7 @@ import { JobAnalysisResult, TaskState, TrendDirection, AIImpactLevel, SkillCateg
 import { findPrebuiltRole } from "@/data/prebuilt-roles";
 import { analyzeJobWithAI } from "@/lib/ai-analysis";
 import { useToast } from "@/hooks/use-toast";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface CompanySnapshot {
   success: boolean;
@@ -66,6 +67,7 @@ const Analysis = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const isMobile = useIsMobile();
   const company = searchParams.get("company") || "";
   const jobTitle = searchParams.get("title") || "";
   const [result, setResult] = useState<JobAnalysisResult | null>(null);
@@ -73,6 +75,7 @@ const Analysis = () => {
   const [error, setError] = useState<string | null>(null);
   const [snapshot, setSnapshot] = useState<CompanySnapshot | null>(null);
   const [snapshotLoading, setSnapshotLoading] = useState(false);
+  const [selectedTaskIndex, setSelectedTaskIndex] = useState<number | null>(null);
 
   useEffect(() => {
     if (!jobTitle) { navigate("/"); return; }
@@ -125,6 +128,22 @@ const Analysis = () => {
     toast({ title: "Coming soon!", description: "Sign up to save your learning path and track progress." });
   };
 
+  const handleTaskClick = (index: number) => {
+    setSelectedTaskIndex((prev) => (prev === index ? null : index));
+  };
+
+  // Get skills for the right panel
+  const getDisplayedSkills = () => {
+    if (!result) return [];
+    if (selectedTaskIndex === null) return result.skills;
+    const selectedTask = result.tasks[selectedTaskIndex];
+    if (!selectedTask) return result.skills;
+    const related = result.skills.filter(
+      (s) => s.relatedTasks?.some((rt) => rt.toLowerCase() === selectedTask.name.toLowerCase())
+    );
+    return related.length > 0 ? related : result.skills;
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-background px-4 py-16">
@@ -161,8 +180,8 @@ const Analysis = () => {
     );
   }
 
-  // Group skills by category
-  const grouped = result.skills.reduce(
+  const displayedSkills = getDisplayedSkills();
+  const groupedSkills = displayedSkills.reduce(
     (acc, skill) => {
       acc[skill.category] = acc[skill.category] || [];
       acc[skill.category].push(skill);
@@ -171,9 +190,21 @@ const Analysis = () => {
     {} as Record<SkillCategory, typeof result.skills>,
   );
 
+  // For mobile: get related skills for inline display
+  const getRelatedSkills = (taskName: string) =>
+    result.skills.filter((s) => s.relatedTasks?.some((rt) => rt.toLowerCase() === taskName.toLowerCase()));
+
+  // Orphan skills for mobile
+  const linkedSkillNames = new Set(
+    result.skills
+      .filter((s) => s.relatedTasks?.some((rt) => result.tasks.some((t) => t.name.toLowerCase() === rt.toLowerCase())))
+      .map((s) => s.name)
+  );
+  const orphanSkills = result.skills.filter((s) => !linkedSkillNames.has(s.name));
+
   return (
     <div className="min-h-screen bg-background px-4 py-12">
-      <div className="max-w-3xl mx-auto">
+      <div className="max-w-6xl mx-auto">
         {/* Header */}
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mb-10">
           <Button variant="ghost" size="sm" onClick={() => navigate("/")} className="mb-6 -ml-2 text-muted-foreground">
@@ -257,36 +288,40 @@ const Analysis = () => {
           </div>
         </motion.div>
 
-        {/* Integrated Task & Skills Breakdown */}
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="mb-10">
-          <h2 className="text-sm font-medium uppercase tracking-widest text-muted-foreground mb-4">Task-Level Breakdown & Recommendations</h2>
-          <div className="space-y-4">
-            {result.tasks.map((task, i) => {
-              const state = stateLabels[task.currentState];
-              const trend = trendIcons[task.trend];
-              const TrendIcon = trend.icon;
-              // Find skills related to this task
-              const relatedSkills = result.skills.filter(
-                (s) => s.relatedTasks?.some((rt) => rt.toLowerCase() === task.name.toLowerCase())
-              );
+        {/* Two-Column Layout (desktop) / Single Column (mobile) */}
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-10">
+            {/* LEFT COLUMN — Tasks */}
+            <div>
+              <h2 className="text-sm font-medium uppercase tracking-widest text-muted-foreground mb-4">Task-Level Breakdown</h2>
+              <div className="space-y-3">
+                {result.tasks.map((task, i) => {
+                  const state = stateLabels[task.currentState];
+                  const trend = trendIcons[task.trend];
+                  const TrendIcon = trend.icon;
+                  const isSelected = selectedTaskIndex === i;
+                  const relatedSkills = getRelatedSkills(task.name);
 
-              return (
-                <motion.div
-                  key={i}
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.25 + i * 0.04 }}
-                >
-                  <Card className="border-border overflow-hidden">
-                    <CardContent className="p-0">
-                      {/* Task header */}
-                      <div className="p-4 flex items-start justify-between gap-3">
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 flex-wrap">
+                  return (
+                    <motion.div
+                      key={i}
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.25 + i * 0.04 }}
+                    >
+                      <Card
+                        className={`border-border cursor-pointer transition-all hover:border-primary/40 ${isSelected ? "ring-2 ring-primary/30 border-primary/50" : ""}`}
+                        onClick={() => !isMobile && handleTaskClick(i)}
+                      >
+                        <CardContent className="p-4">
+                          <div className="flex items-center gap-2 flex-wrap mb-1">
                             <h3 className="font-medium text-foreground">{task.name}</h3>
-                            <Badge variant="outline" className={`gap-1 ${state.className}`}>{(() => { const StateIcon = state.icon; return <StateIcon className="h-3 w-3" />; })()}{state.label}</Badge>
+                            <Badge variant="outline" className={`gap-1 ${state.className}`}>
+                              {(() => { const StateIcon = state.icon; return <StateIcon className="h-3 w-3" />; })()}
+                              {state.label}
+                            </Badge>
                           </div>
-                          <p className="text-sm text-muted-foreground mt-1">{task.description}</p>
+                          <p className="text-sm text-muted-foreground">{task.description}</p>
                           <div className="flex items-center gap-4 mt-2">
                             <span className="flex items-center gap-1 text-xs text-muted-foreground">
                               <TrendIcon className="h-3 w-3" /> {trend.label}
@@ -295,109 +330,86 @@ const Analysis = () => {
                               {task.impactLevel} impact
                             </span>
                           </div>
-                        </div>
-                      </div>
+                        </CardContent>
+                      </Card>
 
-                      {/* Related skills */}
-                      {relatedSkills.length > 0 && (
-                        <div className="border-t border-border bg-accent/30 px-4 py-3">
-                          <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground mb-2">Recommended skills</p>
-                          <div className="space-y-2">
-                            {relatedSkills.map((skill, si) => {
-                              const catConf = categoryConfig[skill.category];
-                              const CatIcon = catConf.icon;
-                              return (
-                                <div key={si} className="flex items-start gap-2">
-                                  <CatIcon className="h-3.5 w-3.5 text-primary mt-0.5 shrink-0" />
-                                  <div className="flex-1 min-w-0">
-                                    <div className="flex items-center gap-2">
-                                      <span className="text-sm font-medium text-foreground">{skill.name}</span>
-                                      <Badge variant="outline" className={`text-[10px] px-1.5 py-0 capitalize ${priorityStyles[skill.priority]}`}>
-                                        {skill.priority}
-                                      </Badge>
-                                    </div>
-                                    <p className="text-xs text-muted-foreground mt-0.5">{skill.description}</p>
-                                    {skill.resources && skill.resources.length > 0 && (
-                                      <div className="mt-1.5 flex flex-wrap gap-1.5">
-                                        {skill.resources.map((resource, ri) => (
-                                          <a
-                                            key={ri}
-                                            href={resource.url}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            title={resource.summary}
-                                            className="inline-flex items-center gap-1 text-[11px] px-2 py-1 rounded bg-background text-muted-foreground hover:text-foreground border border-border transition-colors"
-                                          >
-                                            <ExternalLink className="h-2.5 w-2.5" />
-                                            {resource.name}
-                                          </a>
-                                        ))}
-                                      </div>
-                                    )}
-                                  </div>
-                                </div>
-                              );
-                            })}
-                          </div>
+                      {/* Mobile: inline skills under each task */}
+                      {isMobile && relatedSkills.length > 0 && (
+                        <div className="mt-2 ml-3 border-l-2 border-border pl-4 space-y-2">
+                          {relatedSkills.map((skill, si) => (
+                            <SkillItem key={si} skill={skill} />
+                          ))}
                         </div>
                       )}
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              );
-            })}
-          </div>
-        </motion.div>
-
-        {/* Orphan skills not linked to any task */}
-        {(() => {
-          const linkedSkills = new Set(
-            result.skills
-              .filter((s) => s.relatedTasks?.some((rt) =>
-                result.tasks.some((t) => t.name.toLowerCase() === rt.toLowerCase())
-              ))
-              .map((s) => s.name)
-          );
-          const orphans = result.skills.filter((s) => !linkedSkills.has(s.name));
-          if (!orphans.length) return null;
-          return (
-            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }} className="mb-10">
-              <h2 className="text-sm font-medium uppercase tracking-widest text-muted-foreground mb-4">Additional Skills</h2>
-              <div className="space-y-3">
-                {orphans.map((skill, i) => {
-                  const catConf = categoryConfig[skill.category];
-                  const CatIcon = catConf.icon;
-                  return (
-                    <Card key={i} className="border-border">
-                      <CardContent className="p-4">
-                        <div className="flex items-start gap-2">
-                          <CatIcon className="h-4 w-4 text-primary mt-0.5 shrink-0" />
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2">
-                              <span className="font-medium text-foreground">{skill.name}</span>
-                              <Badge variant="outline" className={`capitalize ${priorityStyles[skill.priority]}`}>{skill.priority}</Badge>
-                            </div>
-                            <p className="text-sm text-muted-foreground mt-1">{skill.description}</p>
-                            {skill.resources && skill.resources.length > 0 && (
-                              <div className="mt-2 flex flex-wrap gap-2">
-                                {skill.resources.map((resource, ri) => (
-                                  <a key={ri} href={resource.url} target="_blank" rel="noopener noreferrer" title={resource.summary}
-                                    className="inline-flex items-center gap-1 text-xs px-2.5 py-1.5 rounded-md bg-accent text-accent-foreground hover:bg-accent/80 transition-colors">
-                                    <ExternalLink className="h-3 w-3" /> {resource.name}
-                                  </a>
-                                ))}
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
+                    </motion.div>
                   );
                 })}
               </div>
-            </motion.div>
-          );
-        })()}
+
+              {/* Mobile: orphan skills */}
+              {isMobile && orphanSkills.length > 0 && (
+                <div className="mt-6">
+                  <h2 className="text-sm font-medium uppercase tracking-widest text-muted-foreground mb-4">Additional Skills</h2>
+                  <div className="space-y-3">
+                    {orphanSkills.map((skill, i) => (
+                      <Card key={i} className="border-border">
+                        <CardContent className="p-4">
+                          <SkillItem skill={skill} />
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* RIGHT COLUMN — Skills Panel (desktop only) */}
+            {!isMobile && (
+              <div className="lg:sticky lg:top-6 lg:self-start">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-sm font-medium uppercase tracking-widest text-muted-foreground">
+                    {selectedTaskIndex !== null
+                      ? `Skills for: ${result.tasks[selectedTaskIndex]?.name}`
+                      : "All Recommended Skills"
+                    }
+                  </h2>
+                  {selectedTaskIndex !== null && (
+                    <Button variant="ghost" size="sm" onClick={() => setSelectedTaskIndex(null)} className="text-xs text-muted-foreground h-auto py-1">
+                      Show all
+                    </Button>
+                  )}
+                </div>
+
+                <div className="space-y-6">
+                  {(Object.keys(categoryConfig) as SkillCategory[]).map((cat) => {
+                    const skills = groupedSkills[cat];
+                    if (!skills?.length) return null;
+                    const config = categoryConfig[cat];
+                    const CatIcon = config.icon;
+
+                    return (
+                      <div key={cat}>
+                        <div className="flex items-center gap-2 mb-3">
+                          <CatIcon className="h-4 w-4 text-primary" />
+                          <h3 className="text-sm font-semibold text-foreground">{config.label}</h3>
+                        </div>
+                        <div className="space-y-3">
+                          {skills.map((skill, si) => (
+                            <Card key={si} className="border-border">
+                              <CardContent className="p-3">
+                                <SkillItem skill={skill} />
+                              </CardContent>
+                            </Card>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </div>
+        </motion.div>
 
         {/* Save CTA */}
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }} className="mt-12 text-center pb-8">
@@ -413,6 +425,44 @@ const Analysis = () => {
             </CardContent>
           </Card>
         </motion.div>
+      </div>
+    </div>
+  );
+};
+
+/* Extracted reusable skill item */
+const SkillItem = ({ skill }: { skill: JobAnalysisResult["skills"][number] }) => {
+  const catConf = categoryConfig[skill.category];
+  const CatIcon = catConf.icon;
+
+  return (
+    <div className="flex items-start gap-2">
+      <CatIcon className="h-3.5 w-3.5 text-primary mt-0.5 shrink-0" />
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-medium text-foreground">{skill.name}</span>
+          <Badge variant="outline" className={`text-[10px] px-1.5 py-0 capitalize ${priorityStyles[skill.priority]}`}>
+            {skill.priority}
+          </Badge>
+        </div>
+        <p className="text-xs text-muted-foreground mt-0.5">{skill.description}</p>
+        {skill.resources && skill.resources.length > 0 && (
+          <div className="mt-1.5 flex flex-wrap gap-1.5">
+            {skill.resources.map((resource, ri) => (
+              <a
+                key={ri}
+                href={resource.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                title={resource.summary}
+                className="inline-flex items-center gap-1 text-[11px] px-2 py-1 rounded bg-background text-muted-foreground hover:text-foreground border border-border transition-colors"
+              >
+                <ExternalLink className="h-2.5 w-2.5" />
+                {resource.name}
+              </a>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
