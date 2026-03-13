@@ -28,8 +28,7 @@ interface SimulatorModalProps {
   jobTitle: string;
   company?: string;
 }
-
-const MAX_TURNS = 10;
+const MAX_ROUNDS = 10;
 
 /* ── Briefing Screen ── */
 const BriefingScreen = ({
