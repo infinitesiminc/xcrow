@@ -50,6 +50,18 @@ const impactBorder: Record<AIImpactLevel, string> = {
   high: "border-l-destructive",
 };
 
+const heroGradients: Record<AIImpactLevel, string> = {
+  low: "bg-gradient-to-br from-success/40 via-success/20 to-primary/10",
+  medium: "bg-gradient-to-br from-warning/40 via-warning/20 to-accent/30",
+  high: "bg-gradient-to-br from-destructive/40 via-destructive/20 to-warning/10",
+};
+
+const heroIcons: Record<AIImpactLevel, typeof Bot> = {
+  low: User,
+  medium: Users,
+  high: Bot,
+};
+
 const categoryConfig: Record<SkillCategory, { label: string; icon: typeof Wrench; bg: string; iconColor: string }> = {
   ai_tools: { label: "AI Tools & Platforms", icon: Wrench, bg: "bg-primary/10", iconColor: "text-primary" },
   human_skills: { label: "Human-Edge Skills", icon: Heart, bg: "bg-destructive/10", iconColor: "text-destructive" },
