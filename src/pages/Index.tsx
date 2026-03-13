@@ -233,17 +233,11 @@ const Index = () => {
 
     // Otherwise treat everything as JD files (documents + spreadsheets as JD content)
     const allFiles = [...listFiles, ...jdFiles];
-    setTeamJdParsing(true);
-
-    for (const file of allFiles) {
-
-    setTeamJdParsing(true);
     const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
     const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
-
     const newRoles: RoleEntry[] = [];
 
-    for (const file of files) {
+    for (const file of allFiles) {
       const name = file.name.toLowerCase();
       let jdText = "";
 
