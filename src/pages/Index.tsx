@@ -220,7 +220,7 @@ const Index = () => {
           allLines.push(...text.split(/\r?\n/).map((l) => l.trim()).filter(Boolean));
         }
       }
-      allLines = allLines.slice(0, 10);
+      allLines = allLines.slice(0, 100);
       if (allLines.length === 0) {
         toast({ title: "Empty file", description: "No job titles found.", variant: "destructive" });
       } else {
