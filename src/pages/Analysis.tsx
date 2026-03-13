@@ -13,9 +13,14 @@ import { analyzeJobWithAI } from "@/lib/ai-analysis";
 
 interface CompanySnapshot {
   success: boolean;
-  name: string | null;
-  description: string | null;
-  summary: string | null;
+  companyName: string | null;
+  industry: string | null;
+  companyType: string | null;
+  employeeRange: string | null;
+  revenueScale: string | null;
+  founded: string | null;
+  headquarters: string | null;
+  tagline: string | null;
   logo: string | null;
   url: string;
 }
