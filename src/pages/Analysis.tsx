@@ -51,9 +51,15 @@ const impactBorder: Record<AIImpactLevel, string> = {
 };
 
 const heroGradients: Record<AIImpactLevel, string> = {
-  low: "bg-gradient-to-br from-success/40 via-success/20 to-primary/10",
-  medium: "bg-gradient-to-br from-warning/40 via-warning/20 to-accent/30",
-  high: "bg-gradient-to-br from-destructive/40 via-destructive/20 to-warning/10",
+  low: "bg-gradient-to-br from-success/30 via-success/15 to-primary/10",
+  medium: "bg-gradient-to-br from-warning/30 via-warning/15 to-accent/20",
+  high: "bg-gradient-to-br from-destructive/30 via-destructive/15 to-warning/10",
+};
+
+const heroIconColors: Record<AIImpactLevel, string> = {
+  low: "text-success",
+  medium: "text-warning",
+  high: "text-destructive",
 };
 
 const heroIcons: Record<AIImpactLevel, typeof Bot> = {
@@ -338,7 +344,7 @@ const Analysis = () => {
                   >
                     {/* Hero gradient header */}
                     <div className={`relative h-32 ${heroGradient} flex items-center justify-center overflow-hidden`}>
-                      <HeroIcon className="h-16 w-16 text-primary-foreground/30" strokeWidth={1} />
+                      <HeroIcon className={`h-16 w-16 ${heroIconColors[task.impactLevel]} opacity-40`} strokeWidth={1.5} />
                       <div className="absolute inset-0 bg-gradient-to-t from-card/60 to-transparent" />
                     </div>
 
