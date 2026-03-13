@@ -87,7 +87,7 @@ Generate a JSON response with these fields:
 
 4. "systemPrompt": A detailed system prompt for the AI simulator. The simulator should roleplay as a colleague/manager presenting a realistic scenario. It should naturally weave in context and explain things as if onboarding a new team member. 3-4 sentences.
 
-5. "openingMessage": The first message from the simulator (2-3 sentences). It should set up the scenario while naturally providing context a beginner would need. For example, instead of "We need to review the TPS reports", say "We need to review the TPS reports — those are the weekly status summaries each team sends to leadership."
+5. "openingMessage": The first message from the simulator (3-4 sentences). It should proactively TEACH — introduce the scenario, explain relevant context, and then pose a specific situational question to check understanding. Do NOT ask open-ended questions like "Where should we start?" Instead say something like "Let me walk you through how this works... [explanation]. Now, given what I just told you, how would you handle [specific situation]?"
 
 6. "scenario": { "title": a short title, "description": a 1-sentence description }
 
