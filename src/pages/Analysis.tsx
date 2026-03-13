@@ -432,6 +432,15 @@ const Analysis = () => {
             </CardContent>
           </Card>
         </motion.div>
+
+        {/* Simulator Modal */}
+        <SimulatorModal
+          open={!!simTask}
+          onClose={() => setSimTask(null)}
+          taskName={simTask || ""}
+          jobTitle={result.jobTitle}
+          company={result.company}
+        />
       </div>
     </div>
   );
