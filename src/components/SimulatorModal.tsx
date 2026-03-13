@@ -1,11 +1,10 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Send, Loader2, Trophy, RotateCcw, Play, Lightbulb, BookOpen, ChevronDown, ChevronUp } from "lucide-react";
+import { Send, Loader2, RotateCcw, Play, Lightbulb, ChevronDown, ChevronUp, CheckCircle2 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
 import {
   Dialog,
   DialogContent,
@@ -13,13 +12,14 @@ import {
 import {
   compileSession,
   chatTurn,
-  scoreTranscript,
   type SimMessage,
   type SimSession,
-  type SimScore,
 } from "@/lib/simulator";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
-type Phase = "loading" | "briefing" | "chat" | "scoring" | "results";
+type Phase = "loading" | "briefing" | "chat" | "completing" | "done";
 
 interface SimulatorModalProps {
   open: boolean;
@@ -27,6 +27,7 @@ interface SimulatorModalProps {
   taskName: string;
   jobTitle: string;
   company?: string;
+  onCompleted?: () => void;
 }
 const MAX_ROUNDS = 10;
 
@@ -51,25 +52,19 @@ const BriefingScreen = ({
       <p className="text-xs text-muted-foreground mt-1">{session.scenario.description}</p>
     </div>
 
-    {/* Briefing */}
     <Card className="bg-accent/20 border-accent/30">
       <CardContent className="p-4">
-        <h4 className="text-xs font-semibold text-foreground mb-2">
-          📚 What you need to know
-        </h4>
+        <h4 className="text-xs font-semibold text-foreground mb-2">📚 What you need to know</h4>
         <div className="text-sm text-foreground/90 leading-relaxed prose prose-sm dark:prose-invert max-w-none [&>p]:mb-2">
           <ReactMarkdown>{session.briefing}</ReactMarkdown>
         </div>
       </CardContent>
     </Card>
 
-    {/* Tips */}
     {session.tips && session.tips.length > 0 && (
       <Card className="border-primary/20 bg-primary/5">
         <CardContent className="p-4">
-          <h4 className="text-xs font-semibold text-foreground mb-2">
-            💡 Tips for success
-          </h4>
+          <h4 className="text-xs font-semibold text-foreground mb-2">💡 Tips for success</h4>
           <ul className="space-y-1.5">
             {session.tips.map((tip, i) => (
               <li key={i} className="text-sm text-foreground/80 flex items-start gap-2">
@@ -82,13 +77,11 @@ const BriefingScreen = ({
       </Card>
     )}
 
-    <Button onClick={onStart} className="gap-2 mx-auto">
-      🚀 Start Simulation
-    </Button>
+    <Button onClick={onStart} className="gap-2 mx-auto">🚀 Start Simulation</Button>
   </motion.div>
 );
 
-/* ── Tips Toggle (during chat) ── */
+/* ── Tips Toggle ── */
 const TipsToggle = ({ tips }: { tips: string[] }) => {
   const [open, setOpen] = useState(false);
   if (!tips || tips.length === 0) return null;
@@ -105,12 +98,7 @@ const TipsToggle = ({ tips }: { tips: string[] }) => {
       </button>
       <AnimatePresence>
         {open && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            className="overflow-hidden"
-          >
+          <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
             <div className="mt-1.5 p-2.5 rounded-lg bg-primary/5 border border-primary/10">
               <ul className="space-y-1">
                 {tips.map((tip, i) => (
@@ -129,16 +117,17 @@ const TipsToggle = ({ tips }: { tips: string[] }) => {
 };
 
 /* ── Main Modal ── */
-const SimulatorModal = ({ open, onClose, taskName, jobTitle, company }: SimulatorModalProps) => {
+const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, onCompleted }: SimulatorModalProps) => {
   const [phase, setPhase] = useState<Phase>("loading");
   const [session, setSession] = useState<SimSession | null>(null);
   const [messages, setMessages] = useState<SimMessage[]>([]);
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
   const [roundCount, setRoundCount] = useState(1);
-  const [score, setScore] = useState<SimScore | null>(null);
   const [error, setError] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const { user } = useAuth();
+  const { toast } = useToast();
 
   const scrollToBottom = useCallback(() => {
     setTimeout(() => scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" }), 50);
@@ -149,7 +138,6 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company }: Simulato
     setError(null);
     setMessages([]);
     setRoundCount(1);
-    setScore(null);
     try {
       const compiled = await compileSession(taskName, jobTitle, company, 3);
       setSession(compiled);
@@ -183,7 +171,6 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company }: Simulato
     try {
       const reply = await chatTurn(newMessages, roundCount, roundCount, jobTitle);
       setMessages((prev) => [...prev, { role: "assistant", content: reply }]);
-      // Increment round when user answers yes to continue
       const lowerInput = input.trim().toLowerCase();
       if (lowerInput === "yes" || lowerInput === "y" || lowerInput === "yeah" || lowerInput === "sure") {
         setRoundCount((c) => c + 1);
@@ -197,17 +184,22 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company }: Simulato
   };
 
   const handleFinish = async () => {
-    if (!session) return;
-    setPhase("scoring");
-    try {
-      const result = await scoreTranscript(messages, session.scenario);
-      setScore(result);
-      setPhase("results");
-    } catch (err) {
-      console.error("Scoring error:", err);
-      setError("Couldn't score the session.");
-      setPhase("results");
+    setPhase("completing");
+    if (user) {
+      try {
+        await supabase.from("completed_simulations").insert({
+          user_id: user.id,
+          task_name: taskName,
+          job_title: jobTitle,
+          company: company || null,
+          rounds_completed: roundCount,
+        });
+        onCompleted?.();
+      } catch (err) {
+        console.error("Failed to save completion:", err);
+      }
     }
+    setPhase("done");
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -228,9 +220,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company }: Simulato
           </div>
           <div className="flex items-center gap-2 shrink-0">
             {phase === "chat" && (
-              <Badge variant="outline" className="text-[10px]">
-                Round {roundCount}
-              </Badge>
+              <Badge variant="outline" className="text-[10px]">Round {roundCount}</Badge>
             )}
           </div>
         </div>
@@ -260,9 +250,9 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company }: Simulato
               </motion.div>
             )}
 
-            {phase === "chat" && !error && (
+            {(phase === "chat" || phase === "done") && !error && (
               <>
-                <TipsToggle tips={session?.tips || []} />
+                {phase === "chat" && <TipsToggle tips={session?.tips || []} />}
                 {messages.map((msg, i) => (
                   <motion.div
                     key={i}
@@ -279,7 +269,6 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company }: Simulato
                     >
                       <div className="prose prose-sm dark:prose-invert max-w-none [&>p]:m-0">
                         <ReactMarkdown>{
-                          // Strip multiple-choice lines from the last assistant message if they'll be shown as buttons
                           msg.role === "assistant" && i === messages.length - 1 && !sending
                             ? msg.content.replace(/^[A-D][).]\s*.+$/gm, "").trim()
                             : msg.content
@@ -303,47 +292,30 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company }: Simulato
               </motion.div>
             )}
 
-            {phase === "scoring" && (
-              <motion.div key="scoring" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col items-center justify-center py-12 gap-3">
+            {phase === "completing" && (
+              <motion.div key="completing" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col items-center justify-center py-12 gap-3">
                 <Loader2 className="h-8 w-8 text-primary animate-spin" />
-                <p className="text-sm text-muted-foreground">Evaluating your performance...</p>
+                <p className="text-sm text-muted-foreground">Saving your progress...</p>
               </motion.div>
             )}
 
-            {phase === "results" && score && (
-              <motion.div key="results" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="space-y-4 py-4">
+            {phase === "done" && (
+              <motion.div key="done" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="flex flex-col items-center py-8 gap-4">
+                <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-success/10">
+                  <CheckCircle2 className="h-8 w-8 text-success" />
+                </div>
                 <div className="text-center">
-                  <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-primary/10 mb-3">
-                    <Trophy className="h-8 w-8 text-primary" />
-                  </div>
-                  <h3 className="text-2xl font-bold text-foreground">{score.overall}/100</h3>
-                  <p className="text-sm text-muted-foreground mt-1">Overall Score</p>
+                  <h3 className="text-lg font-bold text-foreground">Practice Complete!</h3>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    You completed {roundCount} round{roundCount !== 1 ? "s" : ""} on "{taskName}"
+                  </p>
+                  {!user && (
+                    <p className="text-xs text-muted-foreground mt-2">
+                      <a href="/auth" className="text-primary hover:underline">Sign in</a> to save your progress
+                    </p>
+                  )}
                 </div>
-
-                <div className="space-y-3">
-                  {score.categories?.map((cat, i) => (
-                    <Card key={i}>
-                      <CardContent className="p-3">
-                        <div className="flex items-center justify-between mb-1.5">
-                          <span className="text-xs font-semibold text-foreground">{cat.name}</span>
-                          <span className="text-xs font-bold text-primary">{cat.score}/100</span>
-                        </div>
-                        <Progress value={cat.score} className="h-1.5 mb-2" />
-                        <p className="text-[11px] text-muted-foreground">{cat.feedback}</p>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-
-                {score.summary && (
-                  <Card className="bg-accent/30">
-                    <CardContent className="p-4">
-                      <p className="text-sm text-foreground leading-relaxed">{score.summary}</p>
-                    </CardContent>
-                  </Card>
-                )}
-
-                <div className="flex gap-2 justify-center pt-2">
+                <div className="flex gap-2">
                   <Button variant="outline" size="sm" onClick={startSession} className="gap-1.5">
                     <RotateCcw className="h-3.5 w-3.5" /> Try Again
                   </Button>
@@ -365,7 +337,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company }: Simulato
               if (!opts || opts.length < 2) return null;
               return (
                 <div className="flex flex-col gap-1.5">
-                  {opts.slice(0, 3).map((opt, i) => {
+                  {opts.slice(0, 4).map((opt, i) => {
                     const letter = opt.charAt(0);
                     const text = opt.replace(/^[A-D][).]\s*/, "").trim();
                     return (
@@ -375,7 +347,6 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company }: Simulato
                         size="sm"
                         className="w-full justify-start text-left h-auto py-2 px-3 text-sm font-normal hover:bg-primary/5 hover:border-primary/30"
                         onClick={() => {
-                          const letter = opt.charAt(0);
                           const fakeMsg: SimMessage = { role: "user", content: letter };
                           const newMsgs = [...messages, fakeMsg];
                           setMessages(newMsgs);
@@ -399,7 +370,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company }: Simulato
               );
             })()}
 
-            {/* Continue / end buttons after feedback */}
+            {/* Continue / end buttons */}
             {(() => {
               const lastAi = [...messages].reverse().find(m => m.role === "assistant");
               if (!lastAi || sending) return null;
@@ -432,10 +403,10 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company }: Simulato
                   </Button>
                   <Button
                     size="sm"
-                    className="flex-1"
+                    className="flex-1 gap-1.5"
                     onClick={handleFinish}
                   >
-                    <Trophy className="h-3.5 w-3.5 mr-1.5" /> Finish & Score
+                    <CheckCircle2 className="h-3.5 w-3.5" /> Finish
                   </Button>
                 </div>
               );
@@ -452,7 +423,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company }: Simulato
               />
               <div className="flex gap-1.5 shrink-0">
                 <Button variant="outline" size="sm" onClick={handleFinish} className="gap-1 text-xs h-[38px]">
-                  <Trophy className="h-3.5 w-3.5" /> Finish
+                  <CheckCircle2 className="h-3.5 w-3.5" /> Finish
                 </Button>
                 <Button size="sm" onClick={handleSend} disabled={!input.trim() || sending} className="h-[38px] w-[38px] p-0">
                   <Send className="h-4 w-4" />
