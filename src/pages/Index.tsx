@@ -183,7 +183,7 @@ const Index = () => {
 
   // Single smart upload: spreadsheets/CSVs → job title list; documents → JD entries
   const handleFilesUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || []).slice(0, 10);
+    const files = Array.from(e.target.files || []).slice(0, 100);
     if (files.length === 0) return;
 
     const listExts = [".csv", ".tsv"];
