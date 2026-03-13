@@ -1,15 +1,20 @@
 import { useEffect, useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, ArrowRight, TrendingUp, Minus, AlertTriangle, Zap, Bot, Globe, ExternalLink, Building2, Users, DollarSign, MapPin, Calendar, Tag } from "lucide-react";
+import {
+  ArrowLeft, TrendingUp, Minus, AlertTriangle, Zap, Bot, Globe, ExternalLink,
+  Building2, Users, DollarSign, MapPin, Calendar, Tag,
+  Wrench, Heart, Sparkles, Save, Link2,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
-import { JobAnalysisResult, TaskState, TrendDirection, AIImpactLevel } from "@/types/analysis";
+import { JobAnalysisResult, TaskState, TrendDirection, AIImpactLevel, SkillCategory, SkillPriority } from "@/types/analysis";
 import { findPrebuiltRole } from "@/data/prebuilt-roles";
 import { analyzeJobWithAI } from "@/lib/ai-analysis";
+import { useToast } from "@/hooks/use-toast";
 
 interface CompanySnapshot {
   success: boolean;
@@ -43,13 +48,25 @@ const impactColors: Record<AIImpactLevel, string> = {
   high: "text-destructive",
 };
 
-const isWebsite = (value: string) => {
-  return /^(https?:\/\/)?([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}(\/.*)?$/.test(value.trim());
+const categoryConfig: Record<SkillCategory, { label: string; icon: typeof Wrench; description: string }> = {
+  ai_tools: { label: "AI Tools to Learn", icon: Wrench, description: "Master these tools to boost your productivity" },
+  human_skills: { label: "Human Skills to Strengthen", icon: Heart, description: "Double down on what makes you irreplaceable" },
+  new_capabilities: { label: "New Capabilities to Build", icon: Sparkles, description: "Develop these emerging skills to stay ahead" },
 };
+
+const priorityStyles: Record<SkillPriority, string> = {
+  high: "bg-destructive/10 text-destructive border-destructive/20",
+  medium: "bg-warning/10 text-warning border-warning/20",
+  low: "bg-muted text-muted-foreground border-border",
+};
+
+const isWebsite = (value: string) =>
+  /^(https?:\/\/)?([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}(\/.*)?$/.test(value.trim());
 
 const Analysis = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const { toast } = useToast();
   const company = searchParams.get("company") || "";
   const jobTitle = searchParams.get("title") || "";
   const [result, setResult] = useState<JobAnalysisResult | null>(null);
@@ -59,15 +76,10 @@ const Analysis = () => {
   const [snapshotLoading, setSnapshotLoading] = useState(false);
 
   useEffect(() => {
-    if (!jobTitle) {
-      navigate("/");
-      return;
-    }
-
+    if (!jobTitle) { navigate("/"); return; }
     const analyze = async () => {
       setLoading(true);
       setError(null);
-
       const prebuilt = findPrebuiltRole(jobTitle);
       if (prebuilt) {
         await new Promise((r) => setTimeout(r, 1200));
@@ -75,7 +87,6 @@ const Analysis = () => {
         setLoading(false);
         return;
       }
-
       try {
         const aiResult = await analyzeJobWithAI(jobTitle, company);
         setResult(aiResult);
@@ -85,14 +96,11 @@ const Analysis = () => {
       }
       setLoading(false);
     };
-
     analyze();
   }, [jobTitle, company, navigate]);
 
-  // Fetch company snapshot if company looks like a website
   useEffect(() => {
     if (!company || !isWebsite(company)) return;
-
     const fetchSnapshot = async () => {
       setSnapshotLoading(true);
       try {
@@ -100,25 +108,23 @@ const Analysis = () => {
         const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
         const res = await fetch(`${supabaseUrl}/functions/v1/scrape-company`, {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${supabaseKey}`,
-          },
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${supabaseKey}` },
           body: JSON.stringify({ url: company }),
         });
         const data = await res.json();
-        if (data.success) {
-          setSnapshot(data);
-        }
+        if (data.success) setSnapshot(data);
       } catch (err) {
         console.error("Failed to fetch company snapshot:", err);
       } finally {
         setSnapshotLoading(false);
       }
     };
-
     fetchSnapshot();
   }, [company]);
+
+  const handleSave = () => {
+    toast({ title: "Coming soon!", description: "Sign up to save your learning path and track progress." });
+  };
 
   if (loading) {
     return (
@@ -156,6 +162,16 @@ const Analysis = () => {
     );
   }
 
+  // Group skills by category
+  const grouped = result.skills.reduce(
+    (acc, skill) => {
+      acc[skill.category] = acc[skill.category] || [];
+      acc[skill.category].push(skill);
+      return acc;
+    },
+    {} as Record<SkillCategory, typeof result.skills>,
+  );
+
   return (
     <div className="min-h-screen bg-background px-4 py-12">
       <div className="max-w-3xl mx-auto">
@@ -170,12 +186,7 @@ const Analysis = () => {
 
         {/* Company Snapshot */}
         {(snapshotLoading || snapshot) && (
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.05 }}
-            className="mb-10"
-          >
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }} className="mb-10">
             {snapshotLoading ? (
               <Skeleton className="h-28 w-full rounded-lg" />
             ) : snapshot ? (
@@ -195,49 +206,18 @@ const Analysis = () => {
                         <h3 className="font-display font-semibold text-foreground text-sm truncate">
                           {snapshot.companyName || snapshot.url}
                         </h3>
-                        <a
-                          href={snapshot.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-muted-foreground hover:text-foreground transition-colors shrink-0"
-                        >
+                        <a href={snapshot.url} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground transition-colors shrink-0">
                           <ExternalLink className="h-3 w-3" />
                         </a>
                       </div>
-                      {snapshot.tagline && (
-                        <p className="text-sm text-muted-foreground mb-3">{snapshot.tagline}</p>
-                      )}
+                      {snapshot.tagline && <p className="text-sm text-muted-foreground mb-3">{snapshot.tagline}</p>}
                       <div className="flex flex-wrap gap-x-4 gap-y-2">
-                        {snapshot.industry && (
-                          <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                            <Building2 className="h-3 w-3 shrink-0" /> {snapshot.industry}
-                          </span>
-                        )}
-                        {snapshot.companyType && (
-                          <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                            <Tag className="h-3 w-3 shrink-0" /> {snapshot.companyType}
-                          </span>
-                        )}
-                        {snapshot.employeeRange && (
-                          <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                            <Users className="h-3 w-3 shrink-0" /> {snapshot.employeeRange} employees
-                          </span>
-                        )}
-                        {snapshot.revenueScale && (
-                          <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                            <DollarSign className="h-3 w-3 shrink-0" /> {snapshot.revenueScale}
-                          </span>
-                        )}
-                        {snapshot.headquarters && (
-                          <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                            <MapPin className="h-3 w-3 shrink-0" /> {snapshot.headquarters}
-                          </span>
-                        )}
-                        {snapshot.founded && (
-                          <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                            <Calendar className="h-3 w-3 shrink-0" /> Est. {snapshot.founded}
-                          </span>
-                        )}
+                        {snapshot.industry && <span className="flex items-center gap-1.5 text-xs text-muted-foreground"><Building2 className="h-3 w-3 shrink-0" /> {snapshot.industry}</span>}
+                        {snapshot.companyType && <span className="flex items-center gap-1.5 text-xs text-muted-foreground"><Tag className="h-3 w-3 shrink-0" /> {snapshot.companyType}</span>}
+                        {snapshot.employeeRange && <span className="flex items-center gap-1.5 text-xs text-muted-foreground"><Users className="h-3 w-3 shrink-0" /> {snapshot.employeeRange} employees</span>}
+                        {snapshot.revenueScale && <span className="flex items-center gap-1.5 text-xs text-muted-foreground"><DollarSign className="h-3 w-3 shrink-0" /> {snapshot.revenueScale}</span>}
+                        {snapshot.headquarters && <span className="flex items-center gap-1.5 text-xs text-muted-foreground"><MapPin className="h-3 w-3 shrink-0" /> {snapshot.headquarters}</span>}
+                        {snapshot.founded && <span className="flex items-center gap-1.5 text-xs text-muted-foreground"><Calendar className="h-3 w-3 shrink-0" /> Est. {snapshot.founded}</span>}
                       </div>
                     </div>
                   </div>
@@ -248,12 +228,7 @@ const Analysis = () => {
         )}
 
         {/* Summary Stats */}
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="grid grid-cols-3 gap-4 mb-10"
-        >
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="grid grid-cols-3 gap-4 mb-10">
           {[
             { label: "Tasks augmented by AI", value: result.summary.augmentedPercent, color: "primary" },
             { label: "At risk of full automation", value: result.summary.automationRiskPercent, color: "destructive" },
@@ -269,15 +244,8 @@ const Analysis = () => {
         </motion.div>
 
         {/* AI Distribution Bar */}
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.15 }}
-          className="mb-10"
-        >
-          <h2 className="text-sm font-medium uppercase tracking-widest text-muted-foreground mb-3">
-            Human vs AI Task Distribution
-          </h2>
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} className="mb-10">
+          <h2 className="text-sm font-medium uppercase tracking-widest text-muted-foreground mb-3">Human vs AI Task Distribution</h2>
           <div className="flex rounded-lg overflow-hidden h-3">
             <div className="bg-success transition-all" style={{ width: `${100 - result.summary.augmentedPercent}%` }} />
             <div className="bg-warning transition-all" style={{ width: `${result.summary.augmentedPercent - result.summary.automationRiskPercent}%` }} />
@@ -291,15 +259,8 @@ const Analysis = () => {
         </motion.div>
 
         {/* Task Breakdown */}
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="mb-10"
-        >
-          <h2 className="text-sm font-medium uppercase tracking-widest text-muted-foreground mb-4">
-            Task-Level Breakdown
-          </h2>
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="mb-14">
+          <h2 className="text-sm font-medium uppercase tracking-widest text-muted-foreground mb-4">Task-Level Breakdown</h2>
           <Card className="border-border overflow-hidden">
             <Table>
               <TableHeader>
@@ -321,18 +282,14 @@ const Analysis = () => {
                         <div className="font-medium text-foreground">{task.name}</div>
                         <div className="text-xs text-muted-foreground mt-0.5 max-w-xs">{task.description}</div>
                       </TableCell>
-                      <TableCell>
-                        <Badge variant="outline" className={state.className}>{state.label}</Badge>
-                      </TableCell>
+                      <TableCell><Badge variant="outline" className={state.className}>{state.label}</Badge></TableCell>
                       <TableCell>
                         <span className="flex items-center gap-1 text-sm text-muted-foreground">
                           <TrendIcon className="h-3.5 w-3.5" /> {trend.label}
                         </span>
                       </TableCell>
                       <TableCell className="text-right">
-                        <span className={`text-sm font-medium capitalize ${impactColors[task.impactLevel]}`}>
-                          {task.impactLevel}
-                        </span>
+                        <span className={`text-sm font-medium capitalize ${impactColors[task.impactLevel]}`}>{task.impactLevel}</span>
                       </TableCell>
                     </TableRow>
                   );
@@ -342,23 +299,98 @@ const Analysis = () => {
           </Card>
         </motion.div>
 
-        {/* CTA to Skills */}
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-          className="text-center"
-        >
-          <Button
-            size="lg"
-            className="gap-2"
-            onClick={() =>
-              navigate(`/skills?company=${encodeURIComponent(company)}&title=${encodeURIComponent(jobTitle)}`)
-            }
-          >
-            View Skill Recommendations
-            <ArrowRight className="w-4 h-4" />
-          </Button>
+        {/* Divider */}
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.25 }} className="mb-10">
+          <div className="border-t border-border" />
+        </motion.div>
+
+        {/* Skill Recommendations */}
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="mb-10">
+          <h2 className="text-2xl font-display font-bold text-foreground mb-1">Skill Recommendations</h2>
+          <p className="text-muted-foreground mb-8">Personalized skills to stay ahead based on the task analysis above.</p>
+        </motion.div>
+
+        {(["ai_tools", "human_skills", "new_capabilities"] as SkillCategory[]).map((cat, catIndex) => {
+          const config = categoryConfig[cat];
+          const skills = grouped[cat] || [];
+          if (!skills.length) return null;
+          const Icon = config.icon;
+
+          return (
+            <motion.div
+              key={cat}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.35 + catIndex * 0.08 }}
+              className="mb-8"
+            >
+              <div className="flex items-center gap-2 mb-1">
+                <Icon className="h-4 w-4 text-primary" />
+                <h3 className="font-display font-semibold text-foreground">{config.label}</h3>
+              </div>
+              <p className="text-sm text-muted-foreground mb-4">{config.description}</p>
+
+              <div className="space-y-3">
+                {skills.map((skill, i) => (
+                  <Card key={i} className="border-border">
+                    <CardContent className="p-4">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex-1">
+                          <h4 className="font-medium text-foreground">{skill.name}</h4>
+                          <p className="text-sm text-muted-foreground mt-1">{skill.description}</p>
+
+                          {skill.relatedTasks && skill.relatedTasks.length > 0 && (
+                            <div className="mt-2 flex flex-wrap items-center gap-1.5">
+                              <Link2 className="h-3 w-3 text-muted-foreground shrink-0" />
+                              {skill.relatedTasks.map((task, ti) => (
+                                <span key={ti} className="text-xs px-2 py-0.5 rounded bg-muted text-muted-foreground">{task}</span>
+                              ))}
+                            </div>
+                          )}
+
+                          {skill.resources && skill.resources.length > 0 && (
+                            <div className="mt-3 flex flex-wrap gap-2">
+                              {skill.resources.map((resource, ri) => (
+                                <a
+                                  key={ri}
+                                  href={resource.url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  title={resource.summary}
+                                  className="inline-flex items-center gap-1 text-xs px-2.5 py-1.5 rounded-md bg-accent text-accent-foreground hover:bg-accent/80 transition-colors"
+                                >
+                                  <ExternalLink className="h-3 w-3" />
+                                  {resource.name}
+                                </a>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                        <Badge variant="outline" className={`shrink-0 capitalize ${priorityStyles[skill.priority]}`}>
+                          {skill.priority}
+                        </Badge>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </motion.div>
+          );
+        })}
+
+        {/* Save CTA */}
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }} className="mt-12 text-center pb-8">
+          <Card className="border-border bg-accent/30">
+            <CardContent className="p-6">
+              <h3 className="font-display font-semibold text-foreground mb-2">Save your learning path</h3>
+              <p className="text-sm text-muted-foreground mb-4">
+                Create a free account to save your analysis, track progress, and revisit your skills roadmap.
+              </p>
+              <Button onClick={handleSave} className="gap-2">
+                <Save className="w-4 h-4" /> Save My Path
+              </Button>
+            </CardContent>
+          </Card>
         </motion.div>
       </div>
     </div>
