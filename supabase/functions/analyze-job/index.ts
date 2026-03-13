@@ -185,7 +185,7 @@ serve(async (req) => {
                     },
                   },
                 },
-                required: ["summary", "tasks", "skills"],
+                required: ["extractedJobTitle", "summary", "tasks", "skills"],
                 additionalProperties: false,
               },
             },
