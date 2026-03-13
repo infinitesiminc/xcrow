@@ -14,6 +14,39 @@ export type Database = {
   }
   public: {
     Tables: {
+      analysis_history: {
+        Row: {
+          analyzed_at: string
+          augmented_percent: number
+          automation_risk_percent: number
+          company: string | null
+          id: string
+          job_title: string
+          tasks_count: number
+          user_id: string
+        }
+        Insert: {
+          analyzed_at?: string
+          augmented_percent?: number
+          automation_risk_percent?: number
+          company?: string | null
+          id?: string
+          job_title: string
+          tasks_count?: number
+          user_id: string
+        }
+        Update: {
+          analyzed_at?: string
+          augmented_percent?: number
+          automation_risk_percent?: number
+          company?: string | null
+          id?: string
+          job_title?: string
+          tasks_count?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
       completed_simulations: {
         Row: {
           company: string | null
