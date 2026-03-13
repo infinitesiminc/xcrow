@@ -64,7 +64,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company }: Simulato
       setError("Couldn't start the simulation. The simulator may not have scenarios for this role yet.");
       setPhase("chat");
     }
-  }, [buildSlug]);
+  }, [taskName, jobTitle, company]);
 
   useEffect(() => {
     if (open) startSession();
