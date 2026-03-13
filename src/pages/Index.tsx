@@ -688,11 +688,11 @@ const Index = () => {
                   if (files?.length && fileInputRef.current) {
                     const dt = new DataTransfer();
                     Array.from(files).forEach(f => dt.items.add(f));
-                    fileInputRef.current.files = dt.files;
-                    fileInputRef.current.dispatchEvent(new Event("change", { bubbles: true }));
+                    teamFileInputRef.current.files = dt.files;
+                    teamFileInputRef.current.dispatchEvent(new Event("change", { bubbles: true }));
                   }
                 }}
-                onClick={() => fileInputRef.current?.click()}
+                onClick={() => teamFileInputRef.current?.click()}
                 animate={isDragging ? { scale: 1.02, borderColor: "hsl(var(--primary))" } : { scale: 1 }}
                 transition={{ type: "spring", stiffness: 300, damping: 20 }}
                 className={`flex flex-col items-center justify-center gap-2 py-8 px-4 rounded-xl border-2 border-dashed cursor-pointer transition-colors mb-3 ${
