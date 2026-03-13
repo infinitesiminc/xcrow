@@ -181,12 +181,27 @@ const Index = () => {
     setRoles(roles.map((r) => (r.id === id ? { ...r, title } : r)));
   };
 
-  // Upload a CSV/TXT with one job title per line
+  // Upload a CSV/TXT/XLSX with one job title per line/row
   const handleJobListUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    const text = await file.text();
-    const lines = text.split(/\r?\n/).map((l) => l.trim()).filter(Boolean).slice(0, 10);
+
+    let lines: string[] = [];
+    const name = file.name.toLowerCase();
+
+    if (name.endsWith(".xlsx") || name.endsWith(".xls")) {
+      const XLSX = await import("xlsx");
+      const arrayBuffer = await file.arrayBuffer();
+      const workbook = XLSX.read(arrayBuffer, { type: "array" });
+      const sheet = workbook.Sheets[workbook.SheetNames[0]];
+      const rows: string[][] = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+      lines = rows.map((row) => (row[0] || "").toString().trim()).filter(Boolean);
+    } else {
+      const text = await file.text();
+      lines = text.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
+    }
+
+    lines = lines.slice(0, 10);
     if (lines.length === 0) {
       toast({ title: "Empty file", description: "No job titles found.", variant: "destructive" });
       return;
@@ -213,6 +228,19 @@ const Index = () => {
 
       if (name.endsWith(".txt") || name.endsWith(".md")) {
         jdText = await file.text();
+      } else if (name.endsWith(".xlsx") || name.endsWith(".xls")) {
+        try {
+          const XLSX = await import("xlsx");
+          const arrayBuffer = await file.arrayBuffer();
+          const workbook = XLSX.read(arrayBuffer, { type: "array" });
+          const sheet = workbook.Sheets[workbook.SheetNames[0]];
+          jdText = XLSX.utils.sheet_to_json(sheet, { header: 1 })
+            .map((row: any) => (Array.isArray(row) ? row.join(" ") : "").trim())
+            .filter(Boolean)
+            .join("\n");
+        } catch (err) {
+          console.error(`Failed to parse ${file.name}:`, err);
+        }
       } else if (name.endsWith(".pdf") || name.endsWith(".docx") || name.endsWith(".doc")) {
         try {
           const formData = new FormData();
@@ -551,11 +579,11 @@ const Index = () => {
                 </Button>
                 <label className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md border border-border text-muted-foreground hover:text-foreground hover:border-border/80 cursor-pointer transition-colors">
                   <Upload className="h-3 w-3" /> Import list
-                  <input type="file" accept=".csv,.txt,.tsv" className="hidden" onChange={handleJobListUpload} />
+                  <input type="file" accept=".csv,.txt,.tsv,.xlsx,.xls" className="hidden" onChange={handleJobListUpload} />
                 </label>
                 <label className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md border border-border text-muted-foreground hover:text-foreground hover:border-border/80 cursor-pointer transition-colors">
                   <FileText className="h-3 w-3" /> Upload JDs
-                  <input type="file" accept=".pdf,.docx,.doc,.txt,.md" multiple className="hidden" onChange={handleBatchJdUpload} disabled={teamJdParsing} />
+                  <input type="file" accept=".pdf,.docx,.doc,.txt,.md,.xlsx,.xls" multiple className="hidden" onChange={handleBatchJdUpload} disabled={teamJdParsing} />
                 </label>
                 <Button onClick={handleTeamAnalyze} disabled={teamLoading || teamJdParsing} className="gap-2 ml-auto">
                   {teamLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <BarChart3 className="h-4 w-4" />}
