@@ -464,7 +464,7 @@ export const prebuiltRoles: Record<string, JobAnalysisResult> = {
   "supply chain manager": {
     jobTitle: "Supply Chain Manager",
     company: "",
-    summary: { augmentedPercent: 65, automationRiskPercent: 28, newSkillsPercent: 60 },
+    summary: { augmentedPercent: 70, automationRiskPercent: 22, newSkillsPercent: 48 },
     tasks: [
       { name: "Demand forecasting", currentState: "human_ai", trend: "fully_ai_soon", impactLevel: "high", description: "AI models predict demand using historical data, weather, events, and market signals." },
       { name: "Inventory optimization", currentState: "human_ai", trend: "increasing_ai", impactLevel: "medium", description: "AI calculates optimal stock levels and reorder points across the network." },
