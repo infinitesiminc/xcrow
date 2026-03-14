@@ -95,6 +95,7 @@ const verdictConfig = {
   leverage: { icon: Rocket, color: "hsl(142, 71%, 45%)", label: "Leverage" },
 };
 
+export default function Heatmap() {
   const navigate = useNavigate();
   const [hoveredCell, setHoveredCell] = useState<{ role: string; cat: string } | null>(null);
   const [tooltipPos, setTooltipPos] = useState({ x: 0, y: 0 });
