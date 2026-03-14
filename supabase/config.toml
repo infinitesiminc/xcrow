@@ -5,3 +5,6 @@ verify_jwt = false
 
 [functions.scrape-company]
 verify_jwt = false
+
+[functions.esco-lookup]
+verify_jwt = false
