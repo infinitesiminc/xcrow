@@ -60,6 +60,12 @@ export default {
           DEFAULT: "hsl(var(--warning))",
           foreground: "hsl(var(--warning-foreground))",
         },
+        dot: {
+          blue: "hsl(var(--dot-blue))",
+          teal: "hsl(var(--dot-teal))",
+          purple: "hsl(var(--dot-purple))",
+          amber: "hsl(var(--dot-amber))",
+        },
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
           foreground: "hsl(var(--sidebar-foreground))",
