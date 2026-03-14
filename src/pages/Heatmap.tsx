@@ -211,6 +211,9 @@ export default function Heatmap() {
                       {cat.label}
                     </div>
                   ))}
+                  <div className="p-2 text-[10px] leading-tight font-semibold text-muted-foreground border-b border-border/40 bg-muted/30 text-center">
+                    Action
+                  </div>
                 </div>
 
                 {/* Data rows */}
