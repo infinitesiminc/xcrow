@@ -533,7 +533,7 @@ export const prebuiltRoles: Record<string, JobAnalysisResult> = {
   "qa manager": {
     jobTitle: "QA Manager",
     company: "",
-    summary: { augmentedPercent: 64, automationRiskPercent: 32, newSkillsPercent: 58 },
+    summary: { augmentedPercent: 60, automationRiskPercent: 38, newSkillsPercent: 60 },
     tasks: [
       { name: "Test case generation", currentState: "human_ai", trend: "fully_ai_soon", impactLevel: "high", description: "AI generates comprehensive test cases from requirements and code changes." },
       { name: "Automated test execution", currentState: "mostly_ai", trend: "fully_ai_soon", impactLevel: "high", description: "AI-driven test automation runs regression suites and reports results continuously." },
