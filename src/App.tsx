@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/contexts/AuthContext";
 import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
 import Index from "./pages/Index.tsx";
 import Analysis from "./pages/Analysis.tsx";
 import TeamAnalysis from "./pages/TeamAnalysis.tsx";
@@ -28,16 +29,16 @@ const App = () => (
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<Index />} />
-            <Route path="/analysis" element={<><Navbar /><Analysis /></>} />
-            <Route path="/team-analysis" element={<><Navbar /><TeamAnalysis /></>} />
+            <Route path="/analysis" element={<><Navbar /><Analysis /><Footer /></>} />
+            <Route path="/team-analysis" element={<><Navbar /><TeamAnalysis /><Footer /></>} />
             <Route path="/auth" element={<><Navbar /><Auth /></>} />
-            <Route path="/dashboard" element={<><Navbar /><Dashboard /></>} />
-            <Route path="/settings" element={<><Navbar /><Settings /></>} />
+            <Route path="/dashboard" element={<><Navbar /><Dashboard /><Footer /></>} />
+            <Route path="/settings" element={<><Navbar /><Settings /><Footer /></>} />
             
-            <Route path="/for-individuals" element={<><Navbar /><ForIndividuals /></>} />
-            <Route path="/for-organizations" element={<><Navbar /><ForOrganizations /></>} />
-            <Route path="/tools" element={<><Navbar /><ToolsMarketplace /></>} />
-            <Route path="/contact-org" element={<><Navbar /><ContactOrg /></>} />
+            <Route path="/for-individuals" element={<><Navbar /><ForIndividuals /><Footer /></>} />
+            <Route path="/for-organizations" element={<><Navbar /><ForOrganizations /><Footer /></>} />
+            <Route path="/tools" element={<><Navbar /><ToolsMarketplace /><Footer /></>} />
+            <Route path="/contact-org" element={<><Navbar /><ContactOrg /><Footer /></>} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
