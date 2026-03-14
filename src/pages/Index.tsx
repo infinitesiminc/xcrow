@@ -470,7 +470,7 @@ const Index = () => {
               <LayoutDashboard className="mr-1 h-3.5 w-3.5" /> Dashboard
             </Button>
           ) : (
-            <Button variant="ghost" size="sm" className="text-xs h-7" onClick={() => navigate("/auth")}>
+            <Button variant="ghost" size="sm" className="text-xs h-7" onClick={openAuthModal}>
               <User className="mr-1 h-3.5 w-3.5" /> Sign in
             </Button>
           )}
