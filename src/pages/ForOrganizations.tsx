@@ -8,6 +8,12 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import CompanyMarquee from "@/components/CompanyMarquee";
+
+const MARQUEE_ROWS = [
+  ["Microsoft", "Apple", "Nvidia", "Meta", "OpenAI", "Stripe", "Deloitte", "McKinsey", "Boeing", "FedEx"],
+  ["Databricks", "Cohere", "Mistral", "Gong", "DeepMind", "CoreWeave", "Glean", "Deel", "Lockheed Martin"],
+];
 
 const challenges = [
   {
