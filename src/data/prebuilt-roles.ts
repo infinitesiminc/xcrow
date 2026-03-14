@@ -349,7 +349,7 @@ export const prebuiltRoles: Record<string, JobAnalysisResult> = {
   "social media manager": {
     jobTitle: "Social Media Manager",
     company: "",
-    summary: { augmentedPercent: 70, automationRiskPercent: 35, newSkillsPercent: 65 },
+    summary: { augmentedPercent: 65, automationRiskPercent: 38, newSkillsPercent: 62 },
     tasks: [
       { name: "Content creation & posting", currentState: "human_ai", trend: "fully_ai_soon", impactLevel: "high", description: "AI generates posts, captions, images, and videos tailored to each platform." },
       { name: "Scheduling & publishing", currentState: "mostly_ai", trend: "fully_ai_soon", impactLevel: "high", description: "AI optimizes posting times and auto-publishes across platforms." },
