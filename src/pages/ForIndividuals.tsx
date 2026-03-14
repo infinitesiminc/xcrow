@@ -52,7 +52,7 @@ const steps = [
   {
     num: "02",
     title: "Get your AI impact report",
-    description: "Receive a task-by-task breakdown with risk scores, industry benchmarks, and skill gap analysis — in under 30 seconds.",
+    description: "Receive a task-by-task breakdown with risk scores, industry benchmarks, and skill gap analysis — in about 3 seconds.",
     icon: BarChart3,
   },
   {
@@ -90,7 +90,7 @@ const audiences = [
 
 const stats = [
   { value: "100M+", label: "Roles analyzed" },
-  { value: "<30s", label: "Analysis time" },
+  { value: "~3s", label: "Analysis time" },
   { value: "8-12", label: "Tasks per role analyzed" },
   { value: "Free", label: "To get started" },
 ];
@@ -178,7 +178,7 @@ export default function ForIndividuals() {
       <section className="px-4 py-20">
         <div className="mx-auto max-w-4xl">
           <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} className="text-center mb-12">
-            <h2 className="font-sans text-2xl sm:text-3xl font-bold text-foreground">From uncertainty to action in 30 seconds</h2>
+            <h2 className="font-sans text-2xl sm:text-3xl font-bold text-foreground">From uncertainty to action in 3 seconds</h2>
             <p className="mt-2 text-muted-foreground">Three steps. No sign-up required to start.</p>
           </motion.div>
           <div className="grid sm:grid-cols-3 gap-6">
@@ -303,7 +303,7 @@ export default function ForIndividuals() {
                   Your role is changing. Are you ready?
                 </h2>
                 <p className="mt-2 text-sm text-muted-foreground max-w-md mx-auto">
-                  Run your first analysis free — no sign-up, no credit card. See exactly where you stand in under 30 seconds.
+                  Run your first analysis free — no sign-up, no credit card. See exactly where you stand in seconds.
                 </p>
                 <Button size="lg" onClick={() => navigate("/")} className="mt-6 gap-2">
                   <Zap className="h-4 w-4" /> Start Free Analysis
