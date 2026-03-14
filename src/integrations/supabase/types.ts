@@ -47,6 +47,48 @@ export type Database = {
         }
         Relationships: []
       }
+      companies: {
+        Row: {
+          description: string | null
+          employee_range: string | null
+          external_id: string | null
+          headquarters: string | null
+          id: string
+          imported_at: string
+          industry: string | null
+          logo_url: string | null
+          name: string
+          slug: string | null
+          website: string | null
+        }
+        Insert: {
+          description?: string | null
+          employee_range?: string | null
+          external_id?: string | null
+          headquarters?: string | null
+          id?: string
+          imported_at?: string
+          industry?: string | null
+          logo_url?: string | null
+          name: string
+          slug?: string | null
+          website?: string | null
+        }
+        Update: {
+          description?: string | null
+          employee_range?: string | null
+          external_id?: string | null
+          headquarters?: string | null
+          id?: string
+          imported_at?: string
+          industry?: string | null
+          logo_url?: string | null
+          name?: string
+          slug?: string | null
+          website?: string | null
+        }
+        Relationships: []
+      }
       completed_simulations: {
         Row: {
           company: string | null
@@ -77,6 +119,100 @@ export type Database = {
         }
         Relationships: []
       }
+      job_skills: {
+        Row: {
+          category: string | null
+          description: string | null
+          external_id: string | null
+          id: string
+          job_id: string
+          name: string
+          priority: string | null
+        }
+        Insert: {
+          category?: string | null
+          description?: string | null
+          external_id?: string | null
+          id?: string
+          job_id: string
+          name: string
+          priority?: string | null
+        }
+        Update: {
+          category?: string | null
+          description?: string | null
+          external_id?: string | null
+          id?: string
+          job_id?: string
+          name?: string
+          priority?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "job_skills_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      jobs: {
+        Row: {
+          augmented_percent: number | null
+          automation_risk_percent: number | null
+          company_id: string | null
+          department: string | null
+          description: string | null
+          external_id: string | null
+          id: string
+          imported_at: string
+          new_skills_percent: number | null
+          seniority: string | null
+          slug: string | null
+          status: string | null
+          title: string
+        }
+        Insert: {
+          augmented_percent?: number | null
+          automation_risk_percent?: number | null
+          company_id?: string | null
+          department?: string | null
+          description?: string | null
+          external_id?: string | null
+          id?: string
+          imported_at?: string
+          new_skills_percent?: number | null
+          seniority?: string | null
+          slug?: string | null
+          status?: string | null
+          title: string
+        }
+        Update: {
+          augmented_percent?: number | null
+          automation_risk_percent?: number | null
+          company_id?: string | null
+          department?: string | null
+          description?: string | null
+          external_id?: string | null
+          id?: string
+          imported_at?: string
+          new_skills_percent?: number | null
+          seniority?: string | null
+          slug?: string | null
+          status?: string | null
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "jobs_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string
@@ -94,6 +230,88 @@ export type Database = {
           id?: string
         }
         Relationships: []
+      }
+      scenarios: {
+        Row: {
+          description: string | null
+          difficulty: number | null
+          external_id: string | null
+          id: string
+          job_id: string | null
+          slug: string | null
+          title: string
+        }
+        Insert: {
+          description?: string | null
+          difficulty?: number | null
+          external_id?: string | null
+          id?: string
+          job_id?: string | null
+          slug?: string | null
+          title: string
+        }
+        Update: {
+          description?: string | null
+          difficulty?: number | null
+          external_id?: string | null
+          id?: string
+          job_id?: string | null
+          slug?: string | null
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "scenarios_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      task_clusters: {
+        Row: {
+          current_state: string | null
+          description: string | null
+          external_id: string | null
+          id: string
+          impact_level: string | null
+          job_id: string
+          name: string
+          sort_order: number | null
+          trend: string | null
+        }
+        Insert: {
+          current_state?: string | null
+          description?: string | null
+          external_id?: string | null
+          id?: string
+          impact_level?: string | null
+          job_id: string
+          name: string
+          sort_order?: number | null
+          trend?: string | null
+        }
+        Update: {
+          current_state?: string | null
+          description?: string | null
+          external_id?: string | null
+          id?: string
+          impact_level?: string | null
+          job_id?: string
+          name?: string
+          sort_order?: number | null
+          trend?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "task_clusters_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
