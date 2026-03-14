@@ -648,7 +648,7 @@ export const prebuiltRoles: Record<string, JobAnalysisResult> = {
   "ip specialist": {
     jobTitle: "IP Specialist",
     company: "",
-    summary: { augmentedPercent: 52, automationRiskPercent: 15, newSkillsPercent: 48 },
+    summary: { augmentedPercent: 75, automationRiskPercent: 8, newSkillsPercent: 30 },
     tasks: [
       { name: "Patent searching", currentState: "human_ai", trend: "increasing_ai", impactLevel: "medium", description: "AI searches patent databases comprehensively, but evaluating novelty requires expertise." },
       { name: "Patent drafting", currentState: "human_ai", trend: "increasing_ai", impactLevel: "medium", description: "AI assists with claims drafting and specification writing, but inventive step analysis is human." },
