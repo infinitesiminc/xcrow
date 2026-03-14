@@ -83,8 +83,9 @@ export default function Heatmap() {
   const [hoveredCell, setHoveredCell] = useState<{ role: string; cat: string } | null>(null);
   const [tooltipPos, setTooltipPos] = useState({ x: 0, y: 0 });
 
-  const { grid, roles } = useMemo(() => {
+  const { grid, roles, agentRisks } = useMemo(() => {
     const grid: Record<string, Record<string, CellData>> = {};
+    const agentRisks: Record<string, number> = {};
     const rolesData: { key: string; title: string }[] = [];
 
     for (const key of ALL_ROLES) {
@@ -92,6 +93,13 @@ export default function Heatmap() {
       if (!role) continue;
       rolesData.push({ key, title: role.jobTitle });
       grid[key] = {};
+
+      // Agent replacement risk (same formula as RolesChart)
+      agentRisks[key] = Math.round(
+        role.summary.automationRiskPercent * 0.55 +
+        role.summary.augmentedPercent * 0.25 +
+        role.summary.newSkillsPercent * 0.20,
+      );
 
       for (const cat of TASK_CATEGORIES) {
         grid[key][cat.id] = { score: null, tasks: [] };
@@ -116,14 +124,10 @@ export default function Heatmap() {
       }
     }
 
-    // Sort roles by overall disruption (highest first)
-    rolesData.sort((a, b) => {
-      const aTotal = TASK_CATEGORIES.reduce((s, c) => s + (grid[a.key]?.[c.id]?.score || 0), 0);
-      const bTotal = TASK_CATEGORIES.reduce((s, c) => s + (grid[b.key]?.[c.id]?.score || 0), 0);
-      return bTotal - aTotal;
-    });
+    // Sort roles by agent risk (highest first)
+    rolesData.sort((a, b) => (agentRisks[b.key] || 0) - (agentRisks[a.key] || 0));
 
-    return { grid, roles: rolesData };
+    return { grid, roles: rolesData, agentRisks };
   }, []);
 
   const hoveredData = hoveredCell ? grid[hoveredCell.role]?.[hoveredCell.cat] : null;
@@ -173,9 +177,12 @@ export default function Heatmap() {
             <div className="overflow-x-auto">
               <div className="min-w-[900px]">
                 {/* Header row */}
-                <div className="grid" style={{ gridTemplateColumns: "180px repeat(8, 1fr)" }}>
+                <div className="grid" style={{ gridTemplateColumns: "180px 60px repeat(8, 1fr)" }}>
                   <div className="p-3 text-xs font-medium text-muted-foreground border-b border-r border-border/40 bg-muted/30">
                     Role
+                  </div>
+                  <div className="p-2 text-[10px] leading-tight font-semibold text-muted-foreground border-b border-r border-border/40 bg-muted/30 text-center">
+                    Agent Risk
                   </div>
                   {TASK_CATEGORIES.map((cat) => (
                     <div
@@ -188,17 +195,28 @@ export default function Heatmap() {
                 </div>
 
                 {/* Data rows */}
-                {roles.map((role) => (
+                {roles.map((role) => {
+                  const risk = agentRisks[role.key] || 0;
+                  const riskColor = risk >= 45 ? "hsl(0, 84%, 55%)" : risk >= 35 ? "hsl(25, 95%, 53%)" : risk >= 25 ? "hsl(45, 93%, 50%)" : "hsl(142, 71%, 50%)";
+                  return (
                   <div
                     key={role.key}
                     className="grid hover:bg-muted/20 transition-colors"
-                    style={{ gridTemplateColumns: "180px repeat(8, 1fr)" }}
+                    style={{ gridTemplateColumns: "180px 60px repeat(8, 1fr)" }}
                   >
                     <div
                       className="p-2.5 text-xs font-medium text-foreground border-b border-r border-border/30 flex items-center cursor-pointer hover:text-primary transition-colors"
                       onClick={() => navigate(`/analysis?title=${encodeURIComponent(role.title)}`)}
                     >
                       {role.title}
+                    </div>
+                    <div
+                      className="border-b border-r border-border/30 flex items-center justify-center"
+                      style={{ backgroundColor: `${riskColor}20` }}
+                    >
+                      <span className="text-xs font-bold tabular-nums" style={{ color: riskColor }}>
+                        {risk}%
+                      </span>
                     </div>
                     {TASK_CATEGORIES.map((cat) => {
                       const cell = grid[role.key]?.[cat.id];
@@ -229,7 +247,8 @@ export default function Heatmap() {
                       );
                     })}
                   </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           </CardContent>
