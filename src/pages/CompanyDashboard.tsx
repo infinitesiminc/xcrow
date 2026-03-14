@@ -356,10 +356,10 @@ const CompanyDashboard = () => {
                       <span className="flex items-center justify-end text-xs">Risk <SortIcon field="automation_risk_percent" /></span>
                     </TableHead>
                      <TableHead className="text-center">
-                       <span className="text-xs">Tool Proficiency</span>
+                       <span className="text-xs">Task Progress</span>
                      </TableHead>
                      <TableHead className="text-center">
-                       <span className="text-xs">Staff Upskill</span>
+                       <span className="text-xs">Skill Readiness</span>
                      </TableHead>
                      <TableHead className="w-20" />
                   </TableRow>
