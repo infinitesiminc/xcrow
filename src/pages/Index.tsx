@@ -46,64 +46,76 @@ interface RoleCard {
   image: string;
   augmented: number;
   risk: number;
+  agentRisk: number;
   tag: string;
 }
 
-const roleCategories: { label: string; roles: RoleCard[] }[] = [
+function calcAgentRisk(automationRisk: number, augmented: number, newSkills: number): number {
+  return Math.round(automationRisk * 0.55 + (100 - augmented) * 0.25 + newSkills * 0.20);
+}
+
+// All 30 roles with their agent replacement risk computed
+const allRoles: RoleCard[] = [
+  { title: "Software Engineer", image: roleSoftwareEngineer, augmented: 72, risk: 15, agentRisk: calcAgentRisk(15, 72, 65), tag: "Tech" },
+  { title: "Data Scientist", image: roleDataScientist, augmented: 78, risk: 12, agentRisk: calcAgentRisk(12, 78, 60), tag: "Tech" },
+  { title: "Product Manager", image: roleProductManager, augmented: 65, risk: 18, agentRisk: calcAgentRisk(18, 65, 55), tag: "Tech" },
+  { title: "DevOps Engineer", image: roleDevopsEngineer, augmented: 70, risk: 20, agentRisk: calcAgentRisk(20, 70, 60), tag: "Tech" },
+  { title: "UX Designer", image: roleUxDesigner, augmented: 60, risk: 22, agentRisk: calcAgentRisk(22, 60, 50), tag: "Tech" },
+  { title: "Cybersecurity Analyst", image: roleCybersecurityAnalyst, augmented: 68, risk: 16, agentRisk: calcAgentRisk(16, 68, 55), tag: "Tech" },
+  { title: "Accountant", image: roleAccountant, augmented: 60, risk: 35, agentRisk: calcAgentRisk(35, 60, 55), tag: "Finance" },
+  { title: "Financial Analyst", image: roleFinancialAnalyst, augmented: 70, risk: 28, agentRisk: calcAgentRisk(28, 70, 60), tag: "Finance" },
+  { title: "Investment Banker", image: roleInvestmentBanker, augmented: 55, risk: 20, agentRisk: calcAgentRisk(20, 55, 45), tag: "Finance" },
+  { title: "Tax Advisor", image: roleTaxAdvisor, augmented: 62, risk: 38, agentRisk: calcAgentRisk(38, 62, 55), tag: "Finance" },
+  { title: "Risk Manager", image: roleRiskManager, augmented: 66, risk: 24, agentRisk: calcAgentRisk(24, 66, 50), tag: "Finance" },
+  { title: "Auditor", image: roleAuditor, augmented: 58, risk: 42, agentRisk: calcAgentRisk(42, 58, 60), tag: "Finance" },
+  { title: "Marketing Manager", image: roleMarketingManager, augmented: 68, risk: 25, agentRisk: calcAgentRisk(25, 68, 70), tag: "Marketing" },
+  { title: "Content Strategist", image: roleContentStrategist, augmented: 74, risk: 30, agentRisk: calcAgentRisk(30, 74, 65), tag: "Marketing" },
+  { title: "SEO Specialist", image: roleSeoSpecialist, augmented: 72, risk: 40, agentRisk: calcAgentRisk(40, 72, 65), tag: "Marketing" },
+  { title: "Social Media Manager", image: roleSocialMediaManager, augmented: 70, risk: 35, agentRisk: calcAgentRisk(35, 70, 60), tag: "Marketing" },
+  { title: "Brand Strategist", image: roleBrandStrategist, augmented: 55, risk: 15, agentRisk: calcAgentRisk(15, 55, 40), tag: "Marketing" },
+  { title: "Business Analyst", image: roleBusinessAnalyst, augmented: 67, risk: 26, agentRisk: calcAgentRisk(26, 67, 55), tag: "Marketing" },
+  { title: "Project Manager", image: roleProjectManager, augmented: 62, risk: 22, agentRisk: calcAgentRisk(22, 62, 50), tag: "Operations" },
+  { title: "HR Manager", image: roleHrManager, augmented: 58, risk: 30, agentRisk: calcAgentRisk(30, 58, 50), tag: "Operations" },
+  { title: "Supply Chain Manager", image: roleSupplyChainManager, augmented: 65, risk: 28, agentRisk: calcAgentRisk(28, 65, 55), tag: "Operations" },
+  { title: "Operations Manager", image: roleOperationsManager, augmented: 60, risk: 25, agentRisk: calcAgentRisk(25, 60, 50), tag: "Operations" },
+  { title: "Customer Success Manager", image: roleCustomerSuccessManager, augmented: 55, risk: 20, agentRisk: calcAgentRisk(20, 55, 40), tag: "Operations" },
+  { title: "QA Manager", image: roleQaManager, augmented: 64, risk: 32, agentRisk: calcAgentRisk(32, 64, 55), tag: "Operations" },
+  { title: "Corporate Lawyer", image: roleCorporateLawyer, augmented: 55, risk: 18, agentRisk: calcAgentRisk(18, 55, 40), tag: "Legal" },
+  { title: "Compliance Officer", image: roleComplianceOfficer, augmented: 60, risk: 32, agentRisk: calcAgentRisk(32, 60, 55), tag: "Legal" },
+  { title: "Paralegal", image: roleParalegal, augmented: 68, risk: 45, agentRisk: calcAgentRisk(45, 68, 60), tag: "Legal" },
+  { title: "Contract Attorney", image: roleContractAttorney, augmented: 65, risk: 40, agentRisk: calcAgentRisk(40, 65, 55), tag: "Legal" },
+  { title: "IP Specialist", image: roleIpSpecialist, augmented: 52, risk: 15, agentRisk: calcAgentRisk(15, 52, 35), tag: "Legal" },
+  { title: "Legal Ops Manager", image: roleLegalOpsManager, augmented: 63, risk: 28, agentRisk: calcAgentRisk(28, 63, 50), tag: "Legal" },
+];
+
+// Sort into risk tiers
+const riskTiers: { label: string; color: string; textColor: string; bgColor: string; borderColor: string; iconColor: string; roles: RoleCard[] }[] = [
   {
-    label: "Tech",
-    roles: [
-      { title: "Software Engineer", image: roleSoftwareEngineer, augmented: 72, risk: 15, tag: "High AI Augmentation" },
-      { title: "Data Scientist", image: roleDataScientist, augmented: 78, risk: 12, tag: "AI-Native Role" },
-      { title: "Product Manager", image: roleProductManager, augmented: 65, risk: 18, tag: "Strategic AI Use" },
-      { title: "DevOps Engineer", image: roleDevopsEngineer, augmented: 70, risk: 20, tag: "High AI Augmentation" },
-      { title: "UX Designer", image: roleUxDesigner, augmented: 60, risk: 22, tag: "Moderate Change" },
-      { title: "Cybersecurity Analyst", image: roleCybersecurityAnalyst, augmented: 68, risk: 16, tag: "Strategic AI Use" },
-    ],
+    label: "High Risk",
+    color: "text-destructive",
+    textColor: "text-destructive",
+    bgColor: "bg-destructive/10",
+    borderColor: "border-destructive/20",
+    iconColor: "text-destructive",
+    roles: allRoles.filter(r => r.agentRisk >= 35).sort((a, b) => b.agentRisk - a.agentRisk),
   },
   {
-    label: "Finance",
-    roles: [
-      { title: "Accountant", image: roleAccountant, augmented: 60, risk: 35, tag: "Automation Risk" },
-      { title: "Financial Analyst", image: roleFinancialAnalyst, augmented: 70, risk: 28, tag: "High AI Augmentation" },
-      { title: "Investment Banker", image: roleInvestmentBanker, augmented: 55, risk: 20, tag: "Moderate Change" },
-      { title: "Tax Advisor", image: roleTaxAdvisor, augmented: 62, risk: 38, tag: "Automation Risk" },
-      { title: "Risk Manager", image: roleRiskManager, augmented: 66, risk: 24, tag: "Strategic AI Use" },
-      { title: "Auditor", image: roleAuditor, augmented: 58, risk: 42, tag: "High Automation Risk" },
-    ],
+    label: "Moderate Risk",
+    color: "text-warning",
+    textColor: "text-warning",
+    bgColor: "bg-warning/10",
+    borderColor: "border-warning/20",
+    iconColor: "text-warning",
+    roles: allRoles.filter(r => r.agentRisk >= 25 && r.agentRisk < 35).sort((a, b) => b.agentRisk - a.agentRisk),
   },
   {
-    label: "Marketing",
-    roles: [
-      { title: "Marketing Manager", image: roleMarketingManager, augmented: 68, risk: 25, tag: "Rapid AI Growth" },
-      { title: "Content Strategist", image: roleContentStrategist, augmented: 74, risk: 30, tag: "High AI Augmentation" },
-      { title: "SEO Specialist", image: roleSeoSpecialist, augmented: 72, risk: 40, tag: "Automation Risk" },
-      { title: "Social Media Manager", image: roleSocialMediaManager, augmented: 70, risk: 35, tag: "Automation Risk" },
-      { title: "Brand Strategist", image: roleBrandStrategist, augmented: 55, risk: 15, tag: "Strategic AI Use" },
-      { title: "Business Analyst", image: roleBusinessAnalyst, augmented: 67, risk: 26, tag: "Moderate Change" },
-    ],
-  },
-  {
-    label: "Operations",
-    roles: [
-      { title: "Project Manager", image: roleProjectManager, augmented: 62, risk: 22, tag: "Moderate Change" },
-      { title: "HR Manager", image: roleHrManager, augmented: 58, risk: 30, tag: "Automation Risk" },
-      { title: "Supply Chain Manager", image: roleSupplyChainManager, augmented: 65, risk: 28, tag: "High AI Augmentation" },
-      { title: "Operations Manager", image: roleOperationsManager, augmented: 60, risk: 25, tag: "Moderate Change" },
-      { title: "Customer Success Manager", image: roleCustomerSuccessManager, augmented: 55, risk: 20, tag: "Strategic AI Use" },
-      { title: "QA Manager", image: roleQaManager, augmented: 64, risk: 32, tag: "Automation Risk" },
-    ],
-  },
-  {
-    label: "Legal",
-    roles: [
-      { title: "Corporate Lawyer", image: roleCorporateLawyer, augmented: 55, risk: 18, tag: "Strategic AI Use" },
-      { title: "Compliance Officer", image: roleComplianceOfficer, augmented: 60, risk: 32, tag: "Automation Risk" },
-      { title: "Paralegal", image: roleParalegal, augmented: 68, risk: 45, tag: "High Automation Risk" },
-      { title: "Contract Attorney", image: roleContractAttorney, augmented: 65, risk: 40, tag: "Automation Risk" },
-      { title: "IP Specialist", image: roleIpSpecialist, augmented: 52, risk: 15, tag: "Strategic AI Use" },
-      { title: "Legal Ops Manager", image: roleLegalOpsManager, augmented: 63, risk: 28, tag: "Moderate Change" },
-    ],
+    label: "Lower Risk",
+    color: "text-success",
+    textColor: "text-success",
+    bgColor: "bg-success/10",
+    borderColor: "border-success/20",
+    iconColor: "text-success",
+    roles: allRoles.filter(r => r.agentRisk < 25).sort((a, b) => b.agentRisk - a.agentRisk),
   },
 ];
 
@@ -703,32 +715,38 @@ const Index = () => {
             </AnimatePresence>
           </div>
 
-          {/* Categorized Role Rows */}
-          <div className="space-y-6">
+          {/* Risk-Tiered Roles */}
+          <div className="space-y-8">
             <div className="flex items-center gap-2">
               <TrendingUp className="h-4 w-4 text-primary" />
-              <h2 className="text-sm font-semibold font-sans text-foreground">Popular roles — explore free</h2>
+              <h2 className="text-sm font-semibold font-sans text-foreground">Roles ranked by AI replacement risk</h2>
             </div>
-            {roleCategories.map((category, catIdx) => (
-              <div key={category.label}>
-                <h3 className="text-xs font-semibold font-sans text-muted-foreground uppercase tracking-wider mb-2">{category.label}</h3>
+            {riskTiers.map((tier) => (
+              <div key={tier.label}>
+                <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full ${tier.bgColor} ${tier.borderColor} border mb-3`}>
+                  <div className={`h-2 w-2 rounded-full ${tier.color} bg-current`} />
+                  <span className={`text-xs font-bold uppercase tracking-wider ${tier.textColor}`}>{tier.label}</span>
+                  <span className="text-[10px] text-muted-foreground ml-1">({tier.roles.length} roles)</span>
+                </div>
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3">
-                  {category.roles.map((role, i) => (
+                  {tier.roles.map((role, i) => (
                     <motion.button
                       key={role.title}
                       initial={{ opacity: 0, y: 12 }}
                       animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.4, delay: 0.1 + i * 0.08 }}
+                      transition={{ duration: 0.4, delay: 0.1 + i * 0.05 }}
                       onClick={() => navigate(`/analysis?title=${encodeURIComponent(role.title)}&company=`)}
                       className="group cursor-pointer text-left flex flex-col"
                     >
-                      <div className="overflow-hidden rounded-xl aspect-[4/3] mb-2">
+                      <div className="relative overflow-hidden rounded-xl aspect-[4/3] mb-2">
                         <img src={role.image} alt={role.title} className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" />
+                        <div className={`absolute top-1.5 right-1.5 px-1.5 py-0.5 rounded-md text-[10px] font-bold ${tier.bgColor} ${tier.textColor} backdrop-blur-sm border ${tier.borderColor}`}>
+                          {role.agentRisk}%
+                        </div>
                       </div>
                       <h3 className="text-sm font-semibold font-sans text-foreground leading-tight">{role.title}</h3>
                       <div className="flex items-center gap-2 mt-0.5 text-xs text-muted-foreground">
-                        <span className="flex items-center gap-0.5"><Briefcase className="h-3 w-3" />{role.augmented}%</span>
-                        <span className="flex items-center gap-0.5"><TrendingUp className="h-3 w-3" />{role.risk}%</span>
+                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-secondary">{role.tag}</span>
                       </div>
                     </motion.button>
                   ))}
