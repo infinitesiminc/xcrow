@@ -157,6 +157,47 @@ export type Database = {
           },
         ]
       }
+      job_task_clusters: {
+        Row: {
+          cluster_name: string
+          description: string | null
+          external_id: string | null
+          id: string
+          job_id: string
+          outcome: string | null
+          skill_names: string[] | null
+          sort_order: number | null
+        }
+        Insert: {
+          cluster_name: string
+          description?: string | null
+          external_id?: string | null
+          id?: string
+          job_id: string
+          outcome?: string | null
+          skill_names?: string[] | null
+          sort_order?: number | null
+        }
+        Update: {
+          cluster_name?: string
+          description?: string | null
+          external_id?: string | null
+          id?: string
+          job_id?: string
+          outcome?: string | null
+          skill_names?: string[] | null
+          sort_order?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "job_task_clusters_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       jobs: {
         Row: {
           augmented_percent: number | null
@@ -262,50 +303,6 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "scenarios_job_id_fkey"
-            columns: ["job_id"]
-            isOneToOne: false
-            referencedRelation: "jobs"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      task_clusters: {
-        Row: {
-          current_state: string | null
-          description: string | null
-          external_id: string | null
-          id: string
-          impact_level: string | null
-          job_id: string
-          name: string
-          sort_order: number | null
-          trend: string | null
-        }
-        Insert: {
-          current_state?: string | null
-          description?: string | null
-          external_id?: string | null
-          id?: string
-          impact_level?: string | null
-          job_id: string
-          name: string
-          sort_order?: number | null
-          trend?: string | null
-        }
-        Update: {
-          current_state?: string | null
-          description?: string | null
-          external_id?: string | null
-          id?: string
-          impact_level?: string | null
-          job_id?: string
-          name?: string
-          sort_order?: number | null
-          trend?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "task_clusters_job_id_fkey"
             columns: ["job_id"]
             isOneToOne: false
             referencedRelation: "jobs"
