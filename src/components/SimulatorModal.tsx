@@ -199,10 +199,7 @@ const BriefingScreen = ({
               </motion.li>
             );
           })}
-            </motion.li>
-          ))}
         </ul>
-      </motion.div>
     )}
 
     <motion.div
