@@ -671,7 +671,7 @@ export const prebuiltRoles: Record<string, JobAnalysisResult> = {
   "legal ops manager": {
     jobTitle: "Legal Ops Manager",
     company: "",
-    summary: { augmentedPercent: 63, automationRiskPercent: 28, newSkillsPercent: 58 },
+    summary: { augmentedPercent: 68, automationRiskPercent: 22, newSkillsPercent: 48 },
     tasks: [
       { name: "Legal tech management", currentState: "human_ai", trend: "increasing_ai", impactLevel: "medium", description: "AI helps evaluate and optimize the legal tech stack, but strategy decisions are human." },
       { name: "Budget & spend analytics", currentState: "human_ai", trend: "fully_ai_soon", impactLevel: "high", description: "AI tracks legal spend, analyzes vendor invoices, and identifies cost-saving opportunities." },
