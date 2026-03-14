@@ -343,7 +343,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, onComplete
                           <div className="prose prose-sm dark:prose-invert max-w-none [&>p]:m-0 [&>p]:mb-1 [&>ul]:mt-2 [&>ul]:mb-0">
                             <ReactMarkdown>{
                               !isUser
-                                ? msg.content.replace(/^[A-D][).]\s*.+$/gm, "").trim()
+                                ? msg.content.replace(/^[A-C][).]\s*.+$/gm, "").trim()
                                 : msg.content
                             }</ReactMarkdown>
                           </div>
