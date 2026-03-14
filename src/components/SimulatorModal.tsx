@@ -348,6 +348,8 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
 
   const handleFinish = async () => {
     setPhase("completing");
+    const totalQ = answeredQuestions.length;
+    const correctQ = answeredQuestions.filter(q => q.selectedLetter === q.correctLetter).length;
     if (user) {
       try {
         await supabase.from("completed_simulations").insert({
@@ -356,7 +358,10 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
           job_title: jobTitle,
           company: company || null,
           rounds_completed: roundCount,
-        });
+          correct_answers: correctQ,
+          total_questions: totalQ,
+          experience_level: experienceLevel,
+        } as any);
         onCompleted?.();
       } catch (err) {
         console.error("Failed to save completion:", err);
@@ -687,6 +692,24 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                   <p className="text-sm text-muted-foreground mt-2 leading-relaxed">
                     You completed {roundCount} round{roundCount !== 1 ? "s" : ""} on "{taskName}"
                   </p>
+                  {answeredQuestions.length > 0 && (
+                    <div className="flex items-center justify-center gap-4 mt-4">
+                      <div className="text-center">
+                        <div className="text-2xl font-bold text-foreground">
+                          {answeredQuestions.filter(q => q.selectedLetter === q.correctLetter).length}/{answeredQuestions.length}
+                        </div>
+                        <div className="text-[10px] text-muted-foreground">Correct</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-2xl font-bold text-foreground">
+                          {answeredQuestions.length > 0
+                            ? Math.round((answeredQuestions.filter(q => q.selectedLetter === q.correctLetter).length / answeredQuestions.length) * 100)
+                            : 0}%
+                        </div>
+                        <div className="text-[10px] text-muted-foreground">Score</div>
+                      </div>
+                    </div>
+                  )}
                   {!user && (
                     <p className="text-xs text-muted-foreground mt-3">
                       <a href="/auth" className="text-primary hover:underline">Sign in</a> to save your progress

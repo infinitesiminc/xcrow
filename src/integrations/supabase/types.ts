@@ -126,28 +126,37 @@ export type Database = {
         Row: {
           company: string | null
           completed_at: string
+          correct_answers: number
+          experience_level: string | null
           id: string
           job_title: string
           rounds_completed: number
           task_name: string
+          total_questions: number
           user_id: string
         }
         Insert: {
           company?: string | null
           completed_at?: string
+          correct_answers?: number
+          experience_level?: string | null
           id?: string
           job_title: string
           rounds_completed?: number
           task_name: string
+          total_questions?: number
           user_id: string
         }
         Update: {
           company?: string | null
           completed_at?: string
+          correct_answers?: number
+          experience_level?: string | null
           id?: string
           job_title?: string
           rounds_completed?: number
           task_name?: string
+          total_questions?: number
           user_id?: string
         }
         Relationships: []

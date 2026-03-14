@@ -21,6 +21,9 @@ interface CompletedSim {
   company: string | null;
   rounds_completed: number;
   completed_at: string;
+  correct_answers: number;
+  total_questions: number;
+  experience_level: string | null;
 }
 
 interface AnalysisEntry {
@@ -407,7 +410,7 @@ const Dashboard = () => {
           )}
         </motion.div>
 
-        {/* Completion list */}
+        {/* Practice History — grouped by job with scores */}
         <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}>
           <h2 className="text-xs font-medium uppercase tracking-widest text-muted-foreground mb-3">Practice History</h2>
           {loading ? (
@@ -423,69 +426,76 @@ const Dashboard = () => {
             </Card>
           ) : (() => {
               const grouped = completions.reduce((acc, c) => {
-                const key = c.job_title + (c.company ? ` · ${c.company}` : "");
-                if (!acc[key]) acc[key] = [];
-                acc[key].push(c);
+                const key = c.job_title + "||" + (c.company || "");
+                if (!acc[key]) acc[key] = { jobTitle: c.job_title, company: c.company, items: [] };
+                acc[key].items.push(c);
                 return acc;
-              }, {} as Record<string, CompletedSim[]>);
-              const groups = Object.entries(grouped);
-              const needsGrouping = groups.length > 1;
+              }, {} as Record<string, { jobTitle: string; company: string | null; items: CompletedSim[] }>);
 
-              if (!needsGrouping) {
-                return (
-                  <div className="space-y-2">
-                    {completions.map((c, i) => (
-                      <motion.div key={c.id} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 + i * 0.03 }}>
-                        <Card className="hover:border-primary/20 transition-colors">
-                          <CardContent className="p-4 flex items-center gap-3">
-                            <CheckCircle2 className="h-5 w-5 text-success shrink-0" />
-                            <div className="flex-1 min-w-0">
-                              <p className="text-sm font-semibold text-foreground truncate">{c.task_name}</p>
-                              <p className="text-xs text-muted-foreground truncate">{c.job_title}{c.company ? ` · ${c.company}` : ""}</p>
+              return (
+                <div className="space-y-5">
+                  {Object.values(grouped).map((group, gi) => {
+                    const totalCorrect = group.items.reduce((s, c) => s + (c.correct_answers || 0), 0);
+                    const totalQ = group.items.reduce((s, c) => s + (c.total_questions || 0), 0);
+                    const avgScore = totalQ > 0 ? Math.round((totalCorrect / totalQ) * 100) : null;
+
+                    return (
+                      <motion.div key={gi} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 + gi * 0.05 }}>
+                        <Card className="overflow-hidden">
+                          <div
+                            className="flex items-center justify-between gap-3 px-4 py-3 bg-accent/30 border-b border-border/40 cursor-pointer hover:bg-accent/50 transition-colors"
+                            onClick={() => {
+                              const params = new URLSearchParams({ title: group.jobTitle });
+                              if (group.company) params.set("company", group.company);
+                              navigate(`/analysis?${params.toString()}`, { state: { from: "dashboard" } });
+                            }}
+                          >
+                            <div className="flex items-center gap-2 min-w-0">
+                              <Briefcase className="h-4 w-4 text-primary shrink-0" />
+                              <div className="min-w-0">
+                                <h3 className="text-sm font-semibold text-foreground truncate">{group.jobTitle}</h3>
+                                {group.company && <p className="text-[10px] text-muted-foreground truncate">{group.company}</p>}
+                              </div>
                             </div>
-                            <div className="text-right shrink-0">
-                              <Badge variant="outline" className="text-[10px]">{c.rounds_completed} rounds</Badge>
-                              <p className="text-[10px] text-muted-foreground mt-1 flex items-center gap-1 justify-end">
-                                <Calendar className="h-2.5 w-2.5" />
-                                {new Date(c.completed_at).toLocaleDateString()}
-                              </p>
+                            <div className="flex items-center gap-3 shrink-0">
+                              <Badge variant="secondary" className="text-[10px]">{group.items.length} session{group.items.length !== 1 ? "s" : ""}</Badge>
+                              {avgScore !== null && (
+                                <div className="text-center">
+                                  <div className={`text-sm font-bold ${avgScore >= 70 ? "text-success" : avgScore >= 40 ? "text-warning" : "text-destructive"}`}>{avgScore}%</div>
+                                  <div className="text-[9px] text-muted-foreground">avg score</div>
+                                </div>
+                              )}
+                              <ArrowRight className="h-3.5 w-3.5 text-muted-foreground" />
+                            </div>
+                          </div>
+                          <CardContent className="p-0">
+                            <div className="divide-y divide-border/30">
+                              {group.items.map((c) => {
+                                const score = c.total_questions > 0 ? Math.round((c.correct_answers / c.total_questions) * 100) : null;
+                                return (
+                                  <div key={c.id} className="flex items-center gap-3 px-4 py-2.5">
+                                    <CheckCircle2 className="h-3.5 w-3.5 text-success shrink-0" />
+                                    <p className="text-sm text-foreground truncate flex-1">{c.task_name}</p>
+                                    <div className="flex items-center gap-2 shrink-0">
+                                      {score !== null && (
+                                        <span className={`text-xs font-semibold ${score >= 70 ? "text-success" : score >= 40 ? "text-warning" : "text-destructive"}`}>
+                                          {c.correct_answers}/{c.total_questions}
+                                        </span>
+                                      )}
+                                      <Badge variant="outline" className="text-[10px]">{c.rounds_completed}r</Badge>
+                                      <span className="text-[10px] text-muted-foreground">
+                                        {new Date(c.completed_at).toLocaleDateString()}
+                                      </span>
+                                    </div>
+                                  </div>
+                                );
+                              })}
                             </div>
                           </CardContent>
                         </Card>
                       </motion.div>
-                    ))}
-                  </div>
-                );
-              }
-
-              return (
-                <div className="space-y-6">
-                  {groups.map(([groupLabel, items], gi) => (
-                    <motion.div key={groupLabel} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 + gi * 0.05 }}>
-                      <div className="flex items-center gap-2 mb-2">
-                        <Briefcase className="h-4 w-4 text-primary" />
-                        <h3 className="text-sm font-semibold text-foreground">{groupLabel}</h3>
-                        <Badge variant="secondary" className="text-[10px]">{items.length} session{items.length !== 1 ? "s" : ""}</Badge>
-                      </div>
-                      <div className="space-y-1.5 ml-6">
-                        {items.map((c) => (
-                          <Card key={c.id} className="hover:border-primary/20 transition-colors">
-                            <CardContent className="p-3 flex items-center gap-3">
-                              <CheckCircle2 className="h-4 w-4 text-success shrink-0" />
-                              <p className="text-sm font-medium text-foreground truncate flex-1">{c.task_name}</p>
-                              <div className="text-right shrink-0 flex items-center gap-2">
-                                <Badge variant="outline" className="text-[10px]">{c.rounds_completed} rounds</Badge>
-                                <span className="text-[10px] text-muted-foreground flex items-center gap-1">
-                                  <Calendar className="h-2.5 w-2.5" />
-                                  {new Date(c.completed_at).toLocaleDateString()}
-                                </span>
-                              </div>
-                            </CardContent>
-                          </Card>
-                        ))}
-                      </div>
-                    </motion.div>
-                  ))}
+                    );
+                  })}
                 </div>
               );
             })()
