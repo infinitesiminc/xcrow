@@ -556,7 +556,7 @@ export const prebuiltRoles: Record<string, JobAnalysisResult> = {
   "corporate lawyer": {
     jobTitle: "Corporate Lawyer",
     company: "",
-    summary: { augmentedPercent: 55, automationRiskPercent: 18, newSkillsPercent: 48 },
+    summary: { augmentedPercent: 72, automationRiskPercent: 10, newSkillsPercent: 35 },
     tasks: [
       { name: "Contract review & drafting", currentState: "human_ai", trend: "increasing_ai", impactLevel: "medium", description: "AI reviews contracts for risks and drafts standard clauses, lawyers handle complex terms." },
       { name: "Legal research", currentState: "human_ai", trend: "fully_ai_soon", impactLevel: "high", description: "AI searches case law, statutes, and regulations in seconds with high accuracy." },
