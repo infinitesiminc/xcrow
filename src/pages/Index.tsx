@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowRight, Briefcase, BarChart3, BookOpen, Users, Plus, X, Loader2, FileText, Link, Upload, Search, User, LayoutDashboard, TrendingUp, ChevronLeft, ChevronRight } from "lucide-react";
@@ -40,6 +40,7 @@ import { findPrebuiltRole } from "@/data/prebuilt-roles";
 import { analyzeJobWithAI } from "@/lib/ai-analysis";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
+import { RoleSearchAutocomplete } from "@/components/RoleSearchAutocomplete";
 
 interface RoleCard {
   title: string;
@@ -717,10 +718,15 @@ const Index = () => {
 
           {/* Risk-Tiered Roles */}
           <div className="space-y-8">
-            <div className="flex items-center gap-2">
-              <TrendingUp className="h-4 w-4 text-primary" />
-              <h2 className="text-sm font-semibold font-sans text-foreground">Roles ranked by AI replacement risk</h2>
+            <div className="flex items-center justify-between gap-4 flex-wrap">
+              <div className="flex items-center gap-2">
+                <TrendingUp className="h-4 w-4 text-primary" />
+                <h2 className="text-sm font-semibold font-sans text-foreground">Roles ranked by AI replacement risk</h2>
+              </div>
             </div>
+
+            {/* DB Role Search */}
+            <RoleSearchAutocomplete />
             {riskTiers.map((tier) => {
               const half = Math.ceil(tier.roles.length / 2);
               const row1 = tier.roles.slice(0, half);
