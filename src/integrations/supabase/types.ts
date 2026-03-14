@@ -80,6 +80,30 @@ export type Database = {
         }
         Relationships: []
       }
+      cached_analyses: {
+        Row: {
+          company_lower: string
+          created_at: string
+          id: string
+          job_title_lower: string
+          result: Json
+        }
+        Insert: {
+          company_lower?: string
+          created_at?: string
+          id?: string
+          job_title_lower: string
+          result: Json
+        }
+        Update: {
+          company_lower?: string
+          created_at?: string
+          id?: string
+          job_title_lower?: string
+          result?: Json
+        }
+        Relationships: []
+      }
       companies: {
         Row: {
           description: string | null

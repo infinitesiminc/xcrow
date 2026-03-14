@@ -210,6 +210,29 @@ serve(async (req) => {
 
     const sb = getSupabaseAdmin();
 
+    // 0. Check cache first (only for title-only queries without custom JD)
+    const cacheKey = {
+      title: (jobTitle || "").trim().toLowerCase(),
+      company: (company || "").trim().toLowerCase(),
+    };
+
+    if (!jobDescription && !jdUrl && cacheKey.title) {
+      const { data: cached } = await sb
+        .from("cached_analyses")
+        .select("result")
+        .eq("job_title_lower", cacheKey.title)
+        .eq("company_lower", cacheKey.company)
+        .maybeSingle();
+
+      if (cached?.result) {
+        console.log("Cache hit for:", cacheKey.title);
+        return new Response(JSON.stringify(cached.result), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      console.log("Cache miss for:", cacheKey.title);
+    }
+
     // 1. Look up matching job in DB
     const { job: matchedJob, skills: curatedSkills } = await findMatchingJob(sb, jobTitle);
     console.log("DB match:", matchedJob?.title || "none", "skills:", curatedSkills.length);
@@ -440,6 +463,18 @@ serve(async (req) => {
 
     // Flag if this was a DB-enhanced result
     result.dbEnhanced = !!(matchedJob || curatedSkills.length > 0 || benchmark);
+
+    // Store in cache for future lookups (only title-based queries)
+    if (!jobDescription && !jdUrl && cacheKey.title) {
+      await sb.from("cached_analyses").upsert({
+        job_title_lower: cacheKey.title,
+        company_lower: cacheKey.company,
+        result,
+      }, { onConflict: "job_title_lower,company_lower" }).then(({ error }) => {
+        if (error) console.error("Cache store error:", error);
+        else console.log("Cached result for:", cacheKey.title);
+      });
+    }
 
     return new Response(JSON.stringify(result), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
