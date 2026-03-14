@@ -326,7 +326,7 @@ export const prebuiltRoles: Record<string, JobAnalysisResult> = {
   "seo specialist": {
     jobTitle: "SEO Specialist",
     company: "",
-    summary: { augmentedPercent: 72, automationRiskPercent: 40, newSkillsPercent: 65 },
+    summary: { augmentedPercent: 68, automationRiskPercent: 45, newSkillsPercent: 65 },
     tasks: [
       { name: "Keyword research", currentState: "mostly_ai", trend: "fully_ai_soon", impactLevel: "high", description: "AI tools identify keyword opportunities, search intent, and content gaps automatically." },
       { name: "Technical SEO audits", currentState: "mostly_ai", trend: "fully_ai_soon", impactLevel: "high", description: "AI crawlers detect technical issues, suggest fixes, and monitor site health continuously." },
