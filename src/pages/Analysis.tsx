@@ -348,7 +348,7 @@ const Analysis = () => {
         </motion.div>
 
         {/* Section 1: Risk Gauge + Verdict */}
-        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="mb-8">
+        <motion.div ref={heroRef} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="mb-8">
           <Card className="border-border/50 overflow-hidden">
             <CardContent className="p-6 sm:p-8">
               <RiskGauge
