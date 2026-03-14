@@ -16,6 +16,7 @@ import RolesChart from "./pages/RolesChart.tsx";
 import Heatmap from "./pages/Heatmap.tsx";
 import ForIndividuals from "./pages/ForIndividuals.tsx";
 import ForOrganizations from "./pages/ForOrganizations.tsx";
+import ToolsMarketplace from "./pages/ToolsMarketplace.tsx";
 
 const queryClient = new QueryClient();
 
