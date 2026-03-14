@@ -719,12 +719,12 @@ const Index = () => {
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.4, delay: 0.1 + i * 0.08 }}
                       onClick={() => navigate(`/analysis?title=${encodeURIComponent(role.title)}&company=`)}
-                      className="group cursor-pointer text-left"
+                      className="group cursor-pointer text-left flex flex-col"
                     >
                       <div className="overflow-hidden rounded-xl aspect-[4/3] mb-2">
                         <img src={role.image} alt={role.title} className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" />
                       </div>
-                      <h3 className="text-sm font-semibold text-foreground leading-tight">{role.title}</h3>
+                      <h3 className="text-sm font-semibold text-foreground leading-tight min-h-[2.5em]">{role.title}</h3>
                       <p className="text-xs text-muted-foreground mt-0.5">
                         {role.augmented}% AI-augmented · {role.risk}% at risk
                       </p>
