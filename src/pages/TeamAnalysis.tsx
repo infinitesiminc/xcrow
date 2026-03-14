@@ -37,11 +37,22 @@ const TeamAnalysis = () => {
 
   if (teamResults.length === 0) {
     return (
-      <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-4">
-        <p className="text-muted-foreground">No team analysis data found.</p>
-        <Button variant="outline" onClick={() => navigate("/")} className="gap-2">
-          <ArrowLeft className="h-4 w-4" /> Back to home
-        </Button>
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-4 px-4 text-center">
+        <div className="flex items-center justify-center w-14 h-14 rounded-2xl bg-primary/10 mb-2">
+          <Building2 className="h-7 w-7 text-primary" />
+        </div>
+        <h2 className="text-xl font-serif font-bold text-foreground">Team Analysis is for Organizations</h2>
+        <p className="text-sm text-muted-foreground max-w-md">
+          Contact us to get team and enterprise features for your organization.
+        </p>
+        <div className="flex gap-3">
+          <Button variant="outline" onClick={() => navigate("/")} className="gap-2">
+            <ArrowLeft className="h-4 w-4" /> Analyze Individual
+          </Button>
+          <Button onClick={() => navigate("/contact-org")} className="gap-2">
+            Contact Us
+          </Button>
+        </div>
       </div>
     );
   }
