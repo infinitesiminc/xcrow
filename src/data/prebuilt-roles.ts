@@ -1,6 +1,6 @@
 import { JobAnalysisResult } from "@/types/analysis";
 
-const prebuiltRoles: Record<string, JobAnalysisResult> = {
+export const prebuiltRoles: Record<string, JobAnalysisResult> = {
   "software engineer": {
     jobTitle: "Software Engineer",
     company: "",
