@@ -379,12 +379,12 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
 
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
-      <DialogContent className="max-w-3xl w-[95vw] h-[90vh] p-0 flex flex-col overflow-hidden gap-0 border-border/50 rounded-2xl [&>button]:hidden">
+      <DialogContent className="max-w-3xl w-[95vw] h-[90vh] sm:h-[90vh] h-[100dvh] sm:rounded-2xl rounded-none p-0 flex flex-col overflow-hidden gap-0 border-border/50 [&>button]:hidden">
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-border/40 shrink-0">
-          <div className="min-w-0">
-            <h2 className="text-base font-sans font-semibold text-foreground truncate">{taskName}</h2>
-            <p className="text-xs text-muted-foreground mt-0.5 truncate">{jobTitle}{company ? ` · ${company}` : ""}</p>
+        <div className="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 border-b border-border/40 shrink-0">
+          <div className="min-w-0 flex-1">
+            <h2 className="text-sm sm:text-base font-sans font-semibold text-foreground truncate">{taskName}</h2>
+            <p className="text-[11px] sm:text-xs text-muted-foreground mt-0.5 truncate">{jobTitle}{company ? ` · ${company}` : ""}</p>
           </div>
           <div className="flex items-center gap-3 shrink-0">
             {phase === "chat" && (
@@ -406,7 +406,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
         </div>
 
         {/* Body */}
-        <div ref={scrollRef} className="flex-1 overflow-y-auto px-6 py-6 scrollbar-thin">
+        <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 sm:px-6 py-4 sm:py-6 scrollbar-thin">
           <AnimatePresence mode="popLayout">
             {phase === "loading" && (
               <motion.div
@@ -469,7 +469,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                     >
                       <div className={`flex ${isUser ? "justify-end" : "justify-start"}`}>
                         <div
-                          className={`max-w-[85%] rounded-2xl px-5 py-4 text-[15px] leading-[1.7] ${
+                          className={`max-w-[90%] sm:max-w-[85%] rounded-2xl px-4 sm:px-5 py-3 sm:py-4 text-sm sm:text-[15px] leading-[1.7] ${
                             isUser
                               ? "bg-foreground text-background rounded-br-lg"
                               : "bg-accent/40 text-foreground rounded-bl-lg"
@@ -607,10 +607,10 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                   const askContinue = lower.includes("ready for the next scenario") || lower.includes("want to see another example") || lower.includes("want another") || lower.includes("(yes/no)");
                   if (!askContinue) return null;
                   return (
-                    <div className="flex gap-3 mt-4">
+                    <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 mt-4">
                       <Button
                         variant="outline"
-                        className="flex-1 rounded-xl h-11 text-sm gap-2"
+                        className="flex-1 rounded-xl h-10 sm:h-11 text-sm gap-2"
                         onClick={() => {
                           const fakeMsg: SimMessage = { role: "user", content: "yes" };
                           const newMsgs = [...messages, fakeMsg];
@@ -631,7 +631,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                         <ArrowRight className="h-4 w-4" /> Next Scenario
                       </Button>
                       <Button
-                        className="flex-1 rounded-xl h-11 text-sm gap-2"
+                        className="flex-1 rounded-xl h-10 sm:h-11 text-sm gap-2"
                         onClick={handleFinish}
                       >
                         <CheckCircle2 className="h-4 w-4" /> Finish Practice
@@ -733,7 +733,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3 }}
-            className="shrink-0 border-t border-border/40 bg-background px-6 py-4 space-y-3"
+            className="shrink-0 border-t border-border/40 bg-background px-4 sm:px-6 py-3 sm:py-4 space-y-3 pb-[env(safe-area-inset-bottom,12px)]"
           >
             <div className="flex items-end gap-3 max-w-2xl mx-auto">
               <textarea
@@ -742,7 +742,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                 onKeyDown={handleKeyDown}
                 placeholder="Type your answer…"
                 rows={1}
-                className="flex-1 resize-none rounded-xl border border-border/40 bg-accent/10 px-4 py-3 text-[15px] text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-ring/30 focus:border-border min-h-[44px] max-h-[120px] transition-all duration-200"
+                className="flex-1 resize-none rounded-xl border border-border/40 bg-accent/10 px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-[15px] text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-ring/30 focus:border-border min-h-[40px] sm:min-h-[44px] max-h-[120px] transition-all duration-200"
               />
               <div className="flex gap-2 shrink-0">
                 <Button
