@@ -485,25 +485,6 @@ const Index = () => {
           <div className="flex flex-col items-center mb-8">
             {/* Top row: mode toggle + re-analyze */}
             <div className="flex items-center gap-3 mb-3 flex-wrap justify-center">
-              <div className="flex rounded-lg border border-border bg-card p-1 gap-1">
-                <button
-                  onClick={() => setMode("individual")}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
-                    mode === "individual" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  <Briefcase className="h-3.5 w-3.5" /> Individual
-                </button>
-                <button
-                  onClick={() => navigate("/contact-org")}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
-                    mode === "team" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  <Users className="h-3.5 w-3.5" /> Team
-                </button>
-              </div>
-
               {lastAnalysis && lastAnalysis.jobTitle && (
                 <button
                   type="button"
