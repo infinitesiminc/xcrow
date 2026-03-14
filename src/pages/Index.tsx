@@ -89,33 +89,21 @@ const allRoles: RoleCard[] = [
   { title: "Legal Ops Manager", image: roleLegalOpsManager, augmented: 63, risk: 28, agentRisk: calcAgentRisk(28, 63, 50), tag: "Legal" },
 ];
 
-// Sort into risk tiers
-const riskTiers: { label: string; color: string; textColor: string; bgColor: string; borderColor: string; iconColor: string; roles: RoleCard[] }[] = [
+// Sort into risk tiers — Linear-style: grayscale text, colored dots only
+const riskTiers: { label: string; dotColor: string; roles: RoleCard[] }[] = [
   {
     label: "High Risk",
-    color: "text-destructive",
-    textColor: "text-destructive",
-    bgColor: "bg-destructive/10",
-    borderColor: "border-destructive/20",
-    iconColor: "text-destructive",
+    dotColor: "bg-dot-purple",
     roles: allRoles.filter(r => r.agentRisk >= 35).sort((a, b) => b.agentRisk - a.agentRisk),
   },
   {
     label: "Moderate Risk",
-    color: "text-warning",
-    textColor: "text-warning",
-    bgColor: "bg-warning/10",
-    borderColor: "border-warning/20",
-    iconColor: "text-warning",
+    dotColor: "bg-dot-amber",
     roles: allRoles.filter(r => r.agentRisk >= 25 && r.agentRisk < 35).sort((a, b) => b.agentRisk - a.agentRisk),
   },
   {
     label: "Lower Risk",
-    color: "text-success",
-    textColor: "text-success",
-    bgColor: "bg-success/10",
-    borderColor: "border-success/20",
-    iconColor: "text-success",
+    dotColor: "bg-dot-teal",
     roles: allRoles.filter(r => r.agentRisk < 25).sort((a, b) => b.agentRisk - a.agentRisk),
   },
 ];
