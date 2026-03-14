@@ -18,6 +18,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { fetchCareerPathways, type EscoMatchResult, type EscoPathway } from "@/lib/esco-api";
+import { getRiskTier } from "@/lib/risk-colors";
 import { generateLocalPathways } from "@/lib/local-pathways";
 
 import SimulatorModal from "@/components/SimulatorModal";
