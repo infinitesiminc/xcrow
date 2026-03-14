@@ -275,7 +275,7 @@ const Analysis = () => {
               <ArrowLeft className="h-4 w-4 text-muted-foreground" />
             </button>
             <div>
-              <h1 className="text-2xl sm:text-3xl font-display font-bold text-foreground leading-tight">{result.jobTitle}</h1>
+              <h1 className="text-2xl sm:text-3xl font-serif font-bold text-foreground leading-tight">{result.jobTitle}</h1>
               {result.company && <p className="text-sm text-muted-foreground mt-1">at {result.company}</p>}
             </div>
           </div>
