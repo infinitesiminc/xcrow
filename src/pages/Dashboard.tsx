@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import {
   ArrowLeft, CheckCircle2, Calendar, Briefcase, Loader2, Play, BarChart3, Bot,
   ShieldAlert, ArrowRight, Bookmark, Target, Sparkles, GraduationCap,
-  Zap, ExternalLink, Settings,
+  Zap, ExternalLink, Settings, Trash2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -12,6 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 interface CompletedSim {
   id: string;
@@ -45,10 +46,26 @@ interface BookmarkedRole {
 const Dashboard = () => {
   const { user, loading: authLoading, profile } = useAuth();
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [completions, setCompletions] = useState<CompletedSim[]>([]);
   const [analyses, setAnalyses] = useState<AnalysisEntry[]>([]);
   const [bookmarks, setBookmarks] = useState<BookmarkedRole[]>([]);
   const [loading, setLoading] = useState(true);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+
+  const deleteAnalysis = async (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (deletingId) return;
+    setDeletingId(id);
+    const { error } = await supabase.from("analysis_history").delete().eq("id", id);
+    if (error) {
+      toast({ title: "Failed to delete", description: error.message, variant: "destructive" });
+    } else {
+      setAnalyses((prev) => prev.filter((a) => a.id !== id));
+      toast({ title: "Analysis deleted" });
+    }
+    setDeletingId(null);
+  };
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -343,7 +360,15 @@ const Dashboard = () => {
                           <p className="text-sm font-semibold text-foreground truncate">{a.job_title}</p>
                           {a.company && <p className="text-xs text-muted-foreground truncate">{a.company}</p>}
                         </div>
-                        <ArrowRight className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-7 w-7 shrink-0 text-muted-foreground hover:text-destructive"
+                          onClick={(e) => deleteAnalysis(a.id, e)}
+                          disabled={deletingId === a.id}
+                        >
+                          {deletingId === a.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />}
+                        </Button>
                       </div>
                       <div className="space-y-2">
                         <div className="flex items-center gap-2">
