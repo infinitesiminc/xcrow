@@ -165,12 +165,15 @@ const Analysis = () => {
     analyze();
   }, [jobTitle, company, hasJd, navigate]);
 
-  // Fetch ESCO data for action plan
+  // Fetch ESCO data (single call for both CareerPathways and ActionPlan)
   useEffect(() => {
     if (!result?.jobTitle) return;
+    setEscoLoading(true);
+    setEscoError(false);
     fetchCareerPathways(result.jobTitle)
       .then(setEscoData)
-      .catch(() => {});
+      .catch(() => setEscoError(true))
+      .finally(() => setEscoLoading(false));
   }, [result?.jobTitle]);
 
   useEffect(() => {
