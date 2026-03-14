@@ -425,9 +425,12 @@ const Analysis = () => {
         <SimulatorModal
           open={!!simTask}
           onClose={() => setSimTask(null)}
-          taskName={simTask || ""}
+          taskName={simTask?.name || ""}
           jobTitle={result.jobTitle}
           company={result.company}
+          taskState={simTask?.currentState}
+          taskTrend={simTask?.trend}
+          taskImpactLevel={simTask?.impactLevel}
           onCompleted={fetchCompletions}
         />
       </div>
