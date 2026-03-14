@@ -441,7 +441,7 @@ export const prebuiltRoles: Record<string, JobAnalysisResult> = {
   "hr manager": {
     jobTitle: "HR Manager",
     company: "",
-    summary: { augmentedPercent: 58, automationRiskPercent: 30, newSkillsPercent: 55 },
+    summary: { augmentedPercent: 55, automationRiskPercent: 35, newSkillsPercent: 55 },
     tasks: [
       { name: "Resume screening", currentState: "mostly_ai", trend: "fully_ai_soon", impactLevel: "high", description: "AI screens resumes, matches candidates to roles, and ranks applicants automatically." },
       { name: "Employee onboarding", currentState: "human_ai", trend: "increasing_ai", impactLevel: "medium", description: "AI automates onboarding workflows and training, but cultural integration is human." },
