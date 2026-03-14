@@ -124,23 +124,16 @@ export function RoleSearchAutocomplete({ onAnalyze, value, onChange, jdInputType
           />
           {loading && <Loader2 className="h-4 w-4 text-muted-foreground animate-spin shrink-0" />}
           {onToggleJd && (
-            <>
-              <div className="w-px h-6 bg-border hidden sm:block" />
-              <div className="flex items-center gap-1">
-                <button type="button" onClick={() => onToggleJd("paste")}
-                  className={`p-1.5 rounded-md transition-colors ${
-                    jdInputType === "paste" ? "bg-primary/10 text-primary" : "text-muted-foreground hover:text-foreground"
-                  }`} title="Paste JD"><FileText className="h-4 w-4" /></button>
-                <button type="button" onClick={() => onToggleJd("url")}
-                  className={`p-1.5 rounded-md transition-colors ${
-                    jdInputType === "url" ? "bg-primary/10 text-primary" : "text-muted-foreground hover:text-foreground"
-                  }`} title="JD URL"><LinkIcon className="h-4 w-4" /></button>
-                <button type="button" onClick={() => onToggleJd("file")}
-                  className={`p-1.5 rounded-md transition-colors ${
-                    jdInputType === "file" ? "bg-primary/10 text-primary" : "text-muted-foreground hover:text-foreground"
-                  }`} title="Upload"><Upload className="h-4 w-4" /></button>
-              </div>
-            </>
+            <div className="flex items-center gap-0.5 shrink-0">
+              <button type="button" onClick={() => onToggleJd("paste")}
+                className={`p-1.5 rounded-md transition-colors ${
+                  jdInputType === "paste" ? "bg-primary/10 text-primary" : "text-muted-foreground hover:text-foreground"
+                }`} title="Paste JD"><FileText className="h-4 w-4" /></button>
+              <button type="button" onClick={() => onToggleJd("url")}
+                className={`p-1.5 rounded-md transition-colors ${
+                  jdInputType === "url" ? "bg-primary/10 text-primary" : "text-muted-foreground hover:text-foreground"
+                }`} title="JD URL"><LinkIcon className="h-4 w-4" /></button>
+            </div>
           )}
           <Button type="submit" size="sm" className="h-9 px-4 text-sm font-semibold gap-1.5 shrink-0">
             Analyze <ArrowRight className="w-3.5 h-3.5" />
