@@ -303,7 +303,7 @@ export default function ForIndividuals() {
                   Your role is changing. Are you ready?
                 </h2>
                 <p className="mt-2 text-sm text-muted-foreground max-w-md mx-auto">
-                  Run your first analysis free — no sign-up, no credit card. See exactly where you stand in under 30 seconds.
+                  Run your first analysis free — no sign-up, no credit card. See exactly where you stand in seconds.
                 </p>
                 <Button size="lg" onClick={() => navigate("/")} className="mt-6 gap-2">
                   <Zap className="h-4 w-4" /> Start Free Analysis

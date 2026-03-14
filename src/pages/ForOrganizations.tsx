@@ -110,7 +110,7 @@ const steps = [
 
 const stats = [
   { value: "100M+", label: "Roles analyzed" },
-  { value: "<30s", label: "Per-role analysis" },
+  { value: "~3s", label: "Per-role analysis" },
   { value: "8-12", label: "Tasks mapped per role" },
   { value: "$15", label: "Per seat / month" },
 ];
