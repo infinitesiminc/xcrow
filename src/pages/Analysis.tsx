@@ -305,64 +305,77 @@ const Analysis = () => {
   return (
     <div className="min-h-screen bg-background px-4 py-8">
       <div className="max-w-5xl mx-auto">
-        {/* Header */}
-        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="mb-6">
-          <div className="flex items-baseline gap-3 flex-wrap">
-            <h1 className="text-2xl font-display font-bold text-foreground">{result.jobTitle}</h1>
-            {result.company && <span className="text-sm text-muted-foreground">at {result.company}</span>}
-          </div>
-        </motion.div>
+        {/* Hero Header */}
+        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
+          <Card className="overflow-hidden border-border">
+            <div className="relative bg-gradient-to-br from-primary/8 via-accent/15 to-warning/8">
+              <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,hsl(var(--primary)/0.08),transparent_60%)]" />
+              <div className="relative px-6 py-6 sm:px-8 sm:py-8">
+                {/* Top row: back + title */}
+                <div className="flex items-start gap-4 mb-6">
+                  <button onClick={() => navigate("/")} className="mt-1 p-1.5 rounded-lg hover:bg-background/60 transition-colors shrink-0">
+                    <ArrowLeft className="h-4 w-4 text-muted-foreground" />
+                  </button>
+                  <div>
+                    <h1 className="text-2xl sm:text-3xl font-display font-bold text-foreground leading-tight">{result.jobTitle}</h1>
+                    {result.company && <p className="text-sm text-muted-foreground mt-1">at {result.company}</p>}
+                  </div>
+                </div>
 
-        {/* Company Snapshot */}
-        {(snapshotLoading || snapshot) && (
-          <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }} className="mb-6">
-            {snapshotLoading ? (
-              <Skeleton className="h-16 w-full rounded-lg" />
-            ) : snapshot ? (
-              <div className="flex items-center gap-3 px-4 py-3 rounded-lg bg-accent/20 border border-border">
-                {snapshot.logo && (
-                  <img src={snapshot.logo} alt="" className="h-8 w-8 rounded-md object-contain shrink-0 bg-card"
-                    onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
+                {/* Company snapshot inline */}
+                {snapshot && (
+                  <div className="flex items-center gap-3 mb-6 px-2 py-2 rounded-lg bg-background/50 border border-border/50 backdrop-blur-sm">
+                    {snapshot.logo && (
+                      <img src={snapshot.logo} alt="" className="h-7 w-7 rounded-md object-contain shrink-0 bg-card"
+                        onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
+                    )}
+                    <div className="flex items-center gap-3 flex-wrap text-xs text-muted-foreground min-w-0">
+                      <span className="font-medium text-foreground text-sm">{snapshot.companyName || snapshot.url}</span>
+                      {snapshot.industry && <span className="flex items-center gap-1"><Building2 className="h-3 w-3" />{snapshot.industry}</span>}
+                      {snapshot.employeeRange && <span className="flex items-center gap-1"><Users className="h-3 w-3" />{snapshot.employeeRange}</span>}
+                      {snapshot.headquarters && <span className="flex items-center gap-1"><MapPin className="h-3 w-3" />{snapshot.headquarters}</span>}
+                      {snapshot.founded && <span className="flex items-center gap-1"><Calendar className="h-3 w-3" />{snapshot.founded}</span>}
+                      <a href={snapshot.url} target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">
+                        <ExternalLink className="h-3 w-3" />
+                      </a>
+                    </div>
+                  </div>
                 )}
-                <div className="flex items-center gap-3 flex-wrap text-xs text-muted-foreground min-w-0">
-                  <span className="font-medium text-foreground text-sm">{snapshot.companyName || snapshot.url}</span>
-                  {snapshot.industry && <span className="flex items-center gap-1"><Building2 className="h-3 w-3" />{snapshot.industry}</span>}
-                  {snapshot.employeeRange && <span className="flex items-center gap-1"><Users className="h-3 w-3" />{snapshot.employeeRange}</span>}
-                  {snapshot.headquarters && <span className="flex items-center gap-1"><MapPin className="h-3 w-3" />{snapshot.headquarters}</span>}
-                  {snapshot.founded && <span className="flex items-center gap-1"><Calendar className="h-3 w-3" />{snapshot.founded}</span>}
-                  <a href={snapshot.url} target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">
-                    <ExternalLink className="h-3 w-3" />
-                  </a>
+
+                {/* Stats row */}
+                <div className="grid grid-cols-3 gap-3 sm:gap-4">
+                  {statCards.map((stat, i) => {
+                    const Icon = stat.icon;
+                    return (
+                      <motion.div
+                        key={stat.label}
+                        initial={{ opacity: 0, y: 12 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.1 + i * 0.07 }}
+                        className="bg-background/70 backdrop-blur-sm rounded-xl p-3 sm:p-4 border border-border/50"
+                      >
+                        <div className="flex items-center gap-2 mb-2">
+                          <div className={`flex items-center justify-center w-8 h-8 rounded-lg shrink-0 ${stat.iconBg}`}>
+                            <Icon className={`h-4 w-4 ${stat.iconColor}`} />
+                          </div>
+                          <span className="text-xl sm:text-2xl font-display font-bold text-foreground">{stat.value}%</span>
+                        </div>
+                        <p className="text-[11px] sm:text-xs text-muted-foreground leading-snug">{stat.sublabel}</p>
+                        <div className="w-full h-1 rounded-full bg-secondary/60 overflow-hidden mt-2">
+                          <motion.div
+                            className={`h-full rounded-full ${stat.barColor}`}
+                            initial={{ width: 0 }}
+                            animate={{ width: `${stat.value}%` }}
+                            transition={{ duration: 0.8, delay: 0.3 + i * 0.1 }}
+                          />
+                        </div>
+                      </motion.div>
+                    );
+                  })}
                 </div>
               </div>
-            ) : null}
-          </motion.div>
-        )}
-
-        {/* === Stat Cards === */}
-        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="mb-8">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {statCards.map((stat, i) => {
-              const Icon = stat.icon;
-              return (
-                <motion.div key={stat.label} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 + i * 0.07 }}>
-                  <Card className="relative overflow-hidden border-border hover:border-primary/20 transition-colors">
-                    <CardContent className="p-5">
-                      <div className="flex items-center gap-3 mb-3">
-                        <div className={`flex items-center justify-center w-10 h-10 rounded-xl shrink-0 ${stat.iconBg}`}>
-                          <Icon className={`h-5 w-5 ${stat.iconColor}`} />
-                        </div>
-                        <p className="text-sm font-semibold text-foreground leading-snug">{stat.label}</p>
-                      </div>
-                      <div className="w-full h-1.5 rounded-full bg-secondary overflow-hidden">
-                        <div className={`h-full rounded-full ${stat.barColor} transition-all duration-700`} style={{ width: `${stat.value}%` }} />
-                      </div>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              );
-            })}
-          </div>
+            </div>
+          </Card>
         </motion.div>
 
         {/* Task Carousel */}
