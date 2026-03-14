@@ -148,9 +148,14 @@ export default function RolesChart() {
   return (
     <div className="min-h-screen bg-background">
       <div className="max-w-5xl mx-auto px-4 py-8">
-        <Button variant="ghost" onClick={() => navigate("/")} className="mb-6 text-muted-foreground">
-          <ArrowLeft className="w-4 h-4 mr-2" /> Back
-        </Button>
+        <div className="flex items-center gap-3 mb-6">
+          <Button variant="ghost" onClick={() => navigate("/")} className="text-muted-foreground">
+            <ArrowLeft className="w-4 h-4 mr-2" /> Back
+          </Button>
+          <Button variant="outline" size="sm" onClick={() => navigate("/heatmap")}>
+            View Heatmap →
+          </Button>
+        </div>
 
         <div className="mb-6">
           <h1 className="text-3xl font-bold text-foreground font-[Space_Grotesk]">
