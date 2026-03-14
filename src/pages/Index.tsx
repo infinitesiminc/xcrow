@@ -760,6 +760,9 @@ const Index = () => {
                 </div>
               );
             })}
+
+            {/* Heatmap Discovery */}
+            <HeatmapPreview />
           </div>
         </div>
       </div>
