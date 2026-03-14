@@ -50,7 +50,7 @@ export const prebuiltRoles: Record<string, JobAnalysisResult> = {
   "accountant": {
     jobTitle: "Accountant",
     company: "",
-    summary: { augmentedPercent: 60, automationRiskPercent: 35, newSkillsPercent: 55 },
+    summary: { augmentedPercent: 55, automationRiskPercent: 42, newSkillsPercent: 60 },
     tasks: [
       { name: "Data entry & bookkeeping", currentState: "mostly_ai", trend: "fully_ai_soon", impactLevel: "high", description: "Automated systems handle transaction recording, categorization, and reconciliation." },
       { name: "Tax preparation", currentState: "human_ai", trend: "increasing_ai", impactLevel: "medium", description: "AI pre-fills returns and flags deductions, but complex tax situations need human judgment." },
