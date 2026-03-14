@@ -388,9 +388,11 @@ const Analysis = () => {
         {/* Header */}
         <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
           {/* Breadcrumb */}
-          {fromDashboard && (
+          {(fromDashboard || fromCompanyDemo) && (
             <nav className="flex items-center gap-1.5 text-xs text-muted-foreground mb-4">
-              <button onClick={() => navigate("/dashboard")} className="hover:text-foreground transition-colors">Dashboard</button>
+              <button onClick={() => navigate(backPath)} className="hover:text-foreground transition-colors">
+                {fromCompanyDemo ? "Company Demo" : "Dashboard"}
+              </button>
               <ChevronRight className="h-3 w-3" />
               <span className="text-foreground font-medium truncate max-w-[200px]">{result.jobTitle}</span>
               {company && (
