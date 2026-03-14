@@ -1,8 +1,8 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { findPrebuiltRole } from "@/data/prebuilt-roles";
-import { TaskAnalysis } from "@/types/analysis";
-import { ArrowLeft } from "lucide-react";
+import { TaskAnalysis, JobAnalysisResult } from "@/types/analysis";
+import { ArrowLeft, TrendingUp, RefreshCw, Rocket } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 
