@@ -55,6 +55,15 @@ const mockScores = (title: string) => {
   return { automation_risk_percent, augmented_percent, new_skills_percent };
 };
 
+const TASKS_PER_JOB = 12;
+
+const mockPracticeProgress = (title: string) => {
+  const h = hashStr(title.toLowerCase() + "_practice");
+  const practised = h % (TASKS_PER_JOB + 1); // 0-12 tasks practised
+  const avgScore = practised > 0 ? 30 + (h >> 3) % 60 : 0; // 30-89% avg score
+  return { practised, avgScore };
+};
+
 const riskBadge = (risk: number) => {
   if (risk >= 60) return { label: "High Risk", className: "bg-destructive/10 text-destructive border-destructive/20" };
   if (risk >= 35) return { label: "Moderate", className: "bg-warning/10 text-warning border-warning/20" };
