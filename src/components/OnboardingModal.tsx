@@ -47,7 +47,7 @@ export default function OnboardingModal({ open, onComplete, userId }: Onboarding
   const handleSkip = async () => {
     await supabase
       .from("profiles")
-      .update({ onboarding_completed: true })
+      .update({ onboarding_completed: true } as any)
       .eq("id", userId);
     onComplete("", "");
   };
