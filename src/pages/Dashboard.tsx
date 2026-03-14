@@ -360,7 +360,15 @@ const Dashboard = () => {
                           <p className="text-sm font-semibold text-foreground truncate">{a.job_title}</p>
                           {a.company && <p className="text-xs text-muted-foreground truncate">{a.company}</p>}
                         </div>
-                        <ArrowRight className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-7 w-7 shrink-0 text-muted-foreground hover:text-destructive"
+                          onClick={(e) => deleteAnalysis(a.id, e)}
+                          disabled={deletingId === a.id}
+                        >
+                          {deletingId === a.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />}
+                        </Button>
                       </div>
                       <div className="space-y-2">
                         <div className="flex items-center gap-2">
