@@ -168,7 +168,7 @@ export default function ForOrganizations() {
       <section className="px-4 py-20">
         <div className="mx-auto max-w-5xl">
           <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} className="text-center mb-12">
-            <h2 className="font-heading text-2xl sm:text-3xl font-bold text-foreground">One platform, every organization</h2>
+            <h2 className="font-sans text-2xl sm:text-3xl font-bold text-foreground">One platform, every organization</h2>
           </motion.div>
           <div className="grid sm:grid-cols-3 gap-6">
             {orgTypes.map((o, i) => {
