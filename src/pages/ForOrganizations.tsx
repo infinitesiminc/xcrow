@@ -153,7 +153,7 @@ export default function ForOrganizations() {
                       <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-primary/10 mb-4">
                         <Icon className="h-5 w-5 text-primary" />
                       </div>
-                      <h3 className="text-base font-heading font-semibold text-foreground">{f.title}</h3>
+                      <h3 className="text-base font-sans font-semibold text-foreground">{f.title}</h3>
                       <p className="mt-1.5 text-sm text-muted-foreground leading-relaxed">{f.description}</p>
                     </CardContent>
                   </Card>
