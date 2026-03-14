@@ -725,7 +725,7 @@ const Index = () => {
                       <div className="overflow-hidden rounded-xl aspect-[4/3] mb-2">
                         <img src={role.image} alt={role.title} className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" />
                       </div>
-                      <h3 className="text-sm font-semibold text-foreground leading-tight min-h-[2.5em]">{role.title}</h3>
+                      <h3 className="text-sm font-semibold font-sans text-foreground leading-tight min-h-[2.5em]">{role.title}</h3>
                       <div className="flex items-center gap-2 mt-0.5 text-xs text-muted-foreground">
                         <span className="flex items-center gap-0.5"><Briefcase className="h-3 w-3" />{role.augmented}%</span>
                         <span className="flex items-center gap-0.5"><TrendingUp className="h-3 w-3" />{role.risk}%</span>
