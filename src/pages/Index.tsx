@@ -603,7 +603,7 @@ const Index = () => {
                     <span className="text-xs font-medium uppercase tracking-widest text-muted-foreground">{tier.label}</span>
                     <span className="text-[10px] text-muted-foreground/60">({tier.roles.length})</span>
                   </div>
-                  <div className="space-y-3 laser-cards">
+                  <div className="space-y-3">
                     {[row1, row2].map((row, rowIdx) => (
                       row.length > 0 && (
                         <div key={rowIdx} className="flex gap-3 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent -mx-4 px-4 sm:-mx-6 sm:px-6">
