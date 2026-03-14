@@ -10,6 +10,7 @@ const Footer = () => (
             <li><Link to="/" className="text-sm text-foreground/70 hover:text-foreground transition-colors">Analyze a Role</Link></li>
             <li><Link to="/tools" className="text-sm text-foreground/70 hover:text-foreground transition-colors">Tool Marketplace</Link></li>
             <li><Link to="/dashboard" className="text-sm text-foreground/70 hover:text-foreground transition-colors">Dashboard</Link></li>
+            <li><Link to="/company-dashboard" className="text-sm text-foreground/70 hover:text-foreground transition-colors">Company Demo</Link></li>
             <li><Link to="/pricing" className="text-sm text-foreground/70 hover:text-foreground transition-colors">Pricing</Link></li>
           </ul>
         </div>
