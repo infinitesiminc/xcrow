@@ -110,7 +110,11 @@ const CompanyDashboard = () => {
     if (deptFilter !== "all") {
       list = list.filter((j) => j.department === deptFilter);
     }
+    // Primary sort: analysed first, then has description, then rest
     list = [...list].sort((a, b) => {
+      const statusA = a._analysed ? 2 : a._hasDescription ? 1 : 0;
+      const statusB = b._analysed ? 2 : b._hasDescription ? 1 : 0;
+      if (statusA !== statusB) return statusB - statusA;
       const aVal = a[sortField] ?? "";
       const bVal = b[sortField] ?? "";
       if (typeof aVal === "number" && typeof bVal === "number") {
