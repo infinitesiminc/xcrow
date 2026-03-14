@@ -52,7 +52,7 @@ const steps = [
   {
     num: "02",
     title: "Get your AI impact report",
-    description: "Receive a task-by-task breakdown with risk scores, industry benchmarks, and skill gap analysis — in under 30 seconds.",
+    description: "Receive a task-by-task breakdown with risk scores, industry benchmarks, and skill gap analysis — in about 3 seconds.",
     icon: BarChart3,
   },
   {
