@@ -225,7 +225,7 @@ export default function ForOrganizations() {
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.1 }}
               >
-                <p className="text-3xl font-heading font-bold text-primary">{stat.value}</p>
+                <p className="text-3xl font-sans font-bold text-primary">{stat.value}</p>
                 <p className="text-xs text-muted-foreground mt-1">{stat.label}</p>
               </motion.div>
             ))}
