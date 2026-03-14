@@ -68,14 +68,6 @@ export function RoleContext({ agentRisk, jobTitle }: RoleContextProps) {
             Higher risk than <span className="font-bold text-foreground">{percentile}%</span> of analyzed roles.
           </p>
 
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-7 text-xs gap-1 text-primary hover:bg-primary/5 mt-2"
-            onClick={() => navigate("/heatmap")}
-          >
-            <BarChart3 className="h-3 w-3" /> View full heatmap
-          </Button>
         </CardContent>
       </Card>
     </motion.div>
