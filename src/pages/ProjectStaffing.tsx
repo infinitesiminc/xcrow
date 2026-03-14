@@ -100,10 +100,12 @@ const ProjectStaffing = ({ embedded }: { embedded?: boolean }) => {
         return { skill: req, proficiency: found?.proficiency ?? 0, hasSkill: !!found };
       });
       const matchCount = matchedSkills.filter((m) => m.hasSkill).length;
-      const avgProficiency = matchedSkills.length > 0
-        ? Math.round(matchedSkills.reduce((s, m) => s + m.proficiency, 0) / matchedSkills.length)
+      const matchedOnly = matchedSkills.filter((m) => m.hasSkill);
+      const avgProficiency = matchedOnly.length > 0
+        ? Math.round(matchedOnly.reduce((s, m) => s + m.proficiency, 0) / matchedOnly.length)
         : 0;
-      const fitScore = Math.round((matchCount / requiredSkills.length) * 60 + avgProficiency * 0.4);
+      const coverageScore = (matchCount / requiredSkills.length) * 100;
+      const fitScore = Math.min(99, Math.round(coverageScore * 0.6 + avgProficiency * 0.4));
       return { ...staff, matchedSkills, matchCount, avgProficiency, fitScore };
     })
       .sort((a, b) => b.fitScore - a.fitScore)
