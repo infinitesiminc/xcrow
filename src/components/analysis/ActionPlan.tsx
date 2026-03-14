@@ -15,23 +15,23 @@ interface ActionPlanProps {
   onPractice: (taskName: string) => void;
 }
 
-const categoryConfig: Record<SkillCategory, { label: string; icon: typeof Wrench; bg: string; iconColor: string }> = {
-  ai_tools: { label: "AI Tools & Platforms", icon: Wrench, bg: "bg-accent/50", iconColor: "text-foreground/60" },
-  human_skills: { label: "Human-Edge Skills", icon: Heart, bg: "bg-accent/50", iconColor: "text-foreground/60" },
-  new_capabilities: { label: "New Capabilities", icon: Sparkles, bg: "bg-accent/50", iconColor: "text-foreground/60" },
+// Colored dot icons, grayscale text
+const categoryConfig: Record<SkillCategory, { label: string; icon: typeof Wrench; dotColor: string }> = {
+  ai_tools: { label: "AI Tools & Platforms", icon: Wrench, dotColor: "bg-dot-blue" },
+  human_skills: { label: "Human-Edge Skills", icon: Heart, dotColor: "bg-dot-teal" },
+  new_capabilities: { label: "New Capabilities", icon: Sparkles, dotColor: "bg-dot-purple" },
 };
 
-const priorityStyles: Record<string, string> = {
-  high: "bg-foreground/8 text-foreground/70 border-foreground/10",
-  medium: "bg-foreground/5 text-foreground/50 border-foreground/7",
-  low: "bg-muted text-muted-foreground border-border",
+const priorityDot: Record<string, string> = {
+  high: "bg-dot-purple",
+  medium: "bg-dot-amber",
+  low: "bg-muted-foreground/30",
 };
 
 export function ActionPlan({ result, topPathway, onPractice }: ActionPlanProps) {
   const steps = useMemo(() => {
     const plan: { number: number; headline: string; description: string; cta?: { label: string; action: () => void } | { label: string; url: string } }[] = [];
 
-    // Step 1: Highest priority skill
     const topSkill = result.skills.find(s => s.priority === "high") || result.skills[0];
     if (topSkill) {
       const resource = topSkill.resources?.[0];
@@ -43,7 +43,6 @@ export function ActionPlan({ result, topPathway, onPractice }: ActionPlanProps) 
       });
     }
 
-    // Step 2: Most at-risk task to practice
     const atRiskTask = result.tasks
       .filter(t => t.trend === "fully_ai_soon" || t.trend === "increasing_ai")
       .sort((a, b) => {
@@ -60,7 +59,6 @@ export function ActionPlan({ result, topPathway, onPractice }: ActionPlanProps) 
       });
     }
 
-    // Step 3: Career pathway
     if (topPathway) {
       plan.push({
         number: 3,
@@ -102,7 +100,7 @@ export function ActionPlan({ result, topPathway, onPractice }: ActionPlanProps) 
           >
             <Card className="border-border/50">
               <CardContent className="p-4 flex items-start gap-4">
-                <div className="flex items-center justify-center w-8 h-8 rounded-full bg-foreground/10 text-foreground text-sm font-sans font-bold shrink-0">
+                <div className="flex items-center justify-center w-8 h-8 rounded-full bg-accent text-foreground/60 text-sm font-sans font-bold shrink-0">
                   {step.number}
                 </div>
                 <div className="flex-1 min-w-0">
@@ -112,7 +110,7 @@ export function ActionPlan({ result, topPathway, onPractice }: ActionPlanProps) 
                     <div className="mt-2">
                       {"url" in step.cta ? (
                         <a href={step.cta.url} target="_blank" rel="noopener noreferrer">
-                          <Button variant="ghost" size="sm" className="h-7 text-xs gap-1 text-primary hover:bg-primary/5">
+                          <Button variant="ghost" size="sm" className="h-7 text-xs gap-1 text-muted-foreground hover:text-foreground">
                             <ExternalLink className="h-3 w-3" /> {step.cta.label}
                           </Button>
                         </a>
@@ -120,7 +118,7 @@ export function ActionPlan({ result, topPathway, onPractice }: ActionPlanProps) 
                         <Button
                           variant="ghost"
                           size="sm"
-                          className="h-7 text-xs gap-1 text-primary hover:bg-primary/5"
+                          className="h-7 text-xs gap-1 text-muted-foreground hover:text-foreground"
                           onClick={step.cta.action}
                         >
                           <Play className="h-3 w-3" /> {step.cta.label}
@@ -146,12 +144,11 @@ export function ActionPlan({ result, topPathway, onPractice }: ActionPlanProps) 
           return (
             <AccordionItem key={cat} value={cat} className="border rounded-lg px-3">
               <AccordionTrigger className="py-3 hover:no-underline">
-                <div className="flex items-center gap-2">
-                  <div className={`flex items-center justify-center w-7 h-7 rounded-lg ${config.bg}`}>
-                    <CatIcon className={`h-3.5 w-3.5 ${config.iconColor}`} />
-                  </div>
+                <div className="flex items-center gap-2.5">
+                  <span className={`w-2.5 h-2.5 rounded-full ${config.dotColor} shrink-0`} />
+                  <CatIcon className="h-3.5 w-3.5 text-muted-foreground" />
                   <span className="text-xs font-bold text-foreground uppercase tracking-wide">{config.label}</span>
-                  <Badge variant="secondary" className="text-[10px] ml-1">{skills.length}</Badge>
+                  <span className="text-[10px] text-muted-foreground ml-1">{skills.length}</span>
                 </div>
               </AccordionTrigger>
               <AccordionContent>
@@ -159,9 +156,8 @@ export function ActionPlan({ result, topPathway, onPractice }: ActionPlanProps) 
                   {skills.map((skill, si) => (
                     <div key={si} className="p-3 rounded-lg border border-border/50 bg-background">
                       <div className="flex items-center gap-2 mb-1">
-                        <Badge variant="outline" className={`text-[9px] px-1.5 py-0 capitalize shrink-0 ${priorityStyles[skill.priority]}`}>
-                          {skill.priority}
-                        </Badge>
+                        <span className={`w-1.5 h-1.5 rounded-full ${priorityDot[skill.priority]} shrink-0`} />
+                        <span className="text-[9px] uppercase tracking-wider text-muted-foreground capitalize">{skill.priority}</span>
                         <span className="text-xs font-semibold text-foreground">{skill.name}</span>
                       </div>
                       <p className="text-[11px] text-muted-foreground leading-relaxed">{skill.description}</p>
@@ -169,7 +165,7 @@ export function ActionPlan({ result, topPathway, onPractice }: ActionPlanProps) 
                         <div className="mt-2 space-y-1.5">
                           {skill.resources.map((r, ri) => (
                             <a key={ri} href={r.url} target="_blank" rel="noopener noreferrer"
-                              className="flex items-center gap-1.5 text-[11px] text-primary hover:underline">
+                              className="flex items-center gap-1.5 text-[11px] text-muted-foreground hover:text-foreground transition-colors">
                               <ExternalLink className="h-3 w-3 shrink-0" /> {r.name}
                             </a>
                           ))}

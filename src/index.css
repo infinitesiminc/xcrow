@@ -41,6 +41,12 @@
     --warning: 38 92% 50%;
     --warning-foreground: 0 0% 100%;
 
+    /* Categorical dot colors (Linear-style) */
+    --dot-blue: 220 80% 58%;
+    --dot-teal: 172 66% 45%;
+    --dot-purple: 262 60% 58%;
+    --dot-amber: 38 80% 55%;
+
     --sidebar-background: 40 33% 93%;
     --sidebar-foreground: 40 10% 20%;
     --sidebar-primary: 40 10% 10%;
@@ -84,6 +90,11 @@
     --success-foreground: 0 0% 100%;
     --warning: 38 80% 45%;
     --warning-foreground: 0 0% 100%;
+
+    --dot-blue: 220 80% 62%;
+    --dot-teal: 172 66% 50%;
+    --dot-purple: 262 60% 65%;
+    --dot-amber: 38 80% 60%;
 
     --sidebar-background: 225 25% 8%;
     --sidebar-foreground: 225 10% 85%;

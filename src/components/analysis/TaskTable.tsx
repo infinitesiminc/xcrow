@@ -13,16 +13,17 @@ interface TaskTableProps {
   onPractice: (taskName: string) => void;
 }
 
-const stateLabels: Record<TaskState, { label: string; className: string }> = {
-  mostly_human: { label: "Human-led", className: "bg-accent/50 text-foreground/70 border-border/30" },
-  human_ai: { label: "Human + AI", className: "bg-accent/50 text-foreground/70 border-border/30" },
-  mostly_ai: { label: "AI-driven", className: "bg-accent/50 text-foreground/70 border-border/30" },
+// Colored dots for state — text stays grayscale
+const stateLabels: Record<TaskState, { label: string; dot: string }> = {
+  mostly_human: { label: "Human-led", dot: "bg-dot-teal" },
+  human_ai: { label: "Human + AI", dot: "bg-dot-blue" },
+  mostly_ai: { label: "AI-driven", dot: "bg-dot-purple" },
 };
 
-const trendConfig: Record<TrendDirection, { icon: typeof Minus; className: string; label: string }> = {
-  stable: { icon: Minus, className: "text-muted-foreground", label: "Stable" },
-  increasing_ai: { icon: TrendingUp, className: "text-foreground/60", label: "Growing AI" },
-  fully_ai_soon: { icon: Bot, className: "text-foreground/70", label: "Full AI soon" },
+const trendConfig: Record<TrendDirection, { icon: typeof Minus; dot: string; label: string }> = {
+  stable: { icon: Minus, dot: "bg-muted-foreground/40", label: "Stable" },
+  increasing_ai: { icon: TrendingUp, dot: "bg-dot-amber", label: "Growing AI" },
+  fully_ai_soon: { icon: Bot, dot: "bg-dot-purple", label: "Full AI soon" },
 };
 
 function getDisruptionScore(task: TaskAnalysis): number {
@@ -38,19 +39,8 @@ function getDisruptionScore(task: TaskAnalysis): number {
   return score;
 }
 
-function getScoreColor(score: number): string {
-  // Subtle monochrome intensity based on score
-  if (score >= 7) return "bg-foreground/15 text-foreground";
-  if (score >= 5) return "bg-foreground/10 text-foreground/80";
-  if (score >= 3) return "bg-foreground/7 text-foreground/60";
-  return "bg-foreground/5 text-foreground/50";
-}
-
-function getHeatBarColor(score: number): string {
-  if (score >= 7) return "bg-foreground/50";
-  if (score >= 5) return "bg-foreground/35";
-  if (score >= 3) return "bg-foreground/20";
-  return "bg-foreground/10";
+function getHeatBarOpacity(score: number): number {
+  return 0.12 + (score / 8) * 0.45;
 }
 
 export function TaskTable({ tasks, skills, completedTasks, onPractice }: TaskTableProps) {
@@ -74,18 +64,19 @@ export function TaskTable({ tasks, skills, completedTasks, onPractice }: TaskTab
 
   return (
     <div>
-      {/* Summary bar */}
-      <div className="flex items-center gap-3 mb-4 flex-wrap">
-        <span className="text-xs font-medium text-muted-foreground">
-          <span className="font-bold text-foreground">{summary.fullyAi}</span> trending to full AI
+      {/* Summary bar — colored dots, grayscale text */}
+      <div className="flex items-center gap-4 mb-4 flex-wrap">
+        <span className="text-xs text-muted-foreground flex items-center gap-1.5">
+          <span className="w-2 h-2 rounded-full bg-dot-purple" />
+          <span className="font-semibold text-foreground">{summary.fullyAi}</span> trending to full AI
         </span>
-        <span className="text-xs text-border">•</span>
-        <span className="text-xs font-medium text-muted-foreground">
-          <span className="font-bold text-foreground">{summary.aiDriven}</span> already AI-driven
+        <span className="text-xs text-muted-foreground flex items-center gap-1.5">
+          <span className="w-2 h-2 rounded-full bg-dot-blue" />
+          <span className="font-semibold text-foreground">{summary.aiDriven}</span> AI-driven
         </span>
-        <span className="text-xs text-border">•</span>
-        <span className="text-xs font-medium text-muted-foreground">
-          <span className="font-bold text-foreground">{summary.human}</span> safely human
+        <span className="text-xs text-muted-foreground flex items-center gap-1.5">
+          <span className="w-2 h-2 rounded-full bg-dot-teal" />
+          <span className="font-semibold text-foreground">{summary.human}</span> human-led
         </span>
       </div>
 
@@ -107,40 +98,42 @@ export function TaskTable({ tasks, skills, completedTasks, onPractice }: TaskTab
               transition={{ delay: i * 0.03 }}
               className="rounded-lg border border-border bg-card overflow-hidden"
             >
-              {/* Row */}
               <button
                 onClick={() => setExpandedIndex(isExpanded ? null : i)}
                 className="w-full flex items-center gap-3 p-3 sm:p-4 text-left hover:bg-accent/30 transition-colors"
               >
-                {/* Score pill */}
-                <span className={`text-xs font-bold px-2 py-1 rounded-md shrink-0 ${getScoreColor(score)}`}>
+                {/* Score — plain text */}
+                <span className="text-xs font-bold text-muted-foreground tabular-nums shrink-0 w-8 text-center">
                   {score}/8
                 </span>
 
-                {/* Heat bar */}
+                {/* Heat bar — monochrome */}
                 <div className="w-12 h-2 rounded-full bg-secondary shrink-0 overflow-hidden">
-                  <div className={`h-full rounded-full ${getHeatBarColor(score)}`} style={{ width: `${(score / 8) * 100}%` }} />
+                  <div
+                    className="h-full rounded-full bg-foreground transition-all"
+                    style={{ width: `${(score / 8) * 100}%`, opacity: getHeatBarOpacity(score) }}
+                  />
                 </div>
 
                 {/* Task name */}
                 <span className="text-sm font-medium text-foreground flex-1 min-w-0 truncate">{task.name}</span>
 
-                {/* Badges */}
-                <div className="hidden sm:flex items-center gap-2 shrink-0">
-                  <Badge variant="outline" className={`text-[10px] px-1.5 py-0.5 ${state.className}`}>
+                {/* Badges — colored dot + grayscale text */}
+                <div className="hidden sm:flex items-center gap-3 shrink-0">
+                  <span className="inline-flex items-center gap-1.5 text-[11px] text-muted-foreground">
+                    <span className={`w-2 h-2 rounded-full ${state.dot}`} />
                     {state.label}
-                  </Badge>
-                  <span className={`inline-flex items-center gap-1 text-[10px] font-medium ${trend.className}`}>
+                  </span>
+                  <span className="inline-flex items-center gap-1.5 text-[11px] text-muted-foreground">
+                    <span className={`w-1.5 h-1.5 rounded-full ${trend.dot}`} />
                     <TrendIcon className="h-3 w-3" />
                     {trend.label}
                   </span>
                 </div>
 
-                {/* Expand icon */}
                 <ChevronDown className={`h-4 w-4 text-muted-foreground shrink-0 transition-transform ${isExpanded ? "rotate-180" : ""}`} />
               </button>
 
-              {/* Expanded content */}
               <AnimatePresence>
                 {isExpanded && (
                   <motion.div
@@ -154,17 +147,18 @@ export function TaskTable({ tasks, skills, completedTasks, onPractice }: TaskTab
                       <p className="text-xs text-muted-foreground mb-3 leading-relaxed">{task.description}</p>
 
                       {/* Mobile badges */}
-                      <div className="flex sm:hidden items-center gap-2 mb-3 flex-wrap">
-                        <Badge variant="outline" className={`text-[10px] px-1.5 py-0.5 ${state.className}`}>
+                      <div className="flex sm:hidden items-center gap-3 mb-3 flex-wrap">
+                        <span className="inline-flex items-center gap-1.5 text-[11px] text-muted-foreground">
+                          <span className={`w-2 h-2 rounded-full ${state.dot}`} />
                           {state.label}
-                        </Badge>
-                        <span className={`inline-flex items-center gap-1 text-[10px] font-medium ${trend.className}`}>
+                        </span>
+                        <span className="inline-flex items-center gap-1.5 text-[11px] text-muted-foreground">
+                          <span className={`w-1.5 h-1.5 rounded-full ${trend.dot}`} />
                           <TrendIcon className="h-3 w-3" />
                           {trend.label}
                         </span>
                       </div>
 
-                      {/* Related skills */}
                       {relatedSkills.length > 0 && (
                         <div className="mb-3">
                           <span className="text-[10px] uppercase tracking-widest text-muted-foreground font-medium">Related Skills</span>
@@ -179,10 +173,10 @@ export function TaskTable({ tasks, skills, completedTasks, onPractice }: TaskTab
                       <Button
                         variant="ghost"
                         size="sm"
-                        className={`h-7 text-xs gap-1.5 ${isCompleted ? "text-foreground/70 hover:bg-accent/30" : "text-primary hover:bg-primary/5"}`}
+                        className="h-7 text-xs gap-1.5 text-muted-foreground hover:text-foreground hover:bg-accent/30"
                         onClick={(e) => { e.stopPropagation(); onPractice(task.name); }}
                       >
-                        {isCompleted ? <><CheckCircle2 className="h-3 w-3" /> Practiced</> : <><Play className="h-3 w-3" /> Practice this task</>}
+                        {isCompleted ? <><CheckCircle2 className="h-3 w-3 text-dot-teal" /> Practiced</> : <><Play className="h-3 w-3" /> Practice this task</>}
                       </Button>
                     </div>
                   </motion.div>

@@ -262,9 +262,9 @@ const Analysis = () => {
   }
 
   const statCards = [
-    { label: "AI Involvement", value: result.summary.augmentedPercent, icon: Bot, iconBg: "bg-accent/50", iconColor: "text-foreground/60", barColor: "bg-foreground/25" },
-    { label: "Automation Risk", value: result.summary.automationRiskPercent, icon: ShieldAlert, iconBg: "bg-accent/50", iconColor: "text-foreground/60", barColor: "bg-foreground/35" },
-    { label: "New Skills Needed", value: result.summary.newSkillsPercent, icon: GraduationCap, iconBg: "bg-accent/50", iconColor: "text-foreground/60", barColor: "bg-foreground/20" },
+    { label: "AI Involvement", value: result.summary.augmentedPercent, icon: Bot, dotColor: "bg-dot-blue" },
+    { label: "Automation Risk", value: result.summary.automationRiskPercent, icon: ShieldAlert, dotColor: "bg-dot-purple" },
+    { label: "New Skills Needed", value: result.summary.newSkillsPercent, icon: GraduationCap, dotColor: "bg-dot-amber" },
   ];
 
   return (
@@ -325,16 +325,15 @@ const Analysis = () => {
                       transition={{ delay: 0.3 + i * 0.07 }}
                       className="text-center"
                     >
-                      <div className="flex items-center justify-center gap-1.5 mb-1">
-                        <div className={`flex items-center justify-center w-6 h-6 rounded-md ${stat.iconBg}`}>
-                          <Icon className={`h-3 w-3 ${stat.iconColor}`} />
-                        </div>
+                      <div className="flex items-center justify-center gap-2 mb-1">
+                        <span className={`w-2 h-2 rounded-full ${stat.dotColor} shrink-0`} />
+                        <Icon className="h-3.5 w-3.5 text-muted-foreground" />
                         <span className="text-lg font-sans font-bold text-foreground">{stat.value}%</span>
                       </div>
                       <p className="text-[10px] text-muted-foreground">{stat.label}</p>
                       <div className="w-full h-1 rounded-full bg-secondary/60 overflow-hidden mt-1.5 mx-auto max-w-[80px]">
                         <motion.div
-                          className={`h-full rounded-full ${stat.barColor}`}
+                          className="h-full rounded-full bg-foreground/20"
                           initial={{ width: 0 }}
                           animate={{ width: `${stat.value}%` }}
                           transition={{ duration: 0.8, delay: 0.5 + i * 0.1 }}
