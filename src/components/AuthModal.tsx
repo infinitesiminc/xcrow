@@ -68,7 +68,7 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
             {isSignUp ? "Create account" : "Welcome back"}
           </DialogTitle>
           <DialogDescription className="text-sm">
-            {isSignUp ? "Track your practice progress" : "Sign in to save your progress"}
+            {isSignUp ? "Track your upskill progress" : "Sign in to save your progress"}
           </DialogDescription>
         </DialogHeader>
 

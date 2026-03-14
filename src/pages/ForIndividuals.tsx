@@ -25,7 +25,7 @@ const features = [
   {
     icon: Gamepad2,
     title: "AI Collaboration Simulations",
-    description: "Practice working alongside AI tools on your actual at-risk tasks. Build muscle memory before the shift happens.",
+    description: "Upskill by working alongside AI tools on your actual at-risk tasks. Build muscle memory before the shift happens.",
     highlight: "Interactive scenarios, not passive courses",
   },
   {
@@ -57,7 +57,7 @@ const steps = [
   },
   {
     num: "03",
-    title: "Practice & future-proof",
+    title: "Upskill & future-proof",
     description: "Run interactive simulations on your most at-risk tasks. Build the AI collaboration skills employers will demand.",
     icon: Gamepad2,
   },
@@ -81,7 +81,7 @@ const audiences = [
     tagline: "Enter the workforce AI-ready",
     points: [
       "Evaluate careers with real AI exposure data",
-      "Practice before your first interview",
+      "Upskill before your first interview",
       "Choose roles with strong augmentation potential",
       "Build a portfolio that proves AI literacy",
     ],
@@ -113,7 +113,7 @@ export default function ForIndividuals() {
               <em className="italic">Know it. Then master it.</em>
             </h1>
             <p className="mx-auto mt-5 max-w-2xl text-lg text-muted-foreground leading-relaxed">
-              Get a task-level AI impact analysis for any job role — then practice the exact skills
+              Get a task-level AI impact analysis for any job role — then upskill on the exact skills
               that keep you irreplaceable. Powered by data from 100M+ analyzed positions.
             </p>
             <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3">

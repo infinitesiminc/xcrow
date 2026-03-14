@@ -121,7 +121,7 @@ const Dashboard = () => {
       items.push({ text: `Your role has ${myRoleAnalysis.automation_risk_percent}% automation risk — explore adjacent roles`, icon: ShieldAlert, priority: "high" });
     }
     if (myRoleAnalysis && myRoleAnalysis.augmented_percent >= 50) {
-      items.push({ text: `Practice AI-augmented tasks for your role`, icon: Bot, priority: "medium" });
+      items.push({ text: `Upskill on AI-augmented tasks for your role`, icon: Bot, priority: "medium" });
     }
     if (completions.length === 0) {
       items.push({ text: "Complete your first simulation to build skills", icon: GraduationCap, priority: "medium" });
@@ -245,7 +245,7 @@ const Dashboard = () => {
         <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="grid grid-cols-4 gap-3 mb-8">
           {[
             { label: "Jobs Analyzed", value: analyses.length, icon: BarChart3 },
-            { label: "Tasks Practiced", value: uniqueTasks, icon: Play },
+            { label: "Tasks Upskilled", value: uniqueTasks, icon: Play },
             { label: "Sessions", value: completions.length, icon: CheckCircle2 },
             { label: "Saved Roles", value: bookmarks.length, icon: Bookmark },
           ].map((stat) => (
@@ -412,7 +412,7 @@ const Dashboard = () => {
 
         {/* Practice History — grouped by job with scores */}
         <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}>
-          <h2 className="text-xs font-medium uppercase tracking-widest text-muted-foreground mb-3">Practice History</h2>
+          <h2 className="text-xs font-medium uppercase tracking-widest text-muted-foreground mb-3">Upskill History</h2>
           {loading ? (
             <div className="flex justify-center py-8">
               <Loader2 className="h-5 w-5 text-primary animate-spin" />
@@ -420,8 +420,8 @@ const Dashboard = () => {
           ) : completions.length === 0 ? (
             <Card>
               <CardContent className="p-8 text-center">
-                <p className="text-sm text-muted-foreground mb-3">No practice sessions yet</p>
-                <Button size="sm" onClick={() => navigate("/")}>Start Practicing</Button>
+                <p className="text-sm text-muted-foreground mb-3">No upskill sessions yet</p>
+                <Button size="sm" onClick={() => navigate("/")}>Start Upskilling</Button>
               </CardContent>
             </Card>
           ) : (() => {

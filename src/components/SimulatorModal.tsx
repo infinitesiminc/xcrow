@@ -209,7 +209,7 @@ const BriefingScreen = ({
       className="flex justify-center pt-2"
     >
       <Button onClick={onStart} size="lg" className="gap-2 rounded-xl px-8 text-base">
-        Begin Practice
+        Begin Upskill
       </Button>
     </motion.div>
   </motion.div>
@@ -634,7 +634,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                         className="flex-1 rounded-xl h-10 sm:h-11 text-sm gap-2"
                         onClick={handleFinish}
                       >
-                        <CheckCircle2 className="h-4 w-4" /> Finish Practice
+                        <CheckCircle2 className="h-4 w-4" /> Finish Upskill
                       </Button>
                     </div>
                   );
@@ -688,7 +688,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                   <CheckCircle2 className="h-10 w-10 text-success" />
                 </motion.div>
                 <div>
-                  <h3 className="text-xl font-serif font-bold text-foreground">Practice Complete</h3>
+                  <h3 className="text-xl font-serif font-bold text-foreground">Upskill Complete</h3>
                   <p className="text-sm text-muted-foreground mt-2 leading-relaxed">
                     You completed {roundCount} round{roundCount !== 1 ? "s" : ""} on "{taskName}"
                   </p>
