@@ -351,7 +351,7 @@ const Dashboard = () => {
                     onClick={() => {
                       const params = new URLSearchParams({ title: a.job_title });
                       if (a.company) params.set("company", a.company);
-                      navigate(`/analysis?${params.toString()}`);
+                      navigate(`/analysis?${params.toString()}`, { state: { from: "dashboard" } });
                     }}
                   >
                     <CardContent className="p-4">
