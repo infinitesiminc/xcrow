@@ -35,8 +35,10 @@ export async function compileSession(
   jobTitle: string,
   company?: string,
   difficulty = 3,
+  experienceLevel: "exploring" | "practicing" = "exploring",
+  taskMeta?: { currentState?: string; trend?: string; impactLevel?: string },
 ): Promise<SimSession> {
-  return simFetch("compile", { taskName, jobTitle, company, difficulty });
+  return simFetch("compile", { taskName, jobTitle, company, difficulty, experienceLevel, taskMeta });
 }
 
 export async function chatTurn(
