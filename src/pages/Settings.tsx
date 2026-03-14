@@ -22,11 +22,13 @@ import { useToast } from "@/hooks/use-toast";
 import { Loader2, Save, Trash2, KeyRound } from "lucide-react";
 
 export default function Settings() {
-  const { user, loading: authLoading, signOut } = useAuth();
+  const { user, loading: authLoading, signOut, profile, refreshProfile } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
 
   const [displayName, setDisplayName] = useState("");
+  const [jobTitle, setJobTitle] = useState("");
+  const [company, setCompany] = useState("");
   const [saving, setSaving] = useState(false);
 
   const [currentPassword, setCurrentPassword] = useState("");
@@ -41,32 +43,30 @@ export default function Settings() {
   }, [authLoading, user, navigate]);
 
   useEffect(() => {
-    if (!user) return;
-    // Load profile display name
-    supabase
-      .from("profiles")
-      .select("display_name")
-      .eq("id", user.id)
-      .single()
-      .then(({ data }) => {
-        if (data?.display_name) setDisplayName(data.display_name);
-      });
-  }, [user]);
+    if (!profile) return;
+    setDisplayName(profile.displayName || "");
+    setJobTitle(profile.jobTitle || "");
+    setCompany(profile.company || "");
+  }, [profile]);
 
   const handleSaveProfile = async () => {
     if (!user) return;
     setSaving(true);
     const { error } = await supabase
       .from("profiles")
-      .update({ display_name: displayName })
+      .update({
+        display_name: displayName,
+        job_title: jobTitle.trim() || null,
+        company: company.trim() || null,
+      })
       .eq("id", user.id);
 
     if (error) {
       toast({ title: "Error", description: "Failed to update profile.", variant: "destructive" });
     } else {
-      // Also update auth metadata
       await supabase.auth.updateUser({ data: { display_name: displayName } });
-      toast({ title: "Profile updated", description: "Your display name has been saved." });
+      await refreshProfile();
+      toast({ title: "Profile updated", description: "Your profile has been saved." });
     }
     setSaving(false);
   };
@@ -124,7 +124,7 @@ export default function Settings() {
       <Card className="mb-6">
         <CardHeader>
           <CardTitle className="text-lg">Profile</CardTitle>
-          <CardDescription>Update your display name and view your email.</CardDescription>
+          <CardDescription>Your personal and professional details.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
@@ -138,6 +138,25 @@ export default function Settings() {
               value={displayName}
               onChange={(e) => setDisplayName(e.target.value)}
               placeholder="Your name"
+            />
+          </div>
+          <Separator />
+          <div className="space-y-2">
+            <Label htmlFor="jobTitle">Job title</Label>
+            <Input
+              id="jobTitle"
+              value={jobTitle}
+              onChange={(e) => setJobTitle(e.target.value)}
+              placeholder="e.g. Product Manager"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="company">Company</Label>
+            <Input
+              id="company"
+              value={company}
+              onChange={(e) => setCompany(e.target.value)}
+              placeholder="e.g. Acme Corp or acme.com"
             />
           </div>
           <Button onClick={handleSaveProfile} disabled={saving} size="sm">

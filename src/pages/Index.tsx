@@ -138,7 +138,7 @@ const getLastAnalysis = (): LastAnalysis | null => {
 };
 
 const Index = () => {
-  const { user, openAuthModal } = useAuth();
+  const { user, openAuthModal, profile } = useAuth();
   const lastAnalysis = getLastAnalysis();
   const [website, setWebsite] = useState("");
   const [jobTitle, setJobTitle] = useState("");
@@ -163,6 +163,16 @@ const Index = () => {
   ]);
   const [teamLoading, setTeamLoading] = useState(false);
   const [teamJdParsing, setTeamJdParsing] = useState(false);
+
+  // Pre-fill from user profile
+  useEffect(() => {
+    if (profile?.jobTitle && !jobTitle) {
+      setJobTitle(profile.jobTitle);
+    }
+    if (profile?.company && !website) {
+      setWebsite(profile.company);
+    }
+  }, [profile]);
 
   const isValidWebsite = (url: string) => {
     if (!url) return true;
