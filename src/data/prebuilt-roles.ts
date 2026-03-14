@@ -96,7 +96,7 @@ export const prebuiltRoles: Record<string, JobAnalysisResult> = {
   "product manager": {
     jobTitle: "Product Manager",
     company: "",
-    summary: { augmentedPercent: 65, automationRiskPercent: 18, newSkillsPercent: 60 },
+    summary: { augmentedPercent: 72, automationRiskPercent: 12, newSkillsPercent: 45 },
     tasks: [
       { name: "User research synthesis", currentState: "human_ai", trend: "increasing_ai", impactLevel: "medium", description: "AI summarizes interviews and surveys, but extracting deep user needs requires human empathy." },
       { name: "Writing PRDs & specs", currentState: "human_ai", trend: "fully_ai_soon", impactLevel: "high", description: "AI drafts product specs from brief descriptions, significantly speeding up documentation." },
