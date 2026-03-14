@@ -119,7 +119,7 @@ export const prebuiltRoles: Record<string, JobAnalysisResult> = {
   "devops engineer": {
     jobTitle: "DevOps Engineer",
     company: "",
-    summary: { augmentedPercent: 70, automationRiskPercent: 20, newSkillsPercent: 65 },
+    summary: { augmentedPercent: 70, automationRiskPercent: 20, newSkillsPercent: 55 },
     tasks: [
       { name: "Infrastructure provisioning", currentState: "human_ai", trend: "fully_ai_soon", impactLevel: "high", description: "AI generates IaC templates and auto-provisions cloud resources from natural language descriptions." },
       { name: "CI/CD pipeline management", currentState: "human_ai", trend: "increasing_ai", impactLevel: "medium", description: "AI optimizes build pipelines, detects flaky tests, and suggests parallelization improvements." },
