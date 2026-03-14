@@ -469,7 +469,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                     >
                       <div className={`flex ${isUser ? "justify-end" : "justify-start"}`}>
                         <div
-                          className={`max-w-[85%] rounded-2xl px-5 py-4 text-[15px] leading-[1.7] ${
+                          className={`max-w-[90%] sm:max-w-[85%] rounded-2xl px-4 sm:px-5 py-3 sm:py-4 text-sm sm:text-[15px] leading-[1.7] ${
                             isUser
                               ? "bg-foreground text-background rounded-br-lg"
                               : "bg-accent/40 text-foreground rounded-bl-lg"
