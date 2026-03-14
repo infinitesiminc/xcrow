@@ -1,5 +1,23 @@
 import { prebuiltRoles } from "@/data/prebuilt-roles";
-import type { EscoMatchResult, EscoPathway } from "@/lib/esco-api";
+
+export interface CareerPathway {
+  title: string;
+  uri: string;
+  skillOverlap: number;
+  sharedSkills: string[];
+  totalSkills: number;
+  newSkillsNeeded: string[];
+}
+
+export interface CareerMatchResult {
+  primary: {
+    title: string;
+    uri: string;
+    skillCount: number;
+    essentialSkills: string[];
+  };
+  pathways: CareerPathway[];
+}
 
 /** Extract meaningful keywords from a skill/task name */
 function extractKeywords(text: string): Set<string> {
