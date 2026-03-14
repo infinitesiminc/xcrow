@@ -27,6 +27,20 @@ export interface SkillRecommendation {
   relatedTasks?: string[];
 }
 
+export interface CuratedSkill {
+  name: string;
+  priority: string | null;
+  category: string;
+}
+
+export interface IndustryBenchmark {
+  industry: string;
+  totalRoles: number;
+  avgAutomationRisk: number;
+  avgAugmented: number;
+  rolesInSameIndustry: { title: string; automationRisk: number; augmented: number }[];
+}
+
 export interface JobAnalysisResult {
   jobTitle: string;
   company: string;
@@ -37,4 +51,7 @@ export interface JobAnalysisResult {
   };
   tasks: TaskAnalysis[];
   skills: SkillRecommendation[];
+  curatedSkills?: CuratedSkill[];
+  industryBenchmark?: IndustryBenchmark;
+  dbEnhanced?: boolean;
 }
