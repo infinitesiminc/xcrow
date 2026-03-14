@@ -220,11 +220,13 @@ export default function Heatmap() {
                 {roles.map((role) => {
                   const risk = agentRisks[role.key] || 0;
                   const riskColor = risk >= 45 ? "hsl(0, 84%, 55%)" : risk >= 35 ? "hsl(25, 95%, 53%)" : risk >= 25 ? "hsl(45, 93%, 50%)" : "hsl(142, 71%, 50%)";
+                  const v = verdicts[role.key] || "upskill";
+                  const vc = verdictConfig[v];
                   return (
                   <div
                     key={role.key}
                     className="grid hover:bg-muted/20 transition-colors"
-                    style={{ gridTemplateColumns: "180px 60px repeat(8, 1fr)" }}
+                    style={{ gridTemplateColumns: "160px 55px 70px repeat(8, 1fr)" }}
                   >
                     <div
                       className="p-2.5 text-xs font-medium text-foreground border-b border-r border-border/30 flex items-center cursor-pointer hover:text-primary transition-colors"
