@@ -21,10 +21,32 @@ interface EscoOccupation {
   skills: EscoSkill[];
 }
 
+async function fetchWithRetry(url: string, retries = 2): Promise<Response> {
+  for (let i = 0; i <= retries; i++) {
+    try {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 8000);
+      const res = await fetch(url, {
+        headers: { Accept: "application/json" },
+        signal: controller.signal,
+      });
+      clearTimeout(timeout);
+      if (res.ok) return res;
+      // Consume body to avoid leak
+      await res.text();
+      if (i === retries) throw new Error(`ESCO API returned ${res.status}`);
+    } catch (e) {
+      if (i === retries) throw e;
+      // Brief pause before retry
+      await new Promise(r => setTimeout(r, 500));
+    }
+  }
+  throw new Error("Unreachable");
+}
+
 async function searchOccupations(query: string, limit = 10): Promise<{ uri: string; title: string }[]> {
   const url = `${ESCO_BASE}/search?text=${encodeURIComponent(query)}&type=occupation&language=en&full=false&limit=${limit}`;
-  const res = await fetch(url, { headers: { Accept: "application/json" } });
-  if (!res.ok) throw new Error(`ESCO search failed: ${res.status}`);
+  const res = await fetchWithRetry(url);
   const data = await res.json();
   return (data._embedded?.results || []).map((r: any) => ({
     uri: r.uri,
@@ -34,8 +56,7 @@ async function searchOccupations(query: string, limit = 10): Promise<{ uri: stri
 
 async function getOccupationSkills(uri: string): Promise<EscoOccupation> {
   const url = `${ESCO_BASE}/resource/occupation?uri=${encodeURIComponent(uri)}&language=en`;
-  const res = await fetch(url, { headers: { Accept: "application/json" } });
-  if (!res.ok) throw new Error(`ESCO occupation fetch failed: ${res.status}`);
+  const res = await fetchWithRetry(url);
   const data = await res.json();
 
   const skills: EscoSkill[] = [];
@@ -93,7 +114,6 @@ serve(async (req) => {
     }
 
     if (action === "match") {
-      // Search for a job title, get its skills, then find related occupations
       if (!query) {
         return new Response(JSON.stringify({ error: "query is required" }), {
           status: 400,
@@ -114,7 +134,7 @@ serve(async (req) => {
       const primary = await getOccupationSkills(searchResults[0].uri);
       const primarySkillNames = new Set(primary.skills.map((s) => s.title.toLowerCase()));
 
-      // 3. Search for related occupations using top essential skills as queries
+      // 3. Search for related occupations using top essential skills
       const essentialSkills = primary.skills
         .filter((s) => s.skillType === "essential")
         .slice(0, 3);
@@ -122,23 +142,33 @@ serve(async (req) => {
       const relatedUris = new Set<string>();
       const relatedOccupations: { uri: string; title: string }[] = [];
 
-      for (const skill of essentialSkills) {
-        const related = await searchOccupations(skill.title, 5);
-        for (const r of related) {
-          if (r.uri !== primary.uri && !relatedUris.has(r.uri)) {
-            relatedUris.add(r.uri);
-            relatedOccupations.push(r);
+      // Fetch related occupations in parallel (batched)
+      const relatedResults = await Promise.allSettled(
+        essentialSkills.map(skill => searchOccupations(skill.title, 5))
+      );
+
+      for (const result of relatedResults) {
+        if (result.status === "fulfilled") {
+          for (const r of result.value) {
+            if (r.uri !== primary.uri && !relatedUris.has(r.uri)) {
+              relatedUris.add(r.uri);
+              relatedOccupations.push(r);
+            }
           }
         }
       }
 
-      // 4. Get skills for top related occupations and calculate overlap
-      const pathways = [];
-      const topRelated = relatedOccupations.slice(0, 8);
+      // 4. Get skills for top related occupations in parallel
+      const topRelated = relatedOccupations.slice(0, 6);
+      const pathwayResults = await Promise.allSettled(
+        topRelated.map(rel => getOccupationSkills(rel.uri))
+      );
 
-      for (const rel of topRelated) {
-        try {
-          const relOcc = await getOccupationSkills(rel.uri);
+      const pathways = [];
+      for (let i = 0; i < topRelated.length; i++) {
+        const result = pathwayResults[i];
+        if (result.status === "fulfilled") {
+          const relOcc = result.value;
           const relSkillNames = relOcc.skills.map((s) => s.title.toLowerCase());
           const shared = relSkillNames.filter((s) => primarySkillNames.has(s));
           const overlapPercent = primarySkillNames.size > 0
@@ -153,12 +183,9 @@ serve(async (req) => {
             totalSkills: relOcc.skills.length,
             newSkillsNeeded: relSkillNames.filter((s) => !primarySkillNames.has(s)).slice(0, 5),
           });
-        } catch (e) {
-          console.error(`Failed to get skills for ${rel.title}:`, e);
         }
       }
 
-      // Sort by skill overlap
       pathways.sort((a, b) => b.skillOverlap - a.skillOverlap);
 
       return new Response(
