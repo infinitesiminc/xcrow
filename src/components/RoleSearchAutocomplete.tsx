@@ -124,7 +124,7 @@ export function RoleSearchAutocomplete({ onAnalyze, value, onChange, jdInputType
           />
           {loading && <Loader2 className="h-4 w-4 text-muted-foreground animate-spin shrink-0" />}
           {onToggleJd && (
-            <div className="flex items-center gap-0.5 shrink-0">
+            <div className="hidden sm:flex items-center gap-0.5 shrink-0">
               <button type="button" onClick={() => onToggleJd("paste")}
                 className={`p-1.5 rounded-md transition-colors ${
                   jdInputType === "paste" ? "bg-primary/10 text-primary" : "text-muted-foreground hover:text-foreground"
