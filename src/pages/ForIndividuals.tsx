@@ -114,7 +114,7 @@ export default function ForIndividuals() {
             </h1>
             <p className="mx-auto mt-5 max-w-2xl text-lg text-muted-foreground leading-relaxed">
               Get a task-level AI impact analysis for any job role — then practice the exact skills
-              that keep you irreplaceable. Powered by data from 500+ analyzed positions.
+              that keep you irreplaceable. Powered by data from 100M+ analyzed positions.
             </p>
             <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3">
               <Button size="lg" onClick={() => navigate("/")} className="gap-2 text-base px-8">
