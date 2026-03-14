@@ -625,7 +625,7 @@ export const prebuiltRoles: Record<string, JobAnalysisResult> = {
   "contract attorney": {
     jobTitle: "Contract Attorney",
     company: "",
-    summary: { augmentedPercent: 65, automationRiskPercent: 40, newSkillsPercent: 58 },
+    summary: { augmentedPercent: 60, automationRiskPercent: 44, newSkillsPercent: 58 },
     tasks: [
       { name: "Contract drafting", currentState: "human_ai", trend: "increasing_ai", impactLevel: "medium", description: "AI generates contract drafts from templates and playbooks, attorneys refine terms." },
       { name: "Contract review & redlining", currentState: "human_ai", trend: "fully_ai_soon", impactLevel: "high", description: "AI identifies risky clauses, deviations from standards, and suggests redlines." },
