@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -32,6 +33,158 @@ For each skill, include "relatedTasks" — an array of task names (matching the 
 
 Provide 6-8 tasks and 5-7 skills. Be specific to the role, not generic.`;
 
+function getSupabaseAdmin() {
+  const url = Deno.env.get("SUPABASE_URL")!;
+  const key = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+  return createClient(url, key);
+}
+
+interface DbJob {
+  id: string;
+  title: string;
+  automation_risk_percent: number | null;
+  augmented_percent: number | null;
+  new_skills_percent: number | null;
+  department: string | null;
+  company_id: string | null;
+  similarity?: number;
+}
+
+interface DbSkill {
+  name: string;
+  category: string | null;
+  priority: string | null;
+  description: string | null;
+}
+
+interface IndustryBenchmark {
+  industry: string;
+  totalRoles: number;
+  avgAutomationRisk: number;
+  avgAugmented: number;
+  rolesInSameIndustry: { title: string; automationRisk: number; augmented: number }[];
+}
+
+async function findMatchingJob(sb: any, jobTitle: string): Promise<{ job: DbJob | null; skills: DbSkill[] }> {
+  if (!jobTitle) return { job: null, skills: [] };
+
+  // Use trigram similarity for fuzzy matching
+  const { data: matches } = await sb.rpc("similarity_search_jobs", { search_title: jobTitle.toLowerCase() });
+  
+  // Fallback to ilike if rpc doesn't exist
+  if (!matches || matches.length === 0) {
+    const { data } = await sb
+      .from("jobs")
+      .select("id, title, automation_risk_percent, augmented_percent, new_skills_percent, department, company_id")
+      .ilike("title", `%${jobTitle}%`)
+      .limit(1);
+    
+    if (!data || data.length === 0) return { job: null, skills: [] };
+    
+    const job = data[0];
+    const { data: skills } = await sb
+      .from("job_skills")
+      .select("name, category, priority, description")
+      .eq("job_id", job.id)
+      .order("priority", { ascending: true });
+    
+    return { job, skills: skills || [] };
+  }
+
+  const job = matches[0];
+  const { data: skills } = await sb
+    .from("job_skills")
+    .select("name, category, priority, description")
+    .eq("job_id", job.id)
+    .order("priority", { ascending: true });
+
+  return { job, skills: skills || [] };
+}
+
+async function getIndustryBenchmark(sb: any, companyName?: string, jobTitle?: string): Promise<IndustryBenchmark | null> {
+  // First try to find the company's industry
+  let industry: string | null = null;
+
+  if (companyName) {
+    const { data: companies } = await sb
+      .from("companies")
+      .select("industry")
+      .ilike("name", `%${companyName}%`)
+      .limit(1);
+    
+    if (companies && companies.length > 0) {
+      industry = companies[0].industry;
+    }
+  }
+
+  // If no industry found from company, try to infer from the matched job
+  if (!industry && jobTitle) {
+    const { data } = await sb
+      .from("jobs")
+      .select("company_id")
+      .ilike("title", `%${jobTitle}%`)
+      .limit(1);
+    
+    if (data && data.length > 0 && data[0].company_id) {
+      const { data: comp } = await sb
+        .from("companies")
+        .select("industry")
+        .eq("id", data[0].company_id)
+        .single();
+      if (comp) industry = comp.industry;
+    }
+  }
+
+  if (!industry) return null;
+
+  // Get all jobs in this industry that have been analyzed (non-zero scores)
+  const { data: industryJobs } = await sb
+    .from("jobs")
+    .select("title, automation_risk_percent, augmented_percent, company_id, companies!inner(industry)")
+    .eq("companies.industry", industry)
+    .gt("automation_risk_percent", 0)
+    .limit(100);
+
+  // Also get total count of roles in this industry
+  const { count } = await sb
+    .from("jobs")
+    .select("id", { count: "exact", head: true })
+    .eq("companies.industry", industry);
+
+  const analyzed = industryJobs || [];
+  if (analyzed.length === 0) {
+    return { industry, totalRoles: count || 0, avgAutomationRisk: 0, avgAugmented: 0, rolesInSameIndustry: [] };
+  }
+
+  const avgRisk = Math.round(analyzed.reduce((s: number, j: any) => s + (j.automation_risk_percent || 0), 0) / analyzed.length);
+  const avgAug = Math.round(analyzed.reduce((s: number, j: any) => s + (j.augmented_percent || 0), 0) / analyzed.length);
+
+  return {
+    industry,
+    totalRoles: count || analyzed.length,
+    avgAutomationRisk: avgRisk,
+    avgAugmented: avgAug,
+    rolesInSameIndustry: analyzed.slice(0, 5).map((j: any) => ({
+      title: j.title,
+      automationRisk: j.automation_risk_percent || 0,
+      augmented: j.augmented_percent || 0,
+    })),
+  };
+}
+
+async function storeAnalysisResults(sb: any, jobId: string, summary: any) {
+  try {
+    await sb.from("jobs").update({
+      automation_risk_percent: summary.automationRiskPercent,
+      augmented_percent: summary.augmentedPercent,
+      new_skills_percent: summary.newSkillsPercent,
+    }).eq("id", jobId);
+    console.log("Stored analysis results back to job:", jobId);
+  } catch (e) {
+    console.error("Failed to store results:", e);
+  }
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -54,6 +207,23 @@ serve(async (req) => {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+
+    const sb = getSupabaseAdmin();
+
+    // 1. Look up matching job in DB
+    const { job: matchedJob, skills: curatedSkills } = await findMatchingJob(sb, jobTitle);
+    console.log("DB match:", matchedJob?.title || "none", "skills:", curatedSkills.length);
+
+    // 2. If the matched job already has analysis scores and no JD was provided, return cached results
+    if (matchedJob && matchedJob.automation_risk_percent && matchedJob.automation_risk_percent > 0 && !jobDescription && !jdUrl) {
+      // We have cached results — but we still need tasks/skills from AI
+      // So we'll still call AI but inject the cached scores context
+      console.log("Found cached scores for:", matchedJob.title);
+    }
+
+    // 3. Get industry benchmark
+    const benchmark = await getIndustryBenchmark(sb, company, jobTitle);
+    console.log("Industry benchmark:", benchmark?.industry || "none");
 
     // If jdUrl is provided, scrape it to get the JD text
     let resolvedJd = jobDescription || "";
@@ -94,6 +264,7 @@ serve(async (req) => {
     // Truncate JD to avoid token limits
     const truncatedJd = resolvedJd.slice(0, 6000);
 
+    // Build enriched prompt with DB context
     let userPrompt = "";
     if (truncatedJd && jobTitle) {
       userPrompt = `Analyze the role of "${jobTitle}"${company ? ` at "${company}"` : ""}.\n\nHere is the actual job description — use it to identify the real tasks and responsibilities:\n\n---\n${truncatedJd}\n---`;
@@ -103,6 +274,17 @@ serve(async (req) => {
       userPrompt = `Analyze the role of "${jobTitle}" at "${company}". Consider the specific industry and company context.`;
     } else {
       userPrompt = `Analyze the role of "${jobTitle}". Consider typical responsibilities across industries.`;
+    }
+
+    // Inject curated skills context if available
+    if (curatedSkills.length > 0) {
+      const skillsList = curatedSkills.map((s, i) => `${i + 1}. ${s.name}`).join("\n");
+      userPrompt += `\n\nIMPORTANT: Our database identifies these as the KEY HUMAN SKILLS for this role (prioritized). Factor them into your analysis — especially when recommending "human_skills" category skills:\n${skillsList}`;
+    }
+
+    // Inject industry context if available
+    if (benchmark && benchmark.avgAutomationRisk > 0) {
+      userPrompt += `\n\nINDUSTRY CONTEXT: In the "${benchmark.industry}" industry, the average automation risk across ${benchmark.totalRoles} analyzed roles is ${benchmark.avgAutomationRisk}% and average augmentation is ${benchmark.avgAugmented}%. Use this for calibration.`;
     }
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
@@ -229,13 +411,35 @@ serve(async (req) => {
 
     const analysis = JSON.parse(toolCall.function.arguments);
 
-    const result = {
+    // Store results back to DB if we had a match
+    if (matchedJob) {
+      await storeAnalysisResults(sb, matchedJob.id, analysis.summary);
+    }
+
+    const result: Record<string, unknown> = {
       jobTitle: jobTitle || analysis.extractedJobTitle || "Unknown Role",
       company: company || "",
       summary: analysis.summary,
       tasks: analysis.tasks,
       skills: analysis.skills,
     };
+
+    // Add curated skills from DB
+    if (curatedSkills.length > 0) {
+      result.curatedSkills = curatedSkills.map(s => ({
+        name: s.name,
+        priority: s.priority,
+        category: s.category || "human_skills",
+      }));
+    }
+
+    // Add industry benchmark
+    if (benchmark) {
+      result.industryBenchmark = benchmark;
+    }
+
+    // Flag if this was a DB-enhanced result
+    result.dbEnhanced = !!(matchedJob || curatedSkills.length > 0 || benchmark);
 
     return new Response(JSON.stringify(result), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
