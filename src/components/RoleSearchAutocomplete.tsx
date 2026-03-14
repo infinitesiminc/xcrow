@@ -64,19 +64,17 @@ export function RoleSearchAutocomplete({ onAnalyze, value, onChange, jdInputType
         return true;
       }).slice(0, 8);
 
-      if (unique.length > 0) {
-        const mapped: DbRole[] = unique.map((j: any) => ({
-          id: j.id,
-          title: j.title,
-          department: j.department,
-          automation_risk_percent: j.automation_risk_percent,
-          augmented_percent: j.augmented_percent,
-          company_name: j.companies?.name || null,
-          industry: j.companies?.industry || null,
-        }));
-        setResults(mapped);
-        setOpen(true);
-      }
+      const mapped: DbRole[] = unique.map((j: any) => ({
+        id: j.id,
+        title: j.title,
+        department: j.department,
+        automation_risk_percent: j.automation_risk_percent,
+        augmented_percent: j.augmented_percent,
+        company_name: j.companies?.name || null,
+        industry: j.companies?.industry || null,
+      }));
+      setResults(mapped);
+      setOpen(mapped.length > 0);
     } catch (e) {
       console.error("Search error:", e);
     } finally {
