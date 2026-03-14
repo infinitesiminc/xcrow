@@ -475,6 +475,12 @@ const CompanyDashboard = () => {
             )}
           </Card>
         </motion.div>
+          </TabsContent>
+
+          <TabsContent value="staffing">
+            <ProjectStaffing embedded />
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );
