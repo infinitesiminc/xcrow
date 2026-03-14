@@ -249,7 +249,7 @@ const Analysis = () => {
       <div className="min-h-screen bg-background flex items-center justify-center px-4">
         <div className="text-center max-w-sm">
           <AlertTriangle className="mx-auto h-8 w-8 text-warning mb-3" />
-          <h1 className="text-lg font-display font-bold text-foreground mb-1">Analysis Failed</h1>
+          <h1 className="text-lg font-sans font-bold text-foreground mb-1">Analysis Failed</h1>
           <p className="text-sm text-muted-foreground mb-4">{error || "Something went wrong."}</p>
           <Button onClick={() => navigate("/")} variant="outline" size="sm">
             <ArrowLeft className="w-3 h-3 mr-1" /> Try Again
