@@ -379,7 +379,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
 
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
-      <DialogContent className="max-w-3xl w-[95vw] h-[90vh] p-0 flex flex-col overflow-hidden gap-0 border-border/50 rounded-2xl [&>button]:hidden">
+      <DialogContent className="max-w-3xl w-[95vw] h-[90vh] sm:h-[90vh] h-[100dvh] sm:rounded-2xl rounded-none p-0 flex flex-col overflow-hidden gap-0 border-border/50 [&>button]:hidden">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-border/40 shrink-0">
           <div className="min-w-0">
