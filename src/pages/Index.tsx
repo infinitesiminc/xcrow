@@ -447,7 +447,7 @@ const Index = () => {
     <div className="h-screen bg-background flex flex-col">
       {/* Minimal top bar */}
       <div className="flex items-center justify-between px-4 sm:px-6 py-2 shrink-0">
-        <div className="flex items-center gap-2 font-heading text-sm font-bold tracking-tight text-foreground">
+        <div className="flex items-center gap-2 font-sans text-sm font-bold tracking-tight text-foreground">
           <img src={logoImg} alt="Infinite Sim" className="h-5 w-5" />
           Infinite Sim
         </div>
