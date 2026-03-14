@@ -708,8 +708,8 @@ const Index = () => {
           <div className="space-y-8">
             <div className="flex items-center justify-between gap-4 flex-wrap">
               <div className="flex items-center gap-2">
-                <TrendingUp className="h-4 w-4 text-primary" />
-                <h2 className="text-sm font-semibold font-sans text-foreground">Roles ranked by AI replacement risk</h2>
+                <TrendingUp className="h-4 w-4 text-muted-foreground" />
+                <h2 className="text-xs font-medium uppercase tracking-widest text-muted-foreground">Roles ranked by AI replacement risk</h2>
               </div>
             </div>
 
@@ -721,10 +721,10 @@ const Index = () => {
               const row2 = tier.roles.slice(half);
               return (
                 <div key={tier.label}>
-                  <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full ${tier.bgColor} ${tier.borderColor} border mb-3`}>
-                    <div className={`h-2 w-2 rounded-full ${tier.color} bg-current`} />
-                    <span className={`text-xs font-bold uppercase tracking-wider ${tier.textColor}`}>{tier.label}</span>
-                    <span className="text-[10px] text-muted-foreground ml-1">({tier.roles.length} roles)</span>
+                  <div className="inline-flex items-center gap-2 mb-3">
+                    <span className={`w-2.5 h-2.5 rounded-full ${tier.dotColor} shrink-0`} />
+                    <span className="text-xs font-medium uppercase tracking-widest text-muted-foreground">{tier.label}</span>
+                    <span className="text-[10px] text-muted-foreground/60">({tier.roles.length})</span>
                   </div>
                   <div className="space-y-3">
                     {[row1, row2].map((row, rowIdx) => (
@@ -741,13 +741,14 @@ const Index = () => {
                             >
                               <div className="relative overflow-hidden rounded-xl aspect-[4/3] mb-2">
                                 <img src={role.image} alt={role.title} className="w-full h-full object-cover grayscale transition-all duration-300 group-hover:grayscale-0 group-hover:scale-105" />
-                                <div className={`absolute top-1.5 right-1.5 px-1.5 py-0.5 rounded-md text-[10px] font-bold ${tier.bgColor} ${tier.textColor} backdrop-blur-sm border ${tier.borderColor}`}>
-                                  {role.agentRisk}%
+                                <div className="absolute top-1.5 right-1.5 flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-background/80 backdrop-blur-sm border border-border/40">
+                                  <span className={`w-1.5 h-1.5 rounded-full ${tier.dotColor}`} />
+                                  <span className="text-[10px] font-bold text-foreground">{role.agentRisk}%</span>
                                 </div>
                               </div>
                               <h3 className="text-sm font-semibold font-sans text-foreground leading-tight">{role.title}</h3>
-                              <div className="flex items-center gap-2 mt-0.5 text-xs text-muted-foreground">
-                                <span className="text-[10px] px-1.5 py-0.5 rounded bg-secondary">{role.tag}</span>
+                              <div className="flex items-center gap-2 mt-0.5">
+                                <span className="text-[10px] px-1.5 py-0.5 rounded bg-accent text-muted-foreground">{role.tag}</span>
                               </div>
                             </motion.button>
                           ))}
