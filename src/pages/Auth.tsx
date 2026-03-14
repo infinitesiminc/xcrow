@@ -21,6 +21,30 @@ const Auth = () => {
 
   useEffect(() => {
     if (!authLoading && user) {
+      // Process any pending bookmark from pre-login save attempt
+      const pending = sessionStorage.getItem("pending_bookmark");
+      if (pending) {
+        sessionStorage.removeItem("pending_bookmark");
+        try {
+          const data = JSON.parse(pending);
+          const returnUrl = data.return_url;
+          // Fire bookmark insert asynchronously
+          supabase.from("bookmarked_roles").insert({
+            user_id: user.id,
+            job_title: data.job_title,
+            company: data.company,
+            augmented_percent: data.augmented_percent,
+            automation_risk_percent: data.automation_risk_percent,
+            new_skills_percent: data.new_skills_percent,
+          }).then(() => {});
+          // Redirect back to the analysis they were viewing
+          if (returnUrl) {
+            const url = new URL(returnUrl);
+            navigate(url.pathname + url.search);
+            return;
+          }
+        } catch {}
+      }
       navigate("/dashboard");
     }
   }, [user, authLoading, navigate]);

@@ -126,7 +126,21 @@ const Analysis = () => {
   }, [user, jobTitle, company]);
 
   const toggleBookmark = async () => {
-    if (!user) { navigate("/auth"); return; }
+    if (!user) {
+      // Save intent so we can bookmark after OAuth redirect
+      if (result) {
+        sessionStorage.setItem("pending_bookmark", JSON.stringify({
+          job_title: result.jobTitle,
+          company: result.company || null,
+          augmented_percent: result.summary.augmentedPercent,
+          automation_risk_percent: result.summary.automationRiskPercent,
+          new_skills_percent: result.summary.newSkillsPercent,
+          return_url: window.location.href,
+        }));
+      }
+      navigate("/auth");
+      return;
+    }
     if (!result) return;
     setBookmarkLoading(true);
     try {
