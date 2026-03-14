@@ -82,17 +82,40 @@ const Dashboard = () => {
 
   const uniqueTasks = new Set(completions.map((c) => c.task_name)).size;
 
-  // Generate simple action plan suggestions based on analyses
-  const actionItems = analyses.slice(0, 3).flatMap((a) => {
+  // Find user's own role analysis if profile has job title
+  const myRoleAnalysis = profile?.jobTitle
+    ? analyses.find((a) => a.job_title.toLowerCase() === profile.jobTitle!.toLowerCase())
+    : null;
+
+  const hasProfile = !!(profile?.jobTitle);
+
+  // Generate action plan based on profile + analyses
+  const actionItems = (() => {
     const items: { text: string; icon: typeof Bot; priority: "high" | "medium" | "low" }[] = [];
-    if (a.automation_risk_percent >= 40) {
-      items.push({ text: `Explore AI-adjacent skills for ${a.job_title}`, icon: ShieldAlert, priority: "high" });
+
+    // Profile-aware suggestions
+    if (hasProfile && !myRoleAnalysis) {
+      items.push({ text: `Analyze your role: ${profile!.jobTitle}`, icon: Zap, priority: "high" });
     }
-    if (a.augmented_percent >= 50) {
-      items.push({ text: `Practice AI-augmented tasks for ${a.job_title}`, icon: Bot, priority: "medium" });
+    if (myRoleAnalysis && myRoleAnalysis.automation_risk_percent >= 40) {
+      items.push({ text: `Your role has ${myRoleAnalysis.automation_risk_percent}% automation risk — explore adjacent roles`, icon: ShieldAlert, priority: "high" });
     }
-    return items;
-  }).slice(0, 5);
+    if (myRoleAnalysis && myRoleAnalysis.augmented_percent >= 50) {
+      items.push({ text: `Practice AI-augmented tasks for your role`, icon: Bot, priority: "medium" });
+    }
+    if (completions.length === 0) {
+      items.push({ text: "Complete your first simulation to build skills", icon: GraduationCap, priority: "medium" });
+    }
+
+    // Add suggestions from other analyses
+    analyses.filter(a => a !== myRoleAnalysis).slice(0, 2).forEach((a) => {
+      if (a.automation_risk_percent >= 40) {
+        items.push({ text: `Explore AI-adjacent skills for ${a.job_title}`, icon: ShieldAlert, priority: "high" });
+      }
+    });
+
+    return items.slice(0, 5);
+  })();
 
   return (
     <div className="min-h-screen bg-background px-4 py-8">
