@@ -671,17 +671,18 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
               );
             })()}
 
-            {/* Continue / end buttons */}
+            {/* Continue / Finish buttons */}
             {(() => {
               const lastAi = [...messages].reverse().find(m => m.role === "assistant");
               if (!lastAi || sending) return null;
-              const askContinue = lastAi.content.toLowerCase().includes("want to see another example") || lastAi.content.toLowerCase().includes("want another");
+              const lower = lastAi.content.toLowerCase();
+              const askContinue = lower.includes("ready for the next scenario") || lower.includes("want to see another example") || lower.includes("want another") || lower.includes("(yes/no)");
               if (!askContinue) return null;
               return (
                 <div className="flex gap-3 max-w-2xl mx-auto">
                   <Button
                     variant="outline"
-                    className="flex-1 rounded-xl h-11 text-sm"
+                    className="flex-1 rounded-xl h-11 text-sm gap-2"
                     onClick={() => {
                       const fakeMsg: SimMessage = { role: "user", content: "yes" };
                       const newMsgs = [...messages, fakeMsg];
@@ -699,13 +700,13 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                       }).finally(() => setSending(false));
                     }}
                   >
-                    Continue
+                    <ArrowRight className="h-4 w-4" /> Next Scenario
                   </Button>
                   <Button
                     className="flex-1 rounded-xl h-11 text-sm gap-2"
                     onClick={handleFinish}
                   >
-                    <CheckCircle2 className="h-4 w-4" /> Finish
+                    <CheckCircle2 className="h-4 w-4" /> Finish Practice
                   </Button>
                 </div>
               );
