@@ -497,11 +497,29 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, onComplete
                           if (reply.includes("✅")) {
                             correctLetter = opt.letter;
                           } else if (reply.includes("❌")) {
-                            const correctMatch = reply.match(/\*\*([A-C])\)/);
-                            if (correctMatch) correctLetter = correctMatch[1];
-                            else {
-                              const altMatch = reply.match(/\b([A-C])\)\s/);
-                              if (altMatch && altMatch[1] !== opt.letter) correctLetter = altMatch[1];
+                            // Try multiple patterns to find the correct answer
+                            const patterns = [
+                              /\*\*([A-C])\)?\*\*/,           // **C)** or **C**
+                              /correct\s+(?:answer|option)\s+(?:is|was)\s+\**([A-C])/i,  // correct answer is C
+                              /(?:answer|option)\s+([A-C])\s+(?:is|was)\s+correct/i,      // option C is correct
+                              /\b([A-C])\)\s/,                 // C) at word boundary
+                              /\b([A-C])\)/,                   // C) anywhere
+                            ];
+                            for (const pattern of patterns) {
+                              const match = reply.match(pattern);
+                              if (match && match[1] !== opt.letter) {
+                                correctLetter = match[1];
+                                break;
+                              }
+                            }
+                            // Fallback: scan for any letter mentioned positively that isn't the selected one
+                            if (!correctLetter) {
+                              for (const other of parsedOpts) {
+                                if (other.letter !== opt.letter && reply.includes(other.text.substring(0, 20))) {
+                                  correctLetter = other.letter;
+                                  break;
+                                }
+                              }
                             }
                           }
                           setAnsweredQuestions(prev => [...prev, {
