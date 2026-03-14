@@ -135,7 +135,7 @@ export default function ForOrganizations() {
       <section className="px-4 py-20 bg-accent/20">
         <div className="mx-auto max-w-4xl">
           <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} className="text-center mb-12">
-            <h2 className="font-heading text-2xl sm:text-3xl font-bold text-foreground">Enterprise-grade workforce intelligence</h2>
+            <h2 className="font-sans text-2xl sm:text-3xl font-bold text-foreground">Enterprise-grade workforce intelligence</h2>
           </motion.div>
           <div className="grid sm:grid-cols-2 gap-6">
             {features.map((f, i) => {
