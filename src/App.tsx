@@ -12,6 +12,7 @@ import Auth from "./pages/Auth.tsx";
 import Dashboard from "./pages/Dashboard.tsx";
 import Settings from "./pages/Settings.tsx";
 import NotFound from "./pages/NotFound.tsx";
+import RolesChart from "./pages/RolesChart.tsx";
 
 const queryClient = new QueryClient();
 
@@ -29,6 +30,7 @@ const App = () => (
             <Route path="/auth" element={<><Navbar /><Auth /></>} />
             <Route path="/dashboard" element={<><Navbar /><Dashboard /></>} />
             <Route path="/settings" element={<><Navbar /><Settings /></>} />
+            <Route path="/roles-chart" element={<><Navbar /><RolesChart /></>} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
