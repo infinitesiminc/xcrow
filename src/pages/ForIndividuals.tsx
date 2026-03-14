@@ -75,8 +75,8 @@ export default function ForIndividuals() {
               <Button size="lg" onClick={() => navigate("/")} className="gap-2 text-base px-8">
                 Analyze Your Role <ArrowRight className="h-4 w-4" />
               </Button>
-              <Button size="lg" variant="outline" onClick={() => navigate("/for-organizations")} className="text-base">
-                For Organizations →
+              <Button size="lg" variant="outline" onClick={() => navigate("/pricing")} className="text-base">
+                View Pricing →
               </Button>
             </div>
           </motion.div>
