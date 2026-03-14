@@ -113,6 +113,45 @@ const Analysis = () => {
 
   useEffect(() => { fetchCompletions(); }, [fetchCompletions]);
 
+  // Bookmark check
+  useEffect(() => {
+    if (!user || !jobTitle) return;
+    const checkBookmark = async () => {
+      let query = supabase.from("bookmarked_roles").select("id").eq("user_id", user.id).eq("job_title", jobTitle);
+      if (company) { query = query.eq("company", company); } else { query = query.is("company", null); }
+      const { data } = await query.maybeSingle();
+      setIsBookmarked(!!data);
+    };
+    checkBookmark();
+  }, [user, jobTitle, company]);
+
+  const toggleBookmark = async () => {
+    if (!user) { navigate("/auth"); return; }
+    if (!result) return;
+    setBookmarkLoading(true);
+    try {
+      if (isBookmarked) {
+        let query = supabase.from("bookmarked_roles").delete().eq("user_id", user.id).eq("job_title", result.jobTitle);
+        if (result.company) { query = query.eq("company", result.company); } else { query = query.is("company", null); }
+        await query;
+        setIsBookmarked(false);
+      } else {
+        await supabase.from("bookmarked_roles").insert({
+          user_id: user.id,
+          job_title: result.jobTitle,
+          company: result.company || null,
+          augmented_percent: result.summary.augmentedPercent,
+          automation_risk_percent: result.summary.automationRiskPercent,
+          new_skills_percent: result.summary.newSkillsPercent,
+        });
+        setIsBookmarked(true);
+      }
+    } catch (err) {
+      console.error("Bookmark error:", err);
+    }
+    setBookmarkLoading(false);
+  };
+
   // Show sticky bar when hero card scrolls out of view
   useEffect(() => {
     const el = heroRef.current;
