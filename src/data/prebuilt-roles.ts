@@ -418,7 +418,7 @@ export const prebuiltRoles: Record<string, JobAnalysisResult> = {
   "project manager": {
     jobTitle: "Project Manager",
     company: "",
-    summary: { augmentedPercent: 62, automationRiskPercent: 22, newSkillsPercent: 58 },
+    summary: { augmentedPercent: 68, automationRiskPercent: 20, newSkillsPercent: 48 },
     tasks: [
       { name: "Status reporting", currentState: "human_ai", trend: "fully_ai_soon", impactLevel: "high", description: "AI auto-generates project status reports from task management tools and communications." },
       { name: "Schedule management", currentState: "human_ai", trend: "increasing_ai", impactLevel: "medium", description: "AI optimizes schedules, predicts delays, and suggests resource adjustments." },
