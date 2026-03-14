@@ -94,6 +94,8 @@ const Analysis = () => {
   const [escoData, setEscoData] = useState<EscoMatchResult | null>(null);
   const [escoLoading, setEscoLoading] = useState(false);
   const [escoError, setEscoError] = useState(false);
+  const [showStickyBar, setShowStickyBar] = useState(false);
+  const heroRef = useRef<HTMLDivElement>(null);
   const { user } = useAuth();
 
   const fetchCompletions = useCallback(async () => {
