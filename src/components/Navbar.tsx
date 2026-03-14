@@ -29,7 +29,7 @@ export default function Navbar() {
     { label: "For Individuals", path: "/for-individuals" },
     { label: "For Organizations", path: "/for-organizations" },
     { label: "Pricing", path: "/pricing" },
-    { label: "Analyze", path: "/" },
+    
     { label: "Contact", path: "/contact" },
     ...(user ? [{ label: "Dashboard", path: "/dashboard" }] : []),
   ];
