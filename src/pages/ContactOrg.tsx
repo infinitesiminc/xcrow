@@ -21,11 +21,20 @@ const ContactOrg = () => {
     e.preventDefault();
     if (!name.trim() || !email.trim() || !company.trim()) return;
     setSending(true);
-    // Simulate submission delay
-    await new Promise((r) => setTimeout(r, 1200));
-    setSending(false);
-    setSent(true);
-    toast({ title: "Request received", description: "We'll be in touch within 24 hours." });
+    try {
+      const { supabase } = await import("@/integrations/supabase/client");
+      const { error } = await supabase.functions.invoke("send-contact-email", {
+        body: { name, email, company, teamSize, message, formType: "org" },
+      });
+      if (error) throw error;
+      setSent(true);
+      toast({ title: "Request received", description: "We'll be in touch within 24 hours." });
+    } catch (err) {
+      console.error("Contact org form error:", err);
+      toast({ title: "Failed to send", description: "Please try again or email us directly.", variant: "destructive" });
+    } finally {
+      setSending(false);
+    }
   };
 
   return (
