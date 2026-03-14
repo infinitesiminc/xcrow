@@ -55,23 +55,7 @@ function getDisruptionScore(task: TaskAnalysis): number {
   return score; // max 8
 }
 
-function getHeatColor(score: number | null): string {
-  if (score === null) return "hsl(var(--muted))";
-  if (score >= 7) return "hsl(0, 84%, 55%)";
-  if (score >= 6) return "hsl(15, 90%, 55%)";
-  if (score >= 5) return "hsl(30, 95%, 53%)";
-  if (score >= 4) return "hsl(45, 93%, 50%)";
-  if (score >= 3) return "hsl(60, 80%, 50%)";
-  return "hsl(142, 71%, 50%)";
-}
-
-function getHeatLabel(score: number | null): string {
-  if (score === null) return "N/A";
-  if (score >= 7) return "Critical";
-  if (score >= 5) return "High";
-  if (score >= 3) return "Moderate";
-  return "Low";
-}
+// getHeatColor and getHeatLabel imported from shared utility
 
 interface CellData {
   score: number | null;
