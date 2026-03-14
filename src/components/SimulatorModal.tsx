@@ -348,6 +348,8 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
 
   const handleFinish = async () => {
     setPhase("completing");
+    const totalQ = answeredQuestions.length;
+    const correctQ = answeredQuestions.filter(q => q.selectedLetter === q.correctLetter).length;
     if (user) {
       try {
         await supabase.from("completed_simulations").insert({
@@ -356,7 +358,10 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
           job_title: jobTitle,
           company: company || null,
           rounds_completed: roundCount,
-        });
+          correct_answers: correctQ,
+          total_questions: totalQ,
+          experience_level: experienceLevel,
+        } as any);
         onCompleted?.();
       } catch (err) {
         console.error("Failed to save completion:", err);
