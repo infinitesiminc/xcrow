@@ -21,6 +21,9 @@ interface CompletedSim {
   company: string | null;
   rounds_completed: number;
   completed_at: string;
+  correct_answers: number;
+  total_questions: number;
+  experience_level: string | null;
 }
 
 interface AnalysisEntry {
