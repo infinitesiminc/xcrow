@@ -579,7 +579,7 @@ export const prebuiltRoles: Record<string, JobAnalysisResult> = {
   "compliance officer": {
     jobTitle: "Compliance Officer",
     company: "",
-    summary: { augmentedPercent: 60, automationRiskPercent: 32, newSkillsPercent: 55 },
+    summary: { augmentedPercent: 58, automationRiskPercent: 36, newSkillsPercent: 58 },
     tasks: [
       { name: "Regulatory monitoring", currentState: "human_ai", trend: "fully_ai_soon", impactLevel: "high", description: "AI continuously scans regulatory updates and maps them to organizational obligations." },
       { name: "Policy documentation", currentState: "human_ai", trend: "increasing_ai", impactLevel: "medium", description: "AI drafts and updates compliance policies, officers review for organizational context." },
