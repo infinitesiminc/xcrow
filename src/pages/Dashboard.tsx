@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import {
   ArrowLeft, CheckCircle2, Calendar, Briefcase, Loader2, Play, BarChart3, Bot,
   ShieldAlert, ArrowRight, Bookmark, Target, Sparkles, GraduationCap,
+  Zap, ExternalLink, Settings,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -81,17 +82,40 @@ const Dashboard = () => {
 
   const uniqueTasks = new Set(completions.map((c) => c.task_name)).size;
 
-  // Generate simple action plan suggestions based on analyses
-  const actionItems = analyses.slice(0, 3).flatMap((a) => {
+  // Find user's own role analysis if profile has job title
+  const myRoleAnalysis = profile?.jobTitle
+    ? analyses.find((a) => a.job_title.toLowerCase() === profile.jobTitle!.toLowerCase())
+    : null;
+
+  const hasProfile = !!(profile?.jobTitle);
+
+  // Generate action plan based on profile + analyses
+  const actionItems = (() => {
     const items: { text: string; icon: typeof Bot; priority: "high" | "medium" | "low" }[] = [];
-    if (a.automation_risk_percent >= 40) {
-      items.push({ text: `Explore AI-adjacent skills for ${a.job_title}`, icon: ShieldAlert, priority: "high" });
+
+    // Profile-aware suggestions
+    if (hasProfile && !myRoleAnalysis) {
+      items.push({ text: `Analyze your role: ${profile!.jobTitle}`, icon: Zap, priority: "high" });
     }
-    if (a.augmented_percent >= 50) {
-      items.push({ text: `Practice AI-augmented tasks for ${a.job_title}`, icon: Bot, priority: "medium" });
+    if (myRoleAnalysis && myRoleAnalysis.automation_risk_percent >= 40) {
+      items.push({ text: `Your role has ${myRoleAnalysis.automation_risk_percent}% automation risk — explore adjacent roles`, icon: ShieldAlert, priority: "high" });
     }
-    return items;
-  }).slice(0, 5);
+    if (myRoleAnalysis && myRoleAnalysis.augmented_percent >= 50) {
+      items.push({ text: `Practice AI-augmented tasks for your role`, icon: Bot, priority: "medium" });
+    }
+    if (completions.length === 0) {
+      items.push({ text: "Complete your first simulation to build skills", icon: GraduationCap, priority: "medium" });
+    }
+
+    // Add suggestions from other analyses
+    analyses.filter(a => a !== myRoleAnalysis).slice(0, 2).forEach((a) => {
+      if (a.automation_risk_percent >= 40) {
+        items.push({ text: `Explore AI-adjacent skills for ${a.job_title}`, icon: ShieldAlert, priority: "high" });
+      }
+    });
+
+    return items.slice(0, 5);
+  })();
 
   return (
     <div className="min-h-screen bg-background px-4 py-8">
@@ -108,6 +132,94 @@ const Dashboard = () => {
             )}
           </p>
         </motion.div>
+
+        {/* Your Role Card */}
+        {hasProfile && (
+          <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }} className="mb-6">
+            {myRoleAnalysis ? (
+              <Card
+                className="border-primary/20 bg-gradient-to-br from-primary/5 via-background to-accent/10 cursor-pointer hover:shadow-md transition-all"
+                onClick={() => {
+                  const params = new URLSearchParams({ title: myRoleAnalysis.job_title });
+                  if (myRoleAnalysis.company) params.set("company", myRoleAnalysis.company);
+                  navigate(`/analysis?${params.toString()}`);
+                }}
+              >
+                <CardContent className="p-5">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Briefcase className="h-4 w-4 text-primary" />
+                    <span className="text-xs font-medium uppercase tracking-widest text-muted-foreground">Your Role</span>
+                  </div>
+                  <div className="flex items-center justify-between gap-4">
+                    <div className="min-w-0">
+                      <h3 className="text-lg font-semibold text-foreground">{myRoleAnalysis.job_title}</h3>
+                      {myRoleAnalysis.company && (
+                        <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
+                          <ExternalLink className="h-3 w-3" />{myRoleAnalysis.company}
+                        </p>
+                      )}
+                    </div>
+                    <div className="flex gap-4 shrink-0">
+                      <div className="text-center">
+                        <div className="text-xl font-bold text-foreground">{myRoleAnalysis.augmented_percent}%</div>
+                        <div className="text-[10px] text-muted-foreground">AI Involvement</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-xl font-bold text-foreground">{myRoleAnalysis.automation_risk_percent}%</div>
+                        <div className="text-[10px] text-muted-foreground">Automation Risk</div>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 mt-3 pt-3 border-t border-border/50">
+                    <Badge variant="secondary" className="text-[10px]">{myRoleAnalysis.tasks_count} tasks analyzed</Badge>
+                    <span className="text-[10px] text-muted-foreground ml-auto">View full report →</span>
+                  </div>
+                </CardContent>
+              </Card>
+            ) : (
+              <Card className="border-dashed border-primary/30">
+                <CardContent className="p-5 flex items-center justify-between gap-4">
+                  <div>
+                    <div className="flex items-center gap-2 mb-1">
+                      <Zap className="h-4 w-4 text-primary" />
+                      <span className="text-sm font-semibold text-foreground">Analyze your role</span>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      Get a personalized AI impact report for <span className="font-medium text-foreground">{profile!.jobTitle}</span>
+                    </p>
+                  </div>
+                  <Button
+                    size="sm"
+                    onClick={() => {
+                      const params = new URLSearchParams({ title: profile!.jobTitle! });
+                      if (profile!.company) params.set("company", profile!.company);
+                      navigate(`/analysis?${params.toString()}`);
+                    }}
+                  >
+                    <Zap className="h-3.5 w-3.5 mr-1" /> Analyze
+                  </Button>
+                </CardContent>
+              </Card>
+            )}
+          </motion.div>
+        )}
+
+        {/* No profile prompt */}
+        {!hasProfile && (
+          <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }} className="mb-6">
+            <Card className="border-dashed">
+              <CardContent className="p-5 flex items-center justify-between gap-4">
+                <div>
+                  <p className="text-sm font-semibold text-foreground">Complete your profile</p>
+                  <p className="text-xs text-muted-foreground">Add your job title to get personalized insights</p>
+                </div>
+                <Button size="sm" variant="outline" onClick={() => navigate("/settings")}>
+                  <Settings className="h-3.5 w-3.5 mr-1" /> Settings
+                </Button>
+              </CardContent>
+            </Card>
+          </motion.div>
+        )}
 
         {/* Stats */}
         <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="grid grid-cols-4 gap-3 mb-8">
