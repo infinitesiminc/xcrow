@@ -54,15 +54,19 @@ export default function Settings() {
     setSaving(true);
     const { error } = await supabase
       .from("profiles")
-      .update({ display_name: displayName })
+      .update({
+        display_name: displayName,
+        job_title: jobTitle.trim() || null,
+        company: company.trim() || null,
+      })
       .eq("id", user.id);
 
     if (error) {
       toast({ title: "Error", description: "Failed to update profile.", variant: "destructive" });
     } else {
-      // Also update auth metadata
       await supabase.auth.updateUser({ data: { display_name: displayName } });
-      toast({ title: "Profile updated", description: "Your display name has been saved." });
+      await refreshProfile();
+      toast({ title: "Profile updated", description: "Your profile has been saved." });
     }
     setSaving(false);
   };
