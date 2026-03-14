@@ -229,7 +229,7 @@ const Analysis = () => {
             <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-accent">
               <Zap className="h-5 w-5 text-primary animate-pulse" />
             </div>
-            <h1 className="text-xl font-display font-bold text-foreground">Analyzing {jobTitle || "role from JD"}...</h1>
+            <h1 className="text-xl font-sans font-bold text-foreground">Analyzing {jobTitle || "role from JD"}...</h1>
             <p className="mt-1 text-sm text-muted-foreground">Building your personal report card</p>
           </motion.div>
           <div className="space-y-4">
@@ -249,7 +249,7 @@ const Analysis = () => {
       <div className="min-h-screen bg-background flex items-center justify-center px-4">
         <div className="text-center max-w-sm">
           <AlertTriangle className="mx-auto h-8 w-8 text-warning mb-3" />
-          <h1 className="text-lg font-display font-bold text-foreground mb-1">Analysis Failed</h1>
+          <h1 className="text-lg font-sans font-bold text-foreground mb-1">Analysis Failed</h1>
           <p className="text-sm text-muted-foreground mb-4">{error || "Something went wrong."}</p>
           <Button onClick={() => navigate("/")} variant="outline" size="sm">
             <ArrowLeft className="w-3 h-3 mr-1" /> Try Again
@@ -275,7 +275,7 @@ const Analysis = () => {
               <ArrowLeft className="h-4 w-4 text-muted-foreground" />
             </button>
             <div>
-              <h1 className="text-2xl sm:text-3xl font-display font-bold text-foreground leading-tight">{result.jobTitle}</h1>
+              <h1 className="text-2xl sm:text-3xl font-serif font-bold text-foreground leading-tight">{result.jobTitle}</h1>
               {result.company && <p className="text-sm text-muted-foreground mt-1">at {result.company}</p>}
             </div>
           </div>
@@ -327,7 +327,7 @@ const Analysis = () => {
                         <div className={`flex items-center justify-center w-6 h-6 rounded-md ${stat.iconBg}`}>
                           <Icon className={`h-3 w-3 ${stat.iconColor}`} />
                         </div>
-                        <span className="text-lg font-display font-bold text-foreground">{stat.value}%</span>
+                        <span className="text-lg font-sans font-bold text-foreground">{stat.value}%</span>
                       </div>
                       <p className="text-[10px] text-muted-foreground">{stat.label}</p>
                       <div className="w-full h-1 rounded-full bg-secondary/60 overflow-hidden mt-1.5 mx-auto max-w-[80px]">
@@ -387,7 +387,7 @@ const Analysis = () => {
                 <Rocket className="h-6 w-6 text-primary" />
               </div>
               <div className="flex-1 text-center sm:text-left">
-                <h3 className="text-base font-display font-bold text-foreground mb-0.5">
+                <h3 className="text-base font-sans font-bold text-foreground mb-0.5">
                   {user ? "View your dashboard" : "Track your progress"}
                 </h3>
                 <p className="text-sm text-muted-foreground">

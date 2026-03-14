@@ -107,7 +107,7 @@ const TeamAnalysis = () => {
             <ArrowLeft className="w-3 h-3 mr-1" /> New analysis
           </Button>
           <div className="flex items-baseline gap-3 flex-wrap">
-            <h1 className="text-2xl font-display font-bold text-foreground">Team Overview</h1>
+            <h1 className="text-2xl font-sans font-bold text-foreground">Team Overview</h1>
             <span className="text-sm text-muted-foreground">{teamResults.length} roles analyzed</span>
           </div>
         </motion.div>

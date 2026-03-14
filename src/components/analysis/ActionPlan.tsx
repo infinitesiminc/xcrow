@@ -103,11 +103,11 @@ export function ActionPlan({ result, topPathway, onPractice }: ActionPlanProps) 
           >
             <Card className="border-border/50">
               <CardContent className="p-4 flex items-start gap-4">
-                <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary text-primary-foreground text-sm font-display font-bold shrink-0">
+                <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary text-primary-foreground text-sm font-sans font-bold shrink-0">
                   {step.number}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h4 className="text-sm font-display font-bold text-foreground mb-0.5">{step.headline}</h4>
+                  <h4 className="text-sm font-sans font-bold text-foreground mb-0.5">{step.headline}</h4>
                   <p className="text-xs text-muted-foreground leading-relaxed">{step.description}</p>
                   {step.cta && (
                     <div className="mt-2">

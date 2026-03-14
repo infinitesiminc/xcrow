@@ -69,7 +69,7 @@ export function RiskGauge({ risk, verdict, reasoning }: RiskGaugeProps) {
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center">
           <motion.span
-            className="text-4xl font-display font-bold text-foreground"
+            className="text-4xl font-sans font-bold text-foreground"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.5 }}
@@ -91,7 +91,7 @@ export function RiskGauge({ risk, verdict, reasoning }: RiskGaugeProps) {
           <CardContent className="p-4 sm:p-5">
             <div className="flex items-center gap-2 mb-1.5">
               <Icon className={`h-5 w-5 ${config.color}`} />
-              <span className={`text-lg font-display font-bold ${config.color}`}>{config.label}</span>
+              <span className={`text-lg font-sans font-bold ${config.color}`}>{config.label}</span>
             </div>
             <p className="text-sm text-foreground font-medium mb-1">Our recommendation</p>
             <p className="text-xs text-muted-foreground leading-relaxed max-w-sm">{reasoning}</p>

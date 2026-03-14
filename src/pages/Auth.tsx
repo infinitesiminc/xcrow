@@ -68,7 +68,7 @@ const Auth = () => {
 
         <Card>
           <CardContent className="p-6">
-            <h1 className="text-xl font-display font-bold text-foreground mb-1">
+            <h1 className="text-xl font-sans font-bold text-foreground mb-1">
               {isSignUp ? "Create account" : "Welcome back"}
             </h1>
             <p className="text-sm text-muted-foreground mb-6">

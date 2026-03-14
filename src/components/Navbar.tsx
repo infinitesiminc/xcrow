@@ -29,7 +29,7 @@ export default function Navbar() {
         {/* Logo / Home */}
         <button
           onClick={() => navigate("/")}
-          className="flex items-center gap-2 font-heading text-lg font-bold tracking-tight text-foreground hover:opacity-80 transition-opacity"
+          className="flex items-center gap-2 font-sans text-lg font-bold tracking-tight text-foreground hover:opacity-80 transition-opacity"
         >
           <img src={logo} alt="Infinite Sim" className="h-6 w-6" />
           <span className="hidden sm:inline">Infinite Sim</span>

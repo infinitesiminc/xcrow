@@ -64,9 +64,9 @@ export default function ForIndividuals() {
             <div className="mx-auto mb-5 flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10">
               <Sparkles className="h-6 w-6 text-primary" />
             </div>
-            <h1 className="font-heading text-4xl sm:text-5xl lg:text-6xl font-bold text-foreground leading-tight tracking-tight">
+            <h1 className="font-serif text-4xl sm:text-5xl lg:text-6xl font-bold text-foreground leading-tight tracking-tight">
               Know your AI risk.<br />
-              <span className="text-primary">Master what's next.</span>
+              <em className="italic">Master what's next.</em>
             </h1>
             <p className="mx-auto mt-5 max-w-2xl text-lg text-muted-foreground leading-relaxed">
               Get a task-level AI impact analysis for any role — then practice the skills that keep you ahead. For professionals protecting their career and students building theirs.
@@ -87,7 +87,7 @@ export default function ForIndividuals() {
       <section className="px-4 py-20">
         <div className="mx-auto max-w-4xl">
           <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} className="text-center mb-12">
-            <h2 className="font-heading text-2xl sm:text-3xl font-bold text-foreground">Three steps to clarity</h2>
+            <h2 className="font-sans text-2xl sm:text-3xl font-bold text-foreground">Three steps to clarity</h2>
             <p className="mt-2 text-muted-foreground">From uncertainty to action in under a minute</p>
           </motion.div>
           <div className="grid sm:grid-cols-3 gap-6">
@@ -101,8 +101,8 @@ export default function ForIndividuals() {
               >
                 <Card className="border-border/50 h-full">
                   <CardContent className="p-6">
-                    <span className="text-3xl font-heading font-bold text-primary/20">{step.num}</span>
-                    <h3 className="mt-2 text-lg font-heading font-semibold text-foreground">{step.title}</h3>
+                     <span className="text-3xl font-sans font-bold text-primary/20">{step.num}</span>
+                     <h3 className="mt-2 text-lg font-sans font-semibold text-foreground">{step.title}</h3>
                     <p className="mt-1 text-sm text-muted-foreground">{step.description}</p>
                   </CardContent>
                 </Card>
@@ -116,7 +116,7 @@ export default function ForIndividuals() {
       <section className="px-4 py-20 bg-accent/20">
         <div className="mx-auto max-w-4xl">
           <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} className="text-center mb-12">
-            <h2 className="font-heading text-2xl sm:text-3xl font-bold text-foreground">Everything you need to stay ahead</h2>
+            <h2 className="font-sans text-2xl sm:text-3xl font-bold text-foreground">Everything you need to stay ahead</h2>
           </motion.div>
           <div className="grid sm:grid-cols-2 gap-6">
             {features.map((f, i) => {
@@ -134,7 +134,7 @@ export default function ForIndividuals() {
                       <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-primary/10 mb-4">
                         <Icon className="h-5 w-5 text-primary" />
                       </div>
-                      <h3 className="text-base font-heading font-semibold text-foreground">{f.title}</h3>
+                      <h3 className="text-base font-sans font-semibold text-foreground">{f.title}</h3>
                       <p className="mt-1.5 text-sm text-muted-foreground leading-relaxed">{f.description}</p>
                     </CardContent>
                   </Card>
@@ -149,7 +149,7 @@ export default function ForIndividuals() {
       <section className="px-4 py-20">
         <div className="mx-auto max-w-4xl">
           <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} className="text-center mb-12">
-            <h2 className="font-heading text-2xl sm:text-3xl font-bold text-foreground">Built for you</h2>
+            <h2 className="font-sans text-2xl sm:text-3xl font-bold text-foreground">Built for you</h2>
           </motion.div>
           <div className="grid sm:grid-cols-2 gap-6">
             {audiences.map((a, i) => {
@@ -169,7 +169,7 @@ export default function ForIndividuals() {
                           <Icon className="h-5 w-5 text-primary" />
                         </div>
                         <div>
-                          <h3 className="text-base font-heading font-semibold text-foreground">{a.label}</h3>
+                          <h3 className="text-base font-sans font-semibold text-foreground">{a.label}</h3>
                           <p className="text-xs text-muted-foreground">{a.tagline}</p>
                         </div>
                       </div>
@@ -197,7 +197,7 @@ export default function ForIndividuals() {
             <Card className="border-primary/20 bg-gradient-to-r from-primary/5 via-accent/30 to-primary/5">
               <CardContent className="p-8 text-center">
                 <Brain className="mx-auto h-8 w-8 text-primary mb-4" />
-                <h2 className="font-heading text-xl sm:text-2xl font-bold text-foreground">
+                <h2 className="font-sans text-xl sm:text-2xl font-bold text-foreground">
                   Ready to see where you stand?
                 </h2>
                 <p className="mt-2 text-sm text-muted-foreground max-w-md mx-auto">
