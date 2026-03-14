@@ -1,8 +1,8 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { findPrebuiltRole } from "@/data/prebuilt-roles";
-import { TaskAnalysis } from "@/types/analysis";
-import { ArrowLeft } from "lucide-react";
+import { TaskAnalysis, JobAnalysisResult } from "@/types/analysis";
+import { ArrowLeft, TrendingUp, RefreshCw, Rocket } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 
@@ -78,14 +78,32 @@ interface CellData {
   tasks: { name: string; score: number }[];
 }
 
+type Verdict = "upskill" | "pivot" | "leverage";
+
+function getVerdict(role: JobAnalysisResult, agentRisk: number): Verdict {
+  const { automationRiskPercent, augmentedPercent } = role.summary;
+  const fullyAiSoon = role.tasks.filter((t) => t.trend === "fully_ai_soon").length;
+  const mostlyHuman = role.tasks.filter((t) => t.currentState === "mostly_human").length;
+  if (agentRisk >= 45 || (automationRiskPercent >= 40 && fullyAiSoon >= 3)) return "pivot";
+  if (agentRisk <= 28 && mostlyHuman >= 3 && augmentedPercent >= 55) return "leverage";
+  return "upskill";
+}
+
+const verdictConfig = {
+  upskill: { icon: TrendingUp, color: "hsl(234, 89%, 60%)", label: "Upskill" },
+  pivot: { icon: RefreshCw, color: "hsl(0, 84%, 55%)", label: "Pivot" },
+  leverage: { icon: Rocket, color: "hsl(142, 71%, 45%)", label: "Leverage" },
+};
+
 export default function Heatmap() {
   const navigate = useNavigate();
   const [hoveredCell, setHoveredCell] = useState<{ role: string; cat: string } | null>(null);
   const [tooltipPos, setTooltipPos] = useState({ x: 0, y: 0 });
 
-  const { grid, roles, agentRisks } = useMemo(() => {
+  const { grid, roles, agentRisks, verdicts } = useMemo(() => {
     const grid: Record<string, Record<string, CellData>> = {};
     const agentRisks: Record<string, number> = {};
+    const verdicts: Record<string, Verdict> = {};
     const rolesData: { key: string; title: string }[] = [];
 
     for (const key of ALL_ROLES) {
@@ -100,6 +118,7 @@ export default function Heatmap() {
         role.summary.augmentedPercent * 0.25 +
         role.summary.newSkillsPercent * 0.20,
       );
+      verdicts[key] = getVerdict(role, agentRisks[key]);
 
       for (const cat of TASK_CATEGORIES) {
         grid[key][cat.id] = { score: null, tasks: [] };
@@ -127,7 +146,7 @@ export default function Heatmap() {
     // Sort roles by agent risk (highest first)
     rolesData.sort((a, b) => (agentRisks[b.key] || 0) - (agentRisks[a.key] || 0));
 
-    return { grid, roles: rolesData, agentRisks };
+    return { grid, roles: rolesData, agentRisks, verdicts };
   }, []);
 
   const hoveredData = hoveredCell ? grid[hoveredCell.role]?.[hoveredCell.cat] : null;
@@ -177,7 +196,7 @@ export default function Heatmap() {
             <div className="overflow-x-auto">
               <div className="min-w-[900px]">
                 {/* Header row */}
-                <div className="grid" style={{ gridTemplateColumns: "180px 60px repeat(8, 1fr)" }}>
+                <div className="grid" style={{ gridTemplateColumns: "160px 55px 70px repeat(8, 1fr)" }}>
                   <div className="p-3 text-xs font-medium text-muted-foreground border-b border-r border-border/40 bg-muted/30">
                     Role
                   </div>
@@ -192,17 +211,22 @@ export default function Heatmap() {
                       {cat.label}
                     </div>
                   ))}
+                  <div className="p-2 text-[10px] leading-tight font-semibold text-muted-foreground border-b border-border/40 bg-muted/30 text-center">
+                    Action
+                  </div>
                 </div>
 
                 {/* Data rows */}
                 {roles.map((role) => {
                   const risk = agentRisks[role.key] || 0;
                   const riskColor = risk >= 45 ? "hsl(0, 84%, 55%)" : risk >= 35 ? "hsl(25, 95%, 53%)" : risk >= 25 ? "hsl(45, 93%, 50%)" : "hsl(142, 71%, 50%)";
+                  const v = verdicts[role.key] || "upskill";
+                  const vc = verdictConfig[v];
                   return (
                   <div
                     key={role.key}
                     className="grid hover:bg-muted/20 transition-colors"
-                    style={{ gridTemplateColumns: "180px 60px repeat(8, 1fr)" }}
+                    style={{ gridTemplateColumns: "160px 55px 70px repeat(8, 1fr)" }}
                   >
                     <div
                       className="p-2.5 text-xs font-medium text-foreground border-b border-r border-border/30 flex items-center cursor-pointer hover:text-primary transition-colors"
@@ -246,6 +270,14 @@ export default function Heatmap() {
                         </div>
                       );
                     })}
+                    <div className="border-b border-border/30 flex items-center justify-center px-1">
+                      <span
+                        className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full whitespace-nowrap"
+                        style={{ color: vc.color, backgroundColor: `${vc.color}18` }}
+                      >
+                        {vc.label}
+                      </span>
+                    </div>
                   </div>
                   );
                 })}
