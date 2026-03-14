@@ -31,7 +31,7 @@ export default function Navbar() {
           onClick={() => navigate("/")}
           className="flex items-center gap-2 font-sans text-lg font-bold tracking-tight text-foreground hover:opacity-80 transition-opacity"
         >
-          <img src={logo} alt="Infinite Sim" className="h-6 w-6" />
+          <img src={logo} alt="Infinite Sim" className="h-6 w-6 mix-blend-multiply dark:invert" />
           <span className="hidden sm:inline">Infinite Sim</span>
         </button>
 
