@@ -28,6 +28,7 @@ import { CareerPathways } from "@/components/analysis/CareerPathways";
 import { ActionPlan } from "@/components/analysis/ActionPlan";
 import { RoleContext } from "@/components/analysis/RoleContext";
 import { IndustryBenchmarkCard } from "@/components/analysis/IndustryBenchmark";
+import { HeatmapPreview } from "@/components/HeatmapPreview";
 import { CuratedSkillsBadge } from "@/components/analysis/CuratedSkills";
 
 interface CompanySnapshot {
@@ -449,6 +450,7 @@ const Analysis = () => {
                   <CuratedSkillsBadge curatedSkills={result.curatedSkills} />
                 )}
                 <RoleContext agentRisk={agentRisk} jobTitle={result.jobTitle} />
+                <HeatmapPreview />
               </div>
             </TabsContent>
           </Tabs>
