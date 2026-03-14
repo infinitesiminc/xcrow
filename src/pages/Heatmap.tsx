@@ -118,8 +118,8 @@ export default function Heatmap() {
         role.summary.augmentedPercent * 0.25 +
         role.summary.newSkillsPercent * 0.20,
       );
+      verdicts[key] = getVerdict(role, agentRisks[key]);
 
-      for (const cat of TASK_CATEGORIES) {
         grid[key][cat.id] = { score: null, tasks: [] };
       }
 
