@@ -89,8 +89,8 @@ Generate a JSON response with these fields:
 
 5. "openingMessage": The first message that starts Round 1. Follow this EXACT structure:
    - Start with a brief, friendly concept introduction (2-3 sentences explaining one aspect of the task in plain language, with real-world context).
-   - Then present a multiple-choice question with exactly 4 options labeled A, B, C, D. Format them clearly on separate lines.
-   - Example format: "**📖 Concept: [Topic]**\\n\\n[Explanation of the concept]\\n\\n**🤔 Quick Check:**\\nWhich of the following...?\\n\\nA) ...\\nB) ...\\nC) ...\\nD) ..."
+   - Then present a multiple-choice question with exactly 3 options labeled A, B, C. Format them clearly on separate lines.
+   - Example format: "**📖 Concept: [Topic]**\\n\\n[Explanation of the concept]\\n\\n**🤔 Quick Check:**\\nWhich of the following...?\\n\\nA) ...\\nB) ...\\nC) ..."
 
 6. "scenario": { "title": a short title, "description": a 1-sentence description }
 
