@@ -465,7 +465,7 @@ const Index = () => {
 
       {/* Single column centered content */}
       <div className="flex-1 min-h-0 overflow-y-auto">
-        <div className="w-full mx-auto px-6 sm:px-10 lg:px-16 py-6">
+        <div className="w-full mx-auto px-4 sm:px-10 lg:px-16 py-6">
           {/* Hero */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
