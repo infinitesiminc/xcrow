@@ -13,6 +13,7 @@ import Dashboard from "./pages/Dashboard.tsx";
 import Settings from "./pages/Settings.tsx";
 import NotFound from "./pages/NotFound.tsx";
 import RolesChart from "./pages/RolesChart.tsx";
+import Heatmap from "./pages/Heatmap.tsx";
 
 const queryClient = new QueryClient();
 
