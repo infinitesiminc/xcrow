@@ -270,6 +270,14 @@ export default function Heatmap() {
                         </div>
                       );
                     })}
+                    <div className="border-b border-border/30 flex items-center justify-center px-1">
+                      <span
+                        className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full whitespace-nowrap"
+                        style={{ color: vc.color, backgroundColor: `${vc.color}18` }}
+                      >
+                        {vc.label}
+                      </span>
+                    </div>
                   </div>
                   );
                 })}
