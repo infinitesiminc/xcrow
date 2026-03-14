@@ -118,7 +118,7 @@ export function RoleSearchAutocomplete({ onAnalyze, value, onChange, jdInputType
             value={query}
             onChange={(e) => handleChange(e.target.value)}
             onFocus={() => results.length > 0 && setOpen(true)}
-            placeholder={hasJdContent ? "Job title (optional) — or search 500+ roles" : "Enter your job title or search 500+ roles..."}
+            placeholder={hasJdContent ? "Job title (optional) — or search 100M+ roles" : "Enter your job title or search 100M+ roles..."}
             required={!hasJdContent}
             className="flex-1 h-9 bg-transparent text-sm text-foreground placeholder:text-muted-foreground focus:outline-none min-w-0"
           />
