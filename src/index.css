@@ -215,5 +215,5 @@
 }
 
 .laser-container .laser-cards {
-  animation: cards-disintegrate 4s ease-in-out infinite;
+  animation: cards-disintegrate 2s ease-in-out infinite;
 }
