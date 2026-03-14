@@ -5,7 +5,7 @@ import {
   ArrowLeft, Zap, AlertTriangle, Bot, ExternalLink,
   Building2, Users, MapPin, Calendar,
   ShieldAlert, GraduationCap, Rocket, CheckCircle2, LogIn,
-  ListChecks, Route, Target, BarChart3,
+  ListChecks, Route, Target, BarChart3, Wrench,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -403,7 +403,7 @@ const Analysis = () => {
                 <Route className="h-3.5 w-3.5" /> Pathways
               </TabsTrigger>
               <TabsTrigger value="plan" className="gap-1.5 text-xs sm:text-sm">
-                <Target className="h-3.5 w-3.5" /> Plan
+                <Wrench className="h-3.5 w-3.5" /> Tools
               </TabsTrigger>
               <TabsTrigger value="context" className="gap-1.5 text-xs sm:text-sm">
                 <BarChart3 className="h-3.5 w-3.5" /> Context
@@ -427,14 +427,7 @@ const Analysis = () => {
             </TabsContent>
 
             <TabsContent value="plan">
-              <ActionPlan
-                result={result}
-                topPathway={topPathway}
-                onPractice={(taskName) => {
-                  const task = result.tasks.find(t => t.name === taskName);
-                  if (task) setSimTask(task);
-                }}
-              />
+              <ActionPlan result={result} />
             </TabsContent>
 
             <TabsContent value="context">

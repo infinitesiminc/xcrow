@@ -16,6 +16,7 @@ import RolesChart from "./pages/RolesChart.tsx";
 import Heatmap from "./pages/Heatmap.tsx";
 import ForIndividuals from "./pages/ForIndividuals.tsx";
 import ForOrganizations from "./pages/ForOrganizations.tsx";
+import ToolsMarketplace from "./pages/ToolsMarketplace.tsx";
 
 const queryClient = new QueryClient();
 
@@ -37,6 +38,7 @@ const App = () => (
             <Route path="/heatmap" element={<><Navbar /><Heatmap /></>} />
             <Route path="/for-individuals" element={<><Navbar /><ForIndividuals /></>} />
             <Route path="/for-organizations" element={<><Navbar /><ForOrganizations /></>} />
+            <Route path="/tools" element={<><Navbar /><ToolsMarketplace /></>} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
