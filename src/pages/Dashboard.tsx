@@ -121,7 +121,7 @@ const Dashboard = () => {
       items.push({ text: `Your role has ${myRoleAnalysis.automation_risk_percent}% automation risk — explore adjacent roles`, icon: ShieldAlert, priority: "high" });
     }
     if (myRoleAnalysis && myRoleAnalysis.augmented_percent >= 50) {
-      items.push({ text: `Practice AI-augmented tasks for your role`, icon: Bot, priority: "medium" });
+      items.push({ text: `Upskill on AI-augmented tasks for your role`, icon: Bot, priority: "medium" });
     }
     if (completions.length === 0) {
       items.push({ text: "Complete your first simulation to build skills", icon: GraduationCap, priority: "medium" });
