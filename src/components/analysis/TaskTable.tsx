@@ -14,15 +14,15 @@ interface TaskTableProps {
 }
 
 const stateLabels: Record<TaskState, { label: string; className: string }> = {
-  mostly_human: { label: "Human-led", className: "bg-success/10 text-success border-success/20" },
-  human_ai: { label: "Human + AI", className: "bg-warning/10 text-warning border-warning/20" },
-  mostly_ai: { label: "AI-driven", className: "bg-primary/10 text-primary border-primary/20" },
+  mostly_human: { label: "Human-led", className: "bg-accent/50 text-foreground/70 border-border/30" },
+  human_ai: { label: "Human + AI", className: "bg-accent/50 text-foreground/70 border-border/30" },
+  mostly_ai: { label: "AI-driven", className: "bg-accent/50 text-foreground/70 border-border/30" },
 };
 
 const trendConfig: Record<TrendDirection, { icon: typeof Minus; className: string; label: string }> = {
   stable: { icon: Minus, className: "text-muted-foreground", label: "Stable" },
-  increasing_ai: { icon: TrendingUp, className: "text-warning", label: "Growing AI" },
-  fully_ai_soon: { icon: Bot, className: "text-destructive", label: "Full AI soon" },
+  increasing_ai: { icon: TrendingUp, className: "text-foreground/60", label: "Growing AI" },
+  fully_ai_soon: { icon: Bot, className: "text-foreground/70", label: "Full AI soon" },
 };
 
 function getDisruptionScore(task: TaskAnalysis): number {
@@ -39,17 +39,18 @@ function getDisruptionScore(task: TaskAnalysis): number {
 }
 
 function getScoreColor(score: number): string {
-  if (score >= 7) return "bg-destructive text-destructive-foreground";
-  if (score >= 5) return "bg-warning text-warning-foreground";
-  if (score >= 3) return "bg-primary/20 text-primary";
-  return "bg-success/20 text-success";
+  // Subtle monochrome intensity based on score
+  if (score >= 7) return "bg-foreground/15 text-foreground";
+  if (score >= 5) return "bg-foreground/10 text-foreground/80";
+  if (score >= 3) return "bg-foreground/7 text-foreground/60";
+  return "bg-foreground/5 text-foreground/50";
 }
 
 function getHeatBarColor(score: number): string {
-  if (score >= 7) return "bg-destructive";
-  if (score >= 5) return "bg-warning";
-  if (score >= 3) return "bg-primary";
-  return "bg-success";
+  if (score >= 7) return "bg-foreground/50";
+  if (score >= 5) return "bg-foreground/35";
+  if (score >= 3) return "bg-foreground/20";
+  return "bg-foreground/10";
 }
 
 export function TaskTable({ tasks, skills, completedTasks, onPractice }: TaskTableProps) {
@@ -76,15 +77,15 @@ export function TaskTable({ tasks, skills, completedTasks, onPractice }: TaskTab
       {/* Summary bar */}
       <div className="flex items-center gap-3 mb-4 flex-wrap">
         <span className="text-xs font-medium text-muted-foreground">
-          <span className="text-destructive font-bold">{summary.fullyAi}</span> trending to full AI
+          <span className="font-bold text-foreground">{summary.fullyAi}</span> trending to full AI
         </span>
         <span className="text-xs text-border">•</span>
         <span className="text-xs font-medium text-muted-foreground">
-          <span className="text-primary font-bold">{summary.aiDriven}</span> already AI-driven
+          <span className="font-bold text-foreground">{summary.aiDriven}</span> already AI-driven
         </span>
         <span className="text-xs text-border">•</span>
         <span className="text-xs font-medium text-muted-foreground">
-          <span className="text-success font-bold">{summary.human}</span> safely human
+          <span className="font-bold text-foreground">{summary.human}</span> safely human
         </span>
       </div>
 
@@ -178,7 +179,7 @@ export function TaskTable({ tasks, skills, completedTasks, onPractice }: TaskTab
                       <Button
                         variant="ghost"
                         size="sm"
-                        className={`h-7 text-xs gap-1.5 ${isCompleted ? "text-success hover:bg-success/10" : "text-primary hover:bg-primary/10"}`}
+                        className={`h-7 text-xs gap-1.5 ${isCompleted ? "text-foreground/70 hover:bg-accent/30" : "text-primary hover:bg-primary/5"}`}
                         onClick={(e) => { e.stopPropagation(); onPractice(task.name); }}
                       >
                         {isCompleted ? <><CheckCircle2 className="h-3 w-3" /> Practiced</> : <><Play className="h-3 w-3" /> Practice this task</>}

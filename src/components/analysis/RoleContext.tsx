@@ -46,9 +46,10 @@ export function RoleContext({ agentRisk, jobTitle }: RoleContextProps) {
                   className="absolute top-0 bottom-0 w-0.5 bg-muted-foreground/50 z-10"
                   style={{ left: `${average}%` }}
                 />
-                {/* This role */}
+                {/* This role — monochrome intensity */}
                 <motion.div
-                  className={`h-full rounded-full ${agentRisk >= 45 ? "bg-destructive" : agentRisk >= 30 ? "bg-warning" : "bg-success"}`}
+                  className="h-full rounded-full bg-foreground/30"
+                  style={{ opacity: 0.2 + (agentRisk / 100) * 0.6 }}
                   initial={{ width: 0 }}
                   animate={{ width: `${agentRisk}%` }}
                   transition={{ duration: 0.8, delay: 0.2 }}
@@ -69,7 +70,7 @@ export function RoleContext({ agentRisk, jobTitle }: RoleContextProps) {
           <Button
             variant="ghost"
             size="sm"
-            className="h-7 text-xs gap-1 text-primary hover:bg-primary/10 mt-2"
+            className="h-7 text-xs gap-1 text-primary hover:bg-primary/5 mt-2"
             onClick={() => navigate("/heatmap")}
           >
             <BarChart3 className="h-3 w-3" /> View full heatmap

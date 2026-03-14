@@ -16,14 +16,14 @@ interface ActionPlanProps {
 }
 
 const categoryConfig: Record<SkillCategory, { label: string; icon: typeof Wrench; bg: string; iconColor: string }> = {
-  ai_tools: { label: "AI Tools & Platforms", icon: Wrench, bg: "bg-primary/10", iconColor: "text-primary" },
-  human_skills: { label: "Human-Edge Skills", icon: Heart, bg: "bg-destructive/10", iconColor: "text-destructive" },
-  new_capabilities: { label: "New Capabilities", icon: Sparkles, bg: "bg-warning/10", iconColor: "text-warning" },
+  ai_tools: { label: "AI Tools & Platforms", icon: Wrench, bg: "bg-accent/50", iconColor: "text-foreground/60" },
+  human_skills: { label: "Human-Edge Skills", icon: Heart, bg: "bg-accent/50", iconColor: "text-foreground/60" },
+  new_capabilities: { label: "New Capabilities", icon: Sparkles, bg: "bg-accent/50", iconColor: "text-foreground/60" },
 };
 
 const priorityStyles: Record<string, string> = {
-  high: "bg-destructive/10 text-destructive border-destructive/20",
-  medium: "bg-warning/10 text-warning border-warning/20",
+  high: "bg-foreground/8 text-foreground/70 border-foreground/10",
+  medium: "bg-foreground/5 text-foreground/50 border-foreground/7",
   low: "bg-muted text-muted-foreground border-border",
 };
 
@@ -68,7 +68,6 @@ export function ActionPlan({ result, topPathway, onPractice }: ActionPlanProps) 
         description: `You share ${topPathway.skillOverlap}% of skills. Bridge the gap by learning: ${topPathway.newSkillsNeeded.slice(0, 3).join(", ")}.`,
       });
     } else {
-      // Fallback: another high-priority skill
       const secondSkill = result.skills.filter(s => s.priority === "high")[1] || result.skills[1];
       if (secondSkill) {
         plan.push({
@@ -103,7 +102,7 @@ export function ActionPlan({ result, topPathway, onPractice }: ActionPlanProps) 
           >
             <Card className="border-border/50">
               <CardContent className="p-4 flex items-start gap-4">
-                <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary text-primary-foreground text-sm font-sans font-bold shrink-0">
+                <div className="flex items-center justify-center w-8 h-8 rounded-full bg-foreground/10 text-foreground text-sm font-sans font-bold shrink-0">
                   {step.number}
                 </div>
                 <div className="flex-1 min-w-0">
@@ -113,7 +112,7 @@ export function ActionPlan({ result, topPathway, onPractice }: ActionPlanProps) 
                     <div className="mt-2">
                       {"url" in step.cta ? (
                         <a href={step.cta.url} target="_blank" rel="noopener noreferrer">
-                          <Button variant="ghost" size="sm" className="h-7 text-xs gap-1 text-primary hover:bg-primary/10">
+                          <Button variant="ghost" size="sm" className="h-7 text-xs gap-1 text-primary hover:bg-primary/5">
                             <ExternalLink className="h-3 w-3" /> {step.cta.label}
                           </Button>
                         </a>
@@ -121,7 +120,7 @@ export function ActionPlan({ result, topPathway, onPractice }: ActionPlanProps) 
                         <Button
                           variant="ghost"
                           size="sm"
-                          className="h-7 text-xs gap-1 text-primary hover:bg-primary/10"
+                          className="h-7 text-xs gap-1 text-primary hover:bg-primary/5"
                           onClick={step.cta.action}
                         >
                           <Play className="h-3 w-3" /> {step.cta.label}

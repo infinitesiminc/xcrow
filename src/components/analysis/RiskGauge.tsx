@@ -11,15 +11,16 @@ interface RiskGaugeProps {
 }
 
 const verdictConfig: Record<Verdict, { icon: typeof TrendingUp; label: string; color: string; bg: string }> = {
-  upskill: { icon: TrendingUp, label: "Upskill", color: "text-warning", bg: "bg-warning/10" },
-  pivot: { icon: RefreshCw, label: "Pivot", color: "text-destructive", bg: "bg-destructive/10" },
-  leverage: { icon: Rocket, label: "Leverage", color: "text-success", bg: "bg-success/10" },
+  upskill: { icon: TrendingUp, label: "Upskill", color: "text-foreground", bg: "bg-accent/40" },
+  pivot: { icon: RefreshCw, label: "Pivot", color: "text-foreground", bg: "bg-accent/40" },
+  leverage: { icon: Rocket, label: "Leverage", color: "text-foreground", bg: "bg-accent/40" },
 };
 
 function getRiskColor(risk: number): string {
-  if (risk >= 55) return "hsl(var(--destructive))";
-  if (risk >= 35) return "hsl(var(--warning))";
-  return "hsl(var(--success))";
+  // Subtle intensity shift using primary hue at different opacities
+  if (risk >= 55) return "hsl(var(--foreground) / 0.8)";
+  if (risk >= 35) return "hsl(var(--foreground) / 0.5)";
+  return "hsl(var(--foreground) / 0.3)";
 }
 
 export function RiskGauge({ risk, verdict, reasoning }: RiskGaugeProps) {
