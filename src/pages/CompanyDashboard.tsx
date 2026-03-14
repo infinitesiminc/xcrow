@@ -343,10 +343,13 @@ const CompanyDashboard = () => {
                     <TableHead className="cursor-pointer select-none text-right" onClick={() => toggleSort("augmented_percent")}>
                       <span className="flex items-center justify-end text-xs">AI Augmented <SortIcon field="augmented_percent" /></span>
                     </TableHead>
-                    <TableHead className="cursor-pointer select-none text-right" onClick={() => toggleSort("new_skills_percent")}>
-                      <span className="flex items-center justify-end text-xs">New Skills <SortIcon field="new_skills_percent" /></span>
-                    </TableHead>
-                    <TableHead className="w-20" />
+                     <TableHead className="cursor-pointer select-none text-right" onClick={() => toggleSort("new_skills_percent")}>
+                       <span className="flex items-center justify-end text-xs">New Skills <SortIcon field="new_skills_percent" /></span>
+                     </TableHead>
+                     <TableHead className="text-center">
+                       <span className="text-xs">Staff Practice</span>
+                     </TableHead>
+                     <TableHead className="w-20" />
                   </TableRow>
                 </TableHeader>
                 <TableBody>
