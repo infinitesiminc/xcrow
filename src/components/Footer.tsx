@@ -28,10 +28,10 @@ const Footer = () => (
           </ul>
         </div>
         <div>
-          <h4 className="text-xs font-medium uppercase tracking-widest text-muted-foreground mb-3">Legal</h4>
+          <h4 className="text-xs font-medium uppercase tracking-widest text-muted-foreground mb-3">Company</h4>
           <ul className="space-y-2">
-            <li><span className="text-sm text-foreground/40">Privacy Policy</span></li>
-            <li><span className="text-sm text-foreground/40">Terms of Service</span></li>
+            <li><Link to="/contact" className="text-sm text-foreground/70 hover:text-foreground transition-colors">Contact</Link></li>
+            <li><Link to="/contact-org" className="text-sm text-foreground/70 hover:text-foreground transition-colors">Enterprise</Link></li>
           </ul>
         </div>
       </div>
