@@ -30,166 +30,136 @@ Deno.serve(async (req) => {
   }
 
   try {
+    const { step = "companies", offset = 0, batch_size = 10 } = await req.json().catch(() => ({}));
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const sb = createClient(supabaseUrl, serviceKey);
 
-    const results = { companies: 0, jobs: 0, tasks: 0, skills: 0, scenarios: 0 };
-
-    // 1. Fetch all companies
-    console.log("Fetching companies...");
-    const { companies } = await simApi("list_companies", { limit: 200, offset: 0 });
-    if (!companies?.length) {
-      return new Response(
-        JSON.stringify({ success: false, error: "No companies returned from API" }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+    // STEP 1: Import companies
+    if (step === "companies") {
+      console.log("Fetching companies...");
+      const { companies } = await simApi("list_companies", { limit: 200, offset: 0 });
+      let count = 0;
+      if (companies?.length) {
+        for (const c of companies) {
+          const { error } = await sb.from("companies").upsert({
+            external_id: c.id,
+            name: c.name || c.company_name || "Unknown",
+            slug: c.slug || null,
+            industry: c.industry || null,
+            logo_url: c.logo_url || c.logo || null,
+            website: c.website || c.url || null,
+            employee_range: c.employee_range || c.employees || null,
+            headquarters: c.headquarters || c.hq || null,
+            description: c.description || null,
+          }, { onConflict: "external_id" });
+          if (!error) count++;
+        }
+      }
+      return respond({ success: true, step: "companies", imported: count, next_step: "jobs" });
     }
 
-    for (const company of companies) {
-      const { error } = await sb.from("companies").upsert(
-        {
-          external_id: company.id,
-          name: company.name || company.company_name || "Unknown",
-          slug: company.slug || null,
-          industry: company.industry || null,
-          logo_url: company.logo_url || company.logo || null,
-          website: company.website || company.url || null,
-          employee_range: company.employee_range || company.employees || null,
-          headquarters: company.headquarters || company.hq || null,
-          description: company.description || null,
-        },
-        { onConflict: "external_id" }
-      );
-      if (!error) results.companies++;
+    // STEP 2: Import jobs
+    if (step === "jobs") {
+      console.log("Fetching jobs...");
+      const { jobs } = await simApi("list_jobs", { status: "active", limit: 500 });
+      const { data: dbCompanies } = await sb.from("companies").select("id, external_id");
+      const companyMap = new Map((dbCompanies || []).map((c: any) => [c.external_id, c.id]));
+
+      let count = 0;
+      if (jobs?.length) {
+        for (const j of jobs) {
+          const { error } = await sb.from("jobs").upsert({
+            external_id: j.id,
+            company_id: j.company_id ? companyMap.get(j.company_id) || null : null,
+            title: j.title || j.job_title || "Untitled",
+            slug: j.slug || null,
+            status: j.status || "active",
+            seniority: j.seniority || null,
+            department: j.department || null,
+            description: j.description || null,
+            augmented_percent: j.augmented_percent || 0,
+            automation_risk_percent: j.automation_risk_percent || 0,
+            new_skills_percent: j.new_skills_percent || 0,
+          }, { onConflict: "external_id" });
+          if (!error) count++;
+        }
+      }
+      return respond({ success: true, step: "jobs", imported: count, next_step: "details", total_jobs: jobs?.length || 0 });
     }
-    console.log(`Imported ${results.companies} companies`);
 
-    // 2. Fetch all jobs
-    console.log("Fetching jobs...");
-    const { jobs } = await simApi("list_jobs", { status: "active", limit: 500 });
-    if (!jobs?.length) {
-      return new Response(
-        JSON.stringify({ success: true, message: "Companies imported but no jobs found", results }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
+    // STEP 3: Import job details (tasks, skills, scenarios) in batches
+    if (step === "details") {
+      const { data: dbJobs } = await sb.from("jobs").select("id, external_id").range(offset, offset + batch_size - 1);
+      if (!dbJobs?.length) {
+        return respond({ success: true, step: "details", message: "All job details imported", done: true });
+      }
 
-    // Build company lookup map (external_id -> internal uuid)
-    const { data: dbCompanies } = await sb
-      .from("companies")
-      .select("id, external_id");
-    const companyMap = new Map(
-      (dbCompanies || []).map((c: any) => [c.external_id, c.id])
-    );
+      const results = { tasks: 0, skills: 0, scenarios: 0 };
 
-    for (const job of jobs) {
-      const companyId = job.company_id ? companyMap.get(job.company_id) : null;
-      const { error } = await sb.from("jobs").upsert(
-        {
-          external_id: job.id,
-          company_id: companyId || null,
-          title: job.title || job.job_title || "Untitled",
-          slug: job.slug || null,
-          status: job.status || "active",
-          seniority: job.seniority || null,
-          department: job.department || null,
-          description: job.description || null,
-          augmented_percent: job.augmented_percent || 0,
-          automation_risk_percent: job.automation_risk_percent || 0,
-          new_skills_percent: job.new_skills_percent || 0,
-        },
-        { onConflict: "external_id" }
-      );
-      if (!error) results.jobs++;
-    }
-    console.log(`Imported ${results.jobs} jobs`);
-
-    // 3. Fetch job details (tasks, skills, scenarios) for each job
-    const { data: dbJobs } = await sb
-      .from("jobs")
-      .select("id, external_id");
-    const jobMap = new Map(
-      (dbJobs || []).map((j: any) => [j.external_id, j.id])
-    );
-
-    // Process in batches of 5 to avoid overwhelming the API
-    const jobEntries = Array.from(jobMap.entries());
-    for (let i = 0; i < jobEntries.length; i += 5) {
-      const batch = jobEntries.slice(i, i + 5);
-      const detailPromises = batch.map(async ([extId, intId]) => {
+      for (const job of dbJobs) {
         try {
-          const detail = await simApi("job_detail", { job_id: extId });
+          const detail = await simApi("job_detail", { job_id: job.external_id });
 
-          // Task clusters
           if (detail.task_clusters?.length) {
             for (let idx = 0; idx < detail.task_clusters.length; idx++) {
               const t = detail.task_clusters[idx];
-              const { error } = await sb.from("task_clusters").upsert(
-                {
-                  external_id: t.id || `${extId}-task-${idx}`,
-                  job_id: intId,
-                  name: t.name || t.title || "Unnamed task",
-                  current_state: t.current_state || t.currentState || null,
-                  trend: t.trend || null,
-                  impact_level: t.impact_level || t.impactLevel || null,
-                  description: t.description || null,
-                  sort_order: idx,
-                },
-                { onConflict: "external_id" }
-              );
+              const { error } = await sb.from("task_clusters").upsert({
+                external_id: t.id || `${job.external_id}-task-${idx}`,
+                job_id: job.id,
+                name: t.name || t.title || "Unnamed",
+                current_state: t.current_state || t.currentState || null,
+                trend: t.trend || null,
+                impact_level: t.impact_level || t.impactLevel || null,
+                description: t.description || null,
+                sort_order: idx,
+              }, { onConflict: "external_id" });
               if (!error) results.tasks++;
             }
           }
 
-          // Skills
           if (detail.skills?.length) {
             for (const s of detail.skills) {
-              const { error } = await sb.from("job_skills").upsert(
-                {
-                  external_id: s.id || `${extId}-skill-${s.name}`,
-                  job_id: intId,
-                  name: s.name || "Unnamed skill",
-                  priority: s.priority || null,
-                  category: s.category || null,
-                  description: s.description || null,
-                },
-                { onConflict: "external_id" }
-              );
+              const { error } = await sb.from("job_skills").upsert({
+                external_id: s.id || `${job.external_id}-skill-${s.name}`,
+                job_id: job.id,
+                name: s.name || "Unnamed",
+                priority: s.priority || null,
+                category: s.category || null,
+                description: s.description || null,
+              }, { onConflict: "external_id" });
               if (!error) results.skills++;
             }
           }
 
-          // Scenarios
           if (detail.scenarios?.length) {
             for (const sc of detail.scenarios) {
-              const { error } = await sb.from("scenarios").upsert(
-                {
-                  external_id: sc.id || `${extId}-scenario-${sc.slug}`,
-                  job_id: intId,
-                  title: sc.title || "Untitled scenario",
-                  slug: sc.slug || null,
-                  description: sc.description || null,
-                  difficulty: sc.difficulty || 3,
-                },
-                { onConflict: "external_id" }
-              );
+              const { error } = await sb.from("scenarios").upsert({
+                external_id: sc.id || `${job.external_id}-scenario-${sc.slug}`,
+                job_id: job.id,
+                title: sc.title || "Untitled",
+                slug: sc.slug || null,
+                description: sc.description || null,
+                difficulty: sc.difficulty || 3,
+              }, { onConflict: "external_id" });
               if (!error) results.scenarios++;
             }
           }
         } catch (err) {
-          console.error(`Failed to fetch detail for job ${extId}:`, err);
+          console.error(`Failed job ${job.external_id}:`, err);
         }
-      });
+      }
 
-      await Promise.allSettled(detailPromises);
+      const nextOffset = offset + batch_size;
+      return respond({
+        success: true, step: "details", ...results,
+        processed: dbJobs.length,
+        next_offset: nextOffset,
+        done: dbJobs.length < batch_size,
+      });
     }
 
-    console.log("Import complete:", results);
-    return new Response(
-      JSON.stringify({ success: true, results }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
+    return respond({ success: false, error: `Unknown step: ${step}` }, 400);
   } catch (error) {
     console.error("Import error:", error);
     const msg = error instanceof Error ? error.message : "Unknown error";
@@ -199,3 +169,10 @@ Deno.serve(async (req) => {
     );
   }
 });
+
+function respond(body: any, status = 200) {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { ...corsHeaders, "Content-Type": "application/json" },
+  });
+}
