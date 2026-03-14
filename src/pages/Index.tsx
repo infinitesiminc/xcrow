@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowRight, Briefcase, BarChart3, BookOpen, Users, Plus, X, Loader2, FileText, Link, Upload, Search, User, LayoutDashboard, TrendingUp, ChevronLeft, ChevronRight, Wrench, ExternalLink } from "lucide-react";
 import logoImg from "@/assets/logo.png";
+import heroBg from "@/assets/hero-bg.png";
 import roleSoftwareEngineer from "@/assets/role-software-engineer.jpg";
 import roleMarketingManager from "@/assets/role-marketing-manager.jpg";
 import roleAccountant from "@/assets/role-accountant.jpg";
@@ -467,12 +468,15 @@ const Index = () => {
       <div className="flex-1 min-h-0 overflow-y-auto">
         <div className="w-full mx-auto px-4 sm:px-10 lg:px-16 py-6">
           {/* Hero */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="text-center mb-6"
-          >
+          <div className="relative rounded-2xl overflow-hidden mb-6">
+            <img src={heroBg} alt="" className="absolute inset-0 w-full h-full object-cover opacity-20" />
+            <div className="absolute inset-0 bg-gradient-to-b from-background/60 via-background/80 to-background" />
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              className="relative text-center py-12 sm:py-16 px-4"
+            >
             <span className="inline-block mb-3 px-3 py-1 text-xs font-sans font-medium tracking-widest uppercase rounded-full bg-accent text-accent-foreground">
               Infinite Sim
             </span>
@@ -483,6 +487,7 @@ const Index = () => {
               Assess &amp; start learning in 3 seconds.
             </p>
           </motion.div>
+          </div>
 
           {/* Form strip */}
           <div className="flex flex-col items-center mb-8">
