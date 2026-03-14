@@ -496,7 +496,7 @@ const Analysis = () => {
             </TabsContent>
 
             <TabsContent value="pathways">
-              <CareerPathways data={pathwayData} loading={false} error={!pathwayData} />
+              <CareerPathways data={pathwayData} loading={pathwayLoading} error={pathwayError} />
             </TabsContent>
 
             <TabsContent value="plan">
