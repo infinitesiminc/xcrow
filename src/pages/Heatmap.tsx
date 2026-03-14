@@ -145,7 +145,7 @@ export default function Heatmap() {
     // Sort roles by agent risk (highest first)
     rolesData.sort((a, b) => (agentRisks[b.key] || 0) - (agentRisks[a.key] || 0));
 
-    return { grid, roles: rolesData, agentRisks };
+    return { grid, roles: rolesData, agentRisks, verdicts };
   }, []);
 
   const hoveredData = hoveredCell ? grid[hoveredCell.role]?.[hoveredCell.cat] : null;
