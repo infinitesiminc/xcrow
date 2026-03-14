@@ -47,6 +47,39 @@ export type Database = {
         }
         Relationships: []
       }
+      bookmarked_roles: {
+        Row: {
+          augmented_percent: number | null
+          automation_risk_percent: number | null
+          bookmarked_at: string
+          company: string | null
+          id: string
+          job_title: string
+          new_skills_percent: number | null
+          user_id: string
+        }
+        Insert: {
+          augmented_percent?: number | null
+          automation_risk_percent?: number | null
+          bookmarked_at?: string
+          company?: string | null
+          id?: string
+          job_title: string
+          new_skills_percent?: number | null
+          user_id: string
+        }
+        Update: {
+          augmented_percent?: number | null
+          automation_risk_percent?: number | null
+          bookmarked_at?: string
+          company?: string | null
+          id?: string
+          job_title?: string
+          new_skills_percent?: number | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       companies: {
         Row: {
           description: string | null
