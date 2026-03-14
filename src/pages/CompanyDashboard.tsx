@@ -32,6 +32,9 @@ interface DbJob {
   automation_risk_percent: number | null;
   new_skills_percent: number | null;
   company_id: string | null;
+  description: string | null;
+  _analysed: boolean;
+  _hasDescription: boolean;
 }
 
 type SortField = "title" | "automation_risk_percent" | "augmented_percent" | "new_skills_percent" | "department";
@@ -71,14 +74,16 @@ const CompanyDashboard = () => {
     const fetchJobs = async () => {
       const { data } = await supabase
         .from("jobs")
-        .select("id, title, department, seniority, augmented_percent, automation_risk_percent, new_skills_percent, company_id")
+        .select("id, title, department, seniority, augmented_percent, automation_risk_percent, new_skills_percent, company_id, description")
         .order("title");
       if (data) {
-        // Apply mock scores based on title for any role missing real data
         setJobs(data.map((j) => {
+          const hasRealScores = !!(j.automation_risk_percent && j.automation_risk_percent > 0);
           const scores = mockScores(j.title);
           return {
             ...j,
+            _analysed: hasRealScores,
+            _hasDescription: !!j.description,
             automation_risk_percent: j.automation_risk_percent || scores.automation_risk_percent,
             augmented_percent: j.augmented_percent || scores.augmented_percent,
             new_skills_percent: j.new_skills_percent || scores.new_skills_percent,
@@ -105,7 +110,11 @@ const CompanyDashboard = () => {
     if (deptFilter !== "all") {
       list = list.filter((j) => j.department === deptFilter);
     }
+    // Primary sort: analysed first, then has description, then rest
     list = [...list].sort((a, b) => {
+      const statusA = a._analysed ? 2 : a._hasDescription ? 1 : 0;
+      const statusB = b._analysed ? 2 : b._hasDescription ? 1 : 0;
+      if (statusA !== statusB) return statusB - statusA;
       const aVal = a[sortField] ?? "";
       const bVal = b[sortField] ?? "";
       if (typeof aVal === "number" && typeof bVal === "number") {
@@ -337,10 +346,19 @@ const CompanyDashboard = () => {
                     const badge = riskBadge(risk);
                     return (
                       <TableRow key={job.id} className="group">
-                        <TableCell className="font-medium text-sm text-foreground max-w-[200px] truncate">
-                          {job.title}
-                          {job.seniority && (
-                            <span className="ml-1.5 text-[10px] text-muted-foreground">{job.seniority}</span>
+                        <TableCell className="font-medium text-sm text-foreground max-w-[240px]">
+                          <div className="flex items-center gap-2">
+                            <span className="truncate">{job.title}</span>
+                            {job.seniority && (
+                              <span className="text-[10px] text-muted-foreground shrink-0">{job.seniority}</span>
+                            )}
+                          </div>
+                          {job._analysed ? (
+                            <Badge variant="outline" className="mt-1 text-[9px] bg-primary/10 text-primary border-primary/20">Analysed</Badge>
+                          ) : job._hasDescription ? (
+                            <Badge variant="outline" className="mt-1 text-[9px] bg-accent/50 text-accent-foreground border-accent/30">Analysis Ready</Badge>
+                          ) : (
+                            <Badge variant="outline" className="mt-1 text-[9px] bg-muted text-muted-foreground border-border">Title Only</Badge>
                           )}
                         </TableCell>
                         <TableCell className="text-xs text-muted-foreground">{job.department || "—"}</TableCell>
