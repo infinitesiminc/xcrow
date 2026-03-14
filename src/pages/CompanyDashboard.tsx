@@ -55,6 +55,21 @@ const mockScores = (title: string) => {
   return { automation_risk_percent, augmented_percent, new_skills_percent };
 };
 
+const AI_TOOLS = ["ChatGPT", "Copilot", "Claude", "Midjourney", "Gemini", "Cursor", "Notion AI", "Jasper", "Perplexity", "Zapier AI"];
+
+const mockToolProficiency = (title: string) => {
+  const h = hashStr(title.toLowerCase() + "_tools");
+  const count = 1 + (h % 4); // 1-4 tools
+  const tools: { name: string; level: "beginner" | "intermediate" | "advanced" }[] = [];
+  for (let i = 0; i < count; i++) {
+    const idx = (h + i * 7) % AI_TOOLS.length;
+    const lvl = ((h >> (i + 2)) % 3);
+    tools.push({ name: AI_TOOLS[idx], level: lvl === 0 ? "beginner" : lvl === 1 ? "intermediate" : "advanced" });
+  }
+  const avgLevel = Math.round(tools.reduce((s, t) => s + (t.level === "beginner" ? 33 : t.level === "intermediate" ? 66 : 100), 0) / tools.length);
+  return { tools, avgLevel };
+};
+
 const TASKS_PER_JOB = 12;
 
 const mockPracticeProgress = (title: string) => {
@@ -340,11 +355,8 @@ const CompanyDashboard = () => {
                     <TableHead className="cursor-pointer select-none text-right" onClick={() => toggleSort("automation_risk_percent")}>
                       <span className="flex items-center justify-end text-xs">Risk <SortIcon field="automation_risk_percent" /></span>
                     </TableHead>
-                    <TableHead className="cursor-pointer select-none text-right" onClick={() => toggleSort("augmented_percent")}>
-                      <span className="flex items-center justify-end text-xs">AI Augmented <SortIcon field="augmented_percent" /></span>
-                    </TableHead>
-                     <TableHead className="cursor-pointer select-none text-right" onClick={() => toggleSort("new_skills_percent")}>
-                       <span className="flex items-center justify-end text-xs">New Skills <SortIcon field="new_skills_percent" /></span>
+                     <TableHead className="text-center">
+                       <span className="text-xs">Tool Proficiency</span>
                      </TableHead>
                      <TableHead className="text-center">
                        <span className="text-xs">Staff Upskill</span>
@@ -379,8 +391,30 @@ const CompanyDashboard = () => {
                             {risk}%
                           </Badge>
                         </TableCell>
-                        <TableCell className="text-right text-sm text-foreground">{job.augmented_percent ?? 0}%</TableCell>
-                         <TableCell className="text-right text-sm text-foreground">{job.new_skills_percent ?? 0}%</TableCell>
+                         <TableCell>
+                           {(() => {
+                             const { tools, avgLevel } = mockToolProficiency(job.title);
+                             const barColor = avgLevel >= 70 ? "bg-success" : avgLevel >= 45 ? "bg-warning" : "bg-destructive";
+                             return (
+                               <div className="min-w-[120px]">
+                                 <div className="flex flex-wrap gap-1 mb-1.5">
+                                   {tools.map((t) => (
+                                     <Badge key={t.name} variant="outline" className={`text-[9px] px-1.5 py-0 ${
+                                       t.level === "advanced" ? "bg-success/10 text-success border-success/20"
+                                       : t.level === "intermediate" ? "bg-warning/10 text-warning border-warning/20"
+                                       : "bg-muted text-muted-foreground border-border"
+                                     }`}>
+                                       {t.name}
+                                     </Badge>
+                                   ))}
+                                 </div>
+                                 <div className="w-full h-1.5 rounded-full bg-secondary overflow-hidden">
+                                   <div className={`h-full rounded-full ${barColor} transition-all duration-700`} style={{ width: `${avgLevel}%` }} />
+                                 </div>
+                               </div>
+                             );
+                           })()}
+                         </TableCell>
                          <TableCell>
                            {(() => {
                              const { practised, avgScore } = mockPracticeProgress(job.title);
