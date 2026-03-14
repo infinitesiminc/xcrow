@@ -189,6 +189,7 @@
 
 .laser-container {
   position: relative;
+  overflow: hidden;
 }
 
 .laser-line {
