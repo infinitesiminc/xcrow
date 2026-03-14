@@ -81,7 +81,7 @@ const audiences = [
     tagline: "Enter the workforce AI-ready",
     points: [
       "Evaluate careers with real AI exposure data",
-      "Practice before your first interview",
+      "Upskill before your first interview",
       "Choose roles with strong augmentation potential",
       "Build a portfolio that proves AI literacy",
     ],
