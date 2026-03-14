@@ -66,6 +66,9 @@ const ProjectStaffing = ({ embedded }: { embedded?: boolean }) => {
   const [skillSearch, setSkillSearch] = useState("");
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [expandedStaff, setExpandedStaff] = useState<string | null>(null);
+  const [simGenerated, setSimGenerated] = useState(false);
+  const [simGenerating, setSimGenerating] = useState(false);
+  const [selectedCandidates, setSelectedCandidates] = useState<Set<string>>(new Set());
 
   const filteredSuggestions = useMemo(() => {
     if (!skillSearch) return [];
