@@ -13,7 +13,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { BarChart3, LayoutDashboard, Settings, LogOut, User } from "lucide-react";
 
 export default function Navbar() {
-  const { user, signOut } = useAuth();
+  const { user, signOut, openAuthModal } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -114,7 +114,7 @@ export default function Navbar() {
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (
-            <Button size="sm" onClick={() => navigate("/auth")}>
+            <Button size="sm" onClick={openAuthModal}>
               <User className="mr-1.5 h-4 w-4" />
               Sign in
             </Button>
