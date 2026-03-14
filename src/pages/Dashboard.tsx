@@ -245,7 +245,7 @@ const Dashboard = () => {
         <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="grid grid-cols-4 gap-3 mb-8">
           {[
             { label: "Jobs Analyzed", value: analyses.length, icon: BarChart3 },
-            { label: "Tasks Practiced", value: uniqueTasks, icon: Play },
+            { label: "Tasks Upskilled", value: uniqueTasks, icon: Play },
             { label: "Sessions", value: completions.length, icon: CheckCircle2 },
             { label: "Saved Roles", value: bookmarks.length, icon: Bookmark },
           ].map((stat) => (
