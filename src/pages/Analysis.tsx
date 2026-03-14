@@ -366,7 +366,7 @@ const Analysis = () => {
           >
             <div className="max-w-4xl mx-auto px-4 py-2 flex items-center justify-between gap-3">
               <div className="flex items-center gap-2.5 min-w-0">
-                <button onClick={() => navigate("/")} className="p-1 rounded-md hover:bg-accent transition-colors shrink-0">
+                <button onClick={() => navigate(backPath)} className="p-1 rounded-md hover:bg-accent transition-colors shrink-0">
                   <ArrowLeft className="h-3.5 w-3.5 text-muted-foreground" />
                 </button>
                 <span className="text-sm font-semibold text-foreground truncate">{result.jobTitle}</span>
