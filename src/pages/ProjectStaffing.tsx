@@ -52,6 +52,7 @@ const MOCK_STAFF = [
 
 // Predefined project templates
 const PROJECT_TEMPLATES = [
+  { name: "Project Quantum AI", skills: ["Python", "ChatGPT", "AWS", "Data Analysis", "Strategic Thinking", "Copilot"] },
   { name: "AI Chatbot Launch", skills: ["ChatGPT", "Python", "React", "Project Management"] },
   { name: "Data Migration", skills: ["SQL", "AWS", "Python", "Project Management"] },
   { name: "Brand Refresh", skills: ["Figma", "Creativity", "Communication", "Midjourney"] },
