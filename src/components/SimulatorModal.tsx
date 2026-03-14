@@ -469,9 +469,9 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, onComplete
               const lastAiIndex = messages.lastIndexOf(lastAi);
               const alreadyAnswered = answeredQuestions.some(q => q.messageIndex === lastAiIndex);
               if (alreadyAnswered) return null;
-              const opts = lastAi.content.match(/^[A-D][).]\s*.+/gm);
+              const opts = lastAi.content.match(/^[A-C][).]\s*.+/gm);
               if (!opts || opts.length < 2) return null;
-              const parsedOpts = opts.slice(0, 4).map(opt => ({
+              const parsedOpts = opts.slice(0, 3).map(opt => ({
                 letter: opt.charAt(0),
                 text: opt.replace(/^[A-D][).]\s*/, "").trim(),
               }));

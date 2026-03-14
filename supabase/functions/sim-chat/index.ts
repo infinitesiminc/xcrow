@@ -141,12 +141,12 @@ async function handleChat(payload: any, apiKey: string) {
 Each round follows this EXACT structure:
 1. **FEEDBACK on the user's answer**: If the user just answered a multiple-choice question, start by telling them if they're correct or not. Use ✅ for correct or ❌ for incorrect. Give a SHORT explanation (2-3 sentences MAX) of why the correct answer is right. Do NOT explain every wrong answer individually. Keep it concise and scannable.
 2. **CONTINUE PROMPT**: After giving feedback, ask: "🔄 **Want to see another example?** (yes/no)". Wait for their response.
-3. **NEW ROUND** (only if user said yes): Start with "**📖 Concept: [New Topic]**" — introduce a NEW concept (2-3 sentences max). Then present a multiple-choice question with exactly 4 options (A, B, C, D) formatted clearly.
+3. **NEW ROUND** (only if user said yes): Start with "**📖 Concept: [New Topic]**" — introduce a NEW concept (2-3 sentences max). Then present a multiple-choice question with exactly 3 options (A, B, C) formatted clearly.
 
 Current round: ${round || 1}
 
 Rules:
-- ALWAYS present exactly 4 multiple-choice options labeled A, B, C, D on separate lines.
+- ALWAYS present exactly 3 multiple-choice options labeled A, B, C on separate lines. Never use D.
 - Make questions scenario-based and realistic — not textbook trivia.
 - Each round should teach a DIFFERENT aspect of the task.
 - Keep ALL responses SHORT. Feedback should be 2-4 sentences max. No walls of text.
