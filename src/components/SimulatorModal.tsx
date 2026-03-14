@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Send, Loader2, RotateCcw, Lightbulb, ChevronDown, ChevronUp, CheckCircle2, X, Bot, User, Compass, Briefcase } from "lucide-react";
+import { Send, Loader2, RotateCcw, Lightbulb, ChevronDown, ChevronUp, CheckCircle2, X, Bot, User, Compass, Briefcase, ArrowRight } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { Button } from "@/components/ui/button";
 import {
