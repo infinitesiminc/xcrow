@@ -1,7 +1,7 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowRight, Briefcase, BarChart3, BookOpen, Users, Plus, X, Loader2, FileText, Link, Upload, Search, User, LayoutDashboard, TrendingUp, ChevronLeft, ChevronRight } from "lucide-react";
+import { ArrowRight, Briefcase, BarChart3, BookOpen, Users, Plus, X, Loader2, FileText, Link, Upload, Search, User, LayoutDashboard, TrendingUp, ChevronLeft, ChevronRight, Wrench, ExternalLink } from "lucide-react";
 import logoImg from "@/assets/logo.png";
 import roleSoftwareEngineer from "@/assets/role-software-engineer.jpg";
 import roleMarketingManager from "@/assets/role-marketing-manager.jpg";
@@ -765,6 +765,38 @@ const Index = () => {
                 </div>
               );
             })}
+
+          {/* Tool Marketplace CTA */}
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="mt-4"
+          >
+            <div
+              onClick={() => navigate("/tools")}
+              className="group cursor-pointer rounded-xl border border-border/50 bg-card hover:border-border transition-colors p-5 sm:p-6"
+            >
+              <div className="flex items-center justify-between gap-4">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-accent shrink-0">
+                    <Wrench className="h-4 w-4 text-muted-foreground" />
+                  </div>
+                  <div className="min-w-0">
+                    <h3 className="text-sm font-semibold text-foreground">Tool Marketplace</h3>
+                    <p className="text-xs text-muted-foreground mt-0.5">55+ AI tools, platforms & learning resources for every role</p>
+                  </div>
+                </div>
+                <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-foreground group-hover:translate-x-0.5 transition-all shrink-0" />
+              </div>
+              <div className="flex gap-1.5 flex-wrap mt-3">
+                {["ChatGPT Enterprise", "Microsoft Copilot", "GitHub Copilot", "Jasper", "Zapier", "DataCamp"].map(tool => (
+                  <span key={tool} className="text-[10px] px-2 py-0.5 rounded-full bg-secondary text-muted-foreground">{tool}</span>
+                ))}
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-secondary text-muted-foreground">+49 more</span>
+              </div>
+            </div>
+          </motion.div>
 
           </div>
         </div>
