@@ -138,7 +138,7 @@ const getLastAnalysis = (): LastAnalysis | null => {
 };
 
 const Index = () => {
-  const { user, openAuthModal } = useAuth();
+  const { user, openAuthModal, profile } = useAuth();
   const lastAnalysis = getLastAnalysis();
   const [website, setWebsite] = useState("");
   const [jobTitle, setJobTitle] = useState("");
