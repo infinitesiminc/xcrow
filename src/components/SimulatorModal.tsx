@@ -607,10 +607,10 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                   const askContinue = lower.includes("ready for the next scenario") || lower.includes("want to see another example") || lower.includes("want another") || lower.includes("(yes/no)");
                   if (!askContinue) return null;
                   return (
-                    <div className="flex gap-3 mt-4">
+                    <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 mt-4">
                       <Button
                         variant="outline"
-                        className="flex-1 rounded-xl h-11 text-sm gap-2"
+                        className="flex-1 rounded-xl h-10 sm:h-11 text-sm gap-2"
                         onClick={() => {
                           const fakeMsg: SimMessage = { role: "user", content: "yes" };
                           const newMsgs = [...messages, fakeMsg];
