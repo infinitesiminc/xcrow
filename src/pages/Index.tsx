@@ -477,7 +477,7 @@ const Index = () => {
               Infinite Sim
             </span>
             <h1 className="text-3xl sm:text-5xl lg:text-6xl font-bold font-serif tracking-tight text-foreground leading-[1.1] max-w-3xl mx-auto">
-              Upskill before<br /><em className="italic">AI takes your job.</em>
+              Upskill before<br /><em className="italic">AI takes your <span className="laser-word">job<span className="laser-word-line" /><span className="laser-word-dust" /></span>.</em>
             </h1>
             <p className="mt-3 text-sm sm:text-base text-muted-foreground font-sans">
               Assess &amp; start learning in 3 seconds.
@@ -583,8 +583,7 @@ const Index = () => {
           </div>
 
           {/* Risk-Tiered Roles */}
-          <div className="space-y-8 laser-container">
-            <div className="laser-line" />
+          <div className="space-y-8">
             <div className="flex items-center justify-between gap-4 flex-wrap">
               <div className="flex items-center gap-2">
                 <TrendingUp className="h-4 w-4 text-muted-foreground" />
@@ -617,9 +616,8 @@ const Index = () => {
                               className="group cursor-pointer text-left flex flex-col shrink-0 w-[170px] sm:w-[200px]"
                             >
                               <div className="relative overflow-hidden rounded-xl aspect-[4/3] mb-2.5">
-                                <img src={role.image} alt={role.title} className="laser-card-image w-full h-full object-cover transition-all duration-300 group-hover:scale-105" />
-                                <div className="laser-dust" />
-                                <div className="absolute top-2 right-2 flex items-center gap-1.5 px-2 py-1 rounded-lg bg-background/80 backdrop-blur-sm border border-border/40 z-20">
+                                <img src={role.image} alt={role.title} className="w-full h-full object-cover transition-all duration-300 group-hover:scale-105" />
+                                <div className="absolute top-2 right-2 flex items-center gap-1.5 px-2 py-1 rounded-lg bg-background/80 backdrop-blur-sm border border-border/40">
                                   <span className={`w-2 h-2 rounded-full ${tier.dotColor}`} />
                                   <span className="text-xs font-bold text-foreground">{role.agentRisk}%</span>
                                 </div>
