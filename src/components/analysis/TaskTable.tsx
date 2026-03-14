@@ -1,9 +1,8 @@
-import { useState, useMemo } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { ChevronDown, Play, CheckCircle2, Bot, Users, User, TrendingUp, Minus } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { useMemo } from "react";
+import { motion } from "framer-motion";
+import { Play, CheckCircle2, Bot, TrendingUp, Minus } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { TaskAnalysis, TaskState, TrendDirection, AIImpactLevel } from "@/types/analysis";
+import { TaskAnalysis, TaskState, TrendDirection } from "@/types/analysis";
 import type { JobAnalysisResult } from "@/types/analysis";
 
 interface TaskTableProps {
@@ -13,7 +12,6 @@ interface TaskTableProps {
   onPractice: (taskName: string) => void;
 }
 
-// Colored dots for state — text stays grayscale
 const stateLabels: Record<TaskState, { label: string; dot: string }> = {
   mostly_human: { label: "Human-led", dot: "bg-dot-teal" },
   human_ai: { label: "Human + AI", dot: "bg-dot-blue" },
@@ -39,13 +37,7 @@ function getDisruptionScore(task: TaskAnalysis): number {
   return score;
 }
 
-function getHeatBarOpacity(score: number): number {
-  return 0.12 + (score / 8) * 0.45;
-}
-
 export function TaskTable({ tasks, skills, completedTasks, onPractice }: TaskTableProps) {
-  const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
-
   const sortedTasks = useMemo(() => {
     return tasks
       .map((t, i) => ({ task: t, originalIndex: i, score: getDisruptionScore(t) }))
@@ -59,13 +51,10 @@ export function TaskTable({ tasks, skills, completedTasks, onPractice }: TaskTab
     return { fullyAi, aiDriven, human };
   }, [tasks]);
 
-  const getRelatedSkills = (taskName: string) =>
-    skills.filter(s => s.relatedTasks?.some(rt => rt.toLowerCase() === taskName.toLowerCase()));
-
   return (
     <div>
-      {/* Summary bar — colored dots, grayscale text */}
-      <div className="flex items-center gap-4 mb-4 flex-wrap">
+      {/* Summary bar */}
+      <div className="flex items-center gap-4 mb-3 flex-wrap">
         <span className="text-xs text-muted-foreground flex items-center gap-1.5">
           <span className="w-2 h-2 rounded-full bg-dot-purple" />
           <span className="font-semibold text-foreground">{summary.fullyAi}</span> trending to full AI
@@ -80,111 +69,62 @@ export function TaskTable({ tasks, skills, completedTasks, onPractice }: TaskTab
         </span>
       </div>
 
-      {/* Task list */}
-      <div className="space-y-2">
-        {sortedTasks.map(({ task, originalIndex, score }, i) => {
-          const state = stateLabels[task.currentState];
-          const trend = trendConfig[task.trend];
-          const TrendIcon = trend.icon;
-          const isExpanded = expandedIndex === i;
-          const relatedSkills = getRelatedSkills(task.name);
-          const isCompleted = completedTasks.has(task.name);
+      {/* Scrollable grid of mini cards */}
+      <div className="max-h-[420px] overflow-y-auto pr-1 scrollbar-thin">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+          {sortedTasks.map(({ task, originalIndex, score }, i) => {
+            const state = stateLabels[task.currentState];
+            const trend = trendConfig[task.trend];
+            const TrendIcon = trend.icon;
+            const isCompleted = completedTasks.has(task.name);
 
-          return (
-            <motion.div
-              key={originalIndex}
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.03 }}
-              className="rounded-lg border border-border bg-card overflow-hidden"
-            >
-              <button
-                onClick={() => setExpandedIndex(isExpanded ? null : i)}
-                className="w-full flex items-center gap-3 p-3 sm:p-4 text-left hover:bg-accent/30 transition-colors"
+            return (
+              <motion.div
+                key={originalIndex}
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.02 }}
+                className="rounded-lg border border-border bg-card p-3 flex flex-col gap-2"
               >
-                {/* Score — plain text */}
-                <span className="text-xs font-bold text-muted-foreground tabular-nums shrink-0 w-8 text-center">
-                  {score}/8
-                </span>
-
-                {/* Heat bar — monochrome */}
-                <div className="w-12 h-2 rounded-full bg-secondary shrink-0 overflow-hidden">
-                  <div
-                    className="h-full rounded-full bg-foreground transition-all"
-                    style={{ width: `${(score / 8) * 100}%`, opacity: getHeatBarOpacity(score) }}
-                  />
+                {/* Top row: score + name */}
+                <div className="flex items-start gap-2 min-w-0">
+                  <span className="text-[10px] font-bold text-muted-foreground tabular-nums shrink-0 mt-0.5 bg-secondary rounded px-1.5 py-0.5">
+                    {score}/8
+                  </span>
+                  <span className="text-sm font-medium text-foreground leading-tight line-clamp-2 flex-1">
+                    {task.name}
+                  </span>
                 </div>
 
-                {/* Task name */}
-                <span className="text-sm font-medium text-foreground flex-1 min-w-0 truncate">{task.name}</span>
-
-                {/* Badges — colored dot + grayscale text */}
-                <div className="hidden sm:flex items-center gap-3 shrink-0">
-                  <span className="inline-flex items-center gap-1.5 text-[11px] text-muted-foreground">
-                    <span className={`w-2 h-2 rounded-full ${state.dot}`} />
+                {/* State + trend badges */}
+                <div className="flex items-center gap-2.5 flex-wrap">
+                  <span className="inline-flex items-center gap-1 text-[10px] text-muted-foreground">
+                    <span className={`w-1.5 h-1.5 rounded-full ${state.dot}`} />
                     {state.label}
                   </span>
-                  <span className="inline-flex items-center gap-1.5 text-[11px] text-muted-foreground">
+                  <span className="inline-flex items-center gap-1 text-[10px] text-muted-foreground">
                     <span className={`w-1.5 h-1.5 rounded-full ${trend.dot}`} />
-                    <TrendIcon className="h-3 w-3" />
+                    <TrendIcon className="h-2.5 w-2.5" />
                     {trend.label}
                   </span>
                 </div>
 
-                <ChevronDown className={`h-4 w-4 text-muted-foreground shrink-0 transition-transform ${isExpanded ? "rotate-180" : ""}`} />
-              </button>
-
-              <AnimatePresence>
-                {isExpanded && (
-                  <motion.div
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: "auto", opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    transition={{ duration: 0.2 }}
-                    className="overflow-hidden"
-                  >
-                    <div className="px-4 pb-4 pt-1 border-t border-border/50">
-                      <p className="text-xs text-muted-foreground mb-3 leading-relaxed">{task.description}</p>
-
-                      {/* Mobile badges */}
-                      <div className="flex sm:hidden items-center gap-3 mb-3 flex-wrap">
-                        <span className="inline-flex items-center gap-1.5 text-[11px] text-muted-foreground">
-                          <span className={`w-2 h-2 rounded-full ${state.dot}`} />
-                          {state.label}
-                        </span>
-                        <span className="inline-flex items-center gap-1.5 text-[11px] text-muted-foreground">
-                          <span className={`w-1.5 h-1.5 rounded-full ${trend.dot}`} />
-                          <TrendIcon className="h-3 w-3" />
-                          {trend.label}
-                        </span>
-                      </div>
-
-                      {relatedSkills.length > 0 && (
-                        <div className="mb-3">
-                          <span className="text-[10px] uppercase tracking-widest text-muted-foreground font-medium">Related Skills</span>
-                          <div className="flex flex-wrap gap-1.5 mt-1.5">
-                            {relatedSkills.map((s, si) => (
-                              <Badge key={si} variant="secondary" className="text-[10px]">{s.name}</Badge>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-7 text-xs gap-1.5 text-muted-foreground hover:text-foreground hover:bg-accent/30"
-                        onClick={(e) => { e.stopPropagation(); onPractice(task.name); }}
-                      >
-                        {isCompleted ? <><CheckCircle2 className="h-3 w-3 text-dot-teal" /> Practiced</> : <><Play className="h-3 w-3" /> Practice this task</>}
-                      </Button>
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </motion.div>
-          );
-        })}
+                {/* Practice button */}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-6 text-[11px] gap-1 text-muted-foreground hover:text-foreground hover:bg-accent/30 w-fit mt-auto px-2"
+                  onClick={() => onPractice(task.name)}
+                >
+                  {isCompleted
+                    ? <><CheckCircle2 className="h-3 w-3 text-dot-teal" /> Practiced</>
+                    : <><Play className="h-3 w-3" /> Practice</>
+                  }
+                </Button>
+              </motion.div>
+            );
+          })}
+        </div>
       </div>
     </div>
   );
