@@ -404,6 +404,9 @@ const Analysis = () => {
               </button>
               <div>
                 <h1 className="text-2xl sm:text-3xl font-serif font-bold text-foreground leading-tight">{result.jobTitle}</h1>
+                {company && !isWebsite(company) && (
+                  <p className="text-sm text-muted-foreground mt-0.5">at {company}</p>
+                )}
               </div>
             </div>
             <Button
