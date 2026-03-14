@@ -177,9 +177,12 @@ export default function Heatmap() {
             <div className="overflow-x-auto">
               <div className="min-w-[900px]">
                 {/* Header row */}
-                <div className="grid" style={{ gridTemplateColumns: "180px repeat(8, 1fr)" }}>
+                <div className="grid" style={{ gridTemplateColumns: "180px 60px repeat(8, 1fr)" }}>
                   <div className="p-3 text-xs font-medium text-muted-foreground border-b border-r border-border/40 bg-muted/30">
                     Role
+                  </div>
+                  <div className="p-2 text-[10px] leading-tight font-semibold text-muted-foreground border-b border-r border-border/40 bg-muted/30 text-center">
+                    Agent Risk
                   </div>
                   {TASK_CATEGORIES.map((cat) => (
                     <div
@@ -192,17 +195,28 @@ export default function Heatmap() {
                 </div>
 
                 {/* Data rows */}
-                {roles.map((role) => (
+                {roles.map((role) => {
+                  const risk = agentRisks[role.key] || 0;
+                  const riskColor = risk >= 45 ? "hsl(0, 84%, 55%)" : risk >= 35 ? "hsl(25, 95%, 53%)" : risk >= 25 ? "hsl(45, 93%, 50%)" : "hsl(142, 71%, 50%)";
+                  return (
                   <div
                     key={role.key}
                     className="grid hover:bg-muted/20 transition-colors"
-                    style={{ gridTemplateColumns: "180px repeat(8, 1fr)" }}
+                    style={{ gridTemplateColumns: "180px 60px repeat(8, 1fr)" }}
                   >
                     <div
                       className="p-2.5 text-xs font-medium text-foreground border-b border-r border-border/30 flex items-center cursor-pointer hover:text-primary transition-colors"
                       onClick={() => navigate(`/analysis?title=${encodeURIComponent(role.title)}`)}
                     >
                       {role.title}
+                    </div>
+                    <div
+                      className="border-b border-r border-border/30 flex items-center justify-center"
+                      style={{ backgroundColor: `${riskColor}20` }}
+                    >
+                      <span className="text-xs font-bold tabular-nums" style={{ color: riskColor }}>
+                        {risk}%
+                      </span>
                     </div>
                     {TASK_CATEGORIES.map((cat) => {
                       const cell = grid[role.key]?.[cat.id];
