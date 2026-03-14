@@ -5,9 +5,11 @@ import {
   ArrowLeft, Zap, AlertTriangle, Bot, ExternalLink,
   Building2, Users, MapPin, Calendar,
   ShieldAlert, GraduationCap, Rocket, CheckCircle2, LogIn,
+  ListChecks, Route, Target, BarChart3,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 import { JobAnalysisResult, TaskAnalysis } from "@/types/analysis";
 import { findPrebuiltRole } from "@/data/prebuilt-roles";
@@ -347,79 +349,81 @@ const Analysis = () => {
           </Card>
         </motion.div>
 
-        {/* Section 2: Task Breakdown */}
-        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="mb-8">
-          <h2 className="text-xs font-medium uppercase tracking-widest text-muted-foreground mb-3">Task Breakdown</h2>
-          <TaskTable
-            tasks={result.tasks}
-            skills={result.skills}
-            completedTasks={completedTasks}
-            onPractice={(taskName) => {
-              const task = result.tasks.find(t => t.name === taskName);
-              if (task) setSimTask(task);
-            }}
-          />
+        {/* Tabbed Sections */}
+        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
+          <Tabs defaultValue="tasks" className="mb-8">
+            <TabsList className="w-full grid grid-cols-4 h-11 mb-4">
+              <TabsTrigger value="tasks" className="gap-1.5 text-xs sm:text-sm">
+                <ListChecks className="h-3.5 w-3.5" /> Tasks
+              </TabsTrigger>
+              <TabsTrigger value="pathways" className="gap-1.5 text-xs sm:text-sm">
+                <Route className="h-3.5 w-3.5" /> Pathways
+              </TabsTrigger>
+              <TabsTrigger value="plan" className="gap-1.5 text-xs sm:text-sm">
+                <Target className="h-3.5 w-3.5" /> Plan
+              </TabsTrigger>
+              <TabsTrigger value="context" className="gap-1.5 text-xs sm:text-sm">
+                <BarChart3 className="h-3.5 w-3.5" /> Context
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="tasks">
+              <TaskTable
+                tasks={result.tasks}
+                skills={result.skills}
+                completedTasks={completedTasks}
+                onPractice={(taskName) => {
+                  const task = result.tasks.find(t => t.name === taskName);
+                  if (task) setSimTask(task);
+                }}
+              />
+            </TabsContent>
+
+            <TabsContent value="pathways">
+              <CareerPathways data={escoData} loading={escoLoading} error={escoError} />
+            </TabsContent>
+
+            <TabsContent value="plan">
+              <ActionPlan
+                result={result}
+                topPathway={topPathway}
+                onPractice={(taskName) => {
+                  const task = result.tasks.find(t => t.name === taskName);
+                  if (task) setSimTask(task);
+                }}
+              />
+            </TabsContent>
+
+            <TabsContent value="context">
+              <div className="space-y-4">
+                {result.industryBenchmark && result.industryBenchmark.industry && (
+                  <IndustryBenchmarkCard
+                    benchmark={result.industryBenchmark}
+                    currentRisk={result.summary.automationRiskPercent}
+                    currentAugmented={result.summary.augmentedPercent}
+                  />
+                )}
+                {result.curatedSkills && result.curatedSkills.length > 0 && (
+                  <CuratedSkillsBadge curatedSkills={result.curatedSkills} />
+                )}
+                <RoleContext agentRisk={agentRisk} jobTitle={result.jobTitle} />
+              </div>
+            </TabsContent>
+          </Tabs>
         </motion.div>
 
-        {/* Section 3: Career Pathways */}
-        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="mb-8">
-          <h2 className="text-xs font-medium uppercase tracking-widest text-muted-foreground mb-3">Career Pathways</h2>
-          <CareerPathways data={escoData} loading={escoLoading} error={escoError} />
-        </motion.div>
-
-        {/* Section 4: Action Plan */}
-        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }} className="mb-8">
-          <h2 className="text-xs font-medium uppercase tracking-widest text-muted-foreground mb-3">Your Action Plan</h2>
-          <ActionPlan
-            result={result}
-            topPathway={topPathway}
-            onPractice={(taskName) => {
-              const task = result.tasks.find(t => t.name === taskName);
-              if (task) setSimTask(task);
-            }}
-          />
-        </motion.div>
-
-        {/* Section 5: Industry Benchmark + Curated Skills + Role Context */}
-        <div className="mb-8 space-y-4">
-          <h2 className="text-xs font-medium uppercase tracking-widest text-muted-foreground mb-3">Role Context</h2>
-          
-          {result.industryBenchmark && result.industryBenchmark.industry && (
-            <IndustryBenchmarkCard
-              benchmark={result.industryBenchmark}
-              currentRisk={result.summary.automationRiskPercent}
-              currentAugmented={result.summary.augmentedPercent}
-            />
-          )}
-
-          {result.curatedSkills && result.curatedSkills.length > 0 && (
-            <CuratedSkillsBadge curatedSkills={result.curatedSkills} />
-          )}
-
-          <RoleContext agentRisk={agentRisk} jobTitle={result.jobTitle} />
+        {/* Slim CTA */}
+        <div className="flex items-center justify-between gap-3 px-4 py-3 rounded-lg border border-primary/20 bg-primary/5 mb-8">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <Rocket className="h-4 w-4 text-primary shrink-0" />
+            <span className="text-sm text-muted-foreground truncate">
+              {user ? "See all your progress" : "Sign in to track progress"}
+            </span>
+          </div>
+          <Button onClick={() => navigate(user ? "/dashboard" : "/auth")} size="sm" variant="ghost" className="gap-1.5 shrink-0 text-xs">
+            {user ? <><CheckCircle2 className="w-3.5 h-3.5" /> Dashboard</> : <><LogIn className="w-3.5 h-3.5" /> Sign In</>}
+          </Button>
         </div>
-
-        {/* CTA Banner */}
-        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}>
-          <Card className="border-primary/20 bg-gradient-to-r from-primary/5 via-accent/30 to-primary/5">
-            <CardContent className="p-6 flex flex-col sm:flex-row items-center gap-4">
-              <div className="flex items-center justify-center w-12 h-12 rounded-2xl bg-primary/10 shrink-0">
-                <Rocket className="h-6 w-6 text-primary" />
-              </div>
-              <div className="flex-1 text-center sm:text-left">
-                <h3 className="text-base font-sans font-bold text-foreground mb-0.5">
-                  {user ? "View your dashboard" : "Track your progress"}
-                </h3>
-                <p className="text-sm text-muted-foreground">
-                  {user ? "See all your practiced tasks and progress" : "Sign in to save practice completions across sessions"}
-                </p>
-              </div>
-              <Button onClick={() => navigate(user ? "/dashboard" : "/auth")} size="sm" className="gap-1.5 shrink-0">
-                {user ? <><CheckCircle2 className="w-3.5 h-3.5" /> Dashboard</> : <><LogIn className="w-3.5 h-3.5" /> Sign In</>}
-              </Button>
-            </CardContent>
-          </Card>
-        </motion.div>
 
         {/* Simulator Modal */}
         <SimulatorModal
