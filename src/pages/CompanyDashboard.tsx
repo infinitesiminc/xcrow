@@ -213,7 +213,7 @@ const CompanyDashboard = () => {
     <div className="min-h-screen bg-background">
       <div className="max-w-7xl mx-auto px-4 py-8">
         {/* Header */}
-        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
+        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="mb-6">
           <div className="flex items-center gap-3 mb-2">
             <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-primary/10">
               <Building2 className="h-5 w-5 text-primary" />
@@ -224,6 +224,14 @@ const CompanyDashboard = () => {
             </div>
           </div>
         </motion.div>
+
+        <Tabs defaultValue="workforce" className="w-full">
+          <TabsList className="mb-6">
+            <TabsTrigger value="workforce" className="gap-1.5 text-xs"><Users className="h-3.5 w-3.5" /> Workforce</TabsTrigger>
+            <TabsTrigger value="staffing" className="gap-1.5 text-xs"><FolderKanban className="h-3.5 w-3.5" /> Project Staffing</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="workforce">
 
         {/* Stat Cards */}
         {stats && (
