@@ -46,7 +46,7 @@ const steps = [
   {
     num: "01",
     title: "Enter your role",
-    description: "Type your job title, search 500+ pre-analyzed roles, or paste a full job description for maximum accuracy.",
+    description: "Type your job title, search 100M+ pre-analyzed roles, or paste a full job description for maximum accuracy.",
     icon: Search,
   },
   {
