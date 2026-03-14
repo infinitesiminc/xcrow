@@ -705,7 +705,7 @@ const Index = () => {
             {roleCategories.map((category, catIdx) => (
               <div key={category.label}>
                 <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">{category.label}</h3>
-                <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3">
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3">
                   {category.roles.map((role, i) => (
                     <motion.button
                       key={role.title}
@@ -715,13 +715,8 @@ const Index = () => {
                       onClick={() => navigate(`/analysis?title=${encodeURIComponent(role.title)}&company=`)}
                       className="group cursor-pointer text-left"
                     >
-                      <div className="relative overflow-hidden rounded-xl aspect-[4/3] mb-2">
+                      <div className="overflow-hidden rounded-xl aspect-[4/3] mb-2">
                         <img src={role.image} alt={role.title} className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" />
-                        <div className="absolute top-2 left-2">
-                          <span className="inline-block px-2 py-0.5 text-[10px] font-medium rounded-full bg-card/90 text-foreground backdrop-blur-sm shadow-sm">
-                            {role.tag}
-                          </span>
-                        </div>
                       </div>
                       <h3 className="text-sm font-semibold text-foreground leading-tight">{role.title}</h3>
                       <p className="text-xs text-muted-foreground mt-0.5">
