@@ -354,7 +354,10 @@ const Analysis = () => {
             tasks={result.tasks}
             skills={result.skills}
             completedTasks={completedTasks}
-            onPractice={setSimTask}
+            onPractice={(taskName) => {
+              const task = result.tasks.find(t => t.name === taskName);
+              if (task) setSimTask(task);
+            }}
           />
         </motion.div>
 
