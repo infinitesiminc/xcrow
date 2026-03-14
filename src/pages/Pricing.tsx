@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   Check, X, Zap, Building2, ArrowRight, Users,
-  Sparkles, HelpCircle,
+  Sparkles, HelpCircle, Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -11,6 +11,10 @@ import { Switch } from "@/components/ui/switch";
 import {
   Accordion, AccordionContent, AccordionItem, AccordionTrigger,
 } from "@/components/ui/accordion";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
+import { STRIPE_PRICES } from "@/lib/stripe-config";
+import { toast } from "sonner";
 
 /* ── feature rows ── */
 const individualFeatures = [
@@ -71,12 +75,56 @@ function FeatureValue({ value }: { value: string | boolean }) {
 /* ── page ── */
 export default function Pricing() {
   const navigate = useNavigate();
+  const { user, isPro, openAuthModal, subscription } = useAuth();
   const [annual, setAnnual] = useState(false);
+  const [checkoutLoading, setCheckoutLoading] = useState(false);
 
   const monthlyPrice = 19;
   const annualPrice = 190;
   const displayPrice = annual ? Math.round(annualPrice / 12) : monthlyPrice;
   const period = annual ? "/mo, billed yearly" : "/month";
+
+  const handleUpgrade = async () => {
+    if (!user) {
+      openAuthModal();
+      return;
+    }
+
+    if (isPro) {
+      toast.info("You're already on Pro!");
+      return;
+    }
+
+    setCheckoutLoading(true);
+    try {
+      const priceId = annual ? STRIPE_PRICES.PRO_ANNUAL : STRIPE_PRICES.PRO_MONTHLY;
+      const { data, error } = await supabase.functions.invoke("create-checkout", {
+        body: { priceId },
+      });
+      if (error) throw error;
+      if (data?.url) {
+        window.open(data.url, "_blank");
+      }
+    } catch (err: any) {
+      console.error("Checkout error:", err);
+      toast.error("Failed to start checkout. Please try again.");
+    } finally {
+      setCheckoutLoading(false);
+    }
+  };
+
+  const handleManageSubscription = async () => {
+    try {
+      const { data, error } = await supabase.functions.invoke("customer-portal");
+      if (error) throw error;
+      if (data?.url) {
+        window.open(data.url, "_blank");
+      }
+    } catch (err) {
+      console.error("Portal error:", err);
+      toast.error("Failed to open subscription management.");
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -156,12 +204,43 @@ export default function Pricing() {
                     </div>
                   </div>
                   <div className="flex flex-col sm:flex-row gap-2">
-                    <Button variant="outline" className="flex-1" onClick={() => navigate("/")}>
-                      Get started free
-                    </Button>
-                    <Button className="flex-1 gap-1.5" onClick={() => navigate("/")}>
-                      <Zap className="h-4 w-4" /> Upgrade to Pro
-                    </Button>
+                    {!user ? (
+                      <>
+                        <Button variant="outline" className="flex-1" onClick={() => navigate("/")}>
+                          Get started free
+                        </Button>
+                        <Button className="flex-1 gap-1.5" onClick={openAuthModal}>
+                          <Zap className="h-4 w-4" /> Upgrade to Pro
+                        </Button>
+                      </>
+                    ) : isPro ? (
+                      <>
+                        <Button variant="outline" className="flex-1" disabled>
+                          <Check className="h-4 w-4 mr-1.5" /> Current plan
+                        </Button>
+                        <Button variant="secondary" className="flex-1" onClick={handleManageSubscription}>
+                          Manage subscription
+                        </Button>
+                      </>
+                    ) : (
+                      <>
+                        <Button variant="outline" className="flex-1" onClick={() => navigate("/dashboard")}>
+                          Current: Free
+                        </Button>
+                        <Button
+                          className="flex-1 gap-1.5"
+                          onClick={handleUpgrade}
+                          disabled={checkoutLoading}
+                        >
+                          {checkoutLoading ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <Zap className="h-4 w-4" />
+                          )}
+                          Upgrade to Pro
+                        </Button>
+                      </>
+                    )}
                   </div>
                 </div>
               </CardContent>
