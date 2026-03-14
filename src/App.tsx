@@ -14,6 +14,8 @@ import Settings from "./pages/Settings.tsx";
 import NotFound from "./pages/NotFound.tsx";
 import RolesChart from "./pages/RolesChart.tsx";
 import Heatmap from "./pages/Heatmap.tsx";
+import ForIndividuals from "./pages/ForIndividuals.tsx";
+import ForOrganizations from "./pages/ForOrganizations.tsx";
 
 const queryClient = new QueryClient();
 

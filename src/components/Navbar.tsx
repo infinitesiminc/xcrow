@@ -37,6 +37,22 @@ export default function Navbar() {
         {/* Nav links */}
         <nav className="flex items-center gap-1">
           <Button
+            variant={isActive("/for-individuals") ? "secondary" : "ghost"}
+            size="sm"
+            onClick={() => navigate("/for-individuals")}
+            className="text-sm"
+          >
+            For Individuals
+          </Button>
+          <Button
+            variant={isActive("/for-organizations") ? "secondary" : "ghost"}
+            size="sm"
+            onClick={() => navigate("/for-organizations")}
+            className="text-sm"
+          >
+            For Organizations
+          </Button>
+          <Button
             variant={isActive("/") ? "secondary" : "ghost"}
             size="sm"
             onClick={() => navigate("/")}
