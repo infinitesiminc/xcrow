@@ -238,23 +238,11 @@ const Analysis = () => {
     analyze();
   }, [jobTitle, company, hasJd, navigate]);
 
-  // Fetch ESCO data with local fallback
+  // Generate local career pathways
   useEffect(() => {
     if (!result?.jobTitle) return;
-    setEscoLoading(true);
-    setEscoError(false);
-    fetchCareerPathways(result.jobTitle)
-      .then(setEscoData)
-      .catch(() => {
-        // Use local fallback from prebuilt roles
-        const local = generateLocalPathways(result.jobTitle);
-        if (local && local.pathways.length > 0) {
-          setEscoData(local);
-        } else {
-          setEscoError(true);
-        }
-      })
-      .finally(() => setEscoLoading(false));
+    const local = generateLocalPathways(result.jobTitle);
+    setPathwayData(local);
   }, [result?.jobTitle]);
 
   useEffect(() => {
