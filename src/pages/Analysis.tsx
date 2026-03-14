@@ -92,9 +92,7 @@ const Analysis = () => {
   const [snapshotLoading, setSnapshotLoading] = useState(false);
   const [simTask, setSimTask] = useState<TaskAnalysis | null>(null);
   const [completedTasks, setCompletedTasks] = useState<Set<string>>(new Set());
-  const [escoData, setEscoData] = useState<EscoMatchResult | null>(null);
-  const [escoLoading, setEscoLoading] = useState(false);
-  const [escoError, setEscoError] = useState(false);
+  const [pathwayData, setPathwayData] = useState<CareerMatchResult | null>(null);
   const [showStickyBar, setShowStickyBar] = useState(false);
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [bookmarkLoading, setBookmarkLoading] = useState(false);
