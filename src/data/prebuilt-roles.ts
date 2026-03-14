@@ -211,7 +211,7 @@ export const prebuiltRoles: Record<string, JobAnalysisResult> = {
   "investment banker": {
     jobTitle: "Investment Banker",
     company: "",
-    summary: { augmentedPercent: 55, automationRiskPercent: 20, newSkillsPercent: 50 },
+    summary: { augmentedPercent: 70, automationRiskPercent: 14, newSkillsPercent: 35 },
     tasks: [
       { name: "Pitch book creation", currentState: "human_ai", trend: "fully_ai_soon", impactLevel: "high", description: "AI generates pitch decks with market data, comps, and formatting in minutes." },
       { name: "Financial modeling & valuation", currentState: "human_ai", trend: "increasing_ai", impactLevel: "medium", description: "AI builds DCF models and comps tables, bankers focus on assumptions and narrative." },
