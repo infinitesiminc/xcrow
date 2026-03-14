@@ -165,7 +165,7 @@ export const prebuiltRoles: Record<string, JobAnalysisResult> = {
   "cybersecurity analyst": {
     jobTitle: "Cybersecurity Analyst",
     company: "",
-    summary: { augmentedPercent: 68, automationRiskPercent: 16, newSkillsPercent: 62 },
+    summary: { augmentedPercent: 78, automationRiskPercent: 10, newSkillsPercent: 40 },
     tasks: [
       { name: "Threat detection & monitoring", currentState: "human_ai", trend: "increasing_ai", impactLevel: "medium", description: "AI-powered SIEM tools detect anomalies in real-time, reducing manual log review." },
       { name: "Vulnerability scanning", currentState: "mostly_ai", trend: "fully_ai_soon", impactLevel: "high", description: "Automated scanners identify vulnerabilities across networks and applications continuously." },
