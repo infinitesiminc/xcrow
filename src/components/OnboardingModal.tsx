@@ -33,7 +33,7 @@ export default function OnboardingModal({ open, onComplete, userId }: Onboarding
         job_title: jobTitle.trim(),
         company: company.trim() || null,
         onboarding_completed: true,
-      })
+      } as any)
       .eq("id", userId);
 
     if (error) {
