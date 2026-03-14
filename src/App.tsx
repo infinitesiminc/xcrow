@@ -35,6 +35,8 @@ const App = () => (
             <Route path="/settings" element={<><Navbar /><Settings /></>} />
             <Route path="/roles-chart" element={<><Navbar /><RolesChart /></>} />
             <Route path="/heatmap" element={<><Navbar /><Heatmap /></>} />
+            <Route path="/for-individuals" element={<><Navbar /><ForIndividuals /></>} />
+            <Route path="/for-organizations" element={<><Navbar /><ForOrganizations /></>} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
