@@ -497,10 +497,10 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, onComplete
                           if (reply.includes("✅")) {
                             correctLetter = opt.letter;
                           } else if (reply.includes("❌")) {
-                            const correctMatch = reply.match(/\*\*([A-D])\)/);
+                            const correctMatch = reply.match(/\*\*([A-C])\)/);
                             if (correctMatch) correctLetter = correctMatch[1];
                             else {
-                              const altMatch = reply.match(/\b([A-D])\)\s/);
+                              const altMatch = reply.match(/\b([A-C])\)\s/);
                               if (altMatch && altMatch[1] !== opt.letter) correctLetter = altMatch[1];
                             }
                           }
