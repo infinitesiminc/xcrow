@@ -55,8 +55,8 @@ export function CareerPathways({ data, loading, error }: CareerPathwaysProps) {
             <Card className="h-full border-border/50 hover:border-primary/20 transition-colors">
               <CardContent className="p-4">
                 <div className="flex items-start justify-between gap-2 mb-3">
-                  <h4 className="text-sm font-display font-bold text-foreground leading-tight">{pathway.title}</h4>
-                  <span className="text-lg font-display font-bold text-primary shrink-0">{pathway.skillOverlap}%</span>
+                  <h4 className="text-sm font-sans font-bold text-foreground leading-tight">{pathway.title}</h4>
+                  <span className="text-lg font-sans font-bold text-primary shrink-0">{pathway.skillOverlap}%</span>
                 </div>
 
                 <Progress value={pathway.skillOverlap} className="h-1.5 mb-3" />

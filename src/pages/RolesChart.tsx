@@ -158,7 +158,7 @@ export default function RolesChart() {
         </div>
 
         <div className="mb-6">
-          <h1 className="text-3xl font-bold text-foreground font-[Space_Grotesk]">
+          <h1 className="text-3xl font-bold text-foreground font-serif">
             Replaced by AI Agent Risk
           </h1>
           <p className="text-muted-foreground mt-2 max-w-2xl">
