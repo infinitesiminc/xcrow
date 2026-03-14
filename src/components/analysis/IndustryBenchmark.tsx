@@ -32,7 +32,7 @@ export function IndustryBenchmarkCard({ benchmark, currentRisk, currentAugmented
               <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Automation Risk</p>
               <div className="flex items-baseline gap-1.5">
                 <span className="text-lg font-sans font-bold text-foreground">{currentRisk}%</span>
-                <span className={`text-xs font-semibold ${riskDiff > 0 ? "text-destructive" : riskDiff < 0 ? "text-success" : "text-muted-foreground"}`}>
+                <span className={`text-xs font-semibold ${riskDiff !== 0 ? "text-foreground/60" : "text-muted-foreground"}`}>
                   {riskDiff > 0 ? "+" : ""}{riskDiff}% vs avg
                 </span>
               </div>
@@ -41,7 +41,7 @@ export function IndustryBenchmarkCard({ benchmark, currentRisk, currentAugmented
               <p className="text-[10px] text-muted-foreground uppercase tracking-wider">AI Augmentation</p>
               <div className="flex items-baseline gap-1.5">
                 <span className="text-lg font-sans font-bold text-foreground">{currentAugmented}%</span>
-                <span className={`text-xs font-semibold ${augDiff > 0 ? "text-success" : augDiff < 0 ? "text-destructive" : "text-muted-foreground"}`}>
+                <span className={`text-xs font-semibold ${augDiff !== 0 ? "text-foreground/60" : "text-muted-foreground"}`}>
                   {augDiff > 0 ? "+" : ""}{augDiff}% vs avg
                 </span>
               </div>
