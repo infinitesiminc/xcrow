@@ -159,7 +159,7 @@ const Dashboard = () => {
                 onClick={() => {
                   const params = new URLSearchParams({ title: myRoleAnalysis.job_title });
                   if (myRoleAnalysis.company) params.set("company", myRoleAnalysis.company);
-                  navigate(`/analysis?${params.toString()}`);
+                   navigate(`/analysis?${params.toString()}`, { state: { from: "dashboard" } });
                 }}
               >
                 <CardContent className="p-5">
@@ -210,7 +210,7 @@ const Dashboard = () => {
                     onClick={() => {
                       const params = new URLSearchParams({ title: profile!.jobTitle! });
                       if (profile!.company) params.set("company", profile!.company);
-                      navigate(`/analysis?${params.toString()}`);
+                      navigate(`/analysis?${params.toString()}`, { state: { from: "dashboard" } });
                     }}
                   >
                     <Zap className="h-3.5 w-3.5 mr-1" /> Analyze
@@ -299,7 +299,7 @@ const Dashboard = () => {
                     onClick={() => {
                       const params = new URLSearchParams({ title: b.job_title });
                       if (b.company) params.set("company", b.company);
-                      navigate(`/analysis?${params.toString()}`);
+                      navigate(`/analysis?${params.toString()}`, { state: { from: "dashboard" } });
                     }}
                   >
                     <CardContent className="p-4">
@@ -351,7 +351,7 @@ const Dashboard = () => {
                     onClick={() => {
                       const params = new URLSearchParams({ title: a.job_title });
                       if (a.company) params.set("company", a.company);
-                      navigate(`/analysis?${params.toString()}`);
+                      navigate(`/analysis?${params.toString()}`, { state: { from: "dashboard" } });
                     }}
                   >
                     <CardContent className="p-4">
