@@ -368,6 +368,9 @@ const Analysis = () => {
                   <ArrowLeft className="h-3.5 w-3.5 text-muted-foreground" />
                 </button>
                 <span className="text-sm font-semibold text-foreground truncate">{result.jobTitle}</span>
+                {company && !isWebsite(company) && (
+                  <span className="text-xs text-muted-foreground truncate ml-1">@ {company}</span>
+                )}
               </div>
               <div className="flex items-center gap-2 shrink-0">
                 <span className={`w-2 h-2 rounded-full ${getRiskTier(agentRisk).dotClass}`} />
