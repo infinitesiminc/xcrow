@@ -97,6 +97,8 @@ const Analysis = () => {
   const [escoLoading, setEscoLoading] = useState(false);
   const [escoError, setEscoError] = useState(false);
   const [showStickyBar, setShowStickyBar] = useState(false);
+  const [isBookmarked, setIsBookmarked] = useState(false);
+  const [bookmarkLoading, setBookmarkLoading] = useState(false);
   const heroRef = useRef<HTMLDivElement>(null);
   const { user } = useAuth();
 
