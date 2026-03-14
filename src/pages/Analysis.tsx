@@ -449,6 +449,7 @@ const Analysis = () => {
                   <CuratedSkillsBadge curatedSkills={result.curatedSkills} />
                 )}
                 <RoleContext agentRisk={agentRisk} jobTitle={result.jobTitle} />
+                <HeatmapPreview />
               </div>
             </TabsContent>
           </Tabs>

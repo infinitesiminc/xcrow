@@ -761,8 +761,6 @@ const Index = () => {
               );
             })}
 
-            {/* Heatmap Discovery */}
-            <HeatmapPreview />
           </div>
         </div>
       </div>
