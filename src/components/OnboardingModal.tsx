@@ -82,17 +82,19 @@ export default function OnboardingModal({ open, onComplete, userId }: Onboarding
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium text-foreground">Company <span className="text-muted-foreground font-normal">(optional)</span></label>
+            <label className="text-sm font-medium text-foreground">Company website <span className="text-muted-foreground font-normal">(optional)</span></label>
             <div className="relative">
               <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <input
-                type="text"
-                placeholder="e.g. Acme Corp or acme.com"
+                type="url"
+                placeholder="e.g. https://acme.com"
                 value={company}
                 onChange={(e) => setCompany(e.target.value)}
+                pattern="^(https?:\/\/)?([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}(\/.*)?$"
                 className="w-full rounded-xl border border-input bg-background pl-10 pr-3 py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-ring"
               />
             </div>
+            <p className="text-[11px] text-muted-foreground">We'll use this to contextualize your analysis</p>
           </div>
 
           <div className="flex gap-3 pt-2">
