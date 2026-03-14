@@ -452,13 +452,13 @@ const ProjectStaffing = ({ embedded }: { embedded?: boolean }) => {
                         </div>
 
                         <div className="flex items-center gap-2 pt-2">
-                          <Button size="sm" className="gap-1.5 text-xs" disabled={selectedCandidates.size === 0}>
-                            <Send className="h-3 w-3" /> Send to {selectedCandidates.size > 0 ? `${selectedCandidates.size} Candidate${selectedCandidates.size > 1 ? "s" : ""}` : "Candidates"}
+                          <Button size="sm" className="gap-1.5 text-xs" disabled={selectedCandidates.size === 0} onClick={() => setShowResults(true)}>
+                            <Send className="h-3 w-3" /> {showResults ? "Results Sent" : `Send to ${selectedCandidates.size > 0 ? `${selectedCandidates.size} Candidate${selectedCandidates.size > 1 ? "s" : ""}` : "Candidates"}`}
                           </Button>
                           <Button size="sm" variant="outline" className="gap-1.5 text-xs">
                             <Play className="h-3 w-3" /> Preview Simulation
                           </Button>
-                          <Button size="sm" variant="ghost" className="text-xs" onClick={() => { setSimGenerated(false); }}>
+                          <Button size="sm" variant="ghost" className="text-xs" onClick={() => { setSimGenerated(false); setShowResults(false); }}>
                             Regenerate
                           </Button>
                         </div>
