@@ -32,6 +32,9 @@ interface DbJob {
   automation_risk_percent: number | null;
   new_skills_percent: number | null;
   company_id: string | null;
+  description: string | null;
+  _analysed: boolean;
+  _hasDescription: boolean;
 }
 
 type SortField = "title" | "automation_risk_percent" | "augmented_percent" | "new_skills_percent" | "department";
