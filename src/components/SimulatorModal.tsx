@@ -742,7 +742,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                 onKeyDown={handleKeyDown}
                 placeholder="Type your answer…"
                 rows={1}
-                className="flex-1 resize-none rounded-xl border border-border/40 bg-accent/10 px-4 py-3 text-[15px] text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-ring/30 focus:border-border min-h-[44px] max-h-[120px] transition-all duration-200"
+                className="flex-1 resize-none rounded-xl border border-border/40 bg-accent/10 px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-[15px] text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-ring/30 focus:border-border min-h-[40px] sm:min-h-[44px] max-h-[120px] transition-all duration-200"
               />
               <div className="flex gap-2 shrink-0">
                 <Button
