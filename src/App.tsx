@@ -15,6 +15,7 @@ import NotFound from "./pages/NotFound.tsx";
 import ForIndividuals from "./pages/ForIndividuals.tsx";
 import ForOrganizations from "./pages/ForOrganizations.tsx";
 import ToolsMarketplace from "./pages/ToolsMarketplace.tsx";
+import ContactOrg from "./pages/ContactOrg.tsx";
 
 const queryClient = new QueryClient();
 
