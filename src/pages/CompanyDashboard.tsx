@@ -55,6 +55,21 @@ const mockScores = (title: string) => {
   return { automation_risk_percent, augmented_percent, new_skills_percent };
 };
 
+const AI_TOOLS = ["ChatGPT", "Copilot", "Claude", "Midjourney", "Gemini", "Cursor", "Notion AI", "Jasper", "Perplexity", "Zapier AI"];
+
+const mockToolProficiency = (title: string) => {
+  const h = hashStr(title.toLowerCase() + "_tools");
+  const count = 1 + (h % 4); // 1-4 tools
+  const tools: { name: string; level: "beginner" | "intermediate" | "advanced" }[] = [];
+  for (let i = 0; i < count; i++) {
+    const idx = (h + i * 7) % AI_TOOLS.length;
+    const lvl = ((h >> (i + 2)) % 3);
+    tools.push({ name: AI_TOOLS[idx], level: lvl === 0 ? "beginner" : lvl === 1 ? "intermediate" : "advanced" });
+  }
+  const avgLevel = Math.round(tools.reduce((s, t) => s + (t.level === "beginner" ? 33 : t.level === "intermediate" ? 66 : 100), 0) / tools.length);
+  return { tools, avgLevel };
+};
+
 const TASKS_PER_JOB = 12;
 
 const mockPracticeProgress = (title: string) => {
