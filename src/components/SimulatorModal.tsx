@@ -1,10 +1,8 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Send, Loader2, RotateCcw, Play, Lightbulb, ChevronDown, ChevronUp, CheckCircle2 } from "lucide-react";
+import { Send, Loader2, RotateCcw, Lightbulb, ChevronDown, ChevronUp, CheckCircle2, X } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import {
   Dialog,
   DialogContent,
@@ -41,43 +39,72 @@ const BriefingScreen = ({
 }) => (
   <motion.div
     key="briefing"
-    initial={{ opacity: 0, y: 12 }}
+    initial={{ opacity: 0, y: 16 }}
     animate={{ opacity: 1, y: 0 }}
-    exit={{ opacity: 0 }}
-    className="flex flex-col gap-5 py-2"
+    exit={{ opacity: 0, y: -8 }}
+    transition={{ duration: 0.4, ease: "easeOut" }}
+    className="flex flex-col gap-8 py-6 px-2 max-w-2xl mx-auto"
   >
-    <div className="text-center">
-      <div className="text-4xl mb-2">🎯</div>
-      <h3 className="text-lg font-bold text-foreground">{session.scenario.title}</h3>
-      <p className="text-xs text-muted-foreground mt-1">{session.scenario.description}</p>
+    <div className="text-center space-y-3">
+      <motion.div
+        initial={{ scale: 0.8, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={{ delay: 0.15, duration: 0.3 }}
+        className="text-5xl"
+      >
+        🎯
+      </motion.div>
+      <h3 className="text-xl font-serif font-bold text-foreground">{session.scenario.title}</h3>
+      <p className="text-sm text-muted-foreground leading-relaxed max-w-md mx-auto">{session.scenario.description}</p>
     </div>
 
-    <Card className="bg-accent/20 border-accent/30">
-      <CardContent className="p-4">
-        <h4 className="text-xs font-semibold text-foreground mb-2">📚 What you need to know</h4>
-        <div className="text-sm text-foreground/90 leading-relaxed prose prose-sm dark:prose-invert max-w-none [&>p]:mb-2">
-          <ReactMarkdown>{session.briefing}</ReactMarkdown>
-        </div>
-      </CardContent>
-    </Card>
+    <motion.div
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.2, duration: 0.4 }}
+      className="rounded-2xl bg-accent/30 border border-border/40 p-6"
+    >
+      <h4 className="text-xs font-medium uppercase tracking-widest text-muted-foreground mb-3">What you need to know</h4>
+      <div className="text-[15px] text-foreground/90 leading-[1.7] prose prose-sm dark:prose-invert max-w-none [&>p]:mb-3">
+        <ReactMarkdown>{session.briefing}</ReactMarkdown>
+      </div>
+    </motion.div>
 
     {session.tips && session.tips.length > 0 && (
-      <Card className="border-primary/20 bg-primary/5">
-        <CardContent className="p-4">
-          <h4 className="text-xs font-semibold text-foreground mb-2">💡 Tips for success</h4>
-          <ul className="space-y-1.5">
-            {session.tips.map((tip, i) => (
-              <li key={i} className="text-sm text-foreground/80 flex items-start gap-2">
-                <span className="text-sm">{["✅", "🔍", "💬"][i % 3]}</span>
-                {tip}
-              </li>
-            ))}
-          </ul>
-        </CardContent>
-      </Card>
+      <motion.div
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.3, duration: 0.4 }}
+        className="rounded-2xl border border-border/30 p-6"
+      >
+        <h4 className="text-xs font-medium uppercase tracking-widest text-muted-foreground mb-3">Tips for success</h4>
+        <ul className="space-y-3">
+          {session.tips.map((tip, i) => (
+            <motion.li
+              key={i}
+              initial={{ opacity: 0, x: -8 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.35 + i * 0.07 }}
+              className="text-[15px] text-foreground/80 leading-relaxed flex items-start gap-3"
+            >
+              <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-accent text-xs font-medium text-muted-foreground shrink-0 mt-0.5">{i + 1}</span>
+              {tip}
+            </motion.li>
+          ))}
+        </ul>
+      </motion.div>
     )}
 
-    <Button onClick={onStart} className="gap-2 mx-auto">🚀 Start Simulation</Button>
+    <motion.div
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.45, duration: 0.3 }}
+      className="flex justify-center pt-2"
+    >
+      <Button onClick={onStart} size="lg" className="gap-2 rounded-xl px-8 text-base">
+        Begin Practice
+      </Button>
+    </motion.div>
   </motion.div>
 );
 
@@ -87,23 +114,29 @@ const TipsToggle = ({ tips }: { tips: string[] }) => {
   if (!tips || tips.length === 0) return null;
 
   return (
-    <div className="mb-2">
+    <div className="mb-4 max-w-2xl mx-auto">
       <button
         onClick={() => setOpen(!open)}
-        className="flex items-center gap-1.5 text-[11px] text-muted-foreground hover:text-foreground transition-colors"
+        className="flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground transition-colors duration-200"
       >
-        <Lightbulb className="h-3 w-3" />
+        <Lightbulb className="h-3.5 w-3.5" />
         {open ? "Hide tips" : "Show tips"}
-        {open ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
+        {open ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
       </button>
       <AnimatePresence>
         {open && (
-          <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
-            <div className="mt-1.5 p-2.5 rounded-lg bg-primary/5 border border-primary/10">
-              <ul className="space-y-1">
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.25 }}
+            className="overflow-hidden"
+          >
+            <div className="mt-3 p-4 rounded-xl bg-accent/20 border border-border/30">
+              <ul className="space-y-2">
                 {tips.map((tip, i) => (
-                  <li key={i} className="text-[11px] text-foreground/70 flex items-start gap-1.5">
-                    <span className="text-primary font-bold">{i + 1}.</span>
+                  <li key={i} className="text-sm text-foreground/70 flex items-start gap-2.5 leading-relaxed">
+                    <span className="text-muted-foreground font-medium">{i + 1}.</span>
                     {tip}
                   </li>
                 ))}
@@ -120,8 +153,8 @@ const TipsToggle = ({ tips }: { tips: string[] }) => {
 interface AnsweredQuestion {
   options: { letter: string; text: string }[];
   selectedLetter: string;
-  correctLetter: string | null; // parsed from AI feedback
-  messageIndex: number; // index of the AI message that had the question
+  correctLetter: string | null;
+  messageIndex: number;
 }
 
 const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, onCompleted }: SimulatorModalProps) => {
@@ -138,7 +171,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, onComplete
   const { toast } = useToast();
 
   const scrollToBottom = useCallback(() => {
-    setTimeout(() => scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" }), 50);
+    setTimeout(() => scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" }), 80);
   }, []);
 
   const startSession = useCallback(async () => {
@@ -220,27 +253,50 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, onComplete
 
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
-      <DialogContent className="max-w-4xl w-[95vw] h-[90vh] p-0 flex flex-col overflow-hidden gap-0 text-base">
-        {/* Header */}
-        <div className="flex items-center justify-between px-5 py-3 border-b border-border bg-card shrink-0">
+      <DialogContent className="max-w-3xl w-[95vw] h-[90vh] p-0 flex flex-col overflow-hidden gap-0 border-border/50 rounded-2xl [&>button]:hidden">
+        {/* Header — minimal, airy */}
+        <div className="flex items-center justify-between px-6 py-4 border-b border-border/40 shrink-0">
           <div className="min-w-0">
-            <h2 className="text-sm font-bold text-foreground truncate">Practice: {taskName}</h2>
-            <p className="text-xs text-muted-foreground truncate">{jobTitle}{company ? ` at ${company}` : ""}</p>
+            <h2 className="text-base font-sans font-semibold text-foreground truncate">{taskName}</h2>
+            <p className="text-xs text-muted-foreground mt-0.5 truncate">{jobTitle}{company ? ` · ${company}` : ""}</p>
           </div>
-          <div className="flex items-center gap-2 shrink-0">
+          <div className="flex items-center gap-3 shrink-0">
             {phase === "chat" && (
-              <Badge variant="outline" className="text-[10px]">Round {roundCount}</Badge>
+              <motion.span
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="text-xs text-muted-foreground bg-accent/50 px-3 py-1 rounded-full"
+              >
+                Round {roundCount}
+              </motion.span>
             )}
+            <button
+              onClick={onClose}
+              className="p-1.5 rounded-lg hover:bg-accent transition-colors duration-200"
+            >
+              <X className="h-4 w-4 text-muted-foreground" />
+            </button>
           </div>
         </div>
 
-        {/* Body */}
-        <div ref={scrollRef} className="flex-1 overflow-y-auto px-5 py-4 space-y-3">
+        {/* Body — generous padding, breathing room */}
+        <div ref={scrollRef} className="flex-1 overflow-y-auto px-6 py-6 scrollbar-thin">
           <AnimatePresence mode="popLayout">
             {phase === "loading" && (
-              <motion.div key="loading" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex flex-col items-center justify-center h-full gap-3">
-                <Loader2 className="h-8 w-8 text-primary animate-spin" />
-                <p className="text-sm text-muted-foreground">Preparing your briefing...</p>
+              <motion.div
+                key="loading"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="flex flex-col items-center justify-center h-full gap-4"
+              >
+                <motion.div
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 1.2, repeat: Infinity, ease: "linear" }}
+                >
+                  <Loader2 className="h-8 w-8 text-muted-foreground/40" />
+                </motion.div>
+                <p className="text-sm text-muted-foreground">Preparing your session…</p>
               </motion.div>
             )}
 
@@ -249,130 +305,167 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, onComplete
             )}
 
             {error && phase !== "loading" && phase !== "briefing" && (
-              <motion.div key="error" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
-                <Card className="border-warning/30 bg-warning/5">
-                  <CardContent className="p-4 text-center">
-                    <p className="text-sm text-warning font-medium mb-3">{error}</p>
-                    <Button variant="outline" size="sm" onClick={onClose}>Close</Button>
-                  </CardContent>
-                </Card>
+              <motion.div
+                key="error"
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="flex flex-col items-center justify-center py-16 gap-4 max-w-sm mx-auto text-center"
+              >
+                <p className="text-sm text-muted-foreground leading-relaxed">{error}</p>
+                <Button variant="outline" size="sm" onClick={onClose} className="rounded-xl">Close</Button>
               </motion.div>
             )}
 
             {(phase === "chat" || phase === "done") && !error && (
-              <>
+              <div className="max-w-2xl mx-auto space-y-5">
                 {phase === "chat" && <TipsToggle tips={session?.tips || []} />}
                 {messages.map((msg, i) => {
-                  // Hide single-letter user answers (shown via highlighted buttons instead)
                   if (msg.role === "user" && /^[A-D]$/.test(msg.content.trim())) return null;
+
+                  const isUser = msg.role === "user";
+
                   return (
-                  <motion.div
-                    key={i}
-                    initial={{ opacity: 0, y: 6 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
-                  >
-                    <div
-                      className={`max-w-[80%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed ${
-                        msg.role === "user"
-                          ? "bg-primary text-primary-foreground rounded-br-md"
-                          : "bg-secondary text-secondary-foreground rounded-bl-md"
-                      }`}
+                    <motion.div
+                      key={i}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.3, delay: 0.05 }}
+                      className="space-y-3"
                     >
-                      <div className="prose prose-sm dark:prose-invert max-w-none [&>p]:m-0">
-                        <ReactMarkdown>{
-                          msg.role === "assistant"
-                            ? msg.content.replace(/^[A-D][).]\s*.+$/gm, "").trim()
-                            : msg.content
-                        }</ReactMarkdown>
+                      <div className={`flex ${isUser ? "justify-end" : "justify-start"}`}>
+                        <div
+                          className={`max-w-[85%] rounded-2xl px-5 py-4 text-[15px] leading-[1.7] ${
+                            isUser
+                              ? "bg-foreground text-background rounded-br-lg"
+                              : "bg-accent/40 text-foreground rounded-bl-lg"
+                          }`}
+                        >
+                          <div className="prose prose-sm dark:prose-invert max-w-none [&>p]:m-0 [&>p]:mb-1 [&>ul]:mt-2 [&>ul]:mb-0">
+                            <ReactMarkdown>{
+                              !isUser
+                                ? msg.content.replace(/^[A-D][).]\s*.+$/gm, "").trim()
+                                : msg.content
+                            }</ReactMarkdown>
+                          </div>
+                        </div>
                       </div>
-                    </div>
-                    {/* Show answered question buttons inline after the AI message */}
-                    {msg.role === "assistant" && (() => {
-                      const aq = answeredQuestions.find(q => q.messageIndex === i);
-                      if (!aq) return null;
-                      return (
-                        <motion.div initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} className="mt-2 flex flex-col gap-1.5 max-w-[80%]">
-                          {aq.options.map((opt) => {
-                            const isSelected = opt.letter === aq.selectedLetter;
-                            const isCorrect = opt.letter === aq.correctLetter;
-                            let style = "border-border bg-card text-muted-foreground opacity-60";
-                            if (isCorrect) style = "border-success/50 bg-success/10 text-success";
-                            if (isSelected && !isCorrect) style = "border-destructive/50 bg-destructive/10 text-destructive";
-                            return (
-                              <div key={opt.letter} className={`flex items-center gap-2 px-3 py-2 text-sm rounded-lg border ${style} transition-all`}>
-                                <span className={`inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold shrink-0 ${
-                                  isCorrect ? "bg-success/20 text-success" : isSelected ? "bg-destructive/20 text-destructive" : "bg-muted text-muted-foreground"
-                                }`}>
-                                  {isCorrect ? "✓" : isSelected ? "✗" : opt.letter}
-                                </span>
-                                <span className="text-sm">{opt.text}</span>
-                              </div>
-                            );
-                          })}
-                        </motion.div>
-                      );
-                    })()}
-                  </motion.div>
+
+                      {/* Answered MCQ inline */}
+                      {!isUser && (() => {
+                        const aq = answeredQuestions.find(q => q.messageIndex === i);
+                        if (!aq) return null;
+                        return (
+                          <motion.div
+                            initial={{ opacity: 0, y: 6 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.1 }}
+                            className="flex flex-col gap-2 max-w-[85%]"
+                          >
+                            {aq.options.map((opt) => {
+                              const isSelected = opt.letter === aq.selectedLetter;
+                              const isCorrect = opt.letter === aq.correctLetter;
+                              let style = "border-border/40 bg-accent/20 text-muted-foreground/60";
+                              if (isCorrect) style = "border-success/40 bg-success/5 text-success";
+                              if (isSelected && !isCorrect) style = "border-destructive/30 bg-destructive/5 text-destructive";
+                              return (
+                                <div key={opt.letter} className={`flex items-center gap-3 px-4 py-3 text-[15px] rounded-xl border ${style} transition-all duration-200`}>
+                                  <span className={`inline-flex items-center justify-center w-7 h-7 rounded-full text-xs font-semibold shrink-0 ${
+                                    isCorrect ? "bg-success/10 text-success" : isSelected ? "bg-destructive/10 text-destructive" : "bg-accent text-muted-foreground"
+                                  }`}>
+                                    {isCorrect ? "✓" : isSelected ? "✗" : opt.letter}
+                                  </span>
+                                  <span>{opt.text}</span>
+                                </div>
+                              );
+                            })}
+                          </motion.div>
+                        );
+                      })()}
+                    </motion.div>
                   );
                 })}
-              </>
+              </div>
             )}
 
             {sending && (
-              <motion.div key="typing" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex justify-start">
-                <div className="bg-secondary rounded-2xl rounded-bl-md px-4 py-3">
-                  <div className="flex gap-1">
-                    <span className="w-1.5 h-1.5 bg-muted-foreground/50 rounded-full animate-bounce [animation-delay:0ms]" />
-                    <span className="w-1.5 h-1.5 bg-muted-foreground/50 rounded-full animate-bounce [animation-delay:150ms]" />
-                    <span className="w-1.5 h-1.5 bg-muted-foreground/50 rounded-full animate-bounce [animation-delay:300ms]" />
+              <motion.div
+                key="typing"
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="flex justify-start max-w-2xl mx-auto"
+              >
+                <div className="bg-accent/40 rounded-2xl rounded-bl-lg px-5 py-4">
+                  <div className="flex gap-1.5">
+                    <span className="w-2 h-2 bg-muted-foreground/30 rounded-full animate-bounce [animation-delay:0ms]" />
+                    <span className="w-2 h-2 bg-muted-foreground/30 rounded-full animate-bounce [animation-delay:150ms]" />
+                    <span className="w-2 h-2 bg-muted-foreground/30 rounded-full animate-bounce [animation-delay:300ms]" />
                   </div>
                 </div>
               </motion.div>
             )}
 
             {phase === "completing" && (
-              <motion.div key="completing" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col items-center justify-center py-12 gap-3">
-                <Loader2 className="h-8 w-8 text-primary animate-spin" />
-                <p className="text-sm text-muted-foreground">Saving your progress...</p>
+              <motion.div
+                key="completing"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="flex flex-col items-center justify-center py-20 gap-4"
+              >
+                <Loader2 className="h-6 w-6 text-muted-foreground/40 animate-spin" />
+                <p className="text-sm text-muted-foreground">Saving your progress…</p>
               </motion.div>
             )}
 
             {phase === "done" && (
-              <motion.div key="done" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="flex flex-col items-center py-8 gap-4">
-                <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-success/10">
-                  <CheckCircle2 className="h-8 w-8 text-success" />
-                </div>
-                <div className="text-center">
-                  <h3 className="text-lg font-bold text-foreground">Practice Complete!</h3>
-                  <p className="text-sm text-muted-foreground mt-1">
+              <motion.div
+                key="done"
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, ease: "easeOut" }}
+                className="flex flex-col items-center py-16 gap-6 max-w-sm mx-auto text-center"
+              >
+                <motion.div
+                  initial={{ scale: 0.5, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  transition={{ delay: 0.15, type: "spring", stiffness: 200 }}
+                  className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-success/10"
+                >
+                  <CheckCircle2 className="h-10 w-10 text-success" />
+                </motion.div>
+                <div>
+                  <h3 className="text-xl font-serif font-bold text-foreground">Practice Complete</h3>
+                  <p className="text-sm text-muted-foreground mt-2 leading-relaxed">
                     You completed {roundCount} round{roundCount !== 1 ? "s" : ""} on "{taskName}"
                   </p>
                   {!user && (
-                    <p className="text-xs text-muted-foreground mt-2">
+                    <p className="text-xs text-muted-foreground mt-3">
                       <a href="/auth" className="text-primary hover:underline">Sign in</a> to save your progress
                     </p>
                   )}
                 </div>
-                <div className="flex gap-2">
-                  <Button variant="outline" size="sm" onClick={startSession} className="gap-1.5">
+                <div className="flex gap-3 pt-2">
+                  <Button variant="outline" onClick={startSession} className="gap-2 rounded-xl">
                     <RotateCcw className="h-3.5 w-3.5" /> Try Again
                   </Button>
-                  <Button size="sm" onClick={onClose}>Done</Button>
+                  <Button onClick={onClose} className="rounded-xl px-6">Done</Button>
                 </div>
               </motion.div>
             )}
           </AnimatePresence>
         </div>
 
-        {/* Input bar */}
+        {/* Input bar — clean, spacious */}
         {phase === "chat" && !error && (
-          <div className="shrink-0 border-t border-border bg-card px-4 py-3 space-y-2">
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+            className="shrink-0 border-t border-border/40 bg-background px-6 py-4 space-y-3"
+          >
             {/* Multiple choice buttons */}
             {(() => {
               const lastAi = [...messages].reverse().find(m => m.role === "assistant");
               if (!lastAi || sending) return null;
-              // Don't show buttons if this question was already answered
               const lastAiIndex = messages.lastIndexOf(lastAi);
               const alreadyAnswered = answeredQuestions.some(q => q.messageIndex === lastAiIndex);
               if (alreadyAnswered) return null;
@@ -383,13 +476,14 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, onComplete
                 text: opt.replace(/^[A-D][).]\s*/, "").trim(),
               }));
               return (
-                <div className="flex flex-col gap-1.5">
+                <div className="flex flex-col gap-2 max-w-2xl mx-auto">
                   {parsedOpts.map((opt, i) => (
-                    <Button
+                    <motion.button
                       key={i}
-                      variant="outline"
-                      size="sm"
-                      className="w-full justify-start text-left h-auto py-2 px-3 text-sm font-normal hover:bg-primary/5 hover:border-primary/30"
+                      initial={{ opacity: 0, y: 4 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: i * 0.05 }}
+                      className="w-full flex items-center gap-3 text-left px-4 py-3.5 text-[15px] rounded-xl border border-border/40 bg-background hover:bg-accent/30 hover:border-border transition-all duration-200"
                       onClick={() => {
                         const questionMsgIndex = lastAiIndex;
                         const fakeMsg: SimMessage = { role: "user", content: opt.letter };
@@ -399,16 +493,13 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, onComplete
                         setSending(true);
                         scrollToBottom();
                         chatTurn(newMsgs, roundCount, roundCount, jobTitle).then(reply => {
-                          // Parse correct answer from feedback
                           let correctLetter: string | null = null;
                           if (reply.includes("✅")) {
-                            correctLetter = opt.letter; // user was correct
+                            correctLetter = opt.letter;
                           } else if (reply.includes("❌")) {
-                            // Try to find the correct answer letter from feedback like "B)" or "**B)**"
                             const correctMatch = reply.match(/\*\*([A-D])\)/);
                             if (correctMatch) correctLetter = correctMatch[1];
                             else {
-                              // Try "option B" or just look for bold letter
                               const altMatch = reply.match(/\b([A-D])\)\s/);
                               if (altMatch && altMatch[1] !== opt.letter) correctLetter = altMatch[1];
                             }
@@ -426,9 +517,9 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, onComplete
                         }).finally(() => setSending(false));
                       }}
                     >
-                      <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-primary/10 text-primary text-xs font-bold mr-2 shrink-0">{opt.letter}</span>
-                      {opt.text}
-                    </Button>
+                      <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-accent text-xs font-semibold text-muted-foreground shrink-0">{opt.letter}</span>
+                      <span className="text-foreground/80">{opt.text}</span>
+                    </motion.button>
                   ))}
                 </div>
               );
@@ -441,11 +532,10 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, onComplete
               const askContinue = lastAi.content.toLowerCase().includes("want to see another example") || lastAi.content.toLowerCase().includes("want another");
               if (!askContinue) return null;
               return (
-                <div className="flex gap-2">
+                <div className="flex gap-3 max-w-2xl mx-auto">
                   <Button
                     variant="outline"
-                    size="sm"
-                    className="flex-1 hover:bg-success/5 hover:border-success/30"
+                    className="flex-1 rounded-xl h-11 text-sm"
                     onClick={() => {
                       const fakeMsg: SimMessage = { role: "user", content: "yes" };
                       const newMsgs = [...messages, fakeMsg];
@@ -463,38 +553,47 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, onComplete
                       }).finally(() => setSending(false));
                     }}
                   >
-                    Yes, show me more
+                    Continue
                   </Button>
                   <Button
-                    size="sm"
-                    className="flex-1 gap-1.5"
+                    className="flex-1 rounded-xl h-11 text-sm gap-2"
                     onClick={handleFinish}
                   >
-                    <CheckCircle2 className="h-3.5 w-3.5" /> Finish
+                    <CheckCircle2 className="h-4 w-4" /> Finish
                   </Button>
                 </div>
               );
             })()}
 
-            <div className="flex items-end gap-2">
+            <div className="flex items-end gap-3 max-w-2xl mx-auto">
               <textarea
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
-                placeholder="Type your answer or a message..."
+                placeholder="Type your answer…"
                 rows={1}
-                className="flex-1 resize-none rounded-xl border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-ring min-h-[38px] max-h-[120px]"
+                className="flex-1 resize-none rounded-xl border border-border/40 bg-accent/10 px-4 py-3 text-[15px] text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-ring/30 focus:border-border min-h-[44px] max-h-[120px] transition-all duration-200"
               />
-              <div className="flex gap-1.5 shrink-0">
-                <Button variant="outline" size="sm" onClick={handleFinish} className="gap-1 text-xs h-[38px]">
-                  <CheckCircle2 className="h-3.5 w-3.5" /> Finish
+              <div className="flex gap-2 shrink-0">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleFinish}
+                  className="text-xs text-muted-foreground hover:text-foreground h-[44px] px-3 rounded-xl"
+                >
+                  Finish
                 </Button>
-                <Button size="sm" onClick={handleSend} disabled={!input.trim() || sending} className="h-[38px] w-[38px] p-0">
+                <Button
+                  size="sm"
+                  onClick={handleSend}
+                  disabled={!input.trim() || sending}
+                  className="h-[44px] w-[44px] p-0 rounded-xl"
+                >
                   <Send className="h-4 w-4" />
                 </Button>
               </div>
             </div>
-          </div>
+          </motion.div>
         )}
       </DialogContent>
     </Dialog>
