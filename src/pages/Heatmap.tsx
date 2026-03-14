@@ -120,6 +120,7 @@ export default function Heatmap() {
       );
       verdicts[key] = getVerdict(role, agentRisks[key]);
 
+      for (const cat of TASK_CATEGORIES) {
         grid[key][cat.id] = { score: null, tasks: [] };
       }
 
