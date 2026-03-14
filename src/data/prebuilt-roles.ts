@@ -395,7 +395,7 @@ export const prebuiltRoles: Record<string, JobAnalysisResult> = {
   "business analyst": {
     jobTitle: "Business Analyst",
     company: "",
-    summary: { augmentedPercent: 67, automationRiskPercent: 26, newSkillsPercent: 60 },
+    summary: { augmentedPercent: 70, automationRiskPercent: 22, newSkillsPercent: 50 },
     tasks: [
       { name: "Requirements documentation", currentState: "human_ai", trend: "fully_ai_soon", impactLevel: "high", description: "AI drafts requirements docs from meeting notes and conversations." },
       { name: "Process mapping & analysis", currentState: "human_ai", trend: "increasing_ai", impactLevel: "medium", description: "AI auto-generates process diagrams, analysts optimize and identify improvements." },
