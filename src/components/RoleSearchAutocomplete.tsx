@@ -119,10 +119,8 @@ export function RoleSearchAutocomplete() {
                 </div>
                 {role.automation_risk_percent != null && role.automation_risk_percent > 0 && (
                   <div className={`flex items-center gap-1 px-2 py-1 rounded-md text-xs font-bold shrink-0 ${
-                    role.automation_risk_percent >= 35 ? "bg-destructive/10 text-destructive" :
-                    role.automation_risk_percent >= 20 ? "bg-warning/10 text-warning" :
-                    "bg-success/10 text-success"
-                  }`}>
+                    getRiskTier(role.automation_risk_percent).bgClass
+                  } ${getRiskTier(role.automation_risk_percent).textClass}`}>
                     <TrendingUp className="h-3 w-3" />
                     {role.automation_risk_percent}%
                   </div>

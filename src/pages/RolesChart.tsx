@@ -86,9 +86,9 @@ function getRecommendation(role: JobAnalysisResult, agentRisk: number): RoleReco
 }
 
 const verdictConfig = {
-  upskill: { icon: TrendingUp, color: "hsl(234, 89%, 60%)", bg: "bg-primary/10", text: "text-primary", label: "Upskill" },
-  pivot: { icon: RefreshCw, color: "hsl(0, 84%, 55%)", bg: "bg-destructive/10", text: "text-destructive", label: "Pivot" },
-  leverage: { icon: Rocket, color: "hsl(142, 71%, 45%)", bg: "bg-green-500/10", text: "text-green-600", label: "Leverage" },
+  upskill: { icon: TrendingUp, color: "hsl(var(--dot-amber))", bg: "bg-dot-amber/10", text: "text-dot-amber", label: "Upskill" },
+  pivot: { icon: RefreshCw, color: "hsl(var(--dot-purple))", bg: "bg-dot-purple/10", text: "text-dot-purple", label: "Pivot" },
+  leverage: { icon: Rocket, color: "hsl(var(--dot-teal))", bg: "bg-dot-teal/10", text: "text-dot-teal", label: "Leverage" },
 };
 
 const CustomTooltip = ({ active, payload }: any) => {

@@ -203,7 +203,7 @@ export default function Heatmap() {
                 {/* Data rows */}
                 {roles.map((role) => {
                   const risk = agentRisks[role.key] || 0;
-                  const riskColor = risk >= 45 ? "hsl(0, 84%, 55%)" : risk >= 35 ? "hsl(25, 95%, 53%)" : risk >= 25 ? "hsl(45, 93%, 50%)" : "hsl(142, 71%, 50%)";
+                  const riskColor = getRiskTier(risk).color;
                   const v = verdicts[role.key] || "upskill";
                   const vc = verdictConfig[v];
                   return (
