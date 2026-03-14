@@ -453,7 +453,7 @@ const Index = () => {
       setTeamLoading(false);
     }
   };
-import { RoleSearchAutocomplete } from "@/components/RoleSearchAutocomplete";
+
 
   return (
     <div className="h-screen bg-background flex flex-col">
