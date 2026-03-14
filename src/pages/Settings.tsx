@@ -22,11 +22,13 @@ import { useToast } from "@/hooks/use-toast";
 import { Loader2, Save, Trash2, KeyRound } from "lucide-react";
 
 export default function Settings() {
-  const { user, loading: authLoading, signOut } = useAuth();
+  const { user, loading: authLoading, signOut, profile, refreshProfile } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
 
   const [displayName, setDisplayName] = useState("");
+  const [jobTitle, setJobTitle] = useState("");
+  const [company, setCompany] = useState("");
   const [saving, setSaving] = useState(false);
 
   const [currentPassword, setCurrentPassword] = useState("");
@@ -41,17 +43,11 @@ export default function Settings() {
   }, [authLoading, user, navigate]);
 
   useEffect(() => {
-    if (!user) return;
-    // Load profile display name
-    supabase
-      .from("profiles")
-      .select("display_name")
-      .eq("id", user.id)
-      .single()
-      .then(({ data }) => {
-        if (data?.display_name) setDisplayName(data.display_name);
-      });
-  }, [user]);
+    if (!profile) return;
+    setDisplayName(profile.displayName || "");
+    setJobTitle(profile.jobTitle || "");
+    setCompany(profile.company || "");
+  }, [profile]);
 
   const handleSaveProfile = async () => {
     if (!user) return;
