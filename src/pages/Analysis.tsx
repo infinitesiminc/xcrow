@@ -93,6 +93,8 @@ const Analysis = () => {
   const [simTask, setSimTask] = useState<TaskAnalysis | null>(null);
   const [completedTasks, setCompletedTasks] = useState<Set<string>>(new Set());
   const [pathwayData, setPathwayData] = useState<CareerMatchResult | null>(null);
+  const [pathwayLoading, setPathwayLoading] = useState(false);
+  const [pathwayError, setPathwayError] = useState(false);
   const [showStickyBar, setShowStickyBar] = useState(false);
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [bookmarkLoading, setBookmarkLoading] = useState(false);
@@ -227,12 +229,43 @@ const Analysis = () => {
     analyze();
   }, [jobTitle, company, hasJd, navigate]);
 
-  // Generate local career pathways
+  // Generate career pathways – local first, AI fallback
   useEffect(() => {
     if (!result?.jobTitle) return;
+    setPathwayLoading(true);
     const local = generateLocalPathways(result.jobTitle);
-    setPathwayData(local);
-  }, [result?.jobTitle]);
+    if (local && local.pathways.length > 0) {
+      setPathwayData(local);
+      setPathwayLoading(false);
+      return;
+    }
+    // AI fallback
+    const fetchAIPathways = async () => {
+      try {
+        const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+        const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+        const res = await fetch(`${supabaseUrl}/functions/v1/generate-pathways`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${supabaseKey}` },
+          body: JSON.stringify({
+            jobTitle: result.jobTitle,
+            tasks: result.tasks?.slice(0, 8),
+            skills: result.skills?.slice(0, 8),
+          }),
+        });
+        if (!res.ok) throw new Error("AI pathways failed");
+        const data = await res.json();
+        setPathwayData(data);
+      } catch (err) {
+        console.error("AI pathways error:", err);
+        setPathwayData(null);
+        setPathwayError(true);
+      } finally {
+        setPathwayLoading(false);
+      }
+    };
+    fetchAIPathways();
+  }, [result?.jobTitle, result?.tasks, result?.skills]);
 
   useEffect(() => {
     if (!company || !isWebsite(company)) return;
@@ -463,7 +496,7 @@ const Analysis = () => {
             </TabsContent>
 
             <TabsContent value="pathways">
-              <CareerPathways data={pathwayData} loading={false} error={!pathwayData} />
+              <CareerPathways data={pathwayData} loading={pathwayLoading} error={pathwayError} />
             </TabsContent>
 
             <TabsContent value="plan">
