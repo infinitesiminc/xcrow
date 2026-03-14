@@ -737,18 +737,18 @@ const Index = () => {
                               animate={{ opacity: 1, y: 0 }}
                               transition={{ duration: 0.4, delay: 0.1 + i * 0.05 }}
                               onClick={() => navigate(`/analysis?title=${encodeURIComponent(role.title)}&company=`)}
-                              className="group cursor-pointer text-left flex flex-col shrink-0 w-[140px] sm:w-[160px]"
+                              className="group cursor-pointer text-left flex flex-col shrink-0 w-[170px] sm:w-[200px]"
                             >
-                              <div className="relative overflow-hidden rounded-xl aspect-[4/3] mb-2">
+                              <div className="relative overflow-hidden rounded-xl aspect-[4/3] mb-2.5">
                                 <img src={role.image} alt={role.title} className="w-full h-full object-cover grayscale transition-all duration-300 group-hover:grayscale-0 group-hover:scale-105" />
-                                <div className="absolute top-1.5 right-1.5 flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-background/80 backdrop-blur-sm border border-border/40">
-                                  <span className={`w-1.5 h-1.5 rounded-full ${tier.dotColor}`} />
-                                  <span className="text-[10px] font-bold text-foreground">{role.agentRisk}%</span>
+                                <div className="absolute top-2 right-2 flex items-center gap-1.5 px-2 py-1 rounded-lg bg-background/80 backdrop-blur-sm border border-border/40">
+                                  <span className={`w-2 h-2 rounded-full ${tier.dotColor}`} />
+                                  <span className="text-xs font-bold text-foreground">{role.agentRisk}%</span>
                                 </div>
                               </div>
-                              <h3 className="text-sm font-semibold font-sans text-foreground leading-tight">{role.title}</h3>
-                              <div className="flex items-center gap-2 mt-0.5">
-                                <span className="text-[10px] px-1.5 py-0.5 rounded bg-accent text-muted-foreground">{role.tag}</span>
+                              <h3 className="text-[15px] font-semibold font-sans text-foreground leading-snug">{role.title}</h3>
+                              <div className="flex items-center gap-2 mt-1">
+                                <span className="text-[11px] px-2 py-0.5 rounded bg-accent text-muted-foreground">{role.tag}</span>
                               </div>
                             </motion.button>
                           ))}
