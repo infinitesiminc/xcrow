@@ -54,6 +54,14 @@ export default function Navbar() {
             For Organizations
           </Button>
           <Button
+            variant={isActive("/pricing") ? "secondary" : "ghost"}
+            size="sm"
+            onClick={() => navigate("/pricing")}
+            className="text-sm"
+          >
+            Pricing
+          </Button>
+          <Button
             variant={isActive("/") ? "secondary" : "ghost"}
             size="sm"
             onClick={() => navigate("/")}
