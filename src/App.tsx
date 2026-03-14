@@ -20,6 +20,7 @@ import ContactOrg from "./pages/ContactOrg.tsx";
 import Contact from "./pages/Contact.tsx";
 import Pricing from "./pages/Pricing.tsx";
 import CompanyDashboard from "./pages/CompanyDashboard.tsx";
+import ProjectStaffing from "./pages/ProjectStaffing.tsx";
 
 const queryClient = new QueryClient();
 
