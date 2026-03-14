@@ -100,8 +100,10 @@ export default function Heatmap() {
   const [hoveredCell, setHoveredCell] = useState<{ role: string; cat: string } | null>(null);
   const [tooltipPos, setTooltipPos] = useState({ x: 0, y: 0 });
 
-  const { grid, roles, agentRisks } = useMemo(() => {
+  const { grid, roles, agentRisks, verdicts } = useMemo(() => {
     const grid: Record<string, Record<string, CellData>> = {};
+    const agentRisks: Record<string, number> = {};
+    const verdicts: Record<string, Verdict> = {};
     const agentRisks: Record<string, number> = {};
     const rolesData: { key: string; title: string }[] = [];
 
