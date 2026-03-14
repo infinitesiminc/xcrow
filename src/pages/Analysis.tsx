@@ -1,6 +1,6 @@
-import { useEffect, useState, useCallback, useMemo } from "react";
+import { useEffect, useState, useCallback, useMemo, useRef } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowLeft, Zap, AlertTriangle, Bot, ExternalLink,
   Building2, Users, MapPin, Calendar,
@@ -18,6 +18,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { fetchCareerPathways, type EscoMatchResult, type EscoPathway } from "@/lib/esco-api";
+import { getRiskTier } from "@/lib/risk-colors";
 import { generateLocalPathways } from "@/lib/local-pathways";
 
 import SimulatorModal from "@/components/SimulatorModal";
@@ -94,6 +95,8 @@ const Analysis = () => {
   const [escoData, setEscoData] = useState<EscoMatchResult | null>(null);
   const [escoLoading, setEscoLoading] = useState(false);
   const [escoError, setEscoError] = useState(false);
+  const [showStickyBar, setShowStickyBar] = useState(false);
+  const heroRef = useRef<HTMLDivElement>(null);
   const { user } = useAuth();
 
   const fetchCompletions = useCallback(async () => {
@@ -106,6 +109,18 @@ const Analysis = () => {
   }, [user]);
 
   useEffect(() => { fetchCompletions(); }, [fetchCompletions]);
+
+  // Show sticky bar when hero card scrolls out of view
+  useEffect(() => {
+    const el = heroRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => setShowStickyBar(!entry.isIntersecting),
+      { threshold: 0 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [loading, result]);
 
   const saveAnalysisHistory = useCallback(async (analysisResult: JobAnalysisResult) => {
     if (!user) return;
@@ -271,6 +286,33 @@ const Analysis = () => {
 
   return (
     <div className="min-h-screen bg-background px-4 py-8">
+      {/* Sticky context bar */}
+      <AnimatePresence>
+        {showStickyBar && (
+          <motion.div
+            initial={{ y: -40, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: -40, opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-border/50"
+          >
+            <div className="max-w-4xl mx-auto px-4 py-2 flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <button onClick={() => navigate("/")} className="p-1 rounded-md hover:bg-accent transition-colors shrink-0">
+                  <ArrowLeft className="h-3.5 w-3.5 text-muted-foreground" />
+                </button>
+                <span className="text-sm font-semibold text-foreground truncate">{result.jobTitle}</span>
+              </div>
+              <div className="flex items-center gap-2 shrink-0">
+                <span className={`w-2 h-2 rounded-full ${getRiskTier(agentRisk).dotClass}`} />
+                <span className="text-xs font-bold text-foreground tabular-nums">{agentRisk}%</span>
+                <span className="text-[10px] text-muted-foreground">agent risk</span>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
@@ -306,7 +348,7 @@ const Analysis = () => {
         </motion.div>
 
         {/* Section 1: Risk Gauge + Verdict */}
-        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="mb-8">
+        <motion.div ref={heroRef} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="mb-8">
           <Card className="border-border/50 overflow-hidden">
             <CardContent className="p-6 sm:p-8">
               <RiskGauge
