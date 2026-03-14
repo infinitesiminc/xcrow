@@ -160,6 +160,16 @@ export default function ForOrganizations() {
         </div>
       </section>
 
+      {/* Logo marquee */}
+      <section className="px-4 py-8">
+        <div className="mx-auto max-w-5xl">
+          <p className="text-center text-xs font-medium text-muted-foreground uppercase tracking-widest mb-4">
+            Trusted by teams at leading organizations
+          </p>
+          <CompanyMarquee rows={MARQUEE_ROWS} />
+        </div>
+      </section>
+
       {/* Challenge stats */}
       <section className="px-4 py-12 bg-accent/20">
         <div className="mx-auto max-w-4xl">
