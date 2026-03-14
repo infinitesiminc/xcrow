@@ -4,7 +4,7 @@ export const prebuiltRoles: Record<string, JobAnalysisResult> = {
   "software engineer": {
     jobTitle: "Software Engineer",
     company: "",
-    summary: { augmentedPercent: 72, automationRiskPercent: 15, newSkillsPercent: 65 },
+    summary: { augmentedPercent: 80, automationRiskPercent: 10, newSkillsPercent: 45 },
     tasks: [
       { name: "Writing boilerplate code", currentState: "mostly_ai", trend: "fully_ai_soon", impactLevel: "high", description: "AI code generators handle repetitive patterns, scaffolding, and standard implementations." },
       { name: "Code review", currentState: "human_ai", trend: "increasing_ai", impactLevel: "medium", description: "AI flags issues and suggests fixes, but human judgment on architecture and design remains critical." },
@@ -27,7 +27,7 @@ export const prebuiltRoles: Record<string, JobAnalysisResult> = {
   "marketing manager": {
     jobTitle: "Marketing Manager",
     company: "",
-    summary: { augmentedPercent: 68, automationRiskPercent: 25, newSkillsPercent: 70 },
+    summary: { augmentedPercent: 62, automationRiskPercent: 32, newSkillsPercent: 68 },
     tasks: [
       { name: "Campaign performance analysis", currentState: "human_ai", trend: "increasing_ai", impactLevel: "medium", description: "AI dashboards surface insights instantly, but humans set KPIs and interpret business context." },
       { name: "Ad copy & creative briefs", currentState: "human_ai", trend: "fully_ai_soon", impactLevel: "high", description: "Generative AI drafts ad copy, headlines, and creative briefs in seconds." },
@@ -50,7 +50,7 @@ export const prebuiltRoles: Record<string, JobAnalysisResult> = {
   "accountant": {
     jobTitle: "Accountant",
     company: "",
-    summary: { augmentedPercent: 60, automationRiskPercent: 35, newSkillsPercent: 55 },
+    summary: { augmentedPercent: 55, automationRiskPercent: 42, newSkillsPercent: 60 },
     tasks: [
       { name: "Data entry & bookkeeping", currentState: "mostly_ai", trend: "fully_ai_soon", impactLevel: "high", description: "Automated systems handle transaction recording, categorization, and reconciliation." },
       { name: "Tax preparation", currentState: "human_ai", trend: "increasing_ai", impactLevel: "medium", description: "AI pre-fills returns and flags deductions, but complex tax situations need human judgment." },
@@ -73,7 +73,7 @@ export const prebuiltRoles: Record<string, JobAnalysisResult> = {
   "data scientist": {
     jobTitle: "Data Scientist",
     company: "",
-    summary: { augmentedPercent: 78, automationRiskPercent: 12, newSkillsPercent: 70 },
+    summary: { augmentedPercent: 82, automationRiskPercent: 10, newSkillsPercent: 40 },
     tasks: [
       { name: "Exploratory data analysis", currentState: "human_ai", trend: "increasing_ai", impactLevel: "medium", description: "AI auto-generates visualizations and statistical summaries, but hypothesis formation remains human-driven." },
       { name: "Feature engineering", currentState: "human_ai", trend: "increasing_ai", impactLevel: "medium", description: "AutoML tools suggest features, but domain expertise is key for meaningful transformations." },
@@ -96,7 +96,7 @@ export const prebuiltRoles: Record<string, JobAnalysisResult> = {
   "product manager": {
     jobTitle: "Product Manager",
     company: "",
-    summary: { augmentedPercent: 65, automationRiskPercent: 18, newSkillsPercent: 60 },
+    summary: { augmentedPercent: 72, automationRiskPercent: 12, newSkillsPercent: 45 },
     tasks: [
       { name: "User research synthesis", currentState: "human_ai", trend: "increasing_ai", impactLevel: "medium", description: "AI summarizes interviews and surveys, but extracting deep user needs requires human empathy." },
       { name: "Writing PRDs & specs", currentState: "human_ai", trend: "fully_ai_soon", impactLevel: "high", description: "AI drafts product specs from brief descriptions, significantly speeding up documentation." },
@@ -119,7 +119,7 @@ export const prebuiltRoles: Record<string, JobAnalysisResult> = {
   "devops engineer": {
     jobTitle: "DevOps Engineer",
     company: "",
-    summary: { augmentedPercent: 70, automationRiskPercent: 20, newSkillsPercent: 65 },
+    summary: { augmentedPercent: 70, automationRiskPercent: 20, newSkillsPercent: 55 },
     tasks: [
       { name: "Infrastructure provisioning", currentState: "human_ai", trend: "fully_ai_soon", impactLevel: "high", description: "AI generates IaC templates and auto-provisions cloud resources from natural language descriptions." },
       { name: "CI/CD pipeline management", currentState: "human_ai", trend: "increasing_ai", impactLevel: "medium", description: "AI optimizes build pipelines, detects flaky tests, and suggests parallelization improvements." },
@@ -142,7 +142,7 @@ export const prebuiltRoles: Record<string, JobAnalysisResult> = {
   "ux designer": {
     jobTitle: "UX Designer",
     company: "",
-    summary: { augmentedPercent: 60, automationRiskPercent: 22, newSkillsPercent: 58 },
+    summary: { augmentedPercent: 65, automationRiskPercent: 22, newSkillsPercent: 50 },
     tasks: [
       { name: "Wireframing & prototyping", currentState: "human_ai", trend: "increasing_ai", impactLevel: "medium", description: "AI generates wireframes from text prompts, but design decisions require human taste and judgment." },
       { name: "Visual design & UI creation", currentState: "human_ai", trend: "increasing_ai", impactLevel: "medium", description: "AI tools generate UI variants rapidly, but brand coherence needs human curation." },
@@ -165,7 +165,7 @@ export const prebuiltRoles: Record<string, JobAnalysisResult> = {
   "cybersecurity analyst": {
     jobTitle: "Cybersecurity Analyst",
     company: "",
-    summary: { augmentedPercent: 68, automationRiskPercent: 16, newSkillsPercent: 62 },
+    summary: { augmentedPercent: 78, automationRiskPercent: 10, newSkillsPercent: 40 },
     tasks: [
       { name: "Threat detection & monitoring", currentState: "human_ai", trend: "increasing_ai", impactLevel: "medium", description: "AI-powered SIEM tools detect anomalies in real-time, reducing manual log review." },
       { name: "Vulnerability scanning", currentState: "mostly_ai", trend: "fully_ai_soon", impactLevel: "high", description: "Automated scanners identify vulnerabilities across networks and applications continuously." },
@@ -188,7 +188,7 @@ export const prebuiltRoles: Record<string, JobAnalysisResult> = {
   "financial analyst": {
     jobTitle: "Financial Analyst",
     company: "",
-    summary: { augmentedPercent: 70, automationRiskPercent: 28, newSkillsPercent: 62 },
+    summary: { augmentedPercent: 72, automationRiskPercent: 22, newSkillsPercent: 50 },
     tasks: [
       { name: "Financial modeling", currentState: "human_ai", trend: "increasing_ai", impactLevel: "medium", description: "AI generates baseline models and scenarios, but assumptions and logic need human validation." },
       { name: "Data gathering & consolidation", currentState: "mostly_ai", trend: "fully_ai_soon", impactLevel: "high", description: "AI pulls data from multiple sources, cleans it, and consolidates into analysis-ready formats." },
@@ -211,7 +211,7 @@ export const prebuiltRoles: Record<string, JobAnalysisResult> = {
   "investment banker": {
     jobTitle: "Investment Banker",
     company: "",
-    summary: { augmentedPercent: 55, automationRiskPercent: 20, newSkillsPercent: 50 },
+    summary: { augmentedPercent: 70, automationRiskPercent: 14, newSkillsPercent: 35 },
     tasks: [
       { name: "Pitch book creation", currentState: "human_ai", trend: "fully_ai_soon", impactLevel: "high", description: "AI generates pitch decks with market data, comps, and formatting in minutes." },
       { name: "Financial modeling & valuation", currentState: "human_ai", trend: "increasing_ai", impactLevel: "medium", description: "AI builds DCF models and comps tables, bankers focus on assumptions and narrative." },
@@ -234,7 +234,7 @@ export const prebuiltRoles: Record<string, JobAnalysisResult> = {
   "tax advisor": {
     jobTitle: "Tax Advisor",
     company: "",
-    summary: { augmentedPercent: 62, automationRiskPercent: 38, newSkillsPercent: 55 },
+    summary: { augmentedPercent: 55, automationRiskPercent: 44, newSkillsPercent: 58 },
     tasks: [
       { name: "Tax return preparation", currentState: "mostly_ai", trend: "fully_ai_soon", impactLevel: "high", description: "AI software auto-fills returns, calculates obligations, and checks for errors." },
       { name: "Tax planning & strategy", currentState: "mostly_human", trend: "increasing_ai", impactLevel: "medium", description: "AI suggests tax-saving strategies, but complex planning needs human expertise." },
@@ -257,7 +257,7 @@ export const prebuiltRoles: Record<string, JobAnalysisResult> = {
   "risk manager": {
     jobTitle: "Risk Manager",
     company: "",
-    summary: { augmentedPercent: 66, automationRiskPercent: 24, newSkillsPercent: 60 },
+    summary: { augmentedPercent: 68, automationRiskPercent: 20, newSkillsPercent: 50 },
     tasks: [
       { name: "Risk identification & assessment", currentState: "human_ai", trend: "increasing_ai", impactLevel: "medium", description: "AI scans data for risk indicators, but humans assess context and interconnected risks." },
       { name: "Quantitative risk modeling", currentState: "human_ai", trend: "increasing_ai", impactLevel: "medium", description: "AI runs simulations and stress tests, analysts validate assumptions and scenarios." },
@@ -280,7 +280,7 @@ export const prebuiltRoles: Record<string, JobAnalysisResult> = {
   "auditor": {
     jobTitle: "Auditor",
     company: "",
-    summary: { augmentedPercent: 58, automationRiskPercent: 42, newSkillsPercent: 52 },
+    summary: { augmentedPercent: 52, automationRiskPercent: 48, newSkillsPercent: 62 },
     tasks: [
       { name: "Transaction sampling & testing", currentState: "mostly_ai", trend: "fully_ai_soon", impactLevel: "high", description: "AI analyzes entire populations instead of samples, finding anomalies with higher accuracy." },
       { name: "Document review", currentState: "mostly_ai", trend: "fully_ai_soon", impactLevel: "high", description: "AI reads, classifies, and extracts key data from thousands of documents automatically." },
@@ -303,7 +303,7 @@ export const prebuiltRoles: Record<string, JobAnalysisResult> = {
   "content strategist": {
     jobTitle: "Content Strategist",
     company: "",
-    summary: { augmentedPercent: 74, automationRiskPercent: 30, newSkillsPercent: 68 },
+    summary: { augmentedPercent: 74, automationRiskPercent: 22, newSkillsPercent: 50 },
     tasks: [
       { name: "Content creation & drafting", currentState: "human_ai", trend: "fully_ai_soon", impactLevel: "high", description: "AI generates blog posts, social copy, and marketing content from brief prompts." },
       { name: "SEO content optimization", currentState: "mostly_ai", trend: "fully_ai_soon", impactLevel: "high", description: "AI tools handle keyword research, on-page optimization, and content gap analysis." },
@@ -326,7 +326,7 @@ export const prebuiltRoles: Record<string, JobAnalysisResult> = {
   "seo specialist": {
     jobTitle: "SEO Specialist",
     company: "",
-    summary: { augmentedPercent: 72, automationRiskPercent: 40, newSkillsPercent: 65 },
+    summary: { augmentedPercent: 68, automationRiskPercent: 45, newSkillsPercent: 65 },
     tasks: [
       { name: "Keyword research", currentState: "mostly_ai", trend: "fully_ai_soon", impactLevel: "high", description: "AI tools identify keyword opportunities, search intent, and content gaps automatically." },
       { name: "Technical SEO audits", currentState: "mostly_ai", trend: "fully_ai_soon", impactLevel: "high", description: "AI crawlers detect technical issues, suggest fixes, and monitor site health continuously." },
@@ -349,7 +349,7 @@ export const prebuiltRoles: Record<string, JobAnalysisResult> = {
   "social media manager": {
     jobTitle: "Social Media Manager",
     company: "",
-    summary: { augmentedPercent: 70, automationRiskPercent: 35, newSkillsPercent: 65 },
+    summary: { augmentedPercent: 65, automationRiskPercent: 38, newSkillsPercent: 62 },
     tasks: [
       { name: "Content creation & posting", currentState: "human_ai", trend: "fully_ai_soon", impactLevel: "high", description: "AI generates posts, captions, images, and videos tailored to each platform." },
       { name: "Scheduling & publishing", currentState: "mostly_ai", trend: "fully_ai_soon", impactLevel: "high", description: "AI optimizes posting times and auto-publishes across platforms." },
@@ -372,7 +372,7 @@ export const prebuiltRoles: Record<string, JobAnalysisResult> = {
   "brand strategist": {
     jobTitle: "Brand Strategist",
     company: "",
-    summary: { augmentedPercent: 55, automationRiskPercent: 15, newSkillsPercent: 50 },
+    summary: { augmentedPercent: 72, automationRiskPercent: 8, newSkillsPercent: 35 },
     tasks: [
       { name: "Brand research & audits", currentState: "human_ai", trend: "increasing_ai", impactLevel: "medium", description: "AI analyzes brand perception across channels, strategists interpret implications." },
       { name: "Positioning & messaging", currentState: "mostly_human", trend: "stable", impactLevel: "low", description: "Crafting differentiated brand positioning requires deep market intuition and creativity." },
@@ -395,7 +395,7 @@ export const prebuiltRoles: Record<string, JobAnalysisResult> = {
   "business analyst": {
     jobTitle: "Business Analyst",
     company: "",
-    summary: { augmentedPercent: 67, automationRiskPercent: 26, newSkillsPercent: 60 },
+    summary: { augmentedPercent: 70, automationRiskPercent: 22, newSkillsPercent: 50 },
     tasks: [
       { name: "Requirements documentation", currentState: "human_ai", trend: "fully_ai_soon", impactLevel: "high", description: "AI drafts requirements docs from meeting notes and conversations." },
       { name: "Process mapping & analysis", currentState: "human_ai", trend: "increasing_ai", impactLevel: "medium", description: "AI auto-generates process diagrams, analysts optimize and identify improvements." },
@@ -418,7 +418,7 @@ export const prebuiltRoles: Record<string, JobAnalysisResult> = {
   "project manager": {
     jobTitle: "Project Manager",
     company: "",
-    summary: { augmentedPercent: 62, automationRiskPercent: 22, newSkillsPercent: 58 },
+    summary: { augmentedPercent: 68, automationRiskPercent: 20, newSkillsPercent: 48 },
     tasks: [
       { name: "Status reporting", currentState: "human_ai", trend: "fully_ai_soon", impactLevel: "high", description: "AI auto-generates project status reports from task management tools and communications." },
       { name: "Schedule management", currentState: "human_ai", trend: "increasing_ai", impactLevel: "medium", description: "AI optimizes schedules, predicts delays, and suggests resource adjustments." },
@@ -441,7 +441,7 @@ export const prebuiltRoles: Record<string, JobAnalysisResult> = {
   "hr manager": {
     jobTitle: "HR Manager",
     company: "",
-    summary: { augmentedPercent: 58, automationRiskPercent: 30, newSkillsPercent: 55 },
+    summary: { augmentedPercent: 55, automationRiskPercent: 35, newSkillsPercent: 55 },
     tasks: [
       { name: "Resume screening", currentState: "mostly_ai", trend: "fully_ai_soon", impactLevel: "high", description: "AI screens resumes, matches candidates to roles, and ranks applicants automatically." },
       { name: "Employee onboarding", currentState: "human_ai", trend: "increasing_ai", impactLevel: "medium", description: "AI automates onboarding workflows and training, but cultural integration is human." },
@@ -464,7 +464,7 @@ export const prebuiltRoles: Record<string, JobAnalysisResult> = {
   "supply chain manager": {
     jobTitle: "Supply Chain Manager",
     company: "",
-    summary: { augmentedPercent: 65, automationRiskPercent: 28, newSkillsPercent: 60 },
+    summary: { augmentedPercent: 70, automationRiskPercent: 22, newSkillsPercent: 48 },
     tasks: [
       { name: "Demand forecasting", currentState: "human_ai", trend: "fully_ai_soon", impactLevel: "high", description: "AI models predict demand using historical data, weather, events, and market signals." },
       { name: "Inventory optimization", currentState: "human_ai", trend: "increasing_ai", impactLevel: "medium", description: "AI calculates optimal stock levels and reorder points across the network." },
@@ -487,7 +487,7 @@ export const prebuiltRoles: Record<string, JobAnalysisResult> = {
   "operations manager": {
     jobTitle: "Operations Manager",
     company: "",
-    summary: { augmentedPercent: 60, automationRiskPercent: 25, newSkillsPercent: 55 },
+    summary: { augmentedPercent: 65, automationRiskPercent: 22, newSkillsPercent: 48 },
     tasks: [
       { name: "Process monitoring", currentState: "human_ai", trend: "fully_ai_soon", impactLevel: "high", description: "AI dashboards track operational KPIs and flag deviations in real-time." },
       { name: "Workflow optimization", currentState: "human_ai", trend: "increasing_ai", impactLevel: "medium", description: "AI identifies bottlenecks and suggests process improvements from operational data." },
@@ -510,7 +510,7 @@ export const prebuiltRoles: Record<string, JobAnalysisResult> = {
   "customer success manager": {
     jobTitle: "Customer Success Manager",
     company: "",
-    summary: { augmentedPercent: 55, automationRiskPercent: 20, newSkillsPercent: 50 },
+    summary: { augmentedPercent: 72, automationRiskPercent: 12, newSkillsPercent: 35 },
     tasks: [
       { name: "Health scoring & monitoring", currentState: "human_ai", trend: "fully_ai_soon", impactLevel: "high", description: "AI tracks product usage, engagement, and sentiment to predict churn risk." },
       { name: "Onboarding coordination", currentState: "human_ai", trend: "increasing_ai", impactLevel: "medium", description: "AI personalizes onboarding paths, but high-touch guidance needs human attention." },
@@ -533,7 +533,7 @@ export const prebuiltRoles: Record<string, JobAnalysisResult> = {
   "qa manager": {
     jobTitle: "QA Manager",
     company: "",
-    summary: { augmentedPercent: 64, automationRiskPercent: 32, newSkillsPercent: 58 },
+    summary: { augmentedPercent: 60, automationRiskPercent: 38, newSkillsPercent: 60 },
     tasks: [
       { name: "Test case generation", currentState: "human_ai", trend: "fully_ai_soon", impactLevel: "high", description: "AI generates comprehensive test cases from requirements and code changes." },
       { name: "Automated test execution", currentState: "mostly_ai", trend: "fully_ai_soon", impactLevel: "high", description: "AI-driven test automation runs regression suites and reports results continuously." },
@@ -556,7 +556,7 @@ export const prebuiltRoles: Record<string, JobAnalysisResult> = {
   "corporate lawyer": {
     jobTitle: "Corporate Lawyer",
     company: "",
-    summary: { augmentedPercent: 55, automationRiskPercent: 18, newSkillsPercent: 48 },
+    summary: { augmentedPercent: 72, automationRiskPercent: 10, newSkillsPercent: 35 },
     tasks: [
       { name: "Contract review & drafting", currentState: "human_ai", trend: "increasing_ai", impactLevel: "medium", description: "AI reviews contracts for risks and drafts standard clauses, lawyers handle complex terms." },
       { name: "Legal research", currentState: "human_ai", trend: "fully_ai_soon", impactLevel: "high", description: "AI searches case law, statutes, and regulations in seconds with high accuracy." },
@@ -579,7 +579,7 @@ export const prebuiltRoles: Record<string, JobAnalysisResult> = {
   "compliance officer": {
     jobTitle: "Compliance Officer",
     company: "",
-    summary: { augmentedPercent: 60, automationRiskPercent: 32, newSkillsPercent: 55 },
+    summary: { augmentedPercent: 58, automationRiskPercent: 36, newSkillsPercent: 58 },
     tasks: [
       { name: "Regulatory monitoring", currentState: "human_ai", trend: "fully_ai_soon", impactLevel: "high", description: "AI continuously scans regulatory updates and maps them to organizational obligations." },
       { name: "Policy documentation", currentState: "human_ai", trend: "increasing_ai", impactLevel: "medium", description: "AI drafts and updates compliance policies, officers review for organizational context." },
@@ -602,7 +602,7 @@ export const prebuiltRoles: Record<string, JobAnalysisResult> = {
   "paralegal": {
     jobTitle: "Paralegal",
     company: "",
-    summary: { augmentedPercent: 68, automationRiskPercent: 45, newSkillsPercent: 60 },
+    summary: { augmentedPercent: 62, automationRiskPercent: 50, newSkillsPercent: 65 },
     tasks: [
       { name: "Document review & organization", currentState: "mostly_ai", trend: "fully_ai_soon", impactLevel: "high", description: "AI reviews, classifies, and organizes legal documents orders of magnitude faster." },
       { name: "Legal research", currentState: "human_ai", trend: "fully_ai_soon", impactLevel: "high", description: "AI searches case law and statutes comprehensively, paralegals verify and contextualize." },
@@ -625,7 +625,7 @@ export const prebuiltRoles: Record<string, JobAnalysisResult> = {
   "contract attorney": {
     jobTitle: "Contract Attorney",
     company: "",
-    summary: { augmentedPercent: 65, automationRiskPercent: 40, newSkillsPercent: 58 },
+    summary: { augmentedPercent: 60, automationRiskPercent: 44, newSkillsPercent: 58 },
     tasks: [
       { name: "Contract drafting", currentState: "human_ai", trend: "increasing_ai", impactLevel: "medium", description: "AI generates contract drafts from templates and playbooks, attorneys refine terms." },
       { name: "Contract review & redlining", currentState: "human_ai", trend: "fully_ai_soon", impactLevel: "high", description: "AI identifies risky clauses, deviations from standards, and suggests redlines." },
@@ -648,7 +648,7 @@ export const prebuiltRoles: Record<string, JobAnalysisResult> = {
   "ip specialist": {
     jobTitle: "IP Specialist",
     company: "",
-    summary: { augmentedPercent: 52, automationRiskPercent: 15, newSkillsPercent: 48 },
+    summary: { augmentedPercent: 75, automationRiskPercent: 8, newSkillsPercent: 30 },
     tasks: [
       { name: "Patent searching", currentState: "human_ai", trend: "increasing_ai", impactLevel: "medium", description: "AI searches patent databases comprehensively, but evaluating novelty requires expertise." },
       { name: "Patent drafting", currentState: "human_ai", trend: "increasing_ai", impactLevel: "medium", description: "AI assists with claims drafting and specification writing, but inventive step analysis is human." },
@@ -671,7 +671,7 @@ export const prebuiltRoles: Record<string, JobAnalysisResult> = {
   "legal ops manager": {
     jobTitle: "Legal Ops Manager",
     company: "",
-    summary: { augmentedPercent: 63, automationRiskPercent: 28, newSkillsPercent: 58 },
+    summary: { augmentedPercent: 68, automationRiskPercent: 22, newSkillsPercent: 48 },
     tasks: [
       { name: "Legal tech management", currentState: "human_ai", trend: "increasing_ai", impactLevel: "medium", description: "AI helps evaluate and optimize the legal tech stack, but strategy decisions are human." },
       { name: "Budget & spend analytics", currentState: "human_ai", trend: "fully_ai_soon", impactLevel: "high", description: "AI tracks legal spend, analyzes vendor invoices, and identifies cost-saving opportunities." },
