@@ -475,6 +475,9 @@ const Index = () => {
           <Button variant="ghost" size="sm" className="text-xs h-7" onClick={() => navigate("/for-organizations")}>
             For Organizations
           </Button>
+          <Button variant="ghost" size="sm" className="text-xs h-7" onClick={() => navigate("/pricing")}>
+            Pricing
+          </Button>
           {user ? (
             <Button variant="ghost" size="sm" className="text-xs h-7" onClick={() => navigate("/dashboard")}>
               <LayoutDashboard className="mr-1 h-3.5 w-3.5" /> Dashboard
