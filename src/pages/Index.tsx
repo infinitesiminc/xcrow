@@ -2,6 +2,7 @@ import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowRight, Briefcase, BarChart3, BookOpen, Users, Plus, X, Loader2, FileText, Link, Upload, Search, User, LayoutDashboard, TrendingUp, ChevronLeft, ChevronRight } from "lucide-react";
+import logoImg from "@/assets/logo.png";
 import roleSoftwareEngineer from "@/assets/role-software-engineer.jpg";
 import roleMarketingManager from "@/assets/role-marketing-manager.jpg";
 import roleAccountant from "@/assets/role-accountant.jpg";
@@ -447,7 +448,7 @@ const Index = () => {
       {/* Minimal top bar */}
       <div className="flex items-center justify-between px-4 sm:px-6 py-2 shrink-0">
         <div className="flex items-center gap-2 font-heading text-sm font-bold tracking-tight text-foreground">
-          <BarChart3 className="h-4 w-4 text-primary" />
+          <img src={logoImg} alt="Infinite Sim" className="h-5 w-5" />
           Infinite Sim
         </div>
         <div className="flex items-center gap-1">
