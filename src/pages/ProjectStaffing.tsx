@@ -69,6 +69,7 @@ const ProjectStaffing = ({ embedded }: { embedded?: boolean }) => {
   const [simGenerated, setSimGenerated] = useState(false);
   const [simGenerating, setSimGenerating] = useState(false);
   const [selectedCandidates, setSelectedCandidates] = useState<Set<string>>(new Set());
+  const [showResults, setShowResults] = useState(false);
 
   const filteredSuggestions = useMemo(() => {
     if (!skillSearch) return [];
@@ -451,13 +452,13 @@ const ProjectStaffing = ({ embedded }: { embedded?: boolean }) => {
                         </div>
 
                         <div className="flex items-center gap-2 pt-2">
-                          <Button size="sm" className="gap-1.5 text-xs" disabled={selectedCandidates.size === 0}>
-                            <Send className="h-3 w-3" /> Send to {selectedCandidates.size > 0 ? `${selectedCandidates.size} Candidate${selectedCandidates.size > 1 ? "s" : ""}` : "Candidates"}
+                          <Button size="sm" className="gap-1.5 text-xs" disabled={selectedCandidates.size === 0} onClick={() => setShowResults(true)}>
+                            <Send className="h-3 w-3" /> {showResults ? "Results Sent" : `Send to ${selectedCandidates.size > 0 ? `${selectedCandidates.size} Candidate${selectedCandidates.size > 1 ? "s" : ""}` : "Candidates"}`}
                           </Button>
                           <Button size="sm" variant="outline" className="gap-1.5 text-xs">
                             <Play className="h-3 w-3" /> Preview Simulation
                           </Button>
-                          <Button size="sm" variant="ghost" className="text-xs" onClick={() => { setSimGenerated(false); }}>
+                          <Button size="sm" variant="ghost" className="text-xs" onClick={() => { setSimGenerated(false); setShowResults(false); }}>
                             Regenerate
                           </Button>
                         </div>
@@ -465,6 +466,109 @@ const ProjectStaffing = ({ embedded }: { embedded?: boolean }) => {
                     )}
                   </CardContent>
                 </Card>
+              </motion.div>
+            )}
+
+            {/* Simulation Results */}
+            {showResults && simGenerated && rankedStaff.length >= 3 && (
+              <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="mt-8">
+                <h2 className="text-xs font-medium uppercase tracking-widest text-muted-foreground mb-4 flex items-center gap-2">
+                  <Target className="h-4 w-4" /> Simulation Results — {projectName || "Project"}
+                </h2>
+
+                <div className="space-y-4">
+                  {rankedStaff.slice(0, 3).map((staff, idx) => {
+                    const h = hashStr(staff.name + "simresult");
+                    const overallScore = 55 + (h % 35); // 55-89
+                    const completionTime = `${12 + (h % 20)} min`;
+                    const skillScores = mockSimScenarios.map((sc) => {
+                      const sh = hashStr(staff.name + sc.skill);
+                      return {
+                        skill: sc.skill,
+                        score: 40 + (sh % 55), // 40-94
+                        correct: 1 + (sh % sc.questions),
+                        total: sc.questions,
+                      };
+                    });
+                    const strengths = skillScores.filter((s) => s.score >= 70).map((s) => s.skill);
+                    const gaps = skillScores.filter((s) => s.score < 55).map((s) => s.skill);
+                    const verdict = overallScore >= 75 ? "Strong Fit" : overallScore >= 60 ? "Potential Fit" : "Needs Development";
+                    const verdictColor = overallScore >= 75 ? "text-success" : overallScore >= 60 ? "text-warning" : "text-destructive";
+                    const verdictBg = overallScore >= 75 ? "bg-success/10 border-success/20" : overallScore >= 60 ? "bg-warning/10 border-warning/20" : "bg-destructive/10 border-destructive/20";
+
+                    return (
+                      <Card key={staff.name} className="border-border overflow-hidden">
+                        <CardContent className="p-0">
+                          {/* Header */}
+                          <div className="flex items-center gap-3 p-4 border-b border-border">
+                            <div className={`flex items-center justify-center w-8 h-8 rounded-lg text-xs font-bold shrink-0 ${
+                              idx === 0 ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"
+                            }`}>
+                              #{idx + 1}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <span className="font-medium text-sm text-foreground">{staff.name}</span>
+                              <p className="text-xs text-muted-foreground">{staff.role} · {staff.department}</p>
+                            </div>
+                            <div className="text-right shrink-0">
+                              <span className={`text-2xl font-bold ${verdictColor}`}>{overallScore}%</span>
+                              <Badge variant="outline" className={`block mt-1 text-[9px] ${verdictBg} ${verdictColor}`}>{verdict}</Badge>
+                            </div>
+                          </div>
+
+                          {/* Skill scores */}
+                          <div className="p-4 space-y-3">
+                            <div className="flex items-center justify-between text-[10px] text-muted-foreground">
+                              <span>Completed in {completionTime}</span>
+                              <span>{skillScores.reduce((s, sc) => s + sc.correct, 0)}/{skillScores.reduce((s, sc) => s + sc.total, 0)} correct</span>
+                            </div>
+
+                            {skillScores.map((sc) => (
+                              <div key={sc.skill}>
+                                <div className="flex items-center justify-between mb-1">
+                                  <span className="text-xs text-foreground">{sc.skill}</span>
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-[10px] text-muted-foreground">{sc.correct}/{sc.total}</span>
+                                    <span className={`text-xs font-medium ${sc.score >= 70 ? "text-success" : sc.score >= 55 ? "text-warning" : "text-destructive"}`}>{sc.score}%</span>
+                                  </div>
+                                </div>
+                                <div className="w-full h-1.5 rounded-full bg-secondary overflow-hidden">
+                                  <div className={`h-full rounded-full transition-all duration-700 ${
+                                    sc.score >= 70 ? "bg-success" : sc.score >= 55 ? "bg-warning" : "bg-destructive"
+                                  }`} style={{ width: `${sc.score}%` }} />
+                                </div>
+                              </div>
+                            ))}
+
+                            {/* Strengths & Gaps */}
+                            <div className="flex gap-4 pt-2 border-t border-border">
+                              {strengths.length > 0 && (
+                                <div className="flex-1">
+                                  <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1 flex items-center gap-1"><Lightbulb className="h-2.5 w-2.5" /> Strengths</p>
+                                  <div className="flex flex-wrap gap-1">
+                                    {strengths.map((s) => (
+                                      <Badge key={s} variant="outline" className="text-[8px] px-1 py-0 bg-success/10 text-success border-success/20">{s}</Badge>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+                              {gaps.length > 0 && (
+                                <div className="flex-1">
+                                  <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1 flex items-center gap-1"><AlertTriangle className="h-2.5 w-2.5" /> Skill Gaps</p>
+                                  <div className="flex flex-wrap gap-1">
+                                    {gaps.map((s) => (
+                                      <Badge key={s} variant="outline" className="text-[8px] px-1 py-0 bg-destructive/10 text-destructive border-destructive/20">{s}</Badge>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
+                </div>
               </motion.div>
             )}
           </motion.div>
