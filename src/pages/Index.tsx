@@ -588,8 +588,6 @@ const Index = () => {
               </div>
             </div>
 
-            {/* DB Role Search */}
-            <RoleSearchAutocomplete />
             {riskTiers.map((tier) => {
               const half = Math.ceil(tier.roles.length / 2);
               const row1 = tier.roles.slice(0, half);
