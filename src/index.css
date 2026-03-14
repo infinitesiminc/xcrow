@@ -91,6 +91,11 @@
     --warning: 38 80% 45%;
     --warning-foreground: 0 0% 100%;
 
+    --dot-blue: 220 80% 62%;
+    --dot-teal: 172 66% 50%;
+    --dot-purple: 262 60% 65%;
+    --dot-amber: 38 80% 60%;
+
     --sidebar-background: 225 25% 8%;
     --sidebar-foreground: 225 10% 85%;
     --sidebar-primary: 234 89% 65%;
