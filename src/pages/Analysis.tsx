@@ -387,7 +387,7 @@ const Analysis = () => {
                 <Rocket className="h-6 w-6 text-primary" />
               </div>
               <div className="flex-1 text-center sm:text-left">
-                <h3 className="text-base font-display font-bold text-foreground mb-0.5">
+                <h3 className="text-base font-sans font-bold text-foreground mb-0.5">
                   {user ? "View your dashboard" : "Track your progress"}
                 </h3>
                 <p className="text-sm text-muted-foreground">
