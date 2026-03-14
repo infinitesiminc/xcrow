@@ -721,38 +721,49 @@ const Index = () => {
               <TrendingUp className="h-4 w-4 text-primary" />
               <h2 className="text-sm font-semibold font-sans text-foreground">Roles ranked by AI replacement risk</h2>
             </div>
-            {riskTiers.map((tier) => (
-              <div key={tier.label}>
-                <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full ${tier.bgColor} ${tier.borderColor} border mb-3`}>
-                  <div className={`h-2 w-2 rounded-full ${tier.color} bg-current`} />
-                  <span className={`text-xs font-bold uppercase tracking-wider ${tier.textColor}`}>{tier.label}</span>
-                  <span className="text-[10px] text-muted-foreground ml-1">({tier.roles.length} roles)</span>
-                </div>
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3">
-                  {tier.roles.map((role, i) => (
-                    <motion.button
-                      key={role.title}
-                      initial={{ opacity: 0, y: 12 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.4, delay: 0.1 + i * 0.05 }}
-                      onClick={() => navigate(`/analysis?title=${encodeURIComponent(role.title)}&company=`)}
-                      className="group cursor-pointer text-left flex flex-col"
-                    >
-                      <div className="relative overflow-hidden rounded-xl aspect-[4/3] mb-2">
-                        <img src={role.image} alt={role.title} className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" />
-                        <div className={`absolute top-1.5 right-1.5 px-1.5 py-0.5 rounded-md text-[10px] font-bold ${tier.bgColor} ${tier.textColor} backdrop-blur-sm border ${tier.borderColor}`}>
-                          {role.agentRisk}%
+            {riskTiers.map((tier) => {
+              const half = Math.ceil(tier.roles.length / 2);
+              const row1 = tier.roles.slice(0, half);
+              const row2 = tier.roles.slice(half);
+              return (
+                <div key={tier.label}>
+                  <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full ${tier.bgColor} ${tier.borderColor} border mb-3`}>
+                    <div className={`h-2 w-2 rounded-full ${tier.color} bg-current`} />
+                    <span className={`text-xs font-bold uppercase tracking-wider ${tier.textColor}`}>{tier.label}</span>
+                    <span className="text-[10px] text-muted-foreground ml-1">({tier.roles.length} roles)</span>
+                  </div>
+                  <div className="space-y-3">
+                    {[row1, row2].map((row, rowIdx) => (
+                      row.length > 0 && (
+                        <div key={rowIdx} className="flex gap-3 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent -mx-4 px-4 sm:-mx-6 sm:px-6">
+                          {row.map((role, i) => (
+                            <motion.button
+                              key={role.title}
+                              initial={{ opacity: 0, y: 12 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              transition={{ duration: 0.4, delay: 0.1 + i * 0.05 }}
+                              onClick={() => navigate(`/analysis?title=${encodeURIComponent(role.title)}&company=`)}
+                              className="group cursor-pointer text-left flex flex-col shrink-0 w-[140px] sm:w-[160px]"
+                            >
+                              <div className="relative overflow-hidden rounded-xl aspect-[4/3] mb-2">
+                                <img src={role.image} alt={role.title} className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" />
+                                <div className={`absolute top-1.5 right-1.5 px-1.5 py-0.5 rounded-md text-[10px] font-bold ${tier.bgColor} ${tier.textColor} backdrop-blur-sm border ${tier.borderColor}`}>
+                                  {role.agentRisk}%
+                                </div>
+                              </div>
+                              <h3 className="text-sm font-semibold font-sans text-foreground leading-tight">{role.title}</h3>
+                              <div className="flex items-center gap-2 mt-0.5 text-xs text-muted-foreground">
+                                <span className="text-[10px] px-1.5 py-0.5 rounded bg-secondary">{role.tag}</span>
+                              </div>
+                            </motion.button>
+                          ))}
                         </div>
-                      </div>
-                      <h3 className="text-sm font-semibold font-sans text-foreground leading-tight">{role.title}</h3>
-                      <div className="flex items-center gap-2 mt-0.5 text-xs text-muted-foreground">
-                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-secondary">{role.tag}</span>
-                      </div>
-                    </motion.button>
-                  ))}
+                      )
+                    ))}
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </div>
