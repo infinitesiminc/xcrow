@@ -603,7 +603,7 @@ const Index = () => {
                     <span className="text-xs font-medium uppercase tracking-widest text-muted-foreground">{tier.label}</span>
                     <span className="text-[10px] text-muted-foreground/60">({tier.roles.length})</span>
                   </div>
-                  <div className="space-y-3 laser-cards">
+                  <div className="space-y-3">
                     {[row1, row2].map((row, rowIdx) => (
                       row.length > 0 && (
                         <div key={rowIdx} className="flex gap-3 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent -mx-4 px-4 sm:-mx-6 sm:px-6">
@@ -617,8 +617,9 @@ const Index = () => {
                               className="group cursor-pointer text-left flex flex-col shrink-0 w-[170px] sm:w-[200px]"
                             >
                               <div className="relative overflow-hidden rounded-xl aspect-[4/3] mb-2.5">
-                                <img src={role.image} alt={role.title} className="w-full h-full object-cover transition-all duration-300 group-hover:scale-105" />
-                                <div className="absolute top-2 right-2 flex items-center gap-1.5 px-2 py-1 rounded-lg bg-background/80 backdrop-blur-sm border border-border/40">
+                                <img src={role.image} alt={role.title} className="laser-card-image w-full h-full object-cover transition-all duration-300 group-hover:scale-105" />
+                                <div className="laser-dust" />
+                                <div className="absolute top-2 right-2 flex items-center gap-1.5 px-2 py-1 rounded-lg bg-background/80 backdrop-blur-sm border border-border/40 z-20">
                                   <span className={`w-2 h-2 rounded-full ${tier.dotColor}`} />
                                   <span className="text-xs font-bold text-foreground">{role.agentRisk}%</span>
                                 </div>
