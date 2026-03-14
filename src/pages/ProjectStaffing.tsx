@@ -2,7 +2,8 @@ import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
 import {
   Search, FolderKanban, Users, Sparkles, Plus, X, ChevronDown, ChevronUp,
-  CheckCircle2, AlertTriangle, ArrowRight
+  CheckCircle2, AlertTriangle, ArrowRight, Zap, Clock, Play, BookOpen,
+  Target, Brain, Lightbulb, Send
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -65,6 +66,9 @@ const ProjectStaffing = ({ embedded }: { embedded?: boolean }) => {
   const [skillSearch, setSkillSearch] = useState("");
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [expandedStaff, setExpandedStaff] = useState<string | null>(null);
+  const [simGenerated, setSimGenerated] = useState(false);
+  const [simGenerating, setSimGenerating] = useState(false);
+  const [selectedCandidates, setSelectedCandidates] = useState<Set<string>>(new Set());
 
   const filteredSuggestions = useMemo(() => {
     if (!skillSearch) return [];
@@ -111,6 +115,37 @@ const ProjectStaffing = ({ embedded }: { embedded?: boolean }) => {
       .sort((a, b) => b.fitScore - a.fitScore)
       .slice(0, 10);
   }, [requiredSkills]);
+
+  const toggleCandidate = (name: string) => {
+    setSelectedCandidates((prev) => {
+      const next = new Set(prev);
+      if (next.has(name)) next.delete(name); else next.add(name);
+      return next;
+    });
+  };
+
+  const mockSimScenarios = useMemo(() => {
+    if (!simGenerated || requiredSkills.length === 0) return [];
+    return requiredSkills.slice(0, 5).map((skill) => {
+      const h = hashStr(skill + projectName);
+      return {
+        skill,
+        title: `${skill} — Real-world application`,
+        type: h % 2 === 0 ? "Scenario MCQ" : "Problem Solving",
+        questions: 3 + (h % 3),
+        duration: `${5 + (h % 8)} min`,
+        difficulty: h % 3 === 0 ? "Advanced" : h % 3 === 1 ? "Intermediate" : "Foundational",
+      };
+    });
+  }, [simGenerated, requiredSkills, projectName]);
+
+  const handleGenerateSim = () => {
+    setSimGenerating(true);
+    setTimeout(() => {
+      setSimGenerating(false);
+      setSimGenerated(true);
+    }, 1500);
+  };
 
   return (
     <div className={embedded ? "" : "min-h-screen bg-background"}>
@@ -231,6 +266,18 @@ const ProjectStaffing = ({ embedded }: { embedded?: boolean }) => {
                   >
                     <CardContent className="p-4">
                       <div className="flex items-center gap-3">
+                        {/* Select checkbox */}
+                        <button
+                          className={`flex items-center justify-center w-5 h-5 rounded border shrink-0 transition-colors ${
+                            selectedCandidates.has(staff.name)
+                              ? "bg-primary border-primary text-primary-foreground"
+                              : "border-border hover:border-primary/50"
+                          }`}
+                          onClick={(e) => { e.stopPropagation(); toggleCandidate(staff.name); }}
+                        >
+                          {selectedCandidates.has(staff.name) && <CheckCircle2 className="h-3 w-3" />}
+                        </button>
+
                         {/* Rank */}
                         <div className={`flex items-center justify-center w-8 h-8 rounded-lg text-xs font-bold shrink-0 ${
                           i === 0 ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"
@@ -328,6 +375,98 @@ const ProjectStaffing = ({ embedded }: { embedded?: boolean }) => {
                 </Card>
               )}
             </div>
+
+            {/* Simulation Builder */}
+            {rankedStaff.length > 0 && (
+              <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }} className="mt-8">
+                <Card className="border-border border-dashed border-primary/30 bg-primary/[0.02]">
+                  <CardContent className="p-5">
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-primary/10 shrink-0">
+                        <Zap className="h-4 w-4 text-primary" />
+                      </div>
+                      <div>
+                        <h3 className="text-sm font-semibold text-foreground">Auto-Build Skill Simulation</h3>
+                        <p className="text-xs text-muted-foreground">
+                          Generate a tailored assessment to test {selectedCandidates.size > 0 ? `${selectedCandidates.size} selected candidate${selectedCandidates.size > 1 ? "s" : ""}` : "candidates"} on project-specific skills
+                        </p>
+                      </div>
+                    </div>
+
+                    {selectedCandidates.size > 0 && (
+                      <div className="flex flex-wrap gap-1.5 mb-4">
+                        {Array.from(selectedCandidates).map((name) => (
+                          <Badge key={name} variant="outline" className="text-[10px] bg-primary/5 text-primary border-primary/20">
+                            {name}
+                          </Badge>
+                        ))}
+                      </div>
+                    )}
+
+                    {!simGenerated ? (
+                      <Button
+                        onClick={handleGenerateSim}
+                        disabled={simGenerating || requiredSkills.length === 0}
+                        className="gap-2 text-sm"
+                        size="sm"
+                      >
+                        {simGenerating ? (
+                          <><div className="h-3 w-3 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" /> Generating…</>
+                        ) : (
+                          <><Brain className="h-3.5 w-3.5" /> Generate Simulation</>
+                        )}
+                      </Button>
+                    ) : (
+                      <div className="space-y-4">
+                        <div className="flex items-center justify-between">
+                          <Badge variant="outline" className="text-[10px] bg-success/10 text-success border-success/20 gap-1">
+                            <CheckCircle2 className="h-3 w-3" /> Simulation Ready
+                          </Badge>
+                          <span className="text-[10px] text-muted-foreground">
+                            {mockSimScenarios.length} modules · {mockSimScenarios.reduce((s, sc) => s + sc.questions, 0)} questions
+                          </span>
+                        </div>
+
+                        <div className="space-y-2">
+                          {mockSimScenarios.map((sc, i) => (
+                            <div key={sc.skill} className="flex items-center gap-3 p-3 rounded-lg bg-background border border-border">
+                              <div className="flex items-center justify-center w-7 h-7 rounded-md bg-primary/10 text-primary text-xs font-bold shrink-0">
+                                {i + 1}
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <p className="text-sm font-medium text-foreground truncate">{sc.title}</p>
+                                <div className="flex items-center gap-2 mt-0.5">
+                                  <Badge variant="outline" className="text-[8px] px-1 py-0 bg-muted text-muted-foreground border-border">{sc.type}</Badge>
+                                  <span className="text-[10px] text-muted-foreground flex items-center gap-0.5"><BookOpen className="h-2.5 w-2.5" /> {sc.questions} Q</span>
+                                  <span className="text-[10px] text-muted-foreground flex items-center gap-0.5"><Clock className="h-2.5 w-2.5" /> {sc.duration}</span>
+                                </div>
+                              </div>
+                              <Badge variant="outline" className={`text-[9px] ${
+                                sc.difficulty === "Advanced" ? "bg-destructive/10 text-destructive border-destructive/20"
+                                : sc.difficulty === "Intermediate" ? "bg-warning/10 text-warning border-warning/20"
+                                : "bg-success/10 text-success border-success/20"
+                              }`}>{sc.difficulty}</Badge>
+                            </div>
+                          ))}
+                        </div>
+
+                        <div className="flex items-center gap-2 pt-2">
+                          <Button size="sm" className="gap-1.5 text-xs" disabled={selectedCandidates.size === 0}>
+                            <Send className="h-3 w-3" /> Send to {selectedCandidates.size > 0 ? `${selectedCandidates.size} Candidate${selectedCandidates.size > 1 ? "s" : ""}` : "Candidates"}
+                          </Button>
+                          <Button size="sm" variant="outline" className="gap-1.5 text-xs">
+                            <Play className="h-3 w-3" /> Preview Simulation
+                          </Button>
+                          <Button size="sm" variant="ghost" className="text-xs" onClick={() => { setSimGenerated(false); }}>
+                            Regenerate
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </motion.div>
+            )}
           </motion.div>
         )}
       </div>
