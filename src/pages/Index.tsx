@@ -707,7 +707,7 @@ const Index = () => {
           <div className="space-y-6">
             <div className="flex items-center gap-2">
               <TrendingUp className="h-4 w-4 text-primary" />
-              <h2 className="text-sm font-semibold text-foreground">Popular roles — explore free</h2>
+              <h2 className="text-sm font-semibold font-sans text-foreground">Popular roles — explore free</h2>
             </div>
             {roleCategories.map((category, catIdx) => (
               <div key={category.label}>
