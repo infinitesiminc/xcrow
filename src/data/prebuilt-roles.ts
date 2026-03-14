@@ -188,7 +188,7 @@ export const prebuiltRoles: Record<string, JobAnalysisResult> = {
   "financial analyst": {
     jobTitle: "Financial Analyst",
     company: "",
-    summary: { augmentedPercent: 70, automationRiskPercent: 28, newSkillsPercent: 62 },
+    summary: { augmentedPercent: 72, automationRiskPercent: 22, newSkillsPercent: 50 },
     tasks: [
       { name: "Financial modeling", currentState: "human_ai", trend: "increasing_ai", impactLevel: "medium", description: "AI generates baseline models and scenarios, but assumptions and logic need human validation." },
       { name: "Data gathering & consolidation", currentState: "mostly_ai", trend: "fully_ai_soon", impactLevel: "high", description: "AI pulls data from multiple sources, cleans it, and consolidates into analysis-ready formats." },
