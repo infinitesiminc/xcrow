@@ -12,7 +12,6 @@ import Auth from "./pages/Auth.tsx";
 import Dashboard from "./pages/Dashboard.tsx";
 import Settings from "./pages/Settings.tsx";
 import NotFound from "./pages/NotFound.tsx";
-import Heatmap from "./pages/Heatmap.tsx";
 import ForIndividuals from "./pages/ForIndividuals.tsx";
 import ForOrganizations from "./pages/ForOrganizations.tsx";
 import ToolsMarketplace from "./pages/ToolsMarketplace.tsx";
