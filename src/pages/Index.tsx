@@ -583,7 +583,8 @@ const Index = () => {
           </div>
 
           {/* Risk-Tiered Roles */}
-          <div className="space-y-8">
+          <div className="space-y-8 laser-container">
+            <div className="laser-line" />
             <div className="flex items-center justify-between gap-4 flex-wrap">
               <div className="flex items-center gap-2">
                 <TrendingUp className="h-4 w-4 text-muted-foreground" />
@@ -602,7 +603,7 @@ const Index = () => {
                     <span className="text-xs font-medium uppercase tracking-widest text-muted-foreground">{tier.label}</span>
                     <span className="text-[10px] text-muted-foreground/60">({tier.roles.length})</span>
                   </div>
-                  <div className="space-y-3">
+                  <div className="space-y-3 laser-cards">
                     {[row1, row2].map((row, rowIdx) => (
                       row.length > 0 && (
                         <div key={rowIdx} className="flex gap-3 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent -mx-4 px-4 sm:-mx-6 sm:px-6">
