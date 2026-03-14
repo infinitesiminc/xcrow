@@ -218,7 +218,7 @@ export default function Settings() {
               <AlertDialogHeader>
                 <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
                 <AlertDialogDescription>
-                  This will permanently delete your analysis history, practice sessions, and profile data. This action cannot be undone.
+                  This will permanently delete your analysis history, upskill sessions, and profile data. This action cannot be undone.
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>

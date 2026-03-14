@@ -420,8 +420,8 @@ const Dashboard = () => {
           ) : completions.length === 0 ? (
             <Card>
               <CardContent className="p-8 text-center">
-                <p className="text-sm text-muted-foreground mb-3">No practice sessions yet</p>
-                <Button size="sm" onClick={() => navigate("/")}>Start Practicing</Button>
+                <p className="text-sm text-muted-foreground mb-3">No upskill sessions yet</p>
+                <Button size="sm" onClick={() => navigate("/")}>Start Upskilling</Button>
               </CardContent>
             </Card>
           ) : (() => {

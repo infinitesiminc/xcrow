@@ -18,7 +18,7 @@ import { toast } from "sonner";
 
 const individualFeatures = [
   { label: "Role analyses", free: "2 / month", pro: "Unlimited" },
-  { label: "Practice simulations", free: "3 / month", pro: "Unlimited" },
+  { label: "Upskill simulations", free: "3 / month", pro: "Unlimited" },
   { label: "Career pathways", free: "Basic", pro: "Full + AI recommendations" },
   { label: "Action plan", free: "Summary", pro: "Detailed with tool links" },
   { label: "Dashboard & history", free: true, pro: true },

@@ -688,7 +688,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                   <CheckCircle2 className="h-10 w-10 text-success" />
                 </motion.div>
                 <div>
-                  <h3 className="text-xl font-serif font-bold text-foreground">Practice Complete</h3>
+                  <h3 className="text-xl font-serif font-bold text-foreground">Upskill Complete</h3>
                   <p className="text-sm text-muted-foreground mt-2 leading-relaxed">
                     You completed {roundCount} round{roundCount !== 1 ? "s" : ""} on "{taskName}"
                   </p>

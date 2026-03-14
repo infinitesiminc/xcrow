@@ -109,7 +109,7 @@ export function TaskTable({ tasks, skills, completedTasks, onPractice }: TaskTab
                   </span>
                 </div>
 
-                {/* Practice button */}
+                {/* Upskill button */}
                 <Button
                   variant="ghost"
                   size="sm"
@@ -117,8 +117,8 @@ export function TaskTable({ tasks, skills, completedTasks, onPractice }: TaskTab
                   onClick={() => onPractice(task.name)}
                 >
                   {isCompleted
-                    ? <><CheckCircle2 className="h-3 w-3 text-dot-teal" /> Practiced</>
-                    : <><Play className="h-3 w-3" /> Practice</>
+                    ? <><CheckCircle2 className="h-3 w-3 text-dot-teal" /> Upskilled</>
+                    : <><Play className="h-3 w-3" /> Upskill</>
                   }
                 </Button>
               </motion.div>
