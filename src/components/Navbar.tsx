@@ -13,7 +13,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { BarChart3, LayoutDashboard, Settings, LogOut, User } from "lucide-react";
 
 export default function Navbar() {
-  const { user, signOut } = useAuth();
+  const { user, signOut, openAuthModal } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
