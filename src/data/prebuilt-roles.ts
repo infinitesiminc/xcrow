@@ -372,7 +372,7 @@ export const prebuiltRoles: Record<string, JobAnalysisResult> = {
   "brand strategist": {
     jobTitle: "Brand Strategist",
     company: "",
-    summary: { augmentedPercent: 55, automationRiskPercent: 15, newSkillsPercent: 50 },
+    summary: { augmentedPercent: 72, automationRiskPercent: 8, newSkillsPercent: 35 },
     tasks: [
       { name: "Brand research & audits", currentState: "human_ai", trend: "increasing_ai", impactLevel: "medium", description: "AI analyzes brand perception across channels, strategists interpret implications." },
       { name: "Positioning & messaging", currentState: "mostly_human", trend: "stable", impactLevel: "low", description: "Crafting differentiated brand positioning requires deep market intuition and creativity." },
