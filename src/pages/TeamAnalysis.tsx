@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, Search, Sparkles, Bot, ShieldAlert, GraduationCap, Users, User, Play } from "lucide-react";
+import { ArrowLeft, Search, Sparkles, Bot, ShieldAlert, GraduationCap, Users, User, Play, Building2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
