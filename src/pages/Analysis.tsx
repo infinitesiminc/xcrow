@@ -373,7 +373,10 @@ const Analysis = () => {
           <ActionPlan
             result={result}
             topPathway={topPathway}
-            onPractice={setSimTask}
+            onPractice={(taskName) => {
+              const task = result.tasks.find(t => t.name === taskName);
+              if (task) setSimTask(task);
+            }}
           />
         </motion.div>
 
