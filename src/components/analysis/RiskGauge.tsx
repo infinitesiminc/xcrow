@@ -66,7 +66,7 @@ export function RiskGauge({ risk, verdict, reasoning }: RiskGaugeProps) {
           >
             {risk}%
           </motion.span>
-          <span className="text-[10px] text-muted-foreground uppercase tracking-widest mt-0.5">Agent Risk</span>
+          <span className="text-[10px] text-muted-foreground uppercase tracking-widest mt-0.5">AI Agent Replace Risk</span>
         </div>
       </div>
 
