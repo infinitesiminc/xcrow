@@ -6,6 +6,7 @@ import { findPrebuiltRole } from "@/data/prebuilt-roles";
 import { ArrowLeft, TrendingUp, RefreshCw, Rocket, ChevronDown, ChevronUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { JobAnalysisResult } from "@/types/analysis";
+import { getRiskTier } from "@/lib/risk-colors";
 
 const ALL_ROLES = [
   "software engineer", "marketing manager", "accountant", "data scientist",

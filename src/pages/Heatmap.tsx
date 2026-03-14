@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { findPrebuiltRole } from "@/data/prebuilt-roles";
 import { TaskAnalysis, JobAnalysisResult } from "@/types/analysis";
+import { getRiskTier, getHeatColor, getHeatLabel } from "@/lib/risk-colors";
 import { ArrowLeft, TrendingUp, RefreshCw, Rocket } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";

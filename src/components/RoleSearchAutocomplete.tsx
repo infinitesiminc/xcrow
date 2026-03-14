@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Search, Building2, TrendingUp, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
+import { getRiskTier } from "@/lib/risk-colors";
 
 interface DbRole {
   id: string;
