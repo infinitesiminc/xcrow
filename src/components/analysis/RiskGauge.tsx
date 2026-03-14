@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { TrendingUp, RefreshCw, Rocket } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+import { getRiskTier } from "@/lib/risk-colors";
 
 type Verdict = "upskill" | "pivot" | "leverage";
 
@@ -17,9 +18,7 @@ const verdictConfig: Record<Verdict, { icon: typeof TrendingUp; label: string; d
 };
 
 function getGaugeColor(risk: number): string {
-  // Monochrome intensity — darker = higher risk
-  const opacity = 0.2 + (risk / 100) * 0.6;
-  return `hsl(var(--foreground) / ${opacity})`;
+  return getRiskTier(risk).color;
 }
 
 export function RiskGauge({ risk, verdict, reasoning }: RiskGaugeProps) {
