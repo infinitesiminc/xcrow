@@ -104,7 +104,7 @@ export default function Heatmap() {
     const grid: Record<string, Record<string, CellData>> = {};
     const agentRisks: Record<string, number> = {};
     const verdicts: Record<string, Verdict> = {};
-    const agentRisks: Record<string, number> = {};
+    const rolesData: { key: string; title: string }[] = [];
     const rolesData: { key: string; title: string }[] = [];
 
     for (const key of ALL_ROLES) {
