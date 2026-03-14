@@ -717,10 +717,15 @@ const Index = () => {
 
           {/* Risk-Tiered Roles */}
           <div className="space-y-8">
-            <div className="flex items-center gap-2">
-              <TrendingUp className="h-4 w-4 text-primary" />
-              <h2 className="text-sm font-semibold font-sans text-foreground">Roles ranked by AI replacement risk</h2>
+            <div className="flex items-center justify-between gap-4 flex-wrap">
+              <div className="flex items-center gap-2">
+                <TrendingUp className="h-4 w-4 text-primary" />
+                <h2 className="text-sm font-semibold font-sans text-foreground">Roles ranked by AI replacement risk</h2>
+              </div>
             </div>
+
+            {/* DB Role Search */}
+            <RoleSearchAutocomplete />
             {riskTiers.map((tier) => {
               const half = Math.ceil(tier.roles.length / 2);
               const row1 = tier.roles.slice(0, half);
