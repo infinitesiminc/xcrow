@@ -69,6 +69,14 @@ export default function Navbar() {
           >
             Analyze
           </Button>
+          <Button
+            variant={isActive("/contact") ? "secondary" : "ghost"}
+            size="sm"
+            onClick={() => navigate("/contact")}
+            className="text-sm"
+          >
+            Contact
+          </Button>
 
           {user && (
             <Button
