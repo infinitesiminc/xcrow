@@ -142,7 +142,7 @@ export const prebuiltRoles: Record<string, JobAnalysisResult> = {
   "ux designer": {
     jobTitle: "UX Designer",
     company: "",
-    summary: { augmentedPercent: 60, automationRiskPercent: 22, newSkillsPercent: 58 },
+    summary: { augmentedPercent: 65, automationRiskPercent: 22, newSkillsPercent: 50 },
     tasks: [
       { name: "Wireframing & prototyping", currentState: "human_ai", trend: "increasing_ai", impactLevel: "medium", description: "AI generates wireframes from text prompts, but design decisions require human taste and judgment." },
       { name: "Visual design & UI creation", currentState: "human_ai", trend: "increasing_ai", impactLevel: "medium", description: "AI tools generate UI variants rapidly, but brand coherence needs human curation." },
