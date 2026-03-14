@@ -711,7 +711,7 @@ const Index = () => {
             </div>
             {roleCategories.map((category, catIdx) => (
               <div key={category.label}>
-                <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">{category.label}</h3>
+                <h3 className="text-xs font-semibold font-sans text-muted-foreground uppercase tracking-wider mb-2">{category.label}</h3>
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3">
                   {category.roles.map((role, i) => (
                     <motion.button
