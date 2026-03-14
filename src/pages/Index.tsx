@@ -164,6 +164,16 @@ const Index = () => {
   const [teamLoading, setTeamLoading] = useState(false);
   const [teamJdParsing, setTeamJdParsing] = useState(false);
 
+  // Pre-fill from user profile
+  useEffect(() => {
+    if (profile?.jobTitle && !jobTitle) {
+      setJobTitle(profile.jobTitle);
+    }
+    if (profile?.company && !website) {
+      setWebsite(profile.company);
+    }
+  }, [profile]);
+
   const isValidWebsite = (url: string) => {
     if (!url) return true;
     return /^(https?:\/\/)?([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}(\/.*)?$/.test(url.trim());
