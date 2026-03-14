@@ -105,7 +105,6 @@ export default function Heatmap() {
     const agentRisks: Record<string, number> = {};
     const verdicts: Record<string, Verdict> = {};
     const rolesData: { key: string; title: string }[] = [];
-    const rolesData: { key: string; title: string }[] = [];
 
     for (const key of ALL_ROLES) {
       const role = findPrebuiltRole(key);
