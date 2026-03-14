@@ -179,27 +179,28 @@
   100% { left: calc(100% + 6px); }
 }
 
-@keyframes word-flicker {
-  0% { opacity: 1; filter: none; }
-  20% { opacity: 1; filter: none; }
-  25% { opacity: 0; filter: blur(8px) brightness(2); }
-  50% { opacity: 0; filter: blur(8px) brightness(2); }
-  55% { opacity: 1; filter: none; }
-  100% { opacity: 1; filter: none; }
+@keyframes word-clip-away {
+  0% { clip-path: inset(0 0 0 0); filter: none; }
+  5% { clip-path: inset(0 0 0 0); filter: none; }
+  25% { clip-path: inset(0 0 0 100%); filter: blur(2px); }
+  50% { clip-path: inset(0 0 0 100%); opacity: 0; }
+  55% { clip-path: inset(0 100% 0 0); opacity: 0; }
+  75% { clip-path: inset(0 0 0 0); filter: none; opacity: 1; }
+  100% { clip-path: inset(0 0 0 0); filter: none; opacity: 1; }
 }
 
 @keyframes word-dust {
   0% { opacity: 0; transform: translateX(0); }
-  22% { opacity: 0; transform: translateX(0); }
-  25% { opacity: 1; transform: translateX(4px); }
-  40% { opacity: 0; transform: translateX(12px); }
-  100% { opacity: 0; transform: translateX(12px); }
+  10% { opacity: 0; transform: translateX(0); }
+  15% { opacity: 0.8; transform: translateX(6px); }
+  25% { opacity: 0; transform: translateX(16px); }
+  100% { opacity: 0; transform: translateX(16px); }
 }
 
 .laser-word {
   position: relative;
   display: inline-block;
-  animation: word-flicker 2s ease-in-out infinite;
+  animation: word-clip-away 2s ease-in-out infinite;
 }
 
 .laser-word-line {
