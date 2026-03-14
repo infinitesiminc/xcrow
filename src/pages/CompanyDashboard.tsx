@@ -277,34 +277,6 @@ const CompanyDashboard = () => {
           </motion.div>
         )}
 
-        {/* Department Breakdown */}
-        {deptBreakdown.length > 1 && (
-          <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} className="mb-8">
-            <h2 className="text-xs font-medium uppercase tracking-widest text-muted-foreground mb-3">Department Breakdown</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-              {deptBreakdown.slice(0, 9).map((d) => {
-                const badge = riskBadge(d.avgRisk);
-                return (
-                  <Card key={d.dept} className="border-border hover:border-primary/20 transition-colors cursor-pointer" onClick={() => { setDeptFilter(d.dept); }}>
-                    <CardContent className="p-4">
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="font-medium text-foreground text-sm truncate">{d.dept}</span>
-                        <Badge variant="outline" className={`text-[10px] ${badge.className}`}>{badge.label}</Badge>
-                      </div>
-                      <div className="flex items-center justify-between text-xs text-muted-foreground">
-                        <span>{d.count} roles</span>
-                        <span>{d.avgRisk}% risk · {d.avgAug}% augmented</span>
-                      </div>
-                      <div className="w-full h-1.5 rounded-full bg-secondary overflow-hidden mt-2">
-                        <div className="h-full rounded-full bg-destructive/70 transition-all duration-700" style={{ width: `${d.avgRisk}%` }} />
-                      </div>
-                    </CardContent>
-                  </Card>
-                );
-              })}
-            </div>
-          </motion.div>
-        )}
 
         {/* Roles Table */}
         <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
