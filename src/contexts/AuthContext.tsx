@@ -44,16 +44,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const fetchProfile = useCallback(async (userId: string) => {
     const { data } = await supabase
       .from("profiles")
-      .select("display_name, job_title, company, onboarding_completed")
+      .select("*")
       .eq("id", userId)
       .single();
 
     if (data) {
+      const row = data as any;
       const p: UserProfile = {
-        displayName: data.display_name,
-        jobTitle: data.job_title,
-        company: data.company,
-        onboardingCompleted: data.onboarding_completed ?? false,
+        displayName: row.display_name ?? null,
+        jobTitle: row.job_title ?? null,
+        company: row.company ?? null,
+        onboardingCompleted: row.onboarding_completed ?? false,
       };
       setProfile(p);
       if (!p.onboardingCompleted) {
