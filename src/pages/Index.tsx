@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowRight, Briefcase, BarChart3, BookOpen, Users, Plus, X, Loader2, FileText, Link, Upload, Search, User, LayoutDashboard, TrendingUp, ChevronLeft, ChevronRight, Wrench, ExternalLink } from "lucide-react";
 import logoImg from "@/assets/logo.png";
+import heroBg from "@/assets/hero-bg.png";
 import roleSoftwareEngineer from "@/assets/role-software-engineer.jpg";
 import roleMarketingManager from "@/assets/role-marketing-manager.jpg";
 import roleAccountant from "@/assets/role-accountant.jpg";
