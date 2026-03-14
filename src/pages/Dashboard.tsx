@@ -97,8 +97,16 @@ const Dashboard = () => {
     <div className="min-h-screen bg-background px-4 py-8">
       <div className="max-w-3xl mx-auto">
         <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="mb-6">
-          <h1 className="text-2xl font-serif font-bold text-foreground">Your Dashboard</h1>
-          <p className="text-sm text-muted-foreground mt-1">{user.email}</p>
+          <h1 className="text-2xl font-serif font-bold text-foreground">
+            {profile?.displayName ? `Welcome, ${profile.displayName}` : "Your Dashboard"}
+          </h1>
+          <p className="text-sm text-muted-foreground mt-1">
+            {profile?.jobTitle ? (
+              <>{profile.jobTitle}{profile.company ? ` at ${profile.company}` : ""}</>
+            ) : (
+              user.email
+            )}
+          </p>
         </motion.div>
 
         {/* Stats */}
