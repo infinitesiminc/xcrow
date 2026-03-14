@@ -19,6 +19,7 @@ import ToolsMarketplace from "./pages/ToolsMarketplace.tsx";
 import ContactOrg from "./pages/ContactOrg.tsx";
 import Contact from "./pages/Contact.tsx";
 import Pricing from "./pages/Pricing.tsx";
+import CompanyDashboard from "./pages/CompanyDashboard.tsx";
 
 const queryClient = new QueryClient();
 
@@ -43,6 +44,7 @@ const App = () => (
             <Route path="/contact-org" element={<><Navbar /><ContactOrg /><Footer /></>} />
             <Route path="/contact" element={<><Navbar /><Contact /><Footer /></>} />
             <Route path="/pricing" element={<><Navbar /><Pricing /><Footer /></>} />
+            <Route path="/company-dashboard" element={<><Navbar /><CompanyDashboard /><Footer /></>} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
