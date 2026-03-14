@@ -381,10 +381,10 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
       <DialogContent className="max-w-3xl w-[95vw] h-[90vh] sm:h-[90vh] h-[100dvh] sm:rounded-2xl rounded-none p-0 flex flex-col overflow-hidden gap-0 border-border/50 [&>button]:hidden">
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-border/40 shrink-0">
-          <div className="min-w-0">
-            <h2 className="text-base font-sans font-semibold text-foreground truncate">{taskName}</h2>
-            <p className="text-xs text-muted-foreground mt-0.5 truncate">{jobTitle}{company ? ` · ${company}` : ""}</p>
+        <div className="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 border-b border-border/40 shrink-0">
+          <div className="min-w-0 flex-1">
+            <h2 className="text-sm sm:text-base font-sans font-semibold text-foreground truncate">{taskName}</h2>
+            <p className="text-[11px] sm:text-xs text-muted-foreground mt-0.5 truncate">{jobTitle}{company ? ` · ${company}` : ""}</p>
           </div>
           <div className="flex items-center gap-3 shrink-0">
             {phase === "chat" && (
