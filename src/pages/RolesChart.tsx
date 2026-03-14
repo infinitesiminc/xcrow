@@ -6,6 +6,7 @@ import { findPrebuiltRole } from "@/data/prebuilt-roles";
 import { ArrowLeft, TrendingUp, RefreshCw, Rocket, ChevronDown, ChevronUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { JobAnalysisResult } from "@/types/analysis";
+import { getRiskTier } from "@/lib/risk-colors";
 
 const ALL_ROLES = [
   "software engineer", "marketing manager", "accountant", "data scientist",
@@ -24,12 +25,7 @@ function calcAgentRisk(automationRisk: number, augmented: number, newSkills: num
   return Math.round(automationRisk * 0.55 + augmented * 0.25 + newSkills * 0.20);
 }
 
-function getRiskTier(risk: number) {
-  if (risk >= 45) return { label: "Critical", color: "hsl(0, 84%, 55%)" };
-  if (risk >= 35) return { label: "High", color: "hsl(25, 95%, 53%)" };
-  if (risk >= 25) return { label: "Moderate", color: "hsl(45, 93%, 47%)" };
-  return { label: "Low", color: "hsl(142, 71%, 45%)" };
-}
+// getRiskTier imported from shared utility
 
 type Verdict = "upskill" | "pivot" | "leverage";
 
@@ -91,9 +87,9 @@ function getRecommendation(role: JobAnalysisResult, agentRisk: number): RoleReco
 }
 
 const verdictConfig = {
-  upskill: { icon: TrendingUp, color: "hsl(234, 89%, 60%)", bg: "bg-primary/10", text: "text-primary", label: "Upskill" },
-  pivot: { icon: RefreshCw, color: "hsl(0, 84%, 55%)", bg: "bg-destructive/10", text: "text-destructive", label: "Pivot" },
-  leverage: { icon: Rocket, color: "hsl(142, 71%, 45%)", bg: "bg-green-500/10", text: "text-green-600", label: "Leverage" },
+  upskill: { icon: TrendingUp, color: "hsl(var(--dot-amber))", bg: "bg-dot-amber/10", text: "text-dot-amber", label: "Upskill" },
+  pivot: { icon: RefreshCw, color: "hsl(var(--dot-purple))", bg: "bg-dot-purple/10", text: "text-dot-purple", label: "Pivot" },
+  leverage: { icon: Rocket, color: "hsl(var(--dot-teal))", bg: "bg-dot-teal/10", text: "text-dot-teal", label: "Leverage" },
 };
 
 const CustomTooltip = ({ active, payload }: any) => {

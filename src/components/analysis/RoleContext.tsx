@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import { motion } from "framer-motion";
 import { BarChart3 } from "lucide-react";
+import { getRiskTier } from "@/lib/risk-colors";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
@@ -48,8 +49,8 @@ export function RoleContext({ agentRisk, jobTitle }: RoleContextProps) {
                 />
                 {/* This role — monochrome intensity */}
                 <motion.div
-                  className="h-full rounded-full bg-foreground/30"
-                  style={{ opacity: 0.2 + (agentRisk / 100) * 0.6 }}
+                  className="h-full rounded-full"
+                  style={{ backgroundColor: getRiskTier(agentRisk).color }}
                   initial={{ width: 0 }}
                   animate={{ width: `${agentRisk}%` }}
                   transition={{ duration: 0.8, delay: 0.2 }}

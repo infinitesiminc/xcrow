@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { findPrebuiltRole } from "@/data/prebuilt-roles";
 import { TaskAnalysis, JobAnalysisResult } from "@/types/analysis";
+import { getRiskTier, getHeatColor, getHeatLabel } from "@/lib/risk-colors";
 import { ArrowLeft, TrendingUp, RefreshCw, Rocket } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -55,23 +56,7 @@ function getDisruptionScore(task: TaskAnalysis): number {
   return score; // max 8
 }
 
-function getHeatColor(score: number | null): string {
-  if (score === null) return "hsl(var(--muted))";
-  if (score >= 7) return "hsl(0, 84%, 55%)";
-  if (score >= 6) return "hsl(15, 90%, 55%)";
-  if (score >= 5) return "hsl(30, 95%, 53%)";
-  if (score >= 4) return "hsl(45, 93%, 50%)";
-  if (score >= 3) return "hsl(60, 80%, 50%)";
-  return "hsl(142, 71%, 50%)";
-}
-
-function getHeatLabel(score: number | null): string {
-  if (score === null) return "N/A";
-  if (score >= 7) return "Critical";
-  if (score >= 5) return "High";
-  if (score >= 3) return "Moderate";
-  return "Low";
-}
+// getHeatColor and getHeatLabel imported from shared utility
 
 interface CellData {
   score: number | null;
@@ -90,9 +75,9 @@ function getVerdict(role: JobAnalysisResult, agentRisk: number): Verdict {
 }
 
 const verdictConfig = {
-  upskill: { icon: TrendingUp, color: "hsl(234, 89%, 60%)", label: "Upskill" },
-  pivot: { icon: RefreshCw, color: "hsl(0, 84%, 55%)", label: "Pivot" },
-  leverage: { icon: Rocket, color: "hsl(142, 71%, 45%)", label: "Leverage" },
+  upskill: { icon: TrendingUp, color: "hsl(var(--dot-amber))", label: "Upskill" },
+  pivot: { icon: RefreshCw, color: "hsl(var(--dot-purple))", label: "Pivot" },
+  leverage: { icon: Rocket, color: "hsl(var(--dot-teal))", label: "Leverage" },
 };
 
 export default function Heatmap() {
@@ -219,7 +204,7 @@ export default function Heatmap() {
                 {/* Data rows */}
                 {roles.map((role) => {
                   const risk = agentRisks[role.key] || 0;
-                  const riskColor = risk >= 45 ? "hsl(0, 84%, 55%)" : risk >= 35 ? "hsl(25, 95%, 53%)" : risk >= 25 ? "hsl(45, 93%, 50%)" : "hsl(142, 71%, 50%)";
+                  const riskColor = getRiskTier(risk).color;
                   const v = verdicts[role.key] || "upskill";
                   const vc = verdictConfig[v];
                   return (
