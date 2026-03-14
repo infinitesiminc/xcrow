@@ -427,14 +427,7 @@ const Analysis = () => {
             </TabsContent>
 
             <TabsContent value="plan">
-              <ActionPlan
-                result={result}
-                topPathway={topPathway}
-                onPractice={(taskName) => {
-                  const task = result.tasks.find(t => t.name === taskName);
-                  if (task) setSimTask(task);
-                }}
-              />
+              <ActionPlan result={result} />
             </TabsContent>
 
             <TabsContent value="context">
