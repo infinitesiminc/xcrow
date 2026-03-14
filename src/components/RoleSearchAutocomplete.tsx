@@ -191,21 +191,8 @@ export function RoleSearchAutocomplete({ onAnalyze, value, onChange, jdInputType
         )}
       </AnimatePresence>
 
-      {/* Company pills */}
-      {!open && query.length === 0 && (
-        <div className="flex flex-wrap gap-1.5 mt-2 justify-center">
-          {["Anthropic", "OpenAI", "Anduril", "Databricks", "Ramp", "Cohere", "AbbVie", "Gong"].map((company) => (
-            <button
-              key={company}
-              type="button"
-              onClick={() => handleChange(company)}
-              className="px-2.5 py-1 text-xs font-medium rounded-full border border-border bg-secondary/50 text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
-            >
-              {company}
-            </button>
-          ))}
-        </div>
-      )}
+      {/* Rotating company pills */}
+      <CompanyPills visible={!open && query.length === 0} onSelect={handleChange} />
 
       {open && query.length >= 2 && results.length === 0 && !loading && (
         <div className="absolute z-50 mt-1.5 w-full rounded-xl border border-border bg-card shadow-lg p-4 text-center">
