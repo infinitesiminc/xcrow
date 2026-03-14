@@ -18,10 +18,20 @@ const Contact = () => {
     e.preventDefault();
     if (!name.trim() || !email.trim() || !message.trim()) return;
     setSending(true);
-    await new Promise((r) => setTimeout(r, 1200));
-    setSending(false);
-    setSent(true);
-    toast({ title: "Message sent", description: "We'll get back to you soon." });
+    try {
+      const { supabase } = await import("@/integrations/supabase/client");
+      const { error } = await supabase.functions.invoke("send-contact-email", {
+        body: { name, email, subject, message, formType: "general" },
+      });
+      if (error) throw error;
+      setSent(true);
+      toast({ title: "Message sent", description: "We'll get back to you soon." });
+    } catch (err) {
+      console.error("Contact form error:", err);
+      toast({ title: "Failed to send", description: "Please try again or email us directly.", variant: "destructive" });
+    } finally {
+      setSending(false);
+    }
   };
 
   return (
