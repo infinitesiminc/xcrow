@@ -631,7 +631,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                         <ArrowRight className="h-4 w-4" /> Next Scenario
                       </Button>
                       <Button
-                        className="flex-1 rounded-xl h-11 text-sm gap-2"
+                        className="flex-1 rounded-xl h-10 sm:h-11 text-sm gap-2"
                         onClick={handleFinish}
                       >
                         <CheckCircle2 className="h-4 w-4" /> Finish Practice
