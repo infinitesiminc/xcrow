@@ -477,7 +477,7 @@ const Index = () => {
               Infinite Sim
             </span>
             <h1 className="text-3xl sm:text-5xl lg:text-6xl font-bold font-serif tracking-tight text-foreground leading-[1.1] max-w-3xl mx-auto">
-              Upskill before<br /><em className="italic">AI takes your job.</em>
+              Upskill before<br /><em className="italic">AI takes your <span className="laser-word">job<span className="laser-word-line" /><span className="laser-word-dust" /></span>.</em>
             </h1>
             <p className="mt-3 text-sm sm:text-base text-muted-foreground font-sans">
               Assess &amp; start learning in 3 seconds.
