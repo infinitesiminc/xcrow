@@ -66,33 +66,69 @@ async function callAI(apiKey: string, messages: { role: string; content: string 
   return data.choices[0].message.content;
 }
 
+function aiStateDescription(taskMeta?: any): string {
+  if (!taskMeta) return "";
+  const state = taskMeta.currentState;
+  const trend = taskMeta.trend;
+  const impact = taskMeta.impactLevel;
+
+  const stateMap: Record<string, string> = {
+    mostly_human: "currently done mostly by humans",
+    human_ai: "currently done by humans working alongside AI tools",
+    mostly_ai: "already mostly automated by AI",
+  };
+  const trendMap: Record<string, string> = {
+    stable: "AI involvement is stable",
+    increasing_ai: "AI is increasingly taking over parts of this task",
+    fully_ai_soon: "AI is expected to fully automate this task soon",
+  };
+  const impactMap: Record<string, string> = {
+    low: "low overall AI impact",
+    medium: "medium overall AI impact",
+    high: "high overall AI impact",
+  };
+
+  const parts = [];
+  if (state && stateMap[state]) parts.push(stateMap[state]);
+  if (trend && trendMap[trend]) parts.push(trendMap[trend]);
+  if (impact && impactMap[impact]) parts.push(impactMap[impact]);
+  return parts.length > 0 ? `AI STATUS: This task is ${parts.join("; ")}.` : "";
+}
+
 async function handleCompile(payload: any, apiKey: string) {
-  const { taskName, jobTitle, company, difficulty = 3 } = payload;
+  const { taskName, jobTitle, company, difficulty = 3, experienceLevel = "exploring", taskMeta } = payload;
+  const isExploring = experienceLevel === "exploring";
+  const aiContext = aiStateDescription(taskMeta);
 
-  const difficultyLabel = difficulty <= 2 ? "easy" : difficulty <= 4 ? "moderate" : "challenging";
-
-  const prompt = `You are designing a realistic job simulation scenario for someone who has ZERO experience in this industry. They want to explore what this job actually feels like day-to-day.
+  const prompt = `You are designing an AI-AWARE job simulation. The goal is NOT just to teach the task — it's to help the user understand HOW AI IS CHANGING this specific task and what humans should focus on.
 
 Role: ${jobTitle}${company ? ` at ${company}` : ""}
-Task to practice: ${taskName}
-Difficulty: ${difficultyLabel}
+Task: ${taskName}
+${aiContext}
+User experience: ${isExploring ? "EXPLORING — new to this field, needs basics explained simply" : "PRACTICING — already does this job, wants peer-level AI impact insights"}
 
-Generate a JSON response with these fields:
+Generate a JSON response:
 
-1. "briefing": A 3-4 sentence explanation for a complete beginner. Cover: what this task involves in plain language, why it matters in this role, and what a good outcome looks like. Use simple language — no jargon without explanation.
+1. "briefing": ${isExploring 
+  ? "3-4 sentences for a beginner. Explain what this task involves in plain language, then explain how AI is currently affecting it. End with what the user will learn in this practice session." 
+  : "3-4 sentences for a professional. Skip basics — go straight to how AI tools are changing this task today, what's being automated, and what human judgment remains critical. Frame this as a peer conversation."}
 
-2. "tips": An array of 2-3 short, actionable tips the user can reference during the simulation. Each tip should be 1 sentence and help a beginner navigate the conversation.
+2. "tips": Array of 2-3 tips focused on the AI replacement lens:
+   - What AI tools exist for this task
+   - Where human judgment still matters most
+   - How to work WITH AI rather than be replaced by it
 
-3. "keyTerms": An array of 3-4 objects with "term" and "definition" keys — industry-specific words the user will encounter during the simulation, explained simply.
+3. "keyTerms": Array of 3-4 objects with "term" and "definition" — mix of task-specific AND AI-related terms (e.g. "AI copilot", "prompt engineering", relevant AI tools).
 
-4. "systemPrompt": A system prompt for the AI simulator (not shown to user). 3-4 sentences describing the mentor character.
+4. "systemPrompt": System prompt for the AI mentor. The mentor teaches through the AI replacement lens — every round connects the task to AI's role in it.
 
-5. "openingMessage": The first message that starts Round 1. Follow this EXACT structure:
-   - Start with a brief, friendly concept introduction (2-3 sentences explaining one aspect of the task in plain language, with real-world context).
-   - Then present a multiple-choice question with exactly 3 options labeled A, B, C. Format them clearly on separate lines.
-   - Example format: "**📖 Concept: [Topic]**\\n\\n[Explanation of the concept]\\n\\n**🤔 Quick Check:**\\nWhich of the following...?\\n\\nA) ...\\nB) ...\\nC) ..."
+5. "openingMessage": First message starting Round 1. Follow this structure:
+   - Start with "**📖 Scenario:**" — present a realistic work scenario for this task (2-3 sentences).
+   - Then "**🤔 How would you approach this?**" with exactly 3 MCQ options (A, B, C).
+   - One option should involve using AI tools effectively, one should be purely manual, one should be a poor approach.
+   ${isExploring ? "Use simple, jargon-free language." : "Use professional language appropriate for someone in the role."}
 
-6. "scenario": { "title": a short title, "description": a 1-sentence description }
+6. "scenario": { "title": short title incorporating AI angle, "description": 1-sentence description mentioning both the task and AI's role }
 
 Respond ONLY with valid JSON, no markdown.`;
 
@@ -106,7 +142,6 @@ Respond ONLY with valid JSON, no markdown.`;
     throw new Error("Failed to parse AI response for scenario generation");
   }
 
-  // Build briefing with key terms appended
   let briefing = parsed.briefing || `This task involves ${taskName} as part of the ${jobTitle} role.`;
   if (parsed.keyTerms && Array.isArray(parsed.keyTerms) && parsed.keyTerms.length > 0) {
     briefing += "\n\n**Key terms you'll encounter:**\n" +
@@ -132,27 +167,42 @@ Respond ONLY with valid JSON, no markdown.`;
 }
 
 async function handleChat(payload: any, apiKey: string) {
-  const { messages, role, round } = payload;
+  const { messages, role, round, experienceLevel = "exploring", taskMeta } = payload;
+  const isExploring = experienceLevel === "exploring";
+  const aiContext = aiStateDescription(taskMeta);
 
   const systemMsg = {
     role: "system",
-    content: `You are a patient, knowledgeable mentor onboarding someone into the role of ${role}. Your job is to TEACH through structured rounds.
+    content: `You are a mentor teaching someone about the role of ${role} through the AI REPLACEMENT LENS. Your job is to help them understand how AI is changing each task and where humans still add unique value.
+
+${aiContext}
+
+User is ${isExploring ? "EXPLORING (beginner) — use simple language, explain jargon, be encouraging" : "PRACTICING (professional) — speak peer-to-peer, skip basics, go deeper on AI implications"}.
 
 Each round follows this EXACT structure:
-1. **FEEDBACK on the user's answer**: If the user just answered a multiple-choice question, start by telling them if they're correct or not. Use ✅ for correct or ❌ for incorrect. When incorrect, ALWAYS explicitly state which letter was correct like "The correct answer is **C)**". Give a SHORT explanation (2-3 sentences MAX) of why the correct answer is right. Do NOT explain every wrong answer individually. Keep it concise and scannable.
-2. **CONTINUE PROMPT**: After giving feedback, ask: "🔄 **Want to see another example?** (yes/no)". Wait for their response.
-3. **NEW ROUND** (only if user said yes): Start with "**📖 Concept: [New Topic]**" — introduce a NEW concept (2-3 sentences max). Then present a multiple-choice question with exactly 3 options (A, B, C) formatted clearly.
+
+1. **FEEDBACK**: If the user just answered an MCQ:
+   - ✅ or ❌ with the correct answer: "The correct answer is **X)**"
+   - 2-3 sentence explanation of WHY
+   - Then add: "**🤖 AI Today:** [1-2 sentences about what AI tools can currently do for this specific sub-task. Name real tools/approaches when possible.]"
+   - Then add: "**💡 Human Edge:** [1 sentence about what humans uniquely contribute here that AI cannot replicate.]"
+
+2. **CONTINUE PROMPT**: "🔄 **Ready for the next scenario?** (yes/no)"
+
+3. **NEW ROUND** (if user says yes): 
+   - "**📖 Scenario:**" — a NEW realistic scenario for a different aspect of this task
+   - "**🤔 How would you approach this?**" with 3 MCQ options (A, B, C)
+   - One option should leverage AI tools effectively, one purely manual, one poor approach
+   - Each round should explore a DIFFERENT angle of how AI intersects with this task
 
 Current round: ${round || 1}
 
 Rules:
-- ALWAYS present exactly 3 multiple-choice options labeled A, B, C on separate lines. Never use D.
-- Make questions scenario-based and realistic — not textbook trivia.
-- Each round should teach a DIFFERENT aspect of the task.
-- Keep ALL responses SHORT. Feedback should be 2-4 sentences max. No walls of text.
-- Use line breaks between sections for readability.
-- If user says "no" to continuing, respond warmly: "Great session! 🎉 You covered [brief list]. Click 'Finish' for your score!"
-- Define jargon inline but briefly. Stay in character as a colleague/manager.`,
+- ALWAYS present exactly 3 options labeled A, B, C on separate lines. Never use D.
+- Every round must include the 🤖 AI Today and 💡 Human Edge sections after feedback.
+- Keep ALL responses SHORT. No walls of text. Each section 1-3 sentences max.
+- ${isExploring ? "Define jargon inline. Be warm and encouraging." : "Skip basics. Reference specific tools and industry trends."}
+- If user says "no" to continuing: "Great session! 🎉 You explored how AI is shaping [brief summary]. Click 'Finish' to wrap up!"`,
   };
 
   const aiMessages = [systemMsg, ...messages];
@@ -170,29 +220,29 @@ async function handleScore(payload: any, apiKey: string) {
     .map((m: any) => `${m.role === "user" ? "Candidate" : "Simulator"}: ${m.content}`)
     .join("\n\n");
 
-  const prompt = `Evaluate this job simulation conversation. The candidate was practicing: "${scenario?.title || "a work task"}". They may be a complete beginner exploring this career.
+  const prompt = `Evaluate this AI-aware job simulation conversation. The candidate was practicing: "${scenario?.title || "a work task"}" with a focus on understanding AI's impact on the task.
 
 Conversation:
 ${conversationText}
 
-Score the candidate on these categories (0-100 each):
-1. Communication Clarity - How well did they express their thoughts?
-2. Problem-Solving Approach - Did they ask good questions and think through the problem?
-3. Professional Judgment - Did they make reasonable decisions given the context?
-4. Learning & Adaptability - Did they pick up on new concepts and apply guidance?
+Score the candidate on these AI-readiness categories (0-100 each):
+1. AI Tool Awareness - Did they recognize where AI tools apply to this task? Did they choose options that leverage AI effectively?
+2. Human Value-Add - Did they identify what humans uniquely contribute? Did they understand the irreplaceable human elements?
+3. Adaptive Thinking - Can they envision working alongside AI? Did they show flexibility in how they'd use AI as a tool?
+4. Domain Judgment - Do they understand the task's real-world nuances? Did they make sound decisions about when to use AI vs human judgment?
 
-Be encouraging but honest. Acknowledge that they're learning and highlight what they did well alongside areas to improve.
+Be encouraging but honest. Frame feedback around their AI-readiness.
 
 Respond with ONLY valid JSON:
 {
   "overall": <weighted average 0-100>,
   "categories": [
-    {"name": "Communication Clarity", "score": <0-100>, "feedback": "<1 sentence>"},
-    {"name": "Problem-Solving Approach", "score": <0-100>, "feedback": "<1 sentence>"},
-    {"name": "Professional Judgment", "score": <0-100>, "feedback": "<1 sentence>"},
-    {"name": "Learning & Adaptability", "score": <0-100>, "feedback": "<1 sentence>"}
+    {"name": "AI Tool Awareness", "score": <0-100>, "feedback": "<1 sentence>"},
+    {"name": "Human Value-Add", "score": <0-100>, "feedback": "<1 sentence>"},
+    {"name": "Adaptive Thinking", "score": <0-100>, "feedback": "<1 sentence>"},
+    {"name": "Domain Judgment", "score": <0-100>, "feedback": "<1 sentence>"}
   ],
-  "summary": "<2-3 sentence overall feedback. Be encouraging, mention what they learned, and give specific improvement suggestions>"
+  "summary": "<2-3 sentence overall feedback about their AI-readiness for this task>"
 }`;
 
   const result = await callAI(apiKey, [{ role: "user", content: prompt }], 0.3);

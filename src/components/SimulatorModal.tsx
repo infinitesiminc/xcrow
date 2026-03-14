@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Send, Loader2, RotateCcw, Lightbulb, ChevronDown, ChevronUp, CheckCircle2, X } from "lucide-react";
+import { Send, Loader2, RotateCcw, Lightbulb, ChevronDown, ChevronUp, CheckCircle2, X, Bot, User, Compass, Briefcase } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { Button } from "@/components/ui/button";
 import {
@@ -17,7 +17,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
-type Phase = "loading" | "briefing" | "chat" | "completing" | "done";
+type Phase = "loading" | "experience-select" | "briefing" | "chat" | "completing" | "done";
+type ExperienceLevel = "exploring" | "practicing";
 
 interface SimulatorModalProps {
   open: boolean;
@@ -25,9 +26,113 @@ interface SimulatorModalProps {
   taskName: string;
   jobTitle: string;
   company?: string;
+  taskState?: string;
+  taskTrend?: string;
+  taskImpactLevel?: string;
   onCompleted?: () => void;
 }
 const MAX_ROUNDS = 10;
+
+const stateLabel = (s?: string) => {
+  if (s === "mostly_human") return "Mostly Human";
+  if (s === "human_ai") return "Human + AI";
+  if (s === "mostly_ai") return "Mostly AI";
+  return null;
+};
+const trendLabel = (t?: string) => {
+  if (t === "stable") return "Stable";
+  if (t === "increasing_ai") return "Growing AI";
+  if (t === "fully_ai_soon") return "Full AI Soon";
+  return null;
+};
+
+/* ── Experience Level Selector ── */
+const ExperienceSelector = ({
+  taskName,
+  taskState,
+  taskTrend,
+  onSelect,
+}: {
+  taskName: string;
+  taskState?: string;
+  taskTrend?: string;
+  onSelect: (level: ExperienceLevel) => void;
+}) => (
+  <motion.div
+    key="experience"
+    initial={{ opacity: 0, y: 16 }}
+    animate={{ opacity: 1, y: 0 }}
+    exit={{ opacity: 0, y: -8 }}
+    transition={{ duration: 0.4, ease: "easeOut" }}
+    className="flex flex-col gap-8 py-10 px-2 max-w-md mx-auto text-center"
+  >
+    <div className="space-y-3">
+      <motion.div
+        initial={{ scale: 0.8, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={{ delay: 0.1 }}
+        className="text-4xl"
+      >
+        🎯
+      </motion.div>
+      <h3 className="text-xl font-serif font-bold text-foreground">{taskName}</h3>
+      {(stateLabel(taskState) || trendLabel(taskTrend)) && (
+        <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
+          {stateLabel(taskState) && (
+            <span className="flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-dot-blue" />
+              {stateLabel(taskState)}
+            </span>
+          )}
+          {stateLabel(taskState) && trendLabel(taskTrend) && <span>→</span>}
+          {trendLabel(taskTrend) && (
+            <span className="flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-dot-purple" />
+              {trendLabel(taskTrend)}
+            </span>
+          )}
+        </div>
+      )}
+      <p className="text-sm text-muted-foreground leading-relaxed">
+        How familiar are you with this task?
+      </p>
+    </div>
+
+    <div className="grid grid-cols-1 gap-3">
+      <motion.button
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2 }}
+        onClick={() => onSelect("exploring")}
+        className="flex items-start gap-4 p-5 rounded-2xl border border-border/40 bg-background hover:bg-accent/30 hover:border-border transition-all duration-200 text-left"
+      >
+        <span className="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-accent shrink-0 mt-0.5">
+          <Compass className="h-5 w-5 text-muted-foreground" />
+        </span>
+        <div>
+          <p className="text-sm font-semibold text-foreground">I'm exploring</p>
+          <p className="text-xs text-muted-foreground mt-0.5">New to this field — teach me the basics and how AI fits in</p>
+        </div>
+      </motion.button>
+
+      <motion.button
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.3 }}
+        onClick={() => onSelect("practicing")}
+        className="flex items-start gap-4 p-5 rounded-2xl border border-border/40 bg-background hover:bg-accent/30 hover:border-border transition-all duration-200 text-left"
+      >
+        <span className="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-accent shrink-0 mt-0.5">
+          <Briefcase className="h-5 w-5 text-muted-foreground" />
+        </span>
+        <div>
+          <p className="text-sm font-semibold text-foreground">I do this job</p>
+          <p className="text-xs text-muted-foreground mt-0.5">I know the role — show me how AI is changing it</p>
+        </div>
+      </motion.button>
+    </div>
+  </motion.div>
+);
 
 /* ── Briefing Screen ── */
 const BriefingScreen = ({
@@ -52,7 +157,7 @@ const BriefingScreen = ({
         transition={{ delay: 0.15, duration: 0.3 }}
         className="text-5xl"
       >
-        🎯
+        🤖
       </motion.div>
       <h3 className="text-xl font-serif font-bold text-foreground">{session.scenario.title}</h3>
       <p className="text-sm text-muted-foreground leading-relaxed max-w-md mx-auto">{session.scenario.description}</p>
@@ -157,7 +262,7 @@ interface AnsweredQuestion {
   messageIndex: number;
 }
 
-const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, onCompleted }: SimulatorModalProps) => {
+const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState, taskTrend, taskImpactLevel, onCompleted }: SimulatorModalProps) => {
   const [phase, setPhase] = useState<Phase>("loading");
   const [session, setSession] = useState<SimSession | null>(null);
   const [messages, setMessages] = useState<SimMessage[]>([]);
@@ -166,22 +271,26 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, onComplete
   const [roundCount, setRoundCount] = useState(1);
   const [error, setError] = useState<string | null>(null);
   const [answeredQuestions, setAnsweredQuestions] = useState<AnsweredQuestion[]>([]);
+  const [experienceLevel, setExperienceLevel] = useState<ExperienceLevel>("exploring");
   const scrollRef = useRef<HTMLDivElement>(null);
   const { user } = useAuth();
   const { toast } = useToast();
+
+  const taskMeta = { currentState: taskState, trend: taskTrend, impactLevel: taskImpactLevel };
 
   const scrollToBottom = useCallback(() => {
     setTimeout(() => scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" }), 80);
   }, []);
 
-  const startSession = useCallback(async () => {
+  const startCompile = useCallback(async (level: ExperienceLevel) => {
     setPhase("loading");
     setError(null);
     setMessages([]);
     setRoundCount(1);
     setAnsweredQuestions([]);
+    setExperienceLevel(level);
     try {
-      const compiled = await compileSession(taskName, jobTitle, company, 3);
+      const compiled = await compileSession(taskName, jobTitle, company, 3, level, taskMeta);
       setSession(compiled);
       setPhase("briefing");
     } catch (err) {
@@ -189,11 +298,18 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, onComplete
       setError("Couldn't start the simulation. The simulator may not have scenarios for this role yet.");
       setPhase("chat");
     }
-  }, [taskName, jobTitle, company]);
+  }, [taskName, jobTitle, company, taskState, taskTrend, taskImpactLevel]);
 
   useEffect(() => {
-    if (open) startSession();
-  }, [open, startSession]);
+    if (open) {
+      setPhase("experience-select");
+      setSession(null);
+      setMessages([]);
+      setError(null);
+      setRoundCount(1);
+      setAnsweredQuestions([]);
+    }
+  }, [open]);
 
   const beginChat = () => {
     if (!session) return;
@@ -211,7 +327,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, onComplete
     scrollToBottom();
 
     try {
-      const reply = await chatTurn(newMessages, roundCount, roundCount, jobTitle);
+      const reply = await chatTurn(newMessages, roundCount, roundCount, jobTitle, experienceLevel, taskMeta);
       setMessages((prev) => [...prev, { role: "assistant", content: reply }]);
       const lowerInput = input.trim().toLowerCase();
       if (lowerInput === "yes" || lowerInput === "y" || lowerInput === "yeah" || lowerInput === "sure") {
@@ -254,7 +370,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, onComplete
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
       <DialogContent className="max-w-3xl w-[95vw] h-[90vh] p-0 flex flex-col overflow-hidden gap-0 border-border/50 rounded-2xl [&>button]:hidden">
-        {/* Header — minimal, airy */}
+        {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-border/40 shrink-0">
           <div className="min-w-0">
             <h2 className="text-base font-sans font-semibold text-foreground truncate">{taskName}</h2>
@@ -279,7 +395,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, onComplete
           </div>
         </div>
 
-        {/* Body — generous padding, breathing room */}
+        {/* Body */}
         <div ref={scrollRef} className="flex-1 overflow-y-auto px-6 py-6 scrollbar-thin">
           <AnimatePresence mode="popLayout">
             {phase === "loading" && (
@@ -300,11 +416,20 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, onComplete
               </motion.div>
             )}
 
+            {phase === "experience-select" && (
+              <ExperienceSelector
+                taskName={taskName}
+                taskState={taskState}
+                taskTrend={taskTrend}
+                onSelect={startCompile}
+              />
+            )}
+
             {phase === "briefing" && session && (
               <BriefingScreen session={session} onStart={beginChat} />
             )}
 
-            {error && phase !== "loading" && phase !== "briefing" && (
+            {error && phase !== "loading" && phase !== "briefing" && phase !== "experience-select" && (
               <motion.div
                 key="error"
                 initial={{ opacity: 0, y: 12 }}
@@ -444,7 +569,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, onComplete
                   )}
                 </div>
                 <div className="flex gap-3 pt-2">
-                  <Button variant="outline" onClick={startSession} className="gap-2 rounded-xl">
+                  <Button variant="outline" onClick={() => setPhase("experience-select")} className="gap-2 rounded-xl">
                     <RotateCcw className="h-3.5 w-3.5" /> Try Again
                   </Button>
                   <Button onClick={onClose} className="rounded-xl px-6">Done</Button>
@@ -454,7 +579,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, onComplete
           </AnimatePresence>
         </div>
 
-        {/* Input bar — clean, spacious */}
+        {/* Input bar */}
         {phase === "chat" && !error && (
           <motion.div
             initial={{ opacity: 0, y: 8 }}
@@ -492,18 +617,17 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, onComplete
                         setInput("");
                         setSending(true);
                         scrollToBottom();
-                        chatTurn(newMsgs, roundCount, roundCount, jobTitle).then(reply => {
+                        chatTurn(newMsgs, roundCount, roundCount, jobTitle, experienceLevel, taskMeta).then(reply => {
                           let correctLetter: string | null = null;
                           if (reply.includes("✅")) {
                             correctLetter = opt.letter;
                           } else if (reply.includes("❌")) {
-                            // Try multiple patterns to find the correct answer
                             const patterns = [
-                              /\*\*([A-C])\)?\*\*/,           // **C)** or **C**
-                              /correct\s+(?:answer|option)\s+(?:is|was)\s+\**([A-C])/i,  // correct answer is C
-                              /(?:answer|option)\s+([A-C])\s+(?:is|was)\s+correct/i,      // option C is correct
-                              /\b([A-C])\)\s/,                 // C) at word boundary
-                              /\b([A-C])\)/,                   // C) anywhere
+                              /\*\*([A-C])\)?\*\*/,
+                              /correct\s+(?:answer|option)\s+(?:is|was)\s+\**([A-C])/i,
+                              /(?:answer|option)\s+([A-C])\s+(?:is|was)\s+correct/i,
+                              /\b([A-C])\)\s/,
+                              /\b([A-C])\)/,
                             ];
                             for (const pattern of patterns) {
                               const match = reply.match(pattern);
@@ -512,7 +636,6 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, onComplete
                                 break;
                               }
                             }
-                            // Fallback: scan for any letter mentioned positively that isn't the selected one
                             if (!correctLetter) {
                               for (const other of parsedOpts) {
                                 if (other.letter !== opt.letter && reply.includes(other.text.substring(0, 20))) {
@@ -563,7 +686,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, onComplete
                       const nextRound = roundCount + 1;
                       setRoundCount(nextRound);
                       scrollToBottom();
-                      chatTurn(newMsgs, nextRound, nextRound, jobTitle).then(reply => {
+                      chatTurn(newMsgs, nextRound, nextRound, jobTitle, experienceLevel, taskMeta).then(reply => {
                         setMessages(prev => [...prev, { role: "assistant", content: reply }]);
                         scrollToBottom();
                       }).catch(() => {
