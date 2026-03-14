@@ -191,9 +191,9 @@
 
 @keyframes word-dust {
   0% { opacity: 0; transform: translateX(0); }
-  10% { opacity: 0; transform: translateX(0); }
-  15% { opacity: 0.8; transform: translateX(6px); }
-  25% { opacity: 0; transform: translateX(16px); }
+  20% { opacity: 0; transform: translateX(0); }
+  30% { opacity: 0.8; transform: translateX(6px); }
+  50% { opacity: 0; transform: translateX(16px); }
   100% { opacity: 0; transform: translateX(16px); }
 }
 
