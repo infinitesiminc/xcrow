@@ -124,7 +124,7 @@ export default function Settings() {
       <Card className="mb-6">
         <CardHeader>
           <CardTitle className="text-lg">Profile</CardTitle>
-          <CardDescription>Update your display name and view your email.</CardDescription>
+          <CardDescription>Your personal and professional details.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
@@ -138,6 +138,25 @@ export default function Settings() {
               value={displayName}
               onChange={(e) => setDisplayName(e.target.value)}
               placeholder="Your name"
+            />
+          </div>
+          <Separator />
+          <div className="space-y-2">
+            <Label htmlFor="jobTitle">Job title</Label>
+            <Input
+              id="jobTitle"
+              value={jobTitle}
+              onChange={(e) => setJobTitle(e.target.value)}
+              placeholder="e.g. Product Manager"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="company">Company</Label>
+            <Input
+              id="company"
+              value={company}
+              onChange={(e) => setCompany(e.target.value)}
+              placeholder="e.g. Acme Corp or acme.com"
             />
           </div>
           <Button onClick={handleSaveProfile} disabled={saving} size="sm">
