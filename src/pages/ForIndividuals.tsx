@@ -169,7 +169,7 @@ export default function ForIndividuals() {
                           <Icon className="h-5 w-5 text-primary" />
                         </div>
                         <div>
-                          <h3 className="text-base font-heading font-semibold text-foreground">{a.label}</h3>
+                          <h3 className="text-base font-sans font-semibold text-foreground">{a.label}</h3>
                           <p className="text-xs text-muted-foreground">{a.tagline}</p>
                         </div>
                       </div>
