@@ -184,16 +184,21 @@ const BriefingScreen = ({
       >
         <h4 className="text-xs font-medium uppercase tracking-widest text-muted-foreground mb-3">Tips for success</h4>
         <ul className="space-y-3">
-          {session.tips.map((tip, i) => (
-            <motion.li
-              key={i}
-              initial={{ opacity: 0, x: -8 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.35 + i * 0.07 }}
-              className="text-[15px] text-foreground/80 leading-relaxed flex items-start gap-3"
-            >
-              <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-accent text-xs font-medium text-muted-foreground shrink-0 mt-0.5">{i + 1}</span>
-              {tip}
+          {session.tips.map((tip: any, i: number) => {
+            const tipText = typeof tip === "string" ? tip : (tip.content || tip.title || JSON.stringify(tip));
+            return (
+              <motion.li
+                key={i}
+                initial={{ opacity: 0, x: -8 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.35 + i * 0.07 }}
+                className="text-[15px] text-foreground/80 leading-relaxed flex items-start gap-3"
+              >
+                <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-accent text-xs font-medium text-muted-foreground shrink-0 mt-0.5">{i + 1}</span>
+                {tipText}
+              </motion.li>
+            );
+          })}
             </motion.li>
           ))}
         </ul>
