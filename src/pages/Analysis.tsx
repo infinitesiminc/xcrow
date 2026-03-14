@@ -6,6 +6,7 @@ import {
   Building2, Users, MapPin, Calendar,
   ShieldAlert, GraduationCap, Rocket, CheckCircle2, LogIn,
   ListChecks, Route, Target, BarChart3, Wrench, Bookmark, BookmarkCheck,
+  ChevronRight,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
