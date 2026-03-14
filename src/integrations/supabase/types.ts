@@ -289,19 +289,28 @@ export type Database = {
       }
       profiles: {
         Row: {
+          company: string | null
           created_at: string
           display_name: string | null
           id: string
+          job_title: string | null
+          onboarding_completed: boolean
         }
         Insert: {
+          company?: string | null
           created_at?: string
           display_name?: string | null
           id: string
+          job_title?: string | null
+          onboarding_completed?: boolean
         }
         Update: {
+          company?: string | null
           created_at?: string
           display_name?: string | null
           id?: string
+          job_title?: string | null
+          onboarding_completed?: boolean
         }
         Relationships: []
       }
