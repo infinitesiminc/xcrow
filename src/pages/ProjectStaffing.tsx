@@ -2,7 +2,8 @@ import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
 import {
   Search, FolderKanban, Users, Sparkles, Plus, X, ChevronDown, ChevronUp,
-  CheckCircle2, AlertTriangle, ArrowRight
+  CheckCircle2, AlertTriangle, ArrowRight, Zap, Clock, Play, BookOpen,
+  Target, Brain, Lightbulb, Send
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
