@@ -412,7 +412,7 @@ const Dashboard = () => {
 
         {/* Practice History — grouped by job with scores */}
         <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}>
-          <h2 className="text-xs font-medium uppercase tracking-widest text-muted-foreground mb-3">Practice History</h2>
+          <h2 className="text-xs font-medium uppercase tracking-widest text-muted-foreground mb-3">Upskill History</h2>
           {loading ? (
             <div className="flex justify-center py-8">
               <Loader2 className="h-5 w-5 text-primary animate-spin" />
