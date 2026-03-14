@@ -58,7 +58,7 @@ const PROJECT_TEMPLATES = [
   { name: "Compliance Audit", skills: ["Excel", "Research", "Data Analysis", "Communication"] },
 ];
 
-const ProjectStaffing = () => {
+const ProjectStaffing = ({ embedded }: { embedded?: boolean }) => {
   const [projectName, setProjectName] = useState("");
   const [requiredSkills, setRequiredSkills] = useState<string[]>([]);
   const [skillSearch, setSkillSearch] = useState("");
