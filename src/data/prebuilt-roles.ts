@@ -27,7 +27,7 @@ export const prebuiltRoles: Record<string, JobAnalysisResult> = {
   "marketing manager": {
     jobTitle: "Marketing Manager",
     company: "",
-    summary: { augmentedPercent: 68, automationRiskPercent: 25, newSkillsPercent: 70 },
+    summary: { augmentedPercent: 62, automationRiskPercent: 32, newSkillsPercent: 68 },
     tasks: [
       { name: "Campaign performance analysis", currentState: "human_ai", trend: "increasing_ai", impactLevel: "medium", description: "AI dashboards surface insights instantly, but humans set KPIs and interpret business context." },
       { name: "Ad copy & creative briefs", currentState: "human_ai", trend: "fully_ai_soon", impactLevel: "high", description: "Generative AI drafts ad copy, headlines, and creative briefs in seconds." },
