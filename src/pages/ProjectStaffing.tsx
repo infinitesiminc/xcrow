@@ -116,6 +116,37 @@ const ProjectStaffing = ({ embedded }: { embedded?: boolean }) => {
       .slice(0, 10);
   }, [requiredSkills]);
 
+  const toggleCandidate = (name: string) => {
+    setSelectedCandidates((prev) => {
+      const next = new Set(prev);
+      if (next.has(name)) next.delete(name); else next.add(name);
+      return next;
+    });
+  };
+
+  const mockSimScenarios = useMemo(() => {
+    if (!simGenerated || requiredSkills.length === 0) return [];
+    return requiredSkills.slice(0, 5).map((skill) => {
+      const h = hashStr(skill + projectName);
+      return {
+        skill,
+        title: `${skill} — Real-world application`,
+        type: h % 2 === 0 ? "Scenario MCQ" : "Problem Solving",
+        questions: 3 + (h % 3),
+        duration: `${5 + (h % 8)} min`,
+        difficulty: h % 3 === 0 ? "Advanced" : h % 3 === 1 ? "Intermediate" : "Foundational",
+      };
+    });
+  }, [simGenerated, requiredSkills, projectName]);
+
+  const handleGenerateSim = () => {
+    setSimGenerating(true);
+    setTimeout(() => {
+      setSimGenerating(false);
+      setSimGenerated(true);
+    }, 1500);
+  };
+
   return (
     <div className={embedded ? "" : "min-h-screen bg-background"}>
       <div className={embedded ? "" : "max-w-5xl mx-auto px-4 py-8"}>
