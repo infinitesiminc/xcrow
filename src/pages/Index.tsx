@@ -477,7 +477,7 @@ const Index = () => {
               Infinite Sim
             </span>
             <h1 className="text-3xl sm:text-5xl lg:text-6xl font-bold font-serif tracking-tight text-foreground leading-[1.1] max-w-3xl mx-auto">
-              See how AI changes your role — <em className="italic">then master it</em>
+              Assess your job. <em className="italic">AI proof it.</em>
             </h1>
           </motion.div>
 
