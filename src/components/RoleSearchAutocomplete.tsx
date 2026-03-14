@@ -41,25 +41,40 @@ export function RoleSearchAutocomplete({ onAnalyze, value, onChange, jdInputType
     if (q.length < 2) { setResults([]); setOpen(false); return; }
     setLoading(true);
     try {
-      const { data } = await supabase
-        .from("jobs")
-        .select("id, title, department, automation_risk_percent, augmented_percent, companies(name, industry)")
-        .ilike("title", `%${q}%`)
-        .limit(6);
+      // Search by title and by company name in parallel
+      const [titleRes, companyRes] = await Promise.all([
+        supabase
+          .from("jobs")
+          .select("id, title, department, automation_risk_percent, augmented_percent, companies(name, industry)")
+          .ilike("title", `%${q}%`)
+          .limit(6),
+        supabase
+          .from("jobs")
+          .select("id, title, department, automation_risk_percent, augmented_percent, companies!inner(name, industry)")
+          .ilike("companies.name", `%${q}%`)
+          .limit(6),
+      ]);
 
-      if (data) {
-        const mapped: DbRole[] = data.map((j: any) => ({
-          id: j.id,
-          title: j.title,
-          department: j.department,
-          automation_risk_percent: j.automation_risk_percent,
-          augmented_percent: j.augmented_percent,
-          company_name: j.companies?.name || null,
-          industry: j.companies?.industry || null,
-        }));
-        setResults(mapped);
-        setOpen(true);
-      }
+      const allData = [...(titleRes.data || []), ...(companyRes.data || [])];
+      // Deduplicate by id
+      const seen = new Set<string>();
+      const unique = allData.filter((j: any) => {
+        if (seen.has(j.id)) return false;
+        seen.add(j.id);
+        return true;
+      }).slice(0, 8);
+
+      const mapped: DbRole[] = unique.map((j: any) => ({
+        id: j.id,
+        title: j.title,
+        department: j.department,
+        automation_risk_percent: j.automation_risk_percent,
+        augmented_percent: j.augmented_percent,
+        company_name: j.companies?.name || null,
+        industry: j.companies?.industry || null,
+      }));
+      setResults(mapped);
+      setOpen(mapped.length > 0);
     } catch (e) {
       console.error("Search error:", e);
     } finally {
