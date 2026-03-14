@@ -510,7 +510,7 @@ export const prebuiltRoles: Record<string, JobAnalysisResult> = {
   "customer success manager": {
     jobTitle: "Customer Success Manager",
     company: "",
-    summary: { augmentedPercent: 55, automationRiskPercent: 20, newSkillsPercent: 50 },
+    summary: { augmentedPercent: 72, automationRiskPercent: 12, newSkillsPercent: 35 },
     tasks: [
       { name: "Health scoring & monitoring", currentState: "human_ai", trend: "fully_ai_soon", impactLevel: "high", description: "AI tracks product usage, engagement, and sentiment to predict churn risk." },
       { name: "Onboarding coordination", currentState: "human_ai", trend: "increasing_ai", impactLevel: "medium", description: "AI personalizes onboarding paths, but high-touch guidance needs human attention." },
