@@ -74,9 +74,9 @@ function getVerdict(role: JobAnalysisResult, agentRisk: number): Verdict {
 }
 
 const verdictConfig = {
-  upskill: { icon: TrendingUp, color: "hsl(234, 89%, 60%)", label: "Upskill" },
-  pivot: { icon: RefreshCw, color: "hsl(0, 84%, 55%)", label: "Pivot" },
-  leverage: { icon: Rocket, color: "hsl(142, 71%, 45%)", label: "Leverage" },
+  upskill: { icon: TrendingUp, color: "hsl(var(--dot-amber))", label: "Upskill" },
+  pivot: { icon: RefreshCw, color: "hsl(var(--dot-purple))", label: "Pivot" },
+  leverage: { icon: Rocket, color: "hsl(var(--dot-teal))", label: "Leverage" },
 };
 
 export default function Heatmap() {
