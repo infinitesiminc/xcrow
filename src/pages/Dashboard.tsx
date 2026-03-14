@@ -42,7 +42,7 @@ interface BookmarkedRole {
 }
 
 const Dashboard = () => {
-  const { user, loading: authLoading } = useAuth();
+  const { user, loading: authLoading, profile } = useAuth();
   const navigate = useNavigate();
   const [completions, setCompletions] = useState<CompletedSim[]>([]);
   const [analyses, setAnalyses] = useState<AnalysisEntry[]>([]);
