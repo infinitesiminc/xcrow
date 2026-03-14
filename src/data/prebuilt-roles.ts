@@ -257,7 +257,7 @@ export const prebuiltRoles: Record<string, JobAnalysisResult> = {
   "risk manager": {
     jobTitle: "Risk Manager",
     company: "",
-    summary: { augmentedPercent: 66, automationRiskPercent: 24, newSkillsPercent: 60 },
+    summary: { augmentedPercent: 68, automationRiskPercent: 20, newSkillsPercent: 50 },
     tasks: [
       { name: "Risk identification & assessment", currentState: "human_ai", trend: "increasing_ai", impactLevel: "medium", description: "AI scans data for risk indicators, but humans assess context and interconnected risks." },
       { name: "Quantitative risk modeling", currentState: "human_ai", trend: "increasing_ai", impactLevel: "medium", description: "AI runs simulations and stress tests, analysts validate assumptions and scenarios." },
