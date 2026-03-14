@@ -83,8 +83,9 @@ export default function Heatmap() {
   const [hoveredCell, setHoveredCell] = useState<{ role: string; cat: string } | null>(null);
   const [tooltipPos, setTooltipPos] = useState({ x: 0, y: 0 });
 
-  const { grid, roles } = useMemo(() => {
+  const { grid, roles, agentRisks } = useMemo(() => {
     const grid: Record<string, Record<string, CellData>> = {};
+    const agentRisks: Record<string, number> = {};
     const rolesData: { key: string; title: string }[] = [];
 
     for (const key of ALL_ROLES) {
@@ -92,6 +93,13 @@ export default function Heatmap() {
       if (!role) continue;
       rolesData.push({ key, title: role.jobTitle });
       grid[key] = {};
+
+      // Agent replacement risk (same formula as RolesChart)
+      agentRisks[key] = Math.round(
+        role.summary.automationRiskPercent * 0.55 +
+        role.summary.augmentedPercent * 0.25 +
+        role.summary.newSkillsPercent * 0.20,
+      );
 
       for (const cat of TASK_CATEGORIES) {
         grid[key][cat.id] = { score: null, tasks: [] };
@@ -116,14 +124,10 @@ export default function Heatmap() {
       }
     }
 
-    // Sort roles by overall disruption (highest first)
-    rolesData.sort((a, b) => {
-      const aTotal = TASK_CATEGORIES.reduce((s, c) => s + (grid[a.key]?.[c.id]?.score || 0), 0);
-      const bTotal = TASK_CATEGORIES.reduce((s, c) => s + (grid[b.key]?.[c.id]?.score || 0), 0);
-      return bTotal - aTotal;
-    });
+    // Sort roles by agent risk (highest first)
+    rolesData.sort((a, b) => (agentRisks[b.key] || 0) - (agentRisks[a.key] || 0));
 
-    return { grid, roles: rolesData };
+    return { grid, roles: rolesData, agentRisks };
   }, []);
 
   const hoveredData = hoveredCell ? grid[hoveredCell.role]?.[hoveredCell.cat] : null;
