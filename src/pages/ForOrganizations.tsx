@@ -8,6 +8,12 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import CompanyMarquee from "@/components/CompanyMarquee";
+
+const MARQUEE_ROWS = [
+  ["Microsoft", "Apple", "Nvidia", "Meta", "OpenAI", "Stripe", "Deloitte", "McKinsey", "Boeing", "FedEx"],
+  ["Databricks", "Cohere", "Mistral", "Gong", "DeepMind", "CoreWeave", "Glean", "Deel", "Lockheed Martin"],
+];
 
 const challenges = [
   {
@@ -151,6 +157,16 @@ export default function ForOrganizations() {
               </Button>
             </div>
           </motion.div>
+        </div>
+      </section>
+
+      {/* Logo marquee */}
+      <section className="px-4 py-8">
+        <div className="mx-auto max-w-5xl">
+          <p className="text-center text-xs font-medium text-muted-foreground uppercase tracking-widest mb-4">
+            Trusted by teams at leading organizations
+          </p>
+          <CompanyMarquee rows={MARQUEE_ROWS} />
         </div>
       </section>
 
