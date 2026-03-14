@@ -16,6 +16,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { fetchCareerPathways, type EscoMatchResult, type EscoPathway } from "@/lib/esco-api";
+import { generateLocalPathways } from "@/lib/local-pathways";
 
 import SimulatorModal from "@/components/SimulatorModal";
 import { RiskGauge } from "@/components/analysis/RiskGauge";
@@ -165,14 +166,22 @@ const Analysis = () => {
     analyze();
   }, [jobTitle, company, hasJd, navigate]);
 
-  // Fetch ESCO data (single call for both CareerPathways and ActionPlan)
+  // Fetch ESCO data with local fallback
   useEffect(() => {
     if (!result?.jobTitle) return;
     setEscoLoading(true);
     setEscoError(false);
     fetchCareerPathways(result.jobTitle)
       .then(setEscoData)
-      .catch(() => setEscoError(true))
+      .catch(() => {
+        // Use local fallback from prebuilt roles
+        const local = generateLocalPathways(result.jobTitle);
+        if (local && local.pathways.length > 0) {
+          setEscoData(local);
+        } else {
+          setEscoError(true);
+        }
+      })
       .finally(() => setEscoLoading(false));
   }, [result?.jobTitle]);
 
