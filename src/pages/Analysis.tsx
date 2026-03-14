@@ -9,7 +9,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { JobAnalysisResult } from "@/types/analysis";
+import { JobAnalysisResult, TaskAnalysis } from "@/types/analysis";
 import { findPrebuiltRole } from "@/data/prebuilt-roles";
 import { analyzeJobWithAI } from "@/lib/ai-analysis";
 import { useToast } from "@/hooks/use-toast";
