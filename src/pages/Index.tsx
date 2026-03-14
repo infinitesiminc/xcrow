@@ -468,12 +468,15 @@ const Index = () => {
       <div className="flex-1 min-h-0 overflow-y-auto">
         <div className="w-full mx-auto px-4 sm:px-10 lg:px-16 py-6">
           {/* Hero */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="text-center mb-6"
-          >
+          <div className="relative rounded-2xl overflow-hidden mb-6">
+            <img src={heroBg} alt="" className="absolute inset-0 w-full h-full object-cover opacity-20" />
+            <div className="absolute inset-0 bg-gradient-to-b from-background/60 via-background/80 to-background" />
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              className="relative text-center py-12 sm:py-16 px-4"
+            >
             <span className="inline-block mb-3 px-3 py-1 text-xs font-sans font-medium tracking-widest uppercase rounded-full bg-accent text-accent-foreground">
               Infinite Sim
             </span>
