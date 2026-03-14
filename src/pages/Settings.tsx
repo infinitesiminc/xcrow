@@ -58,7 +58,7 @@ export default function Settings() {
         display_name: displayName,
         job_title: jobTitle.trim() || null,
         company: company.trim() || null,
-      })
+      } as any)
       .eq("id", user.id);
 
     if (error) {
