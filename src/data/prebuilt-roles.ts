@@ -303,7 +303,7 @@ export const prebuiltRoles: Record<string, JobAnalysisResult> = {
   "content strategist": {
     jobTitle: "Content Strategist",
     company: "",
-    summary: { augmentedPercent: 74, automationRiskPercent: 30, newSkillsPercent: 68 },
+    summary: { augmentedPercent: 74, automationRiskPercent: 22, newSkillsPercent: 50 },
     tasks: [
       { name: "Content creation & drafting", currentState: "human_ai", trend: "fully_ai_soon", impactLevel: "high", description: "AI generates blog posts, social copy, and marketing content from brief prompts." },
       { name: "SEO content optimization", currentState: "mostly_ai", trend: "fully_ai_soon", impactLevel: "high", description: "AI tools handle keyword research, on-page optimization, and content gap analysis." },
