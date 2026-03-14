@@ -320,7 +320,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, onComplete
               <div className="max-w-2xl mx-auto space-y-5">
                 {phase === "chat" && <TipsToggle tips={session?.tips || []} />}
                 {messages.map((msg, i) => {
-                  if (msg.role === "user" && /^[A-D]$/.test(msg.content.trim())) return null;
+                  if (msg.role === "user" && /^[A-C]$/.test(msg.content.trim())) return null;
 
                   const isUser = msg.role === "user";
 
