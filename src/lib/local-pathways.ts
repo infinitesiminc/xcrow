@@ -72,7 +72,7 @@ export function generateLocalPathways(jobTitle: string): CareerMatchResult | nul
     for (const kw of extractKeywords(t.name)) currentTaskKeywords.add(kw);
   }
 
-  const pathways: EscoPathway[] = [];
+  const pathways: CareerPathway[] = [];
 
   for (const [key, role] of Object.entries(prebuiltRoles)) {
     if (key === currentKey) continue;

@@ -6,10 +6,10 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
-import type { EscoMatchResult } from "@/lib/esco-api";
+import type { CareerMatchResult } from "@/lib/local-pathways";
 
 interface CareerPathwaysProps {
-  data: EscoMatchResult | null;
+  data: CareerMatchResult | null;
   loading: boolean;
   error: boolean;
 }
