@@ -210,7 +210,7 @@ const Dashboard = () => {
                     onClick={() => {
                       const params = new URLSearchParams({ title: profile!.jobTitle! });
                       if (profile!.company) params.set("company", profile!.company);
-                      navigate(`/analysis?${params.toString()}`);
+                      navigate(`/analysis?${params.toString()}`, { state: { from: "dashboard" } });
                     }}
                   >
                     <Zap className="h-3.5 w-3.5 mr-1" /> Analyze
