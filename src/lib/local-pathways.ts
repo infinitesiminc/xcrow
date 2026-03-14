@@ -46,7 +46,7 @@ function keywordOverlap(setA: Set<string>, setB: Set<string>): number {
  * Generate career pathways locally from prebuilt roles data
  * when the ESCO API is unavailable.
  */
-export function generateLocalPathways(jobTitle: string): EscoMatchResult | null {
+export function generateLocalPathways(jobTitle: string): CareerMatchResult | null {
   const normalized = jobTitle.toLowerCase().trim();
 
   // Find the current role
