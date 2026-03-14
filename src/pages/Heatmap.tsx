@@ -247,7 +247,8 @@ export default function Heatmap() {
                       );
                     })}
                   </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           </CardContent>
