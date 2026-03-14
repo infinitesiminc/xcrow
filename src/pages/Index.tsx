@@ -41,6 +41,7 @@ import { analyzeJobWithAI } from "@/lib/ai-analysis";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { RoleSearchAutocomplete } from "@/components/RoleSearchAutocomplete";
+import { HeatmapPreview } from "@/components/HeatmapPreview";
 
 interface RoleCard {
   title: string;
