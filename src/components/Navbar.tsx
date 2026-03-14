@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import logo from "@/assets/logo.png";
@@ -10,12 +11,13 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { BarChart3, LayoutDashboard, Settings, LogOut, User } from "lucide-react";
+import { LayoutDashboard, Settings, LogOut, User, Menu, X } from "lucide-react";
 
 export default function Navbar() {
   const { user, signOut, openAuthModal } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   const isActive = (path: string) => location.pathname === path;
 
@@ -23,72 +25,46 @@ export default function Navbar() {
     ? user.user_metadata.display_name.slice(0, 2).toUpperCase()
     : user?.email?.slice(0, 2).toUpperCase() ?? "?";
 
+  const navItems = [
+    { label: "For Individuals", path: "/for-individuals" },
+    { label: "For Organizations", path: "/for-organizations" },
+    { label: "Pricing", path: "/pricing" },
+    { label: "Analyze", path: "/" },
+    { label: "Contact", path: "/contact" },
+    ...(user ? [{ label: "Dashboard", path: "/dashboard" }] : []),
+  ];
+
+  const handleNav = (path: string) => {
+    navigate(path);
+    setMobileOpen(false);
+  };
+
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border bg-background/80 backdrop-blur-sm">
       <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 sm:px-6">
-        {/* Logo / Home */}
+        {/* Logo */}
         <button
-          onClick={() => navigate("/")}
+          onClick={() => handleNav("/")}
           className="flex items-center gap-2 font-sans text-lg font-bold tracking-tight text-foreground hover:opacity-80 transition-opacity"
         >
           <img src={logo} alt="Infinite Sim" className="h-6 w-6" />
           <span className="hidden sm:inline">Infinite Sim</span>
         </button>
 
-        {/* Nav links */}
-        <nav className="flex items-center gap-1">
-          <Button
-            variant={isActive("/for-individuals") ? "secondary" : "ghost"}
-            size="sm"
-            onClick={() => navigate("/for-individuals")}
-            className="text-sm"
-          >
-            For Individuals
-          </Button>
-          <Button
-            variant={isActive("/for-organizations") ? "secondary" : "ghost"}
-            size="sm"
-            onClick={() => navigate("/for-organizations")}
-            className="text-sm"
-          >
-            For Organizations
-          </Button>
-          <Button
-            variant={isActive("/pricing") ? "secondary" : "ghost"}
-            size="sm"
-            onClick={() => navigate("/pricing")}
-            className="text-sm"
-          >
-            Pricing
-          </Button>
-          <Button
-            variant={isActive("/") ? "secondary" : "ghost"}
-            size="sm"
-            onClick={() => navigate("/")}
-            className="text-sm"
-          >
-            Analyze
-          </Button>
-          <Button
-            variant={isActive("/contact") ? "secondary" : "ghost"}
-            size="sm"
-            onClick={() => navigate("/contact")}
-            className="text-sm"
-          >
-            Contact
-          </Button>
-
-          {user && (
+        {/* Desktop nav */}
+        <nav className="hidden md:flex items-center gap-1">
+          {navItems.map((item) => (
             <Button
-              variant={isActive("/dashboard") ? "secondary" : "ghost"}
+              key={item.path}
+              variant={isActive(item.path) ? "secondary" : "ghost"}
               size="sm"
-              onClick={() => navigate("/dashboard")}
+              onClick={() => navigate(item.path)}
               className="text-sm"
             >
-              <LayoutDashboard className="mr-1.5 h-4 w-4" />
-              Dashboard
+              {item.label === "Dashboard" && <LayoutDashboard className="mr-1.5 h-4 w-4" />}
+              {item.label}
             </Button>
-          )}
+          ))}
         </nav>
 
         {/* Right side */}
@@ -135,8 +111,39 @@ export default function Navbar() {
               Sign in
             </Button>
           )}
+
+          {/* Mobile hamburger */}
+          <Button
+            variant="ghost"
+            size="icon"
+            className="md:hidden"
+            onClick={() => setMobileOpen(!mobileOpen)}
+          >
+            {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          </Button>
         </div>
       </div>
+
+      {/* Mobile menu */}
+      {mobileOpen && (
+        <div className="md:hidden border-t border-border bg-background/95 backdrop-blur-sm">
+          <nav className="flex flex-col px-4 py-3 gap-1">
+            {navItems.map((item) => (
+              <button
+                key={item.path}
+                onClick={() => handleNav(item.path)}
+                className={`text-left px-3 py-2.5 text-sm font-medium rounded-lg transition-colors ${
+                  isActive(item.path)
+                    ? "bg-secondary text-foreground"
+                    : "text-muted-foreground hover:text-foreground hover:bg-accent"
+                }`}
+              >
+                {item.label}
+              </button>
+            ))}
+          </nav>
+        </div>
+      )}
     </header>
   );
 }
