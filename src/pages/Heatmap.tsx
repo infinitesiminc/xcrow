@@ -196,7 +196,7 @@ export default function Heatmap() {
             <div className="overflow-x-auto">
               <div className="min-w-[900px]">
                 {/* Header row */}
-                <div className="grid" style={{ gridTemplateColumns: "180px 60px repeat(8, 1fr)" }}>
+                <div className="grid" style={{ gridTemplateColumns: "160px 55px 70px repeat(8, 1fr)" }}>
                   <div className="p-3 text-xs font-medium text-muted-foreground border-b border-r border-border/40 bg-muted/30">
                     Role
                   </div>
