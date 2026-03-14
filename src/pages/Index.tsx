@@ -469,7 +469,7 @@ const Index = () => {
         <div className="w-full mx-auto px-4 sm:px-10 lg:px-16 py-6">
           {/* Hero */}
           <div className="relative rounded-2xl overflow-hidden mb-6">
-            <img src={heroBg} alt="" className="absolute inset-0 w-full h-full object-cover opacity-60 grayscale" loading="eager" fetchPriority="high" decoding="sync" />
+            <img src={heroBg} alt="" className="absolute inset-0 w-full h-full object-cover opacity-60 grayscale sm:grayscale-0" loading="eager" fetchPriority="high" decoding="sync" />
             <div className="absolute inset-0 bg-gradient-to-b from-background/10 via-background/30 to-background" />
             <motion.div
               initial={{ opacity: 0, y: 20 }}
