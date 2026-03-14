@@ -197,7 +197,7 @@ export default function ForIndividuals() {
             <Card className="border-primary/20 bg-gradient-to-r from-primary/5 via-accent/30 to-primary/5">
               <CardContent className="p-8 text-center">
                 <Brain className="mx-auto h-8 w-8 text-primary mb-4" />
-                <h2 className="font-heading text-xl sm:text-2xl font-bold text-foreground">
+                <h2 className="font-sans text-xl sm:text-2xl font-bold text-foreground">
                   Ready to see where you stand?
                 </h2>
                 <p className="mt-2 text-sm text-muted-foreground max-w-md mx-auto">
