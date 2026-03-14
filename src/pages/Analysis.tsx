@@ -278,7 +278,7 @@ const Analysis = () => {
             </button>
             <div>
               <h1 className="text-2xl sm:text-3xl font-serif font-bold text-foreground leading-tight">{result.jobTitle}</h1>
-              {result.company && <p className="text-sm text-muted-foreground mt-1">at {result.company}</p>}
+              
             </div>
           </div>
 
