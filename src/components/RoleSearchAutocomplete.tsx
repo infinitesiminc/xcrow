@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
 import { getRiskTier } from "@/lib/risk-colors";
 import { Button } from "@/components/ui/button";
+import { CompanyPills } from "@/components/CompanyPills";
 
 interface DbRole {
   id: string;
