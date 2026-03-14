@@ -12,8 +12,6 @@ import Auth from "./pages/Auth.tsx";
 import Dashboard from "./pages/Dashboard.tsx";
 import Settings from "./pages/Settings.tsx";
 import NotFound from "./pages/NotFound.tsx";
-import RolesChart from "./pages/RolesChart.tsx";
-import Heatmap from "./pages/Heatmap.tsx";
 import ForIndividuals from "./pages/ForIndividuals.tsx";
 import ForOrganizations from "./pages/ForOrganizations.tsx";
 import ToolsMarketplace from "./pages/ToolsMarketplace.tsx";
@@ -34,8 +32,7 @@ const App = () => (
             <Route path="/auth" element={<><Navbar /><Auth /></>} />
             <Route path="/dashboard" element={<><Navbar /><Dashboard /></>} />
             <Route path="/settings" element={<><Navbar /><Settings /></>} />
-            <Route path="/roles-chart" element={<><Navbar /><RolesChart /></>} />
-            <Route path="/heatmap" element={<><Navbar /><Heatmap /></>} />
+            
             <Route path="/for-individuals" element={<><Navbar /><ForIndividuals /></>} />
             <Route path="/for-organizations" element={<><Navbar /><ForOrganizations /></>} />
             <Route path="/tools" element={<><Navbar /><ToolsMarketplace /></>} />
