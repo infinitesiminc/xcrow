@@ -209,7 +209,7 @@ const BriefingScreen = ({
       className="flex justify-center pt-2"
     >
       <Button onClick={onStart} size="lg" className="gap-2 rounded-xl px-8 text-base">
-        Begin Practice
+        Begin Upskill
       </Button>
     </motion.div>
   </motion.div>
