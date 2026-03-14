@@ -109,6 +109,18 @@ const Analysis = () => {
 
   useEffect(() => { fetchCompletions(); }, [fetchCompletions]);
 
+  // Show sticky bar when hero card scrolls out of view
+  useEffect(() => {
+    const el = heroRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => setShowStickyBar(!entry.isIntersecting),
+      { threshold: 0 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [loading, result]);
+
   const saveAnalysisHistory = useCallback(async (analysisResult: JobAnalysisResult) => {
     if (!user) return;
     try {
