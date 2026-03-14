@@ -55,6 +55,15 @@ const mockScores = (title: string) => {
   return { automation_risk_percent, augmented_percent, new_skills_percent };
 };
 
+const TASKS_PER_JOB = 12;
+
+const mockPracticeProgress = (title: string) => {
+  const h = hashStr(title.toLowerCase() + "_practice");
+  const practised = h % (TASKS_PER_JOB + 1); // 0-12 tasks practised
+  const avgScore = practised > 0 ? 30 + (h >> 3) % 60 : 0; // 30-89% avg score
+  return { practised, avgScore };
+};
+
 const riskBadge = (risk: number) => {
   if (risk >= 60) return { label: "High Risk", className: "bg-destructive/10 text-destructive border-destructive/20" };
   if (risk >= 35) return { label: "Moderate", className: "bg-warning/10 text-warning border-warning/20" };
@@ -334,10 +343,13 @@ const CompanyDashboard = () => {
                     <TableHead className="cursor-pointer select-none text-right" onClick={() => toggleSort("augmented_percent")}>
                       <span className="flex items-center justify-end text-xs">AI Augmented <SortIcon field="augmented_percent" /></span>
                     </TableHead>
-                    <TableHead className="cursor-pointer select-none text-right" onClick={() => toggleSort("new_skills_percent")}>
-                      <span className="flex items-center justify-end text-xs">New Skills <SortIcon field="new_skills_percent" /></span>
-                    </TableHead>
-                    <TableHead className="w-20" />
+                     <TableHead className="cursor-pointer select-none text-right" onClick={() => toggleSort("new_skills_percent")}>
+                       <span className="flex items-center justify-end text-xs">New Skills <SortIcon field="new_skills_percent" /></span>
+                     </TableHead>
+                     <TableHead className="text-center">
+                       <span className="text-xs">Staff Practice</span>
+                     </TableHead>
+                     <TableHead className="w-20" />
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -368,20 +380,39 @@ const CompanyDashboard = () => {
                           </Badge>
                         </TableCell>
                         <TableCell className="text-right text-sm text-foreground">{job.augmented_percent ?? 0}%</TableCell>
-                        <TableCell className="text-right text-sm text-foreground">{job.new_skills_percent ?? 0}%</TableCell>
-                        <TableCell>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-7 text-xs gap-1 text-primary opacity-0 group-hover:opacity-100 transition-opacity"
-                            onClick={() => {
-                              const params = new URLSearchParams({ title: job.title });
-                              navigate(`/analysis?${params.toString()}`);
-                            }}
-                          >
-                            <Search className="h-3 w-3" /> Analyze
-                          </Button>
-                        </TableCell>
+                         <TableCell className="text-right text-sm text-foreground">{job.new_skills_percent ?? 0}%</TableCell>
+                         <TableCell>
+                           {(() => {
+                             const { practised, avgScore } = mockPracticeProgress(job.title);
+                             const pct = Math.round((practised / TASKS_PER_JOB) * 100);
+                             const scoreColor = avgScore >= 70 ? "text-success" : avgScore >= 40 ? "text-warning" : "text-destructive";
+                             const barColor = avgScore >= 70 ? "bg-success" : avgScore >= 40 ? "bg-warning" : "bg-destructive";
+                             return (
+                               <div className="min-w-[100px]">
+                                 <div className="flex items-center justify-between text-[10px] mb-1">
+                                   <span className="text-muted-foreground">{practised}/{TASKS_PER_JOB} tasks</span>
+                                   {practised > 0 && <span className={scoreColor}>{avgScore}%</span>}
+                                 </div>
+                                 <div className="w-full h-1.5 rounded-full bg-secondary overflow-hidden">
+                                   <div className={`h-full rounded-full ${barColor} transition-all duration-700`} style={{ width: `${pct}%` }} />
+                                 </div>
+                               </div>
+                             );
+                           })()}
+                         </TableCell>
+                         <TableCell>
+                           <Button
+                             variant="ghost"
+                             size="sm"
+                             className="h-7 text-xs gap-1 text-primary opacity-0 group-hover:opacity-100 transition-opacity"
+                             onClick={() => {
+                               const params = new URLSearchParams({ title: job.title });
+                               navigate(`/analysis?${params.toString()}`);
+                             }}
+                           >
+                             <Search className="h-3 w-3" /> Analyze
+                           </Button>
+                         </TableCell>
                       </TableRow>
                     );
                   })}
