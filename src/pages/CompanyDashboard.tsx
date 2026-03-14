@@ -37,6 +37,21 @@ interface DbJob {
 type SortField = "title" | "automation_risk_percent" | "augmented_percent" | "new_skills_percent" | "department";
 type SortDir = "asc" | "desc";
 
+// Deterministic hash to generate consistent mock scores from a job title
+const hashStr = (s: string) => {
+  let h = 0;
+  for (let i = 0; i < s.length; i++) h = (Math.imul(31, h) + s.charCodeAt(i)) | 0;
+  return Math.abs(h);
+};
+
+const mockScores = (title: string) => {
+  const h = hashStr(title.toLowerCase());
+  const automation_risk_percent = 15 + (h % 65);            // 15-79
+  const augmented_percent = 20 + ((h >> 4) % 60);           // 20-79
+  const new_skills_percent = 10 + ((h >> 8) % 55);          // 10-64
+  return { automation_risk_percent, augmented_percent, new_skills_percent };
+};
+
 const riskBadge = (risk: number) => {
   if (risk >= 60) return { label: "High Risk", className: "bg-destructive/10 text-destructive border-destructive/20" };
   if (risk >= 35) return { label: "Moderate", className: "bg-warning/10 text-warning border-warning/20" };
