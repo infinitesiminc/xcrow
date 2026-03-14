@@ -200,6 +200,7 @@
 .laser-word {
   position: relative;
   display: inline-block;
+  overflow: visible;
   animation: word-clip-away 2s ease-in-out infinite;
 }
 
