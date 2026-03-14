@@ -462,33 +462,6 @@ const Index = () => {
 
   return (
     <div className="h-screen bg-background flex flex-col">
-      {/* Minimal top bar */}
-      <div className="flex items-center justify-between px-4 sm:px-6 py-2 shrink-0">
-        <div className="flex items-center gap-2 font-sans text-sm font-bold tracking-tight text-foreground">
-          <img src={logoImg} alt="Infinite Sim" className="h-5 w-5" />
-          Infinite Sim
-        </div>
-        <div className="flex items-center gap-1">
-          <Button variant="ghost" size="sm" className="text-xs h-7" onClick={() => navigate("/for-individuals")}>
-            For Individuals
-          </Button>
-          <Button variant="ghost" size="sm" className="text-xs h-7" onClick={() => navigate("/for-organizations")}>
-            For Organizations
-          </Button>
-          <Button variant="ghost" size="sm" className="text-xs h-7" onClick={() => navigate("/pricing")}>
-            Pricing
-          </Button>
-          {user ? (
-            <Button variant="ghost" size="sm" className="text-xs h-7" onClick={() => navigate("/dashboard")}>
-              <LayoutDashboard className="mr-1 h-3.5 w-3.5" /> Dashboard
-            </Button>
-          ) : (
-            <Button variant="ghost" size="sm" className="text-xs h-7" onClick={openAuthModal}>
-              <User className="mr-1 h-3.5 w-3.5" /> Sign in
-            </Button>
-          )}
-        </div>
-      </div>
 
       {/* Single column centered content */}
       <div className="flex-1 min-h-0 overflow-y-auto">
