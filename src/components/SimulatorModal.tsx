@@ -184,22 +184,24 @@ const BriefingScreen = ({
       >
         <h4 className="text-xs font-medium uppercase tracking-widest text-muted-foreground mb-3">Tips for success</h4>
         <ul className="space-y-3">
-          {session.tips.map((tip, i) => (
-            <motion.li
-              key={i}
-              initial={{ opacity: 0, x: -8 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.35 + i * 0.07 }}
-              className="text-[15px] text-foreground/80 leading-relaxed flex items-start gap-3"
-            >
-              <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-accent text-xs font-medium text-muted-foreground shrink-0 mt-0.5">{i + 1}</span>
-              {tip}
-            </motion.li>
-          ))}
+          {session.tips.map((tip: any, i: number) => {
+            const tipText = typeof tip === "string" ? tip : (tip.content || tip.title || JSON.stringify(tip));
+            return (
+              <motion.li
+                key={i}
+                initial={{ opacity: 0, x: -8 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.35 + i * 0.07 }}
+                className="text-[15px] text-foreground/80 leading-relaxed flex items-start gap-3"
+              >
+                <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-accent text-xs font-medium text-muted-foreground shrink-0 mt-0.5">{i + 1}</span>
+                {tipText}
+              </motion.li>
+            );
+          })}
         </ul>
       </motion.div>
     )}
-
     <motion.div
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
@@ -239,12 +241,15 @@ const TipsToggle = ({ tips }: { tips: string[] }) => {
           >
             <div className="mt-3 p-4 rounded-xl bg-accent/20 border border-border/30">
               <ul className="space-y-2">
-                {tips.map((tip, i) => (
-                  <li key={i} className="text-sm text-foreground/70 flex items-start gap-2.5 leading-relaxed">
-                    <span className="text-muted-foreground font-medium">{i + 1}.</span>
-                    {tip}
-                  </li>
-                ))}
+                {tips.map((tip: any, i: number) => {
+                  const tipText = typeof tip === "string" ? tip : (tip.content || tip.title || JSON.stringify(tip));
+                  return (
+                    <li key={i} className="text-sm text-foreground/70 flex items-start gap-2.5 leading-relaxed">
+                      <span className="text-muted-foreground font-medium">{i + 1}.</span>
+                      {tipText}
+                    </li>
+                  );
+                })}
               </ul>
             </div>
           </motion.div>
