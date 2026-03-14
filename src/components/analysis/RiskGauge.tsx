@@ -69,7 +69,7 @@ export function RiskGauge({ risk, verdict, reasoning }: RiskGaugeProps) {
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center">
           <motion.span
-            className="text-4xl font-display font-bold text-foreground"
+            className="text-4xl font-sans font-bold text-foreground"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.5 }}
