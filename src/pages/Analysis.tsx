@@ -24,6 +24,8 @@ import { TaskTable } from "@/components/analysis/TaskTable";
 import { CareerPathways } from "@/components/analysis/CareerPathways";
 import { ActionPlan } from "@/components/analysis/ActionPlan";
 import { RoleContext } from "@/components/analysis/RoleContext";
+import { IndustryBenchmarkCard } from "@/components/analysis/IndustryBenchmark";
+import { CuratedSkillsBadge } from "@/components/analysis/CuratedSkills";
 
 interface CompanySnapshot {
   success: boolean;
