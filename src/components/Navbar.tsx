@@ -1,5 +1,6 @@
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import logo from "@/assets/logo.png";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -30,7 +31,7 @@ export default function Navbar() {
           onClick={() => navigate("/")}
           className="flex items-center gap-2 font-heading text-lg font-bold tracking-tight text-foreground hover:opacity-80 transition-opacity"
         >
-          <BarChart3 className="h-5 w-5 text-primary" />
+          <img src={logo} alt="Infinite Sim" className="h-6 w-6" />
           <span className="hidden sm:inline">Infinite Sim</span>
         </button>
 
