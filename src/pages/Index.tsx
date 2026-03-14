@@ -475,7 +475,7 @@ const Index = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
-              className="relative text-center py-12 sm:py-16 px-4"
+              className="relative text-center py-8 sm:py-10 px-4"
             >
             <span className="inline-block mb-3 px-3 py-1 text-xs font-sans font-medium tracking-widest uppercase rounded-full bg-accent text-accent-foreground">
               Infinite Sim
