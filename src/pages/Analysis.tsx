@@ -79,6 +79,8 @@ const Analysis = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const fromDashboard = (location.state as any)?.from === "dashboard";
+  const fromCompanyDemo = (location.state as any)?.from === "company-dashboard";
+  const backPath = fromCompanyDemo ? "/company-dashboard" : fromDashboard ? "/dashboard" : "/";
   const { toast } = useToast();
 
   const company = searchParams.get("company") || "";
