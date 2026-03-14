@@ -64,9 +64,9 @@ export default function ForIndividuals() {
             <div className="mx-auto mb-5 flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10">
               <Sparkles className="h-6 w-6 text-primary" />
             </div>
-            <h1 className="font-heading text-4xl sm:text-5xl lg:text-6xl font-bold text-foreground leading-tight tracking-tight">
+            <h1 className="font-serif text-4xl sm:text-5xl lg:text-6xl font-bold text-foreground leading-tight tracking-tight">
               Know your AI risk.<br />
-              <span className="text-primary">Master what's next.</span>
+              <em className="italic">Master what's next.</em>
             </h1>
             <p className="mx-auto mt-5 max-w-2xl text-lg text-muted-foreground leading-relaxed">
               Get a task-level AI impact analysis for any role — then practice the skills that keep you ahead. For professionals protecting their career and students building theirs.
