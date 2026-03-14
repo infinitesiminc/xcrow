@@ -35,8 +35,10 @@ export async function compileSession(
   jobTitle: string,
   company?: string,
   difficulty = 3,
+  experienceLevel: "exploring" | "practicing" = "exploring",
+  taskMeta?: { currentState?: string; trend?: string; impactLevel?: string },
 ): Promise<SimSession> {
-  return simFetch("compile", { taskName, jobTitle, company, difficulty });
+  return simFetch("compile", { taskName, jobTitle, company, difficulty, experienceLevel, taskMeta });
 }
 
 export async function chatTurn(
@@ -44,9 +46,11 @@ export async function chatTurn(
   round: number,
   turnCount: number,
   role: string,
+  experienceLevel: "exploring" | "practicing" = "exploring",
+  taskMeta?: { currentState?: string; trend?: string; impactLevel?: string },
 ): Promise<string> {
   const { data, error } = await supabase.functions.invoke("sim-chat", {
-    body: { action: "chat", payload: { messages, round, turnCount, role } },
+    body: { action: "chat", payload: { messages, round, turnCount, role, experienceLevel, taskMeta } },
   });
   if (error) throw new Error(`Chat error: ${error.message}`);
   return typeof data === "string" ? data : JSON.stringify(data);

@@ -9,7 +9,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { JobAnalysisResult } from "@/types/analysis";
+import { JobAnalysisResult, TaskAnalysis } from "@/types/analysis";
 import { findPrebuiltRole } from "@/data/prebuilt-roles";
 import { analyzeJobWithAI } from "@/lib/ai-analysis";
 import { useToast } from "@/hooks/use-toast";
@@ -87,7 +87,7 @@ const Analysis = () => {
   const [error, setError] = useState<string | null>(null);
   const [snapshot, setSnapshot] = useState<CompanySnapshot | null>(null);
   const [snapshotLoading, setSnapshotLoading] = useState(false);
-  const [simTask, setSimTask] = useState<string | null>(null);
+  const [simTask, setSimTask] = useState<TaskAnalysis | null>(null);
   const [completedTasks, setCompletedTasks] = useState<Set<string>>(new Set());
   const [escoData, setEscoData] = useState<EscoMatchResult | null>(null);
   const [escoLoading, setEscoLoading] = useState(false);
@@ -354,7 +354,10 @@ const Analysis = () => {
             tasks={result.tasks}
             skills={result.skills}
             completedTasks={completedTasks}
-            onPractice={setSimTask}
+            onPractice={(taskName) => {
+              const task = result.tasks.find(t => t.name === taskName);
+              if (task) setSimTask(task);
+            }}
           />
         </motion.div>
 
@@ -370,7 +373,10 @@ const Analysis = () => {
           <ActionPlan
             result={result}
             topPathway={topPathway}
-            onPractice={setSimTask}
+            onPractice={(taskName) => {
+              const task = result.tasks.find(t => t.name === taskName);
+              if (task) setSimTask(task);
+            }}
           />
         </motion.div>
 
@@ -419,9 +425,12 @@ const Analysis = () => {
         <SimulatorModal
           open={!!simTask}
           onClose={() => setSimTask(null)}
-          taskName={simTask || ""}
+          taskName={simTask?.name || ""}
           jobTitle={result.jobTitle}
           company={result.company}
+          taskState={simTask?.currentState}
+          taskTrend={simTask?.trend}
+          taskImpactLevel={simTask?.impactLevel}
           onCompleted={fetchCompletions}
         />
       </div>
