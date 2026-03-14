@@ -733,7 +733,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3 }}
-            className="shrink-0 border-t border-border/40 bg-background px-6 py-4 space-y-3"
+            className="shrink-0 border-t border-border/40 bg-background px-4 sm:px-6 py-3 sm:py-4 space-y-3 pb-[env(safe-area-inset-bottom,12px)]"
           >
             <div className="flex items-end gap-3 max-w-2xl mx-auto">
               <textarea
