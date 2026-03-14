@@ -87,6 +87,8 @@ const Analysis = () => {
   const [simTask, setSimTask] = useState<string | null>(null);
   const [completedTasks, setCompletedTasks] = useState<Set<string>>(new Set());
   const [escoData, setEscoData] = useState<EscoMatchResult | null>(null);
+  const [escoLoading, setEscoLoading] = useState(false);
+  const [escoError, setEscoError] = useState(false);
   const { user } = useAuth();
 
   const fetchCompletions = useCallback(async () => {
