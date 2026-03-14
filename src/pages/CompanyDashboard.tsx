@@ -456,7 +456,7 @@ const CompanyDashboard = () => {
                              className="h-7 text-xs gap-1 text-primary opacity-0 group-hover:opacity-100 transition-opacity"
                              onClick={() => {
                                const params = new URLSearchParams({ title: job.title });
-                               navigate(`/analysis?${params.toString()}`);
+                               navigate(`/analysis?${params.toString()}`, { state: { from: "company-dashboard" } });
                              }}
                            >
                              <Search className="h-3 w-3" /> Analyze

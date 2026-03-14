@@ -79,6 +79,8 @@ const Analysis = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const fromDashboard = (location.state as any)?.from === "dashboard";
+  const fromCompanyDemo = (location.state as any)?.from === "company-dashboard";
+  const backPath = fromCompanyDemo ? "/company-dashboard" : fromDashboard ? "/dashboard" : "/";
   const { toast } = useToast();
 
   const company = searchParams.get("company") || "";
@@ -364,7 +366,7 @@ const Analysis = () => {
           >
             <div className="max-w-4xl mx-auto px-4 py-2 flex items-center justify-between gap-3">
               <div className="flex items-center gap-2.5 min-w-0">
-                <button onClick={() => navigate("/")} className="p-1 rounded-md hover:bg-accent transition-colors shrink-0">
+                <button onClick={() => navigate(backPath)} className="p-1 rounded-md hover:bg-accent transition-colors shrink-0">
                   <ArrowLeft className="h-3.5 w-3.5 text-muted-foreground" />
                 </button>
                 <span className="text-sm font-semibold text-foreground truncate">{result.jobTitle}</span>
@@ -386,9 +388,11 @@ const Analysis = () => {
         {/* Header */}
         <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
           {/* Breadcrumb */}
-          {fromDashboard && (
+          {(fromDashboard || fromCompanyDemo) && (
             <nav className="flex items-center gap-1.5 text-xs text-muted-foreground mb-4">
-              <button onClick={() => navigate("/dashboard")} className="hover:text-foreground transition-colors">Dashboard</button>
+              <button onClick={() => navigate(backPath)} className="hover:text-foreground transition-colors">
+                {fromCompanyDemo ? "Company Demo" : "Dashboard"}
+              </button>
               <ChevronRight className="h-3 w-3" />
               <span className="text-foreground font-medium truncate max-w-[200px]">{result.jobTitle}</span>
               {company && (
@@ -402,7 +406,7 @@ const Analysis = () => {
 
           <div className="flex items-start justify-between gap-3 mb-6">
             <div className="flex items-start gap-3 min-w-0">
-              <button onClick={() => fromDashboard ? navigate("/dashboard") : navigate("/")} className="mt-1 p-1.5 rounded-lg hover:bg-accent transition-colors shrink-0">
+              <button onClick={() => navigate(backPath)} className="mt-1 p-1.5 rounded-lg hover:bg-accent transition-colors shrink-0">
                 <ArrowLeft className="h-4 w-4 text-muted-foreground" />
               </button>
               <div>
