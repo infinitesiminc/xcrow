@@ -210,6 +210,29 @@ serve(async (req) => {
 
     const sb = getSupabaseAdmin();
 
+    // 0. Check cache first (only for title-only queries without custom JD)
+    const cacheKey = {
+      title: (jobTitle || "").trim().toLowerCase(),
+      company: (company || "").trim().toLowerCase(),
+    };
+
+    if (!jobDescription && !jdUrl && cacheKey.title) {
+      const { data: cached } = await sb
+        .from("cached_analyses")
+        .select("result")
+        .eq("job_title_lower", cacheKey.title)
+        .eq("company_lower", cacheKey.company)
+        .maybeSingle();
+
+      if (cached?.result) {
+        console.log("Cache hit for:", cacheKey.title);
+        return new Response(JSON.stringify(cached.result), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      console.log("Cache miss for:", cacheKey.title);
+    }
+
     // 1. Look up matching job in DB
     const { job: matchedJob, skills: curatedSkills } = await findMatchingJob(sb, jobTitle);
     console.log("DB match:", matchedJob?.title || "none", "skills:", curatedSkills.length);
