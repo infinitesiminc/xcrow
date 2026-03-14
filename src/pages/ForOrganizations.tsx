@@ -91,8 +91,8 @@ export default function ForOrganizations() {
               Audit AI exposure across your entire organization, identify skill gaps by department, and deploy targeted upskilling — all from one platform.
             </p>
             <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3">
-              <Button size="lg" onClick={() => navigate("/team-analysis")} className="gap-2 text-base px-8">
-                Start Team Analysis <ArrowRight className="h-4 w-4" />
+              <Button size="lg" onClick={() => navigate("/contact-org")} className="gap-2 text-base px-8">
+                Get Started <ArrowRight className="h-4 w-4" />
               </Button>
               <Button size="lg" variant="outline" onClick={() => navigate("/for-individuals")} className="text-base">
                 For Individuals →
