@@ -1,44 +1,39 @@
-import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowRight, Loader2 } from "lucide-react";
+import { ArrowRight, AlertCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { fetchCareerPathways, type EscoMatchResult } from "@/lib/esco-api";
+import { Skeleton } from "@/components/ui/skeleton";
+import type { EscoMatchResult } from "@/lib/esco-api";
 
 interface CareerPathwaysProps {
-  jobTitle: string;
+  data: EscoMatchResult | null;
+  loading: boolean;
+  error: boolean;
 }
 
-export function CareerPathways({ jobTitle }: CareerPathwaysProps) {
+export function CareerPathways({ data, loading, error }: CareerPathwaysProps) {
   const navigate = useNavigate();
-  const [data, setData] = useState<EscoMatchResult | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false);
-
-  useEffect(() => {
-    if (!jobTitle) return;
-    setLoading(true);
-    setError(false);
-    fetchCareerPathways(jobTitle)
-      .then(setData)
-      .catch(() => setError(true))
-      .finally(() => setLoading(false));
-  }, [jobTitle]);
 
   if (loading) {
     return (
-      <div className="flex items-center gap-2 text-sm text-muted-foreground py-6">
-        <Loader2 className="h-4 w-4 animate-spin" />
-        Finding career pathways...
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        {[1, 2, 3, 4].map(i => <Skeleton key={i} className="h-40 rounded-lg" />)}
       </div>
     );
   }
 
   if (error || !data || data.pathways.length === 0) {
-    return null;
+    return (
+      <Card className="border-border/50">
+        <CardContent className="p-6 text-center">
+          <AlertCircle className="h-5 w-5 text-muted-foreground mx-auto mb-2" />
+          <p className="text-sm text-muted-foreground">Career pathway data is temporarily unavailable. Try refreshing the page.</p>
+        </CardContent>
+      </Card>
+    );
   }
 
   const topPathways = data.pathways.slice(0, 4);
@@ -66,7 +61,6 @@ export function CareerPathways({ jobTitle }: CareerPathwaysProps) {
 
                 <Progress value={pathway.skillOverlap} className="h-1.5 mb-3" />
 
-                {/* Shared skills */}
                 {pathway.sharedSkills.length > 0 && (
                   <div className="mb-2">
                     <span className="text-[10px] uppercase tracking-widest text-muted-foreground font-medium">Shared</span>
@@ -78,7 +72,6 @@ export function CareerPathways({ jobTitle }: CareerPathwaysProps) {
                   </div>
                 )}
 
-                {/* New skills needed */}
                 {pathway.newSkillsNeeded.length > 0 && (
                   <div className="mb-3">
                     <span className="text-[10px] uppercase tracking-widest text-muted-foreground font-medium">New skills needed</span>
