@@ -24,12 +24,7 @@ function calcAgentRisk(automationRisk: number, augmented: number, newSkills: num
   return Math.round(automationRisk * 0.55 + augmented * 0.25 + newSkills * 0.20);
 }
 
-function getRiskTier(risk: number) {
-  if (risk >= 45) return { label: "Critical", color: "hsl(0, 84%, 55%)" };
-  if (risk >= 35) return { label: "High", color: "hsl(25, 95%, 53%)" };
-  if (risk >= 25) return { label: "Moderate", color: "hsl(45, 93%, 47%)" };
-  return { label: "Low", color: "hsl(142, 71%, 45%)" };
-}
+// getRiskTier imported from shared utility
 
 type Verdict = "upskill" | "pivot" | "leverage";
 
