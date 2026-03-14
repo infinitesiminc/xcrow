@@ -533,15 +533,6 @@ const Index = () => {
                 >
                   {/* Single strip: inputs + JD toggles + button */}
                   <div className="flex items-center gap-2 p-2 rounded-xl border border-border bg-card shadow-sm flex-wrap">
-                    {!companyFromJdUrl && (
-                      <Input
-                        placeholder="Company website (optional)"
-                        value={website}
-                        onChange={(e) => { setWebsite(e.target.value); setWebsiteError(""); }}
-                        className={`h-9 border-0 bg-transparent text-sm shadow-none focus-visible:ring-0 flex-1 min-w-[140px] ${websiteError ? "text-destructive" : ""}`}
-                      />
-                    )}
-                    <div className="w-px h-6 bg-border hidden sm:block" />
                     <Input
                       placeholder={hasJdContent ? "Job title (optional)" : "Your job title *"}
                       value={jobTitle}
