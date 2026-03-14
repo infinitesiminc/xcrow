@@ -73,7 +73,7 @@ export const prebuiltRoles: Record<string, JobAnalysisResult> = {
   "data scientist": {
     jobTitle: "Data Scientist",
     company: "",
-    summary: { augmentedPercent: 78, automationRiskPercent: 12, newSkillsPercent: 70 },
+    summary: { augmentedPercent: 82, automationRiskPercent: 10, newSkillsPercent: 40 },
     tasks: [
       { name: "Exploratory data analysis", currentState: "human_ai", trend: "increasing_ai", impactLevel: "medium", description: "AI auto-generates visualizations and statistical summaries, but hypothesis formation remains human-driven." },
       { name: "Feature engineering", currentState: "human_ai", trend: "increasing_ai", impactLevel: "medium", description: "AutoML tools suggest features, but domain expertise is key for meaningful transformations." },
