@@ -1,9 +1,10 @@
 import { useState, useCallback, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Search, Building2, TrendingUp, Loader2 } from "lucide-react";
+import { Search, TrendingUp, Loader2, ArrowRight, FileText, Link as LinkIcon, Upload } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
 import { getRiskTier } from "@/lib/risk-colors";
+import { Button } from "@/components/ui/button";
 
 interface DbRole {
   id: string;
@@ -15,9 +16,21 @@ interface DbRole {
   industry: string | null;
 }
 
-export function RoleSearchAutocomplete() {
+interface Props {
+  onAnalyze: (title: string) => void;
+  value?: string;
+  onChange?: (v: string) => void;
+  jdInputType?: string;
+  onToggleJd?: (type: "paste" | "url" | "file") => void;
+  hasJdContent?: boolean;
+}
+
+export function RoleSearchAutocomplete({ onAnalyze, value, onChange, jdInputType, onToggleJd, hasJdContent }: Props) {
   const navigate = useNavigate();
-  const [query, setQuery] = useState("");
+  const [internalQuery, setInternalQuery] = useState("");
+  const query = value ?? internalQuery;
+  const setQuery = onChange ?? setInternalQuery;
+
   const [results, setResults] = useState<DbRole[]>([]);
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
@@ -32,7 +45,7 @@ export function RoleSearchAutocomplete() {
         .from("jobs")
         .select("id, title, department, automation_risk_percent, augmented_percent, companies(name, industry)")
         .ilike("title", `%${q}%`)
-        .limit(8);
+        .limit(6);
 
       if (data) {
         const mapped: DbRole[] = data.map((j: any) => ({
@@ -54,10 +67,18 @@ export function RoleSearchAutocomplete() {
     }
   }, []);
 
-  const handleChange = (value: string) => {
-    setQuery(value);
+  const handleChange = (val: string) => {
+    setQuery(val);
     if (debounceRef.current) clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(() => search(value), 250);
+    debounceRef.current = setTimeout(() => search(val), 250);
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (query.trim() || hasJdContent) {
+      setOpen(false);
+      onAnalyze(query.trim());
+    }
   };
 
   // Close on outside click
@@ -72,19 +93,44 @@ export function RoleSearchAutocomplete() {
   }, []);
 
   return (
-    <div ref={containerRef} className="relative">
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-        <input
-          type="text"
-          value={query}
-          onChange={(e) => handleChange(e.target.value)}
-          onFocus={() => results.length > 0 && setOpen(true)}
-          placeholder="Search 500+ roles from our database..."
-          className="w-full h-10 pl-9 pr-10 rounded-lg border border-border bg-card text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/40 transition-all"
-        />
-        {loading && <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground animate-spin" />}
-      </div>
+    <div ref={containerRef} className="relative w-full max-w-2xl">
+      <form onSubmit={handleSubmit}>
+        <div className="flex items-center gap-2 p-2 rounded-xl border border-border bg-card shadow-sm">
+          <Search className="h-4 w-4 text-muted-foreground shrink-0 ml-1" />
+          <input
+            type="text"
+            value={query}
+            onChange={(e) => handleChange(e.target.value)}
+            onFocus={() => results.length > 0 && setOpen(true)}
+            placeholder={hasJdContent ? "Job title (optional) — or search 500+ roles" : "Enter your job title or search 500+ roles..."}
+            required={!hasJdContent}
+            className="flex-1 h-9 bg-transparent text-sm text-foreground placeholder:text-muted-foreground focus:outline-none min-w-0"
+          />
+          {loading && <Loader2 className="h-4 w-4 text-muted-foreground animate-spin shrink-0" />}
+          {onToggleJd && (
+            <>
+              <div className="w-px h-6 bg-border hidden sm:block" />
+              <div className="flex items-center gap-1">
+                <button type="button" onClick={() => onToggleJd("paste")}
+                  className={`p-1.5 rounded-md transition-colors ${
+                    jdInputType === "paste" ? "bg-primary/10 text-primary" : "text-muted-foreground hover:text-foreground"
+                  }`} title="Paste JD"><FileText className="h-4 w-4" /></button>
+                <button type="button" onClick={() => onToggleJd("url")}
+                  className={`p-1.5 rounded-md transition-colors ${
+                    jdInputType === "url" ? "bg-primary/10 text-primary" : "text-muted-foreground hover:text-foreground"
+                  }`} title="JD URL"><LinkIcon className="h-4 w-4" /></button>
+                <button type="button" onClick={() => onToggleJd("file")}
+                  className={`p-1.5 rounded-md transition-colors ${
+                    jdInputType === "file" ? "bg-primary/10 text-primary" : "text-muted-foreground hover:text-foreground"
+                  }`} title="Upload"><Upload className="h-4 w-4" /></button>
+              </div>
+            </>
+          )}
+          <Button type="submit" size="sm" className="h-9 px-4 text-sm font-semibold gap-1.5 shrink-0">
+            Analyze <ArrowRight className="w-3.5 h-3.5" />
+          </Button>
+        </div>
+      </form>
 
       <AnimatePresence>
         {open && results.length > 0 && (
@@ -124,7 +170,7 @@ export function RoleSearchAutocomplete() {
               </button>
             ))}
             <div className="px-4 py-2 bg-secondary/30 text-[10px] text-muted-foreground text-center">
-              {results.length} results · Type to refine
+              {results.length} results · Or press Analyze to assess "{query}"
             </div>
           </motion.div>
         )}
@@ -132,8 +178,8 @@ export function RoleSearchAutocomplete() {
 
       {open && query.length >= 2 && results.length === 0 && !loading && (
         <div className="absolute z-50 mt-1.5 w-full rounded-xl border border-border bg-card shadow-lg p-4 text-center">
-          <p className="text-sm text-muted-foreground">No matching roles found</p>
-          <p className="text-xs text-muted-foreground mt-1">Try analyzing it directly using the input above</p>
+          <p className="text-sm text-muted-foreground">No matching roles in database</p>
+          <p className="text-xs text-muted-foreground mt-1">Press <strong>Analyze</strong> to assess "{query}" with AI</p>
         </div>
       )}
     </div>
