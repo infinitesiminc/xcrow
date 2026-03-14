@@ -266,6 +266,18 @@ const ProjectStaffing = ({ embedded }: { embedded?: boolean }) => {
                   >
                     <CardContent className="p-4">
                       <div className="flex items-center gap-3">
+                        {/* Select checkbox */}
+                        <button
+                          className={`flex items-center justify-center w-5 h-5 rounded border shrink-0 transition-colors ${
+                            selectedCandidates.has(staff.name)
+                              ? "bg-primary border-primary text-primary-foreground"
+                              : "border-border hover:border-primary/50"
+                          }`}
+                          onClick={(e) => { e.stopPropagation(); toggleCandidate(staff.name); }}
+                        >
+                          {selectedCandidates.has(staff.name) && <CheckCircle2 className="h-3 w-3" />}
+                        </button>
+
                         {/* Rank */}
                         <div className={`flex items-center justify-center w-8 h-8 rounded-lg text-xs font-bold shrink-0 ${
                           i === 0 ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"
