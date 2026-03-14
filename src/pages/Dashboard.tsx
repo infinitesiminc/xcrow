@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import {
   ArrowLeft, CheckCircle2, Calendar, Briefcase, Loader2, Play, BarChart3, Bot,
   ShieldAlert, ArrowRight, Bookmark, Target, Sparkles, GraduationCap,
+  Zap, ExternalLink, Settings,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
