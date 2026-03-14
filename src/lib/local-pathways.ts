@@ -1,6 +1,29 @@
 import { prebuiltRoles } from "@/data/prebuilt-roles";
 import type { EscoMatchResult, EscoPathway } from "@/lib/esco-api";
 
+/** Extract meaningful keywords from a skill/task name */
+function extractKeywords(text: string): Set<string> {
+  const stopWords = new Set([
+    "a", "an", "the", "and", "or", "for", "of", "in", "to", "with", "&",
+    "is", "are", "was", "be", "has", "had", "do", "does", "did", "not",
+  ]);
+  return new Set(
+    text.toLowerCase()
+      .replace(/[^a-z0-9\s]/g, " ")
+      .split(/\s+/)
+      .filter(w => w.length > 2 && !stopWords.has(w))
+  );
+}
+
+/** Calculate keyword overlap score between two sets of keywords */
+function keywordOverlap(setA: Set<string>, setB: Set<string>): number {
+  let matches = 0;
+  for (const word of setA) {
+    if (setB.has(word)) matches++;
+  }
+  return matches;
+}
+
 /**
  * Generate career pathways locally from prebuilt roles data
  * when the ESCO API is unavailable.
@@ -20,44 +43,71 @@ export function generateLocalPathways(jobTitle: string): EscoMatchResult | null 
   const currentRole = currentKey ? prebuiltRoles[currentKey] : null;
   if (!currentRole) return null;
 
-  const currentSkills = new Set(
-    currentRole.skills.map(s => s.name.toLowerCase())
-  );
+  // Build keyword profile for current role from skills + tasks
+  const currentSkillKeywords = new Set<string>();
+  for (const s of currentRole.skills) {
+    for (const kw of extractKeywords(s.name)) currentSkillKeywords.add(kw);
+    for (const kw of extractKeywords(s.description)) currentSkillKeywords.add(kw);
+  }
+  const currentTaskKeywords = new Set<string>();
+  for (const t of currentRole.tasks) {
+    for (const kw of extractKeywords(t.name)) currentTaskKeywords.add(kw);
+  }
 
   const pathways: EscoPathway[] = [];
 
   for (const [key, role] of Object.entries(prebuiltRoles)) {
     if (key === currentKey) continue;
 
-    const roleSkillNames = role.skills.map(s => s.name.toLowerCase());
-    const shared = roleSkillNames.filter(s => currentSkills.has(s));
-    const overlap = currentSkills.size > 0
-      ? Math.round((shared.length / currentSkills.size) * 100)
+    // Build keyword profile for candidate role
+    const roleSkillKeywords = new Set<string>();
+    for (const s of role.skills) {
+      for (const kw of extractKeywords(s.name)) roleSkillKeywords.add(kw);
+      for (const kw of extractKeywords(s.description)) roleSkillKeywords.add(kw);
+    }
+    const roleTaskKeywords = new Set<string>();
+    for (const t of role.tasks) {
+      for (const kw of extractKeywords(t.name)) roleTaskKeywords.add(kw);
+    }
+
+    // Calculate overlap scores
+    const skillKwOverlap = keywordOverlap(currentSkillKeywords, roleSkillKeywords);
+    const taskKwOverlap = keywordOverlap(currentTaskKeywords, roleTaskKeywords);
+    const totalCurrentKw = currentSkillKeywords.size + currentTaskKeywords.size;
+
+    const overlapPercent = totalCurrentKw > 0
+      ? Math.round(((skillKwOverlap * 1.5 + taskKwOverlap) / totalCurrentKw) * 100)
       : 0;
 
-    // Also check task similarity for roles with no direct skill overlap
-    const currentTaskKeywords = new Set(
-      currentRole.tasks.flatMap(t => t.name.toLowerCase().split(/\s+/))
-    );
-    const taskOverlap = role.tasks.filter(t =>
-      t.name.toLowerCase().split(/\s+/).some(w => currentTaskKeywords.has(w) && w.length > 3)
-    ).length;
+    // Clamp to reasonable range
+    const clampedOverlap = Math.min(Math.max(overlapPercent, 0), 92);
 
-    const combinedScore = overlap + (taskOverlap * 5);
+    if (clampedOverlap >= 15) {
+      // Find shared skill themes (human-readable)
+      const sharedSkills: string[] = [];
+      for (const s of role.skills) {
+        const sKw = extractKeywords(s.name);
+        if (keywordOverlap(sKw, currentSkillKeywords) >= 1) {
+          sharedSkills.push(s.name);
+        }
+      }
 
-    if (combinedScore > 0) {
+      // Find new skills needed
+      const newSkills: string[] = [];
+      for (const s of role.skills) {
+        const sKw = extractKeywords(s.name);
+        if (keywordOverlap(sKw, currentSkillKeywords) === 0) {
+          newSkills.push(s.name);
+        }
+      }
+
       pathways.push({
         title: role.jobTitle,
         uri: `local:${key}`,
-        skillOverlap: Math.min(overlap + taskOverlap * 3, 95),
-        sharedSkills: shared.map(s =>
-          role.skills.find(sk => sk.name.toLowerCase() === s)?.name || s
-        ).slice(0, 5),
+        skillOverlap: clampedOverlap,
+        sharedSkills: sharedSkills.slice(0, 5),
         totalSkills: role.skills.length,
-        newSkillsNeeded: roleSkillNames
-          .filter(s => !currentSkills.has(s))
-          .map(s => role.skills.find(sk => sk.name.toLowerCase() === s)?.name || s)
-          .slice(0, 5),
+        newSkillsNeeded: newSkills.slice(0, 5),
       });
     }
   }
