@@ -320,7 +320,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, onComplete
               <div className="max-w-2xl mx-auto space-y-5">
                 {phase === "chat" && <TipsToggle tips={session?.tips || []} />}
                 {messages.map((msg, i) => {
-                  if (msg.role === "user" && /^[A-D]$/.test(msg.content.trim())) return null;
+                  if (msg.role === "user" && /^[A-C]$/.test(msg.content.trim())) return null;
 
                   const isUser = msg.role === "user";
 
@@ -343,7 +343,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, onComplete
                           <div className="prose prose-sm dark:prose-invert max-w-none [&>p]:m-0 [&>p]:mb-1 [&>ul]:mt-2 [&>ul]:mb-0">
                             <ReactMarkdown>{
                               !isUser
-                                ? msg.content.replace(/^[A-D][).]\s*.+$/gm, "").trim()
+                                ? msg.content.replace(/^[A-C][).]\s*.+$/gm, "").trim()
                                 : msg.content
                             }</ReactMarkdown>
                           </div>
@@ -469,11 +469,11 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, onComplete
               const lastAiIndex = messages.lastIndexOf(lastAi);
               const alreadyAnswered = answeredQuestions.some(q => q.messageIndex === lastAiIndex);
               if (alreadyAnswered) return null;
-              const opts = lastAi.content.match(/^[A-D][).]\s*.+/gm);
+              const opts = lastAi.content.match(/^[A-C][).]\s*.+/gm);
               if (!opts || opts.length < 2) return null;
-              const parsedOpts = opts.slice(0, 4).map(opt => ({
+              const parsedOpts = opts.slice(0, 3).map(opt => ({
                 letter: opt.charAt(0),
-                text: opt.replace(/^[A-D][).]\s*/, "").trim(),
+                text: opt.replace(/^[A-C][).]\s*/, "").trim(),
               }));
               return (
                 <div className="flex flex-col gap-2 max-w-2xl mx-auto">
@@ -497,10 +497,10 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, onComplete
                           if (reply.includes("✅")) {
                             correctLetter = opt.letter;
                           } else if (reply.includes("❌")) {
-                            const correctMatch = reply.match(/\*\*([A-D])\)/);
+                            const correctMatch = reply.match(/\*\*([A-C])\)/);
                             if (correctMatch) correctLetter = correctMatch[1];
                             else {
-                              const altMatch = reply.match(/\b([A-D])\)\s/);
+                              const altMatch = reply.match(/\b([A-C])\)\s/);
                               if (altMatch && altMatch[1] !== opt.letter) correctLetter = altMatch[1];
                             }
                           }
