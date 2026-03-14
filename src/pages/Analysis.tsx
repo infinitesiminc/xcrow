@@ -17,9 +17,8 @@ import { analyzeJobWithAI } from "@/lib/ai-analysis";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { fetchCareerPathways, type EscoMatchResult, type EscoPathway } from "@/lib/esco-api";
 import { getRiskTier } from "@/lib/risk-colors";
-import { generateLocalPathways } from "@/lib/local-pathways";
+import { generateLocalPathways, type CareerMatchResult, type CareerPathway } from "@/lib/local-pathways";
 
 import SimulatorModal from "@/components/SimulatorModal";
 import { RiskGauge } from "@/components/analysis/RiskGauge";
@@ -93,9 +92,7 @@ const Analysis = () => {
   const [snapshotLoading, setSnapshotLoading] = useState(false);
   const [simTask, setSimTask] = useState<TaskAnalysis | null>(null);
   const [completedTasks, setCompletedTasks] = useState<Set<string>>(new Set());
-  const [escoData, setEscoData] = useState<EscoMatchResult | null>(null);
-  const [escoLoading, setEscoLoading] = useState(false);
-  const [escoError, setEscoError] = useState(false);
+  const [pathwayData, setPathwayData] = useState<CareerMatchResult | null>(null);
   const [showStickyBar, setShowStickyBar] = useState(false);
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [bookmarkLoading, setBookmarkLoading] = useState(false);
@@ -241,23 +238,11 @@ const Analysis = () => {
     analyze();
   }, [jobTitle, company, hasJd, navigate]);
 
-  // Fetch ESCO data with local fallback
+  // Generate local career pathways
   useEffect(() => {
     if (!result?.jobTitle) return;
-    setEscoLoading(true);
-    setEscoError(false);
-    fetchCareerPathways(result.jobTitle)
-      .then(setEscoData)
-      .catch(() => {
-        // Use local fallback from prebuilt roles
-        const local = generateLocalPathways(result.jobTitle);
-        if (local && local.pathways.length > 0) {
-          setEscoData(local);
-        } else {
-          setEscoError(true);
-        }
-      })
-      .finally(() => setEscoLoading(false));
+    const local = generateLocalPathways(result.jobTitle);
+    setPathwayData(local);
   }, [result?.jobTitle]);
 
   useEffect(() => {
@@ -294,7 +279,7 @@ const Analysis = () => {
     return getVerdict(result, agentRisk);
   }, [result, agentRisk]);
 
-  const topPathway: EscoPathway | null = escoData?.pathways?.[0] || null;
+  const topPathway: CareerPathway | null = pathwayData?.pathways?.[0] || null;
 
   if (loading) {
     return (
@@ -489,7 +474,7 @@ const Analysis = () => {
             </TabsContent>
 
             <TabsContent value="pathways">
-              <CareerPathways data={escoData} loading={escoLoading} error={escoError} />
+              <CareerPathways data={pathwayData} loading={false} error={!pathwayData} />
             </TabsContent>
 
             <TabsContent value="plan">

@@ -1,5 +1,23 @@
 import { prebuiltRoles } from "@/data/prebuilt-roles";
-import type { EscoMatchResult, EscoPathway } from "@/lib/esco-api";
+
+export interface CareerPathway {
+  title: string;
+  uri: string;
+  skillOverlap: number;
+  sharedSkills: string[];
+  totalSkills: number;
+  newSkillsNeeded: string[];
+}
+
+export interface CareerMatchResult {
+  primary: {
+    title: string;
+    uri: string;
+    skillCount: number;
+    essentialSkills: string[];
+  };
+  pathways: CareerPathway[];
+}
 
 /** Extract meaningful keywords from a skill/task name */
 function extractKeywords(text: string): Set<string> {
@@ -28,7 +46,7 @@ function keywordOverlap(setA: Set<string>, setB: Set<string>): number {
  * Generate career pathways locally from prebuilt roles data
  * when the ESCO API is unavailable.
  */
-export function generateLocalPathways(jobTitle: string): EscoMatchResult | null {
+export function generateLocalPathways(jobTitle: string): CareerMatchResult | null {
   const normalized = jobTitle.toLowerCase().trim();
 
   // Find the current role
@@ -54,7 +72,7 @@ export function generateLocalPathways(jobTitle: string): EscoMatchResult | null 
     for (const kw of extractKeywords(t.name)) currentTaskKeywords.add(kw);
   }
 
-  const pathways: EscoPathway[] = [];
+  const pathways: CareerPathway[] = [];
 
   for (const [key, role] of Object.entries(prebuiltRoles)) {
     if (key === currentKey) continue;
