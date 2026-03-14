@@ -108,11 +108,6 @@ export function RoleSearchAutocomplete() {
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-foreground truncate">{role.title}</p>
                   <div className="flex items-center gap-2 mt-0.5">
-                    {role.company_name && (
-                      <span className="flex items-center gap-1 text-[11px] text-muted-foreground">
-                        <Building2 className="h-3 w-3" />{role.company_name}
-                      </span>
-                    )}
                     {role.industry && (
                       <span className="text-[10px] text-muted-foreground px-1.5 py-0.5 rounded bg-secondary">{role.industry}</span>
                     )}
