@@ -464,6 +464,18 @@ serve(async (req) => {
     // Flag if this was a DB-enhanced result
     result.dbEnhanced = !!(matchedJob || curatedSkills.length > 0 || benchmark);
 
+    // Store in cache for future lookups (only title-based queries)
+    if (!jobDescription && !jdUrl && cacheKey.title) {
+      await sb.from("cached_analyses").upsert({
+        job_title_lower: cacheKey.title,
+        company_lower: cacheKey.company,
+        result,
+      }, { onConflict: "job_title_lower,company_lower" }).then(({ error }) => {
+        if (error) console.error("Cache store error:", error);
+        else console.log("Cached result for:", cacheKey.title);
+      });
+    }
+
     return new Response(JSON.stringify(result), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
