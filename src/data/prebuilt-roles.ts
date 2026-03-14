@@ -602,7 +602,7 @@ export const prebuiltRoles: Record<string, JobAnalysisResult> = {
   "paralegal": {
     jobTitle: "Paralegal",
     company: "",
-    summary: { augmentedPercent: 68, automationRiskPercent: 45, newSkillsPercent: 60 },
+    summary: { augmentedPercent: 62, automationRiskPercent: 50, newSkillsPercent: 65 },
     tasks: [
       { name: "Document review & organization", currentState: "mostly_ai", trend: "fully_ai_soon", impactLevel: "high", description: "AI reviews, classifies, and organizes legal documents orders of magnitude faster." },
       { name: "Legal research", currentState: "human_ai", trend: "fully_ai_soon", impactLevel: "high", description: "AI searches case law and statutes comprehensively, paralegals verify and contextualize." },
