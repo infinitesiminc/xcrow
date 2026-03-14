@@ -4,8 +4,10 @@ import { motion } from "framer-motion";
 import {
   Building2, Users, Bot, ShieldAlert, GraduationCap, Search,
   ArrowUpDown, ChevronDown, ChevronUp, BarChart3, TrendingUp,
-  AlertTriangle, CheckCircle2, Filter
+  AlertTriangle, CheckCircle2, Filter, FolderKanban
 } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import ProjectStaffing from "@/pages/ProjectStaffing";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
