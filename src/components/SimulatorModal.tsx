@@ -241,12 +241,15 @@ const TipsToggle = ({ tips }: { tips: string[] }) => {
           >
             <div className="mt-3 p-4 rounded-xl bg-accent/20 border border-border/30">
               <ul className="space-y-2">
-                {tips.map((tip, i) => (
-                  <li key={i} className="text-sm text-foreground/70 flex items-start gap-2.5 leading-relaxed">
-                    <span className="text-muted-foreground font-medium">{i + 1}.</span>
-                    {tip}
-                  </li>
-                ))}
+                {tips.map((tip: any, i: number) => {
+                  const tipText = typeof tip === "string" ? tip : (tip.content || tip.title || JSON.stringify(tip));
+                  return (
+                    <li key={i} className="text-sm text-foreground/70 flex items-start gap-2.5 leading-relaxed">
+                      <span className="text-muted-foreground font-medium">{i + 1}.</span>
+                      {tipText}
+                    </li>
+                  );
+                })}
               </ul>
             </div>
           </motion.div>
