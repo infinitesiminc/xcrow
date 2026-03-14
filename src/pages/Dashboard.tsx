@@ -1,7 +1,10 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, CheckCircle2, Calendar, Briefcase, Loader2, Play, BarChart3, Bot, ShieldAlert, ArrowRight } from "lucide-react";
+import {
+  ArrowLeft, CheckCircle2, Calendar, Briefcase, Loader2, Play, BarChart3, Bot,
+  ShieldAlert, ArrowRight, Bookmark, Target, Sparkles, GraduationCap,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -28,11 +31,22 @@ interface AnalysisEntry {
   analyzed_at: string;
 }
 
+interface BookmarkedRole {
+  id: string;
+  job_title: string;
+  company: string | null;
+  augmented_percent: number;
+  automation_risk_percent: number;
+  new_skills_percent: number;
+  bookmarked_at: string;
+}
+
 const Dashboard = () => {
-  const { user, loading: authLoading, signOut } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const [completions, setCompletions] = useState<CompletedSim[]>([]);
   const [analyses, setAnalyses] = useState<AnalysisEntry[]>([]);
+  const [bookmarks, setBookmarks] = useState<BookmarkedRole[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -44,12 +58,14 @@ const Dashboard = () => {
   useEffect(() => {
     if (!user) return;
     const fetchData = async () => {
-      const [simRes, analysisRes] = await Promise.all([
+      const [simRes, analysisRes, bookmarkRes] = await Promise.all([
         supabase.from("completed_simulations").select("*").eq("user_id", user.id).order("completed_at", { ascending: false }),
         supabase.from("analysis_history").select("*").eq("user_id", user.id).order("analyzed_at", { ascending: false }),
+        supabase.from("bookmarked_roles").select("*").eq("user_id", user.id).order("bookmarked_at", { ascending: false }),
       ]);
       setCompletions((simRes.data as CompletedSim[]) || []);
       setAnalyses((analysisRes.data as AnalysisEntry[]) || []);
+      setBookmarks((bookmarkRes.data as BookmarkedRole[]) || []);
       setLoading(false);
     };
     fetchData();
@@ -64,32 +80,120 @@ const Dashboard = () => {
   }
 
   const uniqueTasks = new Set(completions.map((c) => c.task_name)).size;
-  const uniqueRoles = new Set(completions.map((c) => c.job_title)).size;
+
+  // Generate simple action plan suggestions based on analyses
+  const actionItems = analyses.slice(0, 3).flatMap((a) => {
+    const items: { text: string; icon: typeof Bot; priority: "high" | "medium" | "low" }[] = [];
+    if (a.automation_risk_percent >= 40) {
+      items.push({ text: `Explore AI-adjacent skills for ${a.job_title}`, icon: ShieldAlert, priority: "high" });
+    }
+    if (a.augmented_percent >= 50) {
+      items.push({ text: `Practice AI-augmented tasks for ${a.job_title}`, icon: Bot, priority: "medium" });
+    }
+    return items;
+  }).slice(0, 5);
 
   return (
     <div className="min-h-screen bg-background px-4 py-8">
       <div className="max-w-3xl mx-auto">
         <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="mb-6">
-          <h1 className="text-2xl font-serif font-bold text-foreground">Your Practice Dashboard</h1>
+          <h1 className="text-2xl font-serif font-bold text-foreground">Your Dashboard</h1>
           <p className="text-sm text-muted-foreground mt-1">{user.email}</p>
         </motion.div>
 
         {/* Stats */}
-        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="grid grid-cols-3 gap-4 mb-8">
+        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="grid grid-cols-4 gap-3 mb-8">
           {[
             { label: "Jobs Analyzed", value: analyses.length, icon: BarChart3 },
             { label: "Tasks Practiced", value: uniqueTasks, icon: Play },
             { label: "Sessions", value: completions.length, icon: CheckCircle2 },
+            { label: "Saved Roles", value: bookmarks.length, icon: Bookmark },
           ].map((stat) => (
             <Card key={stat.label}>
-              <CardContent className="p-4 text-center">
-                <stat.icon className="h-5 w-5 text-primary mx-auto mb-1.5" />
-                <div className="text-2xl font-bold text-foreground">{stat.value}</div>
-                <div className="text-[11px] text-muted-foreground">{stat.label}</div>
+              <CardContent className="p-3 text-center">
+                <stat.icon className="h-4 w-4 text-primary mx-auto mb-1" />
+                <div className="text-xl font-bold text-foreground">{stat.value}</div>
+                <div className="text-[10px] text-muted-foreground">{stat.label}</div>
               </CardContent>
             </Card>
           ))}
         </motion.div>
+
+        {/* Action Plan */}
+        {actionItems.length > 0 && (
+          <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.12 }} className="mb-8">
+            <div className="flex items-center gap-2 mb-3">
+              <Sparkles className="h-4 w-4 text-primary" />
+              <h2 className="text-xs font-medium uppercase tracking-widest text-muted-foreground">Your Action Plan</h2>
+            </div>
+            <Card className="border-primary/20 bg-gradient-to-r from-primary/5 via-background to-primary/5">
+              <CardContent className="p-4 space-y-2">
+                {actionItems.map((item, i) => {
+                  const Icon = item.icon;
+                  return (
+                    <div key={i} className="flex items-center gap-3 py-1.5">
+                      <div className={`w-2 h-2 rounded-full shrink-0 ${
+                        item.priority === "high" ? "bg-destructive" : item.priority === "medium" ? "bg-warning" : "bg-success"
+                      }`} />
+                      <Icon className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                      <span className="text-sm text-foreground">{item.text}</span>
+                    </div>
+                  );
+                })}
+                <p className="text-[10px] text-muted-foreground pt-2 border-t border-border/50">
+                  Based on your {analyses.length} analyzed role{analyses.length !== 1 ? "s" : ""}. Analyze more roles for better recommendations.
+                </p>
+              </CardContent>
+            </Card>
+          </motion.div>
+        )}
+
+        {/* Bookmarked Roles */}
+        {bookmarks.length > 0 && (
+          <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.14 }} className="mb-8">
+            <h2 className="text-xs font-medium uppercase tracking-widest text-muted-foreground mb-3 flex items-center gap-2">
+              <Bookmark className="h-3.5 w-3.5" /> Saved Roles
+            </h2>
+            <div className="grid gap-3 md:grid-cols-2">
+              {bookmarks.map((b, i) => (
+                <motion.div key={b.id} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.14 + i * 0.04 }}>
+                  <Card
+                    className="cursor-pointer hover:border-primary/20 hover:shadow-md transition-all"
+                    onClick={() => {
+                      const params = new URLSearchParams({ title: b.job_title });
+                      if (b.company) params.set("company", b.company);
+                      navigate(`/analysis?${params.toString()}`);
+                    }}
+                  >
+                    <CardContent className="p-4">
+                      <div className="flex items-start justify-between mb-3">
+                        <div className="min-w-0 flex-1">
+                          <p className="text-sm font-semibold text-foreground truncate">{b.job_title}</p>
+                          {b.company && <p className="text-xs text-muted-foreground truncate">{b.company}</p>}
+                        </div>
+                        <Bookmark className="h-3.5 w-3.5 text-primary fill-primary shrink-0 mt-0.5" />
+                      </div>
+                      <div className="grid grid-cols-3 gap-2 text-center">
+                        <div>
+                          <div className="text-xs font-bold text-foreground">{b.augmented_percent}%</div>
+                          <div className="text-[9px] text-muted-foreground">AI</div>
+                        </div>
+                        <div>
+                          <div className="text-xs font-bold text-foreground">{b.automation_risk_percent}%</div>
+                          <div className="text-[9px] text-muted-foreground">Risk</div>
+                        </div>
+                        <div>
+                          <div className="text-xs font-bold text-foreground">{b.new_skills_percent}%</div>
+                          <div className="text-[9px] text-muted-foreground">New Skills</div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
+        )}
 
         {/* Analyzed Jobs */}
         <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} className="mb-8">
@@ -173,7 +277,6 @@ const Dashboard = () => {
               </CardContent>
             </Card>
           ) : (() => {
-              // Group by job_title
               const grouped = completions.reduce((acc, c) => {
                 const key = c.job_title + (c.company ? ` · ${c.company}` : "");
                 if (!acc[key]) acc[key] = [];
