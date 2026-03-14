@@ -234,7 +234,7 @@ export const prebuiltRoles: Record<string, JobAnalysisResult> = {
   "tax advisor": {
     jobTitle: "Tax Advisor",
     company: "",
-    summary: { augmentedPercent: 62, automationRiskPercent: 38, newSkillsPercent: 55 },
+    summary: { augmentedPercent: 55, automationRiskPercent: 44, newSkillsPercent: 58 },
     tasks: [
       { name: "Tax return preparation", currentState: "mostly_ai", trend: "fully_ai_soon", impactLevel: "high", description: "AI software auto-fills returns, calculates obligations, and checks for errors." },
       { name: "Tax planning & strategy", currentState: "mostly_human", trend: "increasing_ai", impactLevel: "medium", description: "AI suggests tax-saving strategies, but complex planning needs human expertise." },
