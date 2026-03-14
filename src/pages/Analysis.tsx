@@ -5,7 +5,7 @@ import {
   ArrowLeft, Zap, AlertTriangle, Bot, ExternalLink,
   Building2, Users, MapPin, Calendar,
   ShieldAlert, GraduationCap, Rocket, CheckCircle2, LogIn,
-  ListChecks, Route, Target, BarChart3, Wrench,
+  ListChecks, Route, Target, BarChart3, Wrench, Bookmark, BookmarkCheck,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -97,6 +97,8 @@ const Analysis = () => {
   const [escoLoading, setEscoLoading] = useState(false);
   const [escoError, setEscoError] = useState(false);
   const [showStickyBar, setShowStickyBar] = useState(false);
+  const [isBookmarked, setIsBookmarked] = useState(false);
+  const [bookmarkLoading, setBookmarkLoading] = useState(false);
   const heroRef = useRef<HTMLDivElement>(null);
   const { user } = useAuth();
 
@@ -110,6 +112,45 @@ const Analysis = () => {
   }, [user]);
 
   useEffect(() => { fetchCompletions(); }, [fetchCompletions]);
+
+  // Bookmark check
+  useEffect(() => {
+    if (!user || !jobTitle) return;
+    const checkBookmark = async () => {
+      let query = supabase.from("bookmarked_roles").select("id").eq("user_id", user.id).eq("job_title", jobTitle);
+      if (company) { query = query.eq("company", company); } else { query = query.is("company", null); }
+      const { data } = await query.maybeSingle();
+      setIsBookmarked(!!data);
+    };
+    checkBookmark();
+  }, [user, jobTitle, company]);
+
+  const toggleBookmark = async () => {
+    if (!user) { navigate("/auth"); return; }
+    if (!result) return;
+    setBookmarkLoading(true);
+    try {
+      if (isBookmarked) {
+        let query = supabase.from("bookmarked_roles").delete().eq("user_id", user.id).eq("job_title", result.jobTitle);
+        if (result.company) { query = query.eq("company", result.company); } else { query = query.is("company", null); }
+        await query;
+        setIsBookmarked(false);
+      } else {
+        await supabase.from("bookmarked_roles").insert({
+          user_id: user.id,
+          job_title: result.jobTitle,
+          company: result.company || null,
+          augmented_percent: result.summary.augmentedPercent,
+          automation_risk_percent: result.summary.automationRiskPercent,
+          new_skills_percent: result.summary.newSkillsPercent,
+        });
+        setIsBookmarked(true);
+      }
+    } catch (err) {
+      console.error("Bookmark error:", err);
+    }
+    setBookmarkLoading(false);
+  };
 
   // Show sticky bar when hero card scrolls out of view
   useEffect(() => {
@@ -317,14 +358,25 @@ const Analysis = () => {
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
-          <div className="flex items-start gap-3 mb-6">
-            <button onClick={() => navigate("/")} className="mt-1 p-1.5 rounded-lg hover:bg-accent transition-colors shrink-0">
-              <ArrowLeft className="h-4 w-4 text-muted-foreground" />
-            </button>
-            <div>
-              <h1 className="text-2xl sm:text-3xl font-serif font-bold text-foreground leading-tight">{result.jobTitle}</h1>
-              
+          <div className="flex items-start justify-between gap-3 mb-6">
+            <div className="flex items-start gap-3 min-w-0">
+              <button onClick={() => navigate("/")} className="mt-1 p-1.5 rounded-lg hover:bg-accent transition-colors shrink-0">
+                <ArrowLeft className="h-4 w-4 text-muted-foreground" />
+              </button>
+              <div>
+                <h1 className="text-2xl sm:text-3xl font-serif font-bold text-foreground leading-tight">{result.jobTitle}</h1>
+              </div>
             </div>
+            <Button
+              variant={isBookmarked ? "secondary" : "outline"}
+              size="sm"
+              onClick={toggleBookmark}
+              disabled={bookmarkLoading}
+              className="gap-1.5 shrink-0 mt-1"
+            >
+              {isBookmarked ? <BookmarkCheck className="h-3.5 w-3.5" /> : <Bookmark className="h-3.5 w-3.5" />}
+              {isBookmarked ? "Saved" : "Save"}
+            </Button>
           </div>
 
           {/* Company snapshot */}
