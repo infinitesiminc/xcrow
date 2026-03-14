@@ -73,7 +73,18 @@ const CompanyDashboard = () => {
         .from("jobs")
         .select("id, title, department, seniority, augmented_percent, automation_risk_percent, new_skills_percent, company_id")
         .order("title");
-      if (data) setJobs(data);
+      if (data) {
+        // Apply mock scores based on title for any role missing real data
+        setJobs(data.map((j) => {
+          const scores = mockScores(j.title);
+          return {
+            ...j,
+            automation_risk_percent: j.automation_risk_percent || scores.automation_risk_percent,
+            augmented_percent: j.augmented_percent || scores.augmented_percent,
+            new_skills_percent: j.new_skills_percent || scores.new_skills_percent,
+          };
+        }));
+      }
       setLoading(false);
     };
     fetchJobs();
