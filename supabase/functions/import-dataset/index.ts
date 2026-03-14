@@ -88,42 +88,46 @@ Deno.serve(async (req) => {
       return respond({ success: true, step: "jobs", imported: count, next_step: "details", total_jobs: jobs?.length || 0 });
     }
 
-    // STEP 3: Import job details (tasks, skills, scenarios) in batches
+    // STEP 3: Import job details in batches
     if (step === "details") {
       const { data: dbJobs } = await sb.from("jobs").select("id, external_id").range(offset, offset + batch_size - 1);
       if (!dbJobs?.length) {
         return respond({ success: true, step: "details", message: "All job details imported", done: true });
       }
 
-      const results = { tasks: 0, skills: 0, scenarios: 0 };
+      const results = { clusters: 0, skills: 0, scenarios: 0 };
 
       for (const job of dbJobs) {
         try {
           const detail = await simApi("job_detail", { job_id: job.external_id });
 
-          if (detail.task_clusters?.length) {
-            for (let idx = 0; idx < detail.task_clusters.length; idx++) {
-              const t = detail.task_clusters[idx];
-              const { error } = await sb.from("task_clusters").upsert({
-                external_id: t.id || `${job.external_id}-task-${idx}`,
+          // Job task clusters (AI-generated from activation pipeline)
+          const clusters = detail.job_task_clusters || detail.task_clusters || [];
+          if (clusters.length) {
+            for (let idx = 0; idx < clusters.length; idx++) {
+              const t = clusters[idx];
+              const { error } = await sb.from("job_task_clusters").upsert({
+                external_id: t.id || `${job.external_id}-cluster-${idx}`,
                 job_id: job.id,
-                name: t.name || t.title || "Unnamed",
-                current_state: t.current_state || t.currentState || null,
-                trend: t.trend || null,
-                impact_level: t.impact_level || t.impactLevel || null,
+                cluster_name: t.cluster_name || t.name || t.title || "Unnamed cluster",
                 description: t.description || null,
+                outcome: t.outcome || null,
+                skill_names: t.skill_names || t.skills || null,
                 sort_order: idx,
               }, { onConflict: "external_id" });
-              if (!error) results.tasks++;
+              if (!error) results.clusters++;
             }
           }
 
-          if (detail.skills?.length) {
-            for (const s of detail.skills) {
+          // Skills — try multiple field name patterns
+          const skills = detail.skills || detail.job_skills || [];
+          if (skills.length) {
+            for (const s of skills) {
+              const skillName = s.skill_name || s.name || s.title || "Unnamed skill";
               const { error } = await sb.from("job_skills").upsert({
-                external_id: s.id || `${job.external_id}-skill-${s.name}`,
+                external_id: s.id || `${job.external_id}-skill-${skillName}`,
                 job_id: job.id,
-                name: s.name || "Unnamed",
+                name: skillName,
                 priority: s.priority || null,
                 category: s.category || null,
                 description: s.description || null,
@@ -132,10 +136,12 @@ Deno.serve(async (req) => {
             }
           }
 
-          if (detail.scenarios?.length) {
-            for (const sc of detail.scenarios) {
+          // Scenarios
+          const scenarios = detail.scenarios || [];
+          if (scenarios.length) {
+            for (const sc of scenarios) {
               const { error } = await sb.from("scenarios").upsert({
-                external_id: sc.id || `${job.external_id}-scenario-${sc.slug}`,
+                external_id: sc.id || `${job.external_id}-scenario-${sc.slug || sc.title}`,
                 job_id: job.id,
                 title: sc.title || "Untitled",
                 slug: sc.slug || null,
@@ -157,6 +163,14 @@ Deno.serve(async (req) => {
         next_offset: nextOffset,
         done: dbJobs.length < batch_size,
       });
+    }
+
+    // DEBUG: Inspect raw API response for a single job
+    if (step === "inspect") {
+      const { data: dbJobs } = await sb.from("jobs").select("id, external_id").limit(1);
+      if (!dbJobs?.length) return respond({ error: "No jobs" }, 400);
+      const detail = await simApi("job_detail", { job_id: dbJobs[0].external_id });
+      return respond({ success: true, raw_keys: Object.keys(detail), sample: detail });
     }
 
     return respond({ success: false, error: `Unknown step: ${step}` }, 400);
