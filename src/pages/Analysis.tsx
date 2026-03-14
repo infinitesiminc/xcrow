@@ -358,14 +358,25 @@ const Analysis = () => {
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
-          <div className="flex items-start gap-3 mb-6">
-            <button onClick={() => navigate("/")} className="mt-1 p-1.5 rounded-lg hover:bg-accent transition-colors shrink-0">
-              <ArrowLeft className="h-4 w-4 text-muted-foreground" />
-            </button>
-            <div>
-              <h1 className="text-2xl sm:text-3xl font-serif font-bold text-foreground leading-tight">{result.jobTitle}</h1>
-              
+          <div className="flex items-start justify-between gap-3 mb-6">
+            <div className="flex items-start gap-3 min-w-0">
+              <button onClick={() => navigate("/")} className="mt-1 p-1.5 rounded-lg hover:bg-accent transition-colors shrink-0">
+                <ArrowLeft className="h-4 w-4 text-muted-foreground" />
+              </button>
+              <div>
+                <h1 className="text-2xl sm:text-3xl font-serif font-bold text-foreground leading-tight">{result.jobTitle}</h1>
+              </div>
             </div>
+            <Button
+              variant={isBookmarked ? "secondary" : "outline"}
+              size="sm"
+              onClick={toggleBookmark}
+              disabled={bookmarkLoading}
+              className="gap-1.5 shrink-0 mt-1"
+            >
+              {isBookmarked ? <BookmarkCheck className="h-3.5 w-3.5" /> : <Bookmark className="h-3.5 w-3.5" />}
+              {isBookmarked ? "Saved" : "Save"}
+            </Button>
           </div>
 
           {/* Company snapshot */}
