@@ -475,7 +475,7 @@ const Index = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
-              className="relative text-center py-12 sm:py-16 px-4"
+              className="relative text-center py-8 sm:py-10 px-4"
             >
             <span className="inline-block mb-3 px-3 py-1 text-xs font-sans font-medium tracking-widest uppercase rounded-full bg-accent text-accent-foreground">
               Infinite Sim
@@ -483,9 +483,9 @@ const Index = () => {
             <h1 className="text-3xl sm:text-5xl lg:text-6xl font-bold font-serif tracking-tight text-foreground leading-[1.1] max-w-3xl mx-auto">
               Upskill before<br /><em className="italic">AI takes your <span className="laser-word">job</span>.</em>
             </h1>
-            <p className="mt-3 text-sm sm:text-base text-muted-foreground font-sans">
-              Assess &amp; start learning in 3 seconds.
-            </p>
+             <p className="mt-3 text-sm sm:text-base text-foreground font-sans">
+               Assess &amp; start learning in 3 seconds.
+             </p>
           </motion.div>
           </div>
 
