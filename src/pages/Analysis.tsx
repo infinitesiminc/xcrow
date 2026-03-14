@@ -403,7 +403,7 @@ const Analysis = () => {
                 <Route className="h-3.5 w-3.5" /> Pathways
               </TabsTrigger>
               <TabsTrigger value="plan" className="gap-1.5 text-xs sm:text-sm">
-                <Target className="h-3.5 w-3.5" /> Plan
+                <Wrench className="h-3.5 w-3.5" /> Tools
               </TabsTrigger>
               <TabsTrigger value="context" className="gap-1.5 text-xs sm:text-sm">
                 <BarChart3 className="h-3.5 w-3.5" /> Context
