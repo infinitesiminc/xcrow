@@ -41,11 +41,11 @@ const MOCK_STAFF = [
   { name: "Omar Hassan", role: "Operations Manager", department: "Operations" },
 ].map((s) => {
   const h = hashStr(s.name);
-  const skillCount = 3 + (h % 4);
+  const skillCount = 5 + (h % 5); // 5-9 skills per person
   const skills: { name: string; proficiency: number }[] = [];
   for (let i = 0; i < skillCount; i++) {
-    const idx = (h + i * 13) % ALL_SKILLS.length;
-    skills.push({ name: ALL_SKILLS[idx], proficiency: 30 + ((h >> (i + 1)) % 70) });
+    const idx = (h + i * 7) % ALL_SKILLS.length;
+    skills.push({ name: ALL_SKILLS[idx], proficiency: 45 + ((h >> (i + 1)) % 55) });
   }
   return { ...s, skills };
 });
