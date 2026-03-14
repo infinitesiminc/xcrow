@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Mail, MessageSquare, MapPin, Send, Loader2, CheckCircle2 } from "lucide-react";
+import { Mail, MessageSquare, MapPin, Send, Loader2, CheckCircle2, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
@@ -65,7 +65,8 @@ const Contact = () => {
           ))}
         </div>
 
-        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="max-w-lg mx-auto">
+        <div className="grid lg:grid-cols-2 gap-8 max-w-5xl mx-auto">
+        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
           {sent ? (
             <Card>
               <CardContent className="p-10 text-center">
@@ -144,6 +145,30 @@ const Contact = () => {
             </Card>
           )}
         </motion.div>
+
+        {/* Book a Meeting */}
+        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
+          <Card className="overflow-hidden h-full">
+            <CardContent className="p-6">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-accent">
+                  <Calendar className="h-5 w-5 text-primary" />
+                </div>
+                <div>
+                  <h2 className="text-lg font-serif font-bold text-foreground">Book a Meeting</h2>
+                  <p className="text-xs text-muted-foreground">Schedule a 30-minute call with our team</p>
+                </div>
+              </div>
+              <iframe
+                src="https://calendly.com/jacksonlam?hide_gdpr_banner=1&background_color=0a0a0a&text_color=fafafa&primary_color=6366f1"
+                className="w-full border-0 rounded-lg"
+                style={{ minHeight: 580 }}
+                title="Book a meeting"
+              />
+            </CardContent>
+          </Card>
+        </motion.div>
+        </div>
       </div>
     </div>
   );
