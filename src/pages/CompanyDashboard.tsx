@@ -391,8 +391,30 @@ const CompanyDashboard = () => {
                             {risk}%
                           </Badge>
                         </TableCell>
-                        <TableCell className="text-right text-sm text-foreground">{job.augmented_percent ?? 0}%</TableCell>
-                         <TableCell className="text-right text-sm text-foreground">{job.new_skills_percent ?? 0}%</TableCell>
+                         <TableCell>
+                           {(() => {
+                             const { tools, avgLevel } = mockToolProficiency(job.title);
+                             const barColor = avgLevel >= 70 ? "bg-success" : avgLevel >= 45 ? "bg-warning" : "bg-destructive";
+                             return (
+                               <div className="min-w-[120px]">
+                                 <div className="flex flex-wrap gap-1 mb-1.5">
+                                   {tools.map((t) => (
+                                     <Badge key={t.name} variant="outline" className={`text-[9px] px-1.5 py-0 ${
+                                       t.level === "advanced" ? "bg-success/10 text-success border-success/20"
+                                       : t.level === "intermediate" ? "bg-warning/10 text-warning border-warning/20"
+                                       : "bg-muted text-muted-foreground border-border"
+                                     }`}>
+                                       {t.name}
+                                     </Badge>
+                                   ))}
+                                 </div>
+                                 <div className="w-full h-1.5 rounded-full bg-secondary overflow-hidden">
+                                   <div className={`h-full rounded-full ${barColor} transition-all duration-700`} style={{ width: `${avgLevel}%` }} />
+                                 </div>
+                               </div>
+                             );
+                           })()}
+                         </TableCell>
                          <TableCell>
                            {(() => {
                              const { practised, avgScore } = mockPracticeProgress(job.title);
