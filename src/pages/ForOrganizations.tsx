@@ -135,8 +135,8 @@ export default function ForOrganizations() {
             <div className="mx-auto mb-6 flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10">
               <Building2 className="h-6 w-6 text-primary" />
             </div>
-            <h1 className="font-serif text-4xl sm:text-5xl lg:text-6xl font-bold text-foreground leading-tight tracking-tight">
-              AI is reshaping your workforce.<br />
+            <h1 className="font-serif text-3xl sm:text-5xl lg:text-6xl font-bold text-foreground leading-tight tracking-tight">
+              AI is reshaping your workforce.<br className="hidden sm:block" />
               <em className="italic">Are you leading or reacting?</em>
             </h1>
             <p className="mx-auto mt-5 max-w-2xl text-lg text-muted-foreground leading-relaxed">

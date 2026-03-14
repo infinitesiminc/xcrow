@@ -108,7 +108,7 @@ export default function ForIndividuals() {
             <div className="mx-auto mb-6 flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10">
               <Sparkles className="h-6 w-6 text-primary" />
             </div>
-            <h1 className="font-serif text-4xl sm:text-5xl lg:text-6xl font-bold text-foreground leading-tight tracking-tight">
+            <h1 className="font-serif text-3xl sm:text-5xl lg:text-6xl font-bold text-foreground leading-tight tracking-tight">
               Don't guess your AI risk.<br />
               <em className="italic">Know it. Then master it.</em>
             </h1>
