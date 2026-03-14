@@ -24,6 +24,8 @@ import { TaskTable } from "@/components/analysis/TaskTable";
 import { CareerPathways } from "@/components/analysis/CareerPathways";
 import { ActionPlan } from "@/components/analysis/ActionPlan";
 import { RoleContext } from "@/components/analysis/RoleContext";
+import { IndustryBenchmarkCard } from "@/components/analysis/IndustryBenchmark";
+import { CuratedSkillsBadge } from "@/components/analysis/CuratedSkills";
 
 interface CompanySnapshot {
   success: boolean;
@@ -373,9 +375,22 @@ const Analysis = () => {
           />
         </motion.div>
 
-        {/* Section 5: Role Context */}
-        <div className="mb-8">
+        {/* Section 5: Industry Benchmark + Curated Skills + Role Context */}
+        <div className="mb-8 space-y-4">
           <h2 className="text-xs font-medium uppercase tracking-widest text-muted-foreground mb-3">Role Context</h2>
+          
+          {result.industryBenchmark && result.industryBenchmark.industry && (
+            <IndustryBenchmarkCard
+              benchmark={result.industryBenchmark}
+              currentRisk={result.summary.automationRiskPercent}
+              currentAugmented={result.summary.augmentedPercent}
+            />
+          )}
+
+          {result.curatedSkills && result.curatedSkills.length > 0 && (
+            <CuratedSkillsBadge curatedSkills={result.curatedSkills} />
+          )}
+
           <RoleContext agentRisk={agentRisk} jobTitle={result.jobTitle} />
         </div>
 
