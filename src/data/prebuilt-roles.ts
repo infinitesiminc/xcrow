@@ -4,7 +4,7 @@ export const prebuiltRoles: Record<string, JobAnalysisResult> = {
   "software engineer": {
     jobTitle: "Software Engineer",
     company: "",
-    summary: { augmentedPercent: 72, automationRiskPercent: 15, newSkillsPercent: 65 },
+    summary: { augmentedPercent: 80, automationRiskPercent: 10, newSkillsPercent: 45 },
     tasks: [
       { name: "Writing boilerplate code", currentState: "mostly_ai", trend: "fully_ai_soon", impactLevel: "high", description: "AI code generators handle repetitive patterns, scaffolding, and standard implementations." },
       { name: "Code review", currentState: "human_ai", trend: "increasing_ai", impactLevel: "medium", description: "AI flags issues and suggests fixes, but human judgment on architecture and design remains critical." },
