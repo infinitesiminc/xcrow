@@ -280,7 +280,7 @@ export const prebuiltRoles: Record<string, JobAnalysisResult> = {
   "auditor": {
     jobTitle: "Auditor",
     company: "",
-    summary: { augmentedPercent: 58, automationRiskPercent: 42, newSkillsPercent: 52 },
+    summary: { augmentedPercent: 52, automationRiskPercent: 48, newSkillsPercent: 62 },
     tasks: [
       { name: "Transaction sampling & testing", currentState: "mostly_ai", trend: "fully_ai_soon", impactLevel: "high", description: "AI analyzes entire populations instead of samples, finding anomalies with higher accuracy." },
       { name: "Document review", currentState: "mostly_ai", trend: "fully_ai_soon", impactLevel: "high", description: "AI reads, classifies, and extracts key data from thousands of documents automatically." },
