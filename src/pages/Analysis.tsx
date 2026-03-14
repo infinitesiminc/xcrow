@@ -327,7 +327,7 @@ const Analysis = () => {
                         <div className={`flex items-center justify-center w-6 h-6 rounded-md ${stat.iconBg}`}>
                           <Icon className={`h-3 w-3 ${stat.iconColor}`} />
                         </div>
-                        <span className="text-lg font-display font-bold text-foreground">{stat.value}%</span>
+                        <span className="text-lg font-sans font-bold text-foreground">{stat.value}%</span>
                       </div>
                       <p className="text-[10px] text-muted-foreground">{stat.label}</p>
                       <div className="w-full h-1 rounded-full bg-secondary/60 overflow-hidden mt-1.5 mx-auto max-w-[80px]">
