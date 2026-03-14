@@ -21,33 +21,43 @@ interface EscoOccupation {
   skills: EscoSkill[];
 }
 
-async function fetchWithRetry(url: string, retries = 2): Promise<Response> {
+async function safeFetch(url: string, timeoutMs = 12000): Promise<string> {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const res = await fetch(url, {
+      headers: { Accept: "application/json" },
+      signal: controller.signal,
+    });
+    const text = await res.text(); // always consume body
+    clearTimeout(timeout);
+    if (!res.ok) throw new Error(`ESCO API ${res.status}: ${text.slice(0, 200)}`);
+    return text;
+  } catch (e) {
+    clearTimeout(timeout);
+    throw e;
+  }
+}
+
+async function fetchWithRetry(url: string, retries = 3): Promise<any> {
+  let lastError: Error | null = null;
   for (let i = 0; i <= retries; i++) {
     try {
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 8000);
-      const res = await fetch(url, {
-        headers: { Accept: "application/json" },
-        signal: controller.signal,
-      });
-      clearTimeout(timeout);
-      if (res.ok) return res;
-      // Consume body to avoid leak
-      await res.text();
-      if (i === retries) throw new Error(`ESCO API returned ${res.status}`);
+      const text = await safeFetch(url);
+      return JSON.parse(text);
     } catch (e) {
-      if (i === retries) throw e;
-      // Brief pause before retry
-      await new Promise(r => setTimeout(r, 500));
+      lastError = e instanceof Error ? e : new Error(String(e));
+      if (i < retries) {
+        await new Promise(r => setTimeout(r, 300 * (i + 1)));
+      }
     }
   }
-  throw new Error("Unreachable");
+  throw lastError;
 }
 
 async function searchOccupations(query: string, limit = 10): Promise<{ uri: string; title: string }[]> {
   const url = `${ESCO_BASE}/search?text=${encodeURIComponent(query)}&type=occupation&language=en&full=false&limit=${limit}`;
-  const res = await fetchWithRetry(url);
-  const data = await res.json();
+  const data = await fetchWithRetry(url);
   return (data._embedded?.results || []).map((r: any) => ({
     uri: r.uri,
     title: r.title || r.preferredLabel?.en || "",
@@ -56,8 +66,7 @@ async function searchOccupations(query: string, limit = 10): Promise<{ uri: stri
 
 async function getOccupationSkills(uri: string): Promise<EscoOccupation> {
   const url = `${ESCO_BASE}/resource/occupation?uri=${encodeURIComponent(uri)}&language=en`;
-  const res = await fetchWithRetry(url);
-  const data = await res.json();
+  const data = await fetchWithRetry(url);
 
   const skills: EscoSkill[] = [];
   const hasSkill = data._links?.hasEssentialSkill || [];
@@ -121,7 +130,6 @@ serve(async (req) => {
         });
       }
 
-      // 1. Find the best matching occupation
       const searchResults = await searchOccupations(query, 1);
       if (searchResults.length === 0) {
         return new Response(JSON.stringify({ error: "No matching occupation found" }), {
@@ -130,11 +138,9 @@ serve(async (req) => {
         });
       }
 
-      // 2. Get the primary occupation's skills
       const primary = await getOccupationSkills(searchResults[0].uri);
       const primarySkillNames = new Set(primary.skills.map((s) => s.title.toLowerCase()));
 
-      // 3. Search for related occupations using top essential skills
       const essentialSkills = primary.skills
         .filter((s) => s.skillType === "essential")
         .slice(0, 3);
@@ -142,7 +148,6 @@ serve(async (req) => {
       const relatedUris = new Set<string>();
       const relatedOccupations: { uri: string; title: string }[] = [];
 
-      // Fetch related occupations in parallel (batched)
       const relatedResults = await Promise.allSettled(
         essentialSkills.map(skill => searchOccupations(skill.title, 5))
       );
@@ -158,7 +163,6 @@ serve(async (req) => {
         }
       }
 
-      // 4. Get skills for top related occupations in parallel
       const topRelated = relatedOccupations.slice(0, 6);
       const pathwayResults = await Promise.allSettled(
         topRelated.map(rel => getOccupationSkills(rel.uri))
