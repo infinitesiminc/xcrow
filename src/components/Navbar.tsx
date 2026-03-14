@@ -114,7 +114,7 @@ export default function Navbar() {
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (
-            <Button size="sm" onClick={() => navigate("/auth")}>
+            <Button size="sm" onClick={openAuthModal}>
               <User className="mr-1.5 h-4 w-4" />
               Sign in
             </Button>

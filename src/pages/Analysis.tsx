@@ -124,18 +124,7 @@ const Analysis = () => {
 
   const toggleBookmark = async () => {
     if (!user) {
-      // Save intent so we can bookmark after OAuth redirect
-      if (result) {
-        sessionStorage.setItem("pending_bookmark", JSON.stringify({
-          job_title: result.jobTitle,
-          company: result.company || null,
-          augmented_percent: result.summary.augmentedPercent,
-          automation_risk_percent: result.summary.automationRiskPercent,
-          new_skills_percent: result.summary.newSkillsPercent,
-          return_url: window.location.href,
-        }));
-      }
-      navigate("/auth");
+      openAuthModal();
       return;
     }
     if (!result) return;
