@@ -148,14 +148,14 @@ export default function Pricing() {
                 {/* Feature comparison */}
                 <div className="border-t border-border pt-5 space-y-0">
                   {/* Column headers */}
-                  <div className="grid grid-cols-[1fr_72px_72px] sm:grid-cols-[1fr_100px_120px] gap-2 pb-3 border-b border-border/50">
+                  <div className="grid grid-cols-[1fr_80px_100px] sm:grid-cols-[1fr_100px_140px] gap-2 pb-3 border-b border-border/50">
                     <span />
                     <span className="text-[10px] sm:text-xs font-medium text-muted-foreground uppercase tracking-widest text-center">Free</span>
                     <span className="text-[10px] sm:text-xs font-medium text-muted-foreground uppercase tracking-widest text-center">Pro</span>
                   </div>
 
                   {individualFeatures.map((f) => (
-                    <div key={f.label} className="grid grid-cols-[1fr_72px_72px] sm:grid-cols-[1fr_100px_120px] gap-2 items-center py-3 border-b border-border/30 last:border-0">
+                    <div key={f.label} className="grid grid-cols-[1fr_80px_100px] sm:grid-cols-[1fr_100px_140px] gap-2 items-center py-3 border-b border-border/30 last:border-0">
                       <span className="text-sm text-foreground">{f.label}</span>
                       <span className="text-center"><FeatureValue value={f.free} /></span>
                       <span className="text-center"><FeatureValue value={f.pro} /></span>
