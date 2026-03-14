@@ -346,10 +346,19 @@ const CompanyDashboard = () => {
                     const badge = riskBadge(risk);
                     return (
                       <TableRow key={job.id} className="group">
-                        <TableCell className="font-medium text-sm text-foreground max-w-[200px] truncate">
-                          {job.title}
-                          {job.seniority && (
-                            <span className="ml-1.5 text-[10px] text-muted-foreground">{job.seniority}</span>
+                        <TableCell className="font-medium text-sm text-foreground max-w-[240px]">
+                          <div className="flex items-center gap-2">
+                            <span className="truncate">{job.title}</span>
+                            {job.seniority && (
+                              <span className="text-[10px] text-muted-foreground shrink-0">{job.seniority}</span>
+                            )}
+                          </div>
+                          {job._analysed ? (
+                            <Badge variant="outline" className="mt-1 text-[9px] bg-primary/10 text-primary border-primary/20">Analysed</Badge>
+                          ) : job._hasDescription ? (
+                            <Badge variant="outline" className="mt-1 text-[9px] bg-accent/50 text-accent-foreground border-accent/30">Analysis Ready</Badge>
+                          ) : (
+                            <Badge variant="outline" className="mt-1 text-[9px] bg-muted text-muted-foreground border-border">Title Only</Badge>
                           )}
                         </TableCell>
                         <TableCell className="text-xs text-muted-foreground">{job.department || "—"}</TableCell>
