@@ -583,8 +583,7 @@ const Index = () => {
           </div>
 
           {/* Risk-Tiered Roles */}
-          <div className="space-y-8 laser-container">
-            <div className="laser-line" />
+          <div className="space-y-8">
             <div className="flex items-center justify-between gap-4 flex-wrap">
               <div className="flex items-center gap-2">
                 <TrendingUp className="h-4 w-4 text-muted-foreground" />
