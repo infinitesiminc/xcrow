@@ -56,17 +56,20 @@ export function CareerPathways({ data, loading, error }: CareerPathwaysProps) {
               <CardContent className="p-4">
                 <div className="flex items-start justify-between gap-2 mb-3">
                   <h4 className="text-sm font-sans font-bold text-foreground leading-tight">{pathway.title}</h4>
-                  <span className="text-lg font-sans font-bold text-foreground/70 shrink-0">{pathway.skillOverlap}%</span>
+                  <span className="text-lg font-sans font-bold text-foreground/60 shrink-0">{pathway.skillOverlap}%</span>
                 </div>
 
                 <Progress value={pathway.skillOverlap} className="h-1.5 mb-3" />
 
                 {pathway.sharedSkills.length > 0 && (
                   <div className="mb-2">
-                    <span className="text-[10px] uppercase tracking-widest text-muted-foreground font-medium">Shared</span>
+                    <span className="text-[10px] uppercase tracking-widest text-muted-foreground font-medium flex items-center gap-1.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-dot-teal" />
+                      Shared
+                    </span>
                     <div className="flex flex-wrap gap-1 mt-1">
                       {pathway.sharedSkills.map((s, si) => (
-                        <Badge key={si} variant="outline" className="text-[10px] bg-accent/40 text-foreground/70 border-border/30">{s}</Badge>
+                        <Badge key={si} variant="outline" className="text-[10px] text-muted-foreground border-border/40">{s}</Badge>
                       ))}
                     </div>
                   </div>
@@ -74,10 +77,13 @@ export function CareerPathways({ data, loading, error }: CareerPathwaysProps) {
 
                 {pathway.newSkillsNeeded.length > 0 && (
                   <div className="mb-3">
-                    <span className="text-[10px] uppercase tracking-widest text-muted-foreground font-medium">New skills needed</span>
+                    <span className="text-[10px] uppercase tracking-widest text-muted-foreground font-medium flex items-center gap-1.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-dot-amber" />
+                      New skills needed
+                    </span>
                     <div className="flex flex-wrap gap-1 mt-1">
                       {pathway.newSkillsNeeded.map((s, si) => (
-                        <Badge key={si} variant="outline" className="text-[10px] bg-accent/30 text-foreground/60 border-border/20">{s}</Badge>
+                        <Badge key={si} variant="outline" className="text-[10px] text-muted-foreground border-border/30">{s}</Badge>
                       ))}
                     </div>
                   </div>
@@ -86,7 +92,7 @@ export function CareerPathways({ data, loading, error }: CareerPathwaysProps) {
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="h-7 text-xs gap-1 text-primary hover:bg-primary/5 w-full"
+                  className="h-7 text-xs gap-1 text-muted-foreground hover:text-foreground w-full"
                   onClick={() => navigate(`/analysis?title=${encodeURIComponent(pathway.title)}`)}
                 >
                   Analyze this role <ArrowRight className="h-3 w-3" />

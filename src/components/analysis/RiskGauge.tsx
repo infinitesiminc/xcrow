@@ -10,31 +10,29 @@ interface RiskGaugeProps {
   reasoning: string;
 }
 
-const verdictConfig: Record<Verdict, { icon: typeof TrendingUp; label: string; color: string; bg: string }> = {
-  upskill: { icon: TrendingUp, label: "Upskill", color: "text-foreground", bg: "bg-accent/40" },
-  pivot: { icon: RefreshCw, label: "Pivot", color: "text-foreground", bg: "bg-accent/40" },
-  leverage: { icon: Rocket, label: "Leverage", color: "text-foreground", bg: "bg-accent/40" },
+const verdictConfig: Record<Verdict, { icon: typeof TrendingUp; label: string; dotColor: string }> = {
+  upskill: { icon: TrendingUp, label: "Upskill", dotColor: "bg-dot-amber" },
+  pivot: { icon: RefreshCw, label: "Pivot", dotColor: "bg-dot-purple" },
+  leverage: { icon: Rocket, label: "Leverage", dotColor: "bg-dot-teal" },
 };
 
-function getRiskColor(risk: number): string {
-  // Subtle intensity shift using primary hue at different opacities
-  if (risk >= 55) return "hsl(var(--foreground) / 0.8)";
-  if (risk >= 35) return "hsl(var(--foreground) / 0.5)";
-  return "hsl(var(--foreground) / 0.3)";
+function getGaugeColor(risk: number): string {
+  // Monochrome intensity — darker = higher risk
+  const opacity = 0.2 + (risk / 100) * 0.6;
+  return `hsl(var(--foreground) / ${opacity})`;
 }
 
 export function RiskGauge({ risk, verdict, reasoning }: RiskGaugeProps) {
   const config = verdictConfig[verdict];
   const Icon = config.icon;
-  const color = getRiskColor(risk);
+  const color = getGaugeColor(risk);
 
-  // SVG gauge params
   const radius = 70;
   const stroke = 10;
   const circumference = 2 * Math.PI * radius;
-  const arcLength = circumference * 0.75; // 270 degrees
+  const arcLength = circumference * 0.75;
   const fillLength = arcLength * (risk / 100);
-  const rotation = 135; // start from bottom-left
+  const rotation = 135;
 
   return (
     <div className="flex flex-col sm:flex-row items-center gap-6">
@@ -42,23 +40,15 @@ export function RiskGauge({ risk, verdict, reasoning }: RiskGaugeProps) {
       <div className="relative shrink-0">
         <svg width="180" height="180" viewBox="0 0 180 180">
           <circle
-            cx="90"
-            cy="90"
-            r={radius}
-            fill="none"
-            stroke="hsl(var(--secondary))"
-            strokeWidth={stroke}
+            cx="90" cy="90" r={radius} fill="none"
+            stroke="hsl(var(--secondary))" strokeWidth={stroke}
             strokeLinecap="round"
             strokeDasharray={`${arcLength} ${circumference}`}
             transform={`rotate(${rotation} 90 90)`}
           />
           <motion.circle
-            cx="90"
-            cy="90"
-            r={radius}
-            fill="none"
-            stroke={color}
-            strokeWidth={stroke}
+            cx="90" cy="90" r={radius} fill="none"
+            stroke={color} strokeWidth={stroke}
             strokeLinecap="round"
             strokeDasharray={`${arcLength} ${circumference}`}
             strokeDashoffset={arcLength - fillLength}
@@ -88,13 +78,14 @@ export function RiskGauge({ risk, verdict, reasoning }: RiskGaugeProps) {
         transition={{ delay: 0.4 }}
         className="text-center sm:text-left"
       >
-        <Card className={`border-border/50 ${config.bg}`}>
+        <Card className="border-border/50 bg-card">
           <CardContent className="p-4 sm:p-5">
-            <div className="flex items-center gap-2 mb-1.5">
-              <Icon className={`h-5 w-5 ${config.color}`} />
-              <span className={`text-lg font-sans font-bold ${config.color}`}>{config.label}</span>
+            <div className="flex items-center gap-2.5 mb-1.5">
+              <span className={`w-2.5 h-2.5 rounded-full ${config.dotColor} shrink-0`} />
+              <Icon className="h-4 w-4 text-muted-foreground" />
+              <span className="text-lg font-sans font-bold text-foreground">{config.label}</span>
             </div>
-            <p className="text-sm text-foreground font-medium mb-1">Our recommendation</p>
+            <p className="text-sm text-foreground/80 font-medium mb-1">Our recommendation</p>
             <p className="text-xs text-muted-foreground leading-relaxed max-w-sm">{reasoning}</p>
           </CardContent>
         </Card>
