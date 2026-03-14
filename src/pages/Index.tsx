@@ -752,7 +752,7 @@ const Index = () => {
                               className="group cursor-pointer text-left flex flex-col shrink-0 w-[140px] sm:w-[160px]"
                             >
                               <div className="relative overflow-hidden rounded-xl aspect-[4/3] mb-2">
-                                <img src={role.image} alt={role.title} className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" />
+                                <img src={role.image} alt={role.title} className="w-full h-full object-cover grayscale transition-all duration-300 group-hover:grayscale-0 group-hover:scale-105" />
                                 <div className={`absolute top-1.5 right-1.5 px-1.5 py-0.5 rounded-md text-[10px] font-bold ${tier.bgColor} ${tier.textColor} backdrop-blur-sm border ${tier.borderColor}`}>
                                   {role.agentRisk}%
                                 </div>
