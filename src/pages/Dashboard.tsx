@@ -46,10 +46,26 @@ interface BookmarkedRole {
 const Dashboard = () => {
   const { user, loading: authLoading, profile } = useAuth();
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [completions, setCompletions] = useState<CompletedSim[]>([]);
   const [analyses, setAnalyses] = useState<AnalysisEntry[]>([]);
   const [bookmarks, setBookmarks] = useState<BookmarkedRole[]>([]);
   const [loading, setLoading] = useState(true);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+
+  const deleteAnalysis = async (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (deletingId) return;
+    setDeletingId(id);
+    const { error } = await supabase.from("analysis_history").delete().eq("id", id);
+    if (error) {
+      toast({ title: "Failed to delete", description: error.message, variant: "destructive" });
+    } else {
+      setAnalyses((prev) => prev.filter((a) => a.id !== id));
+      toast({ title: "Analysis deleted" });
+    }
+    setDeletingId(null);
+  };
 
   useEffect(() => {
     if (!authLoading && !user) {
