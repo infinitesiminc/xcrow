@@ -473,7 +473,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, onComplete
               if (!opts || opts.length < 2) return null;
               const parsedOpts = opts.slice(0, 3).map(opt => ({
                 letter: opt.charAt(0),
-                text: opt.replace(/^[A-D][).]\s*/, "").trim(),
+                text: opt.replace(/^[A-C][).]\s*/, "").trim(),
               }));
               return (
                 <div className="flex flex-col gap-2 max-w-2xl mx-auto">
