@@ -246,8 +246,8 @@ export default function ForOrganizations() {
                 <p className="mt-2 text-sm text-muted-foreground max-w-md mx-auto">
                   Start with a free team analysis — no commitment required.
                 </p>
-                <Button size="lg" onClick={() => navigate("/team-analysis")} className="mt-6 gap-2">
-                  <Zap className="h-4 w-4" /> Start Team Analysis
+                <Button size="lg" onClick={() => navigate("/contact-org")} className="mt-6 gap-2">
+                  <Zap className="h-4 w-4" /> Talk to Us
                 </Button>
               </CardContent>
             </Card>

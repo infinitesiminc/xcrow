@@ -509,7 +509,7 @@ const Index = () => {
                   <Briefcase className="h-3.5 w-3.5" /> Individual
                 </button>
                 <button
-                  onClick={() => setMode("team")}
+                  onClick={() => navigate("/contact-org")}
                   className={`flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
                     mode === "team" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
                   }`}
