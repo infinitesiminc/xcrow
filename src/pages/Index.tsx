@@ -487,6 +487,7 @@ const Index = () => {
               Assess &amp; start learning in 3 seconds.
             </p>
           </motion.div>
+          </div>
 
           {/* Form strip */}
           <div className="flex flex-col items-center mb-8">
