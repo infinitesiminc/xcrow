@@ -356,10 +356,10 @@ const CompanyDashboard = () => {
                       <span className="flex items-center justify-end text-xs">Risk <SortIcon field="automation_risk_percent" /></span>
                     </TableHead>
                      <TableHead className="text-center">
-                       <span className="text-xs">Tool Proficiency</span>
+                       <span className="text-xs">Task Progress</span>
                      </TableHead>
                      <TableHead className="text-center">
-                       <span className="text-xs">Staff Upskill</span>
+                       <span className="text-xs">Skill Readiness</span>
                      </TableHead>
                      <TableHead className="w-20" />
                   </TableRow>
@@ -393,13 +393,34 @@ const CompanyDashboard = () => {
                         </TableCell>
                          <TableCell>
                            {(() => {
-                             const { tools, avgLevel } = mockToolProficiency(job.title);
-                             const barColor = avgLevel >= 70 ? "bg-success" : avgLevel >= 45 ? "bg-warning" : "bg-destructive";
+                             const { practised, avgScore } = mockPracticeProgress(job.title);
+                             const pct = Math.round((practised / TASKS_PER_JOB) * 100);
+                             const barColor = avgScore >= 70 ? "bg-success" : avgScore >= 40 ? "bg-warning" : pct > 0 ? "bg-destructive" : "bg-muted-foreground/30";
                              return (
-                               <div className="min-w-[120px]">
-                                 <div className="flex flex-wrap gap-1 mb-1.5">
+                               <div className="min-w-[90px]">
+                                 <div className="flex items-center justify-between text-[10px] mb-1">
+                                   <span className="text-muted-foreground">{practised}/{TASKS_PER_JOB}</span>
+                                   {practised > 0 && <span className={avgScore >= 70 ? "text-success" : avgScore >= 40 ? "text-warning" : "text-destructive"}>{avgScore}%</span>}
+                                 </div>
+                                 <div className="w-full h-1.5 rounded-full bg-secondary overflow-hidden">
+                                   <div className={`h-full rounded-full ${barColor} transition-all duration-700`} style={{ width: `${Math.max(pct, 2)}%` }} />
+                                 </div>
+                               </div>
+                             );
+                           })()}
+                         </TableCell>
+                         <TableCell>
+                           {(() => {
+                             const { tools, avgLevel } = mockToolProficiency(job.title);
+                             const { practised } = mockPracticeProgress(job.title);
+                             const taskPct = Math.round((practised / TASKS_PER_JOB) * 100);
+                             const readiness = Math.round(taskPct * 0.5 + avgLevel * 0.5);
+                             const readinessColor = readiness >= 60 ? "text-success" : readiness >= 35 ? "text-warning" : "text-destructive";
+                             return (
+                               <div className="min-w-[110px]">
+                                 <div className="flex flex-wrap gap-1 mb-1">
                                    {tools.map((t) => (
-                                     <Badge key={t.name} variant="outline" className={`text-[9px] px-1.5 py-0 ${
+                                     <Badge key={t.name} variant="outline" className={`text-[8px] px-1 py-0 leading-tight ${
                                        t.level === "advanced" ? "bg-success/10 text-success border-success/20"
                                        : t.level === "intermediate" ? "bg-warning/10 text-warning border-warning/20"
                                        : "bg-muted text-muted-foreground border-border"
@@ -408,27 +429,11 @@ const CompanyDashboard = () => {
                                      </Badge>
                                    ))}
                                  </div>
-                                 <div className="w-full h-1.5 rounded-full bg-secondary overflow-hidden">
-                                   <div className={`h-full rounded-full ${barColor} transition-all duration-700`} style={{ width: `${avgLevel}%` }} />
-                                 </div>
-                               </div>
-                             );
-                           })()}
-                         </TableCell>
-                         <TableCell>
-                           {(() => {
-                             const { practised, avgScore } = mockPracticeProgress(job.title);
-                             const pct = Math.round((practised / TASKS_PER_JOB) * 100);
-                             const scoreColor = avgScore >= 70 ? "text-success" : avgScore >= 40 ? "text-warning" : "text-destructive";
-                             const barColor = avgScore >= 70 ? "bg-success" : avgScore >= 40 ? "bg-warning" : "bg-destructive";
-                             return (
-                               <div className="min-w-[100px]">
-                                 <div className="flex items-center justify-between text-[10px] mb-1">
-                                   <span className="text-muted-foreground">{practised}/{TASKS_PER_JOB} tasks</span>
-                                   {practised > 0 && <span className={scoreColor}>{avgScore}%</span>}
-                                 </div>
-                                 <div className="w-full h-1.5 rounded-full bg-secondary overflow-hidden">
-                                   <div className={`h-full rounded-full ${barColor} transition-all duration-700`} style={{ width: `${pct}%` }} />
+                                 <div className="flex items-center gap-1.5">
+                                   <div className="flex-1 h-1.5 rounded-full bg-secondary overflow-hidden">
+                                     <div className={`h-full rounded-full transition-all duration-700 ${readiness >= 60 ? "bg-success" : readiness >= 35 ? "bg-warning" : "bg-destructive"}`} style={{ width: `${readiness}%` }} />
+                                   </div>
+                                   <span className={`text-[10px] font-medium ${readinessColor}`}>{readiness}%</span>
                                  </div>
                                </div>
                              );
