@@ -77,6 +77,8 @@ const isWebsite = (value: string) =>
 const Analysis = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const location = useLocation();
+  const fromDashboard = (location.state as any)?.from === "dashboard";
   const { toast } = useToast();
 
   const company = searchParams.get("company") || "";
