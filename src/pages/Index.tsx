@@ -447,7 +447,7 @@ const Index = () => {
     <div className="h-screen bg-background flex flex-col">
       {/* Minimal top bar */}
       <div className="flex items-center justify-between px-4 sm:px-6 py-2 shrink-0">
-        <div className="flex items-center gap-2 font-heading text-sm font-bold tracking-tight text-foreground">
+        <div className="flex items-center gap-2 font-sans text-sm font-bold tracking-tight text-foreground">
           <img src={logoImg} alt="Infinite Sim" className="h-5 w-5" />
           Infinite Sim
         </div>
@@ -480,11 +480,11 @@ const Index = () => {
             transition={{ duration: 0.5 }}
             className="text-center mb-6"
           >
-            <span className="inline-block mb-3 px-3 py-1 text-xs font-medium tracking-widest uppercase rounded-full bg-accent text-accent-foreground">
+            <span className="inline-block mb-3 px-3 py-1 text-xs font-sans font-medium tracking-widest uppercase rounded-full bg-accent text-accent-foreground">
               Infinite Sim
             </span>
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold font-serif tracking-tight text-foreground leading-[1.1] max-w-3xl mx-auto">
-              See how AI changes your role — <em className="not-italic font-serif italic">then master it</em>
+              See how AI changes your role — <em className="italic">then master it</em>
             </h1>
           </motion.div>
 
@@ -707,11 +707,11 @@ const Index = () => {
           <div className="space-y-6">
             <div className="flex items-center gap-2">
               <TrendingUp className="h-4 w-4 text-primary" />
-              <h2 className="text-sm font-semibold text-foreground">Popular roles — explore free</h2>
+              <h2 className="text-sm font-semibold font-sans text-foreground">Popular roles — explore free</h2>
             </div>
             {roleCategories.map((category, catIdx) => (
               <div key={category.label}>
-                <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">{category.label}</h3>
+                <h3 className="text-xs font-semibold font-sans text-muted-foreground uppercase tracking-wider mb-2">{category.label}</h3>
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3">
                   {category.roles.map((role, i) => (
                     <motion.button
@@ -725,7 +725,7 @@ const Index = () => {
                       <div className="overflow-hidden rounded-xl aspect-[4/3] mb-2">
                         <img src={role.image} alt={role.title} className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" />
                       </div>
-                      <h3 className="text-sm font-semibold text-foreground leading-tight min-h-[2.5em]">{role.title}</h3>
+                      <h3 className="text-sm font-semibold font-sans text-foreground leading-tight min-h-[2.5em]">{role.title}</h3>
                       <div className="flex items-center gap-2 mt-0.5 text-xs text-muted-foreground">
                         <span className="flex items-center gap-0.5"><Briefcase className="h-3 w-3" />{role.augmented}%</span>
                         <span className="flex items-center gap-0.5"><TrendingUp className="h-3 w-3" />{role.risk}%</span>
