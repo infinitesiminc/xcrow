@@ -89,7 +89,7 @@ const audiences = [
 ];
 
 const stats = [
-  { value: "500+", label: "Roles in database" },
+  { value: "100M+", label: "Roles analyzed" },
   { value: "<30s", label: "Analysis time" },
   { value: "8-12", label: "Tasks per role analyzed" },
   { value: "Free", label: "To get started" },
