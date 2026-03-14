@@ -25,7 +25,7 @@ const features = [
   {
     icon: Gamepad2,
     title: "AI Collaboration Simulations",
-    description: "Practice working alongside AI tools on your actual at-risk tasks. Build muscle memory before the shift happens.",
+    description: "Upskill by working alongside AI tools on your actual at-risk tasks. Build muscle memory before the shift happens.",
     highlight: "Interactive scenarios, not passive courses",
   },
   {
