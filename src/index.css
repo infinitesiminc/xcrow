@@ -175,7 +175,7 @@
 /* Laser word sweep effect */
 @keyframes laser-word-sweep {
   0% { left: -6px; }
-  25% { left: calc(100% + 6px); }
+  50% { left: calc(100% + 6px); }
   100% { left: calc(100% + 6px); }
 }
 
