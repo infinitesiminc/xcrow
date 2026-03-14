@@ -87,6 +87,8 @@ const Analysis = () => {
   const [simTask, setSimTask] = useState<string | null>(null);
   const [completedTasks, setCompletedTasks] = useState<Set<string>>(new Set());
   const [escoData, setEscoData] = useState<EscoMatchResult | null>(null);
+  const [escoLoading, setEscoLoading] = useState(false);
+  const [escoError, setEscoError] = useState(false);
   const { user } = useAuth();
 
   const fetchCompletions = useCallback(async () => {
@@ -163,12 +165,15 @@ const Analysis = () => {
     analyze();
   }, [jobTitle, company, hasJd, navigate]);
 
-  // Fetch ESCO data for action plan
+  // Fetch ESCO data (single call for both CareerPathways and ActionPlan)
   useEffect(() => {
     if (!result?.jobTitle) return;
+    setEscoLoading(true);
+    setEscoError(false);
     fetchCareerPathways(result.jobTitle)
       .then(setEscoData)
-      .catch(() => {});
+      .catch(() => setEscoError(true))
+      .finally(() => setEscoLoading(false));
   }, [result?.jobTitle]);
 
   useEffect(() => {
@@ -346,7 +351,7 @@ const Analysis = () => {
         {/* Section 3: Career Pathways */}
         <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="mb-8">
           <h2 className="text-xs font-medium uppercase tracking-widest text-muted-foreground mb-3">Career Pathways</h2>
-          <CareerPathways jobTitle={result.jobTitle} />
+          <CareerPathways data={escoData} loading={escoLoading} error={escoError} />
         </motion.div>
 
         {/* Section 4: Action Plan */}
