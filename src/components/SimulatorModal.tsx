@@ -406,7 +406,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
         </div>
 
         {/* Body */}
-        <div ref={scrollRef} className="flex-1 overflow-y-auto px-6 py-6 scrollbar-thin">
+        <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 sm:px-6 py-4 sm:py-6 scrollbar-thin">
           <AnimatePresence mode="popLayout">
             {phase === "loading" && (
               <motion.div
