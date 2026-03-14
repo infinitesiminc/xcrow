@@ -279,7 +279,7 @@ const Analysis = () => {
     return getVerdict(result, agentRisk);
   }, [result, agentRisk]);
 
-  const topPathway: EscoPathway | null = escoData?.pathways?.[0] || null;
+  const topPathway: CareerPathway | null = pathwayData?.pathways?.[0] || null;
 
   if (loading) {
     return (
