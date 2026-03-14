@@ -180,13 +180,13 @@
 }
 
 @keyframes word-clip-away {
-  0% { clip-path: inset(0 0 0 0); filter: none; }
-  5% { clip-path: inset(0 0 0 0); filter: none; }
-  25% { clip-path: inset(0 0 0 100%); filter: blur(2px); }
-  50% { clip-path: inset(0 0 0 100%); opacity: 0; }
-  55% { clip-path: inset(0 100% 0 0); opacity: 0; }
-  75% { clip-path: inset(0 0 0 0); filter: none; opacity: 1; }
-  100% { clip-path: inset(0 0 0 0); filter: none; opacity: 1; }
+  0% { clip-path: none; filter: none; }
+  10% { clip-path: none; filter: none; }
+  50% { clip-path: inset(-10px -10px -10px 100%); filter: blur(2px); }
+  70% { clip-path: inset(-10px -10px -10px 100%); opacity: 0; }
+  75% { clip-path: inset(-10px 100% -10px -10px); opacity: 0; }
+  90% { clip-path: none; filter: none; opacity: 1; }
+  100% { clip-path: none; filter: none; opacity: 1; }
 }
 
 @keyframes word-dust {
