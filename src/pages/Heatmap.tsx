@@ -78,7 +78,23 @@ interface CellData {
   tasks: { name: string; score: number }[];
 }
 
-export default function Heatmap() {
+type Verdict = "upskill" | "pivot" | "leverage";
+
+function getVerdict(role: JobAnalysisResult, agentRisk: number): Verdict {
+  const { automationRiskPercent, augmentedPercent } = role.summary;
+  const fullyAiSoon = role.tasks.filter((t) => t.trend === "fully_ai_soon").length;
+  const mostlyHuman = role.tasks.filter((t) => t.currentState === "mostly_human").length;
+  if (agentRisk >= 45 || (automationRiskPercent >= 40 && fullyAiSoon >= 3)) return "pivot";
+  if (agentRisk <= 28 && mostlyHuman >= 3 && augmentedPercent >= 55) return "leverage";
+  return "upskill";
+}
+
+const verdictConfig = {
+  upskill: { icon: TrendingUp, color: "hsl(234, 89%, 60%)", label: "Upskill" },
+  pivot: { icon: RefreshCw, color: "hsl(0, 84%, 55%)", label: "Pivot" },
+  leverage: { icon: Rocket, color: "hsl(142, 71%, 45%)", label: "Leverage" },
+};
+
   const navigate = useNavigate();
   const [hoveredCell, setHoveredCell] = useState<{ role: string; cat: string } | null>(null);
   const [tooltipPos, setTooltipPos] = useState({ x: 0, y: 0 });
