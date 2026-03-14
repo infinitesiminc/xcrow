@@ -120,8 +120,8 @@ export default function ForOrganizations() {
               >
                 <Card className="border-border/50 h-full">
                   <CardContent className="p-6">
-                    <span className="text-3xl font-heading font-bold text-primary/20">{step.num}</span>
-                    <h3 className="mt-2 text-lg font-heading font-semibold text-foreground">{step.title}</h3>
+                     <span className="text-3xl font-sans font-bold text-primary/20">{step.num}</span>
+                     <h3 className="mt-2 text-lg font-sans font-semibold text-foreground">{step.title}</h3>
                     <p className="mt-1 text-sm text-muted-foreground">{step.description}</p>
                   </CardContent>
                 </Card>
