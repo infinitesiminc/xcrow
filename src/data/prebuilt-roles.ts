@@ -487,7 +487,7 @@ export const prebuiltRoles: Record<string, JobAnalysisResult> = {
   "operations manager": {
     jobTitle: "Operations Manager",
     company: "",
-    summary: { augmentedPercent: 60, automationRiskPercent: 25, newSkillsPercent: 55 },
+    summary: { augmentedPercent: 65, automationRiskPercent: 22, newSkillsPercent: 48 },
     tasks: [
       { name: "Process monitoring", currentState: "human_ai", trend: "fully_ai_soon", impactLevel: "high", description: "AI dashboards track operational KPIs and flag deviations in real-time." },
       { name: "Workflow optimization", currentState: "human_ai", trend: "increasing_ai", impactLevel: "medium", description: "AI identifies bottlenecks and suggests process improvements from operational data." },
