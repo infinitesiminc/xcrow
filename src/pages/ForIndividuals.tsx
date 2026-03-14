@@ -57,7 +57,7 @@ const steps = [
   },
   {
     num: "03",
-    title: "Practice & future-proof",
+    title: "Upskill & future-proof",
     description: "Run interactive simulations on your most at-risk tasks. Build the AI collaboration skills employers will demand.",
     icon: Gamepad2,
   },
