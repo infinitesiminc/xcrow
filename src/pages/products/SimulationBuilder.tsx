@@ -364,6 +364,24 @@ export default function SimulationBuilder() {
     return { critical, important, totalMinutes, highImpact, total: analyzedTasks.length };
   }, [analyzedTasks]);
 
+  // Priority filter state
+  const [priorityMode, setPriorityMode] = useState<"all" | "dept" | "job">("all");
+  const [priorityDept, setPriorityDept] = useState<string | null>(null);
+  const [priorityJobId, setPriorityJobId] = useState<string | null>(null);
+
+  const unanalyzedByDept = useMemo(() => {
+    const map = new Map<string, number>();
+    jobs.forEach(j => {
+      if (!analyzedJobIds.has(j.id)) {
+        const d = j.department || "Other";
+        map.set(d, (map.get(d) || 0) + 1);
+      }
+    });
+    return Array.from(map.entries()).sort((a, b) => b[1] - a[1]);
+  }, [jobs, analyzedJobIds]);
+
+  const unanalyzedJobs = useMemo(() => jobs.filter(j => !analyzedJobIds.has(j.id)), [jobs, analyzedJobIds]);
+
   /* ── Bulk analyze (single batch per click) ── */
   const runBulkBatch = useCallback(async () => {
     if (!companyId) return;
@@ -381,9 +399,13 @@ export default function SimulationBuilder() {
     setBulkRunning(true);
     setBulkPaused(null);
 
+    const body: any = { companyId, batchSize: 5 };
+    if (priorityMode === "dept" && priorityDept) body.department = priorityDept;
+    if (priorityMode === "job" && priorityJobId) body.jobIds = [priorityJobId];
+
     try {
       const { data, error } = await supabase.functions.invoke("bulk-analyze-roles", {
-        body: { companyId, batchSize: 5 },
+        body,
       });
       if (error) throw new Error(error.message);
       if (data?.error) throw new Error(data.error);
@@ -436,7 +458,7 @@ export default function SimulationBuilder() {
       toast({ title: "Batch error", description: err.message, variant: "destructive" });
     }
     setBulkRunning(false);
-  }, [companyId, toast, bulkErrors, bulkSessionStart]);
+  }, [companyId, toast, bulkErrors, bulkSessionStart, priorityMode, priorityDept, priorityJobId]);
 
   /* ── Launch simulation ── */
   const launchSim = (task: EnrichedTask) => {
@@ -513,24 +535,88 @@ export default function SimulationBuilder() {
                       </div>
                     )}
 
+                    {/* Priority filter */}
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-1.5">
+                        <button
+                          onClick={() => { setPriorityMode("all"); setPriorityDept(null); setPriorityJobId(null); }}
+                          className={`text-[10px] px-2 py-0.5 rounded-full border transition-colors ${priorityMode === "all" ? "bg-primary text-primary-foreground border-primary" : "bg-muted/40 text-muted-foreground border-border hover:border-primary/30"}`}
+                        >
+                          All
+                        </button>
+                        <button
+                          onClick={() => { setPriorityMode("dept"); setPriorityJobId(null); }}
+                          className={`text-[10px] px-2 py-0.5 rounded-full border transition-colors ${priorityMode === "dept" ? "bg-primary text-primary-foreground border-primary" : "bg-muted/40 text-muted-foreground border-border hover:border-primary/30"}`}
+                        >
+                          By Dept
+                        </button>
+                        <button
+                          onClick={() => { setPriorityMode("job"); setPriorityDept(null); }}
+                          className={`text-[10px] px-2 py-0.5 rounded-full border transition-colors ${priorityMode === "job" ? "bg-primary text-primary-foreground border-primary" : "bg-muted/40 text-muted-foreground border-border hover:border-primary/30"}`}
+                        >
+                          Single Job
+                        </button>
+                      </div>
+
+                      {/* Dept picker */}
+                      {priorityMode === "dept" && (
+                        <div className="flex flex-wrap gap-1">
+                          {unanalyzedByDept.map(([dept, count]) => (
+                            <button
+                              key={dept}
+                              onClick={() => setPriorityDept(priorityDept === dept ? null : dept)}
+                              className={`text-[10px] px-2 py-0.5 rounded-full border transition-colors ${priorityDept === dept ? "bg-accent text-accent-foreground border-primary/40" : "bg-muted/30 text-muted-foreground border-border/50 hover:border-primary/30"}`}
+                            >
+                              {dept} ({count})
+                            </button>
+                          ))}
+                          {unanalyzedByDept.length === 0 && <span className="text-[10px] text-muted-foreground">All departments analyzed</span>}
+                        </div>
+                      )}
+
+                      {/* Job picker */}
+                      {priorityMode === "job" && (
+                        <select
+                          value={priorityJobId || ""}
+                          onChange={e => setPriorityJobId(e.target.value || null)}
+                          className="w-full text-xs rounded-md border border-border bg-background px-2 py-1.5 text-foreground"
+                        >
+                          <option value="">Select a role…</option>
+                          {unanalyzedJobs.map(j => (
+                            <option key={j.id} value={j.id}>{j.title}{j.department ? ` (${j.department})` : ""}</option>
+                          ))}
+                        </select>
+                      )}
+                    </div>
+
                     {/* Action row */}
                     <div className="flex items-center gap-3">
                       <Button
                         variant={analyzedJobIds.size >= jobs.length ? "outline" : "default"}
                         size="sm"
                         onClick={runBulkBatch}
-                        disabled={bulkRunning || analyzedJobIds.size >= jobs.length}
+                        disabled={bulkRunning || analyzedJobIds.size >= jobs.length || (priorityMode === "dept" && !priorityDept) || (priorityMode === "job" && !priorityJobId)}
                         className="gap-2 text-xs flex-1"
                       >
                         {bulkRunning ? (
                           <>
                             <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                            Analyzing 5 roles…
+                            Analyzing…
                           </>
                         ) : analyzedJobIds.size >= jobs.length ? (
                           <>
                             <CheckCircle2 className="h-3.5 w-3.5" />
                             All roles analyzed
+                          </>
+                        ) : priorityMode === "job" && priorityJobId ? (
+                          <>
+                            <Target className="h-3.5 w-3.5" />
+                            Analyze this role
+                          </>
+                        ) : priorityMode === "dept" && priorityDept ? (
+                          <>
+                            <Sparkles className="h-3.5 w-3.5" />
+                            Analyze {priorityDept} (5 roles)
                           </>
                         ) : (
                           <>
@@ -543,8 +629,8 @@ export default function SimulationBuilder() {
 
                     {/* Explanation */}
                     <p className="text-[10px] text-muted-foreground leading-relaxed">
-                      Each batch sends 5 roles to AI, generating 8–12 task clusters per role with impact ratings. 
-                      Analyzed roles show a <Badge variant="outline" className="text-[8px] px-1 py-0 h-3 bg-primary/10 text-primary border-primary/20 mx-0.5 inline-flex items-center">Ready</Badge> badge and load instantly.
+                      Filter by department or pick a single role for urgent analysis. 
+                      Analyzed roles show a <Badge variant="outline" className="text-[8px] px-1 py-0 h-3 bg-primary/10 text-primary border-primary/20 mx-0.5 inline-flex items-center">Ready</Badge> badge.
                     </p>
 
                     {bulkPaused && (

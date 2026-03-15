@@ -23,19 +23,21 @@ serve(async (req) => {
   );
 
   try {
-    const { companyId, batchSize = 5 } = await req.json();
+    const { companyId, batchSize = 5, department, jobIds } = await req.json();
     if (!companyId) {
       return new Response(JSON.stringify({ error: "companyId required" }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    // Get all jobs for this company
-    const { data: allJobs, error: jobsErr } = await sb
+    // Get all jobs for this company (optionally filtered by department)
+    let jobQuery = sb
       .from("jobs")
-      .select("id, title, description")
-      .eq("company_id", companyId)
-      .order("title");
+      .select("id, title, description, department")
+      .eq("company_id", companyId);
+    if (department) jobQuery = jobQuery.eq("department", department);
+    if (jobIds?.length) jobQuery = jobQuery.in("id", jobIds);
+    const { data: allJobs, error: jobsErr } = await jobQuery.order("title");
 
     if (jobsErr) throw new Error(jobsErr.message);
     if (!allJobs?.length) {
