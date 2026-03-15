@@ -30,71 +30,8 @@ interface DbJob {
   description: string | null;
 }
 
-interface EnrichedTask {
-  id: string;
-  cluster_name: string;
-  description: string | null;
-  outcome: string | null;
-  skill_names: string[] | null;
-  sort_order: number | null;
-  ai_state?: string;
-  ai_trend?: string;
-  impact_level?: string;
-  recommended_template?: string;
-  priority?: string;
-  sim_duration?: number;
-}
 
-interface CompletedSim {
-  task_name: string;
-  correct_answers: number;
-  total_questions: number;
-  job_title: string;
-}
 
-/* ── Templates ── */
-const templates = [
-  {
-    id: "quick-pulse",
-    name: "Quick Pulse",
-    duration: "~3 min",
-    useCase: "Upskilling",
-    icon: Zap,
-    color: "bg-dot-teal/10 text-dot-teal border-dot-teal/20",
-    description: "Rapid-fire MCQs on a single task.",
-    stages: ["5 MCQs"],
-  },
-  {
-    id: "deep-dive",
-    name: "Deep Dive",
-    duration: "~15 min",
-    useCase: "L&D Programs",
-    icon: GraduationCap,
-    color: "bg-dot-blue/10 text-dot-blue border-dot-blue/20",
-    description: "Briefing → MCQs → Open Response.",
-    stages: ["Briefing", "MCQ ×8", "Open Response"],
-  },
-  {
-    id: "case-challenge",
-    name: "Case Challenge",
-    duration: "~30 min",
-    useCase: "Assessment",
-    icon: ClipboardCheck,
-    color: "bg-dot-purple/10 text-dot-purple border-dot-purple/20",
-    description: "Multi-step deliverable + rubric.",
-    stages: ["Scenario Brief", "Deliverable", "Rubric"],
-  },
-  {
-    id: "full-panel",
-    name: "Full Panel",
-    duration: "~60 min",
-    useCase: "Staffing",
-    icon: Users,
-    color: "bg-dot-amber/10 text-dot-amber border-dot-amber/20",
-    description: "Multi-cluster timed assessment.",
-    stages: ["Cluster ×3", "Timed", "Composite"],
-  },
-];
 
 
 
