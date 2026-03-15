@@ -360,7 +360,7 @@ export default function HowItWorks() {
     <div className="min-h-screen bg-background">
       {/* ── Ticker ── */}
       <div className="px-4 pt-4 mx-auto max-w-4xl">
-        <NewsTicker />
+        <NewsTickerComponent />
       </div>
 
       {/* ── Hero ── */}
