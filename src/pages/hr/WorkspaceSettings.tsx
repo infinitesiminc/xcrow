@@ -25,12 +25,33 @@ export default function WorkspaceSettings() {
     if (!user) { setLoading(false); return; }
     (async () => {
       setLoading(true);
-      const { data } = await supabase
+      // First check if user created a workspace
+      let { data } = await supabase
         .from("company_workspaces")
         .select("id, name, join_code")
         .eq("created_by", user.id)
         .limit(1)
         .maybeSingle();
+
+      // If not a creator, check if user is a member of any workspace
+      if (!data) {
+        const { data: membership } = await supabase
+          .from("workspace_members")
+          .select("workspace_id")
+          .eq("user_id", user.id)
+          .limit(1)
+          .maybeSingle();
+
+        if (membership) {
+          const { data: ws } = await supabase
+            .from("company_workspaces")
+            .select("id, name, join_code")
+            .eq("id", membership.workspace_id)
+            .single();
+          if (ws) data = ws;
+        }
+      }
+
       if (data) setWorkspace(data);
       setLoading(false);
     })();
