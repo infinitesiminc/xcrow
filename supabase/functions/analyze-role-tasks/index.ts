@@ -117,21 +117,60 @@ Respond ONLY with a valid JSON array, no markdown.`;
     const { error: insertErr } = await sb.from("job_task_clusters").insert(rows);
     if (insertErr) console.error("Insert error:", insertErr);
 
+    // Deterministic template selection based on task signals
+    function pickTemplate(t: any): { template: string; duration: number } {
+      const state = t.ai_state || "human_ai";
+      const impact = t.impact_level || "medium";
+      const priority = t.priority || "important";
+      const skillCount = (t.skill_names || []).length;
+
+      // Score: higher = more complex format needed
+      let score = 0;
+
+      // AI state: mostly_human tasks need deeper practice
+      if (state === "mostly_human") score += 3;
+      else if (state === "human_ai") score += 2;
+      else score += 1; // mostly_ai — just awareness check
+
+      // Impact level
+      if (impact === "high") score += 3;
+      else if (impact === "medium") score += 2;
+      else score += 1;
+
+      // Priority is the tiebreaker — critical always gets at least Deep Dive
+      if (priority === "critical") score += 3;
+      else if (priority === "important") score += 2;
+      else score += 1;
+
+      // Skill breadth
+      if (skillCount >= 4) score += 2;
+      else if (skillCount >= 3) score += 1;
+
+      // Map score to template
+      // 3-5 → Quick Pulse, 6-8 → Deep Dive, 9+ → Case Challenge
+      if (score >= 9) return { template: "case-challenge", duration: 30 };
+      if (score >= 6) return { template: "deep-dive", duration: 15 };
+      return { template: "quick-pulse", duration: 3 };
+    }
+
     // Return enriched tasks (with AI metadata that isn't stored in DB)
-    const enrichedTasks = tasks.map((t: any, i: number) => ({
-      id: crypto.randomUUID(),
-      cluster_name: t.cluster_name,
-      description: t.description || null,
-      outcome: t.outcome || null,
-      skill_names: t.skill_names || null,
-      sort_order: i,
-      ai_state: t.ai_state || "human_ai",
-      ai_trend: t.ai_trend || "increasing_ai",
-      impact_level: t.impact_level || "medium",
-      recommended_template: t.recommended_template || "quick-pulse",
-      priority: t.priority || "important",
-      sim_duration: t.sim_duration || 3,
-    }));
+    const enrichedTasks = tasks.map((t: any, i: number) => {
+      const { template, duration } = pickTemplate(t);
+      return {
+        id: crypto.randomUUID(),
+        cluster_name: t.cluster_name,
+        description: t.description || null,
+        outcome: t.outcome || null,
+        skill_names: t.skill_names || null,
+        sort_order: i,
+        ai_state: t.ai_state || "human_ai",
+        ai_trend: t.ai_trend || "increasing_ai",
+        impact_level: t.impact_level || "medium",
+        recommended_template: template,
+        priority: t.priority || "important",
+        sim_duration: duration,
+      };
+    });
 
     return new Response(JSON.stringify({ tasks: enrichedTasks, cached: false }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
