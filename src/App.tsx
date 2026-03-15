@@ -26,7 +26,6 @@ import CandidateAssessment from "./pages/products/CandidateAssessment.tsx";
 import WorkforcePlanning from "./pages/products/WorkforcePlanning.tsx";
 import CareerTransition from "./pages/products/CareerTransition.tsx";
 import LDContentEngine from "./pages/products/LDContentEngine.tsx";
-import Platform from "./pages/Platform.tsx";
 import HowItWorks from "./pages/HowItWorks.tsx";
 import Enterprise from "./pages/Enterprise.tsx";
 const queryClient = new QueryClient();
@@ -39,7 +38,8 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <Routes>
-            <Route path="/" element={<><Navbar /><Index /><Footer /></>} />
+            <Route path="/" element={<><Navbar /><Enterprise /><Footer /></>} />
+            <Route path="/analyze" element={<><Navbar /><Index /><Footer /></>} />
             <Route path="/analysis" element={<><Navbar /><Analysis /><Footer /></>} />
             <Route path="/team-analysis" element={<><Navbar /><TeamAnalysis /><Footer /></>} />
             <Route path="/auth" element={<><Navbar /><Auth /></>} />
@@ -59,9 +59,7 @@ const App = () => (
             <Route path="/products/workforce-planning" element={<><Navbar /><WorkforcePlanning /><Footer /></>} />
             <Route path="/products/career-transition" element={<><Navbar /><CareerTransition /><Footer /></>} />
             <Route path="/products/ld-content-engine" element={<><Navbar /><LDContentEngine /><Footer /></>} />
-            <Route path="/platform" element={<><Navbar /><Platform /><Footer /></>} />
             <Route path="/how-it-works" element={<><Navbar /><HowItWorks /><Footer /></>} />
-            <Route path="/enterprise" element={<><Navbar /><Enterprise /><Footer /></>} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
