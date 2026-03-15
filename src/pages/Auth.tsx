@@ -45,7 +45,7 @@ const Auth = () => {
           }
         } catch {}
       }
-      navigate("/dashboard");
+      navigate("/hr/team-progress");
     }
   }, [user, authLoading, navigate]);
 
