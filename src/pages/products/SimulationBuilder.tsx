@@ -282,342 +282,254 @@ export default function SimulationBuilder() {
             <h1 className="font-serif text-2xl sm:text-4xl font-bold text-foreground leading-tight tracking-tight">
               AI-powered learning paths
             </h1>
-            <p className="mx-auto mt-4 max-w-2xl text-lg text-muted-foreground leading-relaxed">
-              Select any {companyName} role to auto-generate a personalized learning path — 
-              each task analyzed for AI impact with recommended simulation packages.
+            <p className="mx-auto mt-2 max-w-2xl text-sm text-muted-foreground leading-relaxed">
+              Select any {companyName} role to open its learning path with AI impact analysis and simulations.
             </p>
-
-            {/* Auto-Analyze Queue Dashboard */}
-            {companyId && (
-              <div className="mt-6 mx-auto max-w-lg">
-                <Card className="border-border bg-card/60 backdrop-blur">
-                  <CardContent className="p-5 space-y-4">
-                    {/* Header */}
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <div className="rounded-lg bg-primary/10 p-1.5">
-                          <Brain className="h-4 w-4 text-primary" />
-                        </div>
-                        <h3 className="text-sm font-semibold text-foreground">Role Analysis Queue</h3>
-                      </div>
-                      <Badge variant="outline" className="text-[10px] px-2 py-0.5 border-border text-muted-foreground">
-                        {companyName}
-                      </Badge>
-                    </div>
-
-                    {/* Stats */}
-                    <div className="grid grid-cols-3 gap-3">
-                      <div className="rounded-lg border border-border bg-background/50 p-2.5 text-center">
-                        <div className="text-lg font-bold text-foreground">{jobs.length}</div>
-                        <div className="text-[10px] text-muted-foreground">Total Roles</div>
-                      </div>
-                      <div className="rounded-lg border border-border bg-background/50 p-2.5 text-center">
-                        <div className="text-lg font-bold text-primary">{analyzedJobIds.size}</div>
-                        <div className="text-[10px] text-muted-foreground">Analyzed</div>
-                      </div>
-                      <div className="rounded-lg border border-border bg-background/50 p-2.5 text-center">
-                        <div className="text-lg font-bold text-muted-foreground">{pendingCount}</div>
-                        <div className="text-[10px] text-muted-foreground">Remaining</div>
-                      </div>
-                    </div>
-
-                    {/* Progress bar */}
-                    {jobs.length > 0 && (
-                      <div className="space-y-1.5">
-                        <Progress
-                          value={jobs.length > 0 ? (analyzedJobIds.size / jobs.length) * 100 : 0}
-                          className="h-2"
-                        />
-                        <div className="flex justify-between text-[10px] text-muted-foreground">
-                          <span>{Math.round((analyzedJobIds.size / jobs.length) * 100)}% complete</span>
-                          {queueRunning && currentJobTitle && (
-                            <span className="text-primary truncate max-w-[200px]">
-                              Analyzing: {currentJobTitle}
-                            </span>
-                          )}
-                          {!queueRunning && (
-                            <span>~{pendingCount * 4}s estimated</span>
-                          )}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Queue controls */}
-                    <div className="flex items-center gap-2">
-                      {!queueRunning && pendingCount > 0 && (
-                        <Button
-                          size="sm"
-                          onClick={startQueue}
-                          className="gap-2 text-xs flex-1"
-                        >
-                          <Play className="h-3.5 w-3.5" />
-                          {queueMessage ? "Resume Queue" : "Start Auto-Analyze"}
-                          <Badge variant="secondary" className="ml-1 text-[9px] px-1.5 py-0 h-4 bg-primary-foreground/20 border-0">
-                            {pendingCount} roles
-                          </Badge>
-                        </Button>
-                      )}
-
-                      {queueRunning && (
-                        <>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={pauseQueue}
-                            className="gap-2 text-xs flex-1"
-                          >
-                            <Pause className="h-3.5 w-3.5" />
-                            Pause
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={stopQueue}
-                            className="gap-2 text-xs text-destructive hover:text-destructive"
-                          >
-                            Stop
-                          </Button>
-                        </>
-                      )}
-
-                      {!queueRunning && pendingCount === 0 && (
-                        <div className="flex items-center gap-2 text-xs text-primary flex-1 justify-center py-1">
-                          <CheckCircle2 className="h-4 w-4" />
-                          All roles analyzed
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Live status */}
-                    {queueRunning && (
-                      <div className="flex items-center gap-2 text-xs text-muted-foreground bg-accent/50 rounded-md px-3 py-2">
-                        <Loader2 className="h-3 w-3 animate-spin text-primary shrink-0" />
-                        <span>Processing job-by-job… {queueProcessed} done so far. You can browse ready roles below.</span>
-                      </div>
-                    )}
-
-                    {/* Queue message (pause/error) */}
-                    {queueMessage && !queueRunning && (
-                      <div className="flex items-center gap-1.5 text-xs text-amber-500 bg-amber-500/5 rounded-md px-2.5 py-2">
-                        <AlertTriangle className="h-3 w-3 shrink-0" />
-                        <span>{queueMessage}</span>
-                      </div>
-                    )}
-
-                    <p className="text-[10px] text-muted-foreground leading-relaxed">
-                      Queue processes one role at a time. Pauses automatically on rate limits or errors. 
-                      Analyzed roles show a <Badge variant="outline" className="text-[8px] px-1 py-0 h-3 bg-primary/10 text-primary border-primary/20 mx-0.5 inline-flex items-center">Ready</Badge> badge and are immediately browsable.
-                    </p>
-                  </CardContent>
-                </Card>
-              </div>
-            )}
           </motion.div>
         </div>
       </section>
 
       <div className="mx-auto max-w-6xl px-4 pb-16">
-        <div className="flex flex-col lg:flex-row gap-6">
-          {/* Left: Job Browser */}
-          <div className="lg:w-[480px] shrink-0 transition-all duration-300">
-            {/* Search */}
-            <div className="sticky top-4 space-y-3 mb-4">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder={`Search ${jobs.length} roles…`}
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  className="pl-9"
-                />
-              </div>
-              <div className="flex gap-1.5 flex-wrap">
-                {departments.map(([dept, count]) => (
-                  <button
-                    key={dept}
-                    onClick={() => setSearch(search === dept ? "" : dept)}
-                    className={`rounded-full px-2.5 py-0.5 text-[10px] font-medium border transition-colors ${
-                      search === dept
-                        ? "bg-primary text-primary-foreground border-primary"
-                        : "bg-card text-muted-foreground border-border hover:border-primary/30"
-                    }`}
-                  >
-                    {dept} ({count})
-                  </button>
-                ))}
-              </div>
-            </div>
+        {/* Queue + Search bar */}
+        {companyId && (
+          <div className="mb-4 flex flex-col sm:flex-row gap-3 items-stretch">
+            {/* Queue controls — compact horizontal */}
+            <Card className="border-border bg-card/60 backdrop-blur flex-1">
+              <CardContent className="p-3 flex items-center gap-3">
+                <div className="flex items-center gap-3 flex-1 min-w-0">
+                  {/* Stats inline */}
+                  <div className="flex items-center gap-1.5 text-xs shrink-0">
+                    <Brain className="h-3.5 w-3.5 text-primary" />
+                    <span className="font-semibold text-foreground">{analyzedJobIds.size}</span>
+                    <span className="text-muted-foreground">/</span>
+                    <span className="text-muted-foreground">{jobs.length}</span>
+                  </div>
 
-            {/* Job list — grouped by department */}
-            {loading ? (
-              <div className="space-y-2">
-                {Array.from({ length: 6 }).map((_, i) => (
-                  <div key={i} className="h-20 rounded-xl border border-border bg-card animate-pulse" />
-                ))}
-              </div>
-            ) : groupedJobs.length === 0 ? (
-              <div className="text-center py-8">
-                <p className="text-sm text-muted-foreground">No roles match "{search}"</p>
-                <Button variant="ghost" size="sm" onClick={() => setSearch("")} className="mt-1 text-xs">Clear</Button>
-              </div>
-            ) : (
-              <div className="space-y-3 max-h-[70vh] overflow-y-auto pr-1 scrollbar-thin">
-                {groupedJobs.map(([dept, deptJobs]) => {
-                  const isCollapsed = collapsedDepts.has(dept);
-                  const readyCount = deptJobs.filter(j => analyzedJobIds.has(j.id)).length;
-                  return (
-                    <div key={dept}>
-                      <button
-                        onClick={() => setCollapsedDepts(prev => {
-                          const next = new Set(prev);
-                          next.has(dept) ? next.delete(dept) : next.add(dept);
-                          return next;
-                        })}
-                        className="w-full flex items-center gap-2 py-1.5 px-1 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors"
-                      >
-                        {isCollapsed ? <ChevronDown className="h-3 w-3" /> : <ChevronUp className="h-3 w-3" />}
-                        <Briefcase className="h-3 w-3" />
-                        <span>{dept}</span>
-                        <span className="text-[10px] font-normal">({deptJobs.length})</span>
-                        {readyCount > 0 && (
-                          <Badge variant="secondary" className="ml-auto text-[9px] px-1.5 py-0 h-4 bg-primary/10 text-primary border-0">
-                            {readyCount} ready
-                          </Badge>
-                        )}
-                      </button>
+                  {/* Progress bar */}
+                  <div className="flex-1 min-w-[80px]">
+                    <Progress
+                      value={jobs.length > 0 ? (analyzedJobIds.size / jobs.length) * 100 : 0}
+                      className="h-1.5"
+                    />
+                  </div>
 
-                      <AnimatePresence>
-                        {!isCollapsed && (
-                          <motion.div
-                            initial={{ height: 0, opacity: 0 }}
-                            animate={{ height: "auto", opacity: 1 }}
-                            exit={{ height: 0, opacity: 0 }}
-                            transition={{ duration: 0.2 }}
-                            className="overflow-hidden"
-                          >
-                            <div className="space-y-1.5 pl-1">
-                              {deptJobs.slice(0, 30).map((job) => {
-                                const isReady = analyzedJobIds.has(job.id);
-                                const isCurrentlyAnalyzing = queueCurrentJob === job.id;
-                                const completionPct = getJobCompletionPercent(job);
-                                const circumference = 2 * Math.PI * 8;
-                                const strokeOffset = circumference - (completionPct / 100) * circumference;
-
-                                return (
-                                  <motion.div
-                                    key={job.id}
-                                    initial={{ opacity: 0 }}
-                                    animate={{ opacity: 1 }}
-                                    whileHover={{ x: 2 }}
-                                    transition={{ duration: 0.15 }}
-                                  >
-                                    <button
-                                      onClick={() => navigate(`/learning-path?jobId=${job.id}`)}
-                                      className={`w-full text-left p-3 rounded-xl border transition-all duration-200 ${
-                                        isCurrentlyAnalyzing
-                                          ? "border-primary/40 bg-primary/5 ring-1 ring-primary/20"
-                                          : isReady
-                                            ? "border-primary/20 bg-card hover:border-primary/30"
-                                            : "border-border bg-card hover:border-primary/30"
-                                      }`}
-                                    >
-                                      <div className="flex items-start justify-between gap-2">
-                                        <div className="flex-1 min-w-0">
-                                          <h3 className="font-semibold text-foreground text-sm leading-tight truncate">{job.title}</h3>
-                                          <div className="flex items-center gap-2 mt-1">
-                                            {job.location && (
-                                              <span className="flex items-center gap-1 text-[10px] text-muted-foreground">
-                                                <MapPin className="h-2.5 w-2.5" />
-                                                {job.location}
-                                              </span>
-                                            )}
-                                          </div>
-                                        </div>
-                                        <div className="flex items-center gap-1.5 shrink-0">
-                                          {completionPct > 0 && (
-                                            <svg width="22" height="22" className="-rotate-90">
-                                              <circle cx="11" cy="11" r="8" fill="none" strokeWidth="2" className="stroke-muted/30" />
-                                              <circle
-                                                cx="11" cy="11" r="8" fill="none" strokeWidth="2"
-                                                className="stroke-primary"
-                                                strokeDasharray={circumference}
-                                                strokeDashoffset={strokeOffset}
-                                                strokeLinecap="round"
-                                              />
-                                            </svg>
-                                          )}
-                                          {isCurrentlyAnalyzing ? (
-                                            <Badge variant="outline" className="text-[9px] px-1.5 py-0 h-4 bg-primary/10 text-primary border-primary/20 animate-pulse">
-                                              <Loader2 className="h-2.5 w-2.5 animate-spin mr-0.5" />
-                                              Analyzing
-                                            </Badge>
-                                          ) : (
-                                            <Badge
-                                              variant="outline"
-                                              className={`text-[9px] px-1.5 py-0 h-4 ${
-                                                isReady
-                                                  ? "bg-primary/10 text-primary border-primary/20"
-                                                  : "bg-muted/50 text-muted-foreground border-border"
-                                              }`}
-                                            >
-                                              {isReady ? "Ready" : "—"}
-                                            </Badge>
-                                          )}
-                                        </div>
-                                      </div>
-                                    </button>
-                                  </motion.div>
-                                );
-                              })}
-                              {deptJobs.length > 30 && (
-                                <p className="text-center text-[10px] text-muted-foreground py-1">
-                                  +{deptJobs.length - 30} more
-                                </p>
-                              )}
-                            </div>
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-
-          {/* Right: Empty state */}
-          {!loading && (
-            <motion.div
-              key="empty"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="flex-1 flex items-center justify-center"
-            >
-              <div className="text-center py-20 max-w-md">
-                <div className="w-16 h-16 rounded-2xl bg-accent flex items-center justify-center mx-auto mb-4">
-                  <Target className="h-8 w-8 text-muted-foreground" />
+                  {/* Current job label */}
+                  {queueRunning && currentJobTitle && (
+                    <span className="text-[10px] text-primary truncate max-w-[160px] hidden sm:inline">
+                      {currentJobTitle}
+                    </span>
+                  )}
                 </div>
-                <h3 className="font-serif text-xl font-bold text-foreground mb-2">Select a role to begin</h3>
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                  Choose any {companyName} role to open its full learning path — with task-level AI impact analysis, simulation packages, and custom sim creation.
-                </p>
-              </div>
-            </motion.div>
-          )}
+
+                {/* Queue buttons */}
+                <div className="flex items-center gap-1.5 shrink-0">
+                  {!queueRunning && pendingCount > 0 && (
+                    <Button size="sm" onClick={startQueue} className="gap-1.5 text-xs h-7 px-3">
+                      <Play className="h-3 w-3" />
+                      {queueMessage ? "Resume" : "Auto-Analyze"}
+                      <span className="text-[9px] opacity-70">({pendingCount})</span>
+                    </Button>
+                  )}
+                  {queueRunning && (
+                    <>
+                      <Button size="sm" variant="outline" onClick={pauseQueue} className="gap-1 text-xs h-7 px-3">
+                        <Pause className="h-3 w-3" />
+                        Pause
+                      </Button>
+                      <Button size="sm" variant="ghost" onClick={stopQueue} className="text-xs h-7 px-2 text-destructive hover:text-destructive">
+                        Stop
+                      </Button>
+                    </>
+                  )}
+                  {!queueRunning && pendingCount === 0 && (
+                    <span className="flex items-center gap-1 text-xs text-primary">
+                      <CheckCircle2 className="h-3.5 w-3.5" />
+                      Done
+                    </span>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Search */}
+            <div className="relative sm:w-72">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder={`Search ${jobs.length} roles…`}
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="pl-9 h-full"
+              />
+            </div>
+          </div>
+        )}
+
+        {/* Queue message */}
+        {queueMessage && !queueRunning && (
+          <div className="flex items-center gap-1.5 text-xs text-amber-500 bg-amber-500/5 rounded-md px-2.5 py-2 mb-3">
+            <AlertTriangle className="h-3 w-3 shrink-0" />
+            <span>{queueMessage}</span>
+          </div>
+        )}
+
+        {/* Department filter pills */}
+        <div className="flex gap-1.5 flex-wrap mb-4">
+          {departments.map(([dept, count]) => (
+            <button
+              key={dept}
+              onClick={() => setSearch(search === dept ? "" : dept)}
+              className={`rounded-full px-2.5 py-0.5 text-[10px] font-medium border transition-colors ${
+                search === dept
+                  ? "bg-primary text-primary-foreground border-primary"
+                  : "bg-card text-muted-foreground border-border hover:border-primary/30"
+              }`}
+            >
+              {dept} ({count})
+            </button>
+          ))}
         </div>
+
+        {/* Job grid — full width, multi-column */}
+        {loading ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+            {Array.from({ length: 9 }).map((_, i) => (
+              <div key={i} className="h-16 rounded-xl border border-border bg-card animate-pulse" />
+            ))}
+          </div>
+        ) : groupedJobs.length === 0 ? (
+          <div className="text-center py-8">
+            <p className="text-sm text-muted-foreground">No roles match "{search}"</p>
+            <Button variant="ghost" size="sm" onClick={() => setSearch("")} className="mt-1 text-xs">Clear</Button>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {groupedJobs.map(([dept, deptJobs]) => {
+              const isCollapsed = collapsedDepts.has(dept);
+              const readyCount = deptJobs.filter(j => analyzedJobIds.has(j.id)).length;
+              return (
+                <div key={dept}>
+                  <button
+                    onClick={() => setCollapsedDepts(prev => {
+                      const next = new Set(prev);
+                      next.has(dept) ? next.delete(dept) : next.add(dept);
+                      return next;
+                    })}
+                    className="w-full flex items-center gap-2 py-1 px-1 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    {isCollapsed ? <ChevronDown className="h-3 w-3" /> : <ChevronUp className="h-3 w-3" />}
+                    <Briefcase className="h-3 w-3" />
+                    <span>{dept}</span>
+                    <span className="text-[10px] font-normal">({deptJobs.length})</span>
+                    {readyCount > 0 && (
+                      <Badge variant="secondary" className="ml-auto text-[9px] px-1.5 py-0 h-4 bg-primary/10 text-primary border-0">
+                        {readyCount} ready
+                      </Badge>
+                    )}
+                  </button>
+
+                  <AnimatePresence>
+                    {!isCollapsed && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: "auto", opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.2 }}
+                        className="overflow-hidden"
+                      >
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-1.5 pl-1 pt-1">
+                          {deptJobs.slice(0, 30).map((job) => {
+                            const isReady = analyzedJobIds.has(job.id);
+                            const isCurrentlyAnalyzing = queueCurrentJob === job.id;
+                            const completionPct = getJobCompletionPercent(job);
+                            const circumference = 2 * Math.PI * 8;
+                            const strokeOffset = circumference - (completionPct / 100) * circumference;
+
+                            return (
+                              <motion.div
+                                key={job.id}
+                                whileHover={{ scale: 1.01 }}
+                                transition={{ duration: 0.1 }}
+                              >
+                                <button
+                                  onClick={() => navigate(`/learning-path?jobId=${job.id}`)}
+                                  className={`w-full text-left p-2.5 rounded-lg border transition-all duration-200 ${
+                                    isCurrentlyAnalyzing
+                                      ? "border-primary/40 bg-primary/5 ring-1 ring-primary/20"
+                                      : isReady
+                                        ? "border-primary/20 bg-card hover:border-primary/30"
+                                        : "border-border bg-card hover:border-primary/30"
+                                  }`}
+                                >
+                                  <div className="flex items-center justify-between gap-2">
+                                    <div className="flex-1 min-w-0">
+                                      <h3 className="font-medium text-foreground text-xs leading-tight truncate">{job.title}</h3>
+                                      {job.location && (
+                                        <span className="flex items-center gap-1 text-[9px] text-muted-foreground mt-0.5">
+                                          <MapPin className="h-2 w-2" />
+                                          {job.location}
+                                        </span>
+                                      )}
+                                    </div>
+                                    <div className="flex items-center gap-1 shrink-0">
+                                      {completionPct > 0 && (
+                                        <svg width="18" height="18" className="-rotate-90">
+                                          <circle cx="9" cy="9" r="6.5" fill="none" strokeWidth="1.5" className="stroke-muted/30" />
+                                          <circle
+                                            cx="9" cy="9" r="6.5" fill="none" strokeWidth="1.5"
+                                            className="stroke-primary"
+                                            strokeDasharray={2 * Math.PI * 6.5}
+                                            strokeDashoffset={2 * Math.PI * 6.5 - (completionPct / 100) * 2 * Math.PI * 6.5}
+                                            strokeLinecap="round"
+                                          />
+                                        </svg>
+                                      )}
+                                      {isCurrentlyAnalyzing ? (
+                                        <Loader2 className="h-3 w-3 animate-spin text-primary" />
+                                      ) : (
+                                        <Badge
+                                          variant="outline"
+                                          className={`text-[8px] px-1 py-0 h-3.5 ${
+                                            isReady
+                                              ? "bg-primary/10 text-primary border-primary/20"
+                                              : "bg-muted/50 text-muted-foreground border-border"
+                                          }`}
+                                        >
+                                          {isReady ? "Ready" : "—"}
+                                        </Badge>
+                                      )}
+                                    </div>
+                                  </div>
+                                </button>
+                              </motion.div>
+                            );
+                          })}
+                        </div>
+                        {deptJobs.length > 30 && (
+                          <p className="text-center text-[10px] text-muted-foreground py-1">
+                            +{deptJobs.length - 30} more
+                          </p>
+                        )}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       {/* CTA */}
-      <section className="px-4 py-16 bg-accent/30">
+      <section className="px-4 py-12 bg-accent/30">
         <div className="mx-auto max-w-3xl text-center">
-          <Sparkles className="h-8 w-8 text-primary mx-auto mb-4" />
-          <h2 className="font-serif text-2xl sm:text-4xl font-bold text-foreground">
+          <Sparkles className="h-6 w-6 text-primary mx-auto mb-3" />
+          <h2 className="font-serif text-xl sm:text-3xl font-bold text-foreground">
             Your company's roles. Your learning paths.
           </h2>
-          <p className="mt-3 text-muted-foreground">
+          <p className="mt-2 text-sm text-muted-foreground">
             Upload your org chart and we'll generate personalized simulation packages for every role.
           </p>
-          <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3">
+          <div className="mt-6 flex flex-col sm:flex-row items-center justify-center gap-3">
             <Button size="lg" onClick={() => navigate("/contact")} className="gap-2 text-base px-10">
               Request a Demo <ArrowRight className="h-4 w-4" />
             </Button>
