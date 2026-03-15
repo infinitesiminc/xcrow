@@ -104,6 +104,9 @@ For each task cluster return a JSON array of objects with:
 2. "description": One sentence describing the task
 3. "outcome": What successful completion looks like
 4. "skill_names": Array of 2-4 skills needed
+5. "ai_state": One of "mostly_human", "human_ai", "mostly_ai"
+6. "impact_level": One of "low", "medium", "high"
+7. "priority": "critical", "important", or "helpful"
 
 Order from highest AI impact to lowest. Respond ONLY with valid JSON array.`;
 
