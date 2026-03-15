@@ -91,6 +91,48 @@ function LiveTimeline() {
   );
 }
 
+/* ── News Ticker — recent AI disruption headlines ── */
+const TICKER_HEADLINES = [
+  "Software sector meltdown: ~$2T erased as AI tools threaten legacy subscriptions",
+  "CrowdStrike, Zscaler, Cloudflare slide after Anthropic's Claude Code security tool launch",
+  "Salesforce, Intuit, ServiceNow down 20%+ on AI replacement fears",
+  "Thomson Reuters plunges in record one-day drop over Claude legal plugin threat",
+  "Block Inc. plans to lay off nearly half its workforce as AI automates operations",
+  "Atlassian cuts ~10% of staff to redirect resources toward AI",
+  "ServiceNow using AI to eliminate 90% of human customer service use cases",
+  "AI-driven tax tools pressure Raymond James & LPL Financial share prices",
+  "CBRE & JLL fall ~12% on commercial real estate AI automation concerns",
+  "Nvidia slides as hyperscaler CapEx scrutiny intensifies amid uncertain AI ROI",
+  "IBM drops on fears AI adoption disrupts its traditional enterprise business",
+  "Agentic AI shift fuels 'sell first, ask later' panic across tech sector",
+  "White-collar roles in coding, marketing & support eroding faster than expected",
+];
+
+function NewsTicker() {
+  return (
+    <div className="mt-4 rounded-lg border border-destructive/20 bg-destructive/5 overflow-hidden">
+      <div className="flex items-center gap-3 px-3 py-1.5 border-b border-destructive/10 bg-destructive/10">
+        <span className="relative flex h-2 w-2">
+          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-destructive opacity-75" />
+          <span className="relative inline-flex rounded-full h-2 w-2 bg-destructive" />
+        </span>
+        <span className="text-[10px] font-bold uppercase tracking-wider text-destructive">
+          Last 30 Days — AI Disruption Signal
+        </span>
+      </div>
+      <div className="overflow-hidden">
+        <div className="flex animate-[ticker_60s_linear_infinite] gap-8 py-2 px-4 whitespace-nowrap">
+          {[...TICKER_HEADLINES, ...TICKER_HEADLINES].map((h, i) => (
+            <span key={i} className="text-[11px] text-foreground/70 flex items-center gap-2">
+              <span className="text-destructive/60">▸</span> {h}
+            </span>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /* ── Animation helpers ── */
 const fadeUp = (delay = 0) => ({
   initial: { opacity: 0, y: 14 },
