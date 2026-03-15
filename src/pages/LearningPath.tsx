@@ -581,6 +581,7 @@ export default function LearningPath() {
                   const RecIcon = recTemplate.icon;
                   const taskScore = getTaskCompletion(task.cluster_name, job.title);
                   const isCompleted = taskScore !== null;
+                  const isUpdated = updatedTaskNames.has(task.cluster_name);
 
                   return (
                     <motion.div
@@ -589,7 +590,7 @@ export default function LearningPath() {
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: i * 0.04 }}
                     >
-                      <Card className={`border-border bg-card hover:border-primary/30 transition-all group ${isCompleted ? "border-success/30 bg-success/[0.02]" : ""}`}>
+                      <Card className={`border-border bg-card hover:border-primary/30 transition-all group ${isCompleted ? "border-success/30 bg-success/[0.02]" : ""} ${isUpdated ? "border-primary/30 bg-primary/[0.02] ring-1 ring-primary/10" : ""}`}>
                         <CardContent className="p-4">
                           <div className="flex items-start gap-3">
                             <div className="flex flex-col items-center gap-1 shrink-0 pt-0.5">
@@ -609,9 +610,16 @@ export default function LearningPath() {
 
                             <div className="flex-1 min-w-0">
                               <div className="flex items-start justify-between gap-2 mb-1">
-                                <h4 className={`font-semibold text-sm leading-tight ${isCompleted ? "text-success" : "text-foreground"}`}>
-                                  {task.cluster_name}
-                                </h4>
+                                <div className="flex items-center gap-1.5">
+                                  <h4 className={`font-semibold text-sm leading-tight ${isCompleted ? "text-success" : "text-foreground"}`}>
+                                    {task.cluster_name}
+                                  </h4>
+                                  {isUpdated && (
+                                    <Badge className="bg-primary/10 text-primary border-primary/20 text-[8px] px-1 py-0 h-3.5 animate-pulse">
+                                      Updated
+                                    </Badge>
+                                  )}
+                                </div>
                                 <div className="flex items-center gap-1.5 shrink-0">
                                   {isCompleted && taskScore !== null && scoreBadge(taskScore)}
                                   {priorityBadge(task.priority)}
