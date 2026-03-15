@@ -21,7 +21,11 @@ import Contact from "./pages/Contact.tsx";
 import Pricing from "./pages/Pricing.tsx";
 import CompanyDashboard from "./pages/CompanyDashboard.tsx";
 import ProjectStaffing from "./pages/ProjectStaffing.tsx";
-
+import Upskilling from "./pages/products/Upskilling.tsx";
+import CandidateAssessment from "./pages/products/CandidateAssessment.tsx";
+import WorkforcePlanning from "./pages/products/WorkforcePlanning.tsx";
+import CareerTransition from "./pages/products/CareerTransition.tsx";
+import LDContentEngine from "./pages/products/LDContentEngine.tsx";
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -47,6 +51,11 @@ const App = () => (
             <Route path="/pricing" element={<><Navbar /><Pricing /><Footer /></>} />
             <Route path="/company-dashboard" element={<><Navbar /><CompanyDashboard /><Footer /></>} />
             <Route path="/project-staffing" element={<><Navbar /><ProjectStaffing /><Footer /></>} />
+            <Route path="/products/upskilling" element={<><Navbar /><Upskilling /><Footer /></>} />
+            <Route path="/products/candidate-assessment" element={<><Navbar /><CandidateAssessment /><Footer /></>} />
+            <Route path="/products/workforce-planning" element={<><Navbar /><WorkforcePlanning /><Footer /></>} />
+            <Route path="/products/career-transition" element={<><Navbar /><CareerTransition /><Footer /></>} />
+            <Route path="/products/ld-content-engine" element={<><Navbar /><LDContentEngine /><Footer /></>} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
