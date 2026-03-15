@@ -315,6 +315,16 @@ export function generateDemoProgress(employeeCount = 400): DemoProgressRow[] {
       const total = 5;
       const correct = Math.min(total, Math.max(1, randInt(2, 5)));
 
+      // Generate per-category AI readiness scores
+      // Create realistic variation: some employees are strong in certain areas
+      const empArchetype = Math.floor(rand() * 4); // 0=balanced, 1=tech-strong, 2=human-strong, 3=struggling
+      const baseScore = empArchetype === 3 ? randInt(30, 55) : empArchetype === 0 ? randInt(55, 80) : randInt(60, 85);
+      
+      const toolAwareness = Math.min(100, Math.max(10, baseScore + (empArchetype === 1 ? randInt(10, 25) : randInt(-15, 10))));
+      const humanValueAdd = Math.min(100, Math.max(10, baseScore + (empArchetype === 2 ? randInt(10, 25) : randInt(-15, 10))));
+      const adaptiveThinking = Math.min(100, Math.max(10, baseScore + randInt(-12, 12)));
+      const domainJudgment = Math.min(100, Math.max(10, baseScore + randInt(-10, 15)));
+
       // Shorten sim_job_title (remove qualifiers after comma)
       const simTitle = emp.role.includes(",") ? emp.role.split(",")[0].trim() : emp.role;
 
@@ -328,6 +338,10 @@ export function generateDemoProgress(employeeCount = 400): DemoProgressRow[] {
         total_questions: total,
         completed_at: completedAt,
         department: emp.dept,
+        tool_awareness_score: toolAwareness,
+        human_value_add_score: humanValueAdd,
+        adaptive_thinking_score: adaptiveThinking,
+        domain_judgment_score: domainJudgment,
       });
     }
   }
