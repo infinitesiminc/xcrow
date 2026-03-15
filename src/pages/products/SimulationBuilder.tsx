@@ -2,12 +2,10 @@ import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect, useMemo, useCallback } from "react";
 import {
-  Zap, ArrowRight, Layers, Brain,
-  GraduationCap, ClipboardCheck, Users, Target,
-  Sparkles, Clock, Search, MapPin, Briefcase,
+  ArrowRight, Layers, Brain,
+  Target, Sparkles, Clock, Search, MapPin, Briefcase,
   AlertTriangle, Loader2,
-  ChevronDown, ChevronUp,
-  CheckCircle2,
+  ChevronDown, ChevronUp, CheckCircle2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
