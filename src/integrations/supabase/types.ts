@@ -190,6 +190,7 @@ export type Database = {
           company: string | null
           completed_at: string
           correct_answers: number
+          department: string | null
           experience_level: string | null
           id: string
           job_title: string
@@ -202,6 +203,7 @@ export type Database = {
           company?: string | null
           completed_at?: string
           correct_answers?: number
+          department?: string | null
           experience_level?: string | null
           id?: string
           job_title: string
@@ -214,6 +216,7 @@ export type Database = {
           company?: string | null
           completed_at?: string
           correct_answers?: number
+          department?: string | null
           experience_level?: string | null
           id?: string
           job_title?: string
