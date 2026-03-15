@@ -20,6 +20,7 @@ import Pricing from "./pages/Pricing.tsx";
 import CompanyDashboard from "./pages/CompanyDashboard.tsx";
 import ProjectStaffing from "./pages/ProjectStaffing.tsx";
 import SimulationBuilder from "./pages/products/SimulationBuilder.tsx";
+import SimulationDesign from "./pages/SimulationDesign.tsx";
 import Enterprise from "./pages/Enterprise.tsx";
 import Roadmap from "./pages/Roadmap.tsx";
 import Simulations from "./pages/Simulations.tsx";
@@ -61,7 +62,8 @@ const App = () => (
             <Route path="/products/workforce-planning" element={<><Navbar /><SimulationBuilder /><Footer /></>} />
             <Route path="/products/career-transition" element={<><Navbar /><SimulationBuilder /><Footer /></>} />
             <Route path="/products/ld-content-engine" element={<><Navbar /><SimulationBuilder /><Footer /></>} />
-            <Route path="/how-it-works" element={<><Navbar /><SimulationBuilder /><Footer /></>} />
+            <Route path="/how-it-works" element={<><Navbar /><SimulationDesign /><Footer /></>} />
+            <Route path="/simulation-design" element={<><Navbar /><SimulationDesign /><Footer /></>} />
             <Route path="/roadmap" element={<><Navbar /><Roadmap /><Footer /></>} />
             <Route path="/simulations" element={<><Navbar /><Simulations /><Footer /></>} />
             <Route path="/learning-path" element={<><Navbar /><LearningPath /><Footer /></>} />
