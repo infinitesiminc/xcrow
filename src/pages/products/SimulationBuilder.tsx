@@ -268,6 +268,8 @@ export default function SimulationBuilder() {
     return jobs.find(j => j.id === queueCurrentJob)?.title || null;
   }, [queueCurrentJob, jobs]);
 
+  const { openAuthModal } = useAuth();
+
   if (!user) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -277,7 +279,7 @@ export default function SimulationBuilder() {
           <p className="text-sm text-muted-foreground mb-6">
             Sign in to access the Simulation Builder and browse AI-powered learning paths for your organization.
           </p>
-          <Button onClick={() => navigate("/auth")}>Sign In</Button>
+          <Button onClick={() => openAuthModal()}>Sign In</Button>
         </div>
       </div>
     );
