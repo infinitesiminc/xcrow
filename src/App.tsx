@@ -24,6 +24,13 @@ import Enterprise from "./pages/Enterprise.tsx";
 import Roadmap from "./pages/Roadmap.tsx";
 import Simulations from "./pages/Simulations.tsx";
 import LearningPath from "./pages/LearningPath.tsx";
+import JoinWorkspace from "./pages/JoinWorkspace.tsx";
+import HRLayout from "./layouts/HRLayout.tsx";
+import TeamProgress from "./pages/hr/TeamProgress.tsx";
+import Members from "./pages/hr/Members.tsx";
+import WorkspaceSettings from "./pages/hr/WorkspaceSettings.tsx";
+import InvitePage from "./pages/hr/InvitePage.tsx";
+
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -58,6 +65,17 @@ const App = () => (
             <Route path="/roadmap" element={<><Navbar /><Roadmap /><Footer /></>} />
             <Route path="/simulations" element={<><Navbar /><Simulations /><Footer /></>} />
             <Route path="/learning-path" element={<><Navbar /><LearningPath /><Footer /></>} />
+            <Route path="/join" element={<JoinWorkspace />} />
+
+            {/* HR Dashboard with sidebar */}
+            <Route path="/hr" element={<HRLayout />}>
+              <Route index element={<TeamProgress />} />
+              <Route path="team-progress" element={<TeamProgress />} />
+              <Route path="members" element={<Members />} />
+              <Route path="settings" element={<WorkspaceSettings />} />
+              <Route path="invite" element={<InvitePage />} />
+            </Route>
+
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
