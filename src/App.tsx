@@ -21,6 +21,7 @@ import CompanyDashboard from "./pages/CompanyDashboard.tsx";
 import ProjectStaffing from "./pages/ProjectStaffing.tsx";
 import SimulationBuilder from "./pages/products/SimulationBuilder.tsx";
 import Enterprise from "./pages/Enterprise.tsx";
+import Roadmap from "./pages/Roadmap.tsx";
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -52,6 +53,7 @@ const App = () => (
             <Route path="/products/career-transition" element={<><Navbar /><SimulationBuilder /><Footer /></>} />
             <Route path="/products/ld-content-engine" element={<><Navbar /><SimulationBuilder /><Footer /></>} />
             <Route path="/how-it-works" element={<><Navbar /><SimulationBuilder /><Footer /></>} />
+            <Route path="/roadmap" element={<><Navbar /><Roadmap /><Footer /></>} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
