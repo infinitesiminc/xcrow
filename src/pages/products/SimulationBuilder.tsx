@@ -893,6 +893,3 @@ export default function SimulationBuilder() {
     </div>
   );
 }
-    </div>
-  );
-}
