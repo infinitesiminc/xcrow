@@ -364,6 +364,24 @@ export default function SimulationBuilder() {
     return { critical, important, totalMinutes, highImpact, total: analyzedTasks.length };
   }, [analyzedTasks]);
 
+  // Priority filter state
+  const [priorityMode, setPriorityMode] = useState<"all" | "dept" | "job">("all");
+  const [priorityDept, setPriorityDept] = useState<string | null>(null);
+  const [priorityJobId, setPriorityJobId] = useState<string | null>(null);
+
+  const unanalyzedByDept = useMemo(() => {
+    const map = new Map<string, number>();
+    jobs.forEach(j => {
+      if (!analyzedJobIds.has(j.id)) {
+        const d = j.department || "Other";
+        map.set(d, (map.get(d) || 0) + 1);
+      }
+    });
+    return Array.from(map.entries()).sort((a, b) => b[1] - a[1]);
+  }, [jobs, analyzedJobIds]);
+
+  const unanalyzedJobs = useMemo(() => jobs.filter(j => !analyzedJobIds.has(j.id)), [jobs, analyzedJobIds]);
+
   /* ── Bulk analyze (single batch per click) ── */
   const runBulkBatch = useCallback(async () => {
     if (!companyId) return;
@@ -381,9 +399,13 @@ export default function SimulationBuilder() {
     setBulkRunning(true);
     setBulkPaused(null);
 
+    const body: any = { companyId, batchSize: 5 };
+    if (priorityMode === "dept" && priorityDept) body.department = priorityDept;
+    if (priorityMode === "job" && priorityJobId) body.jobIds = [priorityJobId];
+
     try {
       const { data, error } = await supabase.functions.invoke("bulk-analyze-roles", {
-        body: { companyId, batchSize: 5 },
+        body,
       });
       if (error) throw new Error(error.message);
       if (data?.error) throw new Error(data.error);
