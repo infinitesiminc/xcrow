@@ -422,7 +422,7 @@ export default function Platform() {
             Five products, one truth
           </h2>
           <p className="text-center text-muted-foreground mb-12 max-w-xl mx-auto">
-            Every product draws from the same AI Replacement Model and Simulation Engine — tailored to different stakeholders.
+            Every product draws from the same AI Evolution Model and Simulation Engine — tailored to different stakeholders.
           </p>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {products.map((p, i) => (
