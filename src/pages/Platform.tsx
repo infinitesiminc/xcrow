@@ -4,6 +4,7 @@ import {
   Zap, Brain, Target, ArrowRight, Layers, Users,
   Compass, GraduationCap, ClipboardCheck, Building2,
   ChevronRight, Sparkles, BarChart3, Play, Shield,
+  Radio, TrendingUp, Crosshair,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -130,18 +131,18 @@ function CapabilityRadar() {
 const primitives = [
   {
     icon: Target,
-    title: "AI Replacement Model",
+    title: "AI Evolution Model",
     role: "The Diagnostic",
     description:
-      "Scores every task in any job role against a 1-3 year AI disruption horizon. Maps current state (human-led → AI-driven), trend direction, and impact level to produce a composite Agent Replacement Risk score.",
-    stats: ["100M+ roles modeled", "8-12 tasks per role", "3-axis risk classification"],
+      "Tracks AI capability progression across every task in any job role. Maps current state, trend direction, and growth trajectory to reveal where AI is heading — so you can move first.",
+    stats: ["100M+ roles modeled", "8-12 tasks per role", "Real-time signal tracking"],
   },
   {
     icon: Brain,
     title: "Universal Simulation Engine",
     role: "The Action Layer",
     description:
-      "Compiles interactive, AI-aware learning scenarios for any role + task combination. Generates briefings, MCQ rounds with real-world context, and scores learners on a 4-axis AI-readiness framework.",
+      "Compiles interactive, AI-calibrated learning scenarios for any role + task combination. Every scenario reflects where AI tools are today and where they're heading — so training never goes stale.",
     stats: ["Infinite scenario variety", "2 experience modes", "4-axis readiness scoring"],
   },
 ];
@@ -194,7 +195,7 @@ const products = [
     tagline: "Generate training content instantly",
     audience: "L&D leaders & training teams",
     description:
-      "Turn AI Replacement Model data into interactive microlearning modules — briefings, scenarios, and scorecards — with zero instructional design effort.",
+      "Turn AI Evolution Model data into interactive microlearning modules — briefings, scenarios, and scorecards — with zero instructional design effort.",
     path: "/products/ld-content-engine",
     color: "bg-dot-teal/10 text-dot-teal",
   },
@@ -206,7 +207,7 @@ const flowSteps = [
     num: "01",
     label: "Input",
     title: "Any role enters the model",
-    desc: "Job title, job description, or full org chart. The AI Replacement Model decomposes it into individual tasks.",
+    desc: "Job title, job description, or full org chart. The AI Evolution Model decomposes it into individual tasks.",
     icon: Layers,
   },
   {
@@ -251,8 +252,8 @@ export default function Platform() {
               <em className="italic">Five ways to act.</em>
             </h1>
             <p className="mx-auto mt-5 max-w-2xl text-lg text-muted-foreground leading-relaxed">
-              The <strong className="text-foreground">AI Replacement Model</strong> diagnoses task-level AI exposure.
-              The <strong className="text-foreground">Universal Simulation Engine</strong> turns that diagnosis into action.
+              The <strong className="text-foreground">AI Evolution Model</strong> tracks where AI capability is heading.
+              The <strong className="text-foreground">Universal Simulation Engine</strong> turns that signal into action.
               Every product on the platform runs on the same truth.
             </p>
           </motion.div>
@@ -311,6 +312,82 @@ export default function Platform() {
         </motion.div>
       </section>
 
+      {/* ── Vision: Real-Time Calibration ── */}
+      <section className="px-4 py-20 bg-accent/30 relative overflow-hidden">
+        <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: "radial-gradient(circle at 1px 1px, hsl(var(--foreground)) 1px, transparent 0)", backgroundSize: "32px 32px" }} />
+        <div className="relative mx-auto max-w-5xl">
+          <motion.div initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-14">
+            <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4 py-1.5 text-xs font-medium text-primary mb-5">
+              <Radio className="h-3.5 w-3.5" />
+              Live Signal Architecture
+            </div>
+            <h2 className="font-serif text-2xl sm:text-4xl font-bold text-foreground mb-4">
+              Every scenario is calibrated to where<br className="hidden sm:block" /> AI is right now — and where it's heading.
+            </h2>
+            <p className="text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+              Most training becomes outdated the moment it's published. Our engine doesn't work that way.
+              The AI Evolution Model continuously tracks capability progression — so every simulation,
+              every assessment, every recommendation reflects the live frontier.
+            </p>
+          </motion.div>
+
+          <div className="grid md:grid-cols-3 gap-5">
+            {[
+              {
+                icon: Radio,
+                title: "Always Current",
+                description: "Simulations reflect where AI tools are today, not where they were when training was authored. No manual updates needed.",
+                accent: "bg-dot-teal/10 text-dot-teal",
+              },
+              {
+                icon: TrendingUp,
+                title: "Predictive Trajectories",
+                description: "The model doesn't just measure current state — it projects 1-3 year capability curves, so learners practice for tomorrow's workplace.",
+                accent: "bg-dot-blue/10 text-dot-blue",
+              },
+              {
+                icon: Crosshair,
+                title: "Contextually Adaptive",
+                description: "A Financial Analyst scenario in 2024 teaches different AI collaboration skills than the same role in 2026 — automatically.",
+                accent: "bg-dot-purple/10 text-dot-purple",
+              },
+            ].map((item, i) => (
+              <motion.div key={item.title} initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.1 }}>
+                <Card className="h-full border-border bg-card">
+                  <CardContent className="p-6">
+                    <div className={`h-10 w-10 rounded-xl ${item.accent} flex items-center justify-center mb-4`}>
+                      <item.icon className="h-5 w-5" />
+                    </div>
+                    <h3 className="font-semibold text-foreground text-base mb-2">{item.title}</h3>
+                    <p className="text-sm text-muted-foreground leading-relaxed">{item.description}</p>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            ))}
+          </div>
+
+          {/* Timeline visual */}
+          <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} transition={{ delay: 0.3 }} className="mt-12 mx-auto max-w-3xl">
+            <div className="relative flex items-center justify-between px-4">
+              <div className="absolute inset-x-0 top-1/2 h-px bg-border" />
+              <div className="absolute inset-x-0 top-1/2 h-px bg-gradient-to-r from-primary/0 via-primary/50 to-primary animate-pulse" />
+              {["2024", "Now", "2025", "2026", "2027"].map((label, i) => (
+                <div key={label} className="relative flex flex-col items-center z-10">
+                  <div className={`h-3 w-3 rounded-full border-2 ${label === "Now" ? "bg-primary border-primary scale-125 shadow-lg shadow-primary/30" : "bg-card border-border"}`} />
+                  <span className={`mt-2 text-[10px] font-semibold ${label === "Now" ? "text-primary" : "text-muted-foreground"}`}>{label}</span>
+                  {label === "Now" && (
+                    <span className="absolute -top-6 text-[9px] font-bold uppercase tracking-wider text-primary bg-primary/10 rounded-full px-2 py-0.5">Live</span>
+                  )}
+                </div>
+              ))}
+            </div>
+            <p className="text-center text-[11px] text-muted-foreground mt-6">
+              The model tracks AI capability progression in real time — simulations auto-calibrate as the frontier moves.
+            </p>
+          </motion.div>
+        </div>
+      </section>
+
       {/* ── Architecture Flow ── */}
       <section className="px-4 py-16 bg-accent/30">
         <div className="mx-auto max-w-4xl">
@@ -345,7 +422,7 @@ export default function Platform() {
             Five products, one truth
           </h2>
           <p className="text-center text-muted-foreground mb-12 max-w-xl mx-auto">
-            Every product draws from the same AI Replacement Model and Simulation Engine — tailored to different stakeholders.
+            Every product draws from the same AI Evolution Model and Simulation Engine — tailored to different stakeholders.
           </p>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {products.map((p, i) => (
