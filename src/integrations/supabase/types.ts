@@ -187,41 +187,53 @@ export type Database = {
       }
       completed_simulations: {
         Row: {
+          adaptive_thinking_score: number | null
           company: string | null
           completed_at: string
           correct_answers: number
           department: string | null
+          domain_judgment_score: number | null
           experience_level: string | null
+          human_value_add_score: number | null
           id: string
           job_title: string
           rounds_completed: number
           task_name: string
+          tool_awareness_score: number | null
           total_questions: number
           user_id: string
         }
         Insert: {
+          adaptive_thinking_score?: number | null
           company?: string | null
           completed_at?: string
           correct_answers?: number
           department?: string | null
+          domain_judgment_score?: number | null
           experience_level?: string | null
+          human_value_add_score?: number | null
           id?: string
           job_title: string
           rounds_completed?: number
           task_name: string
+          tool_awareness_score?: number | null
           total_questions?: number
           user_id: string
         }
         Update: {
+          adaptive_thinking_score?: number | null
           company?: string | null
           completed_at?: string
           correct_answers?: number
           department?: string | null
+          domain_judgment_score?: number | null
           experience_level?: string | null
+          human_value_add_score?: number | null
           id?: string
           job_title?: string
           rounds_completed?: number
           task_name?: string
+          tool_awareness_score?: number | null
           total_questions?: number
           user_id?: string
         }
