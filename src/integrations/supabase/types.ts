@@ -672,6 +672,7 @@ export type Database = {
         Returns: {
           completed_at: string
           correct_answers: number
+          department: string
           display_name: string
           job_title: string
           sim_job_title: string
