@@ -6,7 +6,7 @@ import {
   Users, Loader2, Trash2, Play, ChevronDown, ChevronUp, Upload,
   Sparkles, Clock, AlertTriangle, Brain, Target, Briefcase,
   BookOpen, TrendingUp, Shield, Award, CheckCircle2, ArrowLeft,
-  ArrowRight,
+  ArrowRight, RefreshCw, BellRing,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
