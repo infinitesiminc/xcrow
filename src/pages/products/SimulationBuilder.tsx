@@ -7,6 +7,7 @@ import {
   Sparkles, Clock, Search, MapPin, Briefcase,
   AlertTriangle, TrendingUp, Shield, Loader2,
   ChevronDown, ChevronUp, Award, BookOpen,
+  CheckCircle2, RotateCcw,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -16,6 +17,7 @@ import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import SimulatorModal from "@/components/SimulatorModal";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
 
 /* ── Types ── */
 interface DbJob {
@@ -43,6 +45,13 @@ interface EnrichedTask {
   recommended_template?: string;
   priority?: string;
   sim_duration?: number;
+}
+
+interface CompletedSim {
+  task_name: string;
+  correct_answers: number;
+  total_questions: number;
+  job_title: string;
 }
 
 /* ── Templates ── */
@@ -92,8 +101,6 @@ const templates = [
 const templateMap = Object.fromEntries(templates.map(t => [t.id, t]));
 
 /* ── Helpers ── */
-const fadeUp = { initial: { opacity: 0, y: 16 }, whileInView: { opacity: 1, y: 0 }, viewport: { once: true } };
-
 function stateIcon(state?: string) {
   if (state === "mostly_ai") return <Brain className="h-3.5 w-3.5 text-dot-purple" />;
   if (state === "human_ai") return <TrendingUp className="h-3.5 w-3.5 text-dot-amber" />;
@@ -119,9 +126,16 @@ function riskBadge(pct: number | null) {
   return <Badge className="bg-success/10 text-success border-success/20 text-[10px]">{pct}% risk</Badge>;
 }
 
+function scoreBadge(score: number) {
+  if (score >= 70) return <Badge className="bg-success/10 text-success border-success/20 text-[9px]">{score}%</Badge>;
+  if (score >= 40) return <Badge className="bg-warning/10 text-warning border-warning/20 text-[9px]">{score}%</Badge>;
+  return <Badge className="bg-destructive/10 text-destructive border-destructive/20 text-[9px]">{score}%</Badge>;
+}
+
 export default function SimulationBuilder() {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { user } = useAuth();
 
   /* ── State ── */
   const [jobs, setJobs] = useState<DbJob[]>([]);
@@ -129,11 +143,19 @@ export default function SimulationBuilder() {
   const [search, setSearch] = useState("");
   const [selectedJob, setSelectedJob] = useState<DbJob | null>(null);
   const [companyName, setCompanyName] = useState("Anthropic");
+  const [companyId, setCompanyId] = useState<string | null>(null);
 
   // Task analysis
   const [analyzedTasks, setAnalyzedTasks] = useState<EnrichedTask[]>([]);
   const [analyzing, setAnalyzing] = useState(false);
   const [analysisError, setAnalysisError] = useState<string | null>(null);
+
+  // Progress tracking
+  const [completedSims, setCompletedSims] = useState<CompletedSim[]>([]);
+
+  // Bulk analyze
+  const [bulkRunning, setBulkRunning] = useState(false);
+  const [bulkProgress, setBulkProgress] = useState<{ analyzed: number; total: number; remaining: number } | null>(null);
 
   // Simulator modal
   const [simOpen, setSimOpen] = useState(false);
@@ -155,18 +177,30 @@ export default function SimulationBuilder() {
         .ilike("name", "%anthropic%")
         .limit(1);
       if (!companies?.length) { setLoading(false); return; }
-      const companyId = companies[0].id;
+      setCompanyId(companies[0].id);
       setCompanyName(companies[0].name);
 
       const { data } = await supabase
         .from("jobs")
         .select("id, title, department, seniority, location, augmented_percent, automation_risk_percent, new_skills_percent, description")
-        .eq("company_id", companyId)
+        .eq("company_id", companies[0].id)
         .order("title");
       setJobs(data || []);
       setLoading(false);
     })();
   }, []);
+
+  /* ── Fetch user's completed sims ── */
+  useEffect(() => {
+    if (!user) return;
+    (async () => {
+      const { data } = await supabase
+        .from("completed_simulations")
+        .select("task_name, correct_answers, total_questions, job_title")
+        .eq("user_id", user.id);
+      setCompletedSims(data || []);
+    })();
+  }, [user, simOpen]); // re-fetch when sim modal closes
 
   /* ── Auto-analyze when job selected ── */
   const analyzeJob = useCallback(async (job: DbJob) => {
@@ -185,7 +219,6 @@ export default function SimulationBuilder() {
       if (error) throw new Error(error.message);
       if (data?.error) throw new Error(data.error);
 
-      // If cached from DB (no AI metadata), enrich with defaults
       const tasks = (data.tasks || []).map((t: any) => ({
         ...t,
         ai_state: t.ai_state || "human_ai",
@@ -233,6 +266,27 @@ export default function SimulationBuilder() {
     return Array.from(depts.entries()).sort((a, b) => b[1] - a[1]).slice(0, 8);
   }, [jobs]);
 
+  /* ── Progress helpers ── */
+  const getTaskCompletion = useCallback((taskName: string, jobTitle: string) => {
+    const matches = completedSims.filter(
+      s => s.task_name === taskName && s.job_title === jobTitle
+    );
+    if (matches.length === 0) return null;
+    // Return best score
+    const best = matches.reduce((best, s) => {
+      const score = s.total_questions > 0 ? Math.round((s.correct_answers / s.total_questions) * 100) : 0;
+      return score > best ? score : best;
+    }, 0);
+    return best;
+  }, [completedSims]);
+
+  const pathProgress = useMemo(() => {
+    if (!analyzedTasks.length || !selectedJob) return null;
+    const completed = analyzedTasks.filter(t => getTaskCompletion(t.cluster_name, selectedJob.title) !== null).length;
+    const percent = Math.round((completed / analyzedTasks.length) * 100);
+    return { completed, total: analyzedTasks.length, percent };
+  }, [analyzedTasks, selectedJob, getTaskCompletion]);
+
   /* ── Learning path stats ── */
   const pathStats = useMemo(() => {
     if (!analyzedTasks.length) return null;
@@ -242,6 +296,43 @@ export default function SimulationBuilder() {
     const highImpact = analyzedTasks.filter(t => t.impact_level === "high").length;
     return { critical, important, totalMinutes, highImpact, total: analyzedTasks.length };
   }, [analyzedTasks]);
+
+  /* ── Bulk analyze ── */
+  const runBulkAnalyze = useCallback(async () => {
+    if (!companyId) return;
+    setBulkRunning(true);
+    let remaining = 999;
+    let analyzed = 0;
+    let total = 0;
+
+    try {
+      while (remaining > 0) {
+        const { data, error } = await supabase.functions.invoke("bulk-analyze-roles", {
+          body: { companyId, batchSize: 5 },
+        });
+        if (error) throw new Error(error.message);
+        if (data?.error) throw new Error(data.error);
+
+        total = data.total || total;
+        analyzed = data.alreadyAnalyzed + data.batchProcessed;
+        remaining = data.remaining || 0;
+        setBulkProgress({ analyzed, total, remaining });
+
+        // Check if any in batch were rate limited
+        if (data.results?.some((r: any) => r.status === "rate_limited")) {
+          toast({ title: "Rate limited", description: "Pausing for 30s…" });
+          await new Promise(r => setTimeout(r, 30000));
+        }
+
+        if (remaining === 0 || data.message === "All jobs already analyzed") break;
+      }
+
+      toast({ title: "Bulk analysis complete", description: `${analyzed} of ${total} roles analyzed.` });
+    } catch (err: any) {
+      toast({ title: "Bulk analysis error", description: err.message, variant: "destructive" });
+    }
+    setBulkRunning(false);
+  }, [companyId, toast]);
 
   /* ── Launch simulation ── */
   const launchSim = (task: EnrichedTask) => {
@@ -270,6 +361,35 @@ export default function SimulationBuilder() {
               Select any {companyName} role to auto-generate a personalized learning path — 
               each task analyzed for AI impact with recommended simulation packages.
             </p>
+            {/* Bulk Analyze Button */}
+            {companyId && (
+              <div className="mt-4 flex items-center justify-center gap-3">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={runBulkAnalyze}
+                  disabled={bulkRunning}
+                  className="gap-2 text-xs"
+                >
+                  {bulkRunning ? (
+                    <>
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                      Analyzing…
+                    </>
+                  ) : (
+                    <>
+                      <RotateCcw className="h-3.5 w-3.5" />
+                      Bulk-Analyze All Roles
+                    </>
+                  )}
+                </Button>
+                {bulkProgress && (
+                  <span className="text-xs text-muted-foreground">
+                    {bulkProgress.analyzed}/{bulkProgress.total} done · {bulkProgress.remaining} remaining
+                  </span>
+                )}
+              </div>
+            )}
           </motion.div>
         </div>
       </section>
@@ -414,7 +534,7 @@ export default function SimulationBuilder() {
                   </CardContent>
                 </Card>
 
-                {/* Learning Path */}
+                {/* Learning Path Header with Progress */}
                 <div className="mb-4">
                   <button
                     onClick={() => setExpandedPath(!expandedPath)}
@@ -431,6 +551,19 @@ export default function SimulationBuilder() {
                       {expandedPath ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
                     </span>
                   </button>
+
+                  {/* Progress bar */}
+                  {expandedPath && pathProgress && user && (
+                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mb-4">
+                      <div className="flex items-center justify-between mb-1.5">
+                        <span className="text-xs text-muted-foreground">
+                          Your progress: {pathProgress.completed}/{pathProgress.total} completed
+                        </span>
+                        <span className="text-xs font-semibold text-foreground">{pathProgress.percent}%</span>
+                      </div>
+                      <Progress value={pathProgress.percent} className="h-2" />
+                    </motion.div>
+                  )}
 
                   {/* Stats bar */}
                   {expandedPath && pathStats && (
@@ -493,6 +626,8 @@ export default function SimulationBuilder() {
                     {analyzedTasks.map((task, i) => {
                       const recTemplate = templateMap[task.recommended_template || "quick-pulse"] || templates[0];
                       const RecIcon = recTemplate.icon;
+                      const taskScore = selectedJob ? getTaskCompletion(task.cluster_name, selectedJob.title) : null;
+                      const isCompleted = taskScore !== null;
 
                       return (
                         <motion.div
@@ -501,23 +636,32 @@ export default function SimulationBuilder() {
                           animate={{ opacity: 1, y: 0 }}
                           transition={{ delay: i * 0.04 }}
                         >
-                          <Card className="border-border bg-card hover:border-primary/30 transition-all group">
+                          <Card className={`border-border bg-card hover:border-primary/30 transition-all group ${isCompleted ? "border-success/30 bg-success/[0.02]" : ""}`}>
                             <CardContent className="p-4">
                               <div className="flex items-start gap-3">
-                                {/* Order number */}
+                                {/* Order number / check */}
                                 <div className="flex flex-col items-center gap-1 shrink-0 pt-0.5">
-                                  <span className="w-6 h-6 rounded-full bg-accent flex items-center justify-center text-[10px] font-bold text-foreground">
-                                    {i + 1}
-                                  </span>
+                                  {isCompleted ? (
+                                    <span className="w-6 h-6 rounded-full bg-success/10 flex items-center justify-center">
+                                      <CheckCircle2 className="h-4 w-4 text-success" />
+                                    </span>
+                                  ) : (
+                                    <span className="w-6 h-6 rounded-full bg-accent flex items-center justify-center text-[10px] font-bold text-foreground">
+                                      {i + 1}
+                                    </span>
+                                  )}
                                   {i < analyzedTasks.length - 1 && (
-                                    <div className="w-px h-full bg-border min-h-[20px]" />
+                                    <div className={`w-px h-full min-h-[20px] ${isCompleted ? "bg-success/30" : "bg-border"}`} />
                                   )}
                                 </div>
 
                                 <div className="flex-1 min-w-0">
                                   <div className="flex items-start justify-between gap-2 mb-1">
-                                    <h4 className="font-semibold text-foreground text-sm leading-tight">{task.cluster_name}</h4>
+                                    <h4 className={`font-semibold text-sm leading-tight ${isCompleted ? "text-success" : "text-foreground"}`}>
+                                      {task.cluster_name}
+                                    </h4>
                                     <div className="flex items-center gap-1.5 shrink-0">
+                                      {isCompleted && taskScore !== null && scoreBadge(taskScore)}
                                       {priorityBadge(task.priority)}
                                     </div>
                                   </div>
@@ -560,12 +704,12 @@ export default function SimulationBuilder() {
                                     </div>
                                     <Button
                                       size="sm"
-                                      variant="outline"
+                                      variant={isCompleted ? "ghost" : "outline"}
                                       className="h-7 text-[11px] gap-1 opacity-80 group-hover:opacity-100 transition-opacity"
                                       onClick={() => launchSim(task)}
                                     >
                                       <Play className="h-3 w-3" />
-                                      Start Simulation
+                                      {isCompleted ? "Retry" : "Start Simulation"}
                                     </Button>
                                   </div>
                                 </div>
@@ -589,17 +733,36 @@ export default function SimulationBuilder() {
                     <Card className="border-primary/20 bg-primary/[0.02]">
                       <CardContent className="p-5 text-center">
                         <Award className="h-6 w-6 text-primary mx-auto mb-2" />
-                        <h3 className="font-semibold text-foreground text-sm mb-1">Complete Learning Path</h3>
+                        <h3 className="font-semibold text-foreground text-sm mb-1">
+                          {pathProgress && pathProgress.percent === 100
+                            ? "🎉 Learning Path Complete!"
+                            : "Complete Learning Path"
+                          }
+                        </h3>
                         <p className="text-xs text-muted-foreground mb-3">
-                          Complete all {analyzedTasks.length} simulations to earn your AI-Readiness Certificate for {selectedJob.title}
+                          {pathProgress && pathProgress.percent === 100
+                            ? `Congratulations! You've completed all ${analyzedTasks.length} simulations for ${selectedJob.title}.`
+                            : `Complete all ${analyzedTasks.length} simulations to earn your AI-Readiness Certificate for ${selectedJob.title}`
+                          }
                         </p>
-                        <Button
-                          className="gap-1.5"
-                          onClick={() => launchSim(analyzedTasks[0])}
-                        >
-                          Start with Task 1
-                          <ArrowRight className="h-3.5 w-3.5" />
-                        </Button>
+                        {(!pathProgress || pathProgress.percent < 100) && (
+                          <Button
+                            className="gap-1.5"
+                            onClick={() => {
+                              // Find first incomplete task
+                              const nextTask = analyzedTasks.find(
+                                t => getTaskCompletion(t.cluster_name, selectedJob.title) === null
+                              ) || analyzedTasks[0];
+                              launchSim(nextTask);
+                            }}
+                          >
+                            {pathProgress && pathProgress.completed > 0
+                              ? `Continue — Task ${pathProgress.completed + 1}`
+                              : "Start with Task 1"
+                            }
+                            <ArrowRight className="h-3.5 w-3.5" />
+                          </Button>
+                        )}
                       </CardContent>
                     </Card>
                   </motion.div>

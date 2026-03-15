@@ -27,3 +27,5 @@ project_id = "xtfubistkgodiksegtcx"
     verify_jwt = false
   [functions.sim-chat]
     verify_jwt = false
+  [functions.bulk-analyze-roles]
+    verify_jwt = false
