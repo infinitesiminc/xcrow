@@ -268,7 +268,7 @@ export default function SimulationBuilder() {
     return jobs.find(j => j.id === queueCurrentJob)?.title || null;
   }, [queueCurrentJob, jobs]);
 
-  const { openAuthModal } = useAuth();
+  
 
   if (!user) {
     return (
