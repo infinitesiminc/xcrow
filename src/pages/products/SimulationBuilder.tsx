@@ -370,14 +370,19 @@ export default function SimulationBuilder() {
   const [priorityJobId, setPriorityJobId] = useState<string | null>(null);
 
   const unanalyzedByDept = useMemo(() => {
-    const map = new Map<string, number>();
+    const map = new Map<string, { total: number; pending: number }>();
     jobs.forEach(j => {
-      if (!analyzedJobIds.has(j.id)) {
-        const d = j.department || "Other";
-        map.set(d, (map.get(d) || 0) + 1);
+      const d = j.department || "Other";
+      const entry = map.get(d) || { total: 0, pending: 0 };
+      entry.total++;
+      if (!analyzedJobIds.has(j.id) || (j.augmented_percent ?? 0) === 0 && (j.automation_risk_percent ?? 0) === 0) {
+        entry.pending++;
       }
+      map.set(d, entry);
     });
-    return Array.from(map.entries()).sort((a, b) => b[1] - a[1]);
+    return Array.from(map.entries())
+      .filter(([, v]) => v.pending > 0)
+      .sort((a, b) => b[1].pending - a[1].pending);
   }, [jobs, analyzedJobIds]);
 
   const unanalyzedJobs = useMemo(() => jobs.filter(j => !analyzedJobIds.has(j.id)), [jobs, analyzedJobIds]);
@@ -569,13 +574,13 @@ export default function SimulationBuilder() {
                       {/* Dept picker */}
                       {priorityMode === "dept" && (
                         <div className="flex flex-wrap gap-1">
-                          {unanalyzedByDept.map(([dept, count]) => (
+                          {unanalyzedByDept.map(([dept, info]) => (
                             <button
                               key={dept}
                               onClick={() => setPriorityDept(priorityDept === dept ? null : dept)}
                               className={`text-[10px] px-2 py-0.5 rounded-full border transition-colors ${priorityDept === dept ? "bg-accent text-accent-foreground border-primary/40" : "bg-muted/30 text-muted-foreground border-border/50 hover:border-primary/30"}`}
                             >
-                              {dept} ({count})
+                              {dept} ({info.pending})
                             </button>
                           ))}
                           {unanalyzedByDept.length === 0 && <span className="text-[10px] text-muted-foreground">All departments analyzed</span>}
