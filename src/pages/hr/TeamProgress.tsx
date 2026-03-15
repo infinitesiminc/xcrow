@@ -437,7 +437,9 @@ export default function TeamProgress() {
       if (ws) setWorkspace(ws);
 
       const { data: rows } = await supabase.rpc("get_workspace_progress", { p_workspace_id: wsId });
-      if (rows) setProgress([...DEMO_PROGRESS, ...(rows as ProgressRow[])]);
+      // Exclude the logged-in admin from the employee list
+      const dbRows = (rows as ProgressRow[] || []).filter(r => r.user_id !== user.id);
+      setProgress([...DEMO_PROGRESS, ...dbRows]);
       setLoading(false);
     })();
   }, [user]);
