@@ -300,47 +300,79 @@ export default function SimulationBuilder() {
     return { critical, important, totalMinutes, highImpact, total: analyzedTasks.length };
   }, [analyzedTasks]);
 
-  /* ── Bulk analyze ── */
-  const runBulkAnalyze = useCallback(async () => {
+  /* ── Bulk analyze (single batch per click) ── */
+  const runBulkBatch = useCallback(async () => {
     if (!companyId) return;
+
+    // Safeguard: 2-minute session timeout
+    const now = Date.now();
+    if (bulkSessionStart && now - bulkSessionStart > 2 * 60 * 1000) {
+      setBulkPaused("Session timeout (2 min). Click again to continue.");
+      setBulkSessionStart(null);
+      setBulkErrors(0);
+      return;
+    }
+    if (!bulkSessionStart) setBulkSessionStart(now);
+
     setBulkRunning(true);
-    let remaining = 999;
-    let analyzed = 0;
-    let total = 0;
+    setBulkPaused(null);
 
     try {
-      while (remaining > 0) {
-        const { data, error } = await supabase.functions.invoke("bulk-analyze-roles", {
-          body: { companyId, batchSize: 5 },
-        });
-        if (error) throw new Error(error.message);
-        if (data?.error) throw new Error(data.error);
+      const { data, error } = await supabase.functions.invoke("bulk-analyze-roles", {
+        body: { companyId, batchSize: 5 },
+      });
+      if (error) throw new Error(error.message);
+      if (data?.error) throw new Error(data.error);
 
-        total = data.total || total;
-        analyzed = (data.alreadyAnalyzed || 0) + (data.justProcessed || 0);
-        remaining = data.remaining ?? 0;
-        // Accumulate progress across iterations
-        setBulkProgress(prev => ({
-          analyzed: (prev?.analyzed || 0) + (data.justProcessed || 0) + (prev ? 0 : data.alreadyAnalyzed || 0),
-          total,
-          remaining,
-        }));
+      const total = data.total || 0;
+      const alreadyAnalyzed = data.alreadyAnalyzed || 0;
+      const justProcessed = data.justProcessed || 0;
+      const remaining = data.remaining ?? 0;
 
-        // Check if any in batch were rate limited
-        if (data.results?.some((r: any) => r.status === "rate_limited")) {
-          toast({ title: "Rate limited", description: "Pausing for 30s…" });
-          await new Promise(r => setTimeout(r, 30000));
+      setBulkProgress({
+        analyzed: alreadyAnalyzed + justProcessed,
+        total,
+        remaining,
+      });
+
+      // Check for rate limiting
+      const rateLimited = data.results?.some((r: any) => r.status === "rate_limited");
+      const hasErrors = data.results?.some((r: any) => r.status.startsWith("error") || r.status === "parse_error" || r.status === "insert_error");
+
+      if (rateLimited || hasErrors) {
+        const newErrors = bulkErrors + 1;
+        setBulkErrors(newErrors);
+        // Safeguard: 3 consecutive errors
+        if (newErrors >= 3) {
+          setBulkPaused("Paused after 3 consecutive issues. Try again later.");
+          setBulkSessionStart(null);
+          setBulkErrors(0);
+          setBulkRunning(false);
+          return;
         }
-
-        if (remaining === 0 || data.message === "All jobs already analyzed") break;
+        if (rateLimited) {
+          toast({ title: "Rate limited on this batch", description: "Wait a moment, then click again." });
+        }
+      } else {
+        setBulkErrors(0); // Reset on success
       }
 
-      toast({ title: "Bulk analysis complete", description: `${analyzed} of ${total} roles analyzed.` });
+      if (remaining === 0 || data.message === "All jobs already analyzed") {
+        toast({ title: "All roles analyzed!", description: `${total} roles complete.` });
+        setBulkSessionStart(null);
+      }
     } catch (err: any) {
-      toast({ title: "Bulk analysis error", description: err.message, variant: "destructive" });
+      const newErrors = bulkErrors + 1;
+      setBulkErrors(newErrors);
+      if (newErrors >= 3) {
+        setBulkPaused("Paused after 3 consecutive errors. Try again later.");
+        setBulkSessionStart(null);
+        setBulkErrors(0);
+      }
+      toast({ title: "Batch error", description: err.message, variant: "destructive" });
     }
     setBulkRunning(false);
-  }, [companyId, toast]);
+  }, [companyId, toast, bulkErrors, bulkSessionStart]);
 
   /* ── Launch simulation ── */
   const launchSim = (task: EnrichedTask) => {
