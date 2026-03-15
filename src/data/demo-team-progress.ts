@@ -1,6 +1,15 @@
 /**
- * Generates 400 realistic mock employees with simulation completions
- * mapped to real Anthropic job titles and task clusters from the database.
+ * Generates demo data for the Anthropic HR dashboard.
+ *
+ * Funnel:
+ *   400 jobs imported  →  77 analyzed  →  77 activated  →  55 employees started
+ *
+ * - 400 employees (one per job title) are created across departments.
+ * - 77 of those roles are marked "analyzed" (have learning paths).
+ * - Of those 77, exactly 55 employees have simulation completions
+ *   at varying degrees of progress (1-4 sims each).
+ * - The remaining 345 employees have no completions yet.
+ * - "Jackson" is excluded from all name pools.
  */
 
 export interface DemoProgressRow {
@@ -17,6 +26,22 @@ export interface DemoProgressRow {
   human_value_add_score: number;
   adaptive_thinking_score: number;
   domain_judgment_score: number;
+}
+
+export interface DemoEmployee {
+  id: string;
+  name: string;
+  dept: string;
+  role: string;
+  analyzed: boolean;
+  started: boolean;
+}
+
+export interface DemoFunnelStats {
+  jobsImported: number;
+  jobsAnalyzed: number;
+  rolesActivated: number;
+  employeesStarted: number;
 }
 
 // Real Anthropic jobs and task clusters from the database
@@ -411,37 +436,38 @@ function seededRandom(seed: number): () => number {
   };
 }
 
-export function generateDemoProgress(employeeCount = 400): DemoProgressRow[] {
-  const rand = seededRandom(42);
+/**
+ * Build the full employee roster (400 people) and mark which ones
+ * belong to analyzed roles (77) and which have started sims (55).
+ */
+function buildEmployeeRoster(rand: () => number) {
   const pick = <T>(arr: T[]): T => arr[Math.floor(rand() * arr.length)];
-  const randInt = (min: number, max: number) => Math.floor(rand() * (max - min + 1)) + min;
 
-  // Distribute employees by department proportionally to real Anthropic headcount
+  // Department weights proportional to real Anthropic headcount
   const deptWeights: [string, number][] = [
     ["Sales", 124], ["Engineering", 65], ["AI / Research", 65], ["Security", 34],
     ["Finance", 31], ["Operations", 30], ["Marketing", 26], ["People", 8],
     ["Legal", 7], ["Compliance", 5], ["Communications", 3], ["Data", 2],
   ];
   const totalWeight = deptWeights.reduce((s, [, w]) => s + w, 0);
+  const EMPLOYEE_COUNT = 400;
 
-  // Assign employees to departments, cycling through real job titles
-  const employees: { id: string; name: string; dept: string; role: string }[] = [];
+  const employees: DemoEmployee[] = [];
   const usedNames = new Set<string>();
   let empIdx = 0;
 
   for (const [dept, weight] of deptWeights) {
-    const count = Math.max(1, Math.round((weight / totalWeight) * employeeCount));
+    const count = Math.max(1, Math.round((weight / totalWeight) * EMPLOYEE_COUNT));
     const deptData = DEPT_DATA[dept];
     let roleIdx = 0;
 
-    for (let i = 0; i < count && employees.length < employeeCount; i++) {
+    for (let i = 0; i < count && employees.length < EMPLOYEE_COUNT; i++) {
       let name: string;
       do {
         name = `${pick(FIRST_NAMES)} ${pick(LAST_NAMES)}`;
       } while (usedNames.has(name));
       usedNames.add(name);
 
-      // Cycle through all roles in this department
       const role = deptData.roles[roleIdx % deptData.roles.length];
       roleIdx++;
 
@@ -450,17 +476,92 @@ export function generateDemoProgress(employeeCount = 400): DemoProgressRow[] {
         name,
         dept,
         role,
+        analyzed: false,
+        started: false,
       });
     }
   }
 
-  // Generate simulation completions (1–4 per employee)
+  // Mark 77 employees as having analyzed roles (spread across departments proportionally)
+  const ANALYZED_COUNT = 77;
+  const analyzePerDept: Record<string, number> = {};
+  for (const [dept, weight] of deptWeights) {
+    analyzePerDept[dept] = Math.max(1, Math.round((weight / totalWeight) * ANALYZED_COUNT));
+  }
+  // Adjust to exactly 77
+  let totalMarked = Object.values(analyzePerDept).reduce((s, n) => s + n, 0);
+  const deptKeys = deptWeights.map(([d]) => d);
+  while (totalMarked > ANALYZED_COUNT) {
+    const d = deptKeys[Math.floor(rand() * deptKeys.length)];
+    if (analyzePerDept[d] > 1) { analyzePerDept[d]--; totalMarked--; }
+  }
+  while (totalMarked < ANALYZED_COUNT) {
+    const d = deptKeys[Math.floor(rand() * deptKeys.length)];
+    analyzePerDept[d]++;
+    totalMarked++;
+  }
+
+  // Apply analyzed flags
+  for (const dept of deptKeys) {
+    const deptEmps = employees.filter(e => e.dept === dept);
+    const toAnalyze = Math.min(analyzePerDept[dept] || 0, deptEmps.length);
+    for (let i = 0; i < toAnalyze; i++) {
+      deptEmps[i].analyzed = true;
+    }
+  }
+
+  // Of the 77 analyzed, mark 55 as started
+  const STARTED_COUNT = 55;
+  const analyzedEmps = employees.filter(e => e.analyzed);
+  // Shuffle analyzed employees deterministically
+  for (let i = analyzedEmps.length - 1; i > 0; i--) {
+    const j = Math.floor(rand() * (i + 1));
+    [analyzedEmps[i], analyzedEmps[j]] = [analyzedEmps[j], analyzedEmps[i]];
+  }
+  for (let i = 0; i < Math.min(STARTED_COUNT, analyzedEmps.length); i++) {
+    analyzedEmps[i].started = true;
+  }
+
+  return employees;
+}
+
+export const FUNNEL_STATS: DemoFunnelStats = {
+  jobsImported: 400,
+  jobsAnalyzed: 77,
+  rolesActivated: 77,
+  employeesStarted: 55,
+};
+
+let _cachedEmployees: DemoEmployee[] | null = null;
+let _cachedProgress: DemoProgressRow[] | null = null;
+
+export function getDemoEmployees(): DemoEmployee[] {
+  if (_cachedEmployees) return _cachedEmployees;
+  const rand = seededRandom(42);
+  _cachedEmployees = buildEmployeeRoster(rand);
+  return _cachedEmployees;
+}
+
+export function generateDemoProgress(): DemoProgressRow[] {
+  if (_cachedProgress) return _cachedProgress;
+
+  const rand = seededRandom(42);
+  const employees = buildEmployeeRoster(rand);
+  _cachedEmployees = employees;
+
+  // Use a second seeded random for sim generation to keep names stable
+  const simRand = seededRandom(1337);
+  const pick = <T>(arr: T[]): T => arr[Math.floor(simRand() * arr.length)];
+  const randInt = (min: number, max: number) => Math.floor(simRand() * (max - min + 1)) + min;
+
+  const startedEmps = employees.filter(e => e.started);
   const rows: DemoProgressRow[] = [];
   const baseDate = new Date("2026-03-15T00:00:00Z").getTime();
 
-  for (const emp of employees) {
+  for (const emp of startedEmps) {
     const deptData = DEPT_DATA[emp.dept];
-    const simCount = randInt(1, 4);
+    // 1-4 sims per employee, weighted toward fewer for realism
+    const simCount = simRand() < 0.3 ? 1 : simRand() < 0.6 ? 2 : simRand() < 0.85 ? 3 : 4;
     const usedTasks = new Set<string>();
 
     for (let s = 0; s < simCount; s++) {
@@ -477,10 +578,10 @@ export function generateDemoProgress(employeeCount = 400): DemoProgressRow[] {
       const total = 5;
       const correct = Math.min(total, Math.max(1, randInt(2, 5)));
 
-      // Generate per-category AI readiness scores with realistic variation
-      const empArchetype = Math.floor(rand() * 4); // 0=balanced, 1=tech-strong, 2=human-strong, 3=struggling
+      // AI readiness scores with realistic archetypes
+      const empArchetype = Math.floor(simRand() * 4);
       const baseScore = empArchetype === 3 ? randInt(30, 55) : empArchetype === 0 ? randInt(55, 80) : randInt(60, 85);
-      
+
       const toolAwareness = Math.min(100, Math.max(10, baseScore + (empArchetype === 1 ? randInt(10, 25) : randInt(-15, 10))));
       const humanValueAdd = Math.min(100, Math.max(10, baseScore + (empArchetype === 2 ? randInt(10, 25) : randInt(-15, 10))));
       const adaptiveThinking = Math.min(100, Math.max(10, baseScore + randInt(-12, 12)));
@@ -504,5 +605,6 @@ export function generateDemoProgress(employeeCount = 400): DemoProgressRow[] {
     }
   }
 
+  _cachedProgress = rows;
   return rows;
 }
