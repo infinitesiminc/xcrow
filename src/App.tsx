@@ -76,6 +76,7 @@ const App = () => (
               <Route path="simulations" element={<SimulationBuilder />} />
               <Route path="members" element={<Members />} />
               <Route path="settings" element={<WorkspaceSettings />} />
+              <Route path="ats-sync" element={<ATSSync />} />
               <Route path="invite" element={<InvitePage />} />
             </Route>
 

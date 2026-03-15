@@ -15,6 +15,7 @@ import {
 
 const items = [
   { title: "Team Progress", url: "/hr/team-progress", icon: BarChart3 },
+  { title: "ATS Sync", url: "/hr/ats-sync", icon: RefreshCw },
   { title: "Simulation Builder", url: "/hr/simulations", icon: Blocks },
   { title: "Members", url: "/hr/members", icon: Users },
   { title: "Workspace Settings", url: "/hr/settings", icon: Settings },
