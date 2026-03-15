@@ -60,6 +60,26 @@ export default function Navbar() {
 
         {/* Desktop nav */}
         <nav className="hidden md:flex items-center gap-1">
+          {/* Products dropdown */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant={location.pathname.startsWith("/products") ? "secondary" : "ghost"}
+                size="sm"
+                className="text-sm gap-1"
+              >
+                Products <ChevronDown className="h-3.5 w-3.5" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" className="w-52">
+              {productItems.map((item) => (
+                <DropdownMenuItem key={item.path} onClick={() => navigate(item.path)} className="cursor-pointer">
+                  {item.label}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+
           {navItems.map((item) => (
             <Button
               key={item.path}
