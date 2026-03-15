@@ -57,9 +57,7 @@ For each task cluster, assess AI's current and future impact. Return a JSON arra
 5. "ai_state": One of "mostly_human", "human_ai", "mostly_ai"
 6. "ai_trend": One of "stable", "increasing_ai", "fully_ai_soon"
 7. "impact_level": One of "low", "medium", "high"
-8. "recommended_template": One of "quick-pulse", "deep-dive", "case-challenge" based on complexity
-9. "priority": "critical", "important", or "helpful" — how urgently this task needs AI upskilling
-10. "sim_duration": Estimated simulation time in minutes (3, 15, or 30)
+8. "priority": "critical", "important", or "helpful" — how urgently this task needs AI upskilling
 
 Order tasks from highest AI impact to lowest.
 
