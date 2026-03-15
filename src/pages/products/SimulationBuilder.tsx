@@ -3,11 +3,11 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect, useMemo, useCallback } from "react";
 import {
   Zap, ArrowRight, Layers, Brain,
-  GraduationCap, Play, ClipboardCheck, Users, Target,
+  GraduationCap, ClipboardCheck, Users, Target,
   Sparkles, Clock, Search, MapPin, Briefcase,
-  AlertTriangle, TrendingUp, Shield, Loader2,
-  ChevronDown, ChevronUp, Award, BookOpen,
-  CheckCircle2, RotateCcw,
+  AlertTriangle, Loader2,
+  ChevronDown, ChevronUp,
+  CheckCircle2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
