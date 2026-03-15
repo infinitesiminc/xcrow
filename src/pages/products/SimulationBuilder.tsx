@@ -285,18 +285,39 @@ export default function SimulationBuilder() {
     return Array.from(depts.entries()).sort((a, b) => b[1] - a[1]).slice(0, 8);
   }, [jobs]);
 
-  /* ── Progress helpers ── */
-  const getTaskCompletion = useCallback((taskName: string, jobTitle: string) => {
-    const matches = completedSims.filter(
-      s => s.task_name === taskName && s.job_title === jobTitle
-    );
-    if (matches.length === 0) return null;
-    // Return best score
-    const best = matches.reduce((best, s) => {
-      const score = s.total_questions > 0 ? Math.round((s.correct_answers / s.total_questions) * 100) : 0;
-      return score > best ? score : best;
-    }, 0);
-    return best;
+  /* ── Grouped & sorted jobs ── */
+  const groupedJobs = useMemo(() => {
+    const groups = new Map<string, DbJob[]>();
+    filteredJobs.forEach(j => {
+      const dept = j.department || "Other";
+      if (!groups.has(dept)) groups.set(dept, []);
+      groups.get(dept)!.push(j);
+    });
+    // Sort each group: ready (analyzed) first, then by title
+    groups.forEach((jobList, dept) => {
+      jobList.sort((a, b) => {
+        const aReady = analyzedJobIds.has(a.id) ? 0 : 1;
+        const bReady = analyzedJobIds.has(b.id) ? 0 : 1;
+        if (aReady !== bReady) return aReady - bReady;
+        return a.title.localeCompare(b.title);
+      });
+    });
+    // Sort departments: most ready roles first
+    return Array.from(groups.entries()).sort((a, b) => {
+      const aReady = a[1].filter(j => analyzedJobIds.has(j.id)).length;
+      const bReady = b[1].filter(j => analyzedJobIds.has(j.id)).length;
+      return bReady - aReady;
+    });
+  }, [filteredJobs, analyzedJobIds]);
+
+  /* ── Job completion ring helper ── */
+  const getJobCompletionPercent = useCallback((job: DbJob) => {
+    const jobSims = completedSims.filter(s => s.job_title === job.title);
+    if (jobSims.length === 0) return 0;
+    // Unique tasks completed
+    const uniqueTasks = new Set(jobSims.map(s => s.task_name));
+    // Assume ~10 tasks per role
+    return Math.min(100, Math.round((uniqueTasks.size / 10) * 100));
   }, [completedSims]);
 
   const pathProgress = useMemo(() => {
