@@ -20,6 +20,10 @@ interface ProgressRow {
   total_questions: number;
   completed_at: string;
   department: string | null;
+  tool_awareness_score?: number;
+  human_value_add_score?: number;
+  adaptive_thinking_score?: number;
+  domain_judgment_score?: number;
 }
 
 interface WorkspaceRow { id: string; name: string; }
@@ -31,6 +35,10 @@ interface UserSummary {
   department: string;
   simCount: number;
   avgScore: number;
+  avgToolAwareness: number;
+  avgHumanValueAdd: number;
+  avgAdaptiveThinking: number;
+  avgDomainJudgment: number;
   sims: ProgressRow[];
 }
 
@@ -121,6 +129,68 @@ function DeptRoleBreakdown({ progress, selectedDept }: { progress: ProgressRow[]
           <span className={`text-xs font-semibold w-10 text-right ${avg >= 70 ? "text-success" : "text-dot-amber"}`}>{avg}%</span>
         </div>
       ))}
+    </div>
+  );
+}
+
+/* ─── AI Readiness Category Breakdown ─── */
+function CategoryBreakdown({ progress, selectedDept }: { progress: ProgressRow[]; selectedDept: string }) {
+  const filtered = selectedDept === "All" ? progress : progress.filter(r => r.department === selectedDept);
+  
+  const categoryAvgs = useMemo(() => {
+    const cats = [
+      { key: "tool_awareness_score" as const, label: "AI Tool Awareness", icon: "🤖" },
+      { key: "human_value_add_score" as const, label: "Human Value-Add", icon: "💡" },
+      { key: "adaptive_thinking_score" as const, label: "Adaptive Thinking", icon: "🔄" },
+      { key: "domain_judgment_score" as const, label: "Domain Judgment", icon: "🎯" },
+    ];
+
+    return cats.map(cat => {
+      const scores = filtered
+        .map(r => r[cat.key])
+        .filter((s): s is number => s != null);
+      const avg = scores.length > 0 ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) : 0;
+      const low = scores.length > 0 ? Math.min(...scores) : 0;
+      const high = scores.length > 0 ? Math.max(...scores) : 0;
+      return { ...cat, avg, low, high, count: scores.length };
+    });
+  }, [filtered]);
+
+  if (categoryAvgs[0].count === 0) return null;
+
+  const weakest = [...categoryAvgs].sort((a, b) => a.avg - b.avg)[0];
+  const strongest = [...categoryAvgs].sort((a, b) => b.avg - a.avg)[0];
+
+  return (
+    <div className="space-y-4">
+      {/* Insight callout */}
+      <div className="bg-accent/50 rounded-lg px-4 py-3 text-xs text-foreground">
+        <span className="font-semibold">Insight: </span>
+        Your team's strongest area is <span className="font-semibold">{strongest.label}</span> ({strongest.avg}%) 
+        and needs the most development in <span className="font-semibold">{weakest.label}</span> ({weakest.avg}%).
+      </div>
+
+      {/* Category bars */}
+      <div className="space-y-3">
+        {categoryAvgs.map(cat => (
+          <div key={cat.key} className="space-y-1">
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-foreground flex items-center gap-1.5">
+                <span>{cat.icon}</span>
+                {cat.label}
+              </span>
+              <span className={`text-sm font-bold ${cat.avg >= 70 ? "text-success" : cat.avg >= 50 ? "text-dot-amber" : "text-destructive"}`}>
+                {cat.avg}%
+              </span>
+            </div>
+            <Progress value={cat.avg} className="h-2.5" />
+            <div className="flex justify-between text-[10px] text-muted-foreground">
+              <span>Low: {cat.low}%</span>
+              <span>High: {cat.high}%</span>
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
@@ -252,7 +322,7 @@ function UserDetailSheet({ user, open, onClose }: { user: UserSummary | null; op
         </SheetHeader>
 
         {/* Summary stats */}
-        <div className="grid grid-cols-3 gap-3 pb-5 border-b border-border">
+        <div className="grid grid-cols-3 gap-3 pb-4 border-b border-border">
           <div className="text-center">
             <p className="text-lg font-bold text-foreground">{user.simCount}</p>
             <p className="text-[10px] text-muted-foreground">Simulations</p>
@@ -267,6 +337,27 @@ function UserDetailSheet({ user, open, onClose }: { user: UserSummary | null; op
           </div>
         </div>
 
+        {/* AI Readiness per category */}
+        {user.avgToolAwareness > 0 && (
+          <div className="pb-4 border-b border-border space-y-2">
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">AI Readiness Profile</p>
+            {[
+              { label: "🤖 Tool Awareness", score: user.avgToolAwareness },
+              { label: "💡 Human Value-Add", score: user.avgHumanValueAdd },
+              { label: "🔄 Adaptive Thinking", score: user.avgAdaptiveThinking },
+              { label: "🎯 Domain Judgment", score: user.avgDomainJudgment },
+            ].map(cat => (
+              <div key={cat.label} className="flex items-center gap-2">
+                <span className="text-xs text-foreground w-36">{cat.label}</span>
+                <Progress value={cat.score} className="flex-1 h-2" />
+                <span className={`text-xs font-semibold w-8 text-right ${cat.score >= 70 ? "text-success" : cat.score >= 50 ? "text-dot-amber" : "text-destructive"}`}>
+                  {cat.score}%
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
+
         {/* Sim history */}
         <div className="pt-4 space-y-3">
           <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Simulation History</p>
@@ -274,17 +365,38 @@ function UserDetailSheet({ user, open, onClose }: { user: UserSummary | null; op
             .sort((a, b) => new Date(b.completed_at).getTime() - new Date(a.completed_at).getTime())
             .map((sim, i) => {
               const pct = sim.total_questions > 0 ? Math.round((sim.correct_answers / sim.total_questions) * 100) : 0;
+              const hasCategories = sim.tool_awareness_score != null;
               return (
-                <div key={i} className="flex items-start gap-3 py-2 border-b border-border/50 last:border-0">
-                  <CheckCircle2 className={`h-4 w-4 mt-0.5 shrink-0 ${pct >= 70 ? "text-success" : "text-dot-amber"}`} />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-foreground">{sim.task_name}</p>
-                    <p className="text-[11px] text-muted-foreground">{sim.sim_job_title}</p>
+                <div key={i} className="py-3 border-b border-border/50 last:border-0 space-y-2">
+                  <div className="flex items-start gap-3">
+                    <CheckCircle2 className={`h-4 w-4 mt-0.5 shrink-0 ${pct >= 70 ? "text-success" : "text-dot-amber"}`} />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-foreground">{sim.task_name}</p>
+                      <p className="text-[11px] text-muted-foreground">{sim.sim_job_title}</p>
+                    </div>
+                    <div className="text-right shrink-0">
+                      <p className={`text-sm font-semibold ${pct >= 70 ? "text-success" : "text-dot-amber"}`}>{pct}%</p>
+                      <p className="text-[10px] text-muted-foreground">{new Date(sim.completed_at).toLocaleDateString()}</p>
+                    </div>
                   </div>
-                  <div className="text-right shrink-0">
-                    <p className={`text-sm font-semibold ${pct >= 70 ? "text-success" : "text-dot-amber"}`}>{pct}%</p>
-                    <p className="text-[10px] text-muted-foreground">{new Date(sim.completed_at).toLocaleDateString()}</p>
-                  </div>
+                  {hasCategories && (
+                    <div className="ml-7 grid grid-cols-2 gap-x-4 gap-y-1.5">
+                      {[
+                        { label: "Tool Awareness", score: sim.tool_awareness_score! },
+                        { label: "Human Value-Add", score: sim.human_value_add_score! },
+                        { label: "Adaptive Thinking", score: sim.adaptive_thinking_score! },
+                        { label: "Domain Judgment", score: sim.domain_judgment_score! },
+                      ].map(cat => (
+                        <div key={cat.label} className="flex items-center gap-2">
+                          <span className="text-[10px] text-muted-foreground w-24 truncate">{cat.label}</span>
+                          <Progress value={cat.score} className="flex-1 h-1.5" />
+                          <span className={`text-[10px] font-semibold w-7 text-right ${cat.score >= 70 ? "text-success" : cat.score >= 50 ? "text-dot-amber" : "text-destructive"}`}>
+                            {cat.score}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               );
             })}
@@ -377,16 +489,28 @@ export default function TeamProgress() {
       if (!map[r.user_id]) {
         map[r.user_id] = {
           userId: r.user_id, name: r.display_name || "Unknown", jobTitle: r.job_title || "",
-          department: r.department || "Other", simCount: 0, avgScore: 0, sims: [],
+          department: r.department || "Other", simCount: 0, avgScore: 0,
+          avgToolAwareness: 0, avgHumanValueAdd: 0, avgAdaptiveThinking: 0, avgDomainJudgment: 0,
+          sims: [],
         };
       }
       map[r.user_id].sims.push(r);
       map[r.user_id].simCount += 1;
     });
+
+    const avgCat = (sims: ProgressRow[], key: keyof ProgressRow) => {
+      const vals = sims.map(s => s[key]).filter((v): v is number => v != null);
+      return vals.length > 0 ? Math.round(vals.reduce((a, b) => a + b, 0) / vals.length) : 0;
+    };
+
     return Object.values(map)
       .map(u => ({
         ...u,
         avgScore: Math.round(u.sims.reduce((a, s) => a + (s.total_questions > 0 ? (s.correct_answers / s.total_questions) * 100 : 0), 0) / u.sims.length),
+        avgToolAwareness: avgCat(u.sims, "tool_awareness_score"),
+        avgHumanValueAdd: avgCat(u.sims, "human_value_add_score"),
+        avgAdaptiveThinking: avgCat(u.sims, "adaptive_thinking_score"),
+        avgDomainJudgment: avgCat(u.sims, "domain_judgment_score"),
       }))
       .sort((a, b) => b.avgScore - a.avgScore);
   }, [progress]);
@@ -464,15 +588,23 @@ export default function TeamProgress() {
             )}
           </div>
 
-          {/* Role breakdown for selected dept */}
-          <Card>
-            <CardContent className="p-5">
-              <p className="text-sm font-semibold text-foreground mb-4">
-                {selectedDept === "All" ? "Roles Across All Departments" : `Roles in ${selectedDept}`}
-              </p>
-              <DeptRoleBreakdown progress={progress} selectedDept={selectedDept} />
-            </CardContent>
-          </Card>
+          {/* AI Readiness + Role breakdown side by side */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <Card>
+              <CardContent className="p-5">
+                <p className="text-sm font-semibold text-foreground mb-4">AI Readiness Breakdown</p>
+                <CategoryBreakdown progress={progress} selectedDept={selectedDept} />
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="p-5">
+                <p className="text-sm font-semibold text-foreground mb-4">
+                  {selectedDept === "All" ? "Roles Across All Departments" : `Roles in ${selectedDept}`}
+                </p>
+                <DeptRoleBreakdown progress={progress} selectedDept={selectedDept} />
+              </CardContent>
+            </Card>
+          </div>
         </>
       ) : (
         <>
