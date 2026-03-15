@@ -268,6 +268,21 @@ export default function SimulationBuilder() {
     return jobs.find(j => j.id === queueCurrentJob)?.title || null;
   }, [queueCurrentJob, jobs]);
 
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center max-w-md px-4">
+          <Layers className="h-12 w-12 mx-auto text-muted-foreground/40 mb-4" />
+          <h2 className="text-lg font-semibold text-foreground mb-2">Sign In Required</h2>
+          <p className="text-sm text-muted-foreground mb-6">
+            Sign in to access the Simulation Builder and browse AI-powered learning paths for your organization.
+          </p>
+          <Button onClick={() => navigate("/auth")}>Sign In</Button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background">
       {/* Hero */}
