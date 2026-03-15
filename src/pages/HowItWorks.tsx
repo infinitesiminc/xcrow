@@ -59,12 +59,6 @@ function LiveTimeline() {
     }
   }
 
-  // Map milestones to dates
-  const milestones = AI_MILESTONES.map((m) => {
-    const d = new Date(config.start.getFullYear(), config.start.getMonth() + m.monthsFromNow, 1);
-    return { ...m, date: d, pct: toPercent(d) };
-  });
-
   const PAD = 4;
   const toLeft = (pct: number) => `${PAD + pct * (100 - 2 * PAD) / 100}%`;
 
@@ -93,19 +87,6 @@ function LiveTimeline() {
         <div className="w-px h-4 bg-primary mt-0.5" />
         <div className="h-4 w-4 rounded-full bg-primary shadow-lg shadow-primary/30 ring-4 ring-primary/10" />
       </div>
-
-      {/* Milestone dots on rail */}
-      {milestones.map((m) => (
-        <div
-          key={m.label}
-          className="absolute z-10 flex flex-col items-center"
-          style={{ left: toLeft(m.pct), top: "61px", transform: "translateX(-50%)" }}
-        >
-          <div className={`h-3 w-3 rounded-full border-2 ${m.date <= now ? "bg-primary/60 border-primary/60" : "bg-card border-border"}`} />
-          <span className={`mt-1.5 text-[10px] font-semibold whitespace-nowrap ${m.date <= now ? "text-foreground" : "text-foreground/50"}`}>{m.label}</span>
-          <span className="text-[8px] text-muted-foreground mt-0.5 whitespace-nowrap">{m.sublabel}</span>
-        </div>
-      ))}
 
       {/* Date label below live dot */}
       <div className="absolute z-10" style={{ left: toLeft(nowPercent), top: "96px", transform: "translateX(-50%)" }}>
