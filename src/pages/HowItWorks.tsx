@@ -68,7 +68,7 @@ function LiveTimeline() {
       {monthLines.map((line) => (
         <div key={line.pct + line.label} className="absolute top-0 bottom-0 flex flex-col items-center" style={{ left: toLeft(line.pct) }}>
           <div className={`w-px h-full ${line.isYear ? "bg-border/60" : "bg-border/25"}`} />
-          <span className={`absolute bottom-1 text-[8px] ${line.isYear ? "font-semibold text-foreground/60" : "text-muted-foreground/50"}`}>
+          <span className={`absolute bottom-2 text-[9px] ${line.isYear ? "font-semibold text-foreground/60" : "text-muted-foreground/50"}`}>
             {line.label}
           </span>
         </div>
