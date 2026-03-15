@@ -527,63 +527,133 @@ export default function SimulationBuilder() {
               </div>
             </div>
 
-            {/* Job list */}
+            {/* Job list — grouped by department */}
             {loading ? (
               <div className="space-y-2">
                 {Array.from({ length: 6 }).map((_, i) => (
                   <div key={i} className="h-20 rounded-xl border border-border bg-card animate-pulse" />
                 ))}
               </div>
+            ) : groupedJobs.length === 0 ? (
+              <div className="text-center py-8">
+                <p className="text-sm text-muted-foreground">No roles match "{search}"</p>
+                <Button variant="ghost" size="sm" onClick={() => setSearch("")} className="mt-1 text-xs">Clear</Button>
+              </div>
             ) : (
-              <div className="space-y-2 max-h-[70vh] overflow-y-auto pr-1 scrollbar-thin">
-                {filteredJobs.slice(0, 50).map((job) => (
-                  <motion.div
-                    key={job.id}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    whileHover={{ x: 2 }}
-                    transition={{ duration: 0.15 }}
-                  >
-                    <button
-                      onClick={() => setSelectedJob(selectedJob?.id === job.id ? null : job)}
-                      className={`w-full text-left p-3 rounded-xl border transition-all duration-200 ${
-                        selectedJob?.id === job.id
-                          ? "border-primary bg-primary/[0.03] ring-1 ring-primary/20"
-                          : "border-border bg-card hover:border-primary/30"
-                      }`}
-                    >
-                      <div className="flex items-start justify-between gap-2">
-                        <h3 className="font-semibold text-foreground text-sm leading-tight">{job.title}</h3>
-                        {riskBadge(job.automation_risk_percent)}
-                      </div>
-                      <div className="flex flex-wrap gap-x-3 gap-y-0.5 text-[10px] text-muted-foreground mt-1">
-                        {job.department && (
-                          <span className="flex items-center gap-1">
-                            <Briefcase className="h-2.5 w-2.5" />
-                            {job.department}
-                          </span>
+              <div className="space-y-3 max-h-[70vh] overflow-y-auto pr-1 scrollbar-thin">
+                {groupedJobs.map(([dept, deptJobs]) => {
+                  const isCollapsed = collapsedDepts.has(dept);
+                  const readyCount = deptJobs.filter(j => analyzedJobIds.has(j.id)).length;
+                  return (
+                    <div key={dept}>
+                      {/* Department header */}
+                      <button
+                        onClick={() => setCollapsedDepts(prev => {
+                          const next = new Set(prev);
+                          next.has(dept) ? next.delete(dept) : next.add(dept);
+                          return next;
+                        })}
+                        className="w-full flex items-center gap-2 py-1.5 px-1 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors"
+                      >
+                        {isCollapsed ? <ChevronDown className="h-3 w-3" /> : <ChevronUp className="h-3 w-3" />}
+                        <Briefcase className="h-3 w-3" />
+                        <span>{dept}</span>
+                        <span className="text-[10px] font-normal">({deptJobs.length})</span>
+                        {readyCount > 0 && (
+                          <Badge variant="secondary" className="ml-auto text-[9px] px-1.5 py-0 h-4 bg-primary/10 text-primary border-0">
+                            {readyCount} ready
+                          </Badge>
                         )}
-                        {job.location && (
-                          <span className="flex items-center gap-1">
-                            <MapPin className="h-2.5 w-2.5" />
-                            {job.location}
-                          </span>
+                      </button>
+
+                      {/* Jobs in this department */}
+                      <AnimatePresence>
+                        {!isCollapsed && (
+                          <motion.div
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={{ height: "auto", opacity: 1 }}
+                            exit={{ height: 0, opacity: 0 }}
+                            transition={{ duration: 0.2 }}
+                            className="overflow-hidden"
+                          >
+                            <div className="space-y-1.5 pl-1">
+                              {deptJobs.slice(0, 30).map((job) => {
+                                const isReady = analyzedJobIds.has(job.id);
+                                const completionPct = getJobCompletionPercent(job);
+                                const circumference = 2 * Math.PI * 8;
+                                const strokeOffset = circumference - (completionPct / 100) * circumference;
+
+                                return (
+                                  <motion.div
+                                    key={job.id}
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    whileHover={{ x: 2 }}
+                                    transition={{ duration: 0.15 }}
+                                  >
+                                    <button
+                                      onClick={() => setSelectedJob(selectedJob?.id === job.id ? null : job)}
+                                      className={`w-full text-left p-3 rounded-xl border transition-all duration-200 ${
+                                        selectedJob?.id === job.id
+                                          ? "border-primary bg-primary/[0.03] ring-1 ring-primary/20"
+                                          : "border-border bg-card hover:border-primary/30"
+                                      }`}
+                                    >
+                                      <div className="flex items-start justify-between gap-2">
+                                        <div className="flex-1 min-w-0">
+                                          <h3 className="font-semibold text-foreground text-sm leading-tight truncate">{job.title}</h3>
+                                          <div className="flex items-center gap-2 mt-1">
+                                            {job.location && (
+                                              <span className="flex items-center gap-1 text-[10px] text-muted-foreground">
+                                                <MapPin className="h-2.5 w-2.5" />
+                                                {job.location}
+                                              </span>
+                                            )}
+                                          </div>
+                                        </div>
+                                        <div className="flex items-center gap-1.5 shrink-0">
+                                          {/* Completion ring */}
+                                          {completionPct > 0 && (
+                                            <svg width="22" height="22" className="-rotate-90">
+                                              <circle cx="11" cy="11" r="8" fill="none" strokeWidth="2" className="stroke-muted/30" />
+                                              <circle
+                                                cx="11" cy="11" r="8" fill="none" strokeWidth="2"
+                                                className="stroke-primary"
+                                                strokeDasharray={circumference}
+                                                strokeDashoffset={strokeOffset}
+                                                strokeLinecap="round"
+                                              />
+                                            </svg>
+                                          )}
+                                          {/* Ready badge */}
+                                          <Badge
+                                            variant="outline"
+                                            className={`text-[9px] px-1.5 py-0 h-4 ${
+                                              isReady
+                                                ? "bg-primary/10 text-primary border-primary/20"
+                                                : "bg-muted/50 text-muted-foreground border-border"
+                                            }`}
+                                          >
+                                            {isReady ? "Ready" : "—"}
+                                          </Badge>
+                                        </div>
+                                      </div>
+                                    </button>
+                                  </motion.div>
+                                );
+                              })}
+                              {deptJobs.length > 30 && (
+                                <p className="text-center text-[10px] text-muted-foreground py-1">
+                                  +{deptJobs.length - 30} more
+                                </p>
+                              )}
+                            </div>
+                          </motion.div>
                         )}
-                      </div>
-                    </button>
-                  </motion.div>
-                ))}
-                {filteredJobs.length > 50 && (
-                  <p className="text-center text-[10px] text-muted-foreground py-2">
-                    Showing 50 of {filteredJobs.length}
-                  </p>
-                )}
-                {filteredJobs.length === 0 && (
-                  <div className="text-center py-8">
-                    <p className="text-sm text-muted-foreground">No roles match "{search}"</p>
-                    <Button variant="ghost" size="sm" onClick={() => setSearch("")} className="mt-1 text-xs">Clear</Button>
-                  </div>
-                )}
+                      </AnimatePresence>
+                    </div>
+                  );
+                })}
               </div>
             )}
           </div>
