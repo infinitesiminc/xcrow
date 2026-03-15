@@ -3,7 +3,7 @@
  * based on real Anthropic job titles and department distribution.
  */
 
-interface DemoProgressRow {
+export interface DemoProgressRow {
   user_id: string;
   display_name: string;
   job_title: string;
@@ -13,6 +13,10 @@ interface DemoProgressRow {
   total_questions: number;
   completed_at: string;
   department: string;
+  tool_awareness_score: number;
+  human_value_add_score: number;
+  adaptive_thinking_score: number;
+  domain_judgment_score: number;
 }
 
 // Real Anthropic departments → sample job titles and tasks
