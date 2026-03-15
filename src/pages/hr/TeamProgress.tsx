@@ -468,16 +468,28 @@ export default function TeamProgress() {
       if (!map[r.user_id]) {
         map[r.user_id] = {
           userId: r.user_id, name: r.display_name || "Unknown", jobTitle: r.job_title || "",
-          department: r.department || "Other", simCount: 0, avgScore: 0, sims: [],
+          department: r.department || "Other", simCount: 0, avgScore: 0,
+          avgToolAwareness: 0, avgHumanValueAdd: 0, avgAdaptiveThinking: 0, avgDomainJudgment: 0,
+          sims: [],
         };
       }
       map[r.user_id].sims.push(r);
       map[r.user_id].simCount += 1;
     });
+
+    const avgCat = (sims: ProgressRow[], key: keyof ProgressRow) => {
+      const vals = sims.map(s => s[key]).filter((v): v is number => v != null);
+      return vals.length > 0 ? Math.round(vals.reduce((a, b) => a + b, 0) / vals.length) : 0;
+    };
+
     return Object.values(map)
       .map(u => ({
         ...u,
         avgScore: Math.round(u.sims.reduce((a, s) => a + (s.total_questions > 0 ? (s.correct_answers / s.total_questions) * 100 : 0), 0) / u.sims.length),
+        avgToolAwareness: avgCat(u.sims, "tool_awareness_score"),
+        avgHumanValueAdd: avgCat(u.sims, "human_value_add_score"),
+        avgAdaptiveThinking: avgCat(u.sims, "adaptive_thinking_score"),
+        avgDomainJudgment: avgCat(u.sims, "domain_judgment_score"),
       }))
       .sort((a, b) => b.avgScore - a.avgScore);
   }, [progress]);
