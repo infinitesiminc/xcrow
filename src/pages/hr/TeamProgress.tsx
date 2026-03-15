@@ -214,27 +214,55 @@ export default function TeamProgress() {
       </div>
 
       {viewMode === "aggregate" ? (
-        /* Aggregate: Role breakdown */
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-sm font-semibold">Completion by Role</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            {Object.entries(stats.roleBreakdown).length === 0 ? (
-              <p className="text-sm text-muted-foreground text-center py-8">No simulation data yet. Share the join code with your team to get started.</p>
-            ) : (
-              Object.entries(stats.roleBreakdown)
-                .sort((a, b) => b[1] - a[1])
-                .map(([role, count]) => (
-                  <div key={role} className="flex items-center gap-3">
-                    <span className="text-sm text-foreground flex-1 truncate">{role}</span>
-                    <Badge variant="secondary" className="text-xs">{count} sims</Badge>
-                    <Progress value={Math.min((count / Math.max(stats.totalSims, 1)) * 100, 100)} className="w-24 h-1.5" />
-                  </div>
-                ))
-            )}
-          </CardContent>
-        </Card>
+        <div className="space-y-6">
+          {/* Department breakdown */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-sm font-semibold">Completion by Department</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {Object.entries(stats.deptBreakdown).length === 0 ? (
+                <p className="text-sm text-muted-foreground text-center py-8">No simulation data yet.</p>
+              ) : (
+                Object.entries(stats.deptBreakdown)
+                  .sort((a, b) => b[1].count - a[1].count)
+                  .map(([dept, data]) => {
+                    const avgPct = Math.round(data.totalScore / data.count);
+                    return (
+                      <div key={dept} className="flex items-center gap-3">
+                        <span className="text-sm text-foreground flex-1 truncate">{dept}</span>
+                        <Badge variant="secondary" className="text-xs">{data.count} sims</Badge>
+                        <span className={`text-xs font-semibold ${avgPct >= 70 ? "text-success" : "text-dot-amber"}`}>{avgPct}%</span>
+                        <Progress value={Math.min((data.count / Math.max(stats.totalSims, 1)) * 100, 100)} className="w-24 h-1.5" />
+                      </div>
+                    );
+                  })
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Role breakdown */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-sm font-semibold">Completion by Role</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {Object.entries(stats.roleBreakdown).length === 0 ? (
+                <p className="text-sm text-muted-foreground text-center py-8">No simulation data yet. Share the join code with your team to get started.</p>
+              ) : (
+                Object.entries(stats.roleBreakdown)
+                  .sort((a, b) => b[1] - a[1])
+                  .map(([role, count]) => (
+                    <div key={role} className="flex items-center gap-3">
+                      <span className="text-sm text-foreground flex-1 truncate">{role}</span>
+                      <Badge variant="secondary" className="text-xs">{count} sims</Badge>
+                      <Progress value={Math.min((count / Math.max(stats.totalSims, 1)) * 100, 100)} className="w-24 h-1.5" />
+                    </div>
+                  ))
+              )}
+            </CardContent>
+          </Card>
+        </div>
       ) : (
         /* Individual: User drill-down */
         <div className="space-y-2">
