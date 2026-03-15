@@ -682,13 +682,17 @@ export type Database = {
       get_workspace_progress: {
         Args: { p_workspace_id: string }
         Returns: {
+          adaptive_thinking_score: number
           completed_at: string
           correct_answers: number
           department: string
           display_name: string
+          domain_judgment_score: number
+          human_value_add_score: number
           job_title: string
           sim_job_title: string
           task_name: string
+          tool_awareness_score: number
           total_questions: number
           user_id: string
         }[]
