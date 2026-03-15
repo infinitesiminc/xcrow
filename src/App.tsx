@@ -17,8 +17,8 @@ import ToolsMarketplace from "./pages/ToolsMarketplace.tsx";
 import ContactOrg from "./pages/ContactOrg.tsx";
 import Contact from "./pages/Contact.tsx";
 import Pricing from "./pages/Pricing.tsx";
-import CompanyDashboard from "./pages/CompanyDashboard.tsx";
 import ProjectStaffing from "./pages/ProjectStaffing.tsx";
+import ATSSync from "./pages/hr/ATSSync.tsx";
 import SimulationBuilder from "./pages/products/SimulationBuilder.tsx";
 import SimulationDesign from "./pages/SimulationDesign.tsx";
 import Enterprise from "./pages/Enterprise.tsx";
@@ -54,7 +54,7 @@ const App = () => (
             <Route path="/contact-org" element={<><Navbar /><ContactOrg /><Footer /></>} />
             <Route path="/contact" element={<><Navbar /><Contact /><Footer /></>} />
             <Route path="/pricing" element={<><Navbar /><Pricing /><Footer /></>} />
-            <Route path="/company-dashboard" element={<><Navbar /><CompanyDashboard /><Footer /></>} />
+            {/* company-dashboard removed — ATS sync now lives under /hr/ats-sync */}
             <Route path="/project-staffing" element={<><Navbar /><ProjectStaffing /><Footer /></>} />
             <Route path="/products/simulation-builder" element={<><Navbar /><SimulationBuilder /><Footer /></>} />
             <Route path="/products/upskilling" element={<><Navbar /><SimulationBuilder /><Footer /></>} />
@@ -76,6 +76,7 @@ const App = () => (
               <Route path="simulations" element={<SimulationBuilder />} />
               <Route path="members" element={<Members />} />
               <Route path="settings" element={<WorkspaceSettings />} />
+              <Route path="ats-sync" element={<ATSSync />} />
               <Route path="invite" element={<InvitePage />} />
             </Route>
 
