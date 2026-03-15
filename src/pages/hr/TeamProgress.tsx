@@ -7,7 +7,7 @@ import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { Loader2, Users, CheckCircle2, TrendingUp, BarChart3, Search, Trophy, AlertTriangle, X, Database, Zap, Play, ChevronRight } from "lucide-react";
+import { Loader2, Users, CheckCircle2, TrendingUp, BarChart3, Search, Trophy, AlertTriangle, X, Database, Zap, Play, ChevronRight, RefreshCw, Target } from "lucide-react";
 import { generateDemoProgress, FUNNEL_STATS } from "@/data/demo-team-progress";
 
 interface ProgressRow {
