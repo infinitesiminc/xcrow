@@ -25,11 +25,18 @@ export default function Navbar() {
     ? user.user_metadata.display_name.slice(0, 2).toUpperCase()
     : user?.email?.slice(0, 2).toUpperCase() ?? "?";
 
+  const productItems = [
+    { label: "AI Upskilling", path: "/products/upskilling" },
+    { label: "Candidate Assessment", path: "/products/candidate-assessment" },
+    { label: "Workforce Planning", path: "/products/workforce-planning" },
+    { label: "Career Transition", path: "/products/career-transition" },
+    { label: "L&D Content Engine", path: "/products/ld-content-engine" },
+  ];
+
   const navItems = [
     { label: "For Individuals", path: "/for-individuals" },
     { label: "For Organizations", path: "/for-organizations" },
     { label: "Pricing", path: "/pricing" },
-    
     { label: "Contact", path: "/contact" },
     ...(user ? [{ label: "Dashboard", path: "/dashboard" }] : []),
   ];
