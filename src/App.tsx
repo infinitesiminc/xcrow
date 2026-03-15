@@ -20,7 +20,6 @@ import Pricing from "./pages/Pricing.tsx";
 import CompanyDashboard from "./pages/CompanyDashboard.tsx";
 import ProjectStaffing from "./pages/ProjectStaffing.tsx";
 import SimulationBuilder from "./pages/products/SimulationBuilder.tsx";
-import HowItWorks from "./pages/HowItWorks.tsx";
 import Enterprise from "./pages/Enterprise.tsx";
 const queryClient = new QueryClient();
 
@@ -52,7 +51,7 @@ const App = () => (
             <Route path="/products/workforce-planning" element={<><Navbar /><SimulationBuilder /><Footer /></>} />
             <Route path="/products/career-transition" element={<><Navbar /><SimulationBuilder /><Footer /></>} />
             <Route path="/products/ld-content-engine" element={<><Navbar /><SimulationBuilder /><Footer /></>} />
-            <Route path="/how-it-works" element={<><Navbar /><HowItWorks /><Footer /></>} />
+            <Route path="/how-it-works" element={<><Navbar /><SimulationBuilder /><Footer /></>} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

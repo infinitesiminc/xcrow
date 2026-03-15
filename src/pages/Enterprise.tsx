@@ -180,7 +180,7 @@ export default function Enterprise() {
               variant="outline"
               size="lg"
               className="gap-2 text-base px-8"
-              onClick={() => navigate("/how-it-works")}
+              onClick={() => navigate("/products/simulation-builder")}
             >
               See How It Works
             </Button>
