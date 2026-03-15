@@ -271,15 +271,15 @@ export default function SimulationBuilder() {
   return (
     <div className="min-h-screen bg-background">
       {/* Hero */}
-      <section className="relative overflow-hidden px-4 pt-20 pb-10">
+      <section className="relative overflow-hidden px-4 pt-16 pb-4">
         <div className="absolute inset-0 bg-gradient-to-b from-accent/40 via-background to-background" />
         <div className="relative mx-auto max-w-5xl text-center">
           <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-            <div className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-4 py-1.5 text-xs text-muted-foreground mb-6">
+            <div className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-4 py-1.5 text-xs text-muted-foreground mb-3">
               <Layers className="h-3.5 w-3.5 text-primary" />
               Simulation Blueprint System
             </div>
-            <h1 className="font-serif text-3xl sm:text-5xl font-bold text-foreground leading-tight tracking-tight">
+            <h1 className="font-serif text-2xl sm:text-4xl font-bold text-foreground leading-tight tracking-tight">
               AI-powered learning paths
             </h1>
             <p className="mx-auto mt-4 max-w-2xl text-lg text-muted-foreground leading-relaxed">
