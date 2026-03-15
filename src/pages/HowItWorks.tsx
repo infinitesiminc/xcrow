@@ -20,14 +20,7 @@ function getTimelineConfig() {
   return { start, end, now };
 }
 
-const AI_MILESTONES = [
-  { monthsFromNow: 0, label: "Now", sublabel: "Agent era" },
-  { monthsFromNow: 6, label: "Q4 2026", sublabel: "Autonomous agents" },
-  { monthsFromNow: 12, label: "2027", sublabel: "Multi-agent systems" },
-  { monthsFromNow: 18, label: "Mid 2027", sublabel: "AI colleagues" },
-  { monthsFromNow: 24, label: "2028", sublabel: "Frontier roles" },
-  { monthsFromNow: 36, label: "2029", sublabel: "Post-AI landscape" },
-];
+// No milestone labels needed — grid provides quarter context
 
 function LiveTimeline() {
   const [now, setNow] = useState(new Date());
