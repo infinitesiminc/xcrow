@@ -128,7 +128,7 @@ const INITIAL_SECTIONS: ChecklistSection[] = [
   },
 ];
 
-const STORAGE_KEY = "infinite-sim-roadmap";
+const STORAGE_KEY = "infinite-sim-roadmap-statuses";
 
 const statusConfig: Record<ItemStatus, { icon: React.ElementType; color: string; label: string; badge: string }> = {
   done: { icon: CheckCircle2, color: "text-emerald-500", label: "Done", badge: "bg-emerald-500/10 text-emerald-500 border-emerald-500/20" },
@@ -136,19 +136,36 @@ const statusConfig: Record<ItemStatus, { icon: React.ElementType; color: string;
   not_started: { icon: Circle, color: "text-muted-foreground/40", label: "Not Started", badge: "bg-muted text-muted-foreground border-border" },
 };
 
+/** Only persist item statuses (not icons, which are functions and can't be serialized). */
+function loadSections(): ChecklistSection[] {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (!saved) return INITIAL_SECTIONS;
+    const statuses: Record<string, ItemStatus> = JSON.parse(saved);
+    return INITIAL_SECTIONS.map((s) => ({
+      ...s,
+      items: s.items.map((item) => ({
+        ...item,
+        status: statuses[item.id] ?? item.status,
+      })),
+    }));
+  } catch {
+    return INITIAL_SECTIONS;
+  }
+}
+
+function saveStatuses(sections: ChecklistSection[]) {
+  const statuses: Record<string, ItemStatus> = {};
+  sections.forEach((s) => s.items.forEach((item) => { statuses[item.id] = item.status; }));
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(statuses));
+}
+
 export default function Roadmap() {
-  const [sections, setSections] = useState<ChecklistSection[]>(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      return saved ? JSON.parse(saved) : INITIAL_SECTIONS;
-    } catch {
-      return INITIAL_SECTIONS;
-    }
-  });
+  const [sections, setSections] = useState<ChecklistSection[]>(loadSections);
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(INITIAL_SECTIONS.map((s) => s.id)));
 
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(sections));
+    saveStatuses(sections);
   }, [sections]);
 
   const toggleSection = (id: string) => {
