@@ -20,6 +20,10 @@ interface ProgressRow {
   total_questions: number;
   completed_at: string;
   department: string | null;
+  tool_awareness_score?: number;
+  human_value_add_score?: number;
+  adaptive_thinking_score?: number;
+  domain_judgment_score?: number;
 }
 
 interface WorkspaceRow { id: string; name: string; }
