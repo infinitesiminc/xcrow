@@ -63,7 +63,7 @@ function LiveTimeline() {
   const toLeft = (pct: number) => `${PAD + pct * (100 - 2 * PAD) / 100}%`;
 
   return (
-    <div className="relative px-2 pt-16 pb-12 rounded-xl border border-border/50 bg-muted/30 overflow-hidden">
+    <div className="relative px-2 pt-16 pb-16 rounded-xl border border-border/50 bg-muted/30 overflow-hidden">
       {/* Monthly grid lines */}
       {monthLines.map((line) => (
         <div key={line.pct + line.label} className="absolute top-0 bottom-0 flex flex-col items-center" style={{ left: toLeft(line.pct) }}>
