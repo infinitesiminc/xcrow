@@ -779,7 +779,7 @@ export default function SimulationBuilder() {
                                     transition={{ duration: 0.15 }}
                                   >
                                     <button
-                                      onClick={() => setSelectedJob(selectedJob?.id === job.id ? null : job)}
+                                      onClick={() => navigate(`/learning-path?jobId=${job.id}`)}
                                       className={`w-full text-left p-3 rounded-xl border transition-all duration-200 ${
                                         selectedJob?.id === job.id
                                           ? "border-primary bg-primary/[0.03] ring-1 ring-primary/20"
