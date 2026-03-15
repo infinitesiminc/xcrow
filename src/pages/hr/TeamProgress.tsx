@@ -20,6 +20,33 @@ interface ProgressRow {
   completed_at: string;
 }
 
+const DEMO_PROGRESS: ProgressRow[] = [
+  { user_id: "demo-1", display_name: "Sarah Chen", job_title: "Senior Software Engineer", task_name: "Code Review with AI Copilot", sim_job_title: "Software Engineer", correct_answers: 5, total_questions: 5, completed_at: "2026-03-15T09:30:00Z" },
+  { user_id: "demo-1", display_name: "Sarah Chen", job_title: "Senior Software Engineer", task_name: "Automated Test Generation", sim_job_title: "Software Engineer", correct_answers: 4, total_questions: 5, completed_at: "2026-03-14T14:00:00Z" },
+  { user_id: "demo-1", display_name: "Sarah Chen", job_title: "Senior Software Engineer", task_name: "Incident Response Triage", sim_job_title: "Software Engineer", correct_answers: 3, total_questions: 5, completed_at: "2026-03-13T11:15:00Z" },
+  { user_id: "demo-1", display_name: "Sarah Chen", job_title: "Senior Software Engineer", task_name: "Architecture Decision Record", sim_job_title: "Software Engineer", correct_answers: 5, total_questions: 5, completed_at: "2026-03-12T16:45:00Z" },
+  { user_id: "demo-2", display_name: "Marcus Rivera", job_title: "ML Research Scientist", task_name: "Model Evaluation Report", sim_job_title: "Data Scientist", correct_answers: 4, total_questions: 5, completed_at: "2026-03-15T10:00:00Z" },
+  { user_id: "demo-2", display_name: "Marcus Rivera", job_title: "ML Research Scientist", task_name: "Dataset Bias Audit", sim_job_title: "Data Scientist", correct_answers: 5, total_questions: 5, completed_at: "2026-03-14T08:30:00Z" },
+  { user_id: "demo-2", display_name: "Marcus Rivera", job_title: "ML Research Scientist", task_name: "Experiment Design Review", sim_job_title: "Data Scientist", correct_answers: 3, total_questions: 5, completed_at: "2026-03-13T15:20:00Z" },
+  { user_id: "demo-3", display_name: "Priya Sharma", job_title: "Product Manager", task_name: "Feature Prioritization Matrix", sim_job_title: "Product Manager", correct_answers: 4, total_questions: 5, completed_at: "2026-03-15T13:00:00Z" },
+  { user_id: "demo-3", display_name: "Priya Sharma", job_title: "Product Manager", task_name: "Stakeholder Alignment Brief", sim_job_title: "Product Manager", correct_answers: 5, total_questions: 5, completed_at: "2026-03-14T09:45:00Z" },
+  { user_id: "demo-3", display_name: "Priya Sharma", job_title: "Product Manager", task_name: "Competitive Landscape Analysis", sim_job_title: "Product Manager", correct_answers: 3, total_questions: 5, completed_at: "2026-03-12T11:30:00Z" },
+  { user_id: "demo-3", display_name: "Priya Sharma", job_title: "Product Manager", task_name: "Go-to-Market Strategy", sim_job_title: "Product Manager", correct_answers: 4, total_questions: 5, completed_at: "2026-03-11T14:00:00Z" },
+  { user_id: "demo-3", display_name: "Priya Sharma", job_title: "Product Manager", task_name: "User Story Mapping", sim_job_title: "Product Manager", correct_answers: 5, total_questions: 5, completed_at: "2026-03-10T10:15:00Z" },
+  { user_id: "demo-4", display_name: "David Kim", job_title: "Data Engineer", task_name: "Pipeline Optimization Review", sim_job_title: "Data Engineer", correct_answers: 4, total_questions: 5, completed_at: "2026-03-14T16:00:00Z" },
+  { user_id: "demo-4", display_name: "David Kim", job_title: "Data Engineer", task_name: "Data Quality Framework", sim_job_title: "Data Engineer", correct_answers: 3, total_questions: 5, completed_at: "2026-03-13T10:30:00Z" },
+  { user_id: "demo-5", display_name: "Emily Watson", job_title: "UX Designer", task_name: "AI-Assisted Wireframing", sim_job_title: "UX Designer", correct_answers: 5, total_questions: 5, completed_at: "2026-03-15T11:00:00Z" },
+  { user_id: "demo-5", display_name: "Emily Watson", job_title: "UX Designer", task_name: "Usability Test Analysis", sim_job_title: "UX Designer", correct_answers: 4, total_questions: 5, completed_at: "2026-03-14T13:30:00Z" },
+  { user_id: "demo-5", display_name: "Emily Watson", job_title: "UX Designer", task_name: "Design System Audit", sim_job_title: "UX Designer", correct_answers: 4, total_questions: 5, completed_at: "2026-03-12T09:00:00Z" },
+  { user_id: "demo-6", display_name: "James Okafor", job_title: "DevOps Engineer", task_name: "CI/CD Pipeline Automation", sim_job_title: "DevOps Engineer", correct_answers: 5, total_questions: 5, completed_at: "2026-03-15T08:00:00Z" },
+  { user_id: "demo-6", display_name: "James Okafor", job_title: "DevOps Engineer", task_name: "Infrastructure Cost Analysis", sim_job_title: "DevOps Engineer", correct_answers: 3, total_questions: 5, completed_at: "2026-03-13T14:45:00Z" },
+  { user_id: "demo-7", display_name: "Aisha Patel", job_title: "Technical Writer", task_name: "API Documentation Review", sim_job_title: "Technical Writer", correct_answers: 5, total_questions: 5, completed_at: "2026-03-14T10:00:00Z" },
+  { user_id: "demo-7", display_name: "Aisha Patel", job_title: "Technical Writer", task_name: "Release Notes Drafting", sim_job_title: "Technical Writer", correct_answers: 4, total_questions: 5, completed_at: "2026-03-13T09:30:00Z" },
+  { user_id: "demo-7", display_name: "Aisha Patel", job_title: "Technical Writer", task_name: "Knowledge Base Restructure", sim_job_title: "Technical Writer", correct_answers: 4, total_questions: 5, completed_at: "2026-03-11T15:00:00Z" },
+  { user_id: "demo-8", display_name: "Tom Lindqvist", job_title: "Security Analyst", task_name: "Threat Modeling Exercise", sim_job_title: "Cybersecurity Analyst", correct_answers: 4, total_questions: 5, completed_at: "2026-03-15T14:30:00Z" },
+  { user_id: "demo-8", display_name: "Tom Lindqvist", job_title: "Security Analyst", task_name: "Vulnerability Assessment Report", sim_job_title: "Cybersecurity Analyst", correct_answers: 5, total_questions: 5, completed_at: "2026-03-13T12:00:00Z" },
+];
+
 interface WorkspaceRow {
   id: string;
   name: string;
