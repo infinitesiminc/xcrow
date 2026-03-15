@@ -34,7 +34,7 @@ export default function Navbar() {
     { label: "Pricing", path: "/pricing" },
     { label: "Contact", path: "/contact" },
     ...(user ? [
-      { label: "Dashboard", path: "/dashboard" },
+      { label: "HR Dashboard", path: "/hr/team-progress" },
     ] : []),
   ];
 
