@@ -51,7 +51,7 @@ const App = () => (
             <Route path="/products/workforce-planning" element={<><Navbar /><SimulationBuilder /><Footer /></>} />
             <Route path="/products/career-transition" element={<><Navbar /><SimulationBuilder /><Footer /></>} />
             <Route path="/products/ld-content-engine" element={<><Navbar /><SimulationBuilder /><Footer /></>} />
-            <Route path="/how-it-works" element={<><Navbar /><HowItWorks /><Footer /></>} />
+            <Route path="/how-it-works" element={<><Navbar /><SimulationBuilder /><Footer /></>} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
