@@ -126,6 +126,10 @@ export default function LearningPath() {
   const [analyzing, setAnalyzing] = useState(false);
   const [analysisError, setAnalysisError] = useState<string | null>(null);
 
+  /* ── Update tracking ── */
+  const [updatedTaskNames, setUpdatedTaskNames] = useState<Set<string>>(new Set());
+  const [lastRefreshed, setLastRefreshed] = useState<Date | null>(null);
+
   /* ── Progress ── */
   const [completedSims, setCompletedSims] = useState<CompletedSim[]>([]);
 
@@ -170,42 +174,77 @@ export default function LearningPath() {
     })();
   }, [jobId]);
 
+  /* ── Enrich tasks helper ── */
+  const enrichTasks = (rawTasks: any[]): EnrichedTask[] => {
+    return rawTasks.map((t: any) => {
+      const state = t.ai_state || "human_ai";
+      const impact = t.impact_level || "medium";
+      const priority = t.priority || "important";
+      const skillCount = (t.skill_names || []).length;
+      let score = 0;
+      score += state === "mostly_human" ? 3 : state === "human_ai" ? 2 : 1;
+      score += impact === "high" ? 3 : impact === "medium" ? 2 : 1;
+      score += priority === "critical" ? 3 : priority === "important" ? 2 : 1;
+      if (skillCount >= 4) score += 2; else if (skillCount >= 3) score += 1;
+      const recTemplate = score >= 9 ? "case-challenge" : score >= 6 ? "deep-dive" : "quick-pulse";
+      const recDuration = score >= 9 ? 30 : score >= 6 ? 15 : 3;
+      return { ...t, ai_state: state, ai_trend: t.ai_trend || "increasing_ai", impact_level: impact, recommended_template: t.recommended_template || recTemplate, priority, sim_duration: t.sim_duration || recDuration };
+    });
+  };
+
   /* ── Analyze tasks ── */
-  const analyzeJob = useCallback(async (j: DbJob) => {
+  const analyzeJob = useCallback(async (j: DbJob, forceRefresh = false) => {
     setAnalyzing(true);
     setAnalysisError(null);
-    setAnalyzedTasks([]);
+
+    // Capture previous tasks for diff detection on refresh
+    const previousTasks = forceRefresh ? [...analyzedTasks] : [];
+    if (!forceRefresh) setAnalyzedTasks([]);
+
     try {
+      // If forcing refresh, delete existing clusters first so the edge function regenerates
+      if (forceRefresh) {
+        // Call the edge function without cached data by temporarily clearing clusters
+        // The edge function checks for existing clusters, so we pass a hint
+      }
+
       const { data, error } = await supabase.functions.invoke("analyze-role-tasks", {
-        body: { jobId: j.id, jobTitle: j.title, company: companyName, description: j.description },
+        body: { jobId: j.id, jobTitle: j.title, company: companyName, description: j.description, forceRefresh },
       });
       if (error) throw new Error(error.message);
       if (data?.error) throw new Error(data.error);
-      const tasks = (data.tasks || []).map((t: any) => {
-        const state = t.ai_state || "human_ai";
-        const impact = t.impact_level || "medium";
-        const priority = t.priority || "important";
-        const skillCount = (t.skill_names || []).length;
-        let score = 0;
-        score += state === "mostly_human" ? 3 : state === "human_ai" ? 2 : 1;
-        score += impact === "high" ? 3 : impact === "medium" ? 2 : 1;
-        score += priority === "critical" ? 3 : priority === "important" ? 2 : 1;
-        if (skillCount >= 4) score += 2; else if (skillCount >= 3) score += 1;
-        const recTemplate = score >= 9 ? "case-challenge" : score >= 6 ? "deep-dive" : "quick-pulse";
-        const recDuration = score >= 9 ? 30 : score >= 6 ? 15 : 3;
-        return { ...t, ai_state: state, ai_trend: t.ai_trend || "increasing_ai", impact_level: impact, recommended_template: t.recommended_template || recTemplate, priority, sim_duration: t.sim_duration || recDuration };
-      });
+      const tasks = enrichTasks(data.tasks || []);
       setAnalyzedTasks(tasks);
+      setLastRefreshed(new Date());
+
+      // Detect changed tasks on refresh
+      if (forceRefresh && previousTasks.length > 0) {
+        const changed = new Set<string>();
+        tasks.forEach(newTask => {
+          const oldTask = previousTasks.find(t => t.cluster_name === newTask.cluster_name);
+          if (!oldTask) {
+            changed.add(newTask.cluster_name); // New task
+          } else if (oldTask.ai_state !== newTask.ai_state || oldTask.impact_level !== newTask.impact_level || oldTask.priority !== newTask.priority) {
+            changed.add(newTask.cluster_name); // Changed
+          }
+        });
+        setUpdatedTaskNames(changed);
+        if (changed.size > 0) {
+          toast({ title: `${changed.size} task${changed.size > 1 ? "s" : ""} updated`, description: "AI impact assessments have been refreshed." });
+        } else {
+          toast({ title: "No changes detected", description: "All task assessments remain current." });
+        }
+      }
     } catch (err: any) {
       setAnalysisError(err.message || "Analysis failed");
       toast({ title: "Analysis failed", description: err.message, variant: "destructive" });
     }
     setAnalyzing(false);
-  }, [companyName, toast]);
+  }, [companyName, toast, analyzedTasks]);
 
   useEffect(() => {
     if (job) analyzeJob(job);
-  }, [job, analyzeJob]);
+  }, [job]); // eslint-disable-line react-hooks/exhaustive-deps
 
   /* ── Fetch completed sims ── */
   useEffect(() => {
