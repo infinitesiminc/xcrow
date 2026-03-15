@@ -322,7 +322,7 @@ function UserDetailSheet({ user, open, onClose }: { user: UserSummary | null; op
         </SheetHeader>
 
         {/* Summary stats */}
-        <div className="grid grid-cols-3 gap-3 pb-5 border-b border-border">
+        <div className="grid grid-cols-3 gap-3 pb-4 border-b border-border">
           <div className="text-center">
             <p className="text-lg font-bold text-foreground">{user.simCount}</p>
             <p className="text-[10px] text-muted-foreground">Simulations</p>
@@ -336,6 +336,27 @@ function UserDetailSheet({ user, open, onClose }: { user: UserSummary | null; op
             <p className="text-[10px] text-muted-foreground">Department</p>
           </div>
         </div>
+
+        {/* AI Readiness per category */}
+        {user.avgToolAwareness > 0 && (
+          <div className="pb-4 border-b border-border space-y-2">
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">AI Readiness Profile</p>
+            {[
+              { label: "🤖 Tool Awareness", score: user.avgToolAwareness },
+              { label: "💡 Human Value-Add", score: user.avgHumanValueAdd },
+              { label: "🔄 Adaptive Thinking", score: user.avgAdaptiveThinking },
+              { label: "🎯 Domain Judgment", score: user.avgDomainJudgment },
+            ].map(cat => (
+              <div key={cat.label} className="flex items-center gap-2">
+                <span className="text-xs text-foreground w-36">{cat.label}</span>
+                <Progress value={cat.score} className="flex-1 h-2" />
+                <span className={`text-xs font-semibold w-8 text-right ${cat.score >= 70 ? "text-success" : cat.score >= 50 ? "text-dot-amber" : "text-destructive"}`}>
+                  {cat.score}%
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
 
         {/* Sim history */}
         <div className="pt-4 space-y-3">
