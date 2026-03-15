@@ -512,7 +512,7 @@ export default function TeamProgress() {
         avgAdaptiveThinking: avgCat(u.sims, "adaptive_thinking_score"),
         avgDomainJudgment: avgCat(u.sims, "domain_judgment_score"),
       }))
-      .sort((a, b) => b.avgScore - a.avgScore);
+      .sort((a, b) => b.simCount - a.simCount || b.avgScore - a.avgScore);
   }, [progress]);
 
   if (loading) {
