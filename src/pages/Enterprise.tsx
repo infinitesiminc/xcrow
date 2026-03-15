@@ -122,8 +122,13 @@ export default function Enterprise() {
 
   return (
     <div className="min-h-screen bg-background">
+      {/* ── Ticker ── */}
+      <div className="px-4 pt-4 mx-auto max-w-4xl">
+        <NewsTicker />
+      </div>
+
       {/* ── Hero ── */}
-      <section className="relative overflow-hidden px-4 pt-24 pb-20">
+      <section className="relative overflow-hidden px-4 pt-12 pb-20">
         <div className="mx-auto max-w-4xl text-center">
           <motion.div {...fadeUp}>
             <span className="inline-flex items-center gap-2 rounded-full border border-border bg-muted/60 px-4 py-1.5 text-xs font-medium tracking-wide text-muted-foreground mb-6">
