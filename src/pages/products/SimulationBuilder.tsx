@@ -195,6 +195,20 @@ export default function SimulationBuilder() {
     })();
   }, []);
 
+  /* ── Fetch which jobs are pre-analyzed ── */
+  useEffect(() => {
+    if (!companyId) return;
+    (async () => {
+      const { data } = await supabase
+        .from("job_task_clusters")
+        .select("job_id")
+        .limit(10000);
+      if (data) {
+        setAnalyzedJobIds(new Set(data.map(d => d.job_id)));
+      }
+    })();
+  }, [companyId, bulkProgress]); // re-fetch after bulk runs
+
   /* ── Fetch user's completed sims ── */
   useEffect(() => {
     if (!user) return;
