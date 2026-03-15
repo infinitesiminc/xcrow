@@ -124,7 +124,9 @@ function NewsTicker() {
         <div className="animate-[ticker-vertical_20s_linear_infinite] flex flex-col">
           {[...TICKER_HEADLINES, ...TICKER_HEADLINES].map((h, i) => (
             <span key={i} className="text-[11px] text-foreground/70 flex items-center gap-2 px-4 h-[22px] shrink-0 whitespace-nowrap">
-              <span className="text-destructive/60">▸</span> {h}
+              <span className="text-destructive/60">▸</span>
+              <span className="text-muted-foreground/60 font-mono text-[10px]">{h.date}</span>
+              {h.text}
             </span>
           ))}
         </div>
