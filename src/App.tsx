@@ -13,8 +13,6 @@ import Auth from "./pages/Auth.tsx";
 import Dashboard from "./pages/Dashboard.tsx";
 import Settings from "./pages/Settings.tsx";
 import NotFound from "./pages/NotFound.tsx";
-import ForIndividuals from "./pages/ForIndividuals.tsx";
-import ForOrganizations from "./pages/ForOrganizations.tsx";
 import ToolsMarketplace from "./pages/ToolsMarketplace.tsx";
 import ContactOrg from "./pages/ContactOrg.tsx";
 import Contact from "./pages/Contact.tsx";
@@ -42,8 +40,6 @@ const App = () => (
             <Route path="/dashboard" element={<><Navbar /><Dashboard /><Footer /></>} />
             <Route path="/settings" element={<><Navbar /><Settings /><Footer /></>} />
             
-            <Route path="/for-individuals" element={<><Navbar /><ForIndividuals /><Footer /></>} />
-            <Route path="/for-organizations" element={<><Navbar /><ForOrganizations /><Footer /></>} />
             <Route path="/tools" element={<><Navbar /><ToolsMarketplace /><Footer /></>} />
             <Route path="/contact-org" element={<><Navbar /><ContactOrg /><Footer /></>} />
             <Route path="/contact" element={<><Navbar /><Contact /><Footer /></>} />

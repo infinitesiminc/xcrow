@@ -9,6 +9,12 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import NewsTicker from "@/components/NewsTicker";
+import CompanyMarquee from "@/components/CompanyMarquee";
+
+const MARQUEE_ROWS = [
+  ["Deloitte", "McKinsey", "Boeing", "FedEx", "Microsoft", "Apple", "Nvidia", "Stripe"],
+  ["DeepMind", "CoreWeave", "Glean", "Deel", "Lockheed Martin", "Databricks", "Cohere", "Meta"],
+];
 
 /* ── Workflow phases ── */
 const phases = [
@@ -179,6 +185,16 @@ export default function Enterprise() {
               See How It Works
             </Button>
           </motion.div>
+        </div>
+      </section>
+
+      {/* ── Trusted by ── */}
+      <section className="px-4 py-10">
+        <div className="mx-auto max-w-5xl">
+          <p className="text-center text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-6">
+            Trusted by teams at leading organizations
+          </p>
+          <CompanyMarquee rows={MARQUEE_ROWS} />
         </div>
       </section>
 
