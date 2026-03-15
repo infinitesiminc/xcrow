@@ -33,7 +33,7 @@ export default function TeamProgress() {
   const [expandedUser, setExpandedUser] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!user) return;
+    if (!user) { setLoading(false); return; }
     (async () => {
       setLoading(true);
       // Find workspace where user is admin

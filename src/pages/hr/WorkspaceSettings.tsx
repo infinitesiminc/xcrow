@@ -22,7 +22,7 @@ export default function WorkspaceSettings() {
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
-    if (!user) return;
+    if (!user) { setLoading(false); return; }
     (async () => {
       setLoading(true);
       const { data } = await supabase

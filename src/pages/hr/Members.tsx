@@ -23,7 +23,7 @@ export default function Members() {
   const [workspaceId, setWorkspaceId] = useState<string | null>(null);
 
   const fetchMembers = async () => {
-    if (!user) return;
+    if (!user) { setLoading(false); return; }
     setLoading(true);
 
     // Get workspace where user is admin
