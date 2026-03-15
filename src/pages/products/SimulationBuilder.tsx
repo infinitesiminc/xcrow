@@ -33,6 +33,11 @@ interface DbJob {
 
 
 
+interface CompletedSim {
+  task_name: string;
+  job_title: string;
+}
+
 
 
 export default function SimulationBuilder() {
