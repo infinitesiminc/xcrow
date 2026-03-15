@@ -1,0 +1,1 @@
+ALTER TABLE public.completed_simulations ADD COLUMN department text;

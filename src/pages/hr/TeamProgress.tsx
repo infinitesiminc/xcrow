@@ -18,32 +18,33 @@ interface ProgressRow {
   correct_answers: number;
   total_questions: number;
   completed_at: string;
+  department: string | null;
 }
 
 const DEMO_PROGRESS: ProgressRow[] = [
-  { user_id: "demo-1", display_name: "Sarah Chen", job_title: "Applied AI Engineer", task_name: "Prompt Engineering for Enterprise Clients", sim_job_title: "Applied AI Engineer", correct_answers: 5, total_questions: 5, completed_at: "2026-03-15T09:30:00Z" },
-  { user_id: "demo-1", display_name: "Sarah Chen", job_title: "Applied AI Engineer", task_name: "Model Integration Testing", sim_job_title: "Applied AI Engineer", correct_answers: 4, total_questions: 5, completed_at: "2026-03-14T14:00:00Z" },
-  { user_id: "demo-1", display_name: "Sarah Chen", job_title: "Applied AI Engineer", task_name: "Customer Deployment Review", sim_job_title: "Applied AI Engineer", correct_answers: 3, total_questions: 5, completed_at: "2026-03-13T11:15:00Z" },
-  { user_id: "demo-1", display_name: "Sarah Chen", job_title: "Applied AI Engineer", task_name: "Safety Evaluation Report", sim_job_title: "Applied AI Engineer", correct_answers: 5, total_questions: 5, completed_at: "2026-03-12T16:45:00Z" },
-  { user_id: "demo-2", display_name: "Marcus Rivera", job_title: "Data Science Engineer, Capacity & Efficiency", task_name: "Capacity Forecasting Model", sim_job_title: "Data Science Engineer", correct_answers: 4, total_questions: 5, completed_at: "2026-03-15T10:00:00Z" },
-  { user_id: "demo-2", display_name: "Marcus Rivera", job_title: "Data Science Engineer, Capacity & Efficiency", task_name: "Inference Cost Optimization", sim_job_title: "Data Science Engineer", correct_answers: 5, total_questions: 5, completed_at: "2026-03-14T08:30:00Z" },
-  { user_id: "demo-2", display_name: "Marcus Rivera", job_title: "Data Science Engineer, Capacity & Efficiency", task_name: "Utilization Dashboard Design", sim_job_title: "Data Science Engineer", correct_answers: 3, total_questions: 5, completed_at: "2026-03-13T15:20:00Z" },
-  { user_id: "demo-3", display_name: "Priya Sharma", job_title: "Solutions Architect, Applied AI", task_name: "Enterprise Architecture Proposal", sim_job_title: "Solutions Architect, Applied AI", correct_answers: 4, total_questions: 5, completed_at: "2026-03-15T13:00:00Z" },
-  { user_id: "demo-3", display_name: "Priya Sharma", job_title: "Solutions Architect, Applied AI", task_name: "Technical Requirements Gathering", sim_job_title: "Solutions Architect, Applied AI", correct_answers: 5, total_questions: 5, completed_at: "2026-03-14T09:45:00Z" },
-  { user_id: "demo-3", display_name: "Priya Sharma", job_title: "Solutions Architect, Applied AI", task_name: "API Integration Workshop", sim_job_title: "Solutions Architect, Applied AI", correct_answers: 3, total_questions: 5, completed_at: "2026-03-12T11:30:00Z" },
-  { user_id: "demo-3", display_name: "Priya Sharma", job_title: "Solutions Architect, Applied AI", task_name: "Proof of Concept Design", sim_job_title: "Solutions Architect, Applied AI", correct_answers: 4, total_questions: 5, completed_at: "2026-03-11T14:00:00Z" },
-  { user_id: "demo-4", display_name: "David Kim", job_title: "Analytics Data Engineer", task_name: "Pipeline Optimization Review", sim_job_title: "Analytics Data Engineer", correct_answers: 4, total_questions: 5, completed_at: "2026-03-14T16:00:00Z" },
-  { user_id: "demo-4", display_name: "David Kim", job_title: "Analytics Data Engineer", task_name: "Data Quality Framework", sim_job_title: "Analytics Data Engineer", correct_answers: 3, total_questions: 5, completed_at: "2026-03-13T10:30:00Z" },
-  { user_id: "demo-5", display_name: "Emily Watson", job_title: "Design Engineer, Web", task_name: "AI-Assisted Component Library", sim_job_title: "Design Engineer, Web", correct_answers: 5, total_questions: 5, completed_at: "2026-03-15T11:00:00Z" },
-  { user_id: "demo-5", display_name: "Emily Watson", job_title: "Design Engineer, Web", task_name: "Accessibility Audit", sim_job_title: "Design Engineer, Web", correct_answers: 4, total_questions: 5, completed_at: "2026-03-14T13:30:00Z" },
-  { user_id: "demo-5", display_name: "Emily Watson", job_title: "Design Engineer, Web", task_name: "Design System Token Migration", sim_job_title: "Design Engineer, Web", correct_answers: 4, total_questions: 5, completed_at: "2026-03-12T09:00:00Z" },
-  { user_id: "demo-6", display_name: "James Okafor", job_title: "Application Security Engineer", task_name: "Threat Model Review", sim_job_title: "Application Security Engineer", correct_answers: 5, total_questions: 5, completed_at: "2026-03-15T08:00:00Z" },
-  { user_id: "demo-6", display_name: "James Okafor", job_title: "Application Security Engineer", task_name: "Penetration Test Analysis", sim_job_title: "Application Security Engineer", correct_answers: 3, total_questions: 5, completed_at: "2026-03-13T14:45:00Z" },
-  { user_id: "demo-7", display_name: "Aisha Patel", job_title: "Developer Education Lead", task_name: "API Documentation Review", sim_job_title: "Developer Education Lead", correct_answers: 5, total_questions: 5, completed_at: "2026-03-14T10:00:00Z" },
-  { user_id: "demo-7", display_name: "Aisha Patel", job_title: "Developer Education Lead", task_name: "Tutorial Content Strategy", sim_job_title: "Developer Education Lead", correct_answers: 4, total_questions: 5, completed_at: "2026-03-13T09:30:00Z" },
-  { user_id: "demo-7", display_name: "Aisha Patel", job_title: "Developer Education Lead", task_name: "Developer Onboarding Flow", sim_job_title: "Developer Education Lead", correct_answers: 4, total_questions: 5, completed_at: "2026-03-11T15:00:00Z" },
-  { user_id: "demo-8", display_name: "Tom Lindqvist", job_title: "Customer Success Manager, Strategics", task_name: "Enterprise Account Health Review", sim_job_title: "Customer Success Manager", correct_answers: 4, total_questions: 5, completed_at: "2026-03-15T14:30:00Z" },
-  { user_id: "demo-8", display_name: "Tom Lindqvist", job_title: "Customer Success Manager, Strategics", task_name: "Quarterly Business Review Prep", sim_job_title: "Customer Success Manager", correct_answers: 5, total_questions: 5, completed_at: "2026-03-13T12:00:00Z" },
+  { user_id: "demo-1", display_name: "Sarah Chen", job_title: "Applied AI Engineer", task_name: "Prompt Engineering for Enterprise Clients", sim_job_title: "Applied AI Engineer", correct_answers: 5, total_questions: 5, completed_at: "2026-03-15T09:30:00Z", department: "Engineering" },
+  { user_id: "demo-1", display_name: "Sarah Chen", job_title: "Applied AI Engineer", task_name: "Model Integration Testing", sim_job_title: "Applied AI Engineer", correct_answers: 4, total_questions: 5, completed_at: "2026-03-14T14:00:00Z", department: "Engineering" },
+  { user_id: "demo-1", display_name: "Sarah Chen", job_title: "Applied AI Engineer", task_name: "Customer Deployment Review", sim_job_title: "Applied AI Engineer", correct_answers: 3, total_questions: 5, completed_at: "2026-03-13T11:15:00Z", department: "Engineering" },
+  { user_id: "demo-1", display_name: "Sarah Chen", job_title: "Applied AI Engineer", task_name: "Safety Evaluation Report", sim_job_title: "Applied AI Engineer", correct_answers: 5, total_questions: 5, completed_at: "2026-03-12T16:45:00Z", department: "Engineering" },
+  { user_id: "demo-2", display_name: "Marcus Rivera", job_title: "Data Science Engineer, Capacity & Efficiency", task_name: "Capacity Forecasting Model", sim_job_title: "Data Science Engineer", correct_answers: 4, total_questions: 5, completed_at: "2026-03-15T10:00:00Z", department: "Engineering" },
+  { user_id: "demo-2", display_name: "Marcus Rivera", job_title: "Data Science Engineer, Capacity & Efficiency", task_name: "Inference Cost Optimization", sim_job_title: "Data Science Engineer", correct_answers: 5, total_questions: 5, completed_at: "2026-03-14T08:30:00Z", department: "Engineering" },
+  { user_id: "demo-2", display_name: "Marcus Rivera", job_title: "Data Science Engineer, Capacity & Efficiency", task_name: "Utilization Dashboard Design", sim_job_title: "Data Science Engineer", correct_answers: 3, total_questions: 5, completed_at: "2026-03-13T15:20:00Z", department: "Engineering" },
+  { user_id: "demo-3", display_name: "Priya Sharma", job_title: "Solutions Architect, Applied AI", task_name: "Enterprise Architecture Proposal", sim_job_title: "Solutions Architect, Applied AI", correct_answers: 4, total_questions: 5, completed_at: "2026-03-15T13:00:00Z", department: "Go-to-Market" },
+  { user_id: "demo-3", display_name: "Priya Sharma", job_title: "Solutions Architect, Applied AI", task_name: "Technical Requirements Gathering", sim_job_title: "Solutions Architect, Applied AI", correct_answers: 5, total_questions: 5, completed_at: "2026-03-14T09:45:00Z", department: "Go-to-Market" },
+  { user_id: "demo-3", display_name: "Priya Sharma", job_title: "Solutions Architect, Applied AI", task_name: "API Integration Workshop", sim_job_title: "Solutions Architect, Applied AI", correct_answers: 3, total_questions: 5, completed_at: "2026-03-12T11:30:00Z", department: "Go-to-Market" },
+  { user_id: "demo-3", display_name: "Priya Sharma", job_title: "Solutions Architect, Applied AI", task_name: "Proof of Concept Design", sim_job_title: "Solutions Architect, Applied AI", correct_answers: 4, total_questions: 5, completed_at: "2026-03-11T14:00:00Z", department: "Go-to-Market" },
+  { user_id: "demo-4", display_name: "David Kim", job_title: "Analytics Data Engineer", task_name: "Pipeline Optimization Review", sim_job_title: "Analytics Data Engineer", correct_answers: 4, total_questions: 5, completed_at: "2026-03-14T16:00:00Z", department: "Engineering" },
+  { user_id: "demo-4", display_name: "David Kim", job_title: "Analytics Data Engineer", task_name: "Data Quality Framework", sim_job_title: "Analytics Data Engineer", correct_answers: 3, total_questions: 5, completed_at: "2026-03-13T10:30:00Z", department: "Engineering" },
+  { user_id: "demo-5", display_name: "Emily Watson", job_title: "Design Engineer, Web", task_name: "AI-Assisted Component Library", sim_job_title: "Design Engineer, Web", correct_answers: 5, total_questions: 5, completed_at: "2026-03-15T11:00:00Z", department: "Product" },
+  { user_id: "demo-5", display_name: "Emily Watson", job_title: "Design Engineer, Web", task_name: "Accessibility Audit", sim_job_title: "Design Engineer, Web", correct_answers: 4, total_questions: 5, completed_at: "2026-03-14T13:30:00Z", department: "Product" },
+  { user_id: "demo-5", display_name: "Emily Watson", job_title: "Design Engineer, Web", task_name: "Design System Token Migration", sim_job_title: "Design Engineer, Web", correct_answers: 4, total_questions: 5, completed_at: "2026-03-12T09:00:00Z", department: "Product" },
+  { user_id: "demo-6", display_name: "James Okafor", job_title: "Application Security Engineer", task_name: "Threat Model Review", sim_job_title: "Application Security Engineer", correct_answers: 5, total_questions: 5, completed_at: "2026-03-15T08:00:00Z", department: "Security" },
+  { user_id: "demo-6", display_name: "James Okafor", job_title: "Application Security Engineer", task_name: "Penetration Test Analysis", sim_job_title: "Application Security Engineer", correct_answers: 3, total_questions: 5, completed_at: "2026-03-13T14:45:00Z", department: "Security" },
+  { user_id: "demo-7", display_name: "Aisha Patel", job_title: "Developer Education Lead", task_name: "API Documentation Review", sim_job_title: "Developer Education Lead", correct_answers: 5, total_questions: 5, completed_at: "2026-03-14T10:00:00Z", department: "Go-to-Market" },
+  { user_id: "demo-7", display_name: "Aisha Patel", job_title: "Developer Education Lead", task_name: "Tutorial Content Strategy", sim_job_title: "Developer Education Lead", correct_answers: 4, total_questions: 5, completed_at: "2026-03-13T09:30:00Z", department: "Go-to-Market" },
+  { user_id: "demo-7", display_name: "Aisha Patel", job_title: "Developer Education Lead", task_name: "Developer Onboarding Flow", sim_job_title: "Developer Education Lead", correct_answers: 4, total_questions: 5, completed_at: "2026-03-11T15:00:00Z", department: "Go-to-Market" },
+  { user_id: "demo-8", display_name: "Tom Lindqvist", job_title: "Customer Success Manager, Strategics", task_name: "Enterprise Account Health Review", sim_job_title: "Customer Success Manager", correct_answers: 4, total_questions: 5, completed_at: "2026-03-15T14:30:00Z", department: "Go-to-Market" },
+  { user_id: "demo-8", display_name: "Tom Lindqvist", job_title: "Customer Success Manager, Strategics", task_name: "Quarterly Business Review Prep", sim_job_title: "Customer Success Manager", correct_answers: 5, total_questions: 5, completed_at: "2026-03-13T12:00:00Z", department: "Go-to-Market" },
 ];
 
 interface WorkspaceRow {
@@ -98,7 +99,14 @@ export default function TeamProgress() {
     progress.forEach(r => {
       roleBreakdown[r.sim_job_title] = (roleBreakdown[r.sim_job_title] || 0) + 1;
     });
-    return { uniqueUsers: uniqueUsers.size, totalSims, avgScore, roleBreakdown };
+    const deptBreakdown: Record<string, { count: number; totalScore: number }> = {};
+    progress.forEach(r => {
+      const dept = r.department || "Uncategorized";
+      if (!deptBreakdown[dept]) deptBreakdown[dept] = { count: 0, totalScore: 0 };
+      deptBreakdown[dept].count += 1;
+      deptBreakdown[dept].totalScore += r.total_questions > 0 ? (r.correct_answers / r.total_questions) * 100 : 0;
+    });
+    return { uniqueUsers: uniqueUsers.size, totalSims, avgScore, roleBreakdown, deptBreakdown };
   }, [progress]);
 
   // Group by user for individual view
@@ -206,27 +214,55 @@ export default function TeamProgress() {
       </div>
 
       {viewMode === "aggregate" ? (
-        /* Aggregate: Role breakdown */
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-sm font-semibold">Completion by Role</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            {Object.entries(stats.roleBreakdown).length === 0 ? (
-              <p className="text-sm text-muted-foreground text-center py-8">No simulation data yet. Share the join code with your team to get started.</p>
-            ) : (
-              Object.entries(stats.roleBreakdown)
-                .sort((a, b) => b[1] - a[1])
-                .map(([role, count]) => (
-                  <div key={role} className="flex items-center gap-3">
-                    <span className="text-sm text-foreground flex-1 truncate">{role}</span>
-                    <Badge variant="secondary" className="text-xs">{count} sims</Badge>
-                    <Progress value={Math.min((count / Math.max(stats.totalSims, 1)) * 100, 100)} className="w-24 h-1.5" />
-                  </div>
-                ))
-            )}
-          </CardContent>
-        </Card>
+        <div className="space-y-6">
+          {/* Department breakdown */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-sm font-semibold">Completion by Department</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {Object.entries(stats.deptBreakdown).length === 0 ? (
+                <p className="text-sm text-muted-foreground text-center py-8">No simulation data yet.</p>
+              ) : (
+                Object.entries(stats.deptBreakdown)
+                  .sort((a, b) => b[1].count - a[1].count)
+                  .map(([dept, data]) => {
+                    const avgPct = Math.round(data.totalScore / data.count);
+                    return (
+                      <div key={dept} className="flex items-center gap-3">
+                        <span className="text-sm text-foreground flex-1 truncate">{dept}</span>
+                        <Badge variant="secondary" className="text-xs">{data.count} sims</Badge>
+                        <span className={`text-xs font-semibold ${avgPct >= 70 ? "text-success" : "text-dot-amber"}`}>{avgPct}%</span>
+                        <Progress value={Math.min((data.count / Math.max(stats.totalSims, 1)) * 100, 100)} className="w-24 h-1.5" />
+                      </div>
+                    );
+                  })
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Role breakdown */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-sm font-semibold">Completion by Role</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {Object.entries(stats.roleBreakdown).length === 0 ? (
+                <p className="text-sm text-muted-foreground text-center py-8">No simulation data yet. Share the join code with your team to get started.</p>
+              ) : (
+                Object.entries(stats.roleBreakdown)
+                  .sort((a, b) => b[1] - a[1])
+                  .map(([role, count]) => (
+                    <div key={role} className="flex items-center gap-3">
+                      <span className="text-sm text-foreground flex-1 truncate">{role}</span>
+                      <Badge variant="secondary" className="text-xs">{count} sims</Badge>
+                      <Progress value={Math.min((count / Math.max(stats.totalSims, 1)) * 100, 100)} className="w-24 h-1.5" />
+                    </div>
+                  ))
+              )}
+            </CardContent>
+          </Card>
+        </div>
       ) : (
         /* Individual: User drill-down */
         <div className="space-y-2">
