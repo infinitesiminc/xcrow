@@ -3,7 +3,8 @@ import { motion } from "framer-motion";
 import {
   Zap, ArrowRight, Layers, Brain, Settings2, Sparkles,
   GraduationCap, Timer, BarChart3, Building2, SlidersHorizontal,
-  Play, ClipboardCheck, Users, Target, Puzzle,
+  Play, ClipboardCheck, Users, Target, Puzzle, Compass, GitBranch,
+  Map, TrendingUp, FileBarChart, BookOpen, ShieldCheck,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
