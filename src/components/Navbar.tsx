@@ -25,14 +25,16 @@ export default function Navbar() {
     ? user.user_metadata.display_name.slice(0, 2).toUpperCase()
     : user?.email?.slice(0, 2).toUpperCase() ?? "?";
 
-  const productItems = [
+  const productItems = user ? [] : [
     { label: "Platform Overview", path: "/" },
     { label: "How It Works", path: "/simulation-design" },
   ];
 
   const navItems = [
-    { label: "Pricing", path: "/pricing" },
-    { label: "Contact", path: "/contact" },
+    ...(!user ? [
+      { label: "Pricing", path: "/pricing" },
+      { label: "Contact", path: "/contact" },
+    ] : []),
     ...(user ? [
       { label: "HR Dashboard", path: "/hr/team-progress" },
     ] : []),
@@ -58,24 +60,26 @@ export default function Navbar() {
         {/* Desktop nav */}
         <nav className="hidden md:flex items-center gap-1">
           {/* Products dropdown */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant={location.pathname.startsWith("/products") ? "secondary" : "ghost"}
-                size="sm"
-                className="text-sm gap-1"
-              >
-                Products <ChevronDown className="h-3.5 w-3.5" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="start" className="w-52">
-              {productItems.map((item) => (
-                <DropdownMenuItem key={item.path} onClick={() => navigate(item.path)} className="cursor-pointer">
-                  {item.label}
-                </DropdownMenuItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
+          {productItems.length > 0 && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant={location.pathname.startsWith("/products") ? "secondary" : "ghost"}
+                  size="sm"
+                  className="text-sm gap-1"
+                >
+                  Products <ChevronDown className="h-3.5 w-3.5" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" className="w-52">
+                {productItems.map((item) => (
+                  <DropdownMenuItem key={item.path} onClick={() => navigate(item.path)} className="cursor-pointer">
+                    {item.label}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
 
           {navItems.map((item) => (
             <Button
