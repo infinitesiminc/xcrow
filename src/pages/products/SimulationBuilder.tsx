@@ -213,7 +213,48 @@ export default function SimulationBuilder() {
     return Math.min(100, Math.round((uniqueTasks.size / 10) * 100));
   }, [completedSims]);
 
-  // Priority filter state
+  /* ── Filter jobs ── */
+  const filteredJobs = useMemo(() => {
+    if (!search.trim()) return jobs;
+    const q = search.toLowerCase();
+    return jobs.filter(j =>
+      j.title.toLowerCase().includes(q) ||
+      j.department?.toLowerCase().includes(q) ||
+      j.location?.toLowerCase().includes(q)
+    );
+  }, [jobs, search]);
+
+  const departments = useMemo(() => {
+    const depts = new Map<string, number>();
+    jobs.forEach(j => {
+      const d = j.department || "Other";
+      depts.set(d, (depts.get(d) || 0) + 1);
+    });
+    return Array.from(depts.entries()).sort((a, b) => b[1] - a[1]).slice(0, 8);
+  }, [jobs]);
+
+  const groupedJobs = useMemo(() => {
+    const groups = new Map<string, DbJob[]>();
+    filteredJobs.forEach(j => {
+      const dept = j.department || "Other";
+      if (!groups.has(dept)) groups.set(dept, []);
+      groups.get(dept)!.push(j);
+    });
+    groups.forEach((jobList) => {
+      jobList.sort((a, b) => {
+        const aReady = analyzedJobIds.has(a.id) ? 0 : 1;
+        const bReady = analyzedJobIds.has(b.id) ? 0 : 1;
+        if (aReady !== bReady) return aReady - bReady;
+        return a.title.localeCompare(b.title);
+      });
+    });
+    return Array.from(groups.entries()).sort((a, b) => {
+      const aReady = a[1].filter(j => analyzedJobIds.has(j.id)).length;
+      const bReady = b[1].filter(j => analyzedJobIds.has(j.id)).length;
+      return bReady - aReady;
+    });
+  }, [filteredJobs, analyzedJobIds]);
+
   const [priorityMode, setPriorityMode] = useState<"all" | "dept" | "job">("all");
   const [priorityDept, setPriorityDept] = useState<string | null>(null);
   const [priorityJobId, setPriorityJobId] = useState<string | null>(null);
