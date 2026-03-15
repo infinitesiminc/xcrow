@@ -200,6 +200,60 @@ export type Database = {
         }
         Relationships: []
       }
+      custom_simulations: {
+        Row: {
+          ai_state: string | null
+          ai_trend: string | null
+          company: string | null
+          created_at: string
+          id: string
+          impact_level: string | null
+          job_title: string
+          priority: string | null
+          recommended_template: string
+          sim_duration: number | null
+          source_document_text: string | null
+          source_prompt: string | null
+          source_type: string
+          task_name: string
+          user_id: string
+        }
+        Insert: {
+          ai_state?: string | null
+          ai_trend?: string | null
+          company?: string | null
+          created_at?: string
+          id?: string
+          impact_level?: string | null
+          job_title: string
+          priority?: string | null
+          recommended_template?: string
+          sim_duration?: number | null
+          source_document_text?: string | null
+          source_prompt?: string | null
+          source_type?: string
+          task_name: string
+          user_id: string
+        }
+        Update: {
+          ai_state?: string | null
+          ai_trend?: string | null
+          company?: string | null
+          created_at?: string
+          id?: string
+          impact_level?: string | null
+          job_title?: string
+          priority?: string | null
+          recommended_template?: string
+          sim_duration?: number | null
+          source_document_text?: string | null
+          source_prompt?: string | null
+          source_type?: string
+          task_name?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       email_send_log: {
         Row: {
           created_at: string
