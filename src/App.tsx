@@ -71,6 +71,7 @@ const App = () => (
             <Route path="/hr" element={<HRLayout />}>
               <Route index element={<TeamProgress />} />
               <Route path="team-progress" element={<TeamProgress />} />
+              <Route path="simulations" element={<SimulationBuilder />} />
               <Route path="members" element={<Members />} />
               <Route path="settings" element={<WorkspaceSettings />} />
               <Route path="invite" element={<InvitePage />} />
