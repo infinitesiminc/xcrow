@@ -322,14 +322,6 @@ export default function SimulationBuilder() {
     setBulkRunning(false);
   }, [companyId, toast, bulkErrors, bulkSessionStart, priorityMode, priorityDept, priorityJobId]);
 
-  /* ── Launch simulation ── */
-  const launchSim = (task: EnrichedTask) => {
-    setSimTask(task.cluster_name);
-    setSimTaskState(task.ai_state);
-    setSimTaskTrend(task.ai_trend);
-    setSimTaskImpact(task.impact_level);
-    setSimOpen(true);
-  };
 
   return (
     <div className="min-h-screen bg-background">
