@@ -608,3 +608,90 @@ export function generateDemoProgress(): DemoProgressRow[] {
   _cachedProgress = rows;
   return rows;
 }
+
+/**
+ * Generate 4-week trend data per department for sparklines.
+ * Shows realistic week-over-week improvement in avg readiness score.
+ */
+export interface WeeklyTrend {
+  week: string; // e.g., "W1", "W2"
+  score: number;
+}
+
+export interface DeptTrendData {
+  dept: string;
+  employees: number;
+  analyzedRoles: number;
+  started: number;
+  completionRate: number;
+  avgReadiness: number;
+  weakestPillar: string;
+  weakestScore: number;
+  trend: WeeklyTrend[];
+  delta: number; // change from W1 → W4
+}
+
+let _cachedTrends: DeptTrendData[] | null = null;
+
+export function generateDeptTrends(): DeptTrendData[] {
+  if (_cachedTrends) return _cachedTrends;
+
+  const rand = seededRandom(9999);
+  const progress = generateDemoProgress();
+  const employees = getDemoEmployees();
+
+  const deptNames = Object.keys(DEPT_DATA);
+  const pillarLabels = ["Tool Awareness", "Human Value-Add", "Adaptive Thinking", "Domain Judgment"];
+  const pillarKeys = ["tool_awareness_score", "human_value_add_score", "adaptive_thinking_score", "domain_judgment_score"] as const;
+
+  const trends: DeptTrendData[] = deptNames.map(dept => {
+    const deptEmps = employees.filter(e => e.dept === dept);
+    const deptProgress = progress.filter(r => r.department === dept);
+    const analyzedCount = deptEmps.filter(e => e.analyzed).length;
+    const startedCount = deptEmps.filter(e => e.started).length;
+    const completionRate = deptEmps.length > 0 ? Math.round((startedCount / deptEmps.length) * 100) : 0;
+
+    // Compute current avg readiness across all 4 pillars
+    const allScores = deptProgress.flatMap(r =>
+      pillarKeys.map(k => r[k]).filter((v): v is number => v != null)
+    );
+    const avgReadiness = allScores.length > 0
+      ? Math.round(allScores.reduce((a, b) => a + b, 0) / allScores.length)
+      : 0;
+
+    // Find weakest pillar
+    const pillarAvgs = pillarKeys.map((k, i) => {
+      const scores = deptProgress.map(r => r[k]).filter((v): v is number => v != null);
+      const avg = scores.length > 0 ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) : 0;
+      return { label: pillarLabels[i], avg };
+    });
+    const weakest = pillarAvgs.sort((a, b) => a.avg - b.avg)[0];
+
+    // Generate 4-week trend (working backward from current avg)
+    // Simulate gradual improvement: W1 was lower, W4 is current
+    const baseW1 = Math.max(20, avgReadiness - Math.floor(rand() * 15) - 8);
+    const trend: WeeklyTrend[] = [
+      { week: "W1", score: baseW1 },
+      { week: "W2", score: Math.min(100, baseW1 + Math.floor(rand() * 6) + 2) },
+      { week: "W3", score: Math.min(100, baseW1 + Math.floor(rand() * 10) + 5) },
+      { week: "W4", score: avgReadiness },
+    ];
+    const delta = trend[3].score - trend[0].score;
+
+    return {
+      dept,
+      employees: deptEmps.length,
+      analyzedRoles: analyzedCount,
+      started: startedCount,
+      completionRate,
+      avgReadiness,
+      weakestPillar: weakest.label,
+      weakestScore: weakest.avg,
+      trend,
+      delta,
+    };
+  });
+
+  _cachedTrends = trends.sort((a, b) => b.employees - a.employees);
+  return _cachedTrends;
+}
