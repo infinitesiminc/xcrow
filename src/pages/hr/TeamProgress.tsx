@@ -93,6 +93,17 @@ export default function TeamProgress() {
     );
   }
 
+  if (!user) {
+    return (
+      <div className="p-8 text-center">
+        <BarChart3 className="h-12 w-12 mx-auto text-muted-foreground/40 mb-4" />
+        <h2 className="text-lg font-semibold text-foreground mb-2">Sign In Required</h2>
+        <p className="text-sm text-muted-foreground mb-4">Sign in to view your team's progress.</p>
+        <Button onClick={() => openAuthModal()}>Sign In</Button>
+      </div>
+    );
+  }
+
   if (!workspace) {
     return (
       <div className="p-8 text-center">
