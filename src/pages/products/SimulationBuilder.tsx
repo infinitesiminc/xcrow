@@ -238,15 +238,29 @@ export default function SimulationBuilder() {
       if (error) throw new Error(error.message);
       if (data?.error) throw new Error(data.error);
 
-      const tasks = (data.tasks || []).map((t: any) => ({
-        ...t,
-        ai_state: t.ai_state || "human_ai",
-        ai_trend: t.ai_trend || "increasing_ai",
-        impact_level: t.impact_level || "medium",
-        recommended_template: t.recommended_template || "quick-pulse",
-        priority: t.priority || "important",
-        sim_duration: t.sim_duration || 3,
-      }));
+      const tasks = (data.tasks || []).map((t: any) => {
+        const state = t.ai_state || "human_ai";
+        const impact = t.impact_level || "medium";
+        const priority = t.priority || "important";
+        const skillCount = (t.skill_names || []).length;
+        // Deterministic template scoring
+        let score = 0;
+        score += state === "mostly_human" ? 3 : state === "human_ai" ? 2 : 1;
+        score += impact === "high" ? 3 : impact === "medium" ? 2 : 1;
+        score += priority === "critical" ? 3 : priority === "important" ? 2 : 1;
+        if (skillCount >= 4) score += 2; else if (skillCount >= 3) score += 1;
+        const recTemplate = score >= 9 ? "case-challenge" : score >= 6 ? "deep-dive" : "quick-pulse";
+        const recDuration = score >= 9 ? 30 : score >= 6 ? 15 : 3;
+        return {
+          ...t,
+          ai_state: state,
+          ai_trend: t.ai_trend || "increasing_ai",
+          impact_level: impact,
+          recommended_template: t.recommended_template || recTemplate,
+          priority,
+          sim_duration: t.sim_duration || recDuration,
+        };
+      });
       setAnalyzedTasks(tasks);
     } catch (err: any) {
       console.error("Task analysis failed:", err);
