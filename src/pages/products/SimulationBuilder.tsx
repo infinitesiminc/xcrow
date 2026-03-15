@@ -567,7 +567,7 @@ export default function SimulationBuilder() {
       <div className="mx-auto max-w-6xl px-4 pb-16">
         <div className="flex flex-col lg:flex-row gap-6">
           {/* Left: Job Browser */}
-          <div className={`${selectedJob ? "lg:w-[380px]" : "lg:w-[480px]"} shrink-0 transition-all duration-300`}>
+          <div className="lg:w-[480px] shrink-0 transition-all duration-300">
             {/* Search */}
             <div className="sticky top-4 space-y-3 mb-4">
               <div className="relative">
