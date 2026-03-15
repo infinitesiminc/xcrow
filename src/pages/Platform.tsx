@@ -172,6 +172,27 @@ export default function Platform() {
         </div>
       </section>
 
+      {/* ── Capability Radar ── */}
+      <section className="px-4 py-16">
+        <div className="mx-auto max-w-4xl text-center mb-10">
+          <h2 className="font-serif text-2xl sm:text-4xl font-bold text-foreground mb-3">
+            One engine. Infinite use cases.
+          </h2>
+          <p className="text-muted-foreground max-w-xl mx-auto">
+            From defending legacy roles against disruption to staffing the quantum frontier — the same model adapts across every dimension.
+          </p>
+        </div>
+        <motion.div
+          initial={{ opacity: 0, scale: 0.92 }}
+          whileInView={{ opacity: 1, scale: 1 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5 }}
+          className="mx-auto max-w-3xl"
+        >
+          <CapabilityRadar />
+        </motion.div>
+      </section>
+
       {/* ── Architecture Flow ── */}
       <section className="px-4 py-16 bg-accent/30">
         <div className="mx-auto max-w-4xl">
