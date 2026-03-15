@@ -552,7 +552,7 @@ export default function SimulationBuilder() {
                     <div className="space-y-2">
                       <div className="flex items-center gap-1.5">
                         <button
-                          onClick={() => { setPriorityMode("all"); setPriorityDept(null); setPriorityJobId(null); }}
+                          onClick={() => { setPriorityMode("all"); setPriorityDept(null); setPriorityJobId(null); setSearch(""); }}
                           className={`text-[10px] px-2 py-0.5 rounded-full border transition-colors ${priorityMode === "all" ? "bg-primary text-primary-foreground border-primary" : "bg-muted/40 text-muted-foreground border-border hover:border-primary/30"}`}
                         >
                           All
