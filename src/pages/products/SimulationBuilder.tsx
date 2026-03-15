@@ -451,65 +451,90 @@ export default function SimulationBuilder() {
               Select any {companyName} role to auto-generate a personalized learning path — 
               each task analyzed for AI impact with recommended simulation packages.
             </p>
-            {/* Bulk Analyze Section */}
+            {/* Batch Analysis Dashboard */}
             {companyId && (
-              <div className="mt-6 mx-auto max-w-md">
+              <div className="mt-6 mx-auto max-w-lg">
                 <Card className="border-border bg-card/60 backdrop-blur">
-                  <CardContent className="p-4 space-y-3">
-                    <div className="flex items-start gap-3">
-                      <div className="rounded-lg bg-primary/10 p-2 shrink-0">
-                        <Brain className="h-4 w-4 text-primary" />
+                  <CardContent className="p-5 space-y-4">
+                    {/* Header row */}
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className="rounded-lg bg-primary/10 p-1.5">
+                          <Brain className="h-4 w-4 text-primary" />
+                        </div>
+                        <h3 className="text-sm font-semibold text-foreground">Role Analysis Pipeline</h3>
                       </div>
-                      <div className="text-left">
-                        <h3 className="text-sm font-semibold text-foreground">Pre-analyze all roles</h3>
-                        <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
-                          AI breaks each role into 8–12 task clusters and flags which are most impacted by AI. 
-                          Analyzed roles show a <Badge variant="outline" className="text-[9px] px-1 py-0 h-3.5 bg-primary/10 text-primary border-primary/20 mx-0.5 inline">Ready</Badge> badge 
-                          and load instantly when selected.
-                        </p>
+                      <Badge variant="outline" className="text-[10px] px-2 py-0.5 border-border text-muted-foreground">
+                        {companyName}
+                      </Badge>
+                    </div>
+
+                    {/* Stats grid */}
+                    <div className="grid grid-cols-3 gap-3">
+                      <div className="rounded-lg border border-border bg-background/50 p-2.5 text-center">
+                        <div className="text-lg font-bold text-foreground">{jobs.length}</div>
+                        <div className="text-[10px] text-muted-foreground">Total Roles</div>
+                      </div>
+                      <div className="rounded-lg border border-border bg-background/50 p-2.5 text-center">
+                        <div className="text-lg font-bold text-primary">{analyzedJobIds.size}</div>
+                        <div className="text-[10px] text-muted-foreground">Analyzed</div>
+                      </div>
+                      <div className="rounded-lg border border-border bg-background/50 p-2.5 text-center">
+                        <div className="text-lg font-bold text-muted-foreground">{Math.max(0, jobs.length - analyzedJobIds.size)}</div>
+                        <div className="text-[10px] text-muted-foreground">Remaining</div>
                       </div>
                     </div>
 
+                    {/* Progress bar */}
+                    {jobs.length > 0 && (
+                      <div className="space-y-1.5">
+                        <Progress
+                          value={jobs.length > 0 ? (analyzedJobIds.size / jobs.length) * 100 : 0}
+                          className="h-2"
+                        />
+                        <div className="flex justify-between text-[10px] text-muted-foreground">
+                          <span>{Math.round((analyzedJobIds.size / jobs.length) * 100)}% complete</span>
+                          <span>~{Math.max(0, jobs.length - analyzedJobIds.size) * 3}s estimated</span>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Action row */}
                     <div className="flex items-center gap-3">
                       <Button
-                        variant="outline"
+                        variant={analyzedJobIds.size >= jobs.length ? "outline" : "default"}
                         size="sm"
                         onClick={runBulkBatch}
-                        disabled={bulkRunning}
-                        className="gap-2 text-xs shrink-0"
+                        disabled={bulkRunning || analyzedJobIds.size >= jobs.length}
+                        className="gap-2 text-xs flex-1"
                       >
                         {bulkRunning ? (
                           <>
                             <Loader2 className="h-3.5 w-3.5 animate-spin" />
                             Analyzing 5 roles…
                           </>
+                        ) : analyzedJobIds.size >= jobs.length ? (
+                          <>
+                            <CheckCircle2 className="h-3.5 w-3.5" />
+                            All roles analyzed
+                          </>
                         ) : (
                           <>
                             <Sparkles className="h-3.5 w-3.5" />
-                            {bulkProgress && bulkProgress.remaining > 0
-                              ? `Analyze next 5 of ${bulkProgress.remaining}`
-                              : "Start batch analysis"}
+                            Analyze next batch ({Math.min(5, jobs.length - analyzedJobIds.size)} roles)
                           </>
                         )}
                       </Button>
-                      {bulkProgress && (
-                        <span className="text-[11px] text-muted-foreground">
-                          {bulkProgress.analyzed}/{bulkProgress.total} roles ready
-                        </span>
-                      )}
                     </div>
 
-                    {bulkProgress && bulkProgress.total > 0 && (
-                      <div className="space-y-1">
-                        <Progress value={(bulkProgress.analyzed / bulkProgress.total) * 100} className="h-1.5" />
-                        <p className="text-[10px] text-muted-foreground text-right">
-                          {Math.round((bulkProgress.analyzed / bulkProgress.total) * 100)}% complete — {bulkProgress.remaining} roles left
-                        </p>
-                      </div>
-                    )}
+                    {/* Explanation */}
+                    <p className="text-[10px] text-muted-foreground leading-relaxed">
+                      Each batch sends 5 roles to AI, generating 8–12 task clusters per role with impact ratings. 
+                      Analyzed roles show a <Badge variant="outline" className="text-[8px] px-1 py-0 h-3 bg-primary/10 text-primary border-primary/20 mx-0.5 inline-flex items-center">Ready</Badge> badge and load instantly.
+                    </p>
 
                     {bulkPaused && (
-                      <div className="flex items-center gap-1.5 text-xs text-amber-500 bg-amber-500/5 rounded-md px-2 py-1.5">
+                      <div className="flex items-center gap-1.5 text-xs text-amber-500 bg-amber-500/5 rounded-md px-2.5 py-2">
                         <AlertTriangle className="h-3 w-3 shrink-0" />
                         <span>{bulkPaused}</span>
                       </div>
