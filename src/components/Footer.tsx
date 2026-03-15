@@ -8,9 +8,10 @@ const Footer = () => (
           <h4 className="text-xs font-medium uppercase tracking-widest text-muted-foreground mb-3">Product</h4>
           <ul className="space-y-2">
             <li><Link to="/" className="text-sm text-foreground/70 hover:text-foreground transition-colors">Analyze a Role</Link></li>
+            <li><Link to="/platform" className="text-sm text-foreground/70 hover:text-foreground transition-colors">Platform</Link></li>
+            <li><Link to="/how-it-works" className="text-sm text-foreground/70 hover:text-foreground transition-colors">How It Works</Link></li>
             <li><Link to="/tools" className="text-sm text-foreground/70 hover:text-foreground transition-colors">Tool Marketplace</Link></li>
             <li><Link to="/dashboard" className="text-sm text-foreground/70 hover:text-foreground transition-colors">Dashboard</Link></li>
-            <li><Link to="/company-dashboard" className="text-sm text-foreground/70 hover:text-foreground transition-colors">Company Demo</Link></li>
             <li><Link to="/pricing" className="text-sm text-foreground/70 hover:text-foreground transition-colors">Pricing</Link></li>
           </ul>
         </div>
