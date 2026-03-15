@@ -578,14 +578,15 @@ export function generateDemoProgress(): DemoProgressRow[] {
       const total = 5;
       const correct = Math.min(total, Math.max(1, randInt(2, 5)));
 
-      // AI readiness scores with realistic archetypes
-      const empArchetype = Math.floor(simRand() * 4);
-      const baseScore = empArchetype === 3 ? randInt(30, 55) : empArchetype === 0 ? randInt(55, 80) : randInt(60, 85);
+      // AI readiness scores with realistic archetypes — wide spread for visible contrast
+      const empArchetype = Math.floor(simRand() * 5);
+      const baseScore = empArchetype === 3 ? randInt(25, 45) : empArchetype === 4 ? randInt(80, 95) : empArchetype === 0 ? randInt(55, 75) : randInt(50, 70);
 
-      const toolAwareness = Math.min(100, Math.max(10, baseScore + (empArchetype === 1 ? randInt(10, 25) : randInt(-15, 10))));
-      const humanValueAdd = Math.min(100, Math.max(10, baseScore + (empArchetype === 2 ? randInt(10, 25) : randInt(-15, 10))));
-      const adaptiveThinking = Math.min(100, Math.max(10, baseScore + randInt(-12, 12)));
-      const domainJudgment = Math.min(100, Math.max(10, baseScore + randInt(-10, 15)));
+      // Each pillar has a distinct bias so org-wide averages diverge clearly
+      const toolAwareness = Math.min(100, Math.max(10, baseScore + (empArchetype === 1 ? randInt(15, 30) : empArchetype === 3 ? randInt(-20, -5) : randInt(-8, 12))));
+      const humanValueAdd = Math.min(100, Math.max(10, baseScore + (empArchetype === 2 ? randInt(15, 30) : empArchetype === 4 ? randInt(-25, -10) : randInt(-10, 8))));
+      const adaptiveThinking = Math.min(100, Math.max(10, baseScore + (empArchetype === 0 ? randInt(-25, -8) : randInt(-5, 15))));
+      const domainJudgment = Math.min(100, Math.max(10, baseScore + (empArchetype === 1 ? randInt(-20, -5) : empArchetype === 4 ? randInt(10, 25) : randInt(-8, 10))));
 
       rows.push({
         user_id: emp.id,
