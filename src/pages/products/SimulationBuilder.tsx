@@ -37,7 +37,7 @@ interface CompletedSim {
 export default function SimulationBuilder() {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { user } = useAuth();
+  const { user, openAuthModal } = useAuth();
 
   /* ── State ── */
   const [jobs, setJobs] = useState<DbJob[]>([]);
