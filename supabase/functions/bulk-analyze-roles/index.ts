@@ -104,6 +104,9 @@ For each task cluster return a JSON array of objects with:
 2. "description": One sentence describing the task
 3. "outcome": What successful completion looks like
 4. "skill_names": Array of 2-4 skills needed
+5. "ai_state": One of "mostly_human", "human_ai", "mostly_ai"
+6. "impact_level": One of "low", "medium", "high"
+7. "priority": "critical", "important", or "helpful"
 
 Order from highest AI impact to lowest. Respond ONLY with valid JSON array.`;
 
@@ -154,6 +157,25 @@ Order from highest AI impact to lowest. Respond ONLY with valid JSON array.`;
         if (insertErr) {
           results.push({ jobId: job.id, title: job.title, status: "insert_error: " + insertErr.message });
         } else {
+          // Compute job-level scores from task signals
+          const totalTasks = tasks.length || 1;
+          const augmentedCount = tasks.filter((t: any) => (t.ai_state || "human_ai") === "human_ai").length;
+          const mostlyAiCount = tasks.filter((t: any) => (t.ai_state || "human_ai") === "mostly_ai").length;
+          const highImpactCount = tasks.filter((t: any) => (t.impact_level || "medium") === "high").length;
+          const criticalCount = tasks.filter((t: any) => (t.priority || "important") === "critical").length;
+
+          const augmented_percent = Math.round((augmentedCount / totalTasks) * 100);
+          const automation_risk_percent = Math.round(((mostlyAiCount * 1.0 + highImpactCount * 0.5) / totalTasks) * 60 + (criticalCount / totalTasks) * 20);
+          const new_skills_percent = Math.round(
+            tasks.reduce((sum: number, t: any) => sum + Math.min((t.skill_names || []).length, 4), 0) / (totalTasks * 4) * 100
+          );
+
+          await sb.from("jobs").update({
+            augmented_percent: Math.min(augmented_percent, 100),
+            automation_risk_percent: Math.min(automation_risk_percent, 100),
+            new_skills_percent: Math.min(new_skills_percent, 100),
+          }).eq("id", job.id);
+
           results.push({ jobId: job.id, title: job.title, status: "success", taskCount: rows.length });
         }
 
