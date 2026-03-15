@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
+import { useState, useEffect } from "react";
 import {
   Zap, Brain, Target, ArrowRight, Clock, Layers,
   BarChart3, Users, Sliders, CheckCircle2, Play,
@@ -10,6 +11,89 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+
+/* ── Live Timeline with month-granularity ── */
+const TIMELINE_START = new Date("2024-01-01");
+const TIMELINE_END = new Date("2028-01-01");
+const TOTAL_MONTHS = 48; // 4 years
+
+const milestones = [
+  { date: new Date("2024-01-01"), label: "GPT-4 era" },
+  { date: new Date("2025-01-01"), label: "Agent wave" },
+  { date: new Date("2026-01-01"), label: "Autonomous AI" },
+  { date: new Date("2027-01-01"), label: "Frontier" },
+  { date: new Date("2028-01-01"), label: "Post-AI roles" },
+];
+
+function getTimelinePercent(date: Date) {
+  const elapsed = date.getTime() - TIMELINE_START.getTime();
+  const total = TIMELINE_END.getTime() - TIMELINE_START.getTime();
+  return Math.max(0, Math.min(100, (elapsed / total) * 100));
+}
+
+function LiveTimeline() {
+  const [now, setNow] = useState(new Date());
+
+  useEffect(() => {
+    const id = setInterval(() => setNow(new Date()), 1000);
+    return () => clearInterval(id);
+  }, []);
+
+  const nowPercent = getTimelinePercent(now);
+  const timeStr = now.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+  const dateStr = now.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+
+  return (
+    <div className="relative px-4 py-10">
+      {/* Base track */}
+      <div className="absolute left-[4%] right-[4%] top-[42px] h-[2px] bg-border" />
+      {/* Filled track up to now */}
+      <div
+        className="absolute left-[4%] top-[42px] h-[2px] bg-primary/40"
+        style={{ width: `${nowPercent * 0.92}%` }}
+      />
+
+      {/* Live indicator */}
+      <div
+        className="absolute z-20 flex flex-col items-center"
+        style={{ left: `${4 + nowPercent * 0.92}%`, top: 0, transform: "translateX(-50%)" }}
+      >
+        <span className="text-[9px] font-bold uppercase tracking-wider text-primary-foreground bg-primary rounded-full px-2.5 py-1 whitespace-nowrap shadow-md">
+          LIVE
+        </span>
+        <span className="text-[9px] font-mono text-primary mt-0.5 whitespace-nowrap">
+          {timeStr}
+        </span>
+        <div className="w-px h-3 bg-primary mt-0.5" />
+        <div className="h-4 w-4 rounded-full bg-primary shadow-lg shadow-primary/30 ring-4 ring-primary/10" />
+      </div>
+
+      {/* Milestone dots */}
+      <div className="relative flex justify-between" style={{ padding: "0 0%" }}>
+        {milestones.map((m) => {
+          const pct = getTimelinePercent(m.date);
+          const isPast = m.date <= now;
+          const year = m.date.getFullYear().toString();
+          return (
+            <div key={year} className="relative flex flex-col items-center" style={{ top: "28px" }}>
+              <div className={`h-3 w-3 rounded-full border-2 ${isPast ? "bg-primary/60 border-primary/60" : "bg-card border-border"}`} />
+              <span className={`mt-2 text-[11px] font-semibold ${isPast ? "text-foreground" : "text-foreground/50"}`}>{year}</span>
+              <span className="text-[9px] text-muted-foreground mt-0.5">{m.label}</span>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Date below timeline */}
+      <div
+        className="absolute z-10 flex flex-col items-center"
+        style={{ left: `${4 + nowPercent * 0.92}%`, bottom: "-4px", transform: "translateX(-50%)" }}
+      >
+        <span className="text-[10px] font-medium text-primary whitespace-nowrap">{dateStr}</span>
+      </div>
+    </div>
+  );
+}
 
 /* ── Animation helpers ── */
 const fadeUp = (delay = 0) => ({
