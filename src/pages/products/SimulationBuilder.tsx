@@ -890,17 +890,9 @@ export default function SimulationBuilder() {
         </div>
       </section>
 
-      {/* Simulator Modal */}
-      <SimulatorModal
-        open={simOpen}
-        onClose={() => setSimOpen(false)}
-        taskName={simTask}
-        jobTitle={selectedJob?.title || ""}
-        company={companyName}
-        taskState={simTaskState}
-        taskTrend={simTaskTrend}
-        taskImpactLevel={simTaskImpact}
-      />
+    </div>
+  );
+}
     </div>
   );
 }
