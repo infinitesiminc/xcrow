@@ -278,17 +278,38 @@ function UserDetailSheet({ user, open, onClose }: { user: UserSummary | null; op
             .sort((a, b) => new Date(b.completed_at).getTime() - new Date(a.completed_at).getTime())
             .map((sim, i) => {
               const pct = sim.total_questions > 0 ? Math.round((sim.correct_answers / sim.total_questions) * 100) : 0;
+              const hasCategories = sim.tool_awareness_score != null;
               return (
-                <div key={i} className="flex items-start gap-3 py-2 border-b border-border/50 last:border-0">
-                  <CheckCircle2 className={`h-4 w-4 mt-0.5 shrink-0 ${pct >= 70 ? "text-success" : "text-dot-amber"}`} />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-foreground">{sim.task_name}</p>
-                    <p className="text-[11px] text-muted-foreground">{sim.sim_job_title}</p>
+                <div key={i} className="py-3 border-b border-border/50 last:border-0 space-y-2">
+                  <div className="flex items-start gap-3">
+                    <CheckCircle2 className={`h-4 w-4 mt-0.5 shrink-0 ${pct >= 70 ? "text-success" : "text-dot-amber"}`} />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-foreground">{sim.task_name}</p>
+                      <p className="text-[11px] text-muted-foreground">{sim.sim_job_title}</p>
+                    </div>
+                    <div className="text-right shrink-0">
+                      <p className={`text-sm font-semibold ${pct >= 70 ? "text-success" : "text-dot-amber"}`}>{pct}%</p>
+                      <p className="text-[10px] text-muted-foreground">{new Date(sim.completed_at).toLocaleDateString()}</p>
+                    </div>
                   </div>
-                  <div className="text-right shrink-0">
-                    <p className={`text-sm font-semibold ${pct >= 70 ? "text-success" : "text-dot-amber"}`}>{pct}%</p>
-                    <p className="text-[10px] text-muted-foreground">{new Date(sim.completed_at).toLocaleDateString()}</p>
-                  </div>
+                  {hasCategories && (
+                    <div className="ml-7 grid grid-cols-2 gap-x-4 gap-y-1.5">
+                      {[
+                        { label: "Tool Awareness", score: sim.tool_awareness_score! },
+                        { label: "Human Value-Add", score: sim.human_value_add_score! },
+                        { label: "Adaptive Thinking", score: sim.adaptive_thinking_score! },
+                        { label: "Domain Judgment", score: sim.domain_judgment_score! },
+                      ].map(cat => (
+                        <div key={cat.label} className="flex items-center gap-2">
+                          <span className="text-[10px] text-muted-foreground w-24 truncate">{cat.label}</span>
+                          <Progress value={cat.score} className="flex-1 h-1.5" />
+                          <span className={`text-[10px] font-semibold w-7 text-right ${cat.score >= 70 ? "text-success" : cat.score >= 50 ? "text-dot-amber" : "text-destructive"}`}>
+                            {cat.score}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               );
             })}
