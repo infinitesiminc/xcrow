@@ -26,7 +26,7 @@ interface WorkspaceRow {
 }
 
 export default function TeamProgress() {
-  const { user } = useAuth();
+  const { user, openAuthModal } = useAuth();
   const [workspace, setWorkspace] = useState<WorkspaceRow | null>(null);
   const [progress, setProgress] = useState<ProgressRow[]>([]);
   const [loading, setLoading] = useState(true);
