@@ -252,8 +252,8 @@ export default function Platform() {
               <em className="italic">Five ways to act.</em>
             </h1>
             <p className="mx-auto mt-5 max-w-2xl text-lg text-muted-foreground leading-relaxed">
-              The <strong className="text-foreground">AI Replacement Model</strong> diagnoses task-level AI exposure.
-              The <strong className="text-foreground">Universal Simulation Engine</strong> turns that diagnosis into action.
+              The <strong className="text-foreground">AI Evolution Model</strong> tracks where AI capability is heading.
+              The <strong className="text-foreground">Universal Simulation Engine</strong> turns that signal into action.
               Every product on the platform runs on the same truth.
             </p>
           </motion.div>
