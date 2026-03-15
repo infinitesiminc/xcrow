@@ -783,7 +783,9 @@ export default function SimulationBuilder() {
                                       className={`w-full text-left p-3 rounded-xl border transition-all duration-200 ${
                                         selectedJob?.id === job.id
                                           ? "border-primary bg-primary/[0.03] ring-1 ring-primary/20"
-                                          : "border-border bg-card hover:border-primary/30"
+                                          : isReady
+                                            ? "border-primary/20 bg-card hover:border-primary/30"
+                                            : "border-border bg-card hover:border-primary/30"
                                       }`}
                                     >
                                       <div className="flex items-start justify-between gap-2">
