@@ -574,13 +574,13 @@ export default function SimulationBuilder() {
                       {/* Dept picker */}
                       {priorityMode === "dept" && (
                         <div className="flex flex-wrap gap-1">
-                          {unanalyzedByDept.map(([dept, count]) => (
+                          {unanalyzedByDept.map(([dept, info]) => (
                             <button
                               key={dept}
                               onClick={() => setPriorityDept(priorityDept === dept ? null : dept)}
                               className={`text-[10px] px-2 py-0.5 rounded-full border transition-colors ${priorityDept === dept ? "bg-accent text-accent-foreground border-primary/40" : "bg-muted/30 text-muted-foreground border-border/50 hover:border-primary/30"}`}
                             >
-                              {dept} ({count})
+                              {dept} ({info.pending})
                             </button>
                           ))}
                           {unanalyzedByDept.length === 0 && <span className="text-[10px] text-muted-foreground">All departments analyzed</span>}
