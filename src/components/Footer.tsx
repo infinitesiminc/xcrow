@@ -9,23 +9,22 @@ const Footer = () => (
           <ul className="space-y-2">
             <li><Link to="/analyze" className="text-sm text-foreground/70 hover:text-foreground transition-colors">Analyze a Role</Link></li>
             <li><Link to="/products/simulation-builder" className="text-sm text-foreground/70 hover:text-foreground transition-colors">Simulation Builder</Link></li>
-            
             <li><Link to="/tools" className="text-sm text-foreground/70 hover:text-foreground transition-colors">Tool Marketplace</Link></li>
-            <li><Link to="/dashboard" className="text-sm text-foreground/70 hover:text-foreground transition-colors">Dashboard</Link></li>
             <li><Link to="/pricing" className="text-sm text-foreground/70 hover:text-foreground transition-colors">Pricing</Link></li>
           </ul>
         </div>
         <div>
-          <h4 className="text-xs font-medium uppercase tracking-widest text-muted-foreground mb-3">Solutions</h4>
+          <h4 className="text-xs font-medium uppercase tracking-widest text-muted-foreground mb-3">Enterprise</h4>
           <ul className="space-y-2">
-            <li><Link to="/products/simulation-builder" className="text-sm text-foreground/70 hover:text-foreground transition-colors">Simulation Builder</Link></li>
-            <li><Link to="/contact-org" className="text-sm text-foreground/70 hover:text-foreground transition-colors">Contact Sales</Link></li>
+            <li><Link to="/company-dashboard" className="text-sm text-foreground/70 hover:text-foreground transition-colors">Company Dashboard</Link></li>
+            <li><Link to="/contact" className="text-sm text-foreground/70 hover:text-foreground transition-colors">Contact Sales</Link></li>
           </ul>
         </div>
         <div>
           <h4 className="text-xs font-medium uppercase tracking-widest text-muted-foreground mb-3">Account</h4>
           <ul className="space-y-2">
             <li><Link to="/auth" className="text-sm text-foreground/70 hover:text-foreground transition-colors">Sign In</Link></li>
+            <li><Link to="/dashboard" className="text-sm text-foreground/70 hover:text-foreground transition-colors">Dashboard</Link></li>
             <li><Link to="/settings" className="text-sm text-foreground/70 hover:text-foreground transition-colors">Settings</Link></li>
           </ul>
         </div>
@@ -33,8 +32,7 @@ const Footer = () => (
           <h4 className="text-xs font-medium uppercase tracking-widest text-muted-foreground mb-3">Company</h4>
           <ul className="space-y-2">
             <li><Link to="/contact" className="text-sm text-foreground/70 hover:text-foreground transition-colors">Contact</Link></li>
-            <li><Link to="/contact-org" className="text-sm text-foreground/70 hover:text-foreground transition-colors">Enterprise</Link></li>
-            <li><Link to="/pricing" className="text-sm text-foreground/70 hover:text-foreground transition-colors">Pricing</Link></li>
+            <li><Link to="/roadmap" className="text-sm text-foreground/70 hover:text-foreground transition-colors">Build Roadmap</Link></li>
           </ul>
         </div>
       </div>
