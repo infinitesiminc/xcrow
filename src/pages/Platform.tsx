@@ -207,7 +207,7 @@ const flowSteps = [
     num: "01",
     label: "Input",
     title: "Any role enters the model",
-    desc: "Job title, job description, or full org chart. The AI Replacement Model decomposes it into individual tasks.",
+    desc: "Job title, job description, or full org chart. The AI Evolution Model decomposes it into individual tasks.",
     icon: Layers,
   },
   {
