@@ -654,6 +654,9 @@ export default function TeamProgress() {
               </CardContent>
             </Card>
           </div>
+
+          {/* Adaptive Simulation Metrics */}
+          <AdaptiveMetrics progress={filteredProgress} />
         </>
       ) : (
         <>
