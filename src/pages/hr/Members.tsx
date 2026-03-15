@@ -16,7 +16,7 @@ interface Member {
 }
 
 export default function Members() {
-  const { user } = useAuth();
+  const { user, openAuthModal } = useAuth();
   const { toast } = useToast();
   const [members, setMembers] = useState<Member[]>([]);
   const [loading, setLoading] = useState(true);
