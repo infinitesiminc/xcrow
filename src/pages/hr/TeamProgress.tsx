@@ -35,6 +35,10 @@ interface UserSummary {
   department: string;
   simCount: number;
   avgScore: number;
+  avgToolAwareness: number;
+  avgHumanValueAdd: number;
+  avgAdaptiveThinking: number;
+  avgDomainJudgment: number;
   sims: ProgressRow[];
 }
 
