@@ -1,5 +1,5 @@
 import { useLocation } from "react-router-dom";
-import { BarChart3, Users, Settings, KeyRound, Building2, Blocks } from "lucide-react";
+import { BarChart3, Users, Settings, KeyRound, Building2, Blocks, RefreshCw } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import {
   Sidebar,
