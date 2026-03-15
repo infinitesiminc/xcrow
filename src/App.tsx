@@ -14,10 +14,8 @@ import Dashboard from "./pages/Dashboard.tsx";
 import Settings from "./pages/Settings.tsx";
 import NotFound from "./pages/NotFound.tsx";
 import ToolsMarketplace from "./pages/ToolsMarketplace.tsx";
-import ContactOrg from "./pages/ContactOrg.tsx";
 import Contact from "./pages/Contact.tsx";
 import Pricing from "./pages/Pricing.tsx";
-import ProjectStaffing from "./pages/ProjectStaffing.tsx";
 import ATSSync from "./pages/hr/ATSSync.tsx";
 import SimulationBuilder from "./pages/products/SimulationBuilder.tsx";
 import SimulationDesign from "./pages/SimulationDesign.tsx";
@@ -43,28 +41,16 @@ const App = () => (
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<><Navbar /><Enterprise /><Footer /></>} />
-            <Route path="/analyze" element={<><Navbar /><Index /><Footer /></>} />
             <Route path="/analysis" element={<><Navbar /><Analysis /><Footer /></>} />
             <Route path="/team-analysis" element={<><Navbar /><TeamAnalysis /><Footer /></>} />
             <Route path="/auth" element={<><Navbar /><Auth /></>} />
             <Route path="/dashboard" element={<><Navbar /><Dashboard /><Footer /></>} />
             <Route path="/settings" element={<><Navbar /><Settings /><Footer /></>} />
-            
             <Route path="/tools" element={<><Navbar /><ToolsMarketplace /><Footer /></>} />
-            <Route path="/contact-org" element={<><Navbar /><ContactOrg /><Footer /></>} />
             <Route path="/contact" element={<><Navbar /><Contact /><Footer /></>} />
             <Route path="/pricing" element={<><Navbar /><Pricing /><Footer /></>} />
-            {/* company-dashboard removed — ATS sync now lives under /hr/ats-sync */}
-            <Route path="/project-staffing" element={<><Navbar /><ProjectStaffing /><Footer /></>} />
             <Route path="/products/simulation-builder" element={<><Navbar /><SimulationBuilder /><Footer /></>} />
-            <Route path="/products/upskilling" element={<><Navbar /><SimulationBuilder /><Footer /></>} />
-            <Route path="/products/candidate-assessment" element={<><Navbar /><SimulationBuilder /><Footer /></>} />
-            <Route path="/products/workforce-planning" element={<><Navbar /><SimulationBuilder /><Footer /></>} />
-            <Route path="/products/career-transition" element={<><Navbar /><SimulationBuilder /><Footer /></>} />
-            <Route path="/products/ld-content-engine" element={<><Navbar /><SimulationBuilder /><Footer /></>} />
             <Route path="/how-it-works" element={<><Navbar /><SimulationDesign /><Footer /></>} />
-            <Route path="/simulation-design" element={<><Navbar /><SimulationDesign /><Footer /></>} />
-            <Route path="/roadmap" element={<><Navbar /><Roadmap /><Footer /></>} />
             <Route path="/simulations" element={<><Navbar /><Simulations /><Footer /></>} />
             <Route path="/learning-path" element={<><Navbar /><LearningPath /><Footer /></>} />
             <Route path="/join" element={<JoinWorkspace />} />
@@ -78,6 +64,9 @@ const App = () => (
               <Route path="settings" element={<WorkspaceSettings />} />
               <Route path="ats-sync" element={<ATSSync />} />
               <Route path="invite" element={<InvitePage />} />
+              {/* Superadmin-only routes */}
+              <Route path="roadmap" element={<Roadmap />} />
+              <Route path="analyze" element={<Index />} />
             </Route>
 
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
