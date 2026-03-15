@@ -451,44 +451,71 @@ export default function SimulationBuilder() {
               Select any {companyName} role to auto-generate a personalized learning path — 
               each task analyzed for AI impact with recommended simulation packages.
             </p>
-            {/* Bulk Analyze Button */}
+            {/* Bulk Analyze Section */}
             {companyId && (
-              <div className="mt-4 flex flex-col items-center gap-2">
-                <div className="flex items-center gap-3">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={runBulkBatch}
-                    disabled={bulkRunning}
-                    className="gap-2 text-xs"
-                  >
-                    {bulkRunning ? (
-                      <>
-                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                        Processing batch…
-                      </>
-                    ) : (
-                      <>
-                        <RotateCcw className="h-3.5 w-3.5" />
-                        {bulkProgress && bulkProgress.remaining > 0 ? "Run Next Batch (5)" : "Analyze All Roles"}
-                      </>
+              <div className="mt-6 mx-auto max-w-md">
+                <Card className="border-border bg-card/60 backdrop-blur">
+                  <CardContent className="p-4 space-y-3">
+                    <div className="flex items-start gap-3">
+                      <div className="rounded-lg bg-primary/10 p-2 shrink-0">
+                        <Brain className="h-4 w-4 text-primary" />
+                      </div>
+                      <div className="text-left">
+                        <h3 className="text-sm font-semibold text-foreground">Pre-analyze all roles</h3>
+                        <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
+                          AI breaks each role into 8–12 task clusters and flags which are most impacted by AI. 
+                          Analyzed roles show a <Badge variant="outline" className="text-[9px] px-1 py-0 h-3.5 bg-primary/10 text-primary border-primary/20 mx-0.5 inline">Ready</Badge> badge 
+                          and load instantly when selected.
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-3">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={runBulkBatch}
+                        disabled={bulkRunning}
+                        className="gap-2 text-xs shrink-0"
+                      >
+                        {bulkRunning ? (
+                          <>
+                            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                            Analyzing 5 roles…
+                          </>
+                        ) : (
+                          <>
+                            <Sparkles className="h-3.5 w-3.5" />
+                            {bulkProgress && bulkProgress.remaining > 0
+                              ? `Analyze next 5 of ${bulkProgress.remaining}`
+                              : "Start batch analysis"}
+                          </>
+                        )}
+                      </Button>
+                      {bulkProgress && (
+                        <span className="text-[11px] text-muted-foreground">
+                          {bulkProgress.analyzed}/{bulkProgress.total} roles ready
+                        </span>
+                      )}
+                    </div>
+
+                    {bulkProgress && bulkProgress.total > 0 && (
+                      <div className="space-y-1">
+                        <Progress value={(bulkProgress.analyzed / bulkProgress.total) * 100} className="h-1.5" />
+                        <p className="text-[10px] text-muted-foreground text-right">
+                          {Math.round((bulkProgress.analyzed / bulkProgress.total) * 100)}% complete — {bulkProgress.remaining} roles left
+                        </p>
+                      </div>
                     )}
-                  </Button>
-                  {bulkProgress && (
-                    <span className="text-xs text-muted-foreground">
-                      {bulkProgress.analyzed}/{bulkProgress.total} done · {bulkProgress.remaining} remaining
-                    </span>
-                  )}
-                </div>
-                {bulkProgress && bulkProgress.total > 0 && (
-                  <Progress value={(bulkProgress.analyzed / bulkProgress.total) * 100} className="w-64 h-2" />
-                )}
-                {bulkPaused && (
-                  <span className="text-xs text-amber-500 flex items-center gap-1">
-                    <AlertTriangle className="h-3 w-3" />
-                    {bulkPaused}
-                  </span>
-                )}
+
+                    {bulkPaused && (
+                      <div className="flex items-center gap-1.5 text-xs text-amber-500 bg-amber-500/5 rounded-md px-2 py-1.5">
+                        <AlertTriangle className="h-3 w-3 shrink-0" />
+                        <span>{bulkPaused}</span>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
               </div>
             )}
           </motion.div>
