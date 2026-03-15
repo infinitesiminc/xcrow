@@ -121,8 +121,6 @@ function LiveTimeline() {
     </div>
   );
 }
-  );
-}
 
 /* ── Animation helpers ── */
 const fadeUp = (delay = 0) => ({
