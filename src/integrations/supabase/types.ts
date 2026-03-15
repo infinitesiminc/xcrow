@@ -589,6 +589,60 @@ export type Database = {
           },
         ]
       }
+      simulation_queue: {
+        Row: {
+          attempt_number: number
+          coaching_tip: string | null
+          completed_at: string | null
+          created_at: string
+          department: string | null
+          id: string
+          job_title: string
+          max_attempts: number
+          source_simulation_id: string | null
+          status: string
+          task_name: string
+          threshold: number
+          user_id: string
+          weak_category: string
+          weak_score: number
+        }
+        Insert: {
+          attempt_number?: number
+          coaching_tip?: string | null
+          completed_at?: string | null
+          created_at?: string
+          department?: string | null
+          id?: string
+          job_title: string
+          max_attempts?: number
+          source_simulation_id?: string | null
+          status?: string
+          task_name: string
+          threshold?: number
+          user_id: string
+          weak_category: string
+          weak_score: number
+        }
+        Update: {
+          attempt_number?: number
+          coaching_tip?: string | null
+          completed_at?: string | null
+          created_at?: string
+          department?: string | null
+          id?: string
+          job_title?: string
+          max_attempts?: number
+          source_simulation_id?: string | null
+          status?: string
+          task_name?: string
+          threshold?: number
+          user_id?: string
+          weak_category?: string
+          weak_score?: number
+        }
+        Relationships: []
+      }
       suppressed_emails: {
         Row: {
           created_at: string
@@ -678,6 +732,10 @@ export type Database = {
       enqueue_email: {
         Args: { payload: Json; queue_name: string }
         Returns: number
+      }
+      get_coaching_tip: {
+        Args: { category: string; score: number }
+        Returns: string
       }
       get_workspace_progress: {
         Args: { p_workspace_id: string }

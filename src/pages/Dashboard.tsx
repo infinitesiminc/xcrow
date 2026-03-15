@@ -13,6 +13,7 @@ import { Progress } from "@/components/ui/progress";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import AdaptiveQueue from "@/components/AdaptiveQueue";
 
 interface CompletedSim {
   id: string;
@@ -258,6 +259,9 @@ const Dashboard = () => {
             </Card>
           ))}
         </motion.div>
+
+        {/* Adaptive Retry Queue */}
+        <AdaptiveQueue userId={user.id} />
 
         {/* Action Plan */}
         {actionItems.length > 0 && (
