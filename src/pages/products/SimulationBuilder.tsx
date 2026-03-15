@@ -458,7 +458,7 @@ export default function SimulationBuilder() {
       toast({ title: "Batch error", description: err.message, variant: "destructive" });
     }
     setBulkRunning(false);
-  }, [companyId, toast, bulkErrors, bulkSessionStart]);
+  }, [companyId, toast, bulkErrors, bulkSessionStart, priorityMode, priorityDept, priorityJobId]);
 
   /* ── Launch simulation ── */
   const launchSim = (task: EnrichedTask) => {
