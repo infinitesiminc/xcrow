@@ -26,6 +26,7 @@ import CandidateAssessment from "./pages/products/CandidateAssessment.tsx";
 import WorkforcePlanning from "./pages/products/WorkforcePlanning.tsx";
 import CareerTransition from "./pages/products/CareerTransition.tsx";
 import LDContentEngine from "./pages/products/LDContentEngine.tsx";
+import SimulationBuilder from "./pages/products/SimulationBuilder.tsx";
 import HowItWorks from "./pages/HowItWorks.tsx";
 import Enterprise from "./pages/Enterprise.tsx";
 const queryClient = new QueryClient();
@@ -59,6 +60,7 @@ const App = () => (
             <Route path="/products/workforce-planning" element={<><Navbar /><WorkforcePlanning /><Footer /></>} />
             <Route path="/products/career-transition" element={<><Navbar /><CareerTransition /><Footer /></>} />
             <Route path="/products/ld-content-engine" element={<><Navbar /><LDContentEngine /><Footer /></>} />
+            <Route path="/products/simulation-builder" element={<><Navbar /><SimulationBuilder /><Footer /></>} />
             <Route path="/how-it-works" element={<><Navbar /><HowItWorks /><Footer /></>} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
