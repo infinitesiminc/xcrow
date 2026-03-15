@@ -129,6 +129,68 @@ function DeptRoleBreakdown({ progress, selectedDept }: { progress: ProgressRow[]
   );
 }
 
+/* ─── AI Readiness Category Breakdown ─── */
+function CategoryBreakdown({ progress, selectedDept }: { progress: ProgressRow[]; selectedDept: string }) {
+  const filtered = selectedDept === "All" ? progress : progress.filter(r => r.department === selectedDept);
+  
+  const categoryAvgs = useMemo(() => {
+    const cats = [
+      { key: "tool_awareness_score" as const, label: "AI Tool Awareness", icon: "🤖" },
+      { key: "human_value_add_score" as const, label: "Human Value-Add", icon: "💡" },
+      { key: "adaptive_thinking_score" as const, label: "Adaptive Thinking", icon: "🔄" },
+      { key: "domain_judgment_score" as const, label: "Domain Judgment", icon: "🎯" },
+    ];
+
+    return cats.map(cat => {
+      const scores = filtered
+        .map(r => r[cat.key])
+        .filter((s): s is number => s != null);
+      const avg = scores.length > 0 ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) : 0;
+      const low = scores.length > 0 ? Math.min(...scores) : 0;
+      const high = scores.length > 0 ? Math.max(...scores) : 0;
+      return { ...cat, avg, low, high, count: scores.length };
+    });
+  }, [filtered]);
+
+  if (categoryAvgs[0].count === 0) return null;
+
+  const weakest = [...categoryAvgs].sort((a, b) => a.avg - b.avg)[0];
+  const strongest = [...categoryAvgs].sort((a, b) => b.avg - a.avg)[0];
+
+  return (
+    <div className="space-y-4">
+      {/* Insight callout */}
+      <div className="bg-accent/50 rounded-lg px-4 py-3 text-xs text-foreground">
+        <span className="font-semibold">Insight: </span>
+        Your team's strongest area is <span className="font-semibold">{strongest.label}</span> ({strongest.avg}%) 
+        and needs the most development in <span className="font-semibold">{weakest.label}</span> ({weakest.avg}%).
+      </div>
+
+      {/* Category bars */}
+      <div className="space-y-3">
+        {categoryAvgs.map(cat => (
+          <div key={cat.key} className="space-y-1">
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-foreground flex items-center gap-1.5">
+                <span>{cat.icon}</span>
+                {cat.label}
+              </span>
+              <span className={`text-sm font-bold ${cat.avg >= 70 ? "text-success" : cat.avg >= 50 ? "text-dot-amber" : "text-destructive"}`}>
+                {cat.avg}%
+              </span>
+            </div>
+            <Progress value={cat.avg} className="h-2.5" />
+            <div className="flex justify-between text-[10px] text-muted-foreground">
+              <span>Low: {cat.low}%</span>
+              <span>High: {cat.high}%</span>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 /* ─── Individual: Leaderboard ─── */
 function Leaderboard({ users, onSelect }: { users: UserSummary[]; onSelect: (u: UserSummary) => void }) {
   const [search, setSearch] = useState("");
