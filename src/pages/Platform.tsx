@@ -7,6 +7,124 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { useMemo } from "react";
+
+/* ── Capability Radar Chart ── */
+const DIMENSIONS = [
+  { label: "Traditional\nRoles", short: "Traditional", value: 0.95, example: "Accountant, Paralegal" },
+  { label: "Emerging\nRoles", short: "Emerging", value: 0.88, example: "AI Ethicist, Prompt Engineer" },
+  { label: "Frontier\nRoles", short: "Frontier", value: 0.82, example: "Quantum AI, Neurotech" },
+  { label: "Individual\nCareer", short: "Individual", value: 0.92, example: "Upskilling, Career Pivot" },
+  { label: "Team &\nHiring", short: "Team", value: 0.90, example: "Assessment, Staffing" },
+  { label: "Enterprise\nWorkforce", short: "Enterprise", value: 0.85, example: "Org Planning, L&D" },
+];
+
+function CapabilityRadar() {
+  const size = 340;
+  const cx = size / 2;
+  const cy = size / 2;
+  const rings = [0.25, 0.5, 0.75, 1.0];
+  const maxR = size * 0.38;
+
+  const points = useMemo(() => {
+    return DIMENSIONS.map((d, i) => {
+      const angle = (Math.PI * 2 * i) / DIMENSIONS.length - Math.PI / 2;
+      const r = d.value * maxR;
+      return {
+        x: cx + r * Math.cos(angle),
+        y: cy + r * Math.sin(angle),
+        lx: cx + (maxR + 28) * Math.cos(angle),
+        ly: cy + (maxR + 28) * Math.sin(angle),
+        ax: cx + maxR * Math.cos(angle),
+        ay: cy + maxR * Math.sin(angle),
+        ...d,
+        angle,
+      };
+    });
+  }, []);
+
+  const polygonPath = points.map((p, i) => `${i === 0 ? "M" : "L"}${p.x},${p.y}`).join(" ") + " Z";
+
+  return (
+    <div className="flex flex-col items-center gap-6">
+      <svg viewBox={`0 0 ${size} ${size}`} className="w-full max-w-[420px] aspect-square">
+        {/* Rings */}
+        {rings.map((r) => (
+          <polygon
+            key={r}
+            points={DIMENSIONS.map((_, i) => {
+              const angle = (Math.PI * 2 * i) / DIMENSIONS.length - Math.PI / 2;
+              return `${cx + r * maxR * Math.cos(angle)},${cy + r * maxR * Math.sin(angle)}`;
+            }).join(" ")}
+            fill="none"
+            stroke="hsl(var(--border))"
+            strokeWidth={r === 1 ? 1.2 : 0.6}
+            strokeDasharray={r === 1 ? "none" : "3 3"}
+          />
+        ))}
+        {/* Axis lines */}
+        {points.map((p, i) => (
+          <line key={i} x1={cx} y1={cy} x2={p.ax} y2={p.ay} stroke="hsl(var(--border))" strokeWidth={0.5} />
+        ))}
+        {/* Filled area */}
+        <motion.polygon
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.8, delay: 0.2 }}
+          points={polygonPath.replace("M", "").replace(" Z", "").replace(/L/g, " ")}
+          fill="hsl(var(--primary) / 0.12)"
+          stroke="hsl(var(--primary))"
+          strokeWidth={2}
+        />
+        {/* Data points */}
+        {points.map((p, i) => (
+          <motion.circle
+            key={i}
+            initial={{ r: 0 }}
+            whileInView={{ r: 4 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.3 + i * 0.08 }}
+            cx={p.x}
+            cy={p.y}
+            fill="hsl(var(--primary))"
+            stroke="hsl(var(--background))"
+            strokeWidth={2}
+          />
+        ))}
+        {/* Labels */}
+        {points.map((p, i) => (
+          <text
+            key={i}
+            x={p.lx}
+            y={p.ly}
+            textAnchor={Math.abs(p.angle) < 0.1 || Math.abs(p.angle - Math.PI) < 0.3 ? "middle" : p.lx > cx ? "start" : "end"}
+            dominantBaseline="middle"
+            className="fill-foreground text-[10px] font-semibold"
+          >
+            {p.short}
+          </text>
+        ))}
+        {/* Center label */}
+        <text x={cx} y={cy - 6} textAnchor="middle" className="fill-primary text-[9px] font-bold uppercase tracking-widest">Engine</text>
+        <text x={cx} y={cx + 6} textAnchor="middle" className="fill-muted-foreground text-[8px]">Coverage</text>
+      </svg>
+
+      {/* Legend */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 w-full max-w-lg">
+        {DIMENSIONS.map((d) => (
+          <div key={d.short} className="flex items-start gap-2 rounded-lg border border-border bg-card px-3 py-2">
+            <div className="mt-0.5 h-2 w-2 rounded-full bg-primary shrink-0" />
+            <div>
+              <span className="text-xs font-semibold text-foreground block leading-tight">{d.short}</span>
+              <span className="text-[10px] text-muted-foreground leading-tight">{d.example}</span>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 /* ── Engine primitives ── */
 const primitives = [
@@ -170,6 +288,27 @@ export default function Platform() {
             </motion.div>
           ))}
         </div>
+      </section>
+
+      {/* ── Capability Radar ── */}
+      <section className="px-4 py-16">
+        <div className="mx-auto max-w-4xl text-center mb-10">
+          <h2 className="font-serif text-2xl sm:text-4xl font-bold text-foreground mb-3">
+            One engine. Infinite use cases.
+          </h2>
+          <p className="text-muted-foreground max-w-xl mx-auto">
+            From defending legacy roles against disruption to staffing the quantum frontier — the same model adapts across every dimension.
+          </p>
+        </div>
+        <motion.div
+          initial={{ opacity: 0, scale: 0.92 }}
+          whileInView={{ opacity: 1, scale: 1 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5 }}
+          className="mx-auto max-w-3xl"
+        >
+          <CapabilityRadar />
+        </motion.div>
       </section>
 
       {/* ── Architecture Flow ── */}
