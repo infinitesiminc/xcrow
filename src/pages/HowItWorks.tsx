@@ -81,16 +81,11 @@ function LiveTimeline() {
       {/* Live indicator */}
       <div className="absolute z-20 flex flex-col items-center" style={{ left: toLeft(nowPercent), top: "4px", transform: "translateX(-50%)" }}>
         <span className="text-[9px] font-bold uppercase tracking-wider text-primary-foreground bg-primary rounded-full px-2.5 py-1 whitespace-nowrap shadow-md">
-          LIVE
+          {dateStr}
         </span>
         <span className="text-[9px] font-mono text-primary mt-0.5 whitespace-nowrap">{timeStr}</span>
         <div className="w-px h-4 bg-primary mt-0.5" />
         <div className="h-4 w-4 rounded-full bg-primary shadow-lg shadow-primary/30 ring-4 ring-primary/10" />
-      </div>
-
-      {/* Date label below live dot */}
-      <div className="absolute z-10" style={{ left: toLeft(nowPercent), top: "96px", transform: "translateX(-50%)" }}>
-        <span className="text-[10px] font-medium text-primary whitespace-nowrap">{dateStr}</span>
       </div>
     </div>
   );
