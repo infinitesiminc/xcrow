@@ -88,6 +88,8 @@ serve(async (req) => {
 
     for (const job of batch) {
       try {
+        const shouldBackfill = backfillJobIds.has(job.id);
+
         // Double-check this job doesn't already have clusters (race condition guard)
         const { data: existing } = await sb
           .from("job_task_clusters")
@@ -95,9 +97,13 @@ serve(async (req) => {
           .eq("job_id", job.id)
           .limit(1);
 
-        if (existing && existing.length > 0) {
+        if (existing && existing.length > 0 && !shouldBackfill) {
           results.push({ jobId: job.id, title: job.title, status: "already_exists" });
           continue;
+        }
+
+        if (existing && existing.length > 0 && shouldBackfill) {
+          await sb.from("job_task_clusters").delete().eq("job_id", job.id);
         }
 
         const prompt = `Analyze the job role "${job.title}" and break it down into 8-12 discrete task clusters.
