@@ -575,7 +575,7 @@ export default function LearningPath() {
 
             {/* Task Cards */}
             {!analyzing && analyzedTasks.length > 0 && (
-              <div className="space-y-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                 {analyzedTasks.map((task, i) => {
                   const recTemplate = templateMap[task.recommended_template || "quick-pulse"] || templates[0];
                   const RecIcon = recTemplate.icon;
@@ -590,10 +590,10 @@ export default function LearningPath() {
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: i * 0.04 }}
                     >
-                      <Card className={`border-border bg-card hover:border-primary/30 transition-all group ${isCompleted ? "border-success/30 bg-success/[0.02]" : ""} ${isUpdated ? "border-primary/30 bg-primary/[0.02] ring-1 ring-primary/10" : ""}`}>
+                      <Card className={`border-border bg-card hover:border-primary/30 transition-all group h-full ${isCompleted ? "border-success/30 bg-success/[0.02]" : ""} ${isUpdated ? "border-primary/30 bg-primary/[0.02] ring-1 ring-primary/10" : ""}`}>
                         <CardContent className="p-4">
                           <div className="flex items-start gap-3">
-                            <div className="flex flex-col items-center gap-1 shrink-0 pt-0.5">
+                            <div className="shrink-0 pt-0.5">
                               {isCompleted ? (
                                 <span className="w-7 h-7 rounded-full bg-success/10 flex items-center justify-center">
                                   <CheckCircle2 className="h-4 w-4 text-success" />
@@ -602,9 +602,6 @@ export default function LearningPath() {
                                 <span className="w-7 h-7 rounded-full bg-accent flex items-center justify-center text-xs font-bold text-foreground">
                                   {i + 1}
                                 </span>
-                              )}
-                              {i < analyzedTasks.length - 1 && (
-                                <div className={`w-px h-full min-h-[20px] ${isCompleted ? "bg-success/30" : "bg-border"}`} />
                               )}
                             </div>
 
