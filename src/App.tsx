@@ -22,6 +22,7 @@ import ProjectStaffing from "./pages/ProjectStaffing.tsx";
 import SimulationBuilder from "./pages/products/SimulationBuilder.tsx";
 import Enterprise from "./pages/Enterprise.tsx";
 import Roadmap from "./pages/Roadmap.tsx";
+import Simulations from "./pages/Simulations.tsx";
 const queryClient = new QueryClient();
 
 const App = () => (
