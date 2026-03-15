@@ -37,7 +37,7 @@ const Footer = () => (
         </div>
       </div>
       <div className="border-t border-border/40 pt-6 flex items-center justify-between">
-        <p className="text-xs text-muted-foreground">© {new Date().getFullYear()} Infinite Simulation. All rights reserved.</p>
+        <p className="text-xs text-muted-foreground">© {new Date().getFullYear()} InfiniteSim, Inc. All rights reserved.</p>
         <p className="text-[10px] text-muted-foreground/60">AI-powered career intelligence</p>
       </div>
     </div>
