@@ -26,6 +26,7 @@ import CandidateAssessment from "./pages/products/CandidateAssessment.tsx";
 import WorkforcePlanning from "./pages/products/WorkforcePlanning.tsx";
 import CareerTransition from "./pages/products/CareerTransition.tsx";
 import LDContentEngine from "./pages/products/LDContentEngine.tsx";
+import Platform from "./pages/Platform.tsx";
 const queryClient = new QueryClient();
 
 const App = () => (
