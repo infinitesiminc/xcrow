@@ -23,3 +23,7 @@ project_id = "xtfubistkgodiksegtcx"
     verify_jwt = false
   [functions.process-email-queue]
     verify_jwt = true
+  [functions.analyze-role-tasks]
+    verify_jwt = false
+  [functions.sim-chat]
+    verify_jwt = false
