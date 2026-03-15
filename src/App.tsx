@@ -61,6 +61,7 @@ const App = () => (
             <Route path="/products/ld-content-engine" element={<><Navbar /><LDContentEngine /><Footer /></>} />
             <Route path="/platform" element={<><Navbar /><Platform /><Footer /></>} />
             <Route path="/how-it-works" element={<><Navbar /><HowItWorks /><Footer /></>} />
+            <Route path="/enterprise" element={<><Navbar /><Enterprise /><Footer /></>} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
