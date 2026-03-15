@@ -171,6 +171,11 @@
   scrollbar-color: hsl(var(--border) / 0.4) transparent;
 }
 
+@keyframes ticker {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
 /* Laser sweep effect */
 /* Laser word sweep effect */
 @keyframes laser-word-sweep {
