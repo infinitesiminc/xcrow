@@ -171,7 +171,7 @@ export default function Enterprise() {
             <Button
               size="lg"
               className="gap-2 text-base px-8"
-              onClick={() => window.open("https://calendly.com/jacksonlam", "_blank")}
+              onClick={() => navigate("/contact")}
             >
               Book a Demo
               <ArrowRight className="h-4 w-4" />
