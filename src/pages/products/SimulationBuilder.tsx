@@ -192,6 +192,9 @@ export default function SimulationBuilder() {
   }, [companyId, bulkProgress]); // re-fetch after bulk runs
 
   /* ── Fetch user's completed sims ── */
+
+  /* ── Completion ring helper (from completed_simulations) ── */
+  const [completedSims, setCompletedSims] = useState<CompletedSim[]>([]);
   useEffect(() => {
     if (!user) return;
     (async () => {
@@ -201,150 +204,14 @@ export default function SimulationBuilder() {
         .eq("user_id", user.id);
       setCompletedSims(data || []);
     })();
-  }, [user, simOpen]); // re-fetch when sim modal closes
+  }, [user]);
 
-  /* ── Auto-analyze when job selected ── */
-  const analyzeJob = useCallback(async (job: DbJob) => {
-    setAnalyzing(true);
-    setAnalysisError(null);
-    setAnalyzedTasks([]);
-    try {
-      const { data, error } = await supabase.functions.invoke("analyze-role-tasks", {
-        body: {
-          jobId: job.id,
-          jobTitle: job.title,
-          company: companyName,
-          description: job.description,
-        },
-      });
-      if (error) throw new Error(error.message);
-      if (data?.error) throw new Error(data.error);
-
-      const tasks = (data.tasks || []).map((t: any) => {
-        const state = t.ai_state || "human_ai";
-        const impact = t.impact_level || "medium";
-        const priority = t.priority || "important";
-        const skillCount = (t.skill_names || []).length;
-        // Deterministic template scoring
-        let score = 0;
-        score += state === "mostly_human" ? 3 : state === "human_ai" ? 2 : 1;
-        score += impact === "high" ? 3 : impact === "medium" ? 2 : 1;
-        score += priority === "critical" ? 3 : priority === "important" ? 2 : 1;
-        if (skillCount >= 4) score += 2; else if (skillCount >= 3) score += 1;
-        const recTemplate = score >= 9 ? "case-challenge" : score >= 6 ? "deep-dive" : "quick-pulse";
-        const recDuration = score >= 9 ? 30 : score >= 6 ? 15 : 3;
-        return {
-          ...t,
-          ai_state: state,
-          ai_trend: t.ai_trend || "increasing_ai",
-          impact_level: impact,
-          recommended_template: t.recommended_template || recTemplate,
-          priority,
-          sim_duration: t.sim_duration || recDuration,
-        };
-      });
-      setAnalyzedTasks(tasks);
-    } catch (err: any) {
-      console.error("Task analysis failed:", err);
-      setAnalysisError(err.message || "Analysis failed");
-      toast({ title: "Analysis failed", description: err.message, variant: "destructive" });
-    }
-    setAnalyzing(false);
-  }, [companyName, toast]);
-
-  useEffect(() => {
-    if (selectedJob) {
-      analyzeJob(selectedJob);
-    } else {
-      setAnalyzedTasks([]);
-      setAnalysisError(null);
-    }
-  }, [selectedJob, analyzeJob]);
-
-  /* ── Filter jobs ── */
-  const filteredJobs = useMemo(() => {
-    if (!search.trim()) return jobs;
-    const q = search.toLowerCase();
-    return jobs.filter(j =>
-      j.title.toLowerCase().includes(q) ||
-      j.department?.toLowerCase().includes(q) ||
-      j.location?.toLowerCase().includes(q)
-    );
-  }, [jobs, search]);
-
-  const departments = useMemo(() => {
-    const depts = new Map<string, number>();
-    jobs.forEach(j => {
-      const d = j.department || "Other";
-      depts.set(d, (depts.get(d) || 0) + 1);
-    });
-    return Array.from(depts.entries()).sort((a, b) => b[1] - a[1]).slice(0, 8);
-  }, [jobs]);
-
-  /* ── Grouped & sorted jobs ── */
-  const groupedJobs = useMemo(() => {
-    const groups = new Map<string, DbJob[]>();
-    filteredJobs.forEach(j => {
-      const dept = j.department || "Other";
-      if (!groups.has(dept)) groups.set(dept, []);
-      groups.get(dept)!.push(j);
-    });
-    // Sort each group: ready (analyzed) first, then by title
-    groups.forEach((jobList, dept) => {
-      jobList.sort((a, b) => {
-        const aReady = analyzedJobIds.has(a.id) ? 0 : 1;
-        const bReady = analyzedJobIds.has(b.id) ? 0 : 1;
-        if (aReady !== bReady) return aReady - bReady;
-        return a.title.localeCompare(b.title);
-      });
-    });
-    // Sort departments: most ready roles first
-    return Array.from(groups.entries()).sort((a, b) => {
-      const aReady = a[1].filter(j => analyzedJobIds.has(j.id)).length;
-      const bReady = b[1].filter(j => analyzedJobIds.has(j.id)).length;
-      return bReady - aReady;
-    });
-  }, [filteredJobs, analyzedJobIds]);
-
-  /* ── Job completion ring helper ── */
   const getJobCompletionPercent = useCallback((job: DbJob) => {
     const jobSims = completedSims.filter(s => s.job_title === job.title);
     if (jobSims.length === 0) return 0;
-    // Unique tasks completed
     const uniqueTasks = new Set(jobSims.map(s => s.task_name));
-    // Assume ~10 tasks per role
     return Math.min(100, Math.round((uniqueTasks.size / 10) * 100));
   }, [completedSims]);
-
-  /* ── Progress helpers ── */
-  const getTaskCompletion = useCallback((taskName: string, jobTitle: string) => {
-    const matches = completedSims.filter(
-      s => s.task_name === taskName && s.job_title === jobTitle
-    );
-    if (matches.length === 0) return null;
-    const best = matches.reduce((best, s) => {
-      const score = s.total_questions > 0 ? Math.round((s.correct_answers / s.total_questions) * 100) : 0;
-      return score > best ? score : best;
-    }, 0);
-    return best;
-  }, [completedSims]);
-
-  const pathProgress = useMemo(() => {
-    if (!analyzedTasks.length || !selectedJob) return null;
-    const completed = analyzedTasks.filter(t => getTaskCompletion(t.cluster_name, selectedJob.title) !== null).length;
-    const percent = Math.round((completed / analyzedTasks.length) * 100);
-    return { completed, total: analyzedTasks.length, percent };
-  }, [analyzedTasks, selectedJob, getTaskCompletion]);
-
-  /* ── Learning path stats ── */
-  const pathStats = useMemo(() => {
-    if (!analyzedTasks.length) return null;
-    const critical = analyzedTasks.filter(t => t.priority === "critical").length;
-    const important = analyzedTasks.filter(t => t.priority === "important").length;
-    const totalMinutes = analyzedTasks.reduce((s, t) => s + (t.sim_duration || 3), 0);
-    const highImpact = analyzedTasks.filter(t => t.impact_level === "high").length;
-    return { critical, important, totalMinutes, highImpact, total: analyzedTasks.length };
-  }, [analyzedTasks]);
 
   // Priority filter state
   const [priorityMode, setPriorityMode] = useState<"all" | "dept" | "job">("all");
