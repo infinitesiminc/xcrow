@@ -27,11 +27,8 @@ export default function Navbar() {
 
   const productItems = [
     { label: "Platform Overview", path: "/" },
-    { label: "AI Upskilling", path: "/products/upskilling" },
-    { label: "Candidate Assessment", path: "/products/candidate-assessment" },
-    { label: "Workforce Planning", path: "/products/workforce-planning" },
-    { label: "Career Transition", path: "/products/career-transition" },
-    { label: "L&D Content Engine", path: "/products/ld-content-engine" },
+    { label: "Simulation Builder", path: "/products/simulation-builder" },
+    { label: "How It Works", path: "/how-it-works" },
   ];
 
   const navItems = [
