@@ -123,8 +123,8 @@ function NewsTicker() {
   }, []);
 
   return (
-    <div className="mt-4 rounded-lg border border-destructive/20 bg-destructive/5 overflow-hidden">
-      <div className="flex items-center gap-3 px-3 py-1.5 border-b border-destructive/10 bg-destructive/10">
+    <div className="mt-4 rounded-lg border border-border/50 bg-muted/30 overflow-hidden">
+      <div className="flex items-center gap-3 px-3 py-1.5 border-b border-border/30 bg-muted/40">
         <span className="relative flex h-2 w-2">
           <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-destructive opacity-75" />
           <span className="relative inline-flex rounded-full h-2 w-2 bg-destructive" />
