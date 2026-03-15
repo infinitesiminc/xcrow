@@ -99,7 +99,14 @@ export default function TeamProgress() {
     progress.forEach(r => {
       roleBreakdown[r.sim_job_title] = (roleBreakdown[r.sim_job_title] || 0) + 1;
     });
-    return { uniqueUsers: uniqueUsers.size, totalSims, avgScore, roleBreakdown };
+    const deptBreakdown: Record<string, { count: number; totalScore: number }> = {};
+    progress.forEach(r => {
+      const dept = r.department || "Uncategorized";
+      if (!deptBreakdown[dept]) deptBreakdown[dept] = { count: 0, totalScore: 0 };
+      deptBreakdown[dept].count += 1;
+      deptBreakdown[dept].totalScore += r.total_questions > 0 ? (r.correct_answers / r.total_questions) * 100 : 0;
+    });
+    return { uniqueUsers: uniqueUsers.size, totalSims, avgScore, roleBreakdown, deptBreakdown };
   }, [progress]);
 
   // Group by user for individual view
