@@ -411,8 +411,13 @@ export default function HowItWorks() {
 
   return (
     <div className="min-h-screen bg-background">
+      {/* ── Ticker ── */}
+      <div className="px-4 pt-4 mx-auto max-w-4xl">
+        <NewsTicker />
+      </div>
+
       {/* ── Hero ── */}
-      <section className="relative overflow-hidden px-4 pt-20 pb-16">
+      <section className="relative overflow-hidden px-4 pt-12 pb-16">
         <div className="absolute inset-0 bg-gradient-to-b from-accent/40 via-background to-background" />
         <div className="relative mx-auto max-w-4xl text-center">
           <motion.div {...fadeUp()}>
