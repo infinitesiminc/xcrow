@@ -9,6 +9,12 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import NewsTicker from "@/components/NewsTicker";
+import CompanyMarquee from "@/components/CompanyMarquee";
+
+const MARQUEE_ROWS = [
+  ["Deloitte", "McKinsey", "Boeing", "FedEx", "Microsoft", "Apple", "Nvidia", "Stripe"],
+  ["DeepMind", "CoreWeave", "Glean", "Deel", "Lockheed Martin", "Databricks", "Cohere", "Meta"],
+];
 
 /* ── Workflow phases ── */
 const phases = [
