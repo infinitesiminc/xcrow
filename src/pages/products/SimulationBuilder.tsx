@@ -701,7 +701,19 @@ export default function SimulationBuilder() {
                 {departments.map(([dept, count]) => (
                   <button
                     key={dept}
-                    onClick={() => setSearch(search === dept ? "" : dept)}
+                    onClick={() => {
+                      const isActive = search === dept;
+                      setSearch(isActive ? "" : dept);
+                      // Sync with batch pipeline
+                      if (!isActive) {
+                        setPriorityMode("dept");
+                        setPriorityDept(dept);
+                        setPriorityJobId(null);
+                      } else {
+                        setPriorityMode("all");
+                        setPriorityDept(null);
+                      }
+                    }}
                     className={`rounded-full px-2.5 py-0.5 text-[10px] font-medium border transition-colors ${
                       search === dept
                         ? "bg-primary text-primary-foreground border-primary"
