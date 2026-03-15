@@ -20,6 +20,7 @@ import Pricing from "./pages/Pricing.tsx";
 import CompanyDashboard from "./pages/CompanyDashboard.tsx";
 import ProjectStaffing from "./pages/ProjectStaffing.tsx";
 import SimulationBuilder from "./pages/products/SimulationBuilder.tsx";
+import SimulationDesign from "./pages/SimulationDesign.tsx";
 import Enterprise from "./pages/Enterprise.tsx";
 import Roadmap from "./pages/Roadmap.tsx";
 import Simulations from "./pages/Simulations.tsx";
