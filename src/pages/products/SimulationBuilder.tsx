@@ -169,6 +169,8 @@ export default function SimulationBuilder() {
 
   // Learning path expanded
   const [expandedPath, setExpandedPath] = useState(true);
+  const [collapsedDepts, setCollapsedDepts] = useState<Set<string>>(new Set());
+  const [analyzedJobIds, setAnalyzedJobIds] = useState<Set<string>>(new Set());
 
   /* ── Fetch Anthropic jobs ── */
   useEffect(() => {
