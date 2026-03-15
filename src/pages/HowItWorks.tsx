@@ -638,6 +638,7 @@ export default function HowItWorks() {
           {/* Timeline */}
           <motion.div {...fadeUp(0.15)} className="mx-auto max-w-3xl">
             <LiveTimeline />
+            <NewsTicker />
           </motion.div>
         </div>
       </section>
