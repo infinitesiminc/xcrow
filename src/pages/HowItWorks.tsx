@@ -623,7 +623,7 @@ export default function HowItWorks() {
             <Button size="lg" onClick={() => navigate("/")} className="gap-2 text-base px-8">
               Try It Free <ArrowRight className="h-4 w-4" />
             </Button>
-            <Button size="lg" variant="outline" onClick={() => navigate("/platform")} className="text-base px-8">
+            <Button size="lg" variant="outline" onClick={() => navigate("/")} className="text-base px-8">
               Platform Overview
             </Button>
           </div>
