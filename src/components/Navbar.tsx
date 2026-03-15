@@ -11,7 +11,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { LayoutDashboard, Settings, LogOut, User, Menu, X } from "lucide-react";
+import { LayoutDashboard, Settings, LogOut, User, Menu, X, ChevronDown } from "lucide-react";
 
 export default function Navbar() {
   const { user, signOut, openAuthModal } = useAuth();
@@ -25,11 +25,18 @@ export default function Navbar() {
     ? user.user_metadata.display_name.slice(0, 2).toUpperCase()
     : user?.email?.slice(0, 2).toUpperCase() ?? "?";
 
+  const productItems = [
+    { label: "AI Upskilling", path: "/products/upskilling" },
+    { label: "Candidate Assessment", path: "/products/candidate-assessment" },
+    { label: "Workforce Planning", path: "/products/workforce-planning" },
+    { label: "Career Transition", path: "/products/career-transition" },
+    { label: "L&D Content Engine", path: "/products/ld-content-engine" },
+  ];
+
   const navItems = [
     { label: "For Individuals", path: "/for-individuals" },
     { label: "For Organizations", path: "/for-organizations" },
     { label: "Pricing", path: "/pricing" },
-    
     { label: "Contact", path: "/contact" },
     ...(user ? [{ label: "Dashboard", path: "/dashboard" }] : []),
   ];
@@ -53,6 +60,26 @@ export default function Navbar() {
 
         {/* Desktop nav */}
         <nav className="hidden md:flex items-center gap-1">
+          {/* Products dropdown */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant={location.pathname.startsWith("/products") ? "secondary" : "ghost"}
+                size="sm"
+                className="text-sm gap-1"
+              >
+                Products <ChevronDown className="h-3.5 w-3.5" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" className="w-52">
+              {productItems.map((item) => (
+                <DropdownMenuItem key={item.path} onClick={() => navigate(item.path)} className="cursor-pointer">
+                  {item.label}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+
           {navItems.map((item) => (
             <Button
               key={item.path}
@@ -130,6 +157,21 @@ export default function Navbar() {
           <div className="fixed inset-0 top-14 z-40 bg-background/60 backdrop-blur-sm md:hidden" onClick={() => setMobileOpen(false)} />
           <div className="fixed left-0 right-0 top-14 z-50 md:hidden border-t border-border bg-background shadow-lg">
             <nav className="flex flex-col px-4 py-3 gap-1">
+              <p className="px-3 py-1.5 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Products</p>
+              {productItems.map((item) => (
+                <button
+                  key={item.path}
+                  onClick={() => handleNav(item.path)}
+                  className={`text-left px-3 py-2.5 text-sm font-medium rounded-lg transition-colors ${
+                    isActive(item.path)
+                      ? "bg-secondary text-foreground"
+                      : "text-muted-foreground hover:text-foreground hover:bg-accent"
+                  }`}
+                >
+                  {item.label}
+                </button>
+              ))}
+              <div className="border-t border-border my-1.5" />
               {navItems.map((item) => (
                 <button
                   key={item.path}
