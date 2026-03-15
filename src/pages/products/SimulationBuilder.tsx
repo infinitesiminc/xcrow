@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo, useCallback } from "react";
 import {
   ArrowRight, Layers, Brain,
   Target, Sparkles, Clock, Search, MapPin, Briefcase,
-  AlertTriangle, Loader2,
+  AlertTriangle, Loader2, Pause, Play,
   ChevronDown, ChevronUp, CheckCircle2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
