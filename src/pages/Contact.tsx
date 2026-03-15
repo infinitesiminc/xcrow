@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Mail, MessageSquare, MapPin, Send, Loader2, CheckCircle2, Calendar } from "lucide-react";
+import { Mail, MessageSquare, MapPin, Send, Loader2, CheckCircle2, Calendar, Building2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
@@ -10,9 +10,13 @@ const Contact = () => {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [subject, setSubject] = useState("");
+  const [company, setCompany] = useState("");
+  const [teamSize, setTeamSize] = useState("");
   const [message, setMessage] = useState("");
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
+
+  const isOrgInquiry = subject === "enterprise" || subject === "partnership";
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -21,7 +25,7 @@ const Contact = () => {
     try {
       const { supabase } = await import("@/integrations/supabase/client");
       const { error } = await supabase.functions.invoke("send-contact-email", {
-        body: { name, email, subject, message, formType: "general" },
+        body: { name, email, subject, company, teamSize, message, formType: isOrgInquiry ? "org" : "general" },
       });
       if (error) throw error;
       setSent(true);
@@ -73,7 +77,7 @@ const Contact = () => {
                 <CheckCircle2 className="h-12 w-12 text-success mx-auto mb-4" />
                 <h2 className="text-lg font-semibold text-foreground mb-2">Message sent!</h2>
                 <p className="text-sm text-muted-foreground mb-4">Thanks for reaching out. We'll get back to you shortly.</p>
-                <Button variant="outline" onClick={() => { setSent(false); setName(""); setEmail(""); setSubject(""); setMessage(""); }}>
+                <Button variant="outline" onClick={() => { setSent(false); setName(""); setEmail(""); setSubject(""); setCompany(""); setTeamSize(""); setMessage(""); }}>
                   Send another message
                 </Button>
               </CardContent>
@@ -118,12 +122,51 @@ const Contact = () => {
                     >
                       <option value="">Select a topic…</option>
                       <option value="general">General Inquiry</option>
+                      <option value="enterprise">Enterprise / Team Plan</option>
                       <option value="feedback">Product Feedback</option>
                       <option value="support">Technical Support</option>
                       <option value="partnership">Partnership</option>
                       <option value="press">Press & Media</option>
                     </select>
                   </div>
+
+                  {/* Show company/team-size fields for enterprise/partnership inquiries */}
+                  {isOrgInquiry && (
+                    <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="space-y-4">
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label className="text-sm font-medium text-foreground mb-1 block">
+                            <Building2 className="inline h-3.5 w-3.5 mr-1 -mt-0.5" />
+                            Company
+                          </label>
+                          <input
+                            type="text"
+                            value={company}
+                            onChange={(e) => setCompany(e.target.value)}
+                            maxLength={100}
+                            className="w-full rounded-lg border border-input bg-background px-3 py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-ring"
+                            placeholder="Acme Inc."
+                          />
+                        </div>
+                        <div>
+                          <label className="text-sm font-medium text-foreground mb-1 block">Team size</label>
+                          <select
+                            value={teamSize}
+                            onChange={(e) => setTeamSize(e.target.value)}
+                            className="w-full rounded-lg border border-input bg-background px-3 py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-ring"
+                          >
+                            <option value="">Select…</option>
+                            <option value="1-10">1–10</option>
+                            <option value="11-50">11–50</option>
+                            <option value="51-200">51–200</option>
+                            <option value="201-1000">201–1,000</option>
+                            <option value="1000+">1,000+</option>
+                          </select>
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+
                   <div>
                     <label className="text-sm font-medium text-foreground mb-1 block">Message *</label>
                     <textarea

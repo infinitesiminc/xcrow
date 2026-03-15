@@ -11,7 +11,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { LayoutDashboard, Settings, LogOut, User, Menu, X, ChevronDown } from "lucide-react";
+import { LayoutDashboard, Settings, LogOut, User, Menu, X, ChevronDown, Wrench } from "lucide-react";
 
 export default function Navbar() {
   const { user, signOut, openAuthModal } = useAuth();
@@ -27,7 +27,7 @@ export default function Navbar() {
 
   const productItems = user ? [] : [
     { label: "Platform Overview", path: "/" },
-    { label: "How It Works", path: "/simulation-design" },
+    { label: "How It Works", path: "/how-it-works" },
   ];
 
   const navItems = [
@@ -36,8 +36,10 @@ export default function Navbar() {
       { label: "Contact", path: "/contact" },
     ] : []),
     ...(user ? [
+      { label: "Dashboard", path: "/dashboard" },
       { label: "HR Dashboard", path: "/hr/team-progress" },
     ] : []),
+    { label: "Tools", path: "/tools" },
   ];
 
   const handleNav = (path: string) => {
@@ -90,6 +92,7 @@ export default function Navbar() {
               className="text-sm"
             >
               {item.label === "Dashboard" && <LayoutDashboard className="mr-1.5 h-4 w-4" />}
+              {item.label === "Tools" && <Wrench className="mr-1.5 h-4 w-4" />}
               {item.label}
             </Button>
           ))}
@@ -158,21 +161,25 @@ export default function Navbar() {
           <div className="fixed inset-0 top-14 z-40 bg-background/60 backdrop-blur-sm md:hidden" onClick={() => setMobileOpen(false)} />
           <div className="fixed left-0 right-0 top-14 z-50 md:hidden border-t border-border bg-background shadow-lg">
             <nav className="flex flex-col px-4 py-3 gap-1">
-              <p className="px-3 py-1.5 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Products</p>
-              {productItems.map((item) => (
-                <button
-                  key={item.path}
-                  onClick={() => handleNav(item.path)}
-                  className={`text-left px-3 py-2.5 text-sm font-medium rounded-lg transition-colors ${
-                    isActive(item.path)
-                      ? "bg-secondary text-foreground"
-                      : "text-muted-foreground hover:text-foreground hover:bg-accent"
-                  }`}
-                >
-                  {item.label}
-                </button>
-              ))}
-              <div className="border-t border-border my-1.5" />
+              {productItems.length > 0 && (
+                <>
+                  <p className="px-3 py-1.5 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Products</p>
+                  {productItems.map((item) => (
+                    <button
+                      key={item.path}
+                      onClick={() => handleNav(item.path)}
+                      className={`text-left px-3 py-2.5 text-sm font-medium rounded-lg transition-colors ${
+                        isActive(item.path)
+                          ? "bg-secondary text-foreground"
+                          : "text-muted-foreground hover:text-foreground hover:bg-accent"
+                      }`}
+                    >
+                      {item.label}
+                    </button>
+                  ))}
+                  <div className="border-t border-border my-1.5" />
+                </>
+              )}
               {navItems.map((item) => (
                 <button
                   key={item.path}
