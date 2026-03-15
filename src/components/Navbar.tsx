@@ -32,8 +32,6 @@ export default function Navbar() {
   ];
 
   const navItems = [
-    { label: "For Individuals", path: "/for-individuals" },
-    { label: "For Organizations", path: "/for-organizations" },
     { label: "Pricing", path: "/pricing" },
     { label: "Contact", path: "/contact" },
     ...(user ? [{ label: "Dashboard", path: "/dashboard" }] : []),
