@@ -130,18 +130,18 @@ function CapabilityRadar() {
 const primitives = [
   {
     icon: Target,
-    title: "AI Replacement Model",
+    title: "AI Evolution Model",
     role: "The Diagnostic",
     description:
-      "Scores every task in any job role against a 1-3 year AI disruption horizon. Maps current state (human-led → AI-driven), trend direction, and impact level to produce a composite Agent Replacement Risk score.",
-    stats: ["100M+ roles modeled", "8-12 tasks per role", "3-axis risk classification"],
+      "Tracks AI capability progression across every task in any job role. Maps current state, trend direction, and growth trajectory to reveal where AI is heading — so you can move first.",
+    stats: ["100M+ roles modeled", "8-12 tasks per role", "Real-time signal tracking"],
   },
   {
     icon: Brain,
     title: "Universal Simulation Engine",
     role: "The Action Layer",
     description:
-      "Compiles interactive, AI-aware learning scenarios for any role + task combination. Generates briefings, MCQ rounds with real-world context, and scores learners on a 4-axis AI-readiness framework.",
+      "Compiles interactive, AI-calibrated learning scenarios for any role + task combination. Every scenario reflects where AI tools are today and where they're heading — so training never goes stale.",
     stats: ["Infinite scenario variety", "2 experience modes", "4-axis readiness scoring"],
   },
 ];
