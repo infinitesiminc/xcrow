@@ -34,7 +34,7 @@ export default function Navbar() {
     { label: "Pricing", path: "/pricing" },
     { label: "Contact", path: "/contact" },
     ...(user ? [
-      { label: "Simulations", path: "/simulations" },
+      { label: "Learning Path", path: "/learning-path" },
       { label: "Dashboard", path: "/dashboard" },
     ] : []),
   ];
