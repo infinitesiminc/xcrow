@@ -192,22 +192,33 @@ export default function LearningPath() {
     });
   };
 
+  /* ── Snapshot helpers for automatic update detection ── */
+  const snapshotKey = jobId ? `lp_snapshot_${jobId}` : null;
+
+  const getStoredSnapshot = useCallback((): Record<string, { ai_state: string; impact_level: string; priority: string }> | null => {
+    if (!snapshotKey) return null;
+    try {
+      const raw = localStorage.getItem(snapshotKey);
+      return raw ? JSON.parse(raw) : null;
+    } catch { return null; }
+  }, [snapshotKey]);
+
+  const saveSnapshot = useCallback((tasks: EnrichedTask[]) => {
+    if (!snapshotKey) return;
+    const snap: Record<string, { ai_state: string; impact_level: string; priority: string }> = {};
+    tasks.forEach(t => {
+      snap[t.cluster_name] = { ai_state: t.ai_state || "human_ai", impact_level: t.impact_level || "medium", priority: t.priority || "important" };
+    });
+    localStorage.setItem(snapshotKey, JSON.stringify(snap));
+  }, [snapshotKey]);
+
   /* ── Analyze tasks ── */
   const analyzeJob = useCallback(async (j: DbJob, forceRefresh = false) => {
     setAnalyzing(true);
     setAnalysisError(null);
-
-    // Capture previous tasks for diff detection on refresh
-    const previousTasks = forceRefresh ? [...analyzedTasks] : [];
     if (!forceRefresh) setAnalyzedTasks([]);
 
     try {
-      // If forcing refresh, delete existing clusters first so the edge function regenerates
-      if (forceRefresh) {
-        // Call the edge function without cached data by temporarily clearing clusters
-        // The edge function checks for existing clusters, so we pass a hint
-      }
-
       const { data, error } = await supabase.functions.invoke("analyze-role-tasks", {
         body: { jobId: j.id, jobTitle: j.title, company: companyName, description: j.description, forceRefresh },
       });
@@ -217,30 +228,40 @@ export default function LearningPath() {
       setAnalyzedTasks(tasks);
       setLastRefreshed(new Date());
 
-      // Detect changed tasks on refresh
-      if (forceRefresh && previousTasks.length > 0) {
+      // Auto-detect changes against stored snapshot
+      const previousSnap = getStoredSnapshot();
+      if (previousSnap && Object.keys(previousSnap).length > 0) {
         const changed = new Set<string>();
         tasks.forEach(newTask => {
-          const oldTask = previousTasks.find(t => t.cluster_name === newTask.cluster_name);
-          if (!oldTask) {
+          const old = previousSnap[newTask.cluster_name];
+          if (!old) {
             changed.add(newTask.cluster_name); // New task
-          } else if (oldTask.ai_state !== newTask.ai_state || oldTask.impact_level !== newTask.impact_level || oldTask.priority !== newTask.priority) {
+          } else if (
+            old.ai_state !== (newTask.ai_state || "human_ai") ||
+            old.impact_level !== (newTask.impact_level || "medium") ||
+            old.priority !== (newTask.priority || "important")
+          ) {
             changed.add(newTask.cluster_name); // Changed
           }
         });
+        // Also detect removed tasks
+        Object.keys(previousSnap).forEach(name => {
+          if (!tasks.find(t => t.cluster_name === name)) changed.add(name);
+        });
         setUpdatedTaskNames(changed);
         if (changed.size > 0) {
-          toast({ title: `${changed.size} task${changed.size > 1 ? "s" : ""} updated`, description: "AI impact assessments have been refreshed." });
-        } else {
-          toast({ title: "No changes detected", description: "All task assessments remain current." });
+          toast({ title: `${changed.size} task${changed.size > 1 ? "s" : ""} updated`, description: "AI impact assessments have changed since your last visit." });
         }
       }
+
+      // Save current snapshot for next visit
+      saveSnapshot(tasks);
     } catch (err: any) {
       setAnalysisError(err.message || "Analysis failed");
       toast({ title: "Analysis failed", description: err.message, variant: "destructive" });
     }
     setAnalyzing(false);
-  }, [companyName, toast, analyzedTasks]);
+  }, [companyName, toast, getStoredSnapshot, saveSnapshot]);
 
   useEffect(() => {
     if (job) analyzeJob(job);
