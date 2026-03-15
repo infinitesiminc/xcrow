@@ -106,11 +106,12 @@ const INITIAL_SECTIONS: ChecklistSection[] = [
     title: "Data & Infrastructure",
     icon: Settings2,
     items: [
-      { id: "d1", label: "Org data model (companies → teams → employees)", status: "not_started", detail: "Required for real enterprise features" },
-      { id: "d2", label: "RBAC / user roles", status: "not_started", detail: "Admin, manager, employee roles" },
-      { id: "d3", label: "Bulk CSV/HRIS import UI", status: "not_started", detail: "import-dataset function exists, no UI" },
-      { id: "d4", label: "Employee-level progress tracking", status: "not_started", detail: "Per-employee simulation/analysis data" },
-      { id: "d5", label: "API access for integrations", status: "not_started", detail: "External API endpoints" },
+      { id: "d1", label: "ATS company/job sync pipeline", status: "done", detail: "217 companies, 400+ Anthropic jobs synced via sim-api" },
+      { id: "d2", label: "Org data model (companies → teams → employees)", status: "partial", detail: "Companies + jobs done, teams/employees pending" },
+      { id: "d3", label: "RBAC / user roles", status: "not_started", detail: "Admin, manager, employee roles" },
+      { id: "d4", label: "Bulk CSV/HRIS import UI", status: "not_started", detail: "import-dataset function exists, no UI" },
+      { id: "d5", label: "Employee-level progress tracking", status: "not_started", detail: "Per-employee simulation/analysis data" },
+      { id: "d6", label: "API access for integrations", status: "not_started", detail: "External API endpoints" },
     ],
   },
   {

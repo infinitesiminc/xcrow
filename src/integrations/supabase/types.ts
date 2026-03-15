@@ -106,39 +106,54 @@ export type Database = {
       }
       companies: {
         Row: {
+          brand_color: string | null
+          careers_url: string | null
+          context: string | null
           description: string | null
+          detected_ats_platform: string | null
           employee_range: string | null
           external_id: string | null
           headquarters: string | null
           id: string
           imported_at: string
           industry: string | null
+          is_demo: boolean | null
           logo_url: string | null
           name: string
           slug: string | null
           website: string | null
         }
         Insert: {
+          brand_color?: string | null
+          careers_url?: string | null
+          context?: string | null
           description?: string | null
+          detected_ats_platform?: string | null
           employee_range?: string | null
           external_id?: string | null
           headquarters?: string | null
           id?: string
           imported_at?: string
           industry?: string | null
+          is_demo?: boolean | null
           logo_url?: string | null
           name: string
           slug?: string | null
           website?: string | null
         }
         Update: {
+          brand_color?: string | null
+          careers_url?: string | null
+          context?: string | null
           description?: string | null
+          detected_ats_platform?: string | null
           employee_range?: string | null
           external_id?: string | null
           headquarters?: string | null
           id?: string
           imported_at?: string
           industry?: string | null
+          is_demo?: boolean | null
           logo_url?: string | null
           name?: string
           slug?: string | null
@@ -358,12 +373,15 @@ export type Database = {
           company_id: string | null
           department: string | null
           description: string | null
+          difficulty: number | null
           external_id: string | null
           id: string
           imported_at: string
+          location: string | null
           new_skills_percent: number | null
           seniority: string | null
           slug: string | null
+          source_url: string | null
           status: string | null
           title: string
         }
@@ -373,12 +391,15 @@ export type Database = {
           company_id?: string | null
           department?: string | null
           description?: string | null
+          difficulty?: number | null
           external_id?: string | null
           id?: string
           imported_at?: string
+          location?: string | null
           new_skills_percent?: number | null
           seniority?: string | null
           slug?: string | null
+          source_url?: string | null
           status?: string | null
           title: string
         }
@@ -388,12 +409,15 @@ export type Database = {
           company_id?: string | null
           department?: string | null
           description?: string | null
+          difficulty?: number | null
           external_id?: string | null
           id?: string
           imported_at?: string
+          location?: string | null
           new_skills_percent?: number | null
           seniority?: string | null
           slug?: string | null
+          source_url?: string | null
           status?: string | null
           title?: string
         }
