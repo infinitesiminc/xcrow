@@ -519,18 +519,20 @@ export default function HowItWorks() {
               <div className="absolute inset-x-8 top-1/2 h-px bg-border" />
               <div className="absolute inset-x-8 top-1/2 h-px bg-gradient-to-r from-primary/0 via-primary/50 to-primary/20 animate-pulse" />
               {[
-                { year: "2024", label: "GPT-4 era" },
-                { year: "Now", label: "Live signal" },
-                { year: "2025", label: "Agent wave" },
-                { year: "2026", label: "Autonomous AI" },
-                { year: "2027", label: "Frontier" },
+                { year: "2024", label: "GPT-4 era", isCurrent: false },
+                { year: "2025", label: "Agent wave", isCurrent: true },
+                { year: "2026", label: "Autonomous AI", isCurrent: false },
+                { year: "2027", label: "Frontier", isCurrent: false },
+                { year: "2028", label: "Post-AI roles", isCurrent: false },
               ].map((point) => (
                 <div key={point.year} className="relative flex flex-col items-center z-10">
-                  {point.year === "Now" && (
-                    <span className="absolute -top-7 text-[9px] font-bold uppercase tracking-wider text-primary bg-primary/10 rounded-full px-2 py-0.5">Live</span>
+                  {point.isCurrent && (
+                    <span className="absolute -top-8 text-[9px] font-bold uppercase tracking-wider text-primary bg-primary/10 rounded-full px-2.5 py-0.5">
+                      Live · {new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                    </span>
                   )}
-                  <div className={`h-3.5 w-3.5 rounded-full border-2 ${point.year === "Now" ? "bg-primary border-primary scale-125 shadow-lg shadow-primary/30" : "bg-card border-border"}`} />
-                  <span className={`mt-2 text-[11px] font-semibold ${point.year === "Now" ? "text-primary" : "text-foreground/70"}`}>{point.year}</span>
+                  <div className={`rounded-full border-2 ${point.isCurrent ? "h-4.5 w-4.5 bg-primary border-primary scale-125 shadow-lg shadow-primary/30" : "h-3.5 w-3.5 bg-card border-border"}`} />
+                  <span className={`mt-2 text-[11px] font-semibold ${point.isCurrent ? "text-primary" : "text-foreground/70"}`}>{point.year}</span>
                   <span className="text-[9px] text-muted-foreground mt-0.5">{point.label}</span>
                 </div>
               ))}
