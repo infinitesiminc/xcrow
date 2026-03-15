@@ -43,20 +43,24 @@ function LiveTimeline() {
   const timeStr = now.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
   const dateStr = now.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
 
+  const PAD = 6; // % padding on each side
+
+  const toLeft = (pct: number) => `${PAD + pct * (100 - 2 * PAD) / 100}%`;
+
   return (
-    <div className="relative px-4 py-10">
+    <div className="relative px-4 pt-14 pb-8">
       {/* Base track */}
-      <div className="absolute left-[4%] right-[4%] top-[42px] h-[2px] bg-border" />
+      <div className="absolute h-[2px] bg-border" style={{ left: toLeft(0), right: toLeft(0), top: "56px" }} />
       {/* Filled track up to now */}
       <div
-        className="absolute left-[4%] top-[42px] h-[2px] bg-primary/40"
-        style={{ width: `${nowPercent * 0.92}%` }}
+        className="absolute h-[2px] bg-primary/40"
+        style={{ left: toLeft(0), width: `${nowPercent * (100 - 2 * PAD) / 100}%`, top: "56px" }}
       />
 
       {/* Live indicator */}
       <div
         className="absolute z-20 flex flex-col items-center"
-        style={{ left: `${4 + nowPercent * 0.92}%`, top: 0, transform: "translateX(-50%)" }}
+        style={{ left: toLeft(nowPercent), top: 0, transform: "translateX(-50%)" }}
       >
         <span className="text-[9px] font-bold uppercase tracking-wider text-primary-foreground bg-primary rounded-full px-2.5 py-1 whitespace-nowrap shadow-md">
           LIVE
@@ -68,26 +72,28 @@ function LiveTimeline() {
         <div className="h-4 w-4 rounded-full bg-primary shadow-lg shadow-primary/30 ring-4 ring-primary/10" />
       </div>
 
-      {/* Milestone dots */}
-      <div className="relative flex justify-between" style={{ padding: "0 0%" }}>
-        {milestones.map((m) => {
-          const pct = getTimelinePercent(m.date);
-          const isPast = m.date <= now;
-          const year = m.date.getFullYear().toString();
-          return (
-            <div key={year} className="relative flex flex-col items-center" style={{ top: "28px" }}>
-              <div className={`h-3 w-3 rounded-full border-2 ${isPast ? "bg-primary/60 border-primary/60" : "bg-card border-border"}`} />
-              <span className={`mt-2 text-[11px] font-semibold ${isPast ? "text-foreground" : "text-foreground/50"}`}>{year}</span>
-              <span className="text-[9px] text-muted-foreground mt-0.5">{m.label}</span>
-            </div>
-          );
-        })}
-      </div>
+      {/* Milestone dots - absolutely positioned to match the track */}
+      {milestones.map((m) => {
+        const pct = getTimelinePercent(m.date);
+        const isPast = m.date <= now;
+        const year = m.date.getFullYear().toString();
+        return (
+          <div
+            key={year}
+            className="absolute flex flex-col items-center"
+            style={{ left: toLeft(pct), top: "49px", transform: "translateX(-50%)" }}
+          >
+            <div className={`h-3 w-3 rounded-full border-2 ${isPast ? "bg-primary/60 border-primary/60" : "bg-card border-border"}`} />
+            <span className={`mt-2 text-[11px] font-semibold ${isPast ? "text-foreground" : "text-foreground/50"}`}>{year}</span>
+            <span className="text-[9px] text-muted-foreground mt-0.5">{m.label}</span>
+          </div>
+        );
+      })}
 
-      {/* Date below timeline */}
+      {/* Date label below live dot */}
       <div
         className="absolute z-10 flex flex-col items-center"
-        style={{ left: `${4 + nowPercent * 0.92}%`, bottom: "-4px", transform: "translateX(-50%)" }}
+        style={{ left: toLeft(nowPercent), bottom: "-2px", transform: "translateX(-50%)" }}
       >
         <span className="text-[10px] font-medium text-primary whitespace-nowrap">{dateStr}</span>
       </div>
