@@ -54,7 +54,7 @@ const App = () => (
             <Route path="/contact-org" element={<><Navbar /><ContactOrg /><Footer /></>} />
             <Route path="/contact" element={<><Navbar /><Contact /><Footer /></>} />
             <Route path="/pricing" element={<><Navbar /><Pricing /><Footer /></>} />
-            <Route path="/company-dashboard" element={<><Navbar /><CompanyDashboard /><Footer /></>} />
+            {/* company-dashboard removed — ATS sync now lives under /hr/ats-sync */}
             <Route path="/project-staffing" element={<><Navbar /><ProjectStaffing /><Footer /></>} />
             <Route path="/products/simulation-builder" element={<><Navbar /><SimulationBuilder /><Footer /></>} />
             <Route path="/products/upskilling" element={<><Navbar /><SimulationBuilder /><Footer /></>} />
