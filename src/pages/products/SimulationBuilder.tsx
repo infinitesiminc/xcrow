@@ -314,9 +314,14 @@ export default function SimulationBuilder() {
         if (data?.error) throw new Error(data.error);
 
         total = data.total || total;
-        analyzed = data.alreadyAnalyzed + data.batchProcessed;
-        remaining = data.remaining || 0;
-        setBulkProgress({ analyzed, total, remaining });
+        analyzed = (data.alreadyAnalyzed || 0) + (data.justProcessed || 0);
+        remaining = data.remaining ?? 0;
+        // Accumulate progress across iterations
+        setBulkProgress(prev => ({
+          analyzed: (prev?.analyzed || 0) + (data.justProcessed || 0) + (prev ? 0 : data.alreadyAnalyzed || 0),
+          total,
+          remaining,
+        }));
 
         // Check if any in batch were rate limited
         if (data.results?.some((r: any) => r.status === "rate_limited")) {
