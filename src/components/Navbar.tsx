@@ -28,7 +28,6 @@ export default function Navbar() {
   const productItems = [
     { label: "Platform Overview", path: "/" },
     { label: "Simulation Builder", path: "/products/simulation-builder" },
-    { label: "How It Works", path: "/how-it-works" },
   ];
 
   const navItems = [
