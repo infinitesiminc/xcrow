@@ -6,7 +6,7 @@ import {
   Users, Loader2, Trash2, Play, ChevronDown, ChevronUp, Upload,
   Sparkles, Clock, AlertTriangle, Brain, Target, Briefcase,
   BookOpen, TrendingUp, Shield, Award, CheckCircle2, ArrowLeft,
-  ArrowRight,
+  ArrowRight, RefreshCw, BellRing,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -126,6 +126,10 @@ export default function LearningPath() {
   const [analyzing, setAnalyzing] = useState(false);
   const [analysisError, setAnalysisError] = useState<string | null>(null);
 
+  /* ── Update tracking ── */
+  const [updatedTaskNames, setUpdatedTaskNames] = useState<Set<string>>(new Set());
+  const [lastRefreshed, setLastRefreshed] = useState<Date | null>(null);
+
   /* ── Progress ── */
   const [completedSims, setCompletedSims] = useState<CompletedSim[]>([]);
 
@@ -170,42 +174,77 @@ export default function LearningPath() {
     })();
   }, [jobId]);
 
+  /* ── Enrich tasks helper ── */
+  const enrichTasks = (rawTasks: any[]): EnrichedTask[] => {
+    return rawTasks.map((t: any) => {
+      const state = t.ai_state || "human_ai";
+      const impact = t.impact_level || "medium";
+      const priority = t.priority || "important";
+      const skillCount = (t.skill_names || []).length;
+      let score = 0;
+      score += state === "mostly_human" ? 3 : state === "human_ai" ? 2 : 1;
+      score += impact === "high" ? 3 : impact === "medium" ? 2 : 1;
+      score += priority === "critical" ? 3 : priority === "important" ? 2 : 1;
+      if (skillCount >= 4) score += 2; else if (skillCount >= 3) score += 1;
+      const recTemplate = score >= 9 ? "case-challenge" : score >= 6 ? "deep-dive" : "quick-pulse";
+      const recDuration = score >= 9 ? 30 : score >= 6 ? 15 : 3;
+      return { ...t, ai_state: state, ai_trend: t.ai_trend || "increasing_ai", impact_level: impact, recommended_template: t.recommended_template || recTemplate, priority, sim_duration: t.sim_duration || recDuration };
+    });
+  };
+
   /* ── Analyze tasks ── */
-  const analyzeJob = useCallback(async (j: DbJob) => {
+  const analyzeJob = useCallback(async (j: DbJob, forceRefresh = false) => {
     setAnalyzing(true);
     setAnalysisError(null);
-    setAnalyzedTasks([]);
+
+    // Capture previous tasks for diff detection on refresh
+    const previousTasks = forceRefresh ? [...analyzedTasks] : [];
+    if (!forceRefresh) setAnalyzedTasks([]);
+
     try {
+      // If forcing refresh, delete existing clusters first so the edge function regenerates
+      if (forceRefresh) {
+        // Call the edge function without cached data by temporarily clearing clusters
+        // The edge function checks for existing clusters, so we pass a hint
+      }
+
       const { data, error } = await supabase.functions.invoke("analyze-role-tasks", {
-        body: { jobId: j.id, jobTitle: j.title, company: companyName, description: j.description },
+        body: { jobId: j.id, jobTitle: j.title, company: companyName, description: j.description, forceRefresh },
       });
       if (error) throw new Error(error.message);
       if (data?.error) throw new Error(data.error);
-      const tasks = (data.tasks || []).map((t: any) => {
-        const state = t.ai_state || "human_ai";
-        const impact = t.impact_level || "medium";
-        const priority = t.priority || "important";
-        const skillCount = (t.skill_names || []).length;
-        let score = 0;
-        score += state === "mostly_human" ? 3 : state === "human_ai" ? 2 : 1;
-        score += impact === "high" ? 3 : impact === "medium" ? 2 : 1;
-        score += priority === "critical" ? 3 : priority === "important" ? 2 : 1;
-        if (skillCount >= 4) score += 2; else if (skillCount >= 3) score += 1;
-        const recTemplate = score >= 9 ? "case-challenge" : score >= 6 ? "deep-dive" : "quick-pulse";
-        const recDuration = score >= 9 ? 30 : score >= 6 ? 15 : 3;
-        return { ...t, ai_state: state, ai_trend: t.ai_trend || "increasing_ai", impact_level: impact, recommended_template: t.recommended_template || recTemplate, priority, sim_duration: t.sim_duration || recDuration };
-      });
+      const tasks = enrichTasks(data.tasks || []);
       setAnalyzedTasks(tasks);
+      setLastRefreshed(new Date());
+
+      // Detect changed tasks on refresh
+      if (forceRefresh && previousTasks.length > 0) {
+        const changed = new Set<string>();
+        tasks.forEach(newTask => {
+          const oldTask = previousTasks.find(t => t.cluster_name === newTask.cluster_name);
+          if (!oldTask) {
+            changed.add(newTask.cluster_name); // New task
+          } else if (oldTask.ai_state !== newTask.ai_state || oldTask.impact_level !== newTask.impact_level || oldTask.priority !== newTask.priority) {
+            changed.add(newTask.cluster_name); // Changed
+          }
+        });
+        setUpdatedTaskNames(changed);
+        if (changed.size > 0) {
+          toast({ title: `${changed.size} task${changed.size > 1 ? "s" : ""} updated`, description: "AI impact assessments have been refreshed." });
+        } else {
+          toast({ title: "No changes detected", description: "All task assessments remain current." });
+        }
+      }
     } catch (err: any) {
       setAnalysisError(err.message || "Analysis failed");
       toast({ title: "Analysis failed", description: err.message, variant: "destructive" });
     }
     setAnalyzing(false);
-  }, [companyName, toast]);
+  }, [companyName, toast, analyzedTasks]);
 
   useEffect(() => {
     if (job) analyzeJob(job);
-  }, [job, analyzeJob]);
+  }, [job]); // eslint-disable-line react-hooks/exhaustive-deps
 
   /* ── Fetch completed sims ── */
   useEffect(() => {
@@ -366,8 +405,8 @@ export default function LearningPath() {
         </Button>
 
         {/* Job Header */}
-        <Card className="border-border bg-card mb-6">
-          <CardContent className="p-6">
+        <Card className="border-border bg-card mb-4">
+          <CardContent className="p-5">
             <div className="flex items-start justify-between gap-3">
               <div>
                 <h1 className="font-serif text-2xl sm:text-3xl font-bold text-foreground leading-tight">{job.title}</h1>
@@ -377,11 +416,23 @@ export default function LearningPath() {
                   {job.location && ` · ${job.location}`}
                 </p>
               </div>
-              {riskBadge(job.automation_risk_percent)}
+              <div className="flex items-center gap-2 shrink-0">
+                {riskBadge(job.automation_risk_percent)}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 w-8 p-0 text-muted-foreground hover:text-primary"
+                  onClick={() => job && analyzeJob(job, true)}
+                  disabled={analyzing}
+                  title="Re-analyze with latest AI data"
+                >
+                  <RefreshCw className={`h-4 w-4 ${analyzing ? "animate-spin" : ""}`} />
+                </Button>
+              </div>
             </div>
 
             {/* Quick stats */}
-            <div className="grid grid-cols-3 gap-4 mt-5">
+            <div className="grid grid-cols-3 gap-4 mt-4">
               {[
                 { label: "AI Augmented", value: job.augmented_percent, color: "bg-dot-blue" },
                 { label: "Automation Risk", value: job.automation_risk_percent, color: "bg-destructive" },
@@ -400,6 +451,54 @@ export default function LearningPath() {
             </div>
           </CardContent>
         </Card>
+
+        {/* ── Update notification strip ── */}
+        {updatedTaskNames.size > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-4"
+          >
+            <Card className="border-primary/30 bg-primary/[0.03]">
+              <CardContent className="p-3">
+                <div className="flex items-center gap-3">
+                  <div className="rounded-full bg-primary/10 p-1.5 shrink-0">
+                    <BellRing className="h-4 w-4 text-primary" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-foreground">
+                      {updatedTaskNames.size} task{updatedTaskNames.size > 1 ? "s" : ""} updated
+                    </p>
+                    <p className="text-[11px] text-muted-foreground truncate">
+                      {Array.from(updatedTaskNames).slice(0, 3).join(", ")}
+                      {updatedTaskNames.size > 3 && ` +${updatedTaskNames.size - 3} more`}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <Button
+                      size="sm"
+                      className="h-7 text-xs gap-1"
+                      onClick={() => {
+                        const firstUpdated = analyzedTasks.find(t => updatedTaskNames.has(t.cluster_name));
+                        if (firstUpdated) launchSim(firstUpdated);
+                      }}
+                    >
+                      <Play className="h-3 w-3" /> Start
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="h-7 text-xs text-muted-foreground"
+                      onClick={() => setUpdatedTaskNames(new Set())}
+                    >
+                      Dismiss
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        )}
 
         {/* Tabs: Learning Path | Custom Sims */}
         <Tabs value={activeTab} onValueChange={v => setActiveTab(v as any)} className="mb-6">
@@ -482,6 +581,7 @@ export default function LearningPath() {
                   const RecIcon = recTemplate.icon;
                   const taskScore = getTaskCompletion(task.cluster_name, job.title);
                   const isCompleted = taskScore !== null;
+                  const isUpdated = updatedTaskNames.has(task.cluster_name);
 
                   return (
                     <motion.div
@@ -490,7 +590,7 @@ export default function LearningPath() {
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: i * 0.04 }}
                     >
-                      <Card className={`border-border bg-card hover:border-primary/30 transition-all group ${isCompleted ? "border-success/30 bg-success/[0.02]" : ""}`}>
+                      <Card className={`border-border bg-card hover:border-primary/30 transition-all group ${isCompleted ? "border-success/30 bg-success/[0.02]" : ""} ${isUpdated ? "border-primary/30 bg-primary/[0.02] ring-1 ring-primary/10" : ""}`}>
                         <CardContent className="p-4">
                           <div className="flex items-start gap-3">
                             <div className="flex flex-col items-center gap-1 shrink-0 pt-0.5">
@@ -510,9 +610,16 @@ export default function LearningPath() {
 
                             <div className="flex-1 min-w-0">
                               <div className="flex items-start justify-between gap-2 mb-1">
-                                <h4 className={`font-semibold text-sm leading-tight ${isCompleted ? "text-success" : "text-foreground"}`}>
-                                  {task.cluster_name}
-                                </h4>
+                                <div className="flex items-center gap-1.5">
+                                  <h4 className={`font-semibold text-sm leading-tight ${isCompleted ? "text-success" : "text-foreground"}`}>
+                                    {task.cluster_name}
+                                  </h4>
+                                  {isUpdated && (
+                                    <Badge className="bg-primary/10 text-primary border-primary/20 text-[8px] px-1 py-0 h-3.5 animate-pulse">
+                                      Updated
+                                    </Badge>
+                                  )}
+                                </div>
                                 <div className="flex items-center gap-1.5 shrink-0">
                                   {isCompleted && taskScore !== null && scoreBadge(taskScore)}
                                   {priorityBadge(task.priority)}

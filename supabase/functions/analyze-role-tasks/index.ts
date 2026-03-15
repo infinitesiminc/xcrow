@@ -18,7 +18,7 @@ serve(async (req) => {
   }
 
   try {
-    const { jobId, jobTitle, company, description } = await req.json();
+    const { jobId, jobTitle, company, description, forceRefresh } = await req.json();
     if (!jobId || !jobTitle) {
       return new Response(JSON.stringify({ error: "jobId and jobTitle required" }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -48,13 +48,14 @@ serve(async (req) => {
       (jobRow?.automation_risk_percent ?? 0) === 0 &&
       (jobRow?.new_skills_percent ?? 0) === 0;
 
-    if (existing && existing.length > 0 && !needsScoreBackfill) {
+    // Return cached unless force refresh or needs backfill
+    if (existing && existing.length > 0 && !needsScoreBackfill && !forceRefresh) {
       return new Response(JSON.stringify({ tasks: existing, cached: true }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    if (existing && existing.length > 0 && needsScoreBackfill) {
+    if (existing && existing.length > 0 && (needsScoreBackfill || forceRefresh)) {
       await sb.from("job_task_clusters").delete().eq("job_id", jobId);
     }
 
