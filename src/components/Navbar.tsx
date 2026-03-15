@@ -26,6 +26,7 @@ export default function Navbar() {
     : user?.email?.slice(0, 2).toUpperCase() ?? "?";
 
   const productItems = [
+    { label: "Platform Overview", path: "/platform" },
     { label: "AI Upskilling", path: "/products/upskilling" },
     { label: "Candidate Assessment", path: "/products/candidate-assessment" },
     { label: "Workforce Planning", path: "/products/workforce-planning" },
