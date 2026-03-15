@@ -552,7 +552,7 @@ export default function SimulationBuilder() {
                     <div className="space-y-2">
                       <div className="flex items-center gap-1.5">
                         <button
-                          onClick={() => { setPriorityMode("all"); setPriorityDept(null); setPriorityJobId(null); }}
+                          onClick={() => { setPriorityMode("all"); setPriorityDept(null); setPriorityJobId(null); setSearch(""); }}
                           className={`text-[10px] px-2 py-0.5 rounded-full border transition-colors ${priorityMode === "all" ? "bg-primary text-primary-foreground border-primary" : "bg-muted/40 text-muted-foreground border-border hover:border-primary/30"}`}
                         >
                           All
@@ -577,7 +577,12 @@ export default function SimulationBuilder() {
                           {unanalyzedByDept.map(([dept, info]) => (
                             <button
                               key={dept}
-                              onClick={() => setPriorityDept(priorityDept === dept ? null : dept)}
+                              onClick={() => {
+                                const isActive = priorityDept === dept;
+                                setPriorityDept(isActive ? null : dept);
+                                // Sync with job browser
+                                setSearch(isActive ? "" : dept);
+                              }}
                               className={`text-[10px] px-2 py-0.5 rounded-full border transition-colors ${priorityDept === dept ? "bg-accent text-accent-foreground border-primary/40" : "bg-muted/30 text-muted-foreground border-border/50 hover:border-primary/30"}`}
                             >
                               {dept} ({info.pending})
@@ -701,7 +706,19 @@ export default function SimulationBuilder() {
                 {departments.map(([dept, count]) => (
                   <button
                     key={dept}
-                    onClick={() => setSearch(search === dept ? "" : dept)}
+                    onClick={() => {
+                      const isActive = search === dept;
+                      setSearch(isActive ? "" : dept);
+                      // Sync with batch pipeline
+                      if (!isActive) {
+                        setPriorityMode("dept");
+                        setPriorityDept(dept);
+                        setPriorityJobId(null);
+                      } else {
+                        setPriorityMode("all");
+                        setPriorityDept(null);
+                      }
+                    }}
                     className={`rounded-full px-2.5 py-0.5 text-[10px] font-medium border transition-colors ${
                       search === dept
                         ? "bg-primary text-primary-foreground border-primary"
