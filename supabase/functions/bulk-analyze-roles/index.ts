@@ -44,13 +44,24 @@ serve(async (req) => {
       });
     }
 
-    // Get jobs that already have task clusters
-    const { data: existingClusters } = await sb
+    // Get DISTINCT job_ids that already have task clusters for this company
+    // Use a simpler query that doesn't hit URL length limits
+    const { data: existingClusters, error: clusterErr } = await sb
       .from("job_task_clusters")
-      .select("job_id")
-      .in("job_id", allJobs.map(j => j.id));
+      .select("job_id, id")
+      .limit(10000);
 
-    const analyzedJobIds = new Set((existingClusters || []).map(c => c.job_id));
+    if (clusterErr) {
+      console.error("Cluster query error:", clusterErr.message);
+    }
+
+    const allJobIds = new Set(allJobs.map(j => j.id));
+    const analyzedJobIds = new Set(
+      (existingClusters || [])
+        .filter(c => allJobIds.has(c.job_id))
+        .map(c => c.job_id)
+    );
+    
     const pendingJobs = allJobs.filter(j => !analyzedJobIds.has(j.id));
 
     if (pendingJobs.length === 0) {
@@ -70,6 +81,18 @@ serve(async (req) => {
 
     for (const job of batch) {
       try {
+        // Double-check this job doesn't already have clusters (race condition guard)
+        const { data: existing } = await sb
+          .from("job_task_clusters")
+          .select("id")
+          .eq("job_id", job.id)
+          .limit(1);
+
+        if (existing && existing.length > 0) {
+          results.push({ jobId: job.id, title: job.title, status: "already_exists" });
+          continue;
+        }
+
         const prompt = `Analyze the job role "${job.title}" and break it down into 8-12 discrete task clusters.
 
 ${job.description ? `Job Description:\n${job.description.slice(0, 2000)}\n\n` : ""}
@@ -99,7 +122,6 @@ Order from highest AI impact to lowest. Respond ONLY with valid JSON array.`;
           const txt = await res.text();
           if (res.status === 429) {
             results.push({ jobId: job.id, title: job.title, status: "rate_limited" });
-            // Stop processing further to respect rate limit
             break;
           }
           results.push({ jobId: job.id, title: job.title, status: `error_${res.status}` });
@@ -128,7 +150,7 @@ Order from highest AI impact to lowest. Respond ONLY with valid JSON array.`;
 
         const { error: insertErr } = await sb.from("job_task_clusters").insert(rows);
         if (insertErr) {
-          results.push({ jobId: job.id, title: job.title, status: "insert_error" });
+          results.push({ jobId: job.id, title: job.title, status: "insert_error: " + insertErr.message });
         } else {
           results.push({ jobId: job.id, title: job.title, status: "success", taskCount: rows.length });
         }
@@ -140,10 +162,13 @@ Order from highest AI impact to lowest. Respond ONLY with valid JSON array.`;
       }
     }
 
+    const successCount = results.filter(r => r.status === "success" || r.status === "already_exists").length;
+
     return new Response(JSON.stringify({
       total: allJobs.length,
       alreadyAnalyzed: analyzedJobIds.size,
-      remaining: pendingJobs.length - batch.length,
+      justProcessed: successCount,
+      remaining: pendingJobs.length - successCount,
       batchProcessed: results.length,
       results,
     }), {
