@@ -551,15 +551,23 @@ export default function TeamProgress() {
             )}
           </div>
 
-          {/* Role breakdown for selected dept */}
-          <Card>
-            <CardContent className="p-5">
-              <p className="text-sm font-semibold text-foreground mb-4">
-                {selectedDept === "All" ? "Roles Across All Departments" : `Roles in ${selectedDept}`}
-              </p>
-              <DeptRoleBreakdown progress={progress} selectedDept={selectedDept} />
-            </CardContent>
-          </Card>
+          {/* AI Readiness + Role breakdown side by side */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <Card>
+              <CardContent className="p-5">
+                <p className="text-sm font-semibold text-foreground mb-4">AI Readiness Breakdown</p>
+                <CategoryBreakdown progress={progress} selectedDept={selectedDept} />
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="p-5">
+                <p className="text-sm font-semibold text-foreground mb-4">
+                  {selectedDept === "All" ? "Roles Across All Departments" : `Roles in ${selectedDept}`}
+                </p>
+                <DeptRoleBreakdown progress={progress} selectedDept={selectedDept} />
+              </CardContent>
+            </Card>
+          </div>
         </>
       ) : (
         <>
