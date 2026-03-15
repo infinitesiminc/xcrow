@@ -385,8 +385,69 @@ export default function SimulationBuilder() {
         </div>
       </section>
 
+      {/* Use Cases */}
+      <section className="px-4 py-16">
+        <div className="mx-auto max-w-5xl">
+          <motion.div {...fadeUp} className="text-center mb-12">
+            <h2 className="font-serif text-2xl sm:text-4xl font-bold text-foreground">
+              Five use cases. One engine.
+            </h2>
+            <p className="mt-3 text-muted-foreground max-w-2xl mx-auto">
+              Every workforce challenge maps to a simulation blueprint — from individual upskilling to org-wide planning.
+            </p>
+          </motion.div>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {[
+              {
+                icon: GraduationCap,
+                title: "AI Upskilling",
+                template: "Quick Pulse",
+                description: "Daily microlearning simulations that teach employees how AI is changing their specific tasks — and how to work alongside it.",
+              },
+              {
+                icon: ClipboardCheck,
+                title: "Candidate Assessment",
+                template: "Case Challenge / Full Panel",
+                description: "Score candidates on AI-readiness, not résumé keywords. Auto-generate skill simulations grounded in your role's disruption data.",
+              },
+              {
+                icon: FileBarChart,
+                title: "Workforce Planning",
+                template: "Bulk Analysis + Heatmaps",
+                description: "Upload your org chart. See AI disruption heatmaps across departments. Allocate L&D budgets to the highest-impact areas.",
+              },
+              {
+                icon: Compass,
+                title: "Career Transition",
+                template: "Quick Pulse + Pathways",
+                description: "Map skill transfer between roles, identify gaps, and let employees explore new careers through simulations before committing.",
+              },
+              {
+                icon: BookOpen,
+                title: "L&D Content Engine",
+                template: "Deep Dive",
+                description: "Auto-generate structured learning modules — briefings, scenario MCQs, open responses, and scorecards — for any role and task.",
+              },
+            ].map((uc, i) => (
+              <motion.div key={uc.title} {...fadeUp} transition={{ delay: i * 0.06 }}>
+                <Card className="h-full border-border bg-card hover:border-primary/30 transition-colors">
+                  <CardContent className="p-6">
+                    <div className="flex items-start justify-between mb-3">
+                      <uc.icon className="h-7 w-7 text-primary" />
+                      <span className="rounded-full bg-accent px-2.5 py-0.5 text-[10px] font-medium text-accent-foreground">{uc.template}</span>
+                    </div>
+                    <h3 className="font-semibold text-foreground text-lg">{uc.title}</h3>
+                    <p className="text-sm text-muted-foreground mt-2 leading-relaxed">{uc.description}</p>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* CTA */}
-      <section className="px-4 py-20">
+      <section className="px-4 py-20 bg-accent/30">
         <div className="mx-auto max-w-3xl text-center">
           <Sparkles className="h-8 w-8 text-primary mx-auto mb-4" />
           <h2 className="font-serif text-2xl sm:text-4xl font-bold text-foreground">
