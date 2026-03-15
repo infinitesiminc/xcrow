@@ -405,8 +405,8 @@ export default function LearningPath() {
         </Button>
 
         {/* Job Header */}
-        <Card className="border-border bg-card mb-6">
-          <CardContent className="p-6">
+        <Card className="border-border bg-card mb-4">
+          <CardContent className="p-5">
             <div className="flex items-start justify-between gap-3">
               <div>
                 <h1 className="font-serif text-2xl sm:text-3xl font-bold text-foreground leading-tight">{job.title}</h1>
@@ -416,11 +416,23 @@ export default function LearningPath() {
                   {job.location && ` · ${job.location}`}
                 </p>
               </div>
-              {riskBadge(job.automation_risk_percent)}
+              <div className="flex items-center gap-2 shrink-0">
+                {riskBadge(job.automation_risk_percent)}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 w-8 p-0 text-muted-foreground hover:text-primary"
+                  onClick={() => job && analyzeJob(job, true)}
+                  disabled={analyzing}
+                  title="Re-analyze with latest AI data"
+                >
+                  <RefreshCw className={`h-4 w-4 ${analyzing ? "animate-spin" : ""}`} />
+                </Button>
+              </div>
             </div>
 
             {/* Quick stats */}
-            <div className="grid grid-cols-3 gap-4 mt-5">
+            <div className="grid grid-cols-3 gap-4 mt-4">
               {[
                 { label: "AI Augmented", value: job.augmented_percent, color: "bg-dot-blue" },
                 { label: "Automation Risk", value: job.automation_risk_percent, color: "bg-destructive" },
@@ -439,6 +451,54 @@ export default function LearningPath() {
             </div>
           </CardContent>
         </Card>
+
+        {/* ── Update notification strip ── */}
+        {updatedTaskNames.size > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-4"
+          >
+            <Card className="border-primary/30 bg-primary/[0.03]">
+              <CardContent className="p-3">
+                <div className="flex items-center gap-3">
+                  <div className="rounded-full bg-primary/10 p-1.5 shrink-0">
+                    <BellRing className="h-4 w-4 text-primary" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-foreground">
+                      {updatedTaskNames.size} task{updatedTaskNames.size > 1 ? "s" : ""} updated
+                    </p>
+                    <p className="text-[11px] text-muted-foreground truncate">
+                      {Array.from(updatedTaskNames).slice(0, 3).join(", ")}
+                      {updatedTaskNames.size > 3 && ` +${updatedTaskNames.size - 3} more`}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <Button
+                      size="sm"
+                      className="h-7 text-xs gap-1"
+                      onClick={() => {
+                        const firstUpdated = analyzedTasks.find(t => updatedTaskNames.has(t.cluster_name));
+                        if (firstUpdated) launchSim(firstUpdated);
+                      }}
+                    >
+                      <Play className="h-3 w-3" /> Start
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="h-7 text-xs text-muted-foreground"
+                      onClick={() => setUpdatedTaskNames(new Set())}
+                    >
+                      Dismiss
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        )}
 
         {/* Tabs: Learning Path | Custom Sims */}
         <Tabs value={activeTab} onValueChange={v => setActiveTab(v as any)} className="mb-6">
