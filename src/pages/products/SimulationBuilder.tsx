@@ -156,6 +156,9 @@ export default function SimulationBuilder() {
   // Bulk analyze
   const [bulkRunning, setBulkRunning] = useState(false);
   const [bulkProgress, setBulkProgress] = useState<{ analyzed: number; total: number; remaining: number } | null>(null);
+  const [bulkErrors, setBulkErrors] = useState(0);
+  const [bulkSessionStart, setBulkSessionStart] = useState<number | null>(null);
+  const [bulkPaused, setBulkPaused] = useState<string | null>(null); // reason for pause
 
   // Simulator modal
   const [simOpen, setSimOpen] = useState(false);
