@@ -33,7 +33,10 @@ export default function Navbar() {
   const navItems = [
     { label: "Pricing", path: "/pricing" },
     { label: "Contact", path: "/contact" },
-    ...(user ? [{ label: "Dashboard", path: "/dashboard" }] : []),
+    ...(user ? [
+      { label: "Simulations", path: "/simulations" },
+      { label: "Dashboard", path: "/dashboard" },
+    ] : []),
   ];
 
   const handleNav = (path: string) => {
