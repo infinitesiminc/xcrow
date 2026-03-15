@@ -13,8 +13,6 @@ import Auth from "./pages/Auth.tsx";
 import Dashboard from "./pages/Dashboard.tsx";
 import Settings from "./pages/Settings.tsx";
 import NotFound from "./pages/NotFound.tsx";
-import ForIndividuals from "./pages/ForIndividuals.tsx";
-import ForOrganizations from "./pages/ForOrganizations.tsx";
 import ToolsMarketplace from "./pages/ToolsMarketplace.tsx";
 import ContactOrg from "./pages/ContactOrg.tsx";
 import Contact from "./pages/Contact.tsx";
