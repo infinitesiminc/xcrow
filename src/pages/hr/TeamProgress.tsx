@@ -239,6 +239,147 @@ function CategoryBreakdown({ progress, selectedDept }: { progress: ProgressRow[]
   );
 }
 
+/* ─── Adaptive Simulation Metrics ─── */
+function AdaptiveMetrics({ progress }: { progress: ProgressRow[] }) {
+  const THRESHOLD = 60;
+
+  const metrics = useMemo(() => {
+    const categories = ["tool_awareness_score", "human_value_add_score", "adaptive_thinking_score", "domain_judgment_score"] as const;
+    const catLabels: Record<string, string> = {
+      tool_awareness_score: "AI Tool Awareness",
+      human_value_add_score: "Human Value-Add",
+      adaptive_thinking_score: "Adaptive Thinking",
+      domain_judgment_score: "Domain Judgment",
+    };
+
+    let totalChecks = 0;
+    let belowThreshold = 0;
+    const taskFailCounts: Record<string, number> = {};
+    const catFailCounts: Record<string, number> = {};
+    const userFailCounts: Record<string, { name: string; count: number; jobTitle: string }> = {};
+
+    progress.forEach(r => {
+      categories.forEach(cat => {
+        const score = r[cat];
+        if (score != null) {
+          totalChecks++;
+          if (score < THRESHOLD) {
+            belowThreshold++;
+            const taskKey = r.task_name;
+            taskFailCounts[taskKey] = (taskFailCounts[taskKey] || 0) + 1;
+            catFailCounts[cat] = (catFailCounts[cat] || 0) + 1;
+            if (!userFailCounts[r.user_id]) {
+              userFailCounts[r.user_id] = { name: r.display_name, count: 0, jobTitle: r.job_title };
+            }
+            userFailCounts[r.user_id].count++;
+          }
+        }
+      });
+    });
+
+    const passRate = totalChecks > 0 ? Math.round(((totalChecks - belowThreshold) / totalChecks) * 100) : 100;
+
+    const bottleneckTasks = Object.entries(taskFailCounts)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 5)
+      .map(([task, count]) => ({ task, count }));
+
+    const weakestCategory = Object.entries(catFailCounts)
+      .sort((a, b) => b[1] - a[1])
+      .map(([cat, count]) => ({ cat: catLabels[cat] || cat, count }))[0];
+
+    const escalatedUsers = Object.values(userFailCounts)
+      .filter(u => u.count >= 3)
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 5);
+
+    return { passRate, belowThreshold, totalChecks, bottleneckTasks, weakestCategory, escalatedUsers };
+  }, [progress]);
+
+  return (
+    <Card className="border-warning/20">
+      <CardContent className="p-5">
+        <div className="flex items-center gap-2 mb-4">
+          <RefreshCw className="h-4 w-4 text-warning" />
+          <p className="text-sm font-semibold text-foreground">Adaptive Simulation Insights</p>
+          <Badge variant="secondary" className="text-[10px] ml-auto">{THRESHOLD}% threshold</Badge>
+        </div>
+
+        {/* Pass rate + counts */}
+        <div className="grid grid-cols-3 gap-4 mb-4">
+          <div className="text-center p-3 rounded-lg bg-accent/30">
+            <p className={`text-2xl font-bold ${metrics.passRate >= 70 ? "text-success" : metrics.passRate >= 50 ? "text-dot-amber" : "text-destructive"}`}>
+              {metrics.passRate}%
+            </p>
+            <p className="text-[10px] text-muted-foreground">Overall Pass Rate</p>
+          </div>
+          <div className="text-center p-3 rounded-lg bg-accent/30">
+            <p className="text-2xl font-bold text-destructive">{metrics.belowThreshold}</p>
+            <p className="text-[10px] text-muted-foreground">Below Threshold</p>
+          </div>
+          <div className="text-center p-3 rounded-lg bg-accent/30">
+            <p className="text-2xl font-bold text-foreground">{metrics.escalatedUsers.length}</p>
+            <p className="text-[10px] text-muted-foreground">Need Attention</p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          {/* Bottleneck tasks */}
+          <div>
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 flex items-center gap-1.5">
+              <Target className="h-3 w-3" /> Bottleneck Tasks
+            </p>
+            {metrics.bottleneckTasks.length === 0 ? (
+              <p className="text-xs text-muted-foreground">All tasks above threshold ✓</p>
+            ) : (
+              <div className="space-y-1.5">
+                {metrics.bottleneckTasks.map(({ task, count }) => (
+                  <div key={task} className="flex items-center gap-2">
+                    <span className="text-xs text-foreground flex-1 truncate">{task}</span>
+                    <Badge variant="outline" className="text-[10px] text-destructive border-destructive/30">{count} fails</Badge>
+                  </div>
+                ))}
+              </div>
+            )}
+            {metrics.weakestCategory && (
+              <div className="mt-3 bg-destructive/5 rounded-md px-3 py-2">
+                <p className="text-[11px] text-foreground">
+                  <span className="font-semibold">Weakest area:</span> {metrics.weakestCategory.cat} ({metrics.weakestCategory.count} failures)
+                </p>
+              </div>
+            )}
+          </div>
+
+          {/* Employees needing attention */}
+          <div>
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 flex items-center gap-1.5">
+              <AlertTriangle className="h-3 w-3" /> Employees Needing Coaching
+            </p>
+            {metrics.escalatedUsers.length === 0 ? (
+              <p className="text-xs text-muted-foreground">No employees with 3+ category failures ✓</p>
+            ) : (
+              <div className="space-y-1.5">
+                {metrics.escalatedUsers.map(u => (
+                  <div key={u.name} className="flex items-center gap-2">
+                    <div className="w-6 h-6 rounded-full bg-destructive/10 flex items-center justify-center text-[10px] font-bold text-destructive shrink-0">
+                      {u.name.split(" ").map(n => n[0]).join("").slice(0, 2)}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs text-foreground truncate">{u.name}</p>
+                      <p className="text-[10px] text-muted-foreground truncate">{u.jobTitle}</p>
+                    </div>
+                    <Badge variant="outline" className="text-[10px] text-destructive border-destructive/30">{u.count} areas</Badge>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
 /* ─── Individual: Leaderboard ─── */
 function Leaderboard({ users, onSelect }: { users: UserSummary[]; onSelect: (u: UserSummary) => void }) {
   const [search, setSearch] = useState("");
