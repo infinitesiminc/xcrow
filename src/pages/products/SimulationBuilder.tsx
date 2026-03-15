@@ -98,39 +98,7 @@ const templates = [
   },
 ];
 
-const templateMap = Object.fromEntries(templates.map(t => [t.id, t]));
 
-/* ── Helpers ── */
-function stateIcon(state?: string) {
-  if (state === "mostly_ai") return <Brain className="h-3.5 w-3.5 text-dot-purple" />;
-  if (state === "human_ai") return <TrendingUp className="h-3.5 w-3.5 text-dot-amber" />;
-  return <Shield className="h-3.5 w-3.5 text-dot-teal" />;
-}
-
-function stateLabel(s?: string) {
-  if (s === "mostly_ai") return "Mostly AI";
-  if (s === "human_ai") return "Human + AI";
-  return "Mostly Human";
-}
-
-function priorityBadge(p?: string) {
-  if (p === "critical") return <Badge className="bg-destructive/10 text-destructive border-destructive/20 text-[9px]">Critical</Badge>;
-  if (p === "important") return <Badge className="bg-warning/10 text-warning border-warning/20 text-[9px]">Important</Badge>;
-  return <Badge className="bg-success/10 text-success border-success/20 text-[9px]">Helpful</Badge>;
-}
-
-function riskBadge(pct: number | null) {
-  if (pct == null) return null;
-  if (pct >= 60) return <Badge className="bg-destructive/10 text-destructive border-destructive/20 text-[10px]">{pct}% risk</Badge>;
-  if (pct >= 35) return <Badge className="bg-warning/10 text-warning border-warning/20 text-[10px]">{pct}% risk</Badge>;
-  return <Badge className="bg-success/10 text-success border-success/20 text-[10px]">{pct}% risk</Badge>;
-}
-
-function scoreBadge(score: number) {
-  if (score >= 70) return <Badge className="bg-success/10 text-success border-success/20 text-[9px]">{score}%</Badge>;
-  if (score >= 40) return <Badge className="bg-warning/10 text-warning border-warning/20 text-[9px]">{score}%</Badge>;
-  return <Badge className="bg-destructive/10 text-destructive border-destructive/20 text-[9px]">{score}%</Badge>;
-}
 
 export default function SimulationBuilder() {
   const navigate = useNavigate();
