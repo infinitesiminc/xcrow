@@ -33,7 +33,7 @@ serve(async (req) => {
     // Get all jobs for this company (optionally filtered by department)
     let jobQuery = sb
       .from("jobs")
-      .select("id, title, description, department")
+      .select("id, title, description, department, augmented_percent, automation_risk_percent, new_skills_percent")
       .eq("company_id", companyId);
     if (department) jobQuery = jobQuery.eq("department", department);
     if (jobIds?.length) jobQuery = jobQuery.in("id", jobIds);
@@ -47,7 +47,6 @@ serve(async (req) => {
     }
 
     // Get DISTINCT job_ids that already have task clusters for this company
-    // Use a simpler query that doesn't hit URL length limits
     const { data: existingClusters, error: clusterErr } = await sb
       .from("job_task_clusters")
       .select("job_id, id")
@@ -63,8 +62,14 @@ serve(async (req) => {
         .filter(c => allJobIds.has(c.job_id))
         .map(c => c.job_id)
     );
-    
-    const pendingJobs = allJobs.filter(j => !analyzedJobIds.has(j.id));
+
+    const backfillJobIds = new Set(
+      allJobs
+        .filter(j => analyzedJobIds.has(j.id) && (j.augmented_percent ?? 0) === 0 && (j.automation_risk_percent ?? 0) === 0 && (j.new_skills_percent ?? 0) === 0)
+        .map(j => j.id)
+    );
+
+    const pendingJobs = allJobs.filter(j => !analyzedJobIds.has(j.id) || backfillJobIds.has(j.id));
 
     if (pendingJobs.length === 0) {
       return new Response(JSON.stringify({
@@ -83,6 +88,8 @@ serve(async (req) => {
 
     for (const job of batch) {
       try {
+        const shouldBackfill = backfillJobIds.has(job.id);
+
         // Double-check this job doesn't already have clusters (race condition guard)
         const { data: existing } = await sb
           .from("job_task_clusters")
@@ -90,9 +97,13 @@ serve(async (req) => {
           .eq("job_id", job.id)
           .limit(1);
 
-        if (existing && existing.length > 0) {
+        if (existing && existing.length > 0 && !shouldBackfill) {
           results.push({ jobId: job.id, title: job.title, status: "already_exists" });
           continue;
+        }
+
+        if (existing && existing.length > 0 && shouldBackfill) {
+          await sb.from("job_task_clusters").delete().eq("job_id", job.id);
         }
 
         const prompt = `Analyze the job role "${job.title}" and break it down into 8-12 discrete task clusters.

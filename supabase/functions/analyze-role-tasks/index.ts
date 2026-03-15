@@ -37,10 +37,25 @@ serve(async (req) => {
       .eq("job_id", jobId)
       .order("sort_order");
 
-    if (existing && existing.length > 0) {
+    const { data: jobRow } = await sb
+      .from("jobs")
+      .select("augmented_percent, automation_risk_percent, new_skills_percent")
+      .eq("id", jobId)
+      .maybeSingle();
+
+    const needsScoreBackfill = !!existing?.length &&
+      (jobRow?.augmented_percent ?? 0) === 0 &&
+      (jobRow?.automation_risk_percent ?? 0) === 0 &&
+      (jobRow?.new_skills_percent ?? 0) === 0;
+
+    if (existing && existing.length > 0 && !needsScoreBackfill) {
       return new Response(JSON.stringify({ tasks: existing, cached: true }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
+    }
+
+    if (existing && existing.length > 0 && needsScoreBackfill) {
+      await sb.from("job_task_clusters").delete().eq("job_id", jobId);
     }
 
     // Generate task analysis via AI
