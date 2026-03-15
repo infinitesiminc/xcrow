@@ -382,6 +382,14 @@ export default function SimulationBuilder() {
 
   const unanalyzedJobs = useMemo(() => jobs.filter(j => !analyzedJobIds.has(j.id)), [jobs, analyzedJobIds]);
 
+  // Priority job search
+  const [priorityJobSearch, setPriorityJobSearch] = useState("");
+  const filteredPriorityJobs = useMemo(() => {
+    if (!priorityJobSearch.trim()) return unanalyzedJobs.slice(0, 8);
+    const q = priorityJobSearch.toLowerCase();
+    return unanalyzedJobs.filter(j => j.title.toLowerCase().includes(q) || j.department?.toLowerCase().includes(q)).slice(0, 12);
+  }, [unanalyzedJobs, priorityJobSearch]);
+
   /* ── Bulk analyze (single batch per click) ── */
   const runBulkBatch = useCallback(async () => {
     if (!companyId) return;
