@@ -109,6 +109,18 @@ const TICKER_HEADLINES = [
 ];
 
 function NewsTicker() {
+  const [headlines, setHeadlines] = useState(TICKER_HEADLINES);
+
+  useEffect(() => {
+    supabase
+      .from("ticker_headlines")
+      .select("date, text")
+      .order("created_at", { ascending: false })
+      .then(({ data }) => {
+        if (data && data.length > 0) setHeadlines(data);
+      });
+  }, []);
+
   return (
     <div className="mt-4 rounded-lg border border-destructive/20 bg-destructive/5 overflow-hidden">
       <div className="flex items-center gap-3 px-3 py-1.5 border-b border-destructive/10 bg-destructive/10">
@@ -122,7 +134,7 @@ function NewsTicker() {
       </div>
       <div className="h-[22px] overflow-hidden relative">
         <div className="animate-[ticker-vertical_20s_linear_infinite] flex flex-col">
-          {[...TICKER_HEADLINES, ...TICKER_HEADLINES].map((h, i) => (
+          {[...headlines, ...headlines].map((h, i) => (
             <span key={i} className="text-[11px] text-foreground/70 flex items-center gap-2 px-4 h-[22px] shrink-0 whitespace-nowrap">
               <span className="text-destructive/60">▸</span>
               <span className="text-muted-foreground/60 font-mono text-[10px]">{h.date}</span>
