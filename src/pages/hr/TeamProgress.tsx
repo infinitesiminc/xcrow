@@ -83,7 +83,7 @@ export default function TeamProgress() {
 
       // Fetch progress via security definer function
       const { data: rows } = await supabase.rpc("get_workspace_progress", { p_workspace_id: wsId });
-      if (rows) setProgress(rows as ProgressRow[]);
+      if (rows) setProgress([...DEMO_PROGRESS, ...(rows as ProgressRow[])]);
       setLoading(false);
     })();
   }, [user]);
