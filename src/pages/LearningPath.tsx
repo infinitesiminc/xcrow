@@ -1,19 +1,19 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
+import { useSearchParams, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Plus, FileText, MessageSquare, Zap, GraduationCap, ClipboardCheck,
   Users, Loader2, Trash2, Play, ChevronDown, ChevronUp, Upload,
-  Sparkles, Clock, AlertTriangle, Brain, Search, Briefcase,
-  BookOpen, Save, TrendingUp, Target, BarChart3, Award,
-  CheckCircle2, ArrowRight,
+  Sparkles, Clock, AlertTriangle, Brain, Target, Briefcase,
+  BookOpen, TrendingUp, Shield, Award, CheckCircle2, ArrowLeft,
+  ArrowRight,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
+import { Textarea } from "@/components/ui/textarea";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
 } from "@/components/ui/dialog";
@@ -22,13 +22,41 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import SimulatorModal from "@/components/SimulatorModal";
 
-/* ── Template config ── */
-const templateMeta: Record<string, { name: string; icon: any; color: string; duration: string }> = {
-  "quick-pulse": { name: "Quick Pulse", icon: Zap, color: "bg-dot-teal/10 text-dot-teal border-dot-teal/20", duration: "~3 min" },
-  "deep-dive": { name: "Deep Dive", icon: GraduationCap, color: "bg-dot-blue/10 text-dot-blue border-dot-blue/20", duration: "~15 min" },
-  "case-challenge": { name: "Case Challenge", icon: ClipboardCheck, color: "bg-dot-purple/10 text-dot-purple border-dot-purple/20", duration: "~30 min" },
-  "full-panel": { name: "Full Panel", icon: Users, color: "bg-dot-amber/10 text-dot-amber border-dot-amber/20", duration: "~60 min" },
-};
+/* ── Types ── */
+interface DbJob {
+  id: string;
+  title: string;
+  department: string | null;
+  seniority: string | null;
+  location: string | null;
+  augmented_percent: number | null;
+  automation_risk_percent: number | null;
+  new_skills_percent: number | null;
+  description: string | null;
+  company_id: string | null;
+}
+
+interface EnrichedTask {
+  id: string;
+  cluster_name: string;
+  description: string | null;
+  outcome: string | null;
+  skill_names: string[] | null;
+  sort_order: number | null;
+  ai_state?: string;
+  ai_trend?: string;
+  impact_level?: string;
+  recommended_template?: string;
+  priority?: string;
+  sim_duration?: number;
+}
+
+interface CompletedSim {
+  task_name: string;
+  correct_answers: number;
+  total_questions: number;
+  job_title: string;
+}
 
 interface CustomSim {
   id: string;
@@ -44,113 +72,204 @@ interface CustomSim {
   created_at: string;
 }
 
-interface CompletedSim {
-  id: string;
-  job_title: string;
-  task_name: string;
-  company: string | null;
-  correct_answers: number;
-  total_questions: number;
-  rounds_completed: number;
-  completed_at: string;
-  experience_level: string | null;
+/* ── Templates ── */
+const templates = [
+  { id: "quick-pulse", name: "Quick Pulse", duration: "~3 min", icon: Zap, color: "bg-dot-teal/10 text-dot-teal border-dot-teal/20" },
+  { id: "deep-dive", name: "Deep Dive", duration: "~15 min", icon: GraduationCap, color: "bg-dot-blue/10 text-dot-blue border-dot-blue/20" },
+  { id: "case-challenge", name: "Case Challenge", duration: "~30 min", icon: ClipboardCheck, color: "bg-dot-purple/10 text-dot-purple border-dot-purple/20" },
+  { id: "full-panel", name: "Full Panel", duration: "~60 min", icon: Users, color: "bg-dot-amber/10 text-dot-amber border-dot-amber/20" },
+];
+const templateMap = Object.fromEntries(templates.map(t => [t.id, t]));
+
+/* ── Helpers ── */
+function stateIcon(state?: string) {
+  if (state === "mostly_ai") return <Brain className="h-3.5 w-3.5 text-dot-purple" />;
+  if (state === "human_ai") return <TrendingUp className="h-3.5 w-3.5 text-dot-amber" />;
+  return <Shield className="h-3.5 w-3.5 text-dot-teal" />;
+}
+function stateLabel(s?: string) {
+  if (s === "mostly_ai") return "Mostly AI";
+  if (s === "human_ai") return "Human + AI";
+  return "Mostly Human";
+}
+function priorityBadge(p?: string) {
+  if (p === "critical") return <Badge className="bg-destructive/10 text-destructive border-destructive/20 text-[9px]">Critical</Badge>;
+  if (p === "important") return <Badge className="bg-warning/10 text-warning border-warning/20 text-[9px]">Important</Badge>;
+  return <Badge className="bg-success/10 text-success border-success/20 text-[9px]">Helpful</Badge>;
+}
+function scoreBadge(score: number) {
+  if (score >= 70) return <Badge className="bg-success/10 text-success border-success/20 text-[9px]">{score}%</Badge>;
+  if (score >= 40) return <Badge className="bg-warning/10 text-warning border-warning/20 text-[9px]">{score}%</Badge>;
+  return <Badge className="bg-destructive/10 text-destructive border-destructive/20 text-[9px]">{score}%</Badge>;
+}
+function riskBadge(pct: number | null) {
+  if (pct == null) return null;
+  const cls = pct >= 60 ? "bg-destructive/10 text-destructive border-destructive/20" : pct >= 35 ? "bg-warning/10 text-warning border-warning/20" : "bg-success/10 text-success border-success/20";
+  return <Badge className={`${cls} text-[10px]`}>{pct}% risk</Badge>;
 }
 
 export default function LearningPath() {
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const { user, openAuthModal } = useAuth();
   const { toast } = useToast();
 
-  const [activeSection, setActiveSection] = useState<"overview" | "library" | "results">("overview");
+  const jobId = searchParams.get("jobId");
 
-  /* ── Library state ── */
-  const [sims, setSims] = useState<CustomSim[]>([]);
-  const [loading, setLoading] = useState(true);
+  /* ── Job data ── */
+  const [job, setJob] = useState<DbJob | null>(null);
+  const [companyName, setCompanyName] = useState("");
+  const [jobLoading, setJobLoading] = useState(true);
+
+  /* ── Tasks ── */
+  const [analyzedTasks, setAnalyzedTasks] = useState<EnrichedTask[]>([]);
+  const [analyzing, setAnalyzing] = useState(false);
+  const [analysisError, setAnalysisError] = useState<string | null>(null);
+
+  /* ── Progress ── */
+  const [completedSims, setCompletedSims] = useState<CompletedSim[]>([]);
+
+  /* ── Custom sims for this job ── */
+  const [customSims, setCustomSims] = useState<CustomSim[]>([]);
   const [createOpen, setCreateOpen] = useState(false);
   const [creating, setCreating] = useState(false);
-  const [expandedJob, setExpandedJob] = useState<string | null>(null);
-
-  // Create form
   const [createTab, setCreateTab] = useState<"prompt" | "document">("prompt");
   const [promptText, setPromptText] = useState("");
   const [docText, setDocText] = useState("");
   const [docFile, setDocFile] = useState<File | null>(null);
   const [parsing, setParsing] = useState(false);
 
-  // Sim runner
-  const [simTask, setSimTask] = useState<{ taskName: string; jobTitle: string; company?: string } | null>(null);
+  /* ── Sim runner ── */
+  const [simOpen, setSimOpen] = useState(false);
+  const [simTask, setSimTask] = useState("");
+  const [simTaskState, setSimTaskState] = useState<string | undefined>();
+  const [simTaskTrend, setSimTaskTrend] = useState<string | undefined>();
+  const [simTaskImpact, setSimTaskImpact] = useState<string | undefined>();
 
-  /* ── Results state ── */
-  const [completedSims, setCompletedSims] = useState<CompletedSim[]>([]);
-  const [resultsLoading, setResultsLoading] = useState(true);
+  /* ── Active tab ── */
+  const [activeTab, setActiveTab] = useState<"path" | "custom">("path");
 
-  /* ── Fetch custom sims ── */
-  const fetchSims = useCallback(async () => {
+  /* ── Load job + company ── */
+  useEffect(() => {
+    if (!jobId) { setJobLoading(false); return; }
+    (async () => {
+      setJobLoading(true);
+      const { data: jobData } = await supabase
+        .from("jobs")
+        .select("id, title, department, seniority, location, augmented_percent, automation_risk_percent, new_skills_percent, description, company_id")
+        .eq("id", jobId)
+        .single();
+      if (jobData) {
+        setJob(jobData);
+        if (jobData.company_id) {
+          const { data: co } = await supabase.from("companies").select("name").eq("id", jobData.company_id).single();
+          if (co) setCompanyName(co.name);
+        }
+      }
+      setJobLoading(false);
+    })();
+  }, [jobId]);
+
+  /* ── Analyze tasks ── */
+  const analyzeJob = useCallback(async (j: DbJob) => {
+    setAnalyzing(true);
+    setAnalysisError(null);
+    setAnalyzedTasks([]);
+    try {
+      const { data, error } = await supabase.functions.invoke("analyze-role-tasks", {
+        body: { jobId: j.id, jobTitle: j.title, company: companyName, description: j.description },
+      });
+      if (error) throw new Error(error.message);
+      if (data?.error) throw new Error(data.error);
+      const tasks = (data.tasks || []).map((t: any) => {
+        const state = t.ai_state || "human_ai";
+        const impact = t.impact_level || "medium";
+        const priority = t.priority || "important";
+        const skillCount = (t.skill_names || []).length;
+        let score = 0;
+        score += state === "mostly_human" ? 3 : state === "human_ai" ? 2 : 1;
+        score += impact === "high" ? 3 : impact === "medium" ? 2 : 1;
+        score += priority === "critical" ? 3 : priority === "important" ? 2 : 1;
+        if (skillCount >= 4) score += 2; else if (skillCount >= 3) score += 1;
+        const recTemplate = score >= 9 ? "case-challenge" : score >= 6 ? "deep-dive" : "quick-pulse";
+        const recDuration = score >= 9 ? 30 : score >= 6 ? 15 : 3;
+        return { ...t, ai_state: state, ai_trend: t.ai_trend || "increasing_ai", impact_level: impact, recommended_template: t.recommended_template || recTemplate, priority, sim_duration: t.sim_duration || recDuration };
+      });
+      setAnalyzedTasks(tasks);
+    } catch (err: any) {
+      setAnalysisError(err.message || "Analysis failed");
+      toast({ title: "Analysis failed", description: err.message, variant: "destructive" });
+    }
+    setAnalyzing(false);
+  }, [companyName, toast]);
+
+  useEffect(() => {
+    if (job) analyzeJob(job);
+  }, [job, analyzeJob]);
+
+  /* ── Fetch completed sims ── */
+  useEffect(() => {
     if (!user) return;
-    setLoading(true);
-    const { data, error } = await supabase
+    (async () => {
+      const { data } = await supabase
+        .from("completed_simulations")
+        .select("task_name, correct_answers, total_questions, job_title")
+        .eq("user_id", user.id);
+      setCompletedSims(data || []);
+    })();
+  }, [user, simOpen]);
+
+  /* ── Fetch custom sims for this job ── */
+  const fetchCustomSims = useCallback(async () => {
+    if (!user || !job) return;
+    const { data } = await supabase
       .from("custom_simulations")
       .select("*")
       .eq("user_id", user.id)
+      .eq("job_title", job.title)
       .order("created_at", { ascending: false });
-    if (error) console.error("Fetch sims error:", error);
-    setSims((data as CustomSim[]) || []);
-    setLoading(false);
-  }, [user]);
+    setCustomSims((data as CustomSim[]) || []);
+  }, [user, job]);
 
-  /* ── Fetch completed sims ── */
-  const fetchResults = useCallback(async () => {
-    if (!user) return;
-    setResultsLoading(true);
-    const { data, error } = await supabase
-      .from("completed_simulations")
-      .select("*")
-      .eq("user_id", user.id)
-      .order("completed_at", { ascending: false });
-    if (error) console.error("Fetch results error:", error);
-    setCompletedSims((data as CompletedSim[]) || []);
-    setResultsLoading(false);
-  }, [user]);
+  useEffect(() => { fetchCustomSims(); }, [fetchCustomSims]);
 
-  useEffect(() => { fetchSims(); fetchResults(); }, [fetchSims, fetchResults]);
-
-  /* ── Skill gap tracker data ── */
-  const skillStats = useMemo(() => {
-    if (!completedSims.length) return null;
-    const byRole = new Map<string, { total: number; correct: number; sessions: number }>();
-    completedSims.forEach(s => {
-      const entry = byRole.get(s.job_title) || { total: 0, correct: 0, sessions: 0 };
-      entry.total += s.total_questions;
-      entry.correct += s.correct_answers;
-      entry.sessions += 1;
-      byRole.set(s.job_title, entry);
-    });
-
-    const roles = Array.from(byRole.entries()).map(([role, stats]) => ({
-      role,
-      avgScore: stats.total > 0 ? Math.round((stats.correct / stats.total) * 100) : 0,
-      sessions: stats.sessions,
-      totalQuestions: stats.total,
-    })).sort((a, b) => b.sessions - a.sessions);
-
-    const overallCorrect = completedSims.reduce((s, c) => s + c.correct_answers, 0);
-    const overallTotal = completedSims.reduce((s, c) => s + c.total_questions, 0);
-    const overallScore = overallTotal > 0 ? Math.round((overallCorrect / overallTotal) * 100) : 0;
-
-    return { roles, overallScore, totalSessions: completedSims.length };
+  /* ── Progress helpers ── */
+  const getTaskCompletion = useCallback((taskName: string, jobTitle: string) => {
+    const matches = completedSims.filter(s => s.task_name === taskName && s.job_title === jobTitle);
+    if (matches.length === 0) return null;
+    return matches.reduce((best, s) => {
+      const score = s.total_questions > 0 ? Math.round((s.correct_answers / s.total_questions) * 100) : 0;
+      return score > best ? score : best;
+    }, 0);
   }, [completedSims]);
 
-  /* ── Group library sims by job title ── */
-  const grouped = useMemo(() => {
-    const map: Record<string, CustomSim[]> = {};
-    for (const s of sims) {
-      const key = s.job_title;
-      if (!map[key]) map[key] = [];
-      map[key].push(s);
-    }
-    return Object.entries(map).sort(([a], [b]) => a.localeCompare(b));
-  }, [sims]);
+  const pathProgress = useMemo(() => {
+    if (!analyzedTasks.length || !job) return null;
+    const completed = analyzedTasks.filter(t => getTaskCompletion(t.cluster_name, job.title) !== null).length;
+    return { completed, total: analyzedTasks.length, percent: Math.round((completed / analyzedTasks.length) * 100) };
+  }, [analyzedTasks, job, getTaskCompletion]);
 
-  /* ── Handle doc file upload ── */
+  const pathStats = useMemo(() => {
+    if (!analyzedTasks.length) return null;
+    return {
+      critical: analyzedTasks.filter(t => t.priority === "critical").length,
+      important: analyzedTasks.filter(t => t.priority === "important").length,
+      totalMinutes: analyzedTasks.reduce((s, t) => s + (t.sim_duration || 3), 0),
+      highImpact: analyzedTasks.filter(t => t.impact_level === "high").length,
+      total: analyzedTasks.length,
+    };
+  }, [analyzedTasks]);
+
+  /* ── Launch sim ── */
+  const launchSim = (task: EnrichedTask | { cluster_name: string; ai_state?: string; ai_trend?: string; impact_level?: string }) => {
+    setSimTask(task.cluster_name);
+    setSimTaskState(task.ai_state);
+    setSimTaskTrend(task.ai_trend);
+    setSimTaskImpact(task.impact_level);
+    setSimOpen(true);
+  };
+
+  /* ── Handle doc upload ── */
   const handleFileUpload = async (file: File) => {
     setDocFile(file);
     const ext = file.name.split(".").pop()?.toLowerCase();
@@ -174,47 +293,65 @@ export default function LearningPath() {
 
   /* ── Create custom sim ── */
   const handleCreate = async () => {
-    if (!user) return;
+    if (!user || !job) return;
     const input = createTab === "prompt" ? promptText.trim() : docText.trim();
-    if (!input) { toast({ title: "Enter something", description: "Provide a prompt or upload a document.", variant: "destructive" }); return; }
+    if (!input) { toast({ title: "Enter something", variant: "destructive" }); return; }
     setCreating(true);
     try {
       const body: any = { userId: user.id };
-      if (createTab === "prompt") body.prompt = input; else body.documentText = input;
+      if (createTab === "prompt") body.prompt = `For the role "${job.title}" at ${companyName}: ${input}`; else body.documentText = input;
       const { data, error } = await supabase.functions.invoke("compile-custom-sim", { body });
       if (error) throw new Error(error.message);
       if (data?.error) throw new Error(data.error);
-      toast({ title: "Simulation created!", description: `"${data.simulation.task_name}" saved to your library.` });
+      toast({ title: "Simulation created!", description: `"${data.simulation.task_name}" added.` });
       setCreateOpen(false);
       setPromptText(""); setDocText(""); setDocFile(null);
-      fetchSims();
+      fetchCustomSims();
     } catch (err: any) {
       toast({ title: "Creation failed", description: err.message, variant: "destructive" });
     }
     setCreating(false);
   };
 
-  /* ── Delete sim ── */
   const deleteSim = async (id: string) => {
     const { error } = await supabase.from("custom_simulations").delete().eq("id", id);
     if (error) toast({ title: "Delete failed", description: error.message, variant: "destructive" });
-    else setSims(prev => prev.filter(s => s.id !== id));
+    else setCustomSims(prev => prev.filter(s => s.id !== id));
   };
 
-  const scoreColor = (score: number) =>
-    score >= 70 ? "text-dot-teal" : score >= 40 ? "text-dot-amber" : "text-destructive";
-
-  const scoreBarColor = (score: number) =>
-    score >= 70 ? "bg-dot-teal" : score >= 40 ? "bg-dot-amber" : "bg-destructive";
-
-  if (!user) {
+  /* ── No jobId state ── */
+  if (!jobId) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-6">
         <Card className="max-w-md w-full"><CardContent className="p-8 text-center">
-          <Brain className="w-10 h-10 text-primary mx-auto mb-3" />
-          <h2 className="text-lg font-bold text-foreground mb-2">Sign in to access Learning Path</h2>
-          <p className="text-sm text-muted-foreground">Track skill gaps, manage custom simulations, and view your progress.</p>
-          <Button className="mt-4" onClick={openAuthModal}>Sign In</Button>
+          <BookOpen className="w-10 h-10 text-muted-foreground/40 mx-auto mb-3" />
+          <h2 className="text-lg font-bold text-foreground mb-2">No role selected</h2>
+          <p className="text-sm text-muted-foreground mb-4">Select a role from the Simulation Builder to view its learning path.</p>
+          <Button onClick={() => navigate("/products/simulation-builder")} className="gap-1.5">
+            <ArrowLeft className="w-4 h-4" /> Go to Simulation Builder
+          </Button>
+        </CardContent></Card>
+      </div>
+    );
+  }
+
+  if (jobLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (!job) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center p-6">
+        <Card className="max-w-md w-full"><CardContent className="p-8 text-center">
+          <AlertTriangle className="w-10 h-10 text-destructive mx-auto mb-3" />
+          <h2 className="text-lg font-bold text-foreground mb-2">Role not found</h2>
+          <Button onClick={() => navigate("/products/simulation-builder")} variant="outline" className="gap-1.5">
+            <ArrowLeft className="w-4 h-4" /> Back
+          </Button>
         </CardContent></Card>
       </div>
     );
@@ -222,261 +359,307 @@ export default function LearningPath() {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="max-w-6xl mx-auto px-4 py-8 sm:py-12">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Learning Path</h1>
-            <p className="text-sm text-muted-foreground mt-1">
-              Track your AI-readiness journey across roles and skills
-            </p>
-          </div>
-          <Button onClick={() => setCreateOpen(true)} className="gap-1.5 self-start">
-            <Plus className="w-4 h-4" /> Create Custom Sim
-          </Button>
-        </div>
+      <div className="max-w-5xl mx-auto px-4 py-6 sm:py-10">
+        {/* Back nav */}
+        <Button variant="ghost" size="sm" onClick={() => navigate("/products/simulation-builder")} className="gap-1.5 text-xs mb-4 -ml-2">
+          <ArrowLeft className="w-3.5 h-3.5" /> Back to Roles
+        </Button>
 
-        {/* Section Nav */}
-        <Tabs value={activeSection} onValueChange={(v) => setActiveSection(v as any)} className="mb-8">
-          <TabsList className="grid w-full grid-cols-3 max-w-md">
-            <TabsTrigger value="overview" className="gap-1.5 text-xs">
-              <Target className="w-3.5 h-3.5" /> Skill Gaps
-            </TabsTrigger>
-            <TabsTrigger value="library" className="gap-1.5 text-xs">
-              <BookOpen className="w-3.5 h-3.5" /> Custom Sims
-            </TabsTrigger>
-            <TabsTrigger value="results" className="gap-1.5 text-xs">
-              <BarChart3 className="w-3.5 h-3.5" /> All Results
-            </TabsTrigger>
-          </TabsList>
-
-          {/* ═══════════════════ SKILL GAP TRACKER ═══════════════════ */}
-          <TabsContent value="overview" className="mt-6">
-            {resultsLoading ? (
-              <div className="flex items-center justify-center py-20">
-                <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+        {/* Job Header */}
+        <Card className="border-border bg-card mb-6">
+          <CardContent className="p-6">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <h1 className="font-serif text-2xl sm:text-3xl font-bold text-foreground leading-tight">{job.title}</h1>
+                <p className="text-sm text-muted-foreground mt-1">
+                  {companyName}
+                  {job.department && ` · ${job.department}`}
+                  {job.location && ` · ${job.location}`}
+                </p>
               </div>
-            ) : !skillStats ? (
-              <Card className="border-dashed">
-                <CardContent className="p-10 text-center">
-                  <Target className="w-10 h-10 text-muted-foreground/40 mx-auto mb-3" />
-                  <h3 className="text-base font-semibold text-foreground mb-1">No skill data yet</h3>
-                  <p className="text-sm text-muted-foreground mb-4">
-                    Complete simulations to see your skill gap analysis.
-                  </p>
-                  <Button variant="outline" onClick={() => setActiveSection("library")} className="gap-1.5">
-                    <BookOpen className="w-4 h-4" /> View Custom Sims
-                  </Button>
-                </CardContent>
-              </Card>
-            ) : (
-              <div className="space-y-6">
-                {/* Summary cards */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  <Card>
-                    <CardContent className="p-5">
-                      <div className="flex items-center justify-between mb-2">
-                        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Overall Score</p>
-                        <Award className={`w-5 h-5 ${scoreColor(skillStats.overallScore)}`} />
-                      </div>
-                      <p className={`text-3xl font-bold ${scoreColor(skillStats.overallScore)}`}>
-                        {skillStats.overallScore}%
-                      </p>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        across {skillStats.totalSessions} session{skillStats.totalSessions !== 1 ? "s" : ""}
-                      </p>
-                    </CardContent>
-                  </Card>
-                  <Card>
-                    <CardContent className="p-5">
-                      <div className="flex items-center justify-between mb-2">
-                        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Roles Practiced</p>
-                        <Briefcase className="w-5 h-5 text-primary" />
-                      </div>
-                      <p className="text-3xl font-bold text-foreground">{skillStats.roles.length}</p>
-                      <p className="text-xs text-muted-foreground mt-1">unique job titles</p>
-                    </CardContent>
-                  </Card>
-                  <Card>
-                    <CardContent className="p-5">
-                      <div className="flex items-center justify-between mb-2">
-                        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Custom Sims</p>
-                        <Sparkles className="w-5 h-5 text-dot-purple" />
-                      </div>
-                      <p className="text-3xl font-bold text-foreground">{sims.length}</p>
-                      <p className="text-xs text-muted-foreground mt-1">in your library</p>
-                    </CardContent>
-                  </Card>
-                </div>
+              {riskBadge(job.automation_risk_percent)}
+            </div>
 
-                {/* Per-role skill gap breakdown */}
-                <Card>
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-sm font-semibold">Proficiency by Role</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    {skillStats.roles.map(r => (
-                      <div key={r.role}>
-                        <div className="flex items-center justify-between mb-1.5">
-                          <div className="flex items-center gap-2 min-w-0">
-                            <p className="text-sm font-medium text-foreground truncate">{r.role}</p>
-                            <Badge variant="outline" className="text-[10px] px-1.5 py-0 flex-shrink-0">
-                              {r.sessions} session{r.sessions !== 1 ? "s" : ""}
-                            </Badge>
-                          </div>
-                          <span className={`text-sm font-bold ${scoreColor(r.avgScore)}`}>{r.avgScore}%</span>
-                        </div>
-                        <div className="h-2 rounded-full bg-muted overflow-hidden">
-                          <motion.div
-                            initial={{ width: 0 }}
-                            animate={{ width: `${r.avgScore}%` }}
-                            transition={{ duration: 0.8, ease: "easeOut" }}
-                            className={`h-full rounded-full ${scoreBarColor(r.avgScore)}`}
-                          />
-                        </div>
-                        {r.avgScore < 70 && (
-                          <p className="text-[10px] text-muted-foreground mt-1 flex items-center gap-1">
-                            <TrendingUp className="w-2.5 h-2.5" />
-                            {r.avgScore < 40 ? "Needs significant practice" : "Almost there — keep practicing"}
-                          </p>
-                        )}
-                      </div>
-                    ))}
-                  </CardContent>
-                </Card>
+            {/* Quick stats */}
+            <div className="grid grid-cols-3 gap-4 mt-5">
+              {[
+                { label: "AI Augmented", value: job.augmented_percent, color: "bg-dot-blue" },
+                { label: "Automation Risk", value: job.automation_risk_percent, color: "bg-destructive" },
+                { label: "New Skills", value: job.new_skills_percent, color: "bg-dot-purple" },
+              ].map(s => (
+                <div key={s.label} className="text-center">
+                  <div className="text-2xl font-bold text-foreground">{s.value ?? "—"}%</div>
+                  <div className="text-xs text-muted-foreground">{s.label}</div>
+                  {s.value != null && (
+                    <div className="h-1.5 rounded-full bg-secondary mt-2 overflow-hidden">
+                      <div className={`h-full rounded-full ${s.color}`} style={{ width: `${s.value}%` }} />
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Tabs: Learning Path | Custom Sims */}
+        <Tabs value={activeTab} onValueChange={v => setActiveTab(v as any)} className="mb-6">
+          <div className="flex items-center justify-between mb-4">
+            <TabsList>
+              <TabsTrigger value="path" className="gap-1.5 text-xs">
+                <BookOpen className="w-3.5 h-3.5" /> Learning Path
+                {pathStats && <span className="text-[10px] text-muted-foreground ml-1">{pathStats.total} tasks</span>}
+              </TabsTrigger>
+              <TabsTrigger value="custom" className="gap-1.5 text-xs">
+                <Sparkles className="w-3.5 h-3.5" /> Custom Sims
+                {customSims.length > 0 && <span className="text-[10px] text-muted-foreground ml-1">{customSims.length}</span>}
+              </TabsTrigger>
+            </TabsList>
+            {activeTab === "custom" && (
+              <Button size="sm" onClick={() => setCreateOpen(true)} className="gap-1.5">
+                <Plus className="w-4 h-4" /> Add Custom Sim
+              </Button>
+            )}
+          </div>
+
+          {/* ═══ LEARNING PATH TAB ═══ */}
+          <TabsContent value="path">
+            {/* Progress bar */}
+            {pathProgress && user && (
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mb-5">
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className="text-xs text-muted-foreground">
+                    Progress: {pathProgress.completed}/{pathProgress.total} completed
+                  </span>
+                  <span className="text-xs font-semibold text-foreground">{pathProgress.percent}%</span>
+                </div>
+                <Progress value={pathProgress.percent} className="h-2" />
+              </motion.div>
+            )}
+
+            {/* Stats bar */}
+            {pathStats && (
+              <div className="grid grid-cols-4 gap-2 mb-6">
+                {[
+                  { label: "Critical", value: pathStats.critical, icon: AlertTriangle, iconColor: "text-destructive" },
+                  { label: "Important", value: pathStats.important, icon: Target, iconColor: "text-warning" },
+                  { label: "High AI Impact", value: pathStats.highImpact, icon: Brain, iconColor: "text-dot-purple" },
+                  { label: "Total Time", value: `${pathStats.totalMinutes}m`, icon: Clock, iconColor: "text-muted-foreground" },
+                ].map(s => (
+                  <div key={s.label} className="flex items-center gap-2 rounded-lg border border-border bg-card px-3 py-2.5">
+                    <s.icon className={`h-4 w-4 ${s.iconColor}`} />
+                    <div>
+                      <div className="text-base font-bold text-foreground">{s.value}</div>
+                      <div className="text-[9px] text-muted-foreground">{s.label}</div>
+                    </div>
+                  </div>
+                ))}
               </div>
             )}
-          </TabsContent>
 
-          {/* ═══════════════════ CUSTOM SIMS LIBRARY ═══════════════════ */}
-          <TabsContent value="library" className="mt-6">
-            {loading ? (
-              <div className="flex items-center justify-center py-20">
-                <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+            {/* Loading */}
+            {analyzing && (
+              <div className="flex flex-col items-center justify-center py-16 gap-3">
+                <Loader2 className="h-8 w-8 animate-spin text-primary/40" />
+                <p className="text-sm text-muted-foreground">Analyzing {job.title} tasks…</p>
               </div>
-            ) : sims.length === 0 ? (
-              <Card className="border-dashed">
-                <CardContent className="p-10 text-center">
-                  <Sparkles className="w-10 h-10 text-muted-foreground/40 mx-auto mb-3" />
-                  <h3 className="text-base font-semibold text-foreground mb-1">No custom simulations yet</h3>
-                  <p className="text-sm text-muted-foreground mb-4">
-                    Create a custom sim to practice tasks not covered by template-generated simulations.
-                  </p>
-                  <Button onClick={() => setCreateOpen(true)} className="gap-1.5">
-                    <Plus className="w-4 h-4" /> Create Custom Sim
-                  </Button>
+            )}
+
+            {/* Error */}
+            {analysisError && !analyzing && (
+              <Card className="border-destructive/30 bg-destructive/5">
+                <CardContent className="p-4 text-center">
+                  <p className="text-sm text-destructive">{analysisError}</p>
+                  <Button variant="outline" size="sm" onClick={() => analyzeJob(job)} className="mt-2 text-xs">Retry</Button>
                 </CardContent>
               </Card>
-            ) : (
-              <div className="space-y-3">
-                {grouped.map(([jobTitle, items]) => {
-                  const isExpanded = expandedJob === jobTitle || grouped.length === 1;
+            )}
+
+            {/* Task Cards */}
+            {!analyzing && analyzedTasks.length > 0 && (
+              <div className="space-y-2">
+                {analyzedTasks.map((task, i) => {
+                  const recTemplate = templateMap[task.recommended_template || "quick-pulse"] || templates[0];
+                  const RecIcon = recTemplate.icon;
+                  const taskScore = getTaskCompletion(task.cluster_name, job.title);
+                  const isCompleted = taskScore !== null;
+
                   return (
-                    <Card key={jobTitle}>
-                      <button onClick={() => setExpandedJob(isExpanded && grouped.length > 1 ? null : jobTitle)} className="w-full flex items-center justify-between p-4 text-left">
-                        <div>
-                          <h3 className="text-sm font-semibold text-foreground">{jobTitle}</h3>
-                          <p className="text-xs text-muted-foreground">{items.length} simulation{items.length !== 1 ? "s" : ""}</p>
-                        </div>
-                        {grouped.length > 1 && (isExpanded ? <ChevronUp className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />)}
-                      </button>
-                      <AnimatePresence>
-                        {isExpanded && (
-                          <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
-                            <div className="px-4 pb-4 space-y-2">
-                              {items.map(sim => {
-                                const tmpl = templateMeta[sim.recommended_template] || templateMeta["quick-pulse"];
-                                const TmplIcon = tmpl.icon;
-                                return (
-                                  <div key={sim.id} className="flex items-center gap-3 p-3 rounded-lg border border-border/50 bg-muted/20">
-                                    <div className={`p-1.5 rounded-md border ${tmpl.color}`}>
-                                      <TmplIcon className="w-3.5 h-3.5" />
-                                    </div>
-                                    <div className="flex-1 min-w-0">
-                                      <p className="text-sm font-medium text-foreground truncate">{sim.task_name}</p>
-                                      <div className="flex items-center gap-2 mt-0.5">
-                                        <Badge variant="outline" className="text-[10px] px-1.5 py-0">{tmpl.name}</Badge>
-                                        <span className="text-[10px] text-muted-foreground flex items-center gap-0.5"><Clock className="w-2.5 h-2.5" />{tmpl.duration}</span>
-                                        <span className="text-[10px] text-muted-foreground">
-                                          {sim.source_type === "prompt" ? "✏️ Prompt" : sim.source_type === "job_browser" ? "💼 Job" : "📄 Doc"}
-                                        </span>
-                                      </div>
-                                    </div>
-                                    <div className="flex items-center gap-1">
-                                      <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={() => setSimTask({ taskName: sim.task_name, jobTitle: sim.job_title, company: sim.company || undefined })}>
-                                        <Play className="w-3.5 h-3.5" />
-                                      </Button>
-                                      <Button size="sm" variant="ghost" className="h-7 w-7 p-0 text-destructive hover:text-destructive" onClick={() => deleteSim(sim.id)}>
-                                        <Trash2 className="w-3.5 h-3.5" />
-                                      </Button>
-                                    </div>
-                                  </div>
-                                );
-                              })}
+                    <motion.div
+                      key={task.id || i}
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: i * 0.04 }}
+                    >
+                      <Card className={`border-border bg-card hover:border-primary/30 transition-all group ${isCompleted ? "border-success/30 bg-success/[0.02]" : ""}`}>
+                        <CardContent className="p-4">
+                          <div className="flex items-start gap-3">
+                            <div className="flex flex-col items-center gap-1 shrink-0 pt-0.5">
+                              {isCompleted ? (
+                                <span className="w-7 h-7 rounded-full bg-success/10 flex items-center justify-center">
+                                  <CheckCircle2 className="h-4 w-4 text-success" />
+                                </span>
+                              ) : (
+                                <span className="w-7 h-7 rounded-full bg-accent flex items-center justify-center text-xs font-bold text-foreground">
+                                  {i + 1}
+                                </span>
+                              )}
+                              {i < analyzedTasks.length - 1 && (
+                                <div className={`w-px h-full min-h-[20px] ${isCompleted ? "bg-success/30" : "bg-border"}`} />
+                              )}
                             </div>
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
-                    </Card>
+
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-start justify-between gap-2 mb-1">
+                                <h4 className={`font-semibold text-sm leading-tight ${isCompleted ? "text-success" : "text-foreground"}`}>
+                                  {task.cluster_name}
+                                </h4>
+                                <div className="flex items-center gap-1.5 shrink-0">
+                                  {isCompleted && taskScore !== null && scoreBadge(taskScore)}
+                                  {priorityBadge(task.priority)}
+                                </div>
+                              </div>
+
+                              {task.description && (
+                                <p className="text-xs text-muted-foreground leading-relaxed mb-2">{task.description}</p>
+                              )}
+
+                              <div className="flex items-center gap-3 mb-2">
+                                <span className="flex items-center gap-1 text-[10px] text-muted-foreground">
+                                  {stateIcon(task.ai_state)} {stateLabel(task.ai_state)}
+                                </span>
+                                {task.ai_trend && task.ai_trend !== "stable" && (
+                                  <span className="flex items-center gap-1 text-[10px] text-dot-amber">
+                                    <TrendingUp className="h-3 w-3" />
+                                    {task.ai_trend === "fully_ai_soon" ? "Full AI Soon" : "Growing AI"}
+                                  </span>
+                                )}
+                              </div>
+
+                              {task.skill_names && task.skill_names.length > 0 && (
+                                <div className="flex flex-wrap gap-1 mb-3">
+                                  {task.skill_names.map(s => (
+                                    <span key={s} className="rounded-md bg-secondary px-1.5 py-0.5 text-[9px] font-medium text-foreground">{s}</span>
+                                  ))}
+                                </div>
+                              )}
+
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
+                                  <RecIcon className="h-3 w-3" />
+                                  <span>{recTemplate.name}</span>
+                                  <span className="text-border">·</span>
+                                  <Clock className="h-3 w-3" />
+                                  <span>~{task.sim_duration || 3} min</span>
+                                </div>
+                                <Button
+                                  size="sm"
+                                  variant={isCompleted ? "ghost" : "outline"}
+                                  className="h-7 text-[11px] gap-1 opacity-80 group-hover:opacity-100 transition-opacity"
+                                  onClick={() => launchSim(task)}
+                                >
+                                  <Play className="h-3 w-3" />
+                                  {isCompleted ? "Retry" : "Start Simulation"}
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </motion.div>
                   );
                 })}
               </div>
             )}
+
+            {/* CTA */}
+            {!analyzing && analyzedTasks.length > 0 && (
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }} className="mt-6">
+                <Card className="border-primary/20 bg-primary/[0.02]">
+                  <CardContent className="p-5 text-center">
+                    <Award className="h-6 w-6 text-primary mx-auto mb-2" />
+                    <h3 className="font-semibold text-foreground text-sm mb-1">
+                      {pathProgress?.percent === 100 ? "🎉 Learning Path Complete!" : "Complete Learning Path"}
+                    </h3>
+                    <p className="text-xs text-muted-foreground mb-3">
+                      {pathProgress?.percent === 100
+                        ? `Congratulations! You've completed all ${analyzedTasks.length} simulations for ${job.title}.`
+                        : `Complete all ${analyzedTasks.length} simulations to earn your AI-Readiness Certificate for ${job.title}`}
+                    </p>
+                    {(!pathProgress || pathProgress.percent < 100) && (
+                      <Button
+                        className="gap-1.5"
+                        onClick={() => {
+                          const nextTask = analyzedTasks.find(t => getTaskCompletion(t.cluster_name, job.title) === null) || analyzedTasks[0];
+                          launchSim(nextTask);
+                        }}
+                      >
+                        {pathProgress && pathProgress.completed > 0 ? `Continue — Task ${pathProgress.completed + 1}` : "Start with Task 1"}
+                        <ArrowRight className="h-3.5 w-3.5" />
+                      </Button>
+                    )}
+                  </CardContent>
+                </Card>
+              </motion.div>
+            )}
           </TabsContent>
 
-          {/* ═══════════════════ ALL RESULTS ═══════════════════ */}
-          <TabsContent value="results" className="mt-6">
-            {resultsLoading ? (
-              <div className="flex items-center justify-center py-20">
-                <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
-              </div>
-            ) : completedSims.length === 0 ? (
+          {/* ═══ CUSTOM SIMS TAB ═══ */}
+          <TabsContent value="custom">
+            {!user ? (
+              <Card className="border-dashed">
+                <CardContent className="p-8 text-center">
+                  <Brain className="w-10 h-10 text-muted-foreground/40 mx-auto mb-3" />
+                  <h3 className="text-base font-semibold text-foreground mb-1">Sign in to add custom sims</h3>
+                  <Button className="mt-3" onClick={openAuthModal}>Sign In</Button>
+                </CardContent>
+              </Card>
+            ) : customSims.length === 0 ? (
               <Card className="border-dashed">
                 <CardContent className="p-10 text-center">
-                  <BarChart3 className="w-10 h-10 text-muted-foreground/40 mx-auto mb-3" />
-                  <h3 className="text-base font-semibold text-foreground mb-1">No results yet</h3>
+                  <Sparkles className="w-10 h-10 text-muted-foreground/40 mx-auto mb-3" />
+                  <h3 className="text-base font-semibold text-foreground mb-1">No custom simulations for this role</h3>
                   <p className="text-sm text-muted-foreground mb-4">
-                    Complete simulations to see your results here.
+                    Add simulations for tasks not covered by the AI-generated learning path above.
                   </p>
-                  <Button variant="outline" onClick={() => setActiveSection("library")} className="gap-1.5">
-                    <Play className="w-4 h-4" /> Go to Sims
+                  <Button onClick={() => setCreateOpen(true)} className="gap-1.5">
+                    <Plus className="w-4 h-4" /> Add Custom Sim
                   </Button>
                 </CardContent>
               </Card>
             ) : (
               <div className="space-y-2">
-                {completedSims.map(sim => {
-                  const score = sim.total_questions > 0 ? Math.round((sim.correct_answers / sim.total_questions) * 100) : 0;
+                {customSims.map(sim => {
+                  const tmpl = templateMap[sim.recommended_template] || templates[0];
+                  const TmplIcon = tmpl.icon;
+                  const taskScore = getTaskCompletion(sim.task_name, sim.job_title);
                   return (
-                    <Card key={sim.id}>
+                    <Card key={sim.id} className="group hover:border-primary/30 transition-colors">
                       <CardContent className="p-4">
-                        <div className="flex items-center gap-4">
-                          <div className={`p-2 rounded-lg ${score >= 70 ? "bg-dot-teal/10" : score >= 40 ? "bg-dot-amber/10" : "bg-destructive/10"}`}>
-                            <CheckCircle2 className={`w-5 h-5 ${scoreColor(score)}`} />
+                        <div className="flex items-center gap-3">
+                          <div className={`p-2 rounded-md border ${tmpl.color}`}>
+                            <TmplIcon className="w-4 h-4" />
                           </div>
                           <div className="flex-1 min-w-0">
                             <p className="text-sm font-medium text-foreground truncate">{sim.task_name}</p>
-                            <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-                              <span className="text-xs text-muted-foreground">{sim.job_title}</span>
-                              {sim.company && <span className="text-xs text-muted-foreground">• {sim.company}</span>}
-                              <span className="text-[10px] text-muted-foreground">
-                                {new Date(sim.completed_at).toLocaleDateString()}
+                            <div className="flex items-center gap-2 mt-0.5">
+                              <Badge variant="outline" className="text-[10px] px-1.5 py-0">{tmpl.name}</Badge>
+                              <span className="text-[10px] text-muted-foreground flex items-center gap-0.5">
+                                <Clock className="w-2.5 h-2.5" />{tmpl.duration}
                               </span>
+                              <span className="text-[10px] text-muted-foreground">
+                                {sim.source_type === "prompt" ? "✏️ Prompt" : "📄 Doc"}
+                              </span>
+                              {taskScore !== null && scoreBadge(taskScore)}
                             </div>
                           </div>
-                          <div className="text-right flex-shrink-0">
-                            <p className={`text-lg font-bold ${scoreColor(score)}`}>{score}%</p>
-                            <p className="text-[10px] text-muted-foreground">
-                              {sim.correct_answers}/{sim.total_questions}
-                            </p>
+                          <div className="flex items-center gap-1">
+                            <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={() => launchSim({ cluster_name: sim.task_name, ai_state: sim.ai_state || undefined, impact_level: sim.impact_level || undefined })}>
+                              <Play className="w-3.5 h-3.5" />
+                            </Button>
+                            <Button size="sm" variant="ghost" className="h-7 w-7 p-0 text-destructive hover:text-destructive" onClick={() => deleteSim(sim.id)}>
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </Button>
                           </div>
-                          <Button
-                            size="sm" variant="ghost" className="h-8 w-8 p-0 flex-shrink-0"
-                            onClick={() => setSimTask({ taskName: sim.task_name, jobTitle: sim.job_title, company: sim.company || undefined })}
-                            title="Re-run simulation"
-                          >
-                            <ArrowRight className="w-4 h-4" />
-                          </Button>
                         </div>
                       </CardContent>
                     </Card>
@@ -488,20 +671,22 @@ export default function LearningPath() {
         </Tabs>
       </div>
 
-      {/* ── Create Modal ── */}
+      {/* ── Create Custom Sim Modal ── */}
       <Dialog open={createOpen} onOpenChange={setCreateOpen}>
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
-            <DialogTitle>Create Custom Simulation</DialogTitle>
-            <DialogDescription>Add a simulation not covered by template-generated analyses. Describe a task or upload a document.</DialogDescription>
+            <DialogTitle>Add Custom Simulation</DialogTitle>
+            <DialogDescription>
+              Add a sim for "{job.title}" that isn't covered by the auto-generated learning path.
+            </DialogDescription>
           </DialogHeader>
-          <Tabs value={createTab} onValueChange={(v) => setCreateTab(v as "prompt" | "document")}>
+          <Tabs value={createTab} onValueChange={v => setCreateTab(v as "prompt" | "document")}>
             <TabsList className="w-full">
               <TabsTrigger value="prompt" className="flex-1 gap-1.5 text-xs"><MessageSquare className="w-3.5 h-3.5" /> Describe It</TabsTrigger>
               <TabsTrigger value="document" className="flex-1 gap-1.5 text-xs"><FileText className="w-3.5 h-3.5" /> Upload Doc</TabsTrigger>
             </TabsList>
             <TabsContent value="prompt" className="mt-3">
-              <Textarea placeholder="e.g. Practice negotiating a SaaS contract renewal..." value={promptText} onChange={e => setPromptText(e.target.value)} rows={5} maxLength={2000} className="text-sm" />
+              <Textarea placeholder={`e.g. Practice reviewing AI-generated research summaries for ${job.title}...`} value={promptText} onChange={e => setPromptText(e.target.value)} rows={5} maxLength={2000} className="text-sm" />
               <p className="text-[10px] text-muted-foreground mt-1 text-right">{promptText.length}/2000</p>
             </TabsContent>
             <TabsContent value="document" className="mt-3">
@@ -518,32 +703,29 @@ export default function LearningPath() {
                     <span className="text-sm text-foreground truncate flex-1">{docFile.name}</span>
                     <Button size="sm" variant="ghost" className="h-6 text-xs" onClick={() => { setDocFile(null); setDocText(""); }}>Remove</Button>
                   </div>
-                  {parsing && <div className="flex items-center gap-2 text-xs text-muted-foreground"><Loader2 className="w-3 h-3 animate-spin" /> Parsing document...</div>}
-                  {docText && !parsing && <p className="text-xs text-muted-foreground">✓ Extracted {docText.length.toLocaleString()} characters</p>}
+                  {parsing && <div className="flex items-center gap-2 text-xs text-muted-foreground"><Loader2 className="w-3 h-3 animate-spin" /> Parsing...</div>}
+                  {docText && !parsing && <p className="text-xs text-muted-foreground">✓ {docText.length.toLocaleString()} chars</p>}
                 </div>
               )}
             </TabsContent>
           </Tabs>
-          <div className="flex items-center gap-2 mt-2 p-2.5 rounded-md bg-muted/30 border border-border/30">
-            <AlertTriangle className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0" />
-            <p className="text-[10px] text-muted-foreground leading-relaxed">AI extracts the role, task, and context — then assigns a simulation format based on complexity scoring.</p>
-          </div>
-          <Button onClick={handleCreate} disabled={creating} className="w-full mt-1 gap-1.5">
+          <Button onClick={handleCreate} disabled={creating} className="w-full mt-2 gap-1.5">
             {creating ? <><Loader2 className="w-4 h-4 animate-spin" /> Generating...</> : <><Sparkles className="w-4 h-4" /> Create Simulation</>}
           </Button>
         </DialogContent>
       </Dialog>
 
       {/* ── Sim Runner ── */}
-      {simTask && (
-        <SimulatorModal
-          open={!!simTask}
-          onClose={() => setSimTask(null)}
-          taskName={simTask.taskName}
-          jobTitle={simTask.jobTitle}
-          company={simTask.company}
-        />
-      )}
+      <SimulatorModal
+        open={simOpen}
+        onClose={() => setSimOpen(false)}
+        taskName={simTask}
+        jobTitle={job.title}
+        company={companyName}
+        taskState={simTaskState}
+        taskTrend={simTaskTrend}
+        taskImpactLevel={simTaskImpact}
+      />
     </div>
   );
 }
