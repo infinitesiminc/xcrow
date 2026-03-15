@@ -260,6 +260,9 @@ const Dashboard = () => {
           ))}
         </motion.div>
 
+        {/* Adaptive Retry Queue */}
+        <AdaptiveQueue userId={user.id} />
+
         {/* Action Plan */}
         {actionItems.length > 0 && (
           <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.12 }} className="mb-8">
