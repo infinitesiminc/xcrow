@@ -8,6 +8,7 @@ import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { Loader2, Users, CheckCircle2, TrendingUp, ChevronDown, ChevronUp, BarChart3 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { generateDemoProgress } from "@/data/demo-team-progress";
 
 interface ProgressRow {
   user_id: string;
