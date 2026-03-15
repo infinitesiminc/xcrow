@@ -577,7 +577,12 @@ export default function SimulationBuilder() {
                           {unanalyzedByDept.map(([dept, info]) => (
                             <button
                               key={dept}
-                              onClick={() => setPriorityDept(priorityDept === dept ? null : dept)}
+                              onClick={() => {
+                                const isActive = priorityDept === dept;
+                                setPriorityDept(isActive ? null : dept);
+                                // Sync with job browser
+                                setSearch(isActive ? "" : dept);
+                              }}
                               className={`text-[10px] px-2 py-0.5 rounded-full border transition-colors ${priorityDept === dept ? "bg-accent text-accent-foreground border-primary/40" : "bg-muted/30 text-muted-foreground border-border/50 hover:border-primary/30"}`}
                             >
                               {dept} ({info.pending})
