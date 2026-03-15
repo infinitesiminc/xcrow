@@ -4,6 +4,7 @@ import {
   Zap, Brain, Target, ArrowRight, Layers, Users,
   Compass, GraduationCap, ClipboardCheck, Building2,
   ChevronRight, Sparkles, BarChart3, Play, Shield,
+  Radio, TrendingUp, Crosshair,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
