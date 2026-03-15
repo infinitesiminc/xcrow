@@ -13,7 +13,7 @@ function generateCode(): string {
 }
 
 export default function WorkspaceSettings() {
-  const { user } = useAuth();
+  const { user, openAuthModal } = useAuth();
   const { toast } = useToast();
   const [workspace, setWorkspace] = useState<{ id: string; name: string; join_code: string } | null>(null);
   const [loading, setLoading] = useState(true);
