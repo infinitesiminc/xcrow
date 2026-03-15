@@ -370,14 +370,19 @@ export default function SimulationBuilder() {
   const [priorityJobId, setPriorityJobId] = useState<string | null>(null);
 
   const unanalyzedByDept = useMemo(() => {
-    const map = new Map<string, number>();
+    const map = new Map<string, { total: number; pending: number }>();
     jobs.forEach(j => {
-      if (!analyzedJobIds.has(j.id)) {
-        const d = j.department || "Other";
-        map.set(d, (map.get(d) || 0) + 1);
+      const d = j.department || "Other";
+      const entry = map.get(d) || { total: 0, pending: 0 };
+      entry.total++;
+      if (!analyzedJobIds.has(j.id) || (j.augmented_percent ?? 0) === 0 && (j.automation_risk_percent ?? 0) === 0) {
+        entry.pending++;
       }
+      map.set(d, entry);
     });
-    return Array.from(map.entries()).sort((a, b) => b[1] - a[1]);
+    return Array.from(map.entries())
+      .filter(([, v]) => v.pending > 0)
+      .sort((a, b) => b[1].pending - a[1].pending);
   }, [jobs, analyzedJobIds]);
 
   const unanalyzedJobs = useMemo(() => jobs.filter(j => !analyzedJobIds.has(j.id)), [jobs, analyzedJobIds]);
