@@ -176,6 +176,11 @@
   100% { transform: translateX(-50%); }
 }
 
+@keyframes ticker-vertical {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(-50%); }
+}
+
 /* Laser sweep effect */
 /* Laser word sweep effect */
 @keyframes laser-word-sweep {

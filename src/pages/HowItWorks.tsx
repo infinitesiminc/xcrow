@@ -120,10 +120,10 @@ function NewsTicker() {
           Last 30 Days — AI Disruption Signal
         </span>
       </div>
-      <div className="overflow-hidden">
-        <div className="flex animate-[ticker_60s_linear_infinite] gap-8 py-2 px-4 whitespace-nowrap">
+      <div className="h-[22px] overflow-hidden relative">
+        <div className="animate-[ticker-vertical_20s_linear_infinite] flex flex-col">
           {[...TICKER_HEADLINES, ...TICKER_HEADLINES].map((h, i) => (
-            <span key={i} className="text-[11px] text-foreground/70 flex items-center gap-2">
+            <span key={i} className="text-[11px] text-foreground/70 flex items-center gap-2 px-4 h-[22px] shrink-0 whitespace-nowrap">
               <span className="text-destructive/60">▸</span> {h}
             </span>
           ))}
