@@ -403,29 +403,40 @@ export default function SimulationBuilder() {
             </p>
             {/* Bulk Analyze Button */}
             {companyId && (
-              <div className="mt-4 flex items-center justify-center gap-3">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={runBulkAnalyze}
-                  disabled={bulkRunning}
-                  className="gap-2 text-xs"
-                >
-                  {bulkRunning ? (
-                    <>
-                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                      Analyzing…
-                    </>
-                  ) : (
-                    <>
-                      <RotateCcw className="h-3.5 w-3.5" />
-                      Bulk-Analyze All Roles
-                    </>
+              <div className="mt-4 flex flex-col items-center gap-2">
+                <div className="flex items-center gap-3">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={runBulkBatch}
+                    disabled={bulkRunning}
+                    className="gap-2 text-xs"
+                  >
+                    {bulkRunning ? (
+                      <>
+                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                        Processing batch…
+                      </>
+                    ) : (
+                      <>
+                        <RotateCcw className="h-3.5 w-3.5" />
+                        {bulkProgress && bulkProgress.remaining > 0 ? "Run Next Batch (5)" : "Analyze All Roles"}
+                      </>
+                    )}
+                  </Button>
+                  {bulkProgress && (
+                    <span className="text-xs text-muted-foreground">
+                      {bulkProgress.analyzed}/{bulkProgress.total} done · {bulkProgress.remaining} remaining
+                    </span>
                   )}
-                </Button>
-                {bulkProgress && (
-                  <span className="text-xs text-muted-foreground">
-                    {bulkProgress.analyzed}/{bulkProgress.total} done · {bulkProgress.remaining} remaining
+                </div>
+                {bulkProgress && bulkProgress.total > 0 && (
+                  <Progress value={(bulkProgress.analyzed / bulkProgress.total) * 100} className="w-64 h-2" />
+                )}
+                {bulkPaused && (
+                  <span className="text-xs text-amber-500 flex items-center gap-1">
+                    <AlertTriangle className="h-3 w-3" />
+                    {bulkPaused}
                   </span>
                 )}
               </div>
