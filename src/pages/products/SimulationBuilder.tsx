@@ -320,6 +320,19 @@ export default function SimulationBuilder() {
     return Math.min(100, Math.round((uniqueTasks.size / 10) * 100));
   }, [completedSims]);
 
+  /* ── Progress helpers ── */
+  const getTaskCompletion = useCallback((taskName: string, jobTitle: string) => {
+    const matches = completedSims.filter(
+      s => s.task_name === taskName && s.job_title === jobTitle
+    );
+    if (matches.length === 0) return null;
+    const best = matches.reduce((best, s) => {
+      const score = s.total_questions > 0 ? Math.round((s.correct_answers / s.total_questions) * 100) : 0;
+      return score > best ? score : best;
+    }, 0);
+    return best;
+  }, [completedSims]);
+
   const pathProgress = useMemo(() => {
     if (!analyzedTasks.length || !selectedJob) return null;
     const completed = analyzedTasks.filter(t => getTaskCompletion(t.cluster_name, selectedJob.title) !== null).length;
