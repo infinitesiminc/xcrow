@@ -50,12 +50,12 @@ const App = () => (
             <Route path="/pricing" element={<><Navbar /><Pricing /><Footer /></>} />
             <Route path="/company-dashboard" element={<><Navbar /><CompanyDashboard /><Footer /></>} />
             <Route path="/project-staffing" element={<><Navbar /><ProjectStaffing /><Footer /></>} />
-            <Route path="/products/upskilling" element={<><Navbar /><Upskilling /><Footer /></>} />
-            <Route path="/products/candidate-assessment" element={<><Navbar /><CandidateAssessment /><Footer /></>} />
-            <Route path="/products/workforce-planning" element={<><Navbar /><WorkforcePlanning /><Footer /></>} />
-            <Route path="/products/career-transition" element={<><Navbar /><CareerTransition /><Footer /></>} />
-            <Route path="/products/ld-content-engine" element={<><Navbar /><LDContentEngine /><Footer /></>} />
             <Route path="/products/simulation-builder" element={<><Navbar /><SimulationBuilder /><Footer /></>} />
+            <Route path="/products/upskilling" element={<><Navbar /><SimulationBuilder /><Footer /></>} />
+            <Route path="/products/candidate-assessment" element={<><Navbar /><SimulationBuilder /><Footer /></>} />
+            <Route path="/products/workforce-planning" element={<><Navbar /><SimulationBuilder /><Footer /></>} />
+            <Route path="/products/career-transition" element={<><Navbar /><SimulationBuilder /><Footer /></>} />
+            <Route path="/products/ld-content-engine" element={<><Navbar /><SimulationBuilder /><Footer /></>} />
             <Route path="/how-it-works" element={<><Navbar /><HowItWorks /><Footer /></>} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
