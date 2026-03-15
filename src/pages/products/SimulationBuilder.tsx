@@ -382,6 +382,14 @@ export default function SimulationBuilder() {
 
   const unanalyzedJobs = useMemo(() => jobs.filter(j => !analyzedJobIds.has(j.id)), [jobs, analyzedJobIds]);
 
+  // Priority job search
+  const [priorityJobSearch, setPriorityJobSearch] = useState("");
+  const filteredPriorityJobs = useMemo(() => {
+    if (!priorityJobSearch.trim()) return unanalyzedJobs.slice(0, 8);
+    const q = priorityJobSearch.toLowerCase();
+    return unanalyzedJobs.filter(j => j.title.toLowerCase().includes(q) || j.department?.toLowerCase().includes(q)).slice(0, 12);
+  }, [unanalyzedJobs, priorityJobSearch]);
+
   /* ── Bulk analyze (single batch per click) ── */
   const runBulkBatch = useCallback(async () => {
     if (!companyId) return;
@@ -576,16 +584,38 @@ export default function SimulationBuilder() {
 
                       {/* Job picker */}
                       {priorityMode === "job" && (
-                        <select
-                          value={priorityJobId || ""}
-                          onChange={e => setPriorityJobId(e.target.value || null)}
-                          className="w-full text-xs rounded-md border border-border bg-background px-2 py-1.5 text-foreground"
-                        >
-                          <option value="">Select a role…</option>
-                          {unanalyzedJobs.map(j => (
-                            <option key={j.id} value={j.id}>{j.title}{j.department ? ` (${j.department})` : ""}</option>
-                          ))}
-                        </select>
+                        <div className="space-y-1.5">
+                          <div className="relative">
+                            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3 h-3 text-muted-foreground" />
+                            <Input
+                              placeholder="Search roles…"
+                              value={priorityJobSearch}
+                              onChange={e => { setPriorityJobSearch(e.target.value); setPriorityJobId(null); }}
+                              className="pl-7 h-7 text-xs"
+                            />
+                          </div>
+                          {filteredPriorityJobs.length > 0 && (
+                            <div className="max-h-32 overflow-y-auto space-y-0.5 rounded-md border border-border/50 p-1">
+                              {filteredPriorityJobs.map(j => (
+                                <button
+                                  key={j.id}
+                                  onClick={() => { setPriorityJobId(j.id); setPriorityJobSearch(j.title); }}
+                                  className={`w-full text-left text-[11px] px-2 py-1 rounded transition-colors truncate ${
+                                    priorityJobId === j.id
+                                      ? "bg-primary/10 text-primary"
+                                      : "text-foreground hover:bg-muted/50"
+                                  }`}
+                                >
+                                  {j.title}
+                                  {j.department && <span className="text-muted-foreground ml-1">· {j.department}</span>}
+                                </button>
+                              ))}
+                            </div>
+                          )}
+                          {priorityJobSearch && filteredPriorityJobs.length === 0 && (
+                            <p className="text-[10px] text-muted-foreground px-1">No unanalyzed roles match</p>
+                          )}
+                        </div>
                       )}
                     </div>
 
