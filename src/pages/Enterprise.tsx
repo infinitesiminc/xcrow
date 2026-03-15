@@ -188,6 +188,16 @@ export default function Enterprise() {
         </div>
       </section>
 
+      {/* ── Trusted by ── */}
+      <section className="px-4 py-10">
+        <div className="mx-auto max-w-5xl">
+          <p className="text-center text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-6">
+            Trusted by teams at leading organizations
+          </p>
+          <CompanyMarquee rows={MARQUEE_ROWS} />
+        </div>
+      </section>
+
       {/* ── Stats bar ── */}
       <section className="border-y border-border bg-muted/30">
         <div className="mx-auto max-w-5xl grid grid-cols-2 md:grid-cols-4 divide-x divide-border">
