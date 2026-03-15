@@ -141,34 +141,16 @@ export default function SimulationBuilder() {
   const [jobs, setJobs] = useState<DbJob[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
-  const [selectedJob, setSelectedJob] = useState<DbJob | null>(null);
   const [companyName, setCompanyName] = useState("Anthropic");
   const [companyId, setCompanyId] = useState<string | null>(null);
-
-  // Task analysis
-  const [analyzedTasks, setAnalyzedTasks] = useState<EnrichedTask[]>([]);
-  const [analyzing, setAnalyzing] = useState(false);
-  const [analysisError, setAnalysisError] = useState<string | null>(null);
-
-  // Progress tracking
-  const [completedSims, setCompletedSims] = useState<CompletedSim[]>([]);
 
   // Bulk analyze
   const [bulkRunning, setBulkRunning] = useState(false);
   const [bulkProgress, setBulkProgress] = useState<{ analyzed: number; total: number; remaining: number } | null>(null);
   const [bulkErrors, setBulkErrors] = useState(0);
   const [bulkSessionStart, setBulkSessionStart] = useState<number | null>(null);
-  const [bulkPaused, setBulkPaused] = useState<string | null>(null); // reason for pause
+  const [bulkPaused, setBulkPaused] = useState<string | null>(null);
 
-  // Simulator modal
-  const [simOpen, setSimOpen] = useState(false);
-  const [simTask, setSimTask] = useState("");
-  const [simTaskState, setSimTaskState] = useState<string | undefined>();
-  const [simTaskTrend, setSimTaskTrend] = useState<string | undefined>();
-  const [simTaskImpact, setSimTaskImpact] = useState<string | undefined>();
-
-  // Learning path expanded
-  const [expandedPath, setExpandedPath] = useState(true);
   const [collapsedDepts, setCollapsedDepts] = useState<Set<string>>(new Set());
   const [analyzedJobIds, setAnalyzedJobIds] = useState<Set<string>>(new Set());
 
