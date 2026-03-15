@@ -195,7 +195,7 @@ const products = [
     tagline: "Generate training content instantly",
     audience: "L&D leaders & training teams",
     description:
-      "Turn AI Replacement Model data into interactive microlearning modules — briefings, scenarios, and scorecards — with zero instructional design effort.",
+      "Turn AI Evolution Model data into interactive microlearning modules — briefings, scenarios, and scorecards — with zero instructional design effort.",
     path: "/products/ld-content-engine",
     color: "bg-dot-teal/10 text-dot-teal",
   },
