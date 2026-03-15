@@ -7,8 +7,8 @@ import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { Loader2, Users, CheckCircle2, TrendingUp, BarChart3, Search, Trophy, AlertTriangle, X } from "lucide-react";
-import { generateDemoProgress } from "@/data/demo-team-progress";
+import { Loader2, Users, CheckCircle2, TrendingUp, BarChart3, Search, Trophy, AlertTriangle, X, Database, Zap, Play, ChevronRight } from "lucide-react";
+import { generateDemoProgress, FUNNEL_STATS } from "@/data/demo-team-progress";
 
 interface ProgressRow {
   user_id: string;
@@ -42,7 +42,51 @@ interface UserSummary {
   sims: ProgressRow[];
 }
 
-const DEMO_PROGRESS = generateDemoProgress(400);
+const DEMO_PROGRESS = generateDemoProgress();
+
+/* ─── Deployment Funnel ─── */
+function DeploymentFunnel() {
+  const steps = [
+    { label: "Jobs Imported", value: FUNNEL_STATS.jobsImported, icon: Database, color: "bg-primary/10 text-primary" },
+    { label: "Jobs Analyzed", value: FUNNEL_STATS.jobsAnalyzed, icon: BarChart3, color: "bg-accent/50 text-foreground" },
+    { label: "Roles Activated", value: FUNNEL_STATS.rolesActivated, icon: Zap, color: "bg-warning/10 text-warning" },
+    { label: "Employees Started", value: FUNNEL_STATS.employeesStarted, icon: Play, color: "bg-success/10 text-success" },
+  ];
+
+  return (
+    <Card className="border-border">
+      <CardContent className="p-5">
+        <p className="text-sm font-semibold text-foreground mb-4">Deployment Funnel</p>
+        <div className="flex items-center gap-1">
+          {steps.map((step, i) => {
+            const Icon = step.icon;
+            const pct = Math.round((step.value / FUNNEL_STATS.jobsImported) * 100);
+            return (
+              <div key={step.label} className="flex items-center gap-1 flex-1 min-w-0">
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-1.5">
+                    <div className={`w-7 h-7 rounded-md ${step.color} flex items-center justify-center shrink-0`}>
+                      <Icon className="h-3.5 w-3.5" />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-lg font-bold text-foreground leading-tight">{step.value}</p>
+                      <p className="text-[10px] text-muted-foreground truncate">{step.label}</p>
+                    </div>
+                  </div>
+                  <Progress value={pct} className="h-1.5" />
+                  <p className="text-[10px] text-muted-foreground mt-0.5 text-right">{pct}%</p>
+                </div>
+                {i < steps.length - 1 && (
+                  <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/40 shrink-0 mx-0.5" />
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
 
 /* ─── Stat Card ─── */
 function StatCard({ icon: Icon, value, label, color }: {
@@ -484,7 +528,7 @@ export default function TeamProgress() {
     return { uniqueUsers, totalSims, avgScore, lowestDept };
   }, [filteredProgress, selectedDept, departments, progress]);
 
-  // User summaries for leaderboard (sorted by avg score desc)
+  // User summaries for leaderboard (sorted by sim count desc)
   const userSummaries: UserSummary[] = useMemo(() => {
     const map: Record<string, UserSummary> = {};
     progress.forEach(r => {
@@ -574,6 +618,9 @@ export default function TeamProgress() {
           </button>
         </div>
       </div>
+
+      {/* Deployment Funnel — always visible */}
+      <DeploymentFunnel />
 
       {viewMode === "aggregate" ? (
         <>
