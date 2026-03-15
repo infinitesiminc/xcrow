@@ -12,24 +12,22 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 
-/* ── Live Timeline with month-granularity ── */
-const TIMELINE_START = new Date("2024-01-01");
-const TIMELINE_END = new Date("2028-01-01");
-const TOTAL_MONTHS = 48; // 4 years
-
-const milestones = [
-  { date: new Date("2024-01-01"), label: "GPT-4 era" },
-  { date: new Date("2025-01-01"), label: "Agent wave" },
-  { date: new Date("2026-01-01"), label: "Autonomous AI" },
-  { date: new Date("2027-01-01"), label: "Frontier" },
-  { date: new Date("2028-01-01"), label: "Post-AI roles" },
-];
-
-function getTimelinePercent(date: Date) {
-  const elapsed = date.getTime() - TIMELINE_START.getTime();
-  const total = TIMELINE_END.getTime() - TIMELINE_START.getTime();
-  return Math.max(0, Math.min(100, (elapsed / total) * 100));
+/* ── Live Timeline — starts from today, 3 years forward, monthly grid ── */
+function getTimelineConfig() {
+  const now = new Date();
+  const start = new Date(now.getFullYear(), now.getMonth(), 1); // first of current month
+  const end = new Date(start.getFullYear() + 3, start.getMonth(), 1); // 3 years later
+  return { start, end, now };
 }
+
+const AI_MILESTONES = [
+  { monthsFromNow: 0, label: "Now", sublabel: "Agent era" },
+  { monthsFromNow: 6, label: "Q4 2026", sublabel: "Autonomous agents" },
+  { monthsFromNow: 12, label: "2027", sublabel: "Multi-agent systems" },
+  { monthsFromNow: 18, label: "Mid 2027", sublabel: "AI colleagues" },
+  { monthsFromNow: 24, label: "2028", sublabel: "Frontier roles" },
+  { monthsFromNow: 36, label: "2029", sublabel: "Post-AI landscape" },
+];
 
 function LiveTimeline() {
   const [now, setNow] = useState(new Date());
@@ -39,62 +37,85 @@ function LiveTimeline() {
     return () => clearInterval(id);
   }, []);
 
-  const nowPercent = getTimelinePercent(now);
+  const config = getTimelineConfig();
+  const totalMs = config.end.getTime() - config.start.getTime();
+  const totalMonths = 36;
+
+  const toPercent = (date: Date) => {
+    const elapsed = date.getTime() - config.start.getTime();
+    return Math.max(0, Math.min(100, (elapsed / totalMs) * 100));
+  };
+
+  const nowPercent = toPercent(now);
   const timeStr = now.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
   const dateStr = now.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
 
-  const PAD = 6; // % padding on each side
+  // Generate monthly grid lines
+  const monthLines: { pct: number; label: string; isYear: boolean }[] = [];
+  for (let i = 0; i <= totalMonths; i++) {
+    const d = new Date(config.start.getFullYear(), config.start.getMonth() + i, 1);
+    const pct = toPercent(d);
+    const isYear = d.getMonth() === 0;
+    const isQuarter = d.getMonth() % 3 === 0;
+    if (isYear || isQuarter) {
+      monthLines.push({
+        pct,
+        label: isYear ? d.getFullYear().toString() : `Q${Math.floor(d.getMonth() / 3) + 1}`,
+        isYear,
+      });
+    }
+  }
 
+  // Map milestones to dates
+  const milestones = AI_MILESTONES.map((m) => {
+    const d = new Date(config.start.getFullYear(), config.start.getMonth() + m.monthsFromNow, 1);
+    return { ...m, date: d, pct: toPercent(d) };
+  });
+
+  const PAD = 4;
   const toLeft = (pct: number) => `${PAD + pct * (100 - 2 * PAD) / 100}%`;
 
   return (
-    <div className="relative px-4 pt-14 pb-8">
-      {/* Base track */}
-      <div className="absolute h-[2px] bg-border" style={{ left: toLeft(0), right: toLeft(0), top: "56px" }} />
-      {/* Filled track up to now */}
-      <div
-        className="absolute h-[2px] bg-primary/40"
-        style={{ left: toLeft(0), width: `${nowPercent * (100 - 2 * PAD) / 100}%`, top: "56px" }}
-      />
+    <div className="relative px-2 pt-16 pb-12 rounded-xl border border-border/50 bg-muted/30 overflow-hidden">
+      {/* Monthly grid lines */}
+      {monthLines.map((line) => (
+        <div key={line.pct + line.label} className="absolute top-0 bottom-0 flex flex-col items-center" style={{ left: toLeft(line.pct) }}>
+          <div className={`w-px h-full ${line.isYear ? "bg-border/60" : "bg-border/25"}`} />
+          <span className={`absolute bottom-1 text-[8px] ${line.isYear ? "font-semibold text-foreground/60" : "text-muted-foreground/50"}`}>
+            {line.label}
+          </span>
+        </div>
+      ))}
+
+      {/* Track */}
+      <div className="absolute h-[2px] bg-border/40" style={{ left: toLeft(0), right: toLeft(0), top: "68px" }} />
+      <div className="absolute h-[2px] bg-primary/30" style={{ left: toLeft(0), width: `${nowPercent * (100 - 2 * PAD) / 100}%`, top: "68px" }} />
 
       {/* Live indicator */}
-      <div
-        className="absolute z-20 flex flex-col items-center"
-        style={{ left: toLeft(nowPercent), top: 0, transform: "translateX(-50%)" }}
-      >
+      <div className="absolute z-20 flex flex-col items-center" style={{ left: toLeft(nowPercent), top: "4px", transform: "translateX(-50%)" }}>
         <span className="text-[9px] font-bold uppercase tracking-wider text-primary-foreground bg-primary rounded-full px-2.5 py-1 whitespace-nowrap shadow-md">
           LIVE
         </span>
-        <span className="text-[9px] font-mono text-primary mt-0.5 whitespace-nowrap">
-          {timeStr}
-        </span>
-        <div className="w-px h-3 bg-primary mt-0.5" />
+        <span className="text-[9px] font-mono text-primary mt-0.5 whitespace-nowrap">{timeStr}</span>
+        <div className="w-px h-4 bg-primary mt-0.5" />
         <div className="h-4 w-4 rounded-full bg-primary shadow-lg shadow-primary/30 ring-4 ring-primary/10" />
       </div>
 
-      {/* Milestone dots - absolutely positioned to match the track */}
-      {milestones.map((m) => {
-        const pct = getTimelinePercent(m.date);
-        const isPast = m.date <= now;
-        const year = m.date.getFullYear().toString();
-        return (
-          <div
-            key={year}
-            className="absolute flex flex-col items-center"
-            style={{ left: toLeft(pct), top: "49px", transform: "translateX(-50%)" }}
-          >
-            <div className={`h-3 w-3 rounded-full border-2 ${isPast ? "bg-primary/60 border-primary/60" : "bg-card border-border"}`} />
-            <span className={`mt-2 text-[11px] font-semibold ${isPast ? "text-foreground" : "text-foreground/50"}`}>{year}</span>
-            <span className="text-[9px] text-muted-foreground mt-0.5">{m.label}</span>
-          </div>
-        );
-      })}
+      {/* Milestone dots on rail */}
+      {milestones.map((m) => (
+        <div
+          key={m.label}
+          className="absolute z-10 flex flex-col items-center"
+          style={{ left: toLeft(m.pct), top: "61px", transform: "translateX(-50%)" }}
+        >
+          <div className={`h-3 w-3 rounded-full border-2 ${m.date <= now ? "bg-primary/60 border-primary/60" : "bg-card border-border"}`} />
+          <span className={`mt-1.5 text-[10px] font-semibold whitespace-nowrap ${m.date <= now ? "text-foreground" : "text-foreground/50"}`}>{m.label}</span>
+          <span className="text-[8px] text-muted-foreground mt-0.5 whitespace-nowrap">{m.sublabel}</span>
+        </div>
+      ))}
 
       {/* Date label below live dot */}
-      <div
-        className="absolute z-10 flex flex-col items-center"
-        style={{ left: toLeft(nowPercent), bottom: "-2px", transform: "translateX(-50%)" }}
-      >
+      <div className="absolute z-10" style={{ left: toLeft(nowPercent), top: "96px", transform: "translateX(-50%)" }}>
         <span className="text-[10px] font-medium text-primary whitespace-nowrap">{dateStr}</span>
       </div>
     </div>
