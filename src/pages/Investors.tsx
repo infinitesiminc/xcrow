@@ -113,7 +113,7 @@ export default function Investors() {
 
           {/* Loop flow visual */}
           <motion.div {...fadeUp} className="mb-8">
-            <Card className="border-primary/20 bg-gradient-to-br from-primary/5 via-background to-accent/5">
+            <Card className="border-brand-human/20 bg-gradient-to-br from-brand-ai/5 via-background to-brand-human/5">
               <CardContent className="p-6">
                 <div className="flex items-center justify-center gap-2 sm:gap-4 flex-wrap">
                   {[
