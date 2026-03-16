@@ -179,15 +179,18 @@ Order from highest AI impact to lowest. Respond ONLY with valid JSON array.`;
             return state === "human_ai" || state === "mostly_ai";
           }).length;
           const mostlyAiCount = tasks.filter((t: any) => (t.ai_state || "human_ai") === "mostly_ai").length;
-          const urgentCount = tasks.filter((t: any) => {
+          // Upskill Urgency: weighted blend — critical=100%, high-impact-only=50%
+          const urgencyScore = tasks.reduce((sum: number, t: any) => {
             const priority = t.priority || "important";
             const impact = t.impact_level || "medium";
-            return priority === "critical" || impact === "high";
-          }).length;
+            if (priority === "critical") return sum + 1;
+            if (impact === "high") return sum + 0.5;
+            return sum;
+          }, 0);
 
           const augmented_percent = Math.round((aiInvolvedCount / totalTasks) * 100);
           const automation_risk_percent = Math.round((mostlyAiCount / totalTasks) * 100);
-          const new_skills_percent = Math.round((urgentCount / totalTasks) * 100);
+          const new_skills_percent = Math.round((urgencyScore / totalTasks) * 100);
 
           await sb.from("jobs").update({
             augmented_percent: Math.min(augmented_percent, 100),
