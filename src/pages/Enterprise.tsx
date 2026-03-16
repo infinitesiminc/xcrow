@@ -814,8 +814,8 @@ export default function Enterprise() {
               <Button size="lg" className="gap-2 text-base px-8" onClick={() => navigate("/contact")}>
                 Book a Demo <ArrowRight className="h-4 w-4" />
               </Button>
-              <Button variant="outline" size="lg" className="gap-2 text-base px-8" onClick={() => navigate("/how-it-works")}>
-                How It Works
+              <Button variant="outline" size="lg" className="gap-2 text-base px-8" onClick={() => navigate("/case-study/anthropic")}>
+                See It in Action
               </Button>
             </div>
           </motion.div>

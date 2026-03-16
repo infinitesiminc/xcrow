@@ -27,7 +27,7 @@ export default function Navbar() {
 
   const navItems = [
     ...(!user ? [
-      { label: "How It Works", path: "/how-it-works" },
+      { label: "Why Simulation", path: "/why-simulation" },
       { label: "Case Study", path: "/case-study/anthropic" },
       { label: "Pricing", path: "/pricing" },
       { label: "Contact", path: "/contact" },
