@@ -139,6 +139,10 @@ export default function ATSSync() {
       if (step === "jobs" && selectedCompanyId) {
         body.company_id = selectedCompanyId;
       }
+      // Stamp workspace_id on synced data
+      if (workspaceId) {
+        body.workspace_id = workspaceId;
+      }
 
       const { data, error } = await supabase.functions.invoke("sync-company-jobs", { body });
       if (error) throw error;
