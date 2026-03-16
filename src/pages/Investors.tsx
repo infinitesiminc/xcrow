@@ -387,52 +387,6 @@ export default function Investors() {
           </motion.div>
         </section>
 
-        {/* ── The Ask ── */}
-        <section>
-          <SectionHeader
-            badge="The Ask"
-            title="Raising a seed round to scale GTM"
-          />
-          <motion.div {...fadeUp}>
-            <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-accent/5">
-              <CardContent className="p-6 sm:p-8 text-center space-y-6">
-                <div className="grid sm:grid-cols-3 gap-6">
-                  <div>
-                    <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Use of Funds</p>
-                    <ul className="text-sm text-foreground space-y-1">
-                      <li>Engineering & AI R&D</li>
-                      <li>Go-to-market & sales</li>
-                      <li>ATS integrations</li>
-                    </ul>
-                  </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Key Milestones</p>
-                    <ul className="text-sm text-foreground space-y-1">
-                      <li>10 enterprise pilots</li>
-                      <li>3 ATS integrations</li>
-                      <li>$500K ARR</li>
-                    </ul>
-                  </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Why Now</p>
-                    <ul className="text-sm text-foreground space-y-1">
-                      <li>AI agents shipping weekly</li>
-                      <li>Enterprise urgency at all-time high</li>
-                      <li>No incumbent solution</li>
-                    </ul>
-                  </div>
-                </div>
-                <div className="pt-4 border-t border-border/30">
-                  <Button size="lg" onClick={() => window.open("mailto:founders@infinitesim.ai", "_blank")}>
-                    <DollarSign className="h-4 w-4 mr-2" />
-                    Get in Touch
-                  </Button>
-                  <p className="text-xs text-muted-foreground mt-3">founders@infinitesim.ai</p>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-        </section>
 
       </div>
     </div>
