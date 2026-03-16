@@ -199,7 +199,7 @@ export default function Investors() {
                         <h3 className="text-sm font-bold text-foreground">Assess · Adaptive Simulations</h3>
                       </div>
                       <p className="text-xs text-muted-foreground mb-3">Calibrated simulations measure each employee across 4 readiness pillars. Real tested capability, not self-reported surveys.</p>
-                      <Badge variant="outline" className="text-[10px] border-primary/20 text-primary w-fit">4-pillar scoring model</Badge>
+                      <Badge variant="outline" className="text-[10px] border-brand-human/20 text-brand-human w-fit">4-pillar scoring model</Badge>
                     </div>
                     <div className="bg-muted/20 border-l border-border/50 p-4 sm:p-5">
                       <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-3 font-medium">Readiness Pillars</p>
