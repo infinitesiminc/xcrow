@@ -843,6 +843,9 @@ export default function TeamProgress() {
           <UserDetailSheet user={selectedUser} open={!!selectedUser} onClose={() => setSelectedUser(null)} />
         </TabsContent>
       </Tabs>
+      )}
     </div>
+  );
+}
   );
 }
