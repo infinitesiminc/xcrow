@@ -32,7 +32,7 @@ export default function OnboardingModal({ open, onComplete, userId }: Onboarding
       .from("profiles")
       .update({
         job_title: jobTitle.trim(),
-        company: company.trim() || null,
+        company: normalizedCompany || null,
         onboarding_completed: true,
       } as any)
       .eq("id", userId);
