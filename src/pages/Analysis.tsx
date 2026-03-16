@@ -225,8 +225,13 @@ const Analysis = () => {
         const aiResult = await analyzeJobWithAI(jobTitle, company, jdText || undefined, jdUrlParam || undefined);
         setResult(aiResult);
         saveAnalysisHistory(aiResult);
-      } catch (err) {
-        setError("Unable to analyze this role right now. Please try again.");
+      } catch (err: any) {
+        if (err?.code === "usage_limit") {
+          openUpgradeModal("analysis");
+          setError("You've used your free analysis. Upgrade to analyze more roles.");
+        } else {
+          setError("Unable to analyze this role right now. Please try again.");
+        }
         console.error(err);
       }
       setLoading(false);
