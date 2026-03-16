@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
@@ -754,26 +755,16 @@ export default function TeamProgress() {
   return (
     <div className="p-6 max-w-5xl mx-auto space-y-5">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-xl font-bold text-foreground">{workspace.name}</h1>
-          <p className="text-sm text-muted-foreground">
-            AI readiness program overview
-            {selectedDept && (
-              <> · Filtered: <Badge variant="secondary" className="text-[10px] ml-1">{selectedDept}
-                <button onClick={() => setSelectedDept(null)} className="ml-1 hover:text-foreground">×</button>
-              </Badge></>
-            )}
-          </p>
-        </div>
-        <div className="flex gap-1 bg-secondary rounded-lg p-0.5">
-          <button onClick={() => setViewMode("overview")} className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${viewMode === "overview" ? "bg-foreground text-background" : "text-muted-foreground hover:text-foreground"}`}>
-            Overview
-          </button>
-          <button onClick={() => setViewMode("individual")} className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${viewMode === "individual" ? "bg-foreground text-background" : "text-muted-foreground hover:text-foreground"}`}>
-            Individual
-          </button>
-        </div>
+      <div>
+        <h1 className="text-xl font-bold text-foreground">{workspace.name}</h1>
+        <p className="text-sm text-muted-foreground">
+          AI readiness program overview
+          {selectedDept && (
+            <> · Filtered: <Badge variant="secondary" className="text-[10px] ml-1">{selectedDept}
+              <button onClick={() => setSelectedDept(null)} className="ml-1 hover:text-foreground">×</button>
+            </Badge></>
+          )}
+        </p>
       </div>
 
       {/* Demo data disclaimer */}
@@ -784,32 +775,35 @@ export default function TeamProgress() {
         </p>
       </div>
 
-      {viewMode === "overview" ? (
-        <>
-          {/* 1. Executive Brief */}
+      <Tabs defaultValue="executive" className="w-full">
+        <TabsList className="w-full justify-start">
+          <TabsTrigger value="executive">Executive Brief</TabsTrigger>
+          <TabsTrigger value="departments">Departments</TabsTrigger>
+          <TabsTrigger value="readiness">Readiness Pillars</TabsTrigger>
+          <TabsTrigger value="people">People</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="executive" className="space-y-5 mt-4">
           <ExecutiveBrief progress={progress} deptTrends={deptTrends} funnel={funnel} />
-
-          {/* 2. Deployment Funnel (compact) */}
           <DeploymentFunnel funnel={funnel} />
+          <AdaptiveInsights progress={filteredProgress} />
+        </TabsContent>
 
-          {/* 3. Department Scorecard */}
+        <TabsContent value="departments" className="space-y-5 mt-4">
           <DeptScorecard deptTrends={deptTrends} onSelectDept={(d) => {
             setSelectedDept(d);
-            setViewMode("individual");
           }} />
+        </TabsContent>
 
-          {/* 4. AI Readiness Pillars */}
+        <TabsContent value="readiness" className="space-y-5 mt-4">
           <ReadinessPillars progress={filteredProgress} />
+        </TabsContent>
 
-          {/* 5. Adaptive Insights */}
-          <AdaptiveInsights progress={filteredProgress} />
-        </>
-      ) : (
-        <>
+        <TabsContent value="people" className="space-y-5 mt-4">
           <Leaderboard users={userSummaries} onSelect={setSelectedUser} />
           <UserDetailSheet user={selectedUser} open={!!selectedUser} onClose={() => setSelectedUser(null)} />
-        </>
-      )}
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
