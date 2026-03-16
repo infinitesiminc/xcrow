@@ -272,7 +272,7 @@
   position: absolute;
   inset: -1px;
   border-radius: inherit;
-  padding: 1px;
+  padding: 2px;
   background: conic-gradient(
     from var(--glow-angle),
     transparent 0%,
