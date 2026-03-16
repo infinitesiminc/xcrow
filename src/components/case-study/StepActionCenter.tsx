@@ -20,9 +20,9 @@ const QUEUE_ITEMS = [
 ];
 
 function pillarColor(score: number) {
-  if (score >= 60) return "text-dot-teal";
-  if (score >= 40) return "text-dot-amber";
-  return "text-dot-purple";
+  if (score >= 60) return "text-brand-human";
+  if (score >= 40) return "text-brand-mid";
+  return "text-brand-ai";
 }
 
 export default function StepActionCenter() {
@@ -36,7 +36,7 @@ export default function StepActionCenter() {
       {/* Bottleneck tasks */}
       <div className="rounded-xl border border-border bg-card p-4">
         <div className="flex items-center gap-2 mb-3">
-          <AlertTriangle className="h-3.5 w-3.5 text-dot-amber" />
+          <AlertTriangle className="h-3.5 w-3.5 text-brand-ai" />
           <h4 className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
             Bottleneck Tasks
           </h4>
@@ -68,7 +68,7 @@ export default function StepActionCenter() {
       {/* At-risk employees */}
       <div className="rounded-xl border border-border bg-card p-4">
         <div className="flex items-center gap-2 mb-3">
-          <User className="h-3.5 w-3.5 text-dot-purple" />
+          <User className="h-3.5 w-3.5 text-brand-ai" />
           <h4 className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
             Employees Needing Coaching
           </h4>
@@ -102,7 +102,7 @@ export default function StepActionCenter() {
       {/* Retry queue */}
       <div className="rounded-xl border border-border bg-card p-4">
         <div className="flex items-center gap-2 mb-3">
-          <RefreshCw className="h-3.5 w-3.5 text-dot-blue" />
+          <RefreshCw className="h-3.5 w-3.5 text-brand-human" />
           <h4 className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
             Adaptive Retry Queue
           </h4>

@@ -9,10 +9,10 @@ const ROTATING_MODELS = [
 ];
 
 const TIMELINE_TAIL = [
-  { time: "T+2h", event: "Engine detects 34 task clusters affected", icon: Brain, color: "bg-dot-blue/10 text-dot-blue" },
-  { time: "T+6h", event: "Risk scores recalibrated across Legal & Finance", icon: RefreshCw, color: "bg-dot-purple/10 text-dot-purple" },
+  { time: "T+2h", event: "Engine detects 34 task clusters affected", icon: Brain, color: "bg-brand-ai/10 text-brand-ai" },
+  { time: "T+6h", event: "Risk scores recalibrated across Legal & Finance", icon: RefreshCw, color: "bg-brand-mid/10 text-brand-mid" },
   { time: "T+12h", event: "19 new simulations generated for affected roles", icon: Brain, color: "bg-muted" },
-  { time: "T+24h", event: "127 employees re-queued with updated scenarios", icon: Users, color: "bg-dot-teal/10 text-dot-teal" },
+  { time: "T+24h", event: "127 employees re-queued with updated scenarios", icon: Users, color: "bg-brand-human/10 text-brand-human" },
 ];
 
 const SCORE_SHIFTS = [
@@ -67,7 +67,7 @@ export default function StepModelAdaptation() {
       {/* Adaptation timeline */}
       <div className="rounded-xl border border-border bg-card p-4">
         <div className="flex items-center gap-2 mb-3">
-          <Zap className="h-3.5 w-3.5 text-dot-amber" />
+          <Zap className="h-3.5 w-3.5 text-brand-ai" />
           <h4 className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
             Adaptation Timeline
           </h4>
@@ -78,10 +78,10 @@ export default function StepModelAdaptation() {
             initial={{ opacity: 0, x: -8 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.15 }}
-            className="flex items-center gap-3 rounded-lg border border-dot-amber/30 bg-dot-amber/5 px-3 py-2"
+            className="flex items-center gap-3 rounded-lg border border-brand-ai/30 bg-brand-ai/5 px-3 py-2"
           >
             <span className="text-xs font-mono font-bold text-muted-foreground w-12 shrink-0">T+0h</span>
-            <div className="w-7 h-7 rounded-full bg-dot-amber/10 text-dot-amber flex items-center justify-center shrink-0">
+            <div className="w-7 h-7 rounded-full bg-brand-ai/10 text-brand-ai flex items-center justify-center shrink-0">
               <Zap className="h-3.5 w-3.5" />
             </div>
             <div className="relative h-5 overflow-hidden flex-1">
@@ -124,7 +124,7 @@ export default function StepModelAdaptation() {
       {/* Score shifts */}
       <div className="rounded-xl border border-border bg-card p-4">
         <div className="flex items-center gap-2 mb-3">
-          <TrendingUp className="h-3.5 w-3.5 text-dot-teal" />
+          <TrendingUp className="h-3.5 w-3.5 text-brand-ai" />
           <h4 className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
             AI Exposure Score Shifts
           </h4>
@@ -143,7 +143,7 @@ export default function StepModelAdaptation() {
                 <div className="flex items-center gap-1.5 text-sm font-mono">
                   <span className="text-muted-foreground">{s.before}%</span>
                   <span className="text-muted-foreground/50">→</span>
-                  <span className="font-bold text-dot-amber">{s.after}%</span>
+                  <span className="font-bold text-brand-ai">{s.after}%</span>
                 </div>
               </div>
               <div className="flex items-center gap-2">
@@ -162,9 +162,9 @@ export default function StepModelAdaptation() {
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.8 }}
-        className="rounded-xl border border-dot-teal/20 bg-dot-teal/5 p-4 flex items-start gap-3"
+        className="rounded-xl border border-brand-human/20 bg-brand-human/5 p-4 flex items-start gap-3"
       >
-        <RefreshCw className="h-4 w-4 text-dot-teal mt-0.5 shrink-0" />
+        <RefreshCw className="h-4 w-4 text-brand-human mt-0.5 shrink-0" />
         <div className="space-y-1">
           <p className="text-sm font-medium text-foreground">
             Always adapting — no manual intervention

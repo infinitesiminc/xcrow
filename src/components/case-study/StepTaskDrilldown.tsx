@@ -15,9 +15,9 @@ interface TaskCluster {
 function scoreBadge(score: number | null) {
   if (score === null) return null;
   const color =
-    score >= 70 ? "text-dot-purple bg-dot-purple/10" :
-    score >= 40 ? "text-dot-amber bg-dot-amber/10" :
-    "text-dot-teal bg-dot-teal/10";
+    score >= 70 ? "text-brand-ai bg-brand-ai/10" :
+    score >= 40 ? "text-brand-mid bg-brand-mid/10" :
+    "text-brand-human bg-brand-human/10";
   return (
     <span className={`text-[11px] font-mono font-semibold px-1.5 py-0.5 rounded ${color}`}>
       {score}%
@@ -130,7 +130,7 @@ export default function StepTaskDrilldown() {
                 <Layers className="h-3 w-3 text-muted-foreground shrink-0" />
                 <span className="text-sm truncate">{t.cluster_name}</span>
                 {t.priority === "critical" && (
-                  <ArrowUpRight className="h-3 w-3 text-dot-purple shrink-0" />
+                  <ArrowUpRight className="h-3 w-3 text-brand-ai shrink-0" />
                 )}
               </div>
               <div className="flex justify-center">{scoreBadge(t.ai_exposure_score)}</div>

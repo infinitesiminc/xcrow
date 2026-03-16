@@ -93,11 +93,11 @@ export default function StepExposureMap() {
     : 0;
 
   const BAR_COLORS = [
-    "bg-dot-teal",
-    "bg-dot-teal/70",
-    "bg-dot-amber/70",
-    "bg-dot-amber",
-    "bg-dot-purple",
+    "bg-brand-human",
+    "bg-brand-human/70",
+    "bg-brand-mid/70",
+    "bg-brand-ai/70",
+    "bg-brand-ai",
   ];
 
   if (loading) {
@@ -170,9 +170,9 @@ export default function StepExposureMap() {
                 )}
               </div>
               <span className={`text-xs font-mono ml-2 font-semibold ${
-                r.avgExposure >= 60 ? "text-dot-purple" :
-                r.avgExposure >= 35 ? "text-dot-amber" :
-                "text-dot-teal"
+                r.avgExposure >= 60 ? "text-brand-ai" :
+                r.avgExposure >= 35 ? "text-brand-mid" :
+                "text-brand-human"
               }`}>
                 {r.avgExposure}%
               </span>

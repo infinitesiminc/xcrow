@@ -66,6 +66,11 @@ export default {
           purple: "hsl(var(--dot-purple))",
           amber: "hsl(var(--dot-amber))",
         },
+        brand: {
+          ai: "hsl(var(--brand-ai))",
+          human: "hsl(var(--brand-human))",
+          mid: "hsl(var(--brand-mid))",
+        },
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
           foreground: "hsl(var(--sidebar-foreground))",

@@ -24,9 +24,9 @@ const MOCK_MESSAGES = [
 ];
 
 function scoreColor(s: number) {
-  if (s >= 80) return "text-dot-teal";
-  if (s >= 60) return "text-dot-amber";
-  return "text-dot-purple";
+  if (s >= 80) return "text-brand-human";
+  if (s >= 60) return "text-brand-mid";
+  return "text-brand-ai";
 }
 
 export default function StepSimPreview() {
