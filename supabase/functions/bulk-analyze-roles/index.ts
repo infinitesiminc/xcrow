@@ -55,17 +55,21 @@ serve(async (req) => {
     const analyzedJobIds = new Set((existingClusters || []).map(c => c.job_id));
 
     // Find jobs needing backfill (have clusters but no score) OR forceRefresh all
+    console.log(`[bulk-analyze] forceRefresh=${forceRefresh}, analyzedJobIds=${analyzedJobIds.size}, total=${allJobs.length}`);
     const backfillJobIds = new Set(
       allJobs
         .filter(j => analyzedJobIds.has(j.id) && (forceRefresh || (j.augmented_percent ?? 0) === 0))
         .map(j => j.id)
     );
+    console.log(`[bulk-analyze] backfillJobIds=${backfillJobIds.size}`);
 
     const pendingJobs = allJobs.filter(j => !analyzedJobIds.has(j.id) || backfillJobIds.has(j.id));
+    console.log(`[bulk-analyze] pendingJobs=${pendingJobs.length}`);
     if (pendingJobs.length === 0) {
       return new Response(JSON.stringify({
         total: allJobs.length, alreadyAnalyzed: analyzedJobIds.size,
         justProcessed: 0, remaining: 0, batchProcessed: 0, results: [],
+        debug: { forceRefresh, backfillCount: backfillJobIds.size },
       }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
