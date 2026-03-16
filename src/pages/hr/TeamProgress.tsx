@@ -16,9 +16,7 @@ import {
   ArrowUpRight, ArrowDownRight, Minus, Lightbulb, ChevronDown, ChevronUp,
 } from "lucide-react";
 import { LineChart, Line, ResponsiveContainer } from "recharts";
-import { type DeptTrendData } from "@/data/demo-team-progress";
-
-const EMPTY_FUNNEL = { jobsImported: 0, jobsAnalyzed: 0, rolesActivated: 0, employeesStarted: 0 };
+import { type DeptTrendData, type DemoFunnelStats, generateMockFromDB } from "@/data/demo-team-progress";
 /* ─── Types ─── */
 interface ProgressRow {
   user_id: string;
@@ -76,7 +74,7 @@ const DeltaBadge = ({ delta }: { delta: number }) => {
 };
 
 /* ─── 1. Executive Brief ─── */
-function ExecutiveBrief({ progress, deptTrends }: { progress: ProgressRow[]; deptTrends: DeptTrendData[] }) {
+function ExecutiveBrief({ progress, deptTrends, funnel }: { progress: ProgressRow[]; deptTrends: DeptTrendData[]; funnel: DemoFunnelStats }) {
   const brief = useMemo(() => {
     const uniqueUsers = new Set(progress.map(r => r.user_id)).size;
     const allScores = progress.flatMap(r => [
@@ -86,8 +84,8 @@ function ExecutiveBrief({ progress, deptTrends }: { progress: ProgressRow[]; dep
     const avgReadiness = allScores.length > 0
       ? Math.round(allScores.reduce((a, b) => a + b, 0) / allScores.length) : 0;
 
-    const notStarted = EMPTY_FUNNEL.rolesActivated - EMPTY_FUNNEL.employeesStarted;
-    const notActivated = EMPTY_FUNNEL.jobsImported - EMPTY_FUNNEL.rolesActivated;
+    const notStarted = funnel.rolesActivated - funnel.employeesStarted;
+    const notActivated = funnel.jobsImported - funnel.rolesActivated;
 
     // Weakest department
     const weakestDept = [...deptTrends].sort((a, b) => a.avgReadiness - b.avgReadiness)[0];
@@ -122,7 +120,7 @@ function ExecutiveBrief({ progress, deptTrends }: { progress: ProgressRow[]; dep
       actions.push({ text: `Focus org-wide training on ${pillars[0].label} (${pillars[0].avg}% avg)`, priority: "medium", metric: `${pillars[0].avg}%` });
     }
     if (notActivated > 200) {
-      actions.push({ text: `Activate ${notActivated} remaining roles to expand coverage beyond ${EMPTY_FUNNEL.jobsImported > 0 ? Math.round((EMPTY_FUNNEL.rolesActivated / EMPTY_FUNNEL.jobsImported) * 100) : 0}%`, priority: "medium", metric: `${notActivated} pending` });
+      actions.push({ text: `Activate ${notActivated} remaining roles to expand coverage beyond ${funnel.jobsImported > 0 ? Math.round((funnel.rolesActivated / funnel.jobsImported) * 100) : 0}%`, priority: "medium", metric: `${notActivated} pending` });
     }
     if (mostImproved && mostImproved.delta > 5) {
       actions.push({ text: `Recognize ${mostImproved.dept} for strongest improvement (+${mostImproved.delta}% this month)`, priority: "low", metric: `+${mostImproved.delta}%` });
@@ -187,12 +185,12 @@ function ExecutiveBrief({ progress, deptTrends }: { progress: ProgressRow[]; dep
 }
 
 /* ─── 2. Compact Deployment Funnel ─── */
-function DeploymentFunnel() {
+function DeploymentFunnel({ funnel }: { funnel: DemoFunnelStats }) {
   const steps = [
-    { label: "Imported", value: EMPTY_FUNNEL.jobsImported, icon: Database },
-    { label: "Analyzed", value: EMPTY_FUNNEL.jobsAnalyzed, icon: BarChart3 },
-    { label: "Activated", value: EMPTY_FUNNEL.rolesActivated, icon: Zap },
-    { label: "Started", value: EMPTY_FUNNEL.employeesStarted, icon: Play },
+    { label: "Imported", value: funnel.jobsImported, icon: Database },
+    { label: "Analyzed", value: funnel.jobsAnalyzed, icon: BarChart3 },
+    { label: "Activated", value: funnel.rolesActivated, icon: Zap },
+    { label: "Started", value: funnel.employeesStarted, icon: Play },
   ];
 
   return (
@@ -659,6 +657,8 @@ export default function TeamProgress() {
   const [viewMode, setViewMode] = useState<"overview" | "individual">("overview");
   const [selectedUser, setSelectedUser] = useState<UserSummary | null>(null);
   const [selectedDept, setSelectedDept] = useState<string | null>(null);
+  const [deptTrends, setDeptTrends] = useState<DeptTrendData[]>([]);
+  const [funnel, setFunnel] = useState<DemoFunnelStats>({ jobsImported: 0, jobsAnalyzed: 0, rolesActivated: 0, employeesStarted: 0 });
 
   useEffect(() => {
     if (!user) { setLoading(false); return; }
@@ -675,9 +675,15 @@ export default function TeamProgress() {
         .from("company_workspaces").select("id, name").eq("id", wsId).single();
       if (ws) setWorkspace(ws);
 
+      // Fetch real workspace progress
       const { data: rows } = await supabase.rpc("get_workspace_progress", { p_workspace_id: wsId });
       const dbRows = (rows as ProgressRow[] || []).filter(r => r.user_id !== user.id);
-      setProgress(dbRows);
+
+      // Generate mock data from real DB jobs/clusters
+      const mock = await generateMockFromDB();
+      setProgress([...mock.progress, ...dbRows]);
+      setDeptTrends(mock.trends);
+      setFunnel(mock.funnel);
       setLoading(false);
     })();
   }, [user]);
@@ -773,13 +779,13 @@ export default function TeamProgress() {
       {viewMode === "overview" ? (
         <>
           {/* 1. Executive Brief */}
-          <ExecutiveBrief progress={progress} deptTrends={[]} />
+          <ExecutiveBrief progress={progress} deptTrends={deptTrends} funnel={funnel} />
 
           {/* 2. Deployment Funnel (compact) */}
-          <DeploymentFunnel />
+          <DeploymentFunnel funnel={funnel} />
 
           {/* 3. Department Scorecard */}
-          <DeptScorecard deptTrends={[]} onSelectDept={(d) => {
+          <DeptScorecard deptTrends={deptTrends} onSelectDept={(d) => {
             setSelectedDept(d);
             setViewMode("individual");
           }} />
