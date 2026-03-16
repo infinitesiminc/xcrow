@@ -40,7 +40,7 @@ export default function OnboardingModal({ open, onComplete, userId }: Onboarding
     if (error) {
       toast({ title: "Error", description: "Failed to save profile.", variant: "destructive" });
     } else {
-      onComplete(jobTitle.trim(), company.trim());
+      onComplete(jobTitle.trim(), normalizedCompany);
     }
     setSaving(false);
   };
