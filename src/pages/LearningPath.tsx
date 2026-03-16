@@ -411,17 +411,53 @@ export default function LearningPath() {
               </div>
             </div>
 
-            {/* Single AI Exposure Score */}
-            <div className="mt-4 text-center">
-              <div className="text-4xl font-bold text-foreground">{job.augmented_percent ?? "—"}%</div>
-              <div className="text-sm text-muted-foreground mt-1">AI Exposure Score</div>
-              <p className="text-xs text-muted-foreground/70 mt-0.5">How much of the important work in this role is AI-exposed</p>
-              {job.augmented_percent != null && (
-                <div className="h-2 rounded-full bg-secondary mt-3 overflow-hidden max-w-xs mx-auto">
-                  <div
-                    className={`h-full rounded-full ${job.augmented_percent >= 70 ? "bg-destructive" : job.augmented_percent >= 40 ? "bg-warning" : "bg-success"}`}
-                    style={{ width: `${job.augmented_percent}%` }}
-                  />
+            {/* AI Exposure Score + Task Breakdown */}
+            <div className="mt-4 flex flex-col lg:flex-row items-center lg:items-start gap-6">
+              {/* Score */}
+              <div className="text-center lg:text-left shrink-0">
+                <div className="text-4xl font-bold text-foreground">{job.augmented_percent ?? "—"}%</div>
+                <div className="text-sm text-muted-foreground mt-1">AI Exposure Score</div>
+                <p className="text-xs text-muted-foreground/70 mt-0.5 max-w-[220px]">How much of the important work is AI-exposed</p>
+                {job.augmented_percent != null && (
+                  <div className="h-2 rounded-full bg-secondary mt-3 overflow-hidden w-48">
+                    <div
+                      className={`h-full rounded-full ${job.augmented_percent >= 70 ? "bg-destructive" : job.augmented_percent >= 40 ? "bg-warning" : "bg-success"}`}
+                      style={{ width: `${job.augmented_percent}%` }}
+                    />
+                  </div>
+                )}
+              </div>
+
+              {/* Task breakdown chart */}
+              {analyzedTasks.length > 0 && (
+                <div className="flex-1 w-full min-w-0">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">Task Breakdown</span>
+                    <span className="text-[10px] text-muted-foreground">{analyzedTasks.length} tasks below ↓</span>
+                  </div>
+                  <div className="space-y-1.5">
+                    {analyzedTasks.slice(0, 8).map((task) => {
+                      const exposure = task.ai_exposure_score ?? 50;
+                      const barColor = exposure >= 70 ? "bg-destructive/70" : exposure >= 40 ? "bg-warning/70" : "bg-success/70";
+                      return (
+                        <div key={task.id} className="flex items-center gap-2">
+                          <span className="text-[10px] text-muted-foreground truncate w-[140px] sm:w-[180px] shrink-0 text-right">
+                            {task.cluster_name}
+                          </span>
+                          <div className="flex-1 h-3 rounded-sm bg-secondary/60 overflow-hidden">
+                            <div
+                              className={`h-full rounded-sm ${barColor} transition-all`}
+                              style={{ width: `${exposure}%` }}
+                            />
+                          </div>
+                          <span className="text-[10px] font-medium text-foreground w-8 text-right">{exposure}%</span>
+                        </div>
+                      );
+                    })}
+                    {analyzedTasks.length > 8 && (
+                      <p className="text-[10px] text-muted-foreground/60 text-center">+{analyzedTasks.length - 8} more tasks</p>
+                    )}
+                  </div>
                 </div>
               )}
             </div>
