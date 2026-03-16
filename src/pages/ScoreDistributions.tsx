@@ -164,16 +164,30 @@ export default function ScoreDistributions() {
       .sort((a, b) => b.avg - a.avg);
   }, [jobs]);
 
-  // Location breakdown — split multi-location strings by | ; ,
+  // Location breakdown — split multi-location strings, then group by country
+  const US_STATES = new Set(["AL","AK","AZ","AR","CA","CO","CT","DE","FL","GA","HI","ID","IL","IN","IA","KS","KY","LA","ME","MD","MA","MI","MN","MS","MO","MT","NE","NV","NH","NJ","NM","NY","NC","ND","OH","OK","OR","PA","RI","SC","SD","TN","TX","UT","VT","VA","WA","WV","WI","WY","DC"]);
+  const COUNTRY_MAP: Record<string, string> = { UK: "United Kingdom", IE: "Ireland", CH: "Switzerland", CAN: "Canada" };
+
+  const extractCountry = (loc: string): string => {
+    const trimmed = loc.trim();
+    if (/remote/i.test(trimmed)) return "Remote";
+    const lastPart = trimmed.split(",").pop()?.trim() || "";
+    if (US_STATES.has(lastPart)) return "United States";
+    if (COUNTRY_MAP[lastPart]) return COUNTRY_MAP[lastPart];
+    // Check if last part is a known country name (e.g. "South Korea", "Japan")
+    if (lastPart.length > 2) return lastPart;
+    return "Other";
+  };
+
   const locations = useMemo(() => {
     const map = new Map<string, number[]>();
     jobs.forEach(j => {
       const raw = j.location || "Unknown";
-      const parts = raw.split(/[|;,]/).map(s => s.trim()).filter(Boolean);
-      const unique = [...new Set(parts.length ? parts : ["Unknown"])];
-      unique.forEach(loc => {
-        if (!map.has(loc)) map.set(loc, []);
-        map.get(loc)!.push(j.augmented_percent ?? 0);
+      const parts = raw.split(/[|;]/).map(s => s.trim()).filter(Boolean);
+      const countries = [...new Set(parts.map(extractCountry))];
+      (countries.length ? countries : ["Unknown"]).forEach(country => {
+        if (!map.has(country)) map.set(country, []);
+        map.get(country)!.push(j.augmented_percent ?? 0);
       });
     });
     return Array.from(map.entries())
