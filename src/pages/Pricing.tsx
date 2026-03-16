@@ -1,19 +1,13 @@
-import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   Check, Zap, Building2, ArrowRight, Users,
-  Sparkles, HelpCircle, Loader2, Search, Crown,
+  Sparkles, HelpCircle, Search, Crown,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import {
   Accordion, AccordionContent, AccordionItem, AccordionTrigger,
 } from "@/components/ui/accordion";
-import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
-import { STRIPE_PRICES } from "@/lib/stripe-config";
-import { toast } from "sonner";
 import PricingTierCard from "@/components/pricing/PricingTierCard";
 import GrowthPricingTable from "@/components/pricing/GrowthPricingTable";
 
@@ -28,29 +22,6 @@ const faqs = [
 
 export default function Pricing() {
   const navigate = useNavigate();
-  const { user, isPro, openAuthModal } = useAuth();
-  const [checkoutLoading, setCheckoutLoading] = useState(false);
-
-  const handleUpgrade = async () => {
-    if (!user) { openAuthModal(); return; }
-    if (isPro) { toast.info("You're already subscribed!"); return; }
-    setCheckoutLoading(true);
-    try {
-      const priceId = STRIPE_PRICES.PRO_MONTHLY;
-      const { data, error } = await supabase.functions.invoke("create-checkout", { body: { priceId } });
-      if (error) throw error;
-      if (data?.url) window.open(data.url, "_blank");
-    } catch { toast.error("Failed to start checkout. Please try again."); }
-    finally { setCheckoutLoading(false); }
-  };
-
-  const handleManageSubscription = async () => {
-    try {
-      const { data, error } = await supabase.functions.invoke("customer-portal");
-      if (error) throw error;
-      if (data?.url) window.open(data.url, "_blank");
-    } catch { toast.error("Failed to open subscription management."); }
-  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -109,15 +80,9 @@ export default function Pricing() {
               "Action plan summaries",
             ]}
             cta={
-              !user ? (
-                <Button size="lg" className="w-full text-sm gap-1.5" onClick={openAuthModal}>
-                  <Sparkles className="h-4 w-4" /> Sign up free
-                </Button>
-              ) : (
-                <Button variant="outline" size="lg" className="w-full text-sm" onClick={() => navigate("/dashboard")}>
-                  <Check className="h-4 w-4 mr-1.5" /> Your current plan
-                </Button>
-              )
+              <Button size="lg" className="w-full text-sm gap-1.5" onClick={() => navigate("/contact")}>
+                <ArrowRight className="h-4 w-4" /> Get started
+              </Button>
             }
           />
 
@@ -139,16 +104,9 @@ export default function Pricing() {
               "Volume discounts at scale",
             ]}
             cta={
-              isPro ? (
-                <Button variant="secondary" size="lg" className="w-full text-sm" onClick={handleManageSubscription}>
-                  Manage subscription
-                </Button>
-              ) : (
-                <Button size="lg" className="w-full gap-1.5 text-sm" onClick={handleUpgrade} disabled={checkoutLoading}>
-                  {checkoutLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Zap className="h-4 w-4" />}
-                  Start Growth plan
-                </Button>
-              )
+              <Button size="lg" className="w-full gap-1.5 text-sm" onClick={() => navigate("/contact")}>
+                <ArrowRight className="h-4 w-4" /> Contact us
+              </Button>
             }
           />
 
