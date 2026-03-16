@@ -266,7 +266,7 @@ export default function ScoreDistributions() {
                         <span className={`text-[10px] w-[180px] truncate shrink-0 transition-colors ${isHovered ? "text-foreground font-medium" : "text-muted-foreground"}`}>
                           {j.title.replace(/^\s+/, "")}
                         </span>
-                        <div className="flex-1 h-4 rounded-sm bg-secondary/30 overflow-hidden relative">
+                        <div className="flex-1 h-2 rounded-sm bg-secondary/30 overflow-hidden relative">
                           <motion.div
                             className={`h-full rounded-sm ${barColor} ${isHovered ? "opacity-100" : "opacity-80"}`}
                             initial={{ width: 0 }}
