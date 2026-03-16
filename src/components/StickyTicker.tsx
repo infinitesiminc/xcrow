@@ -43,7 +43,7 @@ export default function StickyTicker() {
   useEffect(() => {
     const interval = setInterval(() => {
       setActiveModel((prev) => (prev + 1) % FRONTIER_RELEASES.length);
-    }, 7000);
+    }, 14000);
     return () => clearInterval(interval);
   }, []);
 
@@ -55,7 +55,7 @@ export default function StickyTicker() {
         <div className="absolute inset-y-0 right-0 w-6 z-10 bg-gradient-to-l from-background to-transparent" />
         <div
           key={activeModel}
-          className="absolute inset-0 flex items-center animate-[model-fly_6s_linear_forwards]"
+          className="absolute inset-0 flex items-center animate-[model-fly_12s_linear_forwards]"
         >
           <span className="inline-flex items-center gap-1.5 whitespace-nowrap">
             <Zap className="h-2.5 w-2.5 text-destructive shrink-0" />
