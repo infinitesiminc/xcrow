@@ -766,11 +766,11 @@ export default function Enterprise() {
         <div className="mx-auto max-w-3xl text-center">
           <motion.div {...fadeUp}>
             <h2 className="font-display text-3xl sm:text-4xl font-semibold text-foreground">
-              Eight models shipped last quarter. Your workforce didn't change.
+              Make every model release your advantage.
             </h2>
             <p className="mt-4 text-muted-foreground text-lg max-w-xl mx-auto">
-              The gap between AI capability and workforce readiness widens every month.
-              We close it — continuously, autonomously, measurably.
+              When AI evolves, your workforce evolves with it — continuously, autonomously, measurably.
+              Turn acceleration into opportunity.
             </p>
             <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3">
               <Button size="lg" className="gap-2 text-base px-8" onClick={() => navigate("/contact")}>
