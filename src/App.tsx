@@ -37,6 +37,13 @@ import Workspaces from "./pages/hr/Workspaces.tsx";
 
 const queryClient = new QueryClient();
 
+function AuthRedirectHome() {
+  const { user, loading } = useAuth();
+  if (loading) return null;
+  if (user) return <Navigate to="/hr/team-progress" replace />;
+  return <><Navbar /><StickyTicker /><Enterprise /><Footer /></>;
+}
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <BrowserRouter>
@@ -45,7 +52,7 @@ const App = () => (
           <Toaster />
           <Sonner />
           <Routes>
-            <Route path="/" element={<><Navbar /><StickyTicker /><Enterprise /><Footer /></>} />
+            <Route path="/" element={<AuthRedirectHome />} />
             <Route path="/analysis" element={<><Navbar /><Analysis /><Footer /></>} />
             <Route path="/team-analysis" element={<><Navbar /><TeamAnalysis /><Footer /></>} />
             <Route path="/auth" element={<><Navbar /><Auth /></>} />
