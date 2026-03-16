@@ -645,15 +645,9 @@ export default function LearningPath() {
                           <CardContent className="p-4">
                             <div className="flex items-start gap-3">
                               <div className="shrink-0 pt-0.5">
-                                {isCompleted ? (
-                                  <span className="w-7 h-7 rounded-full bg-success/10 flex items-center justify-center">
-                                    <CheckCircle2 className="h-4 w-4 text-success" />
-                                  </span>
-                                ) : (
-                                  <span className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold ${isHovered ? "bg-primary text-primary-foreground" : "bg-accent text-foreground"} transition-colors`}>
-                                    {i + 1}
-                                  </span>
-                                )}
+                                <span className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-colors ${isCompleted ? "bg-success/15 text-success ring-1 ring-success/30" : isHovered ? "bg-primary text-primary-foreground" : "bg-accent text-foreground"}`}>
+                                  {i + 1}
+                                </span>
                               </div>
 
                               <div className="flex-1 min-w-0">
