@@ -80,17 +80,29 @@ export default function SimulationBuilder() {
     })();
   }, []);
 
-  /* ── Fetch which jobs are pre-analyzed ── */
+  /* ── Fetch which jobs are pre-analyzed (Anthropic only) ── */
   const refreshAnalyzed = useCallback(async () => {
     if (!companyId) return;
-    const { data } = await supabase
-      .from("job_task_clusters")
-      .select("job_id")
-      .limit(10000);
-    if (data) {
-      setAnalyzedJobIds(new Set(data.map(d => d.job_id)));
+    // Get Anthropic job IDs first
+    const jobIds = jobs.map(j => j.id);
+    if (jobIds.length === 0) return;
+    // Fetch clusters only for these jobs
+    const allClusterJobIds = new Set<string>();
+    const batchSize = 1000;
+    let from = 0;
+    while (true) {
+      const { data } = await supabase
+        .from("job_task_clusters")
+        .select("job_id")
+        .in("job_id", jobIds)
+        .range(from, from + batchSize - 1);
+      if (!data || data.length === 0) break;
+      data.forEach(d => allClusterJobIds.add(d.job_id));
+      if (data.length < batchSize) break;
+      from += batchSize;
     }
-  }, [companyId]);
+    setAnalyzedJobIds(allClusterJobIds);
+  }, [companyId, jobs]);
 
   useEffect(() => { refreshAnalyzed(); }, [refreshAnalyzed]);
 
@@ -131,7 +143,7 @@ export default function SimulationBuilder() {
       const d = j.department || "Other";
       depts.set(d, (depts.get(d) || 0) + 1);
     });
-    return Array.from(depts.entries()).sort((a, b) => b[1] - a[1]).slice(0, 8);
+    return Array.from(depts.entries()).sort((a, b) => b[1] - a[1]);
   }, [jobs]);
 
   const groupedJobs = useMemo(() => {
@@ -168,12 +180,21 @@ export default function SimulationBuilder() {
     setQueueConsecutiveErrors(0);
     setQueueProcessed(0);
 
-    // Get fresh list of pending jobs
-    const { data: clusters } = await supabase
-      .from("job_task_clusters")
-      .select("job_id")
-      .limit(10000);
-    const alreadyDone = new Set((clusters || []).map(c => c.job_id));
+    // Get fresh list of pending jobs (only check Anthropic job clusters)
+    const jobIds = jobs.map(j => j.id);
+    const alreadyDone = new Set<string>();
+    let from = 0;
+    while (true) {
+      const { data: clusters } = await supabase
+        .from("job_task_clusters")
+        .select("job_id")
+        .in("job_id", jobIds)
+        .range(from, from + 999);
+      if (!clusters || clusters.length === 0) break;
+      clusters.forEach(c => alreadyDone.add(c.job_id));
+      if (clusters.length < 1000) break;
+      from += 1000;
+    }
     const pending = jobs.filter(j => !alreadyDone.has(j.id));
 
     let errors = 0;
