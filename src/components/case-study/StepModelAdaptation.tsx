@@ -8,8 +8,7 @@ const ROTATING_MODELS = [
   "Gemini 3 Flash", "DeepSeek R2 Lite", "GPT-5.2", "DeepSeek R2",
 ];
 
-const TIMELINE = [
-  { time: "T+0h", event: "GPT-5 released", icon: Zap, color: "bg-dot-amber/10 text-dot-amber" },
+const TIMELINE_TAIL = [
   { time: "T+2h", event: "Engine detects 34 task clusters affected", icon: Brain, color: "bg-dot-blue/10 text-dot-blue" },
   { time: "T+6h", event: "Risk scores recalibrated across Legal & Finance", icon: RefreshCw, color: "bg-dot-purple/10 text-dot-purple" },
   { time: "T+12h", event: "19 new simulations generated for affected roles", icon: Brain, color: "bg-muted" },
