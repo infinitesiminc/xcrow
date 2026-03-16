@@ -88,12 +88,23 @@ export default function ScoreDistributions() {
     (async () => {
       setLoading(true);
       // Only fetch jobs that actually have task clusters (truly analyzed)
-      const { data: clusterJobIds } = await supabase
-        .from("job_task_clusters")
-        .select("job_id, cluster_name, ai_exposure_score");
+      // Fetch ALL task clusters (default limit is 1000, we need more)
+      let allTaskRows: TaskRow[] = [];
+      let from = 0;
+      const PAGE_SIZE = 1000;
+      while (true) {
+        const { data: batch } = await supabase
+          .from("job_task_clusters")
+          .select("job_id, cluster_name, ai_exposure_score")
+          .range(from, from + PAGE_SIZE - 1);
+        if (!batch || batch.length === 0) break;
+        allTaskRows = allTaskRows.concat(batch as TaskRow[]);
+        if (batch.length < PAGE_SIZE) break;
+        from += PAGE_SIZE;
+      }
 
-      const taskRows = clusterJobIds || [];
-      const analyzedIds = [...new Set(taskRows.map(t => t.job_id))];
+      const taskRows = allTaskRows;
+      const analyzedIds = [...new Set(taskRows.map(t => t.job_id))] as string[];
 
       let analyzedJobs: JobRow[] = [];
       if (analyzedIds.length > 0) {
