@@ -418,6 +418,102 @@ export default function Investors() {
           </motion.div>
         </section>
 
+        {/* ── AI Exposure Data ── */}
+        <section>
+          <SectionHeader
+            badge="Our Data Advantage"
+            title="100M+ job posts mapped to AI exposure"
+            subtitle="We've scored task-level AI exposure across industries and company scales — revealing massive readiness gaps no one else can see."
+          />
+
+          {/* Industry exposure chart */}
+          <motion.div {...fadeUp}>
+            <Card className="border-border/50">
+              <CardContent className="p-5">
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-4">Avg. AI Exposure by Industry</p>
+                <div className="space-y-3">
+                  {[
+                    { industry: "Financial Services", exposure: 72, roles: "18M" },
+                    { industry: "Technology", exposure: 68, roles: "22M" },
+                    { industry: "Professional Services", exposure: 65, roles: "14M" },
+                    { industry: "Healthcare Admin", exposure: 61, roles: "12M" },
+                    { industry: "Media & Marketing", exposure: 58, roles: "9M" },
+                    { industry: "Retail & E-Commerce", exposure: 54, roles: "11M" },
+                    { industry: "Manufacturing", exposure: 41, roles: "8M" },
+                    { industry: "Construction & Trades", exposure: 23, roles: "6M" },
+                  ].map((row) => (
+                    <div key={row.industry} className="flex items-center gap-3">
+                      <span className="text-xs text-foreground w-40 shrink-0 truncate">{row.industry}</span>
+                      <div className="flex-1 h-5 bg-muted/40 rounded-full overflow-hidden relative">
+                        <motion.div
+                          className={`h-full rounded-full ${row.exposure >= 60 ? "bg-destructive/70" : row.exposure >= 40 ? "bg-amber-500/70" : "bg-emerald-500/70"}`}
+                          initial={{ width: 0 }}
+                          whileInView={{ width: `${row.exposure}%` }}
+                          viewport={{ once: true }}
+                          transition={{ duration: 0.8, delay: 0.1 }}
+                        />
+                        <span className="absolute inset-y-0 right-2 flex items-center text-[10px] font-mono text-muted-foreground">{row.exposure}%</span>
+                      </div>
+                      <span className="text-[10px] text-muted-foreground/60 w-10 text-right shrink-0">{row.roles}</span>
+                    </div>
+                  ))}
+                </div>
+                <div className="flex items-center gap-4 mt-4 text-[10px] text-muted-foreground">
+                  <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-destructive/70" /> High (&gt;60%)</span>
+                  <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-amber-500/70" /> Moderate (40–60%)</span>
+                  <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-emerald-500/70" /> Lower (&lt;40%)</span>
+                  <span className="ml-auto">Posts analyzed ↗</span>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+
+          {/* Company scale gap */}
+          <motion.div {...fadeUp} className="mt-4">
+            <Card className="border-border/50">
+              <CardContent className="p-5">
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-4">AI Readiness Gap by Company Scale</p>
+                <div className="grid grid-cols-4 gap-3">
+                  {[
+                    { scale: "Startup\n(1–50)", exposure: 64, readiness: 38, gap: 26 },
+                    { scale: "SMB\n(50–500)", exposure: 61, readiness: 22, gap: 39 },
+                    { scale: "Mid-Market\n(500–5K)", exposure: 58, readiness: 15, gap: 43 },
+                    { scale: "Enterprise\n(5K+)", exposure: 55, readiness: 11, gap: 44 },
+                  ].map((col) => (
+                    <div key={col.scale} className="text-center">
+                      <div className="relative h-40 flex items-end justify-center gap-1 mb-2">
+                        <motion.div
+                          className="w-6 bg-destructive/50 rounded-t"
+                          initial={{ height: 0 }}
+                          whileInView={{ height: `${col.exposure * 1.4}px` }}
+                          viewport={{ once: true }}
+                          transition={{ duration: 0.6 }}
+                        />
+                        <motion.div
+                          className="w-6 bg-primary/50 rounded-t"
+                          initial={{ height: 0 }}
+                          whileInView={{ height: `${col.readiness * 1.4}px` }}
+                          viewport={{ once: true }}
+                          transition={{ duration: 0.6, delay: 0.15 }}
+                        />
+                      </div>
+                      <p className="text-[10px] text-foreground font-medium whitespace-pre-line leading-tight">{col.scale}</p>
+                      <div className="mt-1.5 px-2 py-1 rounded bg-destructive/10">
+                        <p className="text-xs font-bold text-destructive">{col.gap}pt gap</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <div className="flex items-center gap-4 mt-4 text-[10px] text-muted-foreground">
+                  <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-destructive/50" /> AI Exposure</span>
+                  <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-primary/50" /> Workforce Readiness</span>
+                  <span className="ml-auto text-destructive font-medium">Gap widens with company size →</span>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        </section>
+
 
       </div>
     </div>
