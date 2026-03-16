@@ -36,7 +36,7 @@ export default function StepActionCenter() {
       {/* Bottleneck tasks */}
       <div className="rounded-xl border border-border bg-card p-4">
         <div className="flex items-center gap-2 mb-3">
-          <AlertTriangle className="h-3.5 w-3.5 text-dot-amber" />
+          <AlertTriangle className="h-3.5 w-3.5 text-brand-ai" />
           <h4 className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
             Bottleneck Tasks
           </h4>
