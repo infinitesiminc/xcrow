@@ -583,7 +583,7 @@ export default function LearningPath() {
                             <div className="flex-1 min-w-0">
                               <div className="flex items-start justify-between gap-2 mb-1">
                                 <div className="flex items-center gap-1.5">
-                                  <h4 className={`font-semibold text-sm leading-tight ${isCompleted ? "text-success" : "text-foreground"}`}>
+                                  <h4 className={`font-semibold text-base leading-snug ${isCompleted ? "text-success" : "text-foreground"}`}>
                                     {task.cluster_name}
                                   </h4>
                                   {isUpdated && (
