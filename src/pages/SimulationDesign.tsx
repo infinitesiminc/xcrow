@@ -408,7 +408,7 @@ function PillarScoreVisual() {
               />
             </div>
             {p.weak && (
-              <p className="text-[10px] text-dot-amber flex items-center gap-1">
+              <p className="text-[10px] text-brand-ai flex items-center gap-1">
                 <AlertTriangle className="h-3 w-3" /> Below threshold — retry queued
               </p>
             )}
