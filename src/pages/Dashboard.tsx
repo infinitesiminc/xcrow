@@ -328,7 +328,7 @@ const Dashboard = () => {
                         </div>
                         <div>
                           <div className="text-xs font-bold text-foreground">{b.new_skills_percent}%</div>
-                          <div className="text-[9px] text-muted-foreground">New Skills</div>
+                          <div className="text-[9px] text-muted-foreground">Upskill</div>
                         </div>
                       </div>
                     </CardContent>
