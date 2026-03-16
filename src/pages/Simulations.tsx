@@ -54,12 +54,8 @@ interface EnrichedTask {
   description: string | null;
   outcome: string | null;
   skill_names: string[] | null;
-  ai_state?: string;
-  ai_trend?: string;
-  impact_level?: string;
+  ai_exposure_score?: number;
   priority?: string;
-  recommended_template?: string;
-  sim_duration?: number;
 }
 
 interface CompanyInfo {
