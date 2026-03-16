@@ -20,7 +20,7 @@ const MARQUEE_ROWS = [
 const stats = [
   { value: "100M+", label: "Roles analyzed" },
   { value: "<3s", label: "Analysis speed" },
-  { value: "4,200+", label: "Task-level data points" },
+  { value: "1M+", label: "Task-level data points" },
   { value: "98%", label: "Enterprise uptime SLA" },
 ];
 
