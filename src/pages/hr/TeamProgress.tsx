@@ -189,10 +189,10 @@ function ExecutiveBrief({ progress, deptTrends }: { progress: ProgressRow[]; dep
 /* ─── 2. Compact Deployment Funnel ─── */
 function DeploymentFunnel() {
   const steps = [
-    { label: "Imported", value: FUNNEL_STATS.jobsImported, icon: Database },
-    { label: "Analyzed", value: FUNNEL_STATS.jobsAnalyzed, icon: BarChart3 },
-    { label: "Activated", value: FUNNEL_STATS.rolesActivated, icon: Zap },
-    { label: "Started", value: FUNNEL_STATS.employeesStarted, icon: Play },
+    { label: "Imported", value: EMPTY_FUNNEL.jobsImported, icon: Database },
+    { label: "Analyzed", value: EMPTY_FUNNEL.jobsAnalyzed, icon: BarChart3 },
+    { label: "Activated", value: EMPTY_FUNNEL.rolesActivated, icon: Zap },
+    { label: "Started", value: EMPTY_FUNNEL.employeesStarted, icon: Play },
   ];
 
   return (
