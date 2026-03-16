@@ -33,7 +33,7 @@ serve(async (req) => {
     // Check existing clusters
     const { data: existing } = await sb
       .from("job_task_clusters")
-      .select("id, cluster_name, description, outcome, skill_names, sort_order, ai_exposure_score, priority")
+      .select("id, cluster_name, description, outcome, skill_names, sort_order, ai_exposure_score, job_impact_score, priority")
       .eq("job_id", jobId)
       .order("sort_order");
 
@@ -61,14 +61,19 @@ serve(async (req) => {
 
 ${description ? `Job Description:\n${description.slice(0, 3000)}\n\n` : ""}
 
-For each task cluster, assess how much AI is involved today. Return a JSON array of objects with these fields:
+For each task cluster, assess TWO dimensions:
+1. How much AI is involved in this task today
+2. How critical this task is to the overall job's success
+
+Return a JSON array of objects with these fields:
 
 1. "cluster_name": Short task name (3-6 words)
 2. "description": One sentence describing what this task involves
 3. "outcome": What successful completion looks like
 4. "skill_names": Array of 2-4 skills needed for this task
-5. "ai_exposure_score": Integer 0-100 — how much AI is involved in this task today (0 = fully human, 100 = fully AI-driven)
-6. "priority": One of "high", "medium", "low" — how urgently this task needs AI upskilling
+5. "ai_exposure_score": Integer 0-100 — how much AI can do this task today (0 = fully human, 100 = fully AI-driven)
+6. "job_impact_score": Integer 0-100 — how critical this task is to job success (0 = negligible impact, 100 = core to the role)
+7. "priority": One of "high", "medium", "low" — how urgently this task needs AI upskilling
 
 Order tasks from highest AI exposure to lowest.
 
@@ -122,6 +127,7 @@ Respond ONLY with a valid JSON array, no markdown.`;
       skill_names: t.skill_names || null,
       sort_order: i,
       ai_exposure_score: Math.min(Math.max(t.ai_exposure_score ?? 50, 0), 100),
+      job_impact_score: Math.min(Math.max(t.job_impact_score ?? 50, 0), 100),
       priority: t.priority || "medium",
     }));
 
@@ -129,7 +135,6 @@ Respond ONLY with a valid JSON array, no markdown.`;
     if (insertErr) console.error("Insert error:", insertErr);
 
     // Compute job-level AI exposure as weighted average
-    // Priority weights: high = 3, medium = 2, low = 1
     const priorityWeight = (p: string) => p === "high" ? 3 : p === "medium" ? 2 : 1;
     let totalWeight = 0;
     let weightedSum = 0;
@@ -155,6 +160,7 @@ Respond ONLY with a valid JSON array, no markdown.`;
       skill_names: t.skill_names || null,
       sort_order: i,
       ai_exposure_score: Math.min(Math.max(t.ai_exposure_score ?? 50, 0), 100),
+      job_impact_score: Math.min(Math.max(t.job_impact_score ?? 50, 0), 100),
       priority: t.priority || "medium",
     }));
 
