@@ -126,6 +126,7 @@ Generate a JSON response:
    - Start with "**📖 Scenario:**" — present a realistic work scenario for this task (2-3 sentences).
    - Then "**🤔 How would you approach this?**" with exactly 3 MCQ options (A, B, C).
    - One option should involve using AI tools effectively, one should be purely manual, one should be a poor approach.
+   - CRITICAL: Randomly vary which letter (A, B, or C) is the correct answer. Do NOT always make B correct. Aim for roughly equal distribution across A, B, and C.
    ${isExploring ? "Use simple, jargon-free language." : "Use professional language appropriate for someone in the role."}
 
 6. "scenario": { "title": short title incorporating AI angle, "description": 1-sentence description mentioning both the task and AI's role }
