@@ -657,10 +657,10 @@ export default function Investors() {
                     </div>
                   ))}
                 </div>
-                <div className="flex items-center gap-4 mt-4 text-[10px] text-muted-foreground">
-                  <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-destructive/50" /> AI Exposure</span>
-                  <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-primary/50" /> Workforce Readiness</span>
-                  <span className="ml-auto text-destructive font-medium">Gap widens with company size →</span>
+                 <div className="flex items-center gap-4 mt-4 text-[10px] text-muted-foreground">
+                   <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-brand-ai/50" /> AI Exposure</span>
+                   <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-brand-human/50" /> Workforce Readiness</span>
+                   <span className="ml-auto text-brand-ai font-medium">Gap widens with company size →</span>
                 </div>
               </CardContent>
             </Card>
