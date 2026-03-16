@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -463,7 +463,29 @@ function NodeDetail({ node }: { node: typeof loopNodes[0] }) {
    ═══════════════════════════════════════════ */
 export default function Enterprise() {
   const navigate = useNavigate();
-  const [activeNode, setActiveNode] = useState<string | null>(null);
+  const [activeNode, setActiveNode] = useState<string | null>("map");
+  const [isPaused, setIsPaused] = useState(false);
+  const pauseTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Auto-rotate every 2s (synced with 8s circle / 4 nodes)
+  useEffect(() => {
+    if (isPaused) return;
+    const interval = setInterval(() => {
+      setActiveNode((prev) => {
+        const idx = loopNodes.findIndex((n) => n.id === prev);
+        return loopNodes[(idx + 1) % loopNodes.length].id;
+      });
+    }, 2000);
+    return () => clearInterval(interval);
+  }, [isPaused]);
+
+  const handleNodeClick = useCallback((id: string) => {
+    setActiveNode(id);
+    setIsPaused(true);
+    if (pauseTimeout.current) clearTimeout(pauseTimeout.current);
+    pauseTimeout.current = setTimeout(() => setIsPaused(false), 6000);
+  }, []);
+
   const activeNodeData = loopNodes.find((n) => n.id === activeNode) || null;
 
   return (
@@ -602,34 +624,17 @@ export default function Enterprise() {
             transition={{ duration: 0.5, delay: 0.1 }}
             className="text-center text-xs font-medium uppercase tracking-widest text-muted-foreground mb-12"
           >
-            Click a node to explore
+            Auto-rotating · Click any node to pause
           </motion.p>
 
           <div className="grid md:grid-cols-2 gap-8 items-center">
             <motion.div {...fadeUp} transition={{ duration: 0.5, delay: 0.15 }}>
-              <AdaptiveLoopDiagram activeNode={activeNode} setActiveNode={setActiveNode} />
+              <AdaptiveLoopDiagram activeNode={activeNode} setActiveNode={handleNodeClick} />
             </motion.div>
-
             <div className="min-h-[280px] flex items-center">
               <AnimatePresence mode="wait">
-                {activeNodeData ? (
+                {activeNodeData && (
                   <NodeDetail key={activeNodeData.id} node={activeNodeData} />
-                ) : (
-                  <motion.div
-                    key="placeholder"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    className="rounded-xl border border-dashed border-border bg-card/50 p-8 text-center w-full"
-                  >
-                    <TrendingUp className="h-8 w-8 text-muted-foreground/40 mx-auto mb-3" />
-                    <p className="text-sm text-muted-foreground">
-                      Select a stage to see how the engine works
-                    </p>
-                    <p className="text-xs text-muted-foreground/60 mt-1">
-                      Map → Assess → Train → Adapt — then repeat, continuously
-                    </p>
-                  </motion.div>
                 )}
               </AnimatePresence>
             </div>
