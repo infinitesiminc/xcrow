@@ -73,12 +73,40 @@ export default function StepModelAdaptation() {
           </h4>
         </div>
         <div className="space-y-2">
-          {TIMELINE.map((t, i) => (
+          {/* First row: rotating model name */}
+          <motion.div
+            initial={{ opacity: 0, x: -8 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.15 }}
+            className="flex items-center gap-3 rounded-lg border border-dot-amber/30 bg-dot-amber/5 px-3 py-2"
+          >
+            <span className="text-xs font-mono font-bold text-muted-foreground w-12 shrink-0">T+0h</span>
+            <div className="w-7 h-7 rounded-full bg-dot-amber/10 text-dot-amber flex items-center justify-center shrink-0">
+              <Zap className="h-3.5 w-3.5" />
+            </div>
+            <div className="relative h-5 overflow-hidden flex-1">
+              <AnimatePresence mode="wait">
+                <motion.span
+                  key={modelIdx}
+                  initial={{ y: 14, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  exit={{ y: -14, opacity: 0 }}
+                  transition={{ duration: 0.25 }}
+                  className="text-sm font-medium text-foreground absolute inset-0"
+                >
+                  {ROTATING_MODELS[modelIdx]} released
+                </motion.span>
+              </AnimatePresence>
+            </div>
+          </motion.div>
+
+          {/* Remaining timeline steps */}
+          {TIMELINE_TAIL.map((t, i) => (
             <motion.div
               key={t.time}
               initial={{ opacity: 0, x: -8 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.15 + i * 0.1 }}
+              transition={{ delay: 0.25 + i * 0.1 }}
               className="flex items-center gap-3 rounded-lg border border-border/40 px-3 py-2"
             >
               <span className="text-xs font-mono font-bold text-muted-foreground w-12 shrink-0">
