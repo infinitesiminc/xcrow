@@ -87,12 +87,25 @@ export default function ScoreDistributions() {
   useEffect(() => {
     (async () => {
       setLoading(true);
-      const [jobRes, taskRes] = await Promise.all([
-        supabase.from("jobs").select("id, title, department, augmented_percent").not("augmented_percent", "is", null),
-        supabase.from("job_task_clusters").select("cluster_name, ai_exposure_score, job_id"),
-      ]);
-      setJobs(jobRes.data || []);
-      setTasks(taskRes.data || []);
+      // Only fetch jobs that actually have task clusters (truly analyzed)
+      const { data: clusterJobIds } = await supabase
+        .from("job_task_clusters")
+        .select("job_id, cluster_name, ai_exposure_score");
+
+      const taskRows = clusterJobIds || [];
+      const analyzedIds = [...new Set(taskRows.map(t => t.job_id))];
+
+      let analyzedJobs: JobRow[] = [];
+      if (analyzedIds.length > 0) {
+        const { data } = await supabase
+          .from("jobs")
+          .select("id, title, department, augmented_percent")
+          .in("id", analyzedIds);
+        analyzedJobs = data || [];
+      }
+
+      setJobs(analyzedJobs);
+      setTasks(taskRows as TaskRow[]);
       setLoading(false);
     })();
   }, []);
