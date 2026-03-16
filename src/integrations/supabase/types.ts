@@ -829,6 +829,7 @@ export type Database = {
         Args: { _type: string; _user_id: string }
         Returns: Json
       }
+      is_superadmin: { Args: { _user_id: string }; Returns: boolean }
       is_workspace_admin: {
         Args: { _user_id: string; _workspace_id: string }
         Returns: boolean
