@@ -1,10 +1,10 @@
 import { lazy, Suspense } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { AuthProvider } from "@/contexts/AuthContext";
+import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import Navbar from "@/components/Navbar";
 import StickyTicker from "@/components/StickyTicker";
 import Footer from "@/components/Footer";
@@ -37,6 +37,13 @@ import Workspaces from "./pages/hr/Workspaces.tsx";
 
 const queryClient = new QueryClient();
 
+function AuthRedirectHome() {
+  const { user, loading } = useAuth();
+  if (loading) return null;
+  if (user) return <Navigate to="/hr/team-progress" replace />;
+  return <><Navbar /><StickyTicker /><Enterprise /><Footer /></>;
+}
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <BrowserRouter>
@@ -45,7 +52,7 @@ const App = () => (
           <Toaster />
           <Sonner />
           <Routes>
-            <Route path="/" element={<><Navbar /><StickyTicker /><Enterprise /><Footer /></>} />
+            <Route path="/" element={<AuthRedirectHome />} />
             <Route path="/analysis" element={<><Navbar /><Analysis /><Footer /></>} />
             <Route path="/team-analysis" element={<><Navbar /><TeamAnalysis /><Footer /></>} />
             <Route path="/auth" element={<><Navbar /><Auth /></>} />
