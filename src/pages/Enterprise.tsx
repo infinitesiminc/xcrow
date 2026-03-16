@@ -757,7 +757,7 @@ export default function Enterprise() {
           >
             <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground">Case Study</p>
             <h3 className="font-display text-2xl sm:text-3xl font-semibold text-foreground">
-              See how Anthropic keeps 400+ roles in parity with frontier AI
+              See how Anthropic keeps 400+ roles ready for frontier AI
             </h3>
             <p className="text-sm text-muted-foreground max-w-lg mx-auto leading-relaxed">
               Walk through the full platform — from ATS import to continuous adaptation dashboards — in a 6-step guided tour. No sign-up required.
