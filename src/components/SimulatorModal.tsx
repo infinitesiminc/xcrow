@@ -10,8 +10,10 @@ import {
 import {
   compileSession,
   chatTurn,
+  scoreSession,
   type SimMessage,
   type SimSession,
+  type SimScoreResult,
 } from "@/lib/simulator";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -111,7 +113,7 @@ const ExperienceSelector = ({
         </span>
         <div>
           <p className="text-sm font-semibold text-foreground">I'm exploring</p>
-          <p className="text-xs text-muted-foreground mt-0.5">New to this field — teach me the basics and how AI fits in</p>
+          <p className="text-xs text-muted-foreground mt-0.5">New to this field — learn through guided scenarios with multiple choice</p>
         </div>
       </motion.button>
 
@@ -127,7 +129,7 @@ const ExperienceSelector = ({
         </span>
         <div>
           <p className="text-sm font-semibold text-foreground">I do this job</p>
-          <p className="text-xs text-muted-foreground mt-0.5">I know the role — show me how AI is changing it</p>
+          <p className="text-xs text-muted-foreground mt-0.5">Professional level — open conversation with AI-powered evaluation</p>
         </div>
       </motion.button>
     </div>
@@ -137,9 +139,11 @@ const ExperienceSelector = ({
 /* ── Briefing Screen ── */
 const BriefingScreen = ({
   session,
+  experienceLevel,
   onStart,
 }: {
   session: SimSession;
+  experienceLevel: ExperienceLevel;
   onStart: () => void;
 }) => (
   <motion.div
@@ -161,6 +165,15 @@ const BriefingScreen = ({
       </motion.div>
       <h3 className="text-xl font-serif font-bold text-foreground">{session.scenario.title}</h3>
       <p className="text-sm text-muted-foreground leading-relaxed max-w-md mx-auto">{session.scenario.description}</p>
+      <div className="flex items-center justify-center gap-2 mt-2">
+        <span className={`text-[10px] px-2.5 py-1 rounded-full font-medium ${
+          experienceLevel === "exploring" 
+            ? "bg-accent text-muted-foreground" 
+            : "bg-primary/10 text-primary"
+        }`}>
+          {experienceLevel === "exploring" ? "📝 Multiple Choice" : "💬 Open Conversation"}
+        </span>
+      </div>
     </div>
 
     <motion.div
@@ -259,6 +272,36 @@ const TipsToggle = ({ tips }: { tips: string[] }) => {
   );
 };
 
+/* ── Score Display ── */
+const ScoreDisplay = ({ scoreResult }: { scoreResult: SimScoreResult }) => (
+  <motion.div
+    initial={{ opacity: 0, y: 8 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ delay: 0.2 }}
+    className="w-full space-y-4 mt-4"
+  >
+    <div className="grid grid-cols-2 gap-3">
+      {scoreResult.categories.map((cat, i) => (
+        <motion.div
+          key={cat.name}
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.3 + i * 0.08 }}
+          className="rounded-xl border border-border/30 p-3 text-center"
+        >
+          <div className={`text-xl font-bold ${
+            cat.score >= 70 ? "text-success" : cat.score >= 40 ? "text-warning" : "text-destructive"
+          }`}>
+            {cat.score}%
+          </div>
+          <div className="text-[10px] text-muted-foreground mt-0.5 leading-tight">{cat.name}</div>
+        </motion.div>
+      ))}
+    </div>
+    <p className="text-sm text-muted-foreground leading-relaxed text-center">{scoreResult.summary}</p>
+  </motion.div>
+);
+
 /* ── Main Modal ── */
 interface AnsweredQuestion {
   options: { letter: string; text: string }[];
@@ -277,11 +320,13 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
   const [error, setError] = useState<string | null>(null);
   const [answeredQuestions, setAnsweredQuestions] = useState<AnsweredQuestion[]>([]);
   const [experienceLevel, setExperienceLevel] = useState<ExperienceLevel>("exploring");
+  const [scoreResult, setScoreResult] = useState<SimScoreResult | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const { user } = useAuth();
   const { toast } = useToast();
 
   const taskMeta = { currentState: taskState, trend: taskTrend, impactLevel: taskImpactLevel };
+  const isPracticing = experienceLevel === "practicing";
 
   const scrollToBottom = useCallback(() => {
     setTimeout(() => scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" }), 80);
@@ -294,6 +339,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
     setRoundCount(1);
     setAnsweredQuestions([]);
     setExperienceLevel(level);
+    setScoreResult(null);
     try {
       const compiled = await compileSession(taskName, jobTitle, company, 3, level, taskMeta);
       setSession(compiled);
@@ -313,6 +359,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
       setError(null);
       setRoundCount(1);
       setAnsweredQuestions([]);
+      setScoreResult(null);
     }
   }, [open]);
 
@@ -348,8 +395,24 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
 
   const handleFinish = async () => {
     setPhase("completing");
-    const totalQ = answeredQuestions.length;
-    const correctQ = answeredQuestions.filter(q => q.selectedLetter === q.correctLetter).length;
+    
+    let scores: SimScoreResult | null = null;
+    
+    // For practicing mode, get AI-evaluated scores
+    if (isPracticing && messages.length > 2) {
+      try {
+        scores = await scoreSession(messages, session?.scenario || null, experienceLevel);
+        setScoreResult(scores);
+      } catch (err) {
+        console.error("Failed to get scores:", err);
+      }
+    }
+    
+    const totalQ = isPracticing ? roundCount : answeredQuestions.length;
+    const correctQ = isPracticing 
+      ? (scores ? Math.round((scores.overall / 100) * roundCount) : 0)
+      : answeredQuestions.filter(q => q.selectedLetter === q.correctLetter).length;
+    
     if (user) {
       try {
         await supabase.from("completed_simulations").insert({
@@ -361,6 +424,10 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
           correct_answers: correctQ,
           total_questions: totalQ,
           experience_level: experienceLevel,
+          tool_awareness_score: scores?.categories.find(c => c.name === "AI Tool Awareness")?.score ?? null,
+          human_value_add_score: scores?.categories.find(c => c.name === "Human Value-Add")?.score ?? null,
+          adaptive_thinking_score: scores?.categories.find(c => c.name === "Adaptive Thinking")?.score ?? null,
+          domain_judgment_score: scores?.categories.find(c => c.name === "Domain Judgment")?.score ?? null,
         } as any);
         onCompleted?.();
       } catch (err) {
@@ -388,13 +455,19 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
           </div>
           <div className="flex items-center gap-3 shrink-0">
             {phase === "chat" && (
-              <motion.span
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                className="text-xs text-muted-foreground bg-accent/50 px-3 py-1 rounded-full"
-              >
-                Round {roundCount}
-              </motion.span>
+              <>
+                <motion.span
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className={`text-xs px-3 py-1 rounded-full ${
+                    isPracticing 
+                      ? "text-primary bg-primary/10" 
+                      : "text-muted-foreground bg-accent/50"
+                  }`}
+                >
+                  {isPracticing ? "💬 Open Chat" : "📝 MCQ"} · Round {roundCount}
+                </motion.span>
+              </>
             )}
             <button
               onClick={onClose}
@@ -436,7 +509,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
             )}
 
             {phase === "briefing" && session && (
-              <BriefingScreen session={session} onStart={beginChat} />
+              <BriefingScreen session={session} experienceLevel={experienceLevel} onStart={beginChat} />
             )}
 
             {error && phase !== "loading" && phase !== "briefing" && phase !== "experience-select" && (
@@ -455,7 +528,8 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
               <div className="max-w-2xl mx-auto space-y-5">
                 {phase === "chat" && <TipsToggle tips={session?.tips || []} />}
                 {messages.map((msg, i) => {
-                  if (msg.role === "user" && /^[A-C]$/.test(msg.content.trim())) return null;
+                  // Hide single-letter MCQ answers from chat (exploring mode only)
+                  if (!isPracticing && msg.role === "user" && /^[A-C]$/.test(msg.content.trim())) return null;
 
                   const isUser = msg.role === "user";
 
@@ -477,7 +551,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                         >
                           <div className="prose prose-sm dark:prose-invert max-w-none [&>p]:m-0 [&>p]:mb-1 [&>ul]:mt-2 [&>ul]:mb-0">
                             <ReactMarkdown>{
-                              !isUser
+                              !isUser && !isPracticing
                                 ? msg.content.replace(/^[A-C][).]\s*.+$/gm, "").trim()
                                 : msg.content
                             }</ReactMarkdown>
@@ -485,8 +559,8 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                         </div>
                       </div>
 
-                      {/* Answered MCQ inline */}
-                      {!isUser && (() => {
+                      {/* Answered MCQ inline — exploring mode only */}
+                      {!isPracticing && !isUser && (() => {
                         const aq = answeredQuestions.find(q => q.messageIndex === i);
                         if (!aq) return null;
                         return (
@@ -520,8 +594,8 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                   );
                 })}
 
-                {/* Unanswered MCQ options — inline in scroll area */}
-                {phase === "chat" && !sending && (() => {
+                {/* Unanswered MCQ options — exploring mode only */}
+                {!isPracticing && phase === "chat" && !sending && (() => {
                   const lastAi = [...messages].reverse().find(m => m.role === "assistant");
                   if (!lastAi) return null;
                   const lastAiIndex = messages.lastIndexOf(lastAi);
@@ -667,7 +741,9 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                 className="flex flex-col items-center justify-center py-20 gap-4"
               >
                 <Loader2 className="h-6 w-6 text-muted-foreground/40 animate-spin" />
-                <p className="text-sm text-muted-foreground">Saving your progress…</p>
+                <p className="text-sm text-muted-foreground">
+                  {isPracticing ? "Evaluating your responses…" : "Saving your progress…"}
+                </p>
               </motion.div>
             )}
 
@@ -677,7 +753,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                 initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, ease: "easeOut" }}
-                className="flex flex-col items-center py-16 gap-6 max-w-sm mx-auto text-center"
+                className="flex flex-col items-center py-12 gap-6 max-w-sm mx-auto text-center"
               >
                 <motion.div
                   initial={{ scale: 0.5, opacity: 0 }}
@@ -692,7 +768,26 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                   <p className="text-sm text-muted-foreground mt-2 leading-relaxed">
                     You completed {roundCount} round{roundCount !== 1 ? "s" : ""} on "{taskName}"
                   </p>
-                  {answeredQuestions.length > 0 && (
+                  
+                  {/* Practicing mode: show AI-evaluated scores */}
+                  {isPracticing && scoreResult && (
+                    <div className="mt-4">
+                      <div className="flex items-center justify-center mb-3">
+                        <div className="text-center">
+                          <div className={`text-3xl font-bold ${
+                            scoreResult.overall >= 70 ? "text-success" : scoreResult.overall >= 40 ? "text-warning" : "text-destructive"
+                          }`}>
+                            {scoreResult.overall}%
+                          </div>
+                          <div className="text-[10px] text-muted-foreground">Overall Score</div>
+                        </div>
+                      </div>
+                      <ScoreDisplay scoreResult={scoreResult} />
+                    </div>
+                  )}
+                  
+                  {/* Exploring mode: show MCQ score */}
+                  {!isPracticing && answeredQuestions.length > 0 && (
                     <div className="flex items-center justify-center gap-4 mt-4">
                       <div className="text-center">
                         <div className="text-2xl font-bold text-foreground">
@@ -710,6 +805,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                       </div>
                     </div>
                   )}
+                  
                   {!user && (
                     <p className="text-xs text-muted-foreground mt-3">
                       <a href="/auth" className="text-primary hover:underline">Sign in</a> to save your progress
@@ -740,8 +836,8 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
-                placeholder="Type your answer…"
-                rows={1}
+                placeholder={isPracticing ? "Describe your approach…" : "Type your answer…"}
+                rows={isPracticing ? 2 : 1}
                 className="flex-1 resize-none rounded-xl border border-border/40 bg-accent/10 px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-[15px] text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-ring/30 focus:border-border min-h-[40px] sm:min-h-[44px] max-h-[120px] transition-all duration-200"
               />
               <div className="flex gap-2 shrink-0">
