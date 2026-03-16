@@ -382,6 +382,116 @@ export default function Investors() {
             <StatCard value="$60B+" label="Corporate L&D" icon={Target} />
           </div>
 
+          {/* ── Competitive Landscape (Quadrant Chart) ── */}
+          <motion.div {...fadeUp} className="mb-6">
+            <SectionHeader
+              badge="Competitive Landscape"
+              title="Uniquely positioned at the intersection"
+              subtitle="No incumbent combines real-time AI exposure analysis with adaptive simulation-based training."
+            />
+            <Card className="border-border/50">
+              <CardContent className="p-5">
+                {/* Quantified 2-axis chart */}
+                <div className="relative w-full aspect-square max-w-md mx-auto ml-8 mb-8">
+                  {/* White space highlight — upper-right quadrant */}
+                  <div className="absolute rounded-lg bg-brand-human/5 border border-brand-human/10"
+                    style={{ left: "50%", bottom: "50%", width: "50%", height: "50%" }} />
+
+                  {/* Gridlines */}
+                  {[0, 2, 4, 6, 8, 10].map((tick) => {
+                    const pct = `${tick * 10}%`;
+                    return (
+                      <>
+                        {/* Vertical gridline */}
+                        <div className="absolute top-0 bottom-0 border-l border-dashed border-border/20" style={{ left: pct }} />
+                        {/* Horizontal gridline */}
+                        <div className="absolute left-0 right-0 border-t border-dashed border-border/20" style={{ bottom: pct }} />
+                      </>
+                    );
+                  })}
+
+                  {/* Axes */}
+                  <div className="absolute bottom-0 left-0 right-0 h-px bg-border" />
+                  <div className="absolute top-0 bottom-0 left-0 w-px bg-border" />
+
+                  {/* X-axis tick labels */}
+                  {[0, 2, 4, 6, 8, 10].map((tick) => (
+                    <span key={`x-${tick}`} className="absolute text-[9px] text-muted-foreground/60 font-mono"
+                      style={{ left: `${tick * 10}%`, bottom: "-18px", transform: "translateX(-50%)" }}>
+                      {tick}
+                    </span>
+                  ))}
+                  {/* Y-axis tick labels */}
+                  {[0, 2, 4, 6, 8, 10].map((tick) => (
+                    <span key={`y-${tick}`} className="absolute text-[9px] text-muted-foreground/60 font-mono"
+                      style={{ left: "-18px", bottom: `${tick * 10}%`, transform: "translateY(50%)" }}>
+                      {tick}
+                    </span>
+                  ))}
+
+                  {/* Axis labels */}
+                  <span className="absolute -bottom-8 left-1/2 -translate-x-1/2 text-[10px] text-muted-foreground font-medium uppercase tracking-wider">AI Exposure Intelligence →</span>
+                  <span className="absolute -left-8 top-1/2 -translate-y-1/2 -rotate-90 text-[10px] text-muted-foreground font-medium uppercase tracking-wider whitespace-nowrap">Adaptive Upskilling →</span>
+
+                  {/* Quadrant labels */}
+                  <span className="absolute top-3 left-3 text-[9px] text-muted-foreground/40 uppercase leading-tight">Training Without<br />Intelligence</span>
+                  <span className="absolute top-3 right-3 text-[9px] text-brand-human/50 uppercase text-right font-semibold leading-tight">Adaptive AI<br />Readiness</span>
+                  <span className="absolute bottom-3 left-3 text-[9px] text-muted-foreground/40 uppercase leading-tight">Blind<br />Spot</span>
+                  <span className="absolute bottom-3 right-3 text-[9px] text-muted-foreground/40 uppercase text-right leading-tight">Analysis<br />Without Action</span>
+
+                  {/* Competitors plotted on 0–10 scale */}
+                  {[
+                    { name: "LinkedIn Learning", x: 1.5, y: 5.5, score: "(1.5, 5.5)" },
+                    { name: "Coursera", x: 1, y: 5, score: "(1, 5)" },
+                    { name: "McKinsey", x: 6, y: 2, score: "(6, 2)" },
+                    { name: "Deloitte", x: 5.5, y: 1.5, score: "(5.5, 1.5)" },
+                    { name: "Eightfold", x: 5, y: 3, score: "(5, 3)" },
+                    { name: "Gloat", x: 4.5, y: 3.5, score: "(4.5, 3.5)" },
+                    { name: "Workday", x: 3, y: 2.5, score: "(3, 2.5)" },
+                  ].map((c) => (
+                    <div
+                      key={c.name}
+                      className="absolute flex flex-col items-center"
+                      style={{ left: `${c.x * 10}%`, bottom: `${c.y * 10}%`, transform: "translate(-50%, 50%)" }}
+                    >
+                      <span className="text-[10px] font-medium mb-1 whitespace-nowrap text-muted-foreground">
+                        {c.name}
+                      </span>
+                      <div className="h-3 w-3 rounded-full bg-brand-ai/40" />
+                      <span className="text-[8px] text-muted-foreground/50 font-mono mt-0.5">{c.score}</span>
+                    </div>
+                  ))}
+
+                  {/* Infinite Sim — leader position */}
+                  <div
+                    className="absolute flex flex-col items-center"
+                    style={{ left: "95%", bottom: "95%", transform: "translate(-50%, 50%)" }}
+                  >
+                    <span className="text-xs font-bold mb-1 whitespace-nowrap text-brand-human">
+                      Infinite Sim
+                    </span>
+                    <div className="h-4 w-4 rounded-full bg-brand-human ring-4 ring-brand-human/20 shadow-lg shadow-brand-human/30" />
+                    <span className="text-[8px] text-brand-human/70 font-mono mt-0.5">(9.5, 9.5)</span>
+                  </div>
+                </div>
+
+                {/* Legend */}
+                <div className="mt-8 grid sm:grid-cols-3 gap-3">
+                  {[
+                    { name: "Consultancies (McKinsey, Deloitte)", gap: "Deep analysis but manual, $500K+ per engagement, no ongoing training" },
+                    { name: "L&D Platforms (LinkedIn, Coursera)", gap: "Scalable training but generic content, zero AI exposure insight" },
+                    { name: "HR Tech (Eightfold, Gloat, Workday)", gap: "Skills taxonomies but no task-level AI risk scoring or simulations" },
+                  ].map((comp) => (
+                    <div key={comp.name} className="p-3 rounded-lg bg-muted/30">
+                      <p className="text-xs font-medium text-foreground mb-1">{comp.name}</p>
+                      <p className="text-[10px] text-muted-foreground">{comp.gap}</p>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+
           {/* Market gap breakdown */}
           <motion.div {...fadeUp}>
             <Card className="border-border/50">
