@@ -53,6 +53,12 @@ interface CompletedSim {
   correct_answers: number;
   total_questions: number;
   job_title: string;
+  rounds_completed: number;
+  completed_at: string;
+  tool_awareness_score: number | null;
+  human_value_add_score: number | null;
+  adaptive_thinking_score: number | null;
+  domain_judgment_score: number | null;
 }
 
 interface CustomSim {
