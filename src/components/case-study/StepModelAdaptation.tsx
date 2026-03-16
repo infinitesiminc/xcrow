@@ -30,6 +30,14 @@ const IMPACT_SUMMARY = [
 ];
 
 export default function StepModelAdaptation() {
+  const [modelIdx, setModelIdx] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setModelIdx((prev) => (prev + 1) % ROTATING_MODELS.length);
+    }, 1800);
+    return () => clearInterval(interval);
+  }, []);
   return (
     <div className="space-y-4">
       <p className="text-sm text-muted-foreground leading-relaxed">
