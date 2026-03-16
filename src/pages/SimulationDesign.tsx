@@ -206,7 +206,7 @@ function StatusQuoSection() {
               className={`rounded-xl border p-6 space-y-4 ${
                 s.failed
                   ? "border-border bg-card"
-                  : "border-dot-teal/30 bg-dot-teal/5"
+                  : "border-brand-human/30 bg-brand-human/5"
               }`}
             >
               <div className="flex items-center justify-between">
