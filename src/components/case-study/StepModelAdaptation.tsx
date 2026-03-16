@@ -125,7 +125,7 @@ export default function StepModelAdaptation() {
         <RefreshCw className="h-4 w-4 text-dot-teal mt-0.5 shrink-0" />
         <div className="space-y-1">
           <p className="text-sm font-medium text-foreground">
-            Continuous parity — no manual intervention
+            Always adapting — no manual intervention
           </p>
           <p className="text-[12px] text-muted-foreground leading-relaxed">
             Every employee whose tasks shifted above the AI exposure threshold was automatically

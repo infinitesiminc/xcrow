@@ -409,8 +409,8 @@ function AdaptiveLoopDiagram({ activeNode, setActiveNode }: {
 
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
         <div className="text-center">
-          <p className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground">Continuous</p>
-          <p className="text-lg font-display font-semibold text-foreground -mt-0.5">Parity</p>
+          <p className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground">Always</p>
+          <p className="text-lg font-display font-semibold text-foreground -mt-0.5">Adapting</p>
         </div>
       </div>
 
@@ -622,12 +622,12 @@ export default function Enterprise() {
         </div>
       </section>
 
-      {/* ── The Continuous Parity Engine (Loop) ── */}
+      {/* ── Always Adapting Engine (Loop) ── */}
       <section className="px-4 py-20 bg-muted/20 border-y border-border">
         <div className="mx-auto max-w-5xl">
           <motion.div {...fadeUp} className="text-center mb-4">
             <h2 className="font-display text-3xl sm:text-4xl font-semibold text-foreground">
-              Continuous parity with AI
+              Always adapting to AI
             </h2>
             <p className="mt-3 text-muted-foreground max-w-xl mx-auto">
               Not a project. Not a quarterly review. A living system that adapts your
@@ -757,7 +757,7 @@ export default function Enterprise() {
           >
             <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground">Case Study</p>
             <h3 className="font-display text-2xl sm:text-3xl font-semibold text-foreground">
-              See how Anthropic keeps 400+ roles in parity with frontier AI
+              See how Anthropic keeps 400+ roles ready for frontier AI
             </h3>
             <p className="text-sm text-muted-foreground max-w-lg mx-auto leading-relaxed">
               Walk through the full platform — from ATS import to continuous adaptation dashboards — in a 6-step guided tour. No sign-up required.
