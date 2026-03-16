@@ -113,7 +113,7 @@ export default function Investors() {
 
           {/* Loop flow visual */}
           <motion.div {...fadeUp} className="mb-8">
-            <Card className="border-brand-human/20 bg-gradient-to-br from-brand-ai/5 via-background to-brand-human/5">
+            <Card className="border-brand-ai/20 bg-gradient-to-br from-brand-ai/5 via-background to-brand-ai/5">
               <CardContent className="p-6">
                 <div className="flex items-center justify-center gap-2 sm:gap-4 flex-wrap">
                   {[
@@ -124,8 +124,8 @@ export default function Investors() {
                   ].map((step, i) => (
                     <div key={step.label} className="flex items-center gap-2 sm:gap-4">
                       <div className="flex flex-col items-center text-center">
-                        <div className="w-12 h-12 rounded-xl bg-brand-human/10 flex items-center justify-center mb-1.5">
-                          <step.icon className="h-5 w-5 text-brand-human" />
+                        <div className="w-12 h-12 rounded-xl bg-brand-ai/10 flex items-center justify-center mb-1.5">
+                          <step.icon className="h-5 w-5 text-brand-ai" />
                         </div>
                         <p className="text-sm font-semibold text-foreground">{step.label}</p>
                         <p className="text-[10px] text-muted-foreground">{step.sub}</p>
@@ -193,22 +193,22 @@ export default function Investors() {
                   <div className="grid sm:grid-cols-2">
                     <div className="p-5 sm:p-6 flex flex-col justify-center">
                       <div className="flex items-center gap-2 mb-2">
-                        <div className="w-8 h-8 rounded-lg bg-brand-human/10 flex items-center justify-center">
-                          <Target className="h-4 w-4 text-brand-human" />
+                        <div className="w-8 h-8 rounded-lg bg-brand-ai/10 flex items-center justify-center">
+                          <Target className="h-4 w-4 text-brand-ai" />
                         </div>
                         <h3 className="text-sm font-bold text-foreground">Assess · Adaptive Simulations</h3>
                       </div>
                       <p className="text-xs text-muted-foreground mb-3">Calibrated simulations measure each employee across 4 readiness pillars. Real tested capability, not self-reported surveys.</p>
-                      <Badge variant="outline" className="text-[10px] border-brand-human/20 text-brand-human w-fit">4-pillar scoring model</Badge>
+                      <Badge variant="outline" className="text-[10px] border-brand-ai/20 text-brand-ai w-fit">4-pillar scoring model</Badge>
                     </div>
                     <div className="bg-muted/20 border-l border-border/50 p-4 sm:p-5">
                       <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-3 font-medium">Readiness Pillars</p>
                       <div className="grid grid-cols-2 gap-2">
                         {[
-                          { pillar: "Tool Awareness", score: 82, color: "hsl(var(--brand-human) / 0.7)" },
-                          { pillar: "Domain Judgment", score: 71, color: "hsl(var(--brand-mid) / 0.7)" },
-                          { pillar: "Adaptive Thinking", score: 64, color: "hsl(var(--brand-human) / 0.5)" },
-                          { pillar: "Human Value-Add", score: 88, color: "hsl(var(--brand-human) / 0.8)" },
+                          { pillar: "Tool Awareness", score: 82, color: "hsl(var(--brand-ai) / 0.7)" },
+                          { pillar: "Domain Judgment", score: 71, color: "hsl(var(--brand-ai) / 0.5)" },
+                          { pillar: "Adaptive Thinking", score: 64, color: "hsl(var(--brand-ai) / 0.4)" },
+                          { pillar: "Human Value-Add", score: 88, color: "hsl(var(--brand-ai) / 0.8)" },
                         ].map((p) => (
                           <div key={p.pillar} className="rounded-lg border border-border/30 p-2.5 bg-background/50">
                             <div className="flex items-center justify-between mb-1.5">
@@ -241,13 +241,13 @@ export default function Investors() {
                   <div className="grid sm:grid-cols-2">
                     <div className="p-5 sm:p-6 flex flex-col justify-center">
                       <div className="flex items-center gap-2 mb-2">
-                        <div className="w-8 h-8 rounded-lg bg-brand-human/10 flex items-center justify-center">
-                          <Brain className="h-4 w-4 text-brand-human" />
+                        <div className="w-8 h-8 rounded-lg bg-brand-ai/10 flex items-center justify-center">
+                          <Brain className="h-4 w-4 text-brand-ai" />
                         </div>
                         <h3 className="text-sm font-bold text-foreground">Train · Auto-Generated Practice</h3>
                       </div>
                       <p className="text-xs text-muted-foreground mb-3">Targeted practice sessions auto-generated from each employee's weak points. No manual L&D design — the system trains while you focus on strategy.</p>
-                      <Badge variant="outline" className="text-[10px] border-brand-human/20 text-brand-human w-fit">Zero L&D overhead</Badge>
+                      <Badge variant="outline" className="text-[10px] border-brand-ai/20 text-brand-ai w-fit">Zero L&D overhead</Badge>
                     </div>
                     <div className="bg-muted/20 border-l border-border/50 p-4 sm:p-5">
                       <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-3 font-medium">Adaptive Queue</p>
@@ -258,12 +258,12 @@ export default function Investors() {
                           { task: "Automated Compliance Check", weak: "Domain Judgment", score: 61, status: "Queued" },
                         ].map((s, i) => (
                           <div key={s.task} className="flex items-center gap-2 rounded-lg border border-border/30 bg-background/50 p-2">
-                            <div className={`w-1.5 h-8 rounded-full shrink-0 ${i === 0 ? "bg-brand-human" : "bg-muted-foreground/20"}`} />
+                            <div className={`w-1.5 h-8 rounded-full shrink-0 ${i === 0 ? "bg-brand-ai" : "bg-muted-foreground/20"}`} />
                             <div className="flex-1 min-w-0">
                               <p className="text-[10px] font-medium text-foreground truncate">{s.task}</p>
                               <p className="text-[9px] text-muted-foreground">Weak: {s.weak} ({s.score}%)</p>
                             </div>
-                            <span className={`text-[9px] px-1.5 py-0.5 rounded shrink-0 ${i === 0 ? "bg-brand-human/10 text-brand-human" : "bg-muted text-muted-foreground"}`}>{s.status}</span>
+                            <span className={`text-[9px] px-1.5 py-0.5 rounded shrink-0 ${i === 0 ? "bg-brand-ai/10 text-brand-ai" : "bg-muted text-muted-foreground"}`}>{s.status}</span>
                           </div>
                         ))}
                       </div>
@@ -280,13 +280,13 @@ export default function Investors() {
                   <div className="grid sm:grid-cols-2">
                     <div className="p-5 sm:p-6 flex flex-col justify-center">
                       <div className="flex items-center gap-2 mb-2">
-                        <div className="w-8 h-8 rounded-lg bg-brand-mid/10 flex items-center justify-center">
-                          <Zap className="h-4 w-4 text-brand-mid" />
+                        <div className="w-8 h-8 rounded-lg bg-brand-ai/10 flex items-center justify-center">
+                          <Zap className="h-4 w-4 text-brand-ai" />
                         </div>
                         <h3 className="text-sm font-bold text-foreground">Adapt · Model-Aware Re-Calibration</h3>
                       </div>
                       <p className="text-xs text-muted-foreground mb-3">When new frontier models drop, exposure scores automatically re-calibrate and the loop accelerates. Your workforce evolves as fast as AI does.</p>
-                      <Badge variant="outline" className="text-[10px] border-brand-mid/20 text-brand-mid w-fit">Continuous, not quarterly</Badge>
+                      <Badge variant="outline" className="text-[10px] border-brand-ai/20 text-brand-ai w-fit">Continuous, not quarterly</Badge>
                     </div>
                     <div className="bg-muted/20 border-l border-border/50 p-4 sm:p-5">
                       <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-3 font-medium">Auto Re-Calibration Timeline</p>
@@ -413,7 +413,7 @@ export default function Investors() {
                     initial={{ opacity: 0, scale: 0 }}
                     whileInView={{ opacity: 1, scale: 1 }}
                     transition={{ duration: 0.4, delay: 0.65 }}
-                    className="absolute z-10 w-[80px] h-[80px] sm:w-[100px] sm:h-[100px] rounded-full bg-gradient-to-br from-brand-ai/20 via-brand-mid/25 to-brand-human/20 border-2 border-foreground/20 flex flex-col items-center justify-center backdrop-blur-sm shadow-lg shadow-brand-mid/20"
+                    className="absolute z-10 w-[80px] h-[80px] sm:w-[100px] sm:h-[100px] rounded-full bg-gradient-to-br from-brand-ai/20 via-brand-ai/15 to-brand-ai/10 border-2 border-brand-ai/30 flex flex-col items-center justify-center backdrop-blur-sm shadow-lg shadow-brand-ai/20"
                   >
                     <span className="text-[9px] sm:text-[10px] font-bold text-foreground leading-tight text-center">Infinite<br/>Sim</span>
                     <span className="text-[7px] sm:text-[8px] text-muted-foreground mt-0.5">$340B+</span>
@@ -442,7 +442,7 @@ export default function Investors() {
                 {/* Quantified 2-axis chart */}
                 <div className="relative w-full aspect-square max-w-md mx-auto ml-8 mb-8">
                   {/* White space highlight — upper-right quadrant */}
-                  <div className="absolute rounded-lg bg-brand-human/5 border border-brand-human/10"
+                  <div className="absolute rounded-lg bg-brand-ai/5 border border-brand-ai/10"
                     style={{ left: "50%", bottom: "50%", width: "50%", height: "50%" }} />
 
                   {/* Gridlines */}
@@ -483,7 +483,7 @@ export default function Investors() {
 
                   {/* Quadrant labels */}
                   <span className="absolute top-3 left-3 text-[9px] text-muted-foreground/40 uppercase leading-tight">Training Without<br />Intelligence</span>
-                  <span className="absolute top-3 right-3 text-[9px] text-brand-human/50 uppercase text-right font-semibold leading-tight">Adaptive AI<br />Readiness</span>
+                  <span className="absolute top-3 right-3 text-[9px] text-brand-ai/50 uppercase text-right font-semibold leading-tight">Adaptive AI<br />Readiness</span>
                   <span className="absolute bottom-3 left-3 text-[9px] text-muted-foreground/40 uppercase leading-tight">Blind<br />Spot</span>
                   <span className="absolute bottom-3 right-3 text-[9px] text-muted-foreground/40 uppercase text-right leading-tight">Analysis<br />Without Action</span>
 
@@ -505,7 +505,7 @@ export default function Investors() {
                       <span className="text-[10px] font-medium mb-1 whitespace-nowrap text-muted-foreground">
                         {c.name}
                       </span>
-                      <div className="h-3 w-3 rounded-full bg-brand-ai/40" />
+                      <div className="h-3 w-3 rounded-full bg-brand-human/40" />
                       <span className="text-[8px] text-muted-foreground/50 font-mono mt-0.5">{c.score}</span>
                     </div>
                   ))}
@@ -515,11 +515,11 @@ export default function Investors() {
                     className="absolute flex flex-col items-center"
                     style={{ left: "95%", bottom: "95%", transform: "translate(-50%, 50%)" }}
                   >
-                    <span className="text-xs font-bold mb-1 whitespace-nowrap text-brand-human">
+                    <span className="text-xs font-bold mb-1 whitespace-nowrap text-brand-ai">
                       Infinite Sim
                     </span>
-                    <div className="h-4 w-4 rounded-full bg-brand-human ring-4 ring-brand-human/20 shadow-lg shadow-brand-human/30" />
-                    <span className="text-[8px] text-brand-human/70 font-mono mt-0.5">(9.5, 9.5)</span>
+                    <div className="h-4 w-4 rounded-full bg-brand-ai ring-4 ring-brand-ai/20 shadow-lg shadow-brand-ai/30" />
+                    <span className="text-[8px] text-brand-ai/70 font-mono mt-0.5">(9.5, 9.5)</span>
                   </div>
                 </div>
 
@@ -569,7 +569,7 @@ export default function Investors() {
                       gap: "Manual, expensive ($500K+/engagement), one-time snapshots that go stale in weeks",
                       incumbentCoverage: 45,
                       missingCoverage: 20,
-                      color: "brand-ai",
+                      color: "brand-human",
                       capabilities: [
                         { name: "Strategic AI assessment", has: true },
                         { name: "Executive advisory", has: true },
@@ -584,7 +584,7 @@ export default function Investors() {
                       gap: "Generic course catalogs, no task-level personalization or exposure scoring",
                       incumbentCoverage: 60,
                       missingCoverage: 10,
-                      color: "brand-mid",
+                      color: "brand-human",
                       capabilities: [
                         { name: "Course libraries", has: true },
                         { name: "Completion tracking", has: true },
@@ -621,7 +621,7 @@ export default function Investors() {
                             initial={{ width: 0 }}
                             whileInView={{ width: `${100 - seg.incumbentCoverage}%` }}
                             transition={{ duration: 0.7, delay: 0.5 }}
-                            className="h-full bg-brand-human/60 relative"
+                            className="h-full bg-brand-ai/60 relative"
                           >
                             <span className="absolute inset-0 flex items-center justify-center text-[8px] font-bold text-background">
                               Infinite Sim
@@ -637,7 +637,7 @@ export default function Investors() {
                             {cap.has ? (
                               <CheckCircle2 className="h-3 w-3 text-muted-foreground/50 shrink-0" />
                             ) : (
-                              <CheckCircle2 className="h-3 w-3 text-brand-human shrink-0" />
+                              <CheckCircle2 className="h-3 w-3 text-brand-ai shrink-0" />
                             )}
                             <span className={`text-[10px] ${cap.has ? "text-muted-foreground" : "text-foreground font-medium"}`}>
                               {cap.name}
@@ -661,7 +661,7 @@ export default function Investors() {
             subtitle="Our platform is live with real company data. The Anthropic case study walks through the full workflow."
           />
           <motion.div {...fadeUp}>
-            <Card className="border-brand-human/20 bg-gradient-to-br from-brand-ai/5 via-background to-brand-human/5 overflow-hidden">
+            <Card className="border-brand-ai/20 bg-gradient-to-br from-brand-ai/5 via-background to-brand-ai/5 overflow-hidden">
               <CardContent className="p-6 sm:p-8">
                 <div className="grid sm:grid-cols-2 gap-6 items-center">
                   <div>
@@ -723,12 +723,12 @@ export default function Investors() {
               { title: "Enterprise", price: "Custom", arr: "$250K–$1M+", example: "Fortune 500 (1,000+ roles)", features: ["Everything in Growth", "SSO & admin controls", "Model-aware re-scoring SLA", "Dedicated account manager", "Custom integrations & API"] },
             ].map((tier, i) => (
               <motion.div key={i} {...fadeUp} transition={{ ...fadeUp.transition, delay: i * 0.1 }}>
-                <Card className={`h-full ${tier.highlighted ? "border-brand-human/30 bg-brand-human/5" : ""}`}>
+                <Card className={`h-full ${tier.highlighted ? "border-brand-ai/30 bg-brand-ai/5" : ""}`}>
                   <CardContent className="p-5">
                     <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{tier.title}</p>
                     <p className="text-xl font-bold text-foreground mt-1">{tier.price}</p>
                     {tier.arr !== "—" && (
-                      <p className="text-xs font-medium text-brand-human mt-0.5">ARR potential: {tier.arr}</p>
+                      <p className="text-xs font-medium text-brand-ai mt-0.5">ARR potential: {tier.arr}</p>
                     )}
                     <p className="text-[10px] text-muted-foreground/70 mt-1 italic">{tier.example}</p>
                     <ul className="mt-3 space-y-1.5">
