@@ -677,7 +677,7 @@ export default function TeamProgress() {
 
       const { data: rows } = await supabase.rpc("get_workspace_progress", { p_workspace_id: wsId });
       const dbRows = (rows as ProgressRow[] || []).filter(r => r.user_id !== user.id);
-      setProgress([...DEMO_PROGRESS, ...dbRows]);
+      setProgress(dbRows);
       setLoading(false);
     })();
   }, [user]);
