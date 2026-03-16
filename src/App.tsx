@@ -14,7 +14,7 @@ import Auth from "./pages/Auth.tsx";
 import Dashboard from "./pages/Dashboard.tsx";
 import Settings from "./pages/Settings.tsx";
 import NotFound from "./pages/NotFound.tsx";
-import ToolsMarketplace from "./pages/ToolsMarketplace.tsx";
+
 import Contact from "./pages/Contact.tsx";
 import Pricing from "./pages/Pricing.tsx";
 import ATSSync from "./pages/hr/ATSSync.tsx";
