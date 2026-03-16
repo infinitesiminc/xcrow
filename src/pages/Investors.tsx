@@ -635,91 +635,86 @@ export default function Investors() {
             <Card className="border-border/50">
               <CardContent className="p-5">
                 {/* Quantified 2-axis chart */}
-                <div className="relative w-full max-w-lg mx-auto" style={{ paddingBottom: "100%", maxHeight: "480px" }}>
-                  <div className="absolute inset-0" style={{ left: "36px", bottom: "32px", right: "8px", top: "8px" }}>
-                    {/* White space highlight — upper-right quadrant */}
-                    <div className="absolute rounded-lg bg-brand-human/5 border border-brand-human/10"
-                      style={{ left: "50%", bottom: "50%", width: "50%", height: "50%" }} />
+                <div className="relative w-full aspect-square max-w-md mx-auto ml-8 mb-8">
+                  {/* White space highlight — upper-right quadrant */}
+                  <div className="absolute rounded-lg bg-brand-human/5 border border-brand-human/10"
+                    style={{ left: "50%", bottom: "50%", width: "50%", height: "50%" }} />
 
-                    {/* Gridlines */}
-                    {[0, 2, 4, 6, 8, 10].map((tick) => (
-                      <div key={`grid-${tick}`}>
-                        <div className="absolute top-0 bottom-0 border-l border-dashed border-border/15" style={{ left: `${tick * 10}%` }} />
-                        <div className="absolute left-0 right-0 border-t border-dashed border-border/15" style={{ bottom: `${tick * 10}%` }} />
-                      </div>
-                    ))}
+                  {/* Gridlines */}
+                  {[0, 2, 4, 6, 8, 10].map((tick) => {
+                    const pct = `${tick * 10}%`;
+                    return (
+                      <>
+                        {/* Vertical gridline */}
+                        <div className="absolute top-0 bottom-0 border-l border-dashed border-border/20" style={{ left: pct }} />
+                        {/* Horizontal gridline */}
+                        <div className="absolute left-0 right-0 border-t border-dashed border-border/20" style={{ bottom: pct }} />
+                      </>
+                    );
+                  })}
 
-                    {/* Axes */}
-                    <div className="absolute bottom-0 left-0 right-0 h-px bg-border/60" />
-                    <div className="absolute top-0 bottom-0 left-0 w-px bg-border/60" />
+                  {/* Axes */}
+                  <div className="absolute bottom-0 left-0 right-0 h-px bg-border" />
+                  <div className="absolute top-0 bottom-0 left-0 w-px bg-border" />
 
-                    {/* X-axis tick labels */}
-                    {[0, 2, 4, 6, 8, 10].map((tick) => (
-                      <span key={`x-${tick}`} className="absolute text-[9px] text-muted-foreground/50 font-mono"
-                        style={{ left: `${tick * 10}%`, bottom: "-16px", transform: "translateX(-50%)" }}>
-                        {tick}
-                      </span>
-                    ))}
-                    {/* Y-axis tick labels */}
-                    {[0, 2, 4, 6, 8, 10].map((tick) => (
-                      <span key={`y-${tick}`} className="absolute text-[9px] text-muted-foreground/50 font-mono"
-                        style={{ left: "-28px", bottom: `${tick * 10}%`, transform: "translateY(50%)" }}>
-                        {tick}
-                      </span>
-                    ))}
-
-                    {/* Axis labels */}
-                    <span className="absolute text-[10px] text-muted-foreground font-medium uppercase tracking-wider"
-                      style={{ bottom: "-28px", left: "50%", transform: "translateX(-50%)" }}>
-                      AI Exposure Intelligence →
+                  {/* X-axis tick labels */}
+                  {[0, 2, 4, 6, 8, 10].map((tick) => (
+                    <span key={`x-${tick}`} className="absolute text-[9px] text-muted-foreground/60 font-mono"
+                      style={{ left: `${tick * 10}%`, bottom: "-18px", transform: "translateX(-50%)" }}>
+                      {tick}
                     </span>
-                    <span className="absolute text-[10px] text-muted-foreground font-medium uppercase tracking-wider whitespace-nowrap"
-                      style={{ left: "-34px", top: "50%", transform: "translateY(-50%) rotate(-90deg)" }}>
-                      Adaptive Upskilling →
+                  ))}
+                  {/* Y-axis tick labels */}
+                  {[0, 2, 4, 6, 8, 10].map((tick) => (
+                    <span key={`y-${tick}`} className="absolute text-[9px] text-muted-foreground/60 font-mono"
+                      style={{ left: "-18px", bottom: `${tick * 10}%`, transform: "translateY(50%)" }}>
+                      {tick}
                     </span>
+                  ))}
 
-                    {/* Quadrant labels */}
-                    <span className="absolute top-2 left-2 text-[8px] text-muted-foreground/30 uppercase leading-tight pointer-events-none">Training Without<br />Intelligence</span>
-                    <span className="absolute top-2 right-2 text-[8px] text-brand-human/40 uppercase text-right font-semibold leading-tight pointer-events-none">Adaptive AI<br />Readiness</span>
-                    <span className="absolute bottom-2 left-2 text-[8px] text-muted-foreground/30 uppercase leading-tight pointer-events-none">Blind<br />Spot</span>
-                    <span className="absolute bottom-2 right-2 text-[8px] text-muted-foreground/30 uppercase text-right leading-tight pointer-events-none">Analysis<br />Without Action</span>
+                  {/* Axis labels */}
+                  <span className="absolute -bottom-8 left-1/2 -translate-x-1/2 text-[10px] text-muted-foreground font-medium uppercase tracking-wider">AI Exposure Intelligence →</span>
+                  <span className="absolute -left-8 top-1/2 -translate-y-1/2 -rotate-90 text-[10px] text-muted-foreground font-medium uppercase tracking-wider whitespace-nowrap">Adaptive Upskilling →</span>
 
-                    {/* Competitors — spread out with offset labels to avoid overlap */}
-                    {[
-                      { name: "LinkedIn Learning", x: 1.5, y: 6.5, labelPos: "right" as const },
-                      { name: "Coursera",          x: 1,   y: 4.5, labelPos: "right" as const },
-                      { name: "McKinsey",           x: 7,   y: 2,   labelPos: "top" as const },
-                      { name: "Deloitte",           x: 5.5, y: 1,   labelPos: "top" as const },
-                      { name: "Eightfold",          x: 5,   y: 4,   labelPos: "left" as const },
-                      { name: "Gloat",              x: 3.5, y: 3,   labelPos: "right" as const },
-                      { name: "Workday",            x: 2.5, y: 1.5, labelPos: "right" as const },
-                    ].map((c) => (
-                      <div
-                        key={c.name}
-                        className="absolute group"
-                        style={{ left: `${c.x * 10}%`, bottom: `${c.y * 10}%`, transform: "translate(-50%, 50%)" }}
-                      >
-                        <div className="h-2.5 w-2.5 rounded-full bg-brand-ai/50 border border-brand-ai/30" />
-                        <span className={`absolute text-[10px] font-medium whitespace-nowrap text-muted-foreground ${
-                          c.labelPos === "right" ? "left-4 top-1/2 -translate-y-1/2" :
-                          c.labelPos === "left"  ? "right-4 top-1/2 -translate-y-1/2" :
-                          "bottom-4 left-1/2 -translate-x-1/2"
-                        }`}>
-                          {c.name}
-                        </span>
-                      </div>
-                    ))}
+                  {/* Quadrant labels */}
+                  <span className="absolute top-3 left-3 text-[9px] text-muted-foreground/40 uppercase leading-tight">Training Without<br />Intelligence</span>
+                  <span className="absolute top-3 right-3 text-[9px] text-brand-human/50 uppercase text-right font-semibold leading-tight">Adaptive AI<br />Readiness</span>
+                  <span className="absolute bottom-3 left-3 text-[9px] text-muted-foreground/40 uppercase leading-tight">Blind<br />Spot</span>
+                  <span className="absolute bottom-3 right-3 text-[9px] text-muted-foreground/40 uppercase text-right leading-tight">Analysis<br />Without Action</span>
 
-                    {/* Infinite Sim — leader position */}
+                  {/* Competitors plotted on 0–10 scale */}
+                  {[
+                    { name: "LinkedIn Learning", x: 1.5, y: 5.5, score: "(1.5, 5.5)" },
+                    { name: "Coursera", x: 1, y: 5, score: "(1, 5)" },
+                    { name: "McKinsey", x: 6, y: 2, score: "(6, 2)" },
+                    { name: "Deloitte", x: 5.5, y: 1.5, score: "(5.5, 1.5)" },
+                    { name: "Eightfold", x: 5, y: 3, score: "(5, 3)" },
+                    { name: "Gloat", x: 4.5, y: 3.5, score: "(4.5, 3.5)" },
+                    { name: "Workday", x: 3, y: 2.5, score: "(3, 2.5)" },
+                  ].map((c) => (
                     <div
-                      className="absolute"
-                      style={{ left: "90%", bottom: "90%", transform: "translate(-50%, 50%)" }}
+                      key={c.name}
+                      className="absolute flex flex-col items-center"
+                      style={{ left: `${c.x * 10}%`, bottom: `${c.y * 10}%`, transform: "translate(-50%, 50%)" }}
                     >
-                      <div className="h-4 w-4 rounded-full bg-brand-human ring-4 ring-brand-human/20 shadow-lg shadow-brand-human/30" />
-                      <span className="absolute right-6 top-1/2 -translate-y-1/2 text-xs font-bold whitespace-nowrap text-brand-human">
-                        Infinite Sim
+                      <span className="text-[10px] font-medium mb-1 whitespace-nowrap text-muted-foreground">
+                        {c.name}
                       </span>
+                      <div className="h-3 w-3 rounded-full bg-brand-ai/40" />
+                      <span className="text-[8px] text-muted-foreground/50 font-mono mt-0.5">{c.score}</span>
                     </div>
+                  ))}
+
+                  {/* Infinite Sim — leader position */}
+                  <div
+                    className="absolute flex flex-col items-center"
+                    style={{ left: "95%", bottom: "95%", transform: "translate(-50%, 50%)" }}
+                  >
+                    <span className="text-xs font-bold mb-1 whitespace-nowrap text-brand-human">
+                      Infinite Sim
+                    </span>
+                    <div className="h-4 w-4 rounded-full bg-brand-human ring-4 ring-brand-human/20 shadow-lg shadow-brand-human/30" />
+                    <span className="text-[8px] text-brand-human/70 font-mono mt-0.5">(9.5, 9.5)</span>
                   </div>
                 </div>
 
