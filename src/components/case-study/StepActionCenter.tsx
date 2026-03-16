@@ -68,7 +68,7 @@ export default function StepActionCenter() {
       {/* At-risk employees */}
       <div className="rounded-xl border border-border bg-card p-4">
         <div className="flex items-center gap-2 mb-3">
-          <User className="h-3.5 w-3.5 text-dot-purple" />
+          <User className="h-3.5 w-3.5 text-brand-ai" />
           <h4 className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
             Employees Needing Coaching
           </h4>
