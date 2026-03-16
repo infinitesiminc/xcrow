@@ -411,15 +411,15 @@ export default function LearningPath() {
               </div>
             </div>
 
-            {/* AI Exposure Score + Radar Chart */}
-            <div className="mt-4 flex flex-col sm:flex-row items-center gap-6">
+            {/* AI Exposure Score + Radar Chart — compact */}
+            <div className="mt-3 flex flex-col sm:flex-row items-center gap-4">
               {/* Score */}
-              <div className="text-center shrink-0">
-                <div className="text-4xl font-bold text-foreground">{job.augmented_percent ?? "—"}%</div>
-                <div className="text-sm text-muted-foreground mt-1">AI Exposure Score</div>
-                <p className="text-xs text-muted-foreground/70 mt-0.5 max-w-[220px]">How much of the important work is AI-exposed</p>
+              <div className="text-center shrink-0 sm:w-[160px]">
+                <div className="text-3xl font-bold text-foreground">{job.augmented_percent ?? "—"}%</div>
+                <div className="text-xs text-muted-foreground mt-0.5">AI Exposure</div>
+                <p className="text-[10px] text-muted-foreground/60 mt-0.5">Important work that is AI-exposed</p>
                 {job.augmented_percent != null && (
-                  <div className="h-2 rounded-full bg-secondary mt-3 overflow-hidden w-48 mx-auto">
+                  <div className="h-1.5 rounded-full bg-secondary mt-2 overflow-hidden w-32 mx-auto">
                     <div
                       className={`h-full rounded-full ${job.augmented_percent >= 70 ? "bg-destructive" : job.augmented_percent >= 40 ? "bg-warning" : "bg-success"}`}
                       style={{ width: `${job.augmented_percent}%` }}
@@ -432,7 +432,7 @@ export default function LearningPath() {
               {analyzedTasks.length >= 3 && (() => {
                 const tasks = analyzedTasks.slice(0, 10);
                 const n = tasks.length;
-                const cx = 130, cy = 130, maxR = 95;
+                const cx = 100, cy = 100, maxR = 72;
                 const levels = [25, 50, 75, 100];
                 const angleStep = (2 * Math.PI) / n;
                 const startAngle = -Math.PI / 2;
@@ -447,53 +447,46 @@ export default function LearningPath() {
                 const polygon = dataPoints.map(p => `${p.x},${p.y}`).join(" ");
 
                 return (
-                  <div className="flex-1 flex flex-col items-center">
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">AI Exposure by Task</span>
-                    </div>
-                    <svg viewBox="0 0 260 260" className="w-[220px] h-[220px]">
-                      {/* Grid levels */}
+                  <div className="flex items-center gap-3 flex-1 min-w-0">
+                    <svg viewBox="0 0 200 200" className="w-[160px] h-[160px] shrink-0">
                       {levels.map(lv => {
                         const r = (lv / 100) * maxR;
                         const pts = Array.from({ length: n }, (_, i) => {
                           const angle = startAngle + i * angleStep;
                           return `${cx + r * Math.cos(angle)},${cy + r * Math.sin(angle)}`;
                         }).join(" ");
-                        return <polygon key={lv} points={pts} fill="none" stroke="hsl(var(--border))" strokeWidth={lv === 50 ? "0.8" : "0.4"} opacity={0.6} />;
+                        return <polygon key={lv} points={pts} fill="none" stroke="hsl(var(--border))" strokeWidth={lv === 50 ? "0.7" : "0.3"} opacity={0.5} />;
                       })}
-                      {/* Axis lines */}
                       {tasks.map((_, i) => {
                         const p = getPoint(i, 100);
-                        return <line key={i} x1={cx} y1={cy} x2={p.x} y2={p.y} stroke="hsl(var(--border))" strokeWidth="0.4" opacity={0.4} />;
+                        return <line key={i} x1={cx} y1={cy} x2={p.x} y2={p.y} stroke="hsl(var(--border))" strokeWidth="0.3" opacity={0.3} />;
                       })}
-                      {/* Data polygon */}
-                      <polygon points={polygon} fill="hsl(var(--warning) / 0.15)" stroke="hsl(var(--warning))" strokeWidth="1.5" />
-                      {/* Data points + labels */}
+                      <polygon points={polygon} fill="hsl(var(--warning) / 0.15)" stroke="hsl(var(--warning))" strokeWidth="1.2" />
                       {tasks.map((t, i) => {
                         const p = dataPoints[i];
-                        const labelP = getPoint(i, 115);
+                        const labelP = getPoint(i, 118);
                         const exposure = t.ai_exposure_score ?? 50;
                         const dotColor = exposure >= 70 ? "hsl(var(--destructive))" : exposure >= 40 ? "hsl(var(--warning))" : "hsl(var(--success))";
                         return (
                           <g key={i}>
-                            <circle cx={p.x} cy={p.y} r="3" fill={dotColor} />
-                            <text x={labelP.x} y={labelP.y} textAnchor="middle" dominantBaseline="central" className="text-[9px] font-semibold" fill="hsl(var(--foreground))">
+                            <circle cx={p.x} cy={p.y} r="2.5" fill={dotColor} />
+                            <text x={labelP.x} y={labelP.y} textAnchor="middle" dominantBaseline="central" className="text-[8px] font-semibold" fill="hsl(var(--foreground))">
                               {i + 1}
                             </text>
                           </g>
                         );
                       })}
                     </svg>
-                    {/* Legend */}
-                    <div className="grid grid-cols-2 gap-x-4 gap-y-0.5 mt-1">
+                    {/* Compact legend */}
+                    <div className="flex flex-col gap-0.5 min-w-0">
                       {tasks.map((t, i) => {
                         const exposure = t.ai_exposure_score ?? 50;
                         const dotColor = exposure >= 70 ? "bg-destructive" : exposure >= 40 ? "bg-warning" : "bg-success";
                         return (
-                          <div key={i} className="flex items-center gap-1.5 min-w-0">
-                            <span className={`w-2 h-2 rounded-full ${dotColor} shrink-0`} />
-                            <span className="text-[9px] text-muted-foreground truncate">
-                              <span className="font-semibold text-foreground">{i + 1}.</span> {t.cluster_name}
+                          <div key={i} className="flex items-center gap-1 min-w-0">
+                            <span className={`w-1.5 h-1.5 rounded-full ${dotColor} shrink-0`} />
+                            <span className="text-[9px] text-muted-foreground truncate leading-tight">
+                              <span className="font-medium text-foreground">{i + 1}</span> {t.cluster_name}
                             </span>
                           </div>
                         );
