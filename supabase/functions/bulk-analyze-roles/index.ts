@@ -54,10 +54,10 @@ serve(async (req) => {
     if (clusterErr) throw new Error(clusterErr.message);
     const analyzedJobIds = new Set((existingClusters || []).map(c => c.job_id));
 
-    // Find jobs needing backfill (have clusters but no score)
+    // Find jobs needing backfill (have clusters but no score) OR forceRefresh all
     const backfillJobIds = new Set(
       allJobs
-        .filter(j => analyzedJobIds.has(j.id) && (j.augmented_percent ?? 0) === 0)
+        .filter(j => analyzedJobIds.has(j.id) && (forceRefresh || (j.augmented_percent ?? 0) === 0))
         .map(j => j.id)
     );
 
