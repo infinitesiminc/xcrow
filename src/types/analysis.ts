@@ -12,6 +12,7 @@ export interface TaskAnalysis {
   impactLevel: AIImpactLevel;
   description: string;
   aiExposureScore?: number;
+  jobImpactScore?: number;
   priority?: TaskPriority;
 }
 

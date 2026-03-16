@@ -148,6 +148,7 @@ Order from highest AI exposure to lowest. Respond ONLY with valid JSON array.`;
           skill_names: t.skill_names || null,
           sort_order: i,
           ai_exposure_score: Math.min(Math.max(t.ai_exposure_score ?? 50, 0), 100),
+          job_impact_score: Math.min(Math.max(t.job_impact_score ?? 50, 0), 100),
           priority: t.priority || "medium",
         }));
 
