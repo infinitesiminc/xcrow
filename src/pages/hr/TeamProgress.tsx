@@ -58,7 +58,7 @@ const readinessColor = (score: number) =>
   score >= 70 ? "text-success" : score >= 50 ? "text-brand-mid" : "text-destructive";
 
 const readinessBg = (score: number) =>
-  score >= 70 ? "bg-success/15" : score >= 50 ? "bg-dot-amber/15" : "bg-destructive/15";
+  score >= 70 ? "bg-success/15" : score >= 50 ? "bg-brand-mid/15" : "bg-destructive/15";
 
 const DeltaBadge = ({ delta }: { delta: number }) => {
   if (delta > 0) return (
