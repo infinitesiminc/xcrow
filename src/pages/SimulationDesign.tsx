@@ -163,8 +163,89 @@ export default function SimulationDesign() {
         </div>
       </section>
 
-      {/* Format Assignment */}
+      {/* Role Metrics Explained */}
       <section className="px-4 py-16 bg-card border-t border-border">
+        <div className="mx-auto max-w-5xl">
+          <motion.div variants={fadeUp} initial="hidden" whileInView="visible" viewport={{ once: true }} transition={{ duration: 0.4 }}>
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 text-center">Metrics</p>
+            <h2 className="font-serif text-2xl sm:text-3xl font-bold text-foreground text-center mb-4">
+              Three Lenses on Every Role
+            </h2>
+            <p className="text-sm text-muted-foreground text-center max-w-2xl mx-auto mb-12">
+              Each role is scored across three complementary dimensions derived from task-level AI analysis — not surveys or self-assessments.
+            </p>
+          </motion.div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {[
+              {
+                icon: Bot,
+                title: "AI Exposure",
+                value: "67%",
+                color: "bg-primary/10 text-primary",
+                barColor: "bg-dot-blue",
+                definition: "Percentage of tasks where AI is actively involved — either augmenting human work (Human+AI) or performing most of the task (Mostly AI).",
+                formula: "Tasks with AI involvement ÷ Total tasks",
+                insight: "Higher exposure means greater dependency on AI tools. Teams need training to work effectively alongside AI, not just awareness that it exists.",
+              },
+              {
+                icon: ShieldAlert,
+                title: "Replacement Risk",
+                value: "22%",
+                color: "bg-destructive/10 text-destructive",
+                barColor: "bg-destructive",
+                definition: "Percentage of tasks classified as 'Mostly AI' — where AI can perform the task end-to-end with minimal human oversight.",
+                formula: "Mostly AI tasks ÷ Total tasks",
+                insight: "This is the true automation signal. Roles with high replacement risk need proactive career transition planning, not just upskilling.",
+              },
+              {
+                icon: GraduationCap,
+                title: "Upskill Urgency",
+                value: "56%",
+                color: "bg-dot-purple/10 text-dot-purple",
+                barColor: "bg-dot-purple",
+                definition: "Weighted measure of how many tasks demand immediate attention — critical-priority tasks count fully, high-impact tasks count at half weight.",
+                formula: "(Critical tasks × 1.0 + High-impact tasks × 0.5) ÷ Total tasks",
+                insight: "Prioritizes where L&D investment will have the biggest impact. A high score means the role can't wait — skills gaps are already affecting performance.",
+              },
+            ].map((metric, i) => (
+              <motion.div
+                key={metric.title}
+                variants={fadeUp}
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true }}
+                transition={{ duration: 0.4, delay: i * 0.1 }}
+              >
+                <Card className="h-full border-border hover:border-primary/20 transition-colors">
+                  <CardContent className="p-6">
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className={`w-10 h-10 rounded-full ${metric.color} flex items-center justify-center`}>
+                        <metric.icon className="h-5 w-5" />
+                      </div>
+                      <div>
+                        <p className="text-lg font-bold text-foreground">{metric.title}</p>
+                        <p className="text-xs text-muted-foreground">e.g. {metric.value}</p>
+                      </div>
+                    </div>
+                    <p className="text-sm text-foreground mb-3">{metric.definition}</p>
+                    <div className="bg-background rounded-md px-3 py-2 mb-3">
+                      <p className="text-[11px] text-muted-foreground font-mono">{metric.formula}</p>
+                    </div>
+                    <div className="w-full h-1.5 rounded-full bg-secondary overflow-hidden mb-3">
+                      <div className={`h-full rounded-full ${metric.barColor}`} style={{ width: metric.value }} />
+                    </div>
+                    <p className="text-xs text-muted-foreground italic">{metric.insight}</p>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Format Assignment */}
+      <section className="px-4 py-16 border-t border-border">
         <div className="mx-auto max-w-5xl">
           <motion.div variants={fadeUp} initial="hidden" whileInView="visible" viewport={{ once: true }} transition={{ duration: 0.4 }}>
             <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 text-center">Format Selection</p>
