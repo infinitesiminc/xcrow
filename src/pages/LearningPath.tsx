@@ -599,7 +599,7 @@ export default function LearningPath() {
                               </div>
 
                               {task.description && (
-                                <p className="text-xs text-muted-foreground leading-relaxed mb-2">{task.description}</p>
+                                <p className="text-sm text-muted-foreground leading-relaxed mb-3">{task.description}</p>
                               )}
 
                               <div className="flex items-center gap-2 mb-2 flex-wrap">
