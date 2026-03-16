@@ -63,6 +63,14 @@ const STEPS = [
     subtitle: "Automated interventions. Bottleneck detection. Coaching at scale.",
     component: <StepActionCenter />,
   },
+  {
+    id: "adaptation",
+    phase: "Plan",
+    icon: Sparkles,
+    title: "Real-Time Model Adaptation",
+    subtitle: "A new frontier model drops. The engine adapts in under 24 hours — automatically.",
+    component: <StepModelAdaptation />,
+  },
 ];
 
 const PHASE_COLORS: Record<string, string> = {
