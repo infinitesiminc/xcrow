@@ -413,7 +413,7 @@ export default function Investors() {
                     initial={{ opacity: 0, scale: 0 }}
                     whileInView={{ opacity: 1, scale: 1 }}
                     transition={{ duration: 0.4, delay: 0.65 }}
-                    className="absolute z-10 w-[80px] h-[80px] sm:w-[100px] sm:h-[100px] rounded-full bg-gradient-to-br from-brand-ai/20 via-brand-mid/25 to-brand-human/20 border-2 border-foreground/20 flex flex-col items-center justify-center backdrop-blur-sm shadow-lg shadow-brand-mid/20"
+                    className="absolute z-10 w-[80px] h-[80px] sm:w-[100px] sm:h-[100px] rounded-full bg-gradient-to-br from-brand-ai/20 via-brand-ai/15 to-brand-ai/10 border-2 border-brand-ai/30 flex flex-col items-center justify-center backdrop-blur-sm shadow-lg shadow-brand-ai/20"
                   >
                     <span className="text-[9px] sm:text-[10px] font-bold text-foreground leading-tight text-center">Infinite<br/>Sim</span>
                     <span className="text-[7px] sm:text-[8px] text-muted-foreground mt-0.5">$340B+</span>
