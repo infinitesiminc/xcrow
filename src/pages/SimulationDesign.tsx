@@ -450,7 +450,7 @@ export default function SimulationDesign() {
           <motion.div {...fadeUp}>
             <div className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-4 py-1.5 text-sm text-muted-foreground mb-6">
               <Layers className="h-4 w-4" />
-              How It Works
+              Why Simulation
             </div>
           </motion.div>
 
@@ -459,8 +459,8 @@ export default function SimulationDesign() {
             transition={{ duration: 0.6, delay: 0.05 }}
             className="font-display text-4xl sm:text-5xl md:text-6xl font-semibold text-foreground leading-[1.1] tracking-tight"
           >
-            The AI Transition,{" "}
-            <span className="italic">deconstructed</span>
+            Why simulation is the{" "}
+            <span className="italic">only answer</span>
           </motion.h1>
 
           <motion.p
@@ -468,8 +468,8 @@ export default function SimulationDesign() {
             transition={{ duration: 0.6, delay: 0.1 }}
             className="mx-auto mt-6 max-w-2xl text-lg text-muted-foreground leading-relaxed"
           >
-            Three phases. Measurable at every step. Here's exactly how the platform takes your
-            workforce from unknown exposure to auditable readiness.
+            Surveys guess. Certifications expire. Simulations prove readiness in real-time —
+            calibrated to your roles, your company context, and every new model release.
           </motion.p>
 
           <motion.div
