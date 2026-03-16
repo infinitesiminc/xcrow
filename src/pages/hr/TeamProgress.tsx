@@ -55,10 +55,10 @@ const THRESHOLD = 60;
 
 /* ─── Helpers ─── */
 const readinessColor = (score: number) =>
-  score >= 70 ? "text-success" : score >= 50 ? "text-dot-amber" : "text-destructive";
+  score >= 70 ? "text-success" : score >= 50 ? "text-brand-mid" : "text-destructive";
 
 const readinessBg = (score: number) =>
-  score >= 70 ? "bg-success/15" : score >= 50 ? "bg-dot-amber/15" : "bg-destructive/15";
+  score >= 70 ? "bg-success/15" : score >= 50 ? "bg-brand-mid/15" : "bg-destructive/15";
 
 const DeltaBadge = ({ delta }: { delta: number }) => {
   if (delta > 0) return (
@@ -524,7 +524,7 @@ function Leaderboard({ users, onSelect }: { users: UserSummary[]; onSelect: (u: 
           const rank = page * perPage + i + 1;
           return (
             <button key={u.userId} onClick={() => onSelect(u)} className="w-full grid grid-cols-[2rem_1fr_auto_4rem_4rem] gap-3 items-center px-3 py-2.5 rounded-lg text-left hover:bg-muted/40 transition-colors">
-              <span className={`text-xs font-bold ${rank <= 3 ? "text-dot-amber" : "text-muted-foreground"}`}>
+              <span className={`text-xs font-bold ${rank <= 3 ? "text-brand-mid" : "text-muted-foreground"}`}>
                 {rank <= 3 ? <Trophy className="h-3.5 w-3.5 inline" /> : rank}
               </span>
               <div className="min-w-0">
@@ -614,7 +614,7 @@ function UserDetailSheet({ user, open, onClose }: { user: UserSummary | null; op
               return (
                 <div key={i} className="py-3 border-b border-border/50 last:border-0 space-y-2">
                   <div className="flex items-start gap-3">
-                    <CheckCircle2 className={`h-4 w-4 mt-0.5 shrink-0 ${pct >= 70 ? "text-success" : "text-dot-amber"}`} />
+                    <CheckCircle2 className={`h-4 w-4 mt-0.5 shrink-0 ${pct >= 70 ? "text-success" : "text-brand-mid"}`} />
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium text-foreground">{sim.task_name}</p>
                       <p className="text-[11px] text-muted-foreground">{sim.sim_job_title}</p>

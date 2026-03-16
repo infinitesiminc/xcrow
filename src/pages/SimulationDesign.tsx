@@ -206,18 +206,18 @@ function StatusQuoSection() {
               className={`rounded-xl border p-6 space-y-4 ${
                 s.failed
                   ? "border-border bg-card"
-                  : "border-dot-teal/30 bg-dot-teal/5"
+                  : "border-brand-human/30 bg-brand-human/5"
               }`}
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <s.icon className={`h-5 w-5 ${s.failed ? "text-muted-foreground" : "text-dot-teal"}`} />
+                  <s.icon className={`h-5 w-5 ${s.failed ? "text-muted-foreground" : "text-brand-human"}`} />
                   <span className="font-semibold text-foreground">{s.label}</span>
                 </div>
                 <span className={`text-xs font-mono font-bold px-2 py-1 rounded-full ${
                   s.failed
                     ? "bg-destructive/10 text-destructive"
-                    : "bg-dot-teal/10 text-dot-teal"
+                    : "bg-brand-human/10 text-brand-human"
                 }`}>
                   {s.verdict}
                 </span>
@@ -240,7 +240,7 @@ function StatusQuoSection() {
                     {s.failed ? (
                       <X className="h-4 w-4 text-destructive shrink-0 mt-0.5" />
                     ) : (
-                      <CheckCircle2 className="h-4 w-4 text-dot-teal shrink-0 mt-0.5" />
+                      <CheckCircle2 className="h-4 w-4 text-brand-human shrink-0 mt-0.5" />
                     )}
                     <span className="text-muted-foreground">{f}</span>
                   </div>
@@ -265,9 +265,9 @@ function IngestionVisual() {
     { name: "JD Paste", count: 12 },
   ];
   const lenses = [
-    { label: "AI Exposure", value: 67, color: "bg-dot-blue" },
-    { label: "Replace Risk", value: 22, color: "bg-destructive" },
-    { label: "Upskill Urgency", value: 56, color: "bg-dot-purple" },
+    { label: "AI Exposure", value: 67, color: "bg-brand-human" },
+    { label: "Replace Risk", value: 22, color: "bg-brand-ai" },
+    { label: "Upskill Urgency", value: 56, color: "bg-brand-mid" },
   ];
   return (
     <div className="rounded-xl border border-border bg-card p-4 space-y-3">
@@ -284,7 +284,7 @@ function IngestionVisual() {
             <span className="text-sm font-medium">{s.name}</span>
             <div className="flex items-center gap-2">
               <span className="text-xs font-mono text-muted-foreground">{s.count} roles</span>
-              <CheckCircle2 className="h-3.5 w-3.5 text-dot-teal" />
+              <CheckCircle2 className="h-3.5 w-3.5 text-brand-human" />
             </div>
           </motion.div>
         ))}
@@ -327,9 +327,9 @@ function SimChatVisual() {
     { role: "assistant" as const, text: "Strong response. You identified the AI's limitation and proposed systematic human review." },
   ];
   const formats = [
-    { name: "Quick Pulse", duration: "5 min", color: "text-dot-teal" },
-    { name: "Deep Dive", duration: "15 min", color: "text-dot-amber" },
-    { name: "Case Challenge", duration: "25 min", color: "text-dot-purple" },
+    { name: "Quick Pulse", duration: "5 min", color: "text-brand-human" },
+    { name: "Deep Dive", duration: "15 min", color: "text-brand-mid" },
+    { name: "Case Challenge", duration: "25 min", color: "text-brand-ai" },
   ];
   return (
     <div className="rounded-xl border border-border bg-card p-4 space-y-3">
@@ -385,7 +385,7 @@ function PillarScoreVisual() {
             whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true }}
             transition={{ delay: 0.2 + i * 0.08 }}
-            className={`rounded-lg border p-3 space-y-2 ${p.weak ? "border-dot-amber/30 bg-dot-amber/5" : "border-border/50"}`}
+            className={`rounded-lg border p-3 space-y-2 ${p.weak ? "border-brand-ai/30 bg-brand-ai/5" : "border-border/50"}`}
           >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-1.5">
@@ -393,7 +393,7 @@ function PillarScoreVisual() {
                 <span className="text-xs font-medium">{p.label}</span>
               </div>
               <span className={`text-sm font-mono font-bold ${
-                p.score >= 80 ? "text-dot-teal" : p.score >= 60 ? "text-dot-amber" : "text-dot-purple"
+                p.score >= 80 ? "text-brand-human" : p.score >= 60 ? "text-brand-mid" : "text-brand-ai"
               }`}>{p.score}%</span>
             </div>
             <div className="h-1.5 w-full rounded-full bg-secondary overflow-hidden">
@@ -403,12 +403,12 @@ function PillarScoreVisual() {
                 viewport={{ once: true }}
                 transition={{ delay: 0.4 + i * 0.1, duration: 0.6 }}
                 className={`h-full rounded-full ${
-                  p.score >= 80 ? "bg-dot-teal" : p.score >= 60 ? "bg-dot-amber" : "bg-dot-purple"
+                  p.score >= 80 ? "bg-brand-human" : p.score >= 60 ? "bg-brand-mid" : "bg-brand-ai"
                 }`}
               />
             </div>
             {p.weak && (
-              <p className="text-[10px] text-dot-amber flex items-center gap-1">
+              <p className="text-[10px] text-brand-ai flex items-center gap-1">
                 <AlertTriangle className="h-3 w-3" /> Below threshold — retry queued
               </p>
             )}
@@ -421,10 +421,10 @@ function PillarScoreVisual() {
 
 function AdaptiveLoopVisual() {
   const events = [
-    { icon: Zap, label: "New model released", time: "T+0h", color: "bg-dot-amber/10 text-dot-amber" },
-    { icon: Brain, label: "34 task clusters reclassified", time: "T+2h", color: "bg-dot-blue/10 text-dot-blue" },
-    { icon: RefreshCw, label: "Simulations regenerated", time: "T+6h", color: "bg-dot-purple/10 text-dot-purple" },
-    { icon: Users, label: "127 employees re-queued", time: "T+24h", color: "bg-dot-teal/10 text-dot-teal" },
+    { icon: Zap, label: "New model released", time: "T+0h", color: "bg-brand-ai/10 text-brand-ai" },
+    { icon: Brain, label: "34 task clusters reclassified", time: "T+2h", color: "bg-brand-ai/10 text-brand-ai" },
+    { icon: RefreshCw, label: "Simulations regenerated", time: "T+6h", color: "bg-brand-mid/10 text-brand-mid" },
+    { icon: Users, label: "127 employees re-queued", time: "T+24h", color: "bg-brand-human/10 text-brand-human" },
   ];
   return (
     <div className="rounded-xl border border-border bg-card p-4 space-y-2">
@@ -452,7 +452,7 @@ function AdaptiveLoopVisual() {
         transition={{ delay: 0.8 }}
         className="text-[11px] text-muted-foreground text-center pt-1 flex items-center justify-center gap-1.5"
       >
-        <RefreshCw className="h-3 w-3 text-dot-teal" /> No curriculum redesign. No committee. Fully automatic.
+        <RefreshCw className="h-3 w-3 text-brand-human" /> No curriculum redesign. No committee. Fully automatic.
       </motion.p>
     </div>
   );
@@ -542,11 +542,11 @@ function EngineSection() {
 /* ═══════════════════════════════════════════════════════════════ */
 
 const LOOP_NODES = [
-  { label: "New model release", icon: Zap, color: "bg-dot-amber/10 text-dot-amber" },
-  { label: "Engine recalibrates scores", icon: RefreshCw, color: "bg-dot-blue/10 text-dot-blue" },
-  { label: "Simulations regenerated", icon: Brain, color: "bg-dot-purple/10 text-dot-purple" },
+  { label: "New model release", icon: Zap, color: "bg-brand-ai/10 text-brand-ai" },
+  { label: "Engine recalibrates scores", icon: RefreshCw, color: "bg-brand-ai/10 text-brand-ai" },
+  { label: "Simulations regenerated", icon: Brain, color: "bg-brand-mid/10 text-brand-mid" },
   { label: "Employees re-assessed", icon: Users, color: "bg-muted" },
-  { label: "Weak pillars retrained", icon: Target, color: "bg-dot-teal/10 text-dot-teal" },
+  { label: "Weak pillars retrained", icon: Target, color: "bg-brand-human/10 text-brand-human" },
   { label: "Org readiness updated", icon: TrendingUp, color: "bg-muted" },
 ];
 
@@ -597,7 +597,7 @@ function FeedbackLoopSection() {
           transition={{ delay: 0.5, duration: 0.5 }}
           className="flex items-center justify-center mt-6 gap-2 text-sm text-muted-foreground"
         >
-          <RefreshCw className="h-4 w-4 text-dot-teal" />
+          <RefreshCw className="h-4 w-4 text-brand-human" />
           <span>Loop repeats with every frontier model — GPT-5, Gemini 3, Claude 5, and beyond</span>
         </motion.div>
       </div>

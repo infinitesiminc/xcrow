@@ -100,17 +100,17 @@ const allRoles: RoleCard[] = [
 const riskTiers: { label: string; dotColor: string; roles: RoleCard[] }[] = [
   {
     label: "High Risk",
-    dotColor: "bg-dot-purple",
+    dotColor: "bg-brand-ai",
     roles: allRoles.filter(r => r.agentRisk >= 35).sort((a, b) => b.agentRisk - a.agentRisk),
   },
   {
     label: "Moderate Risk",
-    dotColor: "bg-dot-amber",
+    dotColor: "bg-brand-mid",
     roles: allRoles.filter(r => r.agentRisk >= 25 && r.agentRisk < 35).sort((a, b) => b.agentRisk - a.agentRisk),
   },
   {
     label: "Lower Risk",
-    dotColor: "bg-dot-teal",
+    dotColor: "bg-brand-human",
     roles: allRoles.filter(r => r.agentRisk < 25).sort((a, b) => b.agentRisk - a.agentRisk),
   },
 ];

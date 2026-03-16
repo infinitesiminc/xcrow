@@ -78,9 +78,9 @@ const TOOLS_DIRECTORY: Tool[] = [
 ];
 
 const categoryConfig = {
-  ai_tools: { label: "AI Tools & Platforms", icon: Wrench, dotColor: "bg-dot-blue" },
-  human_skills: { label: "Human-Edge Skills", icon: Heart, dotColor: "bg-dot-teal" },
-  new_capabilities: { label: "New Capabilities", icon: Sparkles, dotColor: "bg-dot-purple" },
+  ai_tools: { label: "AI Tools & Platforms", icon: Wrench, dotColor: "bg-brand-ai" },
+  human_skills: { label: "Human-Edge Skills", icon: Heart, dotColor: "bg-brand-human" },
+  new_capabilities: { label: "New Capabilities", icon: Sparkles, dotColor: "bg-brand-mid" },
 };
 
 export default function ToolsMarketplace() {

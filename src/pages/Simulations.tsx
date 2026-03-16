@@ -361,7 +361,7 @@ export default function Simulations() {
                         <div className="px-4 pb-4 space-y-2">
                           {items.map(sim => (
                             <div key={sim.id} className="flex items-center gap-3 p-3 rounded-lg border border-border/50 bg-muted/20">
-                              <div className="p-1.5 rounded-md border bg-dot-blue/10 text-dot-blue border-dot-blue/20">
+                              <div className="p-1.5 rounded-md border bg-brand-human/10 text-brand-human border-brand-human/20">
                                 <GraduationCap className="w-3.5 h-3.5" />
                               </div>
                               <div className="flex-1 min-w-0">
@@ -492,7 +492,7 @@ export default function Simulations() {
                         const exposure = task.ai_exposure_score ?? 50;
                         return (
                           <div key={task.id} className="flex items-start gap-3 p-3 rounded-lg border border-border/50 bg-card">
-                            <div className="p-1.5 rounded-md border bg-dot-blue/10 text-dot-blue border-dot-blue/20 mt-0.5">
+                            <div className="p-1.5 rounded-md border bg-brand-human/10 text-brand-human border-brand-human/20 mt-0.5">
                               <GraduationCap className="w-3.5 h-3.5" />
                             </div>
                             <div className="flex-1 min-w-0">

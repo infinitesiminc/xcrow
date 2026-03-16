@@ -1,9 +1,9 @@
 /**
  * Unified risk tier color system used across the entire project.
- * Based on the dot-color tokens defined in index.css / tailwind.config.ts:
- *   - dot-purple → High Risk (≥35%)
- *   - dot-amber  → Moderate Risk (≥25%)
- *   - dot-teal   → Lower Risk (<25%)
+ * Based on the brand metaphor: Red (AI) → Purple (mid) → Blue (Human)
+ *   - brand-ai   → High Risk (≥35%)
+ *   - brand-mid  → Moderate Risk (≥25%)
+ *   - brand-human → Lower Risk (<25%)
  */
 
 export interface RiskTier {
@@ -18,9 +18,9 @@ export interface RiskTier {
 }
 
 const TIERS: RiskTier[] = [
-  { label: "High",     dotClass: "bg-dot-purple", color: "hsl(var(--dot-purple))", bgClass: "bg-dot-purple/10", textClass: "text-dot-purple" },
-  { label: "Moderate", dotClass: "bg-dot-amber",  color: "hsl(var(--dot-amber))",  bgClass: "bg-dot-amber/10",  textClass: "text-dot-amber" },
-  { label: "Low",      dotClass: "bg-dot-teal",   color: "hsl(var(--dot-teal))",   bgClass: "bg-dot-teal/10",   textClass: "text-dot-teal" },
+  { label: "High",     dotClass: "bg-brand-ai",    color: "hsl(var(--brand-ai))",    bgClass: "bg-brand-ai/10",    textClass: "text-brand-ai" },
+  { label: "Moderate", dotClass: "bg-brand-mid",    color: "hsl(var(--brand-mid))",   bgClass: "bg-brand-mid/10",   textClass: "text-brand-mid" },
+  { label: "Low",      dotClass: "bg-brand-human",  color: "hsl(var(--brand-human))", bgClass: "bg-brand-human/10", textClass: "text-brand-human" },
 ];
 
 export function getRiskTier(risk: number): RiskTier {
@@ -31,14 +31,14 @@ export function getRiskTier(risk: number): RiskTier {
 
 /**
  * Heatmap disruption score (0–8) → color.
- * Uses the same purple → amber → teal palette with interpolated steps.
+ * Uses the same brand-ai → brand-mid → brand-human palette.
  */
 export function getHeatColor(score: number | null): string {
   if (score === null) return "hsl(var(--muted))";
-  if (score >= 7) return "hsl(var(--dot-purple))";
-  if (score >= 5) return "hsl(var(--dot-amber))";
-  if (score >= 3) return "hsl(var(--dot-amber) / 0.7)";
-  return "hsl(var(--dot-teal))";
+  if (score >= 7) return "hsl(var(--brand-ai))";
+  if (score >= 5) return "hsl(var(--brand-mid))";
+  if (score >= 3) return "hsl(var(--brand-mid) / 0.7)";
+  return "hsl(var(--brand-human))";
 }
 
 export function getHeatLabel(score: number | null): string {

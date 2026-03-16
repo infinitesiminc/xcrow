@@ -13,9 +13,9 @@ interface ActionPlanProps {
 }
 
 const categoryConfig: Record<SkillCategory, { label: string; icon: typeof Wrench; dotColor: string }> = {
-  ai_tools: { label: "AI Tools & Platforms", icon: Wrench, dotColor: "bg-dot-blue" },
-  human_skills: { label: "Human-Edge Skills", icon: Heart, dotColor: "bg-dot-teal" },
-  new_capabilities: { label: "New Capabilities", icon: Sparkles, dotColor: "bg-dot-purple" },
+  ai_tools: { label: "AI Tools & Platforms", icon: Wrench, dotColor: "bg-brand-ai" },
+  human_skills: { label: "Human-Edge Skills", icon: Heart, dotColor: "bg-brand-human" },
+  new_capabilities: { label: "New Capabilities", icon: Sparkles, dotColor: "bg-brand-mid" },
 };
 
 // Map skills to recommended tool names for marketplace linking

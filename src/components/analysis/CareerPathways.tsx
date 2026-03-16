@@ -64,7 +64,7 @@ export function CareerPathways({ data, loading, error }: CareerPathwaysProps) {
                 {pathway.sharedSkills.length > 0 && (
                   <div className="mb-2">
                     <span className="text-[10px] uppercase tracking-widest text-muted-foreground font-medium flex items-center gap-1.5">
-                      <span className="w-1.5 h-1.5 rounded-full bg-dot-teal" />
+                      <span className="w-1.5 h-1.5 rounded-full bg-brand-human" />
                       Shared
                     </span>
                     <div className="flex flex-wrap gap-1 mt-1">
@@ -78,7 +78,7 @@ export function CareerPathways({ data, loading, error }: CareerPathwaysProps) {
                 {pathway.newSkillsNeeded.length > 0 && (
                   <div className="mb-3">
                     <span className="text-[10px] uppercase tracking-widest text-muted-foreground font-medium flex items-center gap-1.5">
-                      <span className="w-1.5 h-1.5 rounded-full bg-dot-amber" />
+                      <span className="w-1.5 h-1.5 rounded-full bg-brand-mid" />
                       New skills needed
                     </span>
                     <div className="flex flex-wrap gap-1 mt-1">
