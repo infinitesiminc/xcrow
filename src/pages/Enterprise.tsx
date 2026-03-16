@@ -173,11 +173,11 @@ function AccelerationGapVisual() {
             transition={{ delay: 0.3, duration: 1.2 }}
           />
 
-          {/* Our platform — tracking AI */}
+          {/* Our platform — tracking AI (blue) */}
           <motion.path
             d={toPath(platformPoints)}
             fill="none"
-            stroke="hsl(var(--primary))"
+            stroke="#2563eb"
             strokeWidth="2.5"
             initial={{ pathLength: 0 }}
             whileInView={{ pathLength: 1 }}
