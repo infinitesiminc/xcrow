@@ -429,7 +429,7 @@ export default function Investors() {
                     <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{tier.title}</p>
                     <p className="text-xl font-bold text-foreground mt-1">{tier.price}</p>
                     {tier.arr !== "—" && (
-                      <p className="text-xs font-medium text-primary mt-0.5">ARR potential: {tier.arr}</p>
+                      <p className="text-xs font-medium text-brand-human mt-0.5">ARR potential: {tier.arr}</p>
                     )}
                     <p className="text-[10px] text-muted-foreground/70 mt-1 italic">{tier.example}</p>
                     <ul className="mt-3 space-y-1.5">
