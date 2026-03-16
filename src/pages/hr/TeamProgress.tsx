@@ -52,8 +52,6 @@ interface UserSummary {
 }
 
 const THRESHOLD = 60;
-const DEMO_PROGRESS = generateDemoProgress();
-const DEPT_TRENDS = generateDeptTrends();
 
 /* ─── Helpers ─── */
 const readinessColor = (score: number) =>
