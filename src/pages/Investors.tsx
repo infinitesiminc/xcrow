@@ -258,7 +258,7 @@ export default function Investors() {
                           { task: "Automated Compliance Check", weak: "Domain Judgment", score: 61, status: "Queued" },
                         ].map((s, i) => (
                           <div key={s.task} className="flex items-center gap-2 rounded-lg border border-border/30 bg-background/50 p-2">
-                            <div className={`w-1.5 h-8 rounded-full shrink-0 ${i === 0 ? "bg-primary" : "bg-muted-foreground/20"}`} />
+                            <div className={`w-1.5 h-8 rounded-full shrink-0 ${i === 0 ? "bg-brand-human" : "bg-muted-foreground/20"}`} />
                             <div className="flex-1 min-w-0">
                               <p className="text-[10px] font-medium text-foreground truncate">{s.task}</p>
                               <p className="text-[9px] text-muted-foreground">Weak: {s.weak} ({s.score}%)</p>
