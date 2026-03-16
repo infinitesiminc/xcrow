@@ -110,6 +110,22 @@ export default function ScoreDistributions() {
     })();
   }, []);
 
+  // Per-job task variance map
+  const jobVariance = useMemo(() => {
+    const map = new Map<string, { min: number; max: number; spread: number; count: number }>();
+    const grouped = new Map<string, number[]>();
+    tasks.forEach(t => {
+      if (!grouped.has(t.job_id)) grouped.set(t.job_id, []);
+      grouped.get(t.job_id)!.push(t.ai_exposure_score ?? 50);
+    });
+    grouped.forEach((scores, jobId) => {
+      const min = Math.min(...scores);
+      const max = Math.max(...scores);
+      map.set(jobId, { min, max, spread: max - min, count: scores.length });
+    });
+    return map;
+  }, [tasks]);
+
   const jobScores = useMemo(() => jobs.map(j => j.augmented_percent ?? 0), [jobs]);
   const taskScores = useMemo(() => tasks.map(t => t.ai_exposure_score ?? 50), [tasks]);
 
