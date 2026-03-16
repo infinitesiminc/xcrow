@@ -130,7 +130,7 @@ export default function StepTaskDrilldown() {
                 <Layers className="h-3 w-3 text-muted-foreground shrink-0" />
                 <span className="text-sm truncate">{t.cluster_name}</span>
                 {t.priority === "critical" && (
-                  <ArrowUpRight className="h-3 w-3 text-dot-purple shrink-0" />
+                  <ArrowUpRight className="h-3 w-3 text-brand-ai shrink-0" />
                 )}
               </div>
               <div className="flex justify-center">{scoreBadge(t.ai_exposure_score)}</div>

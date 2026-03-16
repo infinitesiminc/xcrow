@@ -73,7 +73,7 @@ export default function StepTeamProgress() {
                 />
               </div>
               <span className="text-xs font-mono font-medium w-10 text-right">{d.score}%</span>
-              <span className="text-[11px] text-dot-teal font-medium w-10">{d.trend}</span>
+              <span className="text-[11px] text-brand-human font-medium w-10">{d.trend}</span>
             </motion.div>
           ))}
         </div>

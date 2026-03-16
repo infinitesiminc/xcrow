@@ -102,7 +102,7 @@ export default function StepActionCenter() {
       {/* Retry queue */}
       <div className="rounded-xl border border-border bg-card p-4">
         <div className="flex items-center gap-2 mb-3">
-          <RefreshCw className="h-3.5 w-3.5 text-dot-blue" />
+          <RefreshCw className="h-3.5 w-3.5 text-brand-human" />
           <h4 className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
             Adaptive Retry Queue
           </h4>

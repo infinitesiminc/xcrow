@@ -162,9 +162,9 @@ export default function StepModelAdaptation() {
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.8 }}
-        className="rounded-xl border border-dot-teal/20 bg-dot-teal/5 p-4 flex items-start gap-3"
+        className="rounded-xl border border-brand-human/20 bg-brand-human/5 p-4 flex items-start gap-3"
       >
-        <RefreshCw className="h-4 w-4 text-dot-teal mt-0.5 shrink-0" />
+        <RefreshCw className="h-4 w-4 text-brand-human mt-0.5 shrink-0" />
         <div className="space-y-1">
           <p className="text-sm font-medium text-foreground">
             Always adapting — no manual intervention
