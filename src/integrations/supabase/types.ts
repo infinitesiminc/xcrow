@@ -706,6 +706,33 @@ export type Database = {
         }
         Relationships: []
       }
+      user_usage: {
+        Row: {
+          analyses_used: number
+          id: string
+          period_start: string
+          simulations_used: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          analyses_used?: number
+          id?: string
+          period_start?: string
+          simulations_used?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          analyses_used?: number
+          id?: string
+          period_start?: string
+          simulations_used?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       workspace_members: {
         Row: {
           id: string
@@ -743,6 +770,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      check_usage_limit: {
+        Args: { _type: string; _user_id: string }
+        Returns: Json
+      }
       delete_email: {
         Args: { message_id: number; queue_name: string }
         Returns: boolean
@@ -772,6 +803,10 @@ export type Database = {
           total_questions: number
           user_id: string
         }[]
+      }
+      increment_usage: {
+        Args: { _type: string; _user_id: string }
+        Returns: Json
       }
       is_workspace_admin: {
         Args: { _user_id: string; _workspace_id: string }
