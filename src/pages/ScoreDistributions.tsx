@@ -257,6 +257,26 @@ export default function ScoreDistributions() {
     );
   }
 
+  if (jobs.length === 0 && !isSuperAdmin) {
+    return (
+      <div className="min-h-screen bg-background p-8">
+        <Button variant="ghost" onClick={() => navigate(-1)} className="mb-6">
+          <ArrowLeft className="w-4 h-4 mr-2" />Back
+        </Button>
+        <div className="py-16 text-center space-y-4">
+          <Database className="h-12 w-12 mx-auto text-muted-foreground/40" />
+          <h2 className="text-lg font-semibold text-foreground">No analyzed roles yet</h2>
+          <p className="text-sm text-muted-foreground max-w-md mx-auto">
+            Go to ATS Sync to import your company's roles, then run analysis to see AI exposure scores across your organization.
+          </p>
+          <Button onClick={() => navigate("/hr/ats-sync")}>
+            <Briefcase className="h-4 w-4 mr-2" />Import & Analyze Roles
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background">
       <div className="max-w-5xl mx-auto px-4 py-6 sm:py-10">
