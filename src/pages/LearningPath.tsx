@@ -628,7 +628,7 @@ export default function LearningPath() {
                       : exposure >= 50
                       ? { icon: Zap, color: "text-warning", summary: "AI is increasingly capable here — learn to collaborate with AI tools effectively." }
                       : exposure >= 30
-                      ? { icon: Brain, color: "text-dot-purple", summary: "AI assists with parts of this task — your expertise remains the differentiator." }
+                      ? { icon: Brain, color: "text-brand-mid", summary: "AI assists with parts of this task — your expertise remains the differentiator." }
                       : { icon: Shield, color: "text-success", summary: "This task relies heavily on human judgment — AI plays a minimal role." };
                     const AiIcon = aiMeta.icon;
 
