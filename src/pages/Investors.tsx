@@ -230,20 +230,24 @@ export default function Investors() {
         <section>
           <SectionHeader
             badge="Business Model"
-            title="SaaS with usage-based expansion"
-            subtitle="Land with workspace-level subscriptions, expand as organizations analyze more roles and run more simulations."
+            title="Per-role SaaS with built-in expansion"
+            subtitle="Land with free analysis, convert to per-role billing ($29→$12/role/mo at scale), expand as orgs map more roles."
           />
           <div className="grid sm:grid-cols-3 gap-4">
             {[
-              { title: "Starter", price: "Free", features: ["5 role analyses/mo", "3 simulations/mo", "1 workspace"] },
-              { title: "Pro", price: "$49/mo", features: ["Unlimited analyses", "Unlimited simulations", "Team workspace", "Action Center"] },
-              { title: "Enterprise", price: "Custom", features: ["ATS integration", "SSO & compliance", "Dedicated support", "Custom simulations"] },
+              { title: "Free", price: "$0", arr: "—", example: "Individual ICs, consultants", features: ["1 role analysis", "1 simulation", "Personal dashboard"] },
+              { title: "Growth", price: "From $19/role/mo", arr: "$50K–$250K", example: "Series A–C startups (50–200 roles)", highlighted: true, features: ["Unlimited analyses & sims", "Team dashboards & heatmaps", "Bulk ATS sync", "Volume discounts at scale"] },
+              { title: "Enterprise", price: "Custom", arr: "$250K–$1M+", example: "Fortune 500 (1,000+ roles)", features: ["Everything in Growth", "SSO & admin controls", "Model-aware re-scoring SLA", "Dedicated account manager", "Custom integrations & API"] },
             ].map((tier, i) => (
               <motion.div key={i} {...fadeUp} transition={{ ...fadeUp.transition, delay: i * 0.1 }}>
-                <Card className={`h-full ${i === 1 ? "border-primary/30 bg-primary/5" : ""}`}>
+                <Card className={`h-full ${tier.highlighted ? "border-primary/30 bg-primary/5" : ""}`}>
                   <CardContent className="p-5">
                     <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{tier.title}</p>
                     <p className="text-xl font-bold text-foreground mt-1">{tier.price}</p>
+                    {tier.arr !== "—" && (
+                      <p className="text-xs font-medium text-primary mt-0.5">ARR potential: {tier.arr}</p>
+                    )}
+                    <p className="text-[10px] text-muted-foreground/70 mt-1 italic">{tier.example}</p>
                     <ul className="mt-3 space-y-1.5">
                       {tier.features.map((f) => (
                         <li key={f} className="flex items-center gap-2 text-xs text-muted-foreground">
@@ -257,6 +261,109 @@ export default function Investors() {
               </motion.div>
             ))}
           </div>
+
+          {/* ARR scenario table */}
+          <motion.div {...fadeUp} className="mt-6">
+            <Card className="border-border/50">
+              <CardContent className="p-5">
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Revenue Scenario · 100 Customers</p>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-xs">
+                    <thead>
+                      <tr className="border-b border-border/50">
+                        <th className="text-left py-2 text-muted-foreground font-medium">Segment</th>
+                        <th className="text-left py-2 text-muted-foreground font-medium">Avg Roles</th>
+                        <th className="text-left py-2 text-muted-foreground font-medium">Avg Price/Role</th>
+                        <th className="text-right py-2 text-muted-foreground font-medium">ARR / Customer</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {[
+                        { seg: "SMB (60%)", roles: "25", price: "$29", arr: "$8,700" },
+                        { seg: "Mid-Market (30%)", roles: "150", price: "$15", arr: "$27,000" },
+                        { seg: "Enterprise (10%)", roles: "1,000+", price: "Custom", arr: "$250,000+" },
+                      ].map((row) => (
+                        <tr key={row.seg} className="border-b border-border/20 last:border-0">
+                          <td className="py-2 text-foreground font-medium">{row.seg}</td>
+                          <td className="py-2 text-muted-foreground">{row.roles}</td>
+                          <td className="py-2 text-muted-foreground">{row.price}</td>
+                          <td className="py-2 text-right text-foreground font-semibold">{row.arr}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                <p className="text-[10px] text-muted-foreground/60 mt-3">Blended ARR at 100 customers: ~$3.8M. Path to $10M+ with 250 customers.</p>
+              </CardContent>
+            </Card>
+          </motion.div>
+        </section>
+
+        {/* ── Competitive Landscape ── */}
+        <section>
+          <SectionHeader
+            badge="Competitive Landscape"
+            title="Uniquely positioned at the intersection"
+            subtitle="No incumbent combines real-time AI exposure analysis with adaptive simulation-based training."
+          />
+          <motion.div {...fadeUp}>
+            <Card className="border-border/50">
+              <CardContent className="p-5">
+                {/* 2-axis chart */}
+                <div className="relative w-full aspect-square max-w-md mx-auto">
+                  {/* Axes */}
+                  <div className="absolute bottom-0 left-0 right-0 h-px bg-border" />
+                  <div className="absolute top-0 bottom-0 left-0 w-px bg-border" />
+                  {/* Axis labels */}
+                  <span className="absolute -bottom-6 left-1/2 -translate-x-1/2 text-[10px] text-muted-foreground font-medium uppercase tracking-wider">AI Exposure Intelligence →</span>
+                  <span className="absolute -left-2 top-1/2 -translate-y-1/2 -rotate-90 text-[10px] text-muted-foreground font-medium uppercase tracking-wider whitespace-nowrap">Adaptive Upskilling →</span>
+
+                  {/* Quadrant labels */}
+                  <span className="absolute top-2 left-2 text-[9px] text-muted-foreground/40 uppercase">Generic Training</span>
+                  <span className="absolute top-2 right-2 text-[9px] text-muted-foreground/40 uppercase text-right">Full AI Readiness</span>
+                  <span className="absolute bottom-2 left-2 text-[9px] text-muted-foreground/40 uppercase">Legacy HR Tech</span>
+                  <span className="absolute bottom-2 right-2 text-[9px] text-muted-foreground/40 uppercase text-right">Analysis Only</span>
+
+                  {/* Competitors plotted */}
+                  {[
+                    { name: "LinkedIn Learning", x: 15, y: 55, color: "bg-muted-foreground/60" },
+                    { name: "Coursera", x: 10, y: 50, color: "bg-muted-foreground/60" },
+                    { name: "McKinsey", x: 60, y: 20, color: "bg-muted-foreground/60" },
+                    { name: "Deloitte", x: 55, y: 15, color: "bg-muted-foreground/60" },
+                    { name: "Eightfold", x: 50, y: 30, color: "bg-muted-foreground/60" },
+                    { name: "Gloat", x: 45, y: 35, color: "bg-muted-foreground/60" },
+                    { name: "Workday", x: 30, y: 25, color: "bg-muted-foreground/60" },
+                    { name: "Infinite Sim", x: 85, y: 85, color: "bg-primary" },
+                  ].map((c) => (
+                    <div
+                      key={c.name}
+                      className="absolute flex flex-col items-center"
+                      style={{ left: `${c.x}%`, bottom: `${c.y}%`, transform: "translate(-50%, 50%)" }}
+                    >
+                      <span className={`text-[10px] font-medium mb-1 whitespace-nowrap ${c.name === "Infinite Sim" ? "text-primary font-bold text-xs" : "text-muted-foreground"}`}>
+                        {c.name}
+                      </span>
+                      <div className={`h-3 w-3 rounded-full ${c.color} ${c.name === "Infinite Sim" ? "ring-4 ring-primary/20 h-4 w-4" : ""}`} />
+                    </div>
+                  ))}
+                </div>
+
+                {/* Legend */}
+                <div className="mt-8 grid sm:grid-cols-3 gap-3">
+                  {[
+                    { name: "Consultancies (McKinsey, Deloitte)", gap: "Deep analysis but manual, $500K+ per engagement, no ongoing training" },
+                    { name: "L&D Platforms (LinkedIn, Coursera)", gap: "Scalable training but generic content, zero AI exposure insight" },
+                    { name: "HR Tech (Eightfold, Gloat, Workday)", gap: "Skills taxonomies but no task-level AI risk scoring or simulations" },
+                  ].map((comp) => (
+                    <div key={comp.name} className="p-3 rounded-lg bg-muted/30">
+                      <p className="text-xs font-medium text-foreground mb-1">{comp.name}</p>
+                      <p className="text-[10px] text-muted-foreground">{comp.gap}</p>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
         </section>
 
         {/* ── Team ── */}
