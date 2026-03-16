@@ -30,7 +30,7 @@ export default function StickyTicker() {
   return (
     <div className="sticky top-14 z-40 w-full overflow-hidden border-b border-border/40 bg-background/95 backdrop-blur-sm">
       <div className="relative h-[28px] overflow-hidden">
-        <div className="flex <div className="flex animate-[ticker_9s_linear_infinite] whitespace-nowrap items-center h-full"> whitespace-nowrap items-center h-full">
+        <div className="flex animate-[ticker_9s_linear_infinite] whitespace-nowrap items-center h-full">
           {[...FRONTIER_RELEASES, ...FRONTIER_RELEASES].map((r, i) => (
             <span key={i} className="inline-flex items-center gap-1.5 px-4 text-[11px] shrink-0">
               <span className="h-1.5 w-1.5 rounded-full bg-destructive/70 shrink-0" />
