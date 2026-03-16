@@ -157,6 +157,11 @@ Respond ONLY with a valid JSON array, no markdown.`;
       priority: t.priority || "medium",
     }));
 
+    // Delete old clusters only AFTER we have valid new data
+    if (shouldRegenerate) {
+      await sb.from("job_task_clusters").delete().eq("job_id", jobId);
+    }
+
     const { error: insertErr } = await sb.from("job_task_clusters").insert(rows);
     if (insertErr) console.error("Insert error:", insertErr);
 
