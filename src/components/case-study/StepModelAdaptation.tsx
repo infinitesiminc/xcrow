@@ -143,7 +143,7 @@ export default function StepModelAdaptation() {
                 <div className="flex items-center gap-1.5 text-sm font-mono">
                   <span className="text-muted-foreground">{s.before}%</span>
                   <span className="text-muted-foreground/50">→</span>
-                  <span className="font-bold text-dot-amber">{s.after}%</span>
+                  <span className="font-bold text-brand-ai">{s.after}%</span>
                 </div>
               </div>
               <div className="flex items-center gap-2">
