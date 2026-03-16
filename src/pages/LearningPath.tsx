@@ -877,6 +877,7 @@ export default function LearningPath() {
         taskName={simTask}
         jobTitle={job.title}
         company={companyName}
+        mode="upskill"
       />
     </div>
   );
