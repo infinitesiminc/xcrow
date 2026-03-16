@@ -1,13 +1,18 @@
 import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { BarChart3, ArrowLeft, Loader2, Layers, Briefcase } from "lucide-react";
+import { BarChart3, ArrowLeft, Loader2, Layers, Briefcase, Database } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 
+const SUPERADMIN_IDS = [
+  "7be41055-be68-4cab-b63c-f3b0c483e6eb",
+  "bb10735b-051e-4bb5-918e-931a9c79d0fd",
+];
 interface JobRow {
   id: string;
   title: string;
