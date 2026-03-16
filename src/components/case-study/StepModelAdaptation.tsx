@@ -1,8 +1,14 @@
-import { motion } from "framer-motion";
+import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { Zap, RefreshCw, Brain, Users, TrendingUp, AlertTriangle } from "lucide-react";
 
-const TIMELINE = [
-  { time: "T+0h", event: "GPT-5 released", icon: Zap, color: "bg-dot-amber/10 text-dot-amber" },
+const ROTATING_MODELS = [
+  "GPT-5.4", "Claude 4.7 Sonnet", "Gemini 3.1 Flash", "Llama 4 Maverick",
+  "Gemini 3.1 Pro", "Mistral Large 3", "GPT-5.3", "Claude 4.6",
+  "Gemini 3 Flash", "DeepSeek R2 Lite", "GPT-5.2", "DeepSeek R2",
+];
+
+const TIMELINE_TAIL = [
   { time: "T+2h", event: "Engine detects 34 task clusters affected", icon: Brain, color: "bg-dot-blue/10 text-dot-blue" },
   { time: "T+6h", event: "Risk scores recalibrated across Legal & Finance", icon: RefreshCw, color: "bg-dot-purple/10 text-dot-purple" },
   { time: "T+12h", event: "19 new simulations generated for affected roles", icon: Brain, color: "bg-muted" },
@@ -24,6 +30,14 @@ const IMPACT_SUMMARY = [
 ];
 
 export default function StepModelAdaptation() {
+  const [modelIdx, setModelIdx] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setModelIdx((prev) => (prev + 1) % ROTATING_MODELS.length);
+    }, 1800);
+    return () => clearInterval(interval);
+  }, []);
   return (
     <div className="space-y-4">
       <p className="text-sm text-muted-foreground leading-relaxed">
@@ -59,12 +73,40 @@ export default function StepModelAdaptation() {
           </h4>
         </div>
         <div className="space-y-2">
-          {TIMELINE.map((t, i) => (
+          {/* First row: rotating model name */}
+          <motion.div
+            initial={{ opacity: 0, x: -8 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.15 }}
+            className="flex items-center gap-3 rounded-lg border border-dot-amber/30 bg-dot-amber/5 px-3 py-2"
+          >
+            <span className="text-xs font-mono font-bold text-muted-foreground w-12 shrink-0">T+0h</span>
+            <div className="w-7 h-7 rounded-full bg-dot-amber/10 text-dot-amber flex items-center justify-center shrink-0">
+              <Zap className="h-3.5 w-3.5" />
+            </div>
+            <div className="relative h-5 overflow-hidden flex-1">
+              <AnimatePresence mode="wait">
+                <motion.span
+                  key={modelIdx}
+                  initial={{ y: 14, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  exit={{ y: -14, opacity: 0 }}
+                  transition={{ duration: 0.25 }}
+                  className="text-sm font-medium text-foreground absolute inset-0"
+                >
+                  {ROTATING_MODELS[modelIdx]} released
+                </motion.span>
+              </AnimatePresence>
+            </div>
+          </motion.div>
+
+          {/* Remaining timeline steps */}
+          {TIMELINE_TAIL.map((t, i) => (
             <motion.div
               key={t.time}
               initial={{ opacity: 0, x: -8 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.15 + i * 0.1 }}
+              transition={{ delay: 0.25 + i * 0.1 }}
               className="flex items-center gap-3 rounded-lg border border-border/40 px-3 py-2"
             >
               <span className="text-xs font-mono font-bold text-muted-foreground w-12 shrink-0">
