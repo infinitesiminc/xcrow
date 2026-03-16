@@ -18,6 +18,7 @@ import NotFound from "./pages/NotFound.tsx";
 
 import Contact from "./pages/Contact.tsx";
 import Pricing from "./pages/Pricing.tsx";
+import Investors from "./pages/Investors.tsx";
 import ATSSync from "./pages/hr/ATSSync.tsx";
 import SimulationBuilder from "./pages/products/SimulationBuilder.tsx";
 import SimulationDesign from "./pages/SimulationDesign.tsx";
@@ -61,6 +62,7 @@ const App = () => (
             
             <Route path="/contact" element={<><Navbar /><StickyTicker /><Contact /><Footer /></>} />
             <Route path="/pricing" element={<><Navbar /><StickyTicker /><Pricing /><Footer /></>} />
+            <Route path="/investors" element={<><Navbar /><StickyTicker /><Investors /><Footer /></>} />
             <Route path="/products/simulation-builder" element={<><Navbar /><SimulationBuilder /><Footer /></>} />
             <Route path="/why-simulation" element={<><Navbar /><StickyTicker /><SimulationDesign /><Footer /></>} />
             <Route path="/simulations" element={<><Navbar /><Simulations /><Footer /></>} />
