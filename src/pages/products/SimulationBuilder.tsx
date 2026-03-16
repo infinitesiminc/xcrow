@@ -180,12 +180,21 @@ export default function SimulationBuilder() {
     setQueueConsecutiveErrors(0);
     setQueueProcessed(0);
 
-    // Get fresh list of pending jobs
-    const { data: clusters } = await supabase
-      .from("job_task_clusters")
-      .select("job_id")
-      .limit(10000);
-    const alreadyDone = new Set((clusters || []).map(c => c.job_id));
+    // Get fresh list of pending jobs (only check Anthropic job clusters)
+    const jobIds = jobs.map(j => j.id);
+    const alreadyDone = new Set<string>();
+    let from = 0;
+    while (true) {
+      const { data: clusters } = await supabase
+        .from("job_task_clusters")
+        .select("job_id")
+        .in("job_id", jobIds)
+        .range(from, from + 999);
+      if (!clusters || clusters.length === 0) break;
+      clusters.forEach(c => alreadyDone.add(c.job_id));
+      if (clusters.length < 1000) break;
+      from += 1000;
+    }
     const pending = jobs.filter(j => !alreadyDone.has(j.id));
 
     let errors = 0;
