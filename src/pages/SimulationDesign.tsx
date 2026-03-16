@@ -421,10 +421,10 @@ function PillarScoreVisual() {
 
 function AdaptiveLoopVisual() {
   const events = [
-    { icon: Zap, label: "New model released", time: "T+0h", color: "bg-dot-amber/10 text-dot-amber" },
-    { icon: Brain, label: "34 task clusters reclassified", time: "T+2h", color: "bg-dot-blue/10 text-dot-blue" },
-    { icon: RefreshCw, label: "Simulations regenerated", time: "T+6h", color: "bg-dot-purple/10 text-dot-purple" },
-    { icon: Users, label: "127 employees re-queued", time: "T+24h", color: "bg-dot-teal/10 text-dot-teal" },
+    { icon: Zap, label: "New model released", time: "T+0h", color: "bg-brand-ai/10 text-brand-ai" },
+    { icon: Brain, label: "34 task clusters reclassified", time: "T+2h", color: "bg-brand-ai/10 text-brand-ai" },
+    { icon: RefreshCw, label: "Simulations regenerated", time: "T+6h", color: "bg-brand-mid/10 text-brand-mid" },
+    { icon: Users, label: "127 employees re-queued", time: "T+24h", color: "bg-brand-human/10 text-brand-human" },
   ];
   return (
     <div className="rounded-xl border border-border bg-card p-4 space-y-2">
