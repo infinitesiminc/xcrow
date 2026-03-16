@@ -205,10 +205,10 @@ export default function Investors() {
                       <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-3 font-medium">Readiness Pillars</p>
                       <div className="grid grid-cols-2 gap-2">
                         {[
-                          { pillar: "Tool Awareness", score: 82, color: "hsl(var(--primary) / 0.6)" },
-                          { pillar: "Domain Judgment", score: 71, color: "hsl(45 93% 47% / 0.6)" },
-                          { pillar: "Adaptive Thinking", score: 64, color: "hsl(152 69% 40% / 0.6)" },
-                          { pillar: "Human Value-Add", score: 88, color: "hsl(199 89% 48% / 0.6)" },
+                          { pillar: "Tool Awareness", score: 82, color: "hsl(var(--brand-human) / 0.7)" },
+                          { pillar: "Domain Judgment", score: 71, color: "hsl(var(--brand-mid) / 0.7)" },
+                          { pillar: "Adaptive Thinking", score: 64, color: "hsl(var(--brand-human) / 0.5)" },
+                          { pillar: "Human Value-Add", score: 88, color: "hsl(var(--brand-human) / 0.8)" },
                         ].map((p) => (
                           <div key={p.pillar} className="rounded-lg border border-border/30 p-2.5 bg-background/50">
                             <div className="flex items-center justify-between mb-1.5">
