@@ -18,6 +18,7 @@ import {
 import { LineChart, Line, ResponsiveContainer } from "recharts";
 import { type DeptTrendData } from "@/data/demo-team-progress";
 
+const EMPTY_FUNNEL = { jobsImported: 0, jobsAnalyzed: 0, rolesActivated: 0, employeesStarted: 0 };
 /* ─── Types ─── */
 interface ProgressRow {
   user_id: string;
