@@ -10,7 +10,6 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import NewsTicker from "@/components/NewsTicker";
 import CompanyMarquee from "@/components/CompanyMarquee";
 
 const MARQUEE_ROWS = [
@@ -32,9 +31,21 @@ const trustFeatures = [
   { icon: Globe, title: "Data residency", description: "Choose EU, US, or APAC data regions" },
 ];
 
+/* ── Frontier model releases for hero ticker ── */
+const FRONTIER_RELEASES = [
+  { date: "Mar 9", model: "GPT-5.4" },
+  { date: "Mar 5", model: "Gemini 3.1 Flash" },
+  { date: "Feb 19", model: "Gemini 3.1 Pro" },
+  { date: "Feb 12", model: "GPT-5.3" },
+  { date: "Feb 5", model: "Claude 4.6" },
+  { date: "Jan 28", model: "Gemini 3 Flash" },
+  { date: "Jan 15", model: "GPT-5.2" },
+  { date: "Jan 8", model: "DeepSeek R2" },
+];
+
 /* ── Model releases for the acceleration gap visual ── */
 const modelReleases = [
-  { month: "Jan", models: ["GPT-5.2", "Gemini 3 Flash"] },
+  { month: "Jan", models: ["GPT-5.2", "Gemini 3 Flash", "DeepSeek R2"] },
   { month: "Feb", models: ["Claude 4.6", "Gemini 3.1 Pro", "GPT-5.3"] },
   { month: "Mar", models: ["GPT-5.4", "Gemini 3.1 Flash"] },
 ];
@@ -442,13 +453,24 @@ export default function Enterprise() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* ── Ticker — live proof of acceleration ── */}
-      <div className="px-4 pt-4 mx-auto max-w-4xl">
-        <NewsTicker />
-      </div>
-
       {/* ── Hero ── */}
-      <section className="relative overflow-hidden px-4 pt-12 pb-20">
+      <section className="relative overflow-hidden px-4 pt-6 pb-20">
+        {/* Frontier model release ticker — single row, no header */}
+        <div className="mx-auto max-w-5xl mb-8 overflow-hidden rounded-lg border border-border/40 bg-muted/20">
+          <div className="relative h-[28px] overflow-hidden">
+            <div className="flex animate-[ticker_35s_linear_infinite] whitespace-nowrap items-center h-full">
+              {[...FRONTIER_RELEASES, ...FRONTIER_RELEASES].map((r, i) => (
+                <span key={i} className="inline-flex items-center gap-1.5 px-4 text-[11px] shrink-0">
+                  <span className="h-1.5 w-1.5 rounded-full bg-destructive/70 shrink-0" />
+                  <span className="font-mono text-[10px] text-muted-foreground/60">{r.date}</span>
+                  <span className="font-medium text-foreground/70">{r.model}</span>
+                  <span className="text-muted-foreground/50">released</span>
+                </span>
+              ))}
+            </div>
+          </div>
+        </div>
+
         <div className="mx-auto max-w-4xl text-center">
           <motion.div {...fadeUp}>
             <span className="inline-flex items-center gap-2 rounded-full border border-border bg-muted/60 px-4 py-1.5 text-xs font-medium tracking-wide text-muted-foreground mb-6">
