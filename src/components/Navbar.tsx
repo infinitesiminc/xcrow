@@ -25,21 +25,16 @@ export default function Navbar() {
     ? user.user_metadata.display_name.slice(0, 2).toUpperCase()
     : user?.email?.slice(0, 2).toUpperCase() ?? "?";
 
-  const productItems = user ? [] : [
-    { label: "Platform Overview", path: "/" },
-    { label: "How It Works", path: "/how-it-works" },
-    { label: "Case Study", path: "/case-study/anthropic" },
-  ];
-
   const navItems = [
     ...(!user ? [
+      { label: "How It Works", path: "/how-it-works" },
+      { label: "Case Study", path: "/case-study/anthropic" },
       { label: "Pricing", path: "/pricing" },
       { label: "Contact", path: "/contact" },
     ] : []),
     ...(user ? [
       { label: "HR Dashboard", path: "/hr/team-progress" },
     ] : []),
-    
   ];
 
   const handleNav = (path: string) => {
