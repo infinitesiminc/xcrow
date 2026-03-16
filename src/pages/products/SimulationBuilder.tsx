@@ -39,12 +39,13 @@ export default function SimulationBuilder() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { user, openAuthModal } = useAuth();
+  const { workspaceId, loading: wsLoading, isSuperAdmin } = useWorkspace();
 
   /* ── State ── */
   const [jobs, setJobs] = useState<DbJob[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
-  const [companyName, setCompanyName] = useState("Anthropic");
+  const [companyName, setCompanyName] = useState("");
   const [companyId, setCompanyId] = useState<string | null>(null);
   const [collapsedDepts, setCollapsedDepts] = useState<Set<string>>(new Set());
   const [analyzedJobIds, setAnalyzedJobIds] = useState<Set<string>>(new Set());
@@ -58,16 +59,20 @@ export default function SimulationBuilder() {
   const pauseRef = useRef(false);
   const abortRef = useRef(false);
 
-  /* ── Fetch Anthropic jobs ── */
+  /* ── Fetch workspace companies & jobs ── */
   useEffect(() => {
+    if (wsLoading) return;
+    if (!workspaceId) { setJobs([]); setLoading(false); return; }
+
     (async () => {
       setLoading(true);
+      // Fetch companies for this workspace
       const { data: companies } = await supabase
         .from("companies")
         .select("id, name")
-        .ilike("name", "%anthropic%")
+        .eq("workspace_id", workspaceId)
         .limit(1);
-      if (!companies?.length) { setLoading(false); return; }
+      if (!companies?.length) { setJobs([]); setLoading(false); return; }
       setCompanyId(companies[0].id);
       setCompanyName(companies[0].name);
 
@@ -79,7 +84,7 @@ export default function SimulationBuilder() {
       setJobs(data || []);
       setLoading(false);
     })();
-  }, []);
+  }, [workspaceId, wsLoading]);
 
   /* ── Fetch which jobs are pre-analyzed (Anthropic only) ── */
   const refreshAnalyzed = useCallback(async () => {
