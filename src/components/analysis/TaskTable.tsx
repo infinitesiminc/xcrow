@@ -91,7 +91,7 @@ export function TaskTable({ tasks, skills, completedTasks, onPractice }: TaskTab
                 initial={{ opacity: 0, y: 6 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.02 }}
-                className="rounded-lg border border-border bg-card p-3 flex flex-col gap-2"
+                className="rounded-lg border border-border bg-card p-4 flex flex-col gap-2.5"
               >
                 {/* Task name */}
                 <span className="text-sm font-medium text-foreground leading-tight line-clamp-2">
