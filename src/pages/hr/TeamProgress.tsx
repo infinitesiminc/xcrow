@@ -773,7 +773,7 @@ export default function TeamProgress() {
       {viewMode === "overview" ? (
         <>
           {/* 1. Executive Brief */}
-          <ExecutiveBrief progress={progress} deptTrends={DEPT_TRENDS} />
+          <ExecutiveBrief progress={progress} deptTrends={[]} />
 
           {/* 2. Deployment Funnel (compact) */}
           <DeploymentFunnel />
