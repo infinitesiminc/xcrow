@@ -245,7 +245,7 @@ export default function ScoreDistributions() {
                     <span className="border-l border-border pl-3">±spread</span>
                   </div>
                 </div>
-                <div className="space-y-[3px]">
+                <div className="space-y-[1px]">
                   {sortedJobs.map((j, i) => {
                     const score = j.augmented_percent ?? 0;
                     const barColor = score >= 70 ? "bg-destructive" : score >= 40 ? "bg-warning" : "bg-success";
