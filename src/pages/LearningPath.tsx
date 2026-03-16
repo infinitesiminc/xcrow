@@ -411,7 +411,7 @@ export default function LearningPath() {
               </div>
             </div>
 
-            {/* AI Exposure Score + Radar Chart — compact */}
+            {/* AI Exposure Score + Quadrant Chart */}
             <div className="mt-3 flex flex-col sm:flex-row items-center gap-4">
               {/* Score */}
               <div className="text-center shrink-0 sm:w-[160px]">
@@ -428,60 +428,77 @@ export default function LearningPath() {
                 )}
               </div>
 
-              {/* Radar chart */}
-              {analyzedTasks.length >= 3 && (() => {
-                const tasks = analyzedTasks.slice(0, 10);
-                const n = tasks.length;
-                const cx = 100, cy = 100, maxR = 72;
-                const levels = [25, 50, 75, 100];
-                const angleStep = (2 * Math.PI) / n;
-                const startAngle = -Math.PI / 2;
-
-                const getPoint = (i: number, val: number) => {
-                  const angle = startAngle + i * angleStep;
-                  const r = (val / 100) * maxR;
-                  return { x: cx + r * Math.cos(angle), y: cy + r * Math.sin(angle) };
-                };
-
-                const dataPoints = tasks.map((t, i) => getPoint(i, t.ai_exposure_score ?? 50));
-                const polygon = dataPoints.map(p => `${p.x},${p.y}`).join(" ");
+              {/* X-Y Quadrant scatter */}
+              {analyzedTasks.length >= 2 && (() => {
+                const tasks = analyzedTasks.slice(0, 12);
+                // Chart area: padding for labels
+                const pad = { top: 14, right: 14, bottom: 24, left: 28 };
+                const w = 220, h = 180;
+                const plotW = w - pad.left - pad.right;
+                const plotH = h - pad.top - pad.bottom;
 
                 return (
-                  <div className="flex items-center gap-3 flex-1 min-w-0">
-                    <svg viewBox="0 0 200 200" className="w-[160px] h-[160px] shrink-0">
-                      {levels.map(lv => {
-                        const r = (lv / 100) * maxR;
-                        const pts = Array.from({ length: n }, (_, i) => {
-                          const angle = startAngle + i * angleStep;
-                          return `${cx + r * Math.cos(angle)},${cy + r * Math.sin(angle)}`;
-                        }).join(" ");
-                        return <polygon key={lv} points={pts} fill="none" stroke="hsl(var(--border))" strokeWidth={lv === 50 ? "0.7" : "0.3"} opacity={0.5} />;
-                      })}
-                      {tasks.map((_, i) => {
-                        const p = getPoint(i, 100);
-                        return <line key={i} x1={cx} y1={cy} x2={p.x} y2={p.y} stroke="hsl(var(--border))" strokeWidth="0.3" opacity={0.3} />;
-                      })}
-                      <polygon points={polygon} fill="hsl(var(--warning) / 0.15)" stroke="hsl(var(--warning))" strokeWidth="1.2" />
+                  <div className="flex items-start gap-3 flex-1 min-w-0">
+                    <svg viewBox={`0 0 ${w} ${h}`} className="w-[220px] h-[180px] shrink-0">
+                      {/* Quadrant backgrounds */}
+                      <rect x={pad.left} y={pad.top} width={plotW / 2} height={plotH / 2} fill="hsl(var(--success) / 0.06)" />
+                      <rect x={pad.left + plotW / 2} y={pad.top} width={plotW / 2} height={plotH / 2} fill="hsl(var(--destructive) / 0.06)" />
+                      <rect x={pad.left} y={pad.top + plotH / 2} width={plotW / 2} height={plotH / 2} fill="hsl(var(--muted) / 0.3)" />
+                      <rect x={pad.left + plotW / 2} y={pad.top + plotH / 2} width={plotW / 2} height={plotH / 2} fill="hsl(var(--warning) / 0.06)" />
+
+                      {/* Quadrant labels */}
+                      <text x={pad.left + plotW * 0.25} y={pad.top + 10} textAnchor="middle" className="text-[6px]" fill="hsl(var(--success))" opacity={0.7}>💪 Human Edge</text>
+                      <text x={pad.left + plotW * 0.75} y={pad.top + 10} textAnchor="middle" className="text-[6px]" fill="hsl(var(--destructive))" opacity={0.7}>🔴 Urgent Upskill</text>
+                      <text x={pad.left + plotW * 0.25} y={pad.top + plotH - 4} textAnchor="middle" className="text-[6px]" fill="hsl(var(--muted-foreground))" opacity={0.5}>Low Priority</text>
+                      <text x={pad.left + plotW * 0.75} y={pad.top + plotH - 4} textAnchor="middle" className="text-[6px]" fill="hsl(var(--warning))" opacity={0.7}>🤖 Let AI Handle</text>
+
+                      {/* Axes */}
+                      <line x1={pad.left} y1={pad.top + plotH} x2={pad.left + plotW} y2={pad.top + plotH} stroke="hsl(var(--border))" strokeWidth="0.5" />
+                      <line x1={pad.left} y1={pad.top} x2={pad.left} y2={pad.top + plotH} stroke="hsl(var(--border))" strokeWidth="0.5" />
+                      {/* Midlines */}
+                      <line x1={pad.left + plotW / 2} y1={pad.top} x2={pad.left + plotW / 2} y2={pad.top + plotH} stroke="hsl(var(--border))" strokeWidth="0.3" strokeDasharray="3,3" opacity={0.5} />
+                      <line x1={pad.left} y1={pad.top + plotH / 2} x2={pad.left + plotW} y2={pad.top + plotH / 2} stroke="hsl(var(--border))" strokeWidth="0.3" strokeDasharray="3,3" opacity={0.5} />
+
+                      {/* Axis labels */}
+                      <text x={pad.left + plotW / 2} y={h - 2} textAnchor="middle" className="text-[7px]" fill="hsl(var(--muted-foreground))">AI Exposure →</text>
+                      <text x={6} y={pad.top + plotH / 2} textAnchor="middle" dominantBaseline="central" className="text-[7px]" fill="hsl(var(--muted-foreground))" transform={`rotate(-90, 6, ${pad.top + plotH / 2})`}>Job Impact →</text>
+
+                      {/* Tick marks */}
+                      <text x={pad.left} y={h - 10} textAnchor="middle" className="text-[6px]" fill="hsl(var(--muted-foreground))" opacity={0.5}>0</text>
+                      <text x={pad.left + plotW / 2} y={h - 10} textAnchor="middle" className="text-[6px]" fill="hsl(var(--muted-foreground))" opacity={0.5}>50</text>
+                      <text x={pad.left + plotW} y={h - 10} textAnchor="middle" className="text-[6px]" fill="hsl(var(--muted-foreground))" opacity={0.5}>100</text>
+
+                      {/* Data points */}
                       {tasks.map((t, i) => {
-                        const p = dataPoints[i];
-                        const labelP = getPoint(i, 118);
                         const exposure = t.ai_exposure_score ?? 50;
-                        const dotColor = exposure >= 70 ? "hsl(var(--destructive))" : exposure >= 40 ? "hsl(var(--warning))" : "hsl(var(--success))";
+                        const impact = t.job_impact_score ?? 50;
+                        const x = pad.left + (exposure / 100) * plotW;
+                        const y = pad.top + plotH - (impact / 100) * plotH;
+                        const dotColor = (exposure >= 50 && impact >= 50) ? "hsl(var(--destructive))"
+                          : (exposure < 50 && impact >= 50) ? "hsl(var(--success))"
+                          : (exposure >= 50 && impact < 50) ? "hsl(var(--warning))"
+                          : "hsl(var(--muted-foreground))";
                         return (
                           <g key={i}>
-                            <circle cx={p.x} cy={p.y} r="2.5" fill={dotColor} />
-                            <text x={labelP.x} y={labelP.y} textAnchor="middle" dominantBaseline="central" className="text-[8px] font-semibold" fill="hsl(var(--foreground))">
+                            <circle cx={x} cy={y} r="6" fill={dotColor} opacity={0.2} />
+                            <circle cx={x} cy={y} r="3" fill={dotColor} />
+                            <text x={x} y={y - 6} textAnchor="middle" className="text-[7px] font-semibold" fill="hsl(var(--foreground))">
                               {i + 1}
                             </text>
                           </g>
                         );
                       })}
                     </svg>
+
                     {/* Compact legend */}
                     <div className="flex flex-col gap-0.5 min-w-0">
                       {tasks.map((t, i) => {
                         const exposure = t.ai_exposure_score ?? 50;
-                        const dotColor = exposure >= 70 ? "bg-destructive" : exposure >= 40 ? "bg-warning" : "bg-success";
+                        const impact = t.job_impact_score ?? 50;
+                        const dotColor = (exposure >= 50 && impact >= 50) ? "bg-destructive"
+                          : (exposure < 50 && impact >= 50) ? "bg-success"
+                          : (exposure >= 50 && impact < 50) ? "bg-warning"
+                          : "bg-muted-foreground";
                         return (
                           <div key={i} className="flex items-center gap-1 min-w-0">
                             <span className={`w-1.5 h-1.5 rounded-full ${dotColor} shrink-0`} />
