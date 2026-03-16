@@ -378,7 +378,7 @@ function FeedbackLoopSection() {
       <div className="mx-auto max-w-5xl">
         <motion.div {...fadeUp} className="mb-12 text-center">
           <p className="text-xs font-medium uppercase tracking-[0.2em] text-muted-foreground mb-4">
-            Continuous Parity
+            Always Adapting
           </p>
           <h2 className="font-display text-3xl sm:text-4xl font-semibold text-foreground leading-tight max-w-3xl mx-auto">
             The feedback loop that keeps your workforce ahead
