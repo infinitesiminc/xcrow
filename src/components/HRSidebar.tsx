@@ -36,6 +36,7 @@ const workspaceItems = [
 ];
 
 const superadminItems = [
+  { title: "Workspaces", url: "/hr/workspaces", icon: Building2 },
   { title: "Roadmap", url: "/hr/roadmap", icon: Target },
   { title: "Analyze Tool", url: "/hr/analyze", icon: Search },
 ];
