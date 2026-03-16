@@ -127,6 +127,9 @@ export default function LearningPath() {
   /* ── Active tab ── */
   const [activeTab, setActiveTab] = useState<"path" | "custom">("path");
 
+  /* ── Hover interaction between chart and task cards ── */
+  const [hoveredTaskIndex, setHoveredTaskIndex] = useState<number | null>(null);
+
   /* ── Load job + company ── */
   useEffect(() => {
     if (!jobId) { setJobLoading(false); return; }
