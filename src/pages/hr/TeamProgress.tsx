@@ -524,7 +524,7 @@ function Leaderboard({ users, onSelect }: { users: UserSummary[]; onSelect: (u: 
           const rank = page * perPage + i + 1;
           return (
             <button key={u.userId} onClick={() => onSelect(u)} className="w-full grid grid-cols-[2rem_1fr_auto_4rem_4rem] gap-3 items-center px-3 py-2.5 rounded-lg text-left hover:bg-muted/40 transition-colors">
-              <span className={`text-xs font-bold ${rank <= 3 ? "text-dot-amber" : "text-muted-foreground"}`}>
+              <span className={`text-xs font-bold ${rank <= 3 ? "text-brand-mid" : "text-muted-foreground"}`}>
                 {rank <= 3 ? <Trophy className="h-3.5 w-3.5 inline" /> : rank}
               </span>
               <div className="min-w-0">
