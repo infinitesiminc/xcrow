@@ -86,11 +86,10 @@ export default function OnboardingModal({ open, onComplete, userId }: Onboarding
             <div className="relative">
               <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <input
-                type="url"
-                placeholder="e.g. https://acme.com"
+                type="text"
+                placeholder="e.g. acme.com"
                 value={company}
                 onChange={(e) => setCompany(e.target.value)}
-                pattern="^(https?:\/\/)?([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}(\/.*)?$"
                 className="w-full rounded-xl border border-input bg-background pl-10 pr-3 py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-ring"
               />
             </div>
