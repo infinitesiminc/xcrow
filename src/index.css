@@ -251,6 +251,45 @@
     radial-gradient(1.5px 1.5px at 55% 15%, hsl(200 100% 80% / 0.7) 50%, transparent 100%);
 }
 
+/* ── Case study glow border ── */
+@property --glow-angle {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}
+
+@keyframes glow-rotate {
+  to { --glow-angle: 360deg; }
+}
+
+.glow-border {
+  position: relative;
+  border-radius: 0.75rem;
+}
+
+.glow-border::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  padding: 1px;
+  background: conic-gradient(
+    from var(--glow-angle),
+    transparent 0%,
+    hsl(0 85% 55% / 0.5) 10%,
+    hsl(260 70% 55% / 0.4) 25%,
+    hsl(220 85% 55% / 0.5) 40%,
+    transparent 50%,
+    transparent 100%
+  );
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  animation: glow-rotate 3s linear infinite;
+  pointer-events: none;
+}
+
 /* ── Enforce minimum 11px font size app-wide ── */
 @layer utilities {
   [class*="text-[9px]"],
