@@ -49,6 +49,11 @@ interface DbJob {
 type SortField = "title" | "department" | "location";
 type SortDir = "asc" | "desc";
 
+const SUPERADMIN_IDS = [
+  "7be41055-be68-4cab-b63c-f3b0c483e6eb",
+  "bb10735b-051e-4bb5-918e-931a9c79d0fd",
+];
+
 /* ── component ── */
 export default function ATSSync() {
   const { user, openAuthModal } = useAuth();
@@ -66,22 +71,50 @@ export default function ATSSync() {
   const [sortDir, setSortDir] = useState<SortDir>("asc");
   const [companySearch, setCompanySearch] = useState("");
   const [companyDropdownOpen, setCompanyDropdownOpen] = useState(false);
+  const [workspaceId, setWorkspaceId] = useState<string | null>(null);
 
-  /* ── fetch companies ── */
+  const isSuperAdmin = !!user && SUPERADMIN_IDS.includes(user.id);
+
+  /* ── fetch workspace ── */
+  useEffect(() => {
+    if (!user) return;
+    (async () => {
+      const { data: membership } = await supabase
+        .from("workspace_members").select("workspace_id")
+        .eq("user_id", user.id).limit(1);
+      if (membership?.length) setWorkspaceId(membership[0].workspace_id);
+    })();
+  }, [user]);
+
+  /* ── fetch companies (workspace-scoped for non-superadmins) ── */
   const fetchCompanies = useCallback(async () => {
     setLoading(true);
-    const { data } = await supabase
+    let query = supabase
       .from("companies")
       .select("id, name, industry, logo_url, website, careers_url, detected_ats_platform, employee_range, brand_color, external_id")
       .order("name");
+    
+    // Non-superadmins only see their workspace's companies
+    if (!isSuperAdmin && workspaceId) {
+      query = query.eq("workspace_id", workspaceId);
+    } else if (!isSuperAdmin && !workspaceId) {
+      // No workspace yet — show nothing
+      setCompanies([]);
+      setLoading(false);
+      return;
+    }
+    
+    const { data } = await query;
     setCompanies((data as Company[]) || []);
     setLoading(false);
-  }, []);
+  }, [isSuperAdmin, workspaceId]);
 
   useEffect(() => {
     if (!user) return;
+    // Wait for workspace lookup before fetching (unless superadmin)
+    if (!isSuperAdmin && !workspaceId) return;
     fetchCompanies();
-  }, [user, fetchCompanies]);
+  }, [user, fetchCompanies, isSuperAdmin, workspaceId]);
 
   /* ── fetch jobs for selected company ── */
   useEffect(() => {
@@ -105,6 +138,10 @@ export default function ATSSync() {
       const body: Record<string, unknown> = { step };
       if (step === "jobs" && selectedCompanyId) {
         body.company_id = selectedCompanyId;
+      }
+      // Stamp workspace_id on synced data
+      if (workspaceId) {
+        body.workspace_id = workspaceId;
       }
 
       const { data, error } = await supabase.functions.invoke("sync-company-jobs", { body });

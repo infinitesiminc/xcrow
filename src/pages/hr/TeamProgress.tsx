@@ -17,7 +17,13 @@ import {
   ArrowUpRight, ArrowDownRight, Minus, Lightbulb, ChevronDown, ChevronUp,
 } from "lucide-react";
 import { LineChart, Line, ResponsiveContainer } from "recharts";
+import OnboardingChecklist from "@/components/hr/OnboardingChecklist";
 import { type DeptTrendData, type DemoFunnelStats, generateMockFromDB } from "@/data/demo-team-progress";
+
+const SUPERADMIN_IDS = [
+  "7be41055-be68-4cab-b63c-f3b0c483e6eb",
+  "bb10735b-051e-4bb5-918e-931a9c79d0fd",
+];
 /* ─── Types ─── */
 interface ProgressRow {
   user_id: string;
@@ -661,6 +667,8 @@ export default function TeamProgress() {
   const [deptTrends, setDeptTrends] = useState<DeptTrendData[]>([]);
   const [funnel, setFunnel] = useState<DemoFunnelStats>({ jobsImported: 0, jobsAnalyzed: 0, rolesActivated: 0, employeesStarted: 0 });
 
+  const isSuperAdmin = !!user && SUPERADMIN_IDS.includes(user.id);
+
   useEffect(() => {
     if (!user) { setLoading(false); return; }
     (async () => {
@@ -680,14 +688,21 @@ export default function TeamProgress() {
       const { data: rows } = await supabase.rpc("get_workspace_progress", { p_workspace_id: wsId });
       const dbRows = (rows as ProgressRow[] || []).filter(r => r.user_id !== user.id);
 
-      // Generate mock data from real DB jobs/clusters
-      const mock = await generateMockFromDB();
-      setProgress([...mock.progress, ...dbRows]);
-      setDeptTrends(mock.trends);
-      setFunnel(mock.funnel);
+      if (isSuperAdmin) {
+        // Superadmins see demo data + real data
+        const mock = await generateMockFromDB();
+        setProgress([...mock.progress, ...dbRows]);
+        setDeptTrends(mock.trends);
+        setFunnel(mock.funnel);
+      } else {
+        // Regular users see only real data
+        setProgress(dbRows);
+        setDeptTrends([]);
+        setFunnel({ jobsImported: 0, jobsAnalyzed: 0, rolesActivated: 0, employeesStarted: 0 });
+      }
       setLoading(false);
     })();
-  }, [user]);
+  }, [user, isSuperAdmin]);
 
   const filteredProgress = useMemo(() =>
     selectedDept ? progress.filter(r => r.department === selectedDept) : progress
@@ -752,6 +767,8 @@ export default function TeamProgress() {
     );
   }
 
+  const hasData = progress.length > 0;
+
   return (
     <div className="p-6 max-w-5xl mx-auto space-y-5">
       {/* Header */}
@@ -767,13 +784,31 @@ export default function TeamProgress() {
         </p>
       </div>
 
-      {/* Demo data disclaimer */}
-      <div className="flex items-start gap-2.5 rounded-lg border border-primary/20 bg-primary/5 px-4 py-3">
-        <AlertTriangle className="h-4 w-4 text-primary shrink-0 mt-0.5" />
-        <p className="text-xs text-muted-foreground leading-relaxed">
-          <span className="font-semibold text-foreground">Demo data.</span> Employee names and scores shown here are simulated for demonstration purposes on real roles imported from your ATS. Actual employee results will appear once team members complete their AI readiness simulations.
-        </p>
-      </div>
+      {/* Demo data disclaimer (superadmin only) */}
+      {isSuperAdmin && (
+        <div className="flex items-start gap-2.5 rounded-lg border border-primary/20 bg-primary/5 px-4 py-3">
+          <AlertTriangle className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+          <p className="text-xs text-muted-foreground leading-relaxed">
+            <span className="font-semibold text-foreground">Demo data.</span> Employee names and scores shown here are simulated for demonstration purposes on real roles imported from your ATS. Actual employee results will appear once team members complete their AI readiness simulations.
+          </p>
+        </div>
+      )}
+
+      {/* Empty state with onboarding checklist for non-superadmins with no data */}
+      {!hasData && !isSuperAdmin && (
+        <div className="space-y-6">
+          <OnboardingChecklist />
+          <div className="py-8 text-center space-y-3">
+            <Database className="h-10 w-10 mx-auto text-muted-foreground/40" />
+            <h2 className="text-lg font-semibold text-foreground">No simulation data yet</h2>
+            <p className="text-sm text-muted-foreground max-w-md mx-auto">
+              Follow the checklist above to get started. Results will populate here as your team completes simulations.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {(hasData || isSuperAdmin) && (
 
       <Tabs defaultValue="executive" className="w-full">
         <TabsList className="w-full justify-start">
@@ -804,6 +839,7 @@ export default function TeamProgress() {
           <UserDetailSheet user={selectedUser} open={!!selectedUser} onClose={() => setSelectedUser(null)} />
         </TabsContent>
       </Tabs>
+      )}
     </div>
   );
 }

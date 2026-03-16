@@ -1,13 +1,18 @@
 import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { BarChart3, ArrowLeft, Loader2, Layers, Briefcase } from "lucide-react";
+import { BarChart3, ArrowLeft, Loader2, Layers, Briefcase, Database } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 
+const SUPERADMIN_IDS = [
+  "7be41055-be68-4cab-b63c-f3b0c483e6eb",
+  "bb10735b-051e-4bb5-918e-931a9c79d0fd",
+];
 interface JobRow {
   id: string;
   title: string;
@@ -80,16 +85,35 @@ function BarChartVisual({ data, maxCount, label }: { data: ReturnType<typeof buc
 
 export default function ScoreDistributions() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [jobs, setJobs] = useState<JobRow[]>([]);
   const [tasks, setTasks] = useState<TaskRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [hoveredJobId, setHoveredJobId] = useState<string | null>(null);
 
+  const isSuperAdmin = !!user && SUPERADMIN_IDS.includes(user.id);
+
   useEffect(() => {
     (async () => {
       setLoading(true);
-      // Only fetch jobs that actually have task clusters (truly analyzed)
-      // Fetch ALL task clusters (default limit is 1000, we need more)
+
+      // For non-superadmins, scope to workspace companies
+      let workspaceCompanyIds: string[] | null = null;
+      if (!isSuperAdmin && user) {
+        const { data: membership } = await supabase
+          .from("workspace_members").select("workspace_id")
+          .eq("user_id", user.id).limit(1);
+        if (membership?.length) {
+          const wsId = membership[0].workspace_id;
+          const { data: wsCompanies } = await supabase
+            .from("companies").select("id").eq("workspace_id", wsId);
+          workspaceCompanyIds = (wsCompanies || []).map(c => c.id);
+        } else {
+          workspaceCompanyIds = [];
+        }
+      }
+
+      // Fetch task clusters
       let allTaskRows: TaskRow[] = [];
       let from = 0;
       const PAGE_SIZE = 1000;
@@ -104,7 +128,24 @@ export default function ScoreDistributions() {
         from += PAGE_SIZE;
       }
 
-      const taskRows = allTaskRows;
+      let taskRows = allTaskRows;
+
+      // Filter to workspace jobs if scoped
+      if (workspaceCompanyIds !== null) {
+        if (workspaceCompanyIds.length === 0) {
+          setJobs([]);
+          setTasks([]);
+          setLoading(false);
+          return;
+        }
+        // Get jobs belonging to workspace companies
+        const { data: wsJobs } = await supabase
+          .from("jobs").select("id")
+          .in("company_id", workspaceCompanyIds);
+        const wsJobIds = new Set((wsJobs || []).map(j => j.id));
+        taskRows = taskRows.filter(t => wsJobIds.has(t.job_id));
+      }
+
       const analyzedIds = [...new Set(taskRows.map(t => t.job_id))] as string[];
 
       let analyzedJobs: JobRow[] = [];
@@ -120,7 +161,7 @@ export default function ScoreDistributions() {
       setTasks(taskRows as TaskRow[]);
       setLoading(false);
     })();
-  }, []);
+  }, [user, isSuperAdmin]);
 
   // Per-job task variance map
   const jobVariance = useMemo(() => {
@@ -212,6 +253,26 @@ export default function ScoreDistributions() {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (jobs.length === 0 && !isSuperAdmin) {
+    return (
+      <div className="min-h-screen bg-background p-8">
+        <Button variant="ghost" onClick={() => navigate(-1)} className="mb-6">
+          <ArrowLeft className="w-4 h-4 mr-2" />Back
+        </Button>
+        <div className="py-16 text-center space-y-4">
+          <Database className="h-12 w-12 mx-auto text-muted-foreground/40" />
+          <h2 className="text-lg font-semibold text-foreground">No analyzed roles yet</h2>
+          <p className="text-sm text-muted-foreground max-w-md mx-auto">
+            Go to ATS Sync to import your company's roles, then run analysis to see AI exposure scores across your organization.
+          </p>
+          <Button onClick={() => navigate("/hr/ats-sync")}>
+            <Briefcase className="h-4 w-4 mr-2" />Import & Analyze Roles
+          </Button>
+        </div>
       </div>
     );
   }
