@@ -714,7 +714,7 @@ export default function LearningPath() {
                                 })()}
 
                                 <div className="flex items-center justify-between">
-                                  <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
+                                  <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
                                     <GraduationCap className="h-3 w-3" />
                                     <span>15 min</span>
                                   </div>
