@@ -12,6 +12,7 @@ import StepTaskDrilldown from "@/components/case-study/StepTaskDrilldown";
 import StepSimPreview from "@/components/case-study/StepSimPreview";
 import StepTeamProgress from "@/components/case-study/StepTeamProgress";
 import StepActionCenter from "@/components/case-study/StepActionCenter";
+import StepModelAdaptation from "@/components/case-study/StepModelAdaptation";
 
 const STEPS = [
   {
