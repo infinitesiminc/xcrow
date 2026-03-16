@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { BarChart3, ArrowLeft, Loader2, Layers, Briefcase, Database } from "lucide-react";
 import { Button } from "@/components/ui/button";
