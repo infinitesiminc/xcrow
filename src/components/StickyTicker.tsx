@@ -71,7 +71,7 @@ export default function StickyTicker() {
       <div className="relative h-[18px] overflow-hidden">
         <div className="absolute inset-y-0 left-0 w-6 z-10 bg-gradient-to-r from-background to-transparent" />
         <div className="absolute inset-y-0 right-0 w-6 z-10 bg-gradient-to-l from-background to-transparent" />
-        <div className="flex animate-[ticker_40s_linear_infinite] whitespace-nowrap items-center h-full">
+        <div className="flex animate-[ticker-right_40s_linear_infinite] whitespace-nowrap items-center h-full">
           {[...WORKFORCE_ITEMS, ...WORKFORCE_ITEMS].map((item, i) => (
             <span
               key={i}
