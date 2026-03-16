@@ -34,7 +34,7 @@ import Members from "./pages/hr/Members.tsx";
 import WorkspaceSettings from "./pages/hr/WorkspaceSettings.tsx";
 import ActionCenter from "./pages/hr/ActionCenter.tsx";
 import Workspaces from "./pages/hr/Workspaces.tsx";
-
+import Onboarding from "./pages/hr/Onboarding.tsx";
 const queryClient = new QueryClient();
 
 function AuthRedirectHome() {
