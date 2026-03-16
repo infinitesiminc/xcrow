@@ -219,7 +219,7 @@ export default function ScoreDistributions() {
   return (
     <div className="min-h-screen bg-background">
       <div className="max-w-5xl mx-auto px-4 py-6 sm:py-10">
-        <Button variant="ghost" size="sm" onClick={() => navigate("/products/simulation-builder")} className="gap-1.5 text-xs mb-4 -ml-2">
+        <Button variant="ghost" size="sm" onClick={() => navigate("/hr/simulations")} className="gap-1.5 text-xs mb-4 -ml-2">
           <ArrowLeft className="w-3.5 h-3.5" /> Back to Roles
         </Button>
 

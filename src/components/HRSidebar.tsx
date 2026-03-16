@@ -1,5 +1,5 @@
 import { useLocation } from "react-router-dom";
-import { BarChart3, Users, Settings, KeyRound, Building2, Blocks, RefreshCw, Shield, Target, Search, Activity } from "lucide-react";
+import { BarChart3, Users, Settings, Building2, Blocks, RefreshCw, Shield, Target, Search, Activity, Zap } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useAuth } from "@/contexts/AuthContext";
 import {
@@ -19,13 +19,20 @@ const SUPERADMIN_IDS = [
   "bb10735b-051e-4bb5-918e-931a9c79d0fd",
 ];
 
-const items = [
-  { title: "Team Progress", url: "/hr/team-progress", icon: BarChart3 },
+const diagnoseItems = [
+  { title: "Role Explorer", url: "/hr/simulations", icon: Blocks },
   { title: "Score Distributions", url: "/hr/score-distributions", icon: Activity },
   { title: "ATS Sync", url: "/hr/ats-sync", icon: RefreshCw },
-  { title: "Simulation Builder", url: "/hr/simulations", icon: Blocks },
+];
+
+const upskillItems = [
+  { title: "Team Progress", url: "/hr/team-progress", icon: BarChart3 },
+  { title: "Action Center", url: "/hr/action-center", icon: Zap },
+];
+
+const workspaceItems = [
   { title: "Members", url: "/hr/members", icon: Users },
-  { title: "Workspace Settings", url: "/hr/settings", icon: Settings },
+  { title: "Settings", url: "/hr/settings", icon: Settings },
 ];
 
 const superadminItems = [
@@ -33,10 +40,39 @@ const superadminItems = [
   { title: "Analyze Tool", url: "/hr/analyze", icon: Search },
 ];
 
+function NavGroup({ label, items, collapsed, icon }: { label: string; items: typeof diagnoseItems; collapsed: boolean; icon?: React.ReactNode }) {
+  return (
+    <SidebarGroup>
+      <SidebarGroupLabel className="flex items-center gap-2">
+        {icon}
+        {!collapsed && <span>{label}</span>}
+      </SidebarGroupLabel>
+      <SidebarGroupContent>
+        <SidebarMenu>
+          {items.map((item) => (
+            <SidebarMenuItem key={item.title}>
+              <SidebarMenuButton asChild>
+                <NavLink
+                  to={item.url}
+                  end
+                  className="hover:bg-muted/50"
+                  activeClassName="bg-muted text-primary font-medium"
+                >
+                  <item.icon className="mr-2 h-4 w-4" />
+                  {!collapsed && <span>{item.title}</span>}
+                </NavLink>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          ))}
+        </SidebarMenu>
+      </SidebarGroupContent>
+    </SidebarGroup>
+  );
+}
+
 export function HRSidebar() {
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
-  const location = useLocation();
   const { user } = useAuth();
 
   const isSuperAdmin = !!user && SUPERADMIN_IDS.includes(user.id);
@@ -44,81 +80,12 @@ export function HRSidebar() {
   return (
     <Sidebar collapsible="icon" className="border-r border-border">
       <SidebarContent className="pt-4">
-        <SidebarGroup>
-          <SidebarGroupLabel className="flex items-center gap-2">
-            <Building2 className="h-4 w-4" />
-            {!collapsed && <span>HR Dashboard</span>}
-          </SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {items.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
-                    <NavLink
-                      to={item.url}
-                      end
-                      className="hover:bg-muted/50"
-                      activeClassName="bg-muted text-primary font-medium"
-                    >
-                      <item.icon className="mr-2 h-4 w-4" />
-                      {!collapsed && <span>{item.title}</span>}
-                    </NavLink>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-
-        <SidebarGroup>
-          <SidebarGroupLabel>
-            {!collapsed && <span>Invite</span>}
-          </SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              <SidebarMenuItem>
-                <SidebarMenuButton asChild>
-                  <NavLink
-                    to="/hr/invite"
-                    end
-                    className="hover:bg-muted/50"
-                    activeClassName="bg-muted text-primary font-medium"
-                  >
-                    <KeyRound className="mr-2 h-4 w-4" />
-                    {!collapsed && <span>Join Code</span>}
-                  </NavLink>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+        <NavGroup label="Diagnose" items={diagnoseItems} collapsed={collapsed} icon={<Search className="h-4 w-4" />} />
+        <NavGroup label="Upskill & Monitor" items={upskillItems} collapsed={collapsed} icon={<BarChart3 className="h-4 w-4" />} />
+        <NavGroup label="Workspace" items={workspaceItems} collapsed={collapsed} icon={<Building2 className="h-4 w-4" />} />
 
         {isSuperAdmin && (
-          <SidebarGroup>
-            <SidebarGroupLabel className="flex items-center gap-2">
-              <Shield className="h-4 w-4" />
-              {!collapsed && <span>Superadmin</span>}
-            </SidebarGroupLabel>
-            <SidebarGroupContent>
-              <SidebarMenu>
-                {superadminItems.map((item) => (
-                  <SidebarMenuItem key={item.title}>
-                    <SidebarMenuButton asChild>
-                      <NavLink
-                        to={item.url}
-                        end
-                        className="hover:bg-muted/50"
-                        activeClassName="bg-muted text-primary font-medium"
-                      >
-                        <item.icon className="mr-2 h-4 w-4" />
-                        {!collapsed && <span>{item.title}</span>}
-                      </NavLink>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                ))}
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
+          <NavGroup label="Superadmin" items={superadminItems} collapsed={collapsed} icon={<Shield className="h-4 w-4" />} />
         )}
       </SidebarContent>
     </Sidebar>
