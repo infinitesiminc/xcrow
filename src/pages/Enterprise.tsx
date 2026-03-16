@@ -358,6 +358,34 @@ export default function Enterprise() {
         </div>
       </section>
 
+      {/* ── Case Study CTA ── */}
+      <section className="px-4 py-16">
+        <div className="mx-auto max-w-3xl">
+          <motion.div
+            {...fadeUp}
+            className="rounded-2xl border border-border bg-card p-8 sm:p-10 text-center space-y-4"
+          >
+            <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
+              Case Study
+            </p>
+            <h3 className="font-display text-2xl sm:text-3xl font-semibold text-foreground">
+              See how Anthropic maps AI readiness across 400+ roles
+            </h3>
+            <p className="text-sm text-muted-foreground max-w-lg mx-auto leading-relaxed">
+              Walk through the full platform — from ATS import to executive dashboards — in a 
+              6-step guided tour. No sign-up required.
+            </p>
+            <Button
+              size="lg"
+              onClick={() => navigate("/case-study/anthropic")}
+              className="gap-2 mt-2"
+            >
+              Start the Tour <ArrowRight className="h-4 w-4" />
+            </Button>
+          </motion.div>
+        </div>
+      </section>
+
       {/* ── Enterprise trust ── */}
       <section className="px-4 py-20">
         <div className="mx-auto max-w-5xl">
