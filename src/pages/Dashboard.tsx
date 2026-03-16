@@ -183,11 +183,11 @@ const Dashboard = () => {
                     <div className="flex gap-4 shrink-0">
                       <div className="text-center">
                         <div className="text-xl font-bold text-foreground">{myRoleAnalysis.augmented_percent}%</div>
-                        <div className="text-[10px] text-muted-foreground">AI Involvement</div>
+                        <div className="text-[10px] text-muted-foreground">AI Exposure</div>
                       </div>
                       <div className="text-center">
                         <div className="text-xl font-bold text-foreground">{myRoleAnalysis.automation_risk_percent}%</div>
-                        <div className="text-[10px] text-muted-foreground">Automation Risk</div>
+                        <div className="text-[10px] text-muted-foreground">Replacement Risk</div>
                       </div>
                     </div>
                   </div>
