@@ -126,6 +126,10 @@ Respond ONLY with a valid JSON array, no markdown.`;
       outcome: t.outcome || null,
       skill_names: t.skill_names || null,
       sort_order: i,
+      ai_state: t.ai_state || "human_ai",
+      ai_trend: t.ai_trend || "increasing_ai",
+      impact_level: t.impact_level || "medium",
+      priority: t.priority || "important",
     }));
 
     const { error: insertErr } = await sb.from("job_task_clusters").insert(rows);
