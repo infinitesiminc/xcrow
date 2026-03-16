@@ -327,9 +327,9 @@ function SimChatVisual() {
     { role: "assistant" as const, text: "Strong response. You identified the AI's limitation and proposed systematic human review." },
   ];
   const formats = [
-    { name: "Quick Pulse", duration: "5 min", color: "text-dot-teal" },
-    { name: "Deep Dive", duration: "15 min", color: "text-dot-amber" },
-    { name: "Case Challenge", duration: "25 min", color: "text-dot-purple" },
+    { name: "Quick Pulse", duration: "5 min", color: "text-brand-human" },
+    { name: "Deep Dive", duration: "15 min", color: "text-brand-mid" },
+    { name: "Case Challenge", duration: "25 min", color: "text-brand-ai" },
   ];
   return (
     <div className="rounded-xl border border-border bg-card p-4 space-y-3">
