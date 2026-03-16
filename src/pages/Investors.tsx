@@ -651,8 +651,8 @@ export default function Investors() {
                         />
                       </div>
                       <p className="text-[10px] text-foreground font-medium whitespace-pre-line leading-tight">{col.scale}</p>
-                      <div className="mt-1.5 px-2 py-1 rounded bg-destructive/10">
-                        <p className="text-xs font-bold text-destructive">{col.gap}pt gap</p>
+                       <div className="mt-1.5 px-2 py-1 rounded bg-brand-ai/10">
+                         <p className="text-xs font-bold text-brand-ai">{col.gap}pt gap</p>
                       </div>
                     </div>
                   ))}
