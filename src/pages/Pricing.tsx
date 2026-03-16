@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   Check, Zap, Building2, ArrowRight, Users,
-  Sparkles, HelpCircle, Loader2, Search, Crown,
+  Sparkles, HelpCircle, Search, Crown,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
