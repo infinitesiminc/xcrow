@@ -78,7 +78,7 @@ export function TaskTable({ tasks, skills, completedTasks, onPractice }: TaskTab
 
       {/* Scrollable grid of mini cards */}
       <div className="max-h-[420px] overflow-y-auto pr-1 scrollbar-thin">
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
           {sortedTasks.map(({ task, originalIndex }, i) => {
             const aiScore = task.aiExposureScore ?? 50;
             const impactScore = task.jobImpactScore ?? 50;
@@ -91,10 +91,10 @@ export function TaskTable({ tasks, skills, completedTasks, onPractice }: TaskTab
                 initial={{ opacity: 0, y: 6 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.02 }}
-                className="rounded-lg border border-border bg-card p-3 flex flex-col gap-2"
+                className="rounded-lg border border-border bg-card p-4 flex flex-col gap-2.5"
               >
                 {/* Task name */}
-                <span className="text-sm font-medium text-foreground leading-tight line-clamp-2">
+                <span className="text-base font-medium text-foreground leading-snug line-clamp-2">
                   {task.name}
                 </span>
 
