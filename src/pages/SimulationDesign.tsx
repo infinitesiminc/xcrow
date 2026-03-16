@@ -211,7 +211,7 @@ function StatusQuoSection() {
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <s.icon className={`h-5 w-5 ${s.failed ? "text-muted-foreground" : "text-dot-teal"}`} />
+                  <s.icon className={`h-5 w-5 ${s.failed ? "text-muted-foreground" : "text-brand-human"}`} />
                   <span className="font-semibold text-foreground">{s.label}</span>
                 </div>
                 <span className={`text-xs font-mono font-bold px-2 py-1 rounded-full ${
