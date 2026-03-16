@@ -15,6 +15,7 @@ import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
+import { useWorkspace } from "@/contexts/WorkspaceContext";
 
 /* ── Types ── */
 interface DbJob {
@@ -38,12 +39,13 @@ export default function SimulationBuilder() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { user, openAuthModal } = useAuth();
+  const { workspaceId, loading: wsLoading, isSuperAdmin } = useWorkspace();
 
   /* ── State ── */
   const [jobs, setJobs] = useState<DbJob[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
-  const [companyName, setCompanyName] = useState("Anthropic");
+  const [companyName, setCompanyName] = useState("");
   const [companyId, setCompanyId] = useState<string | null>(null);
   const [collapsedDepts, setCollapsedDepts] = useState<Set<string>>(new Set());
   const [analyzedJobIds, setAnalyzedJobIds] = useState<Set<string>>(new Set());
@@ -57,16 +59,20 @@ export default function SimulationBuilder() {
   const pauseRef = useRef(false);
   const abortRef = useRef(false);
 
-  /* ── Fetch Anthropic jobs ── */
+  /* ── Fetch workspace companies & jobs ── */
   useEffect(() => {
+    if (wsLoading) return;
+    if (!workspaceId) { setJobs([]); setLoading(false); return; }
+
     (async () => {
       setLoading(true);
+      // Fetch companies for this workspace
       const { data: companies } = await supabase
         .from("companies")
         .select("id, name")
-        .ilike("name", "%anthropic%")
+        .eq("workspace_id", workspaceId)
         .limit(1);
-      if (!companies?.length) { setLoading(false); return; }
+      if (!companies?.length) { setJobs([]); setLoading(false); return; }
       setCompanyId(companies[0].id);
       setCompanyName(companies[0].name);
 
@@ -78,7 +84,7 @@ export default function SimulationBuilder() {
       setJobs(data || []);
       setLoading(false);
     })();
-  }, []);
+  }, [workspaceId, wsLoading]);
 
   /* ── Fetch which jobs are pre-analyzed (Anthropic only) ── */
   const refreshAnalyzed = useCallback(async () => {
@@ -298,6 +304,25 @@ export default function SimulationBuilder() {
             Sign in to access the Simulation Builder and browse AI-powered learning paths for your organization.
           </p>
           <Button onClick={() => openAuthModal()}>Sign In</Button>
+        </div>
+      </div>
+    );
+  }
+
+  if (!loading && jobs.length === 0) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center max-w-md px-4">
+          <Layers className="h-12 w-12 mx-auto text-muted-foreground/40 mb-4" />
+          <h2 className="text-lg font-semibold text-foreground mb-2">No Roles Found</h2>
+          <p className="text-sm text-muted-foreground mb-6">
+            {!workspaceId
+              ? "Create a workspace first, then import company roles via ATS Sync."
+              : "Import company roles via ATS Sync to see them here."}
+          </p>
+          <Button onClick={() => navigate(!workspaceId ? "/hr/settings" : "/hr/ats-sync")}>
+            {!workspaceId ? "Create Workspace" : "Import Roles"}
+          </Button>
         </div>
       </div>
     );
