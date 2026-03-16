@@ -67,6 +67,7 @@ const App = () => (
               <Route path="ats-sync" element={<ATSSync />} />
               <Route path="invite" element={<InvitePage />} />
               {/* Superadmin-only routes */}
+              <Route path="score-distributions" element={<ScoreDistributions />} />
               <Route path="roadmap" element={<Roadmap />} />
               <Route path="analyze" element={<Index />} />
             </Route>

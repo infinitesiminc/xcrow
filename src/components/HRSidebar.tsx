@@ -1,5 +1,5 @@
 import { useLocation } from "react-router-dom";
-import { BarChart3, Users, Settings, KeyRound, Building2, Blocks, RefreshCw, Shield, Target, Search } from "lucide-react";
+import { BarChart3, Users, Settings, KeyRound, Building2, Blocks, RefreshCw, Shield, Target, Search, Activity } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useAuth } from "@/contexts/AuthContext";
 import {
@@ -27,6 +27,7 @@ const items = [
 ];
 
 const superadminItems = [
+  { title: "Score Distributions", url: "/hr/score-distributions", icon: Activity },
   { title: "Roadmap", url: "/hr/roadmap", icon: Target },
   { title: "Analyze Tool", url: "/hr/analyze", icon: Search },
 ];
