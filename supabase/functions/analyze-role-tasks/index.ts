@@ -33,7 +33,7 @@ serve(async (req) => {
 
     const { data: existing } = await sb
       .from("job_task_clusters")
-      .select("id, cluster_name, description, outcome, skill_names, sort_order")
+      .select("id, cluster_name, description, outcome, skill_names, sort_order, ai_state, ai_trend, impact_level, priority")
       .eq("job_id", jobId)
       .order("sort_order");
 
@@ -126,6 +126,10 @@ Respond ONLY with a valid JSON array, no markdown.`;
       outcome: t.outcome || null,
       skill_names: t.skill_names || null,
       sort_order: i,
+      ai_state: t.ai_state || "human_ai",
+      ai_trend: t.ai_trend || "increasing_ai",
+      impact_level: t.impact_level || "medium",
+      priority: t.priority || "important",
     }));
 
     const { error: insertErr } = await sb.from("job_task_clusters").insert(rows);

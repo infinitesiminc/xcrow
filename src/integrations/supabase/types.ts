@@ -420,32 +420,44 @@ export type Database = {
       }
       job_task_clusters: {
         Row: {
+          ai_state: string | null
+          ai_trend: string | null
           cluster_name: string
           description: string | null
           external_id: string | null
           id: string
+          impact_level: string | null
           job_id: string
           outcome: string | null
+          priority: string | null
           skill_names: string[] | null
           sort_order: number | null
         }
         Insert: {
+          ai_state?: string | null
+          ai_trend?: string | null
           cluster_name: string
           description?: string | null
           external_id?: string | null
           id?: string
+          impact_level?: string | null
           job_id: string
           outcome?: string | null
+          priority?: string | null
           skill_names?: string[] | null
           sort_order?: number | null
         }
         Update: {
+          ai_state?: string | null
+          ai_trend?: string | null
           cluster_name?: string
           description?: string | null
           external_id?: string | null
           id?: string
+          impact_level?: string | null
           job_id?: string
           outcome?: string | null
+          priority?: string | null
           skill_names?: string[] | null
           sort_order?: number | null
         }
