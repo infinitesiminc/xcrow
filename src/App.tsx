@@ -29,7 +29,7 @@ import HRLayout from "./layouts/HRLayout.tsx";
 import TeamProgress from "./pages/hr/TeamProgress.tsx";
 import Members from "./pages/hr/Members.tsx";
 import WorkspaceSettings from "./pages/hr/WorkspaceSettings.tsx";
-import InvitePage from "./pages/hr/InvitePage.tsx";
+import ActionCenter from "./pages/hr/ActionCenter.tsx";
 
 const queryClient = new QueryClient();
 
@@ -59,15 +59,15 @@ const App = () => (
 
             {/* HR Dashboard with sidebar */}
             <Route path="/hr" element={<HRLayout />}>
-              <Route index element={<TeamProgress />} />
-              <Route path="team-progress" element={<TeamProgress />} />
+              <Route index element={<SimulationBuilder />} />
               <Route path="simulations" element={<SimulationBuilder />} />
+              <Route path="score-distributions" element={<ScoreDistributions />} />
+              <Route path="ats-sync" element={<ATSSync />} />
+              <Route path="team-progress" element={<TeamProgress />} />
+              <Route path="action-center" element={<ActionCenter />} />
               <Route path="members" element={<Members />} />
               <Route path="settings" element={<WorkspaceSettings />} />
-              <Route path="ats-sync" element={<ATSSync />} />
-              <Route path="invite" element={<InvitePage />} />
               {/* Superadmin-only routes */}
-              <Route path="score-distributions" element={<ScoreDistributions />} />
               <Route path="roadmap" element={<Roadmap />} />
               <Route path="analyze" element={<Index />} />
             </Route>
