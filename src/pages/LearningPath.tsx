@@ -556,7 +556,15 @@ export default function LearningPath() {
                   const isCompleted = taskScore !== null;
                   const isUpdated = updatedTaskNames.has(task.cluster_name);
                   const exposure = task.ai_exposure_score ?? 50;
-                  const impact = task.job_impact_score ?? 50;
+
+                  // Generate a short AI-impact sentence based on exposure level
+                  const aiSummary = exposure >= 70
+                    ? "AI can handle most of this today — focus on oversight and quality judgment."
+                    : exposure >= 50
+                    ? "AI is increasingly capable here — learn to collaborate with AI tools effectively."
+                    : exposure >= 30
+                    ? "AI assists with parts of this task — your expertise remains the differentiator."
+                    : "This task relies heavily on human judgment — AI plays a minimal role.";
 
                   return (
                     <motion.div
@@ -581,39 +589,26 @@ export default function LearningPath() {
                             </div>
 
                             <div className="flex-1 min-w-0">
-                              <div className="flex items-start justify-between gap-2 mb-1">
-                                <div className="flex items-center gap-1.5">
-                                  <h4 className={`font-semibold text-base leading-snug ${isCompleted ? "text-success" : "text-foreground"}`}>
-                                    {task.cluster_name}
-                                  </h4>
+                              <div className="flex items-start justify-between gap-2 mb-1.5">
+                                <h4 className={`font-semibold text-base leading-snug ${isCompleted ? "text-success" : "text-foreground"}`}>
+                                  {task.cluster_name}
+                                </h4>
+                                <div className="flex items-center gap-1.5 shrink-0">
+                                  {isCompleted && taskScore !== null && scoreBadge(taskScore)}
                                   {isUpdated && (
                                     <Badge className="bg-primary/10 text-primary border-primary/20 text-[8px] px-1 py-0 h-3.5 animate-pulse">
                                       Updated
                                     </Badge>
                                   )}
-                                </div>
-                                <div className="flex items-center gap-1.5 shrink-0">
-                                  {isCompleted && taskScore !== null && scoreBadge(taskScore)}
                                   {priorityBadge(task.priority)}
                                 </div>
                               </div>
 
                               {task.description && (
-                                <p className="text-sm text-muted-foreground leading-relaxed mb-3">{task.description}</p>
+                                <p className="text-sm text-muted-foreground leading-relaxed mb-2">{task.description}</p>
                               )}
 
-                              <div className="flex items-center gap-2 mb-3 flex-wrap">
-                                {exposureBadge(exposure)}
-                                <Badge className={`text-[10px] ${impact >= 70 ? "bg-primary/10 text-primary border-primary/20" : impact >= 40 ? "bg-accent text-muted-foreground border-border/30" : "bg-muted/50 text-muted-foreground border-border/20"}`}>
-                                  ⭐ {impact}% Job Impact
-                                </Badge>
-                                {exposure >= 60 && impact >= 60 && (
-                                  <Badge className="bg-destructive/10 text-destructive border-destructive/20 text-[9px]">🔴 Urgent Upskill</Badge>
-                                )}
-                                {exposure < 40 && impact >= 60 && (
-                                  <Badge className="bg-success/10 text-success border-success/20 text-[9px]">💪 Human Edge</Badge>
-                                )}
-                              </div>
+                              <p className="text-xs text-muted-foreground/80 italic mb-3">{aiSummary}</p>
 
                               {task.skill_names && task.skill_names.length > 0 && (
                                 <div className="flex flex-wrap gap-1.5 mb-3">
