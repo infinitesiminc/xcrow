@@ -78,7 +78,7 @@ export function TaskTable({ tasks, skills, completedTasks, onPractice }: TaskTab
 
       {/* Scrollable grid of mini cards */}
       <div className="max-h-[420px] overflow-y-auto pr-1 scrollbar-thin">
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
           {sortedTasks.map(({ task, originalIndex }, i) => {
             const aiScore = task.aiExposureScore ?? 50;
             const impactScore = task.jobImpactScore ?? 50;
