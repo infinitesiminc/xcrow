@@ -200,7 +200,7 @@ const phases = [
     tag: "Diagnose",
     title: "See where AI hits your workforce",
     description: "Connect your ATS or upload roles. Every task is scored for AI exposure — not guesswork, not surveys.",
-    highlights: ["Task-level scoring, not role-level", "400+ roles mapped in days", "Department & function heatmaps"],
+    highlights: ["Task-level scoring, not role-level", "400+ roles mapped in minutes", "Department & function heatmaps"],
     visual: <DiagnoseVisual />,
   },
   {
