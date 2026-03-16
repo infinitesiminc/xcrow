@@ -67,6 +67,7 @@ const App = () => (
             <Route path="/learning-path" element={<><Navbar /><LearningPath /><Footer /></>} />
             <Route path="/score-distributions" element={<><Navbar /><ScoreDistributions /><Footer /></>} />
             <Route path="/join" element={<JoinWorkspace />} />
+            <Route path="/hr/onboarding" element={<Onboarding />} />
             <Route path="/case-study/anthropic" element={<><Navbar /><StickyTicker /><Suspense fallback={null}><CaseStudy /></Suspense><Footer /></>} />
 
             {/* HR Dashboard with sidebar */}
