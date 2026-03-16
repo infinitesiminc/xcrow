@@ -84,7 +84,7 @@ const TeamAnalysis = () => {
 
   const statCards = [
     {
-      label: `${avgAugmented}% of tasks will involve AI tools`,
+      label: `${avgAugmented}% of tasks involve AI tools`,
       value: avgAugmented,
       icon: Bot,
       iconBg: "bg-primary/10",
@@ -92,7 +92,7 @@ const TeamAnalysis = () => {
       barColor: "bg-primary",
     },
     {
-      label: `${avgAutomation}% could be fully automated`,
+      label: `${avgAutomation}% of tasks could be fully replaced`,
       value: avgAutomation,
       icon: ShieldAlert,
       iconBg: "bg-destructive/10",
@@ -100,7 +100,7 @@ const TeamAnalysis = () => {
       barColor: "bg-destructive",
     },
     {
-      label: `${avgNewSkills}% require learning new skills`,
+      label: `${avgNewSkills}% of tasks need urgent upskilling`,
       value: avgNewSkills,
       icon: GraduationCap,
       iconBg: "bg-warning/10",
