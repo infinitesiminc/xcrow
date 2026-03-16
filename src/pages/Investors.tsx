@@ -55,7 +55,7 @@ export default function Investors() {
             </Badge>
             <h1 className="font-serif text-3xl sm:text-5xl font-bold text-foreground leading-tight tracking-tight">
               Every job is being rewritten by AI.<br />
-              <span className="text-primary">We help companies get ahead of it.</span>
+              <span className="bg-gradient-to-r from-brand-ai to-brand-human bg-clip-text text-transparent">We help companies get ahead of it.</span>
             </h1>
             <p className="mx-auto mt-4 max-w-2xl text-base text-muted-foreground leading-relaxed">
               Infinite Sim is the AI readiness platform that decomposes every role into tasks,
