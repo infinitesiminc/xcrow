@@ -18,9 +18,9 @@ const DEPT_DATA = [
 ];
 
 function readinessColor(s: number) {
-  if (s >= 70) return "bg-dot-teal";
-  if (s >= 60) return "bg-dot-amber";
-  return "bg-dot-purple";
+  if (s >= 70) return "bg-brand-human";
+  if (s >= 60) return "bg-brand-mid";
+  return "bg-brand-ai";
 }
 
 export default function StepTeamProgress() {
