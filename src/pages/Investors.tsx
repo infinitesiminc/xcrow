@@ -643,7 +643,7 @@ export default function Investors() {
                           transition={{ duration: 0.6 }}
                         />
                         <motion.div
-                          className="w-6 bg-primary/50 rounded-t"
+                          className="w-6 bg-brand-human/50 rounded-t"
                           initial={{ height: 0 }}
                           whileInView={{ height: `${col.readiness * 1.4}px` }}
                           viewport={{ once: true }}
