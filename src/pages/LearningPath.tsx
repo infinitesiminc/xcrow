@@ -800,8 +800,8 @@ export default function LearningPath() {
                           <div className="flex-1 min-w-0">
                             <p className="text-sm font-medium text-foreground truncate">{sim.task_name}</p>
                             <div className="flex items-center gap-2 mt-0.5">
-                              <Badge variant="outline" className="text-[10px] px-1.5 py-0">15 min</Badge>
-                              <span className="text-[10px] text-muted-foreground">
+                              <Badge variant="outline" className="text-[11px] px-1.5 py-0">15 min</Badge>
+                              <span className="text-[11px] text-muted-foreground">
                                 {sim.source_type === "prompt" ? "✏️ Prompt" : "📄 Doc"}
                               </span>
                               {taskScore !== null && scoreBadge(taskScore)}
