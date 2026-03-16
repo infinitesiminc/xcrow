@@ -617,14 +617,15 @@ export default function LearningPath() {
                   const isUpdated = updatedTaskNames.has(task.cluster_name);
                   const exposure = task.ai_exposure_score ?? 50;
 
-                  // Generate a short AI-impact sentence based on exposure level
-                  const aiSummary = exposure >= 70
-                    ? "AI can handle most of this today — focus on oversight and quality judgment."
+                  // AI-impact sentence + icon based on exposure level
+                  const aiMeta = exposure >= 70
+                    ? { icon: AlertTriangle, color: "text-destructive", summary: "AI can handle most of this today — focus on oversight and quality judgment." }
                     : exposure >= 50
-                    ? "AI is increasingly capable here — learn to collaborate with AI tools effectively."
+                    ? { icon: Zap, color: "text-warning", summary: "AI is increasingly capable here — learn to collaborate with AI tools effectively." }
                     : exposure >= 30
-                    ? "AI assists with parts of this task — your expertise remains the differentiator."
-                    : "This task relies heavily on human judgment — AI plays a minimal role.";
+                    ? { icon: Brain, color: "text-dot-purple", summary: "AI assists with parts of this task — your expertise remains the differentiator." }
+                    : { icon: Shield, color: "text-success", summary: "This task relies heavily on human judgment — AI plays a minimal role." };
+                  const AiIcon = aiMeta.icon;
 
                   return (
                     <motion.div
@@ -668,8 +669,8 @@ export default function LearningPath() {
                               )}
 
                               <p className="text-xs text-muted-foreground/80 italic mb-3 flex items-start gap-1.5">
-                                <Zap className="h-3.5 w-3.5 shrink-0 mt-0.5 text-warning" />
-                                {aiSummary}
+                                <AiIcon className={`h-3.5 w-3.5 shrink-0 mt-0.5 ${aiMeta.color}`} />
+                                {aiMeta.summary}
                               </p>
 
                               {task.skill_names && task.skill_names.length > 0 && (
