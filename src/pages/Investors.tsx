@@ -637,7 +637,7 @@ export default function Investors() {
                             {cap.has ? (
                               <CheckCircle2 className="h-3 w-3 text-muted-foreground/50 shrink-0" />
                             ) : (
-                              <CheckCircle2 className="h-3 w-3 text-brand-human shrink-0" />
+                              <CheckCircle2 className="h-3 w-3 text-brand-ai shrink-0" />
                             )}
                             <span className={`text-[10px] ${cap.has ? "text-muted-foreground" : "text-foreground font-medium"}`}>
                               {cap.name}
