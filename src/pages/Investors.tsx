@@ -442,7 +442,7 @@ export default function Investors() {
                 {/* Quantified 2-axis chart */}
                 <div className="relative w-full aspect-square max-w-md mx-auto ml-8 mb-8">
                   {/* White space highlight — upper-right quadrant */}
-                  <div className="absolute rounded-lg bg-brand-human/5 border border-brand-human/10"
+                  <div className="absolute rounded-lg bg-brand-ai/5 border border-brand-ai/10"
                     style={{ left: "50%", bottom: "50%", width: "50%", height: "50%" }} />
 
                   {/* Gridlines */}
