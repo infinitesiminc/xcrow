@@ -64,6 +64,8 @@ export default function ATSSync() {
   const [deptFilter, setDeptFilter] = useState("all");
   const [sortField, setSortField] = useState<SortField>("title");
   const [sortDir, setSortDir] = useState<SortDir>("asc");
+  const [companySearch, setCompanySearch] = useState("");
+  const [companyDropdownOpen, setCompanyDropdownOpen] = useState(false);
 
   /* ── fetch companies ── */
   const fetchCompanies = useCallback(async () => {
