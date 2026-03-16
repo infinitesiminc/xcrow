@@ -55,7 +55,7 @@ const THRESHOLD = 60;
 
 /* ─── Helpers ─── */
 const readinessColor = (score: number) =>
-  score >= 70 ? "text-success" : score >= 50 ? "text-dot-amber" : "text-destructive";
+  score >= 70 ? "text-success" : score >= 50 ? "text-brand-mid" : "text-destructive";
 
 const readinessBg = (score: number) =>
   score >= 70 ? "bg-success/15" : score >= 50 ? "bg-dot-amber/15" : "bg-destructive/15";
