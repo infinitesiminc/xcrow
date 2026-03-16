@@ -39,7 +39,7 @@ export default function Navbar() {
       { label: "Dashboard", path: "/dashboard" },
       { label: "HR Dashboard", path: "/hr/team-progress" },
     ] : []),
-    { label: "Tools", path: "/tools" },
+    
   ];
 
   const handleNav = (path: string) => {
