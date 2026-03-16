@@ -167,6 +167,7 @@ export default function CaseStudy() {
 
       {/* Step content */}
       <div className="max-w-3xl mx-auto px-4 py-8">
+        <div className="glow-border rounded-xl border border-border/30 bg-card p-6">
         <AnimatePresence mode="wait">
           <motion.div
             key={step}
