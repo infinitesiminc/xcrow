@@ -9,10 +9,10 @@ const ROTATING_MODELS = [
 ];
 
 const TIMELINE_TAIL = [
-  { time: "T+2h", event: "Engine detects 34 task clusters affected", icon: Brain, color: "bg-dot-blue/10 text-dot-blue" },
-  { time: "T+6h", event: "Risk scores recalibrated across Legal & Finance", icon: RefreshCw, color: "bg-dot-purple/10 text-dot-purple" },
+  { time: "T+2h", event: "Engine detects 34 task clusters affected", icon: Brain, color: "bg-brand-ai/10 text-brand-ai" },
+  { time: "T+6h", event: "Risk scores recalibrated across Legal & Finance", icon: RefreshCw, color: "bg-brand-mid/10 text-brand-mid" },
   { time: "T+12h", event: "19 new simulations generated for affected roles", icon: Brain, color: "bg-muted" },
-  { time: "T+24h", event: "127 employees re-queued with updated scenarios", icon: Users, color: "bg-dot-teal/10 text-dot-teal" },
+  { time: "T+24h", event: "127 employees re-queued with updated scenarios", icon: Users, color: "bg-brand-human/10 text-brand-human" },
 ];
 
 const SCORE_SHIFTS = [
