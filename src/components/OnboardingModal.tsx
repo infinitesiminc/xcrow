@@ -26,6 +26,7 @@ export default function OnboardingModal({ open, onComplete, userId }: Onboarding
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!jobTitle.trim()) return;
+    const normalizedCompany = company.trim() && !company.trim().startsWith("http") ? `https://${company.trim()}` : company.trim();
     setSaving(true);
     const { error } = await supabase
       .from("profiles")
