@@ -164,6 +164,23 @@ export default function ScoreDistributions() {
       .sort((a, b) => b.avg - a.avg);
   }, [jobs]);
 
+  // Location breakdown
+  const locations = useMemo(() => {
+    const map = new Map<string, number[]>();
+    jobs.forEach(j => {
+      const loc = j.location || "Unknown";
+      if (!map.has(loc)) map.set(loc, []);
+      map.get(loc)!.push(j.augmented_percent ?? 0);
+    });
+    return Array.from(map.entries())
+      .map(([name, scores]) => ({
+        name,
+        count: scores.length,
+        avg: Math.round(scores.reduce((a, b) => a + b, 0) / scores.length),
+      }))
+      .sort((a, b) => b.avg - a.avg);
+  }, [jobs]);
+
   const avgJob = useMemo(() => jobScores.length ? Math.round(jobScores.reduce((a, b) => a + b, 0) / jobScores.length) : 0, [jobScores]);
   const avgTask = useMemo(() => taskScores.length ? Math.round(taskScores.reduce((a, b) => a + b, 0) / taskScores.length) : 0, [taskScores]);
 
