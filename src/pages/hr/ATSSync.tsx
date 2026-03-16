@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -14,9 +14,12 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import {
+  Popover, PopoverContent, PopoverTrigger,
+} from "@/components/ui/popover";
+import {
   RefreshCw, Building2, Briefcase, Search, Globe, ExternalLink,
   Loader2, CheckCircle2, AlertTriangle, ArrowUpDown, MapPin,
-  ChevronDown, ChevronUp, Filter,
+  ChevronDown, ChevronUp, Filter, ChevronsUpDown, Check,
 } from "lucide-react";
 
 /* ── types ── */
