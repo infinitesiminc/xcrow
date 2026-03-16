@@ -140,6 +140,15 @@ Order from highest AI exposure to lowest. Respond ONLY with valid JSON array.`;
           continue;
         }
 
+        // Log parsed scores for diagnostics
+        const sampleTask = tasks[0];
+        console.log(`[${job.title}] Sample task scores:`, JSON.stringify({
+          cluster_name: sampleTask?.cluster_name,
+          ai_exposure_score: sampleTask?.ai_exposure_score,
+          job_impact_score: sampleTask?.job_impact_score,
+          keys: sampleTask ? Object.keys(sampleTask) : [],
+        }));
+
         const rows = tasks.map((t: any, i: number) => ({
           job_id: job.id,
           cluster_name: t.cluster_name,
