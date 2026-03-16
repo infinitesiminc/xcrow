@@ -280,13 +280,13 @@ export default function Investors() {
                   <div className="grid sm:grid-cols-2">
                     <div className="p-5 sm:p-6 flex flex-col justify-center">
                       <div className="flex items-center gap-2 mb-2">
-                        <div className="w-8 h-8 rounded-lg bg-brand-mid/10 flex items-center justify-center">
-                          <Zap className="h-4 w-4 text-brand-mid" />
+                        <div className="w-8 h-8 rounded-lg bg-brand-ai/10 flex items-center justify-center">
+                          <Zap className="h-4 w-4 text-brand-ai" />
                         </div>
                         <h3 className="text-sm font-bold text-foreground">Adapt · Model-Aware Re-Calibration</h3>
                       </div>
                       <p className="text-xs text-muted-foreground mb-3">When new frontier models drop, exposure scores automatically re-calibrate and the loop accelerates. Your workforce evolves as fast as AI does.</p>
-                      <Badge variant="outline" className="text-[10px] border-brand-mid/20 text-brand-mid w-fit">Continuous, not quarterly</Badge>
+                      <Badge variant="outline" className="text-[10px] border-brand-ai/20 text-brand-ai w-fit">Continuous, not quarterly</Badge>
                     </div>
                     <div className="bg-muted/20 border-l border-border/50 p-4 sm:p-5">
                       <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-3 font-medium">Auto Re-Calibration Timeline</p>
