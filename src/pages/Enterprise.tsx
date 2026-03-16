@@ -379,8 +379,8 @@ function AdaptiveLoopDiagram({ activeNode, setActiveNode }: {
 
   // Track cumulative rotation so arc always moves forward (clockwise) at constant speed
   const nodeOrder = ["map", "assess", "train", "adapt"];
-  const cumulativeRef = React.useRef(-90); // starts at Map (top)
-  const prevNodeRef = React.useRef(activeNode);
+  const cumulativeRef = useRef(-90); // starts at Map (top)
+  const prevNodeRef = useRef(activeNode);
 
   if (activeNode && activeNode !== prevNodeRef.current) {
     const prevIdx = nodeOrder.indexOf(prevNodeRef.current || "map");
