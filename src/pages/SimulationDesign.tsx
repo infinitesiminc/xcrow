@@ -284,7 +284,7 @@ function IngestionVisual() {
             <span className="text-sm font-medium">{s.name}</span>
             <div className="flex items-center gap-2">
               <span className="text-xs font-mono text-muted-foreground">{s.count} roles</span>
-              <CheckCircle2 className="h-3.5 w-3.5 text-dot-teal" />
+              <CheckCircle2 className="h-3.5 w-3.5 text-brand-human" />
             </div>
           </motion.div>
         ))}
