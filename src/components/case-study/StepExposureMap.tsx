@@ -2,11 +2,13 @@ import { useEffect, useState, useMemo } from "react";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 
-interface JobRow {
-  id: string;
-  title: string;
-  department: string | null;
-  automation_risk_percent: number | null;
+interface TaskRow {
+  ai_exposure_score: number | null;
+  job_id: string;
+}
+
+interface JobMap {
+  [jobId: string]: { title: string; department: string | null };
 }
 
 const BUCKETS = [
@@ -17,8 +19,14 @@ const BUCKETS = [
   { label: "81–100%", min: 81, max: 100 },
 ];
 
+interface RoleScore {
+  title: string;
+  department: string | null;
+  avgExposure: number;
+}
+
 export default function StepExposureMap() {
-  const [jobs, setJobs] = useState<JobRow[]>([]);
+  const [roles, setRoles] = useState<RoleScore[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -29,31 +37,59 @@ export default function StepExposureMap() {
         .eq("name", "Anthropic")
         .single();
       if (!company) { setLoading(false); return; }
-      const { data } = await supabase
+
+      // Get all analyzed Anthropic jobs (those with task clusters)
+      const { data: jobs } = await supabase
         .from("jobs")
-        .select("id, title, department, automation_risk_percent")
+        .select("id, title, department")
         .eq("company_id", company.id)
-        .not("automation_risk_percent", "is", null)
-        .order("automation_risk_percent", { ascending: false })
         .limit(500);
-      setJobs(data ?? []);
+
+      if (!jobs?.length) { setLoading(false); return; }
+
+      const jobMap: JobMap = {};
+      jobs.forEach((j) => { jobMap[j.id] = { title: j.title, department: j.department }; });
+      const jobIds = jobs.map((j) => j.id);
+
+      // Fetch task clusters for these jobs
+      const { data: clusters } = await supabase
+        .from("job_task_clusters")
+        .select("job_id, ai_exposure_score")
+        .in("job_id", jobIds);
+
+      if (!clusters?.length) { setLoading(false); return; }
+
+      // Average ai_exposure_score per job
+      const scoreMap: Record<string, number[]> = {};
+      clusters.forEach((c) => {
+        if (c.ai_exposure_score != null) {
+          (scoreMap[c.job_id] ??= []).push(c.ai_exposure_score);
+        }
+      });
+
+      const result: RoleScore[] = Object.entries(scoreMap)
+        .map(([jobId, scores]) => ({
+          title: jobMap[jobId]?.title ?? "Unknown",
+          department: jobMap[jobId]?.department ?? null,
+          avgExposure: Math.round(scores.reduce((a, b) => a + b, 0) / scores.length),
+        }))
+        .sort((a, b) => b.avgExposure - a.avgExposure);
+
+      setRoles(result);
       setLoading(false);
     })();
   }, []);
 
-  const analyzed = jobs.filter((j) => (j.automation_risk_percent ?? 0) > 0);
   const bucketCounts = useMemo(() => {
     return BUCKETS.map((b) => ({
       ...b,
-      count: analyzed.filter(
-        (j) => (j.automation_risk_percent ?? 0) >= b.min && (j.automation_risk_percent ?? 0) <= b.max
-      ).length,
+      count: roles.filter((r) => r.avgExposure >= b.min && r.avgExposure <= b.max).length,
     }));
-  }, [analyzed]);
+  }, [roles]);
 
   const maxCount = Math.max(...bucketCounts.map((b) => b.count), 1);
-  const avgRisk = analyzed.length
-    ? Math.round(analyzed.reduce((s, j) => s + (j.automation_risk_percent ?? 0), 0) / analyzed.length)
+  const avgRisk = roles.length
+    ? Math.round(roles.reduce((s, r) => s + r.avgExposure, 0) / roles.length)
     : 0;
 
   const BAR_COLORS = [
@@ -75,8 +111,8 @@ export default function StepExposureMap() {
   return (
     <div className="space-y-4">
       <p className="text-sm text-muted-foreground leading-relaxed">
-        After analysis, each role receives an AI exposure score. Here's how Anthropic's{" "}
-        <span className="font-semibold text-foreground">{analyzed.length} analyzed roles</span>{" "}
+        After analysis, each role's tasks are scored for AI exposure. Here's how Anthropic's{" "}
+        <span className="font-semibold text-foreground">{roles.length} analyzed roles</span>{" "}
         distribute across exposure bands — the org-wide average is{" "}
         <span className="font-semibold text-foreground">{avgRisk}%</span>.
       </p>
@@ -117,17 +153,28 @@ export default function StepExposureMap() {
           Most Exposed Roles
         </h4>
         <div className="space-y-1.5">
-          {analyzed.slice(0, 6).map((j, i) => (
+          {roles.slice(0, 8).map((r, i) => (
             <motion.div
-              key={j.id}
+              key={`${r.title}-${i}`}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.4 + i * 0.05 }}
               className="flex items-center justify-between text-sm"
             >
-              <span className="truncate flex-1">{j.title}</span>
-              <span className="text-xs font-mono ml-2 text-dot-purple font-semibold">
-                {j.automation_risk_percent}%
+              <div className="flex-1 min-w-0 flex items-center gap-2">
+                <span className="truncate">{r.title}</span>
+                {r.department && (
+                  <span className="text-[10px] text-muted-foreground bg-muted rounded px-1.5 py-0.5 shrink-0">
+                    {r.department}
+                  </span>
+                )}
+              </div>
+              <span className={`text-xs font-mono ml-2 font-semibold ${
+                r.avgExposure >= 60 ? "text-dot-purple" :
+                r.avgExposure >= 35 ? "text-dot-amber" :
+                "text-dot-teal"
+              }`}>
+                {r.avgExposure}%
               </span>
             </motion.div>
           ))}
