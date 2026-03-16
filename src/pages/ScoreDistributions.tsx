@@ -164,13 +164,17 @@ export default function ScoreDistributions() {
       .sort((a, b) => b.avg - a.avg);
   }, [jobs]);
 
-  // Location breakdown
+  // Location breakdown — split multi-location strings by | ; ,
   const locations = useMemo(() => {
     const map = new Map<string, number[]>();
     jobs.forEach(j => {
-      const loc = j.location || "Unknown";
-      if (!map.has(loc)) map.set(loc, []);
-      map.get(loc)!.push(j.augmented_percent ?? 0);
+      const raw = j.location || "Unknown";
+      const parts = raw.split(/[|;,]/).map(s => s.trim()).filter(Boolean);
+      const unique = [...new Set(parts.length ? parts : ["Unknown"])];
+      unique.forEach(loc => {
+        if (!map.has(loc)) map.set(loc, []);
+        map.get(loc)!.push(j.augmented_percent ?? 0);
+      });
     });
     return Array.from(map.entries())
       .map(([name, scores]) => ({
