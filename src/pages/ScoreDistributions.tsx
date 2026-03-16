@@ -231,6 +231,7 @@ export default function ScoreDistributions() {
                     <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm bg-success inline-block" /> 0-39%</span>
                     <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm bg-warning inline-block" /> 40-69%</span>
                     <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm bg-destructive inline-block" /> 70-100%</span>
+                    <span className="border-l border-border pl-3">±spread</span>
                   </div>
                 </div>
                 <div className="space-y-[3px]">
