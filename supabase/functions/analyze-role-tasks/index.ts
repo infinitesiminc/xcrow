@@ -107,14 +107,42 @@ Respond ONLY with a valid JSON array, no markdown.`;
       throw new Error(`AI API error (${res.status}): ${text}`);
     }
 
-    const data = await res.json();
-    const raw = data.choices[0].message.content;
+    const responseText = await res.text();
+    if (!responseText || responseText.trim().length === 0) {
+      throw new Error("AI returned empty response");
+    }
+
+    let data: any;
+    try {
+      data = JSON.parse(responseText);
+    } catch {
+      console.error("Failed to parse AI response JSON:", responseText.slice(0, 500));
+      throw new Error("AI returned invalid JSON response");
+    }
+
+    const raw = data?.choices?.[0]?.message?.content;
+    if (!raw || raw.trim().length === 0) {
+      console.error("AI returned empty content. Full response:", JSON.stringify(data).slice(0, 500));
+      throw new Error("AI returned empty content");
+    }
 
     let tasks: any[];
     try {
-      const jsonMatch = raw.match(/```(?:json)?\s*([\s\S]*?)```/) || [null, raw];
-      tasks = JSON.parse(jsonMatch[1].trim());
-    } catch {
+      // Try markdown code block first, then raw JSON
+      const jsonMatch = raw.match(/```(?:json)?\s*([\s\S]*?)```/);
+      const jsonStr = jsonMatch ? jsonMatch[1].trim() : raw.trim();
+      // Also handle case where response starts with text before JSON array
+      const arrayMatch = jsonStr.match(/\[[\s\S]*\]/);
+      if (arrayMatch) {
+        tasks = JSON.parse(arrayMatch[0]);
+      } else {
+        tasks = JSON.parse(jsonStr);
+      }
+      if (!Array.isArray(tasks) || tasks.length === 0) {
+        throw new Error("Parsed result is not a non-empty array");
+      }
+    } catch (parseErr) {
+      console.error("Parse error:", parseErr.message, "Raw content:", raw.slice(0, 500));
       throw new Error("Failed to parse AI task analysis response");
     }
 
