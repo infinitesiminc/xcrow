@@ -18,6 +18,7 @@ import NotFound from "./pages/NotFound.tsx";
 
 import Contact from "./pages/Contact.tsx";
 import Pricing from "./pages/Pricing.tsx";
+import Investors from "./pages/Investors.tsx";
 import ATSSync from "./pages/hr/ATSSync.tsx";
 import SimulationBuilder from "./pages/products/SimulationBuilder.tsx";
 import SimulationDesign from "./pages/SimulationDesign.tsx";
