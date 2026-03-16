@@ -91,9 +91,9 @@ export default function Investors() {
               { icon: TrendingUp, stat: "$8.5T", desc: "unrealized productivity from delayed AI adoption (Accenture)" },
             ].map((item, i) => (
               <motion.div key={i} {...fadeUp} transition={{ ...fadeUp.transition, delay: i * 0.1 }}>
-                <Card className="border-destructive/20 bg-destructive/5 h-full">
+                <Card className="border-brand-ai/20 bg-brand-ai/5 h-full">
                   <CardContent className="p-5">
-                    <item.icon className="h-5 w-5 text-destructive mb-3" />
+                    <item.icon className="h-5 w-5 text-brand-ai mb-3" />
                     <p className="text-2xl font-bold text-foreground">{item.stat}</p>
                     <p className="text-xs text-muted-foreground mt-1">{item.desc}</p>
                   </CardContent>
