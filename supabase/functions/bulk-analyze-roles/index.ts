@@ -162,6 +162,10 @@ Order from highest AI impact to lowest. Respond ONLY with valid JSON array.`;
           outcome: t.outcome || null,
           skill_names: t.skill_names || null,
           sort_order: i,
+          ai_state: t.ai_state || "human_ai",
+          ai_trend: t.ai_trend || "increasing_ai",
+          impact_level: t.impact_level || "medium",
+          priority: t.priority || "important",
         }));
 
         const { error: insertErr } = await sb.from("job_task_clusters").insert(rows);
@@ -170,16 +174,20 @@ Order from highest AI impact to lowest. Respond ONLY with valid JSON array.`;
         } else {
           // Compute job-level scores from task signals
           const totalTasks = tasks.length || 1;
-          const augmentedCount = tasks.filter((t: any) => (t.ai_state || "human_ai") === "human_ai").length;
+          const aiInvolvedCount = tasks.filter((t: any) => {
+            const state = t.ai_state || "human_ai";
+            return state === "human_ai" || state === "mostly_ai";
+          }).length;
           const mostlyAiCount = tasks.filter((t: any) => (t.ai_state || "human_ai") === "mostly_ai").length;
-          const highImpactCount = tasks.filter((t: any) => (t.impact_level || "medium") === "high").length;
-          const criticalCount = tasks.filter((t: any) => (t.priority || "important") === "critical").length;
+          const urgentCount = tasks.filter((t: any) => {
+            const priority = t.priority || "important";
+            const impact = t.impact_level || "medium";
+            return priority === "critical" || impact === "high";
+          }).length;
 
-          const augmented_percent = Math.round((augmentedCount / totalTasks) * 100);
-          const automation_risk_percent = Math.round(((mostlyAiCount * 1.0 + highImpactCount * 0.5) / totalTasks) * 60 + (criticalCount / totalTasks) * 20);
-          const new_skills_percent = Math.round(
-            tasks.reduce((sum: number, t: any) => sum + Math.min((t.skill_names || []).length, 4), 0) / (totalTasks * 4) * 100
-          );
+          const augmented_percent = Math.round((aiInvolvedCount / totalTasks) * 100);
+          const automation_risk_percent = Math.round((mostlyAiCount / totalTasks) * 100);
+          const new_skills_percent = Math.round((urgentCount / totalTasks) * 100);
 
           await sb.from("jobs").update({
             augmented_percent: Math.min(augmented_percent, 100),
