@@ -31,9 +31,21 @@ const trustFeatures = [
   { icon: Globe, title: "Data residency", description: "Choose EU, US, or APAC data regions" },
 ];
 
+/* ── Frontier model releases for hero ticker ── */
+const FRONTIER_RELEASES = [
+  { date: "Mar 9", model: "GPT-5.4" },
+  { date: "Mar 5", model: "Gemini 3.1 Flash" },
+  { date: "Feb 19", model: "Gemini 3.1 Pro" },
+  { date: "Feb 12", model: "GPT-5.3" },
+  { date: "Feb 5", model: "Claude 4.6" },
+  { date: "Jan 28", model: "Gemini 3 Flash" },
+  { date: "Jan 15", model: "GPT-5.2" },
+  { date: "Jan 8", model: "DeepSeek R2" },
+];
+
 /* ── Model releases for the acceleration gap visual ── */
 const modelReleases = [
-  { month: "Jan", models: ["GPT-5.2", "Gemini 3 Flash"] },
+  { month: "Jan", models: ["GPT-5.2", "Gemini 3 Flash", "DeepSeek R2"] },
   { month: "Feb", models: ["Claude 4.6", "Gemini 3.1 Pro", "GPT-5.3"] },
   { month: "Mar", models: ["GPT-5.4", "Gemini 3.1 Flash"] },
 ];
