@@ -74,7 +74,7 @@ const DeltaBadge = ({ delta }: { delta: number }) => {
 };
 
 /* ─── 1. Executive Brief ─── */
-function ExecutiveBrief({ progress, deptTrends }: { progress: ProgressRow[]; deptTrends: DeptTrendData[] }) {
+function ExecutiveBrief({ progress, deptTrends, funnel }: { progress: ProgressRow[]; deptTrends: DeptTrendData[]; funnel: DemoFunnelStats }) {
   const brief = useMemo(() => {
     const uniqueUsers = new Set(progress.map(r => r.user_id)).size;
     const allScores = progress.flatMap(r => [
