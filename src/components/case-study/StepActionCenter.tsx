@@ -20,9 +20,9 @@ const QUEUE_ITEMS = [
 ];
 
 function pillarColor(score: number) {
-  if (score >= 60) return "text-dot-teal";
-  if (score >= 40) return "text-dot-amber";
-  return "text-dot-purple";
+  if (score >= 60) return "text-brand-human";
+  if (score >= 40) return "text-brand-mid";
+  return "text-brand-ai";
 }
 
 export default function StepActionCenter() {
