@@ -11,9 +11,6 @@ import {
   Accordion, AccordionContent, AccordionItem, AccordionTrigger,
 } from "@/components/ui/accordion";
 import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
-import { STRIPE_PRICES } from "@/lib/stripe-config";
-import { toast } from "sonner";
 import PricingTierCard from "@/components/pricing/PricingTierCard";
 import GrowthPricingTable from "@/components/pricing/GrowthPricingTable";
 
