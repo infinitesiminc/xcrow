@@ -238,6 +238,8 @@ export default function ScoreDistributions() {
                     const score = j.augmented_percent ?? 0;
                     const barColor = score >= 70 ? "bg-destructive" : score >= 40 ? "bg-warning" : "bg-success";
                     const isHovered = hoveredJobId === j.id;
+                    const variance = jobVariance.get(j.id);
+                    const lowVariance = variance && variance.spread < 10;
                     return (
                       <motion.div
                         key={j.id}
@@ -267,6 +269,9 @@ export default function ScoreDistributions() {
                         </div>
                         <span className={`text-[10px] tabular-nums w-8 text-right shrink-0 ${isHovered ? "font-bold text-foreground" : "text-muted-foreground"}`}>
                           {score}%
+                        </span>
+                        <span className={`text-[9px] tabular-nums w-12 text-right shrink-0 ${lowVariance ? "text-destructive font-bold" : "text-muted-foreground/60"}`} title={variance ? `Tasks: ${variance.min}%–${variance.max}% (${variance.count} tasks)` : ""}>
+                          ±{variance?.spread ?? 0}
                         </span>
                       </motion.div>
                     );
