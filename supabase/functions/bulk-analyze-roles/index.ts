@@ -156,14 +156,13 @@ Order from highest AI exposure to lowest. Respond ONLY with valid JSON array.`;
         if (insertErr) {
           results.push({ jobId: job.id, title: job.title, status: "insert_error: " + insertErr.message });
         } else {
-          // Compute weighted average job score
-          const priorityWeight = (p: string) => p === "high" ? 3 : p === "medium" ? 2 : 1;
+          // Compute job-level AI exposure weighted by job impact
           let totalWeight = 0;
           let weightedSum = 0;
           for (const t of tasks) {
-            const w = priorityWeight(t.priority || "medium");
-            totalWeight += w;
-            weightedSum += (t.ai_exposure_score ?? 50) * w;
+            const impact = Math.max(t.job_impact_score ?? 50, 1);
+            totalWeight += impact;
+            weightedSum += (t.ai_exposure_score ?? 50) * impact;
           }
           const jobScore = totalWeight > 0 ? Math.round(weightedSum / totalWeight) : 0;
 

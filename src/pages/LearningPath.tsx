@@ -415,7 +415,7 @@ export default function LearningPath() {
             <div className="mt-4 text-center">
               <div className="text-4xl font-bold text-foreground">{job.augmented_percent ?? "—"}%</div>
               <div className="text-sm text-muted-foreground mt-1">AI Exposure Score</div>
-              <p className="text-xs text-muted-foreground/70 mt-0.5">Weighted average across all tasks</p>
+              <p className="text-xs text-muted-foreground/70 mt-0.5">How much of the important work in this role is AI-exposed</p>
               {job.augmented_percent != null && (
                 <div className="h-2 rounded-full bg-secondary mt-3 overflow-hidden max-w-xs mx-auto">
                   <div
