@@ -513,7 +513,7 @@ export default function LearningPath() {
                             </div>
                           )}
                         </div>
-                        <p className="text-[10px] text-muted-foreground/60 mt-1">How much of the important work is AI-exposed</p>
+                        <p className="text-[11px] text-muted-foreground/60 mt-1">How much of the important work is AI-exposed</p>
                       </CardContent>
                     </Card>
 
