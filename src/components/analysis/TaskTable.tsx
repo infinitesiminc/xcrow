@@ -19,6 +19,19 @@ function exposureColor(score: number) {
   return "bg-success/10 text-success border-success/20";
 }
 
+function impactColor(score: number) {
+  if (score >= 70) return "bg-primary/10 text-primary border-primary/20";
+  if (score >= 40) return "bg-accent text-muted-foreground border-border/30";
+  return "bg-muted/50 text-muted-foreground border-border/20";
+}
+
+function insightLabel(aiExposure: number, jobImpact: number): { label: string; color: string } | null {
+  if (aiExposure >= 60 && jobImpact >= 60) return { label: "🔴 Urgent Upskill", color: "bg-destructive/10 text-destructive border-destructive/20" };
+  if (aiExposure >= 60 && jobImpact < 40) return { label: "🤖 Let AI Handle", color: "bg-accent text-muted-foreground border-border/30" };
+  if (aiExposure < 40 && jobImpact >= 60) return { label: "💪 Human Edge", color: "bg-success/10 text-success border-success/20" };
+  return null;
+}
+
 function priorityBadge(p?: string) {
   if (p === "high") return <Badge className="bg-destructive/10 text-destructive border-destructive/20 text-[9px]">High</Badge>;
   if (p === "medium") return <Badge className="bg-warning/10 text-warning border-warning/20 text-[9px]">Medium</Badge>;
@@ -33,36 +46,44 @@ export function TaskTable({ tasks, skills, completedTasks, onPractice }: TaskTab
   }, [tasks]);
 
   const summary = useMemo(() => {
-    const high = tasks.filter(t => (t.aiExposureScore ?? 50) >= 70).length;
-    const moderate = tasks.filter(t => (t.aiExposureScore ?? 50) >= 40 && (t.aiExposureScore ?? 50) < 70).length;
-    const low = tasks.filter(t => (t.aiExposureScore ?? 50) < 40).length;
-    return { high, moderate, low };
+    const urgent = tasks.filter(t => (t.aiExposureScore ?? 50) >= 60 && (t.jobImpactScore ?? 50) >= 60).length;
+    const humanEdge = tasks.filter(t => (t.aiExposureScore ?? 50) < 40 && (t.jobImpactScore ?? 50) >= 60).length;
+    const letAi = tasks.filter(t => (t.aiExposureScore ?? 50) >= 60 && (t.jobImpactScore ?? 50) < 40).length;
+    return { urgent, humanEdge, letAi };
   }, [tasks]);
 
   return (
     <div>
       {/* Summary bar */}
       <div className="flex items-center gap-4 mb-3 flex-wrap">
-        <span className="text-xs text-muted-foreground flex items-center gap-1.5">
-          <span className="w-2 h-2 rounded-full bg-destructive" />
-          <span className="font-semibold text-foreground">{summary.high}</span> high exposure
-        </span>
-        <span className="text-xs text-muted-foreground flex items-center gap-1.5">
-          <span className="w-2 h-2 rounded-full bg-warning" />
-          <span className="font-semibold text-foreground">{summary.moderate}</span> moderate
-        </span>
-        <span className="text-xs text-muted-foreground flex items-center gap-1.5">
-          <span className="w-2 h-2 rounded-full bg-success" />
-          <span className="font-semibold text-foreground">{summary.low}</span> low exposure
-        </span>
+        {summary.urgent > 0 && (
+          <span className="text-xs text-muted-foreground flex items-center gap-1.5">
+            <span className="text-sm">🔴</span>
+            <span className="font-semibold text-foreground">{summary.urgent}</span> urgent upskill
+          </span>
+        )}
+        {summary.humanEdge > 0 && (
+          <span className="text-xs text-muted-foreground flex items-center gap-1.5">
+            <span className="text-sm">💪</span>
+            <span className="font-semibold text-foreground">{summary.humanEdge}</span> human edge
+          </span>
+        )}
+        {summary.letAi > 0 && (
+          <span className="text-xs text-muted-foreground flex items-center gap-1.5">
+            <span className="text-sm">🤖</span>
+            <span className="font-semibold text-foreground">{summary.letAi}</span> let AI handle
+          </span>
+        )}
       </div>
 
       {/* Scrollable grid of mini cards */}
       <div className="max-h-[420px] overflow-y-auto pr-1 scrollbar-thin">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
           {sortedTasks.map(({ task, originalIndex }, i) => {
-            const score = task.aiExposureScore ?? 50;
+            const aiScore = task.aiExposureScore ?? 50;
+            const impactScore = task.jobImpactScore ?? 50;
             const isCompleted = completedTasks.has(task.name);
+            const insight = insightLabel(aiScore, impactScore);
 
             return (
               <motion.div
@@ -72,20 +93,28 @@ export function TaskTable({ tasks, skills, completedTasks, onPractice }: TaskTab
                 transition={{ delay: i * 0.02 }}
                 className="rounded-lg border border-border bg-card p-3 flex flex-col gap-2"
               >
-                {/* Top row: score + name */}
-                <div className="flex items-start gap-2 min-w-0">
-                  <Badge className={`text-[10px] shrink-0 ${exposureColor(score)}`}>
-                    {score}%
-                  </Badge>
-                  <span className="text-sm font-medium text-foreground leading-tight line-clamp-2 flex-1">
-                    {task.name}
-                  </span>
-                </div>
+                {/* Task name */}
+                <span className="text-sm font-medium text-foreground leading-tight line-clamp-2">
+                  {task.name}
+                </span>
 
-                {/* Priority badge */}
-                <div className="flex items-center gap-2">
+                {/* Dual scores row */}
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  <Badge className={`text-[10px] shrink-0 ${exposureColor(aiScore)}`} title="AI Exposure — how much AI can do this task">
+                    🤖 {aiScore}%
+                  </Badge>
+                  <Badge className={`text-[10px] shrink-0 ${impactColor(impactScore)}`} title="Job Impact — how critical this task is to role success">
+                    ⭐ {impactScore}%
+                  </Badge>
                   {priorityBadge(task.priority)}
                 </div>
+
+                {/* 2x2 insight label */}
+                {insight && (
+                  <Badge className={`text-[9px] w-fit ${insight.color}`}>
+                    {insight.label}
+                  </Badge>
+                )}
 
                 {/* Upskill button */}
                 <Button

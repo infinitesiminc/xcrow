@@ -429,6 +429,7 @@ export type Database = {
           id: string
           impact_level: string | null
           job_id: string
+          job_impact_score: number | null
           outcome: string | null
           priority: string | null
           skill_names: string[] | null
@@ -444,6 +445,7 @@ export type Database = {
           id?: string
           impact_level?: string | null
           job_id: string
+          job_impact_score?: number | null
           outcome?: string | null
           priority?: string | null
           skill_names?: string[] | null
@@ -459,6 +461,7 @@ export type Database = {
           id?: string
           impact_level?: string | null
           job_id?: string
+          job_impact_score?: number | null
           outcome?: string | null
           priority?: string | null
           skill_names?: string[] | null

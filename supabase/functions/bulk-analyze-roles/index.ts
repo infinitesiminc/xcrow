@@ -101,7 +101,8 @@ For each task cluster return a JSON array of objects with:
 3. "outcome": What successful completion looks like
 4. "skill_names": Array of 2-4 skills needed
 5. "ai_exposure_score": Integer 0-100 — how much AI is involved today (0 = fully human, 100 = fully AI)
-6. "priority": "high", "medium", or "low"
+6. "job_impact_score": Integer 0-100 — how critical this task is to job success (0 = negligible, 100 = core to role)
+7. "priority": "high", "medium", or "low"
 
 Order from highest AI exposure to lowest. Respond ONLY with valid JSON array.`;
 
@@ -147,6 +148,7 @@ Order from highest AI exposure to lowest. Respond ONLY with valid JSON array.`;
           skill_names: t.skill_names || null,
           sort_order: i,
           ai_exposure_score: Math.min(Math.max(t.ai_exposure_score ?? 50, 0), 100),
+          job_impact_score: Math.min(Math.max(t.job_impact_score ?? 50, 0), 100),
           priority: t.priority || "medium",
         }));
 

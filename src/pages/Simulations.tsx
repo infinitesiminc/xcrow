@@ -50,6 +50,7 @@ interface EnrichedTask {
   outcome: string | null;
   skill_names: string[] | null;
   ai_exposure_score?: number;
+  job_impact_score?: number;
   priority?: string;
 }
 
@@ -159,6 +160,7 @@ export default function Simulations() {
       const tasks = (data.tasks || []).map((t: any) => ({
         ...t,
         ai_exposure_score: t.ai_exposure_score ?? 50,
+        job_impact_score: t.job_impact_score ?? 50,
         priority: t.priority || "medium",
       }));
       setBrowseTasks(tasks);

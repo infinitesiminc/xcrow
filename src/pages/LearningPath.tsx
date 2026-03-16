@@ -44,6 +44,7 @@ interface EnrichedTask {
   skill_names: string[] | null;
   sort_order: number | null;
   ai_exposure_score?: number;
+  job_impact_score?: number;
   priority?: string;
 }
 
@@ -152,6 +153,7 @@ export default function LearningPath() {
     return rawTasks.map((t: any) => ({
       ...t,
       ai_exposure_score: t.ai_exposure_score ?? 50,
+      job_impact_score: t.job_impact_score ?? 50,
       priority: t.priority || "medium",
     }));
   };
@@ -554,6 +556,7 @@ export default function LearningPath() {
                   const isCompleted = taskScore !== null;
                   const isUpdated = updatedTaskNames.has(task.cluster_name);
                   const exposure = task.ai_exposure_score ?? 50;
+                  const impact = task.job_impact_score ?? 50;
 
                   return (
                     <motion.div
@@ -599,8 +602,17 @@ export default function LearningPath() {
                                 <p className="text-xs text-muted-foreground leading-relaxed mb-2">{task.description}</p>
                               )}
 
-                              <div className="flex items-center gap-3 mb-2">
+                              <div className="flex items-center gap-2 mb-2 flex-wrap">
                                 {exposureBadge(exposure)}
+                                <Badge className={`text-[9px] ${impact >= 70 ? "bg-primary/10 text-primary border-primary/20" : impact >= 40 ? "bg-accent text-muted-foreground border-border/30" : "bg-muted/50 text-muted-foreground border-border/20"}`}>
+                                  ⭐ {impact}% Job Impact
+                                </Badge>
+                                {exposure >= 60 && impact >= 60 && (
+                                  <Badge className="bg-destructive/10 text-destructive border-destructive/20 text-[8px]">🔴 Urgent Upskill</Badge>
+                                )}
+                                {exposure < 40 && impact >= 60 && (
+                                  <Badge className="bg-success/10 text-success border-success/20 text-[8px]">💪 Human Edge</Badge>
+                                )}
                               </div>
 
                               {task.skill_names && task.skill_names.length > 0 && (
