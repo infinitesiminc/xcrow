@@ -600,7 +600,6 @@ export default function LearningPath() {
                                       Updated
                                     </Badge>
                                   )}
-                                  {priorityBadge(task.priority)}
                                 </div>
                               </div>
 
