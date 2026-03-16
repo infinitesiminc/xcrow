@@ -167,18 +167,84 @@ export default function ScoreDistributions() {
           ))}
         </div>
 
-        <Tabs defaultValue="jobs">
+        <Tabs defaultValue="all">
           <TabsList className="mb-6">
+            <TabsTrigger value="all" className="gap-1.5 text-xs">
+              <BarChart3 className="w-3.5 h-3.5" /> All Jobs
+            </TabsTrigger>
             <TabsTrigger value="jobs" className="gap-1.5 text-xs">
-              <Briefcase className="w-3.5 h-3.5" /> Job-Level ({jobs.length})
+              <Briefcase className="w-3.5 h-3.5" /> Distribution
             </TabsTrigger>
             <TabsTrigger value="tasks" className="gap-1.5 text-xs">
-              <Layers className="w-3.5 h-3.5" /> Task-Level ({tasks.length})
+              <Layers className="w-3.5 h-3.5" /> Task-Level
             </TabsTrigger>
             <TabsTrigger value="departments" className="gap-1.5 text-xs">
               By Department
             </TabsTrigger>
           </TabsList>
+
+          {/* ═══ ALL JOBS RANKED ═══ */}
+          <TabsContent value="all">
+            <Card className="border-border">
+              <CardContent className="p-4 sm:p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                    All {sortedJobs.length} Jobs — Sorted by AI Exposure
+                  </p>
+                  <div className="flex items-center gap-3 text-[10px] text-muted-foreground">
+                    <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm bg-success inline-block" /> 0-39%</span>
+                    <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm bg-warning inline-block" /> 40-69%</span>
+                    <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm bg-destructive inline-block" /> 70-100%</span>
+                  </div>
+                </div>
+                <div className="space-y-[3px]">
+                  {sortedJobs.map((j, i) => {
+                    const score = j.augmented_percent ?? 0;
+                    const barColor = score >= 70 ? "bg-destructive" : score >= 40 ? "bg-warning" : "bg-success";
+                    const isHovered = hoveredJobId === j.id;
+                    return (
+                      <motion.div
+                        key={j.id}
+                        initial={{ opacity: 0, x: -8 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: Math.min(i * 0.008, 0.5) }}
+                        className="flex items-center gap-2 group cursor-pointer"
+                        onMouseEnter={() => setHoveredJobId(j.id)}
+                        onMouseLeave={() => setHoveredJobId(null)}
+                        onClick={() => navigate(`/learning-path?jobId=${j.id}`)}
+                      >
+                        <span className={`text-[10px] w-[180px] truncate shrink-0 transition-colors ${isHovered ? "text-foreground font-medium" : "text-muted-foreground"}`}>
+                          {j.title.replace(/^\s+/, "")}
+                        </span>
+                        <div className="flex-1 h-4 rounded-sm bg-secondary/30 overflow-hidden relative">
+                          <motion.div
+                            className={`h-full rounded-sm ${barColor} ${isHovered ? "opacity-100" : "opacity-80"}`}
+                            initial={{ width: 0 }}
+                            animate={{ width: `${score}%` }}
+                            transition={{ duration: 0.4, delay: Math.min(i * 0.008, 0.5) }}
+                          />
+                          {isHovered && (
+                            <span className="absolute inset-0 flex items-center justify-end pr-1.5 text-[9px] font-bold text-foreground">
+                              {score}%
+                            </span>
+                          )}
+                        </div>
+                        <span className={`text-[10px] tabular-nums w-8 text-right shrink-0 ${isHovered ? "font-bold text-foreground" : "text-muted-foreground"}`}>
+                          {score}%
+                        </span>
+                      </motion.div>
+                    );
+                  })}
+                </div>
+                {/* Average line label */}
+                <div className="mt-4 pt-3 border-t border-border/50 flex items-center justify-between text-xs text-muted-foreground">
+                  <span>Average AI Exposure: <span className="font-bold text-foreground">{avgJob}%</span></span>
+                  <span>Median: <span className="font-bold text-foreground">{medianJob}%</span></span>
+                  <span>Range: <span className="font-bold text-foreground">{minJob}%–{maxJob}%</span></span>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
 
           <TabsContent value="jobs">
             <div className="grid md:grid-cols-2 gap-6">
@@ -197,7 +263,7 @@ export default function ScoreDistributions() {
                   <CardContent className="p-4">
                     <p className="text-xs font-medium text-muted-foreground mb-2 uppercase tracking-wide">Highest AI Exposure</p>
                     <div className="space-y-1.5">
-                      {[...jobs].sort((a, b) => (b.augmented_percent ?? 0) - (a.augmented_percent ?? 0)).slice(0, 5).map(j => (
+                      {sortedJobs.slice(0, 5).map(j => (
                         <div key={j.id} className="flex items-center justify-between gap-2 text-xs">
                           <span className="truncate text-foreground">{j.title.replace(/^\s+/, "")}</span>
                           <Badge className="bg-destructive/10 text-destructive border-destructive/20 text-[11px] shrink-0">{j.augmented_percent}%</Badge>
@@ -210,7 +276,7 @@ export default function ScoreDistributions() {
                   <CardContent className="p-4">
                     <p className="text-xs font-medium text-muted-foreground mb-2 uppercase tracking-wide">Lowest AI Exposure</p>
                     <div className="space-y-1.5">
-                      {[...jobs].sort((a, b) => (a.augmented_percent ?? 0) - (b.augmented_percent ?? 0)).slice(0, 5).map(j => (
+                      {[...sortedJobs].reverse().slice(0, 5).map(j => (
                         <div key={j.id} className="flex items-center justify-between gap-2 text-xs">
                           <span className="truncate text-foreground">{j.title.replace(/^\s+/, "")}</span>
                           <Badge className="bg-success/10 text-success border-success/20 text-[11px] shrink-0">{j.augmented_percent}%</Badge>
