@@ -185,6 +185,13 @@
   100% { transform: translateX(-50%); }
 }
 
+@keyframes model-fly {
+  0% { transform: translateX(-100%); opacity: 0; }
+  5% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { transform: translateX(calc(100vw + 100%)); opacity: 0; }
+}
+
 @keyframes ticker-vertical {
   0% { transform: translateY(0); }
   100% { transform: translateY(-50%); }
