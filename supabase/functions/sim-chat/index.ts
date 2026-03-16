@@ -100,38 +100,9 @@ async function handleCompile(payload: any, apiKey: string) {
   const isExploring = experienceLevel === "exploring";
   const aiContext = aiStateDescription(taskMeta);
 
-  const prompt = `You are designing an AI-AWARE job simulation. The goal is NOT just to teach the task — it's to help the user understand HOW AI IS CHANGING this specific task and what humans should focus on.
-
-Role: ${jobTitle}${company ? ` at ${company}` : ""}
-Task: ${taskName}
-${aiContext}
-User experience: ${isExploring ? "EXPLORING — new to this field, needs basics explained simply" : "PRACTICING — already does this job, wants peer-level AI impact insights"}
-
-Generate a JSON response:
-
-1. "briefing": ${isExploring 
-  ? "3-4 sentences for a beginner. Explain what this task involves in plain language, then explain how AI is currently affecting it. End with what the user will learn in this practice session." 
-  : "3-4 sentences for a professional. Skip basics — go straight to how AI tools are changing this task today, what's being automated, and what human judgment remains critical. Frame this as a peer conversation."}
-
-2. "tips": Array of 2-3 tips focused on the AI replacement lens:
-   - What AI tools exist for this task
-   - Where human judgment still matters most
-   - How to work WITH AI rather than be replaced by it
-
-3. "keyTerms": Array of 3-4 objects with "term" and "definition" — mix of task-specific AND AI-related terms (e.g. "AI copilot", "prompt engineering", relevant AI tools).
-
-4. "systemPrompt": System prompt for the AI mentor. The mentor teaches through the AI replacement lens — every round connects the task to AI's role in it.
-
-5. "openingMessage": First message starting Round 1. Follow this structure:
-   - Start with "**📖 Scenario:**" — present a realistic work scenario for this task (2-3 sentences).
-   - Then "**🤔 How would you approach this?**" with exactly 3 MCQ options (A, B, C).
-   - One option should involve using AI tools effectively, one should be purely manual, one should be a poor approach.
-   - CRITICAL: Randomly vary which letter (A, B, or C) is the correct answer. Do NOT always make B correct. Aim for roughly equal distribution across A, B, and C.
-   ${isExploring ? "Use simple, jargon-free language." : "Use professional language appropriate for someone in the role."}
-
-6. "scenario": { "title": short title incorporating AI angle, "description": 1-sentence description mentioning both the task and AI's role }
-
-Respond ONLY with valid JSON, no markdown.`;
+  const prompt = isExploring
+    ? buildExploringCompilePrompt(taskName, jobTitle, company, aiContext)
+    : buildPracticingCompilePrompt(taskName, jobTitle, company, aiContext);
 
   const result = await callAI(apiKey, [{ role: "user", content: prompt }], 0.9);
 
@@ -167,6 +138,64 @@ Respond ONLY with valid JSON, no markdown.`;
   });
 }
 
+function buildExploringCompilePrompt(taskName: string, jobTitle: string, company: string | undefined, aiContext: string): string {
+  return `You are designing an AI-AWARE job simulation for BEGINNERS using MCQ format.
+
+Role: ${jobTitle}${company ? ` at ${company}` : ""}
+Task: ${taskName}
+${aiContext}
+User experience: EXPLORING — new to this field, needs basics explained simply
+
+Generate a JSON response:
+
+1. "briefing": 3-4 sentences for a beginner. Explain what this task involves in plain language, then explain how AI is currently affecting it. End with what the user will learn.
+
+2. "tips": Array of 2-3 tips focused on the AI replacement lens.
+
+3. "keyTerms": Array of 3-4 objects with "term" and "definition".
+
+4. "systemPrompt": System prompt for the AI mentor using MCQ format.
+
+5. "openingMessage": First message starting Round 1:
+   - Start with "**📖 Scenario:**" — present a realistic work scenario (2-3 sentences).
+   - Then "**🤔 How would you approach this?**" with exactly 3 MCQ options (A, B, C).
+   - One option should involve using AI tools effectively, one should be purely manual, one should be a poor approach.
+   - CRITICAL: Randomly vary which letter (A, B, or C) is the correct answer. Do NOT always make B correct. Aim for roughly equal distribution across A, B, and C.
+   - Use simple, jargon-free language.
+
+6. "scenario": { "title": short title, "description": 1-sentence description }
+
+Respond ONLY with valid JSON, no markdown.`;
+}
+
+function buildPracticingCompilePrompt(taskName: string, jobTitle: string, company: string | undefined, aiContext: string): string {
+  return `You are designing an AI-AWARE job simulation for PROFESSIONALS using open conversation format (NOT MCQ).
+
+Role: ${jobTitle}${company ? ` at ${company}` : ""}
+Task: ${taskName}
+${aiContext}
+User experience: PRACTICING — already does this job, wants peer-level AI impact insights
+
+Generate a JSON response:
+
+1. "briefing": 3-4 sentences for a professional. Skip basics — go straight to how AI tools are changing this task today, what's being automated, and what human judgment remains critical.
+
+2. "tips": Array of 2-3 tips about working with AI in this specific task.
+
+3. "keyTerms": Array of 3-4 objects with "term" and "definition" — focus on AI tools and emerging concepts.
+
+4. "systemPrompt": System prompt for the AI mentor. The mentor engages in peer-level conversation, presents scenarios and asks open-ended questions, then evaluates the professional's reasoning.
+
+5. "openingMessage": First message. Structure:
+   - Start with "**📖 Scenario:**" — present a complex, realistic work scenario that this professional would actually face (3-4 sentences). Include specific details like stakeholders, constraints, and AI tools available.
+   - Then "**🤔 How would you handle this?**" — ask them to describe their approach in their own words. Do NOT provide MCQ options. Instead, prompt them to think about: what tools they'd use, how they'd involve AI, and what they'd keep human-driven.
+   - Use professional language appropriate for someone in the role.
+
+6. "scenario": { "title": short title incorporating AI angle, "description": 1-sentence description }
+
+Respond ONLY with valid JSON, no markdown.`;
+}
+
 async function handleChat(payload: any, apiKey: string) {
   const { messages, role, round, experienceLevel = "exploring", taskMeta } = payload;
   const isExploring = experienceLevel === "exploring";
@@ -174,19 +203,33 @@ async function handleChat(payload: any, apiKey: string) {
 
   const systemMsg = {
     role: "system",
-    content: `You are a mentor teaching someone about the role of ${role} through the AI REPLACEMENT LENS. Your job is to help them understand how AI is changing each task and where humans still add unique value.
+    content: isExploring
+      ? buildExploringChatSystem(role, aiContext, round)
+      : buildPracticingChatSystem(role, aiContext, round),
+  };
+
+  const aiMessages = [systemMsg, ...messages];
+  const reply = await callAI(apiKey, aiMessages, 0.7);
+
+  return new Response(reply, {
+    headers: { ...corsHeaders, "Content-Type": "text/plain" },
+  });
+}
+
+function buildExploringChatSystem(role: string, aiContext: string, round: number): string {
+  return `You are a mentor teaching someone about the role of ${role} through the AI REPLACEMENT LENS using MCQ format.
 
 ${aiContext}
 
-User is ${isExploring ? "EXPLORING (beginner) — use simple language, explain jargon, be encouraging" : "PRACTICING (professional) — speak peer-to-peer, skip basics, go deeper on AI implications"}.
+User is EXPLORING (beginner) — use simple language, explain jargon, be encouraging.
 
 Each round follows this EXACT structure:
 
 1. **FEEDBACK**: If the user just answered an MCQ:
    - ✅ or ❌ with the correct answer: "The correct answer is **X)**"
    - 2-3 sentence explanation of WHY
-   - Then add: "**🤖 AI Today:** [1-2 sentences about what AI tools can currently do for this specific sub-task. Name real tools/approaches when possible.]"
-   - Then add: "**💡 Human Edge:** [1 sentence about what humans uniquely contribute here that AI cannot replicate.]"
+   - Then add: "**🤖 AI Today:** [1-2 sentences about what AI tools can currently do for this specific sub-task.]"
+   - Then add: "**💡 Human Edge:** [1 sentence about what humans uniquely contribute here.]"
 
 2. **CONTINUE PROMPT**: "🔄 **Ready for the next scenario?** (yes/no)"
 
@@ -203,21 +246,50 @@ Rules:
 - ALWAYS present exactly 3 options labeled A, B, C on separate lines. Never use D.
 - The correct answer MUST be randomly distributed across A, B, and C — never always the same letter.
 - Every round must include the 🤖 AI Today and 💡 Human Edge sections after feedback.
-- Keep ALL responses SHORT. No walls of text. Each section 1-3 sentences max.
-- ${isExploring ? "Define jargon inline. Be warm and encouraging." : "Skip basics. Reference specific tools and industry trends."}
-- If user says "no" to continuing: "Great session! 🎉 You explored how AI is shaping [brief summary]. Click 'Finish' to wrap up!"`,
-  };
+- Keep ALL responses SHORT. Each section 1-3 sentences max.
+- Define jargon inline. Be warm and encouraging.
+- If user says "no" to continuing: "Great session! 🎉 You explored how AI is shaping [brief summary]. Click 'Finish' to wrap up!"`;
+}
 
-  const aiMessages = [systemMsg, ...messages];
-  const reply = await callAI(apiKey, aiMessages, 0.7);
+function buildPracticingChatSystem(role: string, aiContext: string, round: number): string {
+  return `You are a peer mentor having a professional conversation about the role of ${role} through the AI REPLACEMENT LENS. This is an OPEN CONVERSATION format — no MCQs.
 
-  return new Response(reply, {
-    headers: { ...corsHeaders, "Content-Type": "text/plain" },
-  });
+${aiContext}
+
+User is PRACTICING (professional) — speak peer-to-peer, skip basics, go deep on AI implications.
+
+Each round follows this structure:
+
+1. **EVALUATE RESPONSE**: When the user shares their approach:
+   - Acknowledge what they got right with specific praise
+   - Point out any blind spots or missed opportunities regarding AI
+   - "**🤖 AI Today:** [Specific AI tools/approaches that apply here. Name real tools when possible — e.g., GPT-based drafting, AI-powered analytics, automated compliance checkers, etc.]"
+   - "**💡 Human Edge:** [What humans uniquely contribute that AI cannot replicate in this scenario.]"
+   - "**📊 Your Approach:** [Brief 1-2 sentence assessment of their AI-readiness based on their answer]"
+
+2. **CONTINUE PROMPT**: "🔄 **Ready for the next scenario?** (yes/no)"
+
+3. **NEW ROUND** (if user says yes):
+   - "**📖 Scenario:**" — a NEW, complex realistic scenario for a DIFFERENT aspect of this task
+   - Include specific details: stakeholders, constraints, deadlines, available AI tools
+   - "**🤔 How would you handle this?**" — open-ended prompt, no MCQ options
+   - Ask them to consider: what tools they'd use, where AI fits, what stays human
+   - Each round should explore a DIFFERENT angle
+
+Current round: ${round || 1}
+
+Rules:
+- NEVER present MCQ options. Always ask open-ended questions.
+- Evaluate their reasoning quality, not just whether they mention AI.
+- Reference specific, real AI tools relevant to this task domain.
+- Keep responses focused and professional — no walls of text.
+- Challenge their thinking when appropriate — this is peer-level.
+- If user says "no" to continuing: "Great session! 🎉 Solid discussion on how AI is reshaping [brief summary]. Click 'Finish' to wrap up!"`;
 }
 
 async function handleScore(payload: any, apiKey: string) {
-  const { transcript, scenario } = payload;
+  const { transcript, scenario, experienceLevel = "exploring" } = payload;
+  const isPracticing = experienceLevel === "practicing";
 
   const conversationText = transcript
     .map((m: any) => `${m.role === "user" ? "Candidate" : "Simulator"}: ${m.content}`)
@@ -225,16 +297,18 @@ async function handleScore(payload: any, apiKey: string) {
 
   const prompt = `Evaluate this AI-aware job simulation conversation. The candidate was practicing: "${scenario?.title || "a work task"}" with a focus on understanding AI's impact on the task.
 
+Format: ${isPracticing ? "Open conversation (professional level)" : "MCQ-based (beginner level)"}
+
 Conversation:
 ${conversationText}
 
 Score the candidate on these AI-readiness categories (0-100 each):
-1. AI Tool Awareness - Did they recognize where AI tools apply to this task? Did they choose options that leverage AI effectively?
+1. AI Tool Awareness - Did they recognize where AI tools apply to this task? ${isPracticing ? "Did they reference specific, relevant AI tools?" : "Did they choose options that leverage AI effectively?"}
 2. Human Value-Add - Did they identify what humans uniquely contribute? Did they understand the irreplaceable human elements?
-3. Adaptive Thinking - Can they envision working alongside AI? Did they show flexibility in how they'd use AI as a tool?
-4. Domain Judgment - Do they understand the task's real-world nuances? Did they make sound decisions about when to use AI vs human judgment?
+3. Adaptive Thinking - Can they envision working alongside AI? ${isPracticing ? "Did they propose creative human-AI workflows?" : "Did they show flexibility in how they'd use AI as a tool?"}
+4. Domain Judgment - Do they understand the task's real-world nuances? ${isPracticing ? "Did they demonstrate deep domain expertise in their reasoning?" : "Did they make sound decisions about when to use AI vs human judgment?"}
 
-Be encouraging but honest. Frame feedback around their AI-readiness.
+${isPracticing ? "For open conversation format, weight the quality of reasoning and specificity of their answers heavily. Vague answers should score lower." : "Be encouraging but honest. Frame feedback around their AI-readiness."}
 
 Respond with ONLY valid JSON:
 {
