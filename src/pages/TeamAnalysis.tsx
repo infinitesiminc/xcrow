@@ -84,7 +84,7 @@ const TeamAnalysis = () => {
 
   const statCards = [
     {
-      label: `${avgAugmented}% of tasks will involve AI tools`,
+      label: `${avgAugmented}% of tasks involve AI tools`,
       value: avgAugmented,
       icon: Bot,
       iconBg: "bg-primary/10",
@@ -92,7 +92,7 @@ const TeamAnalysis = () => {
       barColor: "bg-primary",
     },
     {
-      label: `${avgAutomation}% could be fully automated`,
+      label: `${avgAutomation}% of tasks could be fully replaced`,
       value: avgAutomation,
       icon: ShieldAlert,
       iconBg: "bg-destructive/10",
@@ -100,7 +100,7 @@ const TeamAnalysis = () => {
       barColor: "bg-destructive",
     },
     {
-      label: `${avgNewSkills}% require learning new skills`,
+      label: `${avgNewSkills}% of tasks need urgent upskilling`,
       value: avgNewSkills,
       icon: GraduationCap,
       iconBg: "bg-warning/10",
@@ -172,7 +172,7 @@ const TeamAnalysis = () => {
                           <div className="min-w-0">
                             <span className="font-medium text-foreground text-sm block truncate">{r.jobTitle}</span>
                             <span className="text-[11px] text-muted-foreground">
-                              {r.summary.augmentedPercent}% AI-augmented · {r.summary.automationRiskPercent}% automation risk
+                              {r.summary.augmentedPercent}% AI exposure · {r.summary.automationRiskPercent}% replacement risk
                             </span>
                           </div>
                         </div>

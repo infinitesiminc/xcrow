@@ -29,7 +29,7 @@ export function IndustryBenchmarkCard({ benchmark, currentRisk, currentAugmented
 
           <div className="grid grid-cols-2 gap-3 mb-3">
             <div className="space-y-1">
-              <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Automation Risk</p>
+              <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Replacement Risk</p>
               <div className="flex items-baseline gap-1.5">
                 <span className="text-lg font-sans font-bold text-foreground">{currentRisk}%</span>
                 <span className={`text-xs font-semibold ${riskDiff !== 0 ? "text-foreground/60" : "text-muted-foreground"}`}>
@@ -38,7 +38,7 @@ export function IndustryBenchmarkCard({ benchmark, currentRisk, currentAugmented
               </div>
             </div>
             <div className="space-y-1">
-              <p className="text-[10px] text-muted-foreground uppercase tracking-wider">AI Augmentation</p>
+              <p className="text-[10px] text-muted-foreground uppercase tracking-wider">AI Exposure</p>
               <div className="flex items-baseline gap-1.5">
                 <span className="text-lg font-sans font-bold text-foreground">{currentAugmented}%</span>
                 <span className={`text-xs font-semibold ${augDiff !== 0 ? "text-foreground/60" : "text-muted-foreground"}`}>

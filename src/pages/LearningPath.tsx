@@ -455,9 +455,9 @@ export default function LearningPath() {
             {/* Quick stats */}
             <div className="grid grid-cols-3 gap-4 mt-4">
               {[
-                { label: "AI Augmented", value: job.augmented_percent, color: "bg-dot-blue" },
-                { label: "Automation Risk", value: job.automation_risk_percent, color: "bg-destructive" },
-                { label: "New Skills", value: job.new_skills_percent, color: "bg-dot-purple" },
+                { label: "AI Exposure", value: job.augmented_percent, color: "bg-dot-blue" },
+                { label: "Replacement Risk", value: job.automation_risk_percent, color: "bg-destructive" },
+                { label: "Upskill Urgency", value: job.new_skills_percent, color: "bg-dot-purple" },
               ].map(s => (
                 <div key={s.label} className="text-center">
                   <div className="text-2xl font-bold text-foreground">{s.value ?? "—"}%</div>

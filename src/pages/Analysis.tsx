@@ -63,7 +63,7 @@ function getVerdict(result: JobAnalysisResult, agentRisk: number): Verdict {
 function getVerdictReasoning(verdict: Verdict, result: JobAnalysisResult): string {
   switch (verdict) {
     case "pivot":
-      return `With ${result.summary.automationRiskPercent}% automation risk and multiple tasks trending to full AI, consider transitioning to adjacent roles where your skills transfer.`;
+      return `With ${result.summary.automationRiskPercent}% replacement risk and multiple tasks trending to full AI, consider transitioning to adjacent roles where your skills transfer.`;
     case "leverage":
       return `Your role has strong human-led tasks and high AI augmentation potential. Focus on mastering AI tools to amplify your existing strengths.`;
     case "upskill":
@@ -347,9 +347,9 @@ const Analysis = () => {
   }
 
   const statCards = [
-    { label: "AI Involvement", value: result.summary.augmentedPercent, icon: Bot, dotColor: "bg-dot-blue" },
-    { label: "Automation Risk", value: result.summary.automationRiskPercent, icon: ShieldAlert, dotColor: "bg-dot-purple" },
-    { label: "New Skills Needed", value: result.summary.newSkillsPercent, icon: GraduationCap, dotColor: "bg-dot-amber" },
+    { label: "AI Exposure", value: result.summary.augmentedPercent, icon: Bot, dotColor: "bg-dot-blue" },
+    { label: "Replacement Risk", value: result.summary.automationRiskPercent, icon: ShieldAlert, dotColor: "bg-dot-purple" },
+    { label: "Upskill Urgency", value: result.summary.newSkillsPercent, icon: GraduationCap, dotColor: "bg-dot-amber" },
   ];
 
   return (

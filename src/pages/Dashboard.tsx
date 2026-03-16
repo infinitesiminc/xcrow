@@ -119,7 +119,7 @@ const Dashboard = () => {
       items.push({ text: `Analyze your role: ${profile!.jobTitle}`, icon: Zap, priority: "high" });
     }
     if (myRoleAnalysis && myRoleAnalysis.automation_risk_percent >= 40) {
-      items.push({ text: `Your role has ${myRoleAnalysis.automation_risk_percent}% automation risk — explore adjacent roles`, icon: ShieldAlert, priority: "high" });
+      items.push({ text: `Your role has ${myRoleAnalysis.automation_risk_percent}% replacement risk — explore adjacent roles`, icon: ShieldAlert, priority: "high" });
     }
     if (myRoleAnalysis && myRoleAnalysis.augmented_percent >= 50) {
       items.push({ text: `Upskill on AI-augmented tasks for your role`, icon: Bot, priority: "medium" });
@@ -183,11 +183,11 @@ const Dashboard = () => {
                     <div className="flex gap-4 shrink-0">
                       <div className="text-center">
                         <div className="text-xl font-bold text-foreground">{myRoleAnalysis.augmented_percent}%</div>
-                        <div className="text-[10px] text-muted-foreground">AI Involvement</div>
+                        <div className="text-[10px] text-muted-foreground">AI Exposure</div>
                       </div>
                       <div className="text-center">
                         <div className="text-xl font-bold text-foreground">{myRoleAnalysis.automation_risk_percent}%</div>
-                        <div className="text-[10px] text-muted-foreground">Automation Risk</div>
+                        <div className="text-[10px] text-muted-foreground">Replacement Risk</div>
                       </div>
                     </div>
                   </div>
@@ -328,7 +328,7 @@ const Dashboard = () => {
                         </div>
                         <div>
                           <div className="text-xs font-bold text-foreground">{b.new_skills_percent}%</div>
-                          <div className="text-[9px] text-muted-foreground">New Skills</div>
+                          <div className="text-[9px] text-muted-foreground">Upskill</div>
                         </div>
                       </div>
                     </CardContent>
@@ -382,7 +382,7 @@ const Dashboard = () => {
                           <Bot className="h-3 w-3 text-primary shrink-0" />
                           <div className="flex-1">
                             <div className="flex justify-between text-[10px] mb-0.5">
-                              <span className="text-muted-foreground">AI-augmented</span>
+                              <span className="text-muted-foreground">AI exposure</span>
                               <span className="font-medium text-foreground">{a.augmented_percent}%</span>
                             </div>
                             <Progress value={a.augmented_percent} className="h-1" />
@@ -392,7 +392,7 @@ const Dashboard = () => {
                           <ShieldAlert className="h-3 w-3 text-destructive shrink-0" />
                           <div className="flex-1">
                             <div className="flex justify-between text-[10px] mb-0.5">
-                              <span className="text-muted-foreground">Automation risk</span>
+                              <span className="text-muted-foreground">Replacement risk</span>
                               <span className="font-medium text-foreground">{a.automation_risk_percent}%</span>
                             </div>
                             <Progress value={a.automation_risk_percent} className="h-1" />
