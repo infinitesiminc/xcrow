@@ -621,7 +621,7 @@ export default function Investors() {
                             initial={{ width: 0 }}
                             whileInView={{ width: `${100 - seg.incumbentCoverage}%` }}
                             transition={{ duration: 0.7, delay: 0.5 }}
-                            className="h-full bg-brand-human/60 relative"
+                            className="h-full bg-brand-ai/60 relative"
                           >
                             <span className="absolute inset-0 flex items-center justify-center text-[8px] font-bold text-background">
                               Infinite Sim
