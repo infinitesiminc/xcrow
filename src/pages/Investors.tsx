@@ -644,12 +644,12 @@ export default function Investors() {
                   {[0, 2, 4, 6, 8, 10].map((tick) => {
                     const pct = `${tick * 10}%`;
                     return (
-                      <React.Fragment key={`grid-${tick}`}>
+                      <>
                         {/* Vertical gridline */}
                         <div className="absolute top-0 bottom-0 border-l border-dashed border-border/20" style={{ left: pct }} />
                         {/* Horizontal gridline */}
                         <div className="absolute left-0 right-0 border-t border-dashed border-border/20" style={{ bottom: pct }} />
-                      </React.Fragment>
+                      </>
                     );
                   })}
 
