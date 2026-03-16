@@ -3,36 +3,27 @@ import { Link } from "react-router-dom";
 const Footer = () => (
   <footer className="border-t border-border/50 bg-card/50 mt-auto">
     <div className="max-w-5xl mx-auto px-4 py-10">
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-8">
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-8 mb-8">
         <div>
           <h4 className="text-xs font-medium uppercase tracking-widest text-muted-foreground mb-3">Product</h4>
           <ul className="space-y-2">
-            <li><Link to="/why-simulation" className="text-sm text-foreground/70 hover:text-foreground transition-colors">Why Simulation</Link></li>
-            <li><Link to="/products/simulation-builder" className="text-sm text-foreground/70 hover:text-foreground transition-colors">Simulation Builder</Link></li>
-            <li><Link to="/tools" className="text-sm text-foreground/70 hover:text-foreground transition-colors">Tool Marketplace</Link></li>
-            <li><Link to="/pricing" className="text-sm text-foreground/70 hover:text-foreground transition-colors">Pricing</Link></li>
-          </ul>
-        </div>
-        <div>
-          <h4 className="text-xs font-medium uppercase tracking-widest text-muted-foreground mb-3">Enterprise</h4>
-          <ul className="space-y-2">
+            <li><Link to="/why-simulation" className="text-sm text-foreground/70 hover:text-foreground transition-colors">How It Works</Link></li>
             <li><Link to="/case-study/anthropic" className="text-sm text-foreground/70 hover:text-foreground transition-colors">Case Study</Link></li>
-            <li><Link to="/why-simulation" className="text-sm text-foreground/70 hover:text-foreground transition-colors">Why Simulation</Link></li>
-            <li><Link to="/contact" className="text-sm text-foreground/70 hover:text-foreground transition-colors">Contact Sales</Link></li>
-          </ul>
-        </div>
-        <div>
-          <h4 className="text-xs font-medium uppercase tracking-widest text-muted-foreground mb-3">Account</h4>
-          <ul className="space-y-2">
-            <li><Link to="/auth" className="text-sm text-foreground/70 hover:text-foreground transition-colors">Sign In</Link></li>
-            <li><Link to="/dashboard" className="text-sm text-foreground/70 hover:text-foreground transition-colors">Dashboard</Link></li>
-            <li><Link to="/settings" className="text-sm text-foreground/70 hover:text-foreground transition-colors">Settings</Link></li>
+            <li><Link to="/pricing" className="text-sm text-foreground/70 hover:text-foreground transition-colors">Pricing</Link></li>
           </ul>
         </div>
         <div>
           <h4 className="text-xs font-medium uppercase tracking-widest text-muted-foreground mb-3">Company</h4>
           <ul className="space-y-2">
             <li><Link to="/contact" className="text-sm text-foreground/70 hover:text-foreground transition-colors">Contact</Link></li>
+            <li><Link to="/contact" className="text-sm text-foreground/70 hover:text-foreground transition-colors">Book a Demo</Link></li>
+          </ul>
+        </div>
+        <div>
+          <h4 className="text-xs font-medium uppercase tracking-widest text-muted-foreground mb-3">Account</h4>
+          <ul className="space-y-2">
+            <li><Link to="/dashboard" className="text-sm text-foreground/70 hover:text-foreground transition-colors">Dashboard</Link></li>
+            <li><Link to="/settings" className="text-sm text-foreground/70 hover:text-foreground transition-colors">Settings</Link></li>
           </ul>
         </div>
       </div>
