@@ -633,24 +633,8 @@ export default function Enterprise() {
 
             <div className="min-h-[280px] flex items-center">
               <AnimatePresence mode="wait">
-                {activeNodeData ? (
+                {activeNodeData && (
                   <NodeDetail key={activeNodeData.id} node={activeNodeData} />
-                ) : (
-                  <motion.div
-                    key="placeholder"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    className="rounded-xl border border-dashed border-border bg-card/50 p-8 text-center w-full"
-                  >
-                    <TrendingUp className="h-8 w-8 text-muted-foreground/40 mx-auto mb-3" />
-                    <p className="text-sm text-muted-foreground">
-                      Select a stage to see how the engine works
-                    </p>
-                    <p className="text-xs text-muted-foreground/60 mt-1">
-                      Map → Assess → Train → Adapt — then repeat, continuously
-                    </p>
-                  </motion.div>
                 )}
               </AnimatePresence>
             </div>
