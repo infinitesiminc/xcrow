@@ -779,13 +779,13 @@ export default function TeamProgress() {
       {viewMode === "overview" ? (
         <>
           {/* 1. Executive Brief */}
-          <ExecutiveBrief progress={progress} deptTrends={[]} />
+          <ExecutiveBrief progress={progress} deptTrends={deptTrends} funnel={funnel} />
 
           {/* 2. Deployment Funnel (compact) */}
-          <DeploymentFunnel />
+          <DeploymentFunnel funnel={funnel} />
 
           {/* 3. Department Scorecard */}
-          <DeptScorecard deptTrends={[]} onSelectDept={(d) => {
+          <DeptScorecard deptTrends={deptTrends} onSelectDept={(d) => {
             setSelectedDept(d);
             setViewMode("individual");
           }} />
