@@ -263,7 +263,7 @@ export default function Investors() {
                               <p className="text-[10px] font-medium text-foreground truncate">{s.task}</p>
                               <p className="text-[9px] text-muted-foreground">Weak: {s.weak} ({s.score}%)</p>
                             </div>
-                            <span className={`text-[9px] px-1.5 py-0.5 rounded shrink-0 ${i === 0 ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"}`}>{s.status}</span>
+                            <span className={`text-[9px] px-1.5 py-0.5 rounded shrink-0 ${i === 0 ? "bg-brand-human/10 text-brand-human" : "bg-muted text-muted-foreground"}`}>{s.status}</span>
                           </div>
                         ))}
                       </div>
