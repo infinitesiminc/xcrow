@@ -113,10 +113,6 @@ export default function CaseStudy() {
             See how Anthropic maps AI readiness across 400+ roles
           </h1>
 
-          <p className="text-muted-foreground text-base sm:text-lg max-w-xl mx-auto leading-relaxed">
-            Walk through the full platform in 7 steps — from ATS import to
-            executive dashboards. No sign-up required.
-          </p>
 
           <div className="flex items-center justify-center gap-3 pt-2">
             <Button size="lg" onClick={() => setStarted(true)} className="gap-2">
