@@ -550,7 +550,7 @@ export default function LearningPath() {
 
             {/* Task Cards */}
             {!analyzing && analyzedTasks.length > 0 && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
                 {analyzedTasks.map((task, i) => {
                   const taskScore = getTaskCompletion(task.cluster_name, job.title);
                   const isCompleted = taskScore !== null;
@@ -566,7 +566,7 @@ export default function LearningPath() {
                       transition={{ delay: i * 0.04 }}
                     >
                       <Card className={`border-border bg-card hover:border-primary/30 transition-all group h-full ${isCompleted ? "border-success/30 bg-success/[0.02]" : ""} ${isUpdated ? "border-primary/30 bg-primary/[0.02] ring-1 ring-primary/10" : ""}`}>
-                        <CardContent className="p-4">
+                        <CardContent className="p-5">
                           <div className="flex items-start gap-3">
                             <div className="shrink-0 pt-0.5">
                               {isCompleted ? (
@@ -583,7 +583,7 @@ export default function LearningPath() {
                             <div className="flex-1 min-w-0">
                               <div className="flex items-start justify-between gap-2 mb-1">
                                 <div className="flex items-center gap-1.5">
-                                  <h4 className={`font-semibold text-sm leading-tight ${isCompleted ? "text-success" : "text-foreground"}`}>
+                                  <h4 className={`font-semibold text-base leading-snug ${isCompleted ? "text-success" : "text-foreground"}`}>
                                     {task.cluster_name}
                                   </h4>
                                   {isUpdated && (
@@ -599,42 +599,42 @@ export default function LearningPath() {
                               </div>
 
                               {task.description && (
-                                <p className="text-xs text-muted-foreground leading-relaxed mb-2">{task.description}</p>
+                                <p className="text-sm text-muted-foreground leading-relaxed mb-3">{task.description}</p>
                               )}
 
-                              <div className="flex items-center gap-2 mb-2 flex-wrap">
+                              <div className="flex items-center gap-2 mb-3 flex-wrap">
                                 {exposureBadge(exposure)}
-                                <Badge className={`text-[9px] ${impact >= 70 ? "bg-primary/10 text-primary border-primary/20" : impact >= 40 ? "bg-accent text-muted-foreground border-border/30" : "bg-muted/50 text-muted-foreground border-border/20"}`}>
+                                <Badge className={`text-[10px] ${impact >= 70 ? "bg-primary/10 text-primary border-primary/20" : impact >= 40 ? "bg-accent text-muted-foreground border-border/30" : "bg-muted/50 text-muted-foreground border-border/20"}`}>
                                   ⭐ {impact}% Job Impact
                                 </Badge>
                                 {exposure >= 60 && impact >= 60 && (
-                                  <Badge className="bg-destructive/10 text-destructive border-destructive/20 text-[8px]">🔴 Urgent Upskill</Badge>
+                                  <Badge className="bg-destructive/10 text-destructive border-destructive/20 text-[9px]">🔴 Urgent Upskill</Badge>
                                 )}
                                 {exposure < 40 && impact >= 60 && (
-                                  <Badge className="bg-success/10 text-success border-success/20 text-[8px]">💪 Human Edge</Badge>
+                                  <Badge className="bg-success/10 text-success border-success/20 text-[9px]">💪 Human Edge</Badge>
                                 )}
                               </div>
 
                               {task.skill_names && task.skill_names.length > 0 && (
-                                <div className="flex flex-wrap gap-1 mb-3">
+                                <div className="flex flex-wrap gap-1.5 mb-3">
                                   {task.skill_names.map(s => (
-                                    <span key={s} className="rounded-md bg-secondary px-1.5 py-0.5 text-[9px] font-medium text-foreground">{s}</span>
+                                    <span key={s} className="rounded-md bg-secondary px-2 py-0.5 text-[10px] font-medium text-foreground">{s}</span>
                                   ))}
                                 </div>
                               )}
 
                               <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
-                                  <GraduationCap className="h-3 w-3" />
+                                <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                                  <GraduationCap className="h-3.5 w-3.5" />
                                   <span>15 min simulation</span>
                                 </div>
                                 <Button
                                   size="sm"
                                   variant={isCompleted ? "ghost" : "outline"}
-                                  className="h-7 text-[11px] gap-1 opacity-80 group-hover:opacity-100 transition-opacity"
+                                  className="h-8 text-xs gap-1.5 opacity-80 group-hover:opacity-100 transition-opacity"
                                   onClick={() => launchSim(task)}
                                 >
-                                  <Play className="h-3 w-3" />
+                                  <Play className="h-3.5 w-3.5" />
                                   {isCompleted ? "Retry" : "Start Simulation"}
                                 </Button>
                               </div>
