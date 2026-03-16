@@ -15,9 +15,9 @@ interface TaskCluster {
 function scoreBadge(score: number | null) {
   if (score === null) return null;
   const color =
-    score >= 70 ? "text-dot-purple bg-dot-purple/10" :
-    score >= 40 ? "text-dot-amber bg-dot-amber/10" :
-    "text-dot-teal bg-dot-teal/10";
+    score >= 70 ? "text-brand-ai bg-brand-ai/10" :
+    score >= 40 ? "text-brand-mid bg-brand-mid/10" :
+    "text-brand-human bg-brand-human/10";
   return (
     <span className={`text-[11px] font-mono font-semibold px-1.5 py-0.5 rounded ${color}`}>
       {score}%
