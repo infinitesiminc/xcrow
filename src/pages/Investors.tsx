@@ -515,11 +515,11 @@ export default function Investors() {
                     className="absolute flex flex-col items-center"
                     style={{ left: "95%", bottom: "95%", transform: "translate(-50%, 50%)" }}
                   >
-                    <span className="text-xs font-bold mb-1 whitespace-nowrap text-brand-human">
+                    <span className="text-xs font-bold mb-1 whitespace-nowrap text-brand-ai">
                       Infinite Sim
                     </span>
-                    <div className="h-4 w-4 rounded-full bg-brand-human ring-4 ring-brand-human/20 shadow-lg shadow-brand-human/30" />
-                    <span className="text-[8px] text-brand-human/70 font-mono mt-0.5">(9.5, 9.5)</span>
+                    <div className="h-4 w-4 rounded-full bg-brand-ai ring-4 ring-brand-ai/20 shadow-lg shadow-brand-ai/30" />
+                    <span className="text-[8px] text-brand-ai/70 font-mono mt-0.5">(9.5, 9.5)</span>
                   </div>
                 </div>
 
