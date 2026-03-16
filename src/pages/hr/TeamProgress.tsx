@@ -776,6 +776,14 @@ export default function TeamProgress() {
         </div>
       </div>
 
+      {/* Demo data disclaimer */}
+      <div className="flex items-start gap-2.5 rounded-lg border border-primary/20 bg-primary/5 px-4 py-3">
+        <AlertTriangle className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+        <p className="text-xs text-muted-foreground leading-relaxed">
+          <span className="font-semibold text-foreground">Demo data.</span> Employee names and scores shown here are simulated for demonstration purposes on real roles imported from your ATS. Actual employee results will appear once team members complete their AI readiness simulations.
+        </p>
+      </div>
+
       {viewMode === "overview" ? (
         <>
           {/* 1. Executive Brief */}
