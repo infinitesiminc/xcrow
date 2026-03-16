@@ -346,6 +346,7 @@ function TaskSheet({ task, open, onClose, progress }: {
 /* ─── Main Component ─── */
 export default function ActionCenter() {
   const { user, openAuthModal } = useAuth();
+  const { workspaceId: wsId, loading: wsLoading, isSuperAdmin } = useWorkspace();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [progress, setProgress] = useState<ProgressRow[]>([]);
@@ -353,19 +354,11 @@ export default function ActionCenter() {
   const [selectedEmployee, setSelectedEmployee] = useState<EscalatedUser | null>(null);
   const [selectedTask, setSelectedTask] = useState<{ name: string; count: number } | null>(null);
 
-  const isSuperAdmin = !!user && SUPERADMIN_IDS.includes(user.id);
-
   useEffect(() => {
-    if (!user) { setLoading(false); return; }
+    if (!user || wsLoading) return;
+    if (!wsId) { setLoading(false); return; }
     (async () => {
       setLoading(true);
-
-      const { data: membership } = await supabase
-        .from("workspace_members").select("workspace_id")
-        .eq("user_id", user.id).eq("role", "admin");
-
-      if (!membership?.length) { setLoading(false); return; }
-      const wsId = membership[0].workspace_id;
 
       const [progressRes, queueRes] = await Promise.all([
         supabase.rpc("get_workspace_progress", { p_workspace_id: wsId }),
@@ -383,7 +376,7 @@ export default function ActionCenter() {
       setQueue((queueRes.data as QueueItem[]) || []);
       setLoading(false);
     })();
-  }, [user, isSuperAdmin]);
+  }, [user, wsId, wsLoading, isSuperAdmin]);
 
   const metrics = useMemo(() => {
     const taskFailCounts: Record<string, number> = {};

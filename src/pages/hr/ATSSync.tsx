@@ -58,6 +58,7 @@ const SUPERADMIN_IDS = [
 /* ── component ── */
 export default function ATSSync() {
   const { user, openAuthModal } = useAuth();
+  const { workspaceId, isSuperAdmin } = useWorkspace();
   const { toast } = useToast();
 
   const [companies, setCompanies] = useState<Company[]>([]);
@@ -72,20 +73,6 @@ export default function ATSSync() {
   const [sortDir, setSortDir] = useState<SortDir>("asc");
   const [companySearch, setCompanySearch] = useState("");
   const [companyDropdownOpen, setCompanyDropdownOpen] = useState(false);
-  const [workspaceId, setWorkspaceId] = useState<string | null>(null);
-
-  const isSuperAdmin = !!user && SUPERADMIN_IDS.includes(user.id);
-
-  /* ── fetch workspace ── */
-  useEffect(() => {
-    if (!user) return;
-    (async () => {
-      const { data: membership } = await supabase
-        .from("workspace_members").select("workspace_id")
-        .eq("user_id", user.id).limit(1);
-      if (membership?.length) setWorkspaceId(membership[0].workspace_id);
-    })();
-  }, [user]);
 
   /* ── fetch companies (workspace-scoped for non-superadmins) ── */
   const fetchCompanies = useCallback(async () => {

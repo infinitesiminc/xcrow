@@ -93,6 +93,14 @@ export default function ScoreDistributions() {
 
   const isSuperAdmin = !!user && SUPERADMIN_IDS.includes(user.id);
 
+  // Try to get workspace context if inside HR layout, otherwise fall back to direct lookup
+  let contextWorkspaceId: string | null = null;
+  try {
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    const wsCtx = require("@/contexts/WorkspaceContext").useWorkspace?.();
+    if (wsCtx) contextWorkspaceId = wsCtx.workspaceId;
+  } catch {}
+
   useEffect(() => {
     (async () => {
       setLoading(true);
@@ -100,16 +108,24 @@ export default function ScoreDistributions() {
       // For non-superadmins, scope to workspace companies
       let workspaceCompanyIds: string[] | null = null;
       if (!isSuperAdmin && user) {
-        const { data: membership } = await supabase
-          .from("workspace_members").select("workspace_id")
-          .eq("user_id", user.id).limit(1);
-        if (membership?.length) {
-          const wsId = membership[0].workspace_id;
+        const wsId = contextWorkspaceId;
+        if (wsId) {
           const { data: wsCompanies } = await supabase
             .from("companies").select("id").eq("workspace_id", wsId);
           workspaceCompanyIds = (wsCompanies || []).map(c => c.id);
         } else {
-          workspaceCompanyIds = [];
+          // Fallback: direct workspace lookup
+          const { data: membership } = await supabase
+            .from("workspace_members").select("workspace_id")
+            .eq("user_id", user.id).limit(1);
+          if (membership?.length) {
+            const fallbackWsId = membership[0].workspace_id;
+            const { data: wsCompanies } = await supabase
+              .from("companies").select("id").eq("workspace_id", fallbackWsId);
+            workspaceCompanyIds = (wsCompanies || []).map(c => c.id);
+          } else {
+            workspaceCompanyIds = [];
+          }
         }
       }
 
