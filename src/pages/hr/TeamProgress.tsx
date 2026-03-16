@@ -185,12 +185,12 @@ function ExecutiveBrief({ progress, deptTrends, funnel }: { progress: ProgressRo
 }
 
 /* ─── 2. Compact Deployment Funnel ─── */
-function DeploymentFunnel() {
+function DeploymentFunnel({ funnel }: { funnel: DemoFunnelStats }) {
   const steps = [
-    { label: "Imported", value: EMPTY_FUNNEL.jobsImported, icon: Database },
-    { label: "Analyzed", value: EMPTY_FUNNEL.jobsAnalyzed, icon: BarChart3 },
-    { label: "Activated", value: EMPTY_FUNNEL.rolesActivated, icon: Zap },
-    { label: "Started", value: EMPTY_FUNNEL.employeesStarted, icon: Play },
+    { label: "Imported", value: funnel.jobsImported, icon: Database },
+    { label: "Analyzed", value: funnel.jobsAnalyzed, icon: BarChart3 },
+    { label: "Activated", value: funnel.rolesActivated, icon: Zap },
+    { label: "Started", value: funnel.employeesStarted, icon: Play },
   ];
 
   return (
