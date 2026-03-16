@@ -658,7 +658,7 @@ export default function LearningPath() {
                                   <div className="flex items-center gap-1.5 shrink-0">
                                     {isCompleted && taskScore !== null && scoreBadge(taskScore)}
                                     {isUpdated && (
-                                      <Badge className="bg-primary/10 text-primary border-primary/20 text-[8px] px-1 py-0 h-3.5 animate-pulse">Updated</Badge>
+                                      <Badge className="bg-primary/10 text-primary border-primary/20 text-[11px] px-1.5 py-0 h-4 animate-pulse">Updated</Badge>
                                     )}
                                   </div>
                                 </div>
