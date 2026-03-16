@@ -569,7 +569,7 @@ export default function Investors() {
                       gap: "Manual, expensive ($500K+/engagement), one-time snapshots that go stale in weeks",
                       incumbentCoverage: 45,
                       missingCoverage: 20,
-                      color: "brand-ai",
+                      color: "brand-human",
                       capabilities: [
                         { name: "Strategic AI assessment", has: true },
                         { name: "Executive advisory", has: true },
@@ -584,7 +584,7 @@ export default function Investors() {
                       gap: "Generic course catalogs, no task-level personalization or exposure scoring",
                       incumbentCoverage: 60,
                       missingCoverage: 10,
-                      color: "brand-mid",
+                      color: "brand-human",
                       capabilities: [
                         { name: "Course libraries", has: true },
                         { name: "Completion tracking", has: true },
