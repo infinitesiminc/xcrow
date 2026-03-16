@@ -622,12 +622,12 @@ export default function Enterprise() {
         </div>
       </section>
 
-      {/* ── The Continuous Parity Engine (Loop) ── */}
+      {/* ── Always Adapting Engine (Loop) ── */}
       <section className="px-4 py-20 bg-muted/20 border-y border-border">
         <div className="mx-auto max-w-5xl">
           <motion.div {...fadeUp} className="text-center mb-4">
             <h2 className="font-display text-3xl sm:text-4xl font-semibold text-foreground">
-              Continuous parity with AI
+              Always adapting to AI
             </h2>
             <p className="mt-3 text-muted-foreground max-w-xl mx-auto">
               Not a project. Not a quarterly review. A living system that adapts your
