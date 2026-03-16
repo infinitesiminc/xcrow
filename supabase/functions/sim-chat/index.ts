@@ -97,12 +97,39 @@ function aiStateDescription(taskMeta?: any): string {
 
 async function handleCompile(payload: any, apiKey: string) {
   const { taskName, jobTitle, company, difficulty = 3, mode = "assess", taskMeta } = payload;
-  const isAssess = mode === "assess";
   const aiContext = aiStateDescription(taskMeta);
+  const isAssess = mode === "assess";
 
-  const prompt = isAssess
-    ? buildAssessCompilePrompt(taskName, jobTitle, company, aiContext)
-    : buildUpskillCompilePrompt(taskName, jobTitle, company, aiContext);
+  const prompt = `You are designing a COACHING simulation about AI readiness for a professional task.
+
+Role: ${jobTitle}${company ? ` at ${company}` : ""}
+Task: ${taskName}
+${aiContext}
+Mode: ${isAssess ? "ASSESS — broad baseline check across the task" : "UPSKILL — deeper practice on specific sub-skills"}
+Format: Open coaching conversation, 8 rounds, ${isAssess ? "~10" : "~15"} minutes
+
+You are a COACH, not an examiner. Your tone is warm, curious, and constructive. You never say "wrong" — you help people discover better approaches.
+
+CRITICAL: Every message must be under 80 words. One purpose per message.
+
+Generate a JSON response:
+
+1. "briefing": 2-3 sentences. What this task involves and how AI is changing it. Warm, inviting tone.
+
+2. "tips": Array of 2 practical tips for thinking about AI in this task.
+
+3. "keyTerms": Array of 3 objects with "term" and "definition" — AI tools and concepts relevant here.
+
+4. "systemPrompt": System prompt reinforcing the coaching persona.
+
+5. "openingMessage": First scenario. Structure EXACTLY:
+   - "**📖 Scenario:**" — 2-3 sentence realistic work scenario with specific details (stakeholders, constraints, tools)
+   - "**🤔 How would you approach this?**"
+   - Under 60 words total. Nothing else — no tips, no preamble.
+
+6. "scenario": { "title": short title, "description": 1-sentence }
+
+Respond ONLY with valid JSON, no markdown.`;
 
   const result = await callAI(apiKey, [{ role: "user", content: prompt }], 0.9);
 
@@ -129,7 +156,7 @@ async function handleCompile(payload: any, apiKey: string) {
     scenario: {
       id: crypto.randomUUID(),
       title: parsed.scenario?.title || taskName,
-      description: parsed.scenario?.description || `${isAssess ? "Assess" : "Upskill"}: ${taskName} for ${jobTitle}`,
+      description: parsed.scenario?.description || `${taskName} for ${jobTitle}`,
       slug: "dynamic",
       difficulty,
     },
@@ -138,79 +165,15 @@ async function handleCompile(payload: any, apiKey: string) {
   });
 }
 
-function buildAssessCompilePrompt(taskName: string, jobTitle: string, company: string | undefined, aiContext: string): string {
-  return `You are designing an AI-READINESS ASSESSMENT using MCQ format. This is for enterprise onboarding — quick, efficient baseline measurement.
-
-Role: ${jobTitle}${company ? ` at ${company}` : ""}
-Task: ${taskName}
-${aiContext}
-Format: ASSESS mode — 8 MCQ rounds, ~10 minutes total
-
-Generate a JSON response:
-
-1. "briefing": 2-3 sentences. What this task involves and how AI currently affects it. No fluff.
-
-2. "tips": Array of 2 tips about the assessment format.
-
-3. "keyTerms": Array of 3 objects with "term" and "definition" — focus on AI-relevant concepts.
-
-4. "systemPrompt": System prompt for the AI assessor. Keep responses SHORT.
-
-5. "openingMessage": First MCQ. Structure EXACTLY:
-   - "**📖 Scenario:**" — 2-3 sentence realistic work scenario
-   - "**🤔 How would you approach this?**"
-   - Exactly 3 options A, B, C on separate lines
-   - One leverages AI effectively, one is purely manual, one is poor
-   - CRITICAL: Randomize which letter is correct
-   - Total message under 80 words
-
-6. "scenario": { "title": short title, "description": 1-sentence }
-
-Respond ONLY with valid JSON, no markdown.`;
-}
-
-function buildUpskillCompilePrompt(taskName: string, jobTitle: string, company: string | undefined, aiContext: string): string {
-  return `You are designing an AI-READINESS UPSKILL simulation using micro-turn conversation format.
-
-Role: ${jobTitle}${company ? ` at ${company}` : ""}
-Task: ${taskName}
-${aiContext}
-Format: UPSKILL mode — 8 rounds of scenario-based conversation, ~15 minutes total
-
-CRITICAL UX RULE: Every AI message must be under 80 words. One purpose per message. Never combine feedback with a new scenario.
-
-Generate a JSON response:
-
-1. "briefing": 2-3 sentences for a professional. How AI is changing this task today.
-
-2. "tips": Array of 2 tips about working with AI in this task.
-
-3. "keyTerms": Array of 3 objects with "term" and "definition" — AI tools and concepts.
-
-4. "systemPrompt": System prompt for the AI mentor. MUST enforce 80-word limit per message and micro-turn structure.
-
-5. "openingMessage": First scenario ONLY. Structure:
-   - "**📖 Scenario:**" — 3 sentence realistic work scenario with specific details
-   - "**🤔 How would you handle this?**" — one open-ended question
-   - Total under 80 words. Do NOT include tips, insights, or multiple questions.
-
-6. "scenario": { "title": short title, "description": 1-sentence }
-
-Respond ONLY with valid JSON, no markdown.`;
-}
-
 // ─── CHAT ───
 
 async function handleChat(payload: any, apiKey: string) {
   const { messages, role, round, turnCount, mode = "assess", taskMeta } = payload;
-  const isAssess = mode === "assess";
   const aiContext = aiStateDescription(taskMeta);
 
   const systemMsg = {
     role: "system",
-    content: isAssess
-      ? buildAssessChatSystem(role, aiContext, round)
-      : buildUpskillChatSystem(role, aiContext, round, turnCount),
+    content: buildCoachingChatSystem(role, aiContext, round, turnCount, mode),
   };
 
   const aiMessages = [systemMsg, ...messages];
@@ -221,140 +184,117 @@ async function handleChat(payload: any, apiKey: string) {
   });
 }
 
-function buildAssessChatSystem(role: string, aiContext: string, round: number): string {
-  return `You are an AI readiness assessor for the role of ${role}. Format: MCQ assessment.
-
-${aiContext}
-
-STRICT RULES:
-- Every response MUST be under 80 words total
-- One purpose per message
-
-When user answers an MCQ:
-1. ✅ or ❌ + correct answer letter + 1-sentence WHY (under 30 words)
-2. Then on next line: "🤖 [1 sentence AI insight]"  
-3. Then on next line: "💡 [1 sentence human edge]"
-4. Final line: "🔄 **Ready for the next question?** (yes/no)"
-
-When user says yes to continue — present the NEXT MCQ:
-- "**📖 Scenario:**" — 2-3 sentence new scenario
-- "**🤔 How would you approach this?**"
-- 3 options A, B, C (randomize correct answer)
-- Each option under 15 words
-
-Round ${round || 1} of ${MAX_ROUNDS}. ${round >= MAX_ROUNDS ? "This is the FINAL round. After feedback, say: 'Assessment complete! 🎉 Click Finish to see your results.'" : ""}
-
-If user says no: "Assessment paused. Click 'Finish' to see your results so far."
-NEVER exceed 80 words per message.`;
-}
-
-function buildUpskillChatSystem(role: string, aiContext: string, round: number, turnCount: number): string {
-  // Micro-turn structure: each round has 3 user turns
-  // After user answers scenario → FEEDBACK + PROBE (turn A)
-  // After user answers probe → INSIGHT + CONTINUE (turn B)  
-  // After user says yes → NEW SCENARIO (turn C)
-
-  // Determine which turn we're on based on conversation pattern
-  // turnCount tracks total turns. We use modulo to figure out position in round.
+function buildCoachingChatSystem(role: string, aiContext: string, round: number, turnCount: number, mode: string): string {
+  // Micro-turn structure: each round has 3 exchanges
+  // Turn 0: User answered scenario → Coach gives FEEDBACK + PROBE
+  // Turn 1: User answered probe → Coach gives INSIGHT + CONTINUE
+  // Turn 2: User said yes → Coach gives NEW SCENARIO
   const posInRound = ((turnCount - 1) % 3);
 
-  // Build ONLY the instruction for the current turn — no alternatives
   let turnInstruction: string;
 
   if (posInRound === 0) {
-    // User just answered a scenario — give feedback then probe
-    turnInstruction = `The user just answered your scenario question. Do EXACTLY this:
+    turnInstruction = `The user just shared their approach to your scenario. Do EXACTLY this:
 
-1. **React to their specific answer** in 2 sentences:
-   - First sentence: What was strong or smart about their approach (be specific, reference what they said)
-   - Second sentence: One blind spot or missed opportunity (be specific)
+1. Start with what's genuinely good about their thinking. Be specific — reference their actual words. Example: "Smart to think about [their point] — that shows good instinct for..."
 
-2. Then ask ONE targeted follow-up probe question. Examples:
-   - "What specific AI tool would you use for [detail from their answer]?"
-   - "How would you validate the AI's output in this case?"
-   - "What's your fallback if the AI tool fails here?"
+2. Then gently expand their view: "One thing worth considering is..." or "Have you thought about how AI could help with..." — never say "wrong" or "you missed".
 
-Total response: under 60 words. Do NOT include 🤖 or 💡 or "Ready for next". ONLY feedback + one question.`;
+3. End with ONE follow-up probe question that helps them go deeper. Examples:
+   - "What specific tool would you reach for here?"
+   - "How would you verify the AI's output in this case?"
+   - "What would change if the deadline was tighter?"
+
+Total: under 70 words. Tone: curious colleague, not examiner. Do NOT include 🤖 or 💡 or "Ready for next".`;
   } else if (posInRound === 1) {
-    // User answered the probe — give insight card + continue prompt
     turnInstruction = `The user just answered your follow-up probe. Do EXACTLY this:
 
-1. One sentence acknowledging their probe answer (reference what they said).
+1. Brief acknowledgment of their answer (1 sentence, reference what they said).
 
-2. Then the insight card:
-   🤖 **AI Today:** [Name a specific, real AI tool and what it does for this exact task. E.g. "GitHub Copilot can auto-generate boilerplate integration code" — not generic statements.]
-   💡 **Human Edge:** [One specific thing only a human can do here. E.g. "Only you can assess whether the integration meets your org's compliance requirements."]
+2. Then share the insight card:
+   🤖 **AI Today:** [Name ONE specific, real AI tool and exactly what it does for this task. Be concrete — e.g. "Notion AI can draft first-pass documentation from meeting notes" not "AI tools can help".]
+   💡 **Human Edge:** [ONE specific thing only a human can do here — e.g. "Only you can judge whether the tone matches your team's culture".]
 
 3. Final line: "🔄 **Ready for the next scenario?** (yes/no)"
 
-Total response: under 70 words. Do NOT start a new scenario.`;
+Total: under 70 words.`;
   } else {
-    // User said yes to continue — present new scenario
     turnInstruction = `The user wants the next scenario. Do EXACTLY this:
 
-"**📖 Scenario:**" — Present a NEW realistic work scenario (2-3 sentences). It must:
-- Be a DIFFERENT aspect of the task than previous rounds
-- Include specific details: stakeholders, constraints, or tools available
-- Feel like a real workday situation
+"**📖 Scenario:**" — Present a NEW realistic work scenario (2-3 sentences). It MUST:
+- Cover a DIFFERENT aspect of this task than previous rounds
+- Include specific details: who's involved, what constraints exist, what tools are available
+- Feel like something that actually happens on a workday
 
-"**🤔 How would you handle this?**"
+"**🤔 How would you approach this?**"
 
-Total response: under 60 words. NOTHING else — no tips, no context, no preamble.`;
+Total: under 60 words. NOTHING else — no tips, no preamble, no context.`;
   }
 
-  return `You are a peer mentor for ${role}, discussing AI's impact on their work.
+  const modeContext = mode === "assess" 
+    ? "You're doing a broad baseline check — each scenario should cover a different facet of the task."
+    : "You're doing deeper upskilling — scenarios can drill into specific sub-skills and edge cases.";
+
+  return `You are a supportive AI coach for ${role}. You help people learn by asking good questions and building on their thinking — never by telling them they're wrong.
 
 ${aiContext}
+${modeContext}
 
 Round ${round || 1} of ${MAX_ROUNDS}.
 
+YOUR PERSONA:
+- Warm, curious, encouraging — like a great colleague who's genuinely interested in how they think
+- Always find something genuinely good in their answer FIRST
+- Guide them to discover gaps themselves through questions, not lectures
+- Never use ❌, "incorrect", "wrong", or "you should have"
+- Use "Have you considered...", "One angle worth exploring...", "What if..."
+
 ABSOLUTE RULES:
-- Follow the instruction below EXACTLY. Do not deviate.
+- Follow the instruction below EXACTLY
 - Stay under 80 words. No exceptions.
-- Reference the user's actual words in your response. Never give generic feedback.
+- Reference the user's actual words. Never give generic feedback.
 
 YOUR TASK RIGHT NOW:
 ${turnInstruction}
 
-${round >= MAX_ROUNDS && posInRound === 1 ? "This is the FINAL round. Replace the 'Ready for next scenario?' with: 'Great session! 🎉 Click Finish to see your results.'" : ""}
-${posInRound !== 2 ? "" : "If user said no: 'Solid session! Click Finish to see your results.'"}`;
+${round >= MAX_ROUNDS && posInRound === 1 ? "This is the FINAL round. Replace 'Ready for next scenario?' with: 'Great conversation! 🎉 Click Finish to see how you did.'" : ""}
+${posInRound === 2 && "If user said no: 'Great conversation! Click Finish to see your results.'"}`;
 }
 
 // ─── SCORE ───
 
 async function handleScore(payload: any, apiKey: string) {
   const { transcript, scenario, mode = "assess" } = payload;
-  const isUpskill = mode === "upskill";
 
   const conversationText = transcript
-    .map((m: any) => `${m.role === "user" ? "Candidate" : "Simulator"}: ${m.content}`)
+    .map((m: any) => `${m.role === "user" ? "Candidate" : "Coach"}: ${m.content}`)
     .join("\n\n");
 
-  const prompt = `Evaluate this AI-readiness ${isUpskill ? "upskill" : "assessment"} conversation. Task: "${scenario?.title || "a work task"}"
+  const prompt = `Evaluate this AI-readiness coaching conversation. Task: "${scenario?.title || "a work task"}"
 
-Format: ${isUpskill ? "Open conversation (professional)" : "MCQ assessment"}
+The candidate had an open conversation with an AI coach about how they'd handle work scenarios, with a focus on AI readiness.
 
 Conversation:
 ${conversationText}
 
 Score on these 4 pillars (0-100 each):
-1. AI Tool Awareness - ${isUpskill ? "Did they reference specific AI tools?" : "Did they choose AI-leveraging options?"}
-2. Human Value-Add - Did they identify irreplaceable human contributions?
-3. Adaptive Thinking - ${isUpskill ? "Did they propose creative human-AI workflows?" : "Did they show flexibility in AI usage?"}
-4. Domain Judgment - ${isUpskill ? "Deep domain expertise in reasoning?" : "Sound decisions on AI vs human judgment?"}
+1. AI Tool Awareness - Did they show knowledge of relevant AI tools? Did they know when and how to apply them?
+2. Human Value-Add - Did they identify what humans uniquely contribute that AI can't replicate?
+3. Adaptive Thinking - Did they show flexibility in combining human skills with AI capabilities?
+4. Domain Judgment - Did they demonstrate real understanding of the task's nuances and constraints?
 
-${isUpskill ? "Weight reasoning quality heavily. Vague = lower scores." : "Be fair but honest."}
+Score based on the depth and specificity of their responses. Vague answers = lower scores. Specific tool names, concrete strategies, and nuanced thinking = higher scores.
 
 Respond with ONLY valid JSON:
 {
   "overall": <weighted average 0-100>,
   "categories": [
-    {"name": "AI Tool Awareness", "score": <0-100>, "feedback": "<1 sentence>"},
-    {"name": "Human Value-Add", "score": <0-100>, "feedback": "<1 sentence>"},
-    {"name": "Adaptive Thinking", "score": <0-100>, "feedback": "<1 sentence>"},
-    {"name": "Domain Judgment", "score": <0-100>, "feedback": "<1 sentence>"}
+    {"name": "AI Tool Awareness", "score": <0-100>, "feedback": "<1 encouraging sentence>"},
+    {"name": "Human Value-Add", "score": <0-100>, "feedback": "<1 encouraging sentence>"},
+    {"name": "Adaptive Thinking", "score": <0-100>, "feedback": "<1 encouraging sentence>"},
+    {"name": "Domain Judgment", "score": <0-100>, "feedback": "<1 encouraging sentence>"}
   ],
-  "summary": "<2 sentence overall feedback>"
+  "summary": "<2 sentence encouraging overall feedback with one growth area>"
 }`;
 
   const result = await callAI(apiKey, [{ role: "user", content: prompt }], 0.3);
