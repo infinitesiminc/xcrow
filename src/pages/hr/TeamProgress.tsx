@@ -657,6 +657,8 @@ export default function TeamProgress() {
   const [viewMode, setViewMode] = useState<"overview" | "individual">("overview");
   const [selectedUser, setSelectedUser] = useState<UserSummary | null>(null);
   const [selectedDept, setSelectedDept] = useState<string | null>(null);
+  const [deptTrends, setDeptTrends] = useState<DeptTrendData[]>([]);
+  const [funnel, setFunnel] = useState<DemoFunnelStats>({ jobsImported: 0, jobsAnalyzed: 0, rolesActivated: 0, employeesStarted: 0 });
 
   useEffect(() => {
     if (!user) { setLoading(false); return; }
@@ -673,9 +675,15 @@ export default function TeamProgress() {
         .from("company_workspaces").select("id, name").eq("id", wsId).single();
       if (ws) setWorkspace(ws);
 
+      // Fetch real workspace progress
       const { data: rows } = await supabase.rpc("get_workspace_progress", { p_workspace_id: wsId });
       const dbRows = (rows as ProgressRow[] || []).filter(r => r.user_id !== user.id);
-      setProgress(dbRows);
+
+      // Generate mock data from real DB jobs/clusters
+      const mock = await generateMockFromDB();
+      setProgress([...mock.progress, ...dbRows]);
+      setDeptTrends(mock.trends);
+      setFunnel(mock.funnel);
       setLoading(false);
     })();
   }, [user]);
