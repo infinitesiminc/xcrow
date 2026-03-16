@@ -666,6 +666,8 @@ export default function TeamProgress() {
   const [deptTrends, setDeptTrends] = useState<DeptTrendData[]>([]);
   const [funnel, setFunnel] = useState<DemoFunnelStats>({ jobsImported: 0, jobsAnalyzed: 0, rolesActivated: 0, employeesStarted: 0 });
 
+  const isSuperAdmin = !!user && SUPERADMIN_IDS.includes(user.id);
+
   useEffect(() => {
     if (!user) { setLoading(false); return; }
     (async () => {
@@ -685,14 +687,21 @@ export default function TeamProgress() {
       const { data: rows } = await supabase.rpc("get_workspace_progress", { p_workspace_id: wsId });
       const dbRows = (rows as ProgressRow[] || []).filter(r => r.user_id !== user.id);
 
-      // Generate mock data from real DB jobs/clusters
-      const mock = await generateMockFromDB();
-      setProgress([...mock.progress, ...dbRows]);
-      setDeptTrends(mock.trends);
-      setFunnel(mock.funnel);
+      if (isSuperAdmin) {
+        // Superadmins see demo data + real data
+        const mock = await generateMockFromDB();
+        setProgress([...mock.progress, ...dbRows]);
+        setDeptTrends(mock.trends);
+        setFunnel(mock.funnel);
+      } else {
+        // Regular users see only real data
+        setProgress(dbRows);
+        setDeptTrends([]);
+        setFunnel({ jobsImported: 0, jobsAnalyzed: 0, rolesActivated: 0, employeesStarted: 0 });
+      }
       setLoading(false);
     })();
-  }, [user]);
+  }, [user, isSuperAdmin]);
 
   const filteredProgress = useMemo(() =>
     selectedDept ? progress.filter(r => r.department === selectedDept) : progress
