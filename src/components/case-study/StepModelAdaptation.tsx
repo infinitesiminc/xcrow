@@ -78,10 +78,10 @@ export default function StepModelAdaptation() {
             initial={{ opacity: 0, x: -8 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.15 }}
-            className="flex items-center gap-3 rounded-lg border border-dot-amber/30 bg-dot-amber/5 px-3 py-2"
+            className="flex items-center gap-3 rounded-lg border border-brand-ai/30 bg-brand-ai/5 px-3 py-2"
           >
             <span className="text-xs font-mono font-bold text-muted-foreground w-12 shrink-0">T+0h</span>
-            <div className="w-7 h-7 rounded-full bg-dot-amber/10 text-dot-amber flex items-center justify-center shrink-0">
+            <div className="w-7 h-7 rounded-full bg-brand-ai/10 text-brand-ai flex items-center justify-center shrink-0">
               <Zap className="h-3.5 w-3.5" />
             </div>
             <div className="relative h-5 overflow-hidden flex-1">
