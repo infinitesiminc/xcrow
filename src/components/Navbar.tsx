@@ -28,6 +28,7 @@ export default function Navbar() {
   const productItems = user ? [] : [
     { label: "Platform Overview", path: "/" },
     { label: "How It Works", path: "/how-it-works" },
+    { label: "Case Study", path: "/case-study/anthropic" },
   ];
 
   const navItems = [
