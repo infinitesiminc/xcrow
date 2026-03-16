@@ -52,9 +52,7 @@ serve(async (req) => {
       });
     }
 
-    if (existing && existing.length > 0 && (needsBackfill || forceRefresh)) {
-      await sb.from("job_task_clusters").delete().eq("job_id", jobId);
-    }
+    const shouldRegenerate = existing && existing.length > 0 && (needsBackfill || forceRefresh);
 
     // Generate task analysis via AI
     const prompt = `Analyze the job role "${jobTitle}"${company ? ` at ${company}` : ""} and break it down into 8-12 discrete task clusters.
@@ -158,6 +156,11 @@ Respond ONLY with a valid JSON array, no markdown.`;
       job_impact_score: Math.min(Math.max(t.job_impact_score ?? 50, 0), 100),
       priority: t.priority || "medium",
     }));
+
+    // Delete old clusters only AFTER we have valid new data
+    if (shouldRegenerate) {
+      await sb.from("job_task_clusters").delete().eq("job_id", jobId);
+    }
 
     const { error: insertErr } = await sb.from("job_task_clusters").insert(rows);
     if (insertErr) console.error("Insert error:", insertErr);
