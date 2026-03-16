@@ -276,9 +276,8 @@
   background: conic-gradient(
     from var(--glow-angle),
     transparent 0%,
-    hsl(0 85% 55% / 0.5) 10%,
-    hsl(260 70% 55% / 0.4) 25%,
-    hsl(220 85% 55% / 0.5) 40%,
+    hsl(0 72% 51% / 0.6) 12%,
+    hsl(220 80% 55% / 0.6) 38%,
     transparent 50%,
     transparent 100%
   );
