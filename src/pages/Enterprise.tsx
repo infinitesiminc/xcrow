@@ -384,6 +384,9 @@ export default function Enterprise() {
             </Button>
           </motion.div>
         </div>
+      </section>
+
+      {/* ── Enterprise trust ── */}
       <section className="px-4 py-20">
         <div className="mx-auto max-w-5xl">
           <motion.div {...fadeUp} className="text-center mb-14">
