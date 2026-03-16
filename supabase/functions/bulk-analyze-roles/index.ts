@@ -30,10 +30,9 @@ serve(async (req) => {
       });
     }
 
-    // Get all jobs for this company (optionally filtered by department)
     let jobQuery = sb
       .from("jobs")
-      .select("id, title, description, department, augmented_percent, automation_risk_percent, new_skills_percent")
+      .select("id, title, description, department, augmented_percent")
       .eq("company_id", companyId);
     if (department) jobQuery = jobQuery.eq("department", department);
     if (jobIds?.length) jobQuery = jobQuery.in("id", jobIds);
@@ -46,51 +45,38 @@ serve(async (req) => {
       });
     }
 
-    // Get DISTINCT job_ids that already have task clusters for this company
+    // Get DISTINCT job_ids that already have task clusters
     const { data: existingClusters, error: clusterErr } = await sb
       .from("job_task_clusters")
-      .select("job_id, id")
-      .limit(10000);
+      .select("job_id")
+      .in("job_id", allJobs.map(j => j.id));
 
-    if (clusterErr) {
-      console.error("Cluster query error:", clusterErr.message);
-    }
+    if (clusterErr) throw new Error(clusterErr.message);
+    const analyzedJobIds = new Set((existingClusters || []).map(c => c.job_id));
 
-    const allJobIds = new Set(allJobs.map(j => j.id));
-    const analyzedJobIds = new Set(
-      (existingClusters || [])
-        .filter(c => allJobIds.has(c.job_id))
-        .map(c => c.job_id)
-    );
-
+    // Find jobs needing backfill (have clusters but no score)
     const backfillJobIds = new Set(
       allJobs
-        .filter(j => analyzedJobIds.has(j.id) && (j.augmented_percent ?? 0) === 0 && (j.automation_risk_percent ?? 0) === 0 && (j.new_skills_percent ?? 0) === 0)
+        .filter(j => analyzedJobIds.has(j.id) && (j.augmented_percent ?? 0) === 0)
         .map(j => j.id)
     );
 
     const pendingJobs = allJobs.filter(j => !analyzedJobIds.has(j.id) || backfillJobIds.has(j.id));
-
     if (pendingJobs.length === 0) {
       return new Response(JSON.stringify({
-        message: "All jobs already analyzed",
-        total: allJobs.length,
-        analyzed: analyzedJobIds.size,
-        remaining: 0,
+        total: allJobs.length, alreadyAnalyzed: analyzedJobIds.size,
+        justProcessed: 0, remaining: 0, batchProcessed: 0, results: [],
       }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    // Process a batch
     const batch = pendingJobs.slice(0, Math.min(batchSize, 10));
     const results: { jobId: string; title: string; status: string; taskCount?: number }[] = [];
 
     for (const job of batch) {
       try {
         const shouldBackfill = backfillJobIds.has(job.id);
-
-        // Double-check this job doesn't already have clusters (race condition guard)
         const { data: existing } = await sb
           .from("job_task_clusters")
           .select("id")
@@ -101,7 +87,6 @@ serve(async (req) => {
           results.push({ jobId: job.id, title: job.title, status: "already_exists" });
           continue;
         }
-
         if (existing && existing.length > 0 && shouldBackfill) {
           await sb.from("job_task_clusters").delete().eq("job_id", job.id);
         }
@@ -115,11 +100,10 @@ For each task cluster return a JSON array of objects with:
 2. "description": One sentence describing the task
 3. "outcome": What successful completion looks like
 4. "skill_names": Array of 2-4 skills needed
-5. "ai_state": One of "mostly_human", "human_ai", "mostly_ai"
-6. "impact_level": One of "low", "medium", "high"
-7. "priority": "critical", "important", or "helpful"
+5. "ai_exposure_score": Integer 0-100 — how much AI is involved today (0 = fully human, 100 = fully AI)
+6. "priority": "high", "medium", or "low"
 
-Order from highest AI impact to lowest. Respond ONLY with valid JSON array.`;
+Order from highest AI exposure to lowest. Respond ONLY with valid JSON array.`;
 
         const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
           method: "POST",
@@ -162,46 +146,34 @@ Order from highest AI impact to lowest. Respond ONLY with valid JSON array.`;
           outcome: t.outcome || null,
           skill_names: t.skill_names || null,
           sort_order: i,
-          ai_state: t.ai_state || "human_ai",
-          ai_trend: t.ai_trend || "increasing_ai",
-          impact_level: t.impact_level || "medium",
-          priority: t.priority || "important",
+          ai_exposure_score: Math.min(Math.max(t.ai_exposure_score ?? 50, 0), 100),
+          priority: t.priority || "medium",
         }));
 
         const { error: insertErr } = await sb.from("job_task_clusters").insert(rows);
         if (insertErr) {
           results.push({ jobId: job.id, title: job.title, status: "insert_error: " + insertErr.message });
         } else {
-          // Compute job-level scores from task signals
-          const totalTasks = tasks.length || 1;
-          const aiInvolvedCount = tasks.filter((t: any) => {
-            const state = t.ai_state || "human_ai";
-            return state === "human_ai" || state === "mostly_ai";
-          }).length;
-          const mostlyAiCount = tasks.filter((t: any) => (t.ai_state || "human_ai") === "mostly_ai").length;
-          // Upskill Urgency: weighted blend — critical=100%, high-impact-only=50%
-          const urgencyScore = tasks.reduce((sum: number, t: any) => {
-            const priority = t.priority || "important";
-            const impact = t.impact_level || "medium";
-            if (priority === "critical") return sum + 1;
-            if (impact === "high") return sum + 0.5;
-            return sum;
-          }, 0);
-
-          const augmented_percent = Math.round((aiInvolvedCount / totalTasks) * 100);
-          const automation_risk_percent = Math.round((mostlyAiCount / totalTasks) * 100);
-          const new_skills_percent = Math.round((urgencyScore / totalTasks) * 100);
+          // Compute weighted average job score
+          const priorityWeight = (p: string) => p === "high" ? 3 : p === "medium" ? 2 : 1;
+          let totalWeight = 0;
+          let weightedSum = 0;
+          for (const t of tasks) {
+            const w = priorityWeight(t.priority || "medium");
+            totalWeight += w;
+            weightedSum += (t.ai_exposure_score ?? 50) * w;
+          }
+          const jobScore = totalWeight > 0 ? Math.round(weightedSum / totalWeight) : 0;
 
           await sb.from("jobs").update({
-            augmented_percent: Math.min(augmented_percent, 100),
-            automation_risk_percent: Math.min(automation_risk_percent, 100),
-            new_skills_percent: Math.min(new_skills_percent, 100),
+            augmented_percent: Math.min(jobScore, 100),
+            automation_risk_percent: 0,
+            new_skills_percent: 0,
           }).eq("id", job.id);
 
           results.push({ jobId: job.id, title: job.title, status: "success", taskCount: rows.length });
         }
 
-        // Small delay between calls to avoid rate limits
         await new Promise(r => setTimeout(r, 500));
       } catch (err) {
         results.push({ jobId: job.id, title: job.title, status: `error: ${err.message}` });
