@@ -74,9 +74,9 @@ const STEPS = [
 ];
 
 const PHASE_COLORS: Record<string, string> = {
-  Diagnose: "bg-dot-blue/10 text-dot-blue",
-  Upskill: "bg-dot-amber/10 text-dot-amber",
-  Plan: "bg-dot-teal/10 text-dot-teal",
+  Diagnose: "bg-brand-ai/10 text-brand-ai",
+  Upskill: "bg-brand-mid/10 text-brand-mid",
+  Plan: "bg-brand-human/10 text-brand-human",
 };
 
 export default function CaseStudy() {
