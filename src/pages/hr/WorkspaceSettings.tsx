@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -14,6 +15,7 @@ function generateCode(): string {
 
 export default function WorkspaceSettings() {
   const { user, openAuthModal } = useAuth();
+  const { workspace: wsCtx, loading: wsLoading, refresh: refreshWs } = useWorkspace();
   const { toast } = useToast();
   const [workspace, setWorkspace] = useState<{ id: string; name: string; join_code: string } | null>(null);
   const [loading, setLoading] = useState(true);
@@ -22,40 +24,10 @@ export default function WorkspaceSettings() {
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
-    if (!user) { setLoading(false); return; }
-    (async () => {
-      setLoading(true);
-      // First check if user created a workspace
-      let { data } = await supabase
-        .from("company_workspaces")
-        .select("id, name, join_code")
-        .eq("created_by", user.id)
-        .limit(1)
-        .maybeSingle();
-
-      // If not a creator, check if user is a member of any workspace
-      if (!data) {
-        const { data: membership } = await supabase
-          .from("workspace_members")
-          .select("workspace_id")
-          .eq("user_id", user.id)
-          .limit(1)
-          .maybeSingle();
-
-        if (membership) {
-          const { data: ws } = await supabase
-            .from("company_workspaces")
-            .select("id, name, join_code")
-            .eq("id", membership.workspace_id)
-            .single();
-          if (ws) data = ws;
-        }
-      }
-
-      if (data) setWorkspace(data);
-      setLoading(false);
-    })();
-  }, [user]);
+    if (wsLoading) return;
+    setWorkspace(wsCtx);
+    setLoading(false);
+  }, [wsCtx, wsLoading]);
 
   const createWorkspace = async () => {
     if (!user || !name.trim()) return;

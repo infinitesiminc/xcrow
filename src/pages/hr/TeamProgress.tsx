@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -20,10 +21,6 @@ import { LineChart, Line, ResponsiveContainer } from "recharts";
 import OnboardingChecklist from "@/components/hr/OnboardingChecklist";
 import { type DeptTrendData, type DemoFunnelStats, generateMockFromDB } from "@/data/demo-team-progress";
 
-const SUPERADMIN_IDS = [
-  "7be41055-be68-4cab-b63c-f3b0c483e6eb",
-  "bb10735b-051e-4bb5-918e-931a9c79d0fd",
-];
 /* ─── Types ─── */
 interface ProgressRow {
   user_id: string;
@@ -658,6 +655,7 @@ function UserDetailSheet({ user, open, onClose }: { user: UserSummary | null; op
 /* ─── Main Component ─── */
 export default function TeamProgress() {
   const { user, openAuthModal } = useAuth();
+  const { workspace: wsCtx, workspaceId: wsId, loading: wsLoading, isSuperAdmin } = useWorkspace();
   const [workspace, setWorkspace] = useState<WorkspaceRow | null>(null);
   const [progress, setProgress] = useState<ProgressRow[]>([]);
   const [loading, setLoading] = useState(true);
@@ -667,22 +665,14 @@ export default function TeamProgress() {
   const [deptTrends, setDeptTrends] = useState<DeptTrendData[]>([]);
   const [funnel, setFunnel] = useState<DemoFunnelStats>({ jobsImported: 0, jobsAnalyzed: 0, rolesActivated: 0, employeesStarted: 0 });
 
-  const isSuperAdmin = !!user && SUPERADMIN_IDS.includes(user.id);
-
   useEffect(() => {
-    if (!user) { setLoading(false); return; }
+    if (!user || wsLoading) return;
+    if (!wsId || !wsCtx) { setLoading(false); return; }
+
+    setWorkspace({ id: wsCtx.id, name: wsCtx.name });
+
     (async () => {
       setLoading(true);
-      const { data: membership } = await supabase
-        .from("workspace_members").select("workspace_id")
-        .eq("user_id", user.id).eq("role", "admin");
-
-      if (!membership?.length) { setLoading(false); return; }
-
-      const wsId = membership[0].workspace_id;
-      const { data: ws } = await supabase
-        .from("company_workspaces").select("id, name").eq("id", wsId).single();
-      if (ws) setWorkspace(ws);
 
       // Fetch real workspace progress
       const { data: rows } = await supabase.rpc("get_workspace_progress", { p_workspace_id: wsId });
@@ -702,7 +692,7 @@ export default function TeamProgress() {
       }
       setLoading(false);
     })();
-  }, [user, isSuperAdmin]);
+  }, [user, wsId, wsCtx, wsLoading, isSuperAdmin]);
 
   const filteredProgress = useMemo(() =>
     selectedDept ? progress.filter(r => r.department === selectedDept) : progress

@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -17,31 +18,20 @@ interface Member {
 
 export default function Members() {
   const { user, openAuthModal } = useAuth();
+  const { workspaceId, loading: wsLoading } = useWorkspace();
   const { toast } = useToast();
   const [members, setMembers] = useState<Member[]>([]);
   const [loading, setLoading] = useState(true);
-  const [workspaceId, setWorkspaceId] = useState<string | null>(null);
 
   const fetchMembers = async () => {
-    if (!user) { setLoading(false); return; }
+    if (!user || !workspaceId) { setLoading(false); return; }
     setLoading(true);
-
-    // Get workspace where user is admin
-    const { data: membership } = await supabase
-      .from("workspace_members")
-      .select("workspace_id")
-      .eq("user_id", user.id)
-      .eq("role", "admin");
-
-    if (!membership?.length) { setLoading(false); return; }
-    const wsId = membership[0].workspace_id;
-    setWorkspaceId(wsId);
 
     // Get all members with profile info
     const { data } = await supabase
       .from("workspace_members")
       .select("id, user_id, role, joined_at")
-      .eq("workspace_id", wsId)
+      .eq("workspace_id", workspaceId)
       .order("joined_at", { ascending: true });
 
     if (data) {
@@ -62,7 +52,9 @@ export default function Members() {
     setLoading(false);
   };
 
-  useEffect(() => { fetchMembers(); }, [user]);
+  useEffect(() => {
+    if (!wsLoading) fetchMembers();
+  }, [user, workspaceId, wsLoading]);
 
   const removeMember = async (memberId: string) => {
     const { error } = await supabase.from("workspace_members").delete().eq("id", memberId);

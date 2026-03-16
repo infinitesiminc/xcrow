@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -49,14 +50,11 @@ interface DbJob {
 type SortField = "title" | "department" | "location";
 type SortDir = "asc" | "desc";
 
-const SUPERADMIN_IDS = [
-  "7be41055-be68-4cab-b63c-f3b0c483e6eb",
-  "bb10735b-051e-4bb5-918e-931a9c79d0fd",
-];
 
 /* ── component ── */
 export default function ATSSync() {
   const { user, openAuthModal } = useAuth();
+  const { workspaceId, isSuperAdmin } = useWorkspace();
   const { toast } = useToast();
 
   const [companies, setCompanies] = useState<Company[]>([]);
@@ -71,20 +69,6 @@ export default function ATSSync() {
   const [sortDir, setSortDir] = useState<SortDir>("asc");
   const [companySearch, setCompanySearch] = useState("");
   const [companyDropdownOpen, setCompanyDropdownOpen] = useState(false);
-  const [workspaceId, setWorkspaceId] = useState<string | null>(null);
-
-  const isSuperAdmin = !!user && SUPERADMIN_IDS.includes(user.id);
-
-  /* ── fetch workspace ── */
-  useEffect(() => {
-    if (!user) return;
-    (async () => {
-      const { data: membership } = await supabase
-        .from("workspace_members").select("workspace_id")
-        .eq("user_id", user.id).limit(1);
-      if (membership?.length) setWorkspaceId(membership[0].workspace_id);
-    })();
-  }, [user]);
 
   /* ── fetch companies (workspace-scoped for non-superadmins) ── */
   const fetchCompanies = useCallback(async () => {
