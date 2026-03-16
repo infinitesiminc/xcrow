@@ -403,7 +403,7 @@ function PillarScoreVisual() {
                 viewport={{ once: true }}
                 transition={{ delay: 0.4 + i * 0.1, duration: 0.6 }}
                 className={`h-full rounded-full ${
-                  p.score >= 80 ? "bg-dot-teal" : p.score >= 60 ? "bg-dot-amber" : "bg-dot-purple"
+                  p.score >= 80 ? "bg-brand-human" : p.score >= 60 ? "bg-brand-mid" : "bg-brand-ai"
                 }`}
               />
             </div>
