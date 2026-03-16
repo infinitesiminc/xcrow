@@ -286,7 +286,7 @@ export default function Investors() {
                         <h3 className="text-sm font-bold text-foreground">Adapt · Model-Aware Re-Calibration</h3>
                       </div>
                       <p className="text-xs text-muted-foreground mb-3">When new frontier models drop, exposure scores automatically re-calibrate and the loop accelerates. Your workforce evolves as fast as AI does.</p>
-                      <Badge variant="outline" className="text-[10px] border-primary/20 text-primary w-fit">Continuous, not quarterly</Badge>
+                      <Badge variant="outline" className="text-[10px] border-brand-mid/20 text-brand-mid w-fit">Continuous, not quarterly</Badge>
                     </div>
                     <div className="bg-muted/20 border-l border-border/50 p-4 sm:p-5">
                       <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-3 font-medium">Auto Re-Calibration Timeline</p>
