@@ -589,7 +589,7 @@ export default function LearningPath() {
                                 );
                               })}
                             </svg>
-                            <p className="text-[10px] text-muted-foreground text-center -mt-1">AI Exposure by Task</p>
+                            <p className="text-[11px] text-muted-foreground text-center -mt-1">AI Exposure by Task</p>
                           </CardContent>
                         </Card>
                       );
