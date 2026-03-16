@@ -598,8 +598,8 @@ export default function Investors() {
                     <div key={row.industry} className="flex items-center gap-3">
                       <span className="text-xs text-foreground w-40 shrink-0 truncate">{row.industry}</span>
                       <div className="flex-1 h-5 bg-muted/40 rounded-full overflow-hidden relative">
-                        <motion.div
-                          className={`h-full rounded-full ${row.exposure >= 60 ? "bg-destructive/70" : row.exposure >= 40 ? "bg-amber-500/70" : "bg-emerald-500/70"}`}
+                         <motion.div
+                           className={`h-full rounded-full ${row.exposure >= 60 ? "bg-brand-ai/70" : row.exposure >= 40 ? "bg-brand-mid/70" : "bg-brand-human/70"}`}
                           initial={{ width: 0 }}
                           whileInView={{ width: `${row.exposure}%` }}
                           viewport={{ once: true }}
