@@ -624,7 +624,7 @@ export default function Enterprise() {
             transition={{ duration: 0.5, delay: 0.1 }}
             className="text-center text-xs font-medium uppercase tracking-widest text-muted-foreground mb-12"
           >
-            Click a node to explore
+            Auto-rotating · Click any node to pause
           </motion.p>
 
           <div className="grid md:grid-cols-2 gap-8 items-center">
