@@ -326,49 +326,97 @@ export default function Investors() {
             subtitle="Sitting at the intersection of HR Tech, AI consulting, and corporate L&D — three massive categories converging into one."
           />
 
-          {/* Venn intersection visual */}
+          {/* Concentric segmented ring visual */}
           <motion.div {...fadeUp} className="mb-6">
             <Card className="border-border/50 overflow-hidden">
               <CardContent className="p-6 sm:p-8">
-                <div className="relative flex items-center justify-center h-[260px] sm:h-[300px]">
-                  {/* Circle – HR Tech */}
+                <div className="relative flex items-center justify-center h-[320px] sm:h-[360px]">
+                  {/* Outer segmented ring — SVG arcs */}
+                  <svg viewBox="0 0 300 300" className="absolute w-[280px] h-[280px] sm:w-[320px] sm:h-[320px]">
+                    {/* HR Tech arc — top-left 120° */}
+                    <motion.path
+                      d="M 150 10 A 140 140 0 0 1 271.2 220"
+                      fill="none"
+                      stroke="hsl(var(--brand-human))"
+                      strokeWidth="28"
+                      strokeLinecap="round"
+                      opacity="0.2"
+                      initial={{ pathLength: 0 }}
+                      whileInView={{ pathLength: 1 }}
+                      transition={{ duration: 0.8 }}
+                    />
+                    {/* AI Consulting arc — bottom-right 120° */}
+                    <motion.path
+                      d="M 271.2 220 A 140 140 0 0 1 28.8 220"
+                      fill="none"
+                      stroke="hsl(var(--brand-ai))"
+                      strokeWidth="28"
+                      strokeLinecap="round"
+                      opacity="0.2"
+                      initial={{ pathLength: 0 }}
+                      whileInView={{ pathLength: 1 }}
+                      transition={{ duration: 0.8, delay: 0.15 }}
+                    />
+                    {/* Corporate L&D arc — left 120° */}
+                    <motion.path
+                      d="M 28.8 220 A 140 140 0 0 1 150 10"
+                      fill="none"
+                      stroke="hsl(var(--brand-mid))"
+                      strokeWidth="28"
+                      strokeLinecap="round"
+                      opacity="0.2"
+                      initial={{ pathLength: 0 }}
+                      whileInView={{ pathLength: 1 }}
+                      transition={{ duration: 0.8, delay: 0.3 }}
+                    />
+                  </svg>
+
+                  {/* Middle ring — blended glow */}
                   <motion.div
-                    initial={{ opacity: 0, scale: 0.7 }}
+                    initial={{ opacity: 0, scale: 0.6 }}
                     whileInView={{ opacity: 1, scale: 1 }}
-                    transition={{ duration: 0.5 }}
-                    className="absolute w-[180px] h-[180px] sm:w-[220px] sm:h-[220px] rounded-full bg-brand-human/10 border border-brand-human/30 flex flex-col items-center justify-center -translate-x-[70px] sm:-translate-x-[90px] -translate-y-[30px]"
+                    transition={{ duration: 0.6, delay: 0.4 }}
+                    className="absolute w-[160px] h-[160px] sm:w-[190px] sm:h-[190px] rounded-full bg-gradient-to-br from-brand-human/10 via-brand-mid/10 to-brand-ai/10 border border-border/30"
+                  />
+
+                  {/* Segment labels — positioned around the ring */}
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    whileInView={{ opacity: 1 }}
+                    transition={{ delay: 0.5 }}
+                    className="absolute -top-1 sm:top-0 flex flex-col items-center"
                   >
                     <span className="text-lg sm:text-xl font-bold text-brand-human">$230B+</span>
-                    <span className="text-[10px] sm:text-xs text-muted-foreground font-medium">HR Tech</span>
+                    <span className="text-[10px] text-muted-foreground font-medium">HR Tech</span>
                   </motion.div>
-                  {/* Circle – AI Consulting */}
                   <motion.div
-                    initial={{ opacity: 0, scale: 0.7 }}
-                    whileInView={{ opacity: 1, scale: 1 }}
-                    transition={{ duration: 0.5, delay: 0.15 }}
-                    className="absolute w-[180px] h-[180px] sm:w-[220px] sm:h-[220px] rounded-full bg-brand-ai/10 border border-brand-ai/30 flex flex-col items-center justify-center translate-x-[70px] sm:translate-x-[90px] -translate-y-[30px]"
+                    initial={{ opacity: 0 }}
+                    whileInView={{ opacity: 1 }}
+                    transition={{ delay: 0.6 }}
+                    className="absolute bottom-4 right-2 sm:bottom-6 sm:right-4 flex flex-col items-center"
                   >
                     <span className="text-lg sm:text-xl font-bold text-brand-ai">$50B+</span>
-                    <span className="text-[10px] sm:text-xs text-muted-foreground font-medium">AI Consulting</span>
+                    <span className="text-[10px] text-muted-foreground font-medium">AI Consulting</span>
                   </motion.div>
-                  {/* Circle – Corporate L&D */}
                   <motion.div
-                    initial={{ opacity: 0, scale: 0.7 }}
-                    whileInView={{ opacity: 1, scale: 1 }}
-                    transition={{ duration: 0.5, delay: 0.3 }}
-                    className="absolute w-[180px] h-[180px] sm:w-[220px] sm:h-[220px] rounded-full bg-brand-mid/10 border border-brand-mid/30 flex flex-col items-center justify-center translate-y-[50px] sm:translate-y-[40px]"
+                    initial={{ opacity: 0 }}
+                    whileInView={{ opacity: 1 }}
+                    transition={{ delay: 0.7 }}
+                    className="absolute bottom-4 left-2 sm:bottom-6 sm:left-4 flex flex-col items-center"
                   >
                     <span className="text-lg sm:text-xl font-bold text-brand-mid">$60B+</span>
-                    <span className="text-[10px] sm:text-xs text-muted-foreground font-medium">Corporate L&D</span>
+                    <span className="text-[10px] text-muted-foreground font-medium">Corporate L&D</span>
                   </motion.div>
-                  {/* Center intersection */}
+
+                  {/* Center — Infinite Sim */}
                   <motion.div
                     initial={{ opacity: 0, scale: 0 }}
                     whileInView={{ opacity: 1, scale: 1 }}
-                    transition={{ duration: 0.4, delay: 0.55 }}
-                    className="absolute z-10 w-[80px] h-[80px] sm:w-[100px] sm:h-[100px] rounded-full bg-gradient-to-br from-brand-ai/20 via-brand-mid/20 to-brand-human/20 border-2 border-foreground/20 flex flex-col items-center justify-center backdrop-blur-sm translate-y-[6px]"
+                    transition={{ duration: 0.4, delay: 0.65 }}
+                    className="absolute z-10 w-[80px] h-[80px] sm:w-[100px] sm:h-[100px] rounded-full bg-gradient-to-br from-brand-ai/20 via-brand-mid/25 to-brand-human/20 border-2 border-foreground/20 flex flex-col items-center justify-center backdrop-blur-sm shadow-lg shadow-brand-mid/20"
                   >
                     <span className="text-[9px] sm:text-[10px] font-bold text-foreground leading-tight text-center">Infinite<br/>Sim</span>
+                    <span className="text-[7px] sm:text-[8px] text-muted-foreground mt-0.5">$340B+</span>
                   </motion.div>
                 </div>
               </CardContent>
