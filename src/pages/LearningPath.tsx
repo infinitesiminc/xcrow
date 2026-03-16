@@ -77,18 +77,18 @@ interface CustomSim {
 
 /* ── Helpers ── */
 function priorityBadge(p?: string) {
-  if (p === "high") return <Badge className="bg-destructive/10 text-destructive border-destructive/20 text-[9px]">High</Badge>;
-  if (p === "medium") return <Badge className="bg-warning/10 text-warning border-warning/20 text-[9px]">Medium</Badge>;
-  return <Badge className="bg-success/10 text-success border-success/20 text-[9px]">Low</Badge>;
+  if (p === "high") return <Badge className="bg-destructive/10 text-destructive border-destructive/20 text-[11px]">High</Badge>;
+  if (p === "medium") return <Badge className="bg-warning/10 text-warning border-warning/20 text-[11px]">Medium</Badge>;
+  return <Badge className="bg-success/10 text-success border-success/20 text-[11px]">Low</Badge>;
 }
 function scoreBadge(score: number) {
-  if (score >= 70) return <Badge className="bg-success/10 text-success border-success/20 text-[9px]">{score}%</Badge>;
-  if (score >= 40) return <Badge className="bg-warning/10 text-warning border-warning/20 text-[9px]">{score}%</Badge>;
-  return <Badge className="bg-destructive/10 text-destructive border-destructive/20 text-[9px]">{score}%</Badge>;
+  if (score >= 70) return <Badge className="bg-success/10 text-success border-success/20 text-[11px]">{score}%</Badge>;
+  if (score >= 40) return <Badge className="bg-warning/10 text-warning border-warning/20 text-[11px]">{score}%</Badge>;
+  return <Badge className="bg-destructive/10 text-destructive border-destructive/20 text-[11px]">{score}%</Badge>;
 }
 function exposureBadge(score: number) {
   const cls = score >= 70 ? "bg-destructive/10 text-destructive border-destructive/20" : score >= 40 ? "bg-warning/10 text-warning border-warning/20" : "bg-success/10 text-success border-success/20";
-  return <Badge className={`${cls} text-[10px]`}>{score}% AI</Badge>;
+  return <Badge className={`${cls} text-[11px]`}>{score}% AI</Badge>;
 }
 
 export default function LearningPath() {
