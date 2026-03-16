@@ -409,8 +409,8 @@ function AdaptiveLoopDiagram({ activeNode, setActiveNode }: {
 
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
         <div className="text-center">
-          <p className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground">Continuous</p>
-          <p className="text-lg font-display font-semibold text-foreground -mt-0.5">Parity</p>
+          <p className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground">Always</p>
+          <p className="text-lg font-display font-semibold text-foreground -mt-0.5">Adapting</p>
         </div>
       </div>
 
