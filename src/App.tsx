@@ -14,7 +14,7 @@ import Auth from "./pages/Auth.tsx";
 import Dashboard from "./pages/Dashboard.tsx";
 import Settings from "./pages/Settings.tsx";
 import NotFound from "./pages/NotFound.tsx";
-import ToolsMarketplace from "./pages/ToolsMarketplace.tsx";
+
 import Contact from "./pages/Contact.tsx";
 import Pricing from "./pages/Pricing.tsx";
 import ATSSync from "./pages/hr/ATSSync.tsx";
@@ -49,7 +49,7 @@ const App = () => (
             <Route path="/auth" element={<><Navbar /><Auth /></>} />
             <Route path="/dashboard" element={<><Navbar /><Dashboard /><Footer /></>} />
             <Route path="/settings" element={<><Navbar /><Settings /><Footer /></>} />
-            <Route path="/tools" element={<><Navbar /><ToolsMarketplace /><Footer /></>} />
+            
             <Route path="/contact" element={<><Navbar /><StickyTicker /><Contact /><Footer /></>} />
             <Route path="/pricing" element={<><Navbar /><StickyTicker /><Pricing /><Footer /></>} />
             <Route path="/products/simulation-builder" element={<><Navbar /><SimulationBuilder /><Footer /></>} />
