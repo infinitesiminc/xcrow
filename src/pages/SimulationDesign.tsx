@@ -265,9 +265,9 @@ function IngestionVisual() {
     { name: "JD Paste", count: 12 },
   ];
   const lenses = [
-    { label: "AI Exposure", value: 67, color: "bg-dot-blue" },
-    { label: "Replace Risk", value: 22, color: "bg-destructive" },
-    { label: "Upskill Urgency", value: 56, color: "bg-dot-purple" },
+    { label: "AI Exposure", value: 67, color: "bg-brand-human" },
+    { label: "Replace Risk", value: 22, color: "bg-brand-ai" },
+    { label: "Upskill Urgency", value: 56, color: "bg-brand-mid" },
   ];
   return (
     <div className="rounded-xl border border-border bg-card p-4 space-y-3">
