@@ -34,7 +34,7 @@ import Members from "./pages/hr/Members.tsx";
 import WorkspaceSettings from "./pages/hr/WorkspaceSettings.tsx";
 import ActionCenter from "./pages/hr/ActionCenter.tsx";
 import Workspaces from "./pages/hr/Workspaces.tsx";
-
+import Onboarding from "./pages/hr/Onboarding.tsx";
 const queryClient = new QueryClient();
 
 function AuthRedirectHome() {
@@ -67,6 +67,7 @@ const App = () => (
             <Route path="/learning-path" element={<><Navbar /><LearningPath /><Footer /></>} />
             <Route path="/score-distributions" element={<><Navbar /><ScoreDistributions /><Footer /></>} />
             <Route path="/join" element={<JoinWorkspace />} />
+            <Route path="/hr/onboarding" element={<Onboarding />} />
             <Route path="/case-study/anthropic" element={<><Navbar /><StickyTicker /><Suspense fallback={null}><CaseStudy /></Suspense><Footer /></>} />
 
             {/* HR Dashboard with sidebar */}

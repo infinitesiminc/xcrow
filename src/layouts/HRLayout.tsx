@@ -1,11 +1,11 @@
-import { Outlet, useNavigate } from "react-router-dom";
+import { Outlet, useNavigate, Navigate } from "react-router-dom";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { HRSidebar } from "@/components/HRSidebar";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { WorkspaceProvider, useWorkspace } from "@/contexts/WorkspaceContext";
 import { Badge } from "@/components/ui/badge";
-import { Building2, ArrowLeft } from "lucide-react";
+import { Building2, ArrowLeft, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 function WorkspaceHeader() {
@@ -41,6 +41,33 @@ function WorkspaceHeader() {
   );
 }
 
+/** Redirects users without a workspace to the onboarding wizard */
+function WorkspaceGate() {
+  const { workspaceId, loading, isSuperAdmin } = useWorkspace();
+
+  if (loading) {
+    return (
+      <div className="flex-1 flex items-center justify-center">
+        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
+  // Superadmins can access everything; non-superadmins without a workspace go to onboarding
+  if (!workspaceId && !isSuperAdmin) {
+    return <Navigate to="/hr/onboarding" replace />;
+  }
+
+  return (
+    <>
+      <WorkspaceHeader />
+      <main className="flex-1 overflow-auto">
+        <Outlet />
+      </main>
+    </>
+  );
+}
+
 export default function HRLayout() {
   return (
     <>
@@ -50,10 +77,7 @@ export default function HRLayout() {
           <HRSidebar />
           <div className="flex-1 flex flex-col">
             <WorkspaceProvider>
-              <WorkspaceHeader />
-              <main className="flex-1 overflow-auto">
-                <Outlet />
-              </main>
+              <WorkspaceGate />
             </WorkspaceProvider>
           </div>
         </div>
