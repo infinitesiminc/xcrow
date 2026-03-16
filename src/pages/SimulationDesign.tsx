@@ -240,7 +240,7 @@ function StatusQuoSection() {
                     {s.failed ? (
                       <X className="h-4 w-4 text-destructive shrink-0 mt-0.5" />
                     ) : (
-                      <CheckCircle2 className="h-4 w-4 text-dot-teal shrink-0 mt-0.5" />
+                      <CheckCircle2 className="h-4 w-4 text-brand-human shrink-0 mt-0.5" />
                     )}
                     <span className="text-muted-foreground">{f}</span>
                   </div>
