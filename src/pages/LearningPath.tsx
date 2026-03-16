@@ -695,7 +695,7 @@ export default function LearningPath() {
                                   ].filter(p => p.val !== null);
                                   return (
                                     <div className="rounded-md bg-muted/50 px-2.5 py-2 mb-2 space-y-1">
-                                      <div className="flex items-center gap-3 text-[10px] text-muted-foreground">
+                                      <div className="flex items-center gap-3 text-[11px] text-muted-foreground">
                                         <span>{rounds.length} round{rounds.length > 1 ? "s" : ""}</span>
                                         <span>Best: {best.correct_answers}/{best.total_questions}</span>
                                       </div>
