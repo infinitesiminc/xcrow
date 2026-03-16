@@ -55,7 +55,7 @@ export default function Investors() {
             </Badge>
             <h1 className="font-serif text-3xl sm:text-5xl font-bold text-foreground leading-tight tracking-tight">
               Every job is being rewritten by AI.<br />
-              <span className="text-primary">We help companies get ahead of it.</span>
+              <span className="bg-gradient-to-r from-brand-ai to-brand-human bg-clip-text text-transparent">We help companies get ahead of it.</span>
             </h1>
             <p className="mx-auto mt-4 max-w-2xl text-base text-muted-foreground leading-relaxed">
               Infinite Sim is the AI readiness platform that decomposes every role into tasks,
@@ -91,9 +91,9 @@ export default function Investors() {
               { icon: TrendingUp, stat: "$8.5T", desc: "unrealized productivity from delayed AI adoption (Accenture)" },
             ].map((item, i) => (
               <motion.div key={i} {...fadeUp} transition={{ ...fadeUp.transition, delay: i * 0.1 }}>
-                <Card className="border-destructive/20 bg-destructive/5 h-full">
+                <Card className="border-brand-ai/20 bg-brand-ai/5 h-full">
                   <CardContent className="p-5">
-                    <item.icon className="h-5 w-5 text-destructive mb-3" />
+                    <item.icon className="h-5 w-5 text-brand-ai mb-3" />
                     <p className="text-2xl font-bold text-foreground">{item.stat}</p>
                     <p className="text-xs text-muted-foreground mt-1">{item.desc}</p>
                   </CardContent>
@@ -113,7 +113,7 @@ export default function Investors() {
 
           {/* Loop flow visual */}
           <motion.div {...fadeUp} className="mb-8">
-            <Card className="border-primary/20 bg-gradient-to-br from-primary/5 via-background to-accent/5">
+            <Card className="border-brand-human/20 bg-gradient-to-br from-brand-ai/5 via-background to-brand-human/5">
               <CardContent className="p-6">
                 <div className="flex items-center justify-center gap-2 sm:gap-4 flex-wrap">
                   {[
@@ -124,8 +124,8 @@ export default function Investors() {
                   ].map((step, i) => (
                     <div key={step.label} className="flex items-center gap-2 sm:gap-4">
                       <div className="flex flex-col items-center text-center">
-                        <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-1.5">
-                          <step.icon className="h-5 w-5 text-primary" />
+                        <div className="w-12 h-12 rounded-xl bg-brand-human/10 flex items-center justify-center mb-1.5">
+                          <step.icon className="h-5 w-5 text-brand-human" />
                         </div>
                         <p className="text-sm font-semibold text-foreground">{step.label}</p>
                         <p className="text-[10px] text-muted-foreground">{step.sub}</p>
@@ -148,13 +148,13 @@ export default function Investors() {
                   <div className="grid sm:grid-cols-2">
                     <div className="p-5 sm:p-6 flex flex-col justify-center">
                       <div className="flex items-center gap-2 mb-2">
-                        <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
-                          <Layers className="h-4 w-4 text-primary" />
+                        <div className="w-8 h-8 rounded-lg bg-brand-ai/10 flex items-center justify-center">
+                          <Layers className="h-4 w-4 text-brand-ai" />
                         </div>
                         <h3 className="text-sm font-bold text-foreground">Map · AI Exposure Scoring</h3>
                       </div>
                       <p className="text-xs text-muted-foreground mb-3">Every role decomposed into 8–15 task clusters, each scored for AI exposure. When new models ship, scores update automatically.</p>
-                      <Badge variant="outline" className="text-[10px] border-primary/20 text-primary w-fit">400+ roles mapped in minutes</Badge>
+                      <Badge variant="outline" className="text-[10px] border-brand-ai/20 text-brand-ai w-fit">400+ roles mapped in minutes</Badge>
                     </div>
                     <div className="bg-muted/20 border-l border-border/50 p-4 sm:p-5">
                       <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-3 font-medium">Sample: Financial Analyst</p>
@@ -169,7 +169,7 @@ export default function Investors() {
                             <span className="text-[10px] text-foreground w-28 truncate shrink-0">{t.task}</span>
                             <div className="flex-1 h-3 bg-muted/40 rounded-full overflow-hidden">
                               <motion.div
-                                className={`h-full rounded-full ${t.exposure >= 60 ? "bg-destructive/60" : t.exposure >= 40 ? "bg-amber-500/60" : "bg-emerald-500/60"}`}
+                                className={`h-full rounded-full ${t.exposure >= 60 ? "bg-brand-ai/60" : t.exposure >= 40 ? "bg-brand-mid/60" : "bg-brand-human/60"}`}
                                 initial={{ width: 0 }}
                                 whileInView={{ width: `${t.exposure}%` }}
                                 viewport={{ once: true }}
@@ -193,22 +193,22 @@ export default function Investors() {
                   <div className="grid sm:grid-cols-2">
                     <div className="p-5 sm:p-6 flex flex-col justify-center">
                       <div className="flex items-center gap-2 mb-2">
-                        <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
-                          <Target className="h-4 w-4 text-primary" />
+                        <div className="w-8 h-8 rounded-lg bg-brand-human/10 flex items-center justify-center">
+                          <Target className="h-4 w-4 text-brand-human" />
                         </div>
                         <h3 className="text-sm font-bold text-foreground">Assess · Adaptive Simulations</h3>
                       </div>
                       <p className="text-xs text-muted-foreground mb-3">Calibrated simulations measure each employee across 4 readiness pillars. Real tested capability, not self-reported surveys.</p>
-                      <Badge variant="outline" className="text-[10px] border-primary/20 text-primary w-fit">4-pillar scoring model</Badge>
+                      <Badge variant="outline" className="text-[10px] border-brand-human/20 text-brand-human w-fit">4-pillar scoring model</Badge>
                     </div>
                     <div className="bg-muted/20 border-l border-border/50 p-4 sm:p-5">
                       <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-3 font-medium">Readiness Pillars</p>
                       <div className="grid grid-cols-2 gap-2">
                         {[
-                          { pillar: "Tool Awareness", score: 82, color: "hsl(var(--primary) / 0.6)" },
-                          { pillar: "Domain Judgment", score: 71, color: "hsl(45 93% 47% / 0.6)" },
-                          { pillar: "Adaptive Thinking", score: 64, color: "hsl(152 69% 40% / 0.6)" },
-                          { pillar: "Human Value-Add", score: 88, color: "hsl(199 89% 48% / 0.6)" },
+                          { pillar: "Tool Awareness", score: 82, color: "hsl(var(--brand-human) / 0.7)" },
+                          { pillar: "Domain Judgment", score: 71, color: "hsl(var(--brand-mid) / 0.7)" },
+                          { pillar: "Adaptive Thinking", score: 64, color: "hsl(var(--brand-human) / 0.5)" },
+                          { pillar: "Human Value-Add", score: 88, color: "hsl(var(--brand-human) / 0.8)" },
                         ].map((p) => (
                           <div key={p.pillar} className="rounded-lg border border-border/30 p-2.5 bg-background/50">
                             <div className="flex items-center justify-between mb-1.5">
@@ -241,13 +241,13 @@ export default function Investors() {
                   <div className="grid sm:grid-cols-2">
                     <div className="p-5 sm:p-6 flex flex-col justify-center">
                       <div className="flex items-center gap-2 mb-2">
-                        <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
-                          <Brain className="h-4 w-4 text-primary" />
+                        <div className="w-8 h-8 rounded-lg bg-brand-human/10 flex items-center justify-center">
+                          <Brain className="h-4 w-4 text-brand-human" />
                         </div>
                         <h3 className="text-sm font-bold text-foreground">Train · Auto-Generated Practice</h3>
                       </div>
                       <p className="text-xs text-muted-foreground mb-3">Targeted practice sessions auto-generated from each employee's weak points. No manual L&D design — the system trains while you focus on strategy.</p>
-                      <Badge variant="outline" className="text-[10px] border-primary/20 text-primary w-fit">Zero L&D overhead</Badge>
+                      <Badge variant="outline" className="text-[10px] border-brand-human/20 text-brand-human w-fit">Zero L&D overhead</Badge>
                     </div>
                     <div className="bg-muted/20 border-l border-border/50 p-4 sm:p-5">
                       <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-3 font-medium">Adaptive Queue</p>
@@ -258,12 +258,12 @@ export default function Investors() {
                           { task: "Automated Compliance Check", weak: "Domain Judgment", score: 61, status: "Queued" },
                         ].map((s, i) => (
                           <div key={s.task} className="flex items-center gap-2 rounded-lg border border-border/30 bg-background/50 p-2">
-                            <div className={`w-1.5 h-8 rounded-full shrink-0 ${i === 0 ? "bg-primary" : "bg-muted-foreground/20"}`} />
+                            <div className={`w-1.5 h-8 rounded-full shrink-0 ${i === 0 ? "bg-brand-human" : "bg-muted-foreground/20"}`} />
                             <div className="flex-1 min-w-0">
                               <p className="text-[10px] font-medium text-foreground truncate">{s.task}</p>
                               <p className="text-[9px] text-muted-foreground">Weak: {s.weak} ({s.score}%)</p>
                             </div>
-                            <span className={`text-[9px] px-1.5 py-0.5 rounded shrink-0 ${i === 0 ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"}`}>{s.status}</span>
+                            <span className={`text-[9px] px-1.5 py-0.5 rounded shrink-0 ${i === 0 ? "bg-brand-human/10 text-brand-human" : "bg-muted text-muted-foreground"}`}>{s.status}</span>
                           </div>
                         ))}
                       </div>
@@ -280,13 +280,13 @@ export default function Investors() {
                   <div className="grid sm:grid-cols-2">
                     <div className="p-5 sm:p-6 flex flex-col justify-center">
                       <div className="flex items-center gap-2 mb-2">
-                        <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
-                          <Zap className="h-4 w-4 text-primary" />
+                        <div className="w-8 h-8 rounded-lg bg-brand-mid/10 flex items-center justify-center">
+                          <Zap className="h-4 w-4 text-brand-mid" />
                         </div>
                         <h3 className="text-sm font-bold text-foreground">Adapt · Model-Aware Re-Calibration</h3>
                       </div>
                       <p className="text-xs text-muted-foreground mb-3">When new frontier models drop, exposure scores automatically re-calibrate and the loop accelerates. Your workforce evolves as fast as AI does.</p>
-                      <Badge variant="outline" className="text-[10px] border-primary/20 text-primary w-fit">Continuous, not quarterly</Badge>
+                      <Badge variant="outline" className="text-[10px] border-brand-mid/20 text-brand-mid w-fit">Continuous, not quarterly</Badge>
                     </div>
                     <div className="bg-muted/20 border-l border-border/50 p-4 sm:p-5">
                       <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-3 font-medium">Auto Re-Calibration Timeline</p>
@@ -298,8 +298,8 @@ export default function Investors() {
                         ].map((e, i) => (
                           <div key={e.date} className="flex items-start gap-2.5">
                             <div className="flex flex-col items-center">
-                              <div className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 ${i === 0 ? "bg-primary/15" : "bg-muted/60"}`}>
-                                <e.Icon className={`h-3 w-3 ${i === 0 ? "text-primary" : "text-muted-foreground"}`} />
+                              <div className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 ${i === 0 ? "bg-brand-ai/15" : "bg-muted/60"}`}>
+                                <e.Icon className={`h-3 w-3 ${i === 0 ? "text-brand-ai" : "text-muted-foreground"}`} />
                               </div>
                               {i < 2 && <div className="w-px h-3 bg-border/50 mt-1" />}
                             </div>
@@ -362,7 +362,7 @@ export default function Investors() {
             subtitle="Our platform is live with real company data. The Anthropic case study walks through the full workflow."
           />
           <motion.div {...fadeUp}>
-            <Card className="border-primary/20 bg-gradient-to-br from-primary/5 via-background to-accent/5 overflow-hidden">
+            <Card className="border-brand-human/20 bg-gradient-to-br from-brand-ai/5 via-background to-brand-human/5 overflow-hidden">
               <CardContent className="p-6 sm:p-8">
                 <div className="grid sm:grid-cols-2 gap-6 items-center">
                   <div>
@@ -424,12 +424,12 @@ export default function Investors() {
               { title: "Enterprise", price: "Custom", arr: "$250K–$1M+", example: "Fortune 500 (1,000+ roles)", features: ["Everything in Growth", "SSO & admin controls", "Model-aware re-scoring SLA", "Dedicated account manager", "Custom integrations & API"] },
             ].map((tier, i) => (
               <motion.div key={i} {...fadeUp} transition={{ ...fadeUp.transition, delay: i * 0.1 }}>
-                <Card className={`h-full ${tier.highlighted ? "border-primary/30 bg-primary/5" : ""}`}>
+                <Card className={`h-full ${tier.highlighted ? "border-brand-human/30 bg-brand-human/5" : ""}`}>
                   <CardContent className="p-5">
                     <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{tier.title}</p>
                     <p className="text-xl font-bold text-foreground mt-1">{tier.price}</p>
                     {tier.arr !== "—" && (
-                      <p className="text-xs font-medium text-primary mt-0.5">ARR potential: {tier.arr}</p>
+                      <p className="text-xs font-medium text-brand-human mt-0.5">ARR potential: {tier.arr}</p>
                     )}
                     <p className="text-[10px] text-muted-foreground/70 mt-1 italic">{tier.example}</p>
                     <ul className="mt-3 space-y-1.5">
@@ -598,8 +598,8 @@ export default function Investors() {
                     <div key={row.industry} className="flex items-center gap-3">
                       <span className="text-xs text-foreground w-40 shrink-0 truncate">{row.industry}</span>
                       <div className="flex-1 h-5 bg-muted/40 rounded-full overflow-hidden relative">
-                        <motion.div
-                          className={`h-full rounded-full ${row.exposure >= 60 ? "bg-destructive/70" : row.exposure >= 40 ? "bg-amber-500/70" : "bg-emerald-500/70"}`}
+                         <motion.div
+                           className={`h-full rounded-full ${row.exposure >= 60 ? "bg-brand-ai/70" : row.exposure >= 40 ? "bg-brand-mid/70" : "bg-brand-human/70"}`}
                           initial={{ width: 0 }}
                           whileInView={{ width: `${row.exposure}%` }}
                           viewport={{ once: true }}
@@ -611,10 +611,10 @@ export default function Investors() {
                     </div>
                   ))}
                 </div>
-                <div className="flex items-center gap-4 mt-4 text-[10px] text-muted-foreground">
-                  <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-destructive/70" /> High (&gt;60%)</span>
-                  <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-amber-500/70" /> Moderate (40–60%)</span>
-                  <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-emerald-500/70" /> Lower (&lt;40%)</span>
+                 <div className="flex items-center gap-4 mt-4 text-[10px] text-muted-foreground">
+                   <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-brand-ai/70" /> High (&gt;60%)</span>
+                   <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-brand-mid/70" /> Moderate (40–60%)</span>
+                   <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-brand-human/70" /> Lower (&lt;40%)</span>
                   <span className="ml-auto">Posts analyzed ↗</span>
                 </div>
               </CardContent>
@@ -636,14 +636,14 @@ export default function Investors() {
                     <div key={col.scale} className="text-center">
                       <div className="relative h-40 flex items-end justify-center gap-1 mb-2">
                         <motion.div
-                          className="w-6 bg-destructive/50 rounded-t"
+                          className="w-6 bg-brand-ai/50 rounded-t"
                           initial={{ height: 0 }}
                           whileInView={{ height: `${col.exposure * 1.4}px` }}
                           viewport={{ once: true }}
                           transition={{ duration: 0.6 }}
                         />
                         <motion.div
-                          className="w-6 bg-primary/50 rounded-t"
+                          className="w-6 bg-brand-human/50 rounded-t"
                           initial={{ height: 0 }}
                           whileInView={{ height: `${col.readiness * 1.4}px` }}
                           viewport={{ once: true }}
@@ -651,16 +651,16 @@ export default function Investors() {
                         />
                       </div>
                       <p className="text-[10px] text-foreground font-medium whitespace-pre-line leading-tight">{col.scale}</p>
-                      <div className="mt-1.5 px-2 py-1 rounded bg-destructive/10">
-                        <p className="text-xs font-bold text-destructive">{col.gap}pt gap</p>
+                       <div className="mt-1.5 px-2 py-1 rounded bg-brand-ai/10">
+                         <p className="text-xs font-bold text-brand-ai">{col.gap}pt gap</p>
                       </div>
                     </div>
                   ))}
                 </div>
-                <div className="flex items-center gap-4 mt-4 text-[10px] text-muted-foreground">
-                  <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-destructive/50" /> AI Exposure</span>
-                  <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-primary/50" /> Workforce Readiness</span>
-                  <span className="ml-auto text-destructive font-medium">Gap widens with company size →</span>
+                 <div className="flex items-center gap-4 mt-4 text-[10px] text-muted-foreground">
+                   <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-brand-ai/50" /> AI Exposure</span>
+                   <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-brand-human/50" /> Workforce Readiness</span>
+                   <span className="ml-auto text-brand-ai font-medium">Gap widens with company size →</span>
                 </div>
               </CardContent>
             </Card>
