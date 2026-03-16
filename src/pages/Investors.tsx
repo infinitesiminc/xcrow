@@ -154,7 +154,7 @@ export default function Investors() {
                         <h3 className="text-sm font-bold text-foreground">Map · AI Exposure Scoring</h3>
                       </div>
                       <p className="text-xs text-muted-foreground mb-3">Every role decomposed into 8–15 task clusters, each scored for AI exposure. When new models ship, scores update automatically.</p>
-                      <Badge variant="outline" className="text-[10px] border-primary/20 text-primary w-fit">400+ roles mapped in minutes</Badge>
+                      <Badge variant="outline" className="text-[10px] border-brand-ai/20 text-brand-ai w-fit">400+ roles mapped in minutes</Badge>
                     </div>
                     <div className="bg-muted/20 border-l border-border/50 p-4 sm:p-5">
                       <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-3 font-medium">Sample: Financial Analyst</p>
