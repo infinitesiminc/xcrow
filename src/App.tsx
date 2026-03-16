@@ -75,6 +75,7 @@ const App = () => (
               {/* Superadmin-only routes */}
               <Route path="roadmap" element={<Roadmap />} />
               <Route path="analyze" element={<Index />} />
+              <Route path="workspaces" element={<Workspaces />} />
             </Route>
 
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
