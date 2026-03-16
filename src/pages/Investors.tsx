@@ -723,7 +723,7 @@ export default function Investors() {
               { title: "Enterprise", price: "Custom", arr: "$250K–$1M+", example: "Fortune 500 (1,000+ roles)", features: ["Everything in Growth", "SSO & admin controls", "Model-aware re-scoring SLA", "Dedicated account manager", "Custom integrations & API"] },
             ].map((tier, i) => (
               <motion.div key={i} {...fadeUp} transition={{ ...fadeUp.transition, delay: i * 0.1 }}>
-                <Card className={`h-full ${tier.highlighted ? "border-brand-human/30 bg-brand-human/5" : ""}`}>
+                <Card className={`h-full ${tier.highlighted ? "border-brand-ai/30 bg-brand-ai/5" : ""}`}>
                   <CardContent className="p-5">
                     <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{tier.title}</p>
                     <p className="text-xl font-bold text-foreground mt-1">{tier.price}</p>
