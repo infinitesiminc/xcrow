@@ -1,0 +1,1 @@
+ALTER TABLE public.job_task_clusters ADD COLUMN IF NOT EXISTS job_impact_score integer DEFAULT 50;
