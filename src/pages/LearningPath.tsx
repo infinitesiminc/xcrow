@@ -688,6 +688,39 @@ export default function LearningPath() {
                                   </div>
                                 )}
 
+                                {/* Completed round data */}
+                                {isCompleted && (() => {
+                                  const rounds = completedSims.filter(s => s.task_name === task.cluster_name && s.job_title === job.title);
+                                  const best = rounds.reduce((b, s) => {
+                                    const score = s.total_questions > 0 ? Math.round((s.correct_answers / s.total_questions) * 100) : 0;
+                                    return score > (b.total_questions > 0 ? Math.round((b.correct_answers / b.total_questions) * 100) : 0) ? s : b;
+                                  }, rounds[0]);
+                                  const pillars = [
+                                    { label: "Tool", val: best.tool_awareness_score },
+                                    { label: "Human", val: best.human_value_add_score },
+                                    { label: "Adapt", val: best.adaptive_thinking_score },
+                                    { label: "Domain", val: best.domain_judgment_score },
+                                  ].filter(p => p.val !== null);
+                                  return (
+                                    <div className="rounded-md bg-muted/50 px-2.5 py-2 mb-2 space-y-1">
+                                      <div className="flex items-center gap-3 text-[10px] text-muted-foreground">
+                                        <span>{rounds.length} round{rounds.length > 1 ? "s" : ""}</span>
+                                        <span>Best: {best.correct_answers}/{best.total_questions}</span>
+                                      </div>
+                                      {pillars.length > 0 && (
+                                        <div className="flex gap-2">
+                                          {pillars.map(p => (
+                                            <div key={p.label} className="flex items-center gap-1 text-[9px]">
+                                              <span className="text-muted-foreground">{p.label}</span>
+                                              <span className={`font-semibold ${p.val! >= 70 ? "text-success" : p.val! >= 40 ? "text-warning" : "text-destructive"}`}>{p.val}%</span>
+                                            </div>
+                                          ))}
+                                        </div>
+                                      )}
+                                    </div>
+                                  );
+                                })()}
+
                                 <div className="flex items-center justify-between">
                                   <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
                                     <GraduationCap className="h-3 w-3" />
@@ -695,12 +728,12 @@ export default function LearningPath() {
                                   </div>
                                   <Button
                                     size="sm"
-                                    variant={isCompleted ? "ghost" : "outline"}
-                                    className="h-7 text-[11px] gap-1 opacity-80 group-hover:opacity-100 transition-opacity"
+                                    variant={isCompleted ? "outline" : "default"}
+                                    className="h-9 px-4 text-xs gap-1.5"
                                     onClick={() => launchSim(task)}
                                   >
-                                    <Play className="h-3 w-3" />
-                                    {isCompleted ? "Retry" : "Start Simulation"}
+                                    <Play className="h-3.5 w-3.5" />
+                                    {isCompleted ? "Retry Upskill" : "Begin Upskill"}
                                   </Button>
                                 </div>
                               </div>
