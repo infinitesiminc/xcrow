@@ -255,49 +255,237 @@ function StatusQuoSection() {
 }
 
 /* ═══════════════════════════════════════════════════════════════ */
-/*  ENGINE DESIGN — HOW IT WORKS IN PRACTICE                       */
+/*  ENGINE DESIGN — VISUAL EXAMPLES                                */
 /* ═══════════════════════════════════════════════════════════════ */
+
+function IngestionVisual() {
+  const sources = [
+    { name: "Greenhouse ATS", count: 400 },
+    { name: "CSV Upload", count: 85 },
+    { name: "JD Paste", count: 12 },
+  ];
+  const lenses = [
+    { label: "AI Exposure", value: 67, color: "bg-dot-blue" },
+    { label: "Replace Risk", value: 22, color: "bg-destructive" },
+    { label: "Upskill Urgency", value: 56, color: "bg-dot-purple" },
+  ];
+  return (
+    <div className="rounded-xl border border-border bg-card p-4 space-y-3">
+      <div className="space-y-1.5">
+        {sources.map((s, i) => (
+          <motion.div
+            key={s.name}
+            initial={{ opacity: 0, x: -12 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.2 + i * 0.1 }}
+            className="flex items-center justify-between rounded-lg border border-border/40 bg-muted/20 px-3 py-2"
+          >
+            <span className="text-sm font-medium">{s.name}</span>
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-mono text-muted-foreground">{s.count} roles</span>
+              <CheckCircle2 className="h-3.5 w-3.5 text-dot-teal" />
+            </div>
+          </motion.div>
+        ))}
+      </div>
+      <div className="pt-2 border-t border-border/40">
+        <p className="text-[11px] text-muted-foreground mb-2">Each role scored across 3 lenses:</p>
+        <div className="grid grid-cols-3 gap-2">
+          {lenses.map((l, i) => (
+            <motion.div
+              key={l.label}
+              initial={{ opacity: 0, y: 8 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.5 + i * 0.08 }}
+              className="text-center space-y-1"
+            >
+              <div className="h-1.5 w-full rounded-full bg-secondary overflow-hidden">
+                <motion.div
+                  initial={{ width: 0 }}
+                  whileInView={{ width: `${l.value}%` }}
+                  viewport={{ once: true }}
+                  transition={{ delay: 0.7 + i * 0.1, duration: 0.6 }}
+                  className={`h-full rounded-full ${l.color}`}
+                />
+              </div>
+              <p className="text-xs font-mono font-bold">{l.value}%</p>
+              <p className="text-[10px] text-muted-foreground">{l.label}</p>
+            </motion.div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function SimChatVisual() {
+  const messages = [
+    { role: "system" as const, text: "Your AI tool flagged two liability clauses in the vendor contract as non-standard. What's your next step?" },
+    { role: "user" as const, text: "Review manually — AI misses contextual nuances in jurisdiction-specific indemnity language. I'd cross-reference with standard terms first." },
+    { role: "assistant" as const, text: "Strong response. You identified the AI's limitation and proposed systematic human review." },
+  ];
+  const formats = [
+    { name: "Quick Pulse", duration: "5 min", color: "text-dot-teal" },
+    { name: "Deep Dive", duration: "15 min", color: "text-dot-amber" },
+    { name: "Case Challenge", duration: "25 min", color: "text-dot-purple" },
+  ];
+  return (
+    <div className="rounded-xl border border-border bg-card p-4 space-y-3">
+      <div className="space-y-2">
+        {messages.map((m, i) => (
+          <motion.div
+            key={i}
+            initial={{ opacity: 0, y: 6 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.2 + i * 0.12 }}
+            className={`flex gap-2 ${m.role === "user" ? "flex-row-reverse" : ""}`}
+          >
+            <div className={`h-6 w-6 rounded-full flex items-center justify-center shrink-0 ${m.role === "user" ? "bg-primary text-primary-foreground" : "bg-muted"}`}>
+              {m.role === "user" ? <Users className="h-3 w-3" /> : <Bot className="h-3 w-3" />}
+            </div>
+            <div className={`text-xs leading-relaxed rounded-lg px-3 py-2 max-w-[85%] ${
+              m.role === "user" ? "bg-primary text-primary-foreground"
+              : m.role === "system" ? "bg-muted/50 border border-border italic text-muted-foreground"
+              : "bg-muted/30 border border-border text-muted-foreground"
+            }`}>
+              {m.text}
+            </div>
+          </motion.div>
+        ))}
+      </div>
+      <div className="pt-2 border-t border-border/40 flex items-center gap-3">
+        {formats.map((f) => (
+          <div key={f.name} className="flex items-center gap-1.5 text-[10px]">
+            <span className={`font-bold ${f.color}`}>●</span>
+            <span className="text-muted-foreground">{f.name} · {f.duration}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function PillarScoreVisual() {
+  const pillars = [
+    { icon: Wrench, label: "Tool Awareness", score: 72 },
+    { icon: ShieldAlert, label: "Human Value-Add", score: 85 },
+    { icon: Brain, label: "Adaptive Thinking", score: 58, weak: true },
+    { icon: Lightbulb, label: "Domain Judgment", score: 91 },
+  ];
+  return (
+    <div className="rounded-xl border border-border bg-card p-4">
+      <div className="grid grid-cols-2 gap-3">
+        {pillars.map((p, i) => (
+          <motion.div
+            key={p.label}
+            initial={{ opacity: 0, scale: 0.95 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.2 + i * 0.08 }}
+            className={`rounded-lg border p-3 space-y-2 ${p.weak ? "border-dot-amber/30 bg-dot-amber/5" : "border-border/50"}`}
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-1.5">
+                <p.icon className="h-3.5 w-3.5 text-muted-foreground" />
+                <span className="text-xs font-medium">{p.label}</span>
+              </div>
+              <span className={`text-sm font-mono font-bold ${
+                p.score >= 80 ? "text-dot-teal" : p.score >= 60 ? "text-dot-amber" : "text-dot-purple"
+              }`}>{p.score}%</span>
+            </div>
+            <div className="h-1.5 w-full rounded-full bg-secondary overflow-hidden">
+              <motion.div
+                initial={{ width: 0 }}
+                whileInView={{ width: `${p.score}%` }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.4 + i * 0.1, duration: 0.6 }}
+                className={`h-full rounded-full ${
+                  p.score >= 80 ? "bg-dot-teal" : p.score >= 60 ? "bg-dot-amber" : "bg-dot-purple"
+                }`}
+              />
+            </div>
+            {p.weak && (
+              <p className="text-[10px] text-dot-amber flex items-center gap-1">
+                <AlertTriangle className="h-3 w-3" /> Below threshold — retry queued
+              </p>
+            )}
+          </motion.div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function AdaptiveLoopVisual() {
+  const events = [
+    { icon: Zap, label: "New model released", time: "T+0h", color: "bg-dot-amber/10 text-dot-amber" },
+    { icon: Brain, label: "34 task clusters reclassified", time: "T+2h", color: "bg-dot-blue/10 text-dot-blue" },
+    { icon: RefreshCw, label: "Simulations regenerated", time: "T+6h", color: "bg-dot-purple/10 text-dot-purple" },
+    { icon: Users, label: "127 employees re-queued", time: "T+24h", color: "bg-dot-teal/10 text-dot-teal" },
+  ];
+  return (
+    <div className="rounded-xl border border-border bg-card p-4 space-y-2">
+      {events.map((e, i) => (
+        <motion.div
+          key={e.label}
+          initial={{ opacity: 0, x: -10 }}
+          whileInView={{ opacity: 1, x: 0 }}
+          viewport={{ once: true }}
+          transition={{ delay: 0.2 + i * 0.1 }}
+          className="flex items-center gap-3 rounded-lg border border-border/40 px-3 py-2.5"
+        >
+          <span className="text-xs font-mono font-bold text-muted-foreground w-10 shrink-0">{e.time}</span>
+          <div className={`w-7 h-7 rounded-full ${e.color} flex items-center justify-center shrink-0`}>
+            <e.icon className="h-3.5 w-3.5" />
+          </div>
+          <span className="text-sm text-foreground">{e.label}</span>
+          {i < events.length - 1 && <ArrowRight className="h-3.5 w-3.5 text-muted-foreground/40 ml-auto" />}
+        </motion.div>
+      ))}
+      <motion.p
+        initial={{ opacity: 0 }}
+        whileInView={{ opacity: 1 }}
+        viewport={{ once: true }}
+        transition={{ delay: 0.8 }}
+        className="text-[11px] text-muted-foreground text-center pt-1 flex items-center justify-center gap-1.5"
+      >
+        <RefreshCw className="h-3 w-3 text-dot-teal" /> No curriculum redesign. No committee. Fully automatic.
+      </motion.p>
+    </div>
+  );
+}
 
 const ENGINE_STEPS = [
   {
     phase: "01",
     title: "Ingest & decompose every role",
     desc: "Job descriptions flow in from your ATS, CSV, or paste. The engine breaks each role into task clusters and scores AI exposure, replace risk, and upskill urgency — three lenses that tell you exactly where to act.",
-    example: {
-      label: "Example: Contract Attorney at Anthropic",
-      detail: "400+ roles decomposed → 3,200+ task clusters. The engine flags 'liability clause review' as 67% AI-exposed but only 22% replaceable — it needs human judgment, not automation.",
-    },
     icon: Wrench,
+    visual: <IngestionVisual />,
   },
   {
     phase: "02",
     title: "Generate role-specific simulations",
-    desc: "Each task cluster becomes a simulation calibrated to the employee's actual work. Format is deterministic: low-complexity tasks get Quick Pulses (5 min), high-impact tasks get Case Challenges (25 min). No guesswork.",
-    example: {
-      label: "Example: AI-flagged contract clause",
-      detail: "The sim presents a scenario where AI suggests accepting all vendor amendments. The employee must identify which clauses require human review — testing domain judgment, not tool knowledge.",
-    },
+    desc: "Each task cluster becomes a simulation calibrated to the employee's actual work. Format is deterministic: low-complexity tasks get Quick Pulses, high-impact tasks get Case Challenges. No guesswork.",
     icon: Brain,
+    visual: <SimChatVisual />,
   },
   {
     phase: "03",
     title: "Measure four pillars of readiness",
-    desc: "Every response is scored across four pillars: Tool Awareness (knows which AI to use), Human Value-Add (identifies irreplaceable judgment), Adaptive Thinking (pivots when AI fails), and Domain Judgment (validates AI with expertise).",
-    example: {
-      label: "Example: Pillar scorecard",
-      detail: "Tool Awareness 72% · Human Value-Add 85% · Adaptive Thinking 58% · Domain Judgment 91%. The 58% in Adaptive Thinking triggers a retry — not a generic course, a targeted simulation.",
-    },
+    desc: "Every response is scored across four pillars: Tool Awareness, Human Value-Add, Adaptive Thinking, and Domain Judgment. Scores below 60% trigger targeted retries — not generic courses.",
     icon: Target,
+    visual: <PillarScoreVisual />,
   },
   {
     phase: "04",
     title: "Close the loop — automatically",
-    desc: "Scores below 60% in any pillar auto-queue a retry simulation with a coaching tip. Three failures escalate to the manager with specific recommendations. New model released? The engine recalibrates every score and re-queues affected employees.",
-    example: {
-      label: "Example: GPT-5 drops",
-      detail: "The engine detects that 34 task clusters across Legal and Finance are newly AI-capable. It regenerates simulations for 127 employees within 24 hours — no curriculum redesign, no committee.",
-    },
+    desc: "New model released? The engine recalibrates every score and re-queues affected employees. Three failures escalate to the manager with specific recommendations.",
     icon: RefreshCw,
+    visual: <AdaptiveLoopVisual />,
   },
 ];
 
@@ -310,46 +498,36 @@ function EngineSection() {
             Engine Design
           </p>
           <h2 className="font-display text-3xl sm:text-4xl font-semibold text-foreground leading-tight max-w-3xl mx-auto">
-            How the simulation engine delivers — with examples
+            How the simulation engine delivers
           </h2>
         </motion.div>
 
-        <div className="space-y-16">
+        <div className="space-y-20">
           {ENGINE_STEPS.map((step, i) => (
             <motion.div
               key={step.phase}
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-60px" }}
-              transition={{ duration: 0.55, delay: 0.05 }}
-              className="grid md:grid-cols-[auto_1fr] gap-6 items-start"
+              transition={{ duration: 0.55 }}
+              className={`grid md:grid-cols-2 gap-8 items-start ${i % 2 === 1 ? "md:direction-rtl" : ""}`}
             >
-              {/* Phase number */}
-              <div className="flex md:flex-col items-center gap-3 md:pt-1">
-                <div className="w-12 h-12 rounded-full bg-muted/50 border border-border flex items-center justify-center">
-                  <step.icon className="h-5 w-5 text-foreground" />
+              <div className="space-y-4" style={{ direction: "ltr" }}>
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-muted/50 border border-border flex items-center justify-center">
+                    <step.icon className="h-5 w-5 text-foreground" />
+                  </div>
+                  <span className="text-sm font-mono font-bold text-muted-foreground">{step.phase}</span>
                 </div>
-                <span className="text-sm font-mono font-bold text-muted-foreground">{step.phase}</span>
-              </div>
-
-              {/* Content */}
-              <div className="space-y-4">
                 <h3 className="font-display text-xl sm:text-2xl font-semibold text-foreground">
                   {step.title}
                 </h3>
-                <p className="text-base text-muted-foreground leading-relaxed max-w-2xl">
+                <p className="text-base text-muted-foreground leading-relaxed">
                   {step.desc}
                 </p>
-
-                {/* Concrete example */}
-                <div className="rounded-lg border border-border/60 bg-muted/20 p-4 space-y-1">
-                  <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
-                    {step.example.label}
-                  </p>
-                  <p className="text-sm text-foreground leading-relaxed">
-                    {step.example.detail}
-                  </p>
-                </div>
+              </div>
+              <div style={{ direction: "ltr" }}>
+                {step.visual}
               </div>
             </motion.div>
           ))}
