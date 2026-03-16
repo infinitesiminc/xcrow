@@ -33,7 +33,7 @@ serve(async (req) => {
 
     const { data: existing } = await sb
       .from("job_task_clusters")
-      .select("id, cluster_name, description, outcome, skill_names, sort_order")
+      .select("id, cluster_name, description, outcome, skill_names, sort_order, ai_state, ai_trend, impact_level, priority")
       .eq("job_id", jobId)
       .order("sort_order");
 
