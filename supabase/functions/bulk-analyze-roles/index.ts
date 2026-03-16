@@ -113,7 +113,7 @@ Order from highest AI exposure to lowest. Respond ONLY with valid JSON array.`;
             Authorization: `Bearer ${apiKey}`,
           },
           body: JSON.stringify({
-            model: "google/gemini-2.5-flash-lite",
+            model: "google/gemini-2.5-flash",
             messages: [{ role: "user", content: prompt }],
             temperature: 0.6,
           }),
