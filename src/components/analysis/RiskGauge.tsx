@@ -12,9 +12,9 @@ interface RiskGaugeProps {
 }
 
 const verdictConfig: Record<Verdict, { icon: typeof TrendingUp; label: string; dotColor: string }> = {
-  upskill: { icon: TrendingUp, label: "Upskill", dotColor: "bg-dot-amber" },
-  pivot: { icon: RefreshCw, label: "Pivot", dotColor: "bg-dot-purple" },
-  leverage: { icon: Rocket, label: "Leverage", dotColor: "bg-dot-teal" },
+  upskill: { icon: TrendingUp, label: "Upskill", dotColor: "bg-brand-mid" },
+  pivot: { icon: RefreshCw, label: "Pivot", dotColor: "bg-brand-ai" },
+  leverage: { icon: Rocket, label: "Leverage", dotColor: "bg-brand-human" },
 };
 
 function getGaugeColor(risk: number): string {
