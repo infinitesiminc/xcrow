@@ -12,6 +12,7 @@ interface JobRow {
   id: string;
   title: string;
   department: string | null;
+  location: string | null;
   augmented_percent: number | null;
 }
 
@@ -110,7 +111,7 @@ export default function ScoreDistributions() {
       if (analyzedIds.length > 0) {
         const { data } = await supabase
           .from("jobs")
-          .select("id, title, department, augmented_percent")
+          .select("id, title, department, location, augmented_percent")
           .in("id", analyzedIds);
         analyzedJobs = data || [];
       }
@@ -153,6 +154,23 @@ export default function ScoreDistributions() {
       const dept = j.department || "Other";
       if (!map.has(dept)) map.set(dept, []);
       map.get(dept)!.push(j.augmented_percent ?? 0);
+    });
+    return Array.from(map.entries())
+      .map(([name, scores]) => ({
+        name,
+        count: scores.length,
+        avg: Math.round(scores.reduce((a, b) => a + b, 0) / scores.length),
+      }))
+      .sort((a, b) => b.avg - a.avg);
+  }, [jobs]);
+
+  // Location breakdown
+  const locations = useMemo(() => {
+    const map = new Map<string, number[]>();
+    jobs.forEach(j => {
+      const loc = j.location || "Unknown";
+      if (!map.has(loc)) map.set(loc, []);
+      map.get(loc)!.push(j.augmented_percent ?? 0);
     });
     return Array.from(map.entries())
       .map(([name, scores]) => ({
@@ -227,6 +245,9 @@ export default function ScoreDistributions() {
             </TabsTrigger>
             <TabsTrigger value="departments" className="gap-1.5 text-xs">
               By Department
+            </TabsTrigger>
+            <TabsTrigger value="locations" className="gap-1.5 text-xs">
+              By Location
             </TabsTrigger>
           </TabsList>
 
@@ -390,6 +411,37 @@ export default function ScoreDistributions() {
                             className={`h-full rounded-full ${barColor}`}
                             initial={{ width: 0 }}
                             animate={{ width: `${dept.avg}%` }}
+                            transition={{ duration: 0.6, delay: 0.1 + i * 0.03 }}
+                          />
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                );
+              })}
+            </div>
+          </TabsContent>
+
+          <TabsContent value="locations">
+            <div className="space-y-3">
+              {locations.map((loc, i) => {
+                const barColor = loc.avg >= 60 ? "bg-destructive" : loc.avg >= 40 ? "bg-warning" : "bg-success";
+                return (
+                  <motion.div key={loc.name} initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.03 }}>
+                    <Card className="border-border">
+                      <CardContent className="p-4">
+                        <div className="flex items-center justify-between mb-2">
+                          <div>
+                            <span className="text-sm font-medium text-foreground">{loc.name}</span>
+                            <span className="text-xs text-muted-foreground ml-2">{loc.count} jobs</span>
+                          </div>
+                          <span className="text-sm font-bold text-foreground">{loc.avg}%</span>
+                        </div>
+                        <div className="h-1.5 rounded-full bg-secondary overflow-hidden">
+                          <motion.div
+                            className={`h-full rounded-full ${barColor}`}
+                            initial={{ width: 0 }}
+                            animate={{ width: `${loc.avg}%` }}
                             transition={{ duration: 0.6, delay: 0.1 + i * 0.03 }}
                           />
                         </div>
