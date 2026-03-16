@@ -794,21 +794,16 @@ export default function TeamProgress() {
         </div>
       )}
 
-      {/* Empty state for non-superadmins with no data */}
+      {/* Empty state with onboarding checklist for non-superadmins with no data */}
       {!hasData && !isSuperAdmin && (
-        <div className="py-16 text-center space-y-4">
-          <Database className="h-12 w-12 mx-auto text-muted-foreground/40" />
-          <h2 className="text-lg font-semibold text-foreground">No simulation data yet</h2>
-          <p className="text-sm text-muted-foreground max-w-md mx-auto">
-            Import your company's roles via ATS Sync, analyze them, then invite your team to start AI readiness simulations. Results will populate here automatically.
-          </p>
-          <div className="flex gap-3 justify-center">
-            <Button onClick={() => window.location.href = "/hr/ats-sync"}>
-              <RefreshCw className="h-4 w-4 mr-2" />Import Roles
-            </Button>
-            <Button variant="outline" onClick={() => window.location.href = "/hr/members"}>
-              <Users className="h-4 w-4 mr-2" />Invite Team
-            </Button>
+        <div className="space-y-6">
+          <OnboardingChecklist />
+          <div className="py-8 text-center space-y-3">
+            <Database className="h-10 w-10 mx-auto text-muted-foreground/40" />
+            <h2 className="text-lg font-semibold text-foreground">No simulation data yet</h2>
+            <p className="text-sm text-muted-foreground max-w-md mx-auto">
+              Follow the checklist above to get started. Results will populate here as your team completes simulations.
+            </p>
           </div>
         </div>
       )}
