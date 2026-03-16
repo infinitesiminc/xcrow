@@ -449,7 +449,7 @@ export default function LearningPath() {
                 return (
                   <div className="flex-1 flex flex-col items-center">
                     <div className="flex items-center gap-2 mb-1">
-                      <span className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">Task AI Exposure</span>
+                      <span className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">AI Exposure by Task</span>
                     </div>
                     <svg viewBox="0 0 260 260" className="w-[220px] h-[220px]">
                       {/* Grid levels */}
