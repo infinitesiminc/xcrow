@@ -377,6 +377,11 @@ function AdaptiveLoopDiagram({ activeNode, setActiveNode }: {
     { x: 15, y: 50 },  // Adapt — left
   ];
 
+  // Map arc rotation to active node position on circle
+  // SVG circle starts at 3 o'clock (0°), nodes: Map=top(-90°), Assess=right(0°), Train=bottom(90°), Adapt=left(180°)
+  const nodeAngles: Record<string, number> = { map: -90, assess: 0, train: 90, adapt: 180 };
+  const arcRotation = activeNode ? nodeAngles[activeNode] ?? -90 : -90;
+
   return (
     <div className="relative w-full max-w-sm mx-auto aspect-square">
       <svg viewBox="0 0 100 100" className="absolute inset-0 w-full h-full">
@@ -385,8 +390,8 @@ function AdaptiveLoopDiagram({ activeNode, setActiveNode }: {
           cx="50" cy="50" r="32"
           fill="none" stroke="hsl(var(--primary))" strokeWidth="1.5"
           strokeDasharray="20 181" strokeLinecap="round"
-          animate={{ rotate: 360 }}
-          transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
+          animate={{ rotate: arcRotation }}
+          transition={{ duration: 0.6, ease: [0.4, 0, 0.2, 1] }}
           style={{ transformOrigin: "50px 50px" }}
         />
       </svg>
