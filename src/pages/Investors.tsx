@@ -325,26 +325,167 @@ export default function Investors() {
             title="$340B+ total addressable market"
             subtitle="Sitting at the intersection of HR Tech, AI consulting, and corporate L&D — three massive categories converging into one."
           />
-          <div className="grid grid-cols-3 gap-4">
-            <StatCard value="$340B+" label="Total Addressable Market" icon={Globe} />
-            <StatCard value="$45B" label="AI in HR Tech (2027)" icon={Zap} />
-            <StatCard value="$12B" label="Skills Assessment & Simulation" icon={Target} />
+
+          {/* Venn intersection visual */}
+          <motion.div {...fadeUp} className="mb-6">
+            <Card className="border-border/50 overflow-hidden">
+              <CardContent className="p-6 sm:p-8">
+                <div className="relative flex items-center justify-center h-[260px] sm:h-[300px]">
+                  {/* Circle – HR Tech */}
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.7 }}
+                    whileInView={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.5 }}
+                    className="absolute w-[180px] h-[180px] sm:w-[220px] sm:h-[220px] rounded-full bg-brand-human/10 border border-brand-human/30 flex flex-col items-center justify-center -translate-x-[70px] sm:-translate-x-[90px] -translate-y-[30px]"
+                  >
+                    <span className="text-lg sm:text-xl font-bold text-brand-human">$230B+</span>
+                    <span className="text-[10px] sm:text-xs text-muted-foreground font-medium">HR Tech</span>
+                  </motion.div>
+                  {/* Circle – AI Consulting */}
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.7 }}
+                    whileInView={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.5, delay: 0.15 }}
+                    className="absolute w-[180px] h-[180px] sm:w-[220px] sm:h-[220px] rounded-full bg-brand-ai/10 border border-brand-ai/30 flex flex-col items-center justify-center translate-x-[70px] sm:translate-x-[90px] -translate-y-[30px]"
+                  >
+                    <span className="text-lg sm:text-xl font-bold text-brand-ai">$50B+</span>
+                    <span className="text-[10px] sm:text-xs text-muted-foreground font-medium">AI Consulting</span>
+                  </motion.div>
+                  {/* Circle – Corporate L&D */}
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.7 }}
+                    whileInView={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.5, delay: 0.3 }}
+                    className="absolute w-[180px] h-[180px] sm:w-[220px] sm:h-[220px] rounded-full bg-brand-mid/10 border border-brand-mid/30 flex flex-col items-center justify-center translate-y-[50px] sm:translate-y-[40px]"
+                  >
+                    <span className="text-lg sm:text-xl font-bold text-brand-mid">$60B+</span>
+                    <span className="text-[10px] sm:text-xs text-muted-foreground font-medium">Corporate L&D</span>
+                  </motion.div>
+                  {/* Center intersection */}
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0 }}
+                    whileInView={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.4, delay: 0.55 }}
+                    className="absolute z-10 w-[80px] h-[80px] sm:w-[100px] sm:h-[100px] rounded-full bg-gradient-to-br from-brand-ai/20 via-brand-mid/20 to-brand-human/20 border-2 border-foreground/20 flex flex-col items-center justify-center backdrop-blur-sm translate-y-[6px]"
+                  >
+                    <span className="text-[9px] sm:text-[10px] font-bold text-foreground leading-tight text-center">Infinite<br/>Sim</span>
+                  </motion.div>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+
+          {/* Stat cards */}
+          <div className="grid grid-cols-3 gap-4 mb-6">
+            <StatCard value="$230B+" label="HR Tech" icon={Globe} />
+            <StatCard value="$50B+" label="AI Consulting" icon={Zap} />
+            <StatCard value="$60B+" label="Corporate L&D" icon={Target} />
           </div>
-          <motion.div {...fadeUp} className="mt-6">
+
+          {/* Market gap breakdown */}
+          <motion.div {...fadeUp}>
             <Card className="border-border/50">
               <CardContent className="p-5">
-                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Competitive Landscape</p>
-                <div className="space-y-2">
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-4">What Incumbents Miss — The White Space</p>
+                <div className="space-y-5">
                   {[
-                    { name: "McKinsey / Deloitte", gap: "Manual, expensive, one-time assessments — $500K+ per engagement" },
-                    { name: "LinkedIn Learning / Coursera", gap: "Generic content, no task-level personalization or risk scoring" },
-                    { name: "Eightfold / Gloat", gap: "Skills taxonomies but no AI exposure analysis or simulation-based training" },
-                  ].map((comp) => (
-                    <div key={comp.name} className="flex items-start gap-3 py-2 border-b border-border/30 last:border-0">
-                      <ChevronRight className="h-3.5 w-3.5 text-muted-foreground mt-0.5 shrink-0" />
-                      <div>
-                        <span className="text-sm font-medium text-foreground">{comp.name}</span>
-                        <p className="text-xs text-muted-foreground">{comp.gap}</p>
+                    {
+                      market: "HR Tech",
+                      size: "$230B+",
+                      players: "Workday, SAP SuccessFactors, Eightfold",
+                      gap: "Track employees, don't prepare them for AI disruption",
+                      incumbentCoverage: 70,
+                      missingCoverage: 15,
+                      color: "brand-human",
+                      capabilities: [
+                        { name: "Employee records & payroll", has: true },
+                        { name: "Skills taxonomy", has: true },
+                        { name: "AI exposure analysis", has: false },
+                        { name: "Task-level risk scoring", has: false },
+                      ],
+                    },
+                    {
+                      market: "AI Consulting",
+                      size: "$50B+",
+                      players: "McKinsey, Deloitte, BCG",
+                      gap: "Manual, expensive ($500K+/engagement), one-time snapshots that go stale in weeks",
+                      incumbentCoverage: 45,
+                      missingCoverage: 20,
+                      color: "brand-ai",
+                      capabilities: [
+                        { name: "Strategic AI assessment", has: true },
+                        { name: "Executive advisory", has: true },
+                        { name: "Continuous monitoring", has: false },
+                        { name: "Automated re-calibration", has: false },
+                      ],
+                    },
+                    {
+                      market: "Corporate L&D",
+                      size: "$60B+",
+                      players: "LinkedIn Learning, Coursera, Udemy",
+                      gap: "Generic course catalogs, no task-level personalization or exposure scoring",
+                      incumbentCoverage: 60,
+                      missingCoverage: 10,
+                      color: "brand-mid",
+                      capabilities: [
+                        { name: "Course libraries", has: true },
+                        { name: "Completion tracking", has: true },
+                        { name: "Adaptive simulation training", has: false },
+                        { name: "Role-specific AI readiness paths", has: false },
+                      ],
+                    },
+                  ].map((seg) => (
+                    <div key={seg.market} className="border border-border/40 rounded-lg p-4">
+                      <div className="flex items-center justify-between mb-1">
+                        <div className="flex items-center gap-2">
+                          <div className={`w-2.5 h-2.5 rounded-full bg-${seg.color}`} />
+                          <span className="text-sm font-semibold text-foreground">{seg.market}</span>
+                          <span className={`text-xs font-bold text-${seg.color}`}>{seg.size}</span>
+                        </div>
+                        <span className="text-[10px] text-muted-foreground">{seg.players}</span>
+                      </div>
+                      <p className="text-xs text-muted-foreground mb-3 italic">"{seg.gap}"</p>
+
+                      {/* Coverage bar */}
+                      <div className="mb-3">
+                        <div className="flex items-center justify-between text-[10px] text-muted-foreground mb-1">
+                          <span>Incumbent capability</span>
+                          <span>White space</span>
+                        </div>
+                        <div className="h-3 w-full bg-muted/40 rounded-full overflow-hidden flex">
+                          <motion.div
+                            initial={{ width: 0 }}
+                            whileInView={{ width: `${seg.incumbentCoverage}%` }}
+                            transition={{ duration: 0.7, delay: 0.2 }}
+                            className={`h-full bg-${seg.color}/30`}
+                          />
+                          <motion.div
+                            initial={{ width: 0 }}
+                            whileInView={{ width: `${100 - seg.incumbentCoverage}%` }}
+                            transition={{ duration: 0.7, delay: 0.5 }}
+                            className="h-full bg-brand-human/60 relative"
+                          >
+                            <span className="absolute inset-0 flex items-center justify-center text-[8px] font-bold text-background">
+                              Infinite Sim
+                            </span>
+                          </motion.div>
+                        </div>
+                      </div>
+
+                      {/* Capability checklist */}
+                      <div className="grid grid-cols-2 gap-x-4 gap-y-1">
+                        {seg.capabilities.map((cap) => (
+                          <div key={cap.name} className="flex items-center gap-1.5">
+                            {cap.has ? (
+                              <CheckCircle2 className="h-3 w-3 text-muted-foreground/50 shrink-0" />
+                            ) : (
+                              <CheckCircle2 className="h-3 w-3 text-brand-human shrink-0" />
+                            )}
+                            <span className={`text-[10px] ${cap.has ? "text-muted-foreground" : "text-foreground font-medium"}`}>
+                              {cap.name}
+                            </span>
+                          </div>
+                        ))}
                       </div>
                     </div>
                   ))}
