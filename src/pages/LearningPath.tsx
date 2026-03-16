@@ -624,17 +624,17 @@ export default function LearningPath() {
                               )}
 
                               <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
-                                  <GraduationCap className="h-3 w-3" />
+                                <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                                  <GraduationCap className="h-3.5 w-3.5" />
                                   <span>15 min simulation</span>
                                 </div>
                                 <Button
                                   size="sm"
                                   variant={isCompleted ? "ghost" : "outline"}
-                                  className="h-7 text-[11px] gap-1 opacity-80 group-hover:opacity-100 transition-opacity"
+                                  className="h-8 text-xs gap-1.5 opacity-80 group-hover:opacity-100 transition-opacity"
                                   onClick={() => launchSim(task)}
                                 >
-                                  <Play className="h-3 w-3" />
+                                  <Play className="h-3.5 w-3.5" />
                                   {isCompleted ? "Retry" : "Start Simulation"}
                                 </Button>
                               </div>
