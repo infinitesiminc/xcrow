@@ -1,5 +1,7 @@
 import { supabase } from "@/integrations/supabase/client";
 
+export type SimMode = "assess" | "upskill";
+
 export interface SimScenario {
   id: string;
   title: string;
@@ -41,10 +43,10 @@ export async function compileSession(
   jobTitle: string,
   company?: string,
   difficulty = 3,
-  experienceLevel: "exploring" | "practicing" = "exploring",
+  mode: SimMode = "assess",
   taskMeta?: { currentState?: string; trend?: string; impactLevel?: string },
 ): Promise<SimSession> {
-  return simFetch("compile", { taskName, jobTitle, company, difficulty, experienceLevel, taskMeta });
+  return simFetch("compile", { taskName, jobTitle, company, difficulty, mode, taskMeta });
 }
 
 export async function chatTurn(
@@ -52,11 +54,11 @@ export async function chatTurn(
   round: number,
   turnCount: number,
   role: string,
-  experienceLevel: "exploring" | "practicing" = "exploring",
+  mode: SimMode = "assess",
   taskMeta?: { currentState?: string; trend?: string; impactLevel?: string },
 ): Promise<string> {
   const { data, error } = await supabase.functions.invoke("sim-chat", {
-    body: { action: "chat", payload: { messages, round, turnCount, role, experienceLevel, taskMeta } },
+    body: { action: "chat", payload: { messages, round, turnCount, role, mode, taskMeta } },
   });
   if (error) throw new Error(`Chat error: ${error.message}`);
   return typeof data === "string" ? data : JSON.stringify(data);
@@ -65,7 +67,7 @@ export async function chatTurn(
 export async function scoreSession(
   transcript: SimMessage[],
   scenario: SimScenario | null,
-  experienceLevel: "exploring" | "practicing" = "exploring",
+  mode: SimMode = "assess",
 ): Promise<SimScoreResult> {
-  return simFetch("score", { transcript, scenario, experienceLevel });
+  return simFetch("score", { transcript, scenario, mode });
 }
