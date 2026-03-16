@@ -82,6 +82,7 @@ export default function ScoreDistributions() {
   const [jobs, setJobs] = useState<JobRow[]>([]);
   const [tasks, setTasks] = useState<TaskRow[]>([]);
   const [loading, setLoading] = useState(true);
+  const [hoveredJobId, setHoveredJobId] = useState<string | null>(null);
 
   useEffect(() => {
     (async () => {
