@@ -169,7 +169,7 @@ export default function Investors() {
                             <span className="text-[10px] text-foreground w-28 truncate shrink-0">{t.task}</span>
                             <div className="flex-1 h-3 bg-muted/40 rounded-full overflow-hidden">
                               <motion.div
-                                className={`h-full rounded-full ${t.exposure >= 60 ? "bg-destructive/60" : t.exposure >= 40 ? "bg-amber-500/60" : "bg-emerald-500/60"}`}
+                                className={`h-full rounded-full ${t.exposure >= 60 ? "bg-brand-ai/60" : t.exposure >= 40 ? "bg-brand-mid/60" : "bg-brand-human/60"}`}
                                 initial={{ width: 0 }}
                                 whileInView={{ width: `${t.exposure}%` }}
                                 viewport={{ once: true }}
