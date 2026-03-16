@@ -247,7 +247,7 @@ export default function Investors() {
                         <h3 className="text-sm font-bold text-foreground">Train · Auto-Generated Practice</h3>
                       </div>
                       <p className="text-xs text-muted-foreground mb-3">Targeted practice sessions auto-generated from each employee's weak points. No manual L&D design — the system trains while you focus on strategy.</p>
-                      <Badge variant="outline" className="text-[10px] border-primary/20 text-primary w-fit">Zero L&D overhead</Badge>
+                      <Badge variant="outline" className="text-[10px] border-brand-human/20 text-brand-human w-fit">Zero L&D overhead</Badge>
                     </div>
                     <div className="bg-muted/20 border-l border-border/50 p-4 sm:p-5">
                       <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-3 font-medium">Adaptive Queue</p>
