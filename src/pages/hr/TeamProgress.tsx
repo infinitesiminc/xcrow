@@ -779,7 +779,7 @@ export default function TeamProgress() {
           <DeploymentFunnel />
 
           {/* 3. Department Scorecard */}
-          <DeptScorecard deptTrends={DEPT_TRENDS} onSelectDept={(d) => {
+          <DeptScorecard deptTrends={[]} onSelectDept={(d) => {
             setSelectedDept(d);
             setViewMode("individual");
           }} />
