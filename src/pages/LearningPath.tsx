@@ -602,16 +602,16 @@ export default function LearningPath() {
                                 <p className="text-sm text-muted-foreground leading-relaxed mb-3">{task.description}</p>
                               )}
 
-                              <div className="flex items-center gap-2 mb-2 flex-wrap">
+                              <div className="flex items-center gap-2 mb-3 flex-wrap">
                                 {exposureBadge(exposure)}
-                                <Badge className={`text-[9px] ${impact >= 70 ? "bg-primary/10 text-primary border-primary/20" : impact >= 40 ? "bg-accent text-muted-foreground border-border/30" : "bg-muted/50 text-muted-foreground border-border/20"}`}>
+                                <Badge className={`text-[10px] ${impact >= 70 ? "bg-primary/10 text-primary border-primary/20" : impact >= 40 ? "bg-accent text-muted-foreground border-border/30" : "bg-muted/50 text-muted-foreground border-border/20"}`}>
                                   ⭐ {impact}% Job Impact
                                 </Badge>
                                 {exposure >= 60 && impact >= 60 && (
-                                  <Badge className="bg-destructive/10 text-destructive border-destructive/20 text-[8px]">🔴 Urgent Upskill</Badge>
+                                  <Badge className="bg-destructive/10 text-destructive border-destructive/20 text-[9px]">🔴 Urgent Upskill</Badge>
                                 )}
                                 {exposure < 40 && impact >= 60 && (
-                                  <Badge className="bg-success/10 text-success border-success/20 text-[8px]">💪 Human Edge</Badge>
+                                  <Badge className="bg-success/10 text-success border-success/20 text-[9px]">💪 Human Edge</Badge>
                                 )}
                               </div>
 
