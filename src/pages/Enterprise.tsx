@@ -173,11 +173,11 @@ function AccelerationGapVisual() {
             transition={{ delay: 0.3, duration: 1.2 }}
           />
 
-          {/* Our platform — tracking AI */}
+          {/* Our platform — tracking AI (blue) */}
           <motion.path
             d={toPath(platformPoints)}
             fill="none"
-            stroke="hsl(var(--primary))"
+            stroke="#2563eb"
             strokeWidth="2.5"
             initial={{ pathLength: 0 }}
             whileInView={{ pathLength: 1 }}
@@ -225,8 +225,8 @@ function AccelerationGapVisual() {
           <span className="text-xs text-muted-foreground">Traditional L&D</span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="h-0.5 w-5 bg-primary rounded" />
-          <span className="text-xs text-primary font-medium">With our platform</span>
+          <div className="h-0.5 w-5 rounded" style={{ backgroundColor: "#2563eb" }} />
+          <span className="text-xs font-medium" style={{ color: "#2563eb" }}>With our platform</span>
         </div>
       </div>
     </motion.div>
