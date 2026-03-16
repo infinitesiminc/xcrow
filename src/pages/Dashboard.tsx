@@ -382,7 +382,7 @@ const Dashboard = () => {
                           <Bot className="h-3 w-3 text-primary shrink-0" />
                           <div className="flex-1">
                             <div className="flex justify-between text-[10px] mb-0.5">
-                              <span className="text-muted-foreground">AI-augmented</span>
+                              <span className="text-muted-foreground">AI exposure</span>
                               <span className="font-medium text-foreground">{a.augmented_percent}%</span>
                             </div>
                             <Progress value={a.augmented_percent} className="h-1" />
@@ -392,7 +392,7 @@ const Dashboard = () => {
                           <ShieldAlert className="h-3 w-3 text-destructive shrink-0" />
                           <div className="flex-1">
                             <div className="flex justify-between text-[10px] mb-0.5">
-                              <span className="text-muted-foreground">Automation risk</span>
+                              <span className="text-muted-foreground">Replacement risk</span>
                               <span className="font-medium text-foreground">{a.automation_risk_percent}%</span>
                             </div>
                             <Progress value={a.automation_risk_percent} className="h-1" />
