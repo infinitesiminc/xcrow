@@ -46,7 +46,7 @@ serve(async (req) => {
   }
 
   try {
-    const { step, company_name, company_id, limit = 50, offset = 0 } =
+    const { step, company_name, company_id, workspace_id, limit = 50, offset = 0 } =
       await req.json();
     const sb = getSupabaseAdmin();
 
@@ -67,6 +67,7 @@ serve(async (req) => {
         description: c.context || c.culture || null,
         employee_range: c.size || null,
         is_demo: c.is_demo ?? true,
+        ...(workspace_id ? { workspace_id } : {}),
       }));
 
       if (rows.length > 0) {
@@ -85,12 +86,10 @@ serve(async (req) => {
 
     // ── Step 2: Sync jobs for a company ──
     if (step === "jobs") {
-      // Resolve company
       let externalCompanyId = company_id;
       let localCompanyId: string | null = null;
 
       if (company_name && !company_id) {
-        // Find in our DB by name
         const { data: found } = await sb
           .from("companies")
           .select("id, external_id")
@@ -102,7 +101,6 @@ serve(async (req) => {
         externalCompanyId = found.external_id;
         localCompanyId = found.id;
       } else if (company_id) {
-        // Check if this is a local or external ID
         const { data: found } = await sb
           .from("companies")
           .select("id, external_id")
@@ -117,7 +115,6 @@ serve(async (req) => {
 
       if (!externalCompanyId) throw new Error("No company ID resolved");
 
-      // Fetch jobs from sim-api
       const data = await simApi("list_jobs", {
         company_id: externalCompanyId,
         limit,
@@ -125,7 +122,6 @@ serve(async (req) => {
       });
       const jobs = data.jobs || [];
 
-      // Ensure we have a local company_id
       if (!localCompanyId) {
         const { data: co } = await sb
           .from("companies")
@@ -146,6 +142,7 @@ serve(async (req) => {
         difficulty: j.difficulty,
         status: j.status || "active",
         company_id: localCompanyId,
+        ...(workspace_id ? { workspace_id } : {}),
       }));
 
       if (rows.length > 0) {
@@ -164,7 +161,6 @@ serve(async (req) => {
 
     // ── Step 3: Full sync (companies + all jobs) ──
     if (step === "full") {
-      // Sync all companies first
       let allCompanies: any[] = [];
       let page = 0;
       while (true) {
@@ -178,7 +174,6 @@ serve(async (req) => {
         page++;
       }
 
-      // Upsert companies
       const companyRows = allCompanies.map((c: any) => ({
         external_id: c.id,
         name: c.name,
@@ -191,6 +186,7 @@ serve(async (req) => {
         description: c.context || c.culture || null,
         employee_range: c.size || null,
         is_demo: c.is_demo ?? true,
+        ...(workspace_id ? { workspace_id } : {}),
       }));
 
       if (companyRows.length > 0) {
@@ -200,13 +196,11 @@ serve(async (req) => {
         if (error) throw new Error(`Upsert companies: ${error.message}`);
       }
 
-      // Now sync jobs for each company
       let totalJobs = 0;
       const errors: string[] = [];
 
       for (const co of allCompanies) {
         try {
-          // Get our local company ID
           const { data: localCo } = await sb
             .from("companies")
             .select("id")
@@ -231,6 +225,7 @@ serve(async (req) => {
             difficulty: j.difficulty,
             status: j.status || "active",
             company_id: localCo.id,
+            ...(workspace_id ? { workspace_id } : {}),
           }));
 
           if (rows.length > 0) {
