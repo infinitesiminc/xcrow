@@ -611,10 +611,10 @@ export default function Investors() {
                     </div>
                   ))}
                 </div>
-                <div className="flex items-center gap-4 mt-4 text-[10px] text-muted-foreground">
-                  <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-destructive/70" /> High (&gt;60%)</span>
-                  <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-amber-500/70" /> Moderate (40–60%)</span>
-                  <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-emerald-500/70" /> Lower (&lt;40%)</span>
+                 <div className="flex items-center gap-4 mt-4 text-[10px] text-muted-foreground">
+                   <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-brand-ai/70" /> High (&gt;60%)</span>
+                   <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-brand-mid/70" /> Moderate (40–60%)</span>
+                   <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-brand-human/70" /> Lower (&lt;40%)</span>
                   <span className="ml-auto">Posts analyzed ↗</span>
                 </div>
               </CardContent>
