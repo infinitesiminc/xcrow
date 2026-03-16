@@ -16,7 +16,7 @@ export function CuratedSkillsBadge({ curatedSkills }: Props) {
       <Card className="border-border/50">
         <CardContent className="p-4 sm:p-5">
           <div className="flex items-center gap-2.5 mb-3">
-            <span className="w-2.5 h-2.5 rounded-full bg-dot-teal shrink-0" />
+            <span className="w-2.5 h-2.5 rounded-full bg-brand-human shrink-0" />
             <Database className="h-4 w-4 text-muted-foreground" />
             <span className="text-xs font-bold text-foreground uppercase tracking-wide">
               Curated Human Skills
