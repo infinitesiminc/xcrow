@@ -94,7 +94,7 @@ export function TaskTable({ tasks, skills, completedTasks, onPractice }: TaskTab
                 className="rounded-lg border border-border bg-card p-4 flex flex-col gap-2.5"
               >
                 {/* Task name */}
-                <span className="text-sm font-medium text-foreground leading-tight line-clamp-2">
+                <span className="text-base font-medium text-foreground leading-snug line-clamp-2">
                   {task.name}
                 </span>
 
