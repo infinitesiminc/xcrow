@@ -5,7 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
-  Loader2, Target, AlertTriangle, Zap, Users, Clock, ExternalLink,
+  Loader2, Target, AlertTriangle, Zap, Users, Clock, ExternalLink, BarChart3,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { type DemoFunnelStats, generateMockFromDB } from "@/data/demo-team-progress";
