@@ -733,7 +733,7 @@ export default function LearningPath() {
                                     onClick={() => launchSim(task)}
                                   >
                                     <Play className="h-3.5 w-3.5" />
-                                    {isCompleted ? "Retry Upskill" : "Begin Upskill"}
+                                    {isCompleted ? "Retry" : "Practise Task"}
                                   </Button>
                                 </div>
                               </div>
