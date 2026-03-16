@@ -52,9 +52,7 @@ serve(async (req) => {
       });
     }
 
-    if (existing && existing.length > 0 && (needsBackfill || forceRefresh)) {
-      await sb.from("job_task_clusters").delete().eq("job_id", jobId);
-    }
+    const shouldRegenerate = existing && existing.length > 0 && (needsBackfill || forceRefresh);
 
     // Generate task analysis via AI
     const prompt = `Analyze the job role "${jobTitle}"${company ? ` at ${company}` : ""} and break it down into 8-12 discrete task clusters.
