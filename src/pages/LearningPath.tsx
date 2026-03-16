@@ -245,7 +245,7 @@ export default function LearningPath() {
     (async () => {
       const { data } = await supabase
         .from("completed_simulations")
-        .select("task_name, correct_answers, total_questions, job_title")
+        .select("task_name, correct_answers, total_questions, job_title, rounds_completed, completed_at, tool_awareness_score, human_value_add_score, adaptive_thinking_score, domain_judgment_score")
         .eq("user_id", user.id);
       setCompletedSims(data || []);
     })();
