@@ -126,6 +126,12 @@ export default function ScoreDistributions() {
   const avgJob = useMemo(() => jobScores.length ? Math.round(jobScores.reduce((a, b) => a + b, 0) / jobScores.length) : 0, [jobScores]);
   const avgTask = useMemo(() => taskScores.length ? Math.round(taskScores.reduce((a, b) => a + b, 0) / taskScores.length) : 0, [taskScores]);
 
+  const sortedJobs = useMemo(() => [...jobs].sort((a, b) => (b.augmented_percent ?? 0) - (a.augmented_percent ?? 0)), [jobs]);
+  const sortedScores = useMemo(() => [...jobScores].sort((a, b) => a - b), [jobScores]);
+  const medianJob = useMemo(() => sortedScores.length ? sortedScores[Math.floor(sortedScores.length / 2)] : 0, [sortedScores]);
+  const minJob = useMemo(() => sortedScores.length ? sortedScores[0] : 0, [sortedScores]);
+  const maxJob = useMemo(() => sortedScores.length ? sortedScores[sortedScores.length - 1] : 0, [sortedScores]);
+
   if (loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
