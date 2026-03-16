@@ -2,12 +2,11 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
-  Check, X, Zap, Building2, ArrowRight, Users,
-  Sparkles, HelpCircle, Loader2,
+  Check, Zap, Building2, ArrowRight, Users,
+  Sparkles, HelpCircle, Loader2, Search, Crown,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Switch } from "@/components/ui/switch";
 import {
   Accordion, AccordionContent, AccordionItem, AccordionTrigger,
 } from "@/components/ui/accordion";
@@ -15,64 +14,29 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { STRIPE_PRICES } from "@/lib/stripe-config";
 import { toast } from "sonner";
-
-const individualFeatures = [
-  { label: "Role analyses", free: "2 / month", pro: "Unlimited" },
-  { label: "Upskill simulations", free: "3 / month", pro: "Unlimited" },
-  { label: "Career pathways", free: "Basic", pro: "Full + AI recommendations" },
-  { label: "Action plan", free: "Summary", pro: "Detailed with tool links" },
-  { label: "Dashboard & history", free: true, pro: true },
-  { label: "Priority support", free: false, pro: true },
-];
-
-const orgExtras = [
-  "Everything in Individual Pro",
-  "Bulk role upload & batch analysis",
-  "Department heatmaps",
-  "Team dashboards & cohort tracking",
-  "Admin controls & SSO",
-  "Dedicated account manager",
-];
-
-const tiers = [
-  { seats: "1–10", price: "$15" },
-  { seats: "11–50", price: "$12" },
-  { seats: "51–200", price: "$9" },
-  { seats: "200+", price: "Custom" },
-];
+import PricingTierCard from "@/components/pricing/PricingTierCard";
+import GrowthPricingTable from "@/components/pricing/GrowthPricingTable";
 
 const faqs = [
-  { q: "Is there a free trial for Pro?", a: "Yes — every new account starts with a 14-day Pro trial. No credit card required." },
+  { q: "What counts as a 'role'?", a: "A role is any unique job title you analyze on the platform — e.g. 'Product Manager' or 'Senior Data Engineer'. Analyzing the same role multiple times doesn't count as additional roles." },
+  { q: "Can I try it before committing?", a: "Yes — your first role analysis is completely free with no account required. Sign up to unlock 3 more roles and simulations at no cost." },
+  { q: "How does Growth billing work?", a: "You're billed monthly based on the number of active roles in your workspace. Volume discounts apply automatically as you add roles. Annual billing is available on request." },
   { q: "Can I cancel anytime?", a: "Absolutely. Cancel from your settings page and you'll retain access until the end of your billing period." },
-  { q: "How does organization billing work?", a: "You're billed monthly per active seat. Volume discounts apply automatically as you add seats. Annual billing is available on request." },
   { q: "What payment methods do you accept?", a: "We accept all major credit cards. Enterprise customers can also pay via invoice." },
-  { q: "Can I switch between monthly and annual?", a: "Yes, you can switch at any time. When moving to annual, you'll receive a prorated credit for the remainder of your current month." },
+  { q: "What happens to my data if I downgrade?", a: "Your analysis history and simulation results are preserved. You just won't be able to analyze new roles beyond your tier's limit until you upgrade again." },
 ];
-
-function FeatureValue({ value }: { value: string | boolean }) {
-  if (value === true) return <Check className="h-4 w-4 text-primary mx-auto" />;
-  if (value === false) return <X className="h-4 w-4 text-muted-foreground/30 mx-auto" />;
-  return <span className="text-sm text-foreground text-center block">{value}</span>;
-}
 
 export default function Pricing() {
   const navigate = useNavigate();
   const { user, isPro, openAuthModal } = useAuth();
-  const [annual, setAnnual] = useState(false);
   const [checkoutLoading, setCheckoutLoading] = useState(false);
-
-  const monthlyPrice = 19;
-  const annualPrice = 190;
-  const displayPrice = annual ? Math.round(annualPrice / 12) : monthlyPrice;
-  const period = annual ? "/mo" : "/mo";
-  const billingNote = annual ? `Billed $${annualPrice}/year` : "Billed monthly";
 
   const handleUpgrade = async () => {
     if (!user) { openAuthModal(); return; }
-    if (isPro) { toast.info("You're already on Pro!"); return; }
+    if (isPro) { toast.info("You're already subscribed!"); return; }
     setCheckoutLoading(true);
     try {
-      const priceId = annual ? STRIPE_PRICES.PRO_ANNUAL : STRIPE_PRICES.PRO_MONTHLY;
+      const priceId = STRIPE_PRICES.PRO_MONTHLY;
       const { data, error } = await supabase.functions.invoke("create-checkout", { body: { priceId } });
       if (error) throw error;
       if (data?.url) window.open(data.url, "_blank");
@@ -91,170 +55,139 @@ export default function Pricing() {
   return (
     <div className="min-h-screen bg-background">
       {/* Hero */}
-      <section className="relative overflow-hidden px-4 pt-16 sm:pt-20 pb-10 sm:pb-16">
+      <section className="relative overflow-hidden px-4 pt-16 sm:pt-20 pb-8 sm:pb-12">
         <div className="absolute inset-0 bg-gradient-to-b from-accent/40 via-background to-background" />
         <div className="relative mx-auto max-w-4xl text-center">
           <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45 }}>
             <h1 className="font-serif text-3xl sm:text-5xl font-bold text-foreground tracking-tight">
-              Simple, transparent pricing
+              Map one role free.<br />Scale to your whole org.
             </h1>
             <p className="mx-auto mt-3 sm:mt-4 max-w-xl text-base sm:text-lg text-muted-foreground leading-relaxed">
-              Start free. Upgrade when you need more power.
+              See exactly how AI impacts any role — then expand coverage across your workforce.
             </p>
           </motion.div>
         </div>
       </section>
 
-      {/* Toggle */}
-      <div className="flex items-center justify-center gap-3 pb-8 sm:pb-10">
-        <span className={`text-sm font-medium ${!annual ? "text-foreground" : "text-muted-foreground"}`}>Monthly</span>
-        <Switch checked={annual} onCheckedChange={setAnnual} />
-        <span className={`text-sm font-medium ${annual ? "text-foreground" : "text-muted-foreground"}`}>
-          Annual <span className="text-xs text-primary font-semibold ml-1">Save 17%</span>
-        </span>
-      </div>
-
-      {/* Pricing Cards */}
+      {/* Tier Cards */}
       <section className="px-4 pb-16 sm:pb-20">
-        <div className="mx-auto max-w-5xl grid lg:grid-cols-2 gap-6 sm:gap-8">
+        <div className="mx-auto max-w-6xl grid md:grid-cols-2 lg:grid-cols-4 gap-5">
 
-          {/* ── Individual ── */}
-          <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}>
-            <Card className="border-border/50 h-full flex flex-col">
-              <CardContent className="flex-1 flex flex-col p-5 sm:p-8">
-                {/* Header */}
-                <div className="flex items-center gap-2.5 mb-1">
-                  <Sparkles className="h-5 w-5 text-primary" />
-                  <h2 className="text-xl font-sans font-bold text-foreground">Individual</h2>
-                </div>
-                <p className="text-sm text-muted-foreground mb-6">For professionals and students</p>
+          {/* Free */}
+          <PricingTierCard
+            icon={<Search className="h-5 w-5" />}
+            name="Free"
+            description="Try it instantly"
+            price="$0"
+            priceNote="No account needed"
+            accentClass="border-border/50"
+            features={[
+              "1 full role analysis",
+              "Task breakdown & risk gauge",
+              "Career pathway preview",
+              "Shareable report link",
+            ]}
+            cta={
+              <Button variant="outline" size="lg" className="w-full text-sm" onClick={() => navigate("/")}>
+                Analyze a role free
+              </Button>
+            }
+          />
 
-                {/* Price columns */}
-                <div className="grid grid-cols-2 gap-4 mb-8">
-                  <div className="rounded-xl bg-accent/30 p-4 sm:p-5 text-center">
-                    <p className="text-[10px] sm:text-xs font-medium text-muted-foreground uppercase tracking-widest mb-2">Free</p>
-                    <p className="text-4xl sm:text-5xl font-bold font-sans text-foreground tracking-tight">$0</p>
-                    <p className="text-xs text-muted-foreground mt-1">Forever</p>
-                  </div>
-                  <div className="rounded-xl bg-primary/5 border border-primary/20 p-4 sm:p-5 text-center">
-                    <p className="text-[10px] sm:text-xs font-medium text-primary uppercase tracking-widest mb-2">Pro</p>
-                    <p className="text-4xl sm:text-5xl font-bold font-sans text-foreground tracking-tight">
-                      ${displayPrice}
-                    </p>
-                    <p className="text-xs text-muted-foreground mt-1">{billingNote}</p>
-                  </div>
-                </div>
+          {/* Starter */}
+          <PricingTierCard
+            icon={<Sparkles className="h-5 w-5" />}
+            name="Starter"
+            description="For individual exploration"
+            price="$0"
+            priceNote="Account required"
+            accentClass="border-brand-human/30"
+            features={[
+              "3 role analyses",
+              "5 upskill simulations / month",
+              "Personal dashboard & history",
+              "Action plan summaries",
+            ]}
+            cta={
+              !user ? (
+                <Button size="lg" className="w-full text-sm gap-1.5" onClick={openAuthModal}>
+                  <Sparkles className="h-4 w-4" /> Sign up free
+                </Button>
+              ) : (
+                <Button variant="outline" size="lg" className="w-full text-sm" onClick={() => navigate("/dashboard")}>
+                  <Check className="h-4 w-4 mr-1.5" /> Your current plan
+                </Button>
+              )
+            }
+          />
 
-                {/* Feature comparison */}
-                <div className="border-t border-border pt-5 space-y-0">
-                  {/* Column headers */}
-                  <div className="grid grid-cols-[1fr_80px_100px] sm:grid-cols-[1fr_100px_140px] gap-2 pb-3 border-b border-border/50">
-                    <span />
-                    <span className="text-[10px] sm:text-xs font-medium text-muted-foreground uppercase tracking-widest text-center">Free</span>
-                    <span className="text-[10px] sm:text-xs font-medium text-muted-foreground uppercase tracking-widest text-center">Pro</span>
-                  </div>
+          {/* Growth */}
+          <PricingTierCard
+            icon={<Zap className="h-5 w-5 text-brand-mid" />}
+            name="Growth"
+            description="Scale across your team"
+            price="From $19"
+            priceNote="/role/month"
+            accentClass="border-brand-mid/40"
+            highlighted
+            badge="Most popular"
+            features={[
+              "Unlimited simulations per role",
+              "Team dashboards & heatmaps",
+              "Bulk role upload (ATS sync)",
+              "Workspace & member management",
+              "Volume discounts at scale",
+            ]}
+            cta={
+              isPro ? (
+                <Button variant="secondary" size="lg" className="w-full text-sm" onClick={handleManageSubscription}>
+                  Manage subscription
+                </Button>
+              ) : (
+                <Button size="lg" className="w-full gap-1.5 text-sm" onClick={handleUpgrade} disabled={checkoutLoading}>
+                  {checkoutLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Zap className="h-4 w-4" />}
+                  Start Growth plan
+                </Button>
+              )
+            }
+          />
 
-                  {individualFeatures.map((f) => (
-                    <div key={f.label} className="grid grid-cols-[1fr_80px_100px] sm:grid-cols-[1fr_100px_140px] gap-2 items-center py-3 border-b border-border/30 last:border-0">
-                      <span className="text-sm text-foreground">{f.label}</span>
-                      <span className="text-center"><FeatureValue value={f.free} /></span>
-                      <span className="text-center"><FeatureValue value={f.pro} /></span>
-                    </div>
-                  ))}
-                </div>
+          {/* Enterprise */}
+          <PricingTierCard
+            icon={<Building2 className="h-5 w-5" />}
+            name="Enterprise"
+            description="For org-wide transformation"
+            price="Custom"
+            priceNote="Tailored to your org"
+            accentClass="border-brand-ai/30"
+            features={[
+              "Everything in Growth",
+              "SSO & admin controls",
+              "Model-aware re-scoring SLA",
+              "Dedicated account manager",
+              "Custom integrations & API",
+            ]}
+            cta={
+              <Button size="lg" className="w-full gap-1.5 text-sm" onClick={() => navigate("/contact")}>
+                <ArrowRight className="h-4 w-4" /> Talk to sales
+              </Button>
+            }
+          />
 
-                {/* CTAs */}
-                <div className="mt-auto pt-6 flex flex-col gap-2.5">
-                  {!user ? (
-                    <>
-                      <Button variant="outline" size="lg" className="w-full text-sm" onClick={() => navigate("/")}>
-                        Get started free
-                      </Button>
-                      <Button size="lg" className="w-full gap-1.5 text-sm" onClick={openAuthModal}>
-                        <Zap className="h-4 w-4" /> Upgrade to Pro
-                      </Button>
-                    </>
-                  ) : isPro ? (
-                    <>
-                      <Button variant="outline" size="lg" className="w-full text-sm" disabled>
-                        <Check className="h-4 w-4 mr-1.5" /> Current plan
-                      </Button>
-                      <Button variant="secondary" size="lg" className="w-full text-sm" onClick={handleManageSubscription}>
-                        Manage subscription
-                      </Button>
-                    </>
-                  ) : (
-                    <>
-                      <Button variant="outline" size="lg" className="w-full text-sm" onClick={() => navigate("/dashboard")}>
-                        Current: Free
-                      </Button>
-                      <Button size="lg" className="w-full gap-1.5 text-sm" onClick={handleUpgrade} disabled={checkoutLoading}>
-                        {checkoutLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Zap className="h-4 w-4" />}
-                        Upgrade to Pro
-                      </Button>
-                    </>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
+        </div>
+      </section>
+
+      {/* Growth Volume Pricing */}
+      <section className="px-4 pb-16 sm:pb-20">
+        <div className="mx-auto max-w-2xl">
+          <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} className="text-center mb-8">
+            <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-brand-mid/10">
+              <Crown className="h-5 w-5 text-brand-mid" />
+            </div>
+            <h2 className="font-sans text-2xl font-bold text-foreground">Growth volume pricing</h2>
+            <p className="text-sm text-muted-foreground mt-2">The more roles you map, the less you pay per role.</p>
           </motion.div>
-
-          {/* ── Organization ── */}
-          <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.12 }}>
-            <Card className="border-primary/20 h-full flex flex-col relative overflow-hidden">
-              <div className="absolute top-0 right-0 bg-primary text-primary-foreground text-[10px] font-semibold uppercase tracking-wider px-3 py-1 rounded-bl-lg">
-                Best value
-              </div>
-
-              <CardContent className="flex-1 flex flex-col p-5 sm:p-8">
-                {/* Header */}
-                <div className="flex items-center gap-2.5 mb-1">
-                  <Building2 className="h-5 w-5 text-primary" />
-                  <h2 className="text-xl font-sans font-bold text-foreground">Organization</h2>
-                </div>
-                <p className="text-sm text-muted-foreground mb-6">Per seat, volume discounts</p>
-
-                {/* Volume pricing table */}
-                <div className="rounded-xl border border-border overflow-hidden mb-8">
-                  <div className="grid grid-cols-2 text-[10px] sm:text-xs font-medium text-muted-foreground uppercase tracking-widest bg-muted/50 px-4 py-2.5">
-                    <span>Seats</span>
-                    <span className="text-right">Price / seat / mo</span>
-                  </div>
-                  {tiers.map((t) => (
-                    <div key={t.seats} className="grid grid-cols-2 px-4 py-3 border-t border-border items-center">
-                      <span className="text-sm text-foreground flex items-center gap-2">
-                        <Users className="h-3.5 w-3.5 text-muted-foreground shrink-0" /> {t.seats}
-                      </span>
-                      <span className="text-xl sm:text-2xl font-bold text-foreground text-right font-sans">{t.price}</span>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Includes */}
-                <div className="mb-6">
-                  <p className="text-[10px] sm:text-xs font-medium text-muted-foreground uppercase tracking-widest mb-3">Includes</p>
-                  <ul className="space-y-2.5">
-                    {orgExtras.map((e) => (
-                      <li key={e} className="flex items-start gap-2 text-sm text-muted-foreground">
-                        <Check className="h-4 w-4 text-primary shrink-0 mt-0.5" />
-                        {e}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-
-                {/* CTAs */}
-                <div className="mt-auto pt-6 border-t border-border flex flex-col gap-2.5">
-                  <Button size="lg" className="w-full gap-1.5 text-sm" onClick={() => navigate("/contact-org")}>
-                    Start team trial <ArrowRight className="h-4 w-4" />
-                  </Button>
-                  <Button variant="outline" size="lg" className="w-full text-sm" onClick={() => navigate("/contact-org")}>
-                    Talk to sales
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
+          <GrowthPricingTable />
         </div>
       </section>
 
