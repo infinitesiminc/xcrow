@@ -566,7 +566,7 @@ export default function LearningPath() {
                       transition={{ delay: i * 0.04 }}
                     >
                       <Card className={`border-border bg-card hover:border-primary/30 transition-all group h-full ${isCompleted ? "border-success/30 bg-success/[0.02]" : ""} ${isUpdated ? "border-primary/30 bg-primary/[0.02] ring-1 ring-primary/10" : ""}`}>
-                        <CardContent className="p-4">
+                        <CardContent className="p-5">
                           <div className="flex items-start gap-3">
                             <div className="shrink-0 pt-0.5">
                               {isCompleted ? (
