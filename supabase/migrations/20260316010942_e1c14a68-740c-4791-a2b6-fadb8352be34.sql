@@ -1,0 +1,1 @@
+ALTER TABLE public.job_task_clusters ADD COLUMN IF NOT EXISTS ai_exposure_score integer DEFAULT 50;

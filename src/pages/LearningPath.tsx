@@ -43,12 +43,8 @@ interface EnrichedTask {
   outcome: string | null;
   skill_names: string[] | null;
   sort_order: number | null;
-  ai_state?: string;
-  ai_trend?: string;
-  impact_level?: string;
-  recommended_template?: string;
+  ai_exposure_score?: number;
   priority?: string;
-  sim_duration?: number;
 }
 
 interface CompletedSim {
@@ -72,40 +68,20 @@ interface CustomSim {
   created_at: string;
 }
 
-/* ── Templates ── */
-const templates = [
-  { id: "quick-pulse", name: "Quick Pulse", duration: "~3 min", icon: Zap, color: "bg-dot-teal/10 text-dot-teal border-dot-teal/20" },
-  { id: "deep-dive", name: "Deep Dive", duration: "~15 min", icon: GraduationCap, color: "bg-dot-blue/10 text-dot-blue border-dot-blue/20" },
-  { id: "case-challenge", name: "Case Challenge", duration: "~30 min", icon: ClipboardCheck, color: "bg-dot-purple/10 text-dot-purple border-dot-purple/20" },
-  { id: "full-panel", name: "Full Panel", duration: "~60 min", icon: Users, color: "bg-dot-amber/10 text-dot-amber border-dot-amber/20" },
-];
-const templateMap = Object.fromEntries(templates.map(t => [t.id, t]));
-
 /* ── Helpers ── */
-function stateIcon(state?: string) {
-  if (state === "mostly_ai") return <Brain className="h-3.5 w-3.5 text-dot-purple" />;
-  if (state === "human_ai") return <TrendingUp className="h-3.5 w-3.5 text-dot-amber" />;
-  return <Shield className="h-3.5 w-3.5 text-dot-teal" />;
-}
-function stateLabel(s?: string) {
-  if (s === "mostly_ai") return "Mostly AI";
-  if (s === "human_ai") return "Human + AI";
-  return "Mostly Human";
-}
 function priorityBadge(p?: string) {
-  if (p === "critical") return <Badge className="bg-destructive/10 text-destructive border-destructive/20 text-[9px]">Critical</Badge>;
-  if (p === "important") return <Badge className="bg-warning/10 text-warning border-warning/20 text-[9px]">Important</Badge>;
-  return <Badge className="bg-success/10 text-success border-success/20 text-[9px]">Helpful</Badge>;
+  if (p === "high") return <Badge className="bg-destructive/10 text-destructive border-destructive/20 text-[9px]">High</Badge>;
+  if (p === "medium") return <Badge className="bg-warning/10 text-warning border-warning/20 text-[9px]">Medium</Badge>;
+  return <Badge className="bg-success/10 text-success border-success/20 text-[9px]">Low</Badge>;
 }
 function scoreBadge(score: number) {
   if (score >= 70) return <Badge className="bg-success/10 text-success border-success/20 text-[9px]">{score}%</Badge>;
   if (score >= 40) return <Badge className="bg-warning/10 text-warning border-warning/20 text-[9px]">{score}%</Badge>;
   return <Badge className="bg-destructive/10 text-destructive border-destructive/20 text-[9px]">{score}%</Badge>;
 }
-function riskBadge(pct: number | null) {
-  if (pct == null) return null;
-  const cls = pct >= 60 ? "bg-destructive/10 text-destructive border-destructive/20" : pct >= 35 ? "bg-warning/10 text-warning border-warning/20" : "bg-success/10 text-success border-success/20";
-  return <Badge className={`${cls} text-[10px]`}>{pct}% risk</Badge>;
+function exposureBadge(score: number) {
+  const cls = score >= 70 ? "bg-destructive/10 text-destructive border-destructive/20" : score >= 40 ? "bg-warning/10 text-warning border-warning/20" : "bg-success/10 text-success border-success/20";
+  return <Badge className={`${cls} text-[10px]`}>{score}% AI</Badge>;
 }
 
 export default function LearningPath() {
@@ -146,9 +122,6 @@ export default function LearningPath() {
   /* ── Sim runner ── */
   const [simOpen, setSimOpen] = useState(false);
   const [simTask, setSimTask] = useState("");
-  const [simTaskState, setSimTaskState] = useState<string | undefined>();
-  const [simTaskTrend, setSimTaskTrend] = useState<string | undefined>();
-  const [simTaskImpact, setSimTaskImpact] = useState<string | undefined>();
 
   /* ── Active tab ── */
   const [activeTab, setActiveTab] = useState<"path" | "custom">("path");
@@ -176,26 +149,17 @@ export default function LearningPath() {
 
   /* ── Enrich tasks helper ── */
   const enrichTasks = (rawTasks: any[]): EnrichedTask[] => {
-    return rawTasks.map((t: any) => {
-      const state = t.ai_state || "human_ai";
-      const impact = t.impact_level || "medium";
-      const priority = t.priority || "important";
-      const skillCount = (t.skill_names || []).length;
-      let score = 0;
-      score += state === "mostly_human" ? 3 : state === "human_ai" ? 2 : 1;
-      score += impact === "high" ? 3 : impact === "medium" ? 2 : 1;
-      score += priority === "critical" ? 3 : priority === "important" ? 2 : 1;
-      if (skillCount >= 4) score += 2; else if (skillCount >= 3) score += 1;
-      const recTemplate = score >= 9 ? "case-challenge" : score >= 6 ? "deep-dive" : "quick-pulse";
-      const recDuration = score >= 9 ? 30 : score >= 6 ? 15 : 3;
-      return { ...t, ai_state: state, ai_trend: t.ai_trend || "increasing_ai", impact_level: impact, recommended_template: t.recommended_template || recTemplate, priority, sim_duration: t.sim_duration || recDuration };
-    });
+    return rawTasks.map((t: any) => ({
+      ...t,
+      ai_exposure_score: t.ai_exposure_score ?? 50,
+      priority: t.priority || "medium",
+    }));
   };
 
   /* ── Snapshot helpers for automatic update detection ── */
   const snapshotKey = jobId ? `lp_snapshot_${jobId}` : null;
 
-  const getStoredSnapshot = useCallback((): Record<string, { ai_state: string; impact_level: string; priority: string }> | null => {
+  const getStoredSnapshot = useCallback((): Record<string, { ai_exposure_score: number; priority: string }> | null => {
     if (!snapshotKey) return null;
     try {
       const raw = localStorage.getItem(snapshotKey);
@@ -205,9 +169,9 @@ export default function LearningPath() {
 
   const saveSnapshot = useCallback((tasks: EnrichedTask[]) => {
     if (!snapshotKey) return;
-    const snap: Record<string, { ai_state: string; impact_level: string; priority: string }> = {};
+    const snap: Record<string, { ai_exposure_score: number; priority: string }> = {};
     tasks.forEach(t => {
-      snap[t.cluster_name] = { ai_state: t.ai_state || "human_ai", impact_level: t.impact_level || "medium", priority: t.priority || "important" };
+      snap[t.cluster_name] = { ai_exposure_score: t.ai_exposure_score ?? 50, priority: t.priority || "medium" };
     });
     localStorage.setItem(snapshotKey, JSON.stringify(snap));
   }, [snapshotKey]);
@@ -235,16 +199,14 @@ export default function LearningPath() {
         tasks.forEach(newTask => {
           const old = previousSnap[newTask.cluster_name];
           if (!old) {
-            changed.add(newTask.cluster_name); // New task
+            changed.add(newTask.cluster_name);
           } else if (
-            old.ai_state !== (newTask.ai_state || "human_ai") ||
-            old.impact_level !== (newTask.impact_level || "medium") ||
-            old.priority !== (newTask.priority || "important")
+            old.ai_exposure_score !== (newTask.ai_exposure_score ?? 50) ||
+            old.priority !== (newTask.priority || "medium")
           ) {
-            changed.add(newTask.cluster_name); // Changed
+            changed.add(newTask.cluster_name);
           }
         });
-        // Also detect removed tasks
         Object.keys(previousSnap).forEach(name => {
           if (!tasks.find(t => t.cluster_name === name)) changed.add(name);
         });
@@ -254,7 +216,6 @@ export default function LearningPath() {
         }
       }
 
-      // Save current snapshot for next visit
       saveSnapshot(tasks);
     } catch (err: any) {
       setAnalysisError(err.message || "Analysis failed");
@@ -311,21 +272,18 @@ export default function LearningPath() {
 
   const pathStats = useMemo(() => {
     if (!analyzedTasks.length) return null;
+    const avgExposure = Math.round(analyzedTasks.reduce((s, t) => s + (t.ai_exposure_score ?? 50), 0) / analyzedTasks.length);
     return {
-      critical: analyzedTasks.filter(t => t.priority === "critical").length,
-      important: analyzedTasks.filter(t => t.priority === "important").length,
-      totalMinutes: analyzedTasks.reduce((s, t) => s + (t.sim_duration || 3), 0),
-      highImpact: analyzedTasks.filter(t => t.impact_level === "high").length,
+      high: analyzedTasks.filter(t => t.priority === "high").length,
+      medium: analyzedTasks.filter(t => t.priority === "medium").length,
+      avgExposure,
       total: analyzedTasks.length,
     };
   }, [analyzedTasks]);
 
   /* ── Launch sim ── */
-  const launchSim = (task: EnrichedTask | { cluster_name: string; ai_state?: string; ai_trend?: string; impact_level?: string }) => {
+  const launchSim = (task: EnrichedTask | { cluster_name: string }) => {
     setSimTask(task.cluster_name);
-    setSimTaskState(task.ai_state);
-    setSimTaskTrend(task.ai_trend);
-    setSimTaskImpact(task.impact_level);
     setSimOpen(true);
   };
 
@@ -438,7 +396,6 @@ export default function LearningPath() {
                 </p>
               </div>
               <div className="flex items-center gap-2 shrink-0">
-                {riskBadge(job.automation_risk_percent)}
                 <Button
                   variant="ghost"
                   size="sm"
@@ -452,23 +409,19 @@ export default function LearningPath() {
               </div>
             </div>
 
-            {/* Quick stats */}
-            <div className="grid grid-cols-3 gap-4 mt-4">
-              {[
-                { label: "AI Exposure", value: job.augmented_percent, color: "bg-dot-blue" },
-                { label: "Replacement Risk", value: job.automation_risk_percent, color: "bg-destructive" },
-                { label: "Upskill Urgency", value: job.new_skills_percent, color: "bg-dot-purple" },
-              ].map(s => (
-                <div key={s.label} className="text-center">
-                  <div className="text-2xl font-bold text-foreground">{s.value ?? "—"}%</div>
-                  <div className="text-xs text-muted-foreground">{s.label}</div>
-                  {s.value != null && (
-                    <div className="h-1.5 rounded-full bg-secondary mt-2 overflow-hidden">
-                      <div className={`h-full rounded-full ${s.color}`} style={{ width: `${s.value}%` }} />
-                    </div>
-                  )}
+            {/* Single AI Exposure Score */}
+            <div className="mt-4 text-center">
+              <div className="text-4xl font-bold text-foreground">{job.augmented_percent ?? "—"}%</div>
+              <div className="text-sm text-muted-foreground mt-1">AI Exposure Score</div>
+              <p className="text-xs text-muted-foreground/70 mt-0.5">Weighted average across all tasks</p>
+              {job.augmented_percent != null && (
+                <div className="h-2 rounded-full bg-secondary mt-3 overflow-hidden max-w-xs mx-auto">
+                  <div
+                    className={`h-full rounded-full ${job.augmented_percent >= 70 ? "bg-destructive" : job.augmented_percent >= 40 ? "bg-warning" : "bg-success"}`}
+                    style={{ width: `${job.augmented_percent}%` }}
+                  />
                 </div>
-              ))}
+              )}
             </div>
           </CardContent>
         </Card>
@@ -558,12 +511,11 @@ export default function LearningPath() {
 
             {/* Stats bar */}
             {pathStats && (
-              <div className="grid grid-cols-4 gap-2 mb-6">
+              <div className="grid grid-cols-3 gap-2 mb-6">
                 {[
-                  { label: "Critical", value: pathStats.critical, icon: AlertTriangle, iconColor: "text-destructive" },
-                  { label: "Important", value: pathStats.important, icon: Target, iconColor: "text-warning" },
-                  { label: "High AI Impact", value: pathStats.highImpact, icon: Brain, iconColor: "text-dot-purple" },
-                  { label: "Total Time", value: `${pathStats.totalMinutes}m`, icon: Clock, iconColor: "text-muted-foreground" },
+                  { label: "High Priority", value: pathStats.high, icon: AlertTriangle, iconColor: "text-destructive" },
+                  { label: "Avg AI Exposure", value: `${pathStats.avgExposure}%`, icon: Brain, iconColor: "text-dot-purple" },
+                  { label: "Est. Time", value: `${pathStats.total * 15}m`, icon: Clock, iconColor: "text-muted-foreground" },
                 ].map(s => (
                   <div key={s.label} className="flex items-center gap-2 rounded-lg border border-border bg-card px-3 py-2.5">
                     <s.icon className={`h-4 w-4 ${s.iconColor}`} />
@@ -598,11 +550,10 @@ export default function LearningPath() {
             {!analyzing && analyzedTasks.length > 0 && (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                 {analyzedTasks.map((task, i) => {
-                  const recTemplate = templateMap[task.recommended_template || "quick-pulse"] || templates[0];
-                  const RecIcon = recTemplate.icon;
                   const taskScore = getTaskCompletion(task.cluster_name, job.title);
                   const isCompleted = taskScore !== null;
                   const isUpdated = updatedTaskNames.has(task.cluster_name);
+                  const exposure = task.ai_exposure_score ?? 50;
 
                   return (
                     <motion.div
@@ -649,15 +600,7 @@ export default function LearningPath() {
                               )}
 
                               <div className="flex items-center gap-3 mb-2">
-                                <span className="flex items-center gap-1 text-[10px] text-muted-foreground">
-                                  {stateIcon(task.ai_state)} {stateLabel(task.ai_state)}
-                                </span>
-                                {task.ai_trend && task.ai_trend !== "stable" && (
-                                  <span className="flex items-center gap-1 text-[10px] text-dot-amber">
-                                    <TrendingUp className="h-3 w-3" />
-                                    {task.ai_trend === "fully_ai_soon" ? "Full AI Soon" : "Growing AI"}
-                                  </span>
-                                )}
+                                {exposureBadge(exposure)}
                               </div>
 
                               {task.skill_names && task.skill_names.length > 0 && (
@@ -670,11 +613,8 @@ export default function LearningPath() {
 
                               <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
-                                  <RecIcon className="h-3 w-3" />
-                                  <span>{recTemplate.name}</span>
-                                  <span className="text-border">·</span>
-                                  <Clock className="h-3 w-3" />
-                                  <span>~{task.sim_duration || 3} min</span>
+                                  <GraduationCap className="h-3 w-3" />
+                                  <span>15 min simulation</span>
                                 </div>
                                 <Button
                                   size="sm"
@@ -754,23 +694,18 @@ export default function LearningPath() {
             ) : (
               <div className="space-y-2">
                 {customSims.map(sim => {
-                  const tmpl = templateMap[sim.recommended_template] || templates[0];
-                  const TmplIcon = tmpl.icon;
                   const taskScore = getTaskCompletion(sim.task_name, sim.job_title);
                   return (
                     <Card key={sim.id} className="group hover:border-primary/30 transition-colors">
                       <CardContent className="p-4">
                         <div className="flex items-center gap-3">
-                          <div className={`p-2 rounded-md border ${tmpl.color}`}>
-                            <TmplIcon className="w-4 h-4" />
+                          <div className="p-2 rounded-md border bg-dot-blue/10 text-dot-blue border-dot-blue/20">
+                            <GraduationCap className="w-4 h-4" />
                           </div>
                           <div className="flex-1 min-w-0">
                             <p className="text-sm font-medium text-foreground truncate">{sim.task_name}</p>
                             <div className="flex items-center gap-2 mt-0.5">
-                              <Badge variant="outline" className="text-[10px] px-1.5 py-0">{tmpl.name}</Badge>
-                              <span className="text-[10px] text-muted-foreground flex items-center gap-0.5">
-                                <Clock className="w-2.5 h-2.5" />{tmpl.duration}
-                              </span>
+                              <Badge variant="outline" className="text-[10px] px-1.5 py-0">15 min</Badge>
                               <span className="text-[10px] text-muted-foreground">
                                 {sim.source_type === "prompt" ? "✏️ Prompt" : "📄 Doc"}
                               </span>
@@ -778,7 +713,7 @@ export default function LearningPath() {
                             </div>
                           </div>
                           <div className="flex items-center gap-1">
-                            <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={() => launchSim({ cluster_name: sim.task_name, ai_state: sim.ai_state || undefined, impact_level: sim.impact_level || undefined })}>
+                            <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={() => launchSim({ cluster_name: sim.task_name })}>
                               <Play className="w-3.5 h-3.5" />
                             </Button>
                             <Button size="sm" variant="ghost" className="h-7 w-7 p-0 text-destructive hover:text-destructive" onClick={() => deleteSim(sim.id)}>
@@ -847,9 +782,6 @@ export default function LearningPath() {
         taskName={simTask}
         jobTitle={job.title}
         company={companyName}
-        taskState={simTaskState}
-        taskTrend={simTaskTrend}
-        taskImpactLevel={simTaskImpact}
       />
     </div>
   );

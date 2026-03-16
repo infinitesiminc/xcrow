@@ -1,9 +1,9 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  Plus, FileText, MessageSquare, Zap, GraduationCap, ClipboardCheck,
-  Users, Loader2, Trash2, Play, ChevronDown, ChevronUp, Upload,
-  Sparkles, Clock, AlertTriangle, Brain, Search, Briefcase,
+  Plus, FileText, MessageSquare, GraduationCap,
+  Loader2, Trash2, Play, ChevronDown, ChevronUp, Upload,
+  Sparkles, Clock, Brain, Search, Briefcase,
   BookOpen, Save,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -20,14 +20,6 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import SimulatorModal from "@/components/SimulatorModal";
 
-/* ── Template config ── */
-const templateMeta: Record<string, { name: string; icon: any; color: string; duration: string }> = {
-  "quick-pulse": { name: "Quick Pulse", icon: Zap, color: "bg-dot-teal/10 text-dot-teal border-dot-teal/20", duration: "~3 min" },
-  "deep-dive": { name: "Deep Dive", icon: GraduationCap, color: "bg-dot-blue/10 text-dot-blue border-dot-blue/20", duration: "~15 min" },
-  "case-challenge": { name: "Case Challenge", icon: ClipboardCheck, color: "bg-dot-purple/10 text-dot-purple border-dot-purple/20", duration: "~30 min" },
-  "full-panel": { name: "Full Panel", icon: Users, color: "bg-dot-amber/10 text-dot-amber border-dot-amber/20", duration: "~60 min" },
-};
-
 interface CustomSim {
   id: string;
   job_title: string;
@@ -35,8 +27,6 @@ interface CustomSim {
   task_name: string;
   source_type: string;
   recommended_template: string;
-  ai_state: string | null;
-  impact_level: string | null;
   priority: string | null;
   sim_duration: number | null;
   created_at: string;
@@ -49,7 +39,6 @@ interface DbJob {
   seniority: string | null;
   location: string | null;
   augmented_percent: number | null;
-  automation_risk_percent: number | null;
   description: string | null;
   company_id: string | null;
 }
@@ -60,12 +49,8 @@ interface EnrichedTask {
   description: string | null;
   outcome: string | null;
   skill_names: string[] | null;
-  ai_state?: string;
-  ai_trend?: string;
-  impact_level?: string;
+  ai_exposure_score?: number;
   priority?: string;
-  recommended_template?: string;
-  sim_duration?: number;
 }
 
 interface CompanyInfo {
@@ -73,26 +58,21 @@ interface CompanyInfo {
   name: string;
 }
 
-function pickTemplate(t: EnrichedTask) {
-  const state = t.ai_state || "human_ai";
-  const impact = t.impact_level || "medium";
-  const priority = t.priority || "important";
-  const skillCount = (t.skill_names || []).length;
-  let score = 0;
-  score += state === "mostly_human" ? 3 : state === "human_ai" ? 2 : 1;
-  score += impact === "high" ? 3 : impact === "medium" ? 2 : 1;
-  score += priority === "critical" ? 3 : priority === "important" ? 2 : 1;
-  if (skillCount >= 4) score += 2; else if (skillCount >= 3) score += 1;
-  const recTemplate = score >= 9 ? "case-challenge" : score >= 6 ? "deep-dive" : "quick-pulse";
-  const recDuration = score >= 9 ? 30 : score >= 6 ? 15 : 3;
-  return { recTemplate, recDuration };
+function exposureBadge(score: number) {
+  const cls = score >= 70 ? "bg-destructive/10 text-destructive border-destructive/20" : score >= 40 ? "bg-warning/10 text-warning border-warning/20" : "bg-success/10 text-success border-success/20";
+  return <Badge className={`${cls} text-[10px]`}>{score}% AI</Badge>;
+}
+
+function priorityBadge(p?: string) {
+  if (p === "high") return <Badge variant="outline" className="text-[10px] px-1.5 py-0 border-destructive/30 text-destructive">High</Badge>;
+  if (p === "medium") return <Badge variant="outline" className="text-[10px] px-1.5 py-0 border-warning/30 text-warning">Medium</Badge>;
+  return <Badge variant="outline" className="text-[10px] px-1.5 py-0 border-success/30 text-success">Low</Badge>;
 }
 
 export default function Simulations() {
   const { user } = useAuth();
   const { toast } = useToast();
 
-  // Main tab: "library" or "browse"
   const [mainTab, setMainTab] = useState<"library" | "browse">("library");
 
   /* ── Library state ── */
@@ -102,14 +82,12 @@ export default function Simulations() {
   const [creating, setCreating] = useState(false);
   const [expandedJob, setExpandedJob] = useState<string | null>(null);
 
-  // Create form
   const [createTab, setCreateTab] = useState<"prompt" | "document">("prompt");
   const [promptText, setPromptText] = useState("");
   const [docText, setDocText] = useState("");
   const [docFile, setDocFile] = useState<File | null>(null);
   const [parsing, setParsing] = useState(false);
 
-  // Sim runner
   const [simTask, setSimTask] = useState<{ taskName: string; jobTitle: string; company?: string } | null>(null);
 
   /* ── Job browser state ── */
@@ -139,13 +117,10 @@ export default function Simulations() {
 
   useEffect(() => { fetchSims(); }, [fetchSims]);
 
-  /* ── Fetch companies for browse tab ── */
+  /* ── Fetch companies ── */
   useEffect(() => {
     (async () => {
-      const { data } = await supabase
-        .from("companies")
-        .select("id, name")
-        .order("name");
+      const { data } = await supabase.from("companies").select("id, name").order("name");
       if (data?.length) {
         setCompanies(data);
         setSelectedCompanyId(data[0].id);
@@ -153,7 +128,7 @@ export default function Simulations() {
     })();
   }, []);
 
-  /* ── Fetch jobs when company changes ── */
+  /* ── Fetch jobs ── */
   useEffect(() => {
     if (!selectedCompanyId) return;
     (async () => {
@@ -162,7 +137,7 @@ export default function Simulations() {
       setBrowseTasks([]);
       const { data } = await supabase
         .from("jobs")
-        .select("id, title, department, seniority, location, augmented_percent, automation_risk_percent, description, company_id")
+        .select("id, title, department, seniority, location, augmented_percent, description, company_id")
         .eq("company_id", selectedCompanyId)
         .order("title");
       setJobs(data || []);
@@ -170,7 +145,7 @@ export default function Simulations() {
     })();
   }, [selectedCompanyId]);
 
-  /* ── Analyze job tasks on selection ── */
+  /* ── Analyze job tasks ── */
   const analyzeJob = useCallback(async (job: DbJob) => {
     setAnalyzing(true);
     setBrowseTasks([]);
@@ -181,18 +156,11 @@ export default function Simulations() {
       });
       if (error) throw new Error(error.message);
       if (data?.error) throw new Error(data.error);
-      const tasks = (data.tasks || []).map((t: any) => {
-        const { recTemplate, recDuration } = pickTemplate(t);
-        return {
-          ...t,
-          ai_state: t.ai_state || "human_ai",
-          ai_trend: t.ai_trend || "increasing_ai",
-          impact_level: t.impact_level || "medium",
-          priority: t.priority || "important",
-          recommended_template: t.recommended_template || recTemplate,
-          sim_duration: t.sim_duration || recDuration,
-        };
-      });
+      const tasks = (data.tasks || []).map((t: any) => ({
+        ...t,
+        ai_exposure_score: t.ai_exposure_score ?? 50,
+        priority: t.priority || "medium",
+      }));
       setBrowseTasks(tasks);
     } catch (err: any) {
       toast({ title: "Analysis failed", description: err.message, variant: "destructive" });
@@ -205,24 +173,20 @@ export default function Simulations() {
     else setBrowseTasks([]);
   }, [selectedBrowseJob, analyzeJob]);
 
-  /* ── Save task from job browser to library ── */
+  /* ── Save task to library ── */
   const saveTaskToLibrary = async (task: EnrichedTask, job: DbJob) => {
     if (!user) return;
     setSavingTaskId(task.id);
     const companyName = companies.find(c => c.id === job.company_id)?.name || null;
-    const { recTemplate, recDuration } = pickTemplate(task);
     const { error } = await supabase.from("custom_simulations").insert({
       user_id: user.id,
       job_title: job.title,
       company: companyName,
       task_name: task.cluster_name,
       source_type: "job_browser",
-      recommended_template: task.recommended_template || recTemplate,
-      ai_state: task.ai_state || null,
-      ai_trend: task.ai_trend || null,
-      impact_level: task.impact_level || null,
+      recommended_template: "deep-dive",
       priority: task.priority || null,
-      sim_duration: task.sim_duration || recDuration,
+      sim_duration: 15,
     });
     if (error) {
       toast({ title: "Save failed", description: error.message, variant: "destructive" });
@@ -366,9 +330,7 @@ export default function Simulations() {
                 <CardContent className="p-10 text-center">
                   <Sparkles className="w-10 h-10 text-muted-foreground/40 mx-auto mb-3" />
                   <h3 className="text-base font-semibold text-foreground mb-1">No simulations yet</h3>
-                  <p className="text-sm text-muted-foreground mb-4">
-                    Create a custom sim or browse jobs to save tasks.
-                  </p>
+                  <p className="text-sm text-muted-foreground mb-4">Create a custom sim or browse jobs to save tasks.</p>
                   <div className="flex items-center justify-center gap-2">
                     <Button variant="outline" onClick={() => setCreateOpen(true)} className="gap-1.5">
                       <Plus className="w-4 h-4" /> Create Custom
@@ -395,35 +357,30 @@ export default function Simulations() {
                     {isExpanded && (
                       <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
                         <div className="px-4 pb-4 space-y-2">
-                          {items.map(sim => {
-                            const tmpl = templateMeta[sim.recommended_template] || templateMeta["quick-pulse"];
-                            const TmplIcon = tmpl.icon;
-                            return (
-                              <div key={sim.id} className="flex items-center gap-3 p-3 rounded-lg border border-border/50 bg-muted/20">
-                                <div className={`p-1.5 rounded-md border ${tmpl.color}`}>
-                                  <TmplIcon className="w-3.5 h-3.5" />
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                  <p className="text-sm font-medium text-foreground truncate">{sim.task_name}</p>
-                                  <div className="flex items-center gap-2 mt-0.5">
-                                    <Badge variant="outline" className="text-[10px] px-1.5 py-0">{tmpl.name}</Badge>
-                                    <span className="text-[10px] text-muted-foreground flex items-center gap-0.5"><Clock className="w-2.5 h-2.5" />{tmpl.duration}</span>
-                                    <span className="text-[10px] text-muted-foreground">
-                                      {sim.source_type === "prompt" ? "✏️ Prompt" : sim.source_type === "job_browser" ? "💼 Job" : "📄 Doc"}
-                                    </span>
-                                  </div>
-                                </div>
-                                <div className="flex items-center gap-1">
-                                  <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={() => setSimTask({ taskName: sim.task_name, jobTitle: sim.job_title, company: sim.company || undefined })}>
-                                    <Play className="w-3.5 h-3.5" />
-                                  </Button>
-                                  <Button size="sm" variant="ghost" className="h-7 w-7 p-0 text-destructive hover:text-destructive" onClick={() => deleteSim(sim.id)}>
-                                    <Trash2 className="w-3.5 h-3.5" />
-                                  </Button>
+                          {items.map(sim => (
+                            <div key={sim.id} className="flex items-center gap-3 p-3 rounded-lg border border-border/50 bg-muted/20">
+                              <div className="p-1.5 rounded-md border bg-dot-blue/10 text-dot-blue border-dot-blue/20">
+                                <GraduationCap className="w-3.5 h-3.5" />
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <p className="text-sm font-medium text-foreground truncate">{sim.task_name}</p>
+                                <div className="flex items-center gap-2 mt-0.5">
+                                  <Badge variant="outline" className="text-[10px] px-1.5 py-0">15 min</Badge>
+                                  <span className="text-[10px] text-muted-foreground">
+                                    {sim.source_type === "prompt" ? "✏️ Prompt" : sim.source_type === "job_browser" ? "💼 Job" : "📄 Doc"}
+                                  </span>
                                 </div>
                               </div>
-                            );
-                          })}
+                              <div className="flex items-center gap-1">
+                                <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={() => setSimTask({ taskName: sim.task_name, jobTitle: sim.job_title, company: sim.company || undefined })}>
+                                  <Play className="w-3.5 h-3.5" />
+                                </Button>
+                                <Button size="sm" variant="ghost" className="h-7 w-7 p-0 text-destructive hover:text-destructive" onClick={() => deleteSim(sim.id)}>
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                </Button>
+                              </div>
+                            </div>
+                          ))}
                         </div>
                       </motion.div>
                     )}
@@ -438,7 +395,6 @@ export default function Simulations() {
             <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
               {/* Left: Job list */}
               <div className="lg:col-span-2 space-y-3">
-                {/* Company selector */}
                 {companies.length > 1 && (
                   <div className="flex flex-wrap gap-1.5 mb-2">
                     {companies.map(c => (
@@ -459,12 +415,7 @@ export default function Simulations() {
 
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
-                  <Input
-                    placeholder="Search roles..."
-                    value={jobSearch}
-                    onChange={e => setJobSearch(e.target.value)}
-                    className="pl-9 text-sm h-9"
-                  />
+                  <Input placeholder="Search roles..." value={jobSearch} onChange={e => setJobSearch(e.target.value)} className="pl-9 text-sm h-9" />
                 </div>
 
                 {jobsLoading ? (
@@ -473,9 +424,7 @@ export default function Simulations() {
                   </div>
                 ) : jobs.length === 0 ? (
                   <Card className="border-dashed">
-                    <CardContent className="p-6 text-center text-sm text-muted-foreground">
-                      No jobs found for this company.
-                    </CardContent>
+                    <CardContent className="p-6 text-center text-sm text-muted-foreground">No jobs found for this company.</CardContent>
                   </Card>
                 ) : (
                   <div className="max-h-[60vh] overflow-y-auto space-y-3 pr-1">
@@ -495,9 +444,9 @@ export default function Simulations() {
                             >
                               <p className="font-medium text-foreground truncate">{job.title}</p>
                               <div className="flex items-center gap-2 mt-0.5">
-                                {job.automation_risk_percent != null && (
-                                  <span className={`text-[10px] ${job.automation_risk_percent >= 60 ? "text-destructive" : job.automation_risk_percent >= 30 ? "text-dot-amber" : "text-dot-teal"}`}>
-                                    {job.automation_risk_percent}% risk
+                                {job.augmented_percent != null && (
+                                  <span className={`text-[10px] ${job.augmented_percent >= 70 ? "text-destructive" : job.augmented_percent >= 40 ? "text-warning" : "text-success"}`}>
+                                    {job.augmented_percent}% AI exposure
                                   </span>
                                 )}
                                 {job.seniority && <span className="text-[10px] text-muted-foreground">{job.seniority}</span>}
@@ -537,25 +486,20 @@ export default function Simulations() {
                     </div>
                     <div className="space-y-2 max-h-[60vh] overflow-y-auto pr-1">
                       {browseTasks.map(task => {
-                        const tmpl = templateMeta[task.recommended_template || "quick-pulse"] || templateMeta["quick-pulse"];
-                        const TmplIcon = tmpl.icon;
                         const alreadySaved = sims.some(s => s.task_name === task.cluster_name && s.job_title === selectedBrowseJob.title);
+                        const exposure = task.ai_exposure_score ?? 50;
                         return (
                           <div key={task.id} className="flex items-start gap-3 p-3 rounded-lg border border-border/50 bg-card">
-                            <div className={`p-1.5 rounded-md border ${tmpl.color} mt-0.5`}>
-                              <TmplIcon className="w-3.5 h-3.5" />
+                            <div className="p-1.5 rounded-md border bg-dot-blue/10 text-dot-blue border-dot-blue/20 mt-0.5">
+                              <GraduationCap className="w-3.5 h-3.5" />
                             </div>
                             <div className="flex-1 min-w-0">
                               <p className="text-sm font-medium text-foreground">{task.cluster_name}</p>
                               {task.description && <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{task.description}</p>}
                               <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-                                <Badge variant="outline" className="text-[10px] px-1.5 py-0">{tmpl.name}</Badge>
-                                <span className="text-[10px] text-muted-foreground flex items-center gap-0.5"><Clock className="w-2.5 h-2.5" />{tmpl.duration}</span>
-                                {task.impact_level && (
-                                  <Badge variant="outline" className={`text-[10px] px-1.5 py-0 ${task.impact_level === "high" ? "border-destructive/30 text-destructive" : task.impact_level === "medium" ? "border-dot-amber/30 text-dot-amber" : "border-dot-teal/30 text-dot-teal"}`}>
-                                    {task.impact_level} impact
-                                  </Badge>
-                                )}
+                                {exposureBadge(exposure)}
+                                {priorityBadge(task.priority)}
+                                <span className="text-[10px] text-muted-foreground flex items-center gap-0.5"><Clock className="w-2.5 h-2.5" />15 min</span>
                               </div>
                             </div>
                             <div className="flex items-center gap-1 flex-shrink-0">
@@ -573,8 +517,8 @@ export default function Simulations() {
                               <Button
                                 size="sm" variant="ghost"
                                 className={`h-7 w-7 p-0 ${alreadySaved ? "text-primary" : ""}`}
-                                disabled={alreadySaved || savingTaskId === task.id}
                                 onClick={() => saveTaskToLibrary(task, selectedBrowseJob)}
+                                disabled={alreadySaved || savingTaskId === task.id}
                                 title={alreadySaved ? "Already saved" : "Save to library"}
                               >
                                 {savingTaskId === task.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
@@ -597,15 +541,15 @@ export default function Simulations() {
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
             <DialogTitle>Create Custom Simulation</DialogTitle>
-            <DialogDescription>Describe a task to practice, or upload a job description / case study.</DialogDescription>
+            <DialogDescription>Describe a task to practice or upload a document.</DialogDescription>
           </DialogHeader>
-          <Tabs value={createTab} onValueChange={(v) => setCreateTab(v as "prompt" | "document")}>
+          <Tabs value={createTab} onValueChange={v => setCreateTab(v as "prompt" | "document")}>
             <TabsList className="w-full">
               <TabsTrigger value="prompt" className="flex-1 gap-1.5 text-xs"><MessageSquare className="w-3.5 h-3.5" /> Describe It</TabsTrigger>
               <TabsTrigger value="document" className="flex-1 gap-1.5 text-xs"><FileText className="w-3.5 h-3.5" /> Upload Doc</TabsTrigger>
             </TabsList>
             <TabsContent value="prompt" className="mt-3">
-              <Textarea placeholder="e.g. Practice negotiating a SaaS contract renewal..." value={promptText} onChange={e => setPromptText(e.target.value)} rows={5} maxLength={2000} className="text-sm" />
+              <Textarea placeholder="e.g. Practice reviewing AI-generated financial reports for accuracy..." value={promptText} onChange={e => setPromptText(e.target.value)} rows={5} maxLength={2000} className="text-sm" />
               <p className="text-[10px] text-muted-foreground mt-1 text-right">{promptText.length}/2000</p>
             </TabsContent>
             <TabsContent value="document" className="mt-3">
@@ -622,32 +566,26 @@ export default function Simulations() {
                     <span className="text-sm text-foreground truncate flex-1">{docFile.name}</span>
                     <Button size="sm" variant="ghost" className="h-6 text-xs" onClick={() => { setDocFile(null); setDocText(""); }}>Remove</Button>
                   </div>
-                  {parsing && <div className="flex items-center gap-2 text-xs text-muted-foreground"><Loader2 className="w-3 h-3 animate-spin" /> Parsing document...</div>}
-                  {docText && !parsing && <p className="text-xs text-muted-foreground">✓ Extracted {docText.length.toLocaleString()} characters</p>}
+                  {parsing && <div className="flex items-center gap-2 text-xs text-muted-foreground"><Loader2 className="w-3 h-3 animate-spin" /> Parsing...</div>}
+                  {docText && !parsing && <p className="text-xs text-muted-foreground">✓ {docText.length.toLocaleString()} chars</p>}
                 </div>
               )}
             </TabsContent>
           </Tabs>
-          <div className="flex items-center gap-2 mt-2 p-2.5 rounded-md bg-muted/30 border border-border/30">
-            <AlertTriangle className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0" />
-            <p className="text-[10px] text-muted-foreground leading-relaxed">AI extracts the role, task, and context — then assigns a simulation format based on complexity scoring.</p>
-          </div>
-          <Button onClick={handleCreate} disabled={creating} className="w-full mt-1 gap-1.5">
+          <Button onClick={handleCreate} disabled={creating} className="w-full mt-2 gap-1.5">
             {creating ? <><Loader2 className="w-4 h-4 animate-spin" /> Generating...</> : <><Sparkles className="w-4 h-4" /> Create Simulation</>}
           </Button>
         </DialogContent>
       </Dialog>
 
       {/* ── Sim Runner ── */}
-      {simTask && (
-        <SimulatorModal
-          open={!!simTask}
-          onClose={() => setSimTask(null)}
-          taskName={simTask.taskName}
-          jobTitle={simTask.jobTitle}
-          company={simTask.company}
-        />
-      )}
+      <SimulatorModal
+        open={!!simTask}
+        onClose={() => setSimTask(null)}
+        taskName={simTask?.taskName || ""}
+        jobTitle={simTask?.jobTitle || ""}
+        company={simTask?.company}
+      />
     </div>
   );
 }

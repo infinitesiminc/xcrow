@@ -3,6 +3,7 @@ export type TaskState = "mostly_human" | "human_ai" | "mostly_ai";
 export type TrendDirection = "stable" | "increasing_ai" | "fully_ai_soon";
 export type SkillPriority = "high" | "medium" | "low";
 export type SkillCategory = "ai_tools" | "human_skills" | "new_capabilities";
+export type TaskPriority = "high" | "medium" | "low";
 
 export interface TaskAnalysis {
   name: string;
@@ -10,6 +11,8 @@ export interface TaskAnalysis {
   trend: TrendDirection;
   impactLevel: AIImpactLevel;
   description: string;
+  aiExposureScore?: number;
+  priority?: TaskPriority;
 }
 
 export interface ToolResource {

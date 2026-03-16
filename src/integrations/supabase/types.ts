@@ -420,6 +420,7 @@ export type Database = {
       }
       job_task_clusters: {
         Row: {
+          ai_exposure_score: number | null
           ai_state: string | null
           ai_trend: string | null
           cluster_name: string
@@ -434,6 +435,7 @@ export type Database = {
           sort_order: number | null
         }
         Insert: {
+          ai_exposure_score?: number | null
           ai_state?: string | null
           ai_trend?: string | null
           cluster_name: string
@@ -448,6 +450,7 @@ export type Database = {
           sort_order?: number | null
         }
         Update: {
+          ai_exposure_score?: number | null
           ai_state?: string | null
           ai_trend?: string | null
           cluster_name?: string
