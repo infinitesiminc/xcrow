@@ -43,7 +43,7 @@ export default function StickyTicker() {
   useEffect(() => {
     const interval = setInterval(() => {
       setActiveModel((prev) => (prev + 1) % FRONTIER_RELEASES.length);
-    }, 1800);
+    }, 3500);
     return () => clearInterval(interval);
   }, []);
 
@@ -55,7 +55,7 @@ export default function StickyTicker() {
         <div className="absolute inset-y-0 right-0 w-6 z-10 bg-gradient-to-l from-background to-transparent" />
         <div
           key={activeModel}
-          className="absolute inset-0 flex items-center animate-[model-fly_1.6s_linear_forwards]"
+          className="absolute inset-0 flex items-center animate-[model-fly_3s_linear_forwards]"
         >
           <span className="inline-flex items-center gap-1.5 whitespace-nowrap">
             <Zap className="h-2.5 w-2.5 text-destructive shrink-0" />
@@ -71,7 +71,7 @@ export default function StickyTicker() {
       <div className="relative h-[18px] overflow-hidden">
         <div className="absolute inset-y-0 left-0 w-6 z-10 bg-gradient-to-r from-background to-transparent" />
         <div className="absolute inset-y-0 right-0 w-6 z-10 bg-gradient-to-l from-background to-transparent" />
-        <div className="flex animate-[ticker_40s_linear_infinite] whitespace-nowrap items-center h-full">
+        <div className="flex animate-[ticker-right_40s_linear_infinite] whitespace-nowrap items-center h-full">
           {[...WORKFORCE_ITEMS, ...WORKFORCE_ITEMS].map((item, i) => (
             <span
               key={i}
