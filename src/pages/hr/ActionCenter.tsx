@@ -449,6 +449,29 @@ export default function ActionCenter() {
     );
   }
 
+  const hasData = progress.length > 0;
+
+  if (!hasData && !isSuperAdmin) {
+    return (
+      <div className="p-6 max-w-5xl mx-auto">
+        <div>
+          <h1 className="text-xl font-bold text-foreground">Action Center</h1>
+          <p className="text-sm text-muted-foreground mt-1">Real-time interventions for your team.</p>
+        </div>
+        <div className="py-16 text-center space-y-4">
+          <Zap className="h-12 w-12 mx-auto text-muted-foreground/40" />
+          <h2 className="text-lg font-semibold text-foreground">No intervention data yet</h2>
+          <p className="text-sm text-muted-foreground max-w-md mx-auto">
+            Your team needs to complete AI readiness simulations first. Bottleneck tasks and at-risk employees will appear here automatically.
+          </p>
+          <Button onClick={() => navigate("/hr/team-progress")}>
+            <BarChart3 className="h-4 w-4 mr-2" />View Team Progress
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="p-6 max-w-5xl mx-auto space-y-6">
       <div>
@@ -456,13 +479,15 @@ export default function ActionCenter() {
         <p className="text-sm text-muted-foreground mt-1">Real-time interventions — click any item to drill down and see resolution options.</p>
       </div>
 
-      {/* Demo disclaimer */}
-      <div className="flex items-start gap-2.5 rounded-lg border border-primary/20 bg-primary/5 px-4 py-3">
-        <AlertTriangle className="h-4 w-4 text-primary shrink-0 mt-0.5" />
-        <p className="text-xs text-muted-foreground leading-relaxed">
-          <span className="font-semibold text-foreground">Demo data.</span> Employee names shown are simulated on real roles from your ATS. Live data appears once team members complete simulations.
-        </p>
-      </div>
+      {/* Demo disclaimer (superadmin only) */}
+      {isSuperAdmin && (
+        <div className="flex items-start gap-2.5 rounded-lg border border-primary/20 bg-primary/5 px-4 py-3">
+          <AlertTriangle className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+          <p className="text-xs text-muted-foreground leading-relaxed">
+            <span className="font-semibold text-foreground">Demo data.</span> Employee names shown are simulated on real roles from your ATS. Live data appears once team members complete simulations.
+          </p>
+        </div>
+      )}
 
       {/* Summary stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
