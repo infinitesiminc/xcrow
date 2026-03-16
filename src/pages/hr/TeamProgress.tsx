@@ -122,7 +122,7 @@ function ExecutiveBrief({ progress, deptTrends }: { progress: ProgressRow[]; dep
       actions.push({ text: `Focus org-wide training on ${pillars[0].label} (${pillars[0].avg}% avg)`, priority: "medium", metric: `${pillars[0].avg}%` });
     }
     if (notActivated > 200) {
-      actions.push({ text: `Activate ${notActivated} remaining roles to expand coverage beyond ${Math.round((FUNNEL_STATS.rolesActivated / FUNNEL_STATS.jobsImported) * 100)}%`, priority: "medium", metric: `${notActivated} pending` });
+      actions.push({ text: `Activate ${notActivated} remaining roles to expand coverage beyond ${EMPTY_FUNNEL.jobsImported > 0 ? Math.round((EMPTY_FUNNEL.rolesActivated / EMPTY_FUNNEL.jobsImported) * 100) : 0}%`, priority: "medium", metric: `${notActivated} pending` });
     }
     if (mostImproved && mostImproved.delta > 5) {
       actions.push({ text: `Recognize ${mostImproved.dept} for strongest improvement (+${mostImproved.delta}% this month)`, priority: "low", metric: `+${mostImproved.delta}%` });
