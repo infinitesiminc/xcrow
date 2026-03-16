@@ -194,12 +194,14 @@ Each round follows this EXACT structure:
    - "**📖 Scenario:**" — a NEW realistic scenario for a different aspect of this task
    - "**🤔 How would you approach this?**" with 3 MCQ options (A, B, C)
    - One option should leverage AI tools effectively, one purely manual, one poor approach
+   - CRITICAL: Randomly vary which letter (A, B, or C) is the correct answer. Do NOT default to B. Mix it up every round.
    - Each round should explore a DIFFERENT angle of how AI intersects with this task
 
 Current round: ${round || 1}
 
 Rules:
 - ALWAYS present exactly 3 options labeled A, B, C on separate lines. Never use D.
+- The correct answer MUST be randomly distributed across A, B, and C — never always the same letter.
 - Every round must include the 🤖 AI Today and 💡 Human Edge sections after feedback.
 - Keep ALL responses SHORT. No walls of text. Each section 1-3 sentences max.
 - ${isExploring ? "Define jargon inline. Be warm and encouraging." : "Skip basics. Reference specific tools and industry trends."}
