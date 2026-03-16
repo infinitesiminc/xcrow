@@ -377,10 +377,21 @@ function AdaptiveLoopDiagram({ activeNode, setActiveNode }: {
     { x: 15, y: 50 },  // Adapt — left
   ];
 
-  // Map arc rotation to active node position on circle
-  // SVG circle starts at 3 o'clock (0°), nodes: Map=top(-90°), Assess=right(0°), Train=bottom(90°), Adapt=left(180°)
-  const nodeAngles: Record<string, number> = { map: -90, assess: 0, train: 90, adapt: 180 };
-  const arcRotation = activeNode ? nodeAngles[activeNode] ?? -90 : -90;
+  // Track cumulative rotation so arc always moves forward (clockwise) at constant speed
+  const nodeOrder = ["map", "assess", "train", "adapt"];
+  const cumulativeRef = React.useRef(-90); // starts at Map (top)
+  const prevNodeRef = React.useRef(activeNode);
+
+  if (activeNode && activeNode !== prevNodeRef.current) {
+    const prevIdx = nodeOrder.indexOf(prevNodeRef.current || "map");
+    const nextIdx = nodeOrder.indexOf(activeNode);
+    // Calculate forward steps (always clockwise)
+    const steps = (nextIdx - prevIdx + 4) % 4 || 4;
+    cumulativeRef.current += steps * 90;
+    prevNodeRef.current = activeNode;
+  }
+
+  const arcRotation = cumulativeRef.current;
 
   return (
     <div className="relative w-full max-w-sm mx-auto aspect-square">
@@ -391,7 +402,7 @@ function AdaptiveLoopDiagram({ activeNode, setActiveNode }: {
           fill="none" stroke="hsl(var(--primary))" strokeWidth="1.5"
           strokeDasharray="20 181" strokeLinecap="round"
           animate={{ rotate: arcRotation }}
-          transition={{ duration: 0.6, ease: [0.4, 0, 0.2, 1] }}
+          transition={{ duration: 2, ease: "linear" }}
           style={{ transformOrigin: "50px 50px" }}
         />
       </svg>
