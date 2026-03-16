@@ -505,7 +505,7 @@ export default function Investors() {
                       <span className="text-[10px] font-medium mb-1 whitespace-nowrap text-muted-foreground">
                         {c.name}
                       </span>
-                      <div className="h-3 w-3 rounded-full bg-brand-ai/40" />
+                      <div className="h-3 w-3 rounded-full bg-brand-human/40" />
                       <span className="text-[8px] text-muted-foreground/50 font-mono mt-0.5">{c.score}</span>
                     </div>
                   ))}
