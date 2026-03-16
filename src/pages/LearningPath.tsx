@@ -456,7 +456,7 @@ export default function LearningPath() {
             <TabsList>
               <TabsTrigger value="path" className="gap-1.5 text-xs">
                 <BookOpen className="w-3.5 h-3.5" /> Learning Path
-                {pathStats && <span className="text-[10px] text-muted-foreground ml-1">{pathStats.total} tasks</span>}
+                {pathStats && <span className="text-[11px] text-muted-foreground ml-1">{pathStats.total} tasks</span>}
               </TabsTrigger>
               <TabsTrigger value="custom" className="gap-1.5 text-xs">
                 <Sparkles className="w-3.5 h-3.5" /> Custom Sims
