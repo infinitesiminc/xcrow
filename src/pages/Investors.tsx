@@ -107,15 +107,45 @@ export default function Investors() {
         <section>
           <SectionHeader
             badge="Our Solution"
-            title="AI readiness, automated end-to-end"
-            subtitle="Infinite Sim maps every role to its constituent tasks, scores AI exposure per task, and generates personalized simulation-based training — all in minutes."
+            title="The Adaptive Workforce Engine"
+            subtitle="An autonomous loop that maps AI exposure, measures readiness, closes gaps, and re-calibrates — continuously, without manual L&D overhead."
           />
+
+          {/* Loop visual */}
+          <motion.div {...fadeUp} className="mb-6">
+            <Card className="border-primary/20 bg-gradient-to-br from-primary/5 via-background to-accent/5">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-center gap-2 sm:gap-4 flex-wrap">
+                  {[
+                    { icon: Layers, label: "Map", sub: "Detect exposure" },
+                    { icon: Target, label: "Assess", sub: "Measure readiness" },
+                    { icon: Brain, label: "Train", sub: "Close gaps" },
+                    { icon: Zap, label: "Adapt", sub: "Re-calibrate" },
+                  ].map((step, i) => (
+                    <div key={step.label} className="flex items-center gap-2 sm:gap-4">
+                      <div className="flex flex-col items-center text-center">
+                        <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-1.5">
+                          <step.icon className="h-5 w-5 text-primary" />
+                        </div>
+                        <p className="text-sm font-semibold text-foreground">{step.label}</p>
+                        <p className="text-[10px] text-muted-foreground">{step.sub}</p>
+                      </div>
+                      {i < 3 && <ArrowRight className="h-4 w-4 text-muted-foreground/40 shrink-0 mt-[-12px]" />}
+                    </div>
+                  ))}
+                </div>
+                <p className="text-center text-[10px] text-muted-foreground/60 mt-4">↻ Loop restarts automatically when new frontier models ship — workforce parity maintained continuously</p>
+              </CardContent>
+            </Card>
+          </motion.div>
+
+          {/* Loop step details */}
           <div className="grid sm:grid-cols-2 gap-4">
             {[
-              { icon: Layers, title: "Role Decomposition Engine", desc: "Breaks any job into 8–15 task clusters with AI exposure scores using frontier models" },
-              { icon: BarChart3, title: "AI Exposure Heatmap", desc: "Organization-wide view of which departments, roles, and tasks are most at risk" },
-              { icon: Brain, title: "Adaptive Simulations", desc: "AI-generated scenario training that adapts to each employee's skill gaps" },
-              { icon: Target, title: "Action Center", desc: "Prioritized interventions: who to reskill, which tasks to automate, and what to delegate to AI" },
+              { icon: Layers, title: "Map", desc: "Every role decomposed into 8–15 task clusters with AI exposure scores. When new models ship, scores update automatically — your risk surface is always current.", highlights: "400+ roles mapped in minutes" },
+              { icon: Target, title: "Assess", desc: "Calibrated simulations measure each employee across 4 readiness pillars. Real tested capability, not self-reported surveys or generic certifications.", highlights: "4-pillar scoring model" },
+              { icon: Brain, title: "Train", desc: "Targeted practice sessions auto-generated from each employee's weak points. No manual L&D design — the system trains your people while you focus on strategy.", highlights: "Zero L&D overhead" },
+              { icon: Zap, title: "Adapt", desc: "Scores below threshold trigger automatic re-simulation with coaching. When new models drop, the loop accelerates. Your workforce evolves as fast as AI does.", highlights: "Continuous, not quarterly" },
             ].map((item, i) => (
               <motion.div key={i} {...fadeUp} transition={{ ...fadeUp.transition, delay: i * 0.08 }}>
                 <Card className="h-full">
@@ -126,7 +156,8 @@ export default function Investors() {
                       </div>
                       <h3 className="text-sm font-semibold text-foreground">{item.title}</h3>
                     </div>
-                    <p className="text-xs text-muted-foreground">{item.desc}</p>
+                    <p className="text-xs text-muted-foreground mb-2">{item.desc}</p>
+                    <Badge variant="outline" className="text-[10px] border-primary/20 text-primary">{item.highlights}</Badge>
                   </CardContent>
                 </Card>
               </motion.div>
