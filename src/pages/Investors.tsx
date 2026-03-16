@@ -124,8 +124,8 @@ export default function Investors() {
                   ].map((step, i) => (
                     <div key={step.label} className="flex items-center gap-2 sm:gap-4">
                       <div className="flex flex-col items-center text-center">
-                        <div className="w-12 h-12 rounded-xl bg-brand-human/10 flex items-center justify-center mb-1.5">
-                          <step.icon className="h-5 w-5 text-brand-human" />
+                        <div className="w-12 h-12 rounded-xl bg-brand-ai/10 flex items-center justify-center mb-1.5">
+                          <step.icon className="h-5 w-5 text-brand-ai" />
                         </div>
                         <p className="text-sm font-semibold text-foreground">{step.label}</p>
                         <p className="text-[10px] text-muted-foreground">{step.sub}</p>
