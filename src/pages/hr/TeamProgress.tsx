@@ -84,8 +84,8 @@ function ExecutiveBrief({ progress, deptTrends }: { progress: ProgressRow[]; dep
     const avgReadiness = allScores.length > 0
       ? Math.round(allScores.reduce((a, b) => a + b, 0) / allScores.length) : 0;
 
-    const notStarted = EMPTY_FUNNEL.rolesActivated - EMPTY_FUNNEL.employeesStarted;
-    const notActivated = EMPTY_FUNNEL.jobsImported - EMPTY_FUNNEL.rolesActivated;
+    const notStarted = funnel.rolesActivated - funnel.employeesStarted;
+    const notActivated = funnel.jobsImported - funnel.rolesActivated;
 
     // Weakest department
     const weakestDept = [...deptTrends].sort((a, b) => a.avgReadiness - b.avgReadiness)[0];
