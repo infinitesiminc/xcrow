@@ -193,8 +193,8 @@ export default function Investors() {
                   <div className="grid sm:grid-cols-2">
                     <div className="p-5 sm:p-6 flex flex-col justify-center">
                       <div className="flex items-center gap-2 mb-2">
-                        <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
-                          <Target className="h-4 w-4 text-primary" />
+                        <div className="w-8 h-8 rounded-lg bg-brand-human/10 flex items-center justify-center">
+                          <Target className="h-4 w-4 text-brand-human" />
                         </div>
                         <h3 className="text-sm font-bold text-foreground">Assess · Adaptive Simulations</h3>
                       </div>
