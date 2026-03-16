@@ -492,10 +492,10 @@ export default function LearningPath() {
 
             {/* Two-column: Chart (sticky) | Tasks (scrollable) */}
             {!analyzing && analyzedTasks.length > 0 && (
-              <div className="flex flex-col lg:flex-row gap-6">
+              <div className="flex flex-col md:flex-row gap-6">
                 {/* LEFT: Sticky chart panel */}
-                <div className="lg:w-[380px] shrink-0">
-                  <div className="lg:sticky lg:top-6 space-y-4">
+                <div className="md:w-[340px] shrink-0">
+                  <div className="md:sticky md:top-6 space-y-4">
                     {/* AI Exposure Score */}
                     <Card className="border-border bg-card">
                       <CardContent className="p-4">
