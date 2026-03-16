@@ -675,7 +675,7 @@ export default function LearningPath() {
                                 {task.skill_names && task.skill_names.length > 0 && (
                                   <div className="flex flex-wrap gap-1 mb-2">
                                     {task.skill_names.map(s => (
-                                      <span key={s} className="rounded-md bg-secondary px-1.5 py-0.5 text-[9px] font-medium text-foreground">{s}</span>
+                                      <span key={s} className="rounded-md bg-secondary px-1.5 py-0.5 text-[11px] font-medium text-foreground">{s}</span>
                                     ))}
                                   </div>
                                 )}
