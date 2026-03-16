@@ -14,6 +14,11 @@ import {
 import { useNavigate } from "react-router-dom";
 import { type DemoFunnelStats, generateMockFromDB } from "@/data/demo-team-progress";
 
+const SUPERADMIN_IDS = [
+  "7be41055-be68-4cab-b63c-f3b0c483e6eb",
+  "bb10735b-051e-4bb5-918e-931a9c79d0fd",
+];
+
 interface ProgressRow {
   user_id: string;
   display_name: string;
