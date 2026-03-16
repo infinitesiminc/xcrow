@@ -5,11 +5,9 @@ import {
   Sparkles, HelpCircle, Search, Crown,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import {
   Accordion, AccordionContent, AccordionItem, AccordionTrigger,
 } from "@/components/ui/accordion";
-import { useAuth } from "@/contexts/AuthContext";
 import PricingTierCard from "@/components/pricing/PricingTierCard";
 import GrowthPricingTable from "@/components/pricing/GrowthPricingTable";
 
