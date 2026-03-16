@@ -538,11 +538,11 @@ export default function Enterprise() {
         <div className="mx-auto max-w-5xl">
           <motion.div {...fadeUp} className="text-center mb-14">
             <h2 className="font-display text-3xl sm:text-4xl font-semibold text-foreground">
-              The acceleration gap is widening
+              Close the acceleration gap
             </h2>
             <p className="mt-3 text-muted-foreground max-w-2xl mx-auto">
-              AI capabilities compound monthly. Traditional workforce development updates annually.
-              That growing gap is where you lose talent, market share, and competitive advantage.
+              AI capabilities compound monthly. With the right system, your workforce compounds too —
+              turning every model release into a catalyst for growth, not a source of disruption.
             </p>
           </motion.div>
 
