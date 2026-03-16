@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -14,9 +14,12 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import {
+  Popover, PopoverContent, PopoverTrigger,
+} from "@/components/ui/popover";
+import {
   RefreshCw, Building2, Briefcase, Search, Globe, ExternalLink,
   Loader2, CheckCircle2, AlertTriangle, ArrowUpDown, MapPin,
-  ChevronDown, ChevronUp, Filter,
+  ChevronDown, ChevronUp, Filter, ChevronsUpDown, Check,
 } from "lucide-react";
 
 /* ── types ── */
@@ -61,6 +64,8 @@ export default function ATSSync() {
   const [deptFilter, setDeptFilter] = useState("all");
   const [sortField, setSortField] = useState<SortField>("title");
   const [sortDir, setSortDir] = useState<SortDir>("asc");
+  const [companySearch, setCompanySearch] = useState("");
+  const [companyDropdownOpen, setCompanyDropdownOpen] = useState(false);
 
   /* ── fetch companies ── */
   const fetchCompanies = useCallback(async () => {
@@ -226,7 +231,7 @@ export default function ATSSync() {
         </Card>
       </div>
 
-      {/* ── Company Selector ── */}
+      {/* ── Company Selector (searchable dropdown) ── */}
       <Card>
         <CardHeader className="pb-3">
           <CardTitle className="text-base flex items-center gap-2">
@@ -244,36 +249,84 @@ export default function ATSSync() {
               <p>No companies synced yet. Click <strong>Sync Companies</strong> to import from ATS.</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 max-h-[320px] overflow-y-auto pr-1">
-              {companies.map((co) => (
-                <button
-                  key={co.id}
-                  onClick={() => setSelectedCompanyId(co.id === selectedCompanyId ? null : co.id)}
-                  className={`flex items-center gap-3 p-3 rounded-lg border text-left transition-all ${
-                    co.id === selectedCompanyId
-                      ? "border-primary bg-primary/5 ring-1 ring-primary/30"
-                      : "border-border hover:border-primary/40 hover:bg-muted/30"
-                  }`}
+            <Popover open={companyDropdownOpen} onOpenChange={setCompanyDropdownOpen}>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  role="combobox"
+                  aria-expanded={companyDropdownOpen}
+                  className="w-full justify-between h-10 text-sm font-normal"
                 >
-                  {co.logo_url ? (
-                    <img src={co.logo_url} alt="" className="h-8 w-8 rounded object-contain bg-background" />
-                  ) : (
-                    <div className="h-8 w-8 rounded bg-muted flex items-center justify-center text-xs font-bold text-muted-foreground">
-                      {co.name.charAt(0)}
-                    </div>
-                  )}
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-foreground truncate">{co.name}</p>
-                    <div className="flex items-center gap-1.5 mt-0.5">
-                      {co.industry && <Badge variant="secondary" className="text-[10px] px-1.5 py-0">{co.industry}</Badge>}
-                      {co.detected_ats_platform && (
-                        <Badge variant="outline" className="text-[10px] px-1.5 py-0">{co.detected_ats_platform}</Badge>
+                  {selectedCompany ? (
+                    <span className="flex items-center gap-2 truncate">
+                      {selectedCompany.logo_url ? (
+                        <img src={selectedCompany.logo_url} alt="" className="h-5 w-5 rounded object-contain bg-background shrink-0" />
+                      ) : (
+                        <div className="h-5 w-5 rounded bg-muted flex items-center justify-center text-[10px] font-bold text-muted-foreground shrink-0">
+                          {selectedCompany.name.charAt(0)}
+                        </div>
                       )}
-                    </div>
+                      {selectedCompany.name}
+                      {selectedCompany.detected_ats_platform && (
+                        <Badge variant="outline" className="text-[10px] px-1.5 py-0 ml-1">{selectedCompany.detected_ats_platform}</Badge>
+                      )}
+                    </span>
+                  ) : (
+                    <span className="text-muted-foreground">Search {companies.length} companies…</span>
+                  )}
+                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0" align="start">
+                <div className="p-2 border-b border-border">
+                  <div className="relative">
+                    <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
+                    <Input
+                      placeholder="Search companies…"
+                      value={companySearch}
+                      onChange={(e) => setCompanySearch(e.target.value)}
+                      className="pl-8 h-9 text-sm"
+                      autoFocus
+                    />
                   </div>
-                </button>
-              ))}
-            </div>
+                </div>
+                <div className="max-h-64 overflow-y-auto">
+                  {companies
+                    .filter(c => c.name.toLowerCase().includes(companySearch.toLowerCase()))
+                    .sort((a, b) => a.name.localeCompare(b.name))
+                    .length === 0 ? (
+                    <p className="text-sm text-muted-foreground text-center py-4">No companies found.</p>
+                  ) : (
+                    companies
+                      .filter(c => c.name.toLowerCase().includes(companySearch.toLowerCase()))
+                      .sort((a, b) => a.name.localeCompare(b.name))
+                      .map((co) => (
+                        <button
+                          key={co.id}
+                          onClick={() => {
+                            setSelectedCompanyId(co.id === selectedCompanyId ? null : co.id);
+                            setCompanyDropdownOpen(false);
+                            setCompanySearch("");
+                          }}
+                          className="flex items-center gap-2.5 w-full px-3 py-2 text-left text-sm hover:bg-muted/50 transition-colors"
+                        >
+                          <Check className={`h-3.5 w-3.5 shrink-0 ${co.id === selectedCompanyId ? "opacity-100 text-primary" : "opacity-0"}`} />
+                          {co.logo_url ? (
+                            <img src={co.logo_url} alt="" className="h-6 w-6 rounded object-contain bg-background shrink-0" />
+                          ) : (
+                            <div className="h-6 w-6 rounded bg-muted flex items-center justify-center text-[10px] font-bold text-muted-foreground shrink-0">
+                              {co.name.charAt(0)}
+                            </div>
+                          )}
+                          <span className="flex-1 truncate text-foreground">{co.name}</span>
+                          {co.industry && <Badge variant="secondary" className="text-[10px] px-1.5 py-0 shrink-0">{co.industry}</Badge>}
+                          {co.detected_ats_platform && <Badge variant="outline" className="text-[10px] px-1.5 py-0 shrink-0">{co.detected_ats_platform}</Badge>}
+                        </button>
+                      ))
+                  )}
+                </div>
+              </PopoverContent>
+            </Popover>
           )}
         </CardContent>
       </Card>
