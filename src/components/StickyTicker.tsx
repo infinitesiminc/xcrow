@@ -43,7 +43,7 @@ export default function StickyTicker() {
   useEffect(() => {
     const interval = setInterval(() => {
       setActiveModel((prev) => (prev + 1) % FRONTIER_RELEASES.length);
-    }, 14000);
+    }, 1500);
     return () => clearInterval(interval);
   }, []);
 
