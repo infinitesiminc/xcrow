@@ -43,22 +43,22 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <Routes>
-            <Route path="/" element={<><Navbar /><Enterprise /><Footer /></>} />
+            <Route path="/" element={<><Navbar /><StickyTicker /><Enterprise /><Footer /></>} />
             <Route path="/analysis" element={<><Navbar /><Analysis /><Footer /></>} />
             <Route path="/team-analysis" element={<><Navbar /><TeamAnalysis /><Footer /></>} />
             <Route path="/auth" element={<><Navbar /><Auth /></>} />
             <Route path="/dashboard" element={<><Navbar /><Dashboard /><Footer /></>} />
             <Route path="/settings" element={<><Navbar /><Settings /><Footer /></>} />
             <Route path="/tools" element={<><Navbar /><ToolsMarketplace /><Footer /></>} />
-            <Route path="/contact" element={<><Navbar /><Contact /><Footer /></>} />
-            <Route path="/pricing" element={<><Navbar /><Pricing /><Footer /></>} />
+            <Route path="/contact" element={<><Navbar /><StickyTicker /><Contact /><Footer /></>} />
+            <Route path="/pricing" element={<><Navbar /><StickyTicker /><Pricing /><Footer /></>} />
             <Route path="/products/simulation-builder" element={<><Navbar /><SimulationBuilder /><Footer /></>} />
-            <Route path="/why-simulation" element={<><Navbar /><SimulationDesign /><Footer /></>} />
+            <Route path="/why-simulation" element={<><Navbar /><StickyTicker /><SimulationDesign /><Footer /></>} />
             <Route path="/simulations" element={<><Navbar /><Simulations /><Footer /></>} />
             <Route path="/learning-path" element={<><Navbar /><LearningPath /><Footer /></>} />
             <Route path="/score-distributions" element={<><Navbar /><ScoreDistributions /><Footer /></>} />
             <Route path="/join" element={<JoinWorkspace />} />
-            <Route path="/case-study/anthropic" element={<><Navbar /><CaseStudy /><Footer /></>} />
+            <Route path="/case-study/anthropic" element={<><Navbar /><StickyTicker /><CaseStudy /><Footer /></>} />
 
             {/* HR Dashboard with sidebar */}
             <Route path="/hr" element={<HRLayout />}>
