@@ -529,11 +529,11 @@ export default function LearningPath() {
                               <rect x={pad.left} y={pad.top + plotH / 2} width={plotW / 2} height={plotH / 2} fill="hsl(var(--muted) / 0.15)" />
                               <rect x={pad.left + plotW / 2} y={pad.top + plotH / 2} width={plotW / 2} height={plotH / 2} fill="hsl(var(--warning) / 0.05)" />
 
-                              {/* Quadrant labels */}
-                              <text x={pad.left + plotW * 0.25} y={pad.top + 14} textAnchor="middle" className="text-[8px]" fill="hsl(var(--success))" opacity={0.6}>💪 Human Edge</text>
-                              <text x={pad.left + plotW * 0.75} y={pad.top + 14} textAnchor="middle" className="text-[8px]" fill="hsl(var(--destructive))" opacity={0.6}>🔴 Urgent Upskill</text>
-                              <text x={pad.left + plotW * 0.25} y={pad.top + plotH - 6} textAnchor="middle" className="text-[8px]" fill="hsl(var(--muted-foreground))" opacity={0.4}>Low Priority</text>
-                              <text x={pad.left + plotW * 0.75} y={pad.top + plotH - 6} textAnchor="middle" className="text-[8px]" fill="hsl(var(--warning))" opacity={0.6}>🤖 Let AI Handle</text>
+                               {/* Quadrant labels — pinned to corners */}
+                               <text x={pad.left + 6} y={pad.top + 12} textAnchor="start" className="text-[9px] font-medium" fill="hsl(var(--success))" opacity={0.7}>Human Edge</text>
+                               <text x={pad.left + plotW - 6} y={pad.top + 12} textAnchor="end" className="text-[9px] font-medium" fill="hsl(var(--destructive))" opacity={0.7}>Urgent Upskill</text>
+                               <text x={pad.left + 6} y={pad.top + plotH - 6} textAnchor="start" className="text-[9px] font-medium" fill="hsl(var(--muted-foreground))" opacity={0.45}>Low Priority</text>
+                               <text x={pad.left + plotW - 6} y={pad.top + plotH - 6} textAnchor="end" className="text-[9px] font-medium" fill="hsl(var(--warning))" opacity={0.7}>Automate</text>
 
                               {/* Axes */}
                               <line x1={pad.left} y1={pad.top + plotH} x2={pad.left + plotW} y2={pad.top + plotH} stroke="hsl(var(--border))" strokeWidth="0.5" />
