@@ -110,6 +110,22 @@ export default function ScoreDistributions() {
     })();
   }, []);
 
+  // Per-job task variance map
+  const jobVariance = useMemo(() => {
+    const map = new Map<string, { min: number; max: number; spread: number; count: number }>();
+    const grouped = new Map<string, number[]>();
+    tasks.forEach(t => {
+      if (!grouped.has(t.job_id)) grouped.set(t.job_id, []);
+      grouped.get(t.job_id)!.push(t.ai_exposure_score ?? 50);
+    });
+    grouped.forEach((scores, jobId) => {
+      const min = Math.min(...scores);
+      const max = Math.max(...scores);
+      map.set(jobId, { min, max, spread: max - min, count: scores.length });
+    });
+    return map;
+  }, [tasks]);
+
   const jobScores = useMemo(() => jobs.map(j => j.augmented_percent ?? 0), [jobs]);
   const taskScores = useMemo(() => tasks.map(t => t.ai_exposure_score ?? 50), [tasks]);
 
@@ -215,6 +231,7 @@ export default function ScoreDistributions() {
                     <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm bg-success inline-block" /> 0-39%</span>
                     <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm bg-warning inline-block" /> 40-69%</span>
                     <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm bg-destructive inline-block" /> 70-100%</span>
+                    <span className="border-l border-border pl-3">±spread</span>
                   </div>
                 </div>
                 <div className="space-y-[3px]">
@@ -222,6 +239,8 @@ export default function ScoreDistributions() {
                     const score = j.augmented_percent ?? 0;
                     const barColor = score >= 70 ? "bg-destructive" : score >= 40 ? "bg-warning" : "bg-success";
                     const isHovered = hoveredJobId === j.id;
+                    const variance = jobVariance.get(j.id);
+                    const lowVariance = variance && variance.spread < 10;
                     return (
                       <motion.div
                         key={j.id}
@@ -251,6 +270,9 @@ export default function ScoreDistributions() {
                         </div>
                         <span className={`text-[10px] tabular-nums w-8 text-right shrink-0 ${isHovered ? "font-bold text-foreground" : "text-muted-foreground"}`}>
                           {score}%
+                        </span>
+                        <span className={`text-[9px] tabular-nums w-12 text-right shrink-0 ${lowVariance ? "text-destructive font-bold" : "text-muted-foreground/60"}`} title={variance ? `Tasks: ${variance.min}%–${variance.max}% (${variance.count} tasks)` : ""}>
+                          ±{variance?.spread ?? 0}
                         </span>
                       </motion.div>
                     );
