@@ -309,6 +309,25 @@ export default function SimulationBuilder() {
     );
   }
 
+  if (!loading && jobs.length === 0) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center max-w-md px-4">
+          <Layers className="h-12 w-12 mx-auto text-muted-foreground/40 mb-4" />
+          <h2 className="text-lg font-semibold text-foreground mb-2">No Roles Found</h2>
+          <p className="text-sm text-muted-foreground mb-6">
+            {!workspaceId
+              ? "Create a workspace first, then import company roles via ATS Sync."
+              : "Import company roles via ATS Sync to see them here."}
+          </p>
+          <Button onClick={() => navigate(!workspaceId ? "/hr/settings" : "/hr/ats-sync")}>
+            {!workspaceId ? "Create Workspace" : "Import Roles"}
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background">
       {/* Hero */}
