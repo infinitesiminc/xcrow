@@ -85,16 +85,35 @@ function BarChartVisual({ data, maxCount, label }: { data: ReturnType<typeof buc
 
 export default function ScoreDistributions() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [jobs, setJobs] = useState<JobRow[]>([]);
   const [tasks, setTasks] = useState<TaskRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [hoveredJobId, setHoveredJobId] = useState<string | null>(null);
 
+  const isSuperAdmin = !!user && SUPERADMIN_IDS.includes(user.id);
+
   useEffect(() => {
     (async () => {
       setLoading(true);
-      // Only fetch jobs that actually have task clusters (truly analyzed)
-      // Fetch ALL task clusters (default limit is 1000, we need more)
+
+      // For non-superadmins, scope to workspace companies
+      let workspaceCompanyIds: string[] | null = null;
+      if (!isSuperAdmin && user) {
+        const { data: membership } = await supabase
+          .from("workspace_members").select("workspace_id")
+          .eq("user_id", user.id).limit(1);
+        if (membership?.length) {
+          const wsId = membership[0].workspace_id;
+          const { data: wsCompanies } = await supabase
+            .from("companies").select("id").eq("workspace_id", wsId);
+          workspaceCompanyIds = (wsCompanies || []).map(c => c.id);
+        } else {
+          workspaceCompanyIds = [];
+        }
+      }
+
+      // Fetch task clusters
       let allTaskRows: TaskRow[] = [];
       let from = 0;
       const PAGE_SIZE = 1000;
@@ -109,7 +128,24 @@ export default function ScoreDistributions() {
         from += PAGE_SIZE;
       }
 
-      const taskRows = allTaskRows;
+      let taskRows = allTaskRows;
+
+      // Filter to workspace jobs if scoped
+      if (workspaceCompanyIds !== null) {
+        if (workspaceCompanyIds.length === 0) {
+          setJobs([]);
+          setTasks([]);
+          setLoading(false);
+          return;
+        }
+        // Get jobs belonging to workspace companies
+        const { data: wsJobs } = await supabase
+          .from("jobs").select("id")
+          .in("company_id", workspaceCompanyIds);
+        const wsJobIds = new Set((wsJobs || []).map(j => j.id));
+        taskRows = taskRows.filter(t => wsJobIds.has(t.job_id));
+      }
+
       const analyzedIds = [...new Set(taskRows.map(t => t.job_id))] as string[];
 
       let analyzedJobs: JobRow[] = [];
@@ -125,7 +161,7 @@ export default function ScoreDistributions() {
       setTasks(taskRows as TaskRow[]);
       setLoading(false);
     })();
-  }, []);
+  }, [user, isSuperAdmin]);
 
   // Per-job task variance map
   const jobVariance = useMemo(() => {
