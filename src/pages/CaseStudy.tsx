@@ -1,27 +1,38 @@
-import { useState } from "react";
+import { useState, lazy, Suspense, ComponentType } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowRight, ArrowLeft, Play, Database, BarChart3,
   Layers, MessageSquare, Users, AlertTriangle, Sparkles,
+  LucideIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import StepATSImport from "@/components/case-study/StepATSImport";
-import StepExposureMap from "@/components/case-study/StepExposureMap";
-import StepTaskDrilldown from "@/components/case-study/StepTaskDrilldown";
-import StepSimPreview from "@/components/case-study/StepSimPreview";
-import StepTeamProgress from "@/components/case-study/StepTeamProgress";
-import StepActionCenter from "@/components/case-study/StepActionCenter";
-import StepModelAdaptation from "@/components/case-study/StepModelAdaptation";
 
-const STEPS = [
+const StepATSImport = lazy(() => import("@/components/case-study/StepATSImport"));
+const StepExposureMap = lazy(() => import("@/components/case-study/StepExposureMap"));
+const StepTaskDrilldown = lazy(() => import("@/components/case-study/StepTaskDrilldown"));
+const StepSimPreview = lazy(() => import("@/components/case-study/StepSimPreview"));
+const StepTeamProgress = lazy(() => import("@/components/case-study/StepTeamProgress"));
+const StepActionCenter = lazy(() => import("@/components/case-study/StepActionCenter"));
+const StepModelAdaptation = lazy(() => import("@/components/case-study/StepModelAdaptation"));
+
+interface Step {
+  id: string;
+  phase: string;
+  icon: LucideIcon;
+  title: string;
+  subtitle: string;
+  Component: ComponentType;
+}
+
+const STEPS: Step[] = [
   {
     id: "ats",
     phase: "Diagnose",
     icon: Database,
     title: "Import from ATS",
     subtitle: "Connected to Greenhouse in 2 clicks. Every role ingested automatically.",
-    component: <StepATSImport />,
+    Component: StepATSImport,
   },
   {
     id: "exposure",
@@ -29,7 +40,7 @@ const STEPS = [
     icon: BarChart3,
     title: "AI Exposure Map",
     subtitle: "Every role scored at the task level. See where AI disruption hits hardest.",
-    component: <StepExposureMap />,
+    Component: StepExposureMap,
   },
   {
     id: "tasks",
@@ -37,7 +48,7 @@ const STEPS = [
     icon: Layers,
     title: "Task-Level Drill-down",
     subtitle: "Zoom into any role to see exactly which tasks AI is transforming.",
-    component: <StepTaskDrilldown />,
+    Component: StepTaskDrilldown,
   },
   {
     id: "simulation",
@@ -45,7 +56,7 @@ const STEPS = [
     icon: MessageSquare,
     title: "AI Readiness Simulation",
     subtitle: "Employees practice real scenarios — scored across 4 readiness pillars.",
-    component: <StepSimPreview />,
+    Component: StepSimPreview,
   },
   {
     id: "progress",
@@ -53,7 +64,7 @@ const STEPS = [
     icon: Users,
     title: "Team Progress Dashboard",
     subtitle: "Real-time visibility into readiness scores across departments.",
-    component: <StepTeamProgress />,
+    Component: StepTeamProgress,
   },
   {
     id: "action",
@@ -61,7 +72,7 @@ const STEPS = [
     icon: AlertTriangle,
     title: "Action Center",
     subtitle: "Automated interventions. Bottleneck detection. Coaching at scale.",
-    component: <StepActionCenter />,
+    Component: StepActionCenter,
   },
   {
     id: "adaptation",
@@ -69,7 +80,7 @@ const STEPS = [
     icon: Sparkles,
     title: "Real-Time Model Adaptation",
     subtitle: "A new frontier model drops. The engine adapts in under 24 hours — automatically.",
-    component: <StepModelAdaptation />,
+    Component: StepModelAdaptation,
   },
 ];
 
@@ -103,7 +114,7 @@ export default function CaseStudy() {
           </h1>
 
           <p className="text-muted-foreground text-base sm:text-lg max-w-xl mx-auto leading-relaxed">
-            Walk through the full platform in 6 steps — from ATS import to
+            Walk through the full platform in 7 steps — from ATS import to
             executive dashboards. No sign-up required.
           </p>
 
@@ -187,8 +198,10 @@ export default function CaseStudy() {
                 </div>
               </div>
 
-              {/* Step body */}
-              {current.component}
+              {/* Step body — lazy loaded */}
+              <Suspense fallback={<div className="h-48 flex items-center justify-center text-muted-foreground text-sm">Loading…</div>}>
+                <current.Component />
+              </Suspense>
             </motion.div>
           </AnimatePresence>
         </div>
@@ -214,7 +227,7 @@ export default function CaseStudy() {
               <Button size="sm" onClick={() => navigate("/contact")} className="gap-1">
                 Book a Demo <ArrowRight className="h-3.5 w-3.5" />
               </Button>
-              <Button size="sm" variant="outline" onClick={() => navigate("/auth")}>
+              <Button size="sm" variant="outline" onClick={() => navigate("/")}>
                 Try Free
               </Button>
             </div>
