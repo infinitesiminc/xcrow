@@ -77,18 +77,18 @@ interface CustomSim {
 
 /* ── Helpers ── */
 function priorityBadge(p?: string) {
-  if (p === "high") return <Badge className="bg-destructive/10 text-destructive border-destructive/20 text-[9px]">High</Badge>;
-  if (p === "medium") return <Badge className="bg-warning/10 text-warning border-warning/20 text-[9px]">Medium</Badge>;
-  return <Badge className="bg-success/10 text-success border-success/20 text-[9px]">Low</Badge>;
+  if (p === "high") return <Badge className="bg-destructive/10 text-destructive border-destructive/20 text-[11px]">High</Badge>;
+  if (p === "medium") return <Badge className="bg-warning/10 text-warning border-warning/20 text-[11px]">Medium</Badge>;
+  return <Badge className="bg-success/10 text-success border-success/20 text-[11px]">Low</Badge>;
 }
 function scoreBadge(score: number) {
-  if (score >= 70) return <Badge className="bg-success/10 text-success border-success/20 text-[9px]">{score}%</Badge>;
-  if (score >= 40) return <Badge className="bg-warning/10 text-warning border-warning/20 text-[9px]">{score}%</Badge>;
-  return <Badge className="bg-destructive/10 text-destructive border-destructive/20 text-[9px]">{score}%</Badge>;
+  if (score >= 70) return <Badge className="bg-success/10 text-success border-success/20 text-[11px]">{score}%</Badge>;
+  if (score >= 40) return <Badge className="bg-warning/10 text-warning border-warning/20 text-[11px]">{score}%</Badge>;
+  return <Badge className="bg-destructive/10 text-destructive border-destructive/20 text-[11px]">{score}%</Badge>;
 }
 function exposureBadge(score: number) {
   const cls = score >= 70 ? "bg-destructive/10 text-destructive border-destructive/20" : score >= 40 ? "bg-warning/10 text-warning border-warning/20" : "bg-success/10 text-success border-success/20";
-  return <Badge className={`${cls} text-[10px]`}>{score}% AI</Badge>;
+  return <Badge className={`${cls} text-[11px]`}>{score}% AI</Badge>;
 }
 
 export default function LearningPath() {
@@ -456,11 +456,11 @@ export default function LearningPath() {
             <TabsList>
               <TabsTrigger value="path" className="gap-1.5 text-xs">
                 <BookOpen className="w-3.5 h-3.5" /> Learning Path
-                {pathStats && <span className="text-[10px] text-muted-foreground ml-1">{pathStats.total} tasks</span>}
+                {pathStats && <span className="text-[11px] text-muted-foreground ml-1">{pathStats.total} tasks</span>}
               </TabsTrigger>
               <TabsTrigger value="custom" className="gap-1.5 text-xs">
                 <Sparkles className="w-3.5 h-3.5" /> Custom Sims
-                {customSims.length > 0 && <span className="text-[10px] text-muted-foreground ml-1">{customSims.length}</span>}
+                {customSims.length > 0 && <span className="text-[11px] text-muted-foreground ml-1">{customSims.length}</span>}
               </TabsTrigger>
             </TabsList>
             {activeTab === "custom" && (
@@ -513,7 +513,7 @@ export default function LearningPath() {
                             </div>
                           )}
                         </div>
-                        <p className="text-[10px] text-muted-foreground/60 mt-1">How much of the important work is AI-exposed</p>
+                        <p className="text-[11px] text-muted-foreground/60 mt-1">How much of the important work is AI-exposed</p>
                       </CardContent>
                     </Card>
 
@@ -589,7 +589,7 @@ export default function LearningPath() {
                                 );
                               })}
                             </svg>
-                            <p className="text-[10px] text-muted-foreground text-center -mt-1">AI Exposure by Task</p>
+                            <p className="text-[11px] text-muted-foreground text-center -mt-1">AI Exposure by Task</p>
                           </CardContent>
                         </Card>
                       );
@@ -658,7 +658,7 @@ export default function LearningPath() {
                                   <div className="flex items-center gap-1.5 shrink-0">
                                     {isCompleted && taskScore !== null && scoreBadge(taskScore)}
                                     {isUpdated && (
-                                      <Badge className="bg-primary/10 text-primary border-primary/20 text-[8px] px-1 py-0 h-3.5 animate-pulse">Updated</Badge>
+                                      <Badge className="bg-primary/10 text-primary border-primary/20 text-[11px] px-1.5 py-0 h-4 animate-pulse">Updated</Badge>
                                     )}
                                   </div>
                                 </div>
@@ -675,7 +675,7 @@ export default function LearningPath() {
                                 {task.skill_names && task.skill_names.length > 0 && (
                                   <div className="flex flex-wrap gap-1 mb-2">
                                     {task.skill_names.map(s => (
-                                      <span key={s} className="rounded-md bg-secondary px-1.5 py-0.5 text-[9px] font-medium text-foreground">{s}</span>
+                                      <span key={s} className="rounded-md bg-secondary px-1.5 py-0.5 text-[11px] font-medium text-foreground">{s}</span>
                                     ))}
                                   </div>
                                 )}
@@ -695,14 +695,14 @@ export default function LearningPath() {
                                   ].filter(p => p.val !== null);
                                   return (
                                     <div className="rounded-md bg-muted/50 px-2.5 py-2 mb-2 space-y-1">
-                                      <div className="flex items-center gap-3 text-[10px] text-muted-foreground">
+                                      <div className="flex items-center gap-3 text-[11px] text-muted-foreground">
                                         <span>{rounds.length} round{rounds.length > 1 ? "s" : ""}</span>
                                         <span>Best: {best.correct_answers}/{best.total_questions}</span>
                                       </div>
                                       {pillars.length > 0 && (
                                         <div className="flex gap-2">
                                           {pillars.map(p => (
-                                            <div key={p.label} className="flex items-center gap-1 text-[9px]">
+                                            <div key={p.label} className="flex items-center gap-1 text-[11px]">
                                               <span className="text-muted-foreground">{p.label}</span>
                                               <span className={`font-semibold ${p.val! >= 70 ? "text-success" : p.val! >= 40 ? "text-warning" : "text-destructive"}`}>{p.val}%</span>
                                             </div>
@@ -714,7 +714,7 @@ export default function LearningPath() {
                                 })()}
 
                                 <div className="flex items-center justify-between">
-                                  <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
+                                  <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
                                     <GraduationCap className="h-3 w-3" />
                                     <span>15 min</span>
                                   </div>
@@ -800,8 +800,8 @@ export default function LearningPath() {
                           <div className="flex-1 min-w-0">
                             <p className="text-sm font-medium text-foreground truncate">{sim.task_name}</p>
                             <div className="flex items-center gap-2 mt-0.5">
-                              <Badge variant="outline" className="text-[10px] px-1.5 py-0">15 min</Badge>
-                              <span className="text-[10px] text-muted-foreground">
+                              <Badge variant="outline" className="text-[11px] px-1.5 py-0">15 min</Badge>
+                              <span className="text-[11px] text-muted-foreground">
                                 {sim.source_type === "prompt" ? "✏️ Prompt" : "📄 Doc"}
                               </span>
                               {taskScore !== null && scoreBadge(taskScore)}
