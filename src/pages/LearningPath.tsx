@@ -772,7 +772,7 @@ export default function LearningPath() {
                     <Card key={sim.id} className="group hover:border-primary/30 transition-colors">
                       <CardContent className="p-4">
                         <div className="flex items-center gap-3">
-                          <div className="p-2 rounded-md border bg-dot-blue/10 text-dot-blue border-dot-blue/20">
+                          <div className="p-2 rounded-md border bg-brand-human/10 text-brand-human border-brand-human/20">
                             <GraduationCap className="w-4 h-4" />
                           </div>
                           <div className="flex-1 min-w-0">

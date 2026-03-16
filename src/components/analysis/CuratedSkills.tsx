@@ -35,7 +35,7 @@ export function CuratedSkillsBadge({ curatedSkills }: Props) {
                 variant="outline"
                 className="text-xs text-foreground/70 border-border/40"
               >
-                {i === 0 && <span className="w-1.5 h-1.5 rounded-full bg-dot-teal mr-1.5 shrink-0" />}
+                {i === 0 && <span className="w-1.5 h-1.5 rounded-full bg-brand-human mr-1.5 shrink-0" />}
                 {skill.name}
               </Badge>
             ))}

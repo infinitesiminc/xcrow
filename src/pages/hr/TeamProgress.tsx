@@ -614,7 +614,7 @@ function UserDetailSheet({ user, open, onClose }: { user: UserSummary | null; op
               return (
                 <div key={i} className="py-3 border-b border-border/50 last:border-0 space-y-2">
                   <div className="flex items-start gap-3">
-                    <CheckCircle2 className={`h-4 w-4 mt-0.5 shrink-0 ${pct >= 70 ? "text-success" : "text-dot-amber"}`} />
+                    <CheckCircle2 className={`h-4 w-4 mt-0.5 shrink-0 ${pct >= 70 ? "text-success" : "text-brand-mid"}`} />
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium text-foreground">{sim.task_name}</p>
                       <p className="text-[11px] text-muted-foreground">{sim.sim_job_title}</p>
