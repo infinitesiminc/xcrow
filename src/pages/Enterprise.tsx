@@ -459,7 +459,7 @@ export default function Enterprise() {
   return (
     <div className="min-h-screen bg-background">
       {/* ── Sticky ticker ── */}
-      <div className="sticky top-0 z-50 w-full overflow-hidden border-b border-border/40 bg-background/95 backdrop-blur-sm">
+      <div className="sticky top-14 z-40 w-full overflow-hidden border-b border-border/40 bg-background/95 backdrop-blur-sm">
         <div className="relative h-[28px] overflow-hidden">
           <div className="flex animate-[ticker_18s_linear_infinite] whitespace-nowrap items-center h-full">
             {[...FRONTIER_RELEASES, ...FRONTIER_RELEASES].map((r, i) => (
