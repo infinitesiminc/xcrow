@@ -129,16 +129,28 @@ export async function generateMockFromDB(): Promise<{
 }> {
   if (_cache) return _cache;
 
-  // Fetch all jobs (paginated for >1000)
+  // Find the Anthropic company ID first
+  const { data: companyRow } = await supabase
+    .from("companies")
+    .select("id")
+    .ilike("name", "%anthropic%")
+    .limit(1)
+    .single();
+
+  const companyId = companyRow?.id;
+
+  // Fetch jobs for Anthropic only (paginated for >1000)
   const allJobs: DbJob[] = [];
   let from = 0;
   const batchSize = 1000;
   while (true) {
-    const { data } = await supabase
+    let query = supabase
       .from("jobs")
       .select("id, title, department, augmented_percent")
       .order("title")
       .range(from, from + batchSize - 1);
+    if (companyId) query = query.eq("company_id", companyId);
+    const { data } = await query;
     if (!data || data.length === 0) break;
     allJobs.push(...(data as DbJob[]));
     if (data.length < batchSize) break;
