@@ -246,6 +246,9 @@ export default function ScoreDistributions() {
             <TabsTrigger value="departments" className="gap-1.5 text-xs">
               By Department
             </TabsTrigger>
+            <TabsTrigger value="locations" className="gap-1.5 text-xs">
+              By Location
+            </TabsTrigger>
           </TabsList>
 
           {/* ═══ ALL JOBS RANKED ═══ */}
