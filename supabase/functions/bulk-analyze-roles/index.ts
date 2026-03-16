@@ -23,7 +23,7 @@ serve(async (req) => {
   );
 
   try {
-    const { companyId, batchSize = 5, department, jobIds } = await req.json();
+    const { companyId, batchSize = 5, department, jobIds, forceRefresh = false } = await req.json();
     if (!companyId) {
       return new Response(JSON.stringify({ error: "companyId required" }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -54,18 +54,22 @@ serve(async (req) => {
     if (clusterErr) throw new Error(clusterErr.message);
     const analyzedJobIds = new Set((existingClusters || []).map(c => c.job_id));
 
-    // Find jobs needing backfill (have clusters but no score)
+    // Find jobs needing backfill (have clusters but no score) OR forceRefresh all
+    console.log(`[bulk-analyze] forceRefresh=${forceRefresh}, analyzedJobIds=${analyzedJobIds.size}, total=${allJobs.length}`);
     const backfillJobIds = new Set(
       allJobs
-        .filter(j => analyzedJobIds.has(j.id) && (j.augmented_percent ?? 0) === 0)
+        .filter(j => analyzedJobIds.has(j.id) && (forceRefresh || (j.augmented_percent ?? 0) === 0))
         .map(j => j.id)
     );
+    console.log(`[bulk-analyze] backfillJobIds=${backfillJobIds.size}`);
 
     const pendingJobs = allJobs.filter(j => !analyzedJobIds.has(j.id) || backfillJobIds.has(j.id));
+    console.log(`[bulk-analyze] pendingJobs=${pendingJobs.length}`);
     if (pendingJobs.length === 0) {
       return new Response(JSON.stringify({
         total: allJobs.length, alreadyAnalyzed: analyzedJobIds.size,
         justProcessed: 0, remaining: 0, batchProcessed: 0, results: [],
+        debug: { forceRefresh, backfillCount: backfillJobIds.size },
       }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -113,7 +117,7 @@ Order from highest AI exposure to lowest. Respond ONLY with valid JSON array.`;
             Authorization: `Bearer ${apiKey}`,
           },
           body: JSON.stringify({
-            model: "google/gemini-2.5-flash-lite",
+            model: "google/gemini-2.5-flash",
             messages: [{ role: "user", content: prompt }],
             temperature: 0.6,
           }),
@@ -139,6 +143,15 @@ Order from highest AI exposure to lowest. Respond ONLY with valid JSON array.`;
           results.push({ jobId: job.id, title: job.title, status: "parse_error" });
           continue;
         }
+
+        // Log parsed scores for diagnostics
+        const sampleTask = tasks[0];
+        console.log(`[${job.title}] Sample task scores:`, JSON.stringify({
+          cluster_name: sampleTask?.cluster_name,
+          ai_exposure_score: sampleTask?.ai_exposure_score,
+          job_impact_score: sampleTask?.job_impact_score,
+          keys: sampleTask ? Object.keys(sampleTask) : [],
+        }));
 
         const rows = tasks.map((t: any, i: number) => ({
           job_id: job.id,
