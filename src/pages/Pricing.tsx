@@ -108,16 +108,9 @@ export default function Pricing() {
               "Volume discounts at scale",
             ]}
             cta={
-              isPro ? (
-                <Button variant="secondary" size="lg" className="w-full text-sm" onClick={handleManageSubscription}>
-                  Manage subscription
-                </Button>
-              ) : (
-                <Button size="lg" className="w-full gap-1.5 text-sm" onClick={handleUpgrade} disabled={checkoutLoading}>
-                  {checkoutLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Zap className="h-4 w-4" />}
-                  Start Growth plan
-                </Button>
-              )
+              <Button size="lg" className="w-full gap-1.5 text-sm" onClick={() => navigate("/contact")}>
+                <ArrowRight className="h-4 w-4" /> Contact us
+              </Button>
             }
           />
 
