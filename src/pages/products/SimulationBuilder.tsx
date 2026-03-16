@@ -178,6 +178,7 @@ export default function SimulationBuilder() {
 
     let errors = 0;
     let processed = 0;
+    const failedJobs: { title: string; error: string }[] = [];
 
     for (const job of pending) {
       // Check pause/abort
@@ -204,43 +205,30 @@ export default function SimulationBuilder() {
 
         if (error) throw new Error(error.message);
         if (data?.error) {
-          // Rate limit → auto-pause with backoff
+          // Rate limit → wait and retry same job
           if (data.error.includes("Rate limited") || data.error.includes("429")) {
-            errors++;
-            setQueueMessage(`Rate limited. Waiting 10s before retry… (${errors} issues)`);
-            if (errors >= 3) {
-              setQueueMessage(`Paused after ${errors} rate limits. Click resume to continue.`);
-              pauseRef.current = true;
-              break;
-            }
+            setQueueMessage(`Rate limited. Waiting 10s… (${processed} done, ${failedJobs.length} failed)`);
             await new Promise(r => setTimeout(r, 10000));
-            continue; // retry same job by not incrementing
+            continue; // retry same job
           }
           throw new Error(data.error);
         }
 
         // Success
-        errors = 0;
         processed++;
         setQueueProcessed(processed);
         setQueueConsecutiveErrors(0);
-
-        // Update local analyzed set immediately
         setAnalyzedJobIds(prev => new Set([...prev, job.id]));
 
         // Brief delay between jobs
         await new Promise(r => setTimeout(r, 1500));
       } catch (err: any) {
         errors++;
+        failedJobs.push({ title: job.title, error: err.message });
         setQueueConsecutiveErrors(errors);
         console.error(`Queue error for ${job.title}:`, err.message);
-
-        if (errors >= 3) {
-          setQueueMessage(`Paused after 3 consecutive errors. Last: ${err.message}`);
-          pauseRef.current = true;
-          break;
-        }
-        // Wait and continue to next job
+        setQueueMessage(`${processed} done, ${failedJobs.length} errors — continuing…`);
+        // Wait briefly and continue to NEXT job (don't pause)
         await new Promise(r => setTimeout(r, 3000));
       }
     }
@@ -249,7 +237,16 @@ export default function SimulationBuilder() {
     setQueueRunning(false);
     if (!pauseRef.current && !abortRef.current) {
       setQueueMessage(null);
-      toast({ title: "Queue complete!", description: `${processed} roles analyzed.` });
+      if (failedJobs.length > 0) {
+        toast({
+          title: `Queue complete: ${processed} analyzed, ${failedJobs.length} failed`,
+          description: failedJobs.map(f => f.title).join(", "),
+          variant: "destructive",
+        });
+        console.table(failedJobs);
+      } else {
+        toast({ title: "Queue complete!", description: `${processed} roles analyzed.` });
+      }
     }
     refreshAnalyzed();
   }, [jobs, companyName, queueRunning, toast, refreshAnalyzed]);
