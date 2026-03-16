@@ -29,6 +29,7 @@ export default function Navbar() {
     ...(!user ? [
       { label: "Why Simulation", path: "/why-simulation" },
       { label: "Case Study", path: "/case-study/anthropic" },
+      { label: "Investors", path: "/investors" },
       { label: "Pricing", path: "/pricing" },
       { label: "Contact", path: "/contact" },
     ] : []),
