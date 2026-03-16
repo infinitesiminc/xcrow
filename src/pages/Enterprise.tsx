@@ -33,15 +33,22 @@ const trustFeatures = [
 
 /* ── Frontier model releases for hero ticker ── */
 const FRONTIER_RELEASES = [
-  { date: "Mar 9", model: "GPT-5.4" },
-  { date: "Mar 5", model: "Gemini 3.1 Flash" },
-  { date: "Feb 19", model: "Gemini 3.1 Pro" },
-  { date: "Feb 12", model: "GPT-5.3" },
-  { date: "Feb 5", model: "Claude 4.6" },
-  { date: "Jan 28", model: "Gemini 3 Flash" },
-  { date: "Jan 15", model: "GPT-5.2" },
-  { date: "Jan 8", model: "DeepSeek R2" },
+  { date: "2026-03-09", model: "GPT-5.4" },
+  { date: "2026-03-05", model: "Gemini 3.1 Flash" },
+  { date: "2026-02-19", model: "Gemini 3.1 Pro" },
+  { date: "2026-02-12", model: "GPT-5.3" },
+  { date: "2026-02-05", model: "Claude 4.6" },
+  { date: "2026-01-28", model: "Gemini 3 Flash" },
+  { date: "2026-01-15", model: "GPT-5.2" },
+  { date: "2026-01-08", model: "DeepSeek R2" },
 ];
+
+function daysAgo(dateStr: string): string {
+  const diff = Math.floor((Date.now() - new Date(dateStr).getTime()) / 86400000);
+  if (diff === 0) return "today";
+  if (diff === 1) return "1d ago";
+  return `${diff}d ago`;
+}
 
 /* ── Model releases for the acceleration gap visual ── */
 const modelReleases = [
