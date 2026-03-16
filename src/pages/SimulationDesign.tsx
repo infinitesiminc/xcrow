@@ -597,7 +597,7 @@ function FeedbackLoopSection() {
           transition={{ delay: 0.5, duration: 0.5 }}
           className="flex items-center justify-center mt-6 gap-2 text-sm text-muted-foreground"
         >
-          <RefreshCw className="h-4 w-4 text-dot-teal" />
+          <RefreshCw className="h-4 w-4 text-brand-human" />
           <span>Loop repeats with every frontier model — GPT-5, Gemini 3, Claude 5, and beyond</span>
         </motion.div>
       </div>

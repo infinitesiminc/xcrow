@@ -492,7 +492,7 @@ export default function Simulations() {
                         const exposure = task.ai_exposure_score ?? 50;
                         return (
                           <div key={task.id} className="flex items-start gap-3 p-3 rounded-lg border border-border/50 bg-card">
-                            <div className="p-1.5 rounded-md border bg-dot-blue/10 text-dot-blue border-dot-blue/20 mt-0.5">
+                            <div className="p-1.5 rounded-md border bg-brand-human/10 text-brand-human border-brand-human/20 mt-0.5">
                               <GraduationCap className="w-3.5 h-3.5" />
                             </div>
                             <div className="flex-1 min-w-0">
