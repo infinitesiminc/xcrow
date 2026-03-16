@@ -362,7 +362,7 @@ export default function Investors() {
             subtitle="Our platform is live with real company data. The Anthropic case study walks through the full workflow."
           />
           <motion.div {...fadeUp}>
-            <Card className="border-primary/20 bg-gradient-to-br from-primary/5 via-background to-accent/5 overflow-hidden">
+            <Card className="border-brand-human/20 bg-gradient-to-br from-brand-ai/5 via-background to-brand-human/5 overflow-hidden">
               <CardContent className="p-6 sm:p-8">
                 <div className="grid sm:grid-cols-2 gap-6 items-center">
                   <div>
