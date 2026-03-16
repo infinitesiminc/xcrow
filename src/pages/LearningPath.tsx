@@ -517,74 +517,71 @@ export default function LearningPath() {
                       </CardContent>
                     </Card>
 
-                    {/* Quadrant Chart */}
-                    {analyzedTasks.length >= 2 && (() => {
+                    {/* Radar Chart — AI Exposure per task */}
+                    {analyzedTasks.length >= 3 && (() => {
                       const tasks = analyzedTasks.slice(0, 12);
-                      const pad = { top: 20, right: 20, bottom: 32, left: 36 };
-                      const w = 340, h = 280;
-                      const plotW = w - pad.left - pad.right;
-                      const plotH = h - pad.top - pad.bottom;
+                      const cx = 170, cy = 140, r = 110;
+                      const n = tasks.length;
+                      const angleStep = (2 * Math.PI) / n;
+                      const startAngle = -Math.PI / 2;
+
+                      const rings = [25, 50, 75, 100];
+                      const getPoint = (i: number, val: number) => {
+                        const angle = startAngle + i * angleStep;
+                        const dist = (val / 100) * r;
+                        return { x: cx + dist * Math.cos(angle), y: cy + dist * Math.sin(angle) };
+                      };
+
+                      const polygonPoints = tasks.map((t, i) => {
+                        const p = getPoint(i, t.ai_exposure_score ?? 50);
+                        return `${p.x},${p.y}`;
+                      }).join(" ");
 
                       return (
                         <Card className="border-border bg-card">
                           <CardContent className="p-4">
-                            <svg viewBox={`0 0 ${w} ${h}`} className="w-full" onMouseLeave={() => setHoveredTaskIndex(null)}>
-                              {/* Quadrant backgrounds */}
-                              <rect x={pad.left} y={pad.top} width={plotW / 2} height={plotH / 2} fill="hsl(var(--success) / 0.05)" />
-                              <rect x={pad.left + plotW / 2} y={pad.top} width={plotW / 2} height={plotH / 2} fill="hsl(var(--destructive) / 0.05)" />
-                              <rect x={pad.left} y={pad.top + plotH / 2} width={plotW / 2} height={plotH / 2} fill="hsl(var(--muted) / 0.15)" />
-                              <rect x={pad.left + plotW / 2} y={pad.top + plotH / 2} width={plotW / 2} height={plotH / 2} fill="hsl(var(--warning) / 0.05)" />
-
-                               {/* Quadrant labels — pinned to corners */}
-                               <text x={pad.left + 6} y={pad.top + 12} textAnchor="start" className="text-[9px] font-medium" fill="hsl(var(--success))" opacity={0.7}>Human Edge</text>
-                               <text x={pad.left + plotW - 6} y={pad.top + 12} textAnchor="end" className="text-[9px] font-medium" fill="hsl(var(--destructive))" opacity={0.7}>Urgent Upskill</text>
-                               <text x={pad.left + 6} y={pad.top + plotH - 6} textAnchor="start" className="text-[9px] font-medium" fill="hsl(var(--muted-foreground))" opacity={0.45}>Low Priority</text>
-                               <text x={pad.left + plotW - 6} y={pad.top + plotH - 6} textAnchor="end" className="text-[9px] font-medium" fill="hsl(var(--warning))" opacity={0.7}>Automate</text>
-
-                              {/* Axes */}
-                              <line x1={pad.left} y1={pad.top + plotH} x2={pad.left + plotW} y2={pad.top + plotH} stroke="hsl(var(--border))" strokeWidth="0.5" />
-                              <line x1={pad.left} y1={pad.top} x2={pad.left} y2={pad.top + plotH} stroke="hsl(var(--border))" strokeWidth="0.5" />
-                              <line x1={pad.left + plotW / 2} y1={pad.top} x2={pad.left + plotW / 2} y2={pad.top + plotH} stroke="hsl(var(--border))" strokeWidth="0.4" strokeDasharray="4,4" opacity={0.4} />
-                              <line x1={pad.left} y1={pad.top + plotH / 2} x2={pad.left + plotW} y2={pad.top + plotH / 2} stroke="hsl(var(--border))" strokeWidth="0.4" strokeDasharray="4,4" opacity={0.4} />
-
-                              {/* Axis labels */}
-                              <text x={pad.left + plotW / 2} y={h - 4} textAnchor="middle" className="text-[9px]" fill="hsl(var(--muted-foreground))">AI Exposure →</text>
-                              <text x={10} y={pad.top + plotH / 2} textAnchor="middle" dominantBaseline="central" className="text-[9px]" fill="hsl(var(--muted-foreground))" transform={`rotate(-90, 10, ${pad.top + plotH / 2})`}>Job Impact →</text>
-
-                              {/* Ticks */}
-                              <text x={pad.left} y={h - 14} textAnchor="middle" className="text-[7px]" fill="hsl(var(--muted-foreground))" opacity={0.4}>0</text>
-                              <text x={pad.left + plotW / 2} y={h - 14} textAnchor="middle" className="text-[7px]" fill="hsl(var(--muted-foreground))" opacity={0.4}>50</text>
-                              <text x={pad.left + plotW} y={h - 14} textAnchor="middle" className="text-[7px]" fill="hsl(var(--muted-foreground))" opacity={0.4}>100</text>
-
-                              {/* Data points */}
+                            <svg viewBox="0 0 340 280" className="w-full" onMouseLeave={() => setHoveredTaskIndex(null)}>
+                              {/* Grid rings */}
+                              {rings.map(pct => (
+                                <circle key={pct} cx={cx} cy={cy} r={(pct / 100) * r} fill="none" stroke="hsl(var(--border))" strokeWidth="0.5" opacity={0.4} />
+                              ))}
+                              {/* Ring labels */}
+                              {rings.map(pct => (
+                                <text key={`lbl-${pct}`} x={cx + 2} y={cy - (pct / 100) * r + 3} className="text-[7px]" fill="hsl(var(--muted-foreground))" opacity={0.4}>{pct}</text>
+                              ))}
+                              {/* Spokes */}
+                              {tasks.map((_, i) => {
+                                const p = getPoint(i, 100);
+                                return <line key={i} x1={cx} y1={cy} x2={p.x} y2={p.y} stroke="hsl(var(--border))" strokeWidth="0.3" opacity={0.3} />;
+                              })}
+                              {/* Filled polygon */}
+                              <polygon points={polygonPoints} fill="hsl(var(--primary) / 0.12)" stroke="hsl(var(--primary))" strokeWidth="1.5" />
+                              {/* Data dots + labels */}
                               {tasks.map((t, i) => {
                                 const exposure = t.ai_exposure_score ?? 50;
-                                const impact = t.job_impact_score ?? 50;
-                                const x = pad.left + (exposure / 100) * plotW;
-                                const y = pad.top + plotH - (impact / 100) * plotH;
-                                const { fill } = getQuadrantColor(exposure, impact);
+                                const p = getPoint(i, exposure);
+                                const labelP = getPoint(i, 115);
                                 const isHovered = hoveredTaskIndex === i;
                                 const isAnyHovered = hoveredTaskIndex !== null;
+                                const dotColor = exposure >= 70 ? "hsl(var(--destructive))" : exposure >= 40 ? "hsl(var(--warning))" : "hsl(var(--success))";
                                 return (
                                   <g
                                     key={i}
                                     onMouseEnter={() => setHoveredTaskIndex(i)}
                                     className="cursor-pointer"
+                                    opacity={isAnyHovered && !isHovered ? 0.3 : 1}
                                     style={{ transition: "opacity 0.15s" }}
-                                    opacity={isAnyHovered && !isHovered ? 0.25 : 1}
                                   >
-                                    {/* Hover ring */}
-                                    {isHovered && <circle cx={x} cy={y} r="14" fill={fill} opacity={0.1} />}
-                                    <circle cx={x} cy={y} r={isHovered ? "5" : "4"} fill={fill} style={{ transition: "r 0.15s" }} />
-                                    <text x={x} y={y - (isHovered ? 9 : 7)} textAnchor="middle" className={isHovered ? "text-[9px] font-bold" : "text-[8px] font-semibold"} fill="hsl(var(--foreground))">
+                                    {isHovered && <circle cx={p.x} cy={p.y} r="12" fill={dotColor} opacity={0.12} />}
+                                    <circle cx={p.x} cy={p.y} r={isHovered ? "5" : "3.5"} fill={dotColor} style={{ transition: "r 0.15s" }} />
+                                    <text x={labelP.x} y={labelP.y} textAnchor="middle" dominantBaseline="central" className={`${isHovered ? "text-[9px] font-bold" : "text-[8px] font-medium"}`} fill="hsl(var(--foreground))">
                                       {i + 1}
                                     </text>
-                                    {/* Tooltip on hover */}
                                     {isHovered && (
                                       <>
-                                        <rect x={x - 60} y={y + 8} width="120" height="18" rx="3" fill="hsl(var(--card))" stroke="hsl(var(--border))" strokeWidth="0.5" />
-                                        <text x={x} y={y + 19} textAnchor="middle" className="text-[7px]" fill="hsl(var(--foreground))">
-                                          {t.cluster_name.length > 22 ? t.cluster_name.slice(0, 22) + "…" : t.cluster_name}
+                                        <rect x={p.x - 65} y={p.y - 22} width="130" height="16" rx="3" fill="hsl(var(--card))" stroke="hsl(var(--border))" strokeWidth="0.5" />
+                                        <text x={p.x} y={p.y - 13} textAnchor="middle" className="text-[7px]" fill="hsl(var(--foreground))">
+                                          {t.cluster_name.length > 24 ? t.cluster_name.slice(0, 24) + "…" : t.cluster_name} ({exposure}%)
                                         </text>
                                       </>
                                     )}
@@ -592,6 +589,7 @@ export default function LearningPath() {
                                 );
                               })}
                             </svg>
+                            <p className="text-[10px] text-muted-foreground text-center -mt-1">AI Exposure by Task</p>
                           </CardContent>
                         </Card>
                       );
