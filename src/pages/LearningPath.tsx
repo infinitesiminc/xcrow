@@ -460,7 +460,7 @@ export default function LearningPath() {
               </TabsTrigger>
               <TabsTrigger value="custom" className="gap-1.5 text-xs">
                 <Sparkles className="w-3.5 h-3.5" /> Custom Sims
-                {customSims.length > 0 && <span className="text-[10px] text-muted-foreground ml-1">{customSims.length}</span>}
+                {customSims.length > 0 && <span className="text-[11px] text-muted-foreground ml-1">{customSims.length}</span>}
               </TabsTrigger>
             </TabsList>
             {activeTab === "custom" && (
