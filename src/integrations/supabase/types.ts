@@ -122,6 +122,7 @@ export type Database = {
           name: string
           slug: string | null
           website: string | null
+          workspace_id: string | null
         }
         Insert: {
           brand_color?: string | null
@@ -140,6 +141,7 @@ export type Database = {
           name: string
           slug?: string | null
           website?: string | null
+          workspace_id?: string | null
         }
         Update: {
           brand_color?: string | null
@@ -158,8 +160,17 @@ export type Database = {
           name?: string
           slug?: string | null
           website?: string | null
+          workspace_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "companies_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "company_workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       company_workspaces: {
         Row: {
@@ -495,6 +506,7 @@ export type Database = {
           source_url: string | null
           status: string | null
           title: string
+          workspace_id: string | null
         }
         Insert: {
           augmented_percent?: number | null
@@ -513,6 +525,7 @@ export type Database = {
           source_url?: string | null
           status?: string | null
           title: string
+          workspace_id?: string | null
         }
         Update: {
           augmented_percent?: number | null
@@ -531,6 +544,7 @@ export type Database = {
           source_url?: string | null
           status?: string | null
           title?: string
+          workspace_id?: string | null
         }
         Relationships: [
           {
@@ -538,6 +552,13 @@ export type Database = {
             columns: ["company_id"]
             isOneToOne: false
             referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "jobs_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "company_workspaces"
             referencedColumns: ["id"]
           },
         ]
