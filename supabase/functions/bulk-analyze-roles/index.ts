@@ -23,7 +23,7 @@ serve(async (req) => {
   );
 
   try {
-    const { companyId, batchSize = 5, department, jobIds } = await req.json();
+    const { companyId, batchSize = 5, department, jobIds, forceRefresh = false } = await req.json();
     if (!companyId) {
       return new Response(JSON.stringify({ error: "companyId required" }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
