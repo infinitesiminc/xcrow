@@ -636,7 +636,7 @@ export default function Investors() {
                     <div key={col.scale} className="text-center">
                       <div className="relative h-40 flex items-end justify-center gap-1 mb-2">
                         <motion.div
-                          className="w-6 bg-destructive/50 rounded-t"
+                          className="w-6 bg-brand-ai/50 rounded-t"
                           initial={{ height: 0 }}
                           whileInView={{ height: `${col.exposure * 1.4}px` }}
                           viewport={{ once: true }}
