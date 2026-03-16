@@ -352,6 +352,8 @@ export default function ActionCenter() {
   const [selectedEmployee, setSelectedEmployee] = useState<EscalatedUser | null>(null);
   const [selectedTask, setSelectedTask] = useState<{ name: string; count: number } | null>(null);
 
+  const isSuperAdmin = !!user && SUPERADMIN_IDS.includes(user.id);
+
   useEffect(() => {
     if (!user) { setLoading(false); return; }
     (async () => {
@@ -364,18 +366,23 @@ export default function ActionCenter() {
       if (!membership?.length) { setLoading(false); return; }
       const wsId = membership[0].workspace_id;
 
-      const [progressRes, queueRes, mockData] = await Promise.all([
+      const [progressRes, queueRes] = await Promise.all([
         supabase.rpc("get_workspace_progress", { p_workspace_id: wsId }),
         supabase.from("simulation_queue").select("*").eq("status", "pending").order("created_at", { ascending: false }),
-        generateMockFromDB(),
       ]);
 
       const dbRows = (progressRes.data as ProgressRow[] || []).filter(r => r.user_id !== user.id);
-      setProgress([...mockData.progress, ...dbRows]);
+
+      if (isSuperAdmin) {
+        const mockData = await generateMockFromDB();
+        setProgress([...mockData.progress, ...dbRows]);
+      } else {
+        setProgress(dbRows);
+      }
       setQueue((queueRes.data as QueueItem[]) || []);
       setLoading(false);
     })();
-  }, [user]);
+  }, [user, isSuperAdmin]);
 
   const metrics = useMemo(() => {
     const taskFailCounts: Record<string, number> = {};
