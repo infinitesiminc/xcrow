@@ -629,8 +629,7 @@ export default function Enterprise() {
 
           <div className="grid md:grid-cols-2 gap-8 items-center">
             <motion.div {...fadeUp} transition={{ duration: 0.5, delay: 0.15 }}>
-              <AdaptiveLoopDiagram activeNode={activeNode} setActiveNode={setActiveNode} />
-            </motion.div>
+              <AdaptiveLoopDiagram activeNode={activeNode} setActiveNode={handleNodeClick} />
 
             <div className="min-h-[280px] flex items-center">
               <AnimatePresence mode="wait">
