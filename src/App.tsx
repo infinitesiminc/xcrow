@@ -25,6 +25,7 @@ import Simulations from "./pages/Simulations.tsx";
 import LearningPath from "./pages/LearningPath.tsx";
 import ScoreDistributions from "./pages/ScoreDistributions.tsx";
 import JoinWorkspace from "./pages/JoinWorkspace.tsx";
+import CaseStudy from "./pages/CaseStudy.tsx";
 import HRLayout from "./layouts/HRLayout.tsx";
 import TeamProgress from "./pages/hr/TeamProgress.tsx";
 import Members from "./pages/hr/Members.tsx";
