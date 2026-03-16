@@ -103,8 +103,8 @@ export default function ScoreDistributions() {
         from += PAGE_SIZE;
       }
 
-      const taskRows = clusterJobIds || [];
-      const analyzedIds = [...new Set(taskRows.map(t => t.job_id))];
+      const taskRows = allTaskRows;
+      const analyzedIds = [...new Set(taskRows.map(t => t.job_id))] as string[];
 
       let analyzedJobs: JobRow[] = [];
       if (analyzedIds.length > 0) {
