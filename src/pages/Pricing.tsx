@@ -22,7 +22,6 @@ const faqs = [
 
 export default function Pricing() {
   const navigate = useNavigate();
-  const { user } = useAuth();
 
   return (
     <div className="min-h-screen bg-background">
