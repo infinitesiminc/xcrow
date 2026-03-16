@@ -249,47 +249,75 @@ NEVER exceed 80 words per message.`;
 }
 
 function buildUpskillChatSystem(role: string, aiContext: string, round: number, turnCount: number): string {
-  // Micro-turn structure: each round has ~5 turns
-  // Turn 1: Scenario (from compile or "yes" to continue)
-  // Turn 2: React to user's answer — short feedback
-  // Turn 3: Follow-up probe question
-  // Turn 4: Insight card after user responds to probe
-  // Turn 5: Ready for next?
+  // Micro-turn structure: each round has 3 user turns
+  // After user answers scenario → FEEDBACK + PROBE (turn A)
+  // After user answers probe → INSIGHT + CONTINUE (turn B)  
+  // After user says yes → NEW SCENARIO (turn C)
 
-  const turnInRound = ((turnCount - 1) % 5) + 1;
+  // Determine which turn we're on based on conversation pattern
+  // turnCount tracks total turns. We use modulo to figure out position in round.
+  const posInRound = ((turnCount - 1) % 3);
 
-  return `You are a peer mentor for the role of ${role}, discussing AI's impact through scenario-based conversation.
+  // Build ONLY the instruction for the current turn — no alternatives
+  let turnInstruction: string;
+
+  if (posInRound === 0) {
+    // User just answered a scenario — give feedback then probe
+    turnInstruction = `The user just answered your scenario question. Do EXACTLY this:
+
+1. **React to their specific answer** in 2 sentences:
+   - First sentence: What was strong or smart about their approach (be specific, reference what they said)
+   - Second sentence: One blind spot or missed opportunity (be specific)
+
+2. Then ask ONE targeted follow-up probe question. Examples:
+   - "What specific AI tool would you use for [detail from their answer]?"
+   - "How would you validate the AI's output in this case?"
+   - "What's your fallback if the AI tool fails here?"
+
+Total response: under 60 words. Do NOT include 🤖 or 💡 or "Ready for next". ONLY feedback + one question.`;
+  } else if (posInRound === 1) {
+    // User answered the probe — give insight card + continue prompt
+    turnInstruction = `The user just answered your follow-up probe. Do EXACTLY this:
+
+1. One sentence acknowledging their probe answer (reference what they said).
+
+2. Then the insight card:
+   🤖 **AI Today:** [Name a specific, real AI tool and what it does for this exact task. E.g. "GitHub Copilot can auto-generate boilerplate integration code" — not generic statements.]
+   💡 **Human Edge:** [One specific thing only a human can do here. E.g. "Only you can assess whether the integration meets your org's compliance requirements."]
+
+3. Final line: "🔄 **Ready for the next scenario?** (yes/no)"
+
+Total response: under 70 words. Do NOT start a new scenario.`;
+  } else {
+    // User said yes to continue — present new scenario
+    turnInstruction = `The user wants the next scenario. Do EXACTLY this:
+
+"**📖 Scenario:**" — Present a NEW realistic work scenario (2-3 sentences). It must:
+- Be a DIFFERENT aspect of the task than previous rounds
+- Include specific details: stakeholders, constraints, or tools available
+- Feel like a real workday situation
+
+"**🤔 How would you handle this?**"
+
+Total response: under 60 words. NOTHING else — no tips, no context, no preamble.`;
+  }
+
+  return `You are a peer mentor for ${role}, discussing AI's impact on their work.
 
 ${aiContext}
 
-ABSOLUTE RULE: Every message MUST be under 80 words. No exceptions. One purpose per message.
+Round ${round || 1} of ${MAX_ROUNDS}.
 
-You follow a MICRO-TURN structure within each round. Current state — Round ${round || 1} of ${MAX_ROUNDS}, Turn ${turnInRound} of 5.
+ABSOLUTE RULES:
+- Follow the instruction below EXACTLY. Do not deviate.
+- Stay under 80 words. No exceptions.
+- Reference the user's actual words in your response. Never give generic feedback.
 
-Based on the conversation context, do ONE of these:
+YOUR TASK RIGHT NOW:
+${turnInstruction}
 
-**FEEDBACK TURN** (user just answered a scenario/probe):
-- 1-2 sentences acknowledging their approach
-- Point out one strength and one blind spot
-- End with nothing else. Just the feedback.
-
-**PROBE TURN** (you just gave feedback):
-- Ask ONE targeted follow-up: "What specific tool would you use for X?" or "How would you handle Y?"
-- Single question, under 30 words
-
-**INSIGHT TURN** (user answered the probe):
-- "🤖 **AI Today:** [1 specific sentence about real AI tools for this]"
-- "💡 **Human Edge:** [1 sentence about irreplaceable human value]"
-- "🔄 **Ready for the next scenario?** (yes/no)"
-
-**NEW SCENARIO TURN** (user said yes to continue):
-- "**📖 Scenario:**" — 2-3 sentence NEW scenario, different angle
-- "**🤔 How would you handle this?**"
-- Nothing else. No tips, no context.
-
-${round >= MAX_ROUNDS ? "This is the FINAL round. After the insight turn, say: 'Great session! 🎉 Click Finish to see your results.'" : ""}
-If user says no to continuing: "Solid session! Click 'Finish' to see your results."
-NEVER exceed 80 words.`;
+${round >= MAX_ROUNDS && posInRound === 1 ? "This is the FINAL round. Replace the 'Ready for next scenario?' with: 'Great session! 🎉 Click Finish to see your results.'" : ""}
+${posInRound !== 2 ? "" : "If user said no: 'Solid session! Click Finish to see your results.'"}`;
 }
 
 // ─── SCORE ───
