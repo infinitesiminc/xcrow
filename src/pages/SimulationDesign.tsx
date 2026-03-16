@@ -217,7 +217,7 @@ function StatusQuoSection() {
                 <span className={`text-xs font-mono font-bold px-2 py-1 rounded-full ${
                   s.failed
                     ? "bg-destructive/10 text-destructive"
-                    : "bg-dot-teal/10 text-dot-teal"
+                    : "bg-brand-human/10 text-brand-human"
                 }`}>
                   {s.verdict}
                 </span>
