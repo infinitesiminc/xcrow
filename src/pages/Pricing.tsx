@@ -84,15 +84,9 @@ export default function Pricing() {
               "Action plan summaries",
             ]}
             cta={
-              !user ? (
-                <Button size="lg" className="w-full text-sm gap-1.5" onClick={openAuthModal}>
-                  <Sparkles className="h-4 w-4" /> Sign up free
-                </Button>
-              ) : (
-                <Button variant="outline" size="lg" className="w-full text-sm" onClick={() => navigate("/dashboard")}>
-                  <Check className="h-4 w-4 mr-1.5" /> Your current plan
-                </Button>
-              )
+              <Button size="lg" className="w-full text-sm gap-1.5" onClick={() => navigate("/contact")}>
+                <ArrowRight className="h-4 w-4" /> Get started
+              </Button>
             }
           />
 
