@@ -12,6 +12,7 @@ import StepTaskDrilldown from "@/components/case-study/StepTaskDrilldown";
 import StepSimPreview from "@/components/case-study/StepSimPreview";
 import StepTeamProgress from "@/components/case-study/StepTeamProgress";
 import StepActionCenter from "@/components/case-study/StepActionCenter";
+import StepModelAdaptation from "@/components/case-study/StepModelAdaptation";
 
 const STEPS = [
   {
@@ -61,6 +62,14 @@ const STEPS = [
     title: "Action Center",
     subtitle: "Automated interventions. Bottleneck detection. Coaching at scale.",
     component: <StepActionCenter />,
+  },
+  {
+    id: "adaptation",
+    phase: "Plan",
+    icon: Sparkles,
+    title: "Real-Time Model Adaptation",
+    subtitle: "A new frontier model drops. The engine adapts in under 24 hours — automatically.",
+    component: <StepModelAdaptation />,
   },
 ];
 
