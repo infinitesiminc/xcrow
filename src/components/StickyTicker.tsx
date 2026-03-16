@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Zap, Users } from "lucide-react";
 
 const FRONTIER_RELEASES = [
@@ -37,34 +37,55 @@ const WORKFORCE_ITEMS = [
   "Reskilling efforts",
 ];
 
+const FLY_DURATION = 12000; // ms for one model to cross end-to-end
+const STAGGER = 1500; // ms between each model launch
+
+interface FlyingModel {
+  id: number;
+  index: number;
+}
+
 export default function StickyTicker() {
-  const [activeModel, setActiveModel] = useState(0);
+  const [flying, setFlying] = useState<FlyingModel[]>([]);
+  const nextIndex = useRef(0);
+  const keyCounter = useRef(0);
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setActiveModel((prev) => (prev + 1) % FRONTIER_RELEASES.length);
-    }, 1500);
+    const launch = () => {
+      const id = keyCounter.current++;
+      const index = nextIndex.current % FRONTIER_RELEASES.length;
+      nextIndex.current++;
+      setFlying((prev) => [...prev, { id, index }]);
+      setTimeout(() => {
+        setFlying((prev) => prev.filter((m) => m.id !== id));
+      }, FLY_DURATION);
+    };
+
+    launch();
+    const interval = setInterval(launch, STAGGER);
     return () => clearInterval(interval);
   }, []);
 
   return (
     <div className="sticky top-14 z-40 w-full border-b border-border/40 bg-background/95 backdrop-blur-sm">
-      {/* Top row — models fly across fast */}
+      {/* Top row — models fly across, staggered */}
       <div className="relative h-[20px] overflow-hidden border-b border-border/20">
         <div className="absolute inset-y-0 left-0 w-6 z-10 bg-gradient-to-r from-background to-transparent" />
         <div className="absolute inset-y-0 right-0 w-6 z-10 bg-gradient-to-l from-background to-transparent" />
-        <div
-          key={activeModel}
-          className="absolute inset-0 flex items-center animate-[model-fly_12s_linear_forwards]"
-        >
-          <span className="inline-flex items-center gap-1.5 whitespace-nowrap">
-            <Zap className="h-2.5 w-2.5 text-destructive shrink-0" />
-            <span className="text-[10px] font-semibold tracking-wide text-destructive/90 uppercase">
-              {FRONTIER_RELEASES[activeModel].model}
+        {flying.map((m) => (
+          <div
+            key={m.id}
+            className="absolute inset-0 flex items-center animate-[model-fly_12s_linear_forwards]"
+          >
+            <span className="inline-flex items-center gap-1.5 whitespace-nowrap">
+              <Zap className="h-2.5 w-2.5 text-destructive shrink-0" />
+              <span className="text-[10px] font-semibold tracking-wide text-destructive/90 uppercase">
+                {FRONTIER_RELEASES[m.index].model}
+              </span>
+              <span className="text-[9px] text-muted-foreground/50">released</span>
             </span>
-            <span className="text-[9px] text-muted-foreground/50">released</span>
-          </span>
-        </div>
+          </div>
+        ))}
       </div>
 
       {/* Bottom row — workforce scrolls steadily */}
