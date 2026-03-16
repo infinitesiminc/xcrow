@@ -1,5 +1,12 @@
-import { motion } from "framer-motion";
+import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { Zap, RefreshCw, Brain, Users, TrendingUp, AlertTriangle } from "lucide-react";
+
+const ROTATING_MODELS = [
+  "GPT-5.4", "Claude 4.7 Sonnet", "Gemini 3.1 Flash", "Llama 4 Maverick",
+  "Gemini 3.1 Pro", "Mistral Large 3", "GPT-5.3", "Claude 4.6",
+  "Gemini 3 Flash", "DeepSeek R2 Lite", "GPT-5.2", "DeepSeek R2",
+];
 
 const TIMELINE = [
   { time: "T+0h", event: "GPT-5 released", icon: Zap, color: "bg-dot-amber/10 text-dot-amber" },
