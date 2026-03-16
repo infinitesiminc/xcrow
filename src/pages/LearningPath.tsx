@@ -556,6 +556,7 @@ export default function LearningPath() {
                   const isCompleted = taskScore !== null;
                   const isUpdated = updatedTaskNames.has(task.cluster_name);
                   const exposure = task.ai_exposure_score ?? 50;
+                  const impact = task.job_impact_score ?? 50;
 
                   return (
                     <motion.div
