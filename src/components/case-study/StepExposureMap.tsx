@@ -93,11 +93,11 @@ export default function StepExposureMap() {
     : 0;
 
   const BAR_COLORS = [
-    "bg-dot-teal",
-    "bg-dot-teal/70",
-    "bg-dot-amber/70",
-    "bg-dot-amber",
-    "bg-dot-purple",
+    "bg-brand-human",
+    "bg-brand-human/70",
+    "bg-brand-mid/70",
+    "bg-brand-ai/70",
+    "bg-brand-ai",
   ];
 
   if (loading) {
