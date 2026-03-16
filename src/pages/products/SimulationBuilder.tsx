@@ -143,7 +143,7 @@ export default function SimulationBuilder() {
       const d = j.department || "Other";
       depts.set(d, (depts.get(d) || 0) + 1);
     });
-    return Array.from(depts.entries()).sort((a, b) => b[1] - a[1]).slice(0, 8);
+    return Array.from(depts.entries()).sort((a, b) => b[1] - a[1]);
   }, [jobs]);
 
   const groupedJobs = useMemo(() => {
