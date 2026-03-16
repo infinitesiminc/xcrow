@@ -86,20 +86,14 @@ function BarChartVisual({ data, maxCount, label }: { data: ReturnType<typeof buc
 export default function ScoreDistributions() {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const [searchParams] = useSearchParams();
   const [jobs, setJobs] = useState<JobRow[]>([]);
   const [tasks, setTasks] = useState<TaskRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [hoveredJobId, setHoveredJobId] = useState<string | null>(null);
 
   const isSuperAdmin = !!user && SUPERADMIN_IDS.includes(user.id);
-
-  // Try to get workspace context if inside HR layout, otherwise fall back to direct lookup
-  let contextWorkspaceId: string | null = null;
-  try {
-    // eslint-disable-next-line react-hooks/rules-of-hooks
-    const wsCtx = require("@/contexts/WorkspaceContext").useWorkspace?.();
-    if (wsCtx) contextWorkspaceId = wsCtx.workspaceId;
-  } catch {}
+  const overrideWsId = searchParams.get("workspace");
 
   useEffect(() => {
     (async () => {
@@ -108,25 +102,26 @@ export default function ScoreDistributions() {
       // For non-superadmins, scope to workspace companies
       let workspaceCompanyIds: string[] | null = null;
       if (!isSuperAdmin && user) {
-        const wsId = contextWorkspaceId;
+        // Use URL override or fall back to user's workspace membership
+        let wsId = overrideWsId;
+        if (!wsId) {
+          const { data: membership } = await supabase
+            .from("workspace_members").select("workspace_id")
+            .eq("user_id", user.id).limit(1);
+          if (membership?.length) wsId = membership[0].workspace_id;
+        }
         if (wsId) {
           const { data: wsCompanies } = await supabase
             .from("companies").select("id").eq("workspace_id", wsId);
           workspaceCompanyIds = (wsCompanies || []).map(c => c.id);
         } else {
-          // Fallback: direct workspace lookup
-          const { data: membership } = await supabase
-            .from("workspace_members").select("workspace_id")
-            .eq("user_id", user.id).limit(1);
-          if (membership?.length) {
-            const fallbackWsId = membership[0].workspace_id;
-            const { data: wsCompanies } = await supabase
-              .from("companies").select("id").eq("workspace_id", fallbackWsId);
-            workspaceCompanyIds = (wsCompanies || []).map(c => c.id);
-          } else {
-            workspaceCompanyIds = [];
-          }
+          workspaceCompanyIds = [];
         }
+      } else if (isSuperAdmin && overrideWsId) {
+        // Superadmin viewing a specific workspace
+        const { data: wsCompanies } = await supabase
+          .from("companies").select("id").eq("workspace_id", overrideWsId);
+        workspaceCompanyIds = (wsCompanies || []).map(c => c.id);
       }
 
       // Fetch task clusters
