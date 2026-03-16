@@ -10,7 +10,6 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import NewsTicker from "@/components/NewsTicker";
 import CompanyMarquee from "@/components/CompanyMarquee";
 
 const MARQUEE_ROWS = [
