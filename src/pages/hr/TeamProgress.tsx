@@ -16,9 +16,7 @@ import {
   ArrowUpRight, ArrowDownRight, Minus, Lightbulb, ChevronDown, ChevronUp,
 } from "lucide-react";
 import { LineChart, Line, ResponsiveContainer } from "recharts";
-import { type DeptTrendData } from "@/data/demo-team-progress";
-
-const EMPTY_FUNNEL = { jobsImported: 0, jobsAnalyzed: 0, rolesActivated: 0, employeesStarted: 0 };
+import { type DeptTrendData, type DemoFunnelStats, generateMockFromDB } from "@/data/demo-team-progress";
 /* ─── Types ─── */
 interface ProgressRow {
   user_id: string;
