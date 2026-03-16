@@ -3,7 +3,7 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Zap, ArrowRight } from "lucide-react";
+import { Zap, MessageSquare } from "lucide-react";
 
 interface UpgradeModalProps {
   open: boolean;
@@ -26,7 +26,8 @@ export default function UpgradeModal({ open, onOpenChange, type }: UpgradeModalP
             You've used your free {label}
           </DialogTitle>
           <DialogDescription className="text-center text-sm text-muted-foreground">
-            Upgrade to Growth for unlimited analyses and simulations across your team.
+            The free tier includes 1 analysis and 1 simulation per month.
+            Contact us to unlock unlimited access for your team.
           </DialogDescription>
         </DialogHeader>
         <div className="flex flex-col gap-2.5 pt-4">
@@ -35,21 +36,18 @@ export default function UpgradeModal({ open, onOpenChange, type }: UpgradeModalP
             className="w-full gap-1.5"
             onClick={() => {
               onOpenChange(false);
-              navigate("/pricing");
+              navigate("/contact");
             }}
           >
-            View plans <ArrowRight className="h-4 w-4" />
+            <MessageSquare className="h-4 w-4" /> Contact Us to Upgrade
           </Button>
           <Button
             variant="outline"
             size="lg"
             className="w-full"
-            onClick={() => {
-              onOpenChange(false);
-              navigate("/contact");
-            }}
+            onClick={() => onOpenChange(false)}
           >
-            Talk to sales
+            Maybe later
           </Button>
         </div>
       </DialogContent>

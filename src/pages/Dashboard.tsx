@@ -48,7 +48,7 @@ interface BookmarkedRole {
 }
 
 const Dashboard = () => {
-  const { user, loading: authLoading, profile } = useAuth();
+  const { user, loading: authLoading, profile, usage, isPro, canAnalyze, canSimulate } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [completions, setCompletions] = useState<CompletedSim[]>([]);
@@ -154,7 +154,56 @@ const Dashboard = () => {
           </p>
         </motion.div>
 
-        {/* Your Role Card */}
+        {/* Free Tier Usage Indicator & Limit Banner */}
+        {!isPro && (
+          <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.03 }} className="mb-6">
+            {(!canAnalyze || !canSimulate) ? (
+              <Card className="border-warning/30 bg-gradient-to-r from-warning/5 via-background to-warning/5">
+                <CardContent className="p-4 flex items-center gap-3">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-full bg-warning/10 shrink-0">
+                    <Zap className="h-4 w-4 text-warning" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-foreground">Free tier limit reached</p>
+                    <p className="text-xs text-muted-foreground">
+                      You've used {usage.analysesUsed}/{usage.analysisLimit} analysis{usage.analysisLimit !== 1 ? "es" : ""} and {usage.simulationsUsed}/{usage.simulationLimit} simulation{usage.simulationLimit !== 1 ? "s" : ""} this month.
+                    </p>
+                  </div>
+                  <Button size="sm" onClick={() => navigate("/contact")} className="shrink-0 gap-1">
+                    Contact Us <ArrowRight className="h-3.5 w-3.5" />
+                  </Button>
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="flex gap-3">
+                <Card className="flex-1">
+                  <CardContent className="p-3 flex items-center gap-2.5">
+                    <BarChart3 className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] text-muted-foreground">Analyses</span>
+                        <span className="text-xs font-semibold text-foreground">{usage.analysesUsed}/{usage.analysisLimit}</span>
+                      </div>
+                      <Progress value={(usage.analysesUsed / usage.analysisLimit) * 100} className="h-1 mt-1" />
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card className="flex-1">
+                  <CardContent className="p-3 flex items-center gap-2.5">
+                    <Play className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] text-muted-foreground">Simulations</span>
+                        <span className="text-xs font-semibold text-foreground">{usage.simulationsUsed}/{usage.simulationLimit}</span>
+                      </div>
+                      <Progress value={(usage.simulationsUsed / usage.simulationLimit) * 100} className="h-1 mt-1" />
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            )}
+          </motion.div>
+        )}
         {hasProfile && (
           <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }} className="mb-6">
             {myRoleAnalysis ? (
