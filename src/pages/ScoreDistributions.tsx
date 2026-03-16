@@ -245,7 +245,7 @@ export default function ScoreDistributions() {
                     <span className="border-l border-border pl-3">±spread</span>
                   </div>
                 </div>
-                <div className="space-y-[3px]">
+                <div className="space-y-[1px]">
                   {sortedJobs.map((j, i) => {
                     const score = j.augmented_percent ?? 0;
                     const barColor = score >= 70 ? "bg-destructive" : score >= 40 ? "bg-warning" : "bg-success";
@@ -266,7 +266,7 @@ export default function ScoreDistributions() {
                         <span className={`text-[10px] w-[180px] truncate shrink-0 transition-colors ${isHovered ? "text-foreground font-medium" : "text-muted-foreground"}`}>
                           {j.title.replace(/^\s+/, "")}
                         </span>
-                        <div className="flex-1 h-4 rounded-sm bg-secondary/30 overflow-hidden relative">
+                        <div className="flex-1 h-2 rounded-sm bg-secondary/30 overflow-hidden relative">
                           <motion.div
                             className={`h-full rounded-sm ${barColor} ${isHovered ? "opacity-100" : "opacity-80"}`}
                             initial={{ width: 0 }}
@@ -385,7 +385,7 @@ export default function ScoreDistributions() {
                           </div>
                           <span className="text-sm font-bold text-foreground">{dept.avg}%</span>
                         </div>
-                        <div className="h-2.5 rounded-full bg-secondary overflow-hidden">
+                        <div className="h-1.5 rounded-full bg-secondary overflow-hidden">
                           <motion.div
                             className={`h-full rounded-full ${barColor}`}
                             initial={{ width: 0 }}
