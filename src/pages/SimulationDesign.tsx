@@ -265,7 +265,7 @@ const ENGINE_STEPS = [
     desc: "Job descriptions flow in from your ATS, CSV, or paste. The engine breaks each role into task clusters and scores AI exposure, replace risk, and upskill urgency — three lenses that tell you exactly where to act.",
     example: {
       label: "Example: Contract Attorney at Anthropic",
-      detail: "217 roles decomposed → 2,194 task clusters. The engine flags 'liability clause review' as 67% AI-exposed but only 22% replaceable — it needs human judgment, not automation.",
+      detail: "400+ roles decomposed → 3,200+ task clusters. The engine flags 'liability clause review' as 67% AI-exposed but only 22% replaceable — it needs human judgment, not automation.",
     },
     icon: Wrench,
   },
