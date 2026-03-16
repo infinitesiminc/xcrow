@@ -542,11 +542,11 @@ function EngineSection() {
 /* ═══════════════════════════════════════════════════════════════ */
 
 const LOOP_NODES = [
-  { label: "New model release", icon: Zap, color: "bg-dot-amber/10 text-dot-amber" },
-  { label: "Engine recalibrates scores", icon: RefreshCw, color: "bg-dot-blue/10 text-dot-blue" },
-  { label: "Simulations regenerated", icon: Brain, color: "bg-dot-purple/10 text-dot-purple" },
+  { label: "New model release", icon: Zap, color: "bg-brand-ai/10 text-brand-ai" },
+  { label: "Engine recalibrates scores", icon: RefreshCw, color: "bg-brand-ai/10 text-brand-ai" },
+  { label: "Simulations regenerated", icon: Brain, color: "bg-brand-mid/10 text-brand-mid" },
   { label: "Employees re-assessed", icon: Users, color: "bg-muted" },
-  { label: "Weak pillars retrained", icon: Target, color: "bg-dot-teal/10 text-dot-teal" },
+  { label: "Weak pillars retrained", icon: Target, color: "bg-brand-human/10 text-brand-human" },
   { label: "Org readiness updated", icon: TrendingUp, color: "bg-muted" },
 ];
 
