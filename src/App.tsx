@@ -23,6 +23,7 @@ import Enterprise from "./pages/Enterprise.tsx";
 import Roadmap from "./pages/Roadmap.tsx";
 import Simulations from "./pages/Simulations.tsx";
 import LearningPath from "./pages/LearningPath.tsx";
+import ScoreDistributions from "./pages/ScoreDistributions.tsx";
 import JoinWorkspace from "./pages/JoinWorkspace.tsx";
 import HRLayout from "./layouts/HRLayout.tsx";
 import TeamProgress from "./pages/hr/TeamProgress.tsx";
@@ -53,6 +54,7 @@ const App = () => (
             <Route path="/how-it-works" element={<><Navbar /><SimulationDesign /><Footer /></>} />
             <Route path="/simulations" element={<><Navbar /><Simulations /><Footer /></>} />
             <Route path="/learning-path" element={<><Navbar /><LearningPath /><Footer /></>} />
+            <Route path="/score-distributions" element={<><Navbar /><ScoreDistributions /><Footer /></>} />
             <Route path="/join" element={<JoinWorkspace />} />
 
             {/* HR Dashboard with sidebar */}
