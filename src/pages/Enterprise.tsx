@@ -499,9 +499,8 @@ export default function Enterprise() {
             transition={{ duration: 0.5, delay: 0.1 }}
             className="mt-6 text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed"
           >
-            Eight frontier models shipped in the last 90 days. Each one changed which tasks
-            AI can handle. We run a continuous system that maps exposure, tests readiness,
-            and adapts your people — at the speed AI evolves, not the speed your L&D team plans.
+            Eight frontier models in 90 days — each one shifts which tasks AI can handle.
+            We keep your workforce in lockstep, continuously and autonomously.
           </motion.p>
 
           <motion.div
