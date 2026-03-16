@@ -137,7 +137,7 @@ const BriefingScreen = ({
       className="flex justify-center pt-2"
     >
       <Button onClick={onStart} size="lg" className="gap-2 rounded-xl px-8 text-base">
-        {mode === "assess" ? "Start Assessment" : "Begin Upskill"}
+        {mode === "assess" ? "Start Assessment" : "Practise Task"}
       </Button>
     </motion.div>
   </motion.div>
