@@ -112,7 +112,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       };
       setProfile(p);
       if (!p.onboardingCompleted) {
-        setShowOnboarding(true);
+        // Auto-mark onboarding as completed, skip the modal
+        await supabase.from("profiles").update({ onboarding_completed: true } as any).eq("id", userId);
+        setProfile(prev => prev ? { ...prev, onboardingCompleted: true } : prev);
       }
     }
   }, []);
