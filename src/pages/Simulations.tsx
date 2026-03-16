@@ -160,6 +160,7 @@ export default function Simulations() {
       const tasks = (data.tasks || []).map((t: any) => ({
         ...t,
         ai_exposure_score: t.ai_exposure_score ?? 50,
+        job_impact_score: t.job_impact_score ?? 50,
         priority: t.priority || "medium",
       }));
       setBrowseTasks(tasks);
