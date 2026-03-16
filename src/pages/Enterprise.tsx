@@ -225,8 +225,8 @@ function AccelerationGapVisual() {
           <span className="text-xs text-muted-foreground">Traditional L&D</span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="h-0.5 w-5 bg-primary rounded" />
-          <span className="text-xs text-primary font-medium">With our platform</span>
+          <div className="h-0.5 w-5 rounded" style={{ backgroundColor: "#2563eb" }} />
+          <span className="text-xs font-medium" style={{ color: "#2563eb" }}>With our platform</span>
         </div>
       </div>
     </motion.div>
