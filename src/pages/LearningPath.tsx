@@ -608,7 +608,10 @@ export default function LearningPath() {
                                 <p className="text-sm text-muted-foreground leading-relaxed mb-2">{task.description}</p>
                               )}
 
-                              <p className="text-xs text-muted-foreground/80 italic mb-3">{aiSummary}</p>
+                              <p className="text-xs text-muted-foreground/80 italic mb-3 flex items-start gap-1.5">
+                                <Zap className="h-3.5 w-3.5 shrink-0 mt-0.5 text-warning" />
+                                {aiSummary}
+                              </p>
 
                               {task.skill_names && task.skill_names.length > 0 && (
                                 <div className="flex flex-wrap gap-1.5 mb-3">
