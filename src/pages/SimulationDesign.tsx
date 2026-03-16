@@ -452,7 +452,7 @@ function AdaptiveLoopVisual() {
         transition={{ delay: 0.8 }}
         className="text-[11px] text-muted-foreground text-center pt-1 flex items-center justify-center gap-1.5"
       >
-        <RefreshCw className="h-3 w-3 text-dot-teal" /> No curriculum redesign. No committee. Fully automatic.
+        <RefreshCw className="h-3 w-3 text-brand-human" /> No curriculum redesign. No committee. Fully automatic.
       </motion.p>
     </div>
   );
