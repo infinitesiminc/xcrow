@@ -50,6 +50,7 @@ interface EnrichedTask {
   outcome: string | null;
   skill_names: string[] | null;
   ai_exposure_score?: number;
+  job_impact_score?: number;
   priority?: string;
 }
 
