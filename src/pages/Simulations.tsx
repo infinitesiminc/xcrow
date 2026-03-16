@@ -20,13 +20,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import SimulatorModal from "@/components/SimulatorModal";
 
-/* ── Template config ── */
-const templateMeta: Record<string, { name: string; icon: any; color: string; duration: string }> = {
-  "quick-pulse": { name: "Quick Pulse", icon: Zap, color: "bg-dot-teal/10 text-dot-teal border-dot-teal/20", duration: "~3 min" },
-  "deep-dive": { name: "Deep Dive", icon: GraduationCap, color: "bg-dot-blue/10 text-dot-blue border-dot-blue/20", duration: "~15 min" },
-  "case-challenge": { name: "Case Challenge", icon: ClipboardCheck, color: "bg-dot-purple/10 text-dot-purple border-dot-purple/20", duration: "~30 min" },
-  "full-panel": { name: "Full Panel", icon: Users, color: "bg-dot-amber/10 text-dot-amber border-dot-amber/20", duration: "~60 min" },
-};
+/* ── Standard 15-min format ── */
 
 interface CustomSim {
   id: string;
