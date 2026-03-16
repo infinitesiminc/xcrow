@@ -385,7 +385,7 @@ function PillarScoreVisual() {
             whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true }}
             transition={{ delay: 0.2 + i * 0.08 }}
-            className={`rounded-lg border p-3 space-y-2 ${p.weak ? "border-dot-amber/30 bg-dot-amber/5" : "border-border/50"}`}
+            className={`rounded-lg border p-3 space-y-2 ${p.weak ? "border-brand-ai/30 bg-brand-ai/5" : "border-border/50"}`}
           >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-1.5">
