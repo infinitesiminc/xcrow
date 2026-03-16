@@ -782,6 +782,131 @@ export default function Investors() {
           </motion.div>
         </section>
 
+        {/* ── Enterprise ROI ── */}
+        <section>
+          <SectionHeader
+            badge="Enterprise ROI"
+            title="Value created vs. what they pay us"
+            subtitle="Every company should map its entire employee base 1:1. Here's what that looks like for well-known enterprises across key industries."
+          />
+
+          {/* Value driver bars */}
+          <motion.div {...fadeUp}>
+            <Card className="border-border/50">
+              <CardContent className="p-5 space-y-6">
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Annual Value Created — 5,000-employee enterprise</p>
+                <div className="space-y-3">
+                  {[
+                    { driver: "Avoided mis-hires & reskill waste", range: "$2.5M–$5M", width: "85%", logic: "~5% workforce in wrong-fit roles × $50K avg replacement cost" },
+                    { driver: "Faster redeployment", range: "$1M–$3M", width: "55%", logic: "Weeks saved per mobility decision × 100+ moves/yr" },
+                    { driver: "Attrition reduction", range: "$1M–$3M", width: "55%", logic: "Proactive career pathing reduces voluntary turnover 5–10%" },
+                    { driver: "Training budget efficiency", range: "$800K–$2M", width: "40%", logic: "20–30% L&D spend redirected to targeted upskilling" },
+                    { driver: "Reduced consultant spend", range: "$500K–$1M", width: "25%", logic: "Replaces 2–4 McKinsey/Deloitte workforce strategy engagements" },
+                  ].map((d, i) => (
+                    <motion.div key={d.driver} initial={{ opacity: 0, x: -20 }} whileInView={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.08 }} viewport={{ once: true }}>
+                      <div className="flex justify-between items-baseline mb-1">
+                        <span className="text-xs font-medium text-foreground">{d.driver}</span>
+                        <span className="text-xs font-semibold text-brand-ai">{d.range}/yr</span>
+                      </div>
+                      <div className="h-3 bg-muted/40 rounded-full overflow-hidden">
+                        <motion.div
+                          className="h-full bg-brand-ai rounded-full"
+                          initial={{ width: 0 }}
+                          whileInView={{ width: d.width }}
+                          transition={{ duration: 0.8, delay: i * 0.08 }}
+                          viewport={{ once: true }}
+                        />
+                      </div>
+                      <p className="text-[10px] text-muted-foreground/60 mt-0.5">{d.logic}</p>
+                    </motion.div>
+                  ))}
+
+                  {/* Cost bar */}
+                  <div className="pt-2 border-t border-border/30">
+                    <div className="flex justify-between items-baseline mb-1">
+                      <span className="text-xs font-medium text-muted-foreground">They pay us</span>
+                      <span className="text-xs font-semibold text-muted-foreground">$250K/yr</span>
+                    </div>
+                    <div className="h-3 bg-muted/40 rounded-full overflow-hidden">
+                      <motion.div
+                        className="h-full bg-muted-foreground/30 rounded-full"
+                        initial={{ width: 0 }}
+                        whileInView={{ width: "4%" }}
+                        transition={{ duration: 0.8, delay: 0.5 }}
+                        viewport={{ once: true }}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* ROI callout */}
+                <motion.div
+                  className="flex items-center justify-between p-4 rounded-lg bg-brand-ai/10 border border-brand-ai/20"
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  whileInView={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 0.6 }}
+                  viewport={{ once: true }}
+                >
+                  <div>
+                    <p className="text-sm font-semibold text-foreground">Total value created</p>
+                    <p className="text-xs text-muted-foreground">$5.8M–$14M/yr</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-2xl font-bold text-brand-ai" style={{ textShadow: "0 0 20px hsl(var(--brand-ai) / 0.4)" }}>23–56× ROI</p>
+                  </div>
+                </motion.div>
+              </CardContent>
+            </Card>
+          </motion.div>
+
+          {/* Per-industry ROI table with real companies */}
+          <motion.div {...fadeUp} className="mt-6">
+            <Card className="border-border/50">
+              <CardContent className="p-5">
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-4">ROI by Industry — 1:1 Employee Mapping</p>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-xs">
+                    <thead>
+                      <tr className="border-b border-border/30">
+                        <th className="text-left py-2 text-muted-foreground font-medium">Company</th>
+                        <th className="text-left py-2 text-muted-foreground font-medium">Industry</th>
+                        <th className="text-right py-2 text-muted-foreground font-medium">Employees</th>
+                        <th className="text-right py-2 text-muted-foreground font-medium">Contract</th>
+                        <th className="text-right py-2 text-muted-foreground font-medium">Value Created</th>
+                        <th className="text-right py-2 text-muted-foreground font-medium">ROI</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {[
+                        { company: "JPMorgan Chase", industry: "Financial Services", employees: "310K", contract: "$3.1M", value: "$36M–$87M", roi: "12–28×", exposure: 72 },
+                        { company: "Deloitte", industry: "Professional Services", employees: "460K", contract: "$4.6M", value: "$53M–$129M", roi: "12–28×", exposure: 65 },
+                        { company: "UnitedHealth Group", industry: "Healthcare", employees: "400K", contract: "$4.0M", value: "$46M–$112M", roi: "12–28×", exposure: 61 },
+                        { company: "Amazon", industry: "Technology / Retail", employees: "1.5M", contract: "$15M", value: "$174M–$420M", roi: "12–28×", exposure: 54 },
+                        { company: "Siemens", industry: "Manufacturing", employees: "320K", contract: "$3.2M", value: "$37M–$90M", roi: "12–28×", exposure: 41 },
+                        { company: "Walt Disney Co.", industry: "Media & Entertainment", employees: "225K", contract: "$2.3M", value: "$26M–$63M", roi: "12–28×", exposure: 58 },
+                        { company: "Walmart", industry: "Retail", employees: "2.1M", contract: "$21M", value: "$243M–$588M", roi: "12–28×", exposure: 54 },
+                      ].map((row) => (
+                        <tr key={row.company} className="border-b border-border/10">
+                          <td className="py-2 text-foreground font-medium">{row.company}</td>
+                          <td className="py-2 text-muted-foreground">{row.industry}</td>
+                          <td className="py-2 text-right text-muted-foreground">{row.employees}</td>
+                          <td className="py-2 text-right text-muted-foreground">{row.contract}/yr</td>
+                          <td className="py-2 text-right text-brand-ai font-semibold">{row.value}/yr</td>
+                          <td className="py-2 text-right">
+                            <span className="text-brand-ai font-bold">{row.roi}</span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                <p className="text-[10px] text-muted-foreground/60 mt-3">
+                  Contract = $10/employee/yr. Value modeled at $1,160–$2,800/employee/yr based on avoided reskill waste, faster redeployment, reduced consulting, training efficiency, and attrition reduction. ROI range reflects industry AI exposure levels.
+                </p>
+              </CardContent>
+            </Card>
+          </motion.div>
+        </section>
 
         {/* ── Team ── */}
         <section>
