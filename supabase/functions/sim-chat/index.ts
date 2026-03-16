@@ -1,5 +1,6 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -7,6 +8,58 @@ const corsHeaders = {
 };
 
 const MAX_ROUNDS = 8;
+
+async function checkSimulationUsage(req: Request): Promise<Response | null> {
+  const authHeader = req.headers.get("Authorization");
+  if (!authHeader) return null;
+
+  const supabaseAnon = createClient(
+    Deno.env.get("SUPABASE_URL")!,
+    Deno.env.get("SUPABASE_ANON_KEY")!
+  );
+  const token = authHeader.replace("Bearer ", "");
+  const { data: userData } = await supabaseAnon.auth.getUser(token);
+  if (!userData?.user) return null;
+
+  // Check subscription
+  const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
+  let isSubscribed = false;
+  if (stripeKey && userData.user.email) {
+    try {
+      const { default: Stripe } = await import("https://esm.sh/stripe@18.5.0");
+      const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
+      const customers = await stripe.customers.list({ email: userData.user.email, limit: 1 });
+      if (customers.data.length > 0) {
+        const subs = await stripe.subscriptions.list({ customer: customers.data[0].id, status: "active", limit: 1 });
+        isSubscribed = subs.data.length > 0;
+      }
+    } catch (e) { console.error("Stripe check failed:", e); }
+  }
+
+  if (isSubscribed) return null;
+
+  const sb = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
+  const { data: usageCheck } = await sb.rpc("check_usage_limit", {
+    _user_id: userData.user.id,
+    _type: "simulation",
+  });
+
+  if (usageCheck && !usageCheck.allowed) {
+    return new Response(JSON.stringify({
+      error: "usage_limit",
+      message: "You've used your free simulation. Upgrade to continue.",
+      used: usageCheck.used,
+      limit: usageCheck.limit,
+    }), {
+      status: 403,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+
+  // Increment usage
+  await sb.rpc("increment_usage", { _user_id: userData.user.id, _type: "simulation" });
+  return null;
+}
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -22,9 +75,15 @@ serve(async (req) => {
   }
 
   try {
-    const { action, payload } = await req.json();
+    const body = await req.json();
+    const { action, payload } = body;
 
-    if (action === "compile") return await handleCompile(payload, apiKey);
+    // Gate simulation starts (compile action)
+    if (action === "compile") {
+      const usageBlock = await checkSimulationUsage(req);
+      if (usageBlock) return usageBlock;
+      return await handleCompile(payload, apiKey);
+    }
     if (action === "chat") return await handleChat(payload, apiKey);
     if (action === "score") return await handleScore(payload, apiKey);
 
