@@ -1,5 +1,4 @@
 import { useNavigate } from "react-router-dom";
-import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   Check, Zap, Building2, ArrowRight, Users,
