@@ -168,29 +168,30 @@ export default function CaseStudy() {
       {/* Step content */}
       <div className="max-w-3xl mx-auto px-4 py-8">
         <div className="glow-border rounded-xl border border-border/30 bg-card p-6">
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={step}
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -20 }}
-            transition={{ duration: 0.25 }}
-          >
-            {/* Step header */}
-            <div className="flex items-center gap-3 mb-4">
-              <div className="h-10 w-10 rounded-xl bg-muted flex items-center justify-center">
-                <current.icon className="h-5 w-5 text-foreground" />
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={step}
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              transition={{ duration: 0.25 }}
+            >
+              {/* Step header */}
+              <div className="flex items-center gap-3 mb-4">
+                <div className="h-10 w-10 rounded-xl bg-muted flex items-center justify-center">
+                  <current.icon className="h-5 w-5 text-foreground" />
+                </div>
+                <div>
+                  <h2 className="text-lg font-semibold">{current.title}</h2>
+                  <p className="text-sm text-muted-foreground">{current.subtitle}</p>
+                </div>
               </div>
-              <div>
-                <h2 className="text-lg font-semibold">{current.title}</h2>
-                <p className="text-sm text-muted-foreground">{current.subtitle}</p>
-              </div>
-            </div>
 
-            {/* Step body */}
-            {current.component}
-          </motion.div>
-        </AnimatePresence>
+              {/* Step body */}
+              {current.component}
+            </motion.div>
+          </AnimatePresence>
+        </div>
 
         {/* Navigation */}
         <div className="flex items-center justify-between mt-8 pt-6 border-t border-border">
