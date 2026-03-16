@@ -458,23 +458,24 @@ export default function Enterprise() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* ── Hero ── */}
-      <section className="relative overflow-hidden px-4 pt-6 pb-20">
-        {/* Frontier model release ticker — single row, no header */}
-        <div className="mx-auto max-w-5xl mb-8 overflow-hidden rounded-lg border border-border/40 bg-muted/20">
-          <div className="relative h-[28px] overflow-hidden">
-            <div className="flex animate-[ticker_35s_linear_infinite] whitespace-nowrap items-center h-full">
-              {[...FRONTIER_RELEASES, ...FRONTIER_RELEASES].map((r, i) => (
-                <span key={i} className="inline-flex items-center gap-1.5 px-4 text-[11px] shrink-0">
-                  <span className="h-1.5 w-1.5 rounded-full bg-destructive/70 shrink-0" />
-                  <span className="font-mono text-[10px] text-muted-foreground/60">{r.date}</span>
-                  <span className="font-medium text-foreground/70">{r.model}</span>
-                  <span className="text-muted-foreground/50">released</span>
-                </span>
-              ))}
-            </div>
+      {/* ── Sticky ticker ── */}
+      <div className="sticky top-0 z-50 w-full overflow-hidden border-b border-border/40 bg-background/95 backdrop-blur-sm">
+        <div className="relative h-[28px] overflow-hidden">
+          <div className="flex animate-[ticker_18s_linear_infinite] whitespace-nowrap items-center h-full">
+            {[...FRONTIER_RELEASES, ...FRONTIER_RELEASES].map((r, i) => (
+              <span key={i} className="inline-flex items-center gap-1.5 px-4 text-[11px] shrink-0">
+                <span className="h-1.5 w-1.5 rounded-full bg-destructive/70 shrink-0" />
+                <span className="font-mono text-[10px] text-muted-foreground/60">{daysAgo(r.date)}</span>
+                <span className="font-medium text-foreground/70">{r.model}</span>
+                <span className="text-muted-foreground/50">released</span>
+              </span>
+            ))}
           </div>
         </div>
+      </div>
+
+      {/* ── Hero ── */}
+      <section className="relative overflow-hidden px-4 pt-12 pb-20">
 
         <div className="mx-auto max-w-4xl text-center">
           <motion.div {...fadeUp}>
