@@ -12,6 +12,7 @@ interface JobRow {
   id: string;
   title: string;
   department: string | null;
+  location: string | null;
   augmented_percent: number | null;
 }
 
