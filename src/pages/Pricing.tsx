@@ -1,8 +1,8 @@
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
-  Check, Zap, Building2, ArrowRight, Users,
-  Sparkles, HelpCircle, Search, Crown,
+  Zap, Building2, ArrowRight,
+  Sparkles, HelpCircle, Crown,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -13,7 +13,7 @@ import GrowthPricingTable from "@/components/pricing/GrowthPricingTable";
 
 const faqs = [
   { q: "What counts as a 'role'?", a: "A role is any unique job title you analyze on the platform — e.g. 'Product Manager' or 'Senior Data Engineer'. Analyzing the same role multiple times doesn't count as additional roles." },
-  { q: "Can I try it before committing?", a: "Yes — your first role analysis is completely free with no account required. Sign up to unlock 3 more roles and simulations at no cost." },
+  { q: "Can I try it before committing?", a: "Yes — every account gets 1 free role analysis and 1 simulation to experience the full platform." },
   { q: "How does Growth billing work?", a: "You're billed monthly based on the number of active roles in your workspace. Volume discounts apply automatically as you add roles. Annual billing is available on request." },
   { q: "Can I cancel anytime?", a: "Absolutely. Cancel from your settings page and you'll retain access until the end of your billing period." },
   { q: "What payment methods do you accept?", a: "We accept all major credit cards. Enterprise customers can also pay via invoice." },
@@ -42,46 +42,26 @@ export default function Pricing() {
 
       {/* Tier Cards */}
       <section className="px-4 pb-16 sm:pb-20">
-        <div className="mx-auto max-w-6xl grid md:grid-cols-2 lg:grid-cols-4 gap-5">
+        <div className="mx-auto max-w-5xl grid md:grid-cols-3 gap-5">
 
           {/* Free */}
           <PricingTierCard
-            icon={<Search className="h-5 w-5" />}
-            name="Free"
-            description="Try it instantly"
-            price="$0"
-            priceNote="No account needed"
-            accentClass="border-border/50"
-            features={[
-              "1 full role analysis",
-              "Task breakdown & risk gauge",
-              "Career pathway preview",
-              "Shareable report link",
-            ]}
-            cta={
-              <Button variant="outline" size="lg" className="w-full text-sm" onClick={() => navigate("/")}>
-                Analyze a role free
-              </Button>
-            }
-          />
-
-          {/* Starter */}
-          <PricingTierCard
             icon={<Sparkles className="h-5 w-5" />}
-            name="Starter"
+            name="Free"
             description="For individual exploration"
             price="$0"
             priceNote="Account required"
-            accentClass="border-brand-human/30"
+            accentClass="border-border/50"
             features={[
-              "3 role analyses",
-              "5 upskill simulations / month",
-              "Personal dashboard & history",
-              "Action plan summaries",
+              "1 role analysis",
+              "1 upskill simulation",
+              "Task breakdown & risk gauge",
+              "Career pathway preview",
+              "Personal dashboard",
             ]}
             cta={
-              <Button size="lg" className="w-full text-sm gap-1.5" onClick={() => navigate("/contact")}>
-                <ArrowRight className="h-4 w-4" /> Get started
+              <Button variant="outline" size="lg" className="w-full text-sm" onClick={() => navigate("/")}>
+                Get started free
               </Button>
             }
           />
@@ -97,7 +77,7 @@ export default function Pricing() {
             highlighted
             badge="Most popular"
             features={[
-              "Unlimited simulations per role",
+              "Unlimited analyses & simulations",
               "Team dashboards & heatmaps",
               "Bulk role upload (ATS sync)",
               "Workspace & member management",
