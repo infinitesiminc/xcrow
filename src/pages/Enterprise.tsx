@@ -354,27 +354,27 @@ function AdaptiveLoopDiagram({ activeNode, setActiveNode }: {
   setActiveNode: (id: string | null) => void;
 }) {
   const positions = [
-    { x: 50, y: 5 },
-    { x: 95, y: 50 },
-    { x: 50, y: 95 },
-    { x: 5, y: 50 },
+    { x: 50, y: 15 },  // Map — top
+    { x: 85, y: 50 },  // Assess — right
+    { x: 50, y: 85 },  // Train — bottom
+    { x: 15, y: 50 },  // Adapt — left
   ];
 
   return (
-    <div className="relative w-full max-w-md mx-auto aspect-square">
+    <div className="relative w-full max-w-sm mx-auto aspect-square">
       <svg viewBox="0 0 100 100" className="absolute inset-0 w-full h-full">
-        <circle cx="50" cy="50" r="40" fill="none" stroke="hsl(var(--border))" strokeWidth="0.5" strokeDasharray="3 2" />
+        <circle cx="50" cy="50" r="32" fill="none" stroke="hsl(var(--border))" strokeWidth="0.5" strokeDasharray="3 2" />
         <motion.circle
-          cx="50" cy="50" r="40"
+          cx="50" cy="50" r="32"
           fill="none" stroke="hsl(var(--primary))" strokeWidth="1.5"
-          strokeDasharray="25 227" strokeLinecap="round"
+          strokeDasharray="20 181" strokeLinecap="round"
           animate={{ rotate: 360 }}
           transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
           style={{ transformOrigin: "50px 50px" }}
         />
       </svg>
 
-      <div className="absolute inset-0 flex items-center justify-center">
+      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
         <div className="text-center">
           <p className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground">Continuous</p>
           <p className="text-lg font-display font-semibold text-foreground -mt-0.5">Parity</p>
@@ -385,27 +385,25 @@ function AdaptiveLoopDiagram({ activeNode, setActiveNode }: {
         const pos = positions[i];
         const isActive = activeNode === node.id;
         return (
-          <motion.button
+          <button
             key={node.id}
             className="absolute flex flex-col items-center gap-1 -translate-x-1/2 -translate-y-1/2 cursor-pointer group z-10"
             style={{ left: `${pos.x}%`, top: `${pos.y}%` }}
             onClick={() => setActiveNode(isActive ? null : node.id)}
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.95 }}
           >
-            <div className={`h-12 w-12 sm:h-14 sm:w-14 rounded-2xl flex items-center justify-center transition-all duration-300 ${
+            <div className={`h-12 w-12 rounded-2xl flex items-center justify-center transition-all duration-300 ${
               isActive
                 ? "bg-primary text-primary-foreground shadow-lg shadow-primary/25"
                 : "bg-card border border-border text-foreground group-hover:border-primary/50 group-hover:shadow-md"
             }`}>
-              <node.icon className="h-5 w-5 sm:h-6 sm:w-6" />
+              <node.icon className="h-5 w-5" />
             </div>
             <span className={`text-xs font-semibold transition-colors ${
               isActive ? "text-primary" : "text-muted-foreground group-hover:text-foreground"
             }`}>
               {node.label}
             </span>
-          </motion.button>
+          </button>
         );
       })}
     </div>
