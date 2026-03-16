@@ -111,8 +111,8 @@ export default function Investors() {
             subtitle="An autonomous loop that maps AI exposure, measures readiness, closes gaps, and re-calibrates — continuously, without manual L&D overhead."
           />
 
-          {/* Loop visual */}
-          <motion.div {...fadeUp} className="mb-6">
+          {/* Loop flow visual */}
+          <motion.div {...fadeUp} className="mb-8">
             <Card className="border-primary/20 bg-gradient-to-br from-primary/5 via-background to-accent/5">
               <CardContent className="p-6">
                 <div className="flex items-center justify-center gap-2 sm:gap-4 flex-wrap">
@@ -139,29 +139,182 @@ export default function Investors() {
             </Card>
           </motion.div>
 
-          {/* Loop step details */}
-          <div className="grid sm:grid-cols-2 gap-4">
-            {[
-              { icon: Layers, title: "Map", desc: "Every role decomposed into 8–15 task clusters with AI exposure scores. When new models ship, scores update automatically — your risk surface is always current.", highlights: "400+ roles mapped in minutes" },
-              { icon: Target, title: "Assess", desc: "Calibrated simulations measure each employee across 4 readiness pillars. Real tested capability, not self-reported surveys or generic certifications.", highlights: "4-pillar scoring model" },
-              { icon: Brain, title: "Train", desc: "Targeted practice sessions auto-generated from each employee's weak points. No manual L&D design — the system trains your people while you focus on strategy.", highlights: "Zero L&D overhead" },
-              { icon: Zap, title: "Adapt", desc: "Scores below threshold trigger automatic re-simulation with coaching. When new models drop, the loop accelerates. Your workforce evolves as fast as AI does.", highlights: "Continuous, not quarterly" },
-            ].map((item, i) => (
-              <motion.div key={i} {...fadeUp} transition={{ ...fadeUp.transition, delay: i * 0.08 }}>
-                <Card className="h-full">
-                  <CardContent className="p-5">
-                    <div className="flex items-center gap-3 mb-2">
-                      <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
-                        <item.icon className="h-4 w-4 text-primary" />
+          {/* Component deep-dives with visuals */}
+          <div className="space-y-4">
+            {/* 1 — Map */}
+            <motion.div {...fadeUp}>
+              <Card className="overflow-hidden">
+                <CardContent className="p-0">
+                  <div className="grid sm:grid-cols-2">
+                    <div className="p-5 sm:p-6 flex flex-col justify-center">
+                      <div className="flex items-center gap-2 mb-2">
+                        <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                          <Layers className="h-4 w-4 text-primary" />
+                        </div>
+                        <h3 className="text-sm font-bold text-foreground">Map · AI Exposure Scoring</h3>
                       </div>
-                      <h3 className="text-sm font-semibold text-foreground">{item.title}</h3>
+                      <p className="text-xs text-muted-foreground mb-3">Every role decomposed into 8–15 task clusters, each scored for AI exposure. When new models ship, scores update automatically.</p>
+                      <Badge variant="outline" className="text-[10px] border-primary/20 text-primary w-fit">400+ roles mapped in minutes</Badge>
                     </div>
-                    <p className="text-xs text-muted-foreground mb-2">{item.desc}</p>
-                    <Badge variant="outline" className="text-[10px] border-primary/20 text-primary">{item.highlights}</Badge>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            ))}
+                    <div className="bg-muted/20 border-l border-border/50 p-4 sm:p-5">
+                      <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-3 font-medium">Sample: Financial Analyst</p>
+                      <div className="space-y-2">
+                        {[
+                          { task: "Financial Modeling", exposure: 78, state: "AI-Ready" },
+                          { task: "Variance Analysis", exposure: 65, state: "Augmented" },
+                          { task: "Board Reporting", exposure: 42, state: "Emerging" },
+                          { task: "Stakeholder Advising", exposure: 15, state: "Human-Led" },
+                        ].map((t) => (
+                          <div key={t.task} className="flex items-center gap-2">
+                            <span className="text-[10px] text-foreground w-28 truncate shrink-0">{t.task}</span>
+                            <div className="flex-1 h-3 bg-muted/40 rounded-full overflow-hidden">
+                              <motion.div
+                                className={`h-full rounded-full ${t.exposure >= 60 ? "bg-destructive/60" : t.exposure >= 40 ? "bg-amber-500/60" : "bg-emerald-500/60"}`}
+                                initial={{ width: 0 }}
+                                whileInView={{ width: `${t.exposure}%` }}
+                                viewport={{ once: true }}
+                                transition={{ duration: 0.6 }}
+                              />
+                            </div>
+                            <span className="text-[9px] text-muted-foreground w-14 text-right shrink-0">{t.state}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+
+            {/* 2 — Assess */}
+            <motion.div {...fadeUp}>
+              <Card className="overflow-hidden">
+                <CardContent className="p-0">
+                  <div className="grid sm:grid-cols-2">
+                    <div className="p-5 sm:p-6 flex flex-col justify-center">
+                      <div className="flex items-center gap-2 mb-2">
+                        <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                          <Target className="h-4 w-4 text-primary" />
+                        </div>
+                        <h3 className="text-sm font-bold text-foreground">Assess · Adaptive Simulations</h3>
+                      </div>
+                      <p className="text-xs text-muted-foreground mb-3">Calibrated simulations measure each employee across 4 readiness pillars. Real tested capability, not self-reported surveys.</p>
+                      <Badge variant="outline" className="text-[10px] border-primary/20 text-primary w-fit">4-pillar scoring model</Badge>
+                    </div>
+                    <div className="bg-muted/20 border-l border-border/50 p-4 sm:p-5">
+                      <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-3 font-medium">Readiness Pillars</p>
+                      <div className="grid grid-cols-2 gap-2">
+                        {[
+                          { pillar: "Tool Awareness", score: 82, color: "hsl(var(--primary) / 0.6)" },
+                          { pillar: "Domain Judgment", score: 71, color: "hsl(45 93% 47% / 0.6)" },
+                          { pillar: "Adaptive Thinking", score: 64, color: "hsl(152 69% 40% / 0.6)" },
+                          { pillar: "Human Value-Add", score: 88, color: "hsl(199 89% 48% / 0.6)" },
+                        ].map((p) => (
+                          <div key={p.pillar} className="rounded-lg border border-border/30 p-2.5 bg-background/50">
+                            <div className="flex items-center justify-between mb-1.5">
+                              <span className="text-[10px] text-muted-foreground">{p.pillar}</span>
+                              <span className="text-xs font-bold text-foreground">{p.score}</span>
+                            </div>
+                            <div className="h-1.5 bg-muted/40 rounded-full overflow-hidden">
+                              <motion.div
+                                className="h-full rounded-full"
+                                initial={{ width: 0 }}
+                                whileInView={{ width: `${p.score}%` }}
+                                viewport={{ once: true }}
+                                transition={{ duration: 0.5 }}
+                                style={{ backgroundColor: p.color }}
+                              />
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+
+            {/* 3 — Train */}
+            <motion.div {...fadeUp}>
+              <Card className="overflow-hidden">
+                <CardContent className="p-0">
+                  <div className="grid sm:grid-cols-2">
+                    <div className="p-5 sm:p-6 flex flex-col justify-center">
+                      <div className="flex items-center gap-2 mb-2">
+                        <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                          <Brain className="h-4 w-4 text-primary" />
+                        </div>
+                        <h3 className="text-sm font-bold text-foreground">Train · Auto-Generated Practice</h3>
+                      </div>
+                      <p className="text-xs text-muted-foreground mb-3">Targeted practice sessions auto-generated from each employee's weak points. No manual L&D design — the system trains while you focus on strategy.</p>
+                      <Badge variant="outline" className="text-[10px] border-primary/20 text-primary w-fit">Zero L&D overhead</Badge>
+                    </div>
+                    <div className="bg-muted/20 border-l border-border/50 p-4 sm:p-5">
+                      <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-3 font-medium">Adaptive Queue</p>
+                      <div className="space-y-2">
+                        {[
+                          { task: "AI-Assisted Forecasting", weak: "Tool Awareness", score: 52, status: "In Progress" },
+                          { task: "Prompt Engineering for Reports", weak: "Adaptive Thinking", score: 48, status: "Queued" },
+                          { task: "Automated Compliance Check", weak: "Domain Judgment", score: 61, status: "Queued" },
+                        ].map((s, i) => (
+                          <div key={s.task} className="flex items-center gap-2 rounded-lg border border-border/30 bg-background/50 p-2">
+                            <div className={`w-1.5 h-8 rounded-full shrink-0 ${i === 0 ? "bg-primary" : "bg-muted-foreground/20"}`} />
+                            <div className="flex-1 min-w-0">
+                              <p className="text-[10px] font-medium text-foreground truncate">{s.task}</p>
+                              <p className="text-[9px] text-muted-foreground">Weak: {s.weak} ({s.score}%)</p>
+                            </div>
+                            <span className={`text-[9px] px-1.5 py-0.5 rounded shrink-0 ${i === 0 ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"}`}>{s.status}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+
+            {/* 4 — Adapt */}
+            <motion.div {...fadeUp}>
+              <Card className="overflow-hidden">
+                <CardContent className="p-0">
+                  <div className="grid sm:grid-cols-2">
+                    <div className="p-5 sm:p-6 flex flex-col justify-center">
+                      <div className="flex items-center gap-2 mb-2">
+                        <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                          <Zap className="h-4 w-4 text-primary" />
+                        </div>
+                        <h3 className="text-sm font-bold text-foreground">Adapt · Model-Aware Re-Calibration</h3>
+                      </div>
+                      <p className="text-xs text-muted-foreground mb-3">When new frontier models drop, exposure scores automatically re-calibrate and the loop accelerates. Your workforce evolves as fast as AI does.</p>
+                      <Badge variant="outline" className="text-[10px] border-primary/20 text-primary w-fit">Continuous, not quarterly</Badge>
+                    </div>
+                    <div className="bg-muted/20 border-l border-border/50 p-4 sm:p-5">
+                      <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-3 font-medium">Auto Re-Calibration Timeline</p>
+                      <div className="space-y-2.5">
+                        {[
+                          { date: "Mar 2026", event: "GPT-5 released", action: "Re-scored 400 roles", Icon: Zap },
+                          { date: "Feb 2026", event: "Gemini 3 Pro", action: "18 roles escalated", Icon: AlertTriangle },
+                          { date: "Jan 2026", event: "Claude 4 preview", action: "New sims generated", Icon: Brain },
+                        ].map((e, i) => (
+                          <div key={e.date} className="flex items-start gap-2.5">
+                            <div className="flex flex-col items-center">
+                              <div className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 ${i === 0 ? "bg-primary/15" : "bg-muted/60"}`}>
+                                <e.Icon className={`h-3 w-3 ${i === 0 ? "text-primary" : "text-muted-foreground"}`} />
+                              </div>
+                              {i < 2 && <div className="w-px h-3 bg-border/50 mt-1" />}
+                            </div>
+                            <div>
+                              <p className="text-[10px] font-medium text-foreground">{e.event}</p>
+                              <p className="text-[9px] text-muted-foreground">{e.date} · {e.action}</p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
           </div>
         </section>
 
