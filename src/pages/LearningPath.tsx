@@ -498,35 +498,24 @@ export default function LearningPath() {
 
           {/* ═══ LEARNING PATH TAB ═══ */}
           <TabsContent value="path">
-            {/* Progress bar */}
-            {pathProgress && user && (
-              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mb-5">
-                <div className="flex items-center justify-between mb-1.5">
-                  <span className="text-xs text-muted-foreground">
-                    Progress: {pathProgress.completed}/{pathProgress.total} completed
-                  </span>
-                  <span className="text-xs font-semibold text-foreground">{pathProgress.percent}%</span>
-                </div>
-                <Progress value={pathProgress.percent} className="h-2" />
-              </motion.div>
-            )}
-
-            {/* Stats bar */}
-            {pathStats && (
-              <div className="grid grid-cols-3 gap-2 mb-6">
-                {[
-                  { label: "High Priority", value: pathStats.high, icon: AlertTriangle, iconColor: "text-destructive" },
-                  { label: "Avg AI Exposure", value: `${pathStats.avgExposure}%`, icon: Brain, iconColor: "text-dot-purple" },
-                  { label: "Est. Time", value: `${pathStats.total * 15}m`, icon: Clock, iconColor: "text-muted-foreground" },
-                ].map(s => (
-                  <div key={s.label} className="flex items-center gap-2 rounded-lg border border-border bg-card px-3 py-2.5">
-                    <s.icon className={`h-4 w-4 ${s.iconColor}`} />
-                    <div>
-                      <div className="text-base font-bold text-foreground">{s.value}</div>
-                      <div className="text-[9px] text-muted-foreground">{s.label}</div>
-                    </div>
+            {/* Progress & stats row */}
+            {(pathProgress || pathStats) && (
+              <div className="flex items-center gap-4 mb-4 flex-wrap">
+                {pathProgress && user && (
+                  <div className="flex items-center gap-2 flex-1 min-w-0">
+                    <span className="text-xs text-muted-foreground whitespace-nowrap">
+                      {pathProgress.completed}/{pathProgress.total} completed
+                    </span>
+                    <Progress value={pathProgress.percent} className="h-1.5 flex-1" />
+                    <span className="text-xs font-semibold text-foreground">{pathProgress.percent}%</span>
                   </div>
-                ))}
+                )}
+                {pathStats && (
+                  <div className="flex items-center gap-1.5 text-xs text-muted-foreground shrink-0">
+                    <Clock className="h-3.5 w-3.5" />
+                    <span>~{pathStats.total * 15}m total</span>
+                  </div>
+                )}
               </div>
             )}
 
