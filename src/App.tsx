@@ -33,6 +33,7 @@ import TeamProgress from "./pages/hr/TeamProgress.tsx";
 import Members from "./pages/hr/Members.tsx";
 import WorkspaceSettings from "./pages/hr/WorkspaceSettings.tsx";
 import ActionCenter from "./pages/hr/ActionCenter.tsx";
+import Workspaces from "./pages/hr/Workspaces.tsx";
 
 const queryClient = new QueryClient();
 
@@ -74,6 +75,7 @@ const App = () => (
               {/* Superadmin-only routes */}
               <Route path="roadmap" element={<Roadmap />} />
               <Route path="analyze" element={<Index />} />
+              <Route path="workspaces" element={<Workspaces />} />
             </Route>
 
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
