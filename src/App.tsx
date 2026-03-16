@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/contexts/AuthContext";
 import Navbar from "@/components/Navbar";
+import StickyTicker from "@/components/StickyTicker";
 import Footer from "@/components/Footer";
 import Index from "./pages/Index.tsx";
 import Analysis from "./pages/Analysis.tsx";
