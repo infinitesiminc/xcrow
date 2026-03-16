@@ -21,6 +21,7 @@ const SUPERADMIN_IDS = [
 
 const items = [
   { title: "Team Progress", url: "/hr/team-progress", icon: BarChart3 },
+  { title: "Score Distributions", url: "/hr/score-distributions", icon: Activity },
   { title: "ATS Sync", url: "/hr/ats-sync", icon: RefreshCw },
   { title: "Simulation Builder", url: "/hr/simulations", icon: Blocks },
   { title: "Members", url: "/hr/members", icon: Users },
@@ -28,7 +29,6 @@ const items = [
 ];
 
 const superadminItems = [
-  { title: "Score Distributions", url: "/hr/score-distributions", icon: Activity },
   { title: "Roadmap", url: "/hr/roadmap", icon: Target },
   { title: "Analyze Tool", url: "/hr/analyze", icon: Search },
 ];
