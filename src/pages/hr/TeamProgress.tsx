@@ -766,6 +766,8 @@ export default function TeamProgress() {
     );
   }
 
+  const hasData = progress.length > 0;
+
   return (
     <div className="p-6 max-w-5xl mx-auto space-y-5">
       {/* Header */}
@@ -781,13 +783,36 @@ export default function TeamProgress() {
         </p>
       </div>
 
-      {/* Demo data disclaimer */}
-      <div className="flex items-start gap-2.5 rounded-lg border border-primary/20 bg-primary/5 px-4 py-3">
-        <AlertTriangle className="h-4 w-4 text-primary shrink-0 mt-0.5" />
-        <p className="text-xs text-muted-foreground leading-relaxed">
-          <span className="font-semibold text-foreground">Demo data.</span> Employee names and scores shown here are simulated for demonstration purposes on real roles imported from your ATS. Actual employee results will appear once team members complete their AI readiness simulations.
-        </p>
-      </div>
+      {/* Demo data disclaimer (superadmin only) */}
+      {isSuperAdmin && (
+        <div className="flex items-start gap-2.5 rounded-lg border border-primary/20 bg-primary/5 px-4 py-3">
+          <AlertTriangle className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+          <p className="text-xs text-muted-foreground leading-relaxed">
+            <span className="font-semibold text-foreground">Demo data.</span> Employee names and scores shown here are simulated for demonstration purposes on real roles imported from your ATS. Actual employee results will appear once team members complete their AI readiness simulations.
+          </p>
+        </div>
+      )}
+
+      {/* Empty state for non-superadmins with no data */}
+      {!hasData && !isSuperAdmin && (
+        <div className="py-16 text-center space-y-4">
+          <Database className="h-12 w-12 mx-auto text-muted-foreground/40" />
+          <h2 className="text-lg font-semibold text-foreground">No simulation data yet</h2>
+          <p className="text-sm text-muted-foreground max-w-md mx-auto">
+            Import your company's roles via ATS Sync, analyze them, then invite your team to start AI readiness simulations. Results will populate here automatically.
+          </p>
+          <div className="flex gap-3 justify-center">
+            <Button onClick={() => window.location.href = "/hr/ats-sync"}>
+              <RefreshCw className="h-4 w-4 mr-2" />Import Roles
+            </Button>
+            <Button variant="outline" onClick={() => window.location.href = "/hr/members"}>
+              <Users className="h-4 w-4 mr-2" />Invite Team
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {(hasData || isSuperAdmin) && (
 
       <Tabs defaultValue="executive" className="w-full">
         <TabsList className="w-full justify-start">
