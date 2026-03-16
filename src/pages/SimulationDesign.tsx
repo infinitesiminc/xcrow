@@ -393,7 +393,7 @@ function PillarScoreVisual() {
                 <span className="text-xs font-medium">{p.label}</span>
               </div>
               <span className={`text-sm font-mono font-bold ${
-                p.score >= 80 ? "text-dot-teal" : p.score >= 60 ? "text-dot-amber" : "text-dot-purple"
+                p.score >= 80 ? "text-brand-human" : p.score >= 60 ? "text-brand-mid" : "text-brand-ai"
               }`}>{p.score}%</span>
             </div>
             <div className="h-1.5 w-full rounded-full bg-secondary overflow-hidden">
