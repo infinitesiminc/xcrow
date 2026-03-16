@@ -702,7 +702,7 @@ export default function LearningPath() {
                                       {pillars.length > 0 && (
                                         <div className="flex gap-2">
                                           {pillars.map(p => (
-                                            <div key={p.label} className="flex items-center gap-1 text-[9px]">
+                                            <div key={p.label} className="flex items-center gap-1 text-[11px]">
                                               <span className="text-muted-foreground">{p.label}</span>
                                               <span className={`font-semibold ${p.val! >= 70 ? "text-success" : p.val! >= 40 ? "text-warning" : "text-destructive"}`}>{p.val}%</span>
                                             </div>
