@@ -441,7 +441,7 @@ function CTASection() {
             See the engine in action
           </h2>
           <p className="text-muted-foreground text-lg max-w-xl mx-auto">
-            Walk through a real deployment — 217 roles at Anthropic decomposed, simulated, and tracked in real time.
+            Walk through a real deployment — 400+ roles at Anthropic decomposed, simulated, and tracked in real time.
           </p>
           <div className="flex items-center justify-center gap-4 pt-2">
             <Button size="lg" onClick={() => navigate("/case-study/anthropic")}>
