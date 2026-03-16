@@ -483,7 +483,7 @@ export default function Investors() {
 
                   {/* Quadrant labels */}
                   <span className="absolute top-3 left-3 text-[9px] text-muted-foreground/40 uppercase leading-tight">Training Without<br />Intelligence</span>
-                  <span className="absolute top-3 right-3 text-[9px] text-brand-human/50 uppercase text-right font-semibold leading-tight">Adaptive AI<br />Readiness</span>
+                  <span className="absolute top-3 right-3 text-[9px] text-brand-ai/50 uppercase text-right font-semibold leading-tight">Adaptive AI<br />Readiness</span>
                   <span className="absolute bottom-3 left-3 text-[9px] text-muted-foreground/40 uppercase leading-tight">Blind<br />Spot</span>
                   <span className="absolute bottom-3 right-3 text-[9px] text-muted-foreground/40 uppercase text-right leading-tight">Analysis<br />Without Action</span>
 
