@@ -380,152 +380,49 @@ export default function LearningPath() {
     );
   }
 
+  // Chart helper
+  const getQuadrantColor = (exposure: number, impact: number) => {
+    if (exposure >= 50 && impact >= 50) return { fill: "hsl(var(--destructive))", bg: "bg-destructive" };
+    if (exposure < 50 && impact >= 50) return { fill: "hsl(var(--success))", bg: "bg-success" };
+    if (exposure >= 50 && impact < 50) return { fill: "hsl(var(--warning))", bg: "bg-warning" };
+    return { fill: "hsl(var(--muted-foreground))", bg: "bg-muted-foreground" };
+  };
+
   return (
     <div className="min-h-screen bg-background">
-      <div className="max-w-5xl mx-auto px-4 py-6 sm:py-10">
+      <div className="max-w-7xl mx-auto px-4 py-6 sm:py-10">
         {/* Back nav */}
         <Button variant="ghost" size="sm" onClick={() => navigate("/products/simulation-builder")} className="gap-1.5 text-xs mb-4 -ml-2">
           <ArrowLeft className="w-3.5 h-3.5" /> Back to Roles
         </Button>
 
-        {/* Job Header */}
-        <Card className="border-border bg-card mb-4">
-          <CardContent className="p-5">
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <h1 className="font-serif text-2xl sm:text-3xl font-bold text-foreground leading-tight">{job.title}</h1>
-                <p className="text-sm text-muted-foreground mt-1">
-                  {companyName}
-                  {job.department && ` · ${job.department}`}
-                  {job.location && ` · ${job.location}`}
-                </p>
-              </div>
-              <div className="flex items-center gap-2 shrink-0">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-8 w-8 p-0 text-muted-foreground hover:text-primary"
-                  onClick={() => job && analyzeJob(job, true)}
-                  disabled={analyzing}
-                  title="Re-analyze with latest AI data"
-                >
-                  <RefreshCw className={`h-4 w-4 ${analyzing ? "animate-spin" : ""}`} />
-                </Button>
-              </div>
+        {/* Job Header — full width */}
+        <div className="mb-6">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <h1 className="font-serif text-2xl sm:text-3xl font-bold text-foreground leading-tight">{job.title}</h1>
+              <p className="text-sm text-muted-foreground mt-1">
+                {companyName}
+                {job.department && ` · ${job.department}`}
+                {job.location && ` · ${job.location}`}
+              </p>
             </div>
-
-            {/* AI Exposure Score + Quadrant Chart */}
-            <div className="mt-3 flex flex-col sm:flex-row items-center gap-4">
-              {/* Score */}
-              <div className="text-center shrink-0 sm:w-[160px]">
-                <div className="text-3xl font-bold text-foreground">{job.augmented_percent ?? "—"}%</div>
-                <div className="text-xs text-muted-foreground mt-0.5">AI Exposure</div>
-                <p className="text-[10px] text-muted-foreground/60 mt-0.5">Important work that is AI-exposed</p>
-                {job.augmented_percent != null && (
-                  <div className="h-1.5 rounded-full bg-secondary mt-2 overflow-hidden w-32 mx-auto">
-                    <div
-                      className={`h-full rounded-full ${job.augmented_percent >= 70 ? "bg-destructive" : job.augmented_percent >= 40 ? "bg-warning" : "bg-success"}`}
-                      style={{ width: `${job.augmented_percent}%` }}
-                    />
-                  </div>
-                )}
-              </div>
-
-              {/* X-Y Quadrant scatter */}
-              {analyzedTasks.length >= 2 && (() => {
-                const tasks = analyzedTasks.slice(0, 12);
-                // Chart area: padding for labels
-                const pad = { top: 14, right: 14, bottom: 24, left: 28 };
-                const w = 220, h = 180;
-                const plotW = w - pad.left - pad.right;
-                const plotH = h - pad.top - pad.bottom;
-
-                return (
-                  <div className="flex items-start gap-3 flex-1 min-w-0">
-                    <svg viewBox={`0 0 ${w} ${h}`} className="w-[220px] h-[180px] shrink-0">
-                      {/* Quadrant backgrounds */}
-                      <rect x={pad.left} y={pad.top} width={plotW / 2} height={plotH / 2} fill="hsl(var(--success) / 0.06)" />
-                      <rect x={pad.left + plotW / 2} y={pad.top} width={plotW / 2} height={plotH / 2} fill="hsl(var(--destructive) / 0.06)" />
-                      <rect x={pad.left} y={pad.top + plotH / 2} width={plotW / 2} height={plotH / 2} fill="hsl(var(--muted) / 0.3)" />
-                      <rect x={pad.left + plotW / 2} y={pad.top + plotH / 2} width={plotW / 2} height={plotH / 2} fill="hsl(var(--warning) / 0.06)" />
-
-                      {/* Quadrant labels */}
-                      <text x={pad.left + plotW * 0.25} y={pad.top + 10} textAnchor="middle" className="text-[6px]" fill="hsl(var(--success))" opacity={0.7}>💪 Human Edge</text>
-                      <text x={pad.left + plotW * 0.75} y={pad.top + 10} textAnchor="middle" className="text-[6px]" fill="hsl(var(--destructive))" opacity={0.7}>🔴 Urgent Upskill</text>
-                      <text x={pad.left + plotW * 0.25} y={pad.top + plotH - 4} textAnchor="middle" className="text-[6px]" fill="hsl(var(--muted-foreground))" opacity={0.5}>Low Priority</text>
-                      <text x={pad.left + plotW * 0.75} y={pad.top + plotH - 4} textAnchor="middle" className="text-[6px]" fill="hsl(var(--warning))" opacity={0.7}>🤖 Let AI Handle</text>
-
-                      {/* Axes */}
-                      <line x1={pad.left} y1={pad.top + plotH} x2={pad.left + plotW} y2={pad.top + plotH} stroke="hsl(var(--border))" strokeWidth="0.5" />
-                      <line x1={pad.left} y1={pad.top} x2={pad.left} y2={pad.top + plotH} stroke="hsl(var(--border))" strokeWidth="0.5" />
-                      {/* Midlines */}
-                      <line x1={pad.left + plotW / 2} y1={pad.top} x2={pad.left + plotW / 2} y2={pad.top + plotH} stroke="hsl(var(--border))" strokeWidth="0.3" strokeDasharray="3,3" opacity={0.5} />
-                      <line x1={pad.left} y1={pad.top + plotH / 2} x2={pad.left + plotW} y2={pad.top + plotH / 2} stroke="hsl(var(--border))" strokeWidth="0.3" strokeDasharray="3,3" opacity={0.5} />
-
-                      {/* Axis labels */}
-                      <text x={pad.left + plotW / 2} y={h - 2} textAnchor="middle" className="text-[7px]" fill="hsl(var(--muted-foreground))">AI Exposure →</text>
-                      <text x={6} y={pad.top + plotH / 2} textAnchor="middle" dominantBaseline="central" className="text-[7px]" fill="hsl(var(--muted-foreground))" transform={`rotate(-90, 6, ${pad.top + plotH / 2})`}>Job Impact →</text>
-
-                      {/* Tick marks */}
-                      <text x={pad.left} y={h - 10} textAnchor="middle" className="text-[6px]" fill="hsl(var(--muted-foreground))" opacity={0.5}>0</text>
-                      <text x={pad.left + plotW / 2} y={h - 10} textAnchor="middle" className="text-[6px]" fill="hsl(var(--muted-foreground))" opacity={0.5}>50</text>
-                      <text x={pad.left + plotW} y={h - 10} textAnchor="middle" className="text-[6px]" fill="hsl(var(--muted-foreground))" opacity={0.5}>100</text>
-
-                      {/* Data points */}
-                      {tasks.map((t, i) => {
-                        const exposure = t.ai_exposure_score ?? 50;
-                        const impact = t.job_impact_score ?? 50;
-                        const x = pad.left + (exposure / 100) * plotW;
-                        const y = pad.top + plotH - (impact / 100) * plotH;
-                        const dotColor = (exposure >= 50 && impact >= 50) ? "hsl(var(--destructive))"
-                          : (exposure < 50 && impact >= 50) ? "hsl(var(--success))"
-                          : (exposure >= 50 && impact < 50) ? "hsl(var(--warning))"
-                          : "hsl(var(--muted-foreground))";
-                        return (
-                          <g key={i}>
-                            <circle cx={x} cy={y} r="6" fill={dotColor} opacity={0.2} />
-                            <circle cx={x} cy={y} r="3" fill={dotColor} />
-                            <text x={x} y={y - 6} textAnchor="middle" className="text-[7px] font-semibold" fill="hsl(var(--foreground))">
-                              {i + 1}
-                            </text>
-                          </g>
-                        );
-                      })}
-                    </svg>
-
-                    {/* Compact legend */}
-                    <div className="flex flex-col gap-0.5 min-w-0">
-                      {tasks.map((t, i) => {
-                        const exposure = t.ai_exposure_score ?? 50;
-                        const impact = t.job_impact_score ?? 50;
-                        const dotColor = (exposure >= 50 && impact >= 50) ? "bg-destructive"
-                          : (exposure < 50 && impact >= 50) ? "bg-success"
-                          : (exposure >= 50 && impact < 50) ? "bg-warning"
-                          : "bg-muted-foreground";
-                        return (
-                          <div key={i} className="flex items-center gap-1 min-w-0">
-                            <span className={`w-1.5 h-1.5 rounded-full ${dotColor} shrink-0`} />
-                            <span className="text-[9px] text-muted-foreground truncate leading-tight">
-                              <span className="font-medium text-foreground">{i + 1}</span> {t.cluster_name}
-                            </span>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                );
-              })()}
-            </div>
-          </CardContent>
-        </Card>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-8 w-8 p-0 text-muted-foreground hover:text-primary shrink-0"
+              onClick={() => job && analyzeJob(job, true)}
+              disabled={analyzing}
+              title="Re-analyze with latest AI data"
+            >
+              <RefreshCw className={`h-4 w-4 ${analyzing ? "animate-spin" : ""}`} />
+            </Button>
+          </div>
+        </div>
 
         {/* ── Update notification strip ── */}
         {updatedTaskNames.size > 0 && (
-          <motion.div
-            initial={{ opacity: 0, y: -8 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="mb-4"
-          >
+          <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} className="mb-4">
             <Card className="border-primary/30 bg-primary/[0.03]">
               <CardContent className="p-3">
                 <div className="flex items-center gap-3">
@@ -536,39 +433,19 @@ export default function LearningPath() {
                     <p className="text-sm font-medium text-foreground">
                       {updatedTaskNames.size} task{updatedTaskNames.size > 1 ? "s" : ""} updated
                     </p>
-                    <p className="text-[11px] text-muted-foreground truncate">
-                      {Array.from(updatedTaskNames).slice(0, 3).join(", ")}
-                      {updatedTaskNames.size > 3 && ` +${updatedTaskNames.size - 3} more`}
-                    </p>
                   </div>
-                  <div className="flex items-center gap-2 shrink-0">
-                    <Button
-                      size="sm"
-                      className="h-7 text-xs gap-1"
-                      onClick={() => {
-                        const firstUpdated = analyzedTasks.find(t => updatedTaskNames.has(t.cluster_name));
-                        if (firstUpdated) launchSim(firstUpdated);
-                      }}
-                    >
-                      <Play className="h-3 w-3" /> Start
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      className="h-7 text-xs text-muted-foreground"
-                      onClick={() => setUpdatedTaskNames(new Set())}
-                    >
-                      Dismiss
-                    </Button>
-                  </div>
+                  <Button size="sm" className="h-7 text-xs gap-1" onClick={() => { const t = analyzedTasks.find(t => updatedTaskNames.has(t.cluster_name)); if (t) launchSim(t); }}>
+                    <Play className="h-3 w-3" /> Start
+                  </Button>
+                  <Button size="sm" variant="ghost" className="h-7 text-xs text-muted-foreground" onClick={() => setUpdatedTaskNames(new Set())}>Dismiss</Button>
                 </div>
               </CardContent>
             </Card>
           </motion.div>
         )}
 
-        {/* Tabs: Learning Path | Custom Sims */}
-        <Tabs value={activeTab} onValueChange={v => setActiveTab(v as any)} className="mb-6">
+        {/* Tabs */}
+        <Tabs value={activeTab} onValueChange={v => setActiveTab(v as any)}>
           <div className="flex items-center justify-between mb-4">
             <TabsList>
               <TabsTrigger value="path" className="gap-1.5 text-xs">
@@ -587,29 +464,8 @@ export default function LearningPath() {
             )}
           </div>
 
-          {/* ═══ LEARNING PATH TAB ═══ */}
+          {/* ═══ LEARNING PATH TAB — Two Column ═══ */}
           <TabsContent value="path">
-            {/* Progress & stats row */}
-            {(pathProgress || pathStats) && (
-              <div className="flex items-center gap-4 mb-4 flex-wrap">
-                {pathProgress && user && (
-                  <div className="flex items-center gap-2 flex-1 min-w-0">
-                    <span className="text-xs text-muted-foreground whitespace-nowrap">
-                      {pathProgress.completed}/{pathProgress.total} completed
-                    </span>
-                    <Progress value={pathProgress.percent} className="h-1.5 flex-1" />
-                    <span className="text-xs font-semibold text-foreground">{pathProgress.percent}%</span>
-                  </div>
-                )}
-                {pathStats && (
-                  <div className="flex items-center gap-1.5 text-xs text-muted-foreground shrink-0">
-                    <Clock className="h-3.5 w-3.5" />
-                    <span>~{pathStats.total * 15}m total</span>
-                  </div>
-                )}
-              </div>
-            )}
-
             {/* Loading */}
             {analyzing && (
               <div className="flex flex-col items-center justify-center py-16 gap-3">
@@ -628,133 +484,251 @@ export default function LearningPath() {
               </Card>
             )}
 
-            {/* Task Cards */}
+            {/* Two-column: Chart (sticky) | Tasks (scrollable) */}
             {!analyzing && analyzedTasks.length > 0 && (
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                {analyzedTasks.map((task, i) => {
-                  const taskScore = getTaskCompletion(task.cluster_name, job.title);
-                  const isCompleted = taskScore !== null;
-                  const isUpdated = updatedTaskNames.has(task.cluster_name);
-                  const exposure = task.ai_exposure_score ?? 50;
-
-                  // AI-impact sentence + icon based on exposure level
-                  const aiMeta = exposure >= 70
-                    ? { icon: AlertTriangle, color: "text-destructive", summary: "AI can handle most of this today — focus on oversight and quality judgment." }
-                    : exposure >= 50
-                    ? { icon: Zap, color: "text-warning", summary: "AI is increasingly capable here — learn to collaborate with AI tools effectively." }
-                    : exposure >= 30
-                    ? { icon: Brain, color: "text-dot-purple", summary: "AI assists with parts of this task — your expertise remains the differentiator." }
-                    : { icon: Shield, color: "text-success", summary: "This task relies heavily on human judgment — AI plays a minimal role." };
-                  const AiIcon = aiMeta.icon;
-
-                  return (
-                    <motion.div
-                      key={task.id || i}
-                      initial={{ opacity: 0, y: 8 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: i * 0.04 }}
-                    >
-                      <Card className={`border-border bg-card hover:border-primary/30 transition-all group h-full ${isCompleted ? "border-success/30 bg-success/[0.02]" : ""} ${isUpdated ? "border-primary/30 bg-primary/[0.02] ring-1 ring-primary/10" : ""}`}>
-                        <CardContent className="p-5">
-                          <div className="flex items-start gap-3">
-                            <div className="shrink-0 pt-0.5">
-                              {isCompleted ? (
-                                <span className="w-7 h-7 rounded-full bg-success/10 flex items-center justify-center">
-                                  <CheckCircle2 className="h-4 w-4 text-success" />
-                                </span>
-                              ) : (
-                                <span className="w-7 h-7 rounded-full bg-accent flex items-center justify-center text-xs font-bold text-foreground">
-                                  {i + 1}
-                                </span>
-                              )}
-                            </div>
-
-                            <div className="flex-1 min-w-0">
-                              <div className="flex items-start justify-between gap-2 mb-1.5">
-                                <h4 className={`font-semibold text-base leading-snug ${isCompleted ? "text-success" : "text-foreground"}`}>
-                                  {task.cluster_name}
-                                </h4>
-                                <div className="flex items-center gap-1.5 shrink-0">
-                                  {isCompleted && taskScore !== null && scoreBadge(taskScore)}
-                                  {isUpdated && (
-                                    <Badge className="bg-primary/10 text-primary border-primary/20 text-[8px] px-1 py-0 h-3.5 animate-pulse">
-                                      Updated
-                                    </Badge>
-                                  )}
-                                </div>
-                              </div>
-
-                              {task.description && (
-                                <p className="text-sm text-muted-foreground leading-relaxed mb-2">{task.description}</p>
-                              )}
-
-                              <p className="text-xs text-muted-foreground/80 italic mb-3 flex items-start gap-1.5">
-                                <AiIcon className={`h-3.5 w-3.5 shrink-0 mt-0.5 ${aiMeta.color}`} />
-                                {aiMeta.summary}
-                              </p>
-
-                              {task.skill_names && task.skill_names.length > 0 && (
-                                <div className="flex flex-wrap gap-1.5 mb-3">
-                                  {task.skill_names.map(s => (
-                                    <span key={s} className="rounded-md bg-secondary px-2 py-0.5 text-[10px] font-medium text-foreground">{s}</span>
-                                  ))}
-                                </div>
-                              )}
-
-                              <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                                  <GraduationCap className="h-3.5 w-3.5" />
-                                  <span>15 min simulation</span>
-                                </div>
-                                <Button
-                                  size="sm"
-                                  variant={isCompleted ? "ghost" : "outline"}
-                                  className="h-8 text-xs gap-1.5 opacity-80 group-hover:opacity-100 transition-opacity"
-                                  onClick={() => launchSim(task)}
-                                >
-                                  <Play className="h-3.5 w-3.5" />
-                                  {isCompleted ? "Retry" : "Start Simulation"}
-                                </Button>
-                              </div>
-                            </div>
+              <div className="flex flex-col lg:flex-row gap-6">
+                {/* LEFT: Sticky chart panel */}
+                <div className="lg:w-[380px] shrink-0">
+                  <div className="lg:sticky lg:top-6 space-y-4">
+                    {/* AI Exposure Score */}
+                    <Card className="border-border bg-card">
+                      <CardContent className="p-4">
+                        <div className="flex items-center gap-4">
+                          <div>
+                            <div className="text-3xl font-bold text-foreground">{job.augmented_percent ?? "—"}%</div>
+                            <div className="text-xs text-muted-foreground">AI Exposure</div>
                           </div>
-                        </CardContent>
-                      </Card>
-                    </motion.div>
-                  );
-                })}
-              </div>
-            )}
+                          {job.augmented_percent != null && (
+                            <div className="flex-1 h-2 rounded-full bg-secondary overflow-hidden">
+                              <div
+                                className={`h-full rounded-full ${job.augmented_percent >= 70 ? "bg-destructive" : job.augmented_percent >= 40 ? "bg-warning" : "bg-success"}`}
+                                style={{ width: `${job.augmented_percent}%` }}
+                              />
+                            </div>
+                          )}
+                        </div>
+                        <p className="text-[10px] text-muted-foreground/60 mt-1">How much of the important work is AI-exposed</p>
+                      </CardContent>
+                    </Card>
 
-            {/* CTA */}
-            {!analyzing && analyzedTasks.length > 0 && (
-              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }} className="mt-6">
-                <Card className="border-primary/20 bg-primary/[0.02]">
-                  <CardContent className="p-5 text-center">
-                    <Award className="h-6 w-6 text-primary mx-auto mb-2" />
-                    <h3 className="font-semibold text-foreground text-sm mb-1">
-                      {pathProgress?.percent === 100 ? "🎉 Learning Path Complete!" : "Complete Learning Path"}
-                    </h3>
-                    <p className="text-xs text-muted-foreground mb-3">
-                      {pathProgress?.percent === 100
-                        ? `Congratulations! You've completed all ${analyzedTasks.length} simulations for ${job.title}.`
-                        : `Complete all ${analyzedTasks.length} simulations to earn your AI-Readiness Certificate for ${job.title}`}
-                    </p>
-                    {(!pathProgress || pathProgress.percent < 100) && (
-                      <Button
-                        className="gap-1.5"
-                        onClick={() => {
-                          const nextTask = analyzedTasks.find(t => getTaskCompletion(t.cluster_name, job.title) === null) || analyzedTasks[0];
-                          launchSim(nextTask);
-                        }}
-                      >
-                        {pathProgress && pathProgress.completed > 0 ? `Continue — Task ${pathProgress.completed + 1}` : "Start with Task 1"}
-                        <ArrowRight className="h-3.5 w-3.5" />
-                      </Button>
+                    {/* Quadrant Chart */}
+                    {analyzedTasks.length >= 2 && (() => {
+                      const tasks = analyzedTasks.slice(0, 12);
+                      const pad = { top: 20, right: 20, bottom: 32, left: 36 };
+                      const w = 340, h = 280;
+                      const plotW = w - pad.left - pad.right;
+                      const plotH = h - pad.top - pad.bottom;
+
+                      return (
+                        <Card className="border-border bg-card">
+                          <CardContent className="p-4">
+                            <svg viewBox={`0 0 ${w} ${h}`} className="w-full" onMouseLeave={() => setHoveredTaskIndex(null)}>
+                              {/* Quadrant backgrounds */}
+                              <rect x={pad.left} y={pad.top} width={plotW / 2} height={plotH / 2} fill="hsl(var(--success) / 0.05)" />
+                              <rect x={pad.left + plotW / 2} y={pad.top} width={plotW / 2} height={plotH / 2} fill="hsl(var(--destructive) / 0.05)" />
+                              <rect x={pad.left} y={pad.top + plotH / 2} width={plotW / 2} height={plotH / 2} fill="hsl(var(--muted) / 0.15)" />
+                              <rect x={pad.left + plotW / 2} y={pad.top + plotH / 2} width={plotW / 2} height={plotH / 2} fill="hsl(var(--warning) / 0.05)" />
+
+                              {/* Quadrant labels */}
+                              <text x={pad.left + plotW * 0.25} y={pad.top + 14} textAnchor="middle" className="text-[8px]" fill="hsl(var(--success))" opacity={0.6}>💪 Human Edge</text>
+                              <text x={pad.left + plotW * 0.75} y={pad.top + 14} textAnchor="middle" className="text-[8px]" fill="hsl(var(--destructive))" opacity={0.6}>🔴 Urgent Upskill</text>
+                              <text x={pad.left + plotW * 0.25} y={pad.top + plotH - 6} textAnchor="middle" className="text-[8px]" fill="hsl(var(--muted-foreground))" opacity={0.4}>Low Priority</text>
+                              <text x={pad.left + plotW * 0.75} y={pad.top + plotH - 6} textAnchor="middle" className="text-[8px]" fill="hsl(var(--warning))" opacity={0.6}>🤖 Let AI Handle</text>
+
+                              {/* Axes */}
+                              <line x1={pad.left} y1={pad.top + plotH} x2={pad.left + plotW} y2={pad.top + plotH} stroke="hsl(var(--border))" strokeWidth="0.5" />
+                              <line x1={pad.left} y1={pad.top} x2={pad.left} y2={pad.top + plotH} stroke="hsl(var(--border))" strokeWidth="0.5" />
+                              <line x1={pad.left + plotW / 2} y1={pad.top} x2={pad.left + plotW / 2} y2={pad.top + plotH} stroke="hsl(var(--border))" strokeWidth="0.4" strokeDasharray="4,4" opacity={0.4} />
+                              <line x1={pad.left} y1={pad.top + plotH / 2} x2={pad.left + plotW} y2={pad.top + plotH / 2} stroke="hsl(var(--border))" strokeWidth="0.4" strokeDasharray="4,4" opacity={0.4} />
+
+                              {/* Axis labels */}
+                              <text x={pad.left + plotW / 2} y={h - 4} textAnchor="middle" className="text-[9px]" fill="hsl(var(--muted-foreground))">AI Exposure →</text>
+                              <text x={10} y={pad.top + plotH / 2} textAnchor="middle" dominantBaseline="central" className="text-[9px]" fill="hsl(var(--muted-foreground))" transform={`rotate(-90, 10, ${pad.top + plotH / 2})`}>Job Impact →</text>
+
+                              {/* Ticks */}
+                              <text x={pad.left} y={h - 14} textAnchor="middle" className="text-[7px]" fill="hsl(var(--muted-foreground))" opacity={0.4}>0</text>
+                              <text x={pad.left + plotW / 2} y={h - 14} textAnchor="middle" className="text-[7px]" fill="hsl(var(--muted-foreground))" opacity={0.4}>50</text>
+                              <text x={pad.left + plotW} y={h - 14} textAnchor="middle" className="text-[7px]" fill="hsl(var(--muted-foreground))" opacity={0.4}>100</text>
+
+                              {/* Data points */}
+                              {tasks.map((t, i) => {
+                                const exposure = t.ai_exposure_score ?? 50;
+                                const impact = t.job_impact_score ?? 50;
+                                const x = pad.left + (exposure / 100) * plotW;
+                                const y = pad.top + plotH - (impact / 100) * plotH;
+                                const { fill } = getQuadrantColor(exposure, impact);
+                                const isHovered = hoveredTaskIndex === i;
+                                const isAnyHovered = hoveredTaskIndex !== null;
+                                return (
+                                  <g
+                                    key={i}
+                                    onMouseEnter={() => setHoveredTaskIndex(i)}
+                                    className="cursor-pointer"
+                                    style={{ transition: "opacity 0.15s" }}
+                                    opacity={isAnyHovered && !isHovered ? 0.25 : 1}
+                                  >
+                                    {/* Hover ring */}
+                                    {isHovered && <circle cx={x} cy={y} r="14" fill={fill} opacity={0.1} />}
+                                    <circle cx={x} cy={y} r={isHovered ? "5" : "4"} fill={fill} style={{ transition: "r 0.15s" }} />
+                                    <text x={x} y={y - (isHovered ? 9 : 7)} textAnchor="middle" className={isHovered ? "text-[9px] font-bold" : "text-[8px] font-semibold"} fill="hsl(var(--foreground))">
+                                      {i + 1}
+                                    </text>
+                                    {/* Tooltip on hover */}
+                                    {isHovered && (
+                                      <>
+                                        <rect x={x - 60} y={y + 8} width="120" height="18" rx="3" fill="hsl(var(--card))" stroke="hsl(var(--border))" strokeWidth="0.5" />
+                                        <text x={x} y={y + 19} textAnchor="middle" className="text-[7px]" fill="hsl(var(--foreground))">
+                                          {t.cluster_name.length > 22 ? t.cluster_name.slice(0, 22) + "…" : t.cluster_name}
+                                        </text>
+                                      </>
+                                    )}
+                                  </g>
+                                );
+                              })}
+                            </svg>
+                          </CardContent>
+                        </Card>
+                      );
+                    })()}
+
+                    {/* Progress */}
+                    {pathProgress && user && (
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-muted-foreground whitespace-nowrap">
+                          {pathProgress.completed}/{pathProgress.total}
+                        </span>
+                        <Progress value={pathProgress.percent} className="h-1.5 flex-1" />
+                        <span className="text-xs font-semibold text-foreground">{pathProgress.percent}%</span>
+                      </div>
                     )}
-                  </CardContent>
-                </Card>
-              </motion.div>
+                    {pathStats && (
+                      <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                        <Clock className="h-3.5 w-3.5" />
+                        <span>~{pathStats.total * 15}m total</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* RIGHT: Task list */}
+                <div className="flex-1 min-w-0 space-y-3">
+                  {analyzedTasks.map((task, i) => {
+                    const taskScore = getTaskCompletion(task.cluster_name, job.title);
+                    const isCompleted = taskScore !== null;
+                    const isUpdated = updatedTaskNames.has(task.cluster_name);
+                    const exposure = task.ai_exposure_score ?? 50;
+                    const isHovered = hoveredTaskIndex === i;
+
+                    const aiMeta = exposure >= 70
+                      ? { icon: AlertTriangle, color: "text-destructive", summary: "AI can handle most of this today — focus on oversight and quality judgment." }
+                      : exposure >= 50
+                      ? { icon: Zap, color: "text-warning", summary: "AI is increasingly capable here — learn to collaborate with AI tools effectively." }
+                      : exposure >= 30
+                      ? { icon: Brain, color: "text-dot-purple", summary: "AI assists with parts of this task — your expertise remains the differentiator." }
+                      : { icon: Shield, color: "text-success", summary: "This task relies heavily on human judgment — AI plays a minimal role." };
+                    const AiIcon = aiMeta.icon;
+
+                    return (
+                      <motion.div
+                        key={task.id || i}
+                        initial={{ opacity: 0, y: 8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: i * 0.03 }}
+                        onMouseEnter={() => setHoveredTaskIndex(i)}
+                        onMouseLeave={() => setHoveredTaskIndex(null)}
+                      >
+                        <Card className={`border-border bg-card transition-all group ${isCompleted ? "border-success/30 bg-success/[0.02]" : ""} ${isUpdated ? "border-primary/30 bg-primary/[0.02] ring-1 ring-primary/10" : ""} ${isHovered ? "border-primary/40 shadow-sm" : "hover:border-primary/20"}`}>
+                          <CardContent className="p-4">
+                            <div className="flex items-start gap-3">
+                              <div className="shrink-0 pt-0.5">
+                                {isCompleted ? (
+                                  <span className="w-7 h-7 rounded-full bg-success/10 flex items-center justify-center">
+                                    <CheckCircle2 className="h-4 w-4 text-success" />
+                                  </span>
+                                ) : (
+                                  <span className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold ${isHovered ? "bg-primary text-primary-foreground" : "bg-accent text-foreground"} transition-colors`}>
+                                    {i + 1}
+                                  </span>
+                                )}
+                              </div>
+
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-start justify-between gap-2 mb-1">
+                                  <h4 className={`font-semibold text-sm leading-snug ${isCompleted ? "text-success" : "text-foreground"}`}>
+                                    {task.cluster_name}
+                                  </h4>
+                                  <div className="flex items-center gap-1.5 shrink-0">
+                                    {isCompleted && taskScore !== null && scoreBadge(taskScore)}
+                                    {isUpdated && (
+                                      <Badge className="bg-primary/10 text-primary border-primary/20 text-[8px] px-1 py-0 h-3.5 animate-pulse">Updated</Badge>
+                                    )}
+                                  </div>
+                                </div>
+
+                                {task.description && (
+                                  <p className="text-xs text-muted-foreground leading-relaxed mb-1.5">{task.description}</p>
+                                )}
+
+                                <p className="text-[11px] text-muted-foreground/80 italic mb-2 flex items-start gap-1.5">
+                                  <AiIcon className={`h-3 w-3 shrink-0 mt-0.5 ${aiMeta.color}`} />
+                                  {aiMeta.summary}
+                                </p>
+
+                                {task.skill_names && task.skill_names.length > 0 && (
+                                  <div className="flex flex-wrap gap-1 mb-2">
+                                    {task.skill_names.map(s => (
+                                      <span key={s} className="rounded-md bg-secondary px-1.5 py-0.5 text-[9px] font-medium text-foreground">{s}</span>
+                                    ))}
+                                  </div>
+                                )}
+
+                                <div className="flex items-center justify-between">
+                                  <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
+                                    <GraduationCap className="h-3 w-3" />
+                                    <span>15 min</span>
+                                  </div>
+                                  <Button
+                                    size="sm"
+                                    variant={isCompleted ? "ghost" : "outline"}
+                                    className="h-7 text-[11px] gap-1 opacity-80 group-hover:opacity-100 transition-opacity"
+                                    onClick={() => launchSim(task)}
+                                  >
+                                    <Play className="h-3 w-3" />
+                                    {isCompleted ? "Retry" : "Start Simulation"}
+                                  </Button>
+                                </div>
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      </motion.div>
+                    );
+                  })}
+
+                  {/* CTA */}
+                  <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }}>
+                    <Card className="border-primary/20 bg-primary/[0.02]">
+                      <CardContent className="p-5 text-center">
+                        <Award className="h-6 w-6 text-primary mx-auto mb-2" />
+                        <h3 className="font-semibold text-foreground text-sm mb-1">
+                          {pathProgress?.percent === 100 ? "🎉 Learning Path Complete!" : "Complete Learning Path"}
+                        </h3>
+                        <p className="text-xs text-muted-foreground mb-3">
+                          {pathProgress?.percent === 100
+                            ? `Congratulations! You've completed all ${analyzedTasks.length} simulations for ${job.title}.`
+                            : `Complete all ${analyzedTasks.length} simulations to earn your AI-Readiness Certificate for ${job.title}`}
+                        </p>
+                        {(!pathProgress || pathProgress.percent < 100) && (
+                          <Button className="gap-1.5" onClick={() => { const t = analyzedTasks.find(t => getTaskCompletion(t.cluster_name, job.title) === null) || analyzedTasks[0]; launchSim(t); }}>
+                            {pathProgress && pathProgress.completed > 0 ? `Continue — Task ${pathProgress.completed + 1}` : "Start with Task 1"}
+                            <ArrowRight className="h-3.5 w-3.5" />
+                          </Button>
+                        )}
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                </div>
+              </div>
             )}
           </TabsContent>
 
