@@ -656,7 +656,6 @@ export default function LearningPath() {
                                     {task.cluster_name}
                                   </h4>
                                   <div className="flex items-center gap-1.5 shrink-0">
-                                    {isCompleted && taskScore !== null && scoreBadge(taskScore)}
                                     {isUpdated && (
                                       <Badge className="bg-primary/10 text-primary border-primary/20 text-[11px] px-1.5 py-0 h-4 animate-pulse">Updated</Badge>
                                     )}
