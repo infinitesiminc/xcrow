@@ -421,6 +421,37 @@ export default function ScoreDistributions() {
               })}
             </div>
           </TabsContent>
+
+          <TabsContent value="locations">
+            <div className="space-y-3">
+              {locations.map((loc, i) => {
+                const barColor = loc.avg >= 60 ? "bg-destructive" : loc.avg >= 40 ? "bg-warning" : "bg-success";
+                return (
+                  <motion.div key={loc.name} initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.03 }}>
+                    <Card className="border-border">
+                      <CardContent className="p-4">
+                        <div className="flex items-center justify-between mb-2">
+                          <div>
+                            <span className="text-sm font-medium text-foreground">{loc.name}</span>
+                            <span className="text-xs text-muted-foreground ml-2">{loc.count} jobs</span>
+                          </div>
+                          <span className="text-sm font-bold text-foreground">{loc.avg}%</span>
+                        </div>
+                        <div className="h-1.5 rounded-full bg-secondary overflow-hidden">
+                          <motion.div
+                            className={`h-full rounded-full ${barColor}`}
+                            initial={{ width: 0 }}
+                            animate={{ width: `${loc.avg}%` }}
+                            transition={{ duration: 0.6, delay: 0.1 + i * 0.03 }}
+                          />
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                );
+              })}
+            </div>
+          </TabsContent>
         </Tabs>
       </div>
     </div>
