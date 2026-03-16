@@ -385,7 +385,7 @@ export default function ScoreDistributions() {
                           </div>
                           <span className="text-sm font-bold text-foreground">{dept.avg}%</span>
                         </div>
-                        <div className="h-2.5 rounded-full bg-secondary overflow-hidden">
+                        <div className="h-1.5 rounded-full bg-secondary overflow-hidden">
                           <motion.div
                             className={`h-full rounded-full ${barColor}`}
                             initial={{ width: 0 }}
