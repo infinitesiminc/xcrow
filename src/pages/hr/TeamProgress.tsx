@@ -16,10 +16,7 @@ import {
   ArrowUpRight, ArrowDownRight, Minus, Lightbulb, ChevronDown, ChevronUp,
 } from "lucide-react";
 import { LineChart, Line, ResponsiveContainer } from "recharts";
-import {
-  generateDemoProgress, generateDeptTrends, FUNNEL_STATS,
-  type DeptTrendData,
-} from "@/data/demo-team-progress";
+import { type DeptTrendData } from "@/data/demo-team-progress";
 
 /* ─── Types ─── */
 interface ProgressRow {
