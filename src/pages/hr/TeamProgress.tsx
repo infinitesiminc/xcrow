@@ -17,6 +17,7 @@ import {
   ArrowUpRight, ArrowDownRight, Minus, Lightbulb, ChevronDown, ChevronUp,
 } from "lucide-react";
 import { LineChart, Line, ResponsiveContainer } from "recharts";
+import OnboardingChecklist from "@/components/hr/OnboardingChecklist";
 import { type DeptTrendData, type DemoFunnelStats, generateMockFromDB } from "@/data/demo-team-progress";
 
 const SUPERADMIN_IDS = [
