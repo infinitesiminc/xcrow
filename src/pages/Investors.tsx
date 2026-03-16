@@ -298,8 +298,8 @@ export default function Investors() {
                         ].map((e, i) => (
                           <div key={e.date} className="flex items-start gap-2.5">
                             <div className="flex flex-col items-center">
-                              <div className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 ${i === 0 ? "bg-primary/15" : "bg-muted/60"}`}>
-                                <e.Icon className={`h-3 w-3 ${i === 0 ? "text-primary" : "text-muted-foreground"}`} />
+                              <div className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 ${i === 0 ? "bg-brand-ai/15" : "bg-muted/60"}`}>
+                                <e.Icon className={`h-3 w-3 ${i === 0 ? "text-brand-ai" : "text-muted-foreground"}`} />
                               </div>
                               {i < 2 && <div className="w-px h-3 bg-border/50 mt-1" />}
                             </div>
