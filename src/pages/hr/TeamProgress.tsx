@@ -16,11 +16,9 @@ import {
   ArrowUpRight, ArrowDownRight, Minus, Lightbulb, ChevronDown, ChevronUp,
 } from "lucide-react";
 import { LineChart, Line, ResponsiveContainer } from "recharts";
-import {
-  generateDemoProgress, generateDeptTrends, FUNNEL_STATS,
-  type DeptTrendData,
-} from "@/data/demo-team-progress";
+import { type DeptTrendData } from "@/data/demo-team-progress";
 
+const EMPTY_FUNNEL = { jobsImported: 0, jobsAnalyzed: 0, rolesActivated: 0, employeesStarted: 0 };
 /* ─── Types ─── */
 interface ProgressRow {
   user_id: string;
@@ -55,8 +53,6 @@ interface UserSummary {
 }
 
 const THRESHOLD = 60;
-const DEMO_PROGRESS = generateDemoProgress();
-const DEPT_TRENDS = generateDeptTrends();
 
 /* ─── Helpers ─── */
 const readinessColor = (score: number) =>
@@ -90,8 +86,8 @@ function ExecutiveBrief({ progress, deptTrends }: { progress: ProgressRow[]; dep
     const avgReadiness = allScores.length > 0
       ? Math.round(allScores.reduce((a, b) => a + b, 0) / allScores.length) : 0;
 
-    const notStarted = FUNNEL_STATS.rolesActivated - FUNNEL_STATS.employeesStarted;
-    const notActivated = FUNNEL_STATS.jobsImported - FUNNEL_STATS.rolesActivated;
+    const notStarted = EMPTY_FUNNEL.rolesActivated - EMPTY_FUNNEL.employeesStarted;
+    const notActivated = EMPTY_FUNNEL.jobsImported - EMPTY_FUNNEL.rolesActivated;
 
     // Weakest department
     const weakestDept = [...deptTrends].sort((a, b) => a.avgReadiness - b.avgReadiness)[0];
@@ -126,7 +122,7 @@ function ExecutiveBrief({ progress, deptTrends }: { progress: ProgressRow[]; dep
       actions.push({ text: `Focus org-wide training on ${pillars[0].label} (${pillars[0].avg}% avg)`, priority: "medium", metric: `${pillars[0].avg}%` });
     }
     if (notActivated > 200) {
-      actions.push({ text: `Activate ${notActivated} remaining roles to expand coverage beyond ${Math.round((FUNNEL_STATS.rolesActivated / FUNNEL_STATS.jobsImported) * 100)}%`, priority: "medium", metric: `${notActivated} pending` });
+      actions.push({ text: `Activate ${notActivated} remaining roles to expand coverage beyond ${EMPTY_FUNNEL.jobsImported > 0 ? Math.round((EMPTY_FUNNEL.rolesActivated / EMPTY_FUNNEL.jobsImported) * 100) : 0}%`, priority: "medium", metric: `${notActivated} pending` });
     }
     if (mostImproved && mostImproved.delta > 5) {
       actions.push({ text: `Recognize ${mostImproved.dept} for strongest improvement (+${mostImproved.delta}% this month)`, priority: "low", metric: `+${mostImproved.delta}%` });
@@ -193,10 +189,10 @@ function ExecutiveBrief({ progress, deptTrends }: { progress: ProgressRow[]; dep
 /* ─── 2. Compact Deployment Funnel ─── */
 function DeploymentFunnel() {
   const steps = [
-    { label: "Imported", value: FUNNEL_STATS.jobsImported, icon: Database },
-    { label: "Analyzed", value: FUNNEL_STATS.jobsAnalyzed, icon: BarChart3 },
-    { label: "Activated", value: FUNNEL_STATS.rolesActivated, icon: Zap },
-    { label: "Started", value: FUNNEL_STATS.employeesStarted, icon: Play },
+    { label: "Imported", value: EMPTY_FUNNEL.jobsImported, icon: Database },
+    { label: "Analyzed", value: EMPTY_FUNNEL.jobsAnalyzed, icon: BarChart3 },
+    { label: "Activated", value: EMPTY_FUNNEL.rolesActivated, icon: Zap },
+    { label: "Started", value: EMPTY_FUNNEL.employeesStarted, icon: Play },
   ];
 
   return (
@@ -681,7 +677,7 @@ export default function TeamProgress() {
 
       const { data: rows } = await supabase.rpc("get_workspace_progress", { p_workspace_id: wsId });
       const dbRows = (rows as ProgressRow[] || []).filter(r => r.user_id !== user.id);
-      setProgress([...DEMO_PROGRESS, ...dbRows]);
+      setProgress(dbRows);
       setLoading(false);
     })();
   }, [user]);
@@ -777,13 +773,13 @@ export default function TeamProgress() {
       {viewMode === "overview" ? (
         <>
           {/* 1. Executive Brief */}
-          <ExecutiveBrief progress={progress} deptTrends={DEPT_TRENDS} />
+          <ExecutiveBrief progress={progress} deptTrends={[]} />
 
           {/* 2. Deployment Funnel (compact) */}
           <DeploymentFunnel />
 
           {/* 3. Department Scorecard */}
-          <DeptScorecard deptTrends={DEPT_TRENDS} onSelectDept={(d) => {
+          <DeptScorecard deptTrends={[]} onSelectDept={(d) => {
             setSelectedDept(d);
             setViewMode("individual");
           }} />
