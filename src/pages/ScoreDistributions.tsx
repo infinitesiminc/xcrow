@@ -111,7 +111,7 @@ export default function ScoreDistributions() {
       if (analyzedIds.length > 0) {
         const { data } = await supabase
           .from("jobs")
-          .select("id, title, department, augmented_percent")
+          .select("id, title, department, location, augmented_percent")
           .in("id", analyzedIds);
         analyzedJobs = data || [];
       }
