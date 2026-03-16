@@ -21,7 +21,7 @@ const SUPERADMIN_IDS = [
 
 const diagnoseItems = [
   { title: "Role Explorer", url: "/hr/simulations", icon: Blocks },
-  { title: "Score Distributions", url: "/hr/score-distributions", icon: Activity },
+  { title: "AI Exposure Map", url: "/hr/score-distributions", icon: Activity },
   { title: "ATS Sync", url: "/hr/ats-sync", icon: RefreshCw },
 ];
 
