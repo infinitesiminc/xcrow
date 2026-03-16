@@ -27,6 +27,7 @@ const items = [
 ];
 
 const superadminItems = [
+  { title: "Score Distributions", url: "/hr/score-distributions", icon: Activity },
   { title: "Roadmap", url: "/hr/roadmap", icon: Target },
   { title: "Analyze Tool", url: "/hr/analyze", icon: Search },
 ];
