@@ -463,7 +463,29 @@ function NodeDetail({ node }: { node: typeof loopNodes[0] }) {
    ═══════════════════════════════════════════ */
 export default function Enterprise() {
   const navigate = useNavigate();
-  const [activeNode, setActiveNode] = useState<string | null>(null);
+  const [activeNode, setActiveNode] = useState<string | null>("map");
+  const [isPaused, setIsPaused] = useState(false);
+  const pauseTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Auto-rotate every 2s (synced with 8s circle / 4 nodes)
+  useEffect(() => {
+    if (isPaused) return;
+    const interval = setInterval(() => {
+      setActiveNode((prev) => {
+        const idx = loopNodes.findIndex((n) => n.id === prev);
+        return loopNodes[(idx + 1) % loopNodes.length].id;
+      });
+    }, 2000);
+    return () => clearInterval(interval);
+  }, [isPaused]);
+
+  const handleNodeClick = useCallback((id: string) => {
+    setActiveNode(id);
+    setIsPaused(true);
+    if (pauseTimeout.current) clearTimeout(pauseTimeout.current);
+    pauseTimeout.current = setTimeout(() => setIsPaused(false), 6000);
+  }, []);
+
   const activeNodeData = loopNodes.find((n) => n.id === activeNode) || null;
 
   return (
