@@ -25,29 +25,7 @@ const faqs = [
 
 export default function Pricing() {
   const navigate = useNavigate();
-  const { user, isPro, openAuthModal } = useAuth();
-  const [checkoutLoading, setCheckoutLoading] = useState(false);
-
-  const handleUpgrade = async () => {
-    if (!user) { openAuthModal(); return; }
-    if (isPro) { toast.info("You're already subscribed!"); return; }
-    setCheckoutLoading(true);
-    try {
-      const priceId = STRIPE_PRICES.PRO_MONTHLY;
-      const { data, error } = await supabase.functions.invoke("create-checkout", { body: { priceId } });
-      if (error) throw error;
-      if (data?.url) window.open(data.url, "_blank");
-    } catch { toast.error("Failed to start checkout. Please try again."); }
-    finally { setCheckoutLoading(false); }
-  };
-
-  const handleManageSubscription = async () => {
-    try {
-      const { data, error } = await supabase.functions.invoke("customer-portal");
-      if (error) throw error;
-      if (data?.url) window.open(data.url, "_blank");
-    } catch { toast.error("Failed to open subscription management."); }
-  };
+  const { user } = useAuth();
 
   return (
     <div className="min-h-screen bg-background">
