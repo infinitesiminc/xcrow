@@ -680,35 +680,14 @@ export default function LearningPath() {
                                   </div>
                                 )}
 
-                                {/* Completed round data */}
+                                {/* Completion indicator */}
                                 {isCompleted && (() => {
                                   const rounds = completedSims.filter(s => s.task_name === task.cluster_name && s.job_title === job.title);
-                                  const best = rounds.reduce((b, s) => {
-                                    const score = s.total_questions > 0 ? Math.round((s.correct_answers / s.total_questions) * 100) : 0;
-                                    return score > (b.total_questions > 0 ? Math.round((b.correct_answers / b.total_questions) * 100) : 0) ? s : b;
-                                  }, rounds[0]);
-                                  const pillars = [
-                                    { label: "Tool", val: best.tool_awareness_score },
-                                    { label: "Human", val: best.human_value_add_score },
-                                    { label: "Adapt", val: best.adaptive_thinking_score },
-                                    { label: "Domain", val: best.domain_judgment_score },
-                                  ].filter(p => p.val !== null);
+                                  const latest = rounds.sort((a, b) => new Date(b.completed_at).getTime() - new Date(a.completed_at).getTime())[0];
                                   return (
-                                    <div className="rounded-md bg-muted/50 px-2.5 py-2 mb-2 space-y-1">
-                                      <div className="flex items-center gap-3 text-[11px] text-muted-foreground">
-                                        <span>{rounds.length} round{rounds.length > 1 ? "s" : ""}</span>
-                                        <span>Best: {best.correct_answers}/{best.total_questions}</span>
-                                      </div>
-                                      {pillars.length > 0 && (
-                                        <div className="flex gap-2">
-                                          {pillars.map(p => (
-                                            <div key={p.label} className="flex items-center gap-1 text-[11px]">
-                                              <span className="text-muted-foreground">{p.label}</span>
-                                              <span className={`font-semibold ${p.val! >= 70 ? "text-success" : p.val! >= 40 ? "text-warning" : "text-destructive"}`}>{p.val}%</span>
-                                            </div>
-                                          ))}
-                                        </div>
-                                      )}
+                                    <div className="flex items-center gap-2 text-[11px] text-muted-foreground mb-2">
+                                      <CheckCircle2 className="h-3.5 w-3.5 text-success shrink-0" />
+                                      <span>Completed · Last taken {new Date(latest.completed_at).toLocaleDateString()}</span>
                                     </div>
                                   );
                                 })()}
