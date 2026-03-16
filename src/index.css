@@ -47,6 +47,11 @@
     --dot-purple: 262 60% 58%;
     --dot-amber: 38 80% 55%;
 
+    /* Brand metaphor: Red = AI capability, Blue = workforce readiness */
+    --brand-ai: 0 72% 51%;
+    --brand-human: 220 80% 55%;
+    --brand-mid: 270 60% 52%;
+
     --sidebar-background: 40 33% 93%;
     --sidebar-foreground: 40 10% 20%;
     --sidebar-primary: 40 10% 10%;
