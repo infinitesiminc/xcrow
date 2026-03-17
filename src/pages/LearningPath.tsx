@@ -234,7 +234,7 @@ export default function LearningPath() {
       toast({ title: "Analysis failed", description: err.message, variant: "destructive" });
     }
     setAnalyzing(false);
-  }, [companyName, toast, getStoredSnapshot, saveSnapshot]);
+  }, [companyName, toast, getStoredSnapshot, saveSnapshot, showUpdateNotifications]);
 
   useEffect(() => {
     if (job) analyzeJob(job);
