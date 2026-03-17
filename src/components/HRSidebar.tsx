@@ -19,15 +19,12 @@ const SUPERADMIN_IDS = [
   "bb10735b-051e-4bb5-918e-931a9c79d0fd",
 ];
 
-const diagnoseItems = [
-  { title: "Role Explorer", url: "/hr/simulations", icon: Blocks },
-  { title: "AI Exposure Map", url: "/hr/score-distributions", icon: Activity },
-  { title: "ATS Sync", url: "/hr/ats-sync", icon: RefreshCw },
-];
-
-const upskillItems = [
-  { title: "Team Progress", url: "/hr/team-progress", icon: BarChart3 },
+const platformItems = [
+  { title: "Overview", url: "/hr/team-progress", icon: BarChart3 },
+  { title: "Roles & Simulations", url: "/hr/simulations", icon: Blocks },
+  { title: "Exposure Map", url: "/hr/score-distributions", icon: Activity },
   { title: "Action Center", url: "/hr/action-center", icon: Zap },
+  { title: "Import Roles", url: "/hr/ats-sync", icon: RefreshCw },
 ];
 
 const workspaceItems = [
@@ -43,7 +40,7 @@ const superadminItems = [
 
 function NavGroup({ label, items, collapsed, icon, wsParam }: {
   label: string;
-  items: typeof diagnoseItems;
+  items: typeof platformItems;
   collapsed: boolean;
   icon?: React.ReactNode;
   wsParam?: string;
@@ -92,8 +89,7 @@ export function HRSidebar() {
   return (
     <Sidebar collapsible="icon" className="border-r border-border">
       <SidebarContent className="pt-4">
-        <NavGroup label="Diagnose" items={diagnoseItems} collapsed={collapsed} icon={<Search className="h-4 w-4" />} wsParam={wsParam} />
-        <NavGroup label="Upskill & Monitor" items={upskillItems} collapsed={collapsed} icon={<BarChart3 className="h-4 w-4" />} wsParam={wsParam} />
+        <NavGroup label="Platform" items={platformItems} collapsed={collapsed} icon={<Activity className="h-4 w-4" />} wsParam={wsParam} />
         <NavGroup label="Workspace" items={workspaceItems} collapsed={collapsed} icon={<Building2 className="h-4 w-4" />} wsParam={wsParam} />
 
         {isSuperAdmin && (
