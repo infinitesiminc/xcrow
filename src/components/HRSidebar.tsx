@@ -89,8 +89,7 @@ export function HRSidebar() {
   return (
     <Sidebar collapsible="icon" className="border-r border-border">
       <SidebarContent className="pt-4">
-        <NavGroup label="Diagnose" items={diagnoseItems} collapsed={collapsed} icon={<Search className="h-4 w-4" />} wsParam={wsParam} />
-        <NavGroup label="Upskill & Monitor" items={upskillItems} collapsed={collapsed} icon={<BarChart3 className="h-4 w-4" />} wsParam={wsParam} />
+        <NavGroup label="Platform" items={platformItems} collapsed={collapsed} icon={<Activity className="h-4 w-4" />} wsParam={wsParam} />
         <NavGroup label="Workspace" items={workspaceItems} collapsed={collapsed} icon={<Building2 className="h-4 w-4" />} wsParam={wsParam} />
 
         {isSuperAdmin && (
