@@ -296,7 +296,7 @@ const Analysis = () => {
               <Zap className="h-5 w-5 text-primary animate-pulse" />
             </div>
             <h1 className="text-xl font-sans font-bold text-foreground">Analyzing {jobTitle || "role from JD"}...</h1>
-            <p className="mt-1 text-sm text-muted-foreground">Building your personal report card</p>
+            <p className="mt-1 text-sm text-muted-foreground">Building your AI toolkit report</p>
           </motion.div>
           <div className="space-y-4">
             <Skeleton className="h-48 w-full rounded-xl" />
