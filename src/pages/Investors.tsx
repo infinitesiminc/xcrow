@@ -368,8 +368,8 @@ export default function Investors() {
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-6">
               {[
                 { stat: "50+", label: "Companies" },
-                { stat: "850+", label: "Roles Mapped" },
-                { stat: "2,000+", label: "Simulations Ran" },
+                { stat: "2,000+", label: "Roles Mapped" },
+                { stat: "10,000+", label: "Simulations Ran" },
               ].map((s) => (
                 <div key={s.label} className="text-center rounded-xl border border-brand-ai/20 bg-brand-ai/5 p-4">
                   <p className="text-2xl sm:text-3xl font-bold text-brand-ai">{s.stat}</p>
