@@ -15,6 +15,7 @@ import Settings from "./pages/Settings.tsx";
 import NotFound from "./pages/NotFound.tsx";
 import Simulations from "./pages/Simulations.tsx";
 import LearningPath from "./pages/LearningPath.tsx";
+import CardStyleMockup from "./pages/CardStyleMockup.tsx";
 
 // Admin (superadmin only)
 import HRLayout from "./layouts/HRLayout.tsx";
