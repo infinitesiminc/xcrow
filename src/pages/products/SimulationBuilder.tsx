@@ -342,23 +342,27 @@ export default function SimulationBuilder() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Hero */}
-      <section className="relative overflow-hidden px-4 pt-16 pb-4">
-        <div className="absolute inset-0 bg-gradient-to-b from-accent/40 via-background to-background" />
-        <div className="relative mx-auto max-w-5xl text-center">
-          <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-            <div className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-4 py-1.5 text-xs text-muted-foreground mb-3">
-              <Layers className="h-3.5 w-3.5 text-primary" />
-              Simulation Blueprint System
-            </div>
-            <h1 className="font-serif text-2xl sm:text-4xl font-bold text-foreground leading-tight tracking-tight">
-              AI-powered learning paths
-            </h1>
-            <p className="mx-auto mt-2 max-w-2xl text-sm text-muted-foreground leading-relaxed">
-              Select any {companyName} role to open its learning path with AI impact analysis and simulations.
-            </p>
-          </motion.div>
+    <div className="bg-background">
+      {/* Header with company selector */}
+      <section className="px-4 pt-6 pb-4">
+        <div className="mx-auto max-w-6xl">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-1">
+            <h1 className="text-xl font-bold text-foreground">Role Explorer</h1>
+            {allCompanies.length > 1 && (
+              <select
+                value={companyId || ""}
+                onChange={e => switchCompany(e.target.value)}
+                className="h-9 rounded-md border border-border bg-card px-3 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+              >
+                {allCompanies.map(c => (
+                  <option key={c.id} value={c.id}>{c.name}</option>
+                ))}
+              </select>
+            )}
+          </div>
+          <p className="text-sm text-muted-foreground">
+            {jobs.length} roles · {analyzedJobIds.size} analyzed · {jobs.length - analyzedJobIds.size} pending
+          </p>
         </div>
       </section>
 
