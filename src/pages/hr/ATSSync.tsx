@@ -283,15 +283,7 @@ export default function ATSSync() {
   }
 
   return (
-    <div className="p-6 space-y-6 max-w-7xl mx-auto">
-      {/* ── Header ── */}
-      <div>
-        <h1 className="text-2xl font-bold text-foreground">Import Roles</h1>
-        <p className="text-sm text-muted-foreground mt-1">
-          ATS-only pipeline · US-headquartered companies · No webpage scraping
-        </p>
-      </div>
-
+    <div className="space-y-6">
       {/* ── ATS Platform Tabs ── */}
       <div className="flex flex-wrap gap-2">
         {ATS_PLATFORMS.map((ats) => (

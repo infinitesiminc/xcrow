@@ -18,10 +18,9 @@ import LearningPath from "./pages/LearningPath.tsx";
 
 // Admin (superadmin only)
 import HRLayout from "./layouts/HRLayout.tsx";
-import CompaniesPage from "./pages/admin/CompaniesPage.tsx";
+import PipelinePage from "./pages/admin/PipelinePage.tsx";
 import StatsPage from "./pages/admin/StatsPage.tsx";
-import ATSSync from "./pages/hr/ATSSync.tsx";
-import SimulationBuilder from "./pages/products/SimulationBuilder.tsx";
+
 
 // Public company page
 const CompanyPage = lazy(() => import("./pages/CompanyPage.tsx"));
@@ -57,9 +56,7 @@ const App = () => (
 
             {/* Superadmin content pipeline */}
             <Route path="/admin" element={<AdminGate />}>
-              <Route index element={<CompaniesPage />} />
-              <Route path="import" element={<ATSSync />} />
-              <Route path="roles" element={<SimulationBuilder />} />
+              <Route index element={<PipelinePage />} />
               <Route path="stats" element={<StatsPage />} />
             </Route>
 

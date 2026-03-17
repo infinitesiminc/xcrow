@@ -1,4 +1,4 @@
-import { Building2, RefreshCw, Search, BarChart3 } from "lucide-react";
+import { Layers, BarChart3 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import {
   Sidebar,
@@ -13,9 +13,7 @@ import {
 } from "@/components/ui/sidebar";
 
 const pipelineItems = [
-  { title: "Companies", url: "/admin", icon: Building2 },
-  { title: "Import Roles", url: "/admin/import", icon: RefreshCw },
-  { title: "Role Explorer", url: "/admin/roles", icon: Search },
+  { title: "Pipeline", url: "/admin", icon: Layers },
   { title: "Stats", url: "/admin/stats", icon: BarChart3 },
 ];
 
