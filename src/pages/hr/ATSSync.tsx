@@ -62,7 +62,8 @@ export default function ATSSync() {
   const [jobs, setJobs] = useState<DbJob[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingJobs, setLoadingJobs] = useState(false);
-  const [syncing, setSyncing] = useState<"companies" | "jobs" | "full" | null>(null);
+  const [syncing, setSyncing] = useState<"companies" | "jobs" | "full" | "bulk-jobs" | null>(null);
+  const [bulkProgress, setBulkProgress] = useState({ current: 0, total: 0, currentName: "" });
   const [search, setSearch] = useState("");
   const [deptFilter, setDeptFilter] = useState("all");
   const [sortField, setSortField] = useState<SortField>("title");
