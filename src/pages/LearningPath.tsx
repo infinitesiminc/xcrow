@@ -205,27 +205,26 @@ export default function LearningPath() {
       setAnalyzedTasks(tasks);
       setLastRefreshed(new Date());
 
-      // Auto-detect changes against stored snapshot
-      const previousSnap = getStoredSnapshot();
-      if (previousSnap && Object.keys(previousSnap).length > 0) {
-        const changed = new Set<string>();
-        tasks.forEach(newTask => {
-          const old = previousSnap[newTask.cluster_name];
-          if (!old) {
-            changed.add(newTask.cluster_name);
-          } else if (
-            old.ai_exposure_score !== (newTask.ai_exposure_score ?? 50) ||
-            old.priority !== (newTask.priority || "medium")
-          ) {
-            changed.add(newTask.cluster_name);
-          }
-        });
-        Object.keys(previousSnap).forEach(name => {
-          if (!tasks.find(t => t.cluster_name === name)) changed.add(name);
-        });
-        setUpdatedTaskNames(changed);
-        if (changed.size > 0) {
-          toast({ title: `${changed.size} task${changed.size > 1 ? "s" : ""} updated`, description: "AI impact assessments have changed since your last visit." });
+      // Auto-detect changes against stored snapshot (only when feature flag is on)
+      if (showUpdateNotifications) {
+        const previousSnap = getStoredSnapshot();
+        if (previousSnap && Object.keys(previousSnap).length > 0) {
+          const changed = new Set<string>();
+          tasks.forEach(newTask => {
+            const old = previousSnap[newTask.cluster_name];
+            if (!old) {
+              changed.add(newTask.cluster_name);
+            } else if (
+              old.ai_exposure_score !== (newTask.ai_exposure_score ?? 50) ||
+              old.priority !== (newTask.priority || "medium")
+            ) {
+              changed.add(newTask.cluster_name);
+            }
+          });
+          Object.keys(previousSnap).forEach(name => {
+            if (!tasks.find(t => t.cluster_name === name)) changed.add(name);
+          });
+          setUpdatedTaskNames(changed);
         }
       }
 
