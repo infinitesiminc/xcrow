@@ -283,17 +283,22 @@ export default function Investors() {
             </Card>
           </motion.div>
 
-          {/* ── 5. ENTERPRISE ROI — Simplified ── */}
+          {/* ── 5. ENTERPRISE ROI — Compact Table ── */}
           <motion.div {...fadeUp}>
             <Badge variant="outline" className="mb-3 border-brand-ai/30 text-brand-ai text-xs">Enterprise ROI</Badge>
-            <h2 className="text-2xl sm:text-3xl font-bold text-foreground mb-3">
+            <h2 className="text-2xl sm:text-3xl font-bold text-foreground mb-2">
               The math is simple
             </h2>
-            <p className="text-base text-muted-foreground mb-6">
-              $10 per employee per year. The return is 23–56× because the cost of <em>not</em> adapting — mis-hires, stale skills, consultant fees, attrition — dwarfs the investment.
+            <p className="text-sm text-muted-foreground mb-4">
+              $10/employee/year → 23–56× return. The cost of <em>not</em> adapting dwarfs the investment.
             </p>
 
-            <div className="space-y-3">
+            <div className="rounded-xl border border-border/40 bg-card overflow-hidden">
+              <div className="grid grid-cols-3 text-xs font-medium text-muted-foreground px-4 py-2 border-b border-border/30">
+                <span>Company</span>
+                <span className="text-center">Employees</span>
+                <span className="text-right">Projected Value</span>
+              </div>
               {[
                 { company: "JPMorgan Chase", employees: "310K", roi: "$36M–$87M/yr" },
                 { company: "Amazon", employees: "1.5M", roi: "$174M–$420M/yr" },
@@ -301,21 +306,14 @@ export default function Investors() {
                 { company: "Deloitte", employees: "460K", roi: "$53M–$129M/yr" },
                 { company: "Walmart", employees: "2.1M", roi: "$243M–$588M/yr" },
               ].map((row, i) => (
-                <motion.div
-                  key={row.company}
-                  {...fadeUp}
-                  transition={{ ...fadeUp.transition, delay: i * 0.06 }}
-                  className="flex items-center justify-between rounded-xl border border-border/40 bg-card p-4"
-                >
-                  <div>
-                    <p className="text-base font-semibold text-foreground">{row.company}</p>
-                    <p className="text-sm text-muted-foreground">{row.employees} employees</p>
-                  </div>
-                  <p className="text-lg font-bold text-brand-ai text-right">{row.roi}</p>
-                </motion.div>
+                <div key={row.company} className={`grid grid-cols-3 items-center px-4 py-2.5 text-sm ${i < 4 ? 'border-b border-border/20' : ''}`}>
+                  <span className="font-medium text-foreground">{row.company}</span>
+                  <span className="text-center text-muted-foreground">{row.employees}</span>
+                  <span className="text-right font-semibold text-brand-ai">{row.roi}</span>
+                </div>
               ))}
-              <p className="text-xs text-muted-foreground">Value = avoided mis-hires, faster redeployment, attrition reduction, L&D efficiency, reduced consulting.</p>
             </div>
+            <p className="text-xs text-muted-foreground mt-2">Value = avoided mis-hires, faster redeployment, attrition reduction, L&D efficiency, reduced consulting.</p>
           </motion.div>
 
           {/* ── 5. TAM ── */}
