@@ -282,8 +282,8 @@ const Analysis = () => {
 
   const verdict = useMemo(() => {
     if (!result) return "upskill" as Verdict;
-    return getVerdict(result, agentRisk);
-  }, [result, agentRisk]);
+    return getVerdict(result, readiness);
+  }, [result, readiness]);
 
   const topPathway: CareerPathway | null = pathwayData?.pathways?.[0] || null;
 
