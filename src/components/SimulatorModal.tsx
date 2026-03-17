@@ -257,13 +257,15 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
     setPhase("chat");
   };
 
-  const handleSend = async () => {
-    if (!input.trim() || sending) return;
-    const userMsg: SimMessage = { role: "user", content: input.trim() };
+  const handleSend = async (overrideInput?: string) => {
+    const messageText = overrideInput ?? input.trim();
+    if (!messageText || sending) return;
+    const userMsg: SimMessage = { role: "user", content: messageText };
     const newMessages = [...messages, userMsg];
     setMessages(newMessages);
     setInput("");
     setSending(true);
+    // Tentatively advance turn — may revert if scaffolding
     const nextTurn = turnCount + 1;
     setTurnCount(nextTurn);
     scrollToBottom();
@@ -271,10 +273,17 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
     try {
       const reply = await chatTurn(newMessages, roundCount, nextTurn, jobTitle, mode, taskMeta);
       setMessages((prev) => [...prev, { role: "assistant", content: reply }]);
-      // Check if user said yes to continue — increment round
-      const lowerInput = input.trim().toLowerCase();
-      if (lowerInput === "yes" || lowerInput === "y" || lowerInput === "yeah" || lowerInput === "sure") {
-        setRoundCount((c) => c + 1);
+
+      // If the AI responded with scaffolding, revert the turn counter
+      // so the next exchange stays at the same micro-turn position
+      if (reply.includes("[SCAFFOLDING]")) {
+        setTurnCount(turnCount); // revert to previous value
+      } else {
+        // Check if user said yes to continue — increment round
+        const lowerInput = messageText.toLowerCase();
+        if (lowerInput === "yes" || lowerInput === "y" || lowerInput === "yeah" || lowerInput === "sure") {
+          setRoundCount((c) => c + 1);
+        }
       }
       scrollToBottom();
     } catch (err) {
@@ -328,11 +337,21 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
     }
   };
 
+  // Detect if the last assistant message is a scenario prompt (no prior user response yet for it)
+  const showHelpChip = phase === "chat" && !sending && (() => {
+    if (messages.length < 1) return false;
+    const lastMsg = messages[messages.length - 1];
+    if (lastMsg.role !== "assistant") return false;
+    const lower = lastMsg.content.toLowerCase();
+    return lower.includes("how would you approach") || lower.includes("how would you handle") || lower.includes("[scaffolding]");
+  })();
+
   // Strip insight markers from message text (shown in InsightCard instead)
   const cleanMessageForDisplay = (content: string): string => {
     return content
       .replace(/🤖\s*\*?\*?AI Today:?\*?\*?\s*.+/g, "")
       .replace(/💡\s*\*?\*?Human Edge:?\*?\*?\s*.+/g, "")
+      .replace(/\[SCAFFOLDING\]/g, "")
       .trim();
   };
 
@@ -586,6 +605,16 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
             transition={{ duration: 0.3 }}
             className="shrink-0 border-t border-border/40 bg-background px-4 sm:px-6 py-3 space-y-3 pb-[env(safe-area-inset-bottom,12px)]"
           >
+            {showHelpChip && (
+              <div className="flex gap-2 max-w-2xl mx-auto">
+                <button
+                  onClick={() => handleSend("I'm not sure where to start — can you help me break this down?")}
+                  className="text-xs px-3 py-1.5 rounded-full border border-border/40 bg-accent/20 text-muted-foreground hover:text-foreground hover:bg-accent/40 transition-colors"
+                >
+                  💭 Help me think through this
+                </button>
+              </div>
+            )}
             <div className="flex items-end gap-3 max-w-2xl mx-auto">
               <textarea
                 value={input}
@@ -606,7 +635,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                 </Button>
                 <Button
                   size="sm"
-                  onClick={handleSend}
+                  onClick={() => handleSend()}
                   disabled={!input.trim() || sending}
                   className="h-[40px] w-[40px] p-0 rounded-xl"
                 >

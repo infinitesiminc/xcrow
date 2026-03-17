@@ -253,7 +253,18 @@ function buildCoachingChatSystem(role: string, aiContext: string, round: number,
   let turnInstruction: string;
 
   if (posInRound === 0) {
-    turnInstruction = `The user just shared their approach to your scenario. Do EXACTLY this:
+    turnInstruction = `The user just shared their approach to your scenario. 
+
+FIRST — CHECK FOR UNCERTAINTY: If the user expresses uncertainty ("I'm not sure", "I don't know", "no idea", "hmm", "not really"), gives a very short/vague answer (under 15 words), or doesn't engage with the specifics of the scenario, do NOT follow the normal flow. Instead:
+- Normalize it warmly (1 sentence): "Totally fair — this is a meaty one." or "No worries, let's unpack it together."
+- Break the scenario into ONE smaller, concrete piece they can grab onto. Reference a specific detail FROM the scenario (a stakeholder, a constraint, a number).
+- Ask ONE simpler, more specific question about just that piece. Make it almost impossible to not have an opinion.
+- Examples: "Just focusing on the 200+ documents part — what's your gut concern with that volume?" or "Forget the full solution — if the CEO asked you about this in the elevator, what's the first risk you'd flag?"
+- Do NOT give the answer or share insights. Help them find a starting thread.
+- Do NOT include 🤖, 💡, or "Ready for next" — stay in scaffolding mode.
+- End your message with exactly: [SCAFFOLDING]
+
+IF THE USER GAVE A SUBSTANTIVE ANSWER (15+ words engaging with the scenario), do this:
 
 1. Start with what's genuinely good about their thinking. Be specific — reference their actual words. Example: "Smart to think about [their point] — that shows good instinct for..."
 
