@@ -73,7 +73,7 @@ const INITIAL_SECTIONS: ChecklistSection[] = [
       { id: "an3", label: "Simulator / Upskill (sim-chat)", status: "done", detail: "Compile, chat, score, history" },
       { id: "an4", label: "Career pathways (generate-pathways)", status: "done", detail: "AI + local fallback" },
       { id: "an5", label: "JD parsing (parse-jd)", status: "done", detail: "PDF/DOCX text extraction" },
-      { id: "an6", label: "Company scraping (scrape-company)", status: "done", detail: "Firecrawl + AI extraction" },
+      { id: "an6", label: "ATS import pipeline", status: "done", detail: "Per-platform batch import (US-only)" },
       { id: "an7", label: "News ticker (refresh-ticker)", status: "done", detail: "AI headlines stored in DB" },
     ],
   },

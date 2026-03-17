@@ -272,28 +272,7 @@ const Analysis = () => {
     fetchAIPathways();
   }, [result?.jobTitle, result?.tasks, result?.skills]);
 
-  useEffect(() => {
-    if (!company || !isWebsite(company)) return;
-    const fetchSnapshot = async () => {
-      setSnapshotLoading(true);
-      try {
-        const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-        const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
-        const res = await fetch(`${supabaseUrl}/functions/v1/scrape-company`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json", Authorization: `Bearer ${supabaseKey}` },
-          body: JSON.stringify({ url: company }),
-        });
-        const data = await res.json();
-        if (data.success) setSnapshot(data);
-      } catch (err) {
-        console.error("Failed to fetch company snapshot:", err);
-      } finally {
-        setSnapshotLoading(false);
-      }
-    };
-    fetchSnapshot();
-  }, [company]);
+  // Company snapshot disabled — ATS-only pipeline, no webpage scraping
 
   // Computed values
   const agentRisk = useMemo(() => {
