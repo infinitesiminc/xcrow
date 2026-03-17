@@ -1,6 +1,5 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -15,13 +14,19 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import {
-  Popover, PopoverContent, PopoverTrigger,
-} from "@/components/ui/popover";
-import {
   RefreshCw, Building2, Briefcase, Search, Globe, ExternalLink,
-  Loader2, CheckCircle2, AlertTriangle, ArrowUpDown, MapPin,
-  ChevronDown, ChevronUp, Filter, ChevronsUpDown, Check,
+  Loader2, MapPin, ChevronDown, ChevronUp, ArrowUpDown, Filter,
+  Download, Database,
 } from "lucide-react";
+
+/* ── constants ── */
+const ATS_PLATFORMS = [
+  { id: "greenhouse", label: "Greenhouse", color: "hsl(142, 70%, 45%)" },
+  { id: "ashby", label: "Ashby", color: "hsl(220, 70%, 55%)" },
+  { id: "lever", label: "Lever", color: "hsl(35, 90%, 55%)" },
+  { id: "smartrecruiters", label: "SmartRecruiters", color: "hsl(200, 70%, 50%)" },
+  { id: "workday", label: "Workday", color: "hsl(270, 60%, 55%)" },
+] as const;
 
 /* ── types ── */
 interface Company {
@@ -35,6 +40,7 @@ interface Company {
   employee_range: string | null;
   brand_color: string | null;
   external_id: string | null;
+  headquarters: string | null;
 }
 
 interface DbJob {
@@ -50,42 +56,61 @@ interface DbJob {
 type SortField = "title" | "department" | "location";
 type SortDir = "asc" | "desc";
 
-
-/* ── component ── */
 export default function ATSSync() {
   const { user, openAuthModal } = useAuth();
-  
   const { toast } = useToast();
 
+  /* ── state ── */
+  const [selectedATS, setSelectedATS] = useState<string>("greenhouse");
   const [companies, setCompanies] = useState<Company[]>([]);
+  const [allCompanyCounts, setAllCompanyCounts] = useState<Record<string, number>>({});
   const [selectedCompanyId, setSelectedCompanyId] = useState<string | null>(null);
   const [jobs, setJobs] = useState<DbJob[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingJobs, setLoadingJobs] = useState(false);
-  const [syncing, setSyncing] = useState<"companies" | "jobs" | "full" | "bulk-jobs" | null>(null);
+  const [syncing, setSyncing] = useState<string | null>(null);
   const [bulkProgress, setBulkProgress] = useState({ current: 0, total: 0, currentName: "" });
   const [search, setSearch] = useState("");
+  const [companySearch, setCompanySearch] = useState("");
   const [deptFilter, setDeptFilter] = useState("all");
   const [sortField, setSortField] = useState<SortField>("title");
   const [sortDir, setSortDir] = useState<SortDir>("asc");
-  const [companySearch, setCompanySearch] = useState("");
-  const [companyDropdownOpen, setCompanyDropdownOpen] = useState(false);
 
-  /* ── fetch all companies (global admin view) ── */
+  /* ── fetch companies grouped by ATS ── */
   const fetchCompanies = useCallback(async () => {
     setLoading(true);
     const { data } = await supabase
       .from("companies")
-      .select("id, name, industry, logo_url, website, careers_url, detected_ats_platform, employee_range, brand_color, external_id")
+      .select("id, name, industry, logo_url, website, careers_url, detected_ats_platform, employee_range, brand_color, external_id, headquarters")
       .order("name");
-    setCompanies((data as Company[]) || []);
+    const all = (data as Company[]) || [];
+
+    // Count per ATS
+    const counts: Record<string, number> = {};
+    all.forEach((c) => {
+      const ats = c.detected_ats_platform || "unknown";
+      counts[ats] = (counts[ats] || 0) + 1;
+    });
+    setAllCompanyCounts(counts);
+
+    // Filter to selected ATS
+    setCompanies(all.filter((c) => c.detected_ats_platform === selectedATS));
     setLoading(false);
-  }, []);
+  }, [selectedATS]);
 
   useEffect(() => {
     if (!user) return;
     fetchCompanies();
   }, [user, fetchCompanies]);
+
+  /* ── switch ATS → reset selection ── */
+  useEffect(() => {
+    setSelectedCompanyId(null);
+    setJobs([]);
+    setSearch("");
+    setCompanySearch("");
+    setDeptFilter("all");
+  }, [selectedATS]);
 
   /* ── fetch jobs for selected company ── */
   useEffect(() => {
@@ -102,35 +127,40 @@ export default function ATSSync() {
     })();
   }, [selectedCompanyId]);
 
-  /* ── sync actions ── */
-  const runSync = async (step: "companies" | "jobs" | "full") => {
-    setSyncing(step);
+  /* ── import new companies for selected ATS (US-only) ── */
+  const importCompanies = async () => {
+    setSyncing("import-companies");
     try {
-      const body: Record<string, unknown> = { step };
-      if (step === "jobs" && selectedCompanyId) {
-        body.company_id = selectedCompanyId;
-      }
-
-      const { data, error } = await supabase.functions.invoke("sync-company-jobs", { body });
-      if (error) throw error;
-
-      toast({
-        title: "Sync complete",
-        description:
-          step === "companies"
-            ? `${data.synced} companies synced`
-            : step === "jobs"
-              ? `${data.synced} jobs synced`
-              : `${data.companies} companies, ${data.jobs} jobs synced`,
+      const { data, error } = await supabase.functions.invoke("sync-company-jobs", {
+        body: { step: "companies", ats_platform: selectedATS, us_only: true, limit: 200 },
       });
-
-      // Refresh data
+      if (error) throw error;
+      toast({
+        title: "Import complete",
+        description: `${data.synced} US companies imported (${data.filtered_us} non-US filtered out)`,
+      });
       await fetchCompanies();
-      if (selectedCompanyId && step !== "companies") {
+    } catch (err: any) {
+      toast({ title: "Import failed", description: err.message, variant: "destructive" });
+    } finally {
+      setSyncing(null);
+    }
+  };
+
+  /* ── sync jobs for a single company ── */
+  const syncCompanyJobs = async (companyId: string) => {
+    setSyncing(`jobs-${companyId}`);
+    try {
+      const { data, error } = await supabase.functions.invoke("sync-company-jobs", {
+        body: { step: "jobs", company_id: companyId },
+      });
+      if (error) throw error;
+      toast({ title: "Sync complete", description: `${data.synced} roles synced` });
+      if (companyId === selectedCompanyId) {
         const { data: refreshed } = await supabase
           .from("jobs")
           .select("id, title, department, location, source_url, status, company_id")
-          .eq("company_id", selectedCompanyId)
+          .eq("company_id", companyId)
           .order("title");
         setJobs((refreshed as DbJob[]) || []);
       }
@@ -141,8 +171,8 @@ export default function ATSSync() {
     }
   };
 
-  /* ── bulk sync all jobs (client-side iteration) ── */
-  const runBulkJobSync = async () => {
+  /* ── bulk sync all jobs for current ATS ── */
+  const bulkSyncJobs = async () => {
     setSyncing("bulk-jobs");
     const total = companies.length;
     setBulkProgress({ current: 0, total, currentName: "" });
@@ -156,23 +186,30 @@ export default function ATSSync() {
         const { error } = await supabase.functions.invoke("sync-company-jobs", {
           body: { step: "jobs", company_id: co.id },
         });
-        if (error) { errors++; } else { synced++; }
-      } catch { errors++; }
+        if (error) errors++;
+        else synced++;
+      } catch {
+        errors++;
+      }
     }
 
     toast({
-      title: "Bulk job sync complete",
+      title: "Bulk sync complete",
       description: `${synced} companies synced${errors ? `, ${errors} errors` : ""}`,
     });
     setBulkProgress({ current: 0, total: 0, currentName: "" });
     setSyncing(null);
-    await fetchCompanies();
   };
 
+  /* ── derived ── */
   const selectedCompany = companies.find((c) => c.id === selectedCompanyId);
   const departments = [...new Set(jobs.map((j) => j.department).filter(Boolean))] as string[];
 
-  const filtered = jobs
+  const filteredCompanies = companies.filter((c) =>
+    c.name.toLowerCase().includes(companySearch.toLowerCase())
+  );
+
+  const filteredJobs = jobs
     .filter((j) => {
       if (deptFilter !== "all" && j.department !== deptFilter) return false;
       if (search && !j.title.toLowerCase().includes(search.toLowerCase())) return false;
@@ -206,31 +243,69 @@ export default function ATSSync() {
   return (
     <div className="p-6 space-y-6 max-w-7xl mx-auto">
       {/* ── Header ── */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">ATS Sync</h1>
-          <p className="text-sm text-muted-foreground">Import companies &amp; roles from connected applicant tracking systems</p>
-        </div>
-        <div className="flex gap-2 flex-wrap">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => runSync("companies")}
-            disabled={!!syncing}
-          >
-            {syncing === "companies" ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : <Building2 className="h-4 w-4 mr-1" />}
-            Sync Companies
-          </Button>
-          <Button
-            size="sm"
-            onClick={runBulkJobSync}
-            disabled={!!syncing || companies.length === 0}
-          >
-            {syncing === "bulk-jobs" ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : <RefreshCw className="h-4 w-4 mr-1" />}
-            Sync All Jobs
-          </Button>
-        </div>
+      <div>
+        <h1 className="text-2xl font-bold text-foreground">Import Roles</h1>
+        <p className="text-sm text-muted-foreground mt-1">
+          ATS-only pipeline · US-headquartered companies · No webpage scraping
+        </p>
       </div>
+
+      {/* ── ATS Platform Tabs ── */}
+      <div className="flex flex-wrap gap-2">
+        {ATS_PLATFORMS.map((ats) => (
+          <button
+            key={ats.id}
+            onClick={() => setSelectedATS(ats.id)}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg border text-sm font-medium transition-all ${
+              selectedATS === ats.id
+                ? "border-primary bg-primary/10 text-primary shadow-sm"
+                : "border-border bg-card text-muted-foreground hover:text-foreground hover:border-primary/30"
+            }`}
+          >
+            <Database className="h-3.5 w-3.5" />
+            {ats.label}
+            <Badge variant="secondary" className="text-[10px] px-1.5 py-0 ml-0.5">
+              {allCompanyCounts[ats.id] || 0}
+            </Badge>
+          </button>
+        ))}
+      </div>
+
+      {/* ── Actions for selected ATS ── */}
+      <Card>
+        <CardContent className="p-4">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            <div>
+              <h2 className="text-lg font-semibold text-foreground capitalize flex items-center gap-2">
+                <Database className="h-4 w-4" />
+                {ATS_PLATFORMS.find((a) => a.id === selectedATS)?.label}
+              </h2>
+              <p className="text-sm text-muted-foreground mt-0.5">
+                {companies.length} US companies · Import new or sync existing roles
+              </p>
+            </div>
+            <div className="flex gap-2 flex-wrap">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={importCompanies}
+                disabled={!!syncing}
+              >
+                {syncing === "import-companies" ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : <Download className="h-4 w-4 mr-1" />}
+                Import New Companies
+              </Button>
+              <Button
+                size="sm"
+                onClick={bulkSyncJobs}
+                disabled={!!syncing || companies.length === 0}
+              >
+                {syncing === "bulk-jobs" ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : <RefreshCw className="h-4 w-4 mr-1" />}
+                Sync All Jobs ({companies.length})
+              </Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* ── Bulk progress ── */}
       {syncing === "bulk-jobs" && bulkProgress.total > 0 && (
@@ -238,7 +313,7 @@ export default function ATSSync() {
           <CardContent className="p-4 space-y-2">
             <div className="flex items-center justify-between text-sm">
               <span className="text-muted-foreground">
-                Syncing jobs: <span className="text-foreground font-medium">{bulkProgress.currentName}</span>
+                Syncing: <span className="text-foreground font-medium">{bulkProgress.currentName}</span>
               </span>
               <span className="text-muted-foreground">{bulkProgress.current} / {bulkProgress.total}</span>
             </div>
@@ -247,116 +322,54 @@ export default function ATSSync() {
         </Card>
       )}
 
-      {/* ── Stats ── */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <Card>
-          <CardContent className="p-4">
-            <p className="text-xs text-muted-foreground">Companies</p>
-            <p className="text-2xl font-bold text-foreground">{companies.length}</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4">
-            <p className="text-xs text-muted-foreground">Selected Roles</p>
-            <p className="text-2xl font-bold text-foreground">{jobs.length}</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4">
-            <p className="text-xs text-muted-foreground">Departments</p>
-            <p className="text-2xl font-bold text-foreground">{departments.length}</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4">
-            <p className="text-xs text-muted-foreground">ATS Platforms</p>
-            <p className="text-2xl font-bold text-foreground">
-              {new Set(companies.map((c) => c.detected_ats_platform).filter(Boolean)).size}
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* ── Company Selector (searchable dropdown) ── */}
+      {/* ── Company List ── */}
       <Card>
         <CardHeader className="pb-3">
-          <CardTitle className="text-base flex items-center gap-2">
-            <Building2 className="h-4 w-4" /> Select Company
-          </CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-base flex items-center gap-2">
+              <Building2 className="h-4 w-4" /> Companies ({filteredCompanies.length})
+            </CardTitle>
+            <div className="relative">
+              <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
+              <Input
+                placeholder="Search companies…"
+                value={companySearch}
+                onChange={(e) => setCompanySearch(e.target.value)}
+                className="pl-8 h-9 w-56 text-sm"
+              />
+            </div>
+          </div>
         </CardHeader>
         <CardContent>
           {loading ? (
-            <div className="flex items-center gap-2 text-muted-foreground py-4">
-              <Loader2 className="h-4 w-4 animate-spin" /> Loading companies…
+            <div className="flex items-center gap-2 text-muted-foreground py-8 justify-center">
+              <Loader2 className="h-4 w-4 animate-spin" /> Loading…
             </div>
-          ) : companies.length === 0 ? (
+          ) : filteredCompanies.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
               <Building2 className="h-8 w-8 mx-auto mb-2 opacity-40" />
-              <p>No companies synced yet. Click <strong>Sync Companies</strong> to import from ATS.</p>
+              <p>No companies for this ATS yet. Click <strong>Import New Companies</strong>.</p>
             </div>
           ) : (
-            <Popover open={companyDropdownOpen} onOpenChange={setCompanyDropdownOpen}>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  role="combobox"
-                  aria-expanded={companyDropdownOpen}
-                  className="w-full justify-between h-10 text-sm font-normal"
-                >
-                  {selectedCompany ? (
-                    <span className="flex items-center gap-2 truncate">
-                      {selectedCompany.logo_url ? (
-                        <img src={selectedCompany.logo_url} alt="" className="h-5 w-5 rounded object-contain bg-background shrink-0" />
-                      ) : (
-                        <div className="h-5 w-5 rounded bg-muted flex items-center justify-center text-[10px] font-bold text-muted-foreground shrink-0">
-                          {selectedCompany.name.charAt(0)}
-                        </div>
-                      )}
-                      {selectedCompany.name}
-                      {selectedCompany.detected_ats_platform && (
-                        <Badge variant="outline" className="text-[10px] px-1.5 py-0 ml-1">{selectedCompany.detected_ats_platform}</Badge>
-                      )}
-                    </span>
-                  ) : (
-                    <span className="text-muted-foreground">Search {companies.length} companies…</span>
-                  )}
-                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0" align="start">
-                <div className="p-2 border-b border-border">
-                  <div className="relative">
-                    <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
-                    <Input
-                      placeholder="Search companies…"
-                      value={companySearch}
-                      onChange={(e) => setCompanySearch(e.target.value)}
-                      className="pl-8 h-9 text-sm"
-                      autoFocus
-                    />
-                  </div>
-                </div>
-                <div className="max-h-64 overflow-y-auto">
-                  {companies
-                    .filter(c => c.name.toLowerCase().includes(companySearch.toLowerCase()))
-                    .sort((a, b) => a.name.localeCompare(b.name))
-                    .length === 0 ? (
-                    <p className="text-sm text-muted-foreground text-center py-4">No companies found.</p>
-                  ) : (
-                    companies
-                      .filter(c => c.name.toLowerCase().includes(companySearch.toLowerCase()))
-                      .sort((a, b) => a.name.localeCompare(b.name))
-                      .map((co) => (
-                        <button
-                          key={co.id}
-                          onClick={() => {
-                            setSelectedCompanyId(co.id === selectedCompanyId ? null : co.id);
-                            setCompanyDropdownOpen(false);
-                            setCompanySearch("");
-                          }}
-                          className="flex items-center gap-2.5 w-full px-3 py-2 text-left text-sm hover:bg-muted/50 transition-colors"
-                        >
-                          <Check className={`h-3.5 w-3.5 shrink-0 ${co.id === selectedCompanyId ? "opacity-100 text-primary" : "opacity-0"}`} />
+            <div className="rounded-md border overflow-hidden">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Company</TableHead>
+                    <TableHead>Industry</TableHead>
+                    <TableHead>HQ</TableHead>
+                    <TableHead className="w-24 text-right">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredCompanies.map((co) => (
+                    <TableRow
+                      key={co.id}
+                      className={`cursor-pointer ${co.id === selectedCompanyId ? "bg-primary/5" : ""}`}
+                      onClick={() => setSelectedCompanyId(co.id === selectedCompanyId ? null : co.id)}
+                    >
+                      <TableCell>
+                        <div className="flex items-center gap-2.5">
                           {co.logo_url ? (
                             <img src={co.logo_url} alt="" className="h-6 w-6 rounded object-contain bg-background shrink-0" />
                           ) : (
@@ -364,23 +377,38 @@ export default function ATSSync() {
                               {co.name.charAt(0)}
                             </div>
                           )}
-                          <span className="flex-1 truncate text-foreground">{co.name}</span>
-                          {co.industry && <Badge variant="secondary" className="text-[10px] px-1.5 py-0 shrink-0">{co.industry}</Badge>}
-                          {co.detected_ats_platform && <Badge variant="outline" className="text-[10px] px-1.5 py-0 shrink-0">{co.detected_ats_platform}</Badge>}
-                        </button>
-                      ))
-                  )}
-                </div>
-              </PopoverContent>
-            </Popover>
+                          <span className="font-medium text-foreground">{co.name}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-sm text-muted-foreground">{co.industry || "—"}</TableCell>
+                      <TableCell className="text-sm text-muted-foreground">{co.headquarters || "US"}</TableCell>
+                      <TableCell className="text-right">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={(e) => { e.stopPropagation(); syncCompanyJobs(co.id); }}
+                          disabled={!!syncing}
+                          className="h-7 text-xs"
+                        >
+                          {syncing === `jobs-${co.id}` ? (
+                            <Loader2 className="h-3 w-3 animate-spin" />
+                          ) : (
+                            <RefreshCw className="h-3 w-3" />
+                          )}
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
           )}
         </CardContent>
       </Card>
 
-      {/* ── Selected Company Details + Jobs ── */}
+      {/* ── Selected Company Jobs ── */}
       {selectedCompany && (
         <>
-          {/* Company header bar */}
           <Card>
             <CardContent className="p-4">
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
@@ -396,8 +424,7 @@ export default function ATSSync() {
                     <h2 className="text-lg font-semibold text-foreground">{selectedCompany.name}</h2>
                     <div className="flex items-center gap-2 mt-0.5">
                       {selectedCompany.industry && <Badge variant="secondary" className="text-xs">{selectedCompany.industry}</Badge>}
-                      {selectedCompany.detected_ats_platform && <Badge variant="outline" className="text-xs">{selectedCompany.detected_ats_platform} ATS</Badge>}
-                      {selectedCompany.employee_range && <Badge variant="outline" className="text-xs">👥 {selectedCompany.employee_range}</Badge>}
+                      <Badge variant="outline" className="text-xs">{selectedATS} ATS</Badge>
                       <span className="text-xs text-muted-foreground">{jobs.length} roles</span>
                     </div>
                   </div>
@@ -419,10 +446,10 @@ export default function ATSSync() {
                   )}
                   <Button
                     size="sm"
-                    onClick={() => runSync("jobs")}
+                    onClick={() => syncCompanyJobs(selectedCompany.id)}
                     disabled={!!syncing}
                   >
-                    {syncing === "jobs" ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : <RefreshCw className="h-4 w-4 mr-1" />}
+                    {syncing === `jobs-${selectedCompany.id}` ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : <RefreshCw className="h-4 w-4 mr-1" />}
                     Sync Jobs
                   </Button>
                 </div>
@@ -430,22 +457,16 @@ export default function ATSSync() {
             </CardContent>
           </Card>
 
-          {/* Jobs table */}
           <Card>
             <CardHeader className="pb-3">
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                 <CardTitle className="text-base flex items-center gap-2">
-                  <Briefcase className="h-4 w-4" /> Roles ({filtered.length})
+                  <Briefcase className="h-4 w-4" /> Roles ({filteredJobs.length})
                 </CardTitle>
                 <div className="flex gap-2">
                   <div className="relative">
                     <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
-                    <Input
-                      placeholder="Search roles…"
-                      value={search}
-                      onChange={(e) => setSearch(e.target.value)}
-                      className="pl-8 h-9 w-48 text-sm"
-                    />
+                    <Input placeholder="Search roles…" value={search} onChange={(e) => setSearch(e.target.value)} className="pl-8 h-9 w-48 text-sm" />
                   </div>
                   {departments.length > 0 && (
                     <Select value={deptFilter} onValueChange={setDeptFilter}>
@@ -469,10 +490,10 @@ export default function ATSSync() {
                 <div className="flex items-center gap-2 text-muted-foreground py-8 justify-center">
                   <Loader2 className="h-4 w-4 animate-spin" /> Loading roles…
                 </div>
-              ) : filtered.length === 0 ? (
+              ) : filteredJobs.length === 0 ? (
                 <div className="text-center py-8 text-muted-foreground">
                   <Briefcase className="h-8 w-8 mx-auto mb-2 opacity-40" />
-                  <p>{jobs.length === 0 ? "No roles synced yet. Click Sync Jobs." : "No roles match your filters."}</p>
+                  <p>{jobs.length === 0 ? "No roles synced. Click Sync Jobs." : "No roles match filters."}</p>
                 </div>
               ) : (
                 <div className="rounded-md border overflow-hidden">
@@ -493,7 +514,7 @@ export default function ATSSync() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {filtered.map((job) => (
+                      {filteredJobs.map((job) => (
                         <TableRow key={job.id}>
                           <TableCell className="font-medium text-foreground">{job.title}</TableCell>
                           <TableCell className="text-muted-foreground text-sm">{job.department || "—"}</TableCell>
