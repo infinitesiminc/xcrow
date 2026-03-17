@@ -1,20 +1,32 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
-import { Building2, Briefcase, Brain, Users, Loader2 } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import { Separator } from "@/components/ui/separator";
+import { Building2, Briefcase, Brain, Users, Loader2, Settings2 } from "lucide-react";
+
+interface FeatureFlag {
+  key: string;
+  enabled: boolean;
+  description: string | null;
+}
 
 export default function StatsPage() {
   const [stats, setStats] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [flags, setFlags] = useState<FeatureFlag[]>([]);
+  const [togglingKey, setTogglingKey] = useState<string | null>(null);
 
   useEffect(() => {
     (async () => {
-      const [companies, jobs, clusters, sims, users] = await Promise.all([
+      const [companies, jobs, clusters, sims, users, flagsRes] = await Promise.all([
         supabase.from("companies").select("id", { count: "exact", head: true }),
         supabase.from("jobs").select("id", { count: "exact", head: true }),
         supabase.from("job_task_clusters").select("id", { count: "exact", head: true }),
         supabase.from("completed_simulations").select("id", { count: "exact", head: true }),
         supabase.from("profiles").select("id", { count: "exact", head: true }),
+        supabase.from("feature_flags" as any).select("key, enabled, description").order("key"),
       ]);
 
       setStats({
@@ -24,9 +36,19 @@ export default function StatsPage() {
         sims: sims.count || 0,
         users: users.count || 0,
       });
+      setFlags((flagsRes.data as any as FeatureFlag[]) || []);
       setLoading(false);
     })();
   }, []);
+
+  const toggleFlag = async (key: string, newValue: boolean) => {
+    setTogglingKey(key);
+    await (supabase.from("feature_flags" as any) as any)
+      .update({ enabled: newValue, updated_at: new Date().toISOString() })
+      .eq("key", key);
+    setFlags(prev => prev.map(f => f.key === key ? { ...f, enabled: newValue } : f));
+    setTogglingKey(null);
+  };
 
   if (loading) {
     return (
@@ -62,6 +84,40 @@ export default function StatsPage() {
           </Card>
         ))}
       </div>
+
+      {flags.length > 0 && (
+        <>
+          <Separator />
+          <div className="space-y-4">
+            <div className="flex items-center gap-2">
+              <Settings2 className="h-5 w-5 text-muted-foreground" />
+              <h2 className="text-lg font-semibold">Feature Flags</h2>
+            </div>
+            <div className="space-y-3">
+              {flags.map(f => (
+                <Card key={f.key}>
+                  <CardContent className="p-4 flex items-center justify-between gap-4">
+                    <div className="space-y-0.5">
+                      <Label htmlFor={f.key} className="text-sm font-medium cursor-pointer">
+                        {f.key.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase())}
+                      </Label>
+                      {f.description && (
+                        <p className="text-xs text-muted-foreground">{f.description}</p>
+                      )}
+                    </div>
+                    <Switch
+                      id={f.key}
+                      checked={f.enabled}
+                      disabled={togglingKey === f.key}
+                      onCheckedChange={(v) => toggleFlag(f.key, v)}
+                    />
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 }
