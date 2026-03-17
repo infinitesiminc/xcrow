@@ -349,8 +349,8 @@ function MobileFeed({ roles, onOpenSearch }: RoleFeedProps) {
           <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.3 }}
             className="absolute right-3 bottom-24 flex flex-col items-center gap-4"
           >
-            <ActionButton icon={BarChart3} label="Analyze" glow onClick={() => navigate(`/analysis?title=${encodeURIComponent(role.title)}&company=`)} />
-            <ActionButton icon={Zap} label="Practice" onClick={() => navigate(`/analysis?title=${encodeURIComponent(role.title)}&company=`)} />
+            <ActionButton icon={BarChart3} label="Analyze" glow onClick={() => navigate(`/analysis?title=${encodeURIComponent(role.title)}&company=${encodeURIComponent(role.company || "")}`)} />
+            <ActionButton icon={Zap} label="Practice" onClick={() => navigate(`/analysis?title=${encodeURIComponent(role.title)}&company=${encodeURIComponent(role.company || "")}`)} />
             <ActionButton icon={Bookmark} label="Save" onClick={() => {}} />
             <ActionButton icon={Share2} label="Share" onClick={() => { navigator.share?.({ title: role.title, url: window.location.href }).catch(() => {}); }} />
           </motion.div>
