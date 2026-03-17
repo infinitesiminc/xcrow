@@ -721,11 +721,11 @@ export default function LearningPath() {
                       <CardContent className="p-5 text-center">
                         <Award className="h-6 w-6 text-primary mx-auto mb-2" />
                         <h3 className="font-semibold text-foreground text-sm mb-1">
-                          {pathProgress?.percent === 100 ? "🎉 Learning Path Complete!" : "Complete Learning Path"}
+                          {pathProgress?.percent === 100 ? "🎉 All Skills Mastered!" : "Complete Your AI Toolkit"}
                         </h3>
                         <p className="text-xs text-muted-foreground mb-3">
                           {pathProgress?.percent === 100
-                            ? `Congratulations! You've completed all ${analyzedTasks.length} simulations for ${job.title}.`
+                            ? `Amazing! You've learned all ${analyzedTasks.length} AI-powered skills for ${job.title}.`
                             : `Complete all ${analyzedTasks.length} simulations to earn your AI-Readiness Certificate for ${job.title}`}
                         </p>
                         {(!pathProgress || pathProgress.percent < 100) && (
