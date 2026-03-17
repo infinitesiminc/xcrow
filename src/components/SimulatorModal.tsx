@@ -605,6 +605,16 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
             transition={{ duration: 0.3 }}
             className="shrink-0 border-t border-border/40 bg-background px-4 sm:px-6 py-3 space-y-3 pb-[env(safe-area-inset-bottom,12px)]"
           >
+            {showHelpChip && (
+              <div className="flex gap-2 max-w-2xl mx-auto">
+                <button
+                  onClick={() => handleSend("I'm not sure where to start — can you help me break this down?")}
+                  className="text-xs px-3 py-1.5 rounded-full border border-border/40 bg-accent/20 text-muted-foreground hover:text-foreground hover:bg-accent/40 transition-colors"
+                >
+                  💭 Help me think through this
+                </button>
+              </div>
+            )}
             <div className="flex items-end gap-3 max-w-2xl mx-auto">
               <textarea
                 value={input}
