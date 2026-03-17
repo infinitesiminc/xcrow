@@ -59,19 +59,33 @@ export default function SimulationBuilder() {
   const pauseRef = useRef(false);
   const abortRef = useRef(false);
 
-  /* ── Fetch workspace companies & jobs ── */
+  /* ── Fetch workspace companies & jobs (fall back to demo company) ── */
   useEffect(() => {
     if (wsLoading) return;
-    if (!workspaceId) { setJobs([]); setLoading(false); return; }
 
     (async () => {
       setLoading(true);
-      // Fetch companies for this workspace
-      const { data: companies } = await supabase
-        .from("companies")
-        .select("id, name")
-        .eq("workspace_id", workspaceId)
-        .limit(1);
+      let companies: { id: string; name: string }[] | null = null;
+
+      if (workspaceId) {
+        const { data } = await supabase
+          .from("companies")
+          .select("id, name")
+          .eq("workspace_id", workspaceId)
+          .limit(1);
+        companies = data;
+      }
+
+      // Fall back to demo company if no workspace or no workspace companies
+      if (!companies?.length) {
+        const { data } = await supabase
+          .from("companies")
+          .select("id, name")
+          .eq("is_demo", true)
+          .limit(1);
+        companies = data;
+      }
+
       if (!companies?.length) { setJobs([]); setLoading(false); return; }
       setCompanyId(companies[0].id);
       setCompanyName(companies[0].name);
