@@ -97,6 +97,31 @@ export default function PipelinePage() {
   const pauseRef = useRef(false);
   const abortRef = useRef(false);
 
+  /* ── Add Company ── */
+  const [addOpen, setAddOpen] = useState(false);
+  const [addUrl, setAddUrl] = useState("");
+  const [addLoading, setAddLoading] = useState(false);
+
+  const handleAddCompany = async () => {
+    if (!addUrl.trim()) return;
+    setAddLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("enrich-company", {
+        body: { website: addUrl.trim() },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      toast({ title: "Company added", description: `${data.company.name} enriched and saved.` });
+      setAddOpen(false);
+      setAddUrl("");
+      fetchCompanies();
+    } catch (err: any) {
+      toast({ title: "Failed", description: err.message || "Could not add company", variant: "destructive" });
+    } finally {
+      setAddLoading(false);
+    }
+  };
+
   /* ── Sims ── */
   const [completedSims, setCompletedSims] = useState<CompletedSim[]>([]);
   useEffect(() => {
