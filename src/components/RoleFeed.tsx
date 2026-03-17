@@ -1,7 +1,8 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { motion, AnimatePresence, useMotionValue, useTransform, PanInfo } from "framer-motion";
-import { BarChart3, Zap, Bookmark, Share2, Search, ChevronUp, ChevronDown } from "lucide-react";
+import { motion, AnimatePresence, PanInfo } from "framer-motion";
+import { BarChart3, Zap, Bookmark, Share2, Search, ChevronUp, ChevronDown, X, ArrowRight } from "lucide-react";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface RoleCard {
   title: string;
@@ -17,71 +18,50 @@ interface RoleFeedProps {
   onOpenSearch: () => void;
 }
 
-/** Circular animated gauge */
-function RiskGaugeMini({ value, label, color }: { value: number; label: string; color: string }) {
-  const radius = 38;
+/* ── Shared: Gauge ─────────────────────────────────── */
+
+function RiskGaugeMini({ value, label, color, size = 96 }: { value: number; label: string; color: string; size?: number }) {
+  const radius = size * 0.4;
   const circumference = 2 * Math.PI * radius;
   const offset = circumference - (value / 100) * circumference;
+  const center = size / 2;
 
   return (
     <div className="flex flex-col items-center gap-1">
-      <svg width="96" height="96" viewBox="0 0 96 96" className="drop-shadow-lg">
-        <circle cx="48" cy="48" r={radius} fill="none" stroke="hsl(var(--muted) / 0.3)" strokeWidth="6" />
+      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="drop-shadow-lg">
+        <circle cx={center} cy={center} r={radius} fill="none" stroke="hsl(var(--muted) / 0.3)" strokeWidth="5" />
         <motion.circle
-          cx="48" cy="48" r={radius}
-          fill="none"
-          stroke={color}
-          strokeWidth="6"
-          strokeLinecap="round"
+          cx={center} cy={center} r={radius}
+          fill="none" stroke={color} strokeWidth="5" strokeLinecap="round"
           strokeDasharray={circumference}
           initial={{ strokeDashoffset: circumference }}
           animate={{ strokeDashoffset: offset }}
-          transition={{ duration: 1.2, ease: "easeOut", delay: 0.3 }}
-          transform="rotate(-90 48 48)"
+          transition={{ duration: 1, ease: "easeOut", delay: 0.2 }}
+          transform={`rotate(-90 ${center} ${center})`}
         />
         <motion.text
-          x="48" y="44" textAnchor="middle" dominantBaseline="middle"
+          x={center} y={center - 4} textAnchor="middle" dominantBaseline="middle"
           className="fill-white font-display font-bold"
-          style={{ fontSize: "22px" }}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.6 }}
-        >
-          {value}%
-        </motion.text>
-        <text x="48" y="60" textAnchor="middle" dominantBaseline="middle"
-          className="fill-white/60" style={{ fontSize: "8px", textTransform: "uppercase", letterSpacing: "1px" }}
-        >
-          {label}
-        </text>
+          style={{ fontSize: `${size * 0.22}px` }}
+          initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }}
+        >{value}%</motion.text>
+        <text x={center} y={center + size * 0.14} textAnchor="middle" dominantBaseline="middle"
+          className="fill-white/60" style={{ fontSize: `${Math.max(7, size * 0.08)}px`, textTransform: "uppercase", letterSpacing: "1px" }}
+        >{label}</text>
       </svg>
     </div>
   );
 }
 
-/** Action rail button */
-function ActionButton({
-  icon: Icon,
-  label,
-  onClick,
-  glow,
-}: {
-  icon: typeof BarChart3;
-  label: string;
-  onClick: () => void;
-  glow?: boolean;
-}) {
+/* ── Shared: Action button ─────────────────────────── */
+
+function ActionButton({ icon: Icon, label, onClick, glow }: { icon: typeof BarChart3; label: string; onClick: () => void; glow?: boolean }) {
   return (
-    <motion.button
-      whileTap={{ scale: 0.85 }}
-      whileHover={{ scale: 1.1 }}
-      onClick={onClick}
+    <motion.button whileTap={{ scale: 0.85 }} whileHover={{ scale: 1.1 }} onClick={onClick}
       className={`flex flex-col items-center gap-1 ${glow ? "drop-shadow-[0_0_12px_hsl(var(--neon-purple)/0.6)]" : ""}`}
     >
       <div className={`w-11 h-11 rounded-full flex items-center justify-center backdrop-blur-md transition-colors ${
-        glow
-          ? "bg-primary/30 border border-primary/50"
-          : "bg-white/10 border border-white/20 hover:bg-white/20"
+        glow ? "bg-primary/30 border border-primary/50" : "bg-white/10 border border-white/20 hover:bg-white/20"
       }`}>
         <Icon className={`h-5 w-5 ${glow ? "text-primary-foreground" : "text-white"}`} />
       </div>
@@ -90,7 +70,181 @@ function ActionButton({
   );
 }
 
-export default function RoleFeed({ roles, onOpenSearch }: RoleFeedProps) {
+/* ── Detail Overlay (shared between desktop & mobile) ── */
+
+function RoleDetailOverlay({ role, onClose }: { role: RoleCard; onClose: () => void }) {
+  const navigate = useNavigate();
+  const riskColor = role.risk >= 40 ? "hsl(var(--destructive))" : role.risk >= 20 ? "hsl(var(--warning))" : "hsl(var(--success))";
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-50 flex items-end sm:items-center sm:justify-center"
+    >
+      {/* Backdrop */}
+      <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={onClose} />
+
+      {/* Panel */}
+      <motion.div
+        initial={{ y: "100%", opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        exit={{ y: "100%", opacity: 0 }}
+        transition={{ type: "spring", damping: 28, stiffness: 300 }}
+        className="relative w-full sm:max-w-lg sm:rounded-2xl overflow-hidden"
+      >
+        {/* Hero image */}
+        <div className="relative h-64 sm:h-72">
+          <img src={role.image} alt={role.title} className="w-full h-full object-cover" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-black/10" />
+
+          {/* Close */}
+          <button onClick={onClose} className="absolute top-4 right-4 w-9 h-9 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center hover:bg-black/60 transition-colors">
+            <X className="h-4 w-4 text-white" />
+          </button>
+
+          {/* Gauges */}
+          <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-4">
+            <RiskGaugeMini value={role.risk} label="AI Risk" color={riskColor} size={80} />
+            <RiskGaugeMini value={role.augmented} label="Augmented" color="hsl(var(--neon-blue))" size={80} />
+            <RiskGaugeMini value={role.aiOpportunity} label="To Learn" color="hsl(var(--neon-purple))" size={80} />
+          </div>
+        </div>
+
+        {/* Info */}
+        <div className="bg-card p-5 sm:p-6">
+          <span className="inline-block px-2 py-0.5 text-[10px] font-semibold uppercase tracking-widest rounded bg-accent text-accent-foreground mb-2">
+            {role.tag}
+          </span>
+          <h2 className="text-xl sm:text-2xl font-display font-bold text-foreground">{role.title}</h2>
+          <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
+            {role.risk >= 40
+              ? "High disruption potential — critical upskilling opportunity ahead."
+              : role.risk >= 20
+                ? "Moderate AI exposure — skill requirements are evolving fast."
+                : "Strong human-AI synergy — AI augments rather than replaces."}
+          </p>
+
+          {/* Actions */}
+          <div className="flex gap-3 mt-5">
+            <motion.button
+              whileTap={{ scale: 0.95 }}
+              onClick={() => navigate(`/analysis?title=${encodeURIComponent(role.title)}&company=`)}
+              className="flex-1 flex items-center justify-center gap-2 h-11 rounded-lg bg-primary text-primary-foreground font-semibold text-sm hover:bg-primary/90 transition-colors glow-purple"
+            >
+              <BarChart3 className="h-4 w-4" />
+              Full Analysis
+              <ArrowRight className="h-4 w-4" />
+            </motion.button>
+            <motion.button
+              whileTap={{ scale: 0.95 }}
+              onClick={() => {
+                navigator.share?.({ title: `${role.title} AI Analysis`, url: window.location.href }).catch(() => {});
+              }}
+              className="w-11 h-11 rounded-lg bg-muted flex items-center justify-center hover:bg-muted/80 transition-colors"
+            >
+              <Share2 className="h-4 w-4 text-muted-foreground" />
+            </motion.button>
+          </div>
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+}
+
+/* ── Desktop: Grid Layout ──────────────────────────── */
+
+function DesktopGrid({ roles, onOpenSearch }: RoleFeedProps) {
+  const navigate = useNavigate();
+  const [selected, setSelected] = useState<RoleCard | null>(null);
+  const [filter, setFilter] = useState<string | null>(null);
+
+  const tags = Array.from(new Set(roles.map(r => r.tag)));
+  const filtered = filter ? roles.filter(r => r.tag === filter) : roles;
+
+  return (
+    <div className="h-full flex flex-col overflow-hidden">
+      {/* Filter bar */}
+      <div className="shrink-0 flex items-center gap-2 px-6 py-4 border-b border-border/40">
+        <button
+          onClick={onOpenSearch}
+          className="flex items-center gap-2 h-9 px-4 rounded-full bg-muted hover:bg-muted/80 transition-colors text-sm text-muted-foreground"
+        >
+          <Search className="h-4 w-4" />
+          Search any role...
+        </button>
+        <div className="flex items-center gap-1.5 ml-auto">
+          <button
+            onClick={() => setFilter(null)}
+            className={`px-3 py-1.5 text-xs font-medium rounded-full transition-colors ${
+              !filter ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:text-foreground"
+            }`}
+          >All</button>
+          {tags.map(tag => (
+            <button
+              key={tag}
+              onClick={() => setFilter(f => f === tag ? null : tag)}
+              className={`px-3 py-1.5 text-xs font-medium rounded-full transition-colors ${
+                filter === tag ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:text-foreground"
+              }`}
+            >{tag}</button>
+          ))}
+        </div>
+      </div>
+
+      {/* Grid */}
+      <div className="flex-1 overflow-y-auto px-6 py-5">
+        <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
+          {filtered.map((role, i) => {
+            const riskColor = role.risk >= 40 ? "text-destructive" : role.risk >= 20 ? "text-warning" : "text-success";
+            return (
+              <motion.button
+                key={role.title}
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.35, delay: Math.min(i * 0.03, 0.4) }}
+                onClick={() => setSelected(role)}
+                className="group text-left rounded-xl overflow-hidden bg-card border border-border/40 hover:border-border transition-all hover:shadow-lg hover:shadow-primary/5"
+              >
+                {/* Image */}
+                <div className="relative aspect-[4/3] overflow-hidden">
+                  <img src={role.image} alt={role.title} className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                  {/* Risk badge */}
+                  <div className="absolute top-2 right-2 flex items-center gap-1 px-2 py-0.5 rounded-full bg-black/50 backdrop-blur-sm">
+                    <span className={`text-xs font-bold ${riskColor}`}>{role.risk}%</span>
+                    <span className="text-[9px] text-white/50">risk</span>
+                  </div>
+                  {/* Opportunity badge */}
+                  <div className="absolute bottom-2 left-2 flex items-center gap-1 px-2 py-0.5 rounded-full bg-black/50 backdrop-blur-sm">
+                    <Zap className="h-3 w-3 text-neon-purple" />
+                    <span className="text-xs font-bold text-white">{role.aiOpportunity}%</span>
+                    <span className="text-[9px] text-white/50">to learn</span>
+                  </div>
+                </div>
+                {/* Meta */}
+                <div className="p-3">
+                  <h3 className="text-sm font-semibold text-foreground leading-snug group-hover:text-primary transition-colors">{role.title}</h3>
+                  <span className="text-[10px] text-muted-foreground">{role.tag}</span>
+                </div>
+              </motion.button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Detail overlay */}
+      <AnimatePresence>
+        {selected && <RoleDetailOverlay role={selected} onClose={() => setSelected(null)} />}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+/* ── Mobile: Vertical Swipe Feed ───────────────────── */
+
+function MobileFeed({ roles, onOpenSearch }: RoleFeedProps) {
   const navigate = useNavigate();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [direction, setDirection] = useState(0);
@@ -98,8 +252,7 @@ export default function RoleFeed({ roles, onOpenSearch }: RoleFeedProps) {
   const isAnimating = useRef(false);
 
   const goTo = useCallback((newIndex: number, dir: number) => {
-    if (isAnimating.current) return;
-    if (newIndex < 0 || newIndex >= roles.length) return;
+    if (isAnimating.current || newIndex < 0 || newIndex >= roles.length) return;
     isAnimating.current = true;
     setDirection(dir);
     setCurrentIndex(newIndex);
@@ -109,34 +262,6 @@ export default function RoleFeed({ roles, onOpenSearch }: RoleFeedProps) {
   const goNext = useCallback(() => goTo(currentIndex + 1, 1), [currentIndex, goTo]);
   const goPrev = useCallback(() => goTo(currentIndex - 1, -1), [currentIndex, goTo]);
 
-  // Keyboard navigation
-  useEffect(() => {
-    const handler = (e: KeyboardEvent) => {
-      if (e.key === "ArrowDown" || e.key === "j") goNext();
-      if (e.key === "ArrowUp" || e.key === "k") goPrev();
-    };
-    window.addEventListener("keydown", handler);
-    return () => window.removeEventListener("keydown", handler);
-  }, [goNext, goPrev]);
-
-  // Wheel / trackpad
-  const wheelCooldown = useRef(false);
-  useEffect(() => {
-    const el = containerRef.current;
-    if (!el) return;
-    const handler = (e: WheelEvent) => {
-      e.preventDefault();
-      if (wheelCooldown.current) return;
-      wheelCooldown.current = true;
-      if (e.deltaY > 30) goNext();
-      else if (e.deltaY < -30) goPrev();
-      setTimeout(() => { wheelCooldown.current = false; }, 500);
-    };
-    el.addEventListener("wheel", handler, { passive: false });
-    return () => el.removeEventListener("wheel", handler);
-  }, [goNext, goPrev]);
-
-  // Touch / drag
   const handleDragEnd = (_: any, info: PanInfo) => {
     if (info.offset.y < -60) goNext();
     else if (info.offset.y > 60) goPrev();
@@ -145,189 +270,77 @@ export default function RoleFeed({ roles, onOpenSearch }: RoleFeedProps) {
   const role = roles[currentIndex];
   if (!role) return null;
 
-  const riskColor = role.risk >= 40
-    ? "hsl(var(--destructive))"
-    : role.risk >= 20
-      ? "hsl(var(--warning))"
-      : "hsl(var(--success))";
+  const riskColor = role.risk >= 40 ? "hsl(var(--destructive))" : role.risk >= 20 ? "hsl(var(--warning))" : "hsl(var(--success))";
 
   const variants = {
-    enter: (dir: number) => ({
-      y: dir > 0 ? "100%" : "-100%",
-      opacity: 0,
-    }),
-    center: {
-      y: 0,
-      opacity: 1,
-    },
-    exit: (dir: number) => ({
-      y: dir > 0 ? "-100%" : "100%",
-      opacity: 0,
-    }),
+    enter: (dir: number) => ({ y: dir > 0 ? "100%" : "-100%", opacity: 0 }),
+    center: { y: 0, opacity: 1 },
+    exit: (dir: number) => ({ y: dir > 0 ? "-100%" : "100%", opacity: 0 }),
   };
 
   return (
-    <div
-      ref={containerRef}
-      className="relative w-full h-full overflow-hidden bg-background"
-    >
+    <div ref={containerRef} className="relative w-full h-full overflow-hidden bg-background">
       <AnimatePresence initial={false} custom={direction} mode="popLayout">
         <motion.div
           key={currentIndex}
           custom={direction}
           variants={variants}
-          initial="enter"
-          animate="center"
-          exit="exit"
+          initial="enter" animate="center" exit="exit"
           transition={{ type: "spring", damping: 28, stiffness: 300 }}
-          drag="y"
-          dragConstraints={{ top: 0, bottom: 0 }}
-          dragElastic={0.15}
+          drag="y" dragConstraints={{ top: 0, bottom: 0 }} dragElastic={0.15}
           onDragEnd={handleDragEnd}
           className="absolute inset-0 flex flex-col"
           onAnimationComplete={() => { isAnimating.current = false; }}
         >
-          {/* Background image */}
           <div className="absolute inset-0">
-            <img
-              src={role.image}
-              alt={role.title}
-              className="w-full h-full object-cover"
-              draggable={false}
-            />
-            {/* Gradient overlays for legibility */}
+            <img src={role.image} alt={role.title} className="w-full h-full object-cover" draggable={false} />
             <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-black/10" />
-            <div className="absolute inset-0 bg-gradient-to-r from-black/30 to-transparent" />
           </div>
 
-          {/* Content layer */}
-          <div className="relative flex-1 flex flex-col justify-end p-5 pb-8 sm:p-8 sm:pb-12">
-            {/* Center gauge cluster */}
+          <div className="relative flex-1 flex flex-col justify-end p-5 pb-8">
+            {/* Center gauges */}
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-              <motion.div
-                initial={{ scale: 0.8, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                transition={{ delay: 0.2, type: "spring", damping: 20 }}
-                className="flex gap-6"
-              >
-                <RiskGaugeMini value={role.risk} label="AI Risk" color={riskColor} />
-                <RiskGaugeMini value={role.augmented} label="Augmented" color="hsl(var(--neon-blue))" />
-                <RiskGaugeMini value={role.aiOpportunity} label="To Learn" color="hsl(var(--neon-purple))" />
+              <motion.div initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ delay: 0.2, type: "spring", damping: 20 }} className="flex gap-4">
+                <RiskGaugeMini value={role.risk} label="AI Risk" color={riskColor} size={80} />
+                <RiskGaugeMini value={role.augmented} label="Augmented" color="hsl(var(--neon-blue))" size={80} />
+                <RiskGaugeMini value={role.aiOpportunity} label="To Learn" color="hsl(var(--neon-purple))" size={80} />
               </motion.div>
             </div>
 
-            {/* Bottom-left metadata — TikTok style */}
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.15 }}
-              className="max-w-[70%] sm:max-w-[60%]"
-            >
-              <span className="inline-block px-2 py-0.5 text-[10px] font-semibold uppercase tracking-widest rounded bg-white/15 backdrop-blur-sm text-white/80 mb-2">
-                {role.tag}
-              </span>
-              <h2 className="text-2xl sm:text-4xl font-display font-bold text-white leading-tight drop-shadow-lg">
-                {role.title}
-              </h2>
-              <p className="mt-2 text-xs sm:text-sm text-white/60 leading-relaxed max-w-md">
-                {role.risk >= 40
-                  ? "High disruption potential — critical upskilling opportunity"
-                  : role.risk >= 20
-                    ? "Moderate AI exposure — evolving skill requirements"
-                    : "AI-augmented role — strong human-AI synergy"}
+            {/* Bottom-left metadata */}
+            <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.15 }} className="max-w-[70%]">
+              <span className="inline-block px-2 py-0.5 text-[10px] font-semibold uppercase tracking-widest rounded bg-white/15 backdrop-blur-sm text-white/80 mb-2">{role.tag}</span>
+              <h2 className="text-2xl font-display font-bold text-white leading-tight drop-shadow-lg">{role.title}</h2>
+              <p className="mt-1.5 text-xs text-white/60 leading-relaxed">
+                {role.risk >= 40 ? "High disruption — upskill now" : role.risk >= 20 ? "Evolving skill requirements" : "Strong human-AI synergy"}
               </p>
             </motion.div>
           </div>
 
-          {/* Right-side action rail — TikTok style */}
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.3 }}
-            className="absolute right-4 sm:right-6 bottom-28 sm:bottom-32 flex flex-col items-center gap-5"
+          {/* Right rail */}
+          <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.3 }}
+            className="absolute right-3 bottom-24 flex flex-col items-center gap-4"
           >
-            <ActionButton
-              icon={BarChart3}
-              label="Analyze"
-              glow
-              onClick={() => navigate(`/analysis?title=${encodeURIComponent(role.title)}&company=`)}
-            />
-            <ActionButton
-              icon={Zap}
-              label="Practice"
-              onClick={() => navigate(`/analysis?title=${encodeURIComponent(role.title)}&company=`)}
-            />
-            <ActionButton
-              icon={Bookmark}
-              label="Save"
-              onClick={() => {}}
-            />
-            <ActionButton
-              icon={Share2}
-              label="Share"
-              onClick={() => {
-                navigator.share?.({ title: `${role.title} AI Analysis`, url: window.location.href })
-                  .catch(() => {});
-              }}
-            />
-            <ActionButton
-              icon={Search}
-              label="Search"
-              onClick={onOpenSearch}
-            />
+            <ActionButton icon={BarChart3} label="Analyze" glow onClick={() => navigate(`/analysis?title=${encodeURIComponent(role.title)}&company=`)} />
+            <ActionButton icon={Zap} label="Practice" onClick={() => navigate(`/analysis?title=${encodeURIComponent(role.title)}&company=`)} />
+            <ActionButton icon={Bookmark} label="Save" onClick={() => {}} />
+            <ActionButton icon={Share2} label="Share" onClick={() => { navigator.share?.({ title: role.title, url: window.location.href }).catch(() => {}); }} />
+            <ActionButton icon={Search} label="Search" onClick={onOpenSearch} />
           </motion.div>
         </motion.div>
       </AnimatePresence>
 
-      {/* Top progress bar */}
+      {/* Progress */}
       <div className="absolute top-0 left-0 right-0 z-20 h-0.5 bg-white/10">
-        <motion.div
-          className="h-full bg-primary"
-          initial={false}
-          animate={{ width: `${((currentIndex + 1) / roles.length) * 100}%` }}
-          transition={{ type: "spring", damping: 30 }}
-        />
+        <motion.div className="h-full bg-primary" animate={{ width: `${((currentIndex + 1) / roles.length) * 100}%` }} transition={{ type: "spring", damping: 30 }} />
+      </div>
+      <div className="absolute top-3 right-3 z-20">
+        <span className="text-[10px] font-medium text-white/50 backdrop-blur-sm bg-black/20 px-2 py-1 rounded-full">{currentIndex + 1}/{roles.length}</span>
       </div>
 
-      {/* Role counter */}
-      <div className="absolute top-3 right-4 z-20">
-        <span className="text-xs font-medium text-white/50 backdrop-blur-sm bg-black/20 px-2 py-1 rounded-full">
-          {currentIndex + 1} / {roles.length}
-        </span>
-      </div>
-
-      {/* Navigation hints */}
-      <div className="absolute right-4 sm:right-6 top-1/2 -translate-y-1/2 z-20 flex flex-col items-center gap-1">
-        {currentIndex > 0 && (
-          <motion.button
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 0.5 }}
-            whileHover={{ opacity: 1 }}
-            onClick={goPrev}
-            className="p-1"
-          >
-            <ChevronUp className="h-5 w-5 text-white" />
-          </motion.button>
-        )}
-        {currentIndex < roles.length - 1 && (
-          <motion.button
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 0.5 }}
-            whileHover={{ opacity: 1 }}
-            onClick={goNext}
-            className="p-1"
-          >
-            <ChevronDown className="h-5 w-5 text-white" />
-          </motion.button>
-        )}
-      </div>
-
-      {/* Swipe hint on first card */}
+      {/* Swipe hint */}
       {currentIndex === 0 && (
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: [0, 0.6, 0], y: [10, -5, 10] }}
-          transition={{ duration: 2, repeat: 2, delay: 1.5 }}
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: [0, 0.6, 0] }} transition={{ duration: 2, repeat: 2, delay: 1.5 }}
           className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center"
         >
           <ChevronUp className="h-5 w-5 text-white/60" />
@@ -336,4 +349,11 @@ export default function RoleFeed({ roles, onOpenSearch }: RoleFeedProps) {
       )}
     </div>
   );
+}
+
+/* ── Main Export ────────────────────────────────────── */
+
+export default function RoleFeed(props: RoleFeedProps) {
+  const isMobile = useIsMobile();
+  return isMobile ? <MobileFeed {...props} /> : <DesktopGrid {...props} />;
 }
