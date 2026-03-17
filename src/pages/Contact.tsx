@@ -16,7 +16,7 @@ const Contact = () => {
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
 
-  const isOrgInquiry = subject === "enterprise" || subject === "partnership";
+  const isOrgInquiry = subject !== "" && subject !== "other";
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -114,19 +114,19 @@ const Contact = () => {
                     </div>
                   </div>
                   <div>
-                    <label className="text-sm font-medium text-foreground mb-1 block">Subject</label>
+                    <label className="text-sm font-medium text-foreground mb-1 block">Interested Use Case</label>
                     <select
                       value={subject}
                       onChange={(e) => setSubject(e.target.value)}
                       className="w-full rounded-lg border border-input bg-background px-3 py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-ring"
                     >
-                      <option value="">Select a topic…</option>
-                      <option value="general">General Inquiry</option>
-                      <option value="enterprise">Enterprise / Team Plan</option>
-                      <option value="feedback">Product Feedback</option>
-                      <option value="support">Technical Support</option>
-                      <option value="partnership">Partnership</option>
-                      <option value="press">Press & Media</option>
+                      <option value="">Select a use case…</option>
+                      <option value="hiring">Hiring</option>
+                      <option value="onboarding">Onboarding</option>
+                      <option value="learning-development">Learning & Development</option>
+                      <option value="performance-assessment">Performance Assessment</option>
+                      <option value="project-staffing">Project Staffing</option>
+                      <option value="other">Other (specify in message)</option>
                     </select>
                   </div>
 
