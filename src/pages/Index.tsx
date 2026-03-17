@@ -57,43 +57,43 @@ function calcToolsToLearn(automationRisk: number, augmented: number, newSkills: 
   return Math.round(augmented * 0.45 + newSkills * 0.35 + automationRisk * 0.20);
 }
 
-// All 30 roles with their agent replacement risk computed
+// All 30 roles with their AI learning opportunity computed
 const allRoles: RoleCard[] = [
-  // Tech — balanced across tiers
-  { title: "Software Engineer", image: roleSoftwareEngineer, augmented: 80, risk: 10, agentRisk: calcAgentRisk(10, 80, 45), tag: "Tech" },
-  { title: "Data Scientist", image: roleDataScientist, augmented: 82, risk: 10, agentRisk: calcAgentRisk(10, 82, 40), tag: "Tech" },
-  { title: "Product Manager", image: roleProductManager, augmented: 72, risk: 12, agentRisk: calcAgentRisk(12, 72, 45), tag: "Tech" },
-  { title: "DevOps Engineer", image: roleDevopsEngineer, augmented: 70, risk: 20, agentRisk: calcAgentRisk(20, 70, 55), tag: "Tech" },
-  { title: "UX Designer", image: roleUxDesigner, augmented: 65, risk: 22, agentRisk: calcAgentRisk(22, 65, 50), tag: "Tech" },
-  { title: "Cybersecurity Analyst", image: roleCybersecurityAnalyst, augmented: 78, risk: 10, agentRisk: calcAgentRisk(10, 78, 40), tag: "Tech" },
-  { title: "QA Manager", image: roleQaManager, augmented: 60, risk: 38, agentRisk: calcAgentRisk(38, 60, 60), tag: "Tech" },
-  // Finance — spread across tiers
-  { title: "Accountant", image: roleAccountant, augmented: 55, risk: 42, agentRisk: calcAgentRisk(42, 55, 60), tag: "Finance" },
-  { title: "Financial Analyst", image: roleFinancialAnalyst, augmented: 72, risk: 22, agentRisk: calcAgentRisk(22, 72, 50), tag: "Finance" },
-  { title: "Investment Banker", image: roleInvestmentBanker, augmented: 70, risk: 14, agentRisk: calcAgentRisk(14, 70, 35), tag: "Finance" },
-  { title: "Tax Advisor", image: roleTaxAdvisor, augmented: 55, risk: 44, agentRisk: calcAgentRisk(44, 55, 58), tag: "Finance" },
-  { title: "Risk Manager", image: roleRiskManager, augmented: 68, risk: 20, agentRisk: calcAgentRisk(20, 68, 50), tag: "Finance" },
-  { title: "Auditor", image: roleAuditor, augmented: 52, risk: 48, agentRisk: calcAgentRisk(48, 52, 62), tag: "Finance" },
-  // Marketing — spread across tiers
-  { title: "Marketing Manager", image: roleMarketingManager, augmented: 62, risk: 32, agentRisk: calcAgentRisk(32, 62, 68), tag: "Marketing" },
-  { title: "Content Strategist", image: roleContentStrategist, augmented: 74, risk: 22, agentRisk: calcAgentRisk(22, 74, 50), tag: "Marketing" },
-  { title: "SEO Specialist", image: roleSeoSpecialist, augmented: 68, risk: 45, agentRisk: calcAgentRisk(45, 68, 65), tag: "Marketing" },
-  { title: "Social Media Manager", image: roleSocialMediaManager, augmented: 65, risk: 38, agentRisk: calcAgentRisk(38, 65, 62), tag: "Marketing" },
-  { title: "Brand Strategist", image: roleBrandStrategist, augmented: 72, risk: 8, agentRisk: calcAgentRisk(8, 72, 35), tag: "Marketing" },
-  { title: "Business Analyst", image: roleBusinessAnalyst, augmented: 70, risk: 22, agentRisk: calcAgentRisk(22, 70, 50), tag: "Marketing" },
-  // Operations — spread across tiers
-  { title: "Project Manager", image: roleProjectManager, augmented: 68, risk: 20, agentRisk: calcAgentRisk(20, 68, 48), tag: "Operations" },
-  { title: "HR Manager", image: roleHrManager, augmented: 55, risk: 35, agentRisk: calcAgentRisk(35, 55, 55), tag: "Operations" },
-  { title: "Supply Chain Manager", image: roleSupplyChainManager, augmented: 70, risk: 22, agentRisk: calcAgentRisk(22, 70, 48), tag: "Operations" },
-  { title: "Operations Manager", image: roleOperationsManager, augmented: 65, risk: 22, agentRisk: calcAgentRisk(22, 65, 48), tag: "Operations" },
-  { title: "Customer Success Manager", image: roleCustomerSuccessManager, augmented: 72, risk: 12, agentRisk: calcAgentRisk(12, 72, 35), tag: "Operations" },
-  // Legal — spread across tiers
-  { title: "Corporate Lawyer", image: roleCorporateLawyer, augmented: 72, risk: 10, agentRisk: calcAgentRisk(10, 72, 35), tag: "Legal" },
-  { title: "Compliance Officer", image: roleComplianceOfficer, augmented: 58, risk: 36, agentRisk: calcAgentRisk(36, 58, 58), tag: "Legal" },
-  { title: "Paralegal", image: roleParalegal, augmented: 62, risk: 50, agentRisk: calcAgentRisk(50, 62, 65), tag: "Legal" },
-  { title: "Contract Attorney", image: roleContractAttorney, augmented: 60, risk: 44, agentRisk: calcAgentRisk(44, 60, 58), tag: "Legal" },
-  { title: "IP Specialist", image: roleIpSpecialist, augmented: 75, risk: 8, agentRisk: calcAgentRisk(8, 75, 30), tag: "Legal" },
-  { title: "Legal Ops Manager", image: roleLegalOpsManager, augmented: 68, risk: 22, agentRisk: calcAgentRisk(22, 68, 48), tag: "Legal" },
+  // Tech
+  { title: "Software Engineer", image: roleSoftwareEngineer, augmented: 80, risk: 10, aiOpportunity: calcToolsToLearn(10, 80, 45), tag: "Tech" },
+  { title: "Data Scientist", image: roleDataScientist, augmented: 82, risk: 10, aiOpportunity: calcToolsToLearn(10, 82, 40), tag: "Tech" },
+  { title: "Product Manager", image: roleProductManager, augmented: 72, risk: 12, aiOpportunity: calcToolsToLearn(12, 72, 45), tag: "Tech" },
+  { title: "DevOps Engineer", image: roleDevopsEngineer, augmented: 70, risk: 20, aiOpportunity: calcToolsToLearn(20, 70, 55), tag: "Tech" },
+  { title: "UX Designer", image: roleUxDesigner, augmented: 65, risk: 22, aiOpportunity: calcToolsToLearn(22, 65, 50), tag: "Tech" },
+  { title: "Cybersecurity Analyst", image: roleCybersecurityAnalyst, augmented: 78, risk: 10, aiOpportunity: calcToolsToLearn(10, 78, 40), tag: "Tech" },
+  { title: "QA Manager", image: roleQaManager, augmented: 60, risk: 38, aiOpportunity: calcToolsToLearn(38, 60, 60), tag: "Tech" },
+  // Finance
+  { title: "Accountant", image: roleAccountant, augmented: 55, risk: 42, aiOpportunity: calcToolsToLearn(42, 55, 60), tag: "Finance" },
+  { title: "Financial Analyst", image: roleFinancialAnalyst, augmented: 72, risk: 22, aiOpportunity: calcToolsToLearn(22, 72, 50), tag: "Finance" },
+  { title: "Investment Banker", image: roleInvestmentBanker, augmented: 70, risk: 14, aiOpportunity: calcToolsToLearn(14, 70, 35), tag: "Finance" },
+  { title: "Tax Advisor", image: roleTaxAdvisor, augmented: 55, risk: 44, aiOpportunity: calcToolsToLearn(44, 55, 58), tag: "Finance" },
+  { title: "Risk Manager", image: roleRiskManager, augmented: 68, risk: 20, aiOpportunity: calcToolsToLearn(20, 68, 50), tag: "Finance" },
+  { title: "Auditor", image: roleAuditor, augmented: 52, risk: 48, aiOpportunity: calcToolsToLearn(48, 52, 62), tag: "Finance" },
+  // Marketing
+  { title: "Marketing Manager", image: roleMarketingManager, augmented: 62, risk: 32, aiOpportunity: calcToolsToLearn(32, 62, 68), tag: "Marketing" },
+  { title: "Content Strategist", image: roleContentStrategist, augmented: 74, risk: 22, aiOpportunity: calcToolsToLearn(22, 74, 50), tag: "Marketing" },
+  { title: "SEO Specialist", image: roleSeoSpecialist, augmented: 68, risk: 45, aiOpportunity: calcToolsToLearn(45, 68, 65), tag: "Marketing" },
+  { title: "Social Media Manager", image: roleSocialMediaManager, augmented: 65, risk: 38, aiOpportunity: calcToolsToLearn(38, 65, 62), tag: "Marketing" },
+  { title: "Brand Strategist", image: roleBrandStrategist, augmented: 72, risk: 8, aiOpportunity: calcToolsToLearn(8, 72, 35), tag: "Marketing" },
+  { title: "Business Analyst", image: roleBusinessAnalyst, augmented: 70, risk: 22, aiOpportunity: calcToolsToLearn(22, 70, 50), tag: "Marketing" },
+  // Operations
+  { title: "Project Manager", image: roleProjectManager, augmented: 68, risk: 20, aiOpportunity: calcToolsToLearn(20, 68, 48), tag: "Operations" },
+  { title: "HR Manager", image: roleHrManager, augmented: 55, risk: 35, aiOpportunity: calcToolsToLearn(35, 55, 55), tag: "Operations" },
+  { title: "Supply Chain Manager", image: roleSupplyChainManager, augmented: 70, risk: 22, aiOpportunity: calcToolsToLearn(22, 70, 48), tag: "Operations" },
+  { title: "Operations Manager", image: roleOperationsManager, augmented: 65, risk: 22, aiOpportunity: calcToolsToLearn(22, 65, 48), tag: "Operations" },
+  { title: "Customer Success Manager", image: roleCustomerSuccessManager, augmented: 72, risk: 12, aiOpportunity: calcToolsToLearn(12, 72, 35), tag: "Operations" },
+  // Legal
+  { title: "Corporate Lawyer", image: roleCorporateLawyer, augmented: 72, risk: 10, aiOpportunity: calcToolsToLearn(10, 72, 35), tag: "Legal" },
+  { title: "Compliance Officer", image: roleComplianceOfficer, augmented: 58, risk: 36, aiOpportunity: calcToolsToLearn(36, 58, 58), tag: "Legal" },
+  { title: "Paralegal", image: roleParalegal, augmented: 62, risk: 50, aiOpportunity: calcToolsToLearn(50, 62, 65), tag: "Legal" },
+  { title: "Contract Attorney", image: roleContractAttorney, augmented: 60, risk: 44, aiOpportunity: calcToolsToLearn(44, 60, 58), tag: "Legal" },
+  { title: "IP Specialist", image: roleIpSpecialist, augmented: 75, risk: 8, aiOpportunity: calcToolsToLearn(8, 75, 30), tag: "Legal" },
+  { title: "Legal Ops Manager", image: roleLegalOpsManager, augmented: 68, risk: 22, aiOpportunity: calcToolsToLearn(22, 68, 48), tag: "Legal" },
 ];
 
 // Sort into risk tiers — Linear-style: grayscale text, colored dots only
