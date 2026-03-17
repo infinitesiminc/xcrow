@@ -96,22 +96,22 @@ const allRoles: RoleCard[] = [
   { title: "Legal Ops Manager", image: roleLegalOpsManager, augmented: 68, risk: 22, aiOpportunity: calcToolsToLearn(22, 68, 48), tag: "Legal" },
 ];
 
-// Sort into risk tiers — Linear-style: grayscale text, colored dots only
-const riskTiers: { label: string; dotColor: string; roles: RoleCard[] }[] = [
+// Sort into learning tiers — empowerment framing
+const learningTiers: { label: string; dotColor: string; roles: RoleCard[] }[] = [
   {
-    label: "High Risk",
-    dotColor: "bg-brand-ai",
-    roles: allRoles.filter(r => r.agentRisk >= 35).sort((a, b) => b.agentRisk - a.agentRisk),
+    label: "Most to Learn",
+    dotColor: "bg-primary",
+    roles: allRoles.filter(r => r.aiOpportunity >= 55).sort((a, b) => b.aiOpportunity - a.aiOpportunity),
   },
   {
-    label: "Moderate Risk",
+    label: "Growing Toolkit",
     dotColor: "bg-brand-mid",
-    roles: allRoles.filter(r => r.agentRisk >= 25 && r.agentRisk < 35).sort((a, b) => b.agentRisk - a.agentRisk),
+    roles: allRoles.filter(r => r.aiOpportunity >= 45 && r.aiOpportunity < 55).sort((a, b) => b.aiOpportunity - a.aiOpportunity),
   },
   {
-    label: "Lower Risk",
-    dotColor: "bg-brand-human",
-    roles: allRoles.filter(r => r.agentRisk < 25).sort((a, b) => b.agentRisk - a.agentRisk),
+    label: "AI-Ready",
+    dotColor: "bg-success",
+    roles: allRoles.filter(r => r.aiOpportunity < 45).sort((a, b) => b.aiOpportunity - a.aiOpportunity),
   },
 ];
 
