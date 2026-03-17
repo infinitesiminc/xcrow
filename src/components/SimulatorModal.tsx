@@ -342,6 +342,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
     return content
       .replace(/🤖\s*\*?\*?AI Today:?\*?\*?\s*.+/g, "")
       .replace(/💡\s*\*?\*?Human Edge:?\*?\*?\s*.+/g, "")
+      .replace(/\[SCAFFOLDING\]/g, "")
       .trim();
   };
 
