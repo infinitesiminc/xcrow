@@ -18,16 +18,10 @@ import LearningPath from "./pages/LearningPath.tsx";
 
 // Admin (superadmin only)
 import HRLayout from "./layouts/HRLayout.tsx";
+import CompaniesPage from "./pages/admin/CompaniesPage.tsx";
+import StatsPage from "./pages/admin/StatsPage.tsx";
 import ATSSync from "./pages/hr/ATSSync.tsx";
 import SimulationBuilder from "./pages/products/SimulationBuilder.tsx";
-import TeamProgress from "./pages/hr/TeamProgress.tsx";
-import Members from "./pages/hr/Members.tsx";
-import WorkspaceSettings from "./pages/hr/WorkspaceSettings.tsx";
-import ActionCenter from "./pages/hr/ActionCenter.tsx";
-import Workspaces from "./pages/hr/Workspaces.tsx";
-import Onboarding from "./pages/hr/Onboarding.tsx";
-import ScoreDistributions from "./pages/ScoreDistributions.tsx";
-import Roadmap from "./pages/Roadmap.tsx";
 
 // Public company page
 const CompanyPage = lazy(() => import("./pages/CompanyPage.tsx"));
@@ -61,20 +55,13 @@ const App = () => (
             <Route path="/learning-path" element={<><Navbar /><LearningPath /><Footer /></>} />
             <Route path="/company/:slug" element={<><Navbar /><Suspense fallback={null}><CompanyPage /></Suspense><Footer /></>} />
 
-            {/* Superadmin dashboard */}
+            {/* Superadmin content pipeline */}
             <Route path="/admin" element={<AdminGate />}>
-              <Route index element={<SimulationBuilder />} />
-              <Route path="simulations" element={<SimulationBuilder />} />
-              <Route path="score-distributions" element={<ScoreDistributions />} />
-              <Route path="ats-sync" element={<ATSSync />} />
-              <Route path="team-progress" element={<TeamProgress />} />
-              <Route path="action-center" element={<ActionCenter />} />
-              <Route path="members" element={<Members />} />
-              <Route path="settings" element={<WorkspaceSettings />} />
-              <Route path="roadmap" element={<Roadmap />} />
+              <Route index element={<CompaniesPage />} />
+              <Route path="import" element={<ATSSync />} />
               <Route path="analyze" element={<Index />} />
-              <Route path="workspaces" element={<Workspaces />} />
-              <Route path="onboarding" element={<Onboarding />} />
+              <Route path="roles" element={<SimulationBuilder />} />
+              <Route path="stats" element={<StatsPage />} />
             </Route>
 
             <Route path="*" element={<NotFound />} />
