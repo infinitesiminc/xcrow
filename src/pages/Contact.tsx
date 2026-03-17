@@ -16,7 +16,7 @@ const Contact = () => {
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
 
-  const isOrgInquiry = subject === "enterprise" || subject === "partnership";
+  const isOrgInquiry = subject !== "" && subject !== "other";
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
