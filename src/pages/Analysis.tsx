@@ -354,9 +354,9 @@ const Analysis = () => {
                 )}
               </div>
               <div className="flex items-center gap-2 shrink-0">
-                <span className={`w-2 h-2 rounded-full ${getRiskTier(agentRisk).dotClass}`} />
-                <span className="text-xs font-bold text-foreground tabular-nums">{agentRisk}%</span>
-                <span className="text-[10px] text-muted-foreground">AI agent replace risk</span>
+                <span className={`w-2 h-2 rounded-full ${readiness >= 70 ? "bg-success" : readiness >= 40 ? "bg-primary" : "bg-warning"}`} />
+                <span className="text-xs font-bold text-foreground tabular-nums">{readiness}%</span>
+                <span className="text-[10px] text-muted-foreground">AI Ready</span>
               </div>
             </div>
           </motion.div>
