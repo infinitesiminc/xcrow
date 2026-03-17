@@ -420,7 +420,8 @@ export default function Onboarding() {
                 >
                   {step === 0 && <StepCreateWorkspace onNext={() => setStep(1)} />}
                   {step === 1 && <StepImportCompany onNext={() => setStep(2)} />}
-                  {step === 2 && <StepInviteTeam onNext={handleComplete} />}
+                  {step === 2 && <StepUseCaseInterest onNext={() => setStep(3)} />}
+                  {step === 3 && <StepInviteTeam onNext={handleComplete} />}
                 </motion.div>
               </AnimatePresence>
             </CardContent>
