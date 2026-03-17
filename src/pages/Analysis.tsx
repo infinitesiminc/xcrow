@@ -522,7 +522,7 @@ const Analysis = () => {
                 {result.curatedSkills && result.curatedSkills.length > 0 && (
                   <CuratedSkillsBadge curatedSkills={result.curatedSkills} />
                 )}
-                <RoleContext agentRisk={agentRisk} jobTitle={result.jobTitle} />
+                <RoleContext agentRisk={100 - readiness} jobTitle={result.jobTitle} />
                 
               </div>
             </TabsContent>
