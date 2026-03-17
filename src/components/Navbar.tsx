@@ -14,7 +14,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Settings, LogOut, User, Menu, X, Compass, Zap, GraduationCap, LayoutDashboard, Shield } from "lucide-react";
 
 export default function Navbar() {
-  const { user, signOut, openAuthModal } = useAuth();
+  const { user, signOut, openAuthModal, isSuperAdmin } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
