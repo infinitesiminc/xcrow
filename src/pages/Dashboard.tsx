@@ -239,8 +239,8 @@ const Dashboard = () => {
           {analyses.length === 0 ? (
             <Card>
               <CardContent className="p-6 text-center">
-                <p className="text-sm text-muted-foreground mb-3">No analyses yet</p>
-                <Button size="sm" onClick={() => navigate("/")}>Analyze a Role</Button>
+                <p className="text-sm text-muted-foreground mb-3">No roles explored yet</p>
+                <Button size="sm" onClick={() => navigate("/")}>Explore a Role</Button>
               </CardContent>
             </Card>
           ) : (
