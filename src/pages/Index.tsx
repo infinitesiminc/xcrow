@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useMemo } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Loader2, FileText, Upload } from "lucide-react";
@@ -72,7 +72,6 @@ const Index = () => {
         return;
       }
 
-      // Deduplicate by title (keep first/best)
       const seen = new Set<string>();
       const unique = data.filter(j => {
         const key = j.title.toLowerCase().trim();
@@ -94,7 +93,6 @@ const Index = () => {
         tag: departmentToTag(j.department),
       }));
 
-      // Shuffle for discovery feel
       const shuffled = mapped.sort(() => Math.random() - 0.5);
       setRoles(shuffled);
       setLoadingRoles(false);
@@ -175,6 +173,14 @@ const Index = () => {
     } catch { toast({ title: "Parse failed", variant: "destructive" }); } finally { setJdFileParsing(false); }
   };
 
+  // Lock body scroll when overlay is open
+  useEffect(() => {
+    if (searchOpen) {
+      document.body.style.overflow = "hidden";
+      return () => { document.body.style.overflow = ""; };
+    }
+  }, [searchOpen]);
+
   if (loadingRoles && roles.length === 0) {
     return (
       <div className="h-[calc(100vh-3.5rem)] flex items-center justify-center">
@@ -187,30 +193,49 @@ const Index = () => {
     <div className="h-[calc(100vh-3.5rem)] relative">
       <RoleFeed roles={roles} onOpenSearch={() => setSearchOpen(true)} />
 
+      {/* ── Full-Screen Search Overlay ──────────────── */}
       <AnimatePresence>
         {searchOpen && (
-          <>
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm"
-              onClick={() => setSearchOpen(false)}
-            />
-            <motion.div
-              initial={{ y: "100%" }}
-              animate={{ y: 0 }}
-              exit={{ y: "100%" }}
-              transition={{ type: "spring", damping: 28, stiffness: 300 }}
-              className="fixed inset-x-0 bottom-0 z-50 bg-background rounded-t-2xl border-t border-border max-h-[85vh] overflow-y-auto"
-            >
-              <div className="flex items-center justify-between px-5 pt-5 pb-2">
-                <h3 className="text-sm font-display font-semibold text-foreground">Search any role</h3>
-                <button onClick={() => setSearchOpen(false)} className="p-2 rounded-full hover:bg-muted">
-                  <X className="h-4 w-4 text-muted-foreground" />
-                </button>
-              </div>
-              <div className="px-5 pb-6">
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.25 }}
+            className="fixed inset-0 z-50 bg-black/85 backdrop-blur-xl flex flex-col"
+          >
+            {/* Close button */}
+            <div className="flex justify-end p-4 sm:p-6">
+              <motion.button
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.15 }}
+                onClick={() => setSearchOpen(false)}
+                className="w-10 h-10 rounded-full bg-white/10 border border-white/10 flex items-center justify-center hover:bg-white/20 transition-colors"
+              >
+                <X className="h-5 w-5 text-white" />
+              </motion.button>
+            </div>
+
+            {/* Centered search content */}
+            <div className="flex-1 flex flex-col items-center justify-start px-5 pt-[12vh] sm:pt-[18vh] overflow-y-auto pb-12">
+              <motion.div
+                initial={{ opacity: 0, y: 20, scale: 0.95 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: 20, scale: 0.95 }}
+                transition={{ type: "spring", damping: 25, stiffness: 300, delay: 0.08 }}
+                className="w-full max-w-xl"
+              >
+                {/* Title */}
+                <motion.h2
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.12 }}
+                  className="text-2xl sm:text-3xl font-display font-bold text-white text-center mb-6"
+                >
+                  Search any role
+                </motion.h2>
+
+                {/* Search autocomplete */}
                 <RoleSearchAutocomplete
                   value={jobTitle}
                   onChange={setJobTitle}
@@ -225,7 +250,8 @@ const Index = () => {
                   hasJdContent={hasJdContent}
                 />
 
-                <div className="mt-3">
+                {/* JD input sections */}
+                <div className="mt-4">
                   <AnimatePresence>
                     {jdInputType === "paste" && (
                       <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }}>
@@ -233,27 +259,32 @@ const Index = () => {
                           placeholder="Paste job description..."
                           value={jdText}
                           onChange={(e) => setJdText(e.target.value)}
-                          className="w-full min-h-[80px] max-h-[140px] px-3 py-2 text-sm bg-card border border-border rounded-md resize-y focus:outline-none focus:ring-2 focus:ring-ring text-foreground placeholder:text-muted-foreground"
+                          className="w-full min-h-[100px] max-h-[180px] px-4 py-3 text-sm bg-white/5 border border-white/10 rounded-xl resize-y focus:outline-none focus:ring-2 focus:ring-primary/50 text-white placeholder:text-white/30"
                         />
                       </motion.div>
                     )}
                     {jdInputType === "url" && (
                       <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }}>
-                        <Input placeholder="https://jobs.example.com/role/12345" value={jdUrl} onChange={(e) => setJdUrl(e.target.value)} className="h-10 bg-card border-border text-sm" />
+                        <Input
+                          placeholder="https://jobs.example.com/role/12345"
+                          value={jdUrl}
+                          onChange={(e) => setJdUrl(e.target.value)}
+                          className="h-11 bg-white/5 border-white/10 text-sm text-white placeholder:text-white/30 rounded-xl focus:ring-primary/50"
+                        />
                       </motion.div>
                     )}
                     {jdInputType === "file" && (
                       <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }}>
                         {jdFileParsing ? (
-                          <div className="flex items-center gap-2 py-4 px-3 rounded-lg border border-primary/30 bg-primary/5">
+                          <div className="flex items-center gap-2 py-4 px-4 rounded-xl border border-primary/30 bg-primary/10">
                             <Loader2 className="h-4 w-4 animate-spin text-primary" />
                             <span className="text-xs text-primary font-medium">Parsing {jdFile?.name}...</span>
                           </div>
                         ) : jdFileText ? (
-                          <div className="flex items-center gap-2 px-3 py-2 bg-card border border-primary/20 rounded-lg">
+                          <div className="flex items-center gap-2 px-4 py-3 bg-white/5 border border-primary/20 rounded-xl">
                             <FileText className="h-3.5 w-3.5 text-primary shrink-0" />
-                            <span className="text-sm text-foreground truncate flex-1">{jdFile?.name}</span>
-                            <button onClick={() => { setJdFile(null); setJdFileText(""); setJdInputType("none"); }} className="text-muted-foreground hover:text-foreground">
+                            <span className="text-sm text-white truncate flex-1">{jdFile?.name}</span>
+                            <button onClick={() => { setJdFile(null); setJdFileText(""); setJdInputType("none"); }} className="text-white/40 hover:text-white">
                               <X className="h-3 w-3" />
                             </button>
                           </div>
@@ -267,10 +298,10 @@ const Index = () => {
                               if (file && fileInputRef.current) { const dt = new DataTransfer(); dt.items.add(file); fileInputRef.current.files = dt.files; fileInputRef.current.dispatchEvent(new Event("change", { bubbles: true })); }
                             }}
                             onClick={() => fileInputRef.current?.click()}
-                            className={`flex items-center justify-center gap-2 py-5 px-4 rounded-lg border-2 border-dashed cursor-pointer transition-colors ${isDragging ? "border-primary bg-primary/10" : "border-border hover:border-primary/40"}`}
+                            className={`flex items-center justify-center gap-2 py-6 px-4 rounded-xl border-2 border-dashed cursor-pointer transition-colors ${isDragging ? "border-primary bg-primary/10" : "border-white/15 hover:border-primary/40"}`}
                           >
-                            <Upload className={`h-5 w-5 ${isDragging ? "text-primary" : "text-muted-foreground"}`} />
-                            <p className="text-sm text-muted-foreground">{isDragging ? "Drop here" : "Drop file or click"}</p>
+                            <Upload className={`h-5 w-5 ${isDragging ? "text-primary" : "text-white/40"}`} />
+                            <p className="text-sm text-white/40">{isDragging ? "Drop here" : "Drop file or click"}</p>
                             <input ref={fileInputRef} type="file" accept=".pdf,.docx,.doc,.txt,.md" className="hidden" onChange={(e) => { setJdInputType("file"); handleFileChange(e); }} />
                           </div>
                         )}
@@ -278,9 +309,19 @@ const Index = () => {
                     )}
                   </AnimatePresence>
                 </div>
-              </div>
-            </motion.div>
-          </>
+
+                {/* Keyboard hint */}
+                <motion.p
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.4 }}
+                  className="mt-6 text-center text-xs text-white/20"
+                >
+                  Press <kbd className="px-1.5 py-0.5 rounded bg-white/10 text-white/40 text-[10px] font-mono">Esc</kbd> to close
+                </motion.p>
+              </motion.div>
+            </div>
+          </motion.div>
         )}
       </AnimatePresence>
     </div>
