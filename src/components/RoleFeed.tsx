@@ -243,6 +243,11 @@ function DesktopGrid({ roles, onOpenSearch }: RoleFeedProps) {
                 </div>
                 <div className="p-3">
                   <h3 className="text-sm font-semibold text-foreground leading-snug group-hover:text-primary transition-colors">{role.title}</h3>
+                  {(role.company || role.location) && (
+                    <p className="text-[11px] text-muted-foreground truncate mt-0.5">
+                      {[role.company, role.location].filter(Boolean).join(" · ")}
+                    </p>
+                  )}
                   <span className="text-[10px] text-muted-foreground">{role.tag}</span>
                 </div>
               </motion.button>
