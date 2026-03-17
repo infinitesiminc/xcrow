@@ -252,7 +252,7 @@ async function handleChat(payload: any, apiKey: string) {
   });
 }
 
-function buildCoachingChatSystem(role: string, aiContext: string, round: number, turnCount: number, mode: string): string {
+function buildCoachingChatSystem(role: string, aiContext: string, dateCtx: string, round: number, turnCount: number, mode: string): string {
   // Micro-turn structure: each round has 3 exchanges
   // Turn 0: User answered scenario → Coach gives FEEDBACK + PROBE
   // Turn 1: User answered probe → Coach gives INSIGHT + CONTINUE
