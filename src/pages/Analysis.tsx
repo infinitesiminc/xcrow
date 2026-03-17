@@ -51,23 +51,23 @@ function calcReadiness(automationRisk: number, augmented: number, newSkills: num
   return 100 - Math.round(automationRisk * 0.55 + (100 - augmented) * 0.25 + newSkills * 0.20);
 }
 
-function getVerdict(result: JobAnalysisResult, agentRisk: number): Verdict {
+function getVerdict(result: JobAnalysisResult, readiness: number): Verdict {
   const { automationRiskPercent, augmentedPercent } = result.summary;
   const fullyAiSoon = result.tasks.filter(t => t.trend === "fully_ai_soon").length;
   const mostlyHuman = result.tasks.filter(t => t.currentState === "mostly_human").length;
-  if (agentRisk >= 45 || (automationRiskPercent >= 40 && fullyAiSoon >= 3)) return "pivot";
-  if (agentRisk <= 28 && mostlyHuman >= 3 && augmentedPercent >= 55) return "leverage";
+  if (readiness <= 55 || (automationRiskPercent >= 40 && fullyAiSoon >= 3)) return "pivot";
+  if (readiness >= 72 && mostlyHuman >= 3 && augmentedPercent >= 55) return "leverage";
   return "upskill";
 }
 
 function getVerdictReasoning(verdict: Verdict, result: JobAnalysisResult): string {
   switch (verdict) {
     case "pivot":
-      return `With ${result.summary.automationRiskPercent}% replacement risk and multiple tasks trending to full AI, consider transitioning to adjacent roles where your skills transfer.`;
+      return `Many tasks in this role are becoming AI-native. This is a great opportunity to build skills in adjacent roles where your experience transfers and AI amplifies your value.`;
     case "leverage":
-      return `Your role has strong human-led tasks and high AI augmentation potential. Focus on mastering AI tools to amplify your existing strengths.`;
+      return `You're in a strong position! Your role has deep human-led tasks. Focus on mastering AI tools to 10× your existing strengths and stand out.`;
     case "upskill":
-      return `Build new capabilities in AI collaboration and focus on the tasks most at risk. Targeted upskilling will future-proof your position.`;
+      return `Learn the AI tools for your highest-impact tasks first. Targeted skill-building will make you the go-to person who knows how to work with AI effectively.`;
   }
 }
 
