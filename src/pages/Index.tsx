@@ -49,7 +49,7 @@ interface RoleCard {
   image: string;
   augmented: number;
   risk: number;
-  agentRisk: number;
+  aiOpportunity: number;
   tag: string;
 }
 
