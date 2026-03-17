@@ -78,9 +78,10 @@ serve(async (req) => {
       const data = await simApi("list_companies", apiPayload);
       const companies = data.companies || [];
 
-      // Filter US-only if requested
+      // Filter: exclude known non-US HQs (keep unknowns as likely US)
       const filtered = us_only
-        ? companies.filter((c: any) => isUSHeadquarters(c.headquarters || c.location || c.hq))
+        ? companies.filter((c: any) => !isLikelyNonUS(c.headquarters || c.location || c.hq))
+        : companies;
         : companies;
 
       const rows = filtered.map((c: any) => ({
