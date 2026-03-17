@@ -275,9 +275,9 @@ const Analysis = () => {
   // Company snapshot disabled — ATS-only pipeline, no webpage scraping
 
   // Computed values
-  const agentRisk = useMemo(() => {
+  const readiness = useMemo(() => {
     if (!result) return 0;
-    return calcAgentRisk(result.summary.automationRiskPercent, result.summary.augmentedPercent, result.summary.newSkillsPercent);
+    return calcReadiness(result.summary.automationRiskPercent, result.summary.augmentedPercent, result.summary.newSkillsPercent);
   }, [result]);
 
   const verdict = useMemo(() => {
