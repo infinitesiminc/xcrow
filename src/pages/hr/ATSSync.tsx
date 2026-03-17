@@ -449,13 +449,7 @@ export default function ATSSync() {
             <CardContent className="p-4">
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                 <div className="flex items-center gap-3">
-                  {selectedCompany.logo_url ? (
-                    <img src={selectedCompany.logo_url} alt="" className="h-10 w-10 rounded object-contain bg-background" />
-                  ) : (
-                    <div className="h-10 w-10 rounded bg-muted flex items-center justify-center font-bold text-muted-foreground">
-                      {selectedCompany.name.charAt(0)}
-                    </div>
-                  )}
+                  <CompanyLogo url={selectedCompany.logo_url} name={selectedCompany.name} size="h-10 w-10" />
                   <div>
                     <h2 className="text-lg font-semibold text-foreground">{selectedCompany.name}</h2>
                     <div className="flex items-center gap-2 mt-0.5">
