@@ -53,8 +53,8 @@ interface RoleCard {
   tag: string;
 }
 
-function calcAgentRisk(automationRisk: number, augmented: number, newSkills: number): number {
-  return Math.round(automationRisk * 0.55 + (100 - augmented) * 0.25 + newSkills * 0.20);
+function calcToolsToLearn(automationRisk: number, augmented: number, newSkills: number): number {
+  return Math.round(augmented * 0.45 + newSkills * 0.35 + automationRisk * 0.20);
 }
 
 // All 30 roles with their agent replacement risk computed
