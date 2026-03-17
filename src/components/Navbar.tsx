@@ -11,7 +11,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Settings, LogOut, User, Menu, X, Compass, Zap, GraduationCap, LayoutDashboard } from "lucide-react";
+import { Settings, LogOut, User, Menu, X, Compass, Zap, GraduationCap, LayoutDashboard, Shield } from "lucide-react";
 
 export default function Navbar() {
   const { user, signOut, openAuthModal } = useAuth();
