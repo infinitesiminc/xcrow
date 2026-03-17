@@ -615,7 +615,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                 </Button>
                 <Button
                   size="sm"
-                  onClick={handleSend}
+                  onClick={() => handleSend()}
                   disabled={!input.trim() || sending}
                   className="h-[40px] w-[40px] p-0 rounded-xl"
                 >
