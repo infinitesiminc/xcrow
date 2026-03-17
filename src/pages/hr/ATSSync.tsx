@@ -412,13 +412,7 @@ export default function ATSSync() {
                     >
                       <TableCell>
                         <div className="flex items-center gap-2.5">
-                          {co.logo_url ? (
-                            <img src={co.logo_url} alt="" className="h-6 w-6 rounded object-contain bg-background shrink-0" />
-                          ) : (
-                            <div className="h-6 w-6 rounded bg-muted flex items-center justify-center text-[10px] font-bold text-muted-foreground shrink-0">
-                              {co.name.charAt(0)}
-                            </div>
-                          )}
+                          <CompanyLogo url={co.logo_url} name={co.name} />
                           <span className="font-medium text-foreground">{co.name}</span>
                         </div>
                       </TableCell>
