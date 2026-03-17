@@ -38,7 +38,7 @@ export default function SimulationBuilder() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { user, openAuthModal } = useAuth();
-  const { workspaceId, loading: wsLoading, isSuperAdmin } = useWorkspace();
+  
 
   /* ── State ── */
   const [jobs, setJobs] = useState<DbJob[]>([]);
