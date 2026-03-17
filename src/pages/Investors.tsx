@@ -237,7 +237,7 @@ export default function Investors() {
                   <div className="absolute top-0 bottom-0 left-0 w-px bg-border" />
 
                   <span className="absolute -bottom-8 left-1/2 -translate-x-1/2 text-xs text-muted-foreground font-medium">AI Exposure Intelligence →</span>
-                  <span className="absolute -left-8 top-1/2 -translate-y-1/2 -rotate-90 text-xs text-muted-foreground font-medium whitespace-nowrap">Adaptive Upskilling →</span>
+                  <span className="absolute -left-20 top-1/2 -translate-y-1/2 -rotate-90 text-xs text-muted-foreground font-medium whitespace-nowrap">Adaptive Upskilling →</span>
 
                   {[
                     { name: "LinkedIn Learning", x: 1.5, y: 5.5 },
