@@ -44,7 +44,7 @@ const App = () => (
           <Sonner />
           <Routes>
             {/* Public B2C routes */}
-            <Route path="/" element={<><Navbar /><Index /><Footer /></>} />
+            <Route path="/" element={<><Navbar /><Index /></>} />
             <Route path="/analysis" element={<><Navbar /><Analysis /><Footer /></>} />
             <Route path="/auth" element={<><Navbar /><Auth /></>} />
             <Route path="/dashboard" element={<><Navbar /><Dashboard /><Footer /></>} />
