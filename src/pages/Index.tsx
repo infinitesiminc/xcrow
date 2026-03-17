@@ -481,10 +481,10 @@ const Index = () => {
               Infinite Sim
             </span>
             <h1 className="text-3xl sm:text-5xl lg:text-6xl font-bold font-serif tracking-tight text-foreground leading-[1.1] max-w-3xl mx-auto">
-               Upskill before<br /><em className="italic">AI takes your{" "}<span className="whitespace-nowrap"><span className="laser-word">job</span>.</span></em>
+               Master the AI tools<br /><em className="italic">that get you{" "}<span className="whitespace-nowrap"><span className="laser-word">hired</span>.</span></em>
              </h1>
              <p className="mt-3 text-sm sm:text-base text-foreground font-sans">
-               Assess &amp; start learning in 3 seconds.
+               Discover which AI tools to learn for any role — in seconds.
              </p>
           </motion.div>
           </div>
