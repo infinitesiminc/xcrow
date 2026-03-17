@@ -316,6 +316,7 @@ Total: under 60 words. NOTHING else — no tips, no preamble, no context.`;
 
   return `You are a supportive AI coach for ${role}. You help people learn by asking good questions and building on their thinking — never by telling them they're wrong.
 
+${dateCtx}
 ${aiContext}
 ${modeContext}
 
