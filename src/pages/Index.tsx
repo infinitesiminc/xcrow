@@ -17,6 +17,8 @@ interface RoleCard {
   risk: number;
   aiOpportunity: number;
   tag: string;
+  company?: string;
+  location?: string;
 }
 
 function calcToolsToLearn(risk: number, augmented: number, newSkills: number): number {
@@ -62,7 +64,7 @@ const Index = () => {
     (async () => {
       const { data, error } = await supabase
         .from("jobs")
-        .select("title, department, augmented_percent, automation_risk_percent, new_skills_percent")
+        .select("title, department, location, augmented_percent, automation_risk_percent, new_skills_percent, companies(name)")
         .gt("augmented_percent", 0)
         .order("augmented_percent", { ascending: false })
         .limit(100);
@@ -80,18 +82,23 @@ const Index = () => {
         return true;
       });
 
-      const mapped: RoleCard[] = unique.map(j => ({
-        title: j.title,
-        image: getDepartmentImage(j.department),
-        augmented: j.augmented_percent ?? 0,
-        risk: j.automation_risk_percent ?? 0,
-        aiOpportunity: calcToolsToLearn(
-          j.automation_risk_percent ?? 0,
-          j.augmented_percent ?? 0,
-          j.new_skills_percent ?? 0
-        ),
-        tag: departmentToTag(j.department),
-      }));
+      const mapped: RoleCard[] = unique.map(j => {
+        const companyData = j.companies as unknown as { name: string } | null;
+        return {
+          title: j.title,
+          image: getDepartmentImage(j.department),
+          augmented: j.augmented_percent ?? 0,
+          risk: j.automation_risk_percent ?? 0,
+          aiOpportunity: calcToolsToLearn(
+            j.automation_risk_percent ?? 0,
+            j.augmented_percent ?? 0,
+            j.new_skills_percent ?? 0
+          ),
+          tag: departmentToTag(j.department),
+          company: companyData?.name || undefined,
+          location: j.location || undefined,
+        };
+      });
 
       const shuffled = mapped.sort(() => Math.random() - 0.5);
       setRoles(shuffled);

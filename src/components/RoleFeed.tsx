@@ -11,6 +11,8 @@ interface RoleCard {
   risk: number;
   aiOpportunity: number;
   tag: string;
+  company?: string;
+  location?: string;
 }
 
 interface RoleFeedProps {
@@ -141,6 +143,11 @@ function RoleDetailOverlay({ role, onClose }: { role: RoleCard; onClose: () => v
             {role.tag}
           </span>
           <h2 className="text-xl sm:text-2xl font-display font-bold text-foreground">{role.title}</h2>
+          {(role.company || role.location) && (
+            <p className="mt-1 text-sm text-muted-foreground">
+              {[role.company, role.location].filter(Boolean).join(" · ")}
+            </p>
+          )}
           <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
             {role.risk >= 40
               ? "High disruption potential — critical upskilling opportunity ahead."
@@ -151,7 +158,7 @@ function RoleDetailOverlay({ role, onClose }: { role: RoleCard; onClose: () => v
           <div className="flex gap-3 mt-5">
             <motion.button
               whileTap={{ scale: 0.95 }}
-              onClick={() => navigate(`/analysis?title=${encodeURIComponent(role.title)}&company=`)}
+              onClick={() => navigate(`/analysis?title=${encodeURIComponent(role.title)}&company=${encodeURIComponent(role.company || "")}`)}
               className="flex-1 flex items-center justify-center gap-2 h-11 rounded-lg bg-primary text-primary-foreground font-semibold text-sm hover:bg-primary/90 transition-colors glow-purple"
             >
               <BarChart3 className="h-4 w-4" />
@@ -236,6 +243,11 @@ function DesktopGrid({ roles, onOpenSearch }: RoleFeedProps) {
                 </div>
                 <div className="p-3">
                   <h3 className="text-sm font-semibold text-foreground leading-snug group-hover:text-primary transition-colors">{role.title}</h3>
+                  {(role.company || role.location) && (
+                    <p className="text-[11px] text-muted-foreground truncate mt-0.5">
+                      {[role.company, role.location].filter(Boolean).join(" · ")}
+                    </p>
+                  )}
                   <span className="text-[10px] text-muted-foreground">{role.tag}</span>
                 </div>
               </motion.button>
@@ -324,6 +336,9 @@ function MobileFeed({ roles, onOpenSearch }: RoleFeedProps) {
             <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.15 }} className="max-w-[70%]">
               <span className="inline-block px-2 py-0.5 text-[10px] font-semibold uppercase tracking-widest rounded bg-white/15 backdrop-blur-sm text-white/80 mb-2">{role.tag}</span>
               <h2 className="text-2xl font-display font-bold text-white leading-tight drop-shadow-lg">{role.title}</h2>
+              {(role.company || role.location) && (
+                <p className="mt-1 text-xs text-white/50">{[role.company, role.location].filter(Boolean).join(" · ")}</p>
+              )}
               <p className="mt-1.5 text-xs text-white/60 leading-relaxed">
                 {role.risk >= 40 ? "High disruption — upskill now" : role.risk >= 20 ? "Evolving skill requirements" : "Strong human-AI synergy"}
               </p>
@@ -334,8 +349,8 @@ function MobileFeed({ roles, onOpenSearch }: RoleFeedProps) {
           <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.3 }}
             className="absolute right-3 bottom-24 flex flex-col items-center gap-4"
           >
-            <ActionButton icon={BarChart3} label="Analyze" glow onClick={() => navigate(`/analysis?title=${encodeURIComponent(role.title)}&company=`)} />
-            <ActionButton icon={Zap} label="Practice" onClick={() => navigate(`/analysis?title=${encodeURIComponent(role.title)}&company=`)} />
+            <ActionButton icon={BarChart3} label="Analyze" glow onClick={() => navigate(`/analysis?title=${encodeURIComponent(role.title)}&company=${encodeURIComponent(role.company || "")}`)} />
+            <ActionButton icon={Zap} label="Practice" onClick={() => navigate(`/analysis?title=${encodeURIComponent(role.title)}&company=${encodeURIComponent(role.company || "")}`)} />
             <ActionButton icon={Bookmark} label="Save" onClick={() => {}} />
             <ActionButton icon={Share2} label="Share" onClick={() => { navigator.share?.({ title: role.title, url: window.location.href }).catch(() => {}); }} />
           </motion.div>
