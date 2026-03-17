@@ -70,28 +70,16 @@ export default function ATSSync() {
   const [companySearch, setCompanySearch] = useState("");
   const [companyDropdownOpen, setCompanyDropdownOpen] = useState(false);
 
-  /* ── fetch companies (workspace-scoped for non-superadmins) ── */
+  /* ── fetch all companies (global admin view) ── */
   const fetchCompanies = useCallback(async () => {
     setLoading(true);
-    let query = supabase
+    const { data } = await supabase
       .from("companies")
       .select("id, name, industry, logo_url, website, careers_url, detected_ats_platform, employee_range, brand_color, external_id")
       .order("name");
-    
-    // Non-superadmins only see their workspace's companies
-    if (!isSuperAdmin && workspaceId) {
-      query = query.eq("workspace_id", workspaceId);
-    } else if (!isSuperAdmin && !workspaceId) {
-      // No workspace yet — show nothing
-      setCompanies([]);
-      setLoading(false);
-      return;
-    }
-    
-    const { data } = await query;
     setCompanies((data as Company[]) || []);
     setLoading(false);
-  }, [isSuperAdmin, workspaceId]);
+  }, []);
 
   useEffect(() => {
     if (!user) return;
