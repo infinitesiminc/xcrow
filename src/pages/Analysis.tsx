@@ -226,10 +226,7 @@ const Analysis = () => {
         setResult(aiResult);
         saveAnalysisHistory(aiResult);
       } catch (err: any) {
-        if (err?.code === "usage_limit") {
-          openUpgradeModal("analysis");
-          setError("You've used your free analysis. Upgrade to analyze more roles.");
-        } else {
+        setError("Unable to analyze this role right now. Please try again.");
           setError("Unable to analyze this role right now. Please try again.");
         }
         console.error(err);
