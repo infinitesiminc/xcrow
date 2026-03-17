@@ -74,14 +74,20 @@ export default function Investors() {
         {/* ═══════════════════════════════════════════════
             EXEC SUMMARY — 15-second scan
         ═══════════════════════════════════════════════ */}
-        <section className="space-y-10 mb-20">
+        <section className="space-y-14 mb-20">
 
-          {/* Scale of disruption */}
+          {/* ── 1. THE PROBLEM ── */}
           <motion.div {...fadeUp}>
-            <h2 className="text-2xl sm:text-3xl font-bold text-foreground mb-6">
-              The Disruption
+            <Badge variant="outline" className="mb-3 border-brand-ai/30 text-brand-ai text-xs">The Problem</Badge>
+            <h2 className="text-2xl sm:text-3xl font-bold text-foreground mb-4">
+              AI is rewriting every job — and nobody is keeping up
             </h2>
-            <div className="grid grid-cols-2 gap-4">
+            <p className="text-base text-muted-foreground mb-6 leading-relaxed">
+              A new frontier AI model ships every few weeks. Each one changes which tasks a human should do and which ones a machine can handle. 
+              But companies still plan workforce skills annually — if at all. The result: a growing gap between what employees can do and what the business needs them to do.
+            </p>
+
+            <div className="grid grid-cols-2 gap-4 mb-6">
               {[
                 { stat: "$8.5T", label: "Unrealized productivity from delayed AI adoption", source: "Accenture" },
                 { stat: "40%", label: "Of core job tasks will be AI-exposed by 2028", source: "McKinsey" },
@@ -100,25 +106,36 @@ export default function Investors() {
                 </motion.div>
               ))}
             </div>
+
+            <p className="text-base text-muted-foreground leading-relaxed">
+              This isn't a single-industry problem. Finance, healthcare, retail, professional services, tech — every sector is exposed simultaneously. 
+              Companies like JPMorgan, Amazon, UnitedHealth, and Walmart each have hundreds of thousands of employees whose day-to-day tasks are being reshaped right now. 
+              No one has a system to keep up.
+            </p>
           </motion.div>
 
-          {/* What we do — one sentence + loop */}
+          {/* ── 2. THE SOLUTION ── */}
           <motion.div {...fadeUp}>
-            <h2 className="text-2xl sm:text-3xl font-bold text-foreground mb-3">
-              What We Do
+            <Badge variant="outline" className="mb-3 border-brand-ai/30 text-brand-ai text-xs">The Solution</Badge>
+            <h2 className="text-2xl sm:text-3xl font-bold text-foreground mb-4">
+              An autonomous engine that closes the competence gap daily
             </h2>
-            <p className="text-base text-muted-foreground mb-6">
-              An autonomous engine that maps every role's AI exposure, measures employee readiness, closes gaps through simulations, and re-calibrates when new models ship.
+            <p className="text-base text-muted-foreground mb-6 leading-relaxed">
+              We built the <span className="text-foreground font-semibold">Adaptive Workforce Engine</span> — a system that decomposes every role into its core tasks, 
+              measures how exposed each task is to AI, tests employee readiness through calibrated simulations, and generates targeted training to close gaps. 
+              When a new AI capability drops, the engine re-scores every role and generates new training instantly. No manual course creation. No quarterly reviews. 
+              Every employee gets better, every day, automatically.
             </p>
-            <div className="flex items-center justify-between gap-2 sm:gap-3">
+
+            <div className="flex items-center justify-between gap-2 sm:gap-3 mb-4">
               {[
-                { icon: Layers, label: "Map" },
-                { icon: Target, label: "Assess" },
-                { icon: Brain, label: "Train" },
-                { icon: Zap, label: "Adapt" },
+                { icon: Layers, label: "Map", desc: "Decompose roles into tasks, score AI exposure" },
+                { icon: Target, label: "Assess", desc: "Measure real readiness via simulations" },
+                { icon: Brain, label: "Train", desc: "Auto-generate practice for weak spots" },
+                { icon: Zap, label: "Adapt", desc: "Re-calibrate when new models ship" },
               ].map((step, i) => (
                 <div key={step.label} className="flex items-center gap-2 sm:gap-3">
-                  <div className="flex flex-col items-center">
+                  <div className="flex flex-col items-center text-center">
                     <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-brand-ai/10 flex items-center justify-center">
                       <step.icon className="h-6 w-6 sm:h-7 sm:w-7 text-brand-ai" />
                     </div>
@@ -128,35 +145,84 @@ export default function Investors() {
                 </div>
               ))}
             </div>
-            <p className="text-center text-xs text-muted-foreground/50 mt-3">↻ Loop re-runs automatically when new frontier models ship</p>
+            <p className="text-center text-xs text-muted-foreground/50">↻ Loop re-runs automatically when new frontier models ship</p>
           </motion.div>
 
-          {/* ROI headline */}
+          {/* ── 3. PRODUCT VALUES ── */}
           <motion.div {...fadeUp}>
+            <Badge variant="outline" className="mb-3 border-brand-ai/30 text-brand-ai text-xs">Why It Works</Badge>
+            <h2 className="text-2xl sm:text-3xl font-bold text-foreground mb-6">
+              Six capabilities, one engine
+            </h2>
+
+            <div className="space-y-4">
+              {[
+                {
+                  icon: Globe,
+                  title: "Skill Graph trained on 100M+ jobs",
+                  desc: "Task-level intelligence across every industry. Not a generic skills taxonomy — a living graph that understands how AI changes the actual work people do.",
+                },
+                {
+                  icon: Rocket,
+                  title: "Employees ready before Day 1",
+                  desc: "The engine prepares hires for the role before they even join. Onboarding starts at offer acceptance, not on their first Monday.",
+                },
+                {
+                  icon: Zap,
+                  title: "New training the moment AI capability drops",
+                  desc: "When a new model ships, re-scoring happens automatically and new practice sessions are generated instantly. No L&D team needed.",
+                },
+                {
+                  icon: Layers,
+                  title: "One engine for six use cases",
+                  desc: "Hiring, onboarding, training, internal movement, assessment, and new project staffing — all from the same Skill Graph and simulation engine.",
+                },
+                {
+                  icon: Shield,
+                  title: "Plug and play — minutes, not months",
+                  desc: "No integration project, no change management consulting. Employees are in training within minutes of setup. Zero IT overhead.",
+                },
+                {
+                  icon: TrendingUp,
+                  title: "Continuous improvement, not annual snapshots",
+                  desc: "Traditional L&D takes 6–12 months to design one program. We generate personalized training daily, calibrated to each employee's actual gaps.",
+                },
+              ].map((item, i) => (
+                <motion.div
+                  key={item.title}
+                  {...fadeUp}
+                  transition={{ ...fadeUp.transition, delay: i * 0.06 }}
+                  className="flex gap-4 rounded-xl border border-border/40 bg-card p-5"
+                >
+                  <div className="w-10 h-10 rounded-xl bg-brand-ai/10 flex items-center justify-center shrink-0 mt-0.5">
+                    <item.icon className="h-5 w-5 text-brand-ai" />
+                  </div>
+                  <div>
+                    <p className="text-base font-semibold text-foreground">{item.title}</p>
+                    <p className="text-sm text-muted-foreground mt-1 leading-relaxed">{item.desc}</p>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
+
+          {/* ── 4. ENTERPRISE ROI — Simplified ── */}
+          <motion.div {...fadeUp}>
+            <Badge variant="outline" className="mb-3 border-brand-ai/30 text-brand-ai text-xs">Enterprise ROI</Badge>
             <h2 className="text-2xl sm:text-3xl font-bold text-foreground mb-3">
-              Enterprise ROI
+              The math is simple
             </h2>
             <p className="text-base text-muted-foreground mb-6">
-              Every company should map its entire employee base 1:1. Here's what that unlocks.
+              $10 per employee per year. The return is 23–56× because the cost of <em>not</em> adapting — mis-hires, stale skills, consultant fees, attrition — dwarfs the investment.
             </p>
 
-            {/* Giant ROI callout */}
-            <div className="rounded-2xl bg-brand-ai/10 border border-brand-ai/20 p-6 sm:p-8 text-center mb-6">
-              <p className="text-5xl sm:text-6xl font-bold text-brand-ai leading-none" style={{ textShadow: "0 0 30px hsl(var(--brand-ai) / 0.3)" }}>
-                23–56×
-              </p>
-              <p className="text-lg font-semibold text-foreground mt-2">Return on Investment</p>
-              <p className="text-sm text-muted-foreground mt-1">$5.8M–$14M value created vs. $250K contract</p>
-            </div>
-
-            {/* Industry examples — big, scannable */}
             <div className="space-y-3">
               {[
-                { company: "JPMorgan Chase", industry: "Finance", employees: "310K", value: "$36M–$87M/yr" },
-                { company: "Amazon", industry: "Tech / Retail", employees: "1.5M", value: "$174M–$420M/yr" },
-                { company: "UnitedHealth", industry: "Healthcare", employees: "400K", value: "$46M–$112M/yr" },
-                { company: "Deloitte", industry: "Prof. Services", employees: "460K", value: "$53M–$129M/yr" },
-                { company: "Walmart", industry: "Retail", employees: "2.1M", value: "$243M–$588M/yr" },
+                { company: "JPMorgan Chase", employees: "310K", roi: "$36M–$87M/yr" },
+                { company: "Amazon", employees: "1.5M", roi: "$174M–$420M/yr" },
+                { company: "UnitedHealth", employees: "400K", roi: "$46M–$112M/yr" },
+                { company: "Deloitte", employees: "460K", roi: "$53M–$129M/yr" },
+                { company: "Walmart", employees: "2.1M", roi: "$243M–$588M/yr" },
               ].map((row, i) => (
                 <motion.div
                   key={row.company}
@@ -166,16 +232,16 @@ export default function Investors() {
                 >
                   <div>
                     <p className="text-base font-semibold text-foreground">{row.company}</p>
-                    <p className="text-sm text-muted-foreground">{row.industry} · {row.employees} employees</p>
+                    <p className="text-sm text-muted-foreground">{row.employees} employees</p>
                   </div>
-                  <p className="text-base sm:text-lg font-bold text-brand-ai text-right">{row.value}</p>
+                  <p className="text-lg font-bold text-brand-ai text-right">{row.roi}</p>
                 </motion.div>
               ))}
-              <p className="text-xs text-muted-foreground">At $10/employee/yr · Value modeled at $1,160–$2,800/employee/yr</p>
+              <p className="text-xs text-muted-foreground">Value = avoided mis-hires, faster redeployment, attrition reduction, L&D efficiency, reduced consulting.</p>
             </div>
           </motion.div>
 
-          {/* TAM — single line */}
+          {/* ── 5. TAM ── */}
           <motion.div {...fadeUp}>
             <h2 className="text-2xl sm:text-3xl font-bold text-foreground mb-3">
               $340B+ Market
@@ -193,11 +259,11 @@ export default function Investors() {
               ))}
             </div>
             <p className="text-sm text-muted-foreground mt-3">
-              We sit at the intersection — no incumbent combines real-time AI exposure analysis with adaptive simulation training.
+              One engine. Six use cases. Three massive markets. No incumbent combines real-time AI exposure analysis with adaptive simulation training.
             </p>
           </motion.div>
 
-          {/* Business model — one card */}
+          {/* ── 6. BUSINESS MODEL ── */}
           <motion.div {...fadeUp}>
             <h2 className="text-2xl sm:text-3xl font-bold text-foreground mb-3">
               Business Model
@@ -218,7 +284,7 @@ export default function Investors() {
             <p className="text-sm text-muted-foreground mt-3">Land with free analysis → convert to per-role billing → expand as orgs map more roles.</p>
           </motion.div>
 
-          {/* CTA */}
+          {/* ── CTA ── */}
           <motion.div {...fadeUp} className="flex flex-col sm:flex-row items-center gap-3 pt-4">
             <Button size="lg" className="w-full sm:w-auto" onClick={() => window.open("mailto:founders@infinitesim.ai", "_blank")}>
               <DollarSign className="h-4 w-4 mr-2" />
