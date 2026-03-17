@@ -54,6 +54,7 @@ const App = () => (
             <Route path="/simulations" element={<><Navbar /><Simulations /><Footer /></>} />
             <Route path="/learning-path" element={<><Navbar /><LearningPath /><Footer /></>} />
             <Route path="/company/:slug" element={<><Navbar /><Suspense fallback={null}><CompanyPage /></Suspense><Footer /></>} />
+            <Route path="/card-styles" element={<><Navbar /><CardStyleMockup /></>} />
 
             {/* Superadmin content pipeline */}
             <Route path="/admin" element={<AdminGate />}>
