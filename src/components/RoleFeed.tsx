@@ -143,6 +143,11 @@ function RoleDetailOverlay({ role, onClose }: { role: RoleCard; onClose: () => v
             {role.tag}
           </span>
           <h2 className="text-xl sm:text-2xl font-display font-bold text-foreground">{role.title}</h2>
+          {(role.company || role.location) && (
+            <p className="mt-1 text-sm text-muted-foreground">
+              {[role.company, role.location].filter(Boolean).join(" · ")}
+            </p>
+          )}
           <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
             {role.risk >= 40
               ? "High disruption potential — critical upskilling opportunity ahead."
