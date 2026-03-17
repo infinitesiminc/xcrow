@@ -11,10 +11,10 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Settings, LogOut, User, Menu, X, Compass, Zap, GraduationCap, LayoutDashboard } from "lucide-react";
+import { Settings, LogOut, User, Menu, X, Compass, Zap, GraduationCap, LayoutDashboard, Shield } from "lucide-react";
 
 export default function Navbar() {
-  const { user, signOut, openAuthModal } = useAuth();
+  const { user, signOut, openAuthModal, isSuperAdmin } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -31,6 +31,9 @@ export default function Navbar() {
     ...(user ? [
       { label: "Learn", path: "/learning-path", icon: GraduationCap },
       { label: "Dashboard", path: "/dashboard", icon: LayoutDashboard },
+    ] : []),
+    ...(isSuperAdmin ? [
+      { label: "Admin", path: "/admin", icon: Shield },
     ] : []),
   ];
 

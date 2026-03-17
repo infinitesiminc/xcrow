@@ -104,7 +104,7 @@ const Analysis = () => {
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [bookmarkLoading, setBookmarkLoading] = useState(false);
   const heroRef = useRef<HTMLDivElement>(null);
-  const { user, openAuthModal, openUpgradeModal } = useAuth();
+  const { user, openAuthModal } = useAuth();
 
   const fetchCompletions = useCallback(async () => {
     if (!user) return;
@@ -226,12 +226,7 @@ const Analysis = () => {
         setResult(aiResult);
         saveAnalysisHistory(aiResult);
       } catch (err: any) {
-        if (err?.code === "usage_limit") {
-          openUpgradeModal("analysis");
-          setError("You've used your free analysis. Upgrade to analyze more roles.");
-        } else {
-          setError("Unable to analyze this role right now. Please try again.");
-        }
+        setError("Unable to analyze this role right now. Please try again.");
         console.error(err);
       }
       setLoading(false);

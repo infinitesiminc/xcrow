@@ -219,43 +219,7 @@ serve(async (req) => {
       );
       const token = authHeader.replace("Bearer ", "");
       const { data: userData } = await supabaseAnon.auth.getUser(token);
-      if (userData?.user) {
-        // Check if user has active subscription
-        const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
-        let isSubscribed = false;
-        if (stripeKey && userData.user.email) {
-          try {
-            const { default: Stripe } = await import("https://esm.sh/stripe@18.5.0");
-            const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
-            const customers = await stripe.customers.list({ email: userData.user.email, limit: 1 });
-            if (customers.data.length > 0) {
-              const subs = await stripe.subscriptions.list({ customer: customers.data[0].id, status: "active", limit: 1 });
-              isSubscribed = subs.data.length > 0;
-            }
-          } catch (e) { console.error("Stripe check failed:", e); }
-        }
-
-        if (!isSubscribed) {
-          const { data: usageCheck } = await sb.rpc("check_usage_limit", {
-            _user_id: userData.user.id,
-            _type: "analysis",
-          });
-          if (usageCheck && !usageCheck.allowed) {
-            return new Response(JSON.stringify({
-              error: "usage_limit",
-              message: "You've used your free analysis. Upgrade to continue.",
-              used: usageCheck.used,
-              limit: usageCheck.limit,
-            }), {
-              status: 403,
-              headers: { ...corsHeaders, "Content-Type": "application/json" },
-            });
-          }
-        }
-
-        // Increment usage after passing the check (will be counted)
-        await sb.rpc("increment_usage", { _user_id: userData.user.id, _type: "analysis" });
-      }
+        // Usage limits removed — platform is free for all users
     }
 
     // 0. Check cache first (only for title-only queries without custom JD)

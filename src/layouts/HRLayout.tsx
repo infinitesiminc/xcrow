@@ -9,7 +9,7 @@ import { Building2, ArrowLeft, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 function WorkspaceHeader() {
-  const { workspace, isImpersonating, isSuperAdmin } = useWorkspace();
+  const { workspace, isImpersonating } = useWorkspace();
   const navigate = useNavigate();
 
   return (
@@ -22,7 +22,7 @@ function WorkspaceHeader() {
               variant="ghost"
               size="sm"
               className="h-6 px-2 text-xs text-muted-foreground"
-              onClick={() => navigate("/hr/workspaces")}
+              onClick={() => navigate("/admin/workspaces")}
             >
               <ArrowLeft className="h-3 w-3 mr-1" />
               All Workspaces
@@ -41,7 +41,6 @@ function WorkspaceHeader() {
   );
 }
 
-/** Redirects users without a workspace to the onboarding wizard */
 function WorkspaceGate() {
   const { workspaceId, loading, isSuperAdmin } = useWorkspace();
 
@@ -53,9 +52,8 @@ function WorkspaceGate() {
     );
   }
 
-  // Superadmins can access everything; non-superadmins without a workspace go to onboarding
   if (!workspaceId && !isSuperAdmin) {
-    return <Navigate to="/hr/onboarding" replace />;
+    return <Navigate to="/admin/onboarding" replace />;
   }
 
   return (
