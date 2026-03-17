@@ -124,8 +124,8 @@ export function TaskTable({ tasks, skills, completedTasks, onPractice }: TaskTab
                   onClick={() => onPractice(task.name)}
                 >
                   {isCompleted
-                    ? <><CheckCircle2 className="h-3 w-3 text-success" /> Upskilled</>
-                    : <><Play className="h-3 w-3" /> Upskill</>
+                    ? <><CheckCircle2 className="h-3 w-3 text-success" /> Learned</>
+                    : <><Play className="h-3 w-3" /> Learn This</>
                   }
                 </Button>
               </motion.div>
