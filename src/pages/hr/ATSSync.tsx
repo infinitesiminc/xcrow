@@ -141,7 +141,34 @@ export default function ATSSync() {
     }
   };
 
-  /* ── derived ── */
+  /* ── bulk sync all jobs (client-side iteration) ── */
+  const runBulkJobSync = async () => {
+    setSyncing("bulk-jobs");
+    const total = companies.length;
+    setBulkProgress({ current: 0, total, currentName: "" });
+    let synced = 0;
+    let errors = 0;
+
+    for (let i = 0; i < companies.length; i++) {
+      const co = companies[i];
+      setBulkProgress({ current: i + 1, total, currentName: co.name });
+      try {
+        const { error } = await supabase.functions.invoke("sync-company-jobs", {
+          body: { step: "jobs", company_id: co.id },
+        });
+        if (error) { errors++; } else { synced++; }
+      } catch { errors++; }
+    }
+
+    toast({
+      title: "Bulk job sync complete",
+      description: `${synced} companies synced${errors ? `, ${errors} errors` : ""}`,
+    });
+    setBulkProgress({ current: 0, total: 0, currentName: "" });
+    setSyncing(null);
+    await fetchCompanies();
+  };
+
   const selectedCompany = companies.find((c) => c.id === selectedCompanyId);
   const departments = [...new Set(jobs.map((j) => j.department).filter(Boolean))] as string[];
 
