@@ -19,6 +19,48 @@ import {
   Download, Database,
 } from "lucide-react";
 
+/** Try stored logo → Clearbit → initial */
+function CompanyLogo({ url, name, size = "h-6 w-6" }: { url: string | null; name: string; size?: string }) {
+  const [src, setSrc] = useState(url);
+  const [fallbackTried, setFallbackTried] = useState(false);
+
+  useEffect(() => { setSrc(url); setFallbackTried(false); }, [url]);
+
+  const website = name.toLowerCase().replace(/[^a-z0-9]/g, "") + ".com";
+  const clearbitUrl = `https://logo.clearbit.com/${website}`;
+
+  if (!src && !fallbackTried) {
+    return (
+      <img
+        src={clearbitUrl}
+        alt=""
+        className={`${size} rounded object-contain bg-background shrink-0`}
+        onError={() => setFallbackTried(true)}
+      />
+    );
+  }
+
+  if (!src || fallbackTried) {
+    return (
+      <div className={`${size} rounded bg-muted flex items-center justify-center text-[10px] font-bold text-muted-foreground shrink-0`}>
+        {name.charAt(0)}
+      </div>
+    );
+  }
+
+  return (
+    <img
+      src={src}
+      alt=""
+      className={`${size} rounded object-contain bg-background shrink-0`}
+      onError={() => {
+        if (!fallbackTried) { setSrc(clearbitUrl); setFallbackTried(true); }
+        else setSrc(null);
+      }}
+    />
+  );
+}
+
 /* ── constants ── */
 const ATS_PLATFORMS = [
   { id: "greenhouse", label: "Greenhouse", color: "hsl(142, 70%, 45%)" },
