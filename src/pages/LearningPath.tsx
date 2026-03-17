@@ -20,6 +20,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { useFeatureFlag } from "@/hooks/use-feature-flag";
 import SimulatorModal from "@/components/SimulatorModal";
 
 /* ── Types ── */
