@@ -83,10 +83,8 @@ export default function ATSSync() {
 
   useEffect(() => {
     if (!user) return;
-    // Wait for workspace lookup before fetching (unless superadmin)
-    if (!isSuperAdmin && !workspaceId) return;
     fetchCompanies();
-  }, [user, fetchCompanies, isSuperAdmin, workspaceId]);
+  }, [user, fetchCompanies]);
 
   /* ── fetch jobs for selected company ── */
   useEffect(() => {
