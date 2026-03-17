@@ -433,7 +433,7 @@ const Analysis = () => {
           <Card className="border-border/50 overflow-hidden">
             <CardContent className="p-6 sm:p-8">
               <RiskGauge
-                risk={agentRisk}
+                risk={100 - readiness}
                 verdict={verdict}
                 reasoning={getVerdictReasoning(verdict, result)}
               />
