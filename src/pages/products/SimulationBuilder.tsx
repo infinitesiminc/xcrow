@@ -41,6 +41,7 @@ export default function SimulationBuilder() {
   
 
   /* ── State ── */
+  const [allCompanies, setAllCompanies] = useState<{ id: string; name: string }[]>([]);
   const [jobs, setJobs] = useState<DbJob[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -58,30 +59,47 @@ export default function SimulationBuilder() {
   const pauseRef = useRef(false);
   const abortRef = useRef(false);
 
-  /* ── Fetch companies & jobs ── */
+  /* ── Fetch all companies ── */
   useEffect(() => {
     (async () => {
-      setLoading(true);
-      // Get first available company
-      const { data: companies } = await supabase
+      const { data } = await supabase
         .from("companies")
         .select("id, name")
-        .order("name")
-        .limit(1);
+        .order("name");
+      if (data?.length) {
+        setAllCompanies(data);
+        setCompanyId(data[0].id);
+        setCompanyName(data[0].name);
+      }
+    })();
+  }, []);
 
-      if (!companies?.length) { setJobs([]); setLoading(false); return; }
-      setCompanyId(companies[0].id);
-      setCompanyName(companies[0].name);
-
+  /* ── Fetch jobs for selected company ── */
+  useEffect(() => {
+    if (!companyId) return;
+    (async () => {
+      setLoading(true);
       const { data } = await supabase
         .from("jobs")
         .select("id, title, department, seniority, location, augmented_percent, automation_risk_percent, new_skills_percent, description")
-        .eq("company_id", companies[0].id)
+        .eq("company_id", companyId)
         .order("title");
       setJobs(data || []);
       setLoading(false);
     })();
-  }, []);
+  }, [companyId]);
+
+  const switchCompany = (id: string) => {
+    const co = allCompanies.find(c => c.id === id);
+    if (!co) return;
+    setCompanyId(co.id);
+    setCompanyName(co.name);
+    setSearch("");
+    setCollapsedDepts(new Set());
+    setAnalyzedJobIds(new Set());
+    setQueueRunning(false);
+    setQueueMessage(null);
+  };
 
   /* ── Fetch which jobs are pre-analyzed (Anthropic only) ── */
   const refreshAnalyzed = useCallback(async () => {
@@ -315,7 +333,7 @@ export default function SimulationBuilder() {
           <p className="text-sm text-muted-foreground mb-6">
             Import company roles via ATS Sync to see them here.
           </p>
-          <Button onClick={() => navigate("/hr/ats-sync")}>
+          <Button onClick={() => navigate("/admin/import")}>
             Import Roles
           </Button>
         </div>
@@ -324,23 +342,27 @@ export default function SimulationBuilder() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Hero */}
-      <section className="relative overflow-hidden px-4 pt-16 pb-4">
-        <div className="absolute inset-0 bg-gradient-to-b from-accent/40 via-background to-background" />
-        <div className="relative mx-auto max-w-5xl text-center">
-          <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-            <div className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-4 py-1.5 text-xs text-muted-foreground mb-3">
-              <Layers className="h-3.5 w-3.5 text-primary" />
-              Simulation Blueprint System
-            </div>
-            <h1 className="font-serif text-2xl sm:text-4xl font-bold text-foreground leading-tight tracking-tight">
-              AI-powered learning paths
-            </h1>
-            <p className="mx-auto mt-2 max-w-2xl text-sm text-muted-foreground leading-relaxed">
-              Select any {companyName} role to open its learning path with AI impact analysis and simulations.
-            </p>
-          </motion.div>
+    <div className="bg-background">
+      {/* Header with company selector */}
+      <section className="px-4 pt-6 pb-4">
+        <div className="mx-auto max-w-6xl">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-1">
+            <h1 className="text-xl font-bold text-foreground">Role Explorer</h1>
+            {allCompanies.length > 1 && (
+              <select
+                value={companyId || ""}
+                onChange={e => switchCompany(e.target.value)}
+                className="h-9 rounded-md border border-border bg-card px-3 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+              >
+                {allCompanies.map(c => (
+                  <option key={c.id} value={c.id}>{c.name}</option>
+                ))}
+              </select>
+            )}
+          </div>
+          <p className="text-sm text-muted-foreground">
+            {jobs.length} roles · {analyzedJobIds.size} analyzed · {jobs.length - analyzedJobIds.size} pending
+          </p>
         </div>
       </section>
 
