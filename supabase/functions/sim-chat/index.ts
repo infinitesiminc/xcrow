@@ -162,6 +162,7 @@ function aiStateDescription(taskMeta?: any): string {
 async function handleCompile(payload: any, apiKey: string) {
   const { taskName, jobTitle, company, difficulty = 3, mode = "assess", taskMeta } = payload;
   const aiContext = aiStateDescription(taskMeta);
+  const dateCtx = currentDateContext();
   const isAssess = mode === "assess";
 
   const prompt = `You are designing a COACHING simulation about AI readiness for a professional task.
