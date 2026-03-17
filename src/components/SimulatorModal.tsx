@@ -257,13 +257,15 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
     setPhase("chat");
   };
 
-  const handleSend = async () => {
-    if (!input.trim() || sending) return;
-    const userMsg: SimMessage = { role: "user", content: input.trim() };
+  const handleSend = async (overrideInput?: string) => {
+    const messageText = overrideInput ?? input.trim();
+    if (!messageText || sending) return;
+    const userMsg: SimMessage = { role: "user", content: messageText };
     const newMessages = [...messages, userMsg];
     setMessages(newMessages);
     setInput("");
     setSending(true);
+    // Tentatively advance turn — may revert if scaffolding
     const nextTurn = turnCount + 1;
     setTurnCount(nextTurn);
     scrollToBottom();
@@ -271,10 +273,17 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
     try {
       const reply = await chatTurn(newMessages, roundCount, nextTurn, jobTitle, mode, taskMeta);
       setMessages((prev) => [...prev, { role: "assistant", content: reply }]);
-      // Check if user said yes to continue — increment round
-      const lowerInput = input.trim().toLowerCase();
-      if (lowerInput === "yes" || lowerInput === "y" || lowerInput === "yeah" || lowerInput === "sure") {
-        setRoundCount((c) => c + 1);
+
+      // If the AI responded with scaffolding, revert the turn counter
+      // so the next exchange stays at the same micro-turn position
+      if (reply.includes("[SCAFFOLDING]")) {
+        setTurnCount(turnCount); // revert to previous value
+      } else {
+        // Check if user said yes to continue — increment round
+        const lowerInput = messageText.toLowerCase();
+        if (lowerInput === "yes" || lowerInput === "y" || lowerInput === "yeah" || lowerInput === "sure") {
+          setRoundCount((c) => c + 1);
+        }
       }
       scrollToBottom();
     } catch (err) {
