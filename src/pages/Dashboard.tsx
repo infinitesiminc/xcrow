@@ -235,7 +235,7 @@ const Dashboard = () => {
 
         {/* Analyzed Jobs */}
         <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} className="mb-8">
-          <h2 className="text-xs font-medium uppercase tracking-widest text-muted-foreground mb-3">Analyzed Jobs</h2>
+          <h2 className="text-xs font-medium uppercase tracking-widest text-muted-foreground mb-3">Explored Roles</h2>
           {analyses.length === 0 ? (
             <Card>
               <CardContent className="p-6 text-center">
