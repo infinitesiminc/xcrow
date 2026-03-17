@@ -11,7 +11,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { LayoutDashboard, Settings, LogOut, User, Menu, X, Wrench } from "lucide-react";
+import { Settings, LogOut, User, Menu, X, Compass, Zap, GraduationCap, LayoutDashboard } from "lucide-react";
 
 export default function Navbar() {
   const { user, signOut, openAuthModal } = useAuth();
@@ -26,15 +26,11 @@ export default function Navbar() {
     : user?.email?.slice(0, 2).toUpperCase() ?? "?";
 
   const navItems = [
-    ...(!user ? [
-      { label: "Why Simulation", path: "/why-simulation" },
-      { label: "Case Study", path: "/case-study/anthropic" },
-      { label: "Investors", path: "/investors" },
-      { label: "Pricing", path: "/pricing" },
-      { label: "Contact", path: "/contact" },
-    ] : []),
+    { label: "Explore", path: "/", icon: Compass },
+    { label: "Practice", path: "/practice", icon: Zap },
     ...(user ? [
-      { label: "HR Dashboard", path: "/hr/team-progress" },
+      { label: "Learn", path: "/learning-path", icon: GraduationCap },
+      { label: "Dashboard", path: "/dashboard", icon: LayoutDashboard },
     ] : []),
   ];
 
@@ -44,33 +40,34 @@ export default function Navbar() {
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-border bg-background/80 backdrop-blur-sm">
+    <header className="sticky top-0 z-50 w-full border-b border-border/50 bg-background/80 backdrop-blur-xl">
       <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 sm:px-6">
         {/* Logo */}
         <button
           onClick={() => handleNav("/")}
-          className="flex items-center gap-2 font-sans text-lg font-bold tracking-tight text-foreground hover:opacity-80 transition-opacity"
+          className="flex items-center gap-2 font-display text-lg font-bold tracking-tight text-foreground hover:opacity-80 transition-opacity"
         >
-          <img src={logo} alt="Infinite Sim" className="h-6 w-6" />
-          <span className="hidden sm:inline">Infinite Sim</span>
+          <img src={logo} alt="Infinite Sim" className="h-7 w-7" />
+          <span className="hidden sm:inline neon-text font-extrabold">Infinite Sim</span>
         </button>
 
         {/* Desktop nav */}
         <nav className="hidden md:flex items-center gap-1">
-
-          {navItems.map((item) => (
-            <Button
-              key={item.path}
-              variant={isActive(item.path) ? "secondary" : "ghost"}
-              size="sm"
-              onClick={() => navigate(item.path)}
-              className="text-sm"
-            >
-              {item.label === "Dashboard" && <LayoutDashboard className="mr-1.5 h-4 w-4" />}
-              {item.label === "Tools" && <Wrench className="mr-1.5 h-4 w-4" />}
-              {item.label}
-            </Button>
-          ))}
+          {navItems.map((item) => {
+            const Icon = item.icon;
+            return (
+              <Button
+                key={item.path}
+                variant={isActive(item.path) ? "secondary" : "ghost"}
+                size="sm"
+                onClick={() => navigate(item.path)}
+                className={`text-sm gap-1.5 ${isActive(item.path) ? "text-primary" : ""}`}
+              >
+                <Icon className="h-4 w-4" />
+                {item.label}
+              </Button>
+            );
+          })}
         </nav>
 
         {/* Right side */}
@@ -112,7 +109,7 @@ export default function Navbar() {
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (
-            <Button size="sm" onClick={openAuthModal}>
+            <Button size="sm" onClick={openAuthModal} className="bg-primary hover:bg-primary/90 glow-purple">
               <User className="mr-1.5 h-4 w-4" />
               Sign in
             </Button>
@@ -136,19 +133,23 @@ export default function Navbar() {
           <div className="fixed inset-0 top-14 z-40 bg-background/60 backdrop-blur-sm md:hidden" onClick={() => setMobileOpen(false)} />
           <div className="fixed left-0 right-0 top-14 z-50 md:hidden border-t border-border bg-background shadow-lg">
             <nav className="flex flex-col px-4 py-3 gap-1">
-              {navItems.map((item) => (
-                <button
-                  key={item.path}
-                  onClick={() => handleNav(item.path)}
-                  className={`text-left px-3 py-2.5 text-sm font-medium rounded-lg transition-colors ${
-                    isActive(item.path)
-                      ? "bg-secondary text-foreground"
-                      : "text-muted-foreground hover:text-foreground hover:bg-accent"
-                  }`}
-                >
-                  {item.label}
-                </button>
-              ))}
+              {navItems.map((item) => {
+                const Icon = item.icon;
+                return (
+                  <button
+                    key={item.path}
+                    onClick={() => handleNav(item.path)}
+                    className={`flex items-center gap-2 text-left px-3 py-2.5 text-sm font-medium rounded-lg transition-colors ${
+                      isActive(item.path)
+                        ? "bg-accent text-primary"
+                        : "text-muted-foreground hover:text-foreground hover:bg-accent"
+                    }`}
+                  >
+                    <Icon className="h-4 w-4" />
+                    {item.label}
+                  </button>
+                );
+              })}
             </nav>
           </div>
         </>

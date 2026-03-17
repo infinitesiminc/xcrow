@@ -15,8 +15,8 @@ export default {
     extend: {
       fontFamily: {
         sans: ["Inter", "system-ui", "sans-serif"],
-        display: ["Playfair Display", "Georgia", "Times New Roman", "serif"],
-        serif: ["Playfair Display", "Georgia", "Times New Roman", "serif"],
+        display: ["Syne", "Space Grotesk", "system-ui", "sans-serif"],
+        heading: ["Space Grotesk", "Inter", "system-ui", "sans-serif"],
       },
       colors: {
         border: "hsl(var(--border))",
@@ -59,6 +59,13 @@ export default {
         warning: {
           DEFAULT: "hsl(var(--warning))",
           foreground: "hsl(var(--warning-foreground))",
+        },
+        neon: {
+          purple: "hsl(var(--neon-purple))",
+          pink: "hsl(var(--neon-pink))",
+          blue: "hsl(var(--neon-blue))",
+          cyan: "hsl(var(--neon-cyan))",
+          lime: "hsl(var(--neon-lime))",
         },
         dot: {
           blue: "hsl(var(--dot-blue))",
