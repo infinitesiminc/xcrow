@@ -47,8 +47,8 @@ interface CompanySnapshot {
 
 type Verdict = "upskill" | "pivot" | "leverage";
 
-function calcAgentRisk(automationRisk: number, augmented: number, newSkills: number): number {
-  return Math.round(automationRisk * 0.55 + (100 - augmented) * 0.25 + newSkills * 0.20);
+function calcReadiness(automationRisk: number, augmented: number, newSkills: number): number {
+  return 100 - Math.round(automationRisk * 0.55 + (100 - augmented) * 0.25 + newSkills * 0.20);
 }
 
 function getVerdict(result: JobAnalysisResult, agentRisk: number): Verdict {
