@@ -62,7 +62,8 @@ export default function ATSSync() {
   const [jobs, setJobs] = useState<DbJob[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingJobs, setLoadingJobs] = useState(false);
-  const [syncing, setSyncing] = useState<"companies" | "jobs" | "full" | null>(null);
+  const [syncing, setSyncing] = useState<"companies" | "jobs" | "full" | "bulk-jobs" | null>(null);
+  const [bulkProgress, setBulkProgress] = useState({ current: 0, total: 0, currentName: "" });
   const [search, setSearch] = useState("");
   const [deptFilter, setDeptFilter] = useState("all");
   const [sortField, setSortField] = useState<SortField>("title");
@@ -140,7 +141,34 @@ export default function ATSSync() {
     }
   };
 
-  /* ── derived ── */
+  /* ── bulk sync all jobs (client-side iteration) ── */
+  const runBulkJobSync = async () => {
+    setSyncing("bulk-jobs");
+    const total = companies.length;
+    setBulkProgress({ current: 0, total, currentName: "" });
+    let synced = 0;
+    let errors = 0;
+
+    for (let i = 0; i < companies.length; i++) {
+      const co = companies[i];
+      setBulkProgress({ current: i + 1, total, currentName: co.name });
+      try {
+        const { error } = await supabase.functions.invoke("sync-company-jobs", {
+          body: { step: "jobs", company_id: co.id },
+        });
+        if (error) { errors++; } else { synced++; }
+      } catch { errors++; }
+    }
+
+    toast({
+      title: "Bulk job sync complete",
+      description: `${synced} companies synced${errors ? `, ${errors} errors` : ""}`,
+    });
+    setBulkProgress({ current: 0, total: 0, currentName: "" });
+    setSyncing(null);
+    await fetchCompanies();
+  };
+
   const selectedCompany = companies.find((c) => c.id === selectedCompanyId);
   const departments = [...new Set(jobs.map((j) => j.department).filter(Boolean))] as string[];
 
@@ -183,7 +211,7 @@ export default function ATSSync() {
           <h1 className="text-2xl font-bold text-foreground">ATS Sync</h1>
           <p className="text-sm text-muted-foreground">Import companies &amp; roles from connected applicant tracking systems</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
           <Button
             variant="outline"
             size="sm"
@@ -195,14 +223,29 @@ export default function ATSSync() {
           </Button>
           <Button
             size="sm"
-            onClick={() => runSync("full")}
-            disabled={!!syncing}
+            onClick={runBulkJobSync}
+            disabled={!!syncing || companies.length === 0}
           >
-            {syncing === "full" ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : <RefreshCw className="h-4 w-4 mr-1" />}
-            Full Sync
+            {syncing === "bulk-jobs" ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : <RefreshCw className="h-4 w-4 mr-1" />}
+            Sync All Jobs
           </Button>
         </div>
       </div>
+
+      {/* ── Bulk progress ── */}
+      {syncing === "bulk-jobs" && bulkProgress.total > 0 && (
+        <Card>
+          <CardContent className="p-4 space-y-2">
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-muted-foreground">
+                Syncing jobs: <span className="text-foreground font-medium">{bulkProgress.currentName}</span>
+              </span>
+              <span className="text-muted-foreground">{bulkProgress.current} / {bulkProgress.total}</span>
+            </div>
+            <Progress value={(bulkProgress.current / bulkProgress.total) * 100} className="h-2" />
+          </CardContent>
+        </Card>
+      )}
 
       {/* ── Stats ── */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
