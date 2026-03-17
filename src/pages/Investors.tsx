@@ -206,7 +206,84 @@ export default function Investors() {
             </div>
           </motion.div>
 
-          {/* ── 4. ENTERPRISE ROI — Simplified ── */}
+          {/* ── 4. COMPETITIVE POSITIONING ── */}
+          <motion.div {...fadeUp}>
+            <Badge variant="outline" className="mb-3 border-brand-ai/30 text-brand-ai text-xs">Competitive Landscape</Badge>
+            <h2 className="text-2xl sm:text-3xl font-bold text-foreground mb-3">
+              The only platform in the top-right
+            </h2>
+            <p className="text-base text-muted-foreground mb-6">
+              Incumbents either analyze or train — never both, and never continuously. We occupy the white space.
+            </p>
+
+            <Card className="border-border/40">
+              <CardContent className="p-5">
+                <div className="relative w-full aspect-square max-w-sm mx-auto ml-8 mb-8">
+                  {/* White space highlight */}
+                  <div className="absolute rounded-lg bg-brand-ai/5 border border-brand-ai/10"
+                    style={{ left: "50%", bottom: "50%", width: "50%", height: "50%" }} />
+
+                  {[0, 2, 4, 6, 8, 10].map((tick) => {
+                    const pct = `${tick * 10}%`;
+                    return (
+                      <div key={tick}>
+                        <div className="absolute top-0 bottom-0 border-l border-dashed border-border/20" style={{ left: pct }} />
+                        <div className="absolute left-0 right-0 border-t border-dashed border-border/20" style={{ bottom: pct }} />
+                      </div>
+                    );
+                  })}
+
+                  <div className="absolute bottom-0 left-0 right-0 h-px bg-border" />
+                  <div className="absolute top-0 bottom-0 left-0 w-px bg-border" />
+
+                  <span className="absolute -bottom-8 left-1/2 -translate-x-1/2 text-xs text-muted-foreground font-medium">AI Exposure Intelligence →</span>
+                  <span className="absolute -left-8 top-1/2 -translate-y-1/2 -rotate-90 text-xs text-muted-foreground font-medium whitespace-nowrap">Adaptive Upskilling →</span>
+
+                  {[
+                    { name: "LinkedIn Learning", x: 1.5, y: 5.5 },
+                    { name: "Coursera", x: 1, y: 5 },
+                    { name: "McKinsey", x: 6, y: 2 },
+                    { name: "Deloitte", x: 5.5, y: 1.5 },
+                    { name: "Eightfold", x: 5, y: 3 },
+                    { name: "Gloat", x: 4.5, y: 3.5 },
+                    { name: "Workday", x: 3, y: 2.5 },
+                  ].map((c) => (
+                    <div
+                      key={c.name}
+                      className="absolute flex flex-col items-center"
+                      style={{ left: `${c.x * 10}%`, bottom: `${c.y * 10}%`, transform: "translate(-50%, 50%)" }}
+                    >
+                      <span className="text-xs font-medium mb-1 whitespace-nowrap text-muted-foreground">{c.name}</span>
+                      <div className="h-3 w-3 rounded-full bg-brand-human/40" />
+                    </div>
+                  ))}
+
+                  <div
+                    className="absolute flex flex-col items-center"
+                    style={{ left: "95%", bottom: "95%", transform: "translate(-50%, 50%)" }}
+                  >
+                    <span className="text-sm font-bold mb-1 whitespace-nowrap text-brand-ai">Infinite Sim</span>
+                    <div className="h-4 w-4 rounded-full bg-brand-ai ring-4 ring-brand-ai/20 shadow-lg shadow-brand-ai/30" />
+                  </div>
+                </div>
+
+                <div className="mt-8 space-y-3">
+                  {[
+                    { name: "Consultancies", gap: "Deep analysis but manual, $500K+/engagement, no ongoing training" },
+                    { name: "L&D Platforms", gap: "Scalable training but generic content, zero AI exposure insight" },
+                    { name: "HR Tech", gap: "Skills taxonomies but no task-level AI risk scoring or simulations" },
+                  ].map((comp) => (
+                    <div key={comp.name} className="p-3 rounded-lg bg-muted/30">
+                      <p className="text-sm font-medium text-foreground mb-1">{comp.name}</p>
+                      <p className="text-sm text-muted-foreground">{comp.gap}</p>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+
+          {/* ── 5. ENTERPRISE ROI — Simplified ── */}
           <motion.div {...fadeUp}>
             <Badge variant="outline" className="mb-3 border-brand-ai/30 text-brand-ai text-xs">Enterprise ROI</Badge>
             <h2 className="text-2xl sm:text-3xl font-bold text-foreground mb-3">
