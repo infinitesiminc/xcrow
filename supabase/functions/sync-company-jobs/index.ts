@@ -82,7 +82,6 @@ serve(async (req) => {
       const filtered = us_only
         ? companies.filter((c: any) => !isLikelyNonUS(c.headquarters || c.location || c.hq))
         : companies;
-        : companies;
 
       const rows = filtered.map((c: any) => ({
         external_id: c.id,
