@@ -14,28 +14,23 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 
-const SUPERADMIN_IDS = [
-  "7be41055-be68-4cab-b63c-f3b0c483e6eb",
-  "bb10735b-051e-4bb5-918e-931a9c79d0fd",
-];
-
 const platformItems = [
-  { title: "Overview", url: "/hr/team-progress", icon: BarChart3 },
-  { title: "Roles & Simulations", url: "/hr/simulations", icon: Blocks },
-  { title: "Exposure Map", url: "/hr/score-distributions", icon: Activity },
-  { title: "Action Center", url: "/hr/action-center", icon: Zap },
-  { title: "Import Roles", url: "/hr/ats-sync", icon: RefreshCw },
+  { title: "Overview", url: "/admin/team-progress", icon: BarChart3 },
+  { title: "Roles & Simulations", url: "/admin/simulations", icon: Blocks },
+  { title: "Exposure Map", url: "/admin/score-distributions", icon: Activity },
+  { title: "Action Center", url: "/admin/action-center", icon: Zap },
+  { title: "Import Roles", url: "/admin/ats-sync", icon: RefreshCw },
 ];
 
 const workspaceItems = [
-  { title: "Members", url: "/hr/members", icon: Users },
-  { title: "Settings", url: "/hr/settings", icon: Settings },
+  { title: "Members", url: "/admin/members", icon: Users },
+  { title: "Settings", url: "/admin/settings", icon: Settings },
 ];
 
 const superadminItems = [
-  { title: "Workspaces", url: "/hr/workspaces", icon: Building2 },
-  { title: "Roadmap", url: "/hr/roadmap", icon: Target },
-  { title: "Analyze Tool", url: "/hr/analyze", icon: Search },
+  { title: "Workspaces", url: "/admin/workspaces", icon: Building2 },
+  { title: "Roadmap", url: "/admin/roadmap", icon: Target },
+  { title: "Analyze Tool", url: "/admin/analyze", icon: Search },
 ];
 
 function NavGroup({ label, items, collapsed, icon, wsParam }: {
@@ -80,10 +75,8 @@ function NavGroup({ label, items, collapsed, icon, wsParam }: {
 export function HRSidebar() {
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
-  const { user } = useAuth();
+  const { isSuperAdmin } = useAuth();
   const [searchParams] = useSearchParams();
-
-  const isSuperAdmin = !!user && SUPERADMIN_IDS.includes(user.id);
   const wsParam = searchParams.get("workspace") || undefined;
 
   return (
@@ -91,10 +84,7 @@ export function HRSidebar() {
       <SidebarContent className="pt-4">
         <NavGroup label="Platform" items={platformItems} collapsed={collapsed} icon={<Activity className="h-4 w-4" />} wsParam={wsParam} />
         <NavGroup label="Workspace" items={workspaceItems} collapsed={collapsed} icon={<Building2 className="h-4 w-4" />} wsParam={wsParam} />
-
-        {isSuperAdmin && (
-          <NavGroup label="Superadmin" items={superadminItems} collapsed={collapsed} icon={<Shield className="h-4 w-4" />} />
-        )}
+        <NavGroup label="Superadmin" items={superadminItems} collapsed={collapsed} icon={<Shield className="h-4 w-4" />} />
       </SidebarContent>
     </Sidebar>
   );
