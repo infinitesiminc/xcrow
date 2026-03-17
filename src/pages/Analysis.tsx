@@ -534,7 +534,7 @@ const Analysis = () => {
           <div className="flex items-center gap-2.5 min-w-0">
             <Rocket className="h-4 w-4 text-primary shrink-0" />
             <span className="text-sm text-muted-foreground truncate">
-              {user ? "See all your progress" : "Sign in to track progress"}
+              {user ? "Track your learning progress" : "Sign in to track progress"}
             </span>
           </div>
           <Button onClick={() => navigate(user ? "/dashboard" : "/auth")} size="sm" variant="ghost" className="gap-1.5 shrink-0 text-xs">
