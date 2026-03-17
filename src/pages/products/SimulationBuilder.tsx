@@ -41,6 +41,7 @@ export default function SimulationBuilder() {
   
 
   /* ── State ── */
+  const [allCompanies, setAllCompanies] = useState<{ id: string; name: string }[]>([]);
   const [jobs, setJobs] = useState<DbJob[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -58,30 +59,47 @@ export default function SimulationBuilder() {
   const pauseRef = useRef(false);
   const abortRef = useRef(false);
 
-  /* ── Fetch companies & jobs ── */
+  /* ── Fetch all companies ── */
   useEffect(() => {
     (async () => {
-      setLoading(true);
-      // Get first available company
-      const { data: companies } = await supabase
+      const { data } = await supabase
         .from("companies")
         .select("id, name")
-        .order("name")
-        .limit(1);
+        .order("name");
+      if (data?.length) {
+        setAllCompanies(data);
+        setCompanyId(data[0].id);
+        setCompanyName(data[0].name);
+      }
+    })();
+  }, []);
 
-      if (!companies?.length) { setJobs([]); setLoading(false); return; }
-      setCompanyId(companies[0].id);
-      setCompanyName(companies[0].name);
-
+  /* ── Fetch jobs for selected company ── */
+  useEffect(() => {
+    if (!companyId) return;
+    (async () => {
+      setLoading(true);
       const { data } = await supabase
         .from("jobs")
         .select("id, title, department, seniority, location, augmented_percent, automation_risk_percent, new_skills_percent, description")
-        .eq("company_id", companies[0].id)
+        .eq("company_id", companyId)
         .order("title");
       setJobs(data || []);
       setLoading(false);
     })();
-  }, []);
+  }, [companyId]);
+
+  const switchCompany = (id: string) => {
+    const co = allCompanies.find(c => c.id === id);
+    if (!co) return;
+    setCompanyId(co.id);
+    setCompanyName(co.name);
+    setSearch("");
+    setCollapsedDepts(new Set());
+    setAnalyzedJobIds(new Set());
+    setQueueRunning(false);
+    setQueueMessage(null);
+  };
 
   /* ── Fetch which jobs are pre-analyzed (Anthropic only) ── */
   const refreshAnalyzed = useCallback(async () => {
