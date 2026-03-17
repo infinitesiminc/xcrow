@@ -17,6 +17,8 @@ interface RoleCard {
   risk: number;
   aiOpportunity: number;
   tag: string;
+  company?: string;
+  location?: string;
 }
 
 function calcToolsToLearn(risk: number, augmented: number, newSkills: number): number {
