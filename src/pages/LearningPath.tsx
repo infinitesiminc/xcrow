@@ -625,12 +625,12 @@ export default function LearningPath() {
                     const isHovered = hoveredTaskIndex === i;
 
                     const aiMeta = exposure >= 70
-                      ? { icon: AlertTriangle, color: "text-destructive", summary: "AI can handle most of this today — focus on oversight and quality judgment." }
+                      ? { icon: AlertTriangle, color: "text-primary", summary: "Lots of AI tools available — master them to 10× your output here." }
                       : exposure >= 50
-                      ? { icon: Zap, color: "text-warning", summary: "AI is increasingly capable here — learn to collaborate with AI tools effectively." }
+                      ? { icon: Zap, color: "text-brand-mid", summary: "AI tools are growing fast here — learn them early to stay ahead." }
                       : exposure >= 30
-                      ? { icon: Brain, color: "text-brand-mid", summary: "AI assists with parts of this task — your expertise remains the differentiator." }
-                      : { icon: Shield, color: "text-success", summary: "This task relies heavily on human judgment — AI plays a minimal role." };
+                      ? { icon: Brain, color: "text-brand-mid", summary: "Some AI tools can help — your expertise is the differentiator." }
+                      : { icon: Shield, color: "text-success", summary: "This relies on your human judgment — AI plays a supporting role." };
                     const AiIcon = aiMeta.icon;
 
                     return (
