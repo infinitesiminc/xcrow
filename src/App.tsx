@@ -59,7 +59,6 @@ const App = () => (
             <Route path="/admin" element={<AdminGate />}>
               <Route index element={<CompaniesPage />} />
               <Route path="import" element={<ATSSync />} />
-              <Route path="analyze" element={<Index />} />
               <Route path="roles" element={<SimulationBuilder />} />
               <Route path="stats" element={<StatsPage />} />
             </Route>

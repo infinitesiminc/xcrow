@@ -333,7 +333,7 @@ export default function SimulationBuilder() {
           <p className="text-sm text-muted-foreground mb-6">
             Import company roles via ATS Sync to see them here.
           </p>
-          <Button onClick={() => navigate("/hr/ats-sync")}>
+          <Button onClick={() => navigate("/admin/import")}>
             Import Roles
           </Button>
         </div>
