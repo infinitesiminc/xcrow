@@ -1,7 +1,7 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence, PanInfo } from "framer-motion";
-import { BarChart3, Zap, Bookmark, Share2, Search, ChevronUp, ChevronDown, X, ArrowRight } from "lucide-react";
+import { BarChart3, Zap, Bookmark, Share2, Search, ChevronUp, X, ArrowRight } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 interface RoleCard {
@@ -70,6 +70,39 @@ function ActionButton({ icon: Icon, label, onClick, glow }: { icon: typeof BarCh
   );
 }
 
+/* ── Floating Search FAB ───────────────────────────── */
+
+function SearchFAB({ onClick }: { onClick: () => void }) {
+  const isMobile = useIsMobile();
+
+  return (
+    <motion.button
+      onClick={onClick}
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.6, type: "spring", damping: 20 }}
+      whileHover={{ scale: 1.05 }}
+      whileTap={{ scale: 0.95 }}
+      className={`fixed z-40 flex items-center gap-2.5 backdrop-blur-xl border border-primary/30 bg-primary/20 hover:bg-primary/30 transition-colors shadow-[0_0_24px_hsl(var(--neon-purple)/0.3)] ${
+        isMobile
+          ? "bottom-24 left-1/2 -translate-x-1/2 h-12 px-5 rounded-full"
+          : "bottom-6 right-6 h-12 px-5 rounded-full"
+      }`}
+    >
+      <Search className="h-4.5 w-4.5 text-primary-foreground" />
+      <span className="text-sm font-semibold text-primary-foreground whitespace-nowrap">
+        {isMobile ? "Search" : "Search any role"}
+      </span>
+      {/* Pulse ring */}
+      <motion.div
+        className="absolute inset-0 rounded-full border border-primary/40"
+        animate={{ scale: [1, 1.15, 1], opacity: [0.5, 0, 0.5] }}
+        transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
+      />
+    </motion.button>
+  );
+}
+
 /* ── Detail Overlay (shared between desktop & mobile) ── */
 
 function RoleDetailOverlay({ role, onClose }: { role: RoleCard; onClose: () => void }) {
@@ -83,10 +116,7 @@ function RoleDetailOverlay({ role, onClose }: { role: RoleCard; onClose: () => v
       exit={{ opacity: 0 }}
       className="fixed inset-0 z-50 flex items-end sm:items-center sm:justify-center"
     >
-      {/* Backdrop */}
       <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={onClose} />
-
-      {/* Panel */}
       <motion.div
         initial={{ y: "100%", opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
@@ -94,25 +124,18 @@ function RoleDetailOverlay({ role, onClose }: { role: RoleCard; onClose: () => v
         transition={{ type: "spring", damping: 28, stiffness: 300 }}
         className="relative w-full sm:max-w-lg sm:rounded-2xl overflow-hidden"
       >
-        {/* Hero image */}
         <div className="relative h-64 sm:h-72">
           <img src={role.image} alt={role.title} className="w-full h-full object-cover" />
           <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-black/10" />
-
-          {/* Close */}
           <button onClick={onClose} className="absolute top-4 right-4 w-9 h-9 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center hover:bg-black/60 transition-colors">
             <X className="h-4 w-4 text-white" />
           </button>
-
-          {/* Gauges */}
           <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-4">
             <RiskGaugeMini value={role.risk} label="AI Risk" color={riskColor} size={80} />
             <RiskGaugeMini value={role.augmented} label="Augmented" color="hsl(var(--neon-blue))" size={80} />
             <RiskGaugeMini value={role.aiOpportunity} label="To Learn" color="hsl(var(--neon-purple))" size={80} />
           </div>
         </div>
-
-        {/* Info */}
         <div className="bg-card p-5 sm:p-6">
           <span className="inline-block px-2 py-0.5 text-[10px] font-semibold uppercase tracking-widest rounded bg-accent text-accent-foreground mb-2">
             {role.tag}
@@ -125,8 +148,6 @@ function RoleDetailOverlay({ role, onClose }: { role: RoleCard; onClose: () => v
                 ? "Moderate AI exposure — skill requirements are evolving fast."
                 : "Strong human-AI synergy — AI augments rather than replaces."}
           </p>
-
-          {/* Actions */}
           <div className="flex gap-3 mt-5">
             <motion.button
               whileTap={{ scale: 0.95 }}
@@ -165,16 +186,9 @@ function DesktopGrid({ roles, onOpenSearch }: RoleFeedProps) {
 
   return (
     <div className="h-full flex flex-col overflow-hidden">
-      {/* Filter bar */}
+      {/* Filter bar — no search pill, just filters */}
       <div className="shrink-0 flex items-center gap-2 px-6 py-4 border-b border-border/40">
-        <button
-          onClick={onOpenSearch}
-          className="flex items-center gap-2 h-9 px-4 rounded-full bg-muted hover:bg-muted/80 transition-colors text-sm text-muted-foreground"
-        >
-          <Search className="h-4 w-4" />
-          Search any role...
-        </button>
-        <div className="flex items-center gap-1.5 ml-auto">
+        <div className="flex items-center gap-1.5">
           <button
             onClick={() => setFilter(null)}
             className={`px-3 py-1.5 text-xs font-medium rounded-full transition-colors ${
@@ -207,23 +221,19 @@ function DesktopGrid({ roles, onOpenSearch }: RoleFeedProps) {
                 onClick={() => setSelected(role)}
                 className="group text-left rounded-xl overflow-hidden bg-card border border-border/40 hover:border-border transition-all hover:shadow-lg hover:shadow-primary/5"
               >
-                {/* Image */}
                 <div className="relative aspect-[4/3] overflow-hidden">
                   <img src={role.image} alt={role.title} className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                  {/* Risk badge */}
                   <div className="absolute top-2 right-2 flex items-center gap-1 px-2 py-0.5 rounded-full bg-black/50 backdrop-blur-sm">
                     <span className={`text-xs font-bold ${riskColor}`}>{role.risk}%</span>
                     <span className="text-[9px] text-white/50">risk</span>
                   </div>
-                  {/* Opportunity badge */}
                   <div className="absolute bottom-2 left-2 flex items-center gap-1 px-2 py-0.5 rounded-full bg-black/50 backdrop-blur-sm">
                     <Zap className="h-3 w-3 text-neon-purple" />
                     <span className="text-xs font-bold text-white">{role.aiOpportunity}%</span>
                     <span className="text-[9px] text-white/50">to learn</span>
                   </div>
                 </div>
-                {/* Meta */}
                 <div className="p-3">
                   <h3 className="text-sm font-semibold text-foreground leading-snug group-hover:text-primary transition-colors">{role.title}</h3>
                   <span className="text-[10px] text-muted-foreground">{role.tag}</span>
@@ -233,6 +243,9 @@ function DesktopGrid({ roles, onOpenSearch }: RoleFeedProps) {
           })}
         </div>
       </div>
+
+      {/* Floating FAB */}
+      <SearchFAB onClick={onOpenSearch} />
 
       {/* Detail overlay */}
       <AnimatePresence>
@@ -317,7 +330,7 @@ function MobileFeed({ roles, onOpenSearch }: RoleFeedProps) {
             </motion.div>
           </div>
 
-          {/* Right rail */}
+          {/* Right rail — removed Search button, FAB handles it */}
           <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.3 }}
             className="absolute right-3 bottom-24 flex flex-col items-center gap-4"
           >
@@ -325,7 +338,6 @@ function MobileFeed({ roles, onOpenSearch }: RoleFeedProps) {
             <ActionButton icon={Zap} label="Practice" onClick={() => navigate(`/analysis?title=${encodeURIComponent(role.title)}&company=`)} />
             <ActionButton icon={Bookmark} label="Save" onClick={() => {}} />
             <ActionButton icon={Share2} label="Share" onClick={() => { navigator.share?.({ title: role.title, url: window.location.href }).catch(() => {}); }} />
-            <ActionButton icon={Search} label="Search" onClick={onOpenSearch} />
           </motion.div>
         </motion.div>
       </AnimatePresence>
@@ -347,6 +359,9 @@ function MobileFeed({ roles, onOpenSearch }: RoleFeedProps) {
           <span className="text-[10px] text-white/40 font-medium">Swipe up</span>
         </motion.div>
       )}
+
+      {/* Floating FAB */}
+      <SearchFAB onClick={onOpenSearch} />
     </div>
   );
 }
