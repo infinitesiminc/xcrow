@@ -40,17 +40,24 @@ async function simApi(
   }
 }
 
-/** Check if HQ string looks like a US location */
-function isUSHeadquarters(hq: string | null | undefined): boolean {
-  if (!hq) return false;
+/** Check if HQ string looks like a non-US location (exclude known non-US) */
+function isLikelyNonUS(hq: string | null | undefined): boolean {
+  if (!hq) return false; // unknown = keep (assume US)
   const lower = hq.toLowerCase().trim();
-  // Match US state abbreviations, "united states", "usa", common US cities
-  const usPatterns = [
-    /\bus[a]?\b/, /\bunited states\b/, /\bamerica\b/,
-    /\b(ca|ny|tx|wa|ma|il|co|fl|ga|pa|va|nj|nc|oh|az|or|mn|md|ct|ut|tn|mo|wi|in|mi|sc|al|la|ky|ok|nv|ia|ar|ms|ks|ne|nm|hi|id|wv|nh|me|ri|mt|de|sd|nd|ak|vt|wy|dc)\b/,
-    /san francisco|new york|los angeles|seattle|austin|boston|chicago|denver|atlanta|miami|portland|dallas|houston|raleigh|washington/,
+  const nonUSPatterns = [
+    /\b(uk|united kingdom|london|england|scotland|wales)\b/,
+    /\b(canada|toronto|vancouver|montreal|ontario)\b/,
+    /\b(australia|sydney|melbourne|brisbane)\b/,
+    /\b(germany|berlin|munich|frankfurt)\b/,
+    /\b(france|paris)\b/, /\b(india|bangalore|mumbai|delhi|hyderabad)\b/,
+    /\b(japan|tokyo)\b/, /\b(china|beijing|shanghai|shenzhen)\b/,
+    /\b(brazil|são paulo|sao paulo)\b/, /\b(israel|tel aviv)\b/,
+    /\b(singapore)\b/, /\b(ireland|dublin)\b/, /\b(netherlands|amsterdam)\b/,
+    /\b(sweden|stockholm)\b/, /\b(spain|madrid|barcelona)\b/,
+    /\b(italy|milan|rome)\b/, /\b(south korea|seoul)\b/,
+    /\b(mexico|mexico city)\b/, /\b(switzerland|zurich)\b/,
   ];
-  return usPatterns.some((p) => p.test(lower));
+  return nonUSPatterns.some((p) => p.test(lower));
 }
 
 serve(async (req) => {
@@ -71,9 +78,9 @@ serve(async (req) => {
       const data = await simApi("list_companies", apiPayload);
       const companies = data.companies || [];
 
-      // Filter US-only if requested
+      // Filter: exclude known non-US HQs (keep unknowns as likely US)
       const filtered = us_only
-        ? companies.filter((c: any) => isUSHeadquarters(c.headquarters || c.location || c.hq))
+        ? companies.filter((c: any) => !isLikelyNonUS(c.headquarters || c.location || c.hq))
         : companies;
 
       const rows = filtered.map((c: any) => ({
