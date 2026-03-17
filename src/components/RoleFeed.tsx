@@ -336,6 +336,9 @@ function MobileFeed({ roles, onOpenSearch }: RoleFeedProps) {
             <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.15 }} className="max-w-[70%]">
               <span className="inline-block px-2 py-0.5 text-[10px] font-semibold uppercase tracking-widest rounded bg-white/15 backdrop-blur-sm text-white/80 mb-2">{role.tag}</span>
               <h2 className="text-2xl font-display font-bold text-white leading-tight drop-shadow-lg">{role.title}</h2>
+              {(role.company || role.location) && (
+                <p className="mt-1 text-xs text-white/50">{[role.company, role.location].filter(Boolean).join(" · ")}</p>
+              )}
               <p className="mt-1.5 text-xs text-white/60 leading-relaxed">
                 {role.risk >= 40 ? "High disruption — upskill now" : role.risk >= 20 ? "Evolving skill requirements" : "Strong human-AI synergy"}
               </p>
