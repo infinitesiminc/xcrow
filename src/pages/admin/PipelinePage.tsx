@@ -322,10 +322,16 @@ export default function PipelinePage() {
                 </button>
               ))}
             </div>
-            <Button variant="outline" size="sm" onClick={importCompanies} disabled={!!syncing} className="w-full text-xs h-7 gap-1">
-              {syncing === "import" ? <Loader2 className="h-3 w-3 animate-spin" /> : <Download className="h-3 w-3" />}
-              Import Companies
-            </Button>
+            <div className="flex gap-1">
+              <Button variant="outline" size="sm" onClick={importCompanies} disabled={!!syncing} className="flex-1 text-xs h-7 gap-1">
+                {syncing === "import" ? <Loader2 className="h-3 w-3 animate-spin" /> : <Download className="h-3 w-3" />}
+                Import
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => setAddOpen(true)} className="text-xs h-7 gap-1">
+                <Plus className="h-3 w-3" />
+                Add
+              </Button>
+            </div>
             <div className="relative">
               <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground" />
               <Input placeholder="Search companies…" value={companySearch} onChange={e => setCompanySearch(e.target.value)} className="pl-7 h-7 text-xs" />
