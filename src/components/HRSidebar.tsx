@@ -19,15 +19,12 @@ const SUPERADMIN_IDS = [
   "bb10735b-051e-4bb5-918e-931a9c79d0fd",
 ];
 
-const diagnoseItems = [
-  { title: "Role Explorer", url: "/hr/simulations", icon: Blocks },
-  { title: "AI Exposure Map", url: "/hr/score-distributions", icon: Activity },
-  { title: "ATS Sync", url: "/hr/ats-sync", icon: RefreshCw },
-];
-
-const upskillItems = [
-  { title: "Team Progress", url: "/hr/team-progress", icon: BarChart3 },
+const platformItems = [
+  { title: "Overview", url: "/hr/team-progress", icon: BarChart3 },
+  { title: "Roles & Simulations", url: "/hr/simulations", icon: Blocks },
+  { title: "Exposure Map", url: "/hr/score-distributions", icon: Activity },
   { title: "Action Center", url: "/hr/action-center", icon: Zap },
+  { title: "Import Roles", url: "/hr/ats-sync", icon: RefreshCw },
 ];
 
 const workspaceItems = [
