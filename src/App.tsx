@@ -18,9 +18,8 @@ import LearningPath from "./pages/LearningPath.tsx";
 
 // Admin (superadmin only)
 import HRLayout from "./layouts/HRLayout.tsx";
-import CompaniesPage from "./pages/admin/CompaniesPage.tsx";
+import PipelinePage from "./pages/admin/PipelinePage.tsx";
 import StatsPage from "./pages/admin/StatsPage.tsx";
-import ATSSync from "./pages/hr/ATSSync.tsx";
 import SimulationBuilder from "./pages/products/SimulationBuilder.tsx";
 
 // Public company page
