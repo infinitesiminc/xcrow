@@ -9,9 +9,10 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
+import { Badge } from "@/components/ui/badge";
 import {
   Building2, Globe, Loader2, CheckCircle2, ArrowRight, Users, Rocket,
-  Copy, Check, ChevronRight,
+  Copy, Check, ChevronRight, GraduationCap, UserCheck, BarChart3, FolderKanban, Briefcase,
 } from "lucide-react";
 import Navbar from "@/components/Navbar";
 
