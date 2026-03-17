@@ -5,7 +5,7 @@ import {
   Building2, Briefcase, Search, Loader2, RefreshCw, Download,
   Database, Play, Pause, Brain, ChevronDown, ChevronUp,
   MapPin, CheckCircle2, AlertTriangle, ArrowLeft,
-  Globe,
+  Globe, Plus,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -14,6 +14,7 @@ import { Progress } from "@/components/ui/progress";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
@@ -95,6 +96,31 @@ export default function PipelinePage() {
   const [queueMessage, setQueueMessage] = useState<string | null>(null);
   const pauseRef = useRef(false);
   const abortRef = useRef(false);
+
+  /* ── Add Company ── */
+  const [addOpen, setAddOpen] = useState(false);
+  const [addUrl, setAddUrl] = useState("");
+  const [addLoading, setAddLoading] = useState(false);
+
+  const handleAddCompany = async () => {
+    if (!addUrl.trim()) return;
+    setAddLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("enrich-company", {
+        body: { website: addUrl.trim() },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      toast({ title: "Company added", description: `${data.company.name} enriched and saved.` });
+      setAddOpen(false);
+      setAddUrl("");
+      fetchCompanies();
+    } catch (err: any) {
+      toast({ title: "Failed", description: err.message || "Could not add company", variant: "destructive" });
+    } finally {
+      setAddLoading(false);
+    }
+  };
 
   /* ── Sims ── */
   const [completedSims, setCompletedSims] = useState<CompletedSim[]>([]);
@@ -296,10 +322,16 @@ export default function PipelinePage() {
                 </button>
               ))}
             </div>
-            <Button variant="outline" size="sm" onClick={importCompanies} disabled={!!syncing} className="w-full text-xs h-7 gap-1">
-              {syncing === "import" ? <Loader2 className="h-3 w-3 animate-spin" /> : <Download className="h-3 w-3" />}
-              Import Companies
-            </Button>
+            <div className="flex gap-1">
+              <Button variant="outline" size="sm" onClick={importCompanies} disabled={!!syncing} className="flex-1 text-xs h-7 gap-1">
+                {syncing === "import" ? <Loader2 className="h-3 w-3 animate-spin" /> : <Download className="h-3 w-3" />}
+                Import
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => setAddOpen(true)} className="text-xs h-7 gap-1">
+                <Plus className="h-3 w-3" />
+                Add
+              </Button>
+            </div>
             <div className="relative">
               <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground" />
               <Input placeholder="Search companies…" value={companySearch} onChange={e => setCompanySearch(e.target.value)} className="pl-7 h-7 text-xs" />
@@ -526,6 +558,31 @@ export default function PipelinePage() {
           )}
         </div>
       </div>
+      {/* Add Company Dialog */}
+      <Dialog open={addOpen} onOpenChange={setAddOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Add Company</DialogTitle>
+            <DialogDescription>Enter a website URL — we'll scrape it and auto-fill company details.</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3 pt-2">
+            <div className="relative">
+              <Globe className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="e.g. stripe.com"
+                value={addUrl}
+                onChange={e => setAddUrl(e.target.value)}
+                onKeyDown={e => e.key === "Enter" && !addLoading && handleAddCompany()}
+                className="pl-9"
+                disabled={addLoading}
+              />
+            </div>
+            <Button onClick={handleAddCompany} disabled={addLoading || !addUrl.trim()} className="w-full gap-2">
+              {addLoading ? <><Loader2 className="h-4 w-4 animate-spin" /> Enriching…</> : <><Plus className="h-4 w-4" /> Add & Enrich</>}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
