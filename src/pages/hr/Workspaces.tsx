@@ -1,10 +1,9 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Building2, Users, Calendar, ExternalLink } from "lucide-react";
+import { Building2, Users, Calendar, Sparkles } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 
 interface WorkspaceRow {
@@ -18,8 +17,23 @@ interface WorkspaceRow {
   creator_name: string | null;
 }
 
+interface UserInterest {
+  user_id: string;
+  display_name: string | null;
+  interests: string[];
+}
+
+const USE_CASE_LABELS: Record<string, string> = {
+  "hiring": "Hiring",
+  "onboarding": "Onboarding",
+  "learning-development": "L&D",
+  "performance-assessment": "Performance",
+  "project-staffing": "Staffing",
+};
+
 export default function Workspaces() {
   const [workspaces, setWorkspaces] = useState<WorkspaceRow[]>([]);
+  const [userInterests, setUserInterests] = useState<UserInterest[]>([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
@@ -36,16 +50,12 @@ export default function Workspaces() {
         return;
       }
 
-      // Fetch member counts
-      const { data: members } = await supabase
-        .from("workspace_members")
-        .select("workspace_id");
-
-      // Fetch company counts
-      const { data: companies } = await supabase
-        .from("companies")
-        .select("workspace_id")
-        .not("workspace_id", "is", null);
+      // Fetch member counts, company counts, profiles, and interests in parallel
+      const [membersRes, companiesRes, interestsRes] = await Promise.all([
+        supabase.from("workspace_members").select("workspace_id"),
+        supabase.from("companies").select("workspace_id").not("workspace_id", "is", null),
+        supabase.from("user_use_case_interests" as any).select("user_id, use_case"),
+      ]);
 
       // Fetch creator profiles
       const creatorIds = [...new Set(ws.map((w) => w.created_by))];
@@ -55,16 +65,16 @@ export default function Workspaces() {
         .in("id", creatorIds);
 
       const profileMap = new Map(
-        (profiles ?? []).map((p) => [p.id, p.display_name])
+        (profiles ?? []).map((p: any) => [p.id, p.display_name])
       );
 
       const memberCounts = new Map<string, number>();
-      (members ?? []).forEach((m) => {
+      (membersRes.data ?? []).forEach((m: any) => {
         memberCounts.set(m.workspace_id, (memberCounts.get(m.workspace_id) ?? 0) + 1);
       });
 
       const companyCounts = new Map<string, number>();
-      (companies ?? []).forEach((c) => {
+      (companiesRes.data ?? []).forEach((c: any) => {
         if (c.workspace_id) {
           companyCounts.set(c.workspace_id, (companyCounts.get(c.workspace_id) ?? 0) + 1);
         }
@@ -78,6 +88,32 @@ export default function Workspaces() {
           creator_name: profileMap.get(w.created_by) ?? null,
         }))
       );
+
+      // Group interests by user
+      const interestsData = ((interestsRes.data ?? []) as unknown) as { user_id: string; use_case: string }[];
+      const interestMap = new Map<string, string[]>();
+      interestsData.forEach((row) => {
+        const arr = interestMap.get(row.user_id) || [];
+        arr.push(row.use_case);
+        interestMap.set(row.user_id, arr);
+      });
+
+      // Get profiles for interested users
+      const interestUserIds = [...interestMap.keys()];
+      let interestProfiles: UserInterest[] = [];
+      if (interestUserIds.length > 0) {
+        const { data: iProfiles } = await supabase
+          .from("profiles")
+          .select("id, display_name")
+          .in("id", interestUserIds);
+        interestProfiles = (iProfiles ?? []).map((p: any) => ({
+          user_id: p.id,
+          display_name: p.display_name,
+          interests: interestMap.get(p.id) || [],
+        }));
+      }
+      setUserInterests(interestProfiles);
+
       setLoading(false);
     })();
   }, []);
@@ -145,6 +181,36 @@ export default function Workspaces() {
               </CardContent>
             </Card>
           ))}
+        </div>
+      )}
+
+      {/* User Use Case Interests */}
+      {userInterests.length > 0 && (
+        <div className="space-y-3 pt-4">
+          <div className="flex items-center gap-2">
+            <Sparkles className="h-4 w-4 text-primary" />
+            <h2 className="text-lg font-bold font-serif text-foreground">User Use Case Interests</h2>
+          </div>
+          <Card>
+            <CardContent className="p-0">
+              <div className="divide-y divide-border">
+                {userInterests.map((ui) => (
+                  <div key={ui.user_id} className="flex items-center justify-between px-5 py-3">
+                    <span className="text-sm font-medium text-foreground">
+                      {ui.display_name || "Unknown user"}
+                    </span>
+                    <div className="flex items-center gap-1.5 flex-wrap justify-end">
+                      {ui.interests.map((interest) => (
+                        <Badge key={interest} variant="secondary" className="text-[10px]">
+                          {USE_CASE_LABELS[interest] || interest}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
         </div>
       )}
     </div>

@@ -9,9 +9,10 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
+import { Badge } from "@/components/ui/badge";
 import {
   Building2, Globe, Loader2, CheckCircle2, ArrowRight, Users, Rocket,
-  Copy, Check, ChevronRight,
+  Copy, Check, ChevronRight, GraduationCap, UserCheck, BarChart3, FolderKanban, Briefcase,
 } from "lucide-react";
 import Navbar from "@/components/Navbar";
 
@@ -189,7 +190,105 @@ function StepImportCompany({ onNext }: StepProps) {
   );
 }
 
-/* ─── Step 3: Invite Team ─── */
+/* ─── Step 3: Use Case Interest ─── */
+const USE_CASES = [
+  { key: "hiring", label: "Hiring", icon: Briefcase, launched: false },
+  { key: "onboarding", label: "Onboarding", icon: UserCheck, launched: false },
+  { key: "learning-development", label: "Learning & Development", icon: GraduationCap, launched: true },
+  { key: "performance-assessment", label: "Performance Assessment", icon: BarChart3, launched: false },
+  { key: "project-staffing", label: "Project Staffing", icon: FolderKanban, launched: false },
+] as const;
+
+function StepUseCaseInterest({ onNext }: StepProps) {
+  const { user } = useAuth();
+  const [selected, setSelected] = useState<Set<string>>(new Set(["learning-development"]));
+  const [saving, setSaving] = useState(false);
+
+  const toggle = (key: string) => {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+  };
+
+  const handleContinue = async () => {
+    if (!user) return;
+    setSaving(true);
+    try {
+      await supabase.from("user_use_case_interests" as any).delete().eq("user_id", user.id);
+      const rows = [...selected].map((use_case) => ({ user_id: user.id, use_case }));
+      if (rows.length > 0) {
+        await supabase.from("user_use_case_interests" as any).insert(rows);
+      }
+    } catch {
+      // Non-blocking
+    }
+    setSaving(false);
+    onNext();
+  };
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h2 className="text-2xl font-serif font-bold text-foreground">What are you interested in?</h2>
+        <p className="text-sm text-muted-foreground mt-1">
+          Select the use cases relevant to your team. We'll tailor your experience.
+        </p>
+      </div>
+
+      <div className="space-y-2">
+        {USE_CASES.map((uc) => {
+          const Icon = uc.icon;
+          const isSelected = selected.has(uc.key);
+          return (
+            <button
+              key={uc.key}
+              onClick={() => toggle(uc.key)}
+              className={`flex items-center gap-3 w-full text-left rounded-xl px-4 py-3 border transition-all ${
+                isSelected
+                  ? "border-primary bg-primary/5 ring-1 ring-primary/20"
+                  : "border-border hover:border-primary/30 hover:bg-secondary/30"
+              }`}
+            >
+              <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
+                isSelected ? "bg-primary/10 text-primary" : "bg-secondary text-muted-foreground"
+              }`}>
+                <Icon className="h-4 w-4" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-foreground">{uc.label}</p>
+              </div>
+              {uc.launched ? (
+                <Badge className="bg-success/10 text-success border-success/20 text-[10px] shrink-0">
+                  Live
+                </Badge>
+              ) : (
+                <Badge variant="secondary" className="text-[10px] shrink-0">
+                  Coming Soon
+                </Badge>
+              )}
+              <div className={`w-4 h-4 rounded border-2 shrink-0 flex items-center justify-center ${
+                isSelected ? "border-primary bg-primary" : "border-muted-foreground/30"
+              }`}>
+                {isSelected && <Check className="h-2.5 w-2.5 text-primary-foreground" />}
+              </div>
+            </button>
+          );
+        })}
+      </div>
+
+      <Button onClick={handleContinue} disabled={saving} className="w-full">
+        {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+        Continue
+        <ArrowRight className="h-4 w-4 ml-2" />
+      </Button>
+    </div>
+  );
+}
+
+/* ─── Step 4: Invite Team ─── */
 function StepInviteTeam({ onNext }: StepProps) {
   const { workspace } = useWorkspace();
   const [copied, setCopied] = useState(false);
@@ -242,6 +341,7 @@ function StepInviteTeam({ onNext }: StepProps) {
 const STEPS = [
   { key: "workspace", label: "Create Workspace", icon: Building2 },
   { key: "import", label: "Import Company", icon: Globe },
+  { key: "usecase", label: "Use Cases", icon: Rocket },
   { key: "invite", label: "Invite Team", icon: Users },
 ] as const;
 
@@ -320,7 +420,8 @@ export default function Onboarding() {
                 >
                   {step === 0 && <StepCreateWorkspace onNext={() => setStep(1)} />}
                   {step === 1 && <StepImportCompany onNext={() => setStep(2)} />}
-                  {step === 2 && <StepInviteTeam onNext={handleComplete} />}
+                  {step === 2 && <StepUseCaseInterest onNext={() => setStep(3)} />}
+                  {step === 3 && <StepInviteTeam onNext={handleComplete} />}
                 </motion.div>
               </AnimatePresence>
             </CardContent>
