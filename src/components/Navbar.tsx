@@ -32,6 +32,9 @@ export default function Navbar() {
       { label: "Learn", path: "/learning-path", icon: GraduationCap },
       { label: "Dashboard", path: "/dashboard", icon: LayoutDashboard },
     ] : []),
+    ...(isSuperAdmin ? [
+      { label: "Admin", path: "/admin", icon: Shield },
+    ] : []),
   ];
 
   const handleNav = (path: string) => {

@@ -30,8 +30,6 @@ serve(async (req) => {
 
     // Gate simulation starts (compile action)
     if (action === "compile") {
-      const usageBlock = await checkSimulationUsage(req);
-      if (usageBlock) return usageBlock;
       return await handleCompile(payload, apiKey);
     }
     if (action === "chat") return await handleChat(payload, apiKey);
