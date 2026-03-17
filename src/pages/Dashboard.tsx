@@ -162,7 +162,7 @@ const Dashboard = () => {
           <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.12 }} className="mb-8">
             <div className="flex items-center gap-2 mb-3">
               <Sparkles className="h-4 w-4 text-primary" />
-              <h2 className="text-xs font-medium uppercase tracking-widest text-muted-foreground">Your Action Plan</h2>
+              <h2 className="text-xs font-medium uppercase tracking-widest text-muted-foreground">Your Learning Plan</h2>
             </div>
             <Card className="border-primary/20 bg-gradient-to-r from-primary/5 via-background to-primary/5">
               <CardContent className="p-4 space-y-2">
