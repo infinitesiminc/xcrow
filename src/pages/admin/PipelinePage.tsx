@@ -558,6 +558,31 @@ export default function PipelinePage() {
           )}
         </div>
       </div>
+      {/* Add Company Dialog */}
+      <Dialog open={addOpen} onOpenChange={setAddOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Add Company</DialogTitle>
+            <DialogDescription>Enter a website URL — we'll scrape it and auto-fill company details.</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3 pt-2">
+            <div className="relative">
+              <Globe className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="e.g. stripe.com"
+                value={addUrl}
+                onChange={e => setAddUrl(e.target.value)}
+                onKeyDown={e => e.key === "Enter" && !addLoading && handleAddCompany()}
+                className="pl-9"
+                disabled={addLoading}
+              />
+            </div>
+            <Button onClick={handleAddCompany} disabled={addLoading || !addUrl.trim()} className="w-full gap-2">
+              {addLoading ? <><Loader2 className="h-4 w-4 animate-spin" /> Enriching…</> : <><Plus className="h-4 w-4" /> Add & Enrich</>}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
