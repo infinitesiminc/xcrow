@@ -54,7 +54,7 @@ type SortDir = "asc" | "desc";
 /* ── component ── */
 export default function ATSSync() {
   const { user, openAuthModal } = useAuth();
-  const { workspaceId, isSuperAdmin } = useWorkspace();
+  
   const { toast } = useToast();
 
   const [companies, setCompanies] = useState<Company[]>([]);
