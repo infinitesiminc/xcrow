@@ -227,8 +227,6 @@ const Analysis = () => {
         saveAnalysisHistory(aiResult);
       } catch (err: any) {
         setError("Unable to analyze this role right now. Please try again.");
-          setError("Unable to analyze this role right now. Please try again.");
-        }
         console.error(err);
       }
       setLoading(false);
