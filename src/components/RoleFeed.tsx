@@ -11,6 +11,8 @@ interface RoleCard {
   risk: number;
   aiOpportunity: number;
   tag: string;
+  company?: string;
+  location?: string;
 }
 
 interface RoleFeedProps {
