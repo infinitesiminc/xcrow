@@ -361,6 +361,47 @@ export default function Investors() {
             <p className="text-sm text-muted-foreground mt-3">Land with free analysis → convert to per-role billing → expand as orgs map more roles.</p>
           </motion.div>
 
+          {/* ── TRACTION — Companies on platform ── */}
+          <motion.div {...fadeUp}>
+            <Badge variant="outline" className="mb-3 border-brand-ai/30 text-brand-ai text-xs">Traction</Badge>
+            <h2 className="text-2xl sm:text-3xl font-bold text-foreground mb-3">
+              Already on the platform
+            </h2>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-6">
+              {[
+                { stat: "50+", label: "Companies" },
+                { stat: "850+", label: "Roles Mapped" },
+                { stat: "2,000+", label: "Simulations Ran" },
+              ].map((s) => (
+                <div key={s.label} className="text-center rounded-xl border border-brand-ai/20 bg-brand-ai/5 p-4">
+                  <p className="text-2xl sm:text-3xl font-bold text-brand-ai">{s.stat}</p>
+                  <p className="text-sm text-muted-foreground mt-1">{s.label}</p>
+                </div>
+              ))}
+            </div>
+
+            <div className="flex flex-wrap gap-2">
+              {[
+                "Anthropic", "Anduril", "AbbVie", "Databricks", "Cohere", "Ramp",
+                "OpenAI", "Helion Energy", "Gong", "Relativity Space", "Discord",
+                "Reddit", "Brex", "Ripple", "Datadog", "CoreWeave", "Google DeepMind",
+                "Mistral AI", "ClickUp", "Figma", "Plaid", "Glean", "Perplexity AI",
+                "Airtable", "Patreon", "MoonPay", "Skydio", "Deel", "Runway",
+                "Coupa", "Hugging Face",
+              ].map((name) => (
+                <span
+                  key={name}
+                  className="inline-block rounded-full border border-border/40 bg-card px-3 py-1.5 text-sm text-foreground"
+                >
+                  {name}
+                </span>
+              ))}
+              <span className="inline-block rounded-full border border-border/40 bg-muted/30 px-3 py-1.5 text-sm text-muted-foreground">
+                +20 more
+              </span>
+            </div>
+          </motion.div>
+
           {/* ── CTA ── */}
           <motion.div {...fadeUp} className="flex flex-col sm:flex-row items-center gap-3 pt-4">
             <Button size="lg" className="w-full sm:w-auto" onClick={() => window.open("mailto:founders@infinitesim.ai", "_blank")}>
