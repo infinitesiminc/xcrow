@@ -114,24 +114,22 @@ const Dashboard = () => {
   const actionItems = (() => {
     const items: { text: string; icon: typeof Bot; priority: "high" | "medium" | "low" }[] = [];
 
-    // Profile-aware suggestions
     if (hasProfile && !myRoleAnalysis) {
-      items.push({ text: `Analyze your role: ${profile!.jobTitle}`, icon: Zap, priority: "high" });
-    }
-    if (myRoleAnalysis && myRoleAnalysis.automation_risk_percent >= 40) {
-      items.push({ text: `Your role has ${myRoleAnalysis.automation_risk_percent}% replacement risk — explore adjacent roles`, icon: ShieldAlert, priority: "high" });
+      items.push({ text: `Discover AI tools for: ${profile!.jobTitle}`, icon: Zap, priority: "high" });
     }
     if (myRoleAnalysis && myRoleAnalysis.augmented_percent >= 50) {
-      items.push({ text: `Upskill on AI-augmented tasks for your role`, icon: Bot, priority: "medium" });
+      items.push({ text: `${myRoleAnalysis.augmented_percent}% of your tasks have AI tools — start learning them`, icon: Bot, priority: "high" });
+    }
+    if (myRoleAnalysis && myRoleAnalysis.automation_risk_percent >= 40) {
+      items.push({ text: `Explore AI-powered career paths to boost your value`, icon: Target, priority: "medium" });
     }
     if (completions.length === 0) {
-      items.push({ text: "Complete your first simulation to build skills", icon: GraduationCap, priority: "medium" });
+      items.push({ text: "Complete your first practice session to build skills", icon: GraduationCap, priority: "medium" });
     }
 
-    // Add suggestions from other analyses
     analyses.filter(a => a !== myRoleAnalysis).slice(0, 2).forEach((a) => {
-      if (a.automation_risk_percent >= 40) {
-        items.push({ text: `Explore AI-adjacent skills for ${a.job_title}`, icon: ShieldAlert, priority: "high" });
+      if (a.augmented_percent >= 50) {
+        items.push({ text: `Learn AI tools for ${a.job_title}`, icon: Bot, priority: "medium" });
       }
     });
 
