@@ -1,6 +1,5 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -8,8 +7,6 @@ const corsHeaders = {
 };
 
 const MAX_ROUNDS = 8;
-
-// Usage limits removed — platform is free for all users
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -28,10 +25,7 @@ serve(async (req) => {
     const body = await req.json();
     const { action, payload } = body;
 
-    // Gate simulation starts (compile action)
-    if (action === "compile") {
-      return await handleCompile(payload, apiKey);
-    }
+    if (action === "compile") return await handleCompile(payload, apiKey);
     if (action === "chat") return await handleChat(payload, apiKey);
     if (action === "score") return await handleScore(payload, apiKey);
 
@@ -113,7 +107,7 @@ async function handleCompile(payload: any, apiKey: string) {
   const dateCtx = currentDateContext();
   const isAssess = mode === "assess";
 
-  const prompt = `You are designing a COACHING simulation about AI readiness for a professional task.
+  const prompt = `You are designing a LEARNING simulation about AI tools for a professional task.
 
 ${dateCtx}
 
@@ -121,28 +115,34 @@ Role: ${jobTitle}${company ? ` at ${company}` : ""}
 Task: ${taskName}
 ${aiContext}
 Mode: ${isAssess ? "ASSESS — broad baseline check across the task" : "UPSKILL — deeper practice on specific sub-skills"}
-Format: Open coaching conversation, 8 rounds, ${isAssess ? "~10" : "~15"} minutes
+Format: Structured coaching conversation, 8 rounds, ${isAssess ? "~10" : "~15"} minutes
 
-You are a COACH, not an examiner. Your tone is warm, curious, and constructive. You never say "wrong" — you help people discover better approaches.
-
-CRITICAL: Every message must be under 80 words. One purpose per message.
+You are a COACH helping someone learn to use AI tools effectively for their job.
 
 Generate a JSON response:
 
-1. "briefing": 2-3 sentences. What this task involves and how AI is changing it. Warm, inviting tone.
+1. "learningObjectives": Array of EXACTLY 3 objects, each with:
+   - "id": short snake_case identifier (e.g. "tool_selection", "prompt_engineering", "output_validation")
+   - "label": concise human-readable label (3-6 words, e.g. "Choose the right AI tool")
+   - "description": 1 sentence explaining what mastery looks like
+   - "pillar": which of the 4 pillars this maps to: "tool_awareness", "human_value_add", "adaptive_thinking", or "domain_judgment"
+   
+   CRITICAL: The 3 objectives must be SPECIFIC to "${taskName}" for a ${jobTitle}. Not generic AI skills. Each should map to a different pillar (pick the 3 most relevant).
 
-2. "tips": Array of 2 practical tips for thinking about AI in this task.
+2. "briefing": 2-3 sentences. What this task involves and what AI tools are changing about it. Warm, inviting tone.
 
-3. "keyTerms": Array of 3 objects with "term" and "definition" — AI tools and concepts relevant here.
+3. "tips": Array of 2 practical tips for thinking about AI in this task.
 
-4. "systemPrompt": System prompt reinforcing the coaching persona.
+4. "keyTerms": Array of 3 objects with "term" and "definition" — AI tools and concepts relevant here.
 
-5. "openingMessage": First scenario. Structure EXACTLY:
+5. "systemPrompt": System prompt for the coaching persona.
+
+6. "openingMessage": First scenario. Structure EXACTLY:
    - "**📖 Scenario:**" — 2-3 sentence realistic work scenario with specific details (stakeholders, constraints, tools)
    - "**🤔 How would you approach this?**"
-   - Under 60 words total. Nothing else — no tips, no preamble.
+   - Under 60 words total. Nothing else.
 
-6. "scenario": { "title": short title, "description": 1-sentence }
+7. "scenario": { "title": short title, "description": 1-sentence }
 
 Respond ONLY with valid JSON, no markdown.`;
 
@@ -154,6 +154,16 @@ Respond ONLY with valid JSON, no markdown.`;
     parsed = JSON.parse(jsonMatch[1].trim());
   } catch {
     throw new Error("Failed to parse AI response for scenario generation");
+  }
+
+  // Validate and default learning objectives
+  let objectives = parsed.learningObjectives;
+  if (!Array.isArray(objectives) || objectives.length < 2) {
+    objectives = [
+      { id: "tool_selection", label: "Choose the right AI tool", description: `Know which AI tool best handles aspects of ${taskName}`, pillar: "tool_awareness" },
+      { id: "human_judgment", label: "Apply human judgment", description: `Identify where human expertise is essential in ${taskName}`, pillar: "human_value_add" },
+      { id: "validate_output", label: "Validate AI outputs", description: `Verify and improve AI-generated results for ${taskName}`, pillar: "adaptive_thinking" },
+    ];
   }
 
   let briefing = parsed.briefing || `This task involves ${taskName} as part of the ${jobTitle} role.`;
@@ -168,6 +178,7 @@ Respond ONLY with valid JSON, no markdown.`;
     openingMessage: parsed.openingMessage,
     briefing,
     tips: parsed.tips || [],
+    learningObjectives: objectives,
     scenario: {
       id: crypto.randomUUID(),
       title: parsed.scenario?.title || taskName,
@@ -183,13 +194,13 @@ Respond ONLY with valid JSON, no markdown.`;
 // ─── CHAT ───
 
 async function handleChat(payload: any, apiKey: string) {
-  const { messages, role, round, turnCount, mode = "assess", taskMeta } = payload;
+  const { messages, role, round, turnCount, mode = "assess", taskMeta, learningObjectives, objectiveStatus } = payload;
   const aiContext = aiStateDescription(taskMeta);
   const dateCtx = currentDateContext();
 
   const systemMsg = {
     role: "system",
-    content: buildCoachingChatSystem(role, aiContext, dateCtx, round, turnCount, mode),
+    content: buildCoachingChatSystem(role, aiContext, dateCtx, round, turnCount, mode, learningObjectives, objectiveStatus),
   };
 
   const aiMessages = [systemMsg, ...messages];
@@ -200,12 +211,22 @@ async function handleChat(payload: any, apiKey: string) {
   });
 }
 
-function buildCoachingChatSystem(role: string, aiContext: string, dateCtx: string, round: number, turnCount: number, mode: string): string {
-  // Micro-turn structure: each round has 3 exchanges
-  // Turn 0: User answered scenario → Coach gives FEEDBACK + PROBE
-  // Turn 1: User answered probe → Coach gives INSIGHT + CONTINUE
-  // Turn 2: User said yes → Coach gives NEW SCENARIO
+function buildCoachingChatSystem(role: string, aiContext: string, dateCtx: string, round: number, turnCount: number, mode: string, learningObjectives?: any[], objectiveStatus?: Record<string, boolean>): string {
   const posInRound = ((turnCount - 1) % 3);
+
+  // Build objectives context for the AI
+  let objectivesContext = "";
+  if (learningObjectives && Array.isArray(learningObjectives)) {
+    const statusMap = objectiveStatus || {};
+    const met = learningObjectives.filter(o => statusMap[o.id]);
+    const unmet = learningObjectives.filter(o => !statusMap[o.id]);
+    objectivesContext = `\n\nLEARNING OBJECTIVES FOR THIS SESSION:
+${learningObjectives.map(o => `- [${statusMap[o.id] ? "✅ MET" : "⬜ NOT YET"}] ${o.label}: ${o.description}`).join("\n")}
+${met.length > 0 ? `\nAlready covered: ${met.map(o => o.label).join(", ")}` : ""}
+${unmet.length > 0 ? `\nStill need to cover: ${unmet.map(o => o.label).join(", ")}` : ""}
+
+IMPORTANT: Steer scenarios toward uncovered objectives. When giving feedback, note if the user demonstrated mastery of an objective. If they did, include the tag [OBJECTIVE_MET:objective_id] at the very end of your message (after all visible text). This tag will be parsed programmatically — only include it when the user has clearly demonstrated the skill, not just mentioned it.`;
+  }
 
   let turnInstruction: string;
 
@@ -215,22 +236,18 @@ function buildCoachingChatSystem(role: string, aiContext: string, dateCtx: strin
 FIRST — CHECK FOR UNCERTAINTY: If the user expresses uncertainty ("I'm not sure", "I don't know", "no idea", "hmm", "not really"), gives a very short/vague answer (under 15 words), or doesn't engage with the specifics of the scenario, do NOT follow the normal flow. Instead:
 - Normalize it warmly (1 sentence): "Totally fair — this is a meaty one." or "No worries, let's unpack it together."
 - Break the scenario into ONE smaller, concrete piece they can grab onto. Reference a specific detail FROM the scenario (a stakeholder, a constraint, a number).
-- Ask ONE simpler, more specific question about just that piece. Make it almost impossible to not have an opinion.
-- Examples: "Just focusing on the 200+ documents part — what's your gut concern with that volume?" or "Forget the full solution — if the CEO asked you about this in the elevator, what's the first risk you'd flag?"
+- Ask ONE simpler, more specific question about just that piece.
 - Do NOT give the answer or share insights. Help them find a starting thread.
 - Do NOT include 🤖, 💡, or "Ready for next" — stay in scaffolding mode.
 - End your message with exactly: [SCAFFOLDING]
 
 IF THE USER GAVE A SUBSTANTIVE ANSWER (15+ words engaging with the scenario), do this:
 
-1. Start with what's genuinely good about their thinking. Be specific — reference their actual words. Example: "Smart to think about [their point] — that shows good instinct for..."
+1. Start with what's genuinely good about their thinking. Be specific — reference their actual words.
 
 2. Then gently expand their view: "One thing worth considering is..." or "Have you thought about how AI could help with..." — never say "wrong" or "you missed".
 
-3. End with ONE follow-up probe question that helps them go deeper. Examples:
-   - "What specific tool would you reach for here?"
-   - "How would you verify the AI's output in this case?"
-   - "What would change if the deadline was tighter?"
+3. End with ONE follow-up probe question that helps them go deeper.
 
 Total: under 70 words. Tone: curious colleague, not examiner. Do NOT include 🤖 or 💡 or "Ready for next".`;
   } else if (posInRound === 1) {
@@ -239,8 +256,8 @@ Total: under 70 words. Tone: curious colleague, not examiner. Do NOT include �
 1. Brief acknowledgment of their answer (1 sentence, reference what they said).
 
 2. Then share the insight card:
-   🤖 **AI Today:** [Name ONE specific, real, CURRENT AI tool (latest version as of today) and exactly what it does for this task. Be concrete — e.g. "GitHub Copilot can generate unit tests from function signatures" not "AI tools can help". Always use the latest version name.]
-   💡 **Human Edge:** [ONE specific thing only a human can do here — e.g. "Only you can judge whether the tone matches your team's culture".]
+   🤖 **AI Today:** [Name ONE specific, real, CURRENT AI tool (latest version as of today) and exactly what it does for this task. Be concrete.]
+   💡 **Human Edge:** [ONE specific thing only a human can do here.]
 
 3. Final line: "🔄 **Ready for the next scenario?** (yes/no)"
 
@@ -250,6 +267,7 @@ Total: under 70 words.`;
 
 "**📖 Scenario:**" — Present a NEW realistic work scenario (2-3 sentences). It MUST:
 - Cover a DIFFERENT aspect of this task than previous rounds
+- Target an UNCOVERED learning objective if any remain
 - Include specific details: who's involved, what constraints exist, what tools are available
 - Feel like something that actually happens on a workday
 
@@ -262,11 +280,23 @@ Total: under 60 words. NOTHING else — no tips, no preamble, no context.`;
     ? "You're doing a broad baseline check — each scenario should cover a different facet of the task."
     : "You're doing deeper upskilling — scenarios can drill into specific sub-skills and edge cases.";
 
+  // Check if we're near the end and have unmet objectives
+  const nearEnd = round >= MAX_ROUNDS - 1;
+  let urgencyNote = "";
+  if (nearEnd && objectiveStatus) {
+    const unmetIds = learningObjectives?.filter(o => !objectiveStatus[o.id]) || [];
+    if (unmetIds.length > 0) {
+      urgencyNote = `\n\nURGENT: Only ${MAX_ROUNDS - round} round(s) left and ${unmetIds.length} objective(s) still uncovered: ${unmetIds.map(o => o.label).join(", ")}. Focus your next scenario directly on these.`;
+    }
+  }
+
   return `You are a supportive AI coach for ${role}. You help people learn by asking good questions and building on their thinking — never by telling them they're wrong.
 
 ${dateCtx}
 ${aiContext}
 ${modeContext}
+${objectivesContext}
+${urgencyNote}
 
 Round ${round || 1} of ${MAX_ROUNDS}.
 
@@ -292,15 +322,18 @@ ${posInRound === 2 && "If user said no: 'Great conversation! Click Finish to see
 // ─── SCORE ───
 
 async function handleScore(payload: any, apiKey: string) {
-  const { transcript, scenario, mode = "assess" } = payload;
+  const { transcript, scenario, mode = "assess", learningObjectives } = payload;
 
   const conversationText = transcript
     .map((m: any) => `${m.role === "user" ? "Candidate" : "Coach"}: ${m.content}`)
     .join("\n\n");
 
-  const prompt = `Evaluate this AI-readiness coaching conversation. Task: "${scenario?.title || "a work task"}"
+  const objectivesSection = learningObjectives && Array.isArray(learningObjectives)
+    ? `\n\nLearning Objectives for this session:\n${learningObjectives.map((o: any) => `- ${o.label}: ${o.description} (pillar: ${o.pillar})`).join("\n")}\n\nFor each objective, determine if it was MET or NOT MET based on the conversation evidence.`
+    : "";
 
-The candidate had an open conversation with an AI coach about how they'd handle work scenarios, with a focus on AI readiness.
+  const prompt = `Evaluate this AI-readiness coaching conversation. Task: "${scenario?.title || "a work task"}"
+${objectivesSection}
 
 Conversation:
 ${conversationText}
@@ -322,7 +355,8 @@ Respond with ONLY valid JSON:
     {"name": "Adaptive Thinking", "score": <0-100>, "feedback": "<1 encouraging sentence>"},
     {"name": "Domain Judgment", "score": <0-100>, "feedback": "<1 encouraging sentence>"}
   ],
-  "summary": "<2 sentence encouraging overall feedback with one growth area>"
+  "summary": "<2 sentence encouraging overall feedback with one growth area>",
+  "objectiveResults": [${learningObjectives ? learningObjectives.map((o: any) => `{"id": "${o.id}", "label": "${o.label}", "met": <true/false>, "evidence": "<1 sentence explaining why met or not>"}`).join(", ") : ""}]
 }`;
 
   const result = await callAI(apiKey, [{ role: "user", content: prompt }], 0.3);

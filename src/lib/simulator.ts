@@ -2,6 +2,13 @@ import { supabase } from "@/integrations/supabase/client";
 
 export type SimMode = "assess" | "upskill";
 
+export interface LearningObjective {
+  id: string;
+  label: string;
+  description: string;
+  pillar: string;
+}
+
 export interface SimScenario {
   id: string;
   title: string;
@@ -16,6 +23,7 @@ export interface SimSession {
   openingMessage: string;
   briefing: string;
   tips: string[];
+  learningObjectives: LearningObjective[];
   scenario: SimScenario;
 }
 
@@ -24,10 +32,18 @@ export interface SimMessage {
   content: string;
 }
 
+export interface ObjectiveResult {
+  id: string;
+  label: string;
+  met: boolean;
+  evidence: string;
+}
+
 export interface SimScoreResult {
   overall: number;
   categories: { name: string; score: number; feedback: string }[];
   summary: string;
+  objectiveResults?: ObjectiveResult[];
 }
 
 async function simFetch<T>(action: string, payload: Record<string, unknown>): Promise<T> {
@@ -56,9 +72,11 @@ export async function chatTurn(
   role: string,
   mode: SimMode = "assess",
   taskMeta?: { currentState?: string; trend?: string; impactLevel?: string },
+  learningObjectives?: LearningObjective[],
+  objectiveStatus?: Record<string, boolean>,
 ): Promise<string> {
   const { data, error } = await supabase.functions.invoke("sim-chat", {
-    body: { action: "chat", payload: { messages, round, turnCount, role, mode, taskMeta } },
+    body: { action: "chat", payload: { messages, round, turnCount, role, mode, taskMeta, learningObjectives, objectiveStatus } },
   });
   if (error) throw new Error(`Chat error: ${error.message}`);
   return typeof data === "string" ? data : JSON.stringify(data);
@@ -68,6 +86,7 @@ export async function scoreSession(
   transcript: SimMessage[],
   scenario: SimScenario | null,
   mode: SimMode = "assess",
+  learningObjectives?: LearningObjective[],
 ): Promise<SimScoreResult> {
-  return simFetch("score", { transcript, scenario, mode });
+  return simFetch("score", { transcript, scenario, mode, learningObjectives });
 }
