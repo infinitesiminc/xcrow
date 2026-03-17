@@ -497,24 +497,24 @@ export default function LearningPath() {
                 {/* LEFT: Sticky chart panel */}
                 <div className="md:w-[340px] shrink-0">
                   <div className="md:sticky md:top-6 space-y-4">
-                    {/* AI Exposure Score */}
+                    {/* AI Tool Coverage Score */}
                     <Card className="border-border bg-card">
                       <CardContent className="p-4">
                         <div className="flex items-center gap-4">
                           <div>
                             <div className="text-3xl font-bold text-foreground">{job.augmented_percent ?? "—"}%</div>
-                            <div className="text-xs text-muted-foreground">AI Exposure</div>
+                            <div className="text-xs text-muted-foreground">AI Tool Potential</div>
                           </div>
                           {job.augmented_percent != null && (
                             <div className="flex-1 h-2 rounded-full bg-secondary overflow-hidden">
                               <div
-                                className={`h-full rounded-full ${job.augmented_percent >= 70 ? "bg-destructive" : job.augmented_percent >= 40 ? "bg-warning" : "bg-success"}`}
+                                className={`h-full rounded-full ${job.augmented_percent >= 70 ? "bg-primary" : job.augmented_percent >= 40 ? "bg-brand-mid" : "bg-success"}`}
                                 style={{ width: `${job.augmented_percent}%` }}
                               />
                             </div>
                           )}
                         </div>
-                        <p className="text-[11px] text-muted-foreground/60 mt-1">How much of the important work is AI-exposed</p>
+                        <p className="text-[11px] text-muted-foreground/60 mt-1">How many AI tools can supercharge your work</p>
                       </CardContent>
                     </Card>
 
