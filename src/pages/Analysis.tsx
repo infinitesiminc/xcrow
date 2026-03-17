@@ -326,9 +326,9 @@ const Analysis = () => {
   }
 
   const statCards = [
-    { label: "AI Exposure", value: result.summary.augmentedPercent, icon: Bot, dotColor: "bg-brand-human" },
-    { label: "Replacement Risk", value: result.summary.automationRiskPercent, icon: ShieldAlert, dotColor: "bg-brand-ai" },
-    { label: "Upskill Urgency", value: result.summary.newSkillsPercent, icon: GraduationCap, dotColor: "bg-brand-mid" },
+    { label: "AI Tool Potential", value: result.summary.augmentedPercent, icon: Bot, dotColor: "bg-primary" },
+    { label: "Skills to Build", value: result.summary.newSkillsPercent, icon: GraduationCap, dotColor: "bg-brand-mid" },
+    { label: "Already Strong", value: 100 - result.summary.automationRiskPercent, icon: Rocket, dotColor: "bg-success" },
   ];
 
   return (
