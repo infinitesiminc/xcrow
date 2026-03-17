@@ -291,7 +291,7 @@ Total: under 70 words. Tone: curious colleague, not examiner. Do NOT include �
 1. Brief acknowledgment of their answer (1 sentence, reference what they said).
 
 2. Then share the insight card:
-   🤖 **AI Today:** [Name ONE specific, real AI tool and exactly what it does for this task. Be concrete — e.g. "Notion AI can draft first-pass documentation from meeting notes" not "AI tools can help".]
+   🤖 **AI Today:** [Name ONE specific, real, CURRENT AI tool (latest version as of today) and exactly what it does for this task. Be concrete — e.g. "GitHub Copilot can generate unit tests from function signatures" not "AI tools can help". Always use the latest version name.]
    💡 **Human Edge:** [ONE specific thing only a human can do here — e.g. "Only you can judge whether the tone matches your team's culture".]
 
 3. Final line: "🔄 **Ready for the next scenario?** (yes/no)"
