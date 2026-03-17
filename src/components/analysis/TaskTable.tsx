@@ -58,20 +58,20 @@ export function TaskTable({ tasks, skills, completedTasks, onPractice }: TaskTab
       <div className="flex items-center gap-4 mb-3 flex-wrap">
         {summary.urgent > 0 && (
           <span className="text-xs text-muted-foreground flex items-center gap-1.5">
-            <span className="text-sm">🔴</span>
-            <span className="font-semibold text-foreground">{summary.urgent}</span> urgent upskill
+            <span className="text-sm">🚀</span>
+            <span className="font-semibold text-foreground">{summary.urgent}</span> learn first
           </span>
         )}
         {summary.humanEdge > 0 && (
           <span className="text-xs text-muted-foreground flex items-center gap-1.5">
             <span className="text-sm">💪</span>
-            <span className="font-semibold text-foreground">{summary.humanEdge}</span> human edge
+            <span className="font-semibold text-foreground">{summary.humanEdge}</span> your superpower
           </span>
         )}
         {summary.letAi > 0 && (
           <span className="text-xs text-muted-foreground flex items-center gap-1.5">
             <span className="text-sm">🤖</span>
-            <span className="font-semibold text-foreground">{summary.letAi}</span> let AI handle
+            <span className="font-semibold text-foreground">{summary.letAi}</span> AI handles
           </span>
         )}
       </div>
