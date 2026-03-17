@@ -300,11 +300,13 @@ export default function CompanyPage() {
       {simTask && (
         <SimulatorModal
           open
-          onOpenChange={(open) => { if (!open) setSimTask(null); }}
+          onClose={() => setSimTask(null)}
           taskName={simTask.taskName}
           jobTitle={simTask.jobTitle}
           company={simTask.company}
-          taskMeta={simTask.taskMeta}
+          taskState={simTask.taskMeta?.currentState}
+          taskTrend={simTask.taskMeta?.trend}
+          taskImpactLevel={simTask.taskMeta?.impactLevel}
         />
       )}
     </div>

@@ -104,7 +104,7 @@ const Analysis = () => {
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [bookmarkLoading, setBookmarkLoading] = useState(false);
   const heroRef = useRef<HTMLDivElement>(null);
-  const { user, openAuthModal, openUpgradeModal } = useAuth();
+  const { user, openAuthModal } = useAuth();
 
   const fetchCompletions = useCallback(async () => {
     if (!user) return;

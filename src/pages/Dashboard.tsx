@@ -48,7 +48,7 @@ interface BookmarkedRole {
 }
 
 const Dashboard = () => {
-  const { user, loading: authLoading, profile, usage, isPro, canAnalyze, canSimulate } = useAuth();
+  const { user, loading: authLoading, profile } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [completions, setCompletions] = useState<CompletedSim[]>([]);
