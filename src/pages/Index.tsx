@@ -64,7 +64,7 @@ const Index = () => {
     (async () => {
       const { data, error } = await supabase
         .from("jobs")
-        .select("title, department, augmented_percent, automation_risk_percent, new_skills_percent")
+        .select("title, department, location, augmented_percent, automation_risk_percent, new_skills_percent, companies(name)")
         .gt("augmented_percent", 0)
         .order("augmented_percent", { ascending: false })
         .limit(100);
