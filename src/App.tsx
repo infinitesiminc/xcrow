@@ -56,9 +56,7 @@ const App = () => (
 
             {/* Superadmin content pipeline */}
             <Route path="/admin" element={<AdminGate />}>
-              <Route index element={<CompaniesPage />} />
-              <Route path="import" element={<ATSSync />} />
-              <Route path="roles" element={<SimulationBuilder />} />
+              <Route index element={<PipelinePage />} />
               <Route path="stats" element={<StatsPage />} />
             </Route>
 
