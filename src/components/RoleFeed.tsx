@@ -158,7 +158,7 @@ function RoleDetailOverlay({ role, onClose }: { role: RoleCard; onClose: () => v
           <div className="flex gap-3 mt-5">
             <motion.button
               whileTap={{ scale: 0.95 }}
-              onClick={() => navigate(`/analysis?title=${encodeURIComponent(role.title)}&company=`)}
+              onClick={() => navigate(`/analysis?title=${encodeURIComponent(role.title)}&company=${encodeURIComponent(role.company || "")}`)}
               className="flex-1 flex items-center justify-center gap-2 h-11 rounded-lg bg-primary text-primary-foreground font-semibold text-sm hover:bg-primary/90 transition-colors glow-purple"
             >
               <BarChart3 className="h-4 w-4" />
