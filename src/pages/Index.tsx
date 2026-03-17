@@ -587,16 +587,16 @@ const Index = () => {
             </div>
           </div>
 
-          {/* Risk-Tiered Roles */}
+          {/* Learning-Tiered Roles */}
           <div className="space-y-8">
             <div className="flex items-center justify-between gap-4 flex-wrap">
               <div className="flex items-center gap-2">
                 <TrendingUp className="h-4 w-4 text-muted-foreground" />
-                <h2 className="text-xs font-medium uppercase tracking-widest text-muted-foreground">Roles ranked by AI replacement risk</h2>
+                <h2 className="text-xs font-medium uppercase tracking-widest text-muted-foreground">Roles ranked by AI tools to learn</h2>
               </div>
             </div>
 
-            {riskTiers.map((tier) => {
+            {learningTiers.map((tier) => {
               const half = Math.ceil(tier.roles.length / 2);
               const row1 = tier.roles.slice(0, half);
               const row2 = tier.roles.slice(half);
@@ -624,7 +624,7 @@ const Index = () => {
                                 <img src={role.image} alt={role.title} className="w-full h-full object-cover transition-all duration-300 group-hover:scale-105" />
                                 <div className="absolute top-2 right-2 flex items-center gap-1.5 px-2 py-1 rounded-lg bg-background/80 backdrop-blur-sm border border-border/40">
                                   <span className={`w-2 h-2 rounded-full ${tier.dotColor}`} />
-                                  <span className="text-xs font-bold text-foreground">{role.agentRisk}%</span>
+                                  <span className="text-xs font-bold text-foreground">{role.aiOpportunity}%</span>
                                 </div>
                               </div>
                               <h3 className="text-[15px] font-semibold font-sans text-foreground leading-snug">{role.title}</h3>
