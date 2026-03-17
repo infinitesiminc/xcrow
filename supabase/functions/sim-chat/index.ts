@@ -123,6 +123,11 @@ async function callAI(apiKey: string, messages: { role: string; content: string 
   return data.choices[0].message.content;
 }
 
+function currentDateContext(): string {
+  const now = new Date();
+  return `CURRENT DATE: ${now.toLocaleDateString("en-US", { month: "long", year: "numeric" })}. Always reference the LATEST available versions of AI tools and models as of this date. For example, use "GPT-4o" not "GPT-3", "Claude 4" not "Claude 2", "Gemini 2.5" not "Bard". When naming specific tools (e.g. Notion AI, GitHub Copilot, Cursor, v0), cite their current capabilities, not outdated ones. Never reference deprecated or discontinued tools.`;
+}
+
 function aiStateDescription(taskMeta?: any): string {
   if (!taskMeta) return "";
   const state = taskMeta.currentState;
@@ -157,9 +162,12 @@ function aiStateDescription(taskMeta?: any): string {
 async function handleCompile(payload: any, apiKey: string) {
   const { taskName, jobTitle, company, difficulty = 3, mode = "assess", taskMeta } = payload;
   const aiContext = aiStateDescription(taskMeta);
+  const dateCtx = currentDateContext();
   const isAssess = mode === "assess";
 
   const prompt = `You are designing a COACHING simulation about AI readiness for a professional task.
+
+${dateCtx}
 
 Role: ${jobTitle}${company ? ` at ${company}` : ""}
 Task: ${taskName}
@@ -229,10 +237,11 @@ Respond ONLY with valid JSON, no markdown.`;
 async function handleChat(payload: any, apiKey: string) {
   const { messages, role, round, turnCount, mode = "assess", taskMeta } = payload;
   const aiContext = aiStateDescription(taskMeta);
+  const dateCtx = currentDateContext();
 
   const systemMsg = {
     role: "system",
-    content: buildCoachingChatSystem(role, aiContext, round, turnCount, mode),
+    content: buildCoachingChatSystem(role, aiContext, dateCtx, round, turnCount, mode),
   };
 
   const aiMessages = [systemMsg, ...messages];
@@ -243,7 +252,7 @@ async function handleChat(payload: any, apiKey: string) {
   });
 }
 
-function buildCoachingChatSystem(role: string, aiContext: string, round: number, turnCount: number, mode: string): string {
+function buildCoachingChatSystem(role: string, aiContext: string, dateCtx: string, round: number, turnCount: number, mode: string): string {
   // Micro-turn structure: each round has 3 exchanges
   // Turn 0: User answered scenario → Coach gives FEEDBACK + PROBE
   // Turn 1: User answered probe → Coach gives INSIGHT + CONTINUE
@@ -282,7 +291,7 @@ Total: under 70 words. Tone: curious colleague, not examiner. Do NOT include �
 1. Brief acknowledgment of their answer (1 sentence, reference what they said).
 
 2. Then share the insight card:
-   🤖 **AI Today:** [Name ONE specific, real AI tool and exactly what it does for this task. Be concrete — e.g. "Notion AI can draft first-pass documentation from meeting notes" not "AI tools can help".]
+   🤖 **AI Today:** [Name ONE specific, real, CURRENT AI tool (latest version as of today) and exactly what it does for this task. Be concrete — e.g. "GitHub Copilot can generate unit tests from function signatures" not "AI tools can help". Always use the latest version name.]
    💡 **Human Edge:** [ONE specific thing only a human can do here — e.g. "Only you can judge whether the tone matches your team's culture".]
 
 3. Final line: "🔄 **Ready for the next scenario?** (yes/no)"
@@ -307,6 +316,7 @@ Total: under 60 words. NOTHING else — no tips, no preamble, no context.`;
 
   return `You are a supportive AI coach for ${role}. You help people learn by asking good questions and building on their thinking — never by telling them they're wrong.
 
+${dateCtx}
 ${aiContext}
 ${modeContext}
 
