@@ -241,7 +241,7 @@ async function handleChat(payload: any, apiKey: string) {
 
   const systemMsg = {
     role: "system",
-    content: buildCoachingChatSystem(role, aiContext, round, turnCount, mode),
+    content: buildCoachingChatSystem(role, aiContext, dateCtx, round, turnCount, mode),
   };
 
   const aiMessages = [systemMsg, ...messages];
