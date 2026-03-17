@@ -229,9 +229,7 @@ function StyleD({ jobs }: { jobs: typeof SAMPLE_JOBS }) {
           className="group rounded-xl overflow-hidden border border-border/40 hover:border-border bg-card transition-all hover:shadow-lg cursor-pointer"
         >
           {/* Thin dept-colored accent strip */}
-          <div className="h-1" style={{
-            background: `linear-gradient(90deg, hsl(${210 - (job.augmented / 100) * 210} 80% 50%), hsl(${210 - (job.augmented / 100) * 210 + 15} 70% 45%))`,
-          }} />
+          <div className="h-1 bg-white/20" />
           <div className="p-4">
             <div className="flex items-start gap-3 mb-3">
               <img
