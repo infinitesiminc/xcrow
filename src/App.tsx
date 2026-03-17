@@ -20,7 +20,7 @@ import LearningPath from "./pages/LearningPath.tsx";
 import HRLayout from "./layouts/HRLayout.tsx";
 import PipelinePage from "./pages/admin/PipelinePage.tsx";
 import StatsPage from "./pages/admin/StatsPage.tsx";
-import SimulationBuilder from "./pages/products/SimulationBuilder.tsx";
+
 
 // Public company page
 const CompanyPage = lazy(() => import("./pages/CompanyPage.tsx"));
