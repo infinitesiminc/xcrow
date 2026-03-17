@@ -211,7 +211,7 @@ export default function ATSSync() {
           <h1 className="text-2xl font-bold text-foreground">ATS Sync</h1>
           <p className="text-sm text-muted-foreground">Import companies &amp; roles from connected applicant tracking systems</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
           <Button
             variant="outline"
             size="sm"
@@ -223,14 +223,29 @@ export default function ATSSync() {
           </Button>
           <Button
             size="sm"
-            onClick={() => runSync("full")}
-            disabled={!!syncing}
+            onClick={runBulkJobSync}
+            disabled={!!syncing || companies.length === 0}
           >
-            {syncing === "full" ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : <RefreshCw className="h-4 w-4 mr-1" />}
-            Full Sync
+            {syncing === "bulk-jobs" ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : <RefreshCw className="h-4 w-4 mr-1" />}
+            Sync All Jobs
           </Button>
         </div>
       </div>
+
+      {/* ── Bulk progress ── */}
+      {syncing === "bulk-jobs" && bulkProgress.total > 0 && (
+        <Card>
+          <CardContent className="p-4 space-y-2">
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-muted-foreground">
+                Syncing jobs: <span className="text-foreground font-medium">{bulkProgress.currentName}</span>
+              </span>
+              <span className="text-muted-foreground">{bulkProgress.current} / {bulkProgress.total}</span>
+            </div>
+            <Progress value={(bulkProgress.current / bulkProgress.total) * 100} className="h-2" />
+          </CardContent>
+        </Card>
+      )}
 
       {/* ── Stats ── */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
