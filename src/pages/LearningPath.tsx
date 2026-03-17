@@ -97,6 +97,7 @@ export default function LearningPath() {
   const navigate = useNavigate();
   const { user, openAuthModal } = useAuth();
   const { toast } = useToast();
+  const { enabled: showUpdateNotifications } = useFeatureFlag("show_update_notifications");
 
   const jobId = searchParams.get("jobId");
 
