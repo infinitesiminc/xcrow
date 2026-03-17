@@ -1,7 +1,6 @@
 import { motion } from "framer-motion";
-import { TrendingUp, RefreshCw, Rocket } from "lucide-react";
+import { TrendingUp, Rocket, Zap } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
-import { getRiskTier } from "@/lib/risk-colors";
 
 type Verdict = "upskill" | "pivot" | "leverage";
 
@@ -12,25 +11,29 @@ interface RiskGaugeProps {
 }
 
 const verdictConfig: Record<Verdict, { icon: typeof TrendingUp; label: string; dotColor: string }> = {
-  upskill: { icon: TrendingUp, label: "Upskill", dotColor: "bg-brand-mid" },
-  pivot: { icon: RefreshCw, label: "Pivot", dotColor: "bg-brand-ai" },
-  leverage: { icon: Rocket, label: "Leverage", dotColor: "bg-brand-human" },
+  upskill: { icon: TrendingUp, label: "Fast Track", dotColor: "bg-primary" },
+  pivot: { icon: Rocket, label: "Career Shift", dotColor: "bg-brand-mid" },
+  leverage: { icon: Zap, label: "Power Up", dotColor: "bg-success" },
 };
 
-function getGaugeColor(risk: number): string {
-  return getRiskTier(risk).color;
+function getGaugeColor(readiness: number): string {
+  if (readiness >= 70) return "hsl(var(--success))";
+  if (readiness >= 40) return "hsl(var(--primary))";
+  return "hsl(var(--warning))";
 }
 
 export function RiskGauge({ risk, verdict, reasoning }: RiskGaugeProps) {
   const config = verdictConfig[verdict];
   const Icon = config.icon;
-  const color = getGaugeColor(risk);
+  // Invert: high "risk" number → show as readiness score
+  const readiness = 100 - risk;
+  const color = getGaugeColor(readiness);
 
   const radius = 70;
   const stroke = 10;
   const circumference = 2 * Math.PI * radius;
   const arcLength = circumference * 0.75;
-  const fillLength = arcLength * (risk / 100);
+  const fillLength = arcLength * (readiness / 100);
   const rotation = 135;
 
   return (
@@ -64,9 +67,9 @@ export function RiskGauge({ risk, verdict, reasoning }: RiskGaugeProps) {
             animate={{ opacity: 1 }}
             transition={{ delay: 0.5 }}
           >
-            {risk}%
+            {readiness}%
           </motion.span>
-          <span className="text-[10px] text-muted-foreground uppercase tracking-widest mt-0.5">AI Agent Replace Risk</span>
+          <span className="text-[10px] text-muted-foreground uppercase tracking-widest mt-0.5">AI Readiness</span>
         </div>
       </div>
 
@@ -84,7 +87,7 @@ export function RiskGauge({ risk, verdict, reasoning }: RiskGaugeProps) {
               <Icon className="h-4 w-4 text-muted-foreground" />
               <span className="text-lg font-sans font-bold text-foreground">{config.label}</span>
             </div>
-            <p className="text-sm text-foreground/80 font-medium mb-1">Our recommendation</p>
+            <p className="text-sm text-foreground/80 font-medium mb-1">Your learning plan</p>
             <p className="text-xs text-muted-foreground leading-relaxed max-w-sm">{reasoning}</p>
           </CardContent>
         </Card>

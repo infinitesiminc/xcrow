@@ -49,69 +49,69 @@ interface RoleCard {
   image: string;
   augmented: number;
   risk: number;
-  agentRisk: number;
+  aiOpportunity: number;
   tag: string;
 }
 
-function calcAgentRisk(automationRisk: number, augmented: number, newSkills: number): number {
-  return Math.round(automationRisk * 0.55 + (100 - augmented) * 0.25 + newSkills * 0.20);
+function calcToolsToLearn(automationRisk: number, augmented: number, newSkills: number): number {
+  return Math.round(augmented * 0.45 + newSkills * 0.35 + automationRisk * 0.20);
 }
 
-// All 30 roles with their agent replacement risk computed
+// All 30 roles with their AI learning opportunity computed
 const allRoles: RoleCard[] = [
-  // Tech — balanced across tiers
-  { title: "Software Engineer", image: roleSoftwareEngineer, augmented: 80, risk: 10, agentRisk: calcAgentRisk(10, 80, 45), tag: "Tech" },
-  { title: "Data Scientist", image: roleDataScientist, augmented: 82, risk: 10, agentRisk: calcAgentRisk(10, 82, 40), tag: "Tech" },
-  { title: "Product Manager", image: roleProductManager, augmented: 72, risk: 12, agentRisk: calcAgentRisk(12, 72, 45), tag: "Tech" },
-  { title: "DevOps Engineer", image: roleDevopsEngineer, augmented: 70, risk: 20, agentRisk: calcAgentRisk(20, 70, 55), tag: "Tech" },
-  { title: "UX Designer", image: roleUxDesigner, augmented: 65, risk: 22, agentRisk: calcAgentRisk(22, 65, 50), tag: "Tech" },
-  { title: "Cybersecurity Analyst", image: roleCybersecurityAnalyst, augmented: 78, risk: 10, agentRisk: calcAgentRisk(10, 78, 40), tag: "Tech" },
-  { title: "QA Manager", image: roleQaManager, augmented: 60, risk: 38, agentRisk: calcAgentRisk(38, 60, 60), tag: "Tech" },
-  // Finance — spread across tiers
-  { title: "Accountant", image: roleAccountant, augmented: 55, risk: 42, agentRisk: calcAgentRisk(42, 55, 60), tag: "Finance" },
-  { title: "Financial Analyst", image: roleFinancialAnalyst, augmented: 72, risk: 22, agentRisk: calcAgentRisk(22, 72, 50), tag: "Finance" },
-  { title: "Investment Banker", image: roleInvestmentBanker, augmented: 70, risk: 14, agentRisk: calcAgentRisk(14, 70, 35), tag: "Finance" },
-  { title: "Tax Advisor", image: roleTaxAdvisor, augmented: 55, risk: 44, agentRisk: calcAgentRisk(44, 55, 58), tag: "Finance" },
-  { title: "Risk Manager", image: roleRiskManager, augmented: 68, risk: 20, agentRisk: calcAgentRisk(20, 68, 50), tag: "Finance" },
-  { title: "Auditor", image: roleAuditor, augmented: 52, risk: 48, agentRisk: calcAgentRisk(48, 52, 62), tag: "Finance" },
-  // Marketing — spread across tiers
-  { title: "Marketing Manager", image: roleMarketingManager, augmented: 62, risk: 32, agentRisk: calcAgentRisk(32, 62, 68), tag: "Marketing" },
-  { title: "Content Strategist", image: roleContentStrategist, augmented: 74, risk: 22, agentRisk: calcAgentRisk(22, 74, 50), tag: "Marketing" },
-  { title: "SEO Specialist", image: roleSeoSpecialist, augmented: 68, risk: 45, agentRisk: calcAgentRisk(45, 68, 65), tag: "Marketing" },
-  { title: "Social Media Manager", image: roleSocialMediaManager, augmented: 65, risk: 38, agentRisk: calcAgentRisk(38, 65, 62), tag: "Marketing" },
-  { title: "Brand Strategist", image: roleBrandStrategist, augmented: 72, risk: 8, agentRisk: calcAgentRisk(8, 72, 35), tag: "Marketing" },
-  { title: "Business Analyst", image: roleBusinessAnalyst, augmented: 70, risk: 22, agentRisk: calcAgentRisk(22, 70, 50), tag: "Marketing" },
-  // Operations — spread across tiers
-  { title: "Project Manager", image: roleProjectManager, augmented: 68, risk: 20, agentRisk: calcAgentRisk(20, 68, 48), tag: "Operations" },
-  { title: "HR Manager", image: roleHrManager, augmented: 55, risk: 35, agentRisk: calcAgentRisk(35, 55, 55), tag: "Operations" },
-  { title: "Supply Chain Manager", image: roleSupplyChainManager, augmented: 70, risk: 22, agentRisk: calcAgentRisk(22, 70, 48), tag: "Operations" },
-  { title: "Operations Manager", image: roleOperationsManager, augmented: 65, risk: 22, agentRisk: calcAgentRisk(22, 65, 48), tag: "Operations" },
-  { title: "Customer Success Manager", image: roleCustomerSuccessManager, augmented: 72, risk: 12, agentRisk: calcAgentRisk(12, 72, 35), tag: "Operations" },
-  // Legal — spread across tiers
-  { title: "Corporate Lawyer", image: roleCorporateLawyer, augmented: 72, risk: 10, agentRisk: calcAgentRisk(10, 72, 35), tag: "Legal" },
-  { title: "Compliance Officer", image: roleComplianceOfficer, augmented: 58, risk: 36, agentRisk: calcAgentRisk(36, 58, 58), tag: "Legal" },
-  { title: "Paralegal", image: roleParalegal, augmented: 62, risk: 50, agentRisk: calcAgentRisk(50, 62, 65), tag: "Legal" },
-  { title: "Contract Attorney", image: roleContractAttorney, augmented: 60, risk: 44, agentRisk: calcAgentRisk(44, 60, 58), tag: "Legal" },
-  { title: "IP Specialist", image: roleIpSpecialist, augmented: 75, risk: 8, agentRisk: calcAgentRisk(8, 75, 30), tag: "Legal" },
-  { title: "Legal Ops Manager", image: roleLegalOpsManager, augmented: 68, risk: 22, agentRisk: calcAgentRisk(22, 68, 48), tag: "Legal" },
+  // Tech
+  { title: "Software Engineer", image: roleSoftwareEngineer, augmented: 80, risk: 10, aiOpportunity: calcToolsToLearn(10, 80, 45), tag: "Tech" },
+  { title: "Data Scientist", image: roleDataScientist, augmented: 82, risk: 10, aiOpportunity: calcToolsToLearn(10, 82, 40), tag: "Tech" },
+  { title: "Product Manager", image: roleProductManager, augmented: 72, risk: 12, aiOpportunity: calcToolsToLearn(12, 72, 45), tag: "Tech" },
+  { title: "DevOps Engineer", image: roleDevopsEngineer, augmented: 70, risk: 20, aiOpportunity: calcToolsToLearn(20, 70, 55), tag: "Tech" },
+  { title: "UX Designer", image: roleUxDesigner, augmented: 65, risk: 22, aiOpportunity: calcToolsToLearn(22, 65, 50), tag: "Tech" },
+  { title: "Cybersecurity Analyst", image: roleCybersecurityAnalyst, augmented: 78, risk: 10, aiOpportunity: calcToolsToLearn(10, 78, 40), tag: "Tech" },
+  { title: "QA Manager", image: roleQaManager, augmented: 60, risk: 38, aiOpportunity: calcToolsToLearn(38, 60, 60), tag: "Tech" },
+  // Finance
+  { title: "Accountant", image: roleAccountant, augmented: 55, risk: 42, aiOpportunity: calcToolsToLearn(42, 55, 60), tag: "Finance" },
+  { title: "Financial Analyst", image: roleFinancialAnalyst, augmented: 72, risk: 22, aiOpportunity: calcToolsToLearn(22, 72, 50), tag: "Finance" },
+  { title: "Investment Banker", image: roleInvestmentBanker, augmented: 70, risk: 14, aiOpportunity: calcToolsToLearn(14, 70, 35), tag: "Finance" },
+  { title: "Tax Advisor", image: roleTaxAdvisor, augmented: 55, risk: 44, aiOpportunity: calcToolsToLearn(44, 55, 58), tag: "Finance" },
+  { title: "Risk Manager", image: roleRiskManager, augmented: 68, risk: 20, aiOpportunity: calcToolsToLearn(20, 68, 50), tag: "Finance" },
+  { title: "Auditor", image: roleAuditor, augmented: 52, risk: 48, aiOpportunity: calcToolsToLearn(48, 52, 62), tag: "Finance" },
+  // Marketing
+  { title: "Marketing Manager", image: roleMarketingManager, augmented: 62, risk: 32, aiOpportunity: calcToolsToLearn(32, 62, 68), tag: "Marketing" },
+  { title: "Content Strategist", image: roleContentStrategist, augmented: 74, risk: 22, aiOpportunity: calcToolsToLearn(22, 74, 50), tag: "Marketing" },
+  { title: "SEO Specialist", image: roleSeoSpecialist, augmented: 68, risk: 45, aiOpportunity: calcToolsToLearn(45, 68, 65), tag: "Marketing" },
+  { title: "Social Media Manager", image: roleSocialMediaManager, augmented: 65, risk: 38, aiOpportunity: calcToolsToLearn(38, 65, 62), tag: "Marketing" },
+  { title: "Brand Strategist", image: roleBrandStrategist, augmented: 72, risk: 8, aiOpportunity: calcToolsToLearn(8, 72, 35), tag: "Marketing" },
+  { title: "Business Analyst", image: roleBusinessAnalyst, augmented: 70, risk: 22, aiOpportunity: calcToolsToLearn(22, 70, 50), tag: "Marketing" },
+  // Operations
+  { title: "Project Manager", image: roleProjectManager, augmented: 68, risk: 20, aiOpportunity: calcToolsToLearn(20, 68, 48), tag: "Operations" },
+  { title: "HR Manager", image: roleHrManager, augmented: 55, risk: 35, aiOpportunity: calcToolsToLearn(35, 55, 55), tag: "Operations" },
+  { title: "Supply Chain Manager", image: roleSupplyChainManager, augmented: 70, risk: 22, aiOpportunity: calcToolsToLearn(22, 70, 48), tag: "Operations" },
+  { title: "Operations Manager", image: roleOperationsManager, augmented: 65, risk: 22, aiOpportunity: calcToolsToLearn(22, 65, 48), tag: "Operations" },
+  { title: "Customer Success Manager", image: roleCustomerSuccessManager, augmented: 72, risk: 12, aiOpportunity: calcToolsToLearn(12, 72, 35), tag: "Operations" },
+  // Legal
+  { title: "Corporate Lawyer", image: roleCorporateLawyer, augmented: 72, risk: 10, aiOpportunity: calcToolsToLearn(10, 72, 35), tag: "Legal" },
+  { title: "Compliance Officer", image: roleComplianceOfficer, augmented: 58, risk: 36, aiOpportunity: calcToolsToLearn(36, 58, 58), tag: "Legal" },
+  { title: "Paralegal", image: roleParalegal, augmented: 62, risk: 50, aiOpportunity: calcToolsToLearn(50, 62, 65), tag: "Legal" },
+  { title: "Contract Attorney", image: roleContractAttorney, augmented: 60, risk: 44, aiOpportunity: calcToolsToLearn(44, 60, 58), tag: "Legal" },
+  { title: "IP Specialist", image: roleIpSpecialist, augmented: 75, risk: 8, aiOpportunity: calcToolsToLearn(8, 75, 30), tag: "Legal" },
+  { title: "Legal Ops Manager", image: roleLegalOpsManager, augmented: 68, risk: 22, aiOpportunity: calcToolsToLearn(22, 68, 48), tag: "Legal" },
 ];
 
-// Sort into risk tiers — Linear-style: grayscale text, colored dots only
-const riskTiers: { label: string; dotColor: string; roles: RoleCard[] }[] = [
+// Sort into learning tiers — empowerment framing
+const learningTiers: { label: string; dotColor: string; roles: RoleCard[] }[] = [
   {
-    label: "High Risk",
-    dotColor: "bg-brand-ai",
-    roles: allRoles.filter(r => r.agentRisk >= 35).sort((a, b) => b.agentRisk - a.agentRisk),
+    label: "Most to Learn",
+    dotColor: "bg-primary",
+    roles: allRoles.filter(r => r.aiOpportunity >= 55).sort((a, b) => b.aiOpportunity - a.aiOpportunity),
   },
   {
-    label: "Moderate Risk",
+    label: "Growing Toolkit",
     dotColor: "bg-brand-mid",
-    roles: allRoles.filter(r => r.agentRisk >= 25 && r.agentRisk < 35).sort((a, b) => b.agentRisk - a.agentRisk),
+    roles: allRoles.filter(r => r.aiOpportunity >= 45 && r.aiOpportunity < 55).sort((a, b) => b.aiOpportunity - a.aiOpportunity),
   },
   {
-    label: "Lower Risk",
-    dotColor: "bg-brand-human",
-    roles: allRoles.filter(r => r.agentRisk < 25).sort((a, b) => b.agentRisk - a.agentRisk),
+    label: "AI-Ready",
+    dotColor: "bg-success",
+    roles: allRoles.filter(r => r.aiOpportunity < 45).sort((a, b) => b.aiOpportunity - a.aiOpportunity),
   },
 ];
 
@@ -481,10 +481,10 @@ const Index = () => {
               Infinite Sim
             </span>
             <h1 className="text-3xl sm:text-5xl lg:text-6xl font-bold font-serif tracking-tight text-foreground leading-[1.1] max-w-3xl mx-auto">
-               Upskill before<br /><em className="italic">AI takes your{" "}<span className="whitespace-nowrap"><span className="laser-word">job</span>.</span></em>
+               Master the AI tools<br /><em className="italic">that get you{" "}<span className="whitespace-nowrap"><span className="laser-word">hired</span>.</span></em>
              </h1>
              <p className="mt-3 text-sm sm:text-base text-foreground font-sans">
-               Assess &amp; start learning in 3 seconds.
+               Discover which AI tools to learn for any role — in seconds.
              </p>
           </motion.div>
           </div>
@@ -587,16 +587,16 @@ const Index = () => {
             </div>
           </div>
 
-          {/* Risk-Tiered Roles */}
+          {/* Learning-Tiered Roles */}
           <div className="space-y-8">
             <div className="flex items-center justify-between gap-4 flex-wrap">
               <div className="flex items-center gap-2">
                 <TrendingUp className="h-4 w-4 text-muted-foreground" />
-                <h2 className="text-xs font-medium uppercase tracking-widest text-muted-foreground">Roles ranked by AI replacement risk</h2>
+                <h2 className="text-xs font-medium uppercase tracking-widest text-muted-foreground">Roles ranked by AI tools to learn</h2>
               </div>
             </div>
 
-            {riskTiers.map((tier) => {
+            {learningTiers.map((tier) => {
               const half = Math.ceil(tier.roles.length / 2);
               const row1 = tier.roles.slice(0, half);
               const row2 = tier.roles.slice(half);
@@ -624,7 +624,7 @@ const Index = () => {
                                 <img src={role.image} alt={role.title} className="w-full h-full object-cover transition-all duration-300 group-hover:scale-105" />
                                 <div className="absolute top-2 right-2 flex items-center gap-1.5 px-2 py-1 rounded-lg bg-background/80 backdrop-blur-sm border border-border/40">
                                   <span className={`w-2 h-2 rounded-full ${tier.dotColor}`} />
-                                  <span className="text-xs font-bold text-foreground">{role.agentRisk}%</span>
+                                  <span className="text-xs font-bold text-foreground">{role.aiOpportunity}%</span>
                                 </div>
                               </div>
                               <h3 className="text-[15px] font-semibold font-sans text-foreground leading-snug">{role.title}</h3>

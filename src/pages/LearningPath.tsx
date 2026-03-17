@@ -497,24 +497,24 @@ export default function LearningPath() {
                 {/* LEFT: Sticky chart panel */}
                 <div className="md:w-[340px] shrink-0">
                   <div className="md:sticky md:top-6 space-y-4">
-                    {/* AI Exposure Score */}
+                    {/* AI Tool Coverage Score */}
                     <Card className="border-border bg-card">
                       <CardContent className="p-4">
                         <div className="flex items-center gap-4">
                           <div>
                             <div className="text-3xl font-bold text-foreground">{job.augmented_percent ?? "—"}%</div>
-                            <div className="text-xs text-muted-foreground">AI Exposure</div>
+                            <div className="text-xs text-muted-foreground">AI Tool Potential</div>
                           </div>
                           {job.augmented_percent != null && (
                             <div className="flex-1 h-2 rounded-full bg-secondary overflow-hidden">
                               <div
-                                className={`h-full rounded-full ${job.augmented_percent >= 70 ? "bg-destructive" : job.augmented_percent >= 40 ? "bg-warning" : "bg-success"}`}
+                                className={`h-full rounded-full ${job.augmented_percent >= 70 ? "bg-primary" : job.augmented_percent >= 40 ? "bg-brand-mid" : "bg-success"}`}
                                 style={{ width: `${job.augmented_percent}%` }}
                               />
                             </div>
                           )}
                         </div>
-                        <p className="text-[11px] text-muted-foreground/60 mt-1">How much of the important work is AI-exposed</p>
+                        <p className="text-[11px] text-muted-foreground/60 mt-1">How many AI tools can supercharge your work</p>
                       </CardContent>
                     </Card>
 
@@ -590,7 +590,7 @@ export default function LearningPath() {
                                 );
                               })}
                             </svg>
-                            <p className="text-[11px] text-muted-foreground text-center -mt-1">AI Exposure by Task</p>
+                            <p className="text-[11px] text-muted-foreground text-center -mt-1">AI Tools by Task</p>
                           </CardContent>
                         </Card>
                       );
@@ -625,12 +625,12 @@ export default function LearningPath() {
                     const isHovered = hoveredTaskIndex === i;
 
                     const aiMeta = exposure >= 70
-                      ? { icon: AlertTriangle, color: "text-destructive", summary: "AI can handle most of this today — focus on oversight and quality judgment." }
+                      ? { icon: AlertTriangle, color: "text-primary", summary: "Lots of AI tools available — master them to 10× your output here." }
                       : exposure >= 50
-                      ? { icon: Zap, color: "text-warning", summary: "AI is increasingly capable here — learn to collaborate with AI tools effectively." }
+                      ? { icon: Zap, color: "text-brand-mid", summary: "AI tools are growing fast here — learn them early to stay ahead." }
                       : exposure >= 30
-                      ? { icon: Brain, color: "text-brand-mid", summary: "AI assists with parts of this task — your expertise remains the differentiator." }
-                      : { icon: Shield, color: "text-success", summary: "This task relies heavily on human judgment — AI plays a minimal role." };
+                      ? { icon: Brain, color: "text-brand-mid", summary: "Some AI tools can help — your expertise is the differentiator." }
+                      : { icon: Shield, color: "text-success", summary: "This relies on your human judgment — AI plays a supporting role." };
                     const AiIcon = aiMeta.icon;
 
                     return (
@@ -704,7 +704,7 @@ export default function LearningPath() {
                                     onClick={() => launchSim(task)}
                                   >
                                     <Play className="h-3.5 w-3.5" />
-                                    {isCompleted ? "Retry" : "Practise Task"}
+                                    {isCompleted ? "Retry" : "Learn This"}
                                   </Button>
                                 </div>
                               </div>
@@ -721,11 +721,11 @@ export default function LearningPath() {
                       <CardContent className="p-5 text-center">
                         <Award className="h-6 w-6 text-primary mx-auto mb-2" />
                         <h3 className="font-semibold text-foreground text-sm mb-1">
-                          {pathProgress?.percent === 100 ? "🎉 Learning Path Complete!" : "Complete Learning Path"}
+                          {pathProgress?.percent === 100 ? "🎉 All Skills Mastered!" : "Complete Your AI Toolkit"}
                         </h3>
                         <p className="text-xs text-muted-foreground mb-3">
                           {pathProgress?.percent === 100
-                            ? `Congratulations! You've completed all ${analyzedTasks.length} simulations for ${job.title}.`
+                            ? `Amazing! You've learned all ${analyzedTasks.length} AI-powered skills for ${job.title}.`
                             : `Complete all ${analyzedTasks.length} simulations to earn your AI-Readiness Certificate for ${job.title}`}
                         </p>
                         {(!pathProgress || pathProgress.percent < 100) && (

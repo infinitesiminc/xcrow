@@ -47,27 +47,27 @@ interface CompanySnapshot {
 
 type Verdict = "upskill" | "pivot" | "leverage";
 
-function calcAgentRisk(automationRisk: number, augmented: number, newSkills: number): number {
-  return Math.round(automationRisk * 0.55 + (100 - augmented) * 0.25 + newSkills * 0.20);
+function calcReadiness(automationRisk: number, augmented: number, newSkills: number): number {
+  return 100 - Math.round(automationRisk * 0.55 + (100 - augmented) * 0.25 + newSkills * 0.20);
 }
 
-function getVerdict(result: JobAnalysisResult, agentRisk: number): Verdict {
+function getVerdict(result: JobAnalysisResult, readiness: number): Verdict {
   const { automationRiskPercent, augmentedPercent } = result.summary;
   const fullyAiSoon = result.tasks.filter(t => t.trend === "fully_ai_soon").length;
   const mostlyHuman = result.tasks.filter(t => t.currentState === "mostly_human").length;
-  if (agentRisk >= 45 || (automationRiskPercent >= 40 && fullyAiSoon >= 3)) return "pivot";
-  if (agentRisk <= 28 && mostlyHuman >= 3 && augmentedPercent >= 55) return "leverage";
+  if (readiness <= 55 || (automationRiskPercent >= 40 && fullyAiSoon >= 3)) return "pivot";
+  if (readiness >= 72 && mostlyHuman >= 3 && augmentedPercent >= 55) return "leverage";
   return "upskill";
 }
 
 function getVerdictReasoning(verdict: Verdict, result: JobAnalysisResult): string {
   switch (verdict) {
     case "pivot":
-      return `With ${result.summary.automationRiskPercent}% replacement risk and multiple tasks trending to full AI, consider transitioning to adjacent roles where your skills transfer.`;
+      return `Many tasks in this role are becoming AI-native. This is a great opportunity to build skills in adjacent roles where your experience transfers and AI amplifies your value.`;
     case "leverage":
-      return `Your role has strong human-led tasks and high AI augmentation potential. Focus on mastering AI tools to amplify your existing strengths.`;
+      return `You're in a strong position! Your role has deep human-led tasks. Focus on mastering AI tools to 10× your existing strengths and stand out.`;
     case "upskill":
-      return `Build new capabilities in AI collaboration and focus on the tasks most at risk. Targeted upskilling will future-proof your position.`;
+      return `Learn the AI tools for your highest-impact tasks first. Targeted skill-building will make you the go-to person who knows how to work with AI effectively.`;
   }
 }
 
@@ -275,15 +275,15 @@ const Analysis = () => {
   // Company snapshot disabled — ATS-only pipeline, no webpage scraping
 
   // Computed values
-  const agentRisk = useMemo(() => {
+  const readiness = useMemo(() => {
     if (!result) return 0;
-    return calcAgentRisk(result.summary.automationRiskPercent, result.summary.augmentedPercent, result.summary.newSkillsPercent);
+    return calcReadiness(result.summary.automationRiskPercent, result.summary.augmentedPercent, result.summary.newSkillsPercent);
   }, [result]);
 
   const verdict = useMemo(() => {
     if (!result) return "upskill" as Verdict;
-    return getVerdict(result, agentRisk);
-  }, [result, agentRisk]);
+    return getVerdict(result, readiness);
+  }, [result, readiness]);
 
   const topPathway: CareerPathway | null = pathwayData?.pathways?.[0] || null;
 
@@ -296,7 +296,7 @@ const Analysis = () => {
               <Zap className="h-5 w-5 text-primary animate-pulse" />
             </div>
             <h1 className="text-xl font-sans font-bold text-foreground">Analyzing {jobTitle || "role from JD"}...</h1>
-            <p className="mt-1 text-sm text-muted-foreground">Building your personal report card</p>
+            <p className="mt-1 text-sm text-muted-foreground">Building your AI toolkit report</p>
           </motion.div>
           <div className="space-y-4">
             <Skeleton className="h-48 w-full rounded-xl" />
@@ -326,9 +326,9 @@ const Analysis = () => {
   }
 
   const statCards = [
-    { label: "AI Exposure", value: result.summary.augmentedPercent, icon: Bot, dotColor: "bg-brand-human" },
-    { label: "Replacement Risk", value: result.summary.automationRiskPercent, icon: ShieldAlert, dotColor: "bg-brand-ai" },
-    { label: "Upskill Urgency", value: result.summary.newSkillsPercent, icon: GraduationCap, dotColor: "bg-brand-mid" },
+    { label: "AI Tool Potential", value: result.summary.augmentedPercent, icon: Bot, dotColor: "bg-primary" },
+    { label: "Skills to Build", value: result.summary.newSkillsPercent, icon: GraduationCap, dotColor: "bg-brand-mid" },
+    { label: "Already Strong", value: 100 - result.summary.automationRiskPercent, icon: Rocket, dotColor: "bg-success" },
   ];
 
   return (
@@ -354,9 +354,9 @@ const Analysis = () => {
                 )}
               </div>
               <div className="flex items-center gap-2 shrink-0">
-                <span className={`w-2 h-2 rounded-full ${getRiskTier(agentRisk).dotClass}`} />
-                <span className="text-xs font-bold text-foreground tabular-nums">{agentRisk}%</span>
-                <span className="text-[10px] text-muted-foreground">AI agent replace risk</span>
+                <span className={`w-2 h-2 rounded-full ${readiness >= 70 ? "bg-success" : readiness >= 40 ? "bg-primary" : "bg-warning"}`} />
+                <span className="text-xs font-bold text-foreground tabular-nums">{readiness}%</span>
+                <span className="text-[10px] text-muted-foreground">AI Ready</span>
               </div>
             </div>
           </motion.div>
@@ -433,7 +433,7 @@ const Analysis = () => {
           <Card className="border-border/50 overflow-hidden">
             <CardContent className="p-6 sm:p-8">
               <RiskGauge
-                risk={agentRisk}
+                risk={100 - readiness}
                 verdict={verdict}
                 reasoning={getVerdictReasoning(verdict, result)}
               />
@@ -477,16 +477,16 @@ const Analysis = () => {
           <Tabs defaultValue="tasks" className="mb-8">
             <TabsList className="w-full grid grid-cols-4 h-10 sm:h-11 mb-4">
               <TabsTrigger value="tasks" className="gap-1 sm:gap-1.5 text-[11px] sm:text-sm px-1 sm:px-3">
-                <ListChecks className="h-3 w-3 sm:h-3.5 sm:w-3.5" /> <span className="hidden sm:inline">Tasks</span><span className="sm:hidden">Tasks</span>
+                <ListChecks className="h-3 w-3 sm:h-3.5 sm:w-3.5" /> <span className="hidden sm:inline">Your Tasks</span><span className="sm:hidden">Tasks</span>
               </TabsTrigger>
               <TabsTrigger value="pathways" className="gap-1 sm:gap-1.5 text-[11px] sm:text-sm px-1 sm:px-3">
-                <Route className="h-3 w-3 sm:h-3.5 sm:w-3.5" /> <span className="hidden sm:inline">Pathways</span><span className="sm:hidden">Paths</span>
+                <Route className="h-3 w-3 sm:h-3.5 sm:w-3.5" /> <span className="hidden sm:inline">Career Boost</span><span className="sm:hidden">Boost</span>
               </TabsTrigger>
               <TabsTrigger value="plan" className="gap-1 sm:gap-1.5 text-[11px] sm:text-sm px-1 sm:px-3">
-                <Wrench className="h-3 w-3 sm:h-3.5 sm:w-3.5" /> Tools
+                <Wrench className="h-3 w-3 sm:h-3.5 sm:w-3.5" /> AI Toolkit
               </TabsTrigger>
               <TabsTrigger value="context" className="gap-1 sm:gap-1.5 text-[11px] sm:text-sm px-1 sm:px-3">
-                <BarChart3 className="h-3 w-3 sm:h-3.5 sm:w-3.5" /> <span className="hidden sm:inline">Context</span><span className="sm:hidden">Info</span>
+                <BarChart3 className="h-3 w-3 sm:h-3.5 sm:w-3.5" /> <span className="hidden sm:inline">Insights</span><span className="sm:hidden">Info</span>
               </TabsTrigger>
             </TabsList>
 
@@ -522,7 +522,7 @@ const Analysis = () => {
                 {result.curatedSkills && result.curatedSkills.length > 0 && (
                   <CuratedSkillsBadge curatedSkills={result.curatedSkills} />
                 )}
-                <RoleContext agentRisk={agentRisk} jobTitle={result.jobTitle} />
+                <RoleContext agentRisk={100 - readiness} jobTitle={result.jobTitle} />
                 
               </div>
             </TabsContent>
@@ -534,7 +534,7 @@ const Analysis = () => {
           <div className="flex items-center gap-2.5 min-w-0">
             <Rocket className="h-4 w-4 text-primary shrink-0" />
             <span className="text-sm text-muted-foreground truncate">
-              {user ? "See all your progress" : "Sign in to track progress"}
+              {user ? "Track your learning progress" : "Sign in to track progress"}
             </span>
           </div>
           <Button onClick={() => navigate(user ? "/dashboard" : "/auth")} size="sm" variant="ghost" className="gap-1.5 shrink-0 text-xs">

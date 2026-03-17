@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   ArrowLeft, CheckCircle2, Calendar, Briefcase, Loader2, Play, BarChart3, Bot,
-  ShieldAlert, ArrowRight, Bookmark, Target, Sparkles, GraduationCap,
+  ArrowRight, Bookmark, Target, Sparkles, GraduationCap,
   Zap, ExternalLink, Settings, Trash2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -114,24 +114,22 @@ const Dashboard = () => {
   const actionItems = (() => {
     const items: { text: string; icon: typeof Bot; priority: "high" | "medium" | "low" }[] = [];
 
-    // Profile-aware suggestions
     if (hasProfile && !myRoleAnalysis) {
-      items.push({ text: `Analyze your role: ${profile!.jobTitle}`, icon: Zap, priority: "high" });
-    }
-    if (myRoleAnalysis && myRoleAnalysis.automation_risk_percent >= 40) {
-      items.push({ text: `Your role has ${myRoleAnalysis.automation_risk_percent}% replacement risk — explore adjacent roles`, icon: ShieldAlert, priority: "high" });
+      items.push({ text: `Discover AI tools for: ${profile!.jobTitle}`, icon: Zap, priority: "high" });
     }
     if (myRoleAnalysis && myRoleAnalysis.augmented_percent >= 50) {
-      items.push({ text: `Upskill on AI-augmented tasks for your role`, icon: Bot, priority: "medium" });
+      items.push({ text: `${myRoleAnalysis.augmented_percent}% of your tasks have AI tools — start learning them`, icon: Bot, priority: "high" });
+    }
+    if (myRoleAnalysis && myRoleAnalysis.automation_risk_percent >= 40) {
+      items.push({ text: `Explore AI-powered career paths to boost your value`, icon: Target, priority: "medium" });
     }
     if (completions.length === 0) {
-      items.push({ text: "Complete your first simulation to build skills", icon: GraduationCap, priority: "medium" });
+      items.push({ text: "Complete your first practice session to build skills", icon: GraduationCap, priority: "medium" });
     }
 
-    // Add suggestions from other analyses
     analyses.filter(a => a !== myRoleAnalysis).slice(0, 2).forEach((a) => {
-      if (a.automation_risk_percent >= 40) {
-        items.push({ text: `Explore AI-adjacent skills for ${a.job_title}`, icon: ShieldAlert, priority: "high" });
+      if (a.augmented_percent >= 50) {
+        items.push({ text: `Learn AI tools for ${a.job_title}`, icon: Bot, priority: "medium" });
       }
     });
 
@@ -164,7 +162,7 @@ const Dashboard = () => {
           <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.12 }} className="mb-8">
             <div className="flex items-center gap-2 mb-3">
               <Sparkles className="h-4 w-4 text-primary" />
-              <h2 className="text-xs font-medium uppercase tracking-widest text-muted-foreground">Your Action Plan</h2>
+              <h2 className="text-xs font-medium uppercase tracking-widest text-muted-foreground">Your Learning Plan</h2>
             </div>
             <Card className="border-primary/20 bg-gradient-to-r from-primary/5 via-background to-primary/5">
               <CardContent className="p-4 space-y-2">
@@ -237,12 +235,12 @@ const Dashboard = () => {
 
         {/* Analyzed Jobs */}
         <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} className="mb-8">
-          <h2 className="text-xs font-medium uppercase tracking-widest text-muted-foreground mb-3">Analyzed Jobs</h2>
+          <h2 className="text-xs font-medium uppercase tracking-widest text-muted-foreground mb-3">Explored Roles</h2>
           {analyses.length === 0 ? (
             <Card>
               <CardContent className="p-6 text-center">
-                <p className="text-sm text-muted-foreground mb-3">No analyses yet</p>
-                <Button size="sm" onClick={() => navigate("/")}>Analyze a Role</Button>
+                <p className="text-sm text-muted-foreground mb-3">No roles explored yet</p>
+                <Button size="sm" onClick={() => navigate("/")}>Explore a Role</Button>
               </CardContent>
             </Card>
           ) : (
@@ -278,20 +276,20 @@ const Dashboard = () => {
                           <Bot className="h-3 w-3 text-primary shrink-0" />
                           <div className="flex-1">
                             <div className="flex justify-between text-[10px] mb-0.5">
-                              <span className="text-muted-foreground">AI exposure</span>
+                              <span className="text-muted-foreground">AI tools available</span>
                               <span className="font-medium text-foreground">{a.augmented_percent}%</span>
                             </div>
                             <Progress value={a.augmented_percent} className="h-1" />
                           </div>
                         </div>
                         <div className="flex items-center gap-2">
-                          <ShieldAlert className="h-3 w-3 text-destructive shrink-0" />
+                          <GraduationCap className="h-3 w-3 text-brand-mid shrink-0" />
                           <div className="flex-1">
                             <div className="flex justify-between text-[10px] mb-0.5">
-                              <span className="text-muted-foreground">Replacement risk</span>
-                              <span className="font-medium text-foreground">{a.automation_risk_percent}%</span>
+                              <span className="text-muted-foreground">Skills to build</span>
+                              <span className="font-medium text-foreground">{100 - a.automation_risk_percent}%</span>
                             </div>
-                            <Progress value={a.automation_risk_percent} className="h-1" />
+                            <Progress value={100 - a.automation_risk_percent} className="h-1" />
                           </div>
                         </div>
                       </div>
@@ -312,7 +310,7 @@ const Dashboard = () => {
 
         {/* Practice History — grouped by job with scores */}
         <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}>
-          <h2 className="text-xs font-medium uppercase tracking-widest text-muted-foreground mb-3">Upskill History</h2>
+          <h2 className="text-xs font-medium uppercase tracking-widest text-muted-foreground mb-3">Learning Progress</h2>
           {loading ? (
             <div className="flex justify-center py-8">
               <Loader2 className="h-5 w-5 text-primary animate-spin" />
@@ -320,8 +318,8 @@ const Dashboard = () => {
           ) : completions.length === 0 ? (
             <Card>
               <CardContent className="p-8 text-center">
-                <p className="text-sm text-muted-foreground mb-3">No upskill sessions yet</p>
-                <Button size="sm" onClick={() => navigate("/")}>Start Upskilling</Button>
+                <p className="text-sm text-muted-foreground mb-3">No practice sessions yet</p>
+                <Button size="sm" onClick={() => navigate("/")}>Start Learning</Button>
               </CardContent>
             </Card>
           ) : (() => {

@@ -26,9 +26,9 @@ function impactColor(score: number) {
 }
 
 function insightLabel(aiExposure: number, jobImpact: number): { label: string; color: string } | null {
-  if (aiExposure >= 60 && jobImpact >= 60) return { label: "🔴 Urgent Upskill", color: "bg-destructive/10 text-destructive border-destructive/20" };
-  if (aiExposure >= 60 && jobImpact < 40) return { label: "🤖 Let AI Handle", color: "bg-accent text-muted-foreground border-border/30" };
-  if (aiExposure < 40 && jobImpact >= 60) return { label: "💪 Human Edge", color: "bg-success/10 text-success border-success/20" };
+  if (aiExposure >= 60 && jobImpact >= 60) return { label: "🚀 Learn This First", color: "bg-primary/10 text-primary border-primary/20" };
+  if (aiExposure >= 60 && jobImpact < 40) return { label: "🤖 AI Handles This", color: "bg-accent text-muted-foreground border-border/30" };
+  if (aiExposure < 40 && jobImpact >= 60) return { label: "💪 Your Superpower", color: "bg-success/10 text-success border-success/20" };
   return null;
 }
 
@@ -58,20 +58,20 @@ export function TaskTable({ tasks, skills, completedTasks, onPractice }: TaskTab
       <div className="flex items-center gap-4 mb-3 flex-wrap">
         {summary.urgent > 0 && (
           <span className="text-xs text-muted-foreground flex items-center gap-1.5">
-            <span className="text-sm">🔴</span>
-            <span className="font-semibold text-foreground">{summary.urgent}</span> urgent upskill
+            <span className="text-sm">🚀</span>
+            <span className="font-semibold text-foreground">{summary.urgent}</span> learn first
           </span>
         )}
         {summary.humanEdge > 0 && (
           <span className="text-xs text-muted-foreground flex items-center gap-1.5">
             <span className="text-sm">💪</span>
-            <span className="font-semibold text-foreground">{summary.humanEdge}</span> human edge
+            <span className="font-semibold text-foreground">{summary.humanEdge}</span> your superpower
           </span>
         )}
         {summary.letAi > 0 && (
           <span className="text-xs text-muted-foreground flex items-center gap-1.5">
             <span className="text-sm">🤖</span>
-            <span className="font-semibold text-foreground">{summary.letAi}</span> let AI handle
+            <span className="font-semibold text-foreground">{summary.letAi}</span> AI handles
           </span>
         )}
       </div>
@@ -100,7 +100,7 @@ export function TaskTable({ tasks, skills, completedTasks, onPractice }: TaskTab
 
                 {/* Dual scores row */}
                 <div className="flex items-center gap-1.5 flex-wrap">
-                  <Badge className={`text-[10px] shrink-0 ${exposureColor(aiScore)}`} title="AI Exposure — how much AI can do this task">
+                  <Badge className={`text-[10px] shrink-0 ${exposureColor(aiScore)}`} title="AI Tool Potential — how much AI tools can help with this task">
                     🤖 {aiScore}%
                   </Badge>
                   <Badge className={`text-[10px] shrink-0 ${impactColor(impactScore)}`} title="Job Impact — how critical this task is to role success">
@@ -124,8 +124,8 @@ export function TaskTable({ tasks, skills, completedTasks, onPractice }: TaskTab
                   onClick={() => onPractice(task.name)}
                 >
                   {isCompleted
-                    ? <><CheckCircle2 className="h-3 w-3 text-success" /> Upskilled</>
-                    : <><Play className="h-3 w-3" /> Upskill</>
+                    ? <><CheckCircle2 className="h-3 w-3 text-success" /> Learned</>
+                    : <><Play className="h-3 w-3" /> Learn This</>
                   }
                 </Button>
               </motion.div>
