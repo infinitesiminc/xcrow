@@ -19,6 +19,48 @@ import {
   Download, Database,
 } from "lucide-react";
 
+/** Try stored logo → Clearbit → initial */
+function CompanyLogo({ url, name, size = "h-6 w-6" }: { url: string | null; name: string; size?: string }) {
+  const [src, setSrc] = useState(url);
+  const [fallbackTried, setFallbackTried] = useState(false);
+
+  useEffect(() => { setSrc(url); setFallbackTried(false); }, [url]);
+
+  const website = name.toLowerCase().replace(/[^a-z0-9]/g, "") + ".com";
+  const clearbitUrl = `https://logo.clearbit.com/${website}`;
+
+  if (!src && !fallbackTried) {
+    return (
+      <img
+        src={clearbitUrl}
+        alt=""
+        className={`${size} rounded object-contain bg-background shrink-0`}
+        onError={() => setFallbackTried(true)}
+      />
+    );
+  }
+
+  if (!src || fallbackTried) {
+    return (
+      <div className={`${size} rounded bg-muted flex items-center justify-center text-[10px] font-bold text-muted-foreground shrink-0`}>
+        {name.charAt(0)}
+      </div>
+    );
+  }
+
+  return (
+    <img
+      src={src}
+      alt=""
+      className={`${size} rounded object-contain bg-background shrink-0`}
+      onError={() => {
+        if (!fallbackTried) { setSrc(clearbitUrl); setFallbackTried(true); }
+        else setSrc(null);
+      }}
+    />
+  );
+}
+
 /* ── constants ── */
 const ATS_PLATFORMS = [
   { id: "greenhouse", label: "Greenhouse", color: "hsl(142, 70%, 45%)" },
@@ -370,13 +412,7 @@ export default function ATSSync() {
                     >
                       <TableCell>
                         <div className="flex items-center gap-2.5">
-                          {co.logo_url ? (
-                            <img src={co.logo_url} alt="" className="h-6 w-6 rounded object-contain bg-background shrink-0" />
-                          ) : (
-                            <div className="h-6 w-6 rounded bg-muted flex items-center justify-center text-[10px] font-bold text-muted-foreground shrink-0">
-                              {co.name.charAt(0)}
-                            </div>
-                          )}
+                          <CompanyLogo url={co.logo_url} name={co.name} />
                           <span className="font-medium text-foreground">{co.name}</span>
                         </div>
                       </TableCell>
@@ -413,13 +449,7 @@ export default function ATSSync() {
             <CardContent className="p-4">
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                 <div className="flex items-center gap-3">
-                  {selectedCompany.logo_url ? (
-                    <img src={selectedCompany.logo_url} alt="" className="h-10 w-10 rounded object-contain bg-background" />
-                  ) : (
-                    <div className="h-10 w-10 rounded bg-muted flex items-center justify-center font-bold text-muted-foreground">
-                      {selectedCompany.name.charAt(0)}
-                    </div>
-                  )}
+                  <CompanyLogo url={selectedCompany.logo_url} name={selectedCompany.name} size="h-10 w-10" />
                   <div>
                     <h2 className="text-lg font-semibold text-foreground">{selectedCompany.name}</h2>
                     <div className="flex items-center gap-2 mt-0.5">
