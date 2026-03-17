@@ -26,9 +26,9 @@ function impactColor(score: number) {
 }
 
 function insightLabel(aiExposure: number, jobImpact: number): { label: string; color: string } | null {
-  if (aiExposure >= 60 && jobImpact >= 60) return { label: "🔴 Urgent Upskill", color: "bg-destructive/10 text-destructive border-destructive/20" };
-  if (aiExposure >= 60 && jobImpact < 40) return { label: "🤖 Let AI Handle", color: "bg-accent text-muted-foreground border-border/30" };
-  if (aiExposure < 40 && jobImpact >= 60) return { label: "💪 Human Edge", color: "bg-success/10 text-success border-success/20" };
+  if (aiExposure >= 60 && jobImpact >= 60) return { label: "🚀 Learn This First", color: "bg-primary/10 text-primary border-primary/20" };
+  if (aiExposure >= 60 && jobImpact < 40) return { label: "🤖 AI Handles This", color: "bg-accent text-muted-foreground border-border/30" };
+  if (aiExposure < 40 && jobImpact >= 60) return { label: "💪 Your Superpower", color: "bg-success/10 text-success border-success/20" };
   return null;
 }
 
