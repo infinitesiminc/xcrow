@@ -100,7 +100,7 @@ export function TaskTable({ tasks, skills, completedTasks, onPractice }: TaskTab
 
                 {/* Dual scores row */}
                 <div className="flex items-center gap-1.5 flex-wrap">
-                  <Badge className={`text-[10px] shrink-0 ${exposureColor(aiScore)}`} title="AI Exposure — how much AI can do this task">
+                  <Badge className={`text-[10px] shrink-0 ${exposureColor(aiScore)}`} title="AI Tool Potential — how much AI tools can help with this task">
                     🤖 {aiScore}%
                   </Badge>
                   <Badge className={`text-[10px] shrink-0 ${impactColor(impactScore)}`} title="Job Impact — how critical this task is to role success">
