@@ -90,7 +90,7 @@ export default function Workspaces() {
       );
 
       // Group interests by user
-      const interestsData = (interestsRes.data ?? []) as { user_id: string; use_case: string }[];
+      const interestsData = ((interestsRes.data ?? []) as unknown) as { user_id: string; use_case: string }[];
       const interestMap = new Map<string, string[]>();
       interestsData.forEach((row) => {
         const arr = interestMap.get(row.user_id) || [];
