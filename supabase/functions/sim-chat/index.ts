@@ -167,6 +167,8 @@ async function handleCompile(payload: any, apiKey: string) {
 
   const prompt = `You are designing a COACHING simulation about AI readiness for a professional task.
 
+${dateCtx}
+
 Role: ${jobTitle}${company ? ` at ${company}` : ""}
 Task: ${taskName}
 ${aiContext}
