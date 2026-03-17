@@ -40,7 +40,7 @@ const superadminItems = [
 
 function NavGroup({ label, items, collapsed, icon, wsParam }: {
   label: string;
-  items: typeof diagnoseItems;
+  items: typeof platformItems;
   collapsed: boolean;
   icon?: React.ReactNode;
   wsParam?: string;
