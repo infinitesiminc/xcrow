@@ -477,16 +477,16 @@ const Analysis = () => {
           <Tabs defaultValue="tasks" className="mb-8">
             <TabsList className="w-full grid grid-cols-4 h-10 sm:h-11 mb-4">
               <TabsTrigger value="tasks" className="gap-1 sm:gap-1.5 text-[11px] sm:text-sm px-1 sm:px-3">
-                <ListChecks className="h-3 w-3 sm:h-3.5 sm:w-3.5" /> <span className="hidden sm:inline">Tasks</span><span className="sm:hidden">Tasks</span>
+                <ListChecks className="h-3 w-3 sm:h-3.5 sm:w-3.5" /> <span className="hidden sm:inline">Your Tasks</span><span className="sm:hidden">Tasks</span>
               </TabsTrigger>
               <TabsTrigger value="pathways" className="gap-1 sm:gap-1.5 text-[11px] sm:text-sm px-1 sm:px-3">
-                <Route className="h-3 w-3 sm:h-3.5 sm:w-3.5" /> <span className="hidden sm:inline">Pathways</span><span className="sm:hidden">Paths</span>
+                <Route className="h-3 w-3 sm:h-3.5 sm:w-3.5" /> <span className="hidden sm:inline">Career Boost</span><span className="sm:hidden">Boost</span>
               </TabsTrigger>
               <TabsTrigger value="plan" className="gap-1 sm:gap-1.5 text-[11px] sm:text-sm px-1 sm:px-3">
-                <Wrench className="h-3 w-3 sm:h-3.5 sm:w-3.5" /> Tools
+                <Wrench className="h-3 w-3 sm:h-3.5 sm:w-3.5" /> AI Toolkit
               </TabsTrigger>
               <TabsTrigger value="context" className="gap-1 sm:gap-1.5 text-[11px] sm:text-sm px-1 sm:px-3">
-                <BarChart3 className="h-3 w-3 sm:h-3.5 sm:w-3.5" /> <span className="hidden sm:inline">Context</span><span className="sm:hidden">Info</span>
+                <BarChart3 className="h-3 w-3 sm:h-3.5 sm:w-3.5" /> <span className="hidden sm:inline">Insights</span><span className="sm:hidden">Info</span>
               </TabsTrigger>
             </TabsList>
 
