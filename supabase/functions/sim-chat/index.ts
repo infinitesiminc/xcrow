@@ -123,6 +123,11 @@ async function callAI(apiKey: string, messages: { role: string; content: string 
   return data.choices[0].message.content;
 }
 
+function currentDateContext(): string {
+  const now = new Date();
+  return `CURRENT DATE: ${now.toLocaleDateString("en-US", { month: "long", year: "numeric" })}. Always reference the LATEST available versions of AI tools and models as of this date. For example, use "GPT-4o" not "GPT-3", "Claude 4" not "Claude 2", "Gemini 2.5" not "Bard". When naming specific tools (e.g. Notion AI, GitHub Copilot, Cursor, v0), cite their current capabilities, not outdated ones. Never reference deprecated or discontinued tools.`;
+}
+
 function aiStateDescription(taskMeta?: any): string {
   if (!taskMeta) return "";
   const state = taskMeta.currentState;
