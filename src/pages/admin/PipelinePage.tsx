@@ -36,6 +36,64 @@ interface Company {
   funding_total: string | null;
   founded_year: number | null;
   job_count?: number;
+  priority_score?: number;
+}
+
+/* ── Priority Scoring ── */
+const FUNDING_SCORES: Record<string, number> = {
+  "seed": 15, "pre-seed": 12, "series a": 25, "series b": 30, "series c": 25,
+  "series d": 20, "series e": 15, "growth": 20, "late stage": 15,
+  "ipo": 10, "public": 5, "bootstrapped": 8, "acquired": 5,
+};
+
+const EMPLOYEE_SCORES: Record<string, number> = {
+  "1-10": 5, "11-50": 15, "51-200": 25, "201-500": 20,
+  "501-1000": 15, "1001-5000": 10, "5001-10000": 8, "10000+": 5,
+};
+
+function computePriorityScore(
+  company: Company,
+  industryCounts: Map<string, number>,
+  totalCompanies: number,
+): number {
+  let score = 0;
+
+  // 1. Role count signal (0-30 pts) — more open roles = more data value
+  const roles = company.job_count || 0;
+  score += Math.min(30, roles * 0.5);
+
+  // 2. Funding stage signal (0-30 pts) — Series A-C startups are highest value
+  const funding = (company.funding_stage || "").toLowerCase().trim();
+  score += FUNDING_SCORES[funding] || 0;
+
+  // 3. Employee range signal (0-25 pts) — 51-500 is the growth sweet spot
+  const size = (company.employee_range || "").trim();
+  score += EMPLOYEE_SCORES[size] || 0;
+
+  // 4. Industry diversity bonus (0-25 pts) — underrepresented industries get a boost
+  const industry = (company.industry || "Other").toLowerCase();
+  const industryShare = (industryCounts.get(industry) || 1) / Math.max(totalCompanies, 1);
+  // If this industry is <5% of our DB, full bonus. >20%, no bonus.
+  if (industryShare < 0.05) score += 25;
+  else if (industryShare < 0.10) score += 18;
+  else if (industryShare < 0.15) score += 10;
+  else if (industryShare < 0.20) score += 5;
+
+  return Math.round(score);
+}
+
+function scoreColor(score: number): string {
+  if (score >= 60) return "text-green-500";
+  if (score >= 40) return "text-yellow-500";
+  if (score >= 20) return "text-orange-400";
+  return "text-muted-foreground";
+}
+
+function scoreLabel(score: number): string {
+  if (score >= 60) return "High priority";
+  if (score >= 40) return "Medium";
+  if (score >= 20) return "Low";
+  return "Minimal";
 }
 
 interface DbJob {
@@ -168,7 +226,18 @@ export default function PipelinePage() {
       if (jobRows.length < pageSize) break;
       from += pageSize;
     }
-    setCompanies(all.map(c => ({ ...c, job_count: jm.get(c.id) || 0 })));
+    // Compute industry distribution for diversity scoring
+    const industryCounts = new Map<string, number>();
+    all.forEach(c => {
+      const ind = (c.industry || "Other").toLowerCase();
+      industryCounts.set(ind, (industryCounts.get(ind) || 0) + 1);
+    });
+
+    const scored = all.map(c => {
+      const withJobs = { ...c, job_count: jm.get(c.id) || 0 };
+      return { ...withJobs, priority_score: computePriorityScore(withJobs, industryCounts, all.length) };
+    });
+    setCompanies(scored);
     setLoadingCompanies(false);
   }, []);
 
@@ -178,8 +247,9 @@ export default function PipelinePage() {
     const q = companySearch.trim().toLowerCase();
     // When searching, show across all ATS platforms; otherwise filter by selected ATS
     const af = q ? companies : companies.filter(c => c.detected_ats_platform === selectedATS);
-    if (!q) return af;
-    return af.filter(c => c.name.toLowerCase().includes(q));
+    const matched = q ? af.filter(c => c.name.toLowerCase().includes(q)) : af;
+    // Sort by priority score descending
+    return [...matched].sort((a, b) => (b.priority_score || 0) - (a.priority_score || 0));
   }, [companies, selectedATS, companySearch]);
 
   const selectedCompany = companies.find(c => c.id === selectedCompanyId);
@@ -451,7 +521,14 @@ export default function PipelinePage() {
                           {c.name}
                           {(c.job_count || 0) > 0 && <span className="text-muted-foreground font-normal"> · {c.job_count}</span>}
                         </p>
-                        {c.industry && <p className="text-[9px] text-muted-foreground truncate mt-0.5">{c.industry}</p>}
+                        <div className="flex items-center gap-1 mt-0.5">
+                          {c.industry && <span className="text-[9px] text-muted-foreground truncate">{c.industry}</span>}
+                          {c.priority_score != null && (
+                            <span className={`text-[9px] font-semibold ${scoreColor(c.priority_score)}`} title={scoreLabel(c.priority_score)}>
+                              ★{c.priority_score}
+                            </span>
+                          )}
+                        </div>
                       </div>
                       <div className="flex items-center gap-0.5 shrink-0">
                         <Button variant="ghost" size="sm" className="h-5 w-5 p-0" onClick={e => { e.stopPropagation(); syncCompanyJobs(c.id); }} disabled={!!syncing} title="Sync jobs">
