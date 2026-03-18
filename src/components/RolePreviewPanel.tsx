@@ -163,11 +163,12 @@ export default function RolePreviewPanel({ role, onClose }: RolePreviewPanelProp
 
   // Simulation view
   if (view === "simulation" && simTask) {
-    const content = (
+    const returnView = wasEnlargedRef.current ? "enlarged" : "breakdown";
+    const simContent = (
       <div className="h-full flex flex-col">
         <SimulatorModal
           open={true}
-          onClose={() => { setView("breakdown"); setSimTask(null); }}
+          onClose={() => { setView(returnView); setSimTask(null); }}
           taskName={simTask.cluster_name}
           jobTitle={role.title}
           company={role.company || undefined}
@@ -175,14 +176,21 @@ export default function RolePreviewPanel({ role, onClose }: RolePreviewPanelProp
           taskTrend={simTask.ai_trend || undefined}
           taskImpactLevel={simTask.impact_level || undefined}
           inline
-          onBackToFeed={() => { setView("breakdown"); setSimTask(null); }}
+          onBackToFeed={() => { setView(returnView); setSimTask(null); }}
           onNextTask={pickNextTask}
           onCompleted={fetchCompletions}
         />
       </div>
     );
 
-    if (view === "simulation") return content;
+    if (wasEnlargedRef.current) {
+      return (
+        <div className="fixed inset-0 z-[100] bg-background/95 backdrop-blur-sm flex flex-col">
+          {simContent}
+        </div>
+      );
+    }
+    return simContent;
   }
 
   // Enlarged overlay (full-screen portal)
