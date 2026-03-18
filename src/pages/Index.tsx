@@ -69,9 +69,6 @@ const Index = () => {
         .gt("augmented_percent", 0)
         .order("augmented_percent", { ascending: false })
         .limit(100);
-        .gt("augmented_percent", 0)
-        .order("augmented_percent", { ascending: false })
-        .limit(100);
 
       if (error || !data || data.length === 0) {
         setLoadingRoles(false);
