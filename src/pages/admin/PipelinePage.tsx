@@ -883,7 +883,7 @@ export default function PipelinePage() {
         </TabsContent>
 
         {/* ═══════ TAB: ANALYZE ═══════ */}
-        <TabsContent value="analyze" className="m-0 flex" style={{ height: 'calc(100vh - 310px)' }}>
+        <TabsContent value="analyze" className="m-0 flex" style={{ height: 'calc(100vh - 240px)' }}>
           {/* Company selector sidebar */}
           <div className="w-64 border-r border-border flex flex-col shrink-0">
             <div className="p-3 shrink-0">
