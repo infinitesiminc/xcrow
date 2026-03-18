@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Send, Loader2, RotateCcw, ChevronDown, ChevronUp, CheckCircle2, X, ArrowRight, Target, Circle, CircleCheck, AlertTriangle, TrendingUp, Trophy } from "lucide-react";
+import { Send, Loader2, RotateCcw, ChevronDown, ChevronUp, CheckCircle2, X, ArrowRight, Target, Circle, CircleCheck, AlertTriangle, TrendingUp, Trophy, Zap } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
