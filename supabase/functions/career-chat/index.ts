@@ -167,14 +167,26 @@ serve(async (req) => {
       const sb = createClient(supabaseUrl, supabaseKey);
 
       const limit = args.limit || 6;
-      const q = `%${args.query}%`;
+      // Split query into words for broader matching
+      const words = args.query.split(/\s+/).filter(Boolean);
+      const patterns = words.map(w => `%${w}%`);
       
-      const { data: jobs } = await sb
+      // Build OR conditions: match any word in title, department, location, or country
+      const orConditions = patterns.flatMap(p => [
+        `title.ilike.${p}`,
+        `department.ilike.${p}`,
+        `location.ilike.${p}`,
+        `country.ilike.${p}`,
+      ]).join(",");
+      
+      const { data: jobs, error: dbError } = await sb
         .from("jobs")
         .select("id, title, department, location, country, work_mode, seniority, augmented_percent, automation_risk_percent, companies(name, logo_url, website)")
-        .or(`title.ilike.${q},department.ilike.${q}`)
+        .or(orConditions)
         .order("augmented_percent", { ascending: false, nullsFirst: false })
         .limit(limit);
+      
+      if (dbError) console.error("DB search error:", dbError);
 
       const roleResults = (jobs || []).map((j: any) => ({
         jobId: j.id,
