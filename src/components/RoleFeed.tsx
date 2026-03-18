@@ -13,12 +13,31 @@ interface RoleCard {
   tag: string;
   company?: string;
   location?: string;
+  logo?: string;
 }
 
 interface RoleFeedProps {
   roles: RoleCard[];
   onOpenSearch: () => void;
 }
+
+/* ── Hash to hue (for generative patterns) ─────────── */
+function hashToHue(str: string): number {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) hash = str.charCodeAt(i) + ((hash << 5) - hash);
+  return Math.abs(hash) % 360;
+}
+
+/* ── Tag badge colors ──────────────────────────────── */
+const TAG_BADGE: Record<string, string> = {
+  Tech: "bg-blue-500/15 text-blue-400 border-blue-500/20",
+  Finance: "bg-amber-500/15 text-amber-400 border-amber-500/20",
+  Marketing: "bg-pink-500/15 text-pink-400 border-pink-500/20",
+  Legal: "bg-amber-500/15 text-amber-400 border-amber-500/20",
+  Operations: "bg-cyan-500/15 text-cyan-400 border-cyan-500/20",
+  Sales: "bg-green-500/15 text-green-400 border-green-500/20",
+  Other: "bg-muted text-muted-foreground border-border/40",
+};
 
 /* ── Shared: Gauge ─────────────────────────────────── */
 
