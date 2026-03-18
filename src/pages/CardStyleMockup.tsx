@@ -161,7 +161,7 @@ function StyleC({ jobs }: { jobs: typeof SAMPLE_JOBS }) {
             className="group rounded-xl overflow-hidden border border-border/40 hover:border-border bg-card transition-all hover:shadow-lg cursor-pointer"
           >
             <div
-              className="relative h-28 flex items-center justify-center"
+              className="relative h-28"
               style={{
                 background: `linear-gradient(135deg, hsl(${hue1} 70% 15%) 0%, hsl(${hue2} 60% 12%) 50%, hsl(${hue3} 50% 10%) 100%)`,
               }}
@@ -187,13 +187,6 @@ function StyleC({ jobs }: { jobs: typeof SAMPLE_JOBS }) {
                   background: `radial-gradient(circle, hsl(${hue2} 70% 60% / 0.3), transparent)`,
                 }}
               />
-              {/* Centered company logo */}
-              <img
-                src={job.logo}
-                alt={job.company}
-                className="relative z-10 h-11 w-11 rounded-xl object-contain bg-black/30 backdrop-blur-sm p-1.5"
-                onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
-              />
               {/* Metrics overlay */}
               <div className="absolute bottom-2 left-2 right-2 flex items-center justify-between">
                 <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-black/40 backdrop-blur-sm">
@@ -206,11 +199,21 @@ function StyleC({ jobs }: { jobs: typeof SAMPLE_JOBS }) {
               </div>
             </div>
             <div className="p-3">
-              <h3 className="text-sm font-semibold text-foreground leading-snug group-hover:text-primary transition-colors truncate">{job.title}</h3>
-              <p className="text-[11px] text-muted-foreground truncate mt-0.5">
-                {[job.company, job.location].filter(Boolean).join(" · ")}
-              </p>
-              <span className={`inline-block mt-1.5 px-2 py-0.5 text-[10px] font-medium rounded-full border ${DEPT_BADGE[job.dept] || defaultBadge}`}>
+              <div className="flex items-start gap-2.5">
+                <img
+                  src={job.logo}
+                  alt={job.company}
+                  className="h-9 w-9 rounded-lg object-contain bg-white/10 p-1 shrink-0"
+                  onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+                />
+                <div className="min-w-0">
+                  <h3 className="text-sm font-semibold text-foreground leading-snug group-hover:text-primary transition-colors truncate">{job.title}</h3>
+                  <p className="text-[11px] text-muted-foreground truncate mt-0.5">
+                    {[job.company, job.location].filter(Boolean).join(" · ")}
+                  </p>
+                </div>
+              </div>
+              <span className={`inline-block mt-2 px-2 py-0.5 text-[10px] font-medium rounded-full border ${DEPT_BADGE[job.dept] || defaultBadge}`}>
                 {job.dept}
               </span>
             </div>
