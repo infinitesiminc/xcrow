@@ -21,7 +21,7 @@ export default function HRLayout() {
                 Superadmin
               </Badge>
             </header>
-            <main className="flex-1 flex flex-col overflow-hidden">
+            <main className="flex-1 overflow-auto">
               <Outlet />
             </main>
           </div>
