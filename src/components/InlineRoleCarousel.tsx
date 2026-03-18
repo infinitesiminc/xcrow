@@ -12,6 +12,7 @@ export interface RoleResult {
   seniority: string | null;
   augmented: number;
   risk: number;
+  sourceUrl?: string | null;
 }
 
 function hashToHue(str: string): number {

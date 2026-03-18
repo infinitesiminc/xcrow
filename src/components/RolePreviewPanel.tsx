@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
-import { X, MapPin, Loader2, Play, Maximize2, ChevronLeft, CheckCircle2, Bot, Trophy, Bookmark, BookmarkCheck, GraduationCap, MessageSquare, BarChart3, FileText, Users, Search, Settings, Globe, Shield, Lightbulb, PenTool, Code, TrendingUp, Megaphone, Target, Briefcase, Heart, Layers, Zap } from "lucide-react";
+import { X, MapPin, Loader2, Play, Maximize2, ChevronLeft, CheckCircle2, Bot, Trophy, Bookmark, BookmarkCheck, GraduationCap, MessageSquare, BarChart3, FileText, Users, Search, Settings, Globe, Shield, Lightbulb, PenTool, Code, TrendingUp, Megaphone, Target, Briefcase, Heart, Layers, Zap, ExternalLink } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import ReactMarkdown from "react-markdown";
 import { supabase } from "@/integrations/supabase/client";
@@ -71,6 +71,7 @@ export default function RolePreviewPanel({ role, onClose }: RolePreviewPanelProp
   const { user, openAuthModal } = useAuth();
   const [tasks, setTasks] = useState<TaskCluster[]>([]);
   const [summary, setSummary] = useState<string | null>(null);
+  const [sourceUrl, setSourceUrl] = useState<string | null>(role.sourceUrl || null);
   const [loading, setLoading] = useState(true);
   const [view, setView] = useState<PanelView>("details");
   const [simTask, setSimTask] = useState<TaskCluster | null>(null);
@@ -90,10 +91,11 @@ export default function RolePreviewPanel({ role, onClose }: RolePreviewPanelProp
         supabase.from("job_task_clusters")
           .select("cluster_name, description, ai_exposure_score, priority, ai_state, ai_trend, impact_level")
           .eq("job_id", role.jobId).order("sort_order"),
-        supabase.from("jobs").select("role_summary").eq("id", role.jobId).single(),
+        supabase.from("jobs").select("role_summary, source_url").eq("id", role.jobId).single(),
       ]);
       setTasks(taskRes.data || []);
       setSummary(jobRes.data?.role_summary || null);
+      setSourceUrl(role.sourceUrl || jobRes.data?.source_url || null);
       setLoading(false);
     })();
   }, [role.jobId]);
@@ -360,10 +362,15 @@ export default function RolePreviewPanel({ role, onClose }: RolePreviewPanelProp
             <X className="h-4 w-4 text-muted-foreground" />
           </button>
         </div>
-        <div className="flex items-center gap-3 text-xs text-muted-foreground">
+        <div className="flex items-center gap-3 text-xs text-muted-foreground flex-wrap">
           {role.location && <span className="flex items-center gap-0.5"><MapPin className="h-3 w-3" />{role.location}</span>}
           {role.workMode && <span className="capitalize">{role.workMode}</span>}
           {role.seniority && <span className="capitalize">{role.seniority}</span>}
+          {sourceUrl && (
+            <a href={sourceUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-0.5 text-primary hover:underline">
+              <ExternalLink className="h-3 w-3" />Original posting
+            </a>
+          )}
         </div>
         {role.augmented > 0 && (
           <div className="mt-3 flex items-center gap-2">

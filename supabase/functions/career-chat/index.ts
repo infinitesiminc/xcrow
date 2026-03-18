@@ -182,7 +182,7 @@ serve(async (req) => {
       
       const { data: jobs, error: dbError } = await sb
         .from("jobs")
-        .select("id, title, department, location, country, work_mode, seniority, augmented_percent, automation_risk_percent, companies(name, logo_url, website)")
+        .select("id, title, department, location, country, work_mode, seniority, augmented_percent, automation_risk_percent, source_url, companies(name, logo_url, website)")
         .or(orConditions)
         .order("augmented_percent", { ascending: false, nullsFirst: false })
         .limit(limit);
@@ -200,6 +200,7 @@ serve(async (req) => {
         seniority: j.seniority,
         augmented: j.augmented_percent || 0,
         risk: j.automation_risk_percent || 0,
+        sourceUrl: j.source_url || null,
       }));
 
       // Second AI call with tool result — this time streamed back to client
