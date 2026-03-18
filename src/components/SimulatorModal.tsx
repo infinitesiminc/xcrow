@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Send, Loader2, RotateCcw, ChevronDown, ChevronUp, CheckCircle2, X, ArrowRight, Target, Circle, CircleCheck } from "lucide-react";
+import { Send, Loader2, RotateCcw, ChevronDown, ChevronUp, CheckCircle2, X, ArrowRight, Target, Circle, CircleCheck, AlertTriangle, TrendingUp } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -17,6 +17,7 @@ import {
   type SimScoreResult,
   type SimMode,
   type LearningObjective,
+  type SimConfig,
 } from "@/lib/simulator";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -24,7 +25,12 @@ import { useToast } from "@/hooks/use-toast";
 
 type Phase = "loading" | "briefing" | "chat" | "review" | "completing" | "done";
 
-const MAX_ROUNDS = 8;
+// Defaults — overridden by server config
+const DEFAULT_MIN_ROUNDS = 3;
+const DEFAULT_MAX_ROUNDS = 6;
+
+// Inactivity nudge timer (ms)
+const INACTIVITY_NUDGE_MS = 30_000;
 
 interface SimulatorModalProps {
   open: boolean;
@@ -43,13 +49,16 @@ interface SimulatorModalProps {
 const ObjectiveChecklist = ({
   objectives,
   status,
+  scaffoldingTiers,
   compact = false,
 }: {
   objectives: LearningObjective[];
   status: Record<string, boolean>;
+  scaffoldingTiers?: Record<string, number>;
   compact?: boolean;
 }) => {
   const metCount = objectives.filter(o => status[o.id]).length;
+  const tierLabels = ["", "Nudged", "Hinted", "Guided"];
   
   return (
     <div className={compact ? "space-y-1.5" : "space-y-2"}>
@@ -61,6 +70,7 @@ const ObjectiveChecklist = ({
       </div>
       {objectives.map((obj) => {
         const met = status[obj.id];
+        const tier = scaffoldingTiers?.[obj.id] || 0;
         return (
           <motion.div
             key={obj.id}
@@ -81,6 +91,9 @@ const ObjectiveChecklist = ({
               {!compact && (
                 <p className="text-[11px] text-muted-foreground leading-snug mt-0.5">{obj.description}</p>
               )}
+              {tier > 0 && (
+                <span className="text-[10px] text-muted-foreground/60 italic">{tierLabels[tier]}</span>
+              )}
             </div>
           </motion.div>
         );
@@ -96,116 +109,120 @@ const BriefingScreen = ({
 }: {
   session: SimSession;
   onStart: () => void;
-}) => (
-  <motion.div
-    key="briefing"
-    initial={{ opacity: 0, y: 16 }}
-    animate={{ opacity: 1, y: 0 }}
-    exit={{ opacity: 0, y: -8 }}
-    transition={{ duration: 0.4, ease: "easeOut" }}
-    className="flex flex-col gap-8 py-6 px-2 max-w-2xl mx-auto"
-  >
-    <div className="text-center space-y-3">
-      <motion.div
-        initial={{ scale: 0.8, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        transition={{ delay: 0.15, duration: 0.3 }}
-        className="text-5xl"
-      >
-        🤖
-      </motion.div>
-      <h3 className="text-xl font-serif font-bold text-foreground">{session.scenario.title}</h3>
-      <p className="text-sm text-muted-foreground leading-relaxed max-w-md mx-auto">{session.scenario.description}</p>
-      <span className="inline-block text-[11px] px-2.5 py-1 rounded-full font-medium bg-primary/10 text-primary">
-        💬 8 Scenarios · Coaching format
-      </span>
-    </div>
-
-    {/* Learning Objectives */}
-    {session.learningObjectives && session.learningObjectives.length > 0 && (
-      <motion.div
-        initial={{ opacity: 0, y: 8 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.18, duration: 0.4 }}
-        className="rounded-2xl bg-primary/5 border border-primary/20 p-6"
-      >
-        <h4 className="text-xs font-medium uppercase tracking-widest text-primary mb-3 flex items-center gap-2">
-          <Target className="h-3.5 w-3.5" />
-          What you'll learn
-        </h4>
-        <ul className="space-y-3">
-          {session.learningObjectives.map((obj, i) => (
-            <motion.li
-              key={obj.id}
-              initial={{ opacity: 0, x: -8 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.25 + i * 0.08 }}
-              className="flex items-start gap-3"
-            >
-              <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-primary/10 text-xs font-bold text-primary shrink-0 mt-0.5">
-                {i + 1}
-              </span>
-              <div>
-                <span className="text-[15px] font-medium text-foreground">{obj.label}</span>
-                <p className="text-xs text-muted-foreground mt-0.5">{obj.description}</p>
-              </div>
-            </motion.li>
-          ))}
-        </ul>
-      </motion.div>
-    )}
-
+}) => {
+  const config = session.config;
+  return (
     <motion.div
-      initial={{ opacity: 0, y: 8 }}
+      key="briefing"
+      initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.2, duration: 0.4 }}
-      className="rounded-2xl bg-accent/30 border border-border/40 p-6"
+      exit={{ opacity: 0, y: -8 }}
+      transition={{ duration: 0.4, ease: "easeOut" }}
+      className="flex flex-col gap-8 py-6 px-2 max-w-2xl mx-auto"
     >
-      <h4 className="text-xs font-medium uppercase tracking-widest text-muted-foreground mb-3">What you need to know</h4>
-      <div className="text-[15px] text-foreground/90 leading-[1.7] prose prose-sm dark:prose-invert max-w-none [&>p]:mb-3">
-        <ReactMarkdown>{session.briefing}</ReactMarkdown>
+      <div className="text-center space-y-3">
+        <motion.div
+          initial={{ scale: 0.8, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ delay: 0.15, duration: 0.3 }}
+          className="text-5xl"
+        >
+          🤖
+        </motion.div>
+        <h3 className="text-xl font-serif font-bold text-foreground">{session.scenario.title}</h3>
+        <p className="text-sm text-muted-foreground leading-relaxed max-w-md mx-auto">{session.scenario.description}</p>
+        <span className="inline-block text-[11px] px-2.5 py-1 rounded-full font-medium bg-primary/10 text-primary">
+          🎯 {config?.objectiveCount || 3} goals · Ends when you've got them all
+        </span>
       </div>
-    </motion.div>
 
-    {session.tips && session.tips.length > 0 && (
-      <motion.div
-        initial={{ opacity: 0, y: 8 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.3, duration: 0.4 }}
-        className="rounded-2xl border border-border/30 p-6"
-      >
-        <h4 className="text-xs font-medium uppercase tracking-widest text-muted-foreground mb-3">Tips</h4>
-        <ul className="space-y-3">
-          {session.tips.map((tip: any, i: number) => {
-            const tipText = typeof tip === "string" ? tip : (tip.content || tip.title || JSON.stringify(tip));
-            return (
+      {/* Learning Objectives */}
+      {session.learningObjectives && session.learningObjectives.length > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.18, duration: 0.4 }}
+          className="rounded-2xl bg-primary/5 border border-primary/20 p-6"
+        >
+          <h4 className="text-xs font-medium uppercase tracking-widest text-primary mb-3 flex items-center gap-2">
+            <Target className="h-3.5 w-3.5" />
+            What you'll learn
+          </h4>
+          <ul className="space-y-3">
+            {session.learningObjectives.map((obj, i) => (
               <motion.li
-                key={i}
+                key={obj.id}
                 initial={{ opacity: 0, x: -8 }}
                 animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.35 + i * 0.07 }}
-                className="text-[15px] text-foreground/80 leading-relaxed flex items-start gap-3"
+                transition={{ delay: 0.25 + i * 0.08 }}
+                className="flex items-start gap-3"
               >
-                <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-accent text-xs font-medium text-muted-foreground shrink-0 mt-0.5">{i + 1}</span>
-                {tipText}
+                <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-primary/10 text-xs font-bold text-primary shrink-0 mt-0.5">
+                  {i + 1}
+                </span>
+                <div>
+                  <span className="text-[15px] font-medium text-foreground">{obj.label}</span>
+                  <p className="text-xs text-muted-foreground mt-0.5">{obj.description}</p>
+                </div>
               </motion.li>
-            );
-          })}
-        </ul>
+            ))}
+          </ul>
+        </motion.div>
+      )}
+
+      <motion.div
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2, duration: 0.4 }}
+        className="rounded-2xl bg-accent/30 border border-border/40 p-6"
+      >
+        <h4 className="text-xs font-medium uppercase tracking-widest text-muted-foreground mb-3">What you need to know</h4>
+        <div className="text-[15px] text-foreground/90 leading-[1.7] prose prose-sm dark:prose-invert max-w-none [&>p]:mb-3">
+          <ReactMarkdown>{session.briefing}</ReactMarkdown>
+        </div>
       </motion.div>
-    )}
-    <motion.div
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.45, duration: 0.3 }}
-      className="flex justify-center pt-2"
-    >
-      <Button onClick={onStart} size="lg" className="gap-2 rounded-xl px-8 text-base">
-        Start Learning
-      </Button>
+
+      {session.tips && session.tips.length > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3, duration: 0.4 }}
+          className="rounded-2xl border border-border/30 p-6"
+        >
+          <h4 className="text-xs font-medium uppercase tracking-widest text-muted-foreground mb-3">Tips</h4>
+          <ul className="space-y-3">
+            {session.tips.map((tip: any, i: number) => {
+              const tipText = typeof tip === "string" ? tip : (tip.content || tip.title || JSON.stringify(tip));
+              return (
+                <motion.li
+                  key={i}
+                  initial={{ opacity: 0, x: -8 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.35 + i * 0.08 }}
+                  className="flex items-start gap-3"
+                >
+                  <span className="text-primary text-sm mt-0.5">💡</span>
+                  <span className="text-sm text-foreground/80 leading-relaxed">{tipText}</span>
+                </motion.li>
+              );
+            })}
+          </ul>
+        </motion.div>
+      )}
+
+      <motion.div
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.45, duration: 0.3 }}
+        className="flex justify-center pt-2"
+      >
+        <Button onClick={onStart} size="lg" className="gap-2 rounded-xl px-8 text-base">
+          Start Learning
+        </Button>
+      </motion.div>
     </motion.div>
-  </motion.div>
-);
+  );
+};
 
 /* ── Score Display ── */
 const ScoreDisplay = ({ scoreResult }: { scoreResult: SimScoreResult }) => (
@@ -274,7 +291,10 @@ const ObjectiveResultsDisplay = ({
                 <Circle className="h-4 w-4 text-warning shrink-0 mt-0.5" />
               )}
               <div>
-                <span className={`text-xs font-medium ${r.met ? "text-success" : "text-warning"}`}>{r.label}</span>
+                <span className={`text-xs font-medium ${r.met ? "text-success" : "text-warning"}`}>
+                  {r.label}
+                  {r.assisted && <span className="text-muted-foreground/60 ml-1">(assisted)</span>}
+                </span>
                 <p className="text-[11px] text-muted-foreground">{r.evidence}</p>
               </div>
             </div>
@@ -346,13 +366,18 @@ const UnmetObjectivesReview = ({
   status,
   onContinue,
   onFinishAnyway,
+  roundCount,
+  minRounds,
 }: {
   objectives: LearningObjective[];
   status: Record<string, boolean>;
   onContinue: () => void;
   onFinishAnyway: () => void;
+  roundCount: number;
+  minRounds: number;
 }) => {
   const unmet = objectives.filter(o => !status[o.id]);
+  const tooEarly = roundCount < minRounds;
   
   return (
     <motion.div
@@ -371,9 +396,14 @@ const UnmetObjectivesReview = ({
         <Target className="h-8 w-8 text-warning" />
       </motion.div>
       <div className="space-y-2">
-        <h3 className="text-lg font-serif font-bold text-foreground">Almost there!</h3>
+        <h3 className="text-lg font-serif font-bold text-foreground">
+          {tooEarly ? "Just getting started!" : "Almost there!"}
+        </h3>
         <p className="text-sm text-muted-foreground leading-relaxed">
-          You haven't covered {unmet.length === 1 ? "this learning goal" : `${unmet.length} learning goals`} yet. Want to do {unmet.length === 1 ? "one more scenario" : "a few more scenarios"} to cover {unmet.length === 1 ? "it" : "them"}?
+          {tooEarly
+            ? `You've only completed ${roundCount} of at least ${minRounds} rounds. Finishing now means less practice and a lower score.`
+            : `You haven't covered ${unmet.length === 1 ? "this learning goal" : `${unmet.length} learning goals`} yet. Want to do ${unmet.length === 1 ? "one more scenario" : "a few more scenarios"} to cover ${unmet.length === 1 ? "it" : "them"}?`
+          }
         </p>
       </div>
       <div className="w-full space-y-2">
@@ -412,15 +442,50 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
   const [scoreResult, setScoreResult] = useState<SimScoreResult | null>(null);
   const [objectiveStatus, setObjectiveStatus] = useState<Record<string, boolean>>({});
   const [showObjectives, setShowObjectives] = useState(false);
+  const [scaffoldingTiers, setScaffoldingTiers] = useState<Record<string, number>>({});
+  const [showInactivityNudge, setShowInactivityNudge] = useState(false);
+  const inactivityTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const { user } = useAuth();
   const { toast } = useToast();
 
   const taskMeta = { currentState: taskState, trend: taskTrend, impactLevel: taskImpactLevel };
 
+  // Dynamic round config from server
+  const config: SimConfig = session?.config || { minRounds: DEFAULT_MIN_ROUNDS, maxRounds: DEFAULT_MAX_ROUNDS, objectiveCount: 3 };
+  const maxRounds = config.maxRounds;
+  const minRounds = config.minRounds;
+
+  // Check if all objectives met
+  const allObjectivesMet = session?.learningObjectives?.every(o => objectiveStatus[o.id]) ?? false;
+
   const scrollToBottom = useCallback(() => {
     setTimeout(() => scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" }), 80);
   }, []);
+
+  // ─── Inactivity nudge timer ───
+  const resetInactivityTimer = useCallback(() => {
+    if (inactivityTimer.current) clearTimeout(inactivityTimer.current);
+    setShowInactivityNudge(false);
+    inactivityTimer.current = setTimeout(() => {
+      setShowInactivityNudge(true);
+    }, INACTIVITY_NUDGE_MS);
+  }, []);
+
+  const clearInactivityTimer = useCallback(() => {
+    if (inactivityTimer.current) clearTimeout(inactivityTimer.current);
+    setShowInactivityNudge(false);
+  }, []);
+
+  // Start/stop inactivity timer based on phase
+  useEffect(() => {
+    if (phase === "chat" && !sending) {
+      resetInactivityTimer();
+    } else {
+      clearInactivityTimer();
+    }
+    return clearInactivityTimer;
+  }, [phase, sending, messages.length]);
 
   // Parse objective tags from AI responses
   const parseObjectiveTags = useCallback((reply: string) => {
@@ -440,6 +505,23 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
     }
   }, [objectiveStatus]);
 
+  // Parse scaffolding tier tags from AI responses
+  const parseScaffoldTags = useCallback((reply: string) => {
+    const tierMatch = reply.match(/\[SCAFFOLD_TIER:(\d)\]/);
+    if (!tierMatch) return;
+    const tier = parseInt(tierMatch[1]);
+    
+    // Determine which objective is currently being targeted (most recent unmet)
+    const unmetObjectives = session?.learningObjectives?.filter(o => !objectiveStatus[o.id]) || [];
+    if (unmetObjectives.length > 0) {
+      const targetObj = unmetObjectives[0]; // First unmet objective
+      setScaffoldingTiers(prev => ({
+        ...prev,
+        [targetObj.id]: Math.max(prev[targetObj.id] || 0, tier),
+      }));
+    }
+  }, [session, objectiveStatus]);
+
   const startCompile = useCallback(async () => {
     setPhase("loading");
     setError(null);
@@ -448,6 +530,8 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
     setTurnCount(1);
     setScoreResult(null);
     setObjectiveStatus({});
+    setScaffoldingTiers({});
+    setShowInactivityNudge(false);
     try {
       const compiled = await compileSession(taskName, jobTitle, company, 3, mode, taskMeta);
       setSession(compiled);
@@ -477,6 +561,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
     setMessages(newMessages);
     setInput("");
     setSending(true);
+    resetInactivityTimer();
     const nextTurn = turnCount + 1;
     setTurnCount(nextTurn);
     scrollToBottom();
@@ -484,15 +569,21 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
     try {
       const reply = await chatTurn(
         newMessages, roundCount, nextTurn, jobTitle, mode, taskMeta,
-        session?.learningObjectives, objectiveStatus
+        session?.learningObjectives, objectiveStatus, scaffoldingTiers
       );
       
-      // Parse objective tags before displaying
+      // Parse tags
       parseObjectiveTags(reply);
+      parseScaffoldTags(reply);
       
       setMessages((prev) => [...prev, { role: "assistant", content: reply }]);
 
-      if (reply.includes("[SCAFFOLDING]")) {
+      // Check for all objectives met signal
+      if (reply.includes("[ALL_OBJECTIVES_MET]")) {
+        // Session can end — the AI message will prompt finish
+      }
+
+      if (reply.includes("[SCAFFOLDING]") || reply.includes("[SCAFFOLD_TIER:")) {
         setTurnCount(turnCount);
       } else {
         const lowerInput = messageText.toLowerCase();
@@ -509,11 +600,10 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
   };
 
   const handleFinishAttempt = () => {
-    // Check if there are unmet objectives — show review screen
     const objectives = session?.learningObjectives || [];
     const unmet = objectives.filter(o => !objectiveStatus[o.id]);
-    if (unmet.length > 0 && roundCount < MAX_ROUNDS + 3) {
-      // Allow up to 3 extra rounds for objective coverage
+    const tooEarly = roundCount < minRounds;
+    if ((unmet.length > 0 || tooEarly) && roundCount < maxRounds + 3) {
       setPhase("review");
       return;
     }
@@ -522,7 +612,6 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
 
   const handleContinueAfterReview = () => {
     setPhase("chat");
-    // Generate a new scenario targeting unmet objectives
     const fakeMsg: SimMessage = { role: "user", content: "yes" };
     const newMsgs = [...messages, fakeMsg];
     setMessages(newMsgs);
@@ -532,8 +621,9 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
     const nextTurn = turnCount + 1;
     setTurnCount(nextTurn);
     scrollToBottom();
-    chatTurn(newMsgs, nextRound, nextTurn, jobTitle, mode, taskMeta, session?.learningObjectives, objectiveStatus).then(reply => {
+    chatTurn(newMsgs, nextRound, nextTurn, jobTitle, mode, taskMeta, session?.learningObjectives, objectiveStatus, scaffoldingTiers).then(reply => {
       parseObjectiveTags(reply);
+      parseScaffoldTags(reply);
       setMessages(prev => [...prev, { role: "assistant", content: reply }]);
       scrollToBottom();
     }).catch(() => {
@@ -543,11 +633,12 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
 
   const handleFinish = async () => {
     setPhase("completing");
+    clearInactivityTimer();
     
     let scores: SimScoreResult | null = null;
     if (messages.length > 2) {
       try {
-        scores = await scoreSession(messages, session?.scenario || null, mode, session?.learningObjectives);
+        scores = await scoreSession(messages, session?.scenario || null, mode, session?.learningObjectives, scaffoldingTiers);
         setScoreResult(scores);
       } catch (err) {
         console.error("Failed to get scores:", err);
@@ -590,7 +681,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
     const lastMsg = messages[messages.length - 1];
     if (lastMsg.role !== "assistant") return false;
     const lower = lastMsg.content.toLowerCase();
-    return lower.includes("how would you approach") || lower.includes("how would you handle") || lower.includes("[scaffolding]");
+    return lower.includes("how would you approach") || lower.includes("how would you handle") || lower.includes("[scaffolding]") || lower.includes("[scaffold_tier:");
   })();
 
   // Strip tags from message text for display
@@ -600,12 +691,31 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
       .replace(/💡\s*\*?\*?Human Edge:?\*?\*?\s*.+/g, "")
       .replace(/\[SCAFFOLDING\]/g, "")
       .replace(/\[OBJECTIVE_MET:\w+\]/g, "")
+      .replace(/\[SCAFFOLD_TIER:\d\]/g, "")
+      .replace(/\[ALL_OBJECTIVES_MET\]/g, "")
       .trim();
   };
 
-  const progressPercent = Math.min((roundCount / MAX_ROUNDS) * 100, 100);
+  const progressPercent = Math.min((roundCount / maxRounds) * 100, 100);
   const objectives = session?.learningObjectives || [];
   const metCount = objectives.filter(o => objectiveStatus[o.id]).length;
+
+  // Done screen: adaptive icon/title based on score
+  const doneIcon = (() => {
+    if (!scoreResult) return { icon: CheckCircle2, color: "text-success", bg: "bg-success/10" };
+    if (scoreResult.overall >= 70) return { icon: CheckCircle2, color: "text-success", bg: "bg-success/10" };
+    if (scoreResult.overall >= 40) return { icon: TrendingUp, color: "text-warning", bg: "bg-warning/10" };
+    return { icon: AlertTriangle, color: "text-destructive", bg: "bg-destructive/10" };
+  })();
+
+  const doneTitle = (() => {
+    if (!scoreResult) return "Session Complete";
+    if (scoreResult.overall >= 70) return "Great Work!";
+    if (scoreResult.overall >= 40) return "Room to Grow";
+    return "Keep Practicing";
+  })();
+
+  const DoneIconComponent = doneIcon.icon;
 
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
@@ -627,6 +737,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                 >
                   <Target className="h-3 w-3" />
                   {metCount}/{objectives.length}
+                  {allObjectivesMet && <span className="ml-0.5">✓</span>}
                 </button>
               )}
               {phase === "chat" && (
@@ -635,7 +746,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                   animate={{ opacity: 1, scale: 1 }}
                   className="text-xs px-3 py-1 rounded-full text-primary bg-primary/10"
                 >
-                  💬 {roundCount}/{MAX_ROUNDS}
+                  💬 {roundCount}/{maxRounds}
                 </motion.span>
               )}
               <button
@@ -655,7 +766,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
 
         {/* Body */}
         <div className="flex-1 flex min-h-0">
-          {/* Objectives sidebar — visible on toggle during chat */}
+          {/* Objectives sidebar */}
           <AnimatePresence>
             {showObjectives && phase === "chat" && objectives.length > 0 && (
               <motion.div
@@ -666,7 +777,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                 className="border-r border-border/40 overflow-hidden shrink-0"
               >
                 <div className="p-3 w-[220px]">
-                  <ObjectiveChecklist objectives={objectives} status={objectiveStatus} />
+                  <ObjectiveChecklist objectives={objectives} status={objectiveStatus} scaffoldingTiers={scaffoldingTiers} />
                 </div>
               </motion.div>
             )}
@@ -702,6 +813,8 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                   status={objectiveStatus}
                   onContinue={handleContinueAfterReview}
                   onFinishAnyway={handleFinish}
+                  roundCount={roundCount}
+                  minRounds={minRounds}
                 />
               )}
 
@@ -719,16 +832,18 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
 
               {(phase === "chat" || phase === "done") && !error && (
                 <div className="max-w-2xl mx-auto space-y-4">
-                  {/* Inline objective notification when one is met */}
                   {messages.map((msg, i) => {
                     const isUser = msg.role === "user";
                     const displayContent = isUser ? msg.content : cleanMessageForDisplay(msg.content);
                     
-                    // Check if this message completed an objective
                     const objectiveMetInMsg = !isUser ? (msg.content.match(/\[OBJECTIVE_MET:(\w+)\]/g) || []).map(t => {
                       const m = t.match(/\[OBJECTIVE_MET:(\w+)\]/);
                       return m ? m[1] : null;
                     }).filter(Boolean) : [];
+
+                    // Detect scaffolding tier in message
+                    const scaffoldTierInMsg = !isUser ? msg.content.match(/\[SCAFFOLD_TIER:(\d)\]/) : null;
+                    const tierLabels = ["", "💭 Let's break this down...", "💡 Here's a direction...", "📚 Teaching moment"];
 
                     return (
                       <motion.div
@@ -751,6 +866,19 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                             </div>
                           </div>
                         </div>
+
+                        {/* Scaffolding tier indicator */}
+                        {scaffoldTierInMsg && (
+                          <motion.div
+                            initial={{ opacity: 0, scale: 0.9 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-accent/30 border border-border/30 w-fit"
+                          >
+                            <span className="text-[11px] font-medium text-muted-foreground">
+                              {tierLabels[parseInt(scaffoldTierInMsg[1])] || "Scaffolding"}
+                            </span>
+                          </motion.div>
+                        )}
 
                         {/* Objective met notification */}
                         {objectiveMetInMsg.length > 0 && (
@@ -778,10 +906,11 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                     if (!lastAi) return null;
                     const lower = lastAi.content.toLowerCase();
                     const askContinue = lower.includes("ready for the next") || lower.includes("(yes/no)") || lower.includes("click finish");
-                    if (!askContinue) return null;
+                    const allMetSignal = lastAi.content.includes("[ALL_OBJECTIVES_MET]");
+                    if (!askContinue && !allMetSignal) return null;
                     
-                    const isLastRound = roundCount >= MAX_ROUNDS;
-                    const isSessionEnd = lower.includes("click finish");
+                    const isLastRound = roundCount >= maxRounds;
+                    const isSessionEnd = lower.includes("click finish") || allMetSignal;
                     
                     return (
                       <div className="flex flex-col sm:flex-row gap-2 mt-3">
@@ -799,8 +928,9 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                               const nextTurn = turnCount + 1;
                               setTurnCount(nextTurn);
                               scrollToBottom();
-                              chatTurn(newMsgs, nextRound, nextTurn, jobTitle, mode, taskMeta, session?.learningObjectives, objectiveStatus).then(reply => {
+                              chatTurn(newMsgs, nextRound, nextTurn, jobTitle, mode, taskMeta, session?.learningObjectives, objectiveStatus, scaffoldingTiers).then(reply => {
                                 parseObjectiveTags(reply);
+                                parseScaffoldTags(reply);
                                 setMessages(prev => [...prev, { role: "assistant", content: reply }]);
                                 scrollToBottom();
                               }).catch(() => {
@@ -864,12 +994,12 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                     initial={{ scale: 0.5, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
                     transition={{ delay: 0.15, type: "spring", stiffness: 200 }}
-                    className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-success/10"
+                    className={`inline-flex items-center justify-center w-20 h-20 rounded-full ${doneIcon.bg}`}
                   >
-                    <CheckCircle2 className="h-10 w-10 text-success" />
+                    <DoneIconComponent className={`h-10 w-10 ${doneIcon.color}`} />
                   </motion.div>
                   <div>
-                    <h3 className="text-xl font-serif font-bold text-foreground">Session Complete</h3>
+                    <h3 className="text-xl font-serif font-bold text-foreground">{doneTitle}</h3>
                     <p className="text-sm text-muted-foreground mt-2 leading-relaxed">
                       {roundCount} round{roundCount !== 1 ? "s" : ""} on "{taskName}"
                     </p>
@@ -905,10 +1035,22 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                     )}
                   </div>
                   <div className="flex gap-3 pt-2">
-                    <Button variant="outline" onClick={startCompile} className="gap-2 rounded-xl">
-                      <RotateCcw className="h-3.5 w-3.5" /> Try Again
-                    </Button>
-                    <Button onClick={onClose} className="rounded-xl px-6">Done</Button>
+                    {/* Swap CTA priority: Try Again is primary on low scores */}
+                    {scoreResult && scoreResult.overall < 60 ? (
+                      <>
+                        <Button onClick={startCompile} className="gap-2 rounded-xl">
+                          <RotateCcw className="h-3.5 w-3.5" /> Try Again
+                        </Button>
+                        <Button variant="outline" onClick={onClose} className="rounded-xl px-6">Done</Button>
+                      </>
+                    ) : (
+                      <>
+                        <Button variant="outline" onClick={startCompile} className="gap-2 rounded-xl">
+                          <RotateCcw className="h-3.5 w-3.5" /> Try Again
+                        </Button>
+                        <Button onClick={onClose} className="rounded-xl px-6">Done</Button>
+                      </>
+                    )}
                   </div>
                 </motion.div>
               )}
@@ -924,7 +1066,29 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
             transition={{ duration: 0.3 }}
             className="shrink-0 border-t border-border/40 bg-background px-4 sm:px-6 py-3 space-y-3 pb-[env(safe-area-inset-bottom,12px)]"
           >
-            {showHelpChip && (
+            {/* Inactivity nudge */}
+            <AnimatePresence>
+              {showInactivityNudge && !sending && (
+                <motion.div
+                  initial={{ opacity: 0, y: 4 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -4 }}
+                  className="max-w-2xl mx-auto"
+                >
+                  <button
+                    onClick={() => {
+                      handleSend("I'm thinking about this — can you help me break it down?");
+                      setShowInactivityNudge(false);
+                    }}
+                    className="text-xs px-3 py-1.5 rounded-full border border-primary/30 bg-primary/5 text-primary hover:bg-primary/10 transition-colors animate-pulse"
+                  >
+                    🤔 Stuck? Tap here for a nudge
+                  </button>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {showHelpChip && !showInactivityNudge && (
               <div className="flex gap-2 max-w-2xl mx-auto">
                 <button
                   onClick={() => handleSend("I'm not sure where to start — can you help me break this down?")}
@@ -937,7 +1101,10 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
             <div className="flex items-end gap-3 max-w-2xl mx-auto">
               <textarea
                 value={input}
-                onChange={(e) => setInput(e.target.value)}
+                onChange={(e) => {
+                  setInput(e.target.value);
+                  resetInactivityTimer();
+                }}
                 onKeyDown={handleKeyDown}
                 placeholder="Describe your approach…"
                 rows={2}
