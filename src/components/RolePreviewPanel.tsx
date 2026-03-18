@@ -160,6 +160,7 @@ export default function RolePreviewPanel({ role, onClose }: RolePreviewPanelProp
   const closeSimulation = () => {
     setView("enlarged");
     setSimTask(null);
+    fetchCompletions();
   };
 
   // Simulation overlay — always full-screen with one-click kill
