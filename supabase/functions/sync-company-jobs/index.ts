@@ -70,21 +70,44 @@ function extractAtsSlug(careersUrl: string, platform: string): string | null {
   try {
     const u = new URL(careersUrl);
     if (platform === "ashby" && u.hostname.includes("ashbyhq.com")) {
-      // https://jobs.ashbyhq.com/{slug} or https://jobs.ashbyhq.com/{slug}/...
       const parts = u.pathname.split("/").filter(Boolean);
       return parts[0] || null;
     }
     if (platform === "greenhouse" && u.hostname.includes("greenhouse.io")) {
-      // https://boards.greenhouse.io/{slug}
       const parts = u.pathname.split("/").filter(Boolean);
       return parts[0] || null;
     }
     if (platform === "lever" && u.hostname.includes("lever.co")) {
-      // https://jobs.lever.co/{slug}
       const parts = u.pathname.split("/").filter(Boolean);
       return parts[0] || null;
     }
   } catch { /* invalid URL */ }
+  return null;
+}
+
+/** Try common Greenhouse slug patterns derived from company name */
+async function probeGreenhouseSlug(companyName: string): Promise<string | null> {
+  const candidates = [
+    companyName.toLowerCase().replace(/[^a-z0-9]/g, ""),
+    companyName.toLowerCase().replace(/\s+/g, ""),
+    companyName.toLowerCase().replace(/[^a-z0-9]/g, "") + "industries",
+    companyName.toLowerCase().replace(/[^a-z0-9]/g, "") + "inc",
+  ];
+  for (const slug of candidates) {
+    try {
+      const res = await safeFetch(
+        `https://api.greenhouse.io/v1/boards/${slug}/jobs?content=false`,
+        { method: "GET", headers: { "Accept": "application/json" } },
+        8000
+      );
+      if (res.ok) {
+        const data = JSON.parse(await res.text());
+        if (data.jobs && data.jobs.length > 0) return slug;
+      } else {
+        await res.text(); // consume body
+      }
+    } catch { /* continue */ }
+  }
   return null;
 }
 
