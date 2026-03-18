@@ -102,10 +102,14 @@ export default function Settings() {
 
   const [deleting, setDeleting] = useState(false);
 
-  // Saved roles
+  // Saved & practiced roles
   const [savedRoles, setSavedRoles] = useState<SavedRole[]>([]);
+  const [practicedRoles, setPracticedRoles] = useState<PracticedRole[]>([]);
   const [savedLoading, setSavedLoading] = useState(true);
+  const [practicedLoading, setPracticedLoading] = useState(true);
   const [savedSearch, setSavedSearch] = useState("");
+  const [practicedSearch, setPracticedSearch] = useState("");
+  const [rolesTab, setRolesTab] = useState("saved");
 
   useEffect(() => {
     if (!authLoading && !user) navigate("/auth");
