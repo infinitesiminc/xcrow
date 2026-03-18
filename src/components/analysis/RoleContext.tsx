@@ -18,16 +18,18 @@ function calcAgentRisk(automationRisk: number, augmented: number, newSkills: num
 
 export function RoleContext({ agentRisk, jobTitle }: RoleContextProps) {
   const navigate = useNavigate();
+  const readiness = 100 - agentRisk;
 
   const { average, percentile } = useMemo(() => {
     const allRisks = Object.values(prebuiltRoles).map(r =>
       calcAgentRisk(r.summary.automationRiskPercent, r.summary.augmentedPercent, r.summary.newSkillsPercent)
     );
-    const avg = Math.round(allRisks.reduce((a, b) => a + b, 0) / allRisks.length);
-    const higher = allRisks.filter(r => r < agentRisk).length;
-    const pct = Math.round((higher / allRisks.length) * 100);
+    const allReadiness = allRisks.map(r => 100 - r);
+    const avg = Math.round(allReadiness.reduce((a, b) => a + b, 0) / allReadiness.length);
+    const lower = allReadiness.filter(r => r < readiness).length;
+    const pct = Math.round((lower / allReadiness.length) * 100);
     return { average: avg, percentile: pct };
-  }, [agentRisk]);
+  }, [agentRisk, readiness]);
 
   return (
     <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
@@ -35,24 +37,21 @@ export function RoleContext({ agentRisk, jobTitle }: RoleContextProps) {
         <CardContent className="p-4 sm:p-5">
           <div className="flex items-center gap-2 mb-3">
             <BarChart3 className="h-4 w-4 text-muted-foreground" />
-            <span className="text-xs font-bold text-foreground uppercase tracking-wide">How this role compares</span>
+            <span className="text-xs font-bold text-foreground uppercase tracking-wide">How you compare</span>
           </div>
 
           <div className="flex items-center gap-4 mb-3">
-            {/* Bar visualization */}
             <div className="flex-1">
               <div className="relative h-3 rounded-full bg-secondary overflow-hidden">
-                {/* Average marker */}
                 <div
                   className="absolute top-0 bottom-0 w-0.5 bg-muted-foreground/50 z-10"
                   style={{ left: `${average}%` }}
                 />
-                {/* This role — monochrome intensity */}
                 <motion.div
                   className="h-full rounded-full"
-                  style={{ backgroundColor: getRiskTier(agentRisk).color }}
+                  style={{ backgroundColor: readiness >= 70 ? "hsl(var(--success))" : readiness >= 40 ? "hsl(var(--primary))" : "hsl(var(--warning))" }}
                   initial={{ width: 0 }}
-                  animate={{ width: `${agentRisk}%` }}
+                  animate={{ width: `${readiness}%` }}
                   transition={{ duration: 0.8, delay: 0.2 }}
                 />
               </div>
@@ -65,7 +64,7 @@ export function RoleContext({ agentRisk, jobTitle }: RoleContextProps) {
           </div>
 
           <p className="text-xs text-muted-foreground">
-            Higher risk than <span className="font-bold text-foreground">{percentile}%</span> of analyzed roles.
+            More AI-ready than <span className="font-bold text-foreground">{percentile}%</span> of analyzed roles.
           </p>
 
         </CardContent>

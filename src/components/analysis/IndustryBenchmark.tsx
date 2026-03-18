@@ -10,7 +10,9 @@ interface Props {
 }
 
 export function IndustryBenchmarkCard({ benchmark, currentRisk, currentAugmented }: Props) {
-  const riskDiff = currentRisk - benchmark.avgAutomationRisk;
+  const currentReadiness = 100 - currentRisk;
+  const avgReadiness = 100 - benchmark.avgAutomationRisk;
+  const readinessDiff = currentReadiness - avgReadiness;
   const augDiff = currentAugmented - benchmark.avgAugmented;
 
   return (
@@ -29,19 +31,19 @@ export function IndustryBenchmarkCard({ benchmark, currentRisk, currentAugmented
 
           <div className="grid grid-cols-2 gap-3 mb-3">
             <div className="space-y-1">
-              <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Replacement Risk</p>
+              <p className="text-[10px] text-muted-foreground uppercase tracking-wider">AI Readiness</p>
               <div className="flex items-baseline gap-1.5">
-                <span className="text-lg font-sans font-bold text-foreground">{currentRisk}%</span>
-                <span className={`text-xs font-semibold ${riskDiff !== 0 ? "text-foreground/60" : "text-muted-foreground"}`}>
-                  {riskDiff > 0 ? "+" : ""}{riskDiff}% vs avg
+                <span className="text-lg font-sans font-bold text-foreground">{currentReadiness}%</span>
+                <span className={`text-xs font-semibold ${readinessDiff !== 0 ? (readinessDiff > 0 ? "text-success" : "text-warning") : "text-muted-foreground"}`}>
+                  {readinessDiff > 0 ? "+" : ""}{readinessDiff}% vs avg
                 </span>
               </div>
             </div>
             <div className="space-y-1">
-              <p className="text-[10px] text-muted-foreground uppercase tracking-wider">AI Exposure</p>
+              <p className="text-[10px] text-muted-foreground uppercase tracking-wider">AI Tool Potential</p>
               <div className="flex items-baseline gap-1.5">
                 <span className="text-lg font-sans font-bold text-foreground">{currentAugmented}%</span>
-                <span className={`text-xs font-semibold ${augDiff !== 0 ? "text-foreground/60" : "text-muted-foreground"}`}>
+                <span className={`text-xs font-semibold ${augDiff !== 0 ? (augDiff > 0 ? "text-success" : "text-foreground/60") : "text-muted-foreground"}`}>
                   {augDiff > 0 ? "+" : ""}{augDiff}% vs avg
                 </span>
               </div>
@@ -58,7 +60,7 @@ export function IndustryBenchmarkCard({ benchmark, currentRisk, currentAugmented
                 {benchmark.rolesInSameIndustry.map((role, i) => (
                   <div key={i} className="flex items-center justify-between text-xs">
                     <span className="text-muted-foreground truncate mr-2">{role.title}</span>
-                    <span className="font-semibold text-foreground shrink-0">{role.automationRisk}%</span>
+                    <span className="font-semibold text-foreground shrink-0">{100 - role.automationRisk}% ready</span>
                   </div>
                 ))}
               </div>
