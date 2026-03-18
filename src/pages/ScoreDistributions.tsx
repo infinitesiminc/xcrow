@@ -307,8 +307,8 @@ export default function ScoreDistributions() {
           {[
             { label: "Jobs Analyzed", value: jobs.length, icon: Briefcase },
             { label: "Task Clusters", value: tasks.length, icon: Layers },
-            { label: "Avg Job Exposure", value: `${avgJob}%`, icon: BarChart3 },
-            { label: "Avg Task Exposure", value: `${avgTask}%`, icon: BarChart3 },
+            { label: "Avg Job Augmented", value: `${avgJob}%`, icon: BarChart3 },
+            { label: "Avg Task Augmented", value: `${avgTask}%`, icon: BarChart3 },
           ].map((s, i) => (
             <motion.div key={s.label} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}>
               <Card className="border-border">
@@ -425,7 +425,7 @@ export default function ScoreDistributions() {
               <div className="space-y-4">
                 <Card className="border-border">
                   <CardContent className="p-4">
-                    <p className="text-xs font-medium text-muted-foreground mb-2 uppercase tracking-wide">Highest AI Augmented</p>
+                    <p className="text-xs font-medium text-muted-foreground mb-2 uppercase tracking-wide">Most AI-Augmented</p>
                     <div className="space-y-1.5">
                       {sortedJobs.slice(0, 5).map(j => (
                         <div key={j.id} className="flex items-center justify-between gap-2 text-xs">
@@ -438,7 +438,7 @@ export default function ScoreDistributions() {
                 </Card>
                 <Card className="border-border">
                   <CardContent className="p-4">
-                    <p className="text-xs font-medium text-muted-foreground mb-2 uppercase tracking-wide">Lowest AI Augmented</p>
+                    <p className="text-xs font-medium text-muted-foreground mb-2 uppercase tracking-wide">Least AI-Augmented</p>
                     <div className="space-y-1.5">
                       {[...sortedJobs].reverse().slice(0, 5).map(j => (
                         <div key={j.id} className="flex items-center justify-between gap-2 text-xs">
@@ -467,7 +467,7 @@ export default function ScoreDistributions() {
               {/* Top tasks */}
               <Card className="border-border">
                 <CardContent className="p-4">
-                  <p className="text-xs font-medium text-muted-foreground mb-2 uppercase tracking-wide">Highest AI Augmented Tasks</p>
+                  <p className="text-xs font-medium text-muted-foreground mb-2 uppercase tracking-wide">Most AI-Augmented Tasks</p>
                   <div className="space-y-1.5">
                     {[...tasks].sort((a, b) => (b.ai_exposure_score ?? 50) - (a.ai_exposure_score ?? 50)).slice(0, 10).map((t, i) => (
                       <div key={i} className="flex items-center justify-between gap-2 text-xs">

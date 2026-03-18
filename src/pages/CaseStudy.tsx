@@ -9,7 +9,7 @@ import {
 import { Button } from "@/components/ui/button";
 
 const StepATSImport = lazy(() => import("@/components/case-study/StepATSImport"));
-const StepExposureMap = lazy(() => import("@/components/case-study/StepExposureMap"));
+const StepAugmentedMap = lazy(() => import("@/components/case-study/StepAugmentedMap"));
 const StepTaskDrilldown = lazy(() => import("@/components/case-study/StepTaskDrilldown"));
 const StepSimPreview = lazy(() => import("@/components/case-study/StepSimPreview"));
 const StepTeamProgress = lazy(() => import("@/components/case-study/StepTeamProgress"));
@@ -40,7 +40,7 @@ const STEPS: Step[] = [
     icon: BarChart3,
     title: "AI Augmented Map",
     subtitle: "Every role scored at the task level. See where AI disruption hits hardest.",
-    Component: StepExposureMap,
+    Component: StepAugmentedMap,
   },
   {
     id: "tasks",

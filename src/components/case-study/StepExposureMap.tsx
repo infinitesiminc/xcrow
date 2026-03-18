@@ -22,10 +22,10 @@ const BUCKETS = [
 interface RoleScore {
   title: string;
   department: string | null;
-  avgExposure: number;
+  avgAugmented: number;
 }
 
-export default function StepExposureMap() {
+export default function StepAugmentedMap() {
   const [roles, setRoles] = useState<RoleScore[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -71,9 +71,9 @@ export default function StepExposureMap() {
         .map(([jobId, scores]) => ({
           title: jobMap[jobId]?.title ?? "Unknown",
           department: jobMap[jobId]?.department ?? null,
-          avgExposure: Math.round(scores.reduce((a, b) => a + b, 0) / scores.length),
+          avgAugmented: Math.round(scores.reduce((a, b) => a + b, 0) / scores.length),
         }))
-        .sort((a, b) => b.avgExposure - a.avgExposure);
+        .sort((a, b) => b.avgAugmented - a.avgAugmented);
 
       setRoles(result);
       setLoading(false);
@@ -83,13 +83,13 @@ export default function StepExposureMap() {
   const bucketCounts = useMemo(() => {
     return BUCKETS.map((b) => ({
       ...b,
-      count: roles.filter((r) => r.avgExposure >= b.min && r.avgExposure <= b.max).length,
+      count: roles.filter((r) => r.avgAugmented >= b.min && r.avgAugmented <= b.max).length,
     }));
   }, [roles]);
 
   const maxCount = Math.max(...bucketCounts.map((b) => b.count), 1);
   const avgRisk = roles.length
-    ? Math.round(roles.reduce((s, r) => s + r.avgExposure, 0) / roles.length)
+    ? Math.round(roles.reduce((s, r) => s + r.avgAugmented, 0) / roles.length)
     : 0;
 
   const BAR_COLORS = [
@@ -170,11 +170,11 @@ export default function StepExposureMap() {
                 )}
               </div>
               <span className={`text-xs font-mono ml-2 font-semibold ${
-                r.avgExposure >= 60 ? "text-brand-ai" :
-                r.avgExposure >= 35 ? "text-brand-mid" :
+                r.avgAugmented >= 60 ? "text-brand-ai" :
+                r.avgAugmented >= 35 ? "text-brand-mid" :
                 "text-brand-human"
               }`}>
-                {r.avgExposure}%
+                {r.avgAugmented}%
               </span>
             </motion.div>
           ))}
