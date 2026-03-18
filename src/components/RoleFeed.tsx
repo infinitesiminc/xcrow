@@ -212,7 +212,11 @@ function DesktopGrid({ roles, onOpenSearch }: RoleFeedProps) {
   const [workModeFilter, setWorkModeFilter] = useState<string | null>(null);
 
   const tags = Array.from(new Set(roles.map(r => r.tag)));
-  
+  const tagCounts = useMemo(() => {
+    const c: Record<string, number> = {};
+    roles.forEach(r => { c[r.tag] = (c[r.tag] || 0) + 1; });
+    return c;
+  }, [roles]);
   const countries = useMemo(() => {
     const counts: Record<string, number> = {};
     roles.forEach(r => { if (r.country) counts[r.country] = (counts[r.country] || 0) + 1; });
