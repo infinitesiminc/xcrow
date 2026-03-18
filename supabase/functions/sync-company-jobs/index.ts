@@ -172,10 +172,17 @@ async function fetchLeverJobs(slug: string): Promise<any[]> {
   }));
 }
 
-async function fetchDirectAtsJobs(careersUrl: string, platform: string): Promise<any[]> {
-  const slug = extractAtsSlug(careersUrl, platform);
+async function fetchDirectAtsJobs(careersUrl: string, platform: string, companyName?: string): Promise<any[]> {
+  let slug = extractAtsSlug(careersUrl, platform);
+  
+  // If no slug from URL (e.g. custom careers page), probe by company name
+  if (!slug && platform === "greenhouse" && companyName) {
+    console.log(`No slug from URL, probing Greenhouse by company name: ${companyName}`);
+    slug = await probeGreenhouseSlug(companyName);
+  }
+  
   if (!slug) {
-    console.log(`Could not extract slug from ${careersUrl} for platform ${platform}`);
+    console.log(`Could not find slug for ${careersUrl} / ${companyName} on platform ${platform}`);
     return [];
   }
   console.log(`Direct ATS fetch: platform=${platform}, slug=${slug}`);
