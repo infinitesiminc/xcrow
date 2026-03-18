@@ -200,7 +200,7 @@ export default function HomepageChat({
                 className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
               >
                 {msg.role === "assistant" ? (
-                  <div className="prose prose-sm prose-invert max-w-[90%] text-sm text-foreground/90 leading-relaxed">
+                  <div className="chat-prose max-w-[92%]">
                     <ReactMarkdown>{msg.content}</ReactMarkdown>
                   </div>
                 ) : (
