@@ -482,6 +482,7 @@ export default function PipelinePage() {
                           try {
                             const { data, error } = await supabase.functions.invoke("enrich-company", {
                               body: {
+                                company_id: selectedCompany?.id,
                                 website: selectedCompany?.website || undefined,
                                 careers_url: selectedCompany?.careers_url || undefined,
                               },
