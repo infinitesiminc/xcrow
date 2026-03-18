@@ -33,3 +33,25 @@ project_id = "xtfubistkgodiksegtcx"
     verify_jwt = false
   [functions.search-apollo]
     verify_jwt = false
+  [functions.career-chat]
+    verify_jwt = false
+  [functions.nl-search]
+    verify_jwt = false
+  [functions.compile-custom-sim]
+    verify_jwt = false
+  [functions.detect-ats]
+    verify_jwt = false
+  [functions.enrich-company]
+    verify_jwt = false
+  [functions.import-dataset]
+    verify_jwt = false
+  [functions.parse-jd]
+    verify_jwt = false
+  [functions.parse-locations]
+    verify_jwt = false
+  [functions.refresh-ticker]
+    verify_jwt = false
+  [functions.sync-company-jobs]
+    verify_jwt = false
+  [functions.bulk-score-jobs]
+    verify_jwt = false
