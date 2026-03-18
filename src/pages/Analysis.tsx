@@ -257,7 +257,7 @@ const Analysis = () => {
   const completedCount = sortedTasks.filter(t => completedTasks.has(t.name)).length;
 
   return (
-    <div className="h-[100dvh] bg-background overflow-hidden relative overscroll-none" onWheel={handleWheel}>
+    <div ref={containerRef} className="h-[100dvh] bg-background overflow-hidden relative overscroll-none">
       {/* Progress dots */}
       <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 flex items-center gap-1.5">
         {Array.from({ length: totalCards }).map((_, i) => (
