@@ -162,9 +162,10 @@ export default function PipelinePage() {
   useEffect(() => { fetchCompanies(); }, [fetchCompanies]);
 
   const filteredCompanies = useMemo(() => {
-    const af = companies.filter(c => c.detected_ats_platform === selectedATS);
-    if (!companySearch.trim()) return af;
-    const q = companySearch.toLowerCase();
+    const q = companySearch.trim().toLowerCase();
+    // When searching, show across all ATS platforms; otherwise filter by selected ATS
+    const af = q ? companies : companies.filter(c => c.detected_ats_platform === selectedATS);
+    if (!q) return af;
     return af.filter(c => c.name.toLowerCase().includes(q));
   }, [companies, selectedATS, companySearch]);
 
