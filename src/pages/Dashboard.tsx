@@ -147,7 +147,8 @@ const Dashboard = () => {
                 bookmarksCount={bookmarks.length}
                 simsCompleted={completions.length}
                 uniqueTasks={uniqueTasks}
-                myRoleAnalysis={myRoleAnalysis ? { augmented_percent: myRoleAnalysis.augmented_percent, automation_risk_percent: myRoleAnalysis.automation_risk_percent } : null}
+                recentSession={recentSession}
+                savedRoles={savedRolesPreview}
                 hasCompletions={completions.length > 0}
               />
             )}
