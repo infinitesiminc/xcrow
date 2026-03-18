@@ -112,12 +112,82 @@ function SearchFAB({ onClick }: { onClick: () => void }) {
   );
 }
 
-/* ── Three-Section Detail Overlay ──────────────────── */
+/* ── Mini Arc Gauge (reused from RiskGauge pattern) ── */
+
+function MiniArc({ value, label, color }: { value: number; label: string; color: string }) {
+  const radius = 34;
+  const stroke = 5;
+  const circumference = 2 * Math.PI * radius;
+  const arcLength = circumference * 0.75;
+  const fillLength = arcLength * (value / 100);
+  const rotation = 135;
+
+  return (
+    <div className="flex flex-col items-center gap-1">
+      <div className="relative">
+        <svg width="80" height="80" viewBox="0 0 80 80">
+          <circle
+            cx="40" cy="40" r={radius} fill="none"
+            stroke="hsl(var(--secondary))" strokeWidth={stroke}
+            strokeLinecap="round"
+            strokeDasharray={`${arcLength} ${circumference}`}
+            transform={`rotate(${rotation} 40 40)`}
+          />
+          <motion.circle
+            cx="40" cy="40" r={radius} fill="none"
+            stroke={color} strokeWidth={stroke}
+            strokeLinecap="round"
+            strokeDasharray={`${arcLength} ${circumference}`}
+            strokeDashoffset={arcLength - fillLength}
+            transform={`rotate(${rotation} 40 40)`}
+            initial={{ strokeDashoffset: arcLength }}
+            animate={{ strokeDashoffset: arcLength - fillLength }}
+            transition={{ duration: 1, ease: "easeOut", delay: 0.3 }}
+          />
+        </svg>
+        <div className="absolute inset-0 flex items-center justify-center">
+          <motion.span
+            className="text-lg font-display font-bold text-foreground"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.6 }}
+          >
+            {value}%
+          </motion.span>
+        </div>
+      </div>
+      <span className="text-[10px] text-muted-foreground uppercase tracking-widest font-medium">{label}</span>
+    </div>
+  );
+}
+
+/* ── Dot Nav Indicator ─────────────────────────────── */
+
+function DotNav({ active, total, onDot }: { active: number; total: number; onDot: (i: number) => void }) {
+  return (
+    <div className="absolute right-3 top-1/2 -translate-y-1/2 flex flex-col gap-2.5 z-10">
+      {Array.from({ length: total }).map((_, i) => (
+        <button
+          key={i}
+          onClick={() => onDot(i)}
+          className={`w-2 h-2 rounded-full transition-all duration-300 ${
+            i === active ? "bg-primary scale-125 shadow-[0_0_8px_hsl(var(--primary)/0.6)]" : "bg-muted-foreground/30 hover:bg-muted-foreground/50"
+          }`}
+        />
+      ))}
+    </div>
+  );
+}
+
+/* ── Three-Section Detail Overlay (TikTok-Native) ─── */
 
 function RoleDetailOverlay({ role, onClose }: { role: RoleCard; onClose: () => void }) {
   const navigate = useNavigate();
   const [tasks, setTasks] = useState<TaskCluster[]>([]);
   const [loadingTasks, setLoadingTasks] = useState(false);
+  const [activeSection, setActiveSection] = useState(0);
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const sectionRefs = useRef<(HTMLDivElement | null)[]>([]);
 
   // Fetch task clusters on open
   useEffect(() => {
@@ -138,6 +208,27 @@ function RoleDetailOverlay({ role, onClose }: { role: RoleCard; onClose: () => v
   const seniorityLabel: Record<string, string> = {
     junior: "Junior", mid: "Mid-Level", senior: "Senior", lead: "Lead", manager: "Manager", director: "Director", vp: "VP", c_level: "C-Level",
   };
+
+  // Track active snap section
+  const handleScroll = useCallback(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    const scrollTop = el.scrollTop;
+    const sectionHeight = el.clientHeight;
+    const idx = Math.round(scrollTop / sectionHeight);
+    setActiveSection(Math.min(idx, 2));
+  }, []);
+
+  const scrollToSection = useCallback((i: number) => {
+    const el = scrollRef.current;
+    if (!el) return;
+    el.scrollTo({ top: i * el.clientHeight, behavior: "smooth" });
+  }, []);
+
+  // Pick a random task for quick simulate
+  const randomTask = useMemo(() => tasks.length > 0 ? tasks[Math.floor(Math.random() * tasks.length)] : null, [tasks]);
+
+  const readiness = 100 - role.risk;
 
   return (
     <motion.div
@@ -161,16 +252,16 @@ function RoleDetailOverlay({ role, onClose }: { role: RoleCard; onClose: () => v
           const hue3 = (hue1 + 180) % 360;
           return (
             <div
-              className="relative h-32 shrink-0"
+              className="relative h-28 shrink-0"
               style={{
                 background: `linear-gradient(135deg, hsl(${hue1} 70% 15%) 0%, hsl(${hue2} 60% 12%) 50%, hsl(${hue3} 50% 10%) 100%)`,
               }}
             >
               <div className="absolute rounded-full opacity-20" style={{ width: 80, height: 80, top: -20, right: 20, background: `radial-gradient(circle, hsl(${hue1} 80% 50% / 0.4), transparent)` }} />
-              <button onClick={onClose} className="absolute top-4 right-4 w-9 h-9 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center hover:bg-black/60 transition-colors z-10">
+              <button onClick={onClose} className="absolute top-3 right-3 w-8 h-8 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center hover:bg-black/60 transition-colors z-10">
                 <X className="h-4 w-4 text-white" />
               </button>
-              <div className="absolute bottom-4 left-5 right-5">
+              <div className="absolute bottom-3 left-4 right-4">
                 <div className="flex items-center gap-3">
                   {role.logo && (
                     <img src={role.logo} alt={role.company || ''} className="h-10 w-10 rounded-lg object-contain bg-white/10 p-1 shrink-0" onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
@@ -187,125 +278,177 @@ function RoleDetailOverlay({ role, onClose }: { role: RoleCard; onClose: () => v
           );
         })()}
 
-        {/* Scrollable content — 3 sections */}
-        <div className="flex-1 overflow-y-auto bg-card">
-          {/* Section A: What is this role */}
-          <div className="p-5 border-b border-border/40">
-            <div className="flex items-center gap-2 mb-3">
-              <Briefcase className="h-4 w-4 text-primary" />
-              <h3 className="text-sm font-semibold text-foreground">What is this role</h3>
-            </div>
-            {role.description ? (
-              <p className="text-sm text-muted-foreground leading-relaxed">{role.description.length > 300 ? role.description.slice(0, 300) + "…" : role.description}</p>
-            ) : (
-              <p className="text-sm text-muted-foreground/60 italic">No description available — run a full analysis for details.</p>
-            )}
-            {/* Metadata pills */}
-            <div className="flex flex-wrap gap-1.5 mt-3">
-              {role.seniority && (
-                <span className="px-2 py-0.5 text-[10px] font-medium rounded-full bg-accent text-accent-foreground">
-                  {seniorityLabel[role.seniority] || role.seniority}
-                </span>
-              )}
-              <span className={`px-2 py-0.5 text-[10px] font-medium rounded-full border ${TAG_BADGE[role.tag] || TAG_BADGE.Other}`}>
-                {role.tag}
-              </span>
-              {role.workMode && (
-                <span className="px-2 py-0.5 text-[10px] font-medium rounded-full bg-muted text-muted-foreground">
-                  {role.workMode === "remote" ? "Remote" : role.workMode === "hybrid" ? "Hybrid" : "On-site"}
-                </span>
-              )}
-              {role.country && (
-                <span className="px-2 py-0.5 text-[10px] font-medium rounded-full bg-muted text-muted-foreground">
-                  {role.country}
-                </span>
-              )}
-            </div>
-          </div>
+        {/* Snap-scroll content area with dot nav */}
+        <div className="relative flex-1 overflow-hidden bg-card">
+          <DotNav active={activeSection} total={3} onDot={scrollToSection} />
 
-          {/* Section B: Key responsibilities */}
-          <div className="p-5 border-b border-border/40">
-            <div className="flex items-center gap-2 mb-3">
-              <Sparkles className="h-4 w-4 text-primary" />
-              <h3 className="text-sm font-semibold text-foreground">Key responsibilities</h3>
-            </div>
-            {loadingTasks ? (
-              <div className="flex items-center gap-2 py-3">
-                <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-                <span className="text-xs text-muted-foreground">Loading tasks…</span>
+          <div
+            ref={scrollRef}
+            onScroll={handleScroll}
+            className="h-full overflow-y-auto snap-y snap-mandatory scrollbar-hide"
+            style={{ scrollSnapType: "y mandatory" }}
+          >
+            {/* Screen 1: 🎯 The Role */}
+            <motion.div
+              ref={(el) => { sectionRefs.current[0] = el; }}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+              className="snap-start min-h-full flex flex-col justify-center p-6"
+            >
+              <h3 className="text-base font-bold text-foreground mb-3">🎯 The Role</h3>
+              {role.description ? (
+                <p className="text-sm text-muted-foreground leading-relaxed mb-4">{role.description.length > 280 ? role.description.slice(0, 280) + "…" : role.description}</p>
+              ) : (
+                <p className="text-sm text-muted-foreground/60 italic mb-4">No description available — run a full analysis for details.</p>
+              )}
+              {/* Metadata pills */}
+              <div className="flex flex-wrap gap-2">
+                {role.seniority && (
+                  <span className="px-2.5 py-1 text-[11px] font-medium rounded-full bg-accent text-accent-foreground">
+                    {seniorityLabel[role.seniority] || role.seniority}
+                  </span>
+                )}
+                <span className={`px-2.5 py-1 text-[11px] font-medium rounded-full border ${TAG_BADGE[role.tag] || TAG_BADGE.Other}`}>
+                  {role.tag}
+                </span>
+                {role.workMode && (
+                  <span className="px-2.5 py-1 text-[11px] font-medium rounded-full bg-muted text-muted-foreground">
+                    {role.workMode === "remote" ? "🌐 Remote" : role.workMode === "hybrid" ? "🔄 Hybrid" : "🏢 On-site"}
+                  </span>
+                )}
+                {role.country && (
+                  <span className="px-2.5 py-1 text-[11px] font-medium rounded-full bg-muted text-muted-foreground">
+                    📍 {role.country}
+                  </span>
+                )}
               </div>
-            ) : tasks.length > 0 ? (
-              <div className="space-y-2.5">
-                {tasks.map((task, i) => (
-                  <div key={i} className="flex items-start gap-3">
-                    <div className="w-1.5 h-1.5 rounded-full bg-primary mt-1.5 shrink-0" />
-                    <div className="min-w-0 flex-1">
-                      <p className="text-sm font-medium text-foreground leading-snug">{task.cluster_name}</p>
-                      {task.description && (
-                        <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">{task.description.length > 120 ? task.description.slice(0, 120) + "…" : task.description}</p>
-                      )}
-                    </div>
-                    {task.ai_exposure_score != null && task.ai_exposure_score > 0 && (
-                      <span className={`shrink-0 text-[11px] font-semibold px-2 py-0.5 rounded-full ${
-                        task.ai_exposure_score >= 70 ? "bg-brand-ai/15 text-brand-ai" : task.ai_exposure_score >= 40 ? "bg-brand-mid/15 text-brand-mid" : "bg-brand-human/15 text-brand-human"
-                      }`}>
-                        {task.ai_exposure_score}% AI
-                      </span>
-                    )}
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <button
-                onClick={() => navigate(`/analysis?title=${encodeURIComponent(role.title)}&company=${encodeURIComponent(role.company || "")}`)}
-                className="w-full py-3 rounded-lg border border-dashed border-border text-sm text-muted-foreground hover:text-foreground hover:border-primary/40 transition-colors"
+              {/* Swipe hint */}
+              <motion.div
+                className="flex flex-col items-center mt-auto pt-6 text-muted-foreground/40"
+                animate={{ y: [0, 6, 0] }}
+                transition={{ duration: 1.8, repeat: Infinity }}
               >
-                Run full analysis to see tasks →
-              </button>
-            )}
-          </div>
+                <ChevronUp className="h-4 w-4 rotate-180" />
+                <span className="text-[10px]">Swipe up</span>
+              </motion.div>
+            </motion.div>
 
-          {/* Section C: AI in this role */}
-          <div className="p-5">
-            <div className="flex items-center gap-2 mb-3">
-              <Bot className="h-4 w-4 text-primary" />
-              <h3 className="text-sm font-semibold text-foreground">AI in this role</h3>
-            </div>
+            {/* Screen 2: ⚡ Key Tasks */}
+            <motion.div
+              ref={(el) => { sectionRefs.current[1] = el; }}
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              viewport={{ once: true }}
+              className="snap-start min-h-full flex flex-col justify-center p-6"
+            >
+              <h3 className="text-base font-bold text-foreground mb-4">⚡ Key Tasks</h3>
+              {loadingTasks ? (
+                <div className="flex items-center gap-2 py-3">
+                  <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                  <span className="text-xs text-muted-foreground">Loading tasks…</span>
+                </div>
+              ) : tasks.length > 0 ? (
+                <div className="flex gap-3 overflow-x-auto snap-x snap-mandatory pb-3 scrollbar-hide -mx-2 px-2">
+                  {tasks.map((task, i) => {
+                    const score = task.ai_exposure_score ?? 0;
+                    const chipColor = score >= 70
+                      ? "border-brand-ai/30 bg-brand-ai/5"
+                      : score >= 40
+                      ? "border-brand-mid/30 bg-brand-mid/5"
+                      : "border-brand-human/30 bg-brand-human/5";
+                    const badgeColor = score >= 70
+                      ? "bg-brand-ai/15 text-brand-ai"
+                      : score >= 40
+                      ? "bg-brand-mid/15 text-brand-mid"
+                      : "bg-brand-human/15 text-brand-human";
 
-            {role.augmented > 0 || role.risk > 0 ? (
-              <div className="space-y-3">
-                {/* Automation risk */}
-                <div>
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="text-xs text-muted-foreground">{role.risk}% of tasks could be automated</span>
-                  </div>
-                  <Progress value={role.risk} className="h-1.5 bg-muted/50" />
+                    return (
+                      <motion.button
+                        key={i}
+                        initial={{ opacity: 0, x: 20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: i * 0.08 }}
+                        onClick={() => navigate(`/analysis?title=${encodeURIComponent(role.title)}&company=${encodeURIComponent(role.company || "")}`)}
+                        className={`snap-start shrink-0 w-40 rounded-xl border p-3.5 flex flex-col gap-2 text-left hover:scale-[1.02] active:scale-95 transition-transform ${chipColor}`}
+                      >
+                        <span className="text-sm font-semibold text-foreground leading-snug line-clamp-2">{task.cluster_name}</span>
+                        {score > 0 && (
+                          <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full w-fit ${badgeColor}`}>
+                            🤖 {score}% AI
+                          </span>
+                        )}
+                        {task.description && (
+                          <span className="text-[11px] text-muted-foreground line-clamp-2 leading-relaxed">{task.description}</span>
+                        )}
+                      </motion.button>
+                    );
+                  })}
                 </div>
-                {/* Augmented */}
-                <div>
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="text-xs text-muted-foreground">{role.augmented}% of work enhanced by AI tools</span>
-                  </div>
-                  <Progress value={role.augmented} className="h-1.5 bg-muted/50" />
-                </div>
-                {/* AI Opportunity */}
-                <div>
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="text-xs text-muted-foreground">{role.aiOpportunity}% AI skill opportunity</span>
-                  </div>
-                  <Progress value={role.aiOpportunity} className="h-1.5 bg-muted/50" />
-                </div>
+              ) : (
+                <button
+                  onClick={() => navigate(`/analysis?title=${encodeURIComponent(role.title)}&company=${encodeURIComponent(role.company || "")}`)}
+                  className="w-full py-4 rounded-xl border border-dashed border-border text-sm text-muted-foreground hover:text-foreground hover:border-primary/40 transition-colors"
+                >
+                  Run full analysis to see tasks →
+                </button>
+              )}
+            </motion.div>
 
-                {/* Summary */}
-                <p className="text-xs text-muted-foreground/80 italic pt-1">
-                  {aiSummaryLine(role.risk, role.augmented)}
+            {/* Screen 3: 🤖 AI Impact */}
+            <motion.div
+              ref={(el) => { sectionRefs.current[2] = el; }}
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              viewport={{ once: true }}
+              className="snap-start min-h-full flex flex-col justify-center items-center p-6"
+            >
+              <h3 className="text-base font-bold text-foreground mb-6 self-start">🤖 AI Impact</h3>
+
+              {role.augmented > 0 || role.risk > 0 ? (
+                <>
+                  {/* Hero-sized arc gauges */}
+                  <div className="flex items-center justify-center gap-6 mb-5">
+                    <MiniArc
+                      value={readiness}
+                      label="Readiness"
+                      color={readiness >= 70 ? "hsl(var(--success))" : readiness >= 40 ? "hsl(var(--primary))" : "hsl(var(--warning))"}
+                    />
+                    <MiniArc
+                      value={role.augmented}
+                      label="AI Tools"
+                      color="hsl(var(--brand-human))"
+                    />
+                    <MiniArc
+                      value={role.aiOpportunity}
+                      label="Growth"
+                      color="hsl(var(--brand-mid))"
+                    />
+                  </div>
+
+                  {/* Summary */}
+                  <p className="text-xs text-muted-foreground/80 italic text-center mb-5">
+                    {aiSummaryLine(role.risk, role.augmented)}
+                  </p>
+
+                  {/* Quick Simulate CTA */}
+                  {randomTask && (
+                    <motion.button
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => navigate(`/analysis?title=${encodeURIComponent(role.title)}&company=${encodeURIComponent(role.company || "")}`)}
+                      className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-accent border border-border/50 text-sm font-medium text-foreground hover:bg-accent/80 transition-colors"
+                    >
+                      <Play className="h-3.5 w-3.5 text-primary" />
+                      ⚡ Try a Task
+                    </motion.button>
+                  )}
+                </>
+              ) : (
+                <p className="text-sm text-muted-foreground/60 italic text-center">
+                  AI impact data not yet available — run an analysis to generate insights.
                 </p>
-              </div>
-            ) : (
-              <p className="text-sm text-muted-foreground/60 italic">
-                AI impact data not yet available — run an analysis to generate insights.
-              </p>
-            )}
+              )}
+            </motion.div>
           </div>
         </div>
 
