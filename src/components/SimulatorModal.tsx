@@ -105,6 +105,13 @@ const ObjectiveChecklist = ({
   );
 };
 
+/* ── Hash to hue for generative hero ── */
+function simHeroHue(str: string): number {
+  let h = 0;
+  for (let i = 0; i < str.length; i++) h = str.charCodeAt(i) + ((h << 5) - h);
+  return Math.abs(h) % 360;
+}
+
 /* ── Briefing Screen ── */
 const BriefingScreen = ({
   session,
@@ -114,6 +121,10 @@ const BriefingScreen = ({
   onStart: () => void;
 }) => {
   const config = session.config;
+  const hue1 = simHeroHue(session.scenario.title);
+  const hue2 = (hue1 + 50) % 360;
+  const hue3 = (hue1 + 160) % 360;
+
   return (
     <motion.div
       key="briefing"
@@ -123,17 +134,46 @@ const BriefingScreen = ({
       transition={{ duration: 0.4, ease: "easeOut" }}
       className="flex flex-col gap-8 py-6 px-2 max-w-2xl mx-auto"
     >
-      <div className="text-center space-y-3">
-        <motion.div
-          initial={{ scale: 0.8, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ delay: 0.15, duration: 0.3 }}
-          className="text-5xl"
-        >
-          🤖
-        </motion.div>
-        <h3 className="text-xl font-serif font-bold text-foreground">{session.scenario.title}</h3>
-        <p className="text-sm text-muted-foreground leading-relaxed max-w-md mx-auto">{session.scenario.description}</p>
+      {/* Hero image */}
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.5, ease: "easeOut" }}
+        className="relative rounded-2xl overflow-hidden h-44 sm:h-52"
+        style={{
+          background: `linear-gradient(135deg, hsl(${hue1} 55% 18%) 0%, hsl(${hue2} 50% 12%) 50%, hsl(${hue3} 45% 8%) 100%)`,
+        }}
+      >
+        {/* Decorative circles */}
+        <div
+          className="absolute -top-10 -right-10 w-40 h-40 rounded-full opacity-20 blur-2xl"
+          style={{ background: `hsl(${hue1} 70% 55%)` }}
+        />
+        <div
+          className="absolute bottom-0 left-10 w-28 h-28 rounded-full opacity-15 blur-xl"
+          style={{ background: `hsl(${hue2} 60% 50%)` }}
+        />
+        {/* Grid pattern overlay */}
+        <div className="absolute inset-0 opacity-[0.04]" style={{
+          backgroundImage: `linear-gradient(hsl(${hue1} 50% 80%) 1px, transparent 1px), linear-gradient(90deg, hsl(${hue1} 50% 80%) 1px, transparent 1px)`,
+          backgroundSize: '24px 24px',
+        }} />
+        {/* Content */}
+        <div className="relative z-10 h-full flex flex-col items-center justify-center text-center px-6">
+          <motion.div
+            initial={{ scale: 0.6, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ delay: 0.2, duration: 0.4, type: "spring" }}
+            className="text-5xl mb-3"
+          >
+            🤖
+          </motion.div>
+          <h3 className="text-xl sm:text-2xl font-display font-bold text-foreground drop-shadow-lg">{session.scenario.title}</h3>
+          <p className="text-sm text-foreground/70 leading-relaxed max-w-md mx-auto mt-2">{session.scenario.description}</p>
+        </div>
+      </motion.div>
+
+      <div className="text-center">
         <span className="inline-block text-[11px] px-2.5 py-1 rounded-full font-medium bg-primary/10 text-primary">
           🎯 {config?.objectiveCount || 3} goals · Ends when you've got them all
         </span>
