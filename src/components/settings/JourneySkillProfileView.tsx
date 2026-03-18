@@ -17,7 +17,8 @@ import { Progress } from "@/components/ui/progress";
 import {
   ChevronDown, ChevronRight, Layers, Zap, Brain, Users, Shield,
   BarChart3, Search, Sparkles, Target, ArrowRight, TrendingUp,
-  Lock, Unlock, Bot, ArrowUpRight, Compass,
+  Lock, Unlock, Bot, ArrowUpRight, Compass, Play, CheckCircle2,
+  Route, Star, Trophy, Clock,
 } from "lucide-react";
 
 /* ── Seeded RNG ── */
