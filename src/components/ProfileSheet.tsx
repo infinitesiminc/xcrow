@@ -66,9 +66,7 @@ export default function ProfileSheet({ open, onClose, userId, displayName, email
   const [tasksPracticed, setTasksPracticed] = useState(0);
   const [uniqueTasks, setUniqueTasks] = useState(0);
   const [savedRoles, setSavedRoles] = useState<SavedRole[]>([]);
-  const [expandedSaved, setExpandedSaved] = useState(false);
   const [savedSearch, setSavedSearch] = useState("");
-  const [openGroups, setOpenGroups] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     if (!open || !userId) return;
