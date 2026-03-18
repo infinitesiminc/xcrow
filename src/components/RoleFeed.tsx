@@ -913,7 +913,7 @@ function MobileFeed({ roles }: RoleFeedProps) {
         </motion.div>
       )}
 
-      <SearchFAB onClick={onOpenSearch} />
+      
 
       {/* Detail overlay on tap */}
       <AnimatePresence>
