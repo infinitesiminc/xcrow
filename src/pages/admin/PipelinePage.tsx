@@ -1210,7 +1210,7 @@ export default function PipelinePage() {
         </TabsContent>
 
         {/* ═══════ TAB: COMPANIES ═══════ */}
-        <TabsContent value="companies" className="flex-1 min-h-0 m-0 px-6 py-4 flex flex-col">
+        <TabsContent value="companies" className="flex-1 min-h-0 m-0 px-6 py-4 flex flex-col overflow-hidden" style={{ display: activeTab === "companies" ? "flex" : "none" }} forceMount>
           <div className="flex items-center gap-3 mb-4 flex-wrap">
             <div className="relative flex-1 min-w-[200px]">
               <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
@@ -1232,7 +1232,7 @@ export default function PipelinePage() {
           </div>
 
           {/* Table header */}
-          <div className="grid grid-cols-[2fr_1fr_1fr_1fr_80px_80px] gap-2 px-3 py-1.5 text-[10px] font-medium text-muted-foreground uppercase tracking-wide border-b border-border">
+          <div className="grid grid-cols-[2fr_1fr_1fr_1fr_80px_80px] gap-2 px-3 py-1.5 text-[10px] font-medium text-muted-foreground uppercase tracking-wide border-b border-border shrink-0">
             <span>Company</span>
             <span>Industry</span>
             <span>HQ</span>
@@ -1241,46 +1241,57 @@ export default function PipelinePage() {
             <span className="text-right">Funding</span>
           </div>
 
-          <ScrollArea className="flex-1">
-            <div className="divide-y divide-border/50">
-              {filteredCompanies.slice(0, 200).map(co => (
-                <div key={co.id} className="grid grid-cols-[2fr_1fr_1fr_1fr_80px_80px] gap-2 px-3 py-2 items-center hover:bg-muted/30 transition-colors group">
-                  <div className="flex items-center gap-2 min-w-0">
-                    <CompanyLogo url={co.logo_url} name={co.name} size="h-6 w-6" />
-                    <div className="min-w-0">
-                      <p className="text-xs font-medium truncate">{co.name}</p>
-                      {co.employee_range && <p className="text-[10px] text-muted-foreground">{co.employee_range} employees</p>}
-                    </div>
-                    {co.website && (
-                      <a href={co.website} target="_blank" rel="noopener" className="opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
-                        <ExternalLink className="h-3 w-3 text-muted-foreground hover:text-foreground" />
-                      </a>
-                    )}
-                  </div>
-                  <span className="text-[11px] text-muted-foreground truncate">{co.industry || "—"}</span>
-                  <span className="text-[11px] text-muted-foreground truncate">{co.headquarters || "—"}</span>
-                  <span className="text-[11px] text-muted-foreground">
-                    {co.detected_ats_platform && co.detected_ats_platform !== "unknown" ? (
-                      <Badge variant="outline" className="text-[9px] h-4">{co.detected_ats_platform}</Badge>
-                    ) : "—"}
-                  </span>
-                  <span className="text-[11px] text-right font-medium">
-                    {(co.job_count || 0) > 0 ? (
-                      <span className="text-primary">{co.job_count}</span>
-                    ) : (
-                      <span className="text-muted-foreground">0</span>
-                    )}
-                  </span>
-                  <span className="text-[11px] text-right text-muted-foreground truncate">{co.funding_stage || "—"}</span>
-                </div>
-              ))}
-              {filteredCompanies.length > 200 && (
-                <div className="text-center py-3 text-[10px] text-muted-foreground">
-                  Showing 200 of {filteredCompanies.length} — use filters to narrow down
-                </div>
-              )}
+          {loadingCompanies ? (
+            <div className="flex items-center justify-center py-12 flex-1">
+              <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
             </div>
-          </ScrollArea>
+          ) : filteredCompanies.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-12 flex-1 text-muted-foreground">
+              <Building2 className="h-8 w-8 mb-2 opacity-40" />
+              <p className="text-sm">No companies match your filters</p>
+            </div>
+          ) : (
+            <div className="flex-1 min-h-0 overflow-auto">
+              <div className="divide-y divide-border/50">
+                {filteredCompanies.slice(0, 200).map(co => (
+                  <div key={co.id} className="grid grid-cols-[2fr_1fr_1fr_1fr_80px_80px] gap-2 px-3 py-2 items-center hover:bg-muted/30 transition-colors group">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <CompanyLogo url={co.logo_url} name={co.name} size="h-6 w-6" />
+                      <div className="min-w-0">
+                        <p className="text-xs font-medium truncate">{co.name}</p>
+                        {co.employee_range && <p className="text-[10px] text-muted-foreground">{co.employee_range} employees</p>}
+                      </div>
+                      {co.website && (
+                        <a href={co.website} target="_blank" rel="noopener" className="opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+                          <ExternalLink className="h-3 w-3 text-muted-foreground hover:text-foreground" />
+                        </a>
+                      )}
+                    </div>
+                    <span className="text-[11px] text-muted-foreground truncate">{co.industry || "—"}</span>
+                    <span className="text-[11px] text-muted-foreground truncate">{co.headquarters || "—"}</span>
+                    <span className="text-[11px] text-muted-foreground">
+                      {co.detected_ats_platform && co.detected_ats_platform !== "unknown" ? (
+                        <Badge variant="outline" className="text-[9px] h-4">{co.detected_ats_platform}</Badge>
+                      ) : "—"}
+                    </span>
+                    <span className="text-[11px] text-right font-medium">
+                      {(co.job_count || 0) > 0 ? (
+                        <span className="text-primary">{co.job_count}</span>
+                      ) : (
+                        <span className="text-muted-foreground">0</span>
+                      )}
+                    </span>
+                    <span className="text-[11px] text-right text-muted-foreground truncate">{co.funding_stage || "—"}</span>
+                  </div>
+                ))}
+                {filteredCompanies.length > 200 && (
+                  <div className="text-center py-3 text-[10px] text-muted-foreground">
+                    Showing 200 of {filteredCompanies.length} — use filters to narrow down
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
         </TabsContent>
       </Tabs>
       </div>
