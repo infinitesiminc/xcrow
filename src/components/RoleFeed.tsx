@@ -161,22 +161,48 @@ function MiniArc({ value, label, color }: { value: number; label: string; color:
   );
 }
 
-/* ── Dot Nav Indicator ─────────────────────────────── */
+/* ── Section Tab Nav ────────────────────────────────── */
 
-function DotNav({ active, total, onDot }: { active: number; total: number; onDot: (i: number) => void }) {
+const SECTIONS = [
+  { emoji: "🎯", label: "Role" },
+  { emoji: "⚡", label: "Tasks" },
+  { emoji: "🤖", label: "AI" },
+];
+
+function SectionTabs({ active, onTab }: { active: number; onTab: (i: number) => void }) {
   return (
-    <div className="absolute right-3 top-1/2 -translate-y-1/2 flex flex-col gap-2.5 z-10">
-      {Array.from({ length: total }).map((_, i) => (
+    <div className="flex gap-1 px-5 pt-4 pb-2 bg-card border-b border-border/30">
+      {SECTIONS.map((s, i) => (
         <button
           key={i}
-          onClick={() => onDot(i)}
-          className={`w-2 h-2 rounded-full transition-all duration-300 ${
-            i === active ? "bg-primary scale-125 shadow-[0_0_8px_hsl(var(--primary)/0.6)]" : "bg-muted-foreground/30 hover:bg-muted-foreground/50"
+          onClick={() => onTab(i)}
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${
+            i === active
+              ? "bg-primary/15 text-primary"
+              : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
           }`}
-        />
+        >
+          <span>{s.emoji}</span> {s.label}
+        </button>
       ))}
     </div>
   );
+}
+
+/* ── Clean JD description ──────────────────────────── */
+function cleanDescription(raw: string): string {
+  let clean = raw;
+  // Strip structured metadata prefix
+  clean = clean.replace(/^Title:\s*.*?(Company|Department):/s, "$1:");
+  clean = clean.replace(/^Company:\s*.*?(Department|Location|JD Content):/s, "$1:");
+  clean = clean.replace(/^Department:\s*.*?(Location|JD Content):/s, "$1:");
+  clean = clean.replace(/^Location:\s*.*?(JD Content|Content):/s, "$1:");
+  clean = clean.replace(/^(JD Content|Content):\s*/i, "");
+  // Strip "ABOUT COMPANYNAME" header
+  clean = clean.replace(/^ABOUT\s+[A-Z][A-Za-z\s]{0,30}\s+/i, "");
+  // Strip "About CompanyName" at start
+  clean = clean.replace(/^About\s+[A-Z][A-Za-z]+\s+/i, "");
+  return clean.trim();
 }
 
 /* ── Three-Section Detail Overlay (TikTok-Native) ─── */
