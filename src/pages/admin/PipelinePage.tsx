@@ -176,16 +176,33 @@ export default function PipelinePage() {
     finally { setSyncing(null); }
   };
 
-  const syncCompanyJobs = async (companyId: string) => {
+  const syncCompanyJobs = async (companyId: string, diagnostic = false) => {
     setSyncing(`jobs-${companyId}`);
+    if (diagnostic) {
+      setDiagLoading(true);
+      setDiagData(null);
+      const co = companies.find(c => c.id === companyId);
+      setDiagCompanyName(co?.name || companyId);
+      setDiagOpen(true);
+    }
     try {
       const { data, error } = await supabase.functions.invoke("sync-company-jobs", { body: { step: "jobs", company_id: companyId } });
       if (error) throw error;
-      toast({ title: "Sync complete", description: `${data.synced} roles synced` });
+      if (diagnostic) {
+        setDiagData({ success: true, ...data });
+      } else {
+        toast({ title: "Sync complete", description: `${data.synced} roles synced` });
+      }
       if (companyId === selectedCompanyId) fetchJobs(companyId);
       await fetchCompanies();
-    } catch (err: any) { toast({ title: "Sync failed", description: err.message, variant: "destructive" }); }
-    finally { setSyncing(null); }
+    } catch (err: any) {
+      if (diagnostic) {
+        setDiagData({ success: false, error: err.message });
+      } else {
+        toast({ title: "Sync failed", description: err.message, variant: "destructive" });
+      }
+    }
+    finally { setSyncing(null); setDiagLoading(false); }
   };
 
   /* ═══════ RIGHT LOGIC ═══════ */
