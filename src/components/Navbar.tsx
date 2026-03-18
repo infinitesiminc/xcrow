@@ -5,14 +5,12 @@ import logo from "@/assets/logo.png";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { User, Menu, X, Compass, Shield } from "lucide-react";
-import ProfileSheet from "@/components/ProfileSheet";
 
 export default function Navbar() {
   const { user, signOut, openAuthModal, isSuperAdmin } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [profileOpen, setProfileOpen] = useState(false);
 
   const isActive = (path: string) => location.pathname === path;
 
