@@ -66,6 +66,7 @@ export default function StatsPage() {
   const cards = [
     { label: "Companies", value: stats.companies, icon: Building2 },
     { label: "Jobs", value: stats.jobs, icon: Briefcase },
+    { label: "Jobs Analyzed", value: stats.analyzedJobs, icon: CheckCircle2 },
     { label: "Task Clusters", value: stats.clusters, icon: Brain },
     { label: "Simulations Run", value: stats.sims, icon: Brain },
     { label: "Users", value: stats.users, icon: Users },
