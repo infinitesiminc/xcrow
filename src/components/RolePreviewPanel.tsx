@@ -165,21 +165,7 @@ export default function RolePreviewPanel({ role, onClose }: RolePreviewPanelProp
   // Simulation overlay — always full-screen with one-click kill
   const simulationOverlay = view === "simulation" && simTask && (
     <div className="fixed inset-0 z-[100] bg-background flex flex-col">
-      {/* Top bar with close */}
-      <div className="flex items-center justify-between px-4 py-2 border-b border-border/50 shrink-0 bg-background">
-        <div className="min-w-0">
-          <p className="text-sm font-semibold text-foreground truncate">{simTask.cluster_name}</p>
-          <p className="text-[11px] text-muted-foreground truncate">{role.title}{role.company ? ` · ${role.company}` : ""}</p>
-        </div>
-        <button
-          onClick={closeSimulation}
-          className="p-2 rounded-lg hover:bg-muted/30 transition-colors shrink-0"
-          title="Back to chat"
-        >
-          <X className="h-5 w-5 text-muted-foreground" />
-        </button>
-      </div>
-      {/* Simulation content */}
+      {/* Simulation content — no extra header, SimulatorModal has its own */}
       <div className="flex-1 overflow-hidden">
         <SimulatorModal
           open={true}
