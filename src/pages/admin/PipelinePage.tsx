@@ -31,6 +31,10 @@ interface Company {
   employee_range: string | null;
   headquarters: string | null;
   description: string | null;
+  company_type: string | null;
+  funding_stage: string | null;
+  funding_total: string | null;
+  founded_year: number | null;
   job_count?: number;
 }
 
@@ -147,7 +151,7 @@ export default function PipelinePage() {
   /* ═══════ LEFT LOGIC ═══════ */
   const fetchCompanies = useCallback(async () => {
     setLoadingCompanies(true);
-    const { data } = await supabase.from("companies").select("id, name, industry, logo_url, website, careers_url, detected_ats_platform, employee_range, headquarters, description").order("name");
+    const { data } = await supabase.from("companies").select("id, name, industry, logo_url, website, careers_url, detected_ats_platform, employee_range, headquarters, description, company_type, funding_stage, funding_total, founded_year").order("name");
     const all = (data as Company[]) || [];
     const counts: Record<string, number> = {};
     all.forEach(c => { const a = c.detected_ats_platform || "unknown"; counts[a] = (counts[a] || 0) + 1; });
@@ -486,6 +490,22 @@ export default function PipelinePage() {
                 </div>
                 {selectedCompany?.description && (
                   <p className="text-[11px] text-muted-foreground mt-2 line-clamp-2 leading-relaxed">{selectedCompany.description}</p>
+                )}
+                {(selectedCompany?.company_type || selectedCompany?.funding_stage || selectedCompany?.funding_total || selectedCompany?.founded_year) && (
+                  <div className="flex flex-wrap gap-1.5 mt-2">
+                    {selectedCompany.company_type && (
+                      <span className="text-[10px] px-1.5 py-0.5 rounded bg-secondary text-secondary-foreground">{selectedCompany.company_type}</span>
+                    )}
+                    {selectedCompany.funding_stage && (
+                      <span className="text-[10px] px-1.5 py-0.5 rounded bg-secondary text-secondary-foreground">{selectedCompany.funding_stage}</span>
+                    )}
+                    {selectedCompany.funding_total && (
+                      <span className="text-[10px] px-1.5 py-0.5 rounded bg-secondary text-secondary-foreground">Raised {selectedCompany.funding_total}</span>
+                    )}
+                    {selectedCompany.founded_year && (
+                      <span className="text-[10px] px-1.5 py-0.5 rounded bg-secondary text-secondary-foreground">Est. {selectedCompany.founded_year}</span>
+                    )}
+                  </div>
                 )}
 
                 {/* Queue bar */}

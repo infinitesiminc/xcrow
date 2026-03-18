@@ -75,7 +75,11 @@ Deno.serve(async (req) => {
   "employee_range": "e.g. 50-200, 1000-5000, 10000+",
   "description": "1-2 sentence company description",
   "careers_url": "URL to careers page if found, else null",
-  "brand_color": "hex color from branding if obvious, else null"
+  "brand_color": "hex color from branding if obvious, else null",
+  "company_type": "Public, Private, Non-profit, or Government",
+  "funding_stage": "e.g. Seed, Series A, Series B, Series C, Late Stage, IPO, Bootstrapped, or null",
+  "funding_total": "e.g. $50M, $1.2B, or null if unknown",
+  "founded_year": 2015
 }
 If a field cannot be determined, use null.`,
           },
@@ -115,6 +119,10 @@ If a field cannot be determined, use null.`,
       description: company.description || null,
       careers_url: company.careers_url || null,
       brand_color: company.brand_color || null,
+      company_type: company.company_type || null,
+      funding_stage: company.funding_stage || null,
+      funding_total: company.funding_total || null,
+      founded_year: company.founded_year || null,
       logo_url: `https://logo.clearbit.com/${new URL(url).hostname}`,
       is_demo: false,
     };
@@ -122,7 +130,7 @@ If a field cannot be determined, use null.`,
     const { data: inserted, error } = await sb
       .from("companies")
       .insert(row)
-      .select("id, name, industry, headquarters, employee_range, description, website, logo_url, careers_url, brand_color")
+      .select("id, name, industry, headquarters, employee_range, description, website, logo_url, careers_url, brand_color, company_type, funding_stage, funding_total, founded_year")
       .single();
 
     if (error) throw new Error(`Insert failed: ${error.message}`);

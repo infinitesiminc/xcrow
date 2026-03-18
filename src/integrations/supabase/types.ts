@@ -108,11 +108,15 @@ export type Database = {
         Row: {
           brand_color: string | null
           careers_url: string | null
+          company_type: string | null
           context: string | null
           description: string | null
           detected_ats_platform: string | null
           employee_range: string | null
           external_id: string | null
+          founded_year: number | null
+          funding_stage: string | null
+          funding_total: string | null
           headquarters: string | null
           id: string
           imported_at: string
@@ -127,11 +131,15 @@ export type Database = {
         Insert: {
           brand_color?: string | null
           careers_url?: string | null
+          company_type?: string | null
           context?: string | null
           description?: string | null
           detected_ats_platform?: string | null
           employee_range?: string | null
           external_id?: string | null
+          founded_year?: number | null
+          funding_stage?: string | null
+          funding_total?: string | null
           headquarters?: string | null
           id?: string
           imported_at?: string
@@ -146,11 +154,15 @@ export type Database = {
         Update: {
           brand_color?: string | null
           careers_url?: string | null
+          company_type?: string | null
           context?: string | null
           description?: string | null
           detected_ats_platform?: string | null
           employee_range?: string | null
           external_id?: string | null
+          founded_year?: number | null
+          funding_stage?: string | null
+          funding_total?: string | null
           headquarters?: string | null
           id?: string
           imported_at?: string
