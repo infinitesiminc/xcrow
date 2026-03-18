@@ -1036,23 +1036,42 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                       </p>
                     )}
                   </div>
-                  <div className="flex gap-3 pt-2">
-                    {/* Swap CTA priority: Try Again is primary on low scores */}
+                  <div className="flex flex-col gap-3 pt-2 w-full max-w-xs">
+                    {/* Primary action row */}
                     {scoreResult && scoreResult.overall < 60 ? (
-                      <>
-                        <Button onClick={startCompile} className="gap-2 rounded-xl">
-                          <RotateCcw className="h-3.5 w-3.5" /> Try Again
-                        </Button>
-                        <Button variant="outline" onClick={onClose} className="rounded-xl px-6">Done</Button>
-                      </>
+                      <Button onClick={startCompile} className="gap-2 rounded-xl w-full">
+                        <RotateCcw className="h-3.5 w-3.5" /> Try Again
+                      </Button>
+                    ) : onNextTask ? (
+                      <Button onClick={() => { onClose(); onNextTask(); }} className="gap-2 rounded-xl w-full">
+                        <ArrowRight className="h-3.5 w-3.5" /> Next Task ⚡
+                      </Button>
                     ) : (
-                      <>
-                        <Button variant="outline" onClick={startCompile} className="gap-2 rounded-xl">
-                          <RotateCcw className="h-3.5 w-3.5" /> Try Again
-                        </Button>
-                        <Button onClick={onClose} className="rounded-xl px-6">Done</Button>
-                      </>
+                      <Button onClick={onClose} className="rounded-xl w-full">Done</Button>
                     )}
+                    
+                    {/* Secondary actions */}
+                    <div className="flex gap-2">
+                      {scoreResult && scoreResult.overall < 60 && onNextTask && (
+                        <Button variant="outline" onClick={() => { onClose(); onNextTask(); }} className="gap-2 rounded-xl flex-1 text-xs">
+                          Skip → Next Task
+                        </Button>
+                      )}
+                      {scoreResult && scoreResult.overall >= 60 && (
+                        <Button variant="outline" onClick={startCompile} className="gap-2 rounded-xl flex-1 text-xs">
+                          <RotateCcw className="h-3 w-3" /> Retry
+                        </Button>
+                      )}
+                      {onBackToFeed ? (
+                        <Button variant="ghost" onClick={() => { onClose(); onBackToFeed(); }} className="rounded-xl flex-1 text-xs text-muted-foreground">
+                          ← Back to Roles
+                        </Button>
+                      ) : (
+                        <Button variant="ghost" onClick={onClose} className="rounded-xl flex-1 text-xs text-muted-foreground">
+                          Close
+                        </Button>
+                      )}
+                    </div>
                   </div>
                 </motion.div>
               )}
