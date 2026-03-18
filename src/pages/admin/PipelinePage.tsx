@@ -579,7 +579,7 @@ export default function PipelinePage() {
       </div>
 
       {/* ── Tabbed content ── */}
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col min-h-0" style={{ display: "flex", flexDirection: "column" }}>
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col min-h-0">
         <TabsList className="mx-6 mt-3 w-fit">
           <TabsTrigger value="discover" className="text-xs gap-1"><Telescope className="h-3 w-3" /> Discover</TabsTrigger>
           <TabsTrigger value="sync" className="text-xs gap-1"><RefreshCw className="h-3 w-3" /> Sync</TabsTrigger>
