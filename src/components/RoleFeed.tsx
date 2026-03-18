@@ -718,14 +718,21 @@ function DesktopGrid({ roles, onOpenSearch, savedRoleTitles }: RoleFeedProps) {
                         <span className="text-xs font-bold text-white">{role.aiOpportunity}%</span>
                       </div>
                     )}
-                    {role.augmented > 0 && (
-                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full bg-black/40 backdrop-blur-sm ${
-                        role.augmented >= 60 ? "text-brand-ai" : role.augmented >= 30 ? "text-primary" : "text-brand-human"
-                      }`}>
-                        {role.taskCount && role.taskCount > 0 ? "✓ Analyzed" : "Layer 1"}
-                      </span>
-                    )}
-                    {role.augmented === 0 && (
+                    {role.augmented > 0 ? (
+                      <div className={`flex items-center gap-1 px-2 py-0.5 rounded-full bg-black/40 backdrop-blur-sm`}>
+                        {(role.taskCount ?? 0) > 0 ? (
+                          <>
+                            <CircleDot className="h-3 w-3 text-brand-human" />
+                            <span className="text-[10px] font-bold text-brand-human">Analysis</span>
+                          </>
+                        ) : (
+                          <>
+                            <Circle className="h-3 w-3 text-white/50" style={{ fill: 'currentColor', clipPath: 'inset(0 50% 0 0)' }} />
+                            <span className="text-[10px] font-bold text-white/60">Analysis</span>
+                          </>
+                        )}
+                      </div>
+                    ) : (
                       <span className={`text-xs font-bold px-2 py-0.5 rounded-full bg-black/40 backdrop-blur-sm ${riskColor}`}>
                         {role.risk}% risk
                       </span>
