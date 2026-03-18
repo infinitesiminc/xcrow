@@ -567,11 +567,16 @@ function DesktopGrid({ roles, onOpenSearch, savedRoleTitles }: RoleFeedProps) {
       {/* Filter bar */}
       <div className="shrink-0 flex flex-wrap items-center gap-2 px-6 py-4 border-b border-border/40">
         <div className="flex items-center gap-1.5">
-          <button onClick={() => setFilter(null)} className={`px-3 py-1.5 text-xs font-medium rounded-full transition-colors ${!filter ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:text-foreground"}`}>
+          <button onClick={() => { setFilter(null); setSavedFilter(false); }} className={`px-3 py-1.5 text-xs font-medium rounded-full transition-colors ${!filter && !savedFilter ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:text-foreground"}`}>
             All <span className="opacity-60 ml-0.5">{roles.length}</span>
           </button>
+          {savedRoleTitles && savedCount > 0 && (
+            <button onClick={() => { setSavedFilter(f => !f); setFilter(null); }} className={`px-3 py-1.5 text-xs font-medium rounded-full transition-colors flex items-center gap-1 ${savedFilter ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:text-foreground"}`}>
+              <Bookmark className="h-3 w-3" /> Saved <span className="opacity-60 ml-0.5">{savedCount}</span>
+            </button>
+          )}
           {tags.map(tag => (
-            <button key={tag} onClick={() => setFilter(f => f === tag ? null : tag)} className={`px-3 py-1.5 text-xs font-medium rounded-full transition-colors ${filter === tag ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:text-foreground"}`}>
+            <button key={tag} onClick={() => { setFilter(f => f === tag ? null : tag); setSavedFilter(false); }} className={`px-3 py-1.5 text-xs font-medium rounded-full transition-colors ${filter === tag ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:text-foreground"}`}>
               {tag} <span className="opacity-60 ml-0.5">{tagCounts[tag] || 0}</span>
             </button>
           ))}
