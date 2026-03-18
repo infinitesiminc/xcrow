@@ -176,17 +176,20 @@ export default function PipelinePage() {
   const [diagLoading, setDiagLoading] = useState(false);
   const [diagCompanyName, setDiagCompanyName] = useState("");
 
-  /* ── Apollo Search ── */
+  /* ── Apollo Bulk Discovery ── */
   const [apolloOpen, setApolloOpen] = useState(false);
   const [apolloKeywords, setApolloKeywords] = useState("");
   const [apolloName, setApolloName] = useState("");
   const [apolloLocation, setApolloLocation] = useState("United States");
   const [apolloSize, setApolloSize] = useState("51,200");
+  const [apolloFunding, setApolloFunding] = useState("");
   const [apolloResults, setApolloResults] = useState<any[]>([]);
   const [apolloLoading, setApolloLoading] = useState(false);
   const [apolloImporting, setApolloImporting] = useState(false);
   const [apolloPagination, setApolloPagination] = useState<{ page: number; total_entries: number; total_pages: number }>({ page: 1, total_entries: 0, total_pages: 0 });
   const [apolloSelected, setApolloSelected] = useState<Set<number>>(new Set());
+  const [apolloBulkProgress, setApolloBulkProgress] = useState<{ current: number; total: number; imported: number } | null>(null);
+  const apolloBulkAbort = useRef(false);
 
   const handleAddCompany = async () => {
     if (!addUrl.trim()) return;
