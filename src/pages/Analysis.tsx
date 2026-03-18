@@ -2,15 +2,11 @@ import { useEffect, useState, useCallback, useMemo, useRef } from "react";
 import { useSearchParams, useNavigate, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  ArrowLeft, Zap, AlertTriangle, Bot, ExternalLink,
-  Building2, Users, MapPin, Calendar,
-  ShieldAlert, GraduationCap, Rocket, CheckCircle2, LogIn,
-  ListChecks, Route, Target, BarChart3, Wrench, Bookmark, BookmarkCheck,
-  ChevronRight,
+  ArrowLeft, Zap, AlertTriangle, Bot,
+  GraduationCap, Rocket, CheckCircle2, LogIn,
+  Bookmark, BookmarkCheck, ChevronRight, Play,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 import { JobAnalysisResult, TaskAnalysis } from "@/types/analysis";
 import { findPrebuiltRole } from "@/data/prebuilt-roles";
@@ -18,18 +14,8 @@ import { analyzeJobWithAI } from "@/lib/ai-analysis";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { getRiskTier } from "@/lib/risk-colors";
-import { generateLocalPathways, type CareerMatchResult, type CareerPathway } from "@/lib/local-pathways";
 
 import SimulatorModal from "@/components/SimulatorModal";
-import { RiskGauge } from "@/components/analysis/RiskGauge";
-import { TaskTable } from "@/components/analysis/TaskTable";
-import { CareerPathways } from "@/components/analysis/CareerPathways";
-import { ActionPlan } from "@/components/analysis/ActionPlan";
-import { RoleContext } from "@/components/analysis/RoleContext";
-import { IndustryBenchmarkCard } from "@/components/analysis/IndustryBenchmark";
-
-import { CuratedSkillsBadge } from "@/components/analysis/CuratedSkills";
 
 interface CompanySnapshot {
   success: boolean;
@@ -51,28 +37,15 @@ function calcReadiness(automationRisk: number, augmented: number, newSkills: num
   return 100 - Math.round(automationRisk * 0.55 + (100 - augmented) * 0.25 + newSkills * 0.20);
 }
 
-function getVerdict(result: JobAnalysisResult, readiness: number): Verdict {
-  const { automationRiskPercent, augmentedPercent } = result.summary;
-  const fullyAiSoon = result.tasks.filter(t => t.trend === "fully_ai_soon").length;
-  const mostlyHuman = result.tasks.filter(t => t.currentState === "mostly_human").length;
-  if (readiness <= 55 || (automationRiskPercent >= 40 && fullyAiSoon >= 3)) return "pivot";
-  if (readiness >= 72 && mostlyHuman >= 3 && augmentedPercent >= 55) return "leverage";
-  return "upskill";
-}
-
-function getVerdictReasoning(verdict: Verdict, result: JobAnalysisResult): string {
-  switch (verdict) {
-    case "pivot":
-      return `Many tasks in this role are becoming AI-native. This is a great opportunity to build skills in adjacent roles where your experience transfers and AI amplifies your value.`;
-    case "leverage":
-      return `You're in a strong position! Your role has deep human-led tasks. Focus on mastering AI tools to 10× your existing strengths and stand out.`;
-    case "upskill":
-      return `Learn the AI tools for your highest-impact tasks first. Targeted skill-building will make you the go-to person who knows how to work with AI effectively.`;
-  }
-}
-
 const isWebsite = (value: string) =>
   /^(https?:\/\/)?([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}(\/.*)?$/.test(value.trim());
+
+/* ── Task chip color helper ─── */
+function taskChipStyle(aiScore: number) {
+  if (aiScore >= 70) return { border: "border-brand-ai/30", bg: "bg-brand-ai/5", badge: "bg-brand-ai/15 text-brand-ai" };
+  if (aiScore >= 40) return { border: "border-brand-mid/30", bg: "bg-brand-mid/5", badge: "bg-brand-mid/15 text-brand-mid" };
+  return { border: "border-brand-human/30", bg: "bg-brand-human/5", badge: "bg-brand-human/15 text-brand-human" };
+}
 
 const Analysis = () => {
   const [searchParams] = useSearchParams();
@@ -93,17 +66,10 @@ const Analysis = () => {
   const [result, setResult] = useState<JobAnalysisResult | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [snapshot, setSnapshot] = useState<CompanySnapshot | null>(null);
-  const [snapshotLoading, setSnapshotLoading] = useState(false);
   const [simTask, setSimTask] = useState<TaskAnalysis | null>(null);
   const [completedTasks, setCompletedTasks] = useState<Set<string>>(new Set());
-  const [pathwayData, setPathwayData] = useState<CareerMatchResult | null>(null);
-  const [pathwayLoading, setPathwayLoading] = useState(false);
-  const [pathwayError, setPathwayError] = useState(false);
-  const [showStickyBar, setShowStickyBar] = useState(false);
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [bookmarkLoading, setBookmarkLoading] = useState(false);
-  const heroRef = useRef<HTMLDivElement>(null);
   const { user, openAuthModal } = useAuth();
 
   const fetchCompletions = useCallback(async () => {
@@ -130,10 +96,7 @@ const Analysis = () => {
   }, [user, jobTitle, company]);
 
   const toggleBookmark = async () => {
-    if (!user) {
-      openAuthModal();
-      return;
-    }
+    if (!user) { openAuthModal(); return; }
     if (!result) return;
     setBookmarkLoading(true);
     try {
@@ -153,38 +116,17 @@ const Analysis = () => {
         });
         setIsBookmarked(true);
       }
-    } catch (err) {
-      console.error("Bookmark error:", err);
-    }
+    } catch (err) { console.error("Bookmark error:", err); }
     setBookmarkLoading(false);
   };
-
-  // Show sticky bar when hero card scrolls out of view
-  useEffect(() => {
-    const el = heroRef.current;
-    if (!el) return;
-    const observer = new IntersectionObserver(
-      ([entry]) => setShowStickyBar(!entry.isIntersecting),
-      { threshold: 0 }
-    );
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, [loading, result]);
 
   const saveAnalysisHistory = useCallback(async (analysisResult: JobAnalysisResult) => {
     if (!user) return;
     try {
       let query = supabase.from("analysis_history")
-        .select("id")
-        .eq("user_id", user.id)
-        .eq("job_title", analysisResult.jobTitle);
-      if (analysisResult.company) {
-        query = query.eq("company", analysisResult.company);
-      } else {
-        query = query.is("company", null);
-      }
+        .select("id").eq("user_id", user.id).eq("job_title", analysisResult.jobTitle);
+      if (analysisResult.company) { query = query.eq("company", analysisResult.company); } else { query = query.is("company", null); }
       const { data: existing } = await query.maybeSingle();
-
       if (existing) {
         await supabase.from("analysis_history").update({
           tasks_count: analysisResult.tasks.length,
@@ -194,122 +136,78 @@ const Analysis = () => {
         }).eq("id", existing.id);
       } else {
         await supabase.from("analysis_history").insert({
-          user_id: user.id,
-          job_title: analysisResult.jobTitle,
-          company: analysisResult.company || null,
+          user_id: user.id, job_title: analysisResult.jobTitle, company: analysisResult.company || null,
           tasks_count: analysisResult.tasks.length,
           augmented_percent: analysisResult.summary.augmentedPercent,
           automation_risk_percent: analysisResult.summary.automationRiskPercent,
         });
       }
-    } catch (err) {
-      console.error("Failed to save analysis history:", err);
-    }
+    } catch (err) { console.error("Failed to save analysis history:", err); }
   }, [user]);
 
   useEffect(() => {
     if (!jobTitle && !hasJd) { navigate("/"); return; }
     const analyze = async () => {
-      setLoading(true);
-      setError(null);
+      setLoading(true); setError(null);
       const prebuilt = jobTitle ? findPrebuiltRole(jobTitle) : null;
       if (prebuilt && !hasJd) {
         await new Promise(r => setTimeout(r, 1200));
         const r = { ...prebuilt, company };
-        setResult(r);
-        saveAnalysisHistory(r);
-        setLoading(false);
-        return;
+        setResult(r); saveAnalysisHistory(r); setLoading(false); return;
       }
       try {
         const aiResult = await analyzeJobWithAI(jobTitle, company, jdText || undefined, jdUrlParam || undefined);
-        setResult(aiResult);
-        saveAnalysisHistory(aiResult);
-      } catch (err: any) {
-        setError("Unable to analyze this role right now. Please try again.");
-        console.error(err);
-      }
+        setResult(aiResult); saveAnalysisHistory(aiResult);
+      } catch (err: any) { setError("Unable to analyze this role right now. Please try again."); console.error(err); }
       setLoading(false);
     };
     analyze();
   }, [jobTitle, company, hasJd, navigate]);
 
-  // Generate career pathways – local first, AI fallback
-  useEffect(() => {
-    if (!result?.jobTitle) return;
-    setPathwayLoading(true);
-    const local = generateLocalPathways(result.jobTitle);
-    if (local && local.pathways.length > 0) {
-      setPathwayData(local);
-      setPathwayLoading(false);
-      return;
-    }
-    // AI fallback
-    const fetchAIPathways = async () => {
-      try {
-        const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-        const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
-        const res = await fetch(`${supabaseUrl}/functions/v1/generate-pathways`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json", Authorization: `Bearer ${supabaseKey}` },
-          body: JSON.stringify({
-            jobTitle: result.jobTitle,
-            tasks: result.tasks?.slice(0, 8),
-            skills: result.skills?.slice(0, 8),
-          }),
-        });
-        if (!res.ok) throw new Error("AI pathways failed");
-        const data = await res.json();
-        setPathwayData(data);
-      } catch (err) {
-        console.error("AI pathways error:", err);
-        setPathwayData(null);
-        setPathwayError(true);
-      } finally {
-        setPathwayLoading(false);
-      }
-    };
-    fetchAIPathways();
-  }, [result?.jobTitle, result?.tasks, result?.skills]);
-
-  // Company snapshot disabled — ATS-only pipeline, no webpage scraping
-
-  // Computed values
+  // Readiness score
   const readiness = useMemo(() => {
     if (!result) return 0;
     return calcReadiness(result.summary.automationRiskPercent, result.summary.augmentedPercent, result.summary.newSkillsPercent);
   }, [result]);
 
-  const verdict = useMemo(() => {
-    if (!result) return "upskill" as Verdict;
-    return getVerdict(result, readiness);
-  }, [result, readiness]);
+  // Sorted tasks by priority/exposure
+  const sortedTasks = useMemo(() => {
+    if (!result) return [];
+    return [...result.tasks].sort((a, b) => (b.aiExposureScore ?? 50) - (a.aiExposureScore ?? 50));
+  }, [result]);
 
-  const topPathway: CareerPathway | null = pathwayData?.pathways?.[0] || null;
+  // Pick next uncompleted task
+  const pickNextTask = useCallback(() => {
+    const uncompleted = sortedTasks.filter(t => !completedTasks.has(t.name));
+    if (uncompleted.length > 0) {
+      setSimTask(uncompleted[0]);
+    } else if (sortedTasks.length > 0) {
+      // All done — pick random
+      setSimTask(sortedTasks[Math.floor(Math.random() * sortedTasks.length)]);
+    }
+  }, [sortedTasks, completedTasks]);
 
+  // Loading
   if (loading) {
     return (
       <div className="min-h-screen bg-background px-4 py-16">
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-2xl mx-auto">
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center mb-12">
             <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-accent">
               <Zap className="h-5 w-5 text-primary animate-pulse" />
             </div>
-            <h1 className="text-xl font-sans font-bold text-foreground">Analyzing {jobTitle || "role from JD"}...</h1>
-            <p className="mt-1 text-sm text-muted-foreground">Building your AI toolkit report</p>
+            <h1 className="text-xl font-sans font-bold text-foreground">Analyzing {jobTitle || "role"}...</h1>
+            <p className="mt-1 text-sm text-muted-foreground">Building your task list</p>
           </motion.div>
-          <div className="space-y-4">
-            <Skeleton className="h-48 w-full rounded-xl" />
-            <div className="grid grid-cols-3 gap-3">
-              {[1, 2, 3].map(i => <Skeleton key={i} className="h-20 w-full rounded-xl" />)}
-            </div>
-            <Skeleton className="h-64 w-full rounded-xl" />
+          <div className="space-y-3">
+            {[1, 2, 3, 4].map(i => <Skeleton key={i} className="h-24 w-full rounded-xl" />)}
           </div>
         </div>
       </div>
     );
   }
 
+  // Error
   if (error || !result) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center px-4">
@@ -325,222 +223,125 @@ const Analysis = () => {
     );
   }
 
-  const statCards = [
-    { label: "AI Tool Potential", value: result.summary.augmentedPercent, icon: Bot, dotColor: "bg-primary" },
-    { label: "Skills to Build", value: result.summary.newSkillsPercent, icon: GraduationCap, dotColor: "bg-brand-mid" },
-    { label: "Already Strong", value: 100 - result.summary.automationRiskPercent, icon: Rocket, dotColor: "bg-success" },
-  ];
+  const completedCount = sortedTasks.filter(t => completedTasks.has(t.name)).length;
 
   return (
-    <div className="min-h-screen bg-background px-4 py-8">
-      {/* Sticky context bar */}
-      <AnimatePresence>
-        {showStickyBar && (
-          <motion.div
-            initial={{ y: -40, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            exit={{ y: -40, opacity: 0 }}
-            transition={{ duration: 0.2 }}
-            className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-border/50"
-          >
-            <div className="max-w-4xl mx-auto px-4 py-2 flex items-center justify-between gap-3">
-              <div className="flex items-center gap-2.5 min-w-0">
-                <button onClick={() => navigate(backPath)} className="p-1 rounded-md hover:bg-accent transition-colors shrink-0">
-                  <ArrowLeft className="h-3.5 w-3.5 text-muted-foreground" />
-                </button>
-                <span className="text-sm font-semibold text-foreground truncate">{result.jobTitle}</span>
-                {company && !isWebsite(company) && (
-                  <span className="text-xs text-muted-foreground truncate ml-1">@ {company}</span>
-                )}
-              </div>
-              <div className="flex items-center gap-2 shrink-0">
-                <span className={`w-2 h-2 rounded-full ${readiness >= 70 ? "bg-success" : readiness >= 40 ? "bg-primary" : "bg-warning"}`} />
-                <span className="text-xs font-bold text-foreground tabular-nums">{readiness}%</span>
-                <span className="text-[10px] text-muted-foreground">AI Ready</span>
-              </div>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      <div className="max-w-4xl mx-auto">
-        {/* Header */}
-        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
-          {/* Breadcrumb */}
-          {(fromDashboard || fromCompanyDemo) && (
-            <nav className="flex items-center gap-1.5 text-xs text-muted-foreground mb-4">
-              <button onClick={() => navigate(backPath)} className="hover:text-foreground transition-colors">
-                {fromCompanyDemo ? "Company Demo" : "Dashboard"}
-              </button>
-              <ChevronRight className="h-3 w-3" />
-              <span className="text-foreground font-medium truncate max-w-[200px]">{result.jobTitle}</span>
-              {company && (
-                <>
-                  <span className="text-muted-foreground/50">@</span>
-                  <span className="truncate max-w-[120px]">{company}</span>
-                </>
-              )}
-            </nav>
-          )}
-
-          <div className="flex items-start justify-between gap-3 mb-6">
-            <div className="flex items-start gap-3 min-w-0">
-              <button onClick={() => navigate(backPath)} className="mt-1 p-1.5 rounded-lg hover:bg-accent transition-colors shrink-0">
+    <div className="min-h-screen bg-background px-4 py-6">
+      <div className="max-w-2xl mx-auto">
+        {/* Compact header */}
+        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="mb-6">
+          <div className="flex items-center justify-between gap-3 mb-3">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <button onClick={() => navigate(backPath)} className="p-1.5 rounded-lg hover:bg-accent transition-colors shrink-0">
                 <ArrowLeft className="h-4 w-4 text-muted-foreground" />
               </button>
-              <div>
-                <h1 className="text-2xl sm:text-3xl font-serif font-bold text-foreground leading-tight">{result.jobTitle}</h1>
+              <div className="min-w-0">
+                <h1 className="text-lg font-display font-bold text-foreground truncate">{result.jobTitle}</h1>
                 {company && !isWebsite(company) && (
-                  <p className="text-sm text-muted-foreground mt-0.5">at {company}</p>
+                  <p className="text-xs text-muted-foreground">at {company}</p>
                 )}
               </div>
             </div>
-            <Button
-              variant={isBookmarked ? "secondary" : "outline"}
-              size="sm"
-              onClick={toggleBookmark}
-              disabled={bookmarkLoading}
-              className="gap-1.5 shrink-0 mt-1"
-            >
-              {isBookmarked ? <BookmarkCheck className="h-3.5 w-3.5" /> : <Bookmark className="h-3.5 w-3.5" />}
-              {isBookmarked ? "Saved" : "Save"}
-            </Button>
+            <div className="flex items-center gap-2 shrink-0">
+              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-accent">
+                <span className={`w-2 h-2 rounded-full ${readiness >= 70 ? "bg-success" : readiness >= 40 ? "bg-primary" : "bg-warning"}`} />
+                <span className="text-sm font-bold text-foreground tabular-nums">{readiness}%</span>
+              </div>
+              <Button
+                variant={isBookmarked ? "secondary" : "ghost"}
+                size="icon"
+                onClick={toggleBookmark}
+                disabled={bookmarkLoading}
+                className="h-8 w-8"
+              >
+                {isBookmarked ? <BookmarkCheck className="h-3.5 w-3.5" /> : <Bookmark className="h-3.5 w-3.5" />}
+              </Button>
+            </div>
           </div>
 
-          {/* Company snapshot */}
-          {snapshot && (
-            <div className="flex items-center gap-3 mb-6 px-3 py-2.5 rounded-lg bg-card border border-border/50">
-              {snapshot.logo && (
-                <img src={snapshot.logo} alt="" className="h-7 w-7 rounded-md object-contain shrink-0 bg-card"
-                  onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
-              )}
-              <div className="flex items-center gap-3 flex-wrap text-xs text-muted-foreground min-w-0">
-                <span className="font-medium text-foreground text-sm">{snapshot.companyName || snapshot.url}</span>
-                {snapshot.industry && <span className="flex items-center gap-1"><Building2 className="h-3 w-3" />{snapshot.industry}</span>}
-                {snapshot.employeeRange && <span className="flex items-center gap-1"><Users className="h-3 w-3" />{snapshot.employeeRange}</span>}
-                {snapshot.headquarters && <span className="flex items-center gap-1"><MapPin className="h-3 w-3" />{snapshot.headquarters}</span>}
-                {snapshot.founded && <span className="flex items-center gap-1"><Calendar className="h-3 w-3" />{snapshot.founded}</span>}
-                <a href={snapshot.url} target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">
-                  <ExternalLink className="h-3 w-3" />
-                </a>
-              </div>
+          {/* Progress bar */}
+          <div className="flex items-center gap-3">
+            <div className="flex-1 h-1.5 rounded-full bg-secondary/60 overflow-hidden">
+              <motion.div
+                className="h-full rounded-full bg-primary"
+                initial={{ width: 0 }}
+                animate={{ width: `${sortedTasks.length > 0 ? (completedCount / sortedTasks.length) * 100 : 0}%` }}
+                transition={{ duration: 0.6 }}
+              />
             </div>
-          )}
-        </motion.div>
-
-        {/* Section 1: Risk Gauge + Verdict */}
-        <motion.div ref={heroRef} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="mb-8">
-          <Card className="border-border/50 overflow-hidden">
-            <CardContent className="p-6 sm:p-8">
-              <RiskGauge
-                risk={100 - readiness}
-                verdict={verdict}
-                reasoning={getVerdictReasoning(verdict, result)}
-              />
-
-              {/* Stat pills */}
-              <div className="grid grid-cols-3 gap-3 mt-6 pt-6 border-t border-border/50">
-                {statCards.map((stat, i) => {
-                  const Icon = stat.icon;
-                  return (
-                    <motion.div
-                      key={stat.label}
-                      initial={{ opacity: 0, y: 8 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.3 + i * 0.07 }}
-                      className="text-center"
-                    >
-                      <div className="flex items-center justify-center gap-2 mb-1">
-                        <span className={`w-2 h-2 rounded-full ${stat.dotColor} shrink-0`} />
-                        <Icon className="h-3.5 w-3.5 text-muted-foreground" />
-                        <span className="text-lg font-sans font-bold text-foreground">{stat.value}%</span>
-                      </div>
-                      <p className="text-[10px] text-muted-foreground">{stat.label}</p>
-                      <div className="w-full h-1 rounded-full bg-secondary/60 overflow-hidden mt-1.5 mx-auto max-w-[80px]">
-                        <motion.div
-                          className="h-full rounded-full bg-foreground/20"
-                          initial={{ width: 0 }}
-                          animate={{ width: `${stat.value}%` }}
-                          transition={{ duration: 0.8, delay: 0.5 + i * 0.1 }}
-                        />
-                      </div>
-                    </motion.div>
-                  );
-                })}
-              </div>
-            </CardContent>
-          </Card>
-        </motion.div>
-
-        {/* Tabbed Sections */}
-        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
-          <Tabs defaultValue="tasks" className="mb-8">
-            <TabsList className="w-full grid grid-cols-4 h-10 sm:h-11 mb-4">
-              <TabsTrigger value="tasks" className="gap-1 sm:gap-1.5 text-[11px] sm:text-sm px-1 sm:px-3">
-                <ListChecks className="h-3 w-3 sm:h-3.5 sm:w-3.5" /> <span className="hidden sm:inline">Your Tasks</span><span className="sm:hidden">Tasks</span>
-              </TabsTrigger>
-              <TabsTrigger value="pathways" className="gap-1 sm:gap-1.5 text-[11px] sm:text-sm px-1 sm:px-3">
-                <Route className="h-3 w-3 sm:h-3.5 sm:w-3.5" /> <span className="hidden sm:inline">Career Boost</span><span className="sm:hidden">Boost</span>
-              </TabsTrigger>
-              <TabsTrigger value="plan" className="gap-1 sm:gap-1.5 text-[11px] sm:text-sm px-1 sm:px-3">
-                <Wrench className="h-3 w-3 sm:h-3.5 sm:w-3.5" /> AI Toolkit
-              </TabsTrigger>
-              <TabsTrigger value="context" className="gap-1 sm:gap-1.5 text-[11px] sm:text-sm px-1 sm:px-3">
-                <BarChart3 className="h-3 w-3 sm:h-3.5 sm:w-3.5" /> <span className="hidden sm:inline">Insights</span><span className="sm:hidden">Info</span>
-              </TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="tasks">
-              <TaskTable
-                tasks={result.tasks}
-                skills={result.skills}
-                completedTasks={completedTasks}
-                onPractice={(taskName) => {
-                  const task = result.tasks.find(t => t.name === taskName);
-                  if (task) setSimTask(task);
-                }}
-              />
-            </TabsContent>
-
-            <TabsContent value="pathways">
-              <CareerPathways data={pathwayData} loading={pathwayLoading} error={pathwayError} />
-            </TabsContent>
-
-            <TabsContent value="plan">
-              <ActionPlan result={result} />
-            </TabsContent>
-
-            <TabsContent value="context">
-              <div className="space-y-4">
-                {result.industryBenchmark && result.industryBenchmark.industry && (
-                  <IndustryBenchmarkCard
-                    benchmark={result.industryBenchmark}
-                    currentRisk={result.summary.automationRiskPercent}
-                    currentAugmented={result.summary.augmentedPercent}
-                  />
-                )}
-                {result.curatedSkills && result.curatedSkills.length > 0 && (
-                  <CuratedSkillsBadge curatedSkills={result.curatedSkills} />
-                )}
-                <RoleContext agentRisk={100 - readiness} jobTitle={result.jobTitle} />
-                
-              </div>
-            </TabsContent>
-          </Tabs>
-        </motion.div>
-
-        {/* Slim CTA */}
-        <div className="flex items-center justify-between gap-3 px-4 py-3 rounded-lg border border-primary/20 bg-primary/5 mb-8">
-          <div className="flex items-center gap-2.5 min-w-0">
-            <Rocket className="h-4 w-4 text-primary shrink-0" />
-            <span className="text-sm text-muted-foreground truncate">
-              {user ? "Track your learning progress" : "Sign in to track progress"}
+            <span className="text-[11px] text-muted-foreground shrink-0 tabular-nums">
+              {completedCount}/{sortedTasks.length} done
             </span>
           </div>
-          <Button onClick={() => navigate(user ? "/dashboard" : "/auth")} size="sm" variant="ghost" className="gap-1.5 shrink-0 text-xs">
-            {user ? <><CheckCircle2 className="w-3.5 h-3.5" /> Dashboard</> : <><LogIn className="w-3.5 h-3.5" /> Sign In</>}
-          </Button>
+        </motion.div>
+
+        {/* Task cards — single-focus, fast-paced */}
+        <div className="space-y-3">
+          {sortedTasks.map((task, i) => {
+            const aiScore = task.aiExposureScore ?? 50;
+            const isCompleted = completedTasks.has(task.name);
+            const style = taskChipStyle(aiScore);
+
+            return (
+              <motion.button
+                key={i}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.04 }}
+                onClick={() => setSimTask(task)}
+                className={`w-full rounded-xl border p-4 flex items-center gap-4 text-left transition-all active:scale-[0.98] hover:scale-[1.01] ${style.border} ${style.bg} ${isCompleted ? "opacity-60" : ""}`}
+              >
+                {/* Play/Check icon */}
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${
+                  isCompleted ? "bg-success/15" : "bg-primary/15"
+                }`}>
+                  {isCompleted
+                    ? <CheckCircle2 className="h-5 w-5 text-success" />
+                    : <Play className="h-5 w-5 text-primary" />
+                  }
+                </div>
+
+                {/* Task info */}
+                <div className="flex-1 min-w-0">
+                  <span className="text-sm font-semibold text-foreground leading-snug line-clamp-1 block">
+                    {task.name}
+                  </span>
+                  <div className="flex items-center gap-2 mt-1">
+                    <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${style.badge}`}>
+                      🤖 {aiScore}%
+                    </span>
+                    {task.priority === "high" && (
+                      <span className="text-[10px] text-primary font-medium">🚀 Learn First</span>
+                    )}
+                    {isCompleted && (
+                      <span className="text-[10px] text-success font-medium">✓ Done</span>
+                    )}
+                  </div>
+                </div>
+
+                <ArrowLeft className="h-4 w-4 text-muted-foreground/40 rotate-180 shrink-0" />
+              </motion.button>
+            );
+          })}
         </div>
+
+        {/* Sign in prompt */}
+        {!user && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.3 }}
+            className="flex items-center justify-between gap-3 px-4 py-3 rounded-xl border border-primary/20 bg-primary/5 mt-6"
+          >
+            <div className="flex items-center gap-2.5 min-w-0">
+              <Rocket className="h-4 w-4 text-primary shrink-0" />
+              <span className="text-sm text-muted-foreground">Sign in to save progress</span>
+            </div>
+            <Button onClick={() => navigate("/auth")} size="sm" variant="ghost" className="gap-1.5 shrink-0 text-xs">
+              <LogIn className="w-3.5 h-3.5" /> Sign In
+            </Button>
+          </motion.div>
+        )}
 
         {/* Simulator Modal */}
         <SimulatorModal
@@ -553,6 +354,8 @@ const Analysis = () => {
           taskTrend={simTask?.trend}
           taskImpactLevel={simTask?.impactLevel}
           onCompleted={fetchCompletions}
+          onNextTask={pickNextTask}
+          onBackToFeed={() => navigate("/")}
         />
       </div>
     </div>
