@@ -85,31 +85,83 @@ function extractAtsSlug(careersUrl: string, platform: string): string | null {
   if (!careersUrl) return null;
   try {
     const u = new URL(careersUrl);
-    if (platform === "ashby" && u.hostname.includes("ashbyhq.com")) {
-      const parts = u.pathname.split("/").filter(Boolean);
-      return parts[0] || null;
+    const parts = u.pathname.split("/").filter(Boolean);
+
+    if (platform === "ashby") {
+      // jobs.ashbyhq.com/SLUG or jobs.ashbyhq.com/SLUG/embed
+      if (u.hostname.includes("ashbyhq.com")) {
+        const slug = parts[0] || null;
+        return slug && slug !== "embed" ? slug : null;
+      }
     }
-    if (platform === "greenhouse" && u.hostname.includes("greenhouse.io")) {
-      const parts = u.pathname.split("/").filter(Boolean);
-      return parts[0] || null;
+
+    if (platform === "greenhouse") {
+      // boards.greenhouse.io/SLUG or job-boards.greenhouse.io/SLUG
+      if (u.hostname.includes("greenhouse.io")) {
+        // Handle embed pattern: /embed/job_board/js?for=SLUG
+        if (parts[0] === "embed" && u.searchParams.has("for")) {
+          return u.searchParams.get("for");
+        }
+        // Handle job-boards.greenhouse.io/SLUG and boards.greenhouse.io/SLUG
+        const slug = parts[0] || null;
+        if (slug && slug !== "embed") return slug;
+      }
+      // Handle api.greenhouse.io/v1/boards/SLUG pattern
+      if (u.hostname === "api.greenhouse.io" && parts[0] === "v1" && parts[1] === "boards") {
+        return parts[2] || null;
+      }
     }
-    if (platform === "lever" && u.hostname.includes("lever.co")) {
-      const parts = u.pathname.split("/").filter(Boolean);
-      return parts[0] || null;
+
+    if (platform === "lever") {
+      // jobs.lever.co/SLUG or jobs.lever.co/SLUG/JOB_ID
+      if (u.hostname.includes("lever.co")) {
+        const slug = parts[0] || null;
+        // Make sure we return the company slug, not a job UUID
+        if (slug && !/^[0-9a-f]{8}-/.test(slug)) return slug;
+      }
     }
   } catch { /* invalid URL */ }
   return null;
 }
 
-/** Try common Greenhouse slug patterns derived from company name */
+/** Derive slug candidates from company name */
+function nameToSlugs(companyName: string): string[] {
+  const base = companyName.toLowerCase().replace(/[^a-z0-9]/g, "");
+  const dashed = companyName.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+  const candidates = [base, dashed];
+  // Common suffixes
+  for (const suffix of ["inc", "industries", "io", "ai", "hq", "labs", "tech"]) {
+    if (!base.endsWith(suffix)) candidates.push(base + suffix);
+  }
+  // If name has parentheses like "Canopy (was Encarte)", try the first word
+  const firstWord = companyName.split(/[\s(–\-]/)[0]?.toLowerCase().replace(/[^a-z0-9]/g, "");
+  if (firstWord && firstWord !== base) candidates.push(firstWord);
+  return [...new Set(candidates)];
+}
+
+/** Probe Ashby API by slug */
+async function probeAshbySlug(companyName: string): Promise<string | null> {
+  for (const slug of nameToSlugs(companyName)) {
+    try {
+      const res = await safeFetch(
+        `https://api.ashbyhq.com/posting-api/job-board/${slug}?includeCompensation=false`,
+        { method: "GET", headers: { "Accept": "application/json" } },
+        8000
+      );
+      if (res.ok) {
+        const data = JSON.parse(await res.text());
+        if (data.jobs && data.jobs.length > 0) return slug;
+      } else {
+        await res.text();
+      }
+    } catch { /* continue */ }
+  }
+  return null;
+}
+
+/** Probe Greenhouse API by slug */
 async function probeGreenhouseSlug(companyName: string): Promise<string | null> {
-  const candidates = [
-    companyName.toLowerCase().replace(/[^a-z0-9]/g, ""),
-    companyName.toLowerCase().replace(/\s+/g, ""),
-    companyName.toLowerCase().replace(/[^a-z0-9]/g, "") + "industries",
-    companyName.toLowerCase().replace(/[^a-z0-9]/g, "") + "inc",
-  ];
-  for (const slug of candidates) {
+  for (const slug of nameToSlugs(companyName)) {
     try {
       const res = await safeFetch(
         `https://api.greenhouse.io/v1/boards/${slug}/jobs?content=false`,
@@ -120,7 +172,27 @@ async function probeGreenhouseSlug(companyName: string): Promise<string | null> 
         const data = JSON.parse(await res.text());
         if (data.jobs && data.jobs.length > 0) return slug;
       } else {
-        await res.text(); // consume body
+        await res.text();
+      }
+    } catch { /* continue */ }
+  }
+  return null;
+}
+
+/** Probe Lever API by slug */
+async function probeLeverSlug(companyName: string): Promise<string | null> {
+  for (const slug of nameToSlugs(companyName)) {
+    try {
+      const res = await safeFetch(
+        `https://api.lever.co/v0/postings/${slug}?mode=json&limit=1`,
+        { method: "GET", headers: { "Accept": "application/json" } },
+        8000
+      );
+      if (res.ok) {
+        const data = JSON.parse(await res.text());
+        if (Array.isArray(data) && data.length > 0) return slug;
+      } else {
+        await res.text();
       }
     } catch { /* continue */ }
   }
@@ -148,7 +220,6 @@ async function fetchAshbyJobs(slug: string): Promise<any[]> {
 }
 
 async function fetchGreenhouseJobs(slug: string): Promise<any[]> {
-  // First fetch without content (fast, handles large boards)
   const res = await safeFetch(
     `https://api.greenhouse.io/v1/boards/${slug}/jobs?content=false`,
     { method: "GET", headers: { "Accept": "application/json" } },
@@ -162,7 +233,7 @@ async function fetchGreenhouseJobs(slug: string): Promise<any[]> {
     title: j.title,
     department: j.departments?.[0]?.name || null,
     location: j.location?.name || null,
-    description: null, // skip descriptions for speed — can backfill later
+    description: null,
     source_url: j.absolute_url || null,
     status: "active",
   }));
@@ -191,10 +262,14 @@ async function fetchLeverJobs(slug: string): Promise<any[]> {
 async function fetchDirectAtsJobs(careersUrl: string, platform: string, companyName?: string): Promise<any[]> {
   let slug = extractAtsSlug(careersUrl, platform);
   
-  // If no slug from URL (e.g. custom careers page), probe by company name
-  if (!slug && platform === "greenhouse" && companyName) {
-    console.log(`No slug from URL, probing Greenhouse by company name: ${companyName}`);
-    slug = await probeGreenhouseSlug(companyName);
+  // If no slug from URL, probe by company name on the correct platform
+  if (!slug && companyName) {
+    console.log(`No slug from URL, probing ${platform} by company name: ${companyName}`);
+    switch (platform) {
+      case "greenhouse": slug = await probeGreenhouseSlug(companyName); break;
+      case "ashby": slug = await probeAshbySlug(companyName); break;
+      case "lever": slug = await probeLeverSlug(companyName); break;
+    }
   }
   
   if (!slug) {
