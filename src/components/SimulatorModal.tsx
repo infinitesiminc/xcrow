@@ -726,7 +726,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
     ? { icon: TrendingUp, color: "text-primary", bg: "bg-primary/10" }
     : { icon: Target, color: "text-primary", bg: "bg-primary/10" };
 
-  const doneTitle = allObjectivesMet
+  const doneTitle = allDoneObjectivesMet
     ? "You crushed it! 🎉"
     : objectiveMet > 0
     ? "Great progress! 💪"
