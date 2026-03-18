@@ -430,10 +430,15 @@ function RoleDetailOverlay({ role, onClose }: { role: RoleCard; onClose: () => v
                 transition={{ duration: 0.15 }}
                 className="p-5"
               >
-                {loadingTasks ? (
-                  <div className="flex items-center gap-2 py-6 justify-center">
+                {loadingTasks || analyzingTasks ? (
+                  <div className="flex flex-col items-center gap-2 py-6">
                     <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-                    <span className="text-xs text-muted-foreground">Loading tasks…</span>
+                    <span className="text-xs text-muted-foreground">
+                      {analyzingTasks ? "Running deep AI analysis…" : "Loading tasks…"}
+                    </span>
+                    {analyzingTasks && (
+                      <span className="text-[10px] text-muted-foreground/60 italic">This may take 10-15 seconds</span>
+                    )}
                   </div>
                 ) : tasks.length > 0 ? (
                   <div className="space-y-2.5">
@@ -466,7 +471,7 @@ function RoleDetailOverlay({ role, onClose }: { role: RoleCard; onClose: () => v
                   </div>
                 ) : (
                   <p className="text-sm text-muted-foreground/60 italic text-center py-6">
-                    Tap "Explore Role" below to unlock tasks
+                    No description available to analyze
                   </p>
                 )}
               </motion.div>
