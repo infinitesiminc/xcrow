@@ -19,6 +19,22 @@ function getSupabaseAdmin() {
   );
 }
 
+/* ── Import tracking helpers ── */
+async function logImport(sb: any, entry: Record<string, any>): Promise<string | null> {
+  const { data, error } = await sb.from("import_log").insert(entry).select("id").single();
+  if (error) { console.error("import_log insert failed:", error.message); return null; }
+  return data.id;
+}
+
+async function raiseFlag(sb: any, flag: Record<string, any>): Promise<void> {
+  const { error } = await sb.from("import_flags").insert(flag);
+  if (error) console.error("import_flags insert failed:", error.message);
+}
+
+async function updateLog(sb: any, logId: string, updates: Record<string, any>): Promise<void> {
+  await sb.from("import_log").update(updates).eq("id", logId);
+}
+
 async function safeFetch(url: string, opts: RequestInit, timeoutMs = 30000): Promise<Response> {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), timeoutMs);
