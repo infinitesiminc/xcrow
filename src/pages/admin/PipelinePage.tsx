@@ -371,7 +371,6 @@ export default function PipelinePage() {
   [companies]);
 
   const syncAllNew = async () => {
-    console.log("syncAllNew called, unsyncedCompanies:", unsyncedCompanies.length, "syncAllRunning:", syncAllRunning);
     const targets = unsyncedCompanies;
     if (targets.length === 0) {
       toast({ title: "Nothing to sync", description: "All companies with detected ATS already have jobs." });
