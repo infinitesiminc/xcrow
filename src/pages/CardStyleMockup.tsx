@@ -226,41 +226,41 @@ function StyleD({ jobs }: { jobs: typeof SAMPLE_JOBS }) {
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: i * 0.05 }}
-          className="group rounded-xl overflow-hidden border border-border/40 hover:border-border bg-card transition-all hover:shadow-lg cursor-pointer"
+          className="group rounded-xl overflow-hidden border-none bg-card transition-all hover:shadow-lg cursor-pointer"
         >
-          {/* Thin dept-colored accent strip */}
-          <div className="h-1 bg-white/20" />
-          <div className="p-4">
-            <div className="flex items-start gap-3 mb-3">
-              <img
-                src={job.logo}
-                alt={job.company}
-                className="h-9 w-9 rounded-lg object-contain bg-white/10 p-1 shrink-0"
-                onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
-              />
-              <div className="min-w-0">
-                <p className="text-[11px] text-muted-foreground truncate">{job.company}</p>
-                <h3 className="text-sm font-bold text-foreground leading-snug group-hover:text-primary transition-colors line-clamp-2">{job.title}</h3>
-              </div>
+          {/* Clean branded gradient header with centered logo */}
+          <div
+            className="relative h-28 flex items-center justify-center"
+            style={{
+              background: `linear-gradient(135deg, ${job.brandColor}22 0%, ${job.brandColor}08 100%)`,
+            }}
+          >
+            <img
+              src={job.logo}
+              alt={job.company}
+              className="h-11 w-11 rounded-xl object-contain bg-white/10 backdrop-blur-sm p-1.5"
+              onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+            />
+            {/* Risk pill */}
+            <div className="absolute top-2 right-2 flex items-center gap-1 px-2 py-0.5 rounded-full bg-black/40 backdrop-blur-sm">
+              <span className={`text-xs font-bold ${job.risk >= 20 ? "text-destructive" : "text-success"}`}>{job.risk}%</span>
+              <span className="text-[9px] text-white/50">risk</span>
             </div>
-            {job.location && (
-              <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground mb-3">
-                <MapPin className="h-3 w-3 shrink-0" />
-                <span className="truncate">{job.location}</span>
-              </div>
-            )}
-            <div className="flex items-center justify-between">
-              <span className={`px-2 py-0.5 text-[10px] font-medium rounded-full border ${DEPT_BADGE[job.dept] || defaultBadge}`}>
-                {job.dept}
-              </span>
-              <div className="flex items-center gap-2">
-                <span className={`text-[11px] font-bold ${job.risk >= 20 ? "text-destructive" : "text-success"}`}>{job.risk}%</span>
-                <div className="flex items-center gap-0.5">
-                  <Zap className="h-3 w-3 text-primary" />
-                  <span className="text-[11px] font-bold text-primary">{job.toLearn}%</span>
-                </div>
-              </div>
+            {/* To learn pill */}
+            <div className="absolute bottom-2 left-2 flex items-center gap-1 px-2 py-0.5 rounded-full bg-black/40 backdrop-blur-sm">
+              <Zap className="h-3 w-3 text-primary" />
+              <span className="text-xs font-bold text-white">{job.toLearn}%</span>
             </div>
+          </div>
+          {/* Text content at bottom */}
+          <div className="p-3">
+            <h3 className="text-sm font-bold text-foreground leading-snug group-hover:text-primary transition-colors truncate">{job.title}</h3>
+            <p className="text-[11px] text-muted-foreground truncate mt-0.5">
+              {[job.company, job.location].filter(Boolean).join(" · ")}
+            </p>
+            <span className={`inline-block mt-1.5 px-2 py-0.5 text-[10px] font-medium rounded-full border ${DEPT_BADGE[job.dept] || defaultBadge}`}>
+              {job.dept}
+            </span>
           </div>
         </motion.div>
       ))}
