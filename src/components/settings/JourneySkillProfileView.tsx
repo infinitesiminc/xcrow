@@ -156,6 +156,20 @@ function matchTaskToSkills(taskName: string): string[] {
   return matched;
 }
 
+/* ── User performance data ── */
+export interface PracticedRoleData {
+  job_title: string;
+  task_name: string;
+  company: string | null;
+  completed_at: string;
+  correct_answers: number;
+  total_questions: number;
+  tool_awareness_score: number | null;
+  human_value_add_score: number | null;
+  adaptive_thinking_score: number | null;
+  domain_judgment_score: number | null;
+}
+
 /* ── Aggregated skill data ── */
 interface AggregatedSkill {
   id: string;
@@ -167,6 +181,7 @@ interface AggregatedSkill {
   humanEdge?: string;
   jobCount: number;
   taskCount: number;
+  practiced: boolean; // true if derived from real user data
   jobs: { title: string; company: string; taskName: string; score: number }[];
 }
 
