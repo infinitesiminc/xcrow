@@ -433,18 +433,37 @@ serve(async (req) => {
       });
     }
 
-    const data = await response.json();
+    const responseText = await response.text();
+    let data: any;
+    try {
+      data = JSON.parse(responseText);
+    } catch (parseErr) {
+      console.error("Failed to parse AI response body:", responseText.slice(0, 500));
+      return new Response(JSON.stringify({ error: "AI returned an invalid response. Please try again." }), {
+        status: 502,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
     const toolCall = data.choices?.[0]?.message?.tool_calls?.[0];
 
     if (!toolCall?.function?.arguments) {
-      console.error("No tool call in response:", JSON.stringify(data));
+      console.error("No tool call in response:", JSON.stringify(data).slice(0, 500));
       return new Response(JSON.stringify({ error: "Invalid AI response" }), {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    const analysis = JSON.parse(toolCall.function.arguments);
+    let analysis: any;
+    try {
+      analysis = JSON.parse(toolCall.function.arguments);
+    } catch (parseErr) {
+      console.error("Failed to parse tool call arguments:", toolCall.function.arguments?.slice(0, 500));
+      return new Response(JSON.stringify({ error: "AI returned malformed analysis. Please try again." }), {
+        status: 502,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
     // Store results back to DB if we had a match
     if (matchedJob) {
