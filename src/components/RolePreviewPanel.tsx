@@ -27,6 +27,34 @@ interface RolePreviewPanelProps {
   onClose: () => void;
 }
 
+const TASK_ICON_MAP: [RegExp, React.ComponentType<any>][] = [
+  [/communicat|messag|email|write|copywriting|narrative|story/i, MessageSquare],
+  [/analys|analytic|data|report|metric|insight|dashboard/i, BarChart3],
+  [/document|compliance|audit|policy|legal|contract|regulat/i, FileText],
+  [/team|collaborat|stakeholder|manag|lead|mentor|hire|recruit/i, Users],
+  [/research|discover|investigat|explor|survey/i, Search],
+  [/engineer|develop|code|software|technical|architect|system/i, Code],
+  [/design|creat|ux|ui|visual|brand|content/i, PenTool],
+  [/strateg|plan|roadmap|vision|initiative|growth/i, TrendingUp],
+  [/market|campaign|advertis|promot|launch|gtm|seo|social/i, Megaphone],
+  [/sales|revenue|pipeline|deal|prospect|client|customer/i, Target],
+  [/security|risk|protect|threat|vulnerab|fraud/i, Shield],
+  [/innovat|ideation|brainstorm|concept/i, Lightbulb],
+  [/operat|process|workflow|automat|efficien|optim/i, Settings],
+  [/global|international|region|market.*expan|locali/i, Globe],
+  [/train|learn|educat|onboard|develop.*program/i, GraduationCap],
+  [/finance|budget|cost|invest|forecast|revenue/i, Briefcase],
+  [/culture|wellbeing|engagement|diversity|inclusion/i, Heart],
+  [/integrat|platform|infrastructure|stack|tool/i, Layers],
+];
+
+function getTaskIcon(taskName: string) {
+  for (const [pattern, Icon] of TASK_ICON_MAP) {
+    if (pattern.test(taskName)) return Icon;
+  }
+  return Zap;
+}
+
 interface TaskCluster {
   cluster_name: string;
   description: string | null;
