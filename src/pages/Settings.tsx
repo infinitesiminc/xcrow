@@ -33,6 +33,7 @@ import JourneyRadarView from "@/components/settings/JourneyRadarView";
 import JourneyBubbleView from "@/components/settings/JourneyBubbleView";
 import JourneyTimelineView from "@/components/settings/JourneyTimelineView";
 import JourneyHeatmapView from "@/components/settings/JourneyHeatmapView";
+import JourneySkillProfileView from "@/components/settings/JourneySkillProfileView";
 
 /* ── helpers ─────────────────────────────────────────── */
 
