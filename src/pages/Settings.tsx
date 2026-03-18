@@ -25,7 +25,7 @@ import {
   Loader2, Save, Trash2, KeyRound, Bookmark, Zap, Search,
   Linkedin, Upload, FileText, GraduationCap, Briefcase, X, School,
   Shield, Target, User, Lock, AlertOctagon, ArrowLeft,
-  Radar, CircleDot, GitBranch, LayoutGrid,
+  Radar, CircleDot, GitBranch, LayoutGrid, BarChart3,
 } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { buildInterestGraph, type InterestGraph, type CompletionSignal, type AnalysisSignal, type BookmarkSignal } from "@/lib/interest-graph";
@@ -33,6 +33,7 @@ import JourneyRadarView from "@/components/settings/JourneyRadarView";
 import JourneyBubbleView from "@/components/settings/JourneyBubbleView";
 import JourneyTimelineView from "@/components/settings/JourneyTimelineView";
 import JourneyHeatmapView from "@/components/settings/JourneyHeatmapView";
+import JourneySkillProfileView from "@/components/settings/JourneySkillProfileView";
 
 /* ── helpers ─────────────────────────────────────────── */
 
@@ -452,13 +453,14 @@ export default function Settings() {
    Section Components
    ══════════════════════════════════════════════════════ */
 
-type VizMode = "radar" | "bubble" | "timeline" | "heatmap";
+type VizMode = "radar" | "bubble" | "timeline" | "heatmap" | "skills";
 
 const VIZ_MODES: { key: VizMode; label: string; icon: typeof Radar }[] = [
   { key: "radar", label: "Radar", icon: Radar },
   { key: "bubble", label: "Galaxy", icon: CircleDot },
   { key: "timeline", label: "Timeline", icon: GitBranch },
   { key: "heatmap", label: "Heatmap", icon: LayoutGrid },
+  { key: "skills", label: "Skills", icon: BarChart3 },
 ];
 
 function RolesSection({
@@ -570,6 +572,7 @@ function RolesSection({
           {vizMode === "bubble" && <JourneyBubbleView graph={graph} onNavigate={goToRole} />}
           {vizMode === "timeline" && <JourneyTimelineView graph={graph} onNavigate={goToRole} />}
           {vizMode === "heatmap" && <JourneyHeatmapView graph={graph} onNavigate={goToRole} />}
+          {vizMode === "skills" && <JourneySkillProfileView onNavigate={goToRole} />}
         </motion.div>
       )}
     </div>
