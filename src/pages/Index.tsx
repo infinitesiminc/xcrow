@@ -20,6 +20,8 @@ interface RoleCard {
   company?: string;
   location?: string;
   logo?: string;
+  country?: string;
+  workMode?: string;
 }
 
 function calcToolsToLearn(risk: number, augmented: number, newSkills: number): number {
@@ -65,7 +67,7 @@ const Index = () => {
     (async () => {
       const { data, error } = await supabase
         .from("jobs")
-        .select("title, department, location, augmented_percent, automation_risk_percent, new_skills_percent, companies(name, logo_url, website)")
+        .select("title, department, location, city, country, work_mode, augmented_percent, automation_risk_percent, new_skills_percent, companies(name, logo_url, website)")
         .gt("augmented_percent", 0)
         .order("augmented_percent", { ascending: false })
         .limit(100);
@@ -101,6 +103,8 @@ const Index = () => {
           company: companyName,
           location: j.location || undefined,
           logo: logoUrl,
+          country: j.country || undefined,
+          workMode: j.work_mode || undefined,
         };
       });
 

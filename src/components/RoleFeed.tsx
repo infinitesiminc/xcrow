@@ -1,7 +1,7 @@
-import { useState, useRef, useCallback, useEffect } from "react";
+import { useState, useRef, useCallback, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence, PanInfo } from "framer-motion";
-import { BarChart3, Zap, Bookmark, Share2, Search, ChevronUp, X, ArrowRight } from "lucide-react";
+import { BarChart3, Zap, Bookmark, Share2, Search, ChevronUp, X, ArrowRight, Globe, MapPin, Laptop } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 interface RoleCard {
@@ -14,6 +14,8 @@ interface RoleCard {
   company?: string;
   location?: string;
   logo?: string;
+  country?: string;
+  workMode?: string;
 }
 
 interface RoleFeedProps {
@@ -206,14 +208,43 @@ function DesktopGrid({ roles, onOpenSearch }: RoleFeedProps) {
   const navigate = useNavigate();
   const [selected, setSelected] = useState<RoleCard | null>(null);
   const [filter, setFilter] = useState<string | null>(null);
+  const [countryFilter, setCountryFilter] = useState<string | null>(null);
+  const [workModeFilter, setWorkModeFilter] = useState<string | null>(null);
 
   const tags = Array.from(new Set(roles.map(r => r.tag)));
-  const filtered = filter ? roles.filter(r => r.tag === filter) : roles;
+  
+  const countries = useMemo(() => {
+    const counts: Record<string, number> = {};
+    roles.forEach(r => { if (r.country) counts[r.country] = (counts[r.country] || 0) + 1; });
+    return Object.entries(counts)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 12)
+      .map(([name]) => name);
+  }, [roles]);
+
+  const workModes = useMemo(() => {
+    const modes = new Set<string>();
+    roles.forEach(r => { if (r.workMode) modes.add(r.workMode); });
+    return Array.from(modes).sort();
+  }, [roles]);
+
+  const workModeLabel: Record<string, string> = { remote: "Remote", onsite: "On-site", hybrid: "Hybrid" };
+  const workModeIcon: Record<string, typeof Globe> = { remote: Globe, onsite: MapPin, hybrid: Laptop };
+
+  const filtered = useMemo(() => {
+    return roles.filter(r => {
+      if (filter && r.tag !== filter) return false;
+      if (countryFilter && r.country !== countryFilter) return false;
+      if (workModeFilter && r.workMode !== workModeFilter) return false;
+      return true;
+    });
+  }, [roles, filter, countryFilter, workModeFilter]);
 
   return (
     <div className="h-full flex flex-col overflow-hidden">
-      {/* Filter bar — no search pill, just filters */}
-      <div className="shrink-0 flex items-center gap-2 px-6 py-4 border-b border-border/40">
+      {/* Filter bar */}
+      <div className="shrink-0 flex flex-wrap items-center gap-2 px-6 py-4 border-b border-border/40">
+        {/* Department filters */}
         <div className="flex items-center gap-1.5">
           <button
             onClick={() => setFilter(null)}
@@ -231,6 +262,50 @@ function DesktopGrid({ roles, onOpenSearch }: RoleFeedProps) {
             >{tag}</button>
           ))}
         </div>
+
+        {/* Separator */}
+        <div className="w-px h-5 bg-border/60 mx-1" />
+
+        {/* Work mode filters */}
+        <div className="flex items-center gap-1.5">
+          {workModes.map(mode => {
+            const Icon = workModeIcon[mode] || Globe;
+            return (
+              <button
+                key={mode}
+                onClick={() => setWorkModeFilter(f => f === mode ? null : mode)}
+                className={`flex items-center gap-1 px-3 py-1.5 text-xs font-medium rounded-full transition-colors ${
+                  workModeFilter === mode
+                    ? "bg-accent text-accent-foreground ring-1 ring-accent"
+                    : "bg-muted text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <Icon className="h-3 w-3" />
+                {workModeLabel[mode] || mode}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Separator */}
+        {countries.length > 0 && <div className="w-px h-5 bg-border/60 mx-1" />}
+
+        {/* Country filters */}
+        {countries.length > 0 && (
+          <div className="flex items-center gap-1.5 flex-wrap">
+            {countries.map(country => (
+              <button
+                key={country}
+                onClick={() => setCountryFilter(f => f === country ? null : country)}
+                className={`px-3 py-1.5 text-xs font-medium rounded-full transition-colors ${
+                  countryFilter === country
+                    ? "bg-accent text-accent-foreground ring-1 ring-accent"
+                    : "bg-muted text-muted-foreground hover:text-foreground"
+                }`}
+              >{country}</button>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Grid */}
