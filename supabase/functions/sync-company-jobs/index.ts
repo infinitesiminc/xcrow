@@ -185,20 +185,53 @@ serve(async (req) => {
         ? companies.filter((c: any) => !isLikelyNonUS(c.headquarters || c.location || c.hq))
         : companies;
 
-      const rows = filtered.map((c: any) => ({
-        external_id: c.id,
-        name: c.name,
-        website: c.website,
-        industry: c.industry,
-        logo_url: c.logo_url,
-        careers_url: c.careers_url,
-        detected_ats_platform: c.detected_ats_platform || ats_platform || null,
-        brand_color: c.brand_color,
-        description: c.context || c.culture || null,
-        employee_range: c.size || null,
-        headquarters: c.headquarters || c.location || c.hq || null,
-        is_demo: c.is_demo ?? true,
-      }));
+      // Dedup: for each company, check if one with the same name already exists
+      const rows = [];
+      for (const c of filtered) {
+        const extId = c.id;
+        const name = c.name;
+
+        // Check if company already exists by name (case-insensitive)
+        const { data: existing } = await sb
+          .from("companies")
+          .select("id, external_id")
+          .ilike("name", name)
+          .is("workspace_id", null)
+          .limit(1)
+          .maybeSingle();
+
+        if (existing && existing.external_id !== extId) {
+          // Merge: update existing record with new external_id and metadata
+          await sb.from("companies").update({
+            external_id: extId,
+            website: c.website || undefined,
+            industry: c.industry || undefined,
+            logo_url: c.logo_url || undefined,
+            careers_url: c.careers_url || undefined,
+            detected_ats_platform: c.detected_ats_platform || ats_platform || undefined,
+            brand_color: c.brand_color || undefined,
+            description: c.context || c.culture || undefined,
+            employee_range: c.size || undefined,
+            headquarters: c.headquarters || c.location || c.hq || undefined,
+          }).eq("id", existing.id);
+          continue;
+        }
+
+        rows.push({
+          external_id: extId,
+          name,
+          website: c.website,
+          industry: c.industry,
+          logo_url: c.logo_url,
+          careers_url: c.careers_url,
+          detected_ats_platform: c.detected_ats_platform || ats_platform || null,
+          brand_color: c.brand_color,
+          description: c.context || c.culture || null,
+          employee_range: c.size || null,
+          headquarters: c.headquarters || c.location || c.hq || null,
+          is_demo: c.is_demo ?? true,
+        });
+      }
 
       if (rows.length > 0) {
         const { error } = await sb
