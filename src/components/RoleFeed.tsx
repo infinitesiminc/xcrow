@@ -728,10 +728,22 @@ function MobileFeed({ roles, onOpenSearch }: RoleFeedProps) {
           className="absolute inset-0 flex flex-col"
           onAnimationComplete={() => { isAnimating.current = false; }}
         >
-          <div className="absolute inset-0">
-            <img src={role.image} alt={role.title} className="w-full h-full object-cover" draggable={false} />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-black/10" />
-          </div>
+          {(() => {
+            const hue1 = hashToHue(role.title);
+            const hue2 = (hue1 + 60) % 360;
+            const hue3 = (hue1 + 180) % 360;
+            return (
+              <div className="absolute inset-0" style={{
+                background: `linear-gradient(160deg, hsl(${hue1} 70% 12%) 0%, hsl(${hue2} 60% 8%) 50%, hsl(${hue3} 50% 6%) 100%)`,
+              }}>
+                {/* Decorative orbs */}
+                <div className="absolute rounded-full opacity-25" style={{ width: 200 + (hue1 % 100), height: 200 + (hue1 % 100), top: -(hue2 % 60), right: -(hue1 % 80), background: `radial-gradient(circle, hsl(${hue1} 80% 45% / 0.35), transparent)` }} />
+                <div className="absolute rounded-full opacity-20" style={{ width: 160 + (hue2 % 80), height: 160 + (hue2 % 80), bottom: -(hue3 % 40), left: -(hue2 % 60), background: `radial-gradient(circle, hsl(${hue2} 70% 55% / 0.25), transparent)` }} />
+                <div className="absolute rounded-full opacity-15" style={{ width: 100 + (hue3 % 60), height: 100 + (hue3 % 60), top: '40%', left: '30%', background: `radial-gradient(circle, hsl(${hue3} 60% 50% / 0.2), transparent)` }} />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
+              </div>
+            );
+          })()}
 
           <div className="relative flex-1 flex flex-col justify-end p-5 pb-8" onClick={() => setShowOverlay(true)}>
             {/* Center: summary signal instead of gauges */}
