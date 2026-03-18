@@ -151,6 +151,15 @@ Deno.serve(async (req) => {
       return respond({ error: "AI could not extract company data" }, 422);
     }
 
+    // Use AI-detected website, falling back to provided url
+    const finalWebsite = company.website || url || null;
+    let finalLogoUrl = null;
+    if (finalWebsite) {
+      try {
+        finalLogoUrl = `https://logo.clearbit.com/${new URL(finalWebsite).hostname}`;
+      } catch { /* invalid URL */ }
+    }
+
     // Step 3: Save to DB
     const sb = createClient(
       Deno.env.get("SUPABASE_URL")!,
@@ -158,8 +167,8 @@ Deno.serve(async (req) => {
     );
 
     const row: Record<string, any> = {
-      name: company.name || (url ? new URL(url).hostname.replace("www.", "") : "Unknown"),
-      website: url || null,
+      name: company.name || (finalWebsite ? new URL(finalWebsite).hostname.replace("www.", "") : "Unknown"),
+      website: finalWebsite,
       industry: company.industry || null,
       headquarters: company.headquarters || null,
       employee_range: company.employee_range || null,
@@ -170,7 +179,7 @@ Deno.serve(async (req) => {
       funding_stage: company.funding_stage || null,
       funding_total: company.funding_total || null,
       founded_year: company.founded_year || null,
-      logo_url: url ? `https://logo.clearbit.com/${new URL(url).hostname}` : null,
+      logo_url: finalLogoUrl,
       is_demo: false,
     };
 
