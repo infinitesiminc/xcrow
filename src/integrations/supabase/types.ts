@@ -427,6 +427,137 @@ export type Database = {
         }
         Relationships: []
       }
+      import_flags: {
+        Row: {
+          company_id: string | null
+          company_name: string | null
+          created_at: string
+          details: Json
+          flag_type: string
+          id: string
+          import_log_id: string | null
+          resolution_note: string | null
+          resolved_at: string | null
+          resolved_by: string | null
+          severity: string
+          status: string
+          suggested_action: string | null
+        }
+        Insert: {
+          company_id?: string | null
+          company_name?: string | null
+          created_at?: string
+          details?: Json
+          flag_type: string
+          id?: string
+          import_log_id?: string | null
+          resolution_note?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          severity?: string
+          status?: string
+          suggested_action?: string | null
+        }
+        Update: {
+          company_id?: string | null
+          company_name?: string | null
+          created_at?: string
+          details?: Json
+          flag_type?: string
+          id?: string
+          import_log_id?: string | null
+          resolution_note?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          severity?: string
+          status?: string
+          suggested_action?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "import_flags_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "import_flags_import_log_id_fkey"
+            columns: ["import_log_id"]
+            isOneToOne: false
+            referencedRelation: "import_log"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      import_log: {
+        Row: {
+          action: string
+          ats_platform: string | null
+          created_at: string
+          duration_ms: number | null
+          error_message: string | null
+          flags_raised: number
+          id: string
+          initiated_by: string | null
+          items_created: number
+          items_processed: number
+          items_skipped: number
+          items_updated: number
+          metadata: Json | null
+          result_status: string
+          source: string
+          target_company_id: string | null
+          target_company_name: string | null
+        }
+        Insert: {
+          action: string
+          ats_platform?: string | null
+          created_at?: string
+          duration_ms?: number | null
+          error_message?: string | null
+          flags_raised?: number
+          id?: string
+          initiated_by?: string | null
+          items_created?: number
+          items_processed?: number
+          items_skipped?: number
+          items_updated?: number
+          metadata?: Json | null
+          result_status?: string
+          source: string
+          target_company_id?: string | null
+          target_company_name?: string | null
+        }
+        Update: {
+          action?: string
+          ats_platform?: string | null
+          created_at?: string
+          duration_ms?: number | null
+          error_message?: string | null
+          flags_raised?: number
+          id?: string
+          initiated_by?: string | null
+          items_created?: number
+          items_processed?: number
+          items_skipped?: number
+          items_updated?: number
+          metadata?: Json | null
+          result_status?: string
+          source?: string
+          target_company_id?: string | null
+          target_company_name?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "import_log_target_company_id_fkey"
+            columns: ["target_company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       job_skills: {
         Row: {
           category: string | null

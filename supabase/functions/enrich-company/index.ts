@@ -166,8 +166,10 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
 
+    const companyName = company.name || (finalWebsite ? new URL(finalWebsite).hostname.replace("www.", "") : "Unknown");
+
     const row: Record<string, any> = {
-      name: company.name || (finalWebsite ? new URL(finalWebsite).hostname.replace("www.", "") : "Unknown"),
+      name: companyName,
       website: finalWebsite,
       industry: company.industry || null,
       headquarters: company.headquarters || null,
@@ -183,9 +185,13 @@ Deno.serve(async (req) => {
       is_demo: false,
     };
 
+    const startMs = Date.now();
     let result;
+    let logAction = "enrich-update";
+    let flagsRaised = 0;
+
     if (company_id) {
-      // Re-enrich: update existing company
+      logAction = "enrich-update";
       const { data, error } = await sb
         .from("companies")
         .update(row)
@@ -194,13 +200,13 @@ Deno.serve(async (req) => {
         .single();
       if (error) throw new Error(`Update failed: ${error.message}`);
       result = data;
-      console.log("Company updated:", result.id);
     } else {
+      logAction = "enrich-create";
       // Check for existing company by name (dedup)
       const { data: existing } = await sb
         .from("companies")
-        .select("id")
-        .ilike("name", row.name)
+        .select("id, name, website")
+        .ilike("name", companyName)
         .is("workspace_id", null)
         .limit(1)
         .maybeSingle();
@@ -215,7 +221,23 @@ Deno.serve(async (req) => {
           .single();
         if (error) throw new Error(`Merge update failed: ${error.message}`);
         result = data;
-        console.log("Company merged into existing:", result.id);
+        logAction = "enrich-merge";
+
+        // Flag the merge
+        flagsRaised++;
+        await sb.from("import_flags").insert({
+          flag_type: "merge_conflict",
+          severity: "info",
+          company_id: existing.id,
+          company_name: companyName,
+          details: {
+            existing_name: existing.name,
+            existing_website: existing.website,
+            incoming_website: finalWebsite,
+            action_taken: "merged",
+          },
+          suggested_action: `Merged enrichment for "${companyName}" into existing record. Verify data is correct.`,
+        });
       } else {
         const { data, error } = await sb
           .from("companies")
@@ -224,9 +246,23 @@ Deno.serve(async (req) => {
           .single();
         if (error) throw new Error(`Insert failed: ${error.message}`);
         result = data;
-        console.log("Company created:", result.id);
       }
     }
+
+    // Log the import
+    await sb.from("import_log").insert({
+      source: "enrich-company",
+      action: logAction,
+      target_company_id: result.id,
+      target_company_name: result.name,
+      result_status: "success",
+      items_processed: 1,
+      items_created: logAction === "enrich-create" ? 1 : 0,
+      items_updated: logAction !== "enrich-create" ? 1 : 0,
+      flags_raised: flagsRaised,
+      duration_ms: Date.now() - startMs,
+      metadata: { website: finalWebsite, ai_extracted: company },
+    });
 
     return respond({ success: true, company: result });
   } catch (err) {
