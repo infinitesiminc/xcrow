@@ -38,6 +38,19 @@ interface SavedRole {
   new_skills_percent: number | null;
 }
 
+interface PracticedRole {
+  job_title: string;
+  task_name: string;
+  company: string | null;
+  completed_at: string;
+  correct_answers: number;
+  total_questions: number;
+  tool_awareness_score: number | null;
+  human_value_add_score: number | null;
+  adaptive_thinking_score: number | null;
+  domain_judgment_score: number | null;
+}
+
 function hashToHue(str: string): number {
   let hash = 0;
   for (let i = 0; i < str.length; i++) hash = str.charCodeAt(i) + ((hash << 5) - hash);
