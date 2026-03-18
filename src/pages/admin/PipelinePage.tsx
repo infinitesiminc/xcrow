@@ -6,7 +6,7 @@ import {
   Database, Play, Pause, Brain, ChevronDown, ChevronUp,
   MapPin, CheckCircle2, AlertTriangle, ArrowRight,
   Globe, Plus, Bug, Sparkles, Telescope, Flag,
-  X, FileText, Clock, Zap,
+  X, FileText, Clock, Zap, List, ExternalLink,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -200,6 +200,12 @@ export default function PipelinePage() {
   const [diagLoading, setDiagLoading] = useState(false);
   const [diagCompanyName, setDiagCompanyName] = useState("");
 
+  /* ═══════ COMPANIES BROWSER STATE ═══════ */
+  const [compSearch, setCompSearch] = useState("");
+  const [compAtsFilter, setCompAtsFilter] = useState("");
+  const [compIndustryFilter, setCompIndustryFilter] = useState("");
+  const [compFundingFilter, setCompFundingFilter] = useState("");
+
   /* ═══════ DATA FETCHING ═══════ */
   const fetchCompanies = useCallback(async () => {
     setLoadingCompanies(true);
@@ -275,6 +281,37 @@ export default function PipelinePage() {
     const openFlags = flags.filter(f => f.status === "open").length;
     return { totalCompanies, withATS, withJobs, noJobs, totalJobs, openFlags };
   }, [companies, flags]);
+
+  /* ═══════ COMPANIES BROWSER COMPUTED ═══════ */
+  const uniqueIndustries = useMemo(() => {
+    const set = new Set<string>();
+    companies.forEach(c => { if (c.industry) set.add(c.industry); });
+    return Array.from(set).sort();
+  }, [companies]);
+
+  const uniqueAts = useMemo(() => {
+    const set = new Set<string>();
+    companies.forEach(c => { if (c.detected_ats_platform && c.detected_ats_platform !== "unknown") set.add(c.detected_ats_platform); });
+    return Array.from(set).sort();
+  }, [companies]);
+
+  const uniqueFunding = useMemo(() => {
+    const set = new Set<string>();
+    companies.forEach(c => { if (c.funding_stage) set.add(c.funding_stage); });
+    return Array.from(set).sort();
+  }, [companies]);
+
+  const filteredCompanies = useMemo(() => {
+    let list = companies;
+    if (compSearch) {
+      const q = compSearch.toLowerCase();
+      list = list.filter(c => c.name.toLowerCase().includes(q) || c.industry?.toLowerCase().includes(q) || c.headquarters?.toLowerCase().includes(q));
+    }
+    if (compAtsFilter) list = list.filter(c => c.detected_ats_platform === compAtsFilter);
+    if (compIndustryFilter) list = list.filter(c => c.industry === compIndustryFilter);
+    if (compFundingFilter) list = list.filter(c => c.funding_stage === compFundingFilter);
+    return list.sort((a, b) => (b.job_count || 0) - (a.job_count || 0));
+  }, [companies, compSearch, compAtsFilter, compIndustryFilter, compFundingFilter]);
 
   /* ═══════ DISCOVER LOGIC ═══════ */
   const buildApolloBody = (pg = 1): Record<string, unknown> => {
@@ -619,7 +656,7 @@ export default function PipelinePage() {
         </div>
 
         {/* Stage cards */}
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-4 gap-3">
           <button onClick={() => setActiveTab("discover")} className={`rounded-lg border p-3 text-left transition-all ${activeTab === "discover" ? "border-primary bg-primary/5" : "border-border hover:border-primary/30"}`}>
             <div className="flex items-center gap-2 mb-1">
               <Telescope className="h-3.5 w-3.5 text-primary" />
@@ -645,7 +682,16 @@ export default function PipelinePage() {
               <span className="text-xs font-semibold text-foreground">Analyze</span>
             </div>
             <p className="text-lg font-bold text-foreground">{stats.withJobs}</p>
-            <p className="text-[10px] text-muted-foreground">companies with roles ready for analysis</p>
+            <p className="text-[10px] text-muted-foreground">companies with roles ready</p>
+          </button>
+
+          <button onClick={() => setActiveTab("companies")} className={`rounded-lg border p-3 text-left transition-all ${activeTab === "companies" ? "border-primary bg-primary/5" : "border-border hover:border-primary/30"}`}>
+            <div className="flex items-center gap-2 mb-1">
+              <List className="h-3.5 w-3.5 text-primary" />
+              <span className="text-xs font-semibold text-foreground">Companies</span>
+            </div>
+            <p className="text-lg font-bold text-foreground">{stats.totalCompanies.toLocaleString()}</p>
+            <p className="text-[10px] text-muted-foreground">browse full library</p>
           </button>
         </div>
       </div>
@@ -657,6 +703,7 @@ export default function PipelinePage() {
           <TabsTrigger value="discover" className="text-xs gap-1"><Telescope className="h-3 w-3" /> Discover</TabsTrigger>
           <TabsTrigger value="sync" className="text-xs gap-1"><RefreshCw className="h-3 w-3" /> Sync</TabsTrigger>
           <TabsTrigger value="analyze" className="text-xs gap-1"><Brain className="h-3 w-3" /> Analyze</TabsTrigger>
+          <TabsTrigger value="companies" className="text-xs gap-1"><List className="h-3 w-3" /> Companies</TabsTrigger>
         </TabsList>
 
         {/* ═══════ TAB: DISCOVER ═══════ */}
@@ -1160,6 +1207,80 @@ export default function PipelinePage() {
               </>
             )}
           </div>
+        </TabsContent>
+
+        {/* ═══════ TAB: COMPANIES ═══════ */}
+        <TabsContent value="companies" className="flex-1 min-h-0 m-0 px-6 py-4 flex flex-col">
+          <div className="flex items-center gap-3 mb-4 flex-wrap">
+            <div className="relative flex-1 min-w-[200px]">
+              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+              <Input placeholder="Search companies…" value={compSearch} onChange={e => setCompSearch(e.target.value)} className="pl-8 h-8 text-xs" />
+            </div>
+            <select value={compAtsFilter} onChange={e => setCompAtsFilter(e.target.value)} className="h-8 text-xs rounded-md border border-input bg-background px-2">
+              <option value="">All ATS</option>
+              {uniqueAts.map(a => <option key={a} value={a}>{a.charAt(0).toUpperCase() + a.slice(1)}</option>)}
+            </select>
+            <select value={compIndustryFilter} onChange={e => setCompIndustryFilter(e.target.value)} className="h-8 text-xs rounded-md border border-input bg-background px-2 max-w-[180px]">
+              <option value="">All Industries</option>
+              {uniqueIndustries.map(i => <option key={i} value={i}>{i}</option>)}
+            </select>
+            <select value={compFundingFilter} onChange={e => setCompFundingFilter(e.target.value)} className="h-8 text-xs rounded-md border border-input bg-background px-2">
+              <option value="">All Funding</option>
+              {uniqueFunding.map(f => <option key={f} value={f}>{f}</option>)}
+            </select>
+            <span className="text-[10px] text-muted-foreground shrink-0">{filteredCompanies.length} companies</span>
+          </div>
+
+          {/* Table header */}
+          <div className="grid grid-cols-[2fr_1fr_1fr_1fr_80px_80px] gap-2 px-3 py-1.5 text-[10px] font-medium text-muted-foreground uppercase tracking-wide border-b border-border">
+            <span>Company</span>
+            <span>Industry</span>
+            <span>HQ</span>
+            <span>ATS</span>
+            <span className="text-right">Roles</span>
+            <span className="text-right">Funding</span>
+          </div>
+
+          <ScrollArea className="flex-1">
+            <div className="divide-y divide-border/50">
+              {filteredCompanies.slice(0, 200).map(co => (
+                <div key={co.id} className="grid grid-cols-[2fr_1fr_1fr_1fr_80px_80px] gap-2 px-3 py-2 items-center hover:bg-muted/30 transition-colors group">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <CompanyLogo url={co.logo_url} name={co.name} size="h-6 w-6" />
+                    <div className="min-w-0">
+                      <p className="text-xs font-medium truncate">{co.name}</p>
+                      {co.employee_range && <p className="text-[10px] text-muted-foreground">{co.employee_range} employees</p>}
+                    </div>
+                    {co.website && (
+                      <a href={co.website} target="_blank" rel="noopener" className="opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+                        <ExternalLink className="h-3 w-3 text-muted-foreground hover:text-foreground" />
+                      </a>
+                    )}
+                  </div>
+                  <span className="text-[11px] text-muted-foreground truncate">{co.industry || "—"}</span>
+                  <span className="text-[11px] text-muted-foreground truncate">{co.headquarters || "—"}</span>
+                  <span className="text-[11px] text-muted-foreground">
+                    {co.detected_ats_platform && co.detected_ats_platform !== "unknown" ? (
+                      <Badge variant="outline" className="text-[9px] h-4">{co.detected_ats_platform}</Badge>
+                    ) : "—"}
+                  </span>
+                  <span className="text-[11px] text-right font-medium">
+                    {(co.job_count || 0) > 0 ? (
+                      <span className="text-primary">{co.job_count}</span>
+                    ) : (
+                      <span className="text-muted-foreground">0</span>
+                    )}
+                  </span>
+                  <span className="text-[11px] text-right text-muted-foreground truncate">{co.funding_stage || "—"}</span>
+                </div>
+              ))}
+              {filteredCompanies.length > 200 && (
+                <div className="text-center py-3 text-[10px] text-muted-foreground">
+                  Showing 200 of {filteredCompanies.length} — use filters to narrow down
+                </div>
+              )}
+            </div>
+          </ScrollArea>
         </TabsContent>
       </Tabs>
       </div>
