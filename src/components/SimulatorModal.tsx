@@ -720,9 +720,8 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
 
   const DoneIconComponent = doneIcon.icon;
 
-  return (
-    <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
-      <DialogContent className="max-w-3xl w-[95vw] h-[90vh] sm:h-[90vh] h-[100dvh] sm:rounded-2xl rounded-none p-0 flex flex-col overflow-hidden gap-0 border-border/50 [&>button]:hidden">
+  const content = (
+    <div className={inline ? "h-full flex flex-col overflow-hidden" : "max-w-3xl w-[95vw] h-[90vh] sm:h-[90vh] h-[100dvh] sm:rounded-2xl rounded-none p-0 flex flex-col overflow-hidden gap-0 border-border/50"}>
         {/* Header */}
         <div className="shrink-0">
           <div className="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 border-b border-border/40">
