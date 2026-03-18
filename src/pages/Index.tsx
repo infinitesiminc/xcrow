@@ -103,6 +103,8 @@ const Index = () => {
           company: companyName,
           location: j.location || undefined,
           logo: logoUrl,
+          country: j.country || undefined,
+          workMode: j.work_mode || undefined,
         };
       });
 
