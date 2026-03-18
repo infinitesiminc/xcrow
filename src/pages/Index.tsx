@@ -1,11 +1,10 @@
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { Loader2, MapPin, Zap, CircleDot, ArrowRight } from "lucide-react";
+import { Loader2, MapPin, ArrowRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import HomepageChat from "@/components/HomepageChat";
 import { supabase } from "@/integrations/supabase/client";
-import { getDepartmentImage } from "@/lib/department-images";
 
 /* ── Types ─────────────────────────────────────────── */
 
@@ -32,7 +31,14 @@ function hashToHue(str: string): number {
   return Math.abs(h) % 360;
 }
 
-/* ── Mini arc gauge (inline) ───────────────────────── */
+function getGreeting(): string {
+  const hour = new Date().getHours();
+  if (hour < 12) return "Good morning";
+  if (hour < 18) return "Good afternoon";
+  return "Good evening";
+}
+
+/* ── Mini arc gauge ────────────────────────────────── */
 function MiniGauge({ value }: { value: number }) {
   const r = 14;
   const stroke = 3;
@@ -54,196 +60,171 @@ const Index = () => {
   const navigate = useNavigate();
 
   const [chatRoles, setChatRoles] = useState<RoleCard[]>([]);
-  const [trendingRoles, setTrendingRoles] = useState<RoleCard[]>([]);
-  const [loadingTrending, setLoadingTrending] = useState(true);
-
-  // Fetch a small set of trending roles as default cards
-  useEffect(() => {
-    (async () => {
-      const { data } = await supabase
-        .from("jobs")
-        .select("id, title, department, location, country, work_mode, seniority, augmented_percent, automation_risk_percent, companies(name, logo_url, website)")
-        .gt("augmented_percent", 0)
-        .order("augmented_percent", { ascending: false })
-        .limit(12);
-
-      if (data) {
-        const seen = new Set<string>();
-        const unique = data.filter((j) => {
-          const key = j.title.toLowerCase().replace(/\s*(senior|junior|lead|staff)\s*/gi, "").trim();
-          if (seen.has(key)) return false;
-          seen.add(key);
-          return true;
-        }).slice(0, 6);
-
-        setTrendingRoles(
-          unique.map((j) => {
-            const c = j.companies as any;
-            return {
-              jobId: j.id,
-              title: j.title,
-              company: c?.name || null,
-              logo: c?.logo_url || (c?.website ? `https://logo.clearbit.com/${c.website.replace(/^https?:\/\//, "").replace(/\/.*$/, "")}` : null),
-              location: j.location,
-              country: j.country,
-              workMode: j.work_mode,
-              seniority: j.seniority,
-              augmented: j.augmented_percent ?? 0,
-              risk: j.automation_risk_percent ?? 0,
-            };
-          })
-        );
-      }
-      setLoadingTrending(false);
-    })();
-  }, []);
+  const [hasInteracted, setHasInteracted] = useState(false);
 
   const handleRolesFound = useCallback((roles: RoleCard[]) => {
     setChatRoles(roles);
   }, []);
 
-  const displayRoles = chatRoles.length > 0 ? chatRoles : trendingRoles;
-  const isFromChat = chatRoles.length > 0;
+  const handleChatStart = useCallback(() => {
+    setHasInteracted(true);
+  }, []);
+
+  const greeting = getGreeting();
+  const userName = profile?.displayName?.split(" ")[0];
 
   return (
     <div className="min-h-[calc(100vh-3.5rem)] flex flex-col">
-      {/* ── Chat Section ──────────────────────────────── */}
-      <section className="relative px-5 pt-10 pb-6 sm:pt-16 sm:pb-8">
-        <div className="absolute inset-0 bg-gradient-to-b from-primary/5 via-transparent to-transparent pointer-events-none" />
+      {/* ── Hero / Greeting ─────────────────────────── */}
+      <section className="flex-1 flex flex-col items-center justify-center px-5 pt-8 pb-4 transition-all duration-500">
+        <AnimatePresence mode="wait">
+          {!hasInteracted && (
+            <motion.div
+              key="greeting"
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20, transition: { duration: 0.3 } }}
+              className="text-center mb-8"
+            >
+              <h1 className="text-3xl sm:text-4xl md:text-5xl font-display font-bold text-foreground leading-tight">
+                {greeting}{userName ? `, ${userName}` : ""}
+              </h1>
+              <p className="text-sm sm:text-base text-muted-foreground mt-2 max-w-md mx-auto">
+                Ask me about any career, role, or industry — I'll show you how AI is reshaping it.
+              </p>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
-        <div className="relative z-10 text-center mb-6">
-          <h1 className="text-2xl sm:text-3xl font-display font-bold text-foreground leading-tight">
-            Your AI Career Guide
-          </h1>
-          <p className="text-xs sm:text-sm text-muted-foreground mt-1.5">
-            20,000+ roles · 290+ companies · 70+ countries
-          </p>
-        </div>
-
-        <div className="relative z-10">
-          <HomepageChat onRolesFound={handleRolesFound} />
+        {/* ── Chat ──────────────────────────────────── */}
+        <div className="w-full max-w-2xl">
+          <HomepageChat
+            onRolesFound={handleRolesFound}
+            onChatStart={handleChatStart}
+            hasInteracted={hasInteracted}
+          />
         </div>
       </section>
 
-      {/* ── Role Cards ────────────────────────────────── */}
-      <section className="flex-1 px-5 sm:px-6 pb-10">
-        <div className="flex items-center gap-2 mb-4">
-          <h2 className="text-sm font-semibold text-foreground">
-            {isFromChat ? "Matching Roles" : "Trending Roles"}
-          </h2>
-          {isFromChat && (
-            <span className="text-[10px] px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20 font-medium">
-              AI-matched
-            </span>
-          )}
-        </div>
+      {/* ── Role Cards (only after AI returns results) */}
+      <AnimatePresence>
+        {chatRoles.length > 0 && (
+          <motion.section
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.4 }}
+            className="px-5 sm:px-6 pb-10"
+          >
+            <div className="flex items-center gap-2 mb-4">
+              <h2 className="text-sm font-semibold text-foreground">
+                Matching Roles
+              </h2>
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20 font-medium">
+                AI-matched
+              </span>
+            </div>
 
-        {loadingTrending && displayRoles.length === 0 ? (
-          <div className="flex justify-center py-12">
-            <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-            {displayRoles.map((role, i) => {
-              const hue1 = hashToHue(role.title);
-              const hue2 = (hue1 + 60) % 360;
-              const logoUrl =
-                role.logo ||
-                (role.company
-                  ? `https://logo.clearbit.com/${(role.company as string).toLowerCase().replace(/\s+/g, "")}.com`
-                  : "");
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              {chatRoles.map((role, i) => {
+                const hue1 = hashToHue(role.title);
+                const hue2 = (hue1 + 60) % 360;
+                const logoUrl =
+                  role.logo ||
+                  (role.company
+                    ? `https://logo.clearbit.com/${(role.company as string).toLowerCase().replace(/\s+/g, "")}.com`
+                    : "");
 
-              return (
-                <motion.button
-                  key={(role.jobId || role.title) + i}
-                  initial={{ opacity: 0, y: 12 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.3, delay: Math.min(i * 0.05, 0.3) }}
-                  onClick={() => {
-                    const params = new URLSearchParams({
-                      title: role.title,
-                      company: (role.company as string) || "",
-                    });
-                    navigate(`/analysis?${params.toString()}`);
-                  }}
-                  className="group text-left rounded-xl overflow-hidden bg-card border border-border transition-all hover:shadow-lg hover:shadow-primary/5 hover:border-primary/40 flex flex-col"
-                >
-                  {/* Key info */}
-                  <div className="p-3 pb-2 flex-1">
-                    <div className="flex items-start gap-2.5">
-                      {logoUrl && (
-                        <img
-                          src={logoUrl}
-                          alt=""
-                          className="h-8 w-8 rounded-lg object-contain bg-muted/30 p-0.5 shrink-0 mt-0.5"
-                          onError={(e) => {
-                            (e.target as HTMLImageElement).style.display = "none";
-                          }}
-                        />
-                      )}
-                      <div className="min-w-0 flex-1">
-                        <h3 className="text-sm font-semibold text-foreground leading-snug group-hover:text-primary transition-colors line-clamp-2">
-                          {role.title}
-                        </h3>
-                        {role.company && (
-                          <p className="text-xs text-muted-foreground truncate mt-0.5">
-                            {role.company}
-                          </p>
+                return (
+                  <motion.button
+                    key={(role.jobId || role.title) + i}
+                    initial={{ opacity: 0, y: 12 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3, delay: Math.min(i * 0.05, 0.3) }}
+                    onClick={() => {
+                      const params = new URLSearchParams({
+                        title: role.title,
+                        company: (role.company as string) || "",
+                      });
+                      navigate(`/analysis?${params.toString()}`);
+                    }}
+                    className="group text-left rounded-xl overflow-hidden bg-card border border-border transition-all hover:shadow-lg hover:shadow-primary/5 hover:border-primary/40 flex flex-col"
+                  >
+                    <div className="p-3 pb-2 flex-1">
+                      <div className="flex items-start gap-2.5">
+                        {logoUrl && (
+                          <img
+                            src={logoUrl}
+                            alt=""
+                            className="h-8 w-8 rounded-lg object-contain bg-muted/30 p-0.5 shrink-0 mt-0.5"
+                            onError={(e) => {
+                              (e.target as HTMLImageElement).style.display = "none";
+                            }}
+                          />
+                        )}
+                        <div className="min-w-0 flex-1">
+                          <h3 className="text-sm font-semibold text-foreground leading-snug group-hover:text-primary transition-colors line-clamp-2">
+                            {role.title}
+                          </h3>
+                          {role.company && (
+                            <p className="text-xs text-muted-foreground truncate mt-0.5">
+                              {role.company}
+                            </p>
+                          )}
+                        </div>
+                        <ArrowRight className="h-4 w-4 text-muted-foreground/40 group-hover:text-primary shrink-0 mt-1 transition-colors" />
+                      </div>
+                      <div className="flex items-center gap-1.5 mt-2 flex-wrap">
+                        {role.location && (
+                          <span className="flex items-center gap-0.5 text-[11px] text-muted-foreground">
+                            <MapPin className="h-3 w-3 shrink-0" />
+                            {role.location}
+                          </span>
+                        )}
+                        {role.workMode && (
+                          <span className="text-[11px] text-muted-foreground capitalize">
+                            · {role.workMode}
+                          </span>
+                        )}
+                        {role.seniority && (
+                          <span className="text-[11px] text-muted-foreground capitalize">
+                            · {role.seniority}
+                          </span>
                         )}
                       </div>
-                      <ArrowRight className="h-4 w-4 text-muted-foreground/40 group-hover:text-primary shrink-0 mt-1 transition-colors" />
                     </div>
-                    <div className="flex items-center gap-1.5 mt-2 flex-wrap">
-                      {role.location && (
-                        <span className="flex items-center gap-0.5 text-[11px] text-muted-foreground">
-                          <MapPin className="h-3 w-3 shrink-0" />
-                          {role.location}
-                        </span>
-                      )}
-                      {role.workMode && (
-                        <span className="text-[11px] text-muted-foreground capitalize">
-                          · {role.workMode}
-                        </span>
-                      )}
-                      {role.seniority && (
-                        <span className="text-[11px] text-muted-foreground capitalize">
-                          · {role.seniority}
-                        </span>
-                      )}
-                    </div>
-                  </div>
 
-                  {/* AI metrics strip */}
-                  <div className="border-t border-border/30">
-                    <div
-                      className="px-3 py-2 flex items-center justify-between"
-                      style={{
-                        background: `linear-gradient(135deg, hsl(${hue1} 60% 8%) 0%, hsl(${hue2} 50% 6%) 100%)`,
-                      }}
-                    >
-                      {role.augmented > 0 ? (
-                        <div className="flex items-center gap-1.5">
-                          <MiniGauge value={role.augmented} />
-                          <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">
-                            AI Augmented
+                    <div className="border-t border-border/30">
+                      <div
+                        className="px-3 py-2 flex items-center justify-between"
+                        style={{
+                          background: `linear-gradient(135deg, hsl(${hue1} 60% 8%) 0%, hsl(${hue2} 50% 6%) 100%)`,
+                        }}
+                      >
+                        {role.augmented > 0 ? (
+                          <div className="flex items-center gap-1.5">
+                            <MiniGauge value={role.augmented} />
+                            <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">
+                              AI Augmented
+                            </span>
+                          </div>
+                        ) : (
+                          <span className="text-[11px] text-muted-foreground">
+                            Analysis pending
                           </span>
-                        </div>
-                      ) : (
-                        <span className="text-[11px] text-muted-foreground">
-                          Analysis pending
+                        )}
+                        <span className="text-[10px] font-medium text-primary">
+                          View breakdown →
                         </span>
-                      )}
-                      <span className="text-[10px] font-medium text-primary">
-                        View breakdown →
-                      </span>
+                      </div>
                     </div>
-                  </div>
-                </motion.button>
-              );
-            })}
-          </div>
+                  </motion.button>
+                );
+              })}
+            </div>
+          </motion.section>
         )}
-      </section>
+      </AnimatePresence>
     </div>
   );
 };
