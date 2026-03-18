@@ -19,6 +19,7 @@ interface RoleCard {
   tag: string;
   company?: string;
   location?: string;
+  logo?: string;
 }
 
 function calcToolsToLearn(risk: number, augmented: number, newSkills: number): number {
@@ -64,7 +65,7 @@ const Index = () => {
     (async () => {
       const { data, error } = await supabase
         .from("jobs")
-        .select("title, department, location, augmented_percent, automation_risk_percent, new_skills_percent, companies(name)")
+        .select("title, department, location, augmented_percent, automation_risk_percent, new_skills_percent, companies(name, logo_url, website)")
         .gt("augmented_percent", 0)
         .order("augmented_percent", { ascending: false })
         .limit(100);
@@ -83,7 +84,9 @@ const Index = () => {
       });
 
       const mapped: RoleCard[] = unique.map(j => {
-        const companyData = j.companies as unknown as { name: string } | null;
+        const companyData = j.companies as unknown as { name: string; logo_url?: string; website?: string } | null;
+        const companyName = companyData?.name || undefined;
+        const logoUrl = companyData?.logo_url || (companyData?.website ? `https://logo.clearbit.com/${companyData.website.replace(/^https?:\/\//, '').replace(/\/.*$/, '')}` : undefined);
         return {
           title: j.title,
           image: getDepartmentImage(j.department),
@@ -95,8 +98,9 @@ const Index = () => {
             j.new_skills_percent ?? 0
           ),
           tag: departmentToTag(j.department),
-          company: companyData?.name || undefined,
+          company: companyName,
           location: j.location || undefined,
+          logo: logoUrl,
         };
       });
 
