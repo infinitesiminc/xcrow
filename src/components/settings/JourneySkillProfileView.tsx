@@ -685,7 +685,7 @@ export default function JourneySkillProfileView({ practicedRoles = [], onNavigat
       </div>
 
       <AnimatePresence mode="wait">
-        {view === "strengths" ? (
+        {view === "strengths" && (
           <motion.div key="strengths" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-5">
             {/* Summary bar */}
             <div className="grid grid-cols-3 gap-2">
