@@ -14,7 +14,7 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { website, careers_url } = await req.json();
+    const { website, careers_url, company_id } = await req.json();
     if (!website && !careers_url) {
       return respond({ error: "website or careers_url is required" }, 400);
     }
