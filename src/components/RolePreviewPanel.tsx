@@ -90,10 +90,11 @@ export default function RolePreviewPanel({ role, onClose }: RolePreviewPanelProp
         supabase.from("job_task_clusters")
           .select("cluster_name, description, ai_exposure_score, priority, ai_state, ai_trend, impact_level")
           .eq("job_id", role.jobId).order("sort_order"),
-        supabase.from("jobs").select("role_summary").eq("id", role.jobId).single(),
+        supabase.from("jobs").select("role_summary, source_url").eq("id", role.jobId).single(),
       ]);
       setTasks(taskRes.data || []);
       setSummary(jobRes.data?.role_summary || null);
+      setSourceUrl(role.sourceUrl || jobRes.data?.source_url || null);
       setLoading(false);
     })();
   }, [role.jobId]);
