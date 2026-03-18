@@ -162,6 +162,43 @@ function MiniArc({ value, label, color }: { value: number; label: string; color:
   );
 }
 
+/* ── Tiny gauge for role cards ─────────────────────── */
+
+function CardMiniGauge({ value, size = 32 }: { value: number; size?: number }) {
+  const radius = (size / 2) - 3;
+  const stroke = 3;
+  const circumference = 2 * Math.PI * radius;
+  const arcLength = circumference * 0.75;
+  const fillLength = arcLength * (value / 100);
+  const rotation = 135;
+  const color = value >= 60 ? "hsl(var(--brand-ai))" : value >= 30 ? "hsl(var(--primary))" : "hsl(var(--brand-human))";
+
+  return (
+    <div className="relative" style={{ width: size, height: size }}>
+      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
+        <circle
+          cx={size/2} cy={size/2} r={radius} fill="none"
+          stroke="rgba(255,255,255,0.15)" strokeWidth={stroke}
+          strokeLinecap="round"
+          strokeDasharray={`${arcLength} ${circumference}`}
+          transform={`rotate(${rotation} ${size/2} ${size/2})`}
+        />
+        <circle
+          cx={size/2} cy={size/2} r={radius} fill="none"
+          stroke={color} strokeWidth={stroke}
+          strokeLinecap="round"
+          strokeDasharray={`${arcLength} ${circumference}`}
+          strokeDashoffset={arcLength - fillLength}
+          transform={`rotate(${rotation} ${size/2} ${size/2})`}
+        />
+      </svg>
+      <div className="absolute inset-0 flex items-center justify-center">
+        <span className="text-[9px] font-bold text-white">{value}</span>
+      </div>
+    </div>
+  );
+}
+
 /* ── Section Tab Nav ────────────────────────────────── */
 
 const SECTIONS = [
@@ -212,11 +249,12 @@ function RoleDetailOverlay({ role, onClose }: { role: RoleCard; onClose: () => v
   const navigate = useNavigate();
   const [tasks, setTasks] = useState<TaskCluster[]>([]);
   const [loadingTasks, setLoadingTasks] = useState(false);
+  const [analyzingTasks, setAnalyzingTasks] = useState(false);
   const [activeSection, setActiveSection] = useState(0);
   const [aiSummary, setAiSummary] = useState<string | null>(null);
   const [summaryLoading, setSummaryLoading] = useState(false);
 
-  // Fetch task clusters on open
+  // Fetch task clusters on open, auto-trigger analysis if none exist
   useEffect(() => {
     if (!role.jobId) return;
     setLoadingTasks(true);
@@ -227,10 +265,37 @@ function RoleDetailOverlay({ role, onClose }: { role: RoleCard; onClose: () => v
       .order("sort_order", { ascending: true })
       .limit(10)
       .then(({ data }) => {
-        setTasks(data || []);
-        setLoadingTasks(false);
+        if (data && data.length > 0) {
+          setTasks(data);
+          setLoadingTasks(false);
+        } else if (role.description && role.description.length > 50) {
+          // Layer 2: Auto-trigger deep analysis
+          setLoadingTasks(false);
+          setAnalyzingTasks(true);
+          supabase.functions.invoke("analyze-role-tasks", {
+            body: {
+              jobId: role.jobId,
+              jobTitle: role.title,
+              company: role.company || "",
+              description: role.description,
+            },
+          }).then(({ data: analysisData }) => {
+            if (analysisData?.tasks) {
+              setTasks(analysisData.tasks.map((t: any) => ({
+                cluster_name: t.cluster_name,
+                description: t.description,
+                ai_exposure_score: t.ai_exposure_score,
+                priority: t.priority,
+              })));
+            }
+            setAnalyzingTasks(false);
+          }).catch(() => setAnalyzingTasks(false));
+        } else {
+          setTasks([]);
+          setLoadingTasks(false);
+        }
       });
-  }, [role.jobId]);
+  }, [role.jobId, role.title, role.company, role.description]);
 
   // Fetch or generate AI summary
   useEffect(() => {
@@ -402,10 +467,15 @@ function RoleDetailOverlay({ role, onClose }: { role: RoleCard; onClose: () => v
                 transition={{ duration: 0.15 }}
                 className="p-5"
               >
-                {loadingTasks ? (
-                  <div className="flex items-center gap-2 py-6 justify-center">
+                {loadingTasks || analyzingTasks ? (
+                  <div className="flex flex-col items-center gap-2 py-6">
                     <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-                    <span className="text-xs text-muted-foreground">Loading tasks…</span>
+                    <span className="text-xs text-muted-foreground">
+                      {analyzingTasks ? "Running deep AI analysis…" : "Loading tasks…"}
+                    </span>
+                    {analyzingTasks && (
+                      <span className="text-[10px] text-muted-foreground/60 italic">This may take 10-15 seconds</span>
+                    )}
                   </div>
                 ) : tasks.length > 0 ? (
                   <div className="space-y-2.5">
@@ -438,7 +508,7 @@ function RoleDetailOverlay({ role, onClose }: { role: RoleCard; onClose: () => v
                   </div>
                 ) : (
                   <p className="text-sm text-muted-foreground/60 italic text-center py-6">
-                    Tap "Explore Role" below to unlock tasks
+                    No description available to analyze
                   </p>
                 )}
               </motion.div>
@@ -637,13 +707,29 @@ function DesktopGrid({ roles, onOpenSearch, savedRoleTitles }: RoleFeedProps) {
                   <div className="absolute rounded-full opacity-20" style={{ width: 60 + (hue1 % 40), height: 60 + (hue1 % 40), top: -10 + (hue2 % 30), right: -10 + (hue1 % 30), background: `radial-gradient(circle, hsl(${hue1} 80% 50% / 0.4), transparent)` }} />
                   <div className="absolute rounded-full opacity-15" style={{ width: 40 + (hue2 % 30), height: 40 + (hue2 % 30), bottom: -5 + (hue3 % 20), left: 10 + (hue2 % 40), background: `radial-gradient(circle, hsl(${hue2} 70% 60% / 0.3), transparent)` }} />
                   <div className="absolute bottom-2 left-2 right-2 flex items-center justify-between">
-                    <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-black/40 backdrop-blur-sm">
-                      <Zap className="h-3 w-3 text-primary" />
-                      <span className="text-xs font-bold text-white">{role.aiOpportunity}%</span>
-                    </div>
-                    <span className={`text-xs font-bold px-2 py-0.5 rounded-full bg-black/40 backdrop-blur-sm ${riskColor}`}>
-                      {role.risk}% risk
-                    </span>
+                    {role.augmented > 0 ? (
+                      <div className="flex items-center gap-1.5">
+                        <CardMiniGauge value={role.augmented} />
+                        <span className="text-[10px] font-semibold text-white/80 uppercase tracking-wide">AI Exposure</span>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-black/40 backdrop-blur-sm">
+                        <Zap className="h-3 w-3 text-primary" />
+                        <span className="text-xs font-bold text-white">{role.aiOpportunity}%</span>
+                      </div>
+                    )}
+                    {role.augmented > 0 && (
+                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full bg-black/40 backdrop-blur-sm ${
+                        role.augmented >= 60 ? "text-brand-ai" : role.augmented >= 30 ? "text-primary" : "text-brand-human"
+                      }`}>
+                        {role.taskCount && role.taskCount > 0 ? "✓ Analyzed" : "Layer 1"}
+                      </span>
+                    )}
+                    {role.augmented === 0 && (
+                      <span className={`text-xs font-bold px-2 py-0.5 rounded-full bg-black/40 backdrop-blur-sm ${riskColor}`}>
+                        {role.risk}% risk
+                      </span>
+                    )}
                   </div>
                 </div>
                 {/* Bottom section */}

@@ -183,6 +183,10 @@ export default function PipelinePage() {
   const pauseRef = useRef(false);
   const abortRef = useRef(false);
 
+  /* ── Bulk Layer 1 scoring ── */
+  const [bulkScoring, setBulkScoring] = useState(false);
+  const [bulkScoreResult, setBulkScoreResult] = useState<string | null>(null);
+
   /* ── Diagnostics ── */
   const [diagOpen, setDiagOpen] = useState(false);
   const [diagData, setDiagData] = useState<any>(null);
@@ -950,12 +954,41 @@ export default function PipelinePage() {
                         {!queueRunning && pendingCount === 0 && jobs.length > 0 && (
                           <span className="flex items-center gap-1 text-[10px] text-primary"><CheckCircle2 className="h-3 w-3" /> All analyzed</span>
                         )}
+                        {!queueRunning && (
+                          <Button
+                            size="sm" variant="outline"
+                            className="text-[10px] h-6 px-2 gap-1"
+                            disabled={bulkScoring}
+                            onClick={async () => {
+                              setBulkScoring(true);
+                              setBulkScoreResult(null);
+                              try {
+                                const { data, error } = await supabase.functions.invoke("bulk-score-jobs", {
+                                  body: { batchSize: 25, companyId: selectedCompanyId },
+                                });
+                                if (error) throw error;
+                                setBulkScoreResult(`Scored ${data?.scored || 0}/${data?.processed || 0} roles`);
+                                fetchJobs(selectedCompanyId!);
+                              } catch (err: any) {
+                                setBulkScoreResult(`Error: ${err.message}`);
+                              } finally { setBulkScoring(false); }
+                            }}
+                          >
+                            {bulkScoring ? <Loader2 className="h-2.5 w-2.5 animate-spin" /> : <Zap className="h-2.5 w-2.5" />}
+                            Score L1
+                          </Button>
+                        )}
                       </div>
                     </div>
                   )}
                   {queueMessage && !queueRunning && (
                     <div className="flex items-center gap-1.5 text-[10px] text-amber-600 bg-amber-500/5 rounded px-2 py-1 mt-2">
                       <AlertTriangle className="h-2.5 w-2.5 shrink-0" /><span>{queueMessage}</span>
+                    </div>
+                  )}
+                  {bulkScoreResult && (
+                    <div className="flex items-center gap-1.5 text-[10px] text-primary bg-primary/5 rounded px-2 py-1 mt-2">
+                      <Zap className="h-2.5 w-2.5 shrink-0" /><span>{bulkScoreResult}</span>
                     </div>
                   )}
 
