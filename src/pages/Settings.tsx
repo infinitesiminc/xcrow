@@ -121,9 +121,6 @@ export default function Settings() {
   const [practicedRoles, setPracticedRoles] = useState<PracticedRole[]>([]);
   const [savedLoading, setSavedLoading] = useState(true);
   const [practicedLoading, setPracticedLoading] = useState(true);
-  const [savedSearch, setSavedSearch] = useState("");
-  const [practicedSearch, setPracticedSearch] = useState("");
-  const [rolesTab, setRolesTab] = useState("saved");
 
   useEffect(() => {
     if (!authLoading && !user) navigate("/auth");
@@ -167,37 +164,6 @@ export default function Settings() {
         setPracticedLoading(false);
       });
   }, [user]);
-
-  const filteredRoles = useMemo(() => {
-    const q = savedSearch.toLowerCase().trim();
-    if (!q) return savedRoles;
-    return savedRoles.filter(r =>
-      r.job_title.toLowerCase().includes(q) || (r.company?.toLowerCase().includes(q) ?? false)
-    );
-  }, [savedRoles, savedSearch]);
-
-  const filteredPracticed = useMemo(() => {
-    const q = practicedSearch.toLowerCase().trim();
-    if (!q) return practicedRoles;
-    return practicedRoles.filter(r =>
-      r.job_title.toLowerCase().includes(q) || r.task_name.toLowerCase().includes(q) || (r.company?.toLowerCase().includes(q) ?? false)
-    );
-  }, [practicedRoles, practicedSearch]);
-
-  function avgScore(r: PracticedRole): number {
-    const scores = [r.tool_awareness_score, r.human_value_add_score, r.adaptive_thinking_score, r.domain_judgment_score].filter((s): s is number => s != null);
-    return scores.length ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) : 0;
-  }
-
-  function timeAgo(dateStr: string): string {
-    const diff = Date.now() - new Date(dateStr).getTime();
-    const mins = Math.floor(diff / 60000);
-    if (mins < 60) return `${mins}m ago`;
-    const hrs = Math.floor(mins / 60);
-    if (hrs < 24) return `${hrs}h ago`;
-    const days = Math.floor(hrs / 24);
-    return `${days}d ago`;
-  }
 
   const handleCvUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
