@@ -212,7 +212,11 @@ function DesktopGrid({ roles, onOpenSearch }: RoleFeedProps) {
   const [workModeFilter, setWorkModeFilter] = useState<string | null>(null);
 
   const tags = Array.from(new Set(roles.map(r => r.tag)));
-  
+  const tagCounts = useMemo(() => {
+    const c: Record<string, number> = {};
+    roles.forEach(r => { c[r.tag] = (c[r.tag] || 0) + 1; });
+    return c;
+  }, [roles]);
   const countries = useMemo(() => {
     const counts: Record<string, number> = {};
     roles.forEach(r => { if (r.country) counts[r.country] = (counts[r.country] || 0) + 1; });
@@ -251,7 +255,7 @@ function DesktopGrid({ roles, onOpenSearch }: RoleFeedProps) {
             className={`px-3 py-1.5 text-xs font-medium rounded-full transition-colors ${
               !filter ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:text-foreground"
             }`}
-          >All</button>
+          >All <span className="opacity-60 ml-0.5">{roles.length}</span></button>
           {tags.map(tag => (
             <button
               key={tag}
@@ -259,7 +263,7 @@ function DesktopGrid({ roles, onOpenSearch }: RoleFeedProps) {
               className={`px-3 py-1.5 text-xs font-medium rounded-full transition-colors ${
                 filter === tag ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:text-foreground"
               }`}
-            >{tag}</button>
+            >{tag} <span className="opacity-60 ml-0.5">{tagCounts[tag] || 0}</span></button>
           ))}
         </div>
 
@@ -281,7 +285,7 @@ function DesktopGrid({ roles, onOpenSearch }: RoleFeedProps) {
                 }`}
               >
                 <Icon className="h-3 w-3" />
-                {workModeLabel[mode] || mode}
+                {workModeLabel[mode] || mode} <span className="opacity-60 ml-0.5">{roles.filter(r => r.workMode === mode).length}</span>
               </button>
             );
           })}
@@ -302,7 +306,7 @@ function DesktopGrid({ roles, onOpenSearch }: RoleFeedProps) {
                     ? "bg-accent text-accent-foreground ring-1 ring-accent"
                     : "bg-muted text-muted-foreground hover:text-foreground"
                 }`}
-              >{country}</button>
+              >{country} <span className="opacity-60 ml-0.5">{roles.filter(r => r.country === country).length}</span></button>
             ))}
           </div>
         )}
