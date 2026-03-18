@@ -241,12 +241,16 @@ export default function RolePreviewPanel({ role, onClose }: RolePreviewPanelProp
     </div>
   );
 
+  // Enlarged overlay (full-screen)
+  if (view === "enlarged") {
+    return <>{enlargedOverlay}</>;
+  }
+
   // Breakdown view (inline in panel)
   if (view === "breakdown") {
     const completedCount = tasks.filter(t => completedTasks.has(t.cluster_name)).length;
     return (
       <>
-        {enlargedOverlay}
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="h-full flex flex-col bg-card overflow-hidden">
           {/* Header bar */}
           <div className="flex items-center justify-between px-3 py-2 border-b border-border shrink-0">
