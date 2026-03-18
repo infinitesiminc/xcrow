@@ -161,7 +161,7 @@ function StyleC({ jobs }: { jobs: typeof SAMPLE_JOBS }) {
             className="group rounded-xl overflow-hidden border border-border/40 hover:border-border bg-card transition-all hover:shadow-lg cursor-pointer"
           >
             <div
-              className="relative h-28"
+              className="relative h-28 flex items-center justify-center"
               style={{
                 background: `linear-gradient(135deg, hsl(${hue1} 70% 15%) 0%, hsl(${hue2} 60% 12%) 50%, hsl(${hue3} 50% 10%) 100%)`,
               }}
@@ -186,6 +186,13 @@ function StyleC({ jobs }: { jobs: typeof SAMPLE_JOBS }) {
                   left: 10 + (hue2 % 40),
                   background: `radial-gradient(circle, hsl(${hue2} 70% 60% / 0.3), transparent)`,
                 }}
+              />
+              {/* Centered company logo */}
+              <img
+                src={job.logo}
+                alt={job.company}
+                className="relative z-10 h-11 w-11 rounded-xl object-contain bg-black/30 backdrop-blur-sm p-1.5"
+                onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
               />
               {/* Metrics overlay */}
               <div className="absolute bottom-2 left-2 right-2 flex items-center justify-between">
