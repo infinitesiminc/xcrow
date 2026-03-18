@@ -3,21 +3,16 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import logo from "@/assets/logo.png";
 import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Settings, LogOut, User, Menu, X, Compass, LayoutDashboard, Shield } from "lucide-react";
+import { User, Menu, X, Compass, Shield } from "lucide-react";
+import ProfileSheet from "@/components/ProfileSheet";
 
 export default function Navbar() {
   const { user, signOut, openAuthModal, isSuperAdmin } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
 
   const isActive = (path: string) => location.pathname === path;
 
@@ -27,9 +22,6 @@ export default function Navbar() {
 
   const navItems = [
     { label: "Explore", path: "/", icon: Compass },
-    ...(user ? [
-      { label: "My Hub", path: "/dashboard", icon: LayoutDashboard },
-    ] : []),
     ...(isSuperAdmin ? [
       { label: "Admin", path: "/admin", icon: Shield },
     ] : []),
@@ -41,120 +33,114 @@ export default function Navbar() {
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-border/50 bg-background/80 backdrop-blur-xl">
-      <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 sm:px-6">
-        {/* Logo */}
-        <button
-          onClick={() => handleNav("/")}
-          className="flex items-center gap-2 font-display text-lg font-bold tracking-tight text-foreground hover:opacity-80 transition-opacity"
-        >
-          <img src={logo} alt="Infinite Sim" className="h-7 w-7" />
-          <span className="hidden sm:inline neon-text font-extrabold">Infinite Sim</span>
-        </button>
-
-        {/* Desktop nav */}
-        <nav className="hidden md:flex items-center gap-1">
-          {navItems.map((item) => {
-            const Icon = item.icon;
-            return (
-              <Button
-                key={item.path}
-                variant={isActive(item.path) || (item.path === "/dashboard" && location.pathname.startsWith("/dashboard")) ? "secondary" : "ghost"}
-                size="sm"
-                onClick={() => navigate(item.path)}
-                className={`text-sm gap-1.5 ${isActive(item.path) || (item.path === "/dashboard" && location.pathname.startsWith("/dashboard")) ? "text-primary" : ""}`}
-              >
-                <Icon className="h-4 w-4" />
-                {item.label}
-              </Button>
-            );
-          })}
-        </nav>
-
-        {/* Right side */}
-        <div className="flex items-center gap-2">
-          {user ? (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="rounded-full">
-                  <Avatar className="h-8 w-8">
-                    <AvatarFallback className="bg-primary text-primary-foreground text-xs font-semibold">
-                      {initials}
-                    </AvatarFallback>
-                  </Avatar>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48">
-                <div className="px-2 py-1.5">
-                  <p className="text-sm font-medium text-foreground truncate">
-                    {user.user_metadata?.display_name || user.email}
-                  </p>
-                  <p className="text-xs text-muted-foreground truncate">{user.email}</p>
-                </div>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => navigate("/settings")}>
-                  <Settings className="mr-2 h-4 w-4" />
-                  Settings
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem
-                  onClick={async () => {
-                    await signOut();
-                    navigate("/");
-                  }}
-                  className="text-destructive focus:text-destructive"
-                >
-                  <LogOut className="mr-2 h-4 w-4" />
-                  Sign out
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          ) : (
-            <Button size="sm" onClick={openAuthModal} className="bg-primary hover:bg-primary/90 glow-purple">
-              <User className="mr-1.5 h-4 w-4" />
-              Sign in
-            </Button>
-          )}
-
-          {/* Mobile hamburger */}
-          <Button
-            variant="ghost"
-            size="icon"
-            className="md:hidden"
-            onClick={() => setMobileOpen(!mobileOpen)}
+    <>
+      <header className="sticky top-0 z-50 w-full border-b border-border/50 bg-background/80 backdrop-blur-xl">
+        <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 sm:px-6">
+          {/* Logo */}
+          <button
+            onClick={() => handleNav("/")}
+            className="flex items-center gap-2 font-display text-lg font-bold tracking-tight text-foreground hover:opacity-80 transition-opacity"
           >
-            {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-          </Button>
-        </div>
-      </div>
+            <img src={logo} alt="Infinite Sim" className="h-7 w-7" />
+            <span className="hidden sm:inline neon-text font-extrabold">Infinite Sim</span>
+          </button>
 
-      {/* Mobile menu */}
-      {mobileOpen && (
-        <>
-          <div className="fixed inset-0 top-14 z-40 bg-background/60 backdrop-blur-sm md:hidden" onClick={() => setMobileOpen(false)} />
-          <div className="fixed left-0 right-0 top-14 z-50 md:hidden border-t border-border bg-background shadow-lg">
-            <nav className="flex flex-col px-4 py-3 gap-1">
-              {navItems.map((item) => {
-                const Icon = item.icon;
-                return (
-                  <button
-                    key={item.path}
-                    onClick={() => handleNav(item.path)}
-                    className={`flex items-center gap-2 text-left px-3 py-2.5 text-sm font-medium rounded-lg transition-colors ${
-                      isActive(item.path)
-                        ? "bg-accent text-primary"
-                        : "text-muted-foreground hover:text-foreground hover:bg-accent"
-                    }`}
-                  >
-                    <Icon className="h-4 w-4" />
-                    {item.label}
-                  </button>
-                );
-              })}
-            </nav>
+          {/* Desktop nav */}
+          <nav className="hidden md:flex items-center gap-1">
+            {navItems.map((item) => {
+              const Icon = item.icon;
+              return (
+                <Button
+                  key={item.path}
+                  variant={isActive(item.path) ? "secondary" : "ghost"}
+                  size="sm"
+                  onClick={() => navigate(item.path)}
+                  className={`text-sm gap-1.5 ${isActive(item.path) ? "text-primary" : ""}`}
+                >
+                  <Icon className="h-4 w-4" />
+                  {item.label}
+                </Button>
+              );
+            })}
+          </nav>
+
+          {/* Right side */}
+          <div className="flex items-center gap-2">
+            {user ? (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="rounded-full"
+                onClick={() => setProfileOpen(true)}
+              >
+                <Avatar className="h-8 w-8">
+                  <AvatarFallback className="bg-primary text-primary-foreground text-xs font-semibold">
+                    {initials}
+                  </AvatarFallback>
+                </Avatar>
+              </Button>
+            ) : (
+              <Button size="sm" onClick={openAuthModal} className="bg-primary hover:bg-primary/90 glow-purple">
+                <User className="mr-1.5 h-4 w-4" />
+                Sign in
+              </Button>
+            )}
+
+            {/* Mobile hamburger */}
+            <Button
+              variant="ghost"
+              size="icon"
+              className="md:hidden"
+              onClick={() => setMobileOpen(!mobileOpen)}
+            >
+              {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            </Button>
           </div>
-        </>
+        </div>
+
+        {/* Mobile menu */}
+        {mobileOpen && (
+          <>
+            <div className="fixed inset-0 top-14 z-40 bg-background/60 backdrop-blur-sm md:hidden" onClick={() => setMobileOpen(false)} />
+            <div className="fixed left-0 right-0 top-14 z-50 md:hidden border-t border-border bg-background shadow-lg">
+              <nav className="flex flex-col px-4 py-3 gap-1">
+                {navItems.map((item) => {
+                  const Icon = item.icon;
+                  return (
+                    <button
+                      key={item.path}
+                      onClick={() => handleNav(item.path)}
+                      className={`flex items-center gap-2 text-left px-3 py-2.5 text-sm font-medium rounded-lg transition-colors ${
+                        isActive(item.path)
+                          ? "bg-accent text-primary"
+                          : "text-muted-foreground hover:text-foreground hover:bg-accent"
+                      }`}
+                    >
+                      <Icon className="h-4 w-4" />
+                      {item.label}
+                    </button>
+                  );
+                })}
+              </nav>
+            </div>
+          </>
+        )}
+      </header>
+
+      {/* Profile Sheet */}
+      {user && (
+        <ProfileSheet
+          open={profileOpen}
+          onClose={() => setProfileOpen(false)}
+          userId={user.id}
+          displayName={user.user_metadata?.display_name || null}
+          email={user.email || ""}
+          onSignOut={async () => {
+            await signOut();
+            navigate("/");
+          }}
+        />
       )}
-    </header>
+    </>
   );
 }
