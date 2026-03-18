@@ -300,11 +300,22 @@ serve(async (req) => {
         }
       }
 
-      // Try sim-api first (if company has an external_id)
+      // Try direct ATS public API first (most reliable for known platforms)
       let jobs: any[] = [];
-      let source = "sim-api";
+      let source = "direct-ats";
 
-      if (externalCompanyId) {
+      if (companyRow?.detected_ats_platform && companyRow.detected_ats_platform !== "none") {
+        console.log(`Trying direct ATS fetch: ${companyRow.detected_ats_platform}`);
+        jobs = await fetchDirectAtsJobs(
+          companyRow.careers_url || "",
+          companyRow.detected_ats_platform,
+          companyRow.name
+        );
+      }
+
+      // Fallback to sim-api if direct ATS returned nothing
+      if (jobs.length === 0 && externalCompanyId) {
+        source = "sim-api";
         try {
           const data = await simApi("list_jobs", {
             company_id: externalCompanyId,
@@ -317,32 +328,27 @@ serve(async (req) => {
         }
       }
 
-      // Fallback: direct ATS public API if sim-api returned 0 jobs
-      if (jobs.length === 0 && companyRow?.careers_url && companyRow?.detected_ats_platform) {
-        console.log("sim-api returned 0 jobs, trying direct ATS scrape...");
-        source = "direct-ats";
-        const directJobs = await fetchDirectAtsJobs(companyRow.careers_url, companyRow.detected_ats_platform);
-        if (directJobs.length > 0) {
-          // Direct jobs already have the right shape
-          if (!localCompanyId) {
-            const { data: co } = await sb.from("companies").select("id").eq("external_id", externalCompanyId).single();
-            localCompanyId = co?.id || null;
-          }
-          const rows = directJobs.map(j => ({
-            ...j,
-            company_id: localCompanyId,
-            difficulty: 3,
-          }));
-          if (rows.length > 0) {
-            const { error } = await sb.from("jobs").upsert(rows, { onConflict: "external_id" });
-            if (error) throw new Error(`Upsert direct jobs: ${error.message}`);
-          }
-          return respond({
-            company: company_id,
-            synced: rows.length,
-            source,
-            hasMore: false,
-          });
+      // Resolve local company ID if needed
+      if (!localCompanyId && externalCompanyId) {
+        const { data: co } = await sb.from("companies").select("id").eq("external_id", externalCompanyId).single();
+        localCompanyId = co?.id || null;
+      }
+
+      // For direct-ats jobs, shape is already correct
+      if (source === "direct-ats" && jobs.length > 0) {
+        const rows = jobs.map(j => ({
+          ...j,
+          company_id: localCompanyId,
+          difficulty: 3,
+        }));
+        const { error } = await sb.from("jobs").upsert(rows, { onConflict: "external_id" });
+        if (error) throw new Error(`Upsert direct jobs: ${error.message}`);
+        return respond({
+          company: company_id,
+          synced: rows.length,
+          source,
+          hasMore: false,
+        });
         }
       }
 
