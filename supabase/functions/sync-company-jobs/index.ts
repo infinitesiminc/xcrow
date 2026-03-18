@@ -329,6 +329,7 @@ serve(async (req) => {
 
     // ── Step 2: Sync jobs for a single company ──
     if (step === "jobs") {
+      const startMs = Date.now();
       let externalCompanyId = company_id;
       let localCompanyId: string | null = null;
       let companyRow: any = null;
@@ -347,12 +348,21 @@ serve(async (req) => {
         }
       }
 
-      // Try direct ATS public API first (most reliable for known platforms)
+      const logId = await logImport(sb, {
+        source: "sync-company-jobs",
+        action: "jobs",
+        target_company_id: localCompanyId,
+        target_company_name: companyRow?.name || company_id,
+        ats_platform: companyRow?.detected_ats_platform || null,
+        result_status: "in_progress",
+      });
+      let flagsRaised = 0;
+
+      // Try direct ATS public API first
       let jobs: any[] = [];
       let source = "direct-ats";
 
       if (companyRow?.detected_ats_platform && companyRow.detected_ats_platform !== "none") {
-        console.log(`Trying direct ATS fetch: ${companyRow.detected_ats_platform}`);
         jobs = await fetchDirectAtsJobs(
           companyRow.careers_url || "",
           companyRow.detected_ats_platform,
@@ -360,19 +370,53 @@ serve(async (req) => {
         );
       }
 
-      // Fallback to sim-api if direct ATS returned nothing
+      // Flag: ATS platform set but no jobs from direct fetch
+      if (jobs.length === 0 && companyRow?.detected_ats_platform && companyRow.detected_ats_platform !== "none") {
+        flagsRaised++;
+        if (logId) await raiseFlag(sb, {
+          import_log_id: logId,
+          flag_type: "slug_probe_failed",
+          severity: "warn",
+          company_id: localCompanyId,
+          company_name: companyRow?.name,
+          details: { platform: companyRow.detected_ats_platform, careers_url: companyRow.careers_url },
+          suggested_action: `Could not find ATS board slug for "${companyRow.name}" on ${companyRow.detected_ats_platform}. Manually set careers_url to the board URL.`,
+        });
+      }
+
+      // Fallback to sim-api
       if (jobs.length === 0 && externalCompanyId) {
         source = "sim-api";
         try {
-          const data = await simApi("list_jobs", {
-            company_id: externalCompanyId,
-            limit,
-            offset,
-          });
+          const data = await simApi("list_jobs", { company_id: externalCompanyId, limit, offset });
           jobs = data.jobs || [];
         } catch (e) {
           console.warn("sim-api job fetch failed:", e);
         }
+      }
+
+      // Flag: zero jobs from all sources
+      if (jobs.length === 0) {
+        flagsRaised++;
+        if (logId) {
+          await raiseFlag(sb, {
+            import_log_id: logId,
+            flag_type: "zero_jobs",
+            severity: "warn",
+            company_id: localCompanyId,
+            company_name: companyRow?.name,
+            details: { tried_sources: [companyRow?.detected_ats_platform, "sim-api"].filter(Boolean) },
+            suggested_action: `No jobs found for "${companyRow?.name}". Check if the company has open roles or if the ATS config is correct.`,
+          });
+          await updateLog(sb, logId, {
+            result_status: "partial",
+            items_processed: 0,
+            flags_raised: flagsRaised,
+            duration_ms: Date.now() - startMs,
+            metadata: { source, company: companyRow?.name },
+          });
+        }
+        return respond({ company: company_id, synced: 0, source, import_log_id: logId });
       }
 
       // Resolve local company ID if needed
@@ -381,48 +425,45 @@ serve(async (req) => {
         localCompanyId = co?.id || null;
       }
 
-      // For direct-ats jobs, shape is already correct
-      if (source === "direct-ats" && jobs.length > 0) {
-        const rows = jobs.map(j => ({
-          ...j,
-          company_id: localCompanyId,
-          difficulty: 3,
-        }));
+      let synced = 0;
+
+      if (source === "direct-ats") {
+        const rows = jobs.map(j => ({ ...j, company_id: localCompanyId, difficulty: 3 }));
         const { error } = await sb.from("jobs").upsert(rows, { onConflict: "external_id" });
         if (error) throw new Error(`Upsert direct jobs: ${error.message}`);
-        return respond({
-          company: company_id,
-          synced: rows.length,
-          source,
-        });
+        synced = rows.length;
+      } else {
+        const rows = jobs.map((j: any) => ({
+          external_id: j.id, title: j.title, slug: j.slug,
+          department: j.department, description: j.description,
+          location: j.location, source_url: j.source_url,
+          difficulty: j.difficulty, status: j.status || "active",
+          company_id: localCompanyId,
+        }));
+        if (rows.length > 0) {
+          const { error } = await sb.from("jobs").upsert(rows, { onConflict: "external_id" });
+          if (error) throw new Error(`Upsert jobs: ${error.message}`);
+        }
+        synced = rows.length;
       }
 
-      // Standard sim-api path
-      const rows = jobs.map((j: any) => ({
-        external_id: j.id,
-        title: j.title,
-        slug: j.slug,
-        department: j.department,
-        description: j.description,
-        location: j.location,
-        source_url: j.source_url,
-        difficulty: j.difficulty,
-        status: j.status || "active",
-        company_id: localCompanyId,
-      }));
-
-      if (rows.length > 0) {
-        const { error } = await sb
-          .from("jobs")
-          .upsert(rows, { onConflict: "external_id" });
-        if (error) throw new Error(`Upsert jobs: ${error.message}`);
+      if (logId) {
+        await updateLog(sb, logId, {
+          result_status: "success",
+          items_processed: jobs.length,
+          items_created: synced,
+          flags_raised: flagsRaised,
+          duration_ms: Date.now() - startMs,
+          metadata: { source, company: companyRow?.name },
+        });
       }
 
       return respond({
         company: company_id,
-        synced: rows.length,
+        synced,
         source,
-        hasMore: jobs.length === limit,
+        hasMore: source === "sim-api" && jobs.length === limit,
+        import_log_id: logId,
       });
     }
 
