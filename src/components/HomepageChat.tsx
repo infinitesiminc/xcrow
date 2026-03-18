@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { Send, Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import ReactMarkdown from "react-markdown";
+import TypewriterMarkdown from "@/components/TypewriterMarkdown";
 import { useToast } from "@/hooks/use-toast";
 import InlineRoleCarousel, { type RoleResult } from "@/components/InlineRoleCarousel";
 
