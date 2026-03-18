@@ -10,13 +10,19 @@ import { Badge } from "@/components/ui/badge";
 import { Sparkles, Eye, Shield, Bookmark } from "lucide-react";
 import type { InterestGraph, Recommendation } from "@/lib/interest-graph";
 
-function profToColor(prof: number): string {
-  if (prof >= 80) return "hsl(142 70% 45%)";
-  if (prof >= 60) return "hsl(80 60% 45%)";
-  if (prof >= 40) return "hsl(45 80% 50%)";
+function profToColor(prof: number, hasPractice: boolean): string {
+  if (!hasPractice) return "hsl(var(--muted))";
+  if (prof >= 80) return "hsl(var(--brand-human))";
+  if (prof >= 60) return "hsl(142 70% 45%)";
+  if (prof >= 40) return "hsl(var(--brand-mid))";
   if (prof >= 20) return "hsl(25 80% 50%)";
-  if (prof > 0) return "hsl(0 70% 50%)";
-  return "hsl(var(--muted-foreground))";
+  return "hsl(var(--brand-ai))";
+}
+
+function tierColor(tier: "core" | "exploring" | "peripheral"): string {
+  if (tier === "core") return "hsl(var(--brand-human))";
+  if (tier === "exploring") return "hsl(var(--brand-mid))";
+  return "hsl(var(--muted))";
 }
 
 type TierFilter = "all" | "core" | "exploring" | "peripheral";
