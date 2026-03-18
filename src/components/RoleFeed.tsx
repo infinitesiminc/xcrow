@@ -237,37 +237,80 @@ function DesktopGrid({ roles, onOpenSearch }: RoleFeedProps) {
       <div className="flex-1 overflow-y-auto px-6 py-5">
         <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
           {filtered.map((role, i) => {
+            const hue1 = hashToHue(role.title);
+            const hue2 = (hue1 + 60) % 360;
+            const hue3 = (hue1 + 180) % 360;
             const riskColor = role.risk >= 40 ? "text-destructive" : role.risk >= 20 ? "text-warning" : "text-success";
+            const logoUrl = role.logo || (role.company ? `https://logo.clearbit.com/${role.company.toLowerCase().replace(/\s+/g, '')}.com` : '');
             return (
               <motion.button
-                key={role.title}
+                key={role.title + i}
                 initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.35, delay: Math.min(i * 0.03, 0.4) }}
                 onClick={() => setSelected(role)}
-                className="group text-left rounded-xl overflow-hidden bg-card border border-border/40 hover:border-border transition-all hover:shadow-lg hover:shadow-primary/5"
+                className="group text-left rounded-xl overflow-hidden bg-card border-none transition-all hover:shadow-lg hover:shadow-primary/5"
               >
-                <div className="relative aspect-[4/3] overflow-hidden">
-                  <img src={role.image} alt={role.title} className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                  <div className="absolute top-2 right-2 flex items-center gap-1 px-2 py-0.5 rounded-full bg-black/50 backdrop-blur-sm">
-                    <span className={`text-xs font-bold ${riskColor}`}>{role.risk}%</span>
-                    <span className="text-[9px] text-white/50">risk</span>
-                  </div>
-                  <div className="absolute bottom-2 left-2 flex items-center gap-1 px-2 py-0.5 rounded-full bg-black/50 backdrop-blur-sm">
-                    <Zap className="h-3 w-3 text-neon-purple" />
-                    <span className="text-xs font-bold text-white">{role.aiOpportunity}%</span>
-                    <span className="text-[9px] text-white/50">to learn</span>
+                {/* Generative gradient header */}
+                <div
+                  className="relative h-28"
+                  style={{
+                    background: `linear-gradient(135deg, hsl(${hue1} 70% 15%) 0%, hsl(${hue2} 60% 12%) 50%, hsl(${hue3} 50% 10%) 100%)`,
+                  }}
+                >
+                  {/* Geometric shapes */}
+                  <div
+                    className="absolute rounded-full opacity-20"
+                    style={{
+                      width: 60 + (hue1 % 40),
+                      height: 60 + (hue1 % 40),
+                      top: -10 + (hue2 % 30),
+                      right: -10 + (hue1 % 30),
+                      background: `radial-gradient(circle, hsl(${hue1} 80% 50% / 0.4), transparent)`,
+                    }}
+                  />
+                  <div
+                    className="absolute rounded-full opacity-15"
+                    style={{
+                      width: 40 + (hue2 % 30),
+                      height: 40 + (hue2 % 30),
+                      bottom: -5 + (hue3 % 20),
+                      left: 10 + (hue2 % 40),
+                      background: `radial-gradient(circle, hsl(${hue2} 70% 60% / 0.3), transparent)`,
+                    }}
+                  />
+                  {/* Metrics overlay */}
+                  <div className="absolute bottom-2 left-2 right-2 flex items-center justify-between">
+                    <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-black/40 backdrop-blur-sm">
+                      <Zap className="h-3 w-3 text-primary" />
+                      <span className="text-xs font-bold text-white">{role.aiOpportunity}%</span>
+                    </div>
+                    <span className={`text-xs font-bold px-2 py-0.5 rounded-full bg-black/40 backdrop-blur-sm ${riskColor}`}>
+                      {role.risk}% risk
+                    </span>
                   </div>
                 </div>
+                {/* Bottom section with logo + text */}
                 <div className="p-3">
-                  <h3 className="text-sm font-semibold text-foreground leading-snug group-hover:text-primary transition-colors">{role.title}</h3>
-                  {(role.company || role.location) && (
-                    <p className="text-[11px] text-muted-foreground truncate mt-0.5">
-                      {[role.company, role.location].filter(Boolean).join(" · ")}
-                    </p>
-                  )}
-                  <span className="text-[10px] text-muted-foreground">{role.tag}</span>
+                  <div className="flex items-start gap-2.5">
+                    {logoUrl && (
+                      <img
+                        src={logoUrl}
+                        alt={role.company || ''}
+                        className="h-9 w-9 rounded-lg object-contain bg-white/10 p-1 shrink-0"
+                        onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+                      />
+                    )}
+                    <div className="min-w-0">
+                      <h3 className="text-sm font-semibold text-foreground leading-snug group-hover:text-primary transition-colors truncate">{role.title}</h3>
+                      <p className="text-[11px] text-muted-foreground truncate mt-0.5">
+                        {[role.company, role.location].filter(Boolean).join(" · ")}
+                      </p>
+                    </div>
+                  </div>
+                  <span className={`inline-block mt-2 px-2 py-0.5 text-[10px] font-medium rounded-full border ${TAG_BADGE[role.tag] || TAG_BADGE.Other}`}>
+                    {role.tag}
+                  </span>
                 </div>
               </motion.button>
             );
