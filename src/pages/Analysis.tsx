@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, useMemo, useRef, type WheelEvent as ReactWheelEvent } from "react";
+import { useEffect, useState, useCallback, useMemo, useRef } from "react";
 import { useSearchParams, useNavigate, useLocation } from "react-router-dom";
 import { motion, AnimatePresence, PanInfo } from "framer-motion";
 import {
@@ -178,24 +178,30 @@ const Analysis = () => {
     }
   }, [currentIndex, goTo]);
 
-  const handleWheel = useCallback((e: ReactWheelEvent<HTMLDivElement>) => {
-    if (Math.abs(e.deltaY) < 12) return;
-    e.preventDefault();
-    if (wheelLockRef.current) return;
+  const containerRef = useRef<HTMLDivElement>(null);
 
-    goTo(currentIndex + (e.deltaY > 0 ? 1 : -1));
-    wheelLockRef.current = window.setTimeout(() => {
-      wheelLockRef.current = null;
-    }, 320);
-  }, [currentIndex, goTo]);
-
+  // Attach non-passive wheel listener so preventDefault() actually works
   useEffect(() => {
-    return () => {
-      if (wheelLockRef.current) {
-        window.clearTimeout(wheelLockRef.current);
-      }
+    const el = containerRef.current;
+    if (!el) return;
+
+    const onWheel = (e: WheelEvent) => {
+      if (Math.abs(e.deltaY) < 12) return;
+      e.preventDefault();
+      if (wheelLockRef.current) return;
+
+      goTo(currentIndex + (e.deltaY > 0 ? 1 : -1));
+      wheelLockRef.current = window.setTimeout(() => {
+        wheelLockRef.current = null;
+      }, 320);
     };
-  }, []);
+
+    el.addEventListener("wheel", onWheel, { passive: false });
+    return () => {
+      el.removeEventListener("wheel", onWheel);
+      if (wheelLockRef.current) window.clearTimeout(wheelLockRef.current);
+    };
+  }, [currentIndex, goTo]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -251,7 +257,7 @@ const Analysis = () => {
   const completedCount = sortedTasks.filter(t => completedTasks.has(t.name)).length;
 
   return (
-    <div className="h-[100dvh] bg-background overflow-hidden relative overscroll-none" onWheel={handleWheel}>
+    <div ref={containerRef} className="h-[100dvh] bg-background overflow-hidden relative overscroll-none">
       {/* Progress dots */}
       <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 flex items-center gap-1.5">
         {Array.from({ length: totalCards }).map((_, i) => (
