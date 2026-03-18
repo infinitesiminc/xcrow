@@ -75,7 +75,11 @@ Deno.serve(async (req) => {
   "employee_range": "e.g. 50-200, 1000-5000, 10000+",
   "description": "1-2 sentence company description",
   "careers_url": "URL to careers page if found, else null",
-  "brand_color": "hex color from branding if obvious, else null"
+  "brand_color": "hex color from branding if obvious, else null",
+  "company_type": "Public, Private, Non-profit, or Government",
+  "funding_stage": "e.g. Seed, Series A, Series B, Series C, Late Stage, IPO, Bootstrapped, or null",
+  "funding_total": "e.g. $50M, $1.2B, or null if unknown",
+  "founded_year": 2015
 }
 If a field cannot be determined, use null.`,
           },
