@@ -584,7 +584,7 @@ function RoleDetailOverlay({ role, onClose }: { role: RoleCard; onClose: () => v
 
 /* ── Desktop: Grid Layout ──────────────────────────── */
 
-function DesktopGrid({ roles, onOpenSearch, savedRoleTitles }: RoleFeedProps) {
+function DesktopGrid({ roles, savedRoleTitles }: RoleFeedProps) {
   const navigate = useNavigate();
   const [selected, setSelected] = useState<RoleCard | null>(null);
   const [filter, setFilter] = useState<string | null>(null);
