@@ -1,12 +1,17 @@
 /**
- * Visualization 5: Skill Proficiency Profile
- * Mock 50 analyzed jobs, all tasks practiced, plotting proficiency across 4 pillars.
+ * Unified Skill Taxonomy View
+ *
+ * Extracts skills from 50 mock jobs, normalizes into a unified taxonomy,
+ * aggregates proficiency, and enables matching to any job.
  */
 import { useMemo, useState } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { ChevronDown, ChevronRight, Trophy, TrendingUp, AlertTriangle, Sparkles } from "lucide-react";
+import {
+  ChevronDown, ChevronRight, Layers, Zap, Brain, Users, Shield,
+  BarChart3, Search, Sparkles, Target, ArrowRight,
+} from "lucide-react";
 
 /* ── Seeded RNG ── */
 function seeded(seed: number) {
@@ -14,26 +19,66 @@ function seeded(seed: number) {
   return () => { s = (s * 16807) % 2147483647; return (s - 1) / 2147483646; };
 }
 
-/* ── Mock data types ── */
-interface MockTask {
+/* ── Unified Skill Taxonomy ── */
+interface TaxonomySkill {
+  id: string;
   name: string;
-  toolAwareness: number;
-  humanValueAdd: number;
-  adaptiveThinking: number;
-  domainJudgment: number;
-  avgScore: number;
+  category: SkillCategory;
+  keywords: string[]; // keywords to match tasks/skills to this taxonomy entry
 }
 
-interface MockJob {
-  title: string;
-  company: string;
-  department: string;
-  tasks: MockTask[];
-  avgProficiency: number;
-  pillars: { tool: number; human: number; adaptive: number; domain: number };
-}
+type SkillCategory =
+  | "technical"
+  | "analytical"
+  | "communication"
+  | "leadership"
+  | "creative"
+  | "compliance";
 
-/* ── 50 realistic jobs ── */
+const CATEGORY_META: Record<SkillCategory, { label: string; icon: typeof Layers; color: string }> = {
+  technical: { label: "Technical", icon: Zap, color: "hsl(var(--chart-1))" },
+  analytical: { label: "Analytical", icon: BarChart3, color: "hsl(var(--chart-2))" },
+  communication: { label: "Communication", icon: Users, color: "hsl(var(--chart-3))" },
+  leadership: { label: "Leadership", icon: Target, color: "hsl(var(--chart-4))" },
+  creative: { label: "Creative", icon: Brain, color: "hsl(var(--chart-5))" },
+  compliance: { label: "Compliance & Risk", icon: Shield, color: "hsl(var(--primary))" },
+};
+
+const TAXONOMY: TaxonomySkill[] = [
+  // Technical
+  { id: "code-dev", name: "Software Development", category: "technical", keywords: ["code", "development", "engineering", "component", "pipeline", "etl", "ci/cd", "deploy", "refactor", "responsive", "schema", "integration"] },
+  { id: "system-design", name: "System Architecture", category: "technical", keywords: ["architecture", "system design", "platform", "infrastructure", "migration", "mesh", "autoscaling", "reliability"] },
+  { id: "testing-qa", name: "Testing & QA", category: "technical", keywords: ["test", "qa", "regression", "performance testing", "bug", "quality"] },
+  { id: "security", name: "Security & Compliance Tech", category: "technical", keywords: ["security", "threat", "vulnerability", "penetration", "zero trust", "hardening", "cybersecurity"] },
+  { id: "data-engineering", name: "Data Engineering", category: "technical", keywords: ["data pipeline", "warehouse", "etl", "query optimization", "data quality", "schema design", "data model"] },
+  { id: "ai-ml", name: "AI & Machine Learning", category: "technical", keywords: ["model", "training", "ml", "ai", "machine learning", "feature engineering", "a/b test"] },
+  { id: "devops", name: "DevOps & Infrastructure", category: "technical", keywords: ["devops", "container", "monitoring", "alerting", "incident", "infrastructure as code"] },
+  // Analytical
+  { id: "data-analysis", name: "Data Analysis", category: "analytical", keywords: ["analysis", "analytics", "data", "statistical", "metrics", "dashboard", "tracking", "reporting", "rank"] },
+  { id: "financial-modeling", name: "Financial Modeling", category: "analytical", keywords: ["financial model", "valuation", "forecast", "budget", "revenue", "variance", "cost"] },
+  { id: "research", name: "Research & Discovery", category: "analytical", keywords: ["research", "audit", "review", "literature", "hypothesis", "prior art", "market research", "keyword"] },
+  { id: "process-optimization", name: "Process Optimization", category: "analytical", keywords: ["process", "optimization", "workflow", "automation", "efficiency", "funnel", "pipeline management"] },
+  { id: "risk-assessment", name: "Risk Assessment", category: "analytical", keywords: ["risk", "mitigation", "scenario analysis", "loss prevention", "threat model"] },
+  // Communication
+  { id: "stakeholder-mgmt", name: "Stakeholder Management", category: "communication", keywords: ["stakeholder", "client", "customer", "relationship", "qbr", "onboarding", "correspondence"] },
+  { id: "writing-docs", name: "Writing & Documentation", category: "communication", keywords: ["documentation", "writing", "paper", "copy", "editorial", "content", "email", "style guide", "knowledge base"] },
+  { id: "presentation", name: "Presentation & Reporting", category: "communication", keywords: ["presentation", "reporting", "board", "pitch", "status report", "materials"] },
+  { id: "negotiation", name: "Negotiation & Persuasion", category: "communication", keywords: ["negotiation", "deal", "offer", "closing", "persuasion", "licensing"] },
+  // Leadership
+  { id: "project-mgmt", name: "Project Management", category: "leadership", keywords: ["project", "sprint", "resource allocation", "planning", "coordination", "launch", "retrospective"] },
+  { id: "strategy", name: "Strategy & Planning", category: "leadership", keywords: ["strategy", "roadmap", "positioning", "prioritization", "go-to-market", "planning", "vision"] },
+  { id: "team-mgmt", name: "Team Management", category: "leadership", keywords: ["team", "coaching", "talent", "performance review", "culture", "hiring", "people", "employee", "interview"] },
+  { id: "vendor-mgmt", name: "Vendor & Supply Chain", category: "leadership", keywords: ["vendor", "supplier", "procurement", "supply chain", "inventory", "logistics", "sourcing"] },
+  // Creative
+  { id: "design-ux", name: "Design & UX", category: "creative", keywords: ["design", "ux", "wireframe", "prototype", "usability", "visual", "accessibility", "interaction", "animation", "token"] },
+  { id: "brand-creative", name: "Brand & Creative", category: "creative", keywords: ["brand", "creative", "identity", "campaign", "concept", "ad copy", "influencer", "community"] },
+  { id: "content-seo", name: "Content & SEO", category: "creative", keywords: ["seo", "content", "landing page", "blog", "link building", "social media", "channel"] },
+  // Compliance
+  { id: "regulatory", name: "Regulatory & Legal", category: "compliance", keywords: ["regulatory", "compliance", "legal", "policy", "filing", "patent", "trademark", "contract", "clause", "redline", "m&a", "litigation", "due diligence"] },
+  { id: "audit-control", name: "Audit & Internal Controls", category: "compliance", keywords: ["audit", "reconciliation", "journal", "month-end", "close", "financial statement", "sla"] },
+];
+
+/* ── Job templates (50 jobs, same as before) ── */
 const JOB_TEMPLATES: { title: string; company: string; dept: string; tasks: string[] }[] = [
   { title: "Software Engineer", company: "Anthropic", dept: "Engineering", tasks: ["Code Review & Refactoring", "Architecture Design", "Testing & QA", "CI/CD Pipeline Management", "Technical Documentation"] },
   { title: "Product Manager", company: "Stripe", dept: "Product", tasks: ["Roadmap Planning", "Stakeholder Alignment", "User Research Synthesis", "Feature Prioritization", "Go-to-Market Strategy"] },
@@ -87,330 +132,333 @@ const JOB_TEMPLATES: { title: string; company: string; dept: string; tasks: stri
   { title: "Product Operations Manager", company: "Airtable", dept: "Product", tasks: ["Launch Coordination", "Feature Adoption Tracking", "Cross-functional Sync", "Data Analysis", "Process Design"] },
 ];
 
-const PILLARS = [
-  { key: "tool" as const, label: "Tool Awareness", icon: Sparkles, color: "hsl(var(--primary))" },
-  { key: "human" as const, label: "Human Value-Add", icon: Trophy, color: "hsl(var(--chart-2))" },
-  { key: "adaptive" as const, label: "Adaptive Thinking", icon: TrendingUp, color: "hsl(var(--chart-3))" },
-  { key: "domain" as const, label: "Domain Judgment", icon: AlertTriangle, color: "hsl(var(--chart-4))" },
-];
-
-const DEPT_ORDER = ["Engineering", "Product", "Data", "Design", "Marketing", "Finance", "Sales", "Legal", "Operations", "People", "Security", "Customer Success", "Risk", "Strategy", "Research"];
-
-function generateMockJobs(): MockJob[] {
-  const rand = seeded(2026);
-  return JOB_TEMPLATES.map(tpl => {
-    // Archetype-based scoring for variety
-    const archetype = Math.floor(rand() * 6);
-    const baseByPillar = () => {
-      switch (archetype) {
-        case 0: return { tool: 75 + rand() * 20, human: 55 + rand() * 20, adaptive: 60 + rand() * 20, domain: 65 + rand() * 15 };
-        case 1: return { tool: 50 + rand() * 25, human: 75 + rand() * 20, adaptive: 70 + rand() * 15, domain: 60 + rand() * 20 };
-        case 2: return { tool: 60 + rand() * 20, human: 60 + rand() * 20, adaptive: 78 + rand() * 18, domain: 55 + rand() * 20 };
-        case 3: return { tool: 55 + rand() * 15, human: 50 + rand() * 20, adaptive: 55 + rand() * 20, domain: 80 + rand() * 15 };
-        case 4: return { tool: 70 + rand() * 15, human: 70 + rand() * 15, adaptive: 70 + rand() * 15, domain: 70 + rand() * 15 };
-        default: return { tool: 40 + rand() * 25, human: 45 + rand() * 25, adaptive: 42 + rand() * 25, domain: 48 + rand() * 25 };
-      }
-    };
-    const base = baseByPillar();
-    const clamp = (v: number) => Math.min(98, Math.max(20, Math.round(v)));
-
-    const tasks: MockTask[] = tpl.tasks.map(taskName => {
-      const jitter = () => (rand() - 0.5) * 20;
-      const t = clamp(base.tool + jitter());
-      const h = clamp(base.human + jitter());
-      const a = clamp(base.adaptive + jitter());
-      const d = clamp(base.domain + jitter());
-      return {
-        name: taskName,
-        toolAwareness: t,
-        humanValueAdd: h,
-        adaptiveThinking: a,
-        domainJudgment: d,
-        avgScore: Math.round((t + h + a + d) / 4),
-      };
-    });
-
-    const avg = (key: keyof Pick<MockTask, "toolAwareness" | "humanValueAdd" | "adaptiveThinking" | "domainJudgment">) =>
-      Math.round(tasks.reduce((s, t) => s + t[key], 0) / tasks.length);
-
-    const pillars = { tool: avg("toolAwareness"), human: avg("humanValueAdd"), adaptive: avg("adaptiveThinking"), domain: avg("domainJudgment") };
-
-    return {
-      title: tpl.title,
-      company: tpl.company,
-      department: tpl.dept,
-      tasks,
-      avgProficiency: Math.round((pillars.tool + pillars.human + pillars.adaptive + pillars.domain) / 4),
-      pillars,
-    };
-  });
+/* ── Match tasks to taxonomy skills ── */
+function matchTaskToSkills(taskName: string): string[] {
+  const lower = taskName.toLowerCase();
+  const matched: string[] = [];
+  for (const skill of TAXONOMY) {
+    if (skill.keywords.some(kw => lower.includes(kw))) {
+      matched.push(skill.id);
+    }
+  }
+  return matched.length > 0 ? matched : [];
 }
 
-function scoreColor(score: number): string {
+/* ── Aggregated skill data ── */
+interface AggregatedSkill {
+  id: string;
+  name: string;
+  category: SkillCategory;
+  proficiency: number; // avg across all contributing tasks
+  jobCount: number;    // how many jobs contribute
+  taskCount: number;   // total task evidence
+  jobs: { title: string; company: string; taskName: string; score: number }[];
+}
+
+interface JobMatch {
+  title: string;
+  company: string;
+  dept: string;
+  matchPercent: number;
+  matchedSkills: string[];
+  gapSkills: string[];
+}
+
+function buildTaxonomy(rand: () => number) {
+  const skillMap = new Map<string, AggregatedSkill>();
+
+  // Initialize all taxonomy skills
+  for (const ts of TAXONOMY) {
+    skillMap.set(ts.id, {
+      id: ts.id, name: ts.name, category: ts.category,
+      proficiency: 0, jobCount: 0, taskCount: 0, jobs: [],
+    });
+  }
+
+  // Process each job's tasks
+  for (const job of JOB_TEMPLATES) {
+    for (const taskName of job.tasks) {
+      const matchedIds = matchTaskToSkills(taskName);
+      for (const skillId of matchedIds) {
+        const skill = skillMap.get(skillId)!;
+        const score = Math.round(45 + rand() * 50); // 45-95 proficiency
+        skill.jobs.push({ title: job.title, company: job.company, taskName, score });
+        skill.taskCount++;
+      }
+    }
+  }
+
+  // Finalize
+  const result: AggregatedSkill[] = [];
+  for (const skill of skillMap.values()) {
+    if (skill.taskCount === 0) continue;
+    const uniqueJobs = new Set(skill.jobs.map(j => j.title));
+    skill.jobCount = uniqueJobs.size;
+    skill.proficiency = Math.round(
+      skill.jobs.reduce((s, j) => s + j.score, 0) / skill.jobs.length
+    );
+    result.push(skill);
+  }
+
+  result.sort((a, b) => b.taskCount - a.taskCount);
+  return result;
+}
+
+function computeJobMatches(skills: AggregatedSkill[], rand: () => number): JobMatch[] {
+  return JOB_TEMPLATES.map(job => {
+    const jobSkillIds = new Set<string>();
+    for (const taskName of job.tasks) {
+      for (const id of matchTaskToSkills(taskName)) jobSkillIds.add(id);
+    }
+
+    const allIds = Array.from(jobSkillIds);
+    const userSkillIds = new Set(skills.filter(s => s.proficiency >= 50).map(s => s.id));
+    const matched = allIds.filter(id => userSkillIds.has(id));
+    const gaps = allIds.filter(id => !userSkillIds.has(id));
+
+    const matchPercent = allIds.length > 0
+      ? Math.round((matched.length / allIds.length) * 100)
+      : 0;
+
+    return {
+      title: job.title,
+      company: job.company,
+      dept: job.dept,
+      matchPercent,
+      matchedSkills: matched.map(id => skills.find(s => s.id === id)?.name || id),
+      gapSkills: gaps.map(id => TAXONOMY.find(t => t.id === id)?.name || id),
+    };
+  }).sort((a, b) => b.matchPercent - a.matchPercent);
+}
+
+/* ── Helpers ── */
+function profColor(score: number): string {
   if (score >= 80) return "text-emerald-400";
   if (score >= 60) return "text-amber-400";
   return "text-red-400";
 }
-
-function scoreBg(score: number): string {
-  if (score >= 80) return "bg-emerald-500/20 border-emerald-500/30";
-  if (score >= 60) return "bg-amber-500/20 border-amber-500/30";
-  return "bg-red-500/20 border-red-500/30";
+function profBg(score: number): string {
+  if (score >= 80) return "bg-emerald-500/20";
+  if (score >= 60) return "bg-amber-500/20";
+  return "bg-red-500/20";
 }
 
-type SortKey = "proficiency" | "tool" | "human" | "adaptive" | "domain" | "department";
+type ViewMode = "skills" | "matching";
 
 export default function JourneySkillProfileView({ onNavigate }: { onNavigate: (title: string, company: string | null) => void }) {
-  const jobs = useMemo(() => generateMockJobs(), []);
-  const [expanded, setExpanded] = useState<Set<number>>(new Set());
-  const [sortBy, setSortBy] = useState<SortKey>("proficiency");
-  const [filterDept, setFilterDept] = useState<string | null>(null);
+  const rand = useMemo(() => seeded(2026), []);
+  const skills = useMemo(() => buildTaxonomy(rand), [rand]);
+  const jobMatches = useMemo(() => computeJobMatches(skills, rand), [skills, rand]);
 
-  const departments = useMemo(() => [...new Set(jobs.map(j => j.department))].sort((a, b) => {
-    const ai = DEPT_ORDER.indexOf(a), bi = DEPT_ORDER.indexOf(b);
-    return (ai === -1 ? 99 : ai) - (bi === -1 ? 99 : bi);
-  }), [jobs]);
+  const [view, setView] = useState<ViewMode>("skills");
+  const [expandedSkill, setExpandedSkill] = useState<string | null>(null);
+  const [filterCat, setFilterCat] = useState<SkillCategory | null>(null);
+  const [searchQ, setSearchQ] = useState("");
 
-  const filtered = useMemo(() => {
-    let list = filterDept ? jobs.filter(j => j.department === filterDept) : [...jobs];
-    switch (sortBy) {
-      case "tool": list.sort((a, b) => b.pillars.tool - a.pillars.tool); break;
-      case "human": list.sort((a, b) => b.pillars.human - a.pillars.human); break;
-      case "adaptive": list.sort((a, b) => b.pillars.adaptive - a.pillars.adaptive); break;
-      case "domain": list.sort((a, b) => b.pillars.domain - a.pillars.domain); break;
-      case "department": list.sort((a, b) => a.department.localeCompare(b.department)); break;
-      default: list.sort((a, b) => b.avgProficiency - a.avgProficiency);
+  // Category summaries
+  const catSummaries = useMemo(() => {
+    const map = new Map<SkillCategory, { count: number; totalProf: number; totalTasks: number }>();
+    for (const s of skills) {
+      const e = map.get(s.category) || { count: 0, totalProf: 0, totalTasks: 0 };
+      e.count++; e.totalProf += s.proficiency; e.totalTasks += s.taskCount;
+      map.set(s.category, e);
+    }
+    return Array.from(map.entries()).map(([cat, e]) => ({
+      cat, count: e.count, avg: Math.round(e.totalProf / e.count), tasks: e.totalTasks,
+    })).sort((a, b) => b.avg - a.avg);
+  }, [skills]);
+
+  const filteredSkills = useMemo(() => {
+    let list = filterCat ? skills.filter(s => s.category === filterCat) : [...skills];
+    if (searchQ) {
+      const q = searchQ.toLowerCase();
+      list = list.filter(s => s.name.toLowerCase().includes(q) || s.category.includes(q));
     }
     return list;
-  }, [jobs, sortBy, filterDept]);
+  }, [skills, filterCat, searchQ]);
 
-  // Aggregate stats
-  const globalPillars = useMemo(() => ({
-    tool: Math.round(jobs.reduce((s, j) => s + j.pillars.tool, 0) / jobs.length),
-    human: Math.round(jobs.reduce((s, j) => s + j.pillars.human, 0) / jobs.length),
-    adaptive: Math.round(jobs.reduce((s, j) => s + j.pillars.adaptive, 0) / jobs.length),
-    domain: Math.round(jobs.reduce((s, j) => s + j.pillars.domain, 0) / jobs.length),
-  }), [jobs]);
+  const filteredMatches = useMemo(() => {
+    if (!searchQ) return jobMatches.slice(0, 20);
+    const q = searchQ.toLowerCase();
+    return jobMatches.filter(j => j.title.toLowerCase().includes(q) || j.dept.toLowerCase().includes(q)).slice(0, 20);
+  }, [jobMatches, searchQ]);
 
-  const totalTasks = jobs.reduce((s, j) => s + j.tasks.length, 0);
-  const avgProf = Math.round(jobs.reduce((s, j) => s + j.avgProficiency, 0) / jobs.length);
-
-  const toggle = (i: number) => {
-    setExpanded(prev => {
-      const next = new Set(prev);
-      next.has(i) ? next.delete(i) : next.add(i);
-      return next;
-    });
-  };
-
-  // Dept summary
-  const deptSummary = useMemo(() => {
-    const map = new Map<string, { count: number; totalProf: number; pillars: { tool: number; human: number; adaptive: number; domain: number } }>();
-    for (const j of jobs) {
-      const e = map.get(j.department) || { count: 0, totalProf: 0, pillars: { tool: 0, human: 0, adaptive: 0, domain: 0 } };
-      e.count++;
-      e.totalProf += j.avgProficiency;
-      e.pillars.tool += j.pillars.tool;
-      e.pillars.human += j.pillars.human;
-      e.pillars.adaptive += j.pillars.adaptive;
-      e.pillars.domain += j.pillars.domain;
-      map.set(j.department, e);
-    }
-    return Array.from(map.entries()).map(([dept, e]) => ({
-      dept,
-      count: e.count,
-      avg: Math.round(e.totalProf / e.count),
-      pillars: {
-        tool: Math.round(e.pillars.tool / e.count),
-        human: Math.round(e.pillars.human / e.count),
-        adaptive: Math.round(e.pillars.adaptive / e.count),
-        domain: Math.round(e.pillars.domain / e.count),
-      },
-    })).sort((a, b) => b.avg - a.avg);
-  }, [jobs]);
+  const globalAvg = Math.round(skills.reduce((s, sk) => s + sk.proficiency, 0) / skills.length);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
+      {/* View toggle */}
+      <div className="flex items-center gap-2">
+        <button
+          onClick={() => setView("skills")}
+          className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${view === "skills" ? "bg-primary text-primary-foreground" : "bg-muted/40 text-muted-foreground hover:bg-muted/60"}`}
+        >
+          <Layers className="inline h-3 w-3 mr-1" />Skill Taxonomy
+        </button>
+        <button
+          onClick={() => setView("matching")}
+          className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${view === "matching" ? "bg-primary text-primary-foreground" : "bg-muted/40 text-muted-foreground hover:bg-muted/60"}`}
+        >
+          <Target className="inline h-3 w-3 mr-1" />Job Matching
+        </button>
+      </div>
+
       {/* Global stats */}
-      <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
-        {[
-          { label: "Jobs", value: jobs.length },
-          { label: "Tasks", value: totalTasks },
-          { label: "Avg Prof.", value: `${avgProf}%` },
-          { label: "Tool", value: `${globalPillars.tool}%` },
-          { label: "Human", value: `${globalPillars.human}%` },
-          { label: "Adaptive", value: `${globalPillars.adaptive}%` },
-        ].map(s => (
-          <div key={s.label} className="rounded-lg bg-muted/30 border border-border/40 p-2.5 text-center">
-            <p className="text-sm font-bold text-foreground">{s.value}</p>
-            <p className="text-[9px] text-muted-foreground uppercase tracking-wider">{s.label}</p>
-          </div>
-        ))}
-      </div>
-
-      {/* 4-pillar overview bars */}
-      <div className="grid grid-cols-2 gap-3">
-        {PILLARS.map(p => {
-          const val = globalPillars[p.key];
-          const Icon = p.icon;
-          return (
-            <motion.div
-              key={p.key}
-              initial={{ opacity: 0, x: -10 }}
-              animate={{ opacity: 1, x: 0 }}
-              className="p-3 rounded-lg bg-card border border-border/50"
-            >
-              <div className="flex items-center gap-2 mb-2">
-                <Icon className="h-3.5 w-3.5 text-muted-foreground" />
-                <span className="text-xs font-medium text-foreground">{p.label}</span>
-                <span className={`ml-auto text-sm font-bold ${scoreColor(val)}`}>{val}%</span>
-              </div>
-              <Progress value={val} className="h-2" />
-            </motion.div>
-          );
-        })}
-      </div>
-
-      {/* Dept summary strip */}
-      <div className="space-y-1.5">
-        <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">By Department</h3>
-        <div className="flex flex-wrap gap-1.5">
-          <button
-            onClick={() => setFilterDept(null)}
-            className={`px-2.5 py-1 rounded-md text-[10px] font-medium border transition-all ${
-              filterDept === null ? "bg-primary/10 border-primary/30 text-primary" : "bg-muted/20 border-border/40 text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            All ({jobs.length})
-          </button>
-          {deptSummary.map(d => (
-            <button
-              key={d.dept}
-              onClick={() => setFilterDept(filterDept === d.dept ? null : d.dept)}
-              className={`px-2.5 py-1 rounded-md text-[10px] font-medium border transition-all ${
-                filterDept === d.dept ? "bg-primary/10 border-primary/30 text-primary" : "bg-muted/20 border-border/40 text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              {d.dept} ({d.count}) · {d.avg}%
-            </button>
-          ))}
+      <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+        <div className="rounded-lg bg-muted/30 border border-border/40 p-2.5 text-center">
+          <p className="text-sm font-bold text-foreground">{skills.length}</p>
+          <p className="text-[9px] text-muted-foreground uppercase tracking-wider">Skills</p>
+        </div>
+        <div className="rounded-lg bg-muted/30 border border-border/40 p-2.5 text-center">
+          <p className="text-sm font-bold text-foreground">50</p>
+          <p className="text-[9px] text-muted-foreground uppercase tracking-wider">Jobs</p>
+        </div>
+        <div className="rounded-lg bg-muted/30 border border-border/40 p-2.5 text-center">
+          <p className={`text-sm font-bold ${profColor(globalAvg)}`}>{globalAvg}%</p>
+          <p className="text-[9px] text-muted-foreground uppercase tracking-wider">Avg Prof.</p>
+        </div>
+        <div className="rounded-lg bg-muted/30 border border-border/40 p-2.5 text-center hidden sm:block">
+          <p className="text-sm font-bold text-foreground">{skills.reduce((s, sk) => s + sk.taskCount, 0)}</p>
+          <p className="text-[9px] text-muted-foreground uppercase tracking-wider">Evidence</p>
         </div>
       </div>
 
-      {/* Sort */}
-      <div className="flex items-center gap-1.5 flex-wrap">
-        <span className="text-[10px] text-muted-foreground uppercase tracking-wider mr-1">Sort:</span>
-        {([
-          { key: "proficiency", label: "Overall" },
-          { key: "tool", label: "Tool" },
-          { key: "human", label: "Human" },
-          { key: "adaptive", label: "Adaptive" },
-          { key: "domain", label: "Domain" },
-          { key: "department", label: "Dept" },
-        ] as { key: SortKey; label: string }[]).map(s => (
-          <button
-            key={s.key}
-            onClick={() => setSortBy(s.key)}
-            className={`px-2 py-0.5 rounded text-[10px] font-medium transition-all ${
-              sortBy === s.key ? "bg-primary/15 text-primary" : "text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            {s.label}
-          </button>
-        ))}
-      </div>
-
-      {/* Job list */}
-      <div className="space-y-1.5">
-        {filtered.map((job, i) => {
-          const origIdx = jobs.indexOf(job);
-          const isOpen = expanded.has(origIdx);
+      {/* Category bars */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+        {catSummaries.map(({ cat, count, avg }) => {
+          const meta = CATEGORY_META[cat];
+          const Icon = meta.icon;
+          const active = filterCat === cat;
           return (
-            <motion.div
-              key={origIdx}
-              initial={{ opacity: 0, y: 6 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: Math.min(i * 0.015, 0.5) }}
+            <button
+              key={cat}
+              onClick={() => setFilterCat(active ? null : cat)}
+              className={`p-2.5 rounded-lg border text-left transition-all ${active ? "bg-primary/10 border-primary/40" : "bg-card border-border/40 hover:border-border/60"}`}
             >
-              <button
-                onClick={() => toggle(origIdx)}
-                className="w-full flex items-center gap-2 p-2.5 rounded-lg bg-card border border-border/50 hover:border-primary/30 transition-all text-left group"
-              >
-                {isOpen ? <ChevronDown className="h-3.5 w-3.5 text-muted-foreground shrink-0" /> : <ChevronRight className="h-3.5 w-3.5 text-muted-foreground shrink-0" />}
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs font-medium text-foreground truncate">{job.title}</p>
-                  <p className="text-[10px] text-muted-foreground truncate">{job.company} · {job.department}</p>
-                </div>
-                {/* Mini pillar bars */}
-                <div className="hidden sm:flex items-center gap-1.5 shrink-0">
-                  {PILLARS.map(p => (
-                    <div key={p.key} className="w-10 flex flex-col items-center gap-0.5">
-                      <span className={`text-[8px] font-bold ${scoreColor(job.pillars[p.key])}`}>{job.pillars[p.key]}</span>
-                      <div className="w-full h-1 rounded-full bg-muted/40 overflow-hidden">
-                        <div className="h-full rounded-full bg-primary/60" style={{ width: `${job.pillars[p.key]}%` }} />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                <div className={`w-9 h-9 rounded-lg border flex items-center justify-center text-xs font-bold shrink-0 ${scoreBg(job.avgProficiency)} ${scoreColor(job.avgProficiency)}`}>
-                  {job.avgProficiency}
-                </div>
-              </button>
-
-              {/* Expanded task detail */}
-              {isOpen && (
-                <motion.div
-                  initial={{ height: 0, opacity: 0 }}
-                  animate={{ height: "auto", opacity: 1 }}
-                  exit={{ height: 0, opacity: 0 }}
-                  className="ml-5 mt-1 mb-2 space-y-1"
-                >
-                  {/* Pillar bars for mobile */}
-                  <div className="sm:hidden grid grid-cols-2 gap-1.5 mb-2">
-                    {PILLARS.map(p => (
-                      <div key={p.key} className="flex items-center gap-1.5 text-[10px]">
-                        <span className="text-muted-foreground w-14 truncate">{p.label.split(" ")[0]}</span>
-                        <div className="flex-1 h-1.5 rounded-full bg-muted/40 overflow-hidden">
-                          <div className="h-full rounded-full bg-primary/60" style={{ width: `${job.pillars[p.key]}%` }} />
-                        </div>
-                        <span className={`font-bold ${scoreColor(job.pillars[p.key])}`}>{job.pillars[p.key]}</span>
-                      </div>
-                    ))}
-                  </div>
-
-                  {job.tasks.map(task => (
-                    <div
-                      key={task.name}
-                      className="flex items-center gap-2 p-2 rounded-md bg-muted/20 border border-border/30 cursor-pointer hover:bg-muted/30 transition-colors"
-                      onClick={() => onNavigate(job.title, job.company)}
-                    >
-                      <div className="flex-1 min-w-0">
-                        <p className="text-[11px] font-medium text-foreground truncate">{task.name}</p>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        {[
-                          { v: task.toolAwareness, l: "T" },
-                          { v: task.humanValueAdd, l: "H" },
-                          { v: task.adaptiveThinking, l: "A" },
-                          { v: task.domainJudgment, l: "D" },
-                        ].map(s => (
-                          <div key={s.l} className="text-center w-7">
-                            <p className={`text-[8px] font-bold ${scoreColor(s.v)}`}>{s.v}</p>
-                            <p className="text-[7px] text-muted-foreground">{s.l}</p>
-                          </div>
-                        ))}
-                      </div>
-                      <Badge variant="outline" className={`text-[9px] shrink-0 ${scoreBg(task.avgScore)} ${scoreColor(task.avgScore)}`}>
-                        {task.avgScore}%
-                      </Badge>
-                    </div>
-                  ))}
-                </motion.div>
-              )}
-            </motion.div>
+              <div className="flex items-center gap-1.5 mb-1">
+                <Icon className="h-3 w-3 text-muted-foreground" />
+                <span className="text-[10px] font-medium text-foreground">{meta.label}</span>
+                <span className="text-[9px] text-muted-foreground ml-auto">{count}</span>
+              </div>
+              <Progress value={avg} className="h-1.5" />
+              <p className={`text-[10px] mt-1 font-semibold ${profColor(avg)}`}>{avg}%</p>
+            </button>
           );
         })}
       </div>
+
+      {/* Search */}
+      <div className="relative">
+        <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+        <input
+          value={searchQ}
+          onChange={e => setSearchQ(e.target.value)}
+          placeholder={view === "skills" ? "Search skills..." : "Search jobs..."}
+          className="w-full pl-8 pr-3 py-2 rounded-lg bg-muted/30 border border-border/40 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/50"
+        />
+      </div>
+
+      <AnimatePresence mode="wait">
+        {view === "skills" ? (
+          <motion.div key="skills" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-1.5">
+            {filteredSkills.map(skill => {
+              const isOpen = expandedSkill === skill.id;
+              const meta = CATEGORY_META[skill.category];
+              return (
+                <motion.div key={skill.id} layout className="rounded-lg border border-border/40 bg-card overflow-hidden">
+                  <button
+                    onClick={() => setExpandedSkill(isOpen ? null : skill.id)}
+                    className="w-full flex items-center gap-2.5 p-3 text-left hover:bg-muted/20 transition-colors"
+                  >
+                    {isOpen ? <ChevronDown className="h-3 w-3 text-muted-foreground shrink-0" /> : <ChevronRight className="h-3 w-3 text-muted-foreground shrink-0" />}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-medium text-foreground truncate">{skill.name}</span>
+                        <Badge variant="outline" className="text-[9px] px-1.5 py-0 border-border/30 text-muted-foreground shrink-0">
+                          {meta.label}
+                        </Badge>
+                      </div>
+                      <p className="text-[10px] text-muted-foreground mt-0.5">
+                        {skill.jobCount} jobs · {skill.taskCount} tasks
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <div className="w-16 hidden sm:block">
+                        <Progress value={skill.proficiency} className="h-1.5" />
+                      </div>
+                      <span className={`text-xs font-bold w-10 text-right ${profColor(skill.proficiency)}`}>
+                        {skill.proficiency}%
+                      </span>
+                    </div>
+                  </button>
+
+                  <AnimatePresence>
+                    {isOpen && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: "auto", opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        className="border-t border-border/30"
+                      >
+                        <div className="p-3 space-y-2">
+                          <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">Job Evidence</p>
+                          <div className="space-y-1 max-h-40 overflow-y-auto">
+                            {skill.jobs.slice(0, 15).map((j, i) => (
+                              <button
+                                key={i}
+                                onClick={() => onNavigate(j.title, j.company)}
+                                className="w-full flex items-center gap-2 p-1.5 rounded hover:bg-muted/30 transition-colors text-left"
+                              >
+                                <span className="text-[10px] text-foreground/80 flex-1 truncate">{j.title}</span>
+                                <span className="text-[9px] text-muted-foreground truncate max-w-[80px]">{j.taskName}</span>
+                                <span className={`text-[10px] font-semibold ${profColor(j.score)}`}>{j.score}%</span>
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </motion.div>
+              );
+            })}
+          </motion.div>
+        ) : (
+          <motion.div key="matching" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-1.5">
+            <p className="text-[10px] text-muted-foreground mb-2">
+              Jobs ranked by how well your unified skill profile matches their requirements.
+            </p>
+            {filteredMatches.map((job, i) => (
+              <motion.button
+                key={i}
+                initial={{ opacity: 0, y: 4 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.02 }}
+                onClick={() => onNavigate(job.title, job.company)}
+                className="w-full flex items-center gap-3 p-3 rounded-lg border border-border/40 bg-card hover:bg-muted/20 transition-colors text-left"
+              >
+                <div className={`w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${profBg(job.matchPercent)} ${profColor(job.matchPercent)}`}>
+                  {job.matchPercent}%
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-medium text-foreground truncate">{job.title}</p>
+                  <p className="text-[10px] text-muted-foreground">{job.company} · {job.dept}</p>
+                  {job.gapSkills.length > 0 && (
+                    <div className="flex gap-1 mt-1 flex-wrap">
+                      {job.gapSkills.slice(0, 2).map(g => (
+                        <Badge key={g} variant="outline" className="text-[8px] px-1 py-0 border-red-500/30 text-red-400">
+                          Gap: {g}
+                        </Badge>
+                      ))}
+                    </div>
+                  )}
+                </div>
+                <ArrowRight className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+              </motion.button>
+            ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
