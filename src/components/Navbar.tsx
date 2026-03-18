@@ -69,7 +69,7 @@ export default function Navbar() {
                 variant="ghost"
                 size="icon"
                 className="rounded-full"
-                onClick={() => setProfileOpen(true)}
+                onClick={() => navigate("/settings")}
               >
                 <Avatar className="h-8 w-8">
                   <AvatarFallback className="bg-primary text-primary-foreground text-xs font-semibold">
