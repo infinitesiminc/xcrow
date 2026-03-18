@@ -398,9 +398,13 @@ export default function PipelinePage() {
                       {selectedCompany?.website && (
                         <a href={selectedCompany.website} target="_blank" rel="noopener" className="text-muted-foreground hover:text-foreground"><Globe className="h-3.5 w-3.5" /></a>
                       )}
+                      {selectedCompany?.careers_url && (
+                        <a href={selectedCompany.careers_url} target="_blank" rel="noopener" className="text-xs text-primary hover:underline truncate max-w-[200px]" title={selectedCompany.careers_url}>ATS ↗</a>
+                      )}
                     </div>
                     <div className="flex items-center gap-2 text-xs text-muted-foreground">
                       {selectedCompany?.industry && <span>{selectedCompany.industry}</span>}
+                      {selectedCompany?.detected_ats_platform && <><span>·</span><span className="uppercase text-[10px] font-medium">{selectedCompany.detected_ats_platform}</span></>}
                       <span>·</span>
                       <span>{jobs.length} roles</span>
                       <span>·</span>
