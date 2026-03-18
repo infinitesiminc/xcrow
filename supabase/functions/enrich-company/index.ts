@@ -34,13 +34,14 @@ Deno.serve(async (req) => {
     let markdown = "";
     let pageTitle = "";
 
-    // Step 0: If we have a careers_url, scrape it first to find the real company website
+    // Step 0: If we have a careers_url, scrape it to get supplementary content
+    let atsMarkdown = "";
     if (careers_url) {
       let atsUrl = careers_url.trim();
       if (!atsUrl.startsWith("http://") && !atsUrl.startsWith("https://")) {
         atsUrl = `https://${atsUrl}`;
       }
-      console.log("Scraping ATS page first:", atsUrl);
+      console.log("Scraping ATS page:", atsUrl);
       try {
         const atsRes = await fetch("https://api.firecrawl.dev/v1/scrape", {
           method: "POST",
@@ -50,39 +51,17 @@ Deno.serve(async (req) => {
           },
           body: JSON.stringify({
             url: atsUrl,
-            formats: ["links", "markdown"],
+            formats: ["markdown"],
             onlyMainContent: false,
           }),
         });
         const atsData = await atsRes.json();
-        const links: string[] = atsData?.data?.links || atsData?.links || [];
-        const atsMarkdown = atsData?.data?.markdown || atsData?.markdown || "";
-
-        // Find the company website from the ATS page links
-        // Look for links that are NOT the ATS platform itself
-        const atsHosts = ["greenhouse.io", "ashby.io", "lever.co", "smartrecruiters.com", "myworkdayjobs.com", "workday.com"];
-        const candidateLinks = links.filter((l: string) => {
-          try {
-            const h = new URL(l).hostname.toLowerCase();
-            return !atsHosts.some(ah => h.includes(ah)) && !h.includes("linkedin.") && !h.includes("facebook.") && !h.includes("twitter.") && !h.includes("instagram.");
-          } catch { return false; }
-        });
-
-        if (candidateLinks.length > 0) {
-          // Prefer the shortest/most root-like URL as the company website
-          const sorted = candidateLinks.sort((a: string, b: string) => a.length - b.length);
-          const foundUrl = sorted[0];
-          console.log("Found company website from ATS page:", foundUrl);
-          url = foundUrl;
-        }
-
-        // Use ATS page content as supplementary
-        if (atsMarkdown) {
-          markdown = atsMarkdown;
-          pageTitle = atsData?.data?.metadata?.title || atsData?.metadata?.title || "";
-        }
+        atsMarkdown = atsData?.data?.markdown || atsData?.markdown || "";
+        const atsTitle = atsData?.data?.metadata?.title || atsData?.metadata?.title || "";
+        if (atsMarkdown && !markdown) markdown = atsMarkdown;
+        if (atsTitle && !pageTitle) pageTitle = atsTitle;
       } catch (e) {
-        console.warn("ATS page scrape failed, continuing with provided website:", e);
+        console.warn("ATS page scrape failed:", e);
       }
     }
 
@@ -115,6 +94,29 @@ Deno.serve(async (req) => {
 
     // Step 2: AI extraction
     console.log("Enriching with AI...");
+    const aiPromptFields = `{
+  "name": "Company Name",
+  "website": "The company's actual website URL (NOT an ATS platform like greenhouse.io, ashbyhq.com, lever.co, etc.)",
+  "industry": "e.g. AI/ML, Fintech, Healthcare",
+  "headquarters": "City, State or City, Country",
+  "employee_range": "e.g. 50-200, 1000-5000, 10000+",
+  "description": "1-2 sentence company description",
+  "careers_url": "URL to careers page if found, else null",
+  "brand_color": "hex color from branding if obvious, else null",
+  "company_type": "Public, Private, Non-profit, or Government",
+  "funding_stage": "e.g. Seed, Series A, Series B, Series C, Late Stage, IPO, Bootstrapped, or null",
+  "funding_total": "e.g. $50M, $1.2B, or null if unknown",
+  "founded_year": 2015
+}`;
+
+    const userContent = [
+      url ? `Provided website: ${url}` : "",
+      careers_url ? `ATS/Careers URL: ${careers_url}` : "",
+      `Page title: ${pageTitle}`,
+      atsMarkdown ? `\nATS page content (truncated):\n${atsMarkdown.slice(0, 3000)}` : "",
+      markdown && markdown !== atsMarkdown ? `\nWebsite content (truncated):\n${markdown.slice(0, 3000)}` : "",
+    ].filter(Boolean).join("\n");
+
     const aiRes = await fetch(AI_URL, {
       method: "POST",
       headers: {
@@ -126,25 +128,11 @@ Deno.serve(async (req) => {
         messages: [
           {
             role: "system",
-            content: `You extract structured company data from website content. Return ONLY valid JSON with these fields:
-{
-  "name": "Company Name",
-  "industry": "e.g. AI/ML, Fintech, Healthcare",
-  "headquarters": "City, State or City, Country",
-  "employee_range": "e.g. 50-200, 1000-5000, 10000+",
-  "description": "1-2 sentence company description",
-  "careers_url": "URL to careers page if found, else null",
-  "brand_color": "hex color from branding if obvious, else null",
-  "company_type": "Public, Private, Non-profit, or Government",
-  "funding_stage": "e.g. Seed, Series A, Series B, Series C, Late Stage, IPO, Bootstrapped, or null",
-  "funding_total": "e.g. $50M, $1.2B, or null if unknown",
-  "founded_year": 2015
-}
-If a field cannot be determined, use null.`,
+            content: `You extract structured company data from website content. Return ONLY valid JSON with these fields:\n${aiPromptFields}\nIMPORTANT: The "website" field must be the company's OWN domain, never an ATS platform domain (greenhouse.io, ashbyhq.com, lever.co, smartrecruiters.com, workday.com, etc.). If a field cannot be determined, use null.`,
           },
           {
             role: "user",
-            content: `Website: ${url}\nPage title: ${pageTitle}\n\nContent (truncated):\n${markdown.slice(0, 6000)}`,
+            content: userContent,
           },
         ],
         temperature: 0.1,
@@ -163,6 +151,15 @@ If a field cannot be determined, use null.`,
       return respond({ error: "AI could not extract company data" }, 422);
     }
 
+    // Use AI-detected website, falling back to provided url
+    const finalWebsite = company.website || url || null;
+    let finalLogoUrl = null;
+    if (finalWebsite) {
+      try {
+        finalLogoUrl = `https://logo.clearbit.com/${new URL(finalWebsite).hostname}`;
+      } catch { /* invalid URL */ }
+    }
+
     // Step 3: Save to DB
     const sb = createClient(
       Deno.env.get("SUPABASE_URL")!,
@@ -170,8 +167,8 @@ If a field cannot be determined, use null.`,
     );
 
     const row: Record<string, any> = {
-      name: company.name || (url ? new URL(url).hostname.replace("www.", "") : "Unknown"),
-      website: url || null,
+      name: company.name || (finalWebsite ? new URL(finalWebsite).hostname.replace("www.", "") : "Unknown"),
+      website: finalWebsite,
       industry: company.industry || null,
       headquarters: company.headquarters || null,
       employee_range: company.employee_range || null,
@@ -182,7 +179,7 @@ If a field cannot be determined, use null.`,
       funding_stage: company.funding_stage || null,
       funding_total: company.funding_total || null,
       founded_year: company.founded_year || null,
-      logo_url: url ? `https://logo.clearbit.com/${new URL(url).hostname}` : null,
+      logo_url: finalLogoUrl,
       is_demo: false,
     };
 
