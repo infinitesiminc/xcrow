@@ -45,6 +45,7 @@ interface SimulatorModalProps {
   onCompleted?: () => void;
   onNextTask?: () => void;
   onBackToFeed?: () => void;
+  inline?: boolean;
 }
 
 /* ── Objective Checklist (sidebar / inline) ── */
