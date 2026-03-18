@@ -13,6 +13,74 @@ function respond(body: unknown, status = 200) {
   });
 }
 
+function parseJsonSafely(text: string): any | null {
+  if (!text) return null;
+  try {
+    return JSON.parse(text);
+  } catch {
+    return null;
+  }
+}
+
+type ApolloSearchResult =
+  | { ok: true; data: any; endpoint: string }
+  | { ok: false; status: number; error: string; details: string; code: string };
+
+async function searchApollo(apolloBody: Record<string, unknown>, apiKey: string): Promise<ApolloSearchResult> {
+  const endpoints = [
+    "https://api.apollo.io/api/v1/mixed_companies/search",
+    "https://api.apollo.io/api/v1/organizations/search",
+  ];
+
+  let lastPlanRestrictionDetails = "";
+
+  for (const endpoint of endpoints) {
+    const res = await fetch(endpoint, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Cache-Control": "no-cache",
+        "X-Api-Key": apiKey,
+      },
+      body: JSON.stringify(apolloBody),
+    });
+
+    const raw = await res.text();
+    const parsed = parseJsonSafely(raw);
+
+    if (res.ok) {
+      return { ok: true, data: parsed || {}, endpoint };
+    }
+
+    const errorCode = parsed?.error_code;
+    const errorMessage = typeof parsed?.error === "string" ? parsed.error : raw;
+
+    if (res.status === 403 && errorCode === "API_INACCESSIBLE") {
+      lastPlanRestrictionDetails = errorMessage || "Endpoint is unavailable for this API key plan.";
+      console.warn(`Apollo plan restriction on ${endpoint}:`, lastPlanRestrictionDetails);
+      continue;
+    }
+
+    return {
+      ok: false,
+      status: 502,
+      error: `Apollo API error: ${res.status}`,
+      details: errorMessage || "Unknown Apollo API failure.",
+      code: "APOLLO_API_ERROR",
+    };
+  }
+
+  return {
+    ok: false,
+    status: 200,
+    error: "Apollo API access is restricted for this API key plan.",
+    details:
+      lastPlanRestrictionDetails ||
+      "Company search endpoints are blocked on the current Apollo plan. Upgrade plan or add companies by website manually.",
+    code: "APOLLO_PLAN_RESTRICTED",
+  };
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
@@ -48,23 +116,13 @@ Deno.serve(async (req) => {
 
     console.log("Apollo search:", JSON.stringify(apolloBody));
 
-    const apolloRes = await fetch("https://api.apollo.io/api/v1/mixed_companies/search", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Cache-Control": "no-cache",
-        "X-Api-Key": APOLLO_API_KEY,
-      },
-      body: JSON.stringify(apolloBody),
-    });
-
-    if (!apolloRes.ok) {
-      const errText = await apolloRes.text();
-      console.error("Apollo API error:", apolloRes.status, errText);
-      return respond({ error: `Apollo API error: ${apolloRes.status}`, details: errText }, 502);
+    const apolloResult = await searchApollo(apolloBody, APOLLO_API_KEY);
+    if (!apolloResult.ok) {
+      console.error("Apollo search failed:", apolloResult.code, apolloResult.details);
+      return respond({ error: apolloResult.error, details: apolloResult.details, code: apolloResult.code }, apolloResult.status);
     }
 
-    const apolloData = await apolloRes.json();
+    const apolloData = apolloResult.data;
     const organizations = apolloData.organizations || apolloData.accounts || [];
     const pagination = apolloData.pagination || {};
 
@@ -116,7 +174,10 @@ Deno.serve(async (req) => {
     const importedCompanies: any[] = [];
 
     for (const co of mapped) {
-      if (!co.name || co.name === "Unknown") { skipped++; continue; }
+      if (!co.name || co.name === "Unknown") {
+        skipped++;
+        continue;
+      }
 
       // Check for existing by name (case-insensitive)
       const { data: existing } = await sb
