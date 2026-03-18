@@ -29,3 +29,5 @@ project_id = "xtfubistkgodiksegtcx"
     verify_jwt = false
   [functions.bulk-analyze-roles]
     verify_jwt = false
+  [functions.summarize-role]
+    verify_jwt = false
