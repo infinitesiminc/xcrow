@@ -129,7 +129,7 @@ export default function Investors() {
 
             <div className="flex items-center justify-between gap-2 sm:gap-3 mb-4">
               {[
-                { icon: Layers, label: "Map", desc: "Decompose roles into tasks, score AI exposure" },
+                { icon: Layers, label: "Map", desc: "Decompose roles into tasks, score AI augmented" },
                 { icon: Target, label: "Assess", desc: "Measure real readiness via simulations" },
                 { icon: Brain, label: "Train", desc: "Auto-generate practice for weak spots" },
                 { icon: Zap, label: "Adapt", desc: "Re-calibrate when new models ship" },
@@ -236,7 +236,7 @@ export default function Investors() {
                   <div className="absolute bottom-0 left-0 right-0 h-px bg-border" />
                   <div className="absolute top-0 bottom-0 left-0 w-px bg-border" />
 
-                  <span className="absolute -bottom-8 left-1/2 -translate-x-1/2 text-xs text-muted-foreground font-medium">AI Exposure Intelligence →</span>
+                  <span className="absolute -bottom-8 left-1/2 -translate-x-1/2 text-xs text-muted-foreground font-medium">AI Augmented Intelligence →</span>
                   <span className="absolute -left-20 top-1/2 -translate-y-1/2 -rotate-90 text-xs text-muted-foreground font-medium whitespace-nowrap">Adaptive Upskilling →</span>
 
                   {[
@@ -270,7 +270,7 @@ export default function Investors() {
                 <div className="mt-8 space-y-3">
                   {[
                     { name: "Consultancies", gap: "Deep analysis but manual, $500K+/engagement, no ongoing training" },
-                    { name: "L&D Platforms", gap: "Scalable training but generic content, zero AI exposure insight" },
+                    { name: "L&D Platforms", gap: "Scalable training but generic content, zero AI augmented insight" },
                     { name: "HR Tech", gap: "Skills taxonomies but no task-level AI risk scoring or simulations" },
                   ].map((comp) => (
                     <div key={comp.name} className="p-3 rounded-lg bg-muted/30">
@@ -334,7 +334,7 @@ export default function Investors() {
               ))}
             </div>
             <p className="text-sm text-muted-foreground mt-3">
-              One engine. Six use cases. Three massive markets. No incumbent combines real-time AI exposure analysis with adaptive simulation training.
+              One engine. Six use cases. Three massive markets. No incumbent combines real-time AI augmented analysis with adaptive simulation training.
             </p>
           </motion.div>
 
@@ -429,8 +429,8 @@ export default function Investors() {
               <div className="space-y-4">
                 {[
                   {
-                    icon: Layers, label: "Map · AI Exposure Scoring",
-                    desc: "Every role decomposed into 8–15 task clusters, each scored for AI exposure. When new models ship, scores update automatically.",
+                    icon: Layers, label: "Map · AI Augmented Scoring",
+                    desc: "Every role decomposed into 8–15 task clusters, each scored for AI augmented. When new models ship, scores update automatically.",
                     detail: "400+ roles mapped in minutes",
                     sample: [
                       { task: "Financial Modeling", exposure: 78 },
@@ -591,7 +591,7 @@ export default function Investors() {
                     <div className="absolute bottom-0 left-0 right-0 h-px bg-border" />
                     <div className="absolute top-0 bottom-0 left-0 w-px bg-border" />
 
-                    <span className="absolute -bottom-8 left-1/2 -translate-x-1/2 text-xs text-muted-foreground font-medium">AI Exposure Intelligence →</span>
+                    <span className="absolute -bottom-8 left-1/2 -translate-x-1/2 text-xs text-muted-foreground font-medium">AI Augmented Intelligence →</span>
                     <span className="absolute -left-8 top-1/2 -translate-y-1/2 -rotate-90 text-xs text-muted-foreground font-medium whitespace-nowrap">Adaptive Upskilling →</span>
 
                     {[
@@ -625,7 +625,7 @@ export default function Investors() {
                   <div className="mt-8 space-y-3">
                     {[
                       { name: "Consultancies", gap: "Deep analysis but manual, $500K+/engagement, no ongoing training" },
-                      { name: "L&D Platforms", gap: "Scalable training but generic content, zero AI exposure insight" },
+                      { name: "L&D Platforms", gap: "Scalable training but generic content, zero AI augmented insight" },
                       { name: "HR Tech", gap: "Skills taxonomies but no task-level AI risk scoring or simulations" },
                     ].map((comp) => (
                       <div key={comp.name} className="p-3 rounded-lg bg-muted/30">
@@ -711,8 +711,8 @@ export default function Investors() {
               </Card>
             </AppendixSection>
 
-            {/* A6: AI Exposure Data */}
-            <AppendixSection id="exposure-data" title="AI Exposure Data by Industry">
+            {/* A6: AI Augmented Data */}
+            <AppendixSection id="exposure-data" title="AI Augmented Data by Industry">
               <Card className="border-border/40">
                 <CardContent className="p-5">
                   <div className="space-y-3">
@@ -786,7 +786,7 @@ export default function Investors() {
                     capabilities: [
                       { name: "Employee records & payroll", has: true },
                       { name: "Skills taxonomy", has: true },
-                      { name: "AI exposure analysis", has: false },
+                      { name: "AI augmented analysis", has: false },
                       { name: "Task-level risk scoring", has: false },
                     ],
                   },

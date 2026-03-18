@@ -38,7 +38,7 @@ const STEPS: Step[] = [
     id: "exposure",
     phase: "Diagnose",
     icon: BarChart3,
-    title: "AI Exposure Map",
+    title: "AI Augmented Map",
     subtitle: "Every role scored at the task level. See where AI disruption hits hardest.",
     Component: StepExposureMap,
   },

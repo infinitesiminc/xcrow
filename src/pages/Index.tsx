@@ -225,7 +225,7 @@ const Index = () => {
                         <div className="flex items-center gap-1.5">
                           <MiniGauge value={role.augmented} />
                           <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">
-                            AI Exposure
+                            AI Augmented
                           </span>
                         </div>
                       ) : (

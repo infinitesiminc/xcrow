@@ -525,7 +525,7 @@ function TaskCard({
         <div className="absolute inset-0 flex flex-col items-center justify-center">
           <Bot className={`h-5 w-5 mb-1 ${style.accent}`} />
           <span className="text-4xl font-display font-bold text-foreground tabular-nums">{aiScore}%</span>
-          <span className="text-[10px] text-muted-foreground uppercase tracking-wider">AI Exposure</span>
+          <span className="text-[10px] text-muted-foreground uppercase tracking-wider">AI Augmented</span>
         </div>
       </div>
 

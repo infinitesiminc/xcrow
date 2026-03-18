@@ -265,7 +265,7 @@ function IngestionVisual() {
     { name: "JD Paste", count: 12 },
   ];
   const lenses = [
-    { label: "AI Exposure", value: 67, color: "bg-brand-human" },
+    { label: "AI Augmented", value: 67, color: "bg-brand-human" },
     { label: "Replace Risk", value: 22, color: "bg-brand-ai" },
     { label: "Upskill Urgency", value: 56, color: "bg-brand-mid" },
   ];
@@ -462,7 +462,7 @@ const ENGINE_STEPS = [
   {
     phase: "01",
     title: "Ingest & decompose every role",
-    desc: "Job descriptions flow in from your ATS, CSV, or paste. The engine breaks each role into task clusters and scores AI exposure, replace risk, and upskill urgency — three lenses that tell you exactly where to act.",
+    desc: "Job descriptions flow in from your ATS, CSV, or paste. The engine breaks each role into task clusters and scores AI augmented, replace risk, and upskill urgency — three lenses that tell you exactly where to act.",
     icon: Wrench,
     visual: <IngestionVisual />,
   },

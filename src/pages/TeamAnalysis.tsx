@@ -172,7 +172,7 @@ const TeamAnalysis = () => {
                           <div className="min-w-0">
                             <span className="font-medium text-foreground text-sm block truncate">{r.jobTitle}</span>
                             <span className="text-[11px] text-muted-foreground">
-                              {r.summary.augmentedPercent}% AI exposure · {r.summary.automationRiskPercent}% replacement risk
+                              {r.summary.augmentedPercent}% AI augmented · {r.summary.automationRiskPercent}% replacement risk
                             </span>
                           </div>
                         </div>

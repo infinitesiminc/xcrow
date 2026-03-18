@@ -84,7 +84,7 @@ export default function OnboardingChecklist() {
         {
           key: "analyze",
           label: "Analyze roles",
-          description: "Run AI exposure analysis on imported roles",
+          description: "Run AI augmented analysis on imported roles",
           icon: Rocket,
           href: "/hr/score-distributions",
           done: hasAnalyzedRoles,

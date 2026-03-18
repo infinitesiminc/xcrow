@@ -518,7 +518,7 @@ export default function LearningPath() {
                       </CardContent>
                     </Card>
 
-                    {/* Radar Chart — AI Exposure per task */}
+                    {/* Radar Chart — AI Augmented per task */}
                     {analyzedTasks.length >= 3 && (() => {
                       const tasks = analyzedTasks.slice(0, 12);
                       const cx = 170, cy = 140, r = 110;

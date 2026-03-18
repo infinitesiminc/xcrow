@@ -54,7 +54,7 @@ const loopNodes = [
     label: "Map",
     icon: Crosshair,
     tagline: "Detect what changed",
-    description: "Every role, every task — scored for AI exposure. When new models ship, exposure scores update automatically. Your risk surface is always current.",
+    description: "Every role, every task — scored for AI augmented. When new models ship, exposure scores update automatically. Your risk surface is always current.",
     highlights: ["Task-level scoring across entire org", "Auto-updates when AI capabilities shift", "400+ roles mapped in a single import"],
   },
   {

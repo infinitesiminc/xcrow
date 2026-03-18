@@ -126,7 +126,7 @@ export default function StepModelAdaptation() {
         <div className="flex items-center gap-2 mb-3">
           <TrendingUp className="h-3.5 w-3.5 text-brand-ai" />
           <h4 className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
-            AI Exposure Score Shifts
+            AI Augmented Score Shifts
           </h4>
         </div>
         <div className="space-y-2">
@@ -170,7 +170,7 @@ export default function StepModelAdaptation() {
             Always adapting — no manual intervention
           </p>
           <p className="text-[12px] text-muted-foreground leading-relaxed">
-            Every employee whose tasks shifted above the AI exposure threshold was automatically
+            Every employee whose tasks shifted above the AI augmented threshold was automatically
             re-queued with new simulations calibrated to GPT-5's capabilities. Coaching tips updated.
             Manager dashboards refreshed. The entire adaptation cycle completed in under 24 hours.
           </p>

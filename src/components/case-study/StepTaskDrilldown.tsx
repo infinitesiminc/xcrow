@@ -105,7 +105,7 @@ export default function StepTaskDrilldown() {
       <p className="text-sm text-muted-foreground leading-relaxed">
         Clicking into a role reveals its task-level breakdown. Here's{" "}
         <span className="font-semibold text-foreground">{roleTitle}</span> — each task
-        is scored for AI exposure and job impact to identify where to focus upskilling.
+        is scored for AI augmented and job impact to identify where to focus upskilling.
       </p>
 
       <div className="rounded-xl border border-border bg-card overflow-hidden">

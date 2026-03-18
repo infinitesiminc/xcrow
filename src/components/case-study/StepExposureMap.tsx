@@ -111,7 +111,7 @@ export default function StepExposureMap() {
   return (
     <div className="space-y-4">
       <p className="text-sm text-muted-foreground leading-relaxed">
-        After analysis, each role's tasks are scored for AI exposure. Here's how Anthropic's{" "}
+        After analysis, each role's tasks are scored for AI augmented. Here's how Anthropic's{" "}
         <span className="font-semibold text-foreground">{roles.length} analyzed roles</span>{" "}
         distribute across exposure bands — the org-wide average is{" "}
         <span className="font-semibold text-foreground">{avgRisk}%</span>.
@@ -120,7 +120,7 @@ export default function StepExposureMap() {
       {/* Bar chart */}
       <div className="rounded-xl border border-border bg-card p-4 space-y-3">
         <h4 className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
-          AI Exposure Distribution
+          AI Augmented Distribution
         </h4>
         <div className="space-y-2">
           {bucketCounts.map((b, i) => (
