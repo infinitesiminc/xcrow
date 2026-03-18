@@ -34,13 +34,14 @@ Deno.serve(async (req) => {
     let markdown = "";
     let pageTitle = "";
 
-    // Step 0: If we have a careers_url, scrape it first to find the real company website
+    // Step 0: If we have a careers_url, scrape it to get supplementary content
+    let atsMarkdown = "";
     if (careers_url) {
       let atsUrl = careers_url.trim();
       if (!atsUrl.startsWith("http://") && !atsUrl.startsWith("https://")) {
         atsUrl = `https://${atsUrl}`;
       }
-      console.log("Scraping ATS page first:", atsUrl);
+      console.log("Scraping ATS page:", atsUrl);
       try {
         const atsRes = await fetch("https://api.firecrawl.dev/v1/scrape", {
           method: "POST",
@@ -50,39 +51,17 @@ Deno.serve(async (req) => {
           },
           body: JSON.stringify({
             url: atsUrl,
-            formats: ["links", "markdown"],
+            formats: ["markdown"],
             onlyMainContent: false,
           }),
         });
         const atsData = await atsRes.json();
-        const links: string[] = atsData?.data?.links || atsData?.links || [];
-        const atsMarkdown = atsData?.data?.markdown || atsData?.markdown || "";
-
-        // Find the company website from the ATS page links
-        // Look for links that are NOT the ATS platform itself
-        const atsHosts = ["greenhouse.io", "ashby.io", "lever.co", "smartrecruiters.com", "myworkdayjobs.com", "workday.com"];
-        const candidateLinks = links.filter((l: string) => {
-          try {
-            const h = new URL(l).hostname.toLowerCase();
-            return !atsHosts.some(ah => h.includes(ah)) && !h.includes("linkedin.") && !h.includes("facebook.") && !h.includes("twitter.") && !h.includes("instagram.");
-          } catch { return false; }
-        });
-
-        if (candidateLinks.length > 0) {
-          // Prefer the shortest/most root-like URL as the company website
-          const sorted = candidateLinks.sort((a: string, b: string) => a.length - b.length);
-          const foundUrl = sorted[0];
-          console.log("Found company website from ATS page:", foundUrl);
-          url = foundUrl;
-        }
-
-        // Use ATS page content as supplementary
-        if (atsMarkdown) {
-          markdown = atsMarkdown;
-          pageTitle = atsData?.data?.metadata?.title || atsData?.metadata?.title || "";
-        }
+        atsMarkdown = atsData?.data?.markdown || atsData?.markdown || "";
+        const atsTitle = atsData?.data?.metadata?.title || atsData?.metadata?.title || "";
+        if (atsMarkdown && !markdown) markdown = atsMarkdown;
+        if (atsTitle && !pageTitle) pageTitle = atsTitle;
       } catch (e) {
-        console.warn("ATS page scrape failed, continuing with provided website:", e);
+        console.warn("ATS page scrape failed:", e);
       }
     }
 
