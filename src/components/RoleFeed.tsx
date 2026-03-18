@@ -224,7 +224,7 @@ function RoleDetailOverlay({ role, onClose }: { role: RoleCard; onClose: () => v
       .select("cluster_name, description, ai_exposure_score, priority")
       .eq("job_id", role.jobId)
       .order("sort_order", { ascending: true })
-      .limit(5)
+      .limit(10)
       .then(({ data }) => {
         setTasks(data || []);
         setLoadingTasks(false);
