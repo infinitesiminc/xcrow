@@ -8,17 +8,16 @@ import { useAuth } from "@/contexts/AuthContext";
 import { RoleSearchAutocomplete } from "@/components/RoleSearchAutocomplete";
 import RoleFeed from "@/components/RoleFeed";
 import { supabase } from "@/integrations/supabase/client";
-import { getDepartmentImage } from "@/lib/department-images";
 
 interface RoleCard {
   title: string;
-  image: string;
   augmented: number;
   risk: number;
   aiOpportunity: number;
   tag: string;
   company?: string;
   location?: string;
+  logoUrl?: string;
 }
 
 function calcToolsToLearn(risk: number, augmented: number, newSkills: number): number {
