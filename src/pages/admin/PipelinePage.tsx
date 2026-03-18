@@ -102,6 +102,12 @@ export default function PipelinePage() {
   const [addUrl, setAddUrl] = useState("");
   const [addLoading, setAddLoading] = useState(false);
 
+  /* ── Diagnostics ── */
+  const [diagOpen, setDiagOpen] = useState(false);
+  const [diagData, setDiagData] = useState<any>(null);
+  const [diagLoading, setDiagLoading] = useState(false);
+  const [diagCompanyName, setDiagCompanyName] = useState("");
+
   const handleAddCompany = async () => {
     if (!addUrl.trim()) return;
     setAddLoading(true);
