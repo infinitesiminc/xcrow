@@ -260,7 +260,7 @@ const Index = () => {
 
   return (
     <div className="h-[calc(100vh-3.5rem)] relative">
-      <RoleFeed roles={roles} onOpenSearch={() => setSearchOpen(true)} />
+      <RoleFeed roles={roles} onOpenSearch={() => setSearchOpen(true)} savedRoleTitles={savedRoleTitles} />
 
       {/* ── Full-Screen Search Overlay ──────────────── */}
       <AnimatePresence>
