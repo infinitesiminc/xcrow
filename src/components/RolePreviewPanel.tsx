@@ -158,7 +158,7 @@ export default function RolePreviewPanel({ role, onClose }: RolePreviewPanelProp
   }, [tasks, simTask]);
 
   const closeSimulation = () => {
-    setView("breakdown");
+    setView("enlarged");
     setSimTask(null);
   };
 
