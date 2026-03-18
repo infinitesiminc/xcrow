@@ -397,7 +397,10 @@ export default function RolePreviewPanel({ role, onClose }: RolePreviewPanelProp
                   {tasks.slice(0, 8).map((t, i) => (
                     <div key={i} className="group rounded-lg border border-border/50 bg-muted/20 p-2.5 hover:border-primary/30 transition-colors">
                       <div className="flex items-start justify-between gap-2">
-                        <span className="text-sm font-medium text-foreground leading-snug">{t.cluster_name}</span>
+                        <div className="flex items-center gap-2 min-w-0">
+                          {(() => { const TaskIcon = getTaskIcon(t.cluster_name); return <TaskIcon className="h-3.5 w-3.5 text-muted-foreground shrink-0" />; })()}
+                          <span className="text-sm font-medium text-foreground leading-snug">{t.cluster_name}</span>
+                        </div>
                         <div className="flex items-center gap-2 shrink-0">
                           {t.ai_exposure_score != null && <span className="text-xs font-semibold text-primary">{t.ai_exposure_score}%</span>}
                           {user && (
