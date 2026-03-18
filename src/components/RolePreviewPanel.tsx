@@ -298,8 +298,8 @@ export default function RolePreviewPanel({ role, onClose }: RolePreviewPanelProp
                 return (
                   <div key={i} className="group rounded-lg border border-border/50 bg-muted/20 p-2.5 hover:border-primary/30 transition-colors">
                     <div className="flex items-start justify-between gap-2">
-                      <div className="flex items-center gap-1.5 min-w-0">
-                        {done && <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400 shrink-0" />}
+                      <div className="flex items-center gap-2 min-w-0">
+                        {done ? <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400 shrink-0" /> : (() => { const TaskIcon = getTaskIcon(t.cluster_name); return <TaskIcon className="h-3.5 w-3.5 text-muted-foreground shrink-0" />; })()}
                         <span className="text-sm font-medium text-foreground leading-snug">{t.cluster_name}</span>
                       </div>
                       <div className="flex items-center gap-2 shrink-0">
