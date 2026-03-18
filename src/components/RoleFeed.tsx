@@ -306,7 +306,7 @@ function DesktopGrid({ roles, onOpenSearch }: RoleFeedProps) {
                     ? "bg-accent text-accent-foreground ring-1 ring-accent"
                     : "bg-muted text-muted-foreground hover:text-foreground"
                 }`}
-              >{country}</button>
+              >{country} <span className="opacity-60 ml-0.5">{roles.filter(r => r.country === country).length}</span></button>
             ))}
           </div>
         )}
