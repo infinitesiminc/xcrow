@@ -319,7 +319,7 @@ export default function Settings() {
     : (user?.email ?? "").slice(0, 2).toUpperCase();
 
   return (
-    <div className="min-h-[100dvh] bg-background flex">
+    <div className="settings-page min-h-[100dvh] bg-background flex">
       {/* ── Sidebar ── */}
       <aside className="hidden md:flex w-64 shrink-0 border-r border-border/50 flex-col bg-muted/5">
         <div className="p-5 border-b border-border/30">

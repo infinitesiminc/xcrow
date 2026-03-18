@@ -319,3 +319,30 @@ html:not(.light) {
     font-size: 11px !important;
   }
 }
+
+/* Settings page — bump all text one size up */
+.settings-page {
+  font-size: 1rem;
+}
+.settings-page .text-xs {
+  font-size: 0.8125rem !important; /* 13px */
+  line-height: 1.25rem;
+}
+.settings-page .text-sm {
+  font-size: 0.9375rem !important; /* 15px */
+  line-height: 1.375rem;
+}
+.settings-page .text-base {
+  font-size: 1.0625rem !important; /* 17px */
+  line-height: 1.5rem;
+}
+.settings-page .text-xl {
+  font-size: 1.375rem !important; /* 22px */
+}
+.settings-page .text-\[10px\],
+.settings-page .text-\[11px\] {
+  font-size: 12px !important;
+}
+.settings-page .text-\[13px\] {
+  font-size: 14px !important;
+}
