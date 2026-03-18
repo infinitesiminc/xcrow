@@ -70,21 +70,44 @@ function extractAtsSlug(careersUrl: string, platform: string): string | null {
   try {
     const u = new URL(careersUrl);
     if (platform === "ashby" && u.hostname.includes("ashbyhq.com")) {
-      // https://jobs.ashbyhq.com/{slug} or https://jobs.ashbyhq.com/{slug}/...
       const parts = u.pathname.split("/").filter(Boolean);
       return parts[0] || null;
     }
     if (platform === "greenhouse" && u.hostname.includes("greenhouse.io")) {
-      // https://boards.greenhouse.io/{slug}
       const parts = u.pathname.split("/").filter(Boolean);
       return parts[0] || null;
     }
     if (platform === "lever" && u.hostname.includes("lever.co")) {
-      // https://jobs.lever.co/{slug}
       const parts = u.pathname.split("/").filter(Boolean);
       return parts[0] || null;
     }
   } catch { /* invalid URL */ }
+  return null;
+}
+
+/** Try common Greenhouse slug patterns derived from company name */
+async function probeGreenhouseSlug(companyName: string): Promise<string | null> {
+  const candidates = [
+    companyName.toLowerCase().replace(/[^a-z0-9]/g, ""),
+    companyName.toLowerCase().replace(/\s+/g, ""),
+    companyName.toLowerCase().replace(/[^a-z0-9]/g, "") + "industries",
+    companyName.toLowerCase().replace(/[^a-z0-9]/g, "") + "inc",
+  ];
+  for (const slug of candidates) {
+    try {
+      const res = await safeFetch(
+        `https://api.greenhouse.io/v1/boards/${slug}/jobs?content=false`,
+        { method: "GET", headers: { "Accept": "application/json" } },
+        8000
+      );
+      if (res.ok) {
+        const data = JSON.parse(await res.text());
+        if (data.jobs && data.jobs.length > 0) return slug;
+      } else {
+        await res.text(); // consume body
+      }
+    } catch { /* continue */ }
+  }
   return null;
 }
 
@@ -109,10 +132,11 @@ async function fetchAshbyJobs(slug: string): Promise<any[]> {
 }
 
 async function fetchGreenhouseJobs(slug: string): Promise<any[]> {
+  // First fetch without content (fast, handles large boards)
   const res = await safeFetch(
-    `https://api.greenhouse.io/v1/boards/${slug}/jobs?content=true`,
+    `https://api.greenhouse.io/v1/boards/${slug}/jobs?content=false`,
     { method: "GET", headers: { "Accept": "application/json" } },
-    15000
+    30000
   );
   const text = await res.text();
   if (!res.ok) { console.error("Greenhouse API error:", res.status, text); return []; }
@@ -122,7 +146,7 @@ async function fetchGreenhouseJobs(slug: string): Promise<any[]> {
     title: j.title,
     department: j.departments?.[0]?.name || null,
     location: j.location?.name || null,
-    description: j.content?.slice(0, 5000) || null,
+    description: null, // skip descriptions for speed — can backfill later
     source_url: j.absolute_url || null,
     status: "active",
   }));
@@ -148,10 +172,17 @@ async function fetchLeverJobs(slug: string): Promise<any[]> {
   }));
 }
 
-async function fetchDirectAtsJobs(careersUrl: string, platform: string): Promise<any[]> {
-  const slug = extractAtsSlug(careersUrl, platform);
+async function fetchDirectAtsJobs(careersUrl: string, platform: string, companyName?: string): Promise<any[]> {
+  let slug = extractAtsSlug(careersUrl, platform);
+  
+  // If no slug from URL (e.g. custom careers page), probe by company name
+  if (!slug && platform === "greenhouse" && companyName) {
+    console.log(`No slug from URL, probing Greenhouse by company name: ${companyName}`);
+    slug = await probeGreenhouseSlug(companyName);
+  }
+  
   if (!slug) {
-    console.log(`Could not extract slug from ${careersUrl} for platform ${platform}`);
+    console.log(`Could not find slug for ${careersUrl} / ${companyName} on platform ${platform}`);
     return [];
   }
   console.log(`Direct ATS fetch: platform=${platform}, slug=${slug}`);
@@ -258,7 +289,7 @@ serve(async (req) => {
       if (company_id) {
         const { data: found } = await sb
           .from("companies")
-          .select("id, external_id, careers_url, detected_ats_platform")
+          .select("id, external_id, name, careers_url, detected_ats_platform")
           .or(`id.eq.${company_id},external_id.eq.${company_id}`)
           .limit(1)
           .single();
@@ -269,11 +300,22 @@ serve(async (req) => {
         }
       }
 
-      // Try sim-api first (if company has an external_id)
+      // Try direct ATS public API first (most reliable for known platforms)
       let jobs: any[] = [];
-      let source = "sim-api";
+      let source = "direct-ats";
 
-      if (externalCompanyId) {
+      if (companyRow?.detected_ats_platform && companyRow.detected_ats_platform !== "none") {
+        console.log(`Trying direct ATS fetch: ${companyRow.detected_ats_platform}`);
+        jobs = await fetchDirectAtsJobs(
+          companyRow.careers_url || "",
+          companyRow.detected_ats_platform,
+          companyRow.name
+        );
+      }
+
+      // Fallback to sim-api if direct ATS returned nothing
+      if (jobs.length === 0 && externalCompanyId) {
+        source = "sim-api";
         try {
           const data = await simApi("list_jobs", {
             company_id: externalCompanyId,
@@ -286,45 +328,29 @@ serve(async (req) => {
         }
       }
 
-      // Fallback: direct ATS public API if sim-api returned 0 jobs
-      if (jobs.length === 0 && companyRow?.careers_url && companyRow?.detected_ats_platform) {
-        console.log("sim-api returned 0 jobs, trying direct ATS scrape...");
-        source = "direct-ats";
-        const directJobs = await fetchDirectAtsJobs(companyRow.careers_url, companyRow.detected_ats_platform);
-        if (directJobs.length > 0) {
-          // Direct jobs already have the right shape
-          if (!localCompanyId) {
-            const { data: co } = await sb.from("companies").select("id").eq("external_id", externalCompanyId).single();
-            localCompanyId = co?.id || null;
-          }
-          const rows = directJobs.map(j => ({
-            ...j,
-            company_id: localCompanyId,
-            difficulty: 3,
-          }));
-          if (rows.length > 0) {
-            const { error } = await sb.from("jobs").upsert(rows, { onConflict: "external_id" });
-            if (error) throw new Error(`Upsert direct jobs: ${error.message}`);
-          }
-          return respond({
-            company: company_id,
-            synced: rows.length,
-            source,
-            hasMore: false,
-          });
-        }
-      }
-
-      // Standard sim-api path
-      if (!localCompanyId) {
-        const { data: co } = await sb
-          .from("companies")
-          .select("id")
-          .eq("external_id", externalCompanyId)
-          .single();
+      // Resolve local company ID if needed
+      if (!localCompanyId && externalCompanyId) {
+        const { data: co } = await sb.from("companies").select("id").eq("external_id", externalCompanyId).single();
         localCompanyId = co?.id || null;
       }
 
+      // For direct-ats jobs, shape is already correct
+      if (source === "direct-ats" && jobs.length > 0) {
+        const rows = jobs.map(j => ({
+          ...j,
+          company_id: localCompanyId,
+          difficulty: 3,
+        }));
+        const { error } = await sb.from("jobs").upsert(rows, { onConflict: "external_id" });
+        if (error) throw new Error(`Upsert direct jobs: ${error.message}`);
+        return respond({
+          company: company_id,
+          synced: rows.length,
+          source,
+        });
+      }
+
+      // Standard sim-api path
       const rows = jobs.map((j: any) => ({
         external_id: j.id,
         title: j.title,
