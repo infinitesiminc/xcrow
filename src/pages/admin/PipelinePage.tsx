@@ -97,6 +97,11 @@ export default function PipelinePage() {
   const pauseRef = useRef(false);
   const abortRef = useRef(false);
 
+  /* ── Bulk job sync ── */
+  const [bulkSyncing, setBulkSyncing] = useState(false);
+  const [bulkProgress, setBulkProgress] = useState({ done: 0, total: 0, current: "" });
+  const bulkAbortRef = useRef(false);
+
   /* ── Add Company ── */
   const [addOpen, setAddOpen] = useState(false);
   const [addUrl, setAddUrl] = useState("");
