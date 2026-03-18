@@ -182,6 +182,29 @@ export default function PipelinePage() {
   };
 
   const syncCompanyJobs = async (companyId: string, diagnostic = false) => {
+
+  const bulkSyncAllJobs = async () => {
+    const targets = filteredCompanies;
+    if (targets.length === 0) return;
+    bulkAbortRef.current = false;
+    setBulkSyncing(true);
+    setBulkProgress({ done: 0, total: targets.length, current: "" });
+    let synced = 0;
+    for (const co of targets) {
+      if (bulkAbortRef.current) break;
+      setBulkProgress(p => ({ ...p, current: co.name }));
+      try {
+        const { data, error } = await supabase.functions.invoke("sync-company-jobs", { body: { step: "jobs", company_id: co.id } });
+        if (!error && data?.synced) synced += data.synced;
+      } catch {}
+      setBulkProgress(p => ({ ...p, done: p.done + 1 }));
+    }
+    await fetchCompanies();
+    setBulkSyncing(false);
+    toast({ title: "Bulk sync complete", description: `${synced} total roles synced across ${targets.length} companies` });
+  };
+
+
     setSyncing(`jobs-${companyId}`);
     if (diagnostic) {
       setDiagLoading(true);
