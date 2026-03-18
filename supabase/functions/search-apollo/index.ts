@@ -36,7 +36,6 @@ Deno.serve(async (req) => {
 
     // Build Apollo request body
     const apolloBody: Record<string, unknown> = {
-      api_key: APOLLO_API_KEY,
       page,
       per_page: Math.min(per_page, 100),
     };
@@ -51,7 +50,11 @@ Deno.serve(async (req) => {
 
     const apolloRes = await fetch("https://api.apollo.io/api/v1/mixed_companies/search", {
       method: "POST",
-      headers: { "Content-Type": "application/json", "Cache-Control": "no-cache" },
+      headers: {
+        "Content-Type": "application/json",
+        "Cache-Control": "no-cache",
+        "X-Api-Key": APOLLO_API_KEY,
+      },
       body: JSON.stringify(apolloBody),
     });
 
