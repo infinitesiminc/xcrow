@@ -24,7 +24,9 @@ import { useToast } from "@/hooks/use-toast";
 import {
   Loader2, Save, Trash2, KeyRound, Bookmark, Zap, Search,
   Linkedin, Upload, FileText, GraduationCap, Briefcase, X, School,
-} from "lucide-react";
+  Shield, Target,
+}from "lucide-react";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
 /* ── helpers ─────────────────────────────────────────── */
 
@@ -34,6 +36,19 @@ interface SavedRole {
   augmented_percent: number | null;
   automation_risk_percent: number | null;
   new_skills_percent: number | null;
+}
+
+interface PracticedRole {
+  job_title: string;
+  task_name: string;
+  company: string | null;
+  completed_at: string;
+  correct_answers: number;
+  total_questions: number;
+  tool_awareness_score: number | null;
+  human_value_add_score: number | null;
+  adaptive_thinking_score: number | null;
+  domain_judgment_score: number | null;
 }
 
 function hashToHue(str: string): number {
@@ -87,10 +102,14 @@ export default function Settings() {
 
   const [deleting, setDeleting] = useState(false);
 
-  // Saved roles
+  // Saved & practiced roles
   const [savedRoles, setSavedRoles] = useState<SavedRole[]>([]);
+  const [practicedRoles, setPracticedRoles] = useState<PracticedRole[]>([]);
   const [savedLoading, setSavedLoading] = useState(true);
+  const [practicedLoading, setPracticedLoading] = useState(true);
   const [savedSearch, setSavedSearch] = useState("");
+  const [practicedSearch, setPracticedSearch] = useState("");
+  const [rolesTab, setRolesTab] = useState("saved");
 
   useEffect(() => {
     if (!authLoading && !user) navigate("/auth");
@@ -111,10 +130,11 @@ export default function Settings() {
     }
   }, [profile]);
 
-  // Fetch saved roles
+  // Fetch saved roles & practiced roles
   useEffect(() => {
     if (!user) return;
     setSavedLoading(true);
+    setPracticedLoading(true);
     supabase
       .from("bookmarked_roles")
       .select("job_title, company, augmented_percent, automation_risk_percent, new_skills_percent")
@@ -123,6 +143,15 @@ export default function Settings() {
       .then(({ data }) => {
         setSavedRoles((data as SavedRole[]) || []);
         setSavedLoading(false);
+      });
+    supabase
+      .from("completed_simulations")
+      .select("job_title, task_name, company, completed_at, correct_answers, total_questions, tool_awareness_score, human_value_add_score, adaptive_thinking_score, domain_judgment_score")
+      .eq("user_id", user.id)
+      .order("completed_at", { ascending: false })
+      .then(({ data }) => {
+        setPracticedRoles((data as PracticedRole[]) || []);
+        setPracticedLoading(false);
       });
   }, [user]);
 
@@ -133,6 +162,29 @@ export default function Settings() {
       r.job_title.toLowerCase().includes(q) || (r.company?.toLowerCase().includes(q) ?? false)
     );
   }, [savedRoles, savedSearch]);
+
+  const filteredPracticed = useMemo(() => {
+    const q = practicedSearch.toLowerCase().trim();
+    if (!q) return practicedRoles;
+    return practicedRoles.filter(r =>
+      r.job_title.toLowerCase().includes(q) || r.task_name.toLowerCase().includes(q) || (r.company?.toLowerCase().includes(q) ?? false)
+    );
+  }, [practicedRoles, practicedSearch]);
+
+  function avgScore(r: PracticedRole): number {
+    const scores = [r.tool_awareness_score, r.human_value_add_score, r.adaptive_thinking_score, r.domain_judgment_score].filter((s): s is number => s != null);
+    return scores.length ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) : 0;
+  }
+
+  function timeAgo(dateStr: string): string {
+    const diff = Date.now() - new Date(dateStr).getTime();
+    const mins = Math.floor(diff / 60000);
+    if (mins < 60) return `${mins}m ago`;
+    const hrs = Math.floor(mins / 60);
+    if (hrs < 24) return `${hrs}h ago`;
+    const days = Math.floor(hrs / 24);
+    return `${days}d ago`;
+  }
 
   /* ── CV upload ── */
   const handleCvUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -250,105 +302,204 @@ export default function Settings() {
       <h1 className="text-2xl font-bold text-foreground mb-1">Settings</h1>
       <p className="text-muted-foreground mb-8">Manage your account and preferences.</p>
 
-      {/* Saved Roles — horizontal scroll */}
+      {/* Saved & Practiced Roles — Tabbed */}
       <Card className="mb-6">
-        <CardHeader>
-          <div className="flex items-center justify-between gap-3">
-            <CardTitle className="text-lg flex items-center gap-2 shrink-0">
-              <Bookmark className="h-4 w-4 text-primary fill-primary" />
-              Saved Roles
-              {savedRoles.length > 0 && (
-                <span className="text-sm font-normal text-muted-foreground">· {savedRoles.length}</span>
+        <Tabs value={rolesTab} onValueChange={setRolesTab}>
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between gap-3">
+              <TabsList className="bg-muted/30 h-9">
+                <TabsTrigger value="saved" className="text-xs gap-1.5 data-[state=active]:bg-background">
+                  <Bookmark className="h-3.5 w-3.5" />
+                  Saved
+                  {savedRoles.length > 0 && (
+                    <span className="text-[10px] text-muted-foreground ml-0.5">{savedRoles.length}</span>
+                  )}
+                </TabsTrigger>
+                <TabsTrigger value="practiced" className="text-xs gap-1.5 data-[state=active]:bg-background">
+                  <Shield className="h-3.5 w-3.5" />
+                  Practiced
+                  {practicedRoles.length > 0 && (
+                    <span className="text-[10px] text-muted-foreground ml-0.5">{practicedRoles.length}</span>
+                  )}
+                </TabsTrigger>
+              </TabsList>
+              {rolesTab === "saved" && savedRoles.length > 4 && (
+                <div className="relative flex-1 max-w-[240px]">
+                  <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                  <Input
+                    value={savedSearch}
+                    onChange={e => setSavedSearch(e.target.value)}
+                    placeholder="Filter…"
+                    className="h-8 pl-8 text-xs bg-muted/20 border-border/50"
+                  />
+                </div>
               )}
-            </CardTitle>
-            {savedRoles.length > 4 && (
-              <div className="relative flex-1 max-w-[240px]">
-                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
-                <Input
-                  value={savedSearch}
-                  onChange={e => setSavedSearch(e.target.value)}
-                  placeholder="Filter…"
-                  className="h-8 pl-8 text-xs bg-muted/20 border-border/50"
-                />
-              </div>
-            )}
-          </div>
-        </CardHeader>
-        <CardContent>
-          {savedLoading ? (
-            <div className="flex items-center justify-center py-8">
-              <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+              {rolesTab === "practiced" && practicedRoles.length > 4 && (
+                <div className="relative flex-1 max-w-[240px]">
+                  <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                  <Input
+                    value={practicedSearch}
+                    onChange={e => setPracticedSearch(e.target.value)}
+                    placeholder="Filter…"
+                    className="h-8 pl-8 text-xs bg-muted/20 border-border/50"
+                  />
+                </div>
+              )}
             </div>
-          ) : savedRoles.length === 0 ? (
-            <div className="text-center py-8">
-              <Bookmark className="h-8 w-8 text-muted-foreground/30 mx-auto mb-3" />
-              <p className="text-sm text-muted-foreground">No saved roles yet</p>
-              <p className="text-xs text-muted-foreground/60 mt-1">Explore and bookmark roles you're interested in</p>
-            </div>
-          ) : filteredRoles.length === 0 ? (
-            <p className="text-sm text-muted-foreground py-6 text-center">No matches</p>
-          ) : (
-            <div className="overflow-x-auto -mx-6 px-6 pb-2">
-              <div className="flex gap-3" style={{ width: 'max-content' }}>
-                {filteredRoles.map((role, i) => {
-                  const hue1 = hashToHue(role.job_title);
-                  const hue2 = (hue1 + 60) % 360;
-                  const logoUrl = role.company ? `https://logo.clearbit.com/${role.company.toLowerCase().replace(/\s+/g, '')}.com` : '';
-                  const aug = role.augmented_percent ?? 0;
-                  return (
-                    <motion.button
-                      key={role.job_title + role.company + i}
-                      initial={{ opacity: 0, x: 12 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ duration: 0.25, delay: Math.min(i * 0.03, 0.4) }}
-                      onClick={() => goToRole(role.job_title, role.company)}
-                      className="group text-left rounded-xl overflow-hidden bg-card border border-border transition-all hover:shadow-lg hover:border-primary/40 flex flex-col shrink-0"
-                      style={{ width: 180 }}
-                    >
-                      <div className="p-3 pb-2">
-                        <div className="flex items-start gap-2">
-                          {logoUrl && (
-                            <img
-                              src={logoUrl}
-                              alt={role.company || ''}
-                              className="h-7 w-7 rounded-lg object-contain bg-muted/30 p-0.5 shrink-0 mt-0.5"
-                              onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
-                            />
-                          )}
-                          <div className="min-w-0 flex-1">
-                            <h4 className="text-xs font-semibold text-foreground leading-snug line-clamp-2">{role.job_title}</h4>
-                            {role.company && (
-                              <p className="text-[10px] text-muted-foreground truncate mt-0.5">{role.company}</p>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                      <div className="mt-auto border-t border-border/30">
-                        <div
-                          className="px-3 py-2 flex items-center justify-between"
-                          style={{ background: `linear-gradient(135deg, hsl(${hue1} 60% 8%) 0%, hsl(${hue2} 50% 6%) 100%)` }}
+          </CardHeader>
+          <CardContent>
+            {/* ── Saved tab ── */}
+            <TabsContent value="saved" className="mt-0">
+              {savedLoading ? (
+                <div className="flex items-center justify-center py-8">
+                  <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                </div>
+              ) : savedRoles.length === 0 ? (
+                <div className="text-center py-8">
+                  <Bookmark className="h-8 w-8 text-muted-foreground/30 mx-auto mb-3" />
+                  <p className="text-sm text-muted-foreground">No saved roles yet</p>
+                  <p className="text-xs text-muted-foreground/60 mt-1">Explore and bookmark roles you're interested in</p>
+                </div>
+              ) : filteredRoles.length === 0 ? (
+                <p className="text-sm text-muted-foreground py-6 text-center">No matches</p>
+              ) : (
+                <div className="overflow-x-auto -mx-6 px-6 pb-2">
+                  <div className="flex gap-3" style={{ width: 'max-content' }}>
+                    {filteredRoles.map((role, i) => {
+                      const hue1 = hashToHue(role.job_title);
+                      const hue2 = (hue1 + 60) % 360;
+                      const logoUrl = role.company ? `https://logo.clearbit.com/${role.company.toLowerCase().replace(/\s+/g, '')}.com` : '';
+                      const aug = role.augmented_percent ?? 0;
+                      return (
+                        <motion.button
+                          key={role.job_title + role.company + i}
+                          initial={{ opacity: 0, x: 12 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ duration: 0.25, delay: Math.min(i * 0.03, 0.4) }}
+                          onClick={() => goToRole(role.job_title, role.company)}
+                          className="group text-left rounded-xl overflow-hidden bg-card border border-border transition-all hover:shadow-lg hover:border-primary/40 flex flex-col shrink-0"
+                          style={{ width: 180 }}
                         >
-                          {aug > 0 ? (
-                            <div className="flex items-center gap-1.5">
-                              <MiniGauge value={aug} />
-                              <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">Aug</span>
+                          <div className="p-3 pb-2">
+                            <div className="flex items-start gap-2">
+                              {logoUrl && (
+                                <img
+                                  src={logoUrl}
+                                  alt={role.company || ''}
+                                  className="h-7 w-7 rounded-lg object-contain bg-muted/30 p-0.5 shrink-0 mt-0.5"
+                                  onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+                                />
+                              )}
+                              <div className="min-w-0 flex-1">
+                                <h4 className="text-xs font-semibold text-foreground leading-snug line-clamp-2">{role.job_title}</h4>
+                                {role.company && (
+                                  <p className="text-[10px] text-muted-foreground truncate mt-0.5">{role.company}</p>
+                                )}
+                              </div>
                             </div>
-                          ) : (
-                            <div className="flex items-center gap-1">
-                              <Zap className="h-3 w-3 text-primary" />
-                              <span className="text-[10px] text-muted-foreground">—</span>
+                          </div>
+                          <div className="mt-auto border-t border-border/30">
+                            <div
+                              className="px-3 py-2 flex items-center justify-between"
+                              style={{ background: `linear-gradient(135deg, hsl(${hue1} 60% 8%) 0%, hsl(${hue2} 50% 6%) 100%)` }}
+                            >
+                              {aug > 0 ? (
+                                <div className="flex items-center gap-1.5">
+                                  <MiniGauge value={aug} />
+                                  <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">Aug</span>
+                                </div>
+                              ) : (
+                                <div className="flex items-center gap-1">
+                                  <Zap className="h-3 w-3 text-primary" />
+                                  <span className="text-[10px] text-muted-foreground">—</span>
+                                </div>
+                              )}
+                              <Bookmark className="h-3 w-3 text-primary fill-primary shrink-0" />
                             </div>
-                          )}
-                          <Bookmark className="h-3 w-3 text-primary fill-primary shrink-0" />
-                        </div>
-                      </div>
-                    </motion.button>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-        </CardContent>
+                          </div>
+                        </motion.button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+            </TabsContent>
+
+            {/* ── Practiced tab ── */}
+            <TabsContent value="practiced" className="mt-0">
+              {practicedLoading ? (
+                <div className="flex items-center justify-center py-8">
+                  <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                </div>
+              ) : practicedRoles.length === 0 ? (
+                <div className="text-center py-8">
+                  <Shield className="h-8 w-8 text-muted-foreground/30 mx-auto mb-3" />
+                  <p className="text-sm text-muted-foreground">No practiced roles yet</p>
+                  <p className="text-xs text-muted-foreground/60 mt-1">Complete simulations to track your progress here</p>
+                </div>
+              ) : filteredPracticed.length === 0 ? (
+                <p className="text-sm text-muted-foreground py-6 text-center">No matches</p>
+              ) : (
+                <div className="overflow-x-auto -mx-6 px-6 pb-2">
+                  <div className="flex gap-3" style={{ width: 'max-content' }}>
+                    {filteredPracticed.map((sim, i) => {
+                      const hue1 = hashToHue(sim.task_name);
+                      const hue2 = (hue1 + 80) % 360;
+                      const avg = avgScore(sim);
+                      const logoUrl = sim.company ? `https://logo.clearbit.com/${sim.company.toLowerCase().replace(/\s+/g, '')}.com` : '';
+                      return (
+                        <motion.button
+                          key={sim.task_name + sim.completed_at + i}
+                          initial={{ opacity: 0, x: 12 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ duration: 0.25, delay: Math.min(i * 0.03, 0.4) }}
+                          onClick={() => goToRole(sim.job_title, sim.company)}
+                          className="group text-left rounded-xl overflow-hidden bg-card border border-border transition-all hover:shadow-lg hover:border-primary/40 flex flex-col shrink-0"
+                          style={{ width: 200 }}
+                        >
+                          <div className="p-3 pb-2">
+                            <div className="flex items-start gap-2">
+                              {logoUrl && (
+                                <img
+                                  src={logoUrl}
+                                  alt={sim.company || ''}
+                                  className="h-6 w-6 rounded-lg object-contain bg-muted/30 p-0.5 shrink-0 mt-0.5"
+                                  onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+                                />
+                              )}
+                              <div className="min-w-0 flex-1">
+                                <h4 className="text-xs font-semibold text-foreground leading-snug line-clamp-2">{sim.task_name}</h4>
+                                <p className="text-[10px] text-muted-foreground truncate mt-0.5">{sim.job_title}</p>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="mt-auto border-t border-border/30">
+                            <div
+                              className="px-3 py-2 flex items-center justify-between"
+                              style={{ background: `linear-gradient(135deg, hsl(${hue1} 50% 8%) 0%, hsl(${hue2} 40% 6%) 100%)` }}
+                            >
+                              <div className="flex items-center gap-1.5">
+                                <MiniGauge value={avg} />
+                                <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">Avg</span>
+                              </div>
+                              <div className="flex items-center gap-1.5">
+                                <span className="text-[10px] text-muted-foreground">{sim.correct_answers}/{sim.total_questions}</span>
+                                <Target className="h-3 w-3 text-primary shrink-0" />
+                              </div>
+                            </div>
+                          </div>
+                          <div className="px-3 py-1.5 border-t border-border/20">
+                            <span className="text-[9px] text-muted-foreground/60">{timeAgo(sim.completed_at)}</span>
+                          </div>
+                        </motion.button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+            </TabsContent>
+          </CardContent>
+        </Tabs>
       </Card>
 
       {/* Profile */}
