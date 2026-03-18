@@ -27,6 +27,7 @@ interface RoleCard {
 interface RoleFeedProps {
   roles: RoleCard[];
   onOpenSearch: () => void;
+  savedRoleTitles?: Set<string>;
 }
 
 interface TaskCluster {
