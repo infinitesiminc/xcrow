@@ -347,6 +347,8 @@ const Analysis = () => {
                 total={sortedTasks.length}
                 isCompleted={completedTasks.has(sortedTasks[currentIndex - 1].name)}
                 onPractice={() => setSimTask(sortedTasks[currentIndex - 1])}
+                jobTitle={result.jobTitle}
+                company={company}
               />
             )}
             {currentIndex === totalCards - 1 && (
