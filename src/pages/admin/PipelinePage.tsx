@@ -365,8 +365,9 @@ export default function PipelinePage() {
 
   /* ═══════ SYNC LOGIC ═══════ */
   // Companies needing sync: have ATS detected but 0 jobs
+  const SUPPORTED_ATS = new Set(["ashby", "greenhouse", "lever"]);
   const unsyncedCompanies = useMemo(() =>
-    companies.filter(c => c.detected_ats_platform && c.detected_ats_platform !== "unknown" && (c.job_count || 0) === 0)
+    companies.filter(c => c.detected_ats_platform && SUPPORTED_ATS.has(c.detected_ats_platform) && (c.job_count || 0) === 0)
       .sort((a, b) => (b.priority_score || 0) - (a.priority_score || 0)),
   [companies]);
 
