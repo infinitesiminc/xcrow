@@ -187,9 +187,22 @@ export default function PipelinePage() {
   const importCompanies = async () => {
     setSyncing("import");
     try {
-      const { data, error } = await supabase.functions.invoke("sync-company-jobs", { body: { step: "companies", ats_platform: selectedATS, us_only: true, limit: 200 } });
-      if (error) throw error;
-      toast({ title: "Import complete", description: `${data.synced} companies imported` });
+      const PAGE = 200;
+      let offset = 0;
+      let totalSynced = 0;
+      let hasMore = true;
+
+      while (hasMore) {
+        const { data, error } = await supabase.functions.invoke("sync-company-jobs", {
+          body: { step: "companies", ats_platform: selectedATS, us_only: true, limit: PAGE, offset },
+        });
+        if (error) throw error;
+        totalSynced += data.synced || 0;
+        hasMore = data.hasMore === true;
+        offset += PAGE;
+      }
+
+      toast({ title: "Import complete", description: `${totalSynced} companies imported across ${Math.ceil(offset / PAGE)} batches` });
       await fetchCompanies();
     } catch (err: any) { toast({ title: "Import failed", description: err.message, variant: "destructive" }); }
     finally { setSyncing(null); }
