@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Send, Loader2, RotateCcw, ChevronDown, ChevronUp, CheckCircle2, X, ArrowRight, Target, Circle, CircleCheck, AlertTriangle, TrendingUp } from "lucide-react";
+import { Send, Loader2, RotateCcw, ChevronDown, ChevronUp, CheckCircle2, X, ArrowRight, Target, Circle, CircleCheck, AlertTriangle, TrendingUp, Trophy } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -267,36 +267,8 @@ const BriefingScreen = ({
   );
 };
 
-/* ── Score Display ── */
-const ScoreDisplay = ({ scoreResult }: { scoreResult: SimScoreResult }) => (
-  <motion.div
-    initial={{ opacity: 0, y: 8 }}
-    animate={{ opacity: 1, y: 0 }}
-    transition={{ delay: 0.2 }}
-    className="w-full space-y-4 mt-4"
-  >
-    <div className="grid grid-cols-2 gap-3">
-      {scoreResult.categories.map((cat, i) => (
-        <motion.div
-          key={cat.name}
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.3 + i * 0.08 }}
-          className="rounded-xl border border-border/30 p-3 text-center"
-        >
-          <div className={`text-xl font-bold ${
-            cat.score >= 70 ? "text-success" : cat.score >= 40 ? "text-warning" : "text-destructive"
-          }`}>
-            {cat.score}%
-          </div>
-          <div className="text-[11px] text-muted-foreground mt-0.5 leading-tight">{cat.name}</div>
-          <div className="text-[11px] text-muted-foreground/70 mt-1 leading-snug">{cat.feedback}</div>
-        </motion.div>
-      ))}
-    </div>
-    <p className="text-sm text-muted-foreground leading-relaxed text-center">{scoreResult.summary}</p>
-  </motion.div>
-);
+/* ── Score Display (legacy — kept for data persistence, hidden from UI) ── */
+const ScoreDisplay = ({ scoreResult: _sr }: { scoreResult: SimScoreResult }) => null;
 
 /* ── Objective Results ── */
 const ObjectiveResultsDisplay = ({
@@ -743,20 +715,28 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
   const objectives = session?.learningObjectives || [];
   const metCount = objectives.filter(o => objectiveStatus[o.id]).length;
 
-  // Done screen: adaptive icon/title based on score
-  const doneIcon = (() => {
-    if (!scoreResult) return { icon: CheckCircle2, color: "text-success", bg: "bg-success/10" };
-    if (scoreResult.overall >= 70) return { icon: CheckCircle2, color: "text-success", bg: "bg-success/10" };
-    if (scoreResult.overall >= 40) return { icon: TrendingUp, color: "text-warning", bg: "bg-warning/10" };
-    return { icon: AlertTriangle, color: "text-destructive", bg: "bg-destructive/10" };
-  })();
+  // Done screen: always celebratory — progress is the goal
+  const objectiveMet = scoreResult?.objectiveResults?.filter(r => r.met).length ?? 0;
+  const objectiveTotal = scoreResult?.objectiveResults?.length ?? 0;
+  const allDoneObjectivesMet = objectiveTotal > 0 && objectiveMet === objectiveTotal;
 
-  const doneTitle = (() => {
-    if (!scoreResult) return "Session Complete";
-    if (scoreResult.overall >= 70) return "Great Work!";
-    if (scoreResult.overall >= 40) return "Room to Grow";
-    return "Keep Practicing";
-  })();
+  const doneIcon = allDoneObjectivesMet
+    ? { icon: Trophy, color: "text-primary", bg: "bg-primary/10" }
+    : objectiveMet > 0
+    ? { icon: TrendingUp, color: "text-primary", bg: "bg-primary/10" }
+    : { icon: Target, color: "text-primary", bg: "bg-primary/10" };
+
+  const doneTitle = allDoneObjectivesMet
+    ? "You crushed it! 🎉"
+    : objectiveMet > 0
+    ? "Great progress! 💪"
+    : "You showed up — that's step one 🌱";
+
+  const doneSubtitle = allDoneObjectivesMet
+    ? "Every objective nailed. You're building real AI fluency."
+    : objectiveMet > 0
+    ? `${objectiveMet} of ${objectiveTotal} goals reached. Each attempt makes you sharper.`
+    : "Learning starts with trying. Come back and you'll surprise yourself.";
 
   const DoneIconComponent = doneIcon.icon;
 
@@ -1030,6 +1010,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                   transition={{ duration: 0.5, ease: "easeOut" }}
                   className="flex flex-col items-center py-10 gap-6 max-w-sm mx-auto text-center"
                 >
+                  {/* Celebration icon */}
                   <motion.div
                     initial={{ scale: 0.5, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
@@ -1038,68 +1019,77 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                   >
                     <DoneIconComponent className={`h-10 w-10 ${doneIcon.color}`} />
                   </motion.div>
-                  <div>
-                    <h3 className="text-xl font-serif font-bold text-foreground">{doneTitle}</h3>
-                    <p className="text-sm text-muted-foreground mt-2 leading-relaxed">
+
+                  {/* Encouragement */}
+                  <div className="space-y-2">
+                    <h3 className="text-xl font-display font-bold text-foreground">{doneTitle}</h3>
+                    <p className="text-sm text-muted-foreground leading-relaxed">{doneSubtitle}</p>
+                    <p className="text-xs text-muted-foreground/70">
                       {roundCount} round{roundCount !== 1 ? "s" : ""} on "{taskName}"
                     </p>
-                    
-                    {/* Objective results */}
-                    {scoreResult?.objectiveResults && (
-                      <ObjectiveResultsDisplay
-                        objectives={objectives}
-                        results={scoreResult.objectiveResults}
-                      />
-                    )}
-                    
-                    {scoreResult && (
-                      <div className="mt-4">
-                        <div className="flex items-center justify-center mb-3">
-                          <div className="text-center">
-                            <div className={`text-3xl font-bold ${
-                              scoreResult.overall >= 70 ? "text-success" : scoreResult.overall >= 40 ? "text-warning" : "text-destructive"
-                            }`}>
-                              {scoreResult.overall}%
-                            </div>
-                            <div className="text-[11px] text-muted-foreground">AI Readiness Score</div>
-                          </div>
-                        </div>
-                        <ScoreDisplay scoreResult={scoreResult} />
-                      </div>
-                    )}
-                    
-                    {!user && (
-                      <p className="text-xs text-muted-foreground mt-3">
-                        <a href="/auth" className="text-primary hover:underline">Sign in</a> to save your progress
-                      </p>
-                    )}
                   </div>
+
+                  {/* Objectives achieved — simple, no scores */}
+                  {scoreResult?.objectiveResults && scoreResult.objectiveResults.length > 0 && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.3 }}
+                      className="w-full rounded-2xl border border-border/40 p-5 text-left"
+                    >
+                      <div className="flex items-center gap-2 mb-3">
+                        <Target className="h-4 w-4 text-primary" />
+                        <span className="text-sm font-semibold text-foreground">
+                          {objectiveMet} of {objectiveTotal} goals reached
+                        </span>
+                      </div>
+                      <ul className="space-y-2.5">
+                        {scoreResult.objectiveResults.map((r, i) => (
+                          <motion.li
+                            key={i}
+                            initial={{ opacity: 0, x: -8 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: 0.35 + i * 0.06 }}
+                            className="flex items-start gap-2.5"
+                          >
+                            {r.met ? (
+                              <CircleCheck className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+                            ) : (
+                              <Circle className="h-4 w-4 text-muted-foreground/40 shrink-0 mt-0.5" />
+                            )}
+                            <div>
+                              <span className={`text-sm font-medium ${r.met ? "text-foreground" : "text-muted-foreground"}`}>
+                                {objectives.find(o => o.id === r.id)?.label || r.id}
+                              </span>
+                              {r.evidence && (
+                                <p className="text-xs text-muted-foreground/70 mt-0.5 leading-relaxed">{r.evidence}</p>
+                              )}
+                            </div>
+                          </motion.li>
+                        ))}
+                      </ul>
+                    </motion.div>
+                  )}
+
+                  {!user && (
+                    <p className="text-xs text-muted-foreground">
+                      <a href="/auth" className="text-primary hover:underline">Sign in</a> to save your progress
+                    </p>
+                  )}
+
+                  {/* CTAs — always encouraging */}
                   <div className="flex flex-col gap-3 pt-2 w-full max-w-xs">
-                    {/* Primary action row */}
-                    {scoreResult && scoreResult.overall < 60 ? (
-                      <Button onClick={startCompile} className="gap-2 rounded-xl w-full">
-                        <RotateCcw className="h-3.5 w-3.5" /> Try Again
-                      </Button>
-                    ) : onNextTask ? (
+                    {onNextTask ? (
                       <Button onClick={() => { onClose(); onNextTask(); }} className="gap-2 rounded-xl w-full">
                         <ArrowRight className="h-3.5 w-3.5" /> Next Task ⚡
                       </Button>
                     ) : (
                       <Button onClick={onClose} className="rounded-xl w-full">Done</Button>
                     )}
-                    
-                    {/* Secondary actions */}
                     <div className="flex gap-2">
-                      {scoreResult && scoreResult.overall < 60 && onNextTask && (
-                        <Button variant="outline" onClick={() => { onClose(); onNextTask(); }} className="gap-2 rounded-xl flex-1 text-xs">
-                          Skip → Next Task
-                        </Button>
-                      )}
-                      {scoreResult && scoreResult.overall >= 60 && (
-                        <Button variant="outline" onClick={startCompile} className="gap-2 rounded-xl flex-1 text-xs">
-                          <RotateCcw className="h-3 w-3" /> Retry
-                        </Button>
-                      )}
+                      <Button variant="outline" onClick={startCompile} className="gap-2 rounded-xl flex-1 text-xs">
+                        <RotateCcw className="h-3 w-3" /> Practice Again
+                      </Button>
                       {onBackToFeed ? (
                         <Button variant="ghost" onClick={() => { onClose(); onBackToFeed(); }} className="rounded-xl flex-1 text-xs text-muted-foreground">
                           ← Back to Roles
