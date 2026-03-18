@@ -63,7 +63,7 @@ const ANALOGIES = [
     icon: Car,
     domain: "Autonomous Driving",
     principle: "Test millions of scenarios before anything goes live",
-    workforce: "Every employee faces role-specific AI scenarios before exposure hits their actual work",
+    workforce: "Every employee faces role-specific AI scenarios before augmentation hits their actual work",
   },
   {
     icon: Building2,

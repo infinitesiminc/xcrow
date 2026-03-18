@@ -457,7 +457,7 @@ export default function Investors() {
                   },
                   {
                     icon: Zap, label: "Adapt · Model-Aware Re-Calibration",
-                    desc: "When new frontier models drop, exposure scores automatically re-calibrate. Your workforce evolves as fast as AI does.",
+                    desc: "When new frontier models drop, augmented scores automatically re-calibrate. Your workforce evolves as fast as AI does.",
                     detail: "Continuous, not quarterly",
                   },
                 ].map((step) => (
@@ -802,7 +802,7 @@ export default function Investors() {
                   },
                   {
                     market: "Corporate L&D", size: "$60B+", players: "LinkedIn Learning, Coursera, Udemy",
-                    gap: "Generic course catalogs, no personalization or exposure scoring",
+                    gap: "Generic course catalogs, no personalization or augmented scoring",
                     capabilities: [
                       { name: "Course libraries", has: true },
                       { name: "Completion tracking", has: true },
