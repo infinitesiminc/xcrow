@@ -163,39 +163,54 @@ If a field cannot be determined, use null.`,
       return respond({ error: "AI could not extract company data" }, 422);
     }
 
-    // Step 3: Insert into DB
+    // Step 3: Save to DB
     const sb = createClient(
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
 
-    const row = {
-      name: company.name || new URL(url).hostname.replace("www.", ""),
-      website: url,
+    const row: Record<string, any> = {
+      name: company.name || (url ? new URL(url).hostname.replace("www.", "") : "Unknown"),
+      website: url || null,
       industry: company.industry || null,
       headquarters: company.headquarters || null,
       employee_range: company.employee_range || null,
       description: company.description || null,
-      careers_url: company.careers_url || null,
+      careers_url: company.careers_url || careers_url || null,
       brand_color: company.brand_color || null,
       company_type: company.company_type || null,
       funding_stage: company.funding_stage || null,
       funding_total: company.funding_total || null,
       founded_year: company.founded_year || null,
-      logo_url: `https://logo.clearbit.com/${new URL(url).hostname}`,
+      logo_url: url ? `https://logo.clearbit.com/${new URL(url).hostname}` : null,
       is_demo: false,
     };
 
-    const { data: inserted, error } = await sb
-      .from("companies")
-      .insert(row)
-      .select("id, name, industry, headquarters, employee_range, description, website, logo_url, careers_url, brand_color, company_type, funding_stage, funding_total, founded_year")
-      .single();
+    let result;
+    if (company_id) {
+      // Re-enrich: update existing company
+      const { data, error } = await sb
+        .from("companies")
+        .update(row)
+        .eq("id", company_id)
+        .select("id, name, industry, headquarters, employee_range, description, website, logo_url, careers_url, brand_color, company_type, funding_stage, funding_total, founded_year")
+        .single();
+      if (error) throw new Error(`Update failed: ${error.message}`);
+      result = data;
+      console.log("Company updated:", result.id);
+    } else {
+      // New company: insert
+      const { data, error } = await sb
+        .from("companies")
+        .insert(row)
+        .select("id, name, industry, headquarters, employee_range, description, website, logo_url, careers_url, brand_color, company_type, funding_stage, funding_total, founded_year")
+        .single();
+      if (error) throw new Error(`Insert failed: ${error.message}`);
+      result = data;
+      console.log("Company created:", result.id);
+    }
 
-    if (error) throw new Error(`Insert failed: ${error.message}`);
-
-    console.log("Company created:", inserted.id);
-    return respond({ success: true, company: inserted });
+    return respond({ success: true, company: result });
   } catch (err) {
     console.error("enrich-company error:", err);
     return respond({ error: err.message }, 500);
