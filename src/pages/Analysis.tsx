@@ -17,9 +17,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import SimulatorModal from "@/components/SimulatorModal";
 
-function calcReadiness(automationRisk: number, augmented: number, newSkills: number): number {
-  return 100 - Math.round(automationRisk * 0.55 + (100 - augmented) * 0.25 + newSkills * 0.20);
-}
+// AI Augmented % is the single hero metric across every job
 
 const isWebsite = (value: string) =>
   /^(https?:\/\/)?([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}(\/.*)?$/.test(value.trim());
@@ -150,10 +148,7 @@ const Analysis = () => {
     analyze();
   }, [jobTitle, company, hasJd, navigate]);
 
-  const readiness = useMemo(() => {
-    if (!result) return 0;
-    return calcReadiness(result.summary.automationRiskPercent, result.summary.augmentedPercent, result.summary.newSkillsPercent);
-  }, [result]);
+  const augmentedPercent = result?.summary?.augmentedPercent ?? 0;
 
   const sortedTasks = useMemo(() => {
     if (!result) return [];
@@ -334,7 +329,7 @@ const Analysis = () => {
               <HeroCard
                 result={result}
                 company={company}
-                readiness={readiness}
+                augmented={augmentedPercent}
                 completedCount={completedCount}
                 totalTasks={sortedTasks.length}
                 onNext={() => goTo(1)}
@@ -355,7 +350,7 @@ const Analysis = () => {
               <CompletionCard
                 completedCount={completedCount}
                 totalTasks={sortedTasks.length}
-                readiness={readiness}
+                augmented={augmentedPercent}
                 isBookmarked={isBookmarked}
                 onBookmark={toggleBookmark}
                 onBack={() => navigate(backPath)}
@@ -401,18 +396,15 @@ const Analysis = () => {
 };
 
 function HeroCard({
-  result, company, readiness, completedCount, totalTasks, onNext,
+  result, company, augmented, completedCount, totalTasks, onNext,
 }: {
   result: JobAnalysisResult;
   company: string;
-  readiness: number;
+  augmented: number;
   completedCount: number;
   totalTasks: number;
   onNext: () => void;
 }) {
-  const risk = result.summary.automationRiskPercent;
-  const augmented = result.summary.augmentedPercent;
-
   return (
     <div className="h-full flex flex-col items-center justify-center px-6 text-center max-w-lg mx-auto">
       <div className="relative mb-6">
@@ -425,36 +417,43 @@ function HeroCard({
             strokeLinecap="round"
             strokeDasharray={2 * Math.PI * 60}
             initial={{ strokeDashoffset: 2 * Math.PI * 60 }}
-            animate={{ strokeDashoffset: 2 * Math.PI * 60 * (1 - readiness / 100) }}
+            animate={{ strokeDashoffset: 2 * Math.PI * 60 * (1 - augmented / 100) }}
             transition={{ duration: 1.2, ease: "easeOut" }}
           />
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <span className="text-3xl font-display font-bold text-foreground tabular-nums">{readiness}%</span>
-          <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Ready</span>
+          <span className="text-3xl font-display font-bold text-foreground tabular-nums">{augmented}%</span>
+          <span className="text-[10px] text-muted-foreground uppercase tracking-wider">AI-Augmented</span>
         </div>
       </div>
 
       <h1 className="text-2xl font-display font-bold text-foreground mb-1">{result.jobTitle}</h1>
       {company && !isWebsite(company) && (
-        <p className="text-sm text-muted-foreground mb-6">at {company}</p>
+        <p className="text-sm text-muted-foreground mb-4">at {company}</p>
       )}
 
+      <p className="text-xs text-muted-foreground mb-6 max-w-xs leading-relaxed">
+        {augmented >= 70
+          ? `${augmented}% of this role's tasks can be supercharged with AI tools — tons to learn here 🚀`
+          : augmented >= 40
+          ? `${augmented}% of tasks are enhanced by AI — a great blend of human skill and AI tools 💡`
+          : `This role is mostly human-driven — AI plays a supporting role in ${augmented}% of tasks ✨`}
+      </p>
+
       <div className="flex gap-6 mb-8">
-        <div className="text-center">
-          <div className="text-lg font-bold text-foreground tabular-nums">{risk}%</div>
-          <div className="text-[10px] text-muted-foreground uppercase tracking-wider">AI Risk</div>
-        </div>
-        <div className="h-8 w-px bg-border" />
-        <div className="text-center">
-          <div className="text-lg font-bold text-foreground tabular-nums">{augmented}%</div>
-          <div className="text-[10px] text-muted-foreground uppercase tracking-wider">Augmented</div>
-        </div>
-        <div className="h-8 w-px bg-border" />
         <div className="text-center">
           <div className="text-lg font-bold text-foreground tabular-nums">{totalTasks}</div>
           <div className="text-[10px] text-muted-foreground uppercase tracking-wider">Tasks</div>
         </div>
+        {completedCount > 0 && (
+          <>
+            <div className="h-8 w-px bg-border" />
+            <div className="text-center">
+              <div className="text-lg font-bold text-foreground tabular-nums">{completedCount}</div>
+              <div className="text-[10px] text-muted-foreground uppercase tracking-wider">Practiced</div>
+            </div>
+          </>
+        )}
       </div>
 
       {completedCount > 0 && (
@@ -572,11 +571,11 @@ function TaskCard({
 }
 
 function CompletionCard({
-  completedCount, totalTasks, readiness, isBookmarked, onBookmark, onBack, user, onSignIn,
+  completedCount, totalTasks, augmented, isBookmarked, onBookmark, onBack, user, onSignIn,
 }: {
   completedCount: number;
   totalTasks: number;
-  readiness: number;
+  augmented: number;
   isBookmarked: boolean;
   onBookmark: () => void;
   onBack: () => void;
@@ -600,7 +599,7 @@ function CompletionCard({
         {completedCount === totalTasks && completedCount > 0 ? "All Tasks Complete!" : "Role Overview Complete"}
       </h2>
       <p className="text-sm text-muted-foreground mb-8">
-        {completedCount}/{totalTasks} tasks practiced · {readiness}% readiness
+        {completedCount}/{totalTasks} tasks practiced · {augmented}% AI-augmented
       </p>
 
       <div className="flex flex-col gap-3 w-full max-w-xs">
