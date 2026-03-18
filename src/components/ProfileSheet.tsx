@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   X, Compass, Bookmark, Zap, Trophy, CheckCircle2, Circle,
-  Settings, LogOut, ArrowRight, Search, ChevronDown, ChevronRight,
+  Settings, LogOut, Search, MapPin,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
