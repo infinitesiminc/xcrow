@@ -28,7 +28,7 @@ function AdminGate() {
   const { user, loading, isSuperAdmin } = useAuth();
   if (loading) return null;
   if (!user || !isSuperAdmin) return <Navigate to="/" replace />;
-  return <HRLayout />;
+  return <Suspense fallback={null}><HRLayout /></Suspense>;
 }
 
 const App = () => (
@@ -38,29 +38,31 @@ const App = () => (
         <TooltipProvider>
           <Toaster />
           <Sonner />
-          <Routes>
-            {/* Public B2C routes */}
-            <Route path="/" element={<><Navbar /><Index /></>} />
-            <Route path="/analysis" element={<><Navbar /><Analysis /><Footer /></>} />
-            <Route path="/auth" element={<><Navbar /><Auth /></>} />
-            <Route path="/settings" element={<><Navbar /><Settings /><Footer /></>} />
-            <Route path="/company/:slug" element={<><Navbar /><Suspense fallback={null}><CompanyPage /></Suspense><Footer /></>} />
-            <Route path="/card-styles" element={<><Navbar /><CardStyleMockup /></>} />
+          <Suspense fallback={null}>
+            <Routes>
+              {/* Public B2C routes */}
+              <Route path="/" element={<><Navbar /><Index /></>} />
+              <Route path="/analysis" element={<><Navbar /><Analysis /><Footer /></>} />
+              <Route path="/auth" element={<><Navbar /><Auth /></>} />
+              <Route path="/settings" element={<><Navbar /><Settings /><Footer /></>} />
+              <Route path="/company/:slug" element={<><Navbar /><CompanyPage /><Footer /></>} />
+              <Route path="/card-styles" element={<><Navbar /><CardStyleMockup /></>} />
 
-            {/* Redirects — old routes all go to feed */}
-            <Route path="/dashboard" element={<Navigate to="/" replace />} />
-            <Route path="/dashboard/*" element={<Navigate to="/" replace />} />
-            <Route path="/practice" element={<Navigate to="/" replace />} />
-            <Route path="/simulations" element={<Navigate to="/" replace />} />
-            <Route path="/learning-path" element={<Navigate to="/" replace />} />
+              {/* Redirects — old routes all go to feed */}
+              <Route path="/dashboard" element={<Navigate to="/" replace />} />
+              <Route path="/dashboard/*" element={<Navigate to="/" replace />} />
+              <Route path="/practice" element={<Navigate to="/" replace />} />
+              <Route path="/simulations" element={<Navigate to="/" replace />} />
+              <Route path="/learning-path" element={<Navigate to="/" replace />} />
 
-            {/* Superadmin content pipeline */}
-            <Route path="/admin" element={<AdminGate />}>
-              <Route index element={<PipelinePage />} />
-            </Route>
+              {/* Superadmin content pipeline */}
+              <Route path="/admin" element={<AdminGate />}>
+                <Route index element={<PipelinePage />} />
+              </Route>
 
-            <Route path="*" element={<NotFound />} />
-          </Routes>
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </Suspense>
         </TooltipProvider>
       </AuthProvider>
     </BrowserRouter>
