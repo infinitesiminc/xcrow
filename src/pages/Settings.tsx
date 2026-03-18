@@ -25,8 +25,14 @@ import {
   Loader2, Save, Trash2, KeyRound, Bookmark, Zap, Search,
   Linkedin, Upload, FileText, GraduationCap, Briefcase, X, School,
   Shield, Target, User, Lock, AlertOctagon, ArrowLeft,
+  Radar, CircleDot, GitBranch, LayoutGrid,
 } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { buildInterestGraph, type InterestGraph, type CompletionSignal, type AnalysisSignal, type BookmarkSignal } from "@/lib/interest-graph";
+import JourneyRadarView from "@/components/settings/JourneyRadarView";
+import JourneyBubbleView from "@/components/settings/JourneyBubbleView";
+import JourneyTimelineView from "@/components/settings/JourneyTimelineView";
+import JourneyHeatmapView from "@/components/settings/JourneyHeatmapView";
 
 /* ── helpers ─────────────────────────────────────────── */
 
@@ -446,6 +452,15 @@ export default function Settings() {
    Section Components
    ══════════════════════════════════════════════════════ */
 
+type VizMode = "radar" | "bubble" | "timeline" | "heatmap";
+
+const VIZ_MODES: { key: VizMode; label: string; icon: typeof Radar }[] = [
+  { key: "radar", label: "Radar", icon: Radar },
+  { key: "bubble", label: "Galaxy", icon: CircleDot },
+  { key: "timeline", label: "Timeline", icon: GitBranch },
+  { key: "heatmap", label: "Heatmap", icon: LayoutGrid },
+];
+
 function RolesSection({
   savedRoles, practicedRoles, savedLoading, practicedLoading,
   filteredRoles, filteredPracticed, savedSearch, setSavedSearch,
@@ -468,160 +483,95 @@ function RolesSection({
   avgScore: (r: PracticedRole) => number;
   timeAgo: (d: string) => string;
 }) {
+  const [vizMode, setVizMode] = useState<VizMode>("radar");
+  const { user } = useAuth();
+  const [analyses, setAnalyses] = useState<AnalysisSignal[]>([]);
+  const [graphLoading, setGraphLoading] = useState(true);
+
+  // Fetch analysis history for graph
+  useEffect(() => {
+    if (!user) return;
+    supabase
+      .from("analysis_history")
+      .select("job_title, company, analyzed_at")
+      .eq("user_id", user.id)
+      .order("analyzed_at", { ascending: false })
+      .then(({ data }) => {
+        setAnalyses((data || []).map(d => ({ job_title: d.job_title, company: d.company, analyzed_at: d.analyzed_at })));
+        setGraphLoading(false);
+      });
+  }, [user]);
+
+  // Build graph from all signals
+  const graph = useMemo<InterestGraph | null>(() => {
+    if (savedLoading || practicedLoading || graphLoading) return null;
+
+    const completions: CompletionSignal[] = practicedRoles.map(r => ({
+      task_name: r.task_name,
+      job_title: r.job_title,
+      company: r.company,
+      correct_answers: r.correct_answers,
+      total_questions: r.total_questions,
+      completed_at: r.completed_at,
+    }));
+
+    const bookmarks: BookmarkSignal[] = savedRoles.map(r => ({
+      job_title: r.job_title,
+      company: r.company,
+      augmented_percent: r.augmented_percent,
+      automation_risk_percent: r.automation_risk_percent,
+      bookmarked_at: new Date().toISOString(), // bookmarked_at not in our select, use now as fallback
+    }));
+
+    return buildInterestGraph(completions, analyses, bookmarks);
+  }, [savedRoles, practicedRoles, analyses, savedLoading, practicedLoading, graphLoading]);
+
+  const isLoading = savedLoading || practicedLoading || graphLoading;
+  const isEmpty = !isLoading && graph && graph.nodes.length === 0;
+
   return (
     <div>
-      <h2 className="text-xl font-bold text-foreground mb-1">My Roles</h2>
-      <p className="text-sm text-muted-foreground mb-6">Saved bookmarks and completed simulations.</p>
+      <div className="flex items-center justify-between mb-1">
+        <h2 className="text-xl font-bold text-foreground">My Journey</h2>
+      </div>
+      <p className="text-sm text-muted-foreground mb-5">Your interest and skill map, unified.</p>
 
-      <Tabs value={rolesTab} onValueChange={setRolesTab}>
-        <div className="flex items-center justify-between gap-3 mb-4">
-          <TabsList className="bg-muted/30 h-9">
-            <TabsTrigger value="saved" className="text-xs gap-1.5 data-[state=active]:bg-background">
-              <Bookmark className="h-3.5 w-3.5" />
-              Saved
-              {savedRoles.length > 0 && <span className="text-[10px] text-muted-foreground ml-0.5">{savedRoles.length}</span>}
-            </TabsTrigger>
-            <TabsTrigger value="practiced" className="text-xs gap-1.5 data-[state=active]:bg-background">
-              <Shield className="h-3.5 w-3.5" />
-              Practiced
-              {practicedRoles.length > 0 && <span className="text-[10px] text-muted-foreground ml-0.5">{practicedRoles.length}</span>}
-            </TabsTrigger>
-          </TabsList>
-          {rolesTab === "saved" && savedRoles.length > 4 && (
-            <div className="relative flex-1 max-w-[280px]">
-              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
-              <Input value={savedSearch} onChange={e => setSavedSearch(e.target.value)} placeholder="Filter…" className="h-8 pl-8 text-xs bg-muted/20 border-border/50" />
-            </div>
-          )}
-          {rolesTab === "practiced" && practicedRoles.length > 4 && (
-            <div className="relative flex-1 max-w-[280px]">
-              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
-              <Input value={practicedSearch} onChange={e => setPracticedSearch(e.target.value)} placeholder="Filter…" className="h-8 pl-8 text-xs bg-muted/20 border-border/50" />
-            </div>
-          )}
+      {/* Viz mode switcher */}
+      <div className="flex items-center gap-1 p-1 rounded-lg bg-muted/30 border border-border/40 mb-6 w-fit">
+        {VIZ_MODES.map(mode => (
+          <button
+            key={mode.key}
+            onClick={() => setVizMode(mode.key)}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
+              vizMode === mode.key
+                ? "bg-background text-foreground shadow-sm"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <mode.icon className="h-3.5 w-3.5" />
+            {mode.label}
+          </button>
+        ))}
+      </div>
+
+      {isLoading ? (
+        <div className="flex items-center justify-center py-20">
+          <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
         </div>
-
-        <TabsContent value="saved" className="mt-0">
-          {savedLoading ? (
-            <div className="flex items-center justify-center py-16"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></div>
-          ) : savedRoles.length === 0 ? (
-            <div className="text-center py-16">
-              <Bookmark className="h-10 w-10 text-muted-foreground/20 mx-auto mb-4" />
-              <p className="text-sm text-muted-foreground">No saved roles yet</p>
-              <p className="text-xs text-muted-foreground/60 mt-1">Explore and bookmark roles you're interested in</p>
-            </div>
-          ) : filteredRoles.length === 0 ? (
-            <p className="text-sm text-muted-foreground py-12 text-center">No matches</p>
-          ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-              {filteredRoles.map((role, i) => {
-                const hue1 = hashToHue(role.job_title);
-                const hue2 = (hue1 + 60) % 360;
-                const logoUrl = role.company ? `https://logo.clearbit.com/${role.company.toLowerCase().replace(/\s+/g, '')}.com` : '';
-                const aug = role.augmented_percent ?? 0;
-                return (
-                  <motion.button
-                    key={role.job_title + role.company + i}
-                    initial={{ opacity: 0, y: 8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.2, delay: Math.min(i * 0.03, 0.3) }}
-                    onClick={() => goToRole(role.job_title, role.company)}
-                    className="group text-left rounded-xl overflow-hidden bg-card border border-border transition-all hover:shadow-lg hover:border-primary/40 flex flex-col"
-                  >
-                    <div className="p-3 pb-2">
-                      <div className="flex items-start gap-2">
-                        {logoUrl && (
-                          <img src={logoUrl} alt={role.company || ''} className="h-7 w-7 rounded-lg object-contain bg-muted/30 p-0.5 shrink-0 mt-0.5" onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
-                        )}
-                        <div className="min-w-0 flex-1">
-                          <h4 className="text-xs font-semibold text-foreground leading-snug line-clamp-2">{role.job_title}</h4>
-                          {role.company && <p className="text-[10px] text-muted-foreground truncate mt-0.5">{role.company}</p>}
-                        </div>
-                      </div>
-                    </div>
-                    <div className="mt-auto border-t border-border/30">
-                      <div className="px-3 py-2 flex items-center justify-between" style={{ background: `linear-gradient(135deg, hsl(${hue1} 60% 8%) 0%, hsl(${hue2} 50% 6%) 100%)` }}>
-                        {aug > 0 ? (
-                          <div className="flex items-center gap-1.5">
-                            <MiniGauge value={aug} />
-                            <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">Aug</span>
-                          </div>
-                        ) : (
-                          <div className="flex items-center gap-1">
-                            <Zap className="h-3 w-3 text-primary" />
-                            <span className="text-[10px] text-muted-foreground">—</span>
-                          </div>
-                        )}
-                        <Bookmark className="h-3 w-3 text-primary fill-primary shrink-0" />
-                      </div>
-                    </div>
-                  </motion.button>
-                );
-              })}
-            </div>
-          )}
-        </TabsContent>
-
-        <TabsContent value="practiced" className="mt-0">
-          {practicedLoading ? (
-            <div className="flex items-center justify-center py-16"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></div>
-          ) : practicedRoles.length === 0 ? (
-            <div className="text-center py-16">
-              <Shield className="h-10 w-10 text-muted-foreground/20 mx-auto mb-4" />
-              <p className="text-sm text-muted-foreground">No practiced roles yet</p>
-              <p className="text-xs text-muted-foreground/60 mt-1">Complete simulations to track your progress</p>
-            </div>
-          ) : filteredPracticed.length === 0 ? (
-            <p className="text-sm text-muted-foreground py-12 text-center">No matches</p>
-          ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-              {filteredPracticed.map((sim, i) => {
-                const hue1 = hashToHue(sim.task_name);
-                const hue2 = (hue1 + 80) % 360;
-                const avg = avgScore(sim);
-                const logoUrl = sim.company ? `https://logo.clearbit.com/${sim.company.toLowerCase().replace(/\s+/g, '')}.com` : '';
-                return (
-                  <motion.button
-                    key={sim.task_name + sim.completed_at + i}
-                    initial={{ opacity: 0, y: 8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.2, delay: Math.min(i * 0.03, 0.3) }}
-                    onClick={() => goToRole(sim.job_title, sim.company)}
-                    className="group text-left rounded-xl overflow-hidden bg-card border border-border transition-all hover:shadow-lg hover:border-primary/40 flex flex-col"
-                  >
-                    <div className="p-3 pb-2">
-                      <div className="flex items-start gap-2">
-                        {logoUrl && (
-                          <img src={logoUrl} alt={sim.company || ''} className="h-6 w-6 rounded-lg object-contain bg-muted/30 p-0.5 shrink-0 mt-0.5" onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
-                        )}
-                        <div className="min-w-0 flex-1">
-                          <h4 className="text-xs font-semibold text-foreground leading-snug line-clamp-2">{sim.task_name}</h4>
-                          <p className="text-[10px] text-muted-foreground truncate mt-0.5">{sim.job_title}</p>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="mt-auto border-t border-border/30">
-                      <div className="px-3 py-2 flex items-center justify-between" style={{ background: `linear-gradient(135deg, hsl(${hue1} 50% 8%) 0%, hsl(${hue2} 40% 6%) 100%)` }}>
-                        <div className="flex items-center gap-1.5">
-                          <MiniGauge value={avg} />
-                          <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">Avg</span>
-                        </div>
-                        <div className="flex items-center gap-1.5">
-                          <span className="text-[10px] text-muted-foreground">{sim.correct_answers}/{sim.total_questions}</span>
-                          <Target className="h-3 w-3 text-primary shrink-0" />
-                        </div>
-                      </div>
-                    </div>
-                    <div className="px-3 py-1.5 border-t border-border/20">
-                      <span className="text-[9px] text-muted-foreground/60">{timeAgo(sim.completed_at)}</span>
-                    </div>
-                  </motion.button>
-                );
-              })}
-            </div>
-          )}
-        </TabsContent>
-      </Tabs>
+      ) : isEmpty ? (
+        <div className="text-center py-20">
+          <Bookmark className="h-10 w-10 text-muted-foreground/20 mx-auto mb-4" />
+          <p className="text-sm text-muted-foreground">No data yet</p>
+          <p className="text-xs text-muted-foreground/60 mt-1">Explore, bookmark, and practice roles to build your journey map</p>
+        </div>
+      ) : graph && (
+        <motion.div key={vizMode} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }}>
+          {vizMode === "radar" && <JourneyRadarView graph={graph} onNavigate={goToRole} />}
+          {vizMode === "bubble" && <JourneyBubbleView graph={graph} onNavigate={goToRole} />}
+          {vizMode === "timeline" && <JourneyTimelineView graph={graph} onNavigate={goToRole} />}
+          {vizMode === "heatmap" && <JourneyHeatmapView graph={graph} onNavigate={goToRole} />}
+        </motion.div>
+      )}
     </div>
   );
 }
