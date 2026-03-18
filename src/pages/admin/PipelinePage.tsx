@@ -1211,7 +1211,7 @@ export default function PipelinePage() {
 
         {/* ═══════ TAB: COMPANIES ═══════ */}
         <TabsContent value="companies" className="flex-1 min-h-0 m-0">
-          <div className="flex flex-col h-full px-6 py-4 overflow-hidden">
+          <div className="flex flex-col px-6 py-4 overflow-hidden" style={{ height: "calc(100vh - 320px)" }}>
             <div className="flex items-center gap-3 mb-4 flex-wrap shrink-0">
               <div className="relative flex-1 min-w-[200px]">
                 <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
