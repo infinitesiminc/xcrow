@@ -200,6 +200,7 @@ serve(async (req) => {
         seniority: j.seniority,
         augmented: j.augmented_percent || 0,
         risk: j.automation_risk_percent || 0,
+        sourceUrl: j.source_url || null,
       }));
 
       // Second AI call with tool result — this time streamed back to client
