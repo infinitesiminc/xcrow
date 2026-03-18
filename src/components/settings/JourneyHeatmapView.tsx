@@ -86,7 +86,8 @@ export default function JourneyHeatmapView({ graph, onNavigate }: { graph: Inter
         {filteredNodes.map((node, i) => {
           const engNorm = node.score / maxScore;
           const tileSize = 72 + engNorm * 56; // 72px to 128px
-          const color = profToColor(node.avgProficiency);
+          const hasPractice = node.signals.practices > 0;
+          const color = hasPractice ? profToColor(node.avgProficiency, true) : tierColor(node.tier);
 
           return (
             <motion.button
