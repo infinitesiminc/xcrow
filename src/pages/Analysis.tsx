@@ -329,7 +329,7 @@ const Analysis = () => {
               <HeroCard
                 result={result}
                 company={company}
-                readiness={readiness}
+                augmented={augmentedPercent}
                 completedCount={completedCount}
                 totalTasks={sortedTasks.length}
                 onNext={() => goTo(1)}
