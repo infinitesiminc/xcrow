@@ -130,7 +130,7 @@ If a field cannot be determined, use null.`,
     const { data: inserted, error } = await sb
       .from("companies")
       .insert(row)
-      .select("id, name, industry, headquarters, employee_range, description, website, logo_url, careers_url, brand_color")
+      .select("id, name, industry, headquarters, employee_range, description, website, logo_url, careers_url, brand_color, company_type, funding_stage, funding_total, founded_year")
       .single();
 
     if (error) throw new Error(`Insert failed: ${error.message}`);
