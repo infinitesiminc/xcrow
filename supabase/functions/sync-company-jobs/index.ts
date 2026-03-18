@@ -222,6 +222,7 @@ serve(async (req) => {
 
     // ── Step 1: Sync companies (with optional ATS filter + US filter) ──
     if (step === "companies") {
+      const startMs = Date.now();
       const apiPayload: Record<string, unknown> = { limit, offset };
       if (ats_platform) apiPayload.ats_platform = ats_platform;
 
@@ -232,23 +233,32 @@ serve(async (req) => {
         ? companies.filter((c: any) => !isLikelyNonUS(c.headquarters || c.location || c.hq))
         : companies;
 
-      // Dedup: for each company, check if one with the same name already exists
+      const logId = await logImport(sb, {
+        source: "sync-company-jobs",
+        action: "companies",
+        ats_platform: ats_platform || "all",
+        items_processed: filtered.length,
+        result_status: "in_progress",
+      });
+
       const rows = [];
+      let merged = 0;
+      let flagsRaised = 0;
+
       for (const c of filtered) {
         const extId = c.id;
         const name = c.name;
 
-        // Check if company already exists by name (case-insensitive)
         const { data: existing } = await sb
           .from("companies")
-          .select("id, external_id")
+          .select("id, external_id, name")
           .ilike("name", name)
           .is("workspace_id", null)
           .limit(1)
           .maybeSingle();
 
         if (existing && existing.external_id !== extId) {
-          // Merge: update existing record with new external_id and metadata
+          // Merge into existing — flag if names differ in casing/spelling
           await sb.from("companies").update({
             external_id: extId,
             website: c.website || undefined,
@@ -261,19 +271,29 @@ serve(async (req) => {
             employee_range: c.size || undefined,
             headquarters: c.headquarters || c.location || c.hq || undefined,
           }).eq("id", existing.id);
+          merged++;
+
+          if (logId && existing.name !== name) {
+            flagsRaised++;
+            await raiseFlag(sb, {
+              import_log_id: logId,
+              flag_type: "name_collision",
+              severity: "info",
+              company_id: existing.id,
+              company_name: name,
+              details: { existing_name: existing.name, incoming_name: name, existing_ext_id: existing.external_id, new_ext_id: extId },
+              suggested_action: `Merged "${name}" into existing "${existing.name}". Verify they are the same company.`,
+            });
+          }
           continue;
         }
 
         rows.push({
-          external_id: extId,
-          name,
-          website: c.website,
-          industry: c.industry,
-          logo_url: c.logo_url,
+          external_id: extId, name,
+          website: c.website, industry: c.industry, logo_url: c.logo_url,
           careers_url: c.careers_url,
           detected_ats_platform: c.detected_ats_platform || ats_platform || null,
-          brand_color: c.brand_color,
-          description: c.context || c.culture || null,
+          brand_color: c.brand_color, description: c.context || c.culture || null,
           employee_range: c.size || null,
           headquarters: c.headquarters || c.location || c.hq || null,
           is_demo: c.is_demo ?? true,
@@ -281,18 +301,29 @@ serve(async (req) => {
       }
 
       if (rows.length > 0) {
-        const { error } = await sb
-          .from("companies")
-          .upsert(rows, { onConflict: "external_id" });
+        const { error } = await sb.from("companies").upsert(rows, { onConflict: "external_id" });
         if (error) throw new Error(`Upsert companies: ${error.message}`);
       }
 
+      if (logId) {
+        await updateLog(sb, logId, {
+          result_status: "success",
+          items_created: rows.length,
+          items_updated: merged,
+          items_skipped: companies.length - filtered.length,
+          flags_raised: flagsRaised,
+          duration_ms: Date.now() - startMs,
+          metadata: { total_from_api: companies.length, us_filtered: companies.length - filtered.length },
+        });
+      }
+
       return respond({
-        synced: rows.length,
+        synced: rows.length, merged,
         total_from_api: companies.length,
         filtered_us: us_only ? companies.length - filtered.length : 0,
         hasMore: companies.length === limit,
         ats_platform: ats_platform || "all",
+        import_log_id: logId,
       });
     }
 
