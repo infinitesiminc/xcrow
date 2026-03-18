@@ -212,8 +212,6 @@ function RoleDetailOverlay({ role, onClose }: { role: RoleCard; onClose: () => v
   const [tasks, setTasks] = useState<TaskCluster[]>([]);
   const [loadingTasks, setLoadingTasks] = useState(false);
   const [activeSection, setActiveSection] = useState(0);
-  const scrollRef = useRef<HTMLDivElement>(null);
-  const sectionRefs = useRef<(HTMLDivElement | null)[]>([]);
 
   // Fetch task clusters on open
   useEffect(() => {
