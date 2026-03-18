@@ -13,6 +13,10 @@ interface UserProfile {
   jobTitle: string | null;
   company: string | null;
   onboardingCompleted: boolean;
+  linkedinUrl: string | null;
+  schoolName: string | null;
+  careerStage: string | null;
+  cvUrl: string | null;
 }
 
 interface AuthContextType {
