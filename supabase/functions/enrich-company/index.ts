@@ -14,9 +14,9 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { website } = await req.json();
-    if (!website || typeof website !== "string") {
-      return respond({ error: "website is required" }, 400);
+    const { website, careers_url, company_id } = await req.json();
+    if (!website && !careers_url) {
+      return respond({ error: "website or careers_url is required" }, 400);
     }
 
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
@@ -26,29 +26,88 @@ Deno.serve(async (req) => {
     if (!FIRECRAWL_API_KEY) throw new Error("FIRECRAWL_API_KEY not configured");
 
     // Normalise URL
-    let url = website.trim();
-    if (!url.startsWith("http://") && !url.startsWith("https://")) {
+    let url = (website || "").trim();
+    if (url && !url.startsWith("http://") && !url.startsWith("https://")) {
       url = `https://${url}`;
     }
 
-    // Step 1: Scrape website with Firecrawl
-    console.log("Scraping:", url);
-    const scrapeRes = await fetch("https://api.firecrawl.dev/v1/scrape", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${FIRECRAWL_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        url,
-        formats: ["markdown"],
-        onlyMainContent: true,
-      }),
-    });
+    let markdown = "";
+    let pageTitle = "";
 
-    const scrapeData = await scrapeRes.json();
-    const markdown = scrapeData?.data?.markdown || scrapeData?.markdown || "";
-    const pageTitle = scrapeData?.data?.metadata?.title || scrapeData?.metadata?.title || "";
+    // Step 0: If we have a careers_url, scrape it first to find the real company website
+    if (careers_url) {
+      let atsUrl = careers_url.trim();
+      if (!atsUrl.startsWith("http://") && !atsUrl.startsWith("https://")) {
+        atsUrl = `https://${atsUrl}`;
+      }
+      console.log("Scraping ATS page first:", atsUrl);
+      try {
+        const atsRes = await fetch("https://api.firecrawl.dev/v1/scrape", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${FIRECRAWL_API_KEY}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            url: atsUrl,
+            formats: ["links", "markdown"],
+            onlyMainContent: false,
+          }),
+        });
+        const atsData = await atsRes.json();
+        const links: string[] = atsData?.data?.links || atsData?.links || [];
+        const atsMarkdown = atsData?.data?.markdown || atsData?.markdown || "";
+
+        // Find the company website from the ATS page links
+        // Look for links that are NOT the ATS platform itself
+        const atsHosts = ["greenhouse.io", "ashby.io", "lever.co", "smartrecruiters.com", "myworkdayjobs.com", "workday.com"];
+        const candidateLinks = links.filter((l: string) => {
+          try {
+            const h = new URL(l).hostname.toLowerCase();
+            return !atsHosts.some(ah => h.includes(ah)) && !h.includes("linkedin.") && !h.includes("facebook.") && !h.includes("twitter.") && !h.includes("instagram.");
+          } catch { return false; }
+        });
+
+        if (candidateLinks.length > 0) {
+          // Prefer the shortest/most root-like URL as the company website
+          const sorted = candidateLinks.sort((a: string, b: string) => a.length - b.length);
+          const foundUrl = sorted[0];
+          console.log("Found company website from ATS page:", foundUrl);
+          url = foundUrl;
+        }
+
+        // Use ATS page content as supplementary
+        if (atsMarkdown) {
+          markdown = atsMarkdown;
+          pageTitle = atsData?.data?.metadata?.title || atsData?.metadata?.title || "";
+        }
+      } catch (e) {
+        console.warn("ATS page scrape failed, continuing with provided website:", e);
+      }
+    }
+
+    // Step 1: Scrape the main website (if we have one and didn't get enough content from ATS page)
+    if (url && markdown.length < 500) {
+      console.log("Scraping:", url);
+      const scrapeRes = await fetch("https://api.firecrawl.dev/v1/scrape", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${FIRECRAWL_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          url,
+          formats: ["markdown"],
+          onlyMainContent: true,
+        }),
+      });
+
+      const scrapeData = await scrapeRes.json();
+      const siteMarkdown = scrapeData?.data?.markdown || scrapeData?.markdown || "";
+      const siteTitle = scrapeData?.data?.metadata?.title || scrapeData?.metadata?.title || "";
+      if (siteMarkdown) markdown = siteMarkdown;
+      if (siteTitle) pageTitle = siteTitle;
+    }
 
     if (!markdown && !pageTitle) {
       return respond({ error: "Could not scrape website content" }, 422);
@@ -104,39 +163,54 @@ If a field cannot be determined, use null.`,
       return respond({ error: "AI could not extract company data" }, 422);
     }
 
-    // Step 3: Insert into DB
+    // Step 3: Save to DB
     const sb = createClient(
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
 
-    const row = {
-      name: company.name || new URL(url).hostname.replace("www.", ""),
-      website: url,
+    const row: Record<string, any> = {
+      name: company.name || (url ? new URL(url).hostname.replace("www.", "") : "Unknown"),
+      website: url || null,
       industry: company.industry || null,
       headquarters: company.headquarters || null,
       employee_range: company.employee_range || null,
       description: company.description || null,
-      careers_url: company.careers_url || null,
+      careers_url: company.careers_url || careers_url || null,
       brand_color: company.brand_color || null,
       company_type: company.company_type || null,
       funding_stage: company.funding_stage || null,
       funding_total: company.funding_total || null,
       founded_year: company.founded_year || null,
-      logo_url: `https://logo.clearbit.com/${new URL(url).hostname}`,
+      logo_url: url ? `https://logo.clearbit.com/${new URL(url).hostname}` : null,
       is_demo: false,
     };
 
-    const { data: inserted, error } = await sb
-      .from("companies")
-      .insert(row)
-      .select("id, name, industry, headquarters, employee_range, description, website, logo_url, careers_url, brand_color, company_type, funding_stage, funding_total, founded_year")
-      .single();
+    let result;
+    if (company_id) {
+      // Re-enrich: update existing company
+      const { data, error } = await sb
+        .from("companies")
+        .update(row)
+        .eq("id", company_id)
+        .select("id, name, industry, headquarters, employee_range, description, website, logo_url, careers_url, brand_color, company_type, funding_stage, funding_total, founded_year")
+        .single();
+      if (error) throw new Error(`Update failed: ${error.message}`);
+      result = data;
+      console.log("Company updated:", result.id);
+    } else {
+      // New company: insert
+      const { data, error } = await sb
+        .from("companies")
+        .insert(row)
+        .select("id, name, industry, headquarters, employee_range, description, website, logo_url, careers_url, brand_color, company_type, funding_stage, funding_total, founded_year")
+        .single();
+      if (error) throw new Error(`Insert failed: ${error.message}`);
+      result = data;
+      console.log("Company created:", result.id);
+    }
 
-    if (error) throw new Error(`Insert failed: ${error.message}`);
-
-    console.log("Company created:", inserted.id);
-    return respond({ success: true, company: inserted });
+    return respond({ success: true, company: result });
   } catch (err) {
     console.error("enrich-company error:", err);
     return respond({ error: err.message }, 500);

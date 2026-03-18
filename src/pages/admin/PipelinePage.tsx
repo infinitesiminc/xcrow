@@ -5,7 +5,7 @@ import {
   Building2, Briefcase, Search, Loader2, RefreshCw, Download,
   Database, Play, Pause, Brain, ChevronDown, ChevronUp,
   MapPin, CheckCircle2, AlertTriangle, ArrowLeft,
-  Globe, Plus, Bug,
+  Globe, Plus, Bug, Sparkles,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -472,6 +472,33 @@ export default function PipelinePage() {
                       {selectedCompany?.careers_url && (
                         <a href={selectedCompany.careers_url} target="_blank" rel="noopener" className="text-xs text-primary hover:underline truncate max-w-[200px]" title={selectedCompany.careers_url}>ATS ↗</a>
                       )}
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-5 px-1.5 text-[10px] gap-1 text-muted-foreground hover:text-primary"
+                        disabled={syncing === "enrich"}
+                        onClick={async () => {
+                          setSyncing("enrich");
+                          try {
+                            const { data, error } = await supabase.functions.invoke("enrich-company", {
+                              body: {
+                                company_id: selectedCompany?.id,
+                                website: selectedCompany?.website || undefined,
+                                careers_url: selectedCompany?.careers_url || undefined,
+                              },
+                            });
+                            if (error) throw error;
+                            if (data?.error) throw new Error(data.error);
+                            toast({ title: "Re-enriched", description: `${data.company?.name || "Company"} updated with new data` });
+                            fetchCompanies();
+                          } catch (err: any) {
+                            toast({ title: "Enrich failed", description: err.message, variant: "destructive" });
+                          } finally { setSyncing(null); }
+                        }}
+                      >
+                        {syncing === "enrich" ? <Loader2 className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3" />}
+                        Re-enrich
+                      </Button>
                     </div>
                     <div className="flex items-center gap-2 text-xs text-muted-foreground">
                       {selectedCompany?.industry && <span>{selectedCompany.industry}</span>}
