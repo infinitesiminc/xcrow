@@ -453,13 +453,14 @@ export default function Settings() {
    Section Components
    ══════════════════════════════════════════════════════ */
 
-type VizMode = "radar" | "bubble" | "timeline" | "heatmap";
+type VizMode = "radar" | "bubble" | "timeline" | "heatmap" | "skills";
 
 const VIZ_MODES: { key: VizMode; label: string; icon: typeof Radar }[] = [
   { key: "radar", label: "Radar", icon: Radar },
   { key: "bubble", label: "Galaxy", icon: CircleDot },
   { key: "timeline", label: "Timeline", icon: GitBranch },
   { key: "heatmap", label: "Heatmap", icon: LayoutGrid },
+  { key: "skills", label: "Skills", icon: BarChart3 },
 ];
 
 function RolesSection({
