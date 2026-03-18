@@ -754,7 +754,8 @@ export default function JourneySkillProfileView({ practicedRoles = [], onNavigat
               </>
             )}
           </motion.div>
-        ) : (
+        )}
+        {view === "ai-unlocks" && (
           <motion.div key="ai-unlocks" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-5">
             {/* Reach Map */}
             <ReachMap
