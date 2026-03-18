@@ -385,22 +385,10 @@ export default function Settings() {
             transition={{ duration: 0.2 }}
           >
             {activeSection === "roles" && (
-              <RolesSection
-                savedRoles={savedRoles}
+              <JourneyDashboard
                 practicedRoles={practicedRoles}
-                savedLoading={savedLoading}
-                practicedLoading={practicedLoading}
-                filteredRoles={filteredRoles}
-                filteredPracticed={filteredPracticed}
-                savedSearch={savedSearch}
-                setSavedSearch={setSavedSearch}
-                practicedSearch={practicedSearch}
-                setPracticedSearch={setPracticedSearch}
-                rolesTab={rolesTab}
-                setRolesTab={setRolesTab}
-                goToRole={goToRole}
-                avgScore={avgScore}
-                timeAgo={timeAgo}
+                savedRoles={savedRoles}
+                loading={savedLoading || practicedLoading}
               />
             )}
 
