@@ -90,7 +90,7 @@ const Index = () => {
 
       const seen = new Set<string>();
       const unique = allData.filter(j => {
-        const key = (j.title + '|' + (j.companies as any)?.name).toLowerCase().trim();
+        const key = (j.title + '|' + (j.companies as any)?.name + '|' + (j.city || j.location || '')).toLowerCase().trim();
         if (seen.has(key)) return false;
         seen.add(key);
         return true;
