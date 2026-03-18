@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
-  Loader2, Eye, Zap, Compass, ArrowRight, MapPin, Sparkles,
+  Loader2, Eye, Zap, Compass, ArrowRight, Sparkles, TrendingUp,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -29,6 +29,86 @@ interface AnalysisEntry {
   analyzed_at: string;
 }
 
+/* ── Mock data for demo ── */
+const MOCK_ANALYSES: AnalysisEntry[] = [
+  { id: "m1", job_title: "Product Manager", company: "Stripe", tasks_count: 12, augmented_percent: 68, analyzed_at: "2026-03-17T10:00:00Z" },
+  { id: "m2", job_title: "Marketing Manager", company: "HubSpot", tasks_count: 10, augmented_percent: 72, analyzed_at: "2026-03-16T14:00:00Z" },
+  { id: "m3", job_title: "Data Analyst", company: null, tasks_count: 8, augmented_percent: 81, analyzed_at: "2026-03-15T09:00:00Z" },
+  { id: "m4", job_title: "UX Designer", company: "Figma", tasks_count: 9, augmented_percent: 55, analyzed_at: "2026-03-14T11:00:00Z" },
+  { id: "m5", job_title: "Software Engineer", company: "Vercel", tasks_count: 14, augmented_percent: 74, analyzed_at: "2026-03-13T16:00:00Z" },
+  { id: "m6", job_title: "Content Strategist", company: null, tasks_count: 7, augmented_percent: 63, analyzed_at: "2026-03-10T08:00:00Z" },
+];
+
+const MOCK_COMPLETIONS: CompletedSim[] = [
+  { id: "s1", task_name: "Write product requirements", job_title: "Product Manager", company: "Stripe", correct_answers: 4, total_questions: 5, completed_at: "2026-03-17T12:00:00Z" },
+  { id: "s2", task_name: "Prioritize feature backlog", job_title: "Product Manager", company: "Stripe", correct_answers: 3, total_questions: 5, completed_at: "2026-03-17T13:00:00Z" },
+  { id: "s3", task_name: "Analyze user funnel data", job_title: "Data Analyst", company: null, correct_answers: 5, total_questions: 5, completed_at: "2026-03-16T10:00:00Z" },
+  { id: "s4", task_name: "Build campaign brief", job_title: "Marketing Manager", company: "HubSpot", correct_answers: 3, total_questions: 5, completed_at: "2026-03-16T15:00:00Z" },
+  { id: "s5", task_name: "Create SQL dashboards", job_title: "Data Analyst", company: null, correct_answers: 4, total_questions: 5, completed_at: "2026-03-15T11:00:00Z" },
+  { id: "s6", task_name: "Design user onboarding flow", job_title: "UX Designer", company: "Figma", correct_answers: 2, total_questions: 5, completed_at: "2026-03-14T12:00:00Z" },
+  { id: "s7", task_name: "Write API documentation", job_title: "Software Engineer", company: "Vercel", correct_answers: 5, total_questions: 5, completed_at: "2026-03-13T17:00:00Z" },
+  { id: "s8", task_name: "Code review pull requests", job_title: "Software Engineer", company: "Vercel", correct_answers: 4, total_questions: 5, completed_at: "2026-03-13T18:00:00Z" },
+  { id: "s9", task_name: "Stakeholder presentation", job_title: "Product Manager", company: "Stripe", correct_answers: 3, total_questions: 5, completed_at: "2026-03-12T09:00:00Z" },
+  { id: "s10", task_name: "SEO content audit", job_title: "Content Strategist", company: null, correct_answers: 2, total_questions: 5, completed_at: "2026-03-10T10:00:00Z" },
+];
+
+interface Recommendation {
+  jobTitle: string;
+  company: string | null;
+  matchScore: number;
+  reason: string;
+  tag: "interest" | "skill" | "growth";
+}
+
+function generateRecommendations(
+  interestMap: { jobTitle: string; company: string | null; practiced: boolean; practiceCount: number }[],
+  skillMap: { taskName: string; jobTitle: string; score: number; sessions: number }[],
+): Recommendation[] {
+  const recs: Recommendation[] = [];
+
+  // 1. Find strongest skill areas → recommend adjacent roles
+  const topSkills = skillMap.filter(s => s.score >= 70);
+  const strongRoles = new Set(topSkills.map(s => s.jobTitle.toLowerCase()));
+
+  if (strongRoles.has("product manager")) {
+    recs.push({ jobTitle: "Product Operations Manager", company: "Notion", matchScore: 91, reason: "Your product skills transfer directly — strong at requirements & prioritization", tag: "skill" });
+    recs.push({ jobTitle: "Technical Program Manager", company: "Google", matchScore: 84, reason: "High overlap with stakeholder communication and backlog management", tag: "skill" });
+  }
+  if (strongRoles.has("data analyst")) {
+    recs.push({ jobTitle: "Analytics Engineer", company: "dbt Labs", matchScore: 88, reason: "Your SQL & data analysis scores are strong — this role builds on that", tag: "skill" });
+    recs.push({ jobTitle: "Business Intelligence Lead", company: "Looker", matchScore: 82, reason: "Combines your dashboard skills with strategic reporting", tag: "growth" });
+  }
+  if (strongRoles.has("software engineer")) {
+    recs.push({ jobTitle: "DevOps Engineer", company: "GitLab", matchScore: 79, reason: "Your code review and documentation skills align with CI/CD workflows", tag: "skill" });
+  }
+
+  // 2. Interest-based: roles they viewed but haven't practiced
+  const viewedOnly = interestMap.filter(i => !i.practiced);
+  for (const v of viewedOnly.slice(0, 2)) {
+    recs.push({ jobTitle: v.jobTitle, company: v.company, matchScore: 72, reason: `You explored this role — try a practice session to see how your skills match`, tag: "interest" });
+  }
+
+  // 3. Growth opportunities from weaker areas
+  const weakSkills = skillMap.filter(s => s.score < 50 && s.score > 0);
+  if (weakSkills.length > 0) {
+    const weakRole = weakSkills[0];
+    recs.push({ jobTitle: `${weakRole.jobTitle} (Growth Track)`, company: null, matchScore: 65, reason: `Improving "${weakRole.taskName}" would open up new opportunities`, tag: "growth" });
+  }
+
+  return recs.sort((a, b) => b.matchScore - a.matchScore).slice(0, 5);
+}
+
+const TAG_STYLES: Record<string, string> = {
+  skill: "border-success/30 text-success",
+  interest: "border-primary/30 text-primary",
+  growth: "border-warning/30 text-warning",
+};
+const TAG_LABELS: Record<string, string> = {
+  skill: "Skills match",
+  interest: "Based on interest",
+  growth: "Growth opportunity",
+};
+
 export default function ProgressTab({ userId }: { userId: string }) {
   const navigate = useNavigate();
   const [completions, setCompletions] = useState<CompletedSim[]>([]);
@@ -45,13 +125,18 @@ export default function ProgressTab({ userId }: { userId: string }) {
           .select("id, job_title, company, tasks_count, augmented_percent, analyzed_at")
           .eq("user_id", userId).order("analyzed_at", { ascending: false }),
       ]);
-      setCompletions((simRes.data as CompletedSim[]) || []);
-      setAnalyses((analysisRes.data as AnalysisEntry[]) || []);
+
+      const realCompletions = (simRes.data as CompletedSim[]) || [];
+      const realAnalyses = (analysisRes.data as AnalysisEntry[]) || [];
+
+      // Use mock data when user has little/no real data
+      const useMock = realCompletions.length < 3 && realAnalyses.length < 3;
+      setCompletions(useMock ? MOCK_COMPLETIONS : realCompletions);
+      setAnalyses(useMock ? MOCK_ANALYSES : realAnalyses);
       setLoading(false);
     })();
   }, [userId]);
 
-  /* ── Interest Map: roles viewed + attempted ── */
   const interestMap = useMemo(() => {
     const map = new Map<string, {
       jobTitle: string; company: string | null;
@@ -89,7 +174,6 @@ export default function ProgressTab({ userId }: { userId: string }) {
     );
   }, [analyses, completions]);
 
-  /* ── Skill Map: aggregate scores per task ── */
   const skillMap = useMemo(() => {
     const map = new Map<string, { taskName: string; jobTitle: string; totalCorrect: number; totalQ: number; sessions: number }>();
 
@@ -102,10 +186,8 @@ export default function ProgressTab({ userId }: { userId: string }) {
         existing.sessions += 1;
       } else {
         map.set(key, {
-          taskName: c.task_name,
-          jobTitle: c.job_title,
-          totalCorrect: c.correct_answers || 0,
-          totalQ: c.total_questions || 0,
+          taskName: c.task_name, jobTitle: c.job_title,
+          totalCorrect: c.correct_answers || 0, totalQ: c.total_questions || 0,
           sessions: 1,
         });
       }
@@ -121,6 +203,11 @@ export default function ProgressTab({ userId }: { userId: string }) {
     const totalQ = completions.reduce((s, c) => s + (c.total_questions || 0), 0);
     return totalQ > 0 ? Math.round((totalC / totalQ) * 100) : null;
   }, [completions]);
+
+  const recommendations = useMemo(
+    () => generateRecommendations(interestMap, skillMap),
+    [interestMap, skillMap]
+  );
 
   if (loading) {
     return <div className="flex justify-center py-12"><Loader2 className="h-5 w-5 text-primary animate-spin" /></div>;
@@ -235,27 +322,66 @@ export default function ProgressTab({ userId }: { userId: string }) {
         </section>
       )}
 
-      {/* ── Recommendations teaser ── */}
-      <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
-        <Card className="border-dashed border-muted-foreground/20 bg-gradient-to-r from-primary/5 via-background to-accent/5">
-          <CardContent className="p-4 flex items-center gap-4">
-            <div className="p-2.5 rounded-xl bg-primary/10">
-              <Sparkles className="h-5 w-5 text-primary" />
-            </div>
-            <div className="flex-1">
-              <p className="text-sm font-semibold text-foreground">Job recommendations coming soon</p>
-              <p className="text-[11px] text-muted-foreground">
-                {interestMap.length < 3
-                  ? `Explore ${3 - interestMap.length} more role${3 - interestMap.length !== 1 ? "s" : ""} to unlock personalized job matches`
-                  : skillMap.length < 2
-                    ? "Practice a few more tasks to unlock personalized job matches"
-                    : "We're building your profile — recommendations will appear here soon"
-                }
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-      </motion.div>
+      {/* ── Job Recommendations ── */}
+      {recommendations.length > 0 && (
+        <section>
+          <div className="flex items-center gap-2 mb-3">
+            <Sparkles className="h-4 w-4 text-primary" />
+            <h2 className="text-xs font-medium uppercase tracking-widest text-muted-foreground">Recommended for You</h2>
+            <Badge variant="secondary" className="text-[10px]">{recommendations.length} matches</Badge>
+          </div>
+          <p className="text-[11px] text-muted-foreground mb-3">Based on your interests and practice scores, these roles are a strong fit.</p>
+
+          <div className="space-y-2">
+            {recommendations.map((rec, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 + i * 0.05 }}
+              >
+                <Card
+                  className="cursor-pointer hover:border-primary/30 transition-all group hover:shadow-md"
+                  onClick={() => goToRole(rec.jobTitle, rec.company)}
+                >
+                  <CardContent className="p-4">
+                    <div className="flex items-start gap-3">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          <p className="text-sm font-semibold text-foreground truncate">{rec.jobTitle}</p>
+                          <Badge variant="outline" className={`text-[9px] px-1.5 py-0 shrink-0 ${TAG_STYLES[rec.tag]}`}>
+                            {TAG_LABELS[rec.tag]}
+                          </Badge>
+                        </div>
+                        {rec.company && <p className="text-[11px] text-muted-foreground mb-1.5">{rec.company}</p>}
+                        <p className="text-[11px] text-muted-foreground leading-relaxed">{rec.reason}</p>
+                      </div>
+                      <div className="flex flex-col items-center gap-1 shrink-0">
+                        <div className="relative w-11 h-11">
+                          <svg viewBox="0 0 36 36" className="w-11 h-11 -rotate-90">
+                            <circle cx="18" cy="18" r="15" fill="none" className="stroke-muted/20" strokeWidth="3" />
+                            <circle
+                              cx="18" cy="18" r="15" fill="none"
+                              className={rec.matchScore >= 80 ? "stroke-success" : rec.matchScore >= 65 ? "stroke-primary" : "stroke-warning"}
+                              strokeWidth="3"
+                              strokeDasharray={`${(rec.matchScore / 100) * 94.2} 94.2`}
+                              strokeLinecap="round"
+                            />
+                          </svg>
+                          <span className="absolute inset-0 flex items-center justify-center text-[11px] font-bold text-foreground">
+                            {rec.matchScore}
+                          </span>
+                        </div>
+                        <span className="text-[9px] text-muted-foreground">match</span>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            ))}
+          </div>
+        </section>
+      )}
     </div>
   );
 }
