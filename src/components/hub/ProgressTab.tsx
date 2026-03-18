@@ -245,9 +245,8 @@ export default function ProgressTab({ userId }: { userId: string }) {
 
       const realC = (simRes.data as CompletedSim[]) || [];
       const realA = (analysisRes.data as AnalysisEntry[]) || [];
-      const useMock = realC.length < 3 && realA.length < 3;
-      setCompletions(useMock ? MOCK.completions : realC);
-      setAnalyses(useMock ? MOCK.analyses : realA);
+      setCompletions(realC);
+      setAnalyses(realA);
       setLoading(false);
     })();
   }, [userId]);
