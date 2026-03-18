@@ -347,21 +347,10 @@ serve(async (req) => {
           company: company_id,
           synced: rows.length,
           source,
-          hasMore: false,
         });
-        }
       }
 
       // Standard sim-api path
-      if (!localCompanyId) {
-        const { data: co } = await sb
-          .from("companies")
-          .select("id")
-          .eq("external_id", externalCompanyId)
-          .single();
-        localCompanyId = co?.id || null;
-      }
-
       const rows = jobs.map((j: any) => ({
         external_id: j.id,
         title: j.title,
