@@ -350,7 +350,7 @@ const Analysis = () => {
               <CompletionCard
                 completedCount={completedCount}
                 totalTasks={sortedTasks.length}
-                readiness={readiness}
+                augmented={augmentedPercent}
                 isBookmarked={isBookmarked}
                 onBookmark={toggleBookmark}
                 onBack={() => navigate(backPath)}
