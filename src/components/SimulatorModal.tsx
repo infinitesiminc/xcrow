@@ -715,20 +715,28 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
   const objectives = session?.learningObjectives || [];
   const metCount = objectives.filter(o => objectiveStatus[o.id]).length;
 
-  // Done screen: adaptive icon/title based on score
-  const doneIcon = (() => {
-    if (!scoreResult) return { icon: CheckCircle2, color: "text-success", bg: "bg-success/10" };
-    if (scoreResult.overall >= 70) return { icon: CheckCircle2, color: "text-success", bg: "bg-success/10" };
-    if (scoreResult.overall >= 40) return { icon: TrendingUp, color: "text-warning", bg: "bg-warning/10" };
-    return { icon: AlertTriangle, color: "text-destructive", bg: "bg-destructive/10" };
-  })();
+  // Done screen: always celebratory — progress is the goal
+  const objectiveMet = scoreResult?.objectiveResults?.filter(r => r.met).length ?? 0;
+  const objectiveTotal = scoreResult?.objectiveResults?.length ?? 0;
+  const allObjectivesMet = objectiveTotal > 0 && objectiveMet === objectiveTotal;
 
-  const doneTitle = (() => {
-    if (!scoreResult) return "Session Complete";
-    if (scoreResult.overall >= 70) return "Great Work!";
-    if (scoreResult.overall >= 40) return "Room to Grow";
-    return "Keep Practicing";
-  })();
+  const doneIcon = allObjectivesMet
+    ? { icon: Trophy, color: "text-primary", bg: "bg-primary/10" }
+    : objectiveMet > 0
+    ? { icon: TrendingUp, color: "text-primary", bg: "bg-primary/10" }
+    : { icon: Target, color: "text-primary", bg: "bg-primary/10" };
+
+  const doneTitle = allObjectivesMet
+    ? "You crushed it! 🎉"
+    : objectiveMet > 0
+    ? "Great progress! 💪"
+    : "You showed up — that's step one 🌱";
+
+  const doneSubtitle = allObjectivesMet
+    ? "Every objective nailed. You're building real AI fluency."
+    : objectiveMet > 0
+    ? `${objectiveMet} of ${objectiveTotal} goals reached. Each attempt makes you sharper.`
+    : "Learning starts with trying. Come back and you'll surprise yourself.";
 
   const DoneIconComponent = doneIcon.icon;
 
