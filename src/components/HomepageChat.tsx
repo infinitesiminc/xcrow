@@ -20,15 +20,19 @@ const SUGGESTIONS = [
 ];
 
 export default function HomepageChat({
+  onRolesFound,
   onRoleSelect,
   onChatStart,
   hasInteracted,
   selectedJobId,
+  inlineCards = true,
 }: {
+  onRolesFound?: (roles: RoleResult[]) => void;
   onRoleSelect: (role: RoleResult) => void;
   onChatStart: () => void;
   hasInteracted: boolean;
   selectedJobId?: string;
+  inlineCards?: boolean;
 }) {
   const { toast } = useToast();
   const [items, setItems] = useState<ChatItem[]>([]);
