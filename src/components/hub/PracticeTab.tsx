@@ -484,7 +484,7 @@ export default function PracticeTab({ userId }: PracticeTabProps) {
       {simTask && (
         <SimulatorModal
           open={!!simTask}
-          onOpenChange={(open) => { if (!open) setSimTask(null); }}
+          onClose={() => setSimTask(null)}
           taskName={simTask.taskName}
           jobTitle={simTask.jobTitle}
           company={simTask.company}
