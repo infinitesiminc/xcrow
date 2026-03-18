@@ -264,8 +264,8 @@ export default function RolePreviewPanel({ role, onClose }: RolePreviewPanelProp
   );
 
   // Enlarged overlay (full-screen)
-  if (view === "enlarged") {
-    return <>{enlargedOverlay}</>;
+  if (view === "enlarged" || view === "simulation") {
+    return <>{view === "enlarged" && enlargedOverlay}{simulationOverlay}</>;
   }
 
   // Breakdown view (inline in panel)
