@@ -632,7 +632,7 @@ function DesktopGrid({ roles, savedRoleTitles }: RoleFeedProps) {
   }, [roles, filter, countryFilter, workModeFilter, savedFilter, savedRoleTitles]);
 
   return (
-    <div className="h-full flex flex-col overflow-hidden">
+    <div className="flex flex-col">
       {/* Filter bar */}
       <div className="shrink-0 flex flex-wrap items-center gap-2 px-6 py-4 border-b border-border/40">
         <div className="flex items-center gap-1.5">
