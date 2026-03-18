@@ -3,26 +3,14 @@ import { Send, Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import ReactMarkdown from "react-markdown";
 import { useToast } from "@/hooks/use-toast";
+import InlineRoleCarousel, { type RoleResult } from "@/components/InlineRoleCarousel";
 
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/career-chat`;
 
-interface RoleResult {
-  jobId: string;
-  title: string;
-  company: string | null;
-  logo: string | null;
-  location: string | null;
-  country: string | null;
-  workMode: string | null;
-  seniority: string | null;
-  augmented: number;
-  risk: number;
-}
-
-interface ChatMessage {
-  role: "user" | "assistant";
-  content: string;
-}
+type ChatItem =
+  | { type: "user"; content: string }
+  | { type: "assistant"; content: string }
+  | { type: "roles"; roles: RoleResult[] };
 
 const SUGGESTIONS = [
   "What tech roles are safe from AI?",
@@ -32,16 +20,18 @@ const SUGGESTIONS = [
 ];
 
 export default function HomepageChat({
-  onRolesFound,
+  onRoleSelect,
   onChatStart,
   hasInteracted,
+  selectedJobId,
 }: {
-  onRolesFound: (roles: RoleResult[]) => void;
+  onRoleSelect: (role: RoleResult) => void;
   onChatStart: () => void;
   hasInteracted: boolean;
+  selectedJobId?: string;
 }) {
   const { toast } = useToast();
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [items, setItems] = useState<ChatItem[]>([]);
   const [input, setInput] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -51,9 +41,8 @@ export default function HomepageChat({
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
-  }, [messages]);
+  }, [items]);
 
-  // Auto-resize textarea
   const resizeTextarea = useCallback(() => {
     const ta = textareaRef.current;
     if (!ta) return;
@@ -65,14 +54,19 @@ export default function HomepageChat({
     resizeTextarea();
   }, [input, resizeTextarea]);
 
+  // Extract only text messages for the API
+  const getApiMessages = (chatItems: ChatItem[]) =>
+    chatItems
+      .filter((it): it is ChatItem & { type: "user" | "assistant" } => it.type !== "roles")
+      .map((m) => ({ role: m.type, content: m.content }));
+
   const sendMessage = async (text: string) => {
     if (!text.trim() || isStreaming) return;
-
     if (!hasInteracted) onChatStart();
 
-    const userMsg: ChatMessage = { role: "user", content: text.trim() };
-    const allMessages = [...messages, userMsg];
-    setMessages(allMessages);
+    const userItem: ChatItem = { type: "user", content: text.trim() };
+    const allItems = [...items, userItem];
+    setItems(allItems);
     setInput("");
     setIsStreaming(true);
 
@@ -85,12 +79,7 @@ export default function HomepageChat({
           "Content-Type": "application/json",
           Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
         },
-        body: JSON.stringify({
-          messages: allMessages.map((m) => ({
-            role: m.role,
-            content: m.content,
-          })),
-        }),
+        body: JSON.stringify({ messages: getApiMessages(allItems) }),
       });
 
       if (!resp.ok) {
@@ -110,15 +99,21 @@ export default function HomepageChat({
 
       const upsert = (chunk: string) => {
         assistantSoFar += chunk;
-        setMessages((prev) => {
+        setItems((prev) => {
           const last = prev[prev.length - 1];
-          if (last?.role === "assistant" && prev.length > allMessages.length) {
+          if (last?.type === "assistant") {
             return prev.map((m, i) =>
-              i === prev.length - 1 ? { ...m, content: assistantSoFar } : m
+              i === prev.length - 1 && m.type === "assistant"
+                ? { ...m, content: assistantSoFar }
+                : m
             );
           }
-          return [...prev, { role: "assistant", content: assistantSoFar }];
+          return [...prev, { type: "assistant", content: assistantSoFar }];
         });
+      };
+
+      const insertRoles = (roles: RoleResult[]) => {
+        setItems((prev) => [...prev, { type: "roles", roles }]);
       };
 
       while (true) {
@@ -140,7 +135,7 @@ export default function HomepageChat({
           try {
             const parsed = JSON.parse(jsonStr);
             if (parsed.type === "role_cards" && parsed.roles) {
-              onRolesFound(parsed.roles);
+              insertRoles(parsed.roles);
               continue;
             }
             const content = parsed.choices?.[0]?.delta?.content as string | undefined;
@@ -162,7 +157,7 @@ export default function HomepageChat({
           try {
             const parsed = JSON.parse(jsonStr);
             if (parsed.type === "role_cards" && parsed.roles) {
-              onRolesFound(parsed.roles);
+              insertRoles(parsed.roles);
               continue;
             }
             const content = parsed.choices?.[0]?.delta?.content;
@@ -183,36 +178,50 @@ export default function HomepageChat({
   };
 
   return (
-    <div className="w-full flex flex-col">
-      {/* Chat messages (visible after interaction) */}
-      {hasInteracted && messages.length > 0 && (
+    <div className="w-full flex flex-col h-full">
+      {/* Chat items (visible after interaction) */}
+      {hasInteracted && items.length > 0 && (
         <div
           ref={scrollRef}
-          className="flex flex-col gap-4 max-h-[50vh] overflow-y-auto mb-4 px-1 scrollbar-thin"
+          className="flex-1 flex flex-col gap-4 overflow-y-auto mb-4 px-1 scrollbar-thin"
         >
           <AnimatePresence initial={false}>
-            {messages.map((msg, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.2 }}
-                className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
-              >
-                {msg.role === "assistant" ? (
-                  <div className="chat-prose max-w-[92%]">
-                    <ReactMarkdown>{msg.content}</ReactMarkdown>
+            {items.map((item, i) => {
+              if (item.type === "roles") {
+                return (
+                  <div key={`roles-${i}`} className="py-1">
+                    <InlineRoleCarousel
+                      roles={item.roles}
+                      onSelectRole={onRoleSelect}
+                      selectedJobId={selectedJobId}
+                    />
                   </div>
-                ) : (
-                  <div className="bg-primary/10 border border-primary/20 rounded-2xl rounded-br-md px-4 py-2 max-w-[80%]">
-                    <p className="text-sm text-foreground">{msg.content}</p>
-                  </div>
-                )}
-              </motion.div>
-            ))}
+                );
+              }
+
+              return (
+                <motion.div
+                  key={i}
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.2 }}
+                  className={`flex ${item.type === "user" ? "justify-end" : "justify-start"}`}
+                >
+                  {item.type === "assistant" ? (
+                    <div className="chat-prose max-w-[92%]">
+                      <ReactMarkdown>{item.content}</ReactMarkdown>
+                    </div>
+                  ) : (
+                    <div className="bg-primary/10 border border-primary/20 rounded-2xl rounded-br-md px-4 py-2 max-w-[80%]">
+                      <p className="text-sm text-foreground">{item.content}</p>
+                    </div>
+                  )}
+                </motion.div>
+              );
+            })}
           </AnimatePresence>
 
-          {isStreaming && messages[messages.length - 1]?.role !== "assistant" && (
+          {isStreaming && items[items.length - 1]?.type !== "assistant" && (
             <div className="flex gap-2 items-center">
               <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
               <span className="text-xs text-muted-foreground">Thinking…</span>
@@ -222,7 +231,7 @@ export default function HomepageChat({
       )}
 
       {/* Input card */}
-      <div className="rounded-2xl border border-border bg-card shadow-sm overflow-hidden">
+      <div className="rounded-2xl border border-border bg-card shadow-sm overflow-hidden shrink-0">
         <textarea
           ref={textareaRef}
           value={input}
@@ -239,7 +248,6 @@ export default function HomepageChat({
           className="w-full bg-transparent px-4 pt-4 pb-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none resize-none min-h-[52px]"
         />
         <div className="flex items-center justify-between px-3 pb-3">
-          {/* Suggestion chips */}
           <div className="flex flex-wrap gap-1.5 flex-1 min-w-0">
             {!hasInteracted &&
               SUGGESTIONS.map((s) => (
