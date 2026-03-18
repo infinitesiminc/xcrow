@@ -211,15 +211,21 @@ export default function PipelinePage() {
     }
   };
 
+  const buildApolloBody = (pg = 1): Record<string, unknown> => {
+    const body: Record<string, unknown> = { page: pg, per_page: 25, import_results: false };
+    if (apolloLocation.trim()) body.organization_locations = [apolloLocation.trim()];
+    if (apolloSize) body.organization_num_employees_ranges = [apolloSize];
+    if (apolloKeywords.trim()) body.q_organization_keyword_tags = apolloKeywords.split(",").map(s => s.trim()).filter(Boolean);
+    if (apolloName.trim()) body.q_organization_name = apolloName.trim();
+    if (apolloFunding) body.latest_funding_stage = apolloFunding;
+    return body;
+  };
+
   const handleApolloSearch = async (pg = 1) => {
     setApolloLoading(true);
     setApolloSelected(new Set());
     try {
-      const body: Record<string, unknown> = { page: pg, per_page: 25, import_results: false };
-      if (apolloLocation.trim()) body.organization_locations = [apolloLocation.trim()];
-      if (apolloSize) body.organization_num_employees_ranges = [apolloSize];
-      if (apolloKeywords.trim()) body.q_organization_keyword_tags = apolloKeywords.split(",").map(s => s.trim()).filter(Boolean);
-      if (apolloName.trim()) body.q_organization_name = apolloName.trim();
+      const body = buildApolloBody(pg);
       const { data, error } = await supabase.functions.invoke("search-apollo", { body });
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
@@ -232,13 +238,11 @@ export default function PipelinePage() {
     }
   };
 
+  /** Import selected companies from current page */
   const handleApolloImport = async () => {
-    // Import selected results by calling the edge function with import_results: true
     setApolloImporting(true);
     try {
       const selectedCompanies = apolloResults.filter((_, i) => apolloSelected.has(i));
-      // We import by re-searching with same params but with import flag
-      // Actually, better: enrich each selected company by website
       let imported = 0;
       for (const co of selectedCompanies) {
         const website = co.website || co.domain;
@@ -255,6 +259,35 @@ export default function PipelinePage() {
       toast({ title: "Import failed", description: err.message, variant: "destructive" });
     } finally {
       setApolloImporting(false);
+    }
+  };
+
+  /** Bulk import: auto-page through ALL Apollo results and import each page */
+  const handleApolloBulkImport = async () => {
+    apolloBulkAbort.current = false;
+    setApolloImporting(true);
+    const maxPages = Math.min(apolloPagination.total_pages, 20); // cap at 500 companies
+    setApolloBulkProgress({ current: 0, total: maxPages, imported: 0 });
+    let totalImported = 0;
+    try {
+      for (let pg = 1; pg <= maxPages; pg++) {
+        if (apolloBulkAbort.current) break;
+        setApolloBulkProgress(prev => prev ? { ...prev, current: pg } : null);
+        const body = { ...buildApolloBody(pg), import_results: true };
+        const { data, error } = await supabase.functions.invoke("search-apollo", { body });
+        if (error) throw error;
+        if (data?.error) throw new Error(data.error);
+        totalImported += (data.stats?.created || 0) + (data.stats?.updated || 0);
+        setApolloBulkProgress(prev => prev ? { ...prev, imported: totalImported } : null);
+      }
+      toast({ title: "Bulk discovery complete", description: `${totalImported} companies imported across ${apolloBulkAbort.current ? "stopped early" : maxPages} pages.` });
+      setApolloOpen(false);
+      fetchCompanies();
+    } catch (err: any) {
+      toast({ title: "Bulk import failed", description: err.message, variant: "destructive" });
+    } finally {
+      setApolloImporting(false);
+      setApolloBulkProgress(null);
     }
   };
 
