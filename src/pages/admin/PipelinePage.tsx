@@ -5,7 +5,7 @@ import {
   Building2, Briefcase, Search, Loader2, RefreshCw, Download,
   Database, Play, Pause, Brain, ChevronDown, ChevronUp,
   MapPin, CheckCircle2, AlertTriangle, ArrowLeft,
-  Globe, Plus,
+  Globe, Plus, Bug,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -102,6 +102,12 @@ export default function PipelinePage() {
   const [addUrl, setAddUrl] = useState("");
   const [addLoading, setAddLoading] = useState(false);
 
+  /* ── Diagnostics ── */
+  const [diagOpen, setDiagOpen] = useState(false);
+  const [diagData, setDiagData] = useState<any>(null);
+  const [diagLoading, setDiagLoading] = useState(false);
+  const [diagCompanyName, setDiagCompanyName] = useState("");
+
   const handleAddCompany = async () => {
     if (!addUrl.trim()) return;
     setAddLoading(true);
@@ -170,16 +176,33 @@ export default function PipelinePage() {
     finally { setSyncing(null); }
   };
 
-  const syncCompanyJobs = async (companyId: string) => {
+  const syncCompanyJobs = async (companyId: string, diagnostic = false) => {
     setSyncing(`jobs-${companyId}`);
+    if (diagnostic) {
+      setDiagLoading(true);
+      setDiagData(null);
+      const co = companies.find(c => c.id === companyId);
+      setDiagCompanyName(co?.name || companyId);
+      setDiagOpen(true);
+    }
     try {
       const { data, error } = await supabase.functions.invoke("sync-company-jobs", { body: { step: "jobs", company_id: companyId } });
       if (error) throw error;
-      toast({ title: "Sync complete", description: `${data.synced} roles synced` });
+      if (diagnostic) {
+        setDiagData({ success: true, ...data });
+      } else {
+        toast({ title: "Sync complete", description: `${data.synced} roles synced` });
+      }
       if (companyId === selectedCompanyId) fetchJobs(companyId);
       await fetchCompanies();
-    } catch (err: any) { toast({ title: "Sync failed", description: err.message, variant: "destructive" }); }
-    finally { setSyncing(null); }
+    } catch (err: any) {
+      if (diagnostic) {
+        setDiagData({ success: false, error: err.message });
+      } else {
+        toast({ title: "Sync failed", description: err.message, variant: "destructive" });
+      }
+    }
+    finally { setSyncing(null); setDiagLoading(false); }
   };
 
   /* ═══════ RIGHT LOGIC ═══════ */
@@ -366,9 +389,14 @@ export default function PipelinePage() {
                           {(c.job_count || 0) > 0 && <span className="text-[9px] text-muted-foreground shrink-0">· {c.job_count} roles</span>}
                         </div>
                       </div>
-                      <Button variant="ghost" size="sm" className="h-5 w-5 p-0 shrink-0" onClick={e => { e.stopPropagation(); syncCompanyJobs(c.id); }} disabled={!!syncing}>
-                        {syncing === `jobs-${c.id}` ? <Loader2 className="h-2.5 w-2.5 animate-spin" /> : <RefreshCw className="h-2.5 w-2.5 text-muted-foreground" />}
-                      </Button>
+                      <div className="flex items-center gap-0.5 shrink-0">
+                        <Button variant="ghost" size="sm" className="h-5 w-5 p-0" onClick={e => { e.stopPropagation(); syncCompanyJobs(c.id); }} disabled={!!syncing} title="Sync jobs">
+                          {syncing === `jobs-${c.id}` ? <Loader2 className="h-2.5 w-2.5 animate-spin" /> : <RefreshCw className="h-2.5 w-2.5 text-muted-foreground" />}
+                        </Button>
+                        <Button variant="ghost" size="sm" className="h-5 w-5 p-0" onClick={e => { e.stopPropagation(); syncCompanyJobs(c.id, true); }} disabled={!!syncing} title="Diagnose sync">
+                          <Bug className="h-2.5 w-2.5 text-muted-foreground" />
+                        </Button>
+                      </div>
                     </button>
                   );
                 })}
@@ -584,6 +612,41 @@ export default function PipelinePage() {
             <Button onClick={handleAddCompany} disabled={addLoading || !addUrl.trim()} className="w-full gap-2">
               {addLoading ? <><Loader2 className="h-4 w-4 animate-spin" /> Enriching…</> : <><Plus className="h-4 w-4" /> Add & Enrich</>}
             </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Diagnostic Dialog */}
+      <Dialog open={diagOpen} onOpenChange={setDiagOpen}>
+        <DialogContent className="sm:max-w-lg max-h-[80vh] flex flex-col">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Bug className="h-4 w-4" /> Sync Diagnostic — {diagCompanyName}
+            </DialogTitle>
+            <DialogDescription>Raw response from the sync-company-jobs edge function.</DialogDescription>
+          </DialogHeader>
+          <div className="flex-1 overflow-auto">
+            {diagLoading ? (
+              <div className="flex items-center justify-center py-12">
+                <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                <span className="ml-2 text-sm text-muted-foreground">Calling sim-api…</span>
+              </div>
+            ) : diagData ? (
+              <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                  {diagData.success ? (
+                    <Badge variant="default" className="bg-emerald-500/15 text-emerald-600 border-emerald-500/30">Success</Badge>
+                  ) : (
+                    <Badge variant="destructive">Failed</Badge>
+                  )}
+                  {diagData.synced != null && <span className="text-sm text-muted-foreground">{diagData.synced} roles synced</span>}
+                  {diagData.hasMore && <Badge variant="outline" className="text-xs">hasMore: true</Badge>}
+                </div>
+                <pre className="text-xs bg-muted/50 rounded-lg p-3 overflow-auto max-h-[400px] whitespace-pre-wrap break-all font-mono text-foreground border border-border">
+                  {JSON.stringify(diagData, null, 2)}
+                </pre>
+              </div>
+            ) : null}
           </div>
         </DialogContent>
       </Dialog>
