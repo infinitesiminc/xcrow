@@ -31,6 +31,10 @@ interface Company {
   employee_range: string | null;
   headquarters: string | null;
   description: string | null;
+  company_type: string | null;
+  funding_stage: string | null;
+  funding_total: string | null;
+  founded_year: number | null;
   job_count?: number;
 }
 
