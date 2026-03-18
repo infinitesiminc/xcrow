@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { X, MapPin, Loader2, ArrowRight, Play } from "lucide-react";
+import ReactMarkdown from "react-markdown";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
