@@ -1,7 +1,7 @@
 import { useState, useRef, useCallback, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence, PanInfo } from "framer-motion";
-import { BarChart3, Zap, Bookmark, Share2, Search, ChevronUp, X, ArrowRight } from "lucide-react";
+import { BarChart3, Zap, Bookmark, Share2, Search, ChevronUp, X, ArrowRight, Globe, MapPin, Laptop } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 interface RoleCard {
