@@ -168,6 +168,13 @@ export default function PipelinePage() {
   const [syncAllRunning, setSyncAllRunning] = useState(false);
   const [syncAllProgress, setSyncAllProgress] = useState({ done: 0, total: 0, current: "", synced: 0 });
   const syncAbortRef = useRef(false);
+  const [syncStreamOpen, setSyncStreamOpen] = useState(false);
+  const [syncStreamEntries, setSyncStreamEntries] = useState<Array<{
+    company: string; logo: string | null; platform: string | null;
+    status: "syncing" | "success" | "failed" | "skipped"; jobCount: number;
+    source?: string; duration?: number; timestamp: number;
+  }>>([]);
+  const syncStreamEndRef = useRef<HTMLDivElement>(null);
 
   /* ═══════ ANALYZE STATE ═══════ */
   const [selectedCompanyId, setSelectedCompanyId] = useState<string | null>(null);
