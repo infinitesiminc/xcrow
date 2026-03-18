@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, useMemo, useRef, type WheelEvent as ReactWheelEvent } from "react";
+import { useEffect, useState, useCallback, useMemo, useRef } from "react";
 import { useSearchParams, useNavigate, useLocation } from "react-router-dom";
 import { motion, AnimatePresence, PanInfo } from "framer-motion";
 import {
