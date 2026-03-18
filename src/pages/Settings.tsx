@@ -25,7 +25,7 @@ import {
   Loader2, Save, Trash2, KeyRound, Bookmark, Zap, Search,
   Linkedin, Upload, FileText, GraduationCap, Briefcase, X, School,
   Shield, Target, User, Lock, AlertOctagon, ArrowLeft,
-  Radar, CircleDot, GitBranch, LayoutGrid,
+  Radar, CircleDot, GitBranch, LayoutGrid, BarChart3,
 } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { buildInterestGraph, type InterestGraph, type CompletionSignal, type AnalysisSignal, type BookmarkSignal } from "@/lib/interest-graph";
