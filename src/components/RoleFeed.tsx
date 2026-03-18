@@ -285,7 +285,7 @@ function DesktopGrid({ roles, onOpenSearch }: RoleFeedProps) {
                 }`}
               >
                 <Icon className="h-3 w-3" />
-                {workModeLabel[mode] || mode}
+                {workModeLabel[mode] || mode} <span className="opacity-60 ml-0.5">{roles.filter(r => r.workMode === mode).length}</span>
               </button>
             );
           })}
