@@ -550,6 +550,10 @@ export default function PipelinePage() {
                 <Plus className="h-3 w-3" />
                 Add
               </Button>
+              <Button variant="outline" size="sm" onClick={() => setApolloOpen(true)} className="text-xs h-7 gap-1">
+                <Telescope className="h-3 w-3" />
+                Apollo
+              </Button>
             </div>
             {bulkSyncing && (
               <div className="space-y-1">
