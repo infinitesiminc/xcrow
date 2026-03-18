@@ -11,7 +11,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Settings, LogOut, User, Menu, X, Compass, Zap, GraduationCap, LayoutDashboard, Shield } from "lucide-react";
+import { Settings, LogOut, User, Menu, X, Compass, LayoutDashboard, Shield } from "lucide-react";
 
 export default function Navbar() {
   const { user, signOut, openAuthModal, isSuperAdmin } = useAuth();
@@ -27,10 +27,8 @@ export default function Navbar() {
 
   const navItems = [
     { label: "Explore", path: "/", icon: Compass },
-    { label: "Practice", path: "/practice", icon: Zap },
     ...(user ? [
-      { label: "Learn", path: "/learning-path", icon: GraduationCap },
-      { label: "Dashboard", path: "/dashboard", icon: LayoutDashboard },
+      { label: "My Hub", path: "/dashboard", icon: LayoutDashboard },
     ] : []),
     ...(isSuperAdmin ? [
       { label: "Admin", path: "/admin", icon: Shield },
@@ -61,10 +59,10 @@ export default function Navbar() {
             return (
               <Button
                 key={item.path}
-                variant={isActive(item.path) ? "secondary" : "ghost"}
+                variant={isActive(item.path) || (item.path === "/dashboard" && location.pathname.startsWith("/dashboard")) ? "secondary" : "ghost"}
                 size="sm"
                 onClick={() => navigate(item.path)}
-                className={`text-sm gap-1.5 ${isActive(item.path) ? "text-primary" : ""}`}
+                className={`text-sm gap-1.5 ${isActive(item.path) || (item.path === "/dashboard" && location.pathname.startsWith("/dashboard")) ? "text-primary" : ""}`}
               >
                 <Icon className="h-4 w-4" />
                 {item.label}

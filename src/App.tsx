@@ -13,15 +13,12 @@ import Auth from "./pages/Auth.tsx";
 import Dashboard from "./pages/Dashboard.tsx";
 import Settings from "./pages/Settings.tsx";
 import NotFound from "./pages/NotFound.tsx";
-import Simulations from "./pages/Simulations.tsx";
-import LearningPath from "./pages/LearningPath.tsx";
 import CardStyleMockup from "./pages/CardStyleMockup.tsx";
 
 // Admin (superadmin only)
 import HRLayout from "./layouts/HRLayout.tsx";
 import PipelinePage from "./pages/admin/PipelinePage.tsx";
 import StatsPage from "./pages/admin/StatsPage.tsx";
-
 
 // Public company page
 const CompanyPage = lazy(() => import("./pages/CompanyPage.tsx"));
@@ -50,11 +47,13 @@ const App = () => (
             <Route path="/auth" element={<><Navbar /><Auth /></>} />
             <Route path="/dashboard" element={<><Navbar /><Dashboard /><Footer /></>} />
             <Route path="/settings" element={<><Navbar /><Settings /><Footer /></>} />
-            <Route path="/practice" element={<><Navbar /><Simulations /><Footer /></>} />
-            <Route path="/simulations" element={<><Navbar /><Simulations /><Footer /></>} />
-            <Route path="/learning-path" element={<><Navbar /><LearningPath /><Footer /></>} />
             <Route path="/company/:slug" element={<><Navbar /><Suspense fallback={null}><CompanyPage /></Suspense><Footer /></>} />
             <Route path="/card-styles" element={<><Navbar /><CardStyleMockup /></>} />
+
+            {/* Redirects for old routes */}
+            <Route path="/practice" element={<Navigate to="/dashboard?tab=practice" replace />} />
+            <Route path="/simulations" element={<Navigate to="/dashboard?tab=practice" replace />} />
+            <Route path="/learning-path" element={<Navigate to="/dashboard?tab=progress" replace />} />
 
             {/* Superadmin content pipeline */}
             <Route path="/admin" element={<AdminGate />}>
