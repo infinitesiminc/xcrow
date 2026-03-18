@@ -349,7 +349,179 @@ function aiTag(exposure: number): { label: string; className: string } {
   return { label: "Human Core", className: "border-brand-human/40 text-brand-human" };
 }
 
-type ViewMode = "strengths" | "ai-unlocks";
+type ViewMode = "strengths" | "ai-unlocks" | "edge-path";
+
+/* ── Edge Learning Path types & logic ── */
+interface EdgeStep {
+  edge: string;
+  frequency: number; // how many AI-unlocked jobs need this edge
+  category: SkillCategory;
+  relatedSkills: { name: string; aiEnabler: string }[];
+  /** Simulation tasks that develop this edge */
+  practiceTasks: { jobTitle: string; company: string; taskName: string }[];
+  /** Pillar most related to this edge */
+  pillar: "human_value_add" | "adaptive_thinking" | "domain_judgment" | "tool_awareness";
+  /** User's best score on related tasks (null if never practiced) */
+  bestScore: number | null;
+  /** Historical scores over time */
+  scoreHistory: { date: string; score: number }[];
+  practiced: boolean;
+}
+
+function buildEdgePath(
+  jobMatches: JobMatch[],
+  practicedRoles: PracticedRoleData[],
+): EdgeStep[] {
+  // 1. Aggregate edges across AI-unlocked jobs
+  const edgeMap = new Map<string, {
+    frequency: number;
+    relatedSkills: Map<string, string>;
+    jobs: Set<string>;
+    tasks: { jobTitle: string; company: string; taskName: string }[];
+    category: SkillCategory;
+  }>();
+
+  const unlockedJobs = jobMatches.filter(j => j.unlocked || j.aiBoostMatch >= 60);
+
+  for (const job of unlockedJobs) {
+    for (const gap of job.aiCoveredGaps) {
+      if (!gap.humanEdge) continue;
+      const edge = gap.humanEdge;
+      if (!edgeMap.has(edge)) {
+        edgeMap.set(edge, {
+          frequency: 0,
+          relatedSkills: new Map(),
+          jobs: new Set(),
+          tasks: [],
+          category: TAXONOMY.find(t => t.humanEdge === edge)?.category || "leadership",
+        });
+      }
+      const entry = edgeMap.get(edge)!;
+      entry.frequency++;
+      entry.jobs.add(job.title);
+      entry.relatedSkills.set(gap.name, gap.aiEnabler);
+    }
+    // Also capture edges from newEdges
+    for (const edge of job.newEdges) {
+      if (!edgeMap.has(edge)) {
+        edgeMap.set(edge, {
+          frequency: 0,
+          relatedSkills: new Map(),
+          jobs: new Set(),
+          tasks: [],
+          category: TAXONOMY.find(t => t.humanEdge === edge)?.category || "leadership",
+        });
+      }
+      const entry = edgeMap.get(edge)!;
+      if (!entry.jobs.has(job.title)) {
+        entry.frequency++;
+        entry.jobs.add(job.title);
+      }
+    }
+  }
+
+  // 2. Map edges to simulation tasks via taxonomy keywords
+  const edgeToPillar: Record<string, EdgeStep["pillar"]> = {
+    "System thinking & product judgment": "adaptive_thinking",
+    "Trade-off reasoning at scale": "domain_judgment",
+    "Edge-case intuition": "adaptive_thinking",
+    "Adversarial thinking": "domain_judgment",
+    "Data governance & domain modeling": "domain_judgment",
+    "Problem framing & evaluation design": "adaptive_thinking",
+    "Incident judgment & reliability culture": "domain_judgment",
+    "Asking the right questions": "adaptive_thinking",
+    "Assumption judgment & scenario framing": "domain_judgment",
+    "Novel hypothesis formation": "adaptive_thinking",
+    "Change management & adoption": "human_value_add",
+    "Contextual judgment under uncertainty": "domain_judgment",
+    "Trust building & political navigation": "human_value_add",
+    "Voice, narrative, and persuasion": "human_value_add",
+    "Storytelling & executive presence": "human_value_add",
+    "Empathy & leverage intuition": "human_value_add",
+    "Team dynamics & priority judgment": "human_value_add",
+    "Vision & competitive intuition": "adaptive_thinking",
+    "Empathy & cultural leadership": "human_value_add",
+    "Relationship & negotiation leverage": "human_value_add",
+    "Empathy-driven design thinking": "human_value_add",
+    "Cultural resonance & originality": "adaptive_thinking",
+    "Audience intuition & trend sensing": "adaptive_thinking",
+    "Jurisdictional judgment & precedent": "domain_judgment",
+    "Materiality judgment & ethics": "domain_judgment",
+  };
+
+  // Find practice tasks from JOB_TEMPLATES that exercise the related skills
+  for (const [edge, entry] of edgeMap) {
+    const skill = TAXONOMY.find(t => t.humanEdge === edge);
+    if (!skill) continue;
+    for (const job of JOB_TEMPLATES) {
+      for (const taskName of job.tasks) {
+        const matchedIds = matchTaskToSkills(taskName);
+        if (matchedIds.includes(skill.id)) {
+          entry.tasks.push({ jobTitle: job.title, company: job.company, taskName });
+        }
+      }
+    }
+  }
+
+  // 3. Calculate user progress on each edge using pillar scores
+  const steps: EdgeStep[] = [];
+  for (const [edge, entry] of edgeMap) {
+    if (entry.frequency === 0) continue;
+
+    const pillar = edgeToPillar[edge] || "human_value_add";
+    const pillarKey = `${pillar}_score` as keyof PracticedRoleData;
+
+    // Find all practiced simulations relevant to this edge's skill
+    const skill = TAXONOMY.find(t => t.humanEdge === edge);
+    const relevantPractice: PracticedRoleData[] = [];
+    if (skill) {
+      for (const pr of practicedRoles) {
+        const matchedIds = [...matchTaskToSkills(pr.task_name), ...matchTaskToSkills(pr.job_title)];
+        if (matchedIds.includes(skill.id)) {
+          relevantPractice.push(pr);
+        }
+      }
+    }
+
+    const scoreHistory: { date: string; score: number }[] = [];
+    let bestScore: number | null = null;
+    for (const pr of relevantPractice) {
+      const score = pr[pillarKey] as number | null;
+      if (score != null) {
+        scoreHistory.push({ date: pr.completed_at, score });
+        if (bestScore === null || score > bestScore) bestScore = score;
+      }
+    }
+    scoreHistory.sort((a, b) => a.date.localeCompare(b.date));
+
+    steps.push({
+      edge,
+      frequency: entry.frequency,
+      category: entry.category,
+      relatedSkills: Array.from(entry.relatedSkills.entries()).map(([name, aiEnabler]) => ({ name, aiEnabler })),
+      practiceTasks: entry.tasks.slice(0, 5), // top 5
+      pillar,
+      bestScore,
+      scoreHistory,
+      practiced: relevantPractice.length > 0,
+    });
+  }
+
+  // Sort: most frequent (most impactful) first, then unpracticed first
+  steps.sort((a, b) => {
+    if (a.practiced !== b.practiced) return a.practiced ? 1 : -1;
+    return b.frequency - a.frequency;
+  });
+
+  return steps;
+}
+
+const PILLAR_LABELS: Record<string, string> = {
+  human_value_add: "Human Value-Add",
+  adaptive_thinking: "Adaptive Thinking",
+  domain_judgment: "Domain Judgment",
+  tool_awareness: "Tool Awareness",
+};
 
 /* ── Reach Map SVG ── */
 function ReachMap({ humanOnly, aiUnlocked, total }: { humanOnly: number; aiUnlocked: number; total: number }) {
