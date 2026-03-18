@@ -4,7 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { Building2, Briefcase, Brain, Users, Loader2, Settings2 } from "lucide-react";
+import { Building2, Briefcase, Brain, Users, Loader2, Settings2, CheckCircle2 } from "lucide-react";
 
 interface FeatureFlag {
   key: string;
@@ -20,18 +20,23 @@ export default function StatsPage() {
 
   useEffect(() => {
     (async () => {
-      const [companies, jobs, clusters, sims, users, flagsRes] = await Promise.all([
+      const [companies, jobs, clusters, sims, users, flagsRes, analyzedJobs] = await Promise.all([
         supabase.from("companies").select("id", { count: "exact", head: true }),
         supabase.from("jobs").select("id", { count: "exact", head: true }),
         supabase.from("job_task_clusters").select("id", { count: "exact", head: true }),
         supabase.from("completed_simulations").select("id", { count: "exact", head: true }),
         supabase.from("profiles").select("id", { count: "exact", head: true }),
         supabase.from("feature_flags" as any).select("key, enabled, description").order("key"),
+        supabase.from("job_task_clusters").select("job_id").then(res => {
+          const unique = new Set((res.data || []).map((r: any) => r.job_id));
+          return { count: unique.size };
+        }),
       ]);
 
       setStats({
         companies: companies.count || 0,
         jobs: jobs.count || 0,
+        analyzedJobs: analyzedJobs.count || 0,
         clusters: clusters.count || 0,
         sims: sims.count || 0,
         users: users.count || 0,
@@ -61,6 +66,7 @@ export default function StatsPage() {
   const cards = [
     { label: "Companies", value: stats.companies, icon: Building2 },
     { label: "Jobs", value: stats.jobs, icon: Briefcase },
+    { label: "Jobs Analyzed", value: stats.analyzedJobs, icon: CheckCircle2 },
     { label: "Task Clusters", value: stats.clusters, icon: Brain },
     { label: "Simulations Run", value: stats.sims, icon: Brain },
     { label: "Users", value: stats.users, icon: Users },
