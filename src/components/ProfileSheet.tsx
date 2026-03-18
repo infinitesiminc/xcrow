@@ -69,10 +69,17 @@ export default function ProfileSheet({ open, onClose, userId, displayName, email
   const completedCount = milestones.filter(m => m.completed).length;
 
   const goToRole = (jobTitle: string, company: string | null) => {
+    onClose();
     const params = new URLSearchParams({ title: jobTitle });
     if (company) params.set("company", company);
-    navigate(`/analysis?${params.toString()}`);
-    onClose();
+    const target = `/analysis?${params.toString()}`;
+    // Force navigation even if already on the same route
+    if (window.location.pathname + window.location.search === target) {
+      navigate("/", { replace: true });
+      setTimeout(() => navigate(target, { replace: true }), 0);
+    } else {
+      navigate(target);
+    }
   };
 
   const initials = displayName
