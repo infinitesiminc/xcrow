@@ -493,8 +493,46 @@ export default function RolePreviewPanel({ role, onClose }: RolePreviewPanelProp
                 </div>
               </div>
             )}
-            {!summary && tasks.length === 0 && (
-              <p className="text-sm text-muted-foreground text-center py-8">Detailed analysis coming soon.</p>
+            {!summary && tasks.length === 0 && !analyzing && (
+              <div className="text-center py-8 space-y-4">
+                <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-primary/10 mx-auto">
+                  <Bot className="h-7 w-7 text-primary" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-foreground mb-1">No task breakdown yet</p>
+                  <p className="text-xs text-muted-foreground leading-relaxed max-w-[240px] mx-auto">
+                    {jobDescription
+                      ? "We can analyze this role's tasks and AI exposure right now."
+                      : "This role hasn't been analyzed yet. Check back soon or explore similar roles."}
+                  </p>
+                </div>
+                {jobDescription && role.jobId && (
+                  <Button
+                    size="sm"
+                    className="gap-2 rounded-xl"
+                    onClick={() => triggerAnalysis(role.jobId!, role.title, role.company || undefined, jobDescription)}
+                  >
+                    <Zap className="h-3.5 w-3.5" /> Analyze Now
+                  </Button>
+                )}
+              </div>
+            )}
+            {analyzing && (
+              <div className="text-center py-8 space-y-4">
+                <motion.div
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+                  className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-primary/10 mx-auto"
+                >
+                  <Bot className="h-7 w-7 text-primary" />
+                </motion.div>
+                <div>
+                  <p className="text-sm font-medium text-foreground mb-1">Analyzing tasks…</p>
+                  <p className="text-xs text-muted-foreground leading-relaxed max-w-[240px] mx-auto">
+                    Breaking down this role into tasks and measuring AI exposure. This takes ~10 seconds.
+                  </p>
+                </div>
+              </div>
             )}
           </>
         )}
