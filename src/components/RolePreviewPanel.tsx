@@ -501,16 +501,14 @@ export default function RolePreviewPanel({ role, onClose }: RolePreviewPanelProp
                 <div>
                   <p className="text-sm font-medium text-foreground mb-1">No task breakdown yet</p>
                   <p className="text-xs text-muted-foreground leading-relaxed max-w-[240px] mx-auto">
-                    {jobDescription
-                      ? "We can analyze this role's tasks and AI exposure right now."
-                      : "This role hasn't been analyzed yet. Check back soon or explore similar roles."}
+                    We can analyze this role's tasks and AI exposure right now.
                   </p>
                 </div>
-                {jobDescription && role.jobId && (
+                {role.jobId && (
                   <Button
                     size="sm"
                     className="gap-2 rounded-xl"
-                    onClick={() => triggerAnalysis(role.jobId!, role.title, role.company || undefined, jobDescription)}
+                    onClick={() => triggerAnalysis(role.jobId!, role.title, role.company || undefined, jobDescription || undefined)}
                   >
                     <Zap className="h-3.5 w-3.5" /> Analyze Now
                   </Button>
