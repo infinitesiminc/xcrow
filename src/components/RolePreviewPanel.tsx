@@ -272,7 +272,7 @@ export default function RolePreviewPanel({ role, onClose }: RolePreviewPanelProp
   if (view === "breakdown") {
     const completedCount = tasks.filter(t => completedTasks.has(t.cluster_name)).length;
     return (
-      <>
+      <>{simulationOverlay}
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="h-full flex flex-col bg-card overflow-hidden">
           {/* Header bar */}
           <div className="flex items-center justify-between px-3 py-2 border-b border-border shrink-0">
