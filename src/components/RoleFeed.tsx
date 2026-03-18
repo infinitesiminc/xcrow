@@ -334,8 +334,19 @@ function RoleDetailOverlay({ role, onClose }: { role: RoleCard; onClose: () => v
                     </div>
                   </div>
                 ) : aiSummary ? (
-                  <div className="space-y-1 text-sm text-muted-foreground leading-relaxed whitespace-pre-line">
-                    {aiSummary}
+                  <div className="space-y-3 text-sm text-muted-foreground leading-relaxed">
+                    {aiSummary.split(/\n\n+/).map((block, i) => {
+                      const headingMatch = block.match(/^\*\*(.+?)\*\*\s*\n?([\s\S]*)/);
+                      if (headingMatch) {
+                        return (
+                          <div key={i}>
+                            <h3 className="text-xs font-semibold text-foreground uppercase tracking-wider mb-1">{headingMatch[1]}</h3>
+                            <p>{headingMatch[2].trim()}</p>
+                          </div>
+                        );
+                      }
+                      return <p key={i}>{block}</p>;
+                    })}
                   </div>
                 ) : (
                   <div>
