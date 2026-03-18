@@ -1258,6 +1258,121 @@ export default function PipelinePage() {
           </ScrollArea>
         </SheetContent>
       </Sheet>
+
+      {/* ═══════ SYNC ACTIVITY STREAM ═══════ */}
+      <Sheet open={syncStreamOpen} onOpenChange={setSyncStreamOpen}>
+        <SheetContent className="w-[500px] sm:max-w-[540px] flex flex-col">
+          <SheetHeader>
+            <SheetTitle className="flex items-center gap-2">
+              <Zap className="h-4 w-4 text-primary" /> Sync Activity Stream
+            </SheetTitle>
+            <SheetDescription>
+              {syncAllRunning
+                ? `Syncing ${syncAllProgress.done}/${syncAllProgress.total} companies…`
+                : syncStreamEntries.length > 0
+                  ? `Complete — ${syncStreamEntries.filter(e => e.status === "success").reduce((s, e) => s + e.jobCount, 0)} roles across ${syncStreamEntries.filter(e => e.status === "success").length} companies`
+                  : "Waiting for sync to start…"}
+            </SheetDescription>
+          </SheetHeader>
+
+          {/* Summary stats */}
+          {syncStreamEntries.length > 0 && (
+            <div className="flex gap-3 mt-3">
+              {[
+                { label: "Success", count: syncStreamEntries.filter(e => e.status === "success").length, color: "text-primary" },
+                { label: "Skipped", count: syncStreamEntries.filter(e => e.status === "skipped").length, color: "text-muted-foreground" },
+                { label: "Failed", count: syncStreamEntries.filter(e => e.status === "failed").length, color: "text-destructive" },
+                { label: "Roles", count: syncStreamEntries.filter(e => e.status === "success").reduce((s, e) => s + e.jobCount, 0), color: "text-foreground" },
+              ].map(s => (
+                <div key={s.label} className="flex-1 rounded-md border border-border bg-muted/30 p-2 text-center">
+                  <p className={`text-base font-bold ${s.color}`}>{s.count}</p>
+                  <p className="text-[9px] text-muted-foreground">{s.label}</p>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {syncAllRunning && (
+            <Progress value={(syncAllProgress.done / Math.max(syncAllProgress.total, 1)) * 100} className="h-1.5 mt-3" />
+          )}
+
+          <ScrollArea className="flex-1 mt-3">
+            <div className="space-y-0.5 pr-3">
+              <AnimatePresence initial={false}>
+                {syncStreamEntries.map((entry, idx) => (
+                  <motion.div
+                    key={entry.timestamp}
+                    initial={{ opacity: 0, y: 12, height: 0 }}
+                    animate={{ opacity: 1, y: 0, height: "auto" }}
+                    transition={{ duration: 0.2 }}
+                    className={`flex items-center gap-2.5 px-2.5 py-2 rounded-md border transition-colors ${
+                      entry.status === "syncing" ? "border-primary/30 bg-primary/5" :
+                      entry.status === "success" ? "border-border bg-muted/20" :
+                      entry.status === "failed" ? "border-destructive/30 bg-destructive/5" :
+                      "border-transparent bg-transparent"
+                    }`}
+                  >
+                    {/* Status icon */}
+                    <div className="shrink-0">
+                      {entry.status === "syncing" ? (
+                        <Loader2 className="h-3.5 w-3.5 animate-spin text-primary" />
+                      ) : entry.status === "success" ? (
+                        <CheckCircle2 className="h-3.5 w-3.5 text-primary" />
+                      ) : entry.status === "failed" ? (
+                        <AlertTriangle className="h-3.5 w-3.5 text-destructive" />
+                      ) : (
+                        <div className="h-3.5 w-3.5 rounded-full border border-muted-foreground/30" />
+                      )}
+                    </div>
+
+                    {/* Company info */}
+                    <CompanyLogo url={entry.logo} name={entry.company} size="h-5 w-5" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[11px] font-medium truncate">{entry.company}</p>
+                      <p className="text-[9px] text-muted-foreground">
+                        {entry.platform?.toUpperCase() || "—"}
+                        {entry.source && entry.source !== entry.platform && ` via ${entry.source}`}
+                        {entry.duration != null && ` · ${(entry.duration / 1000).toFixed(1)}s`}
+                      </p>
+                    </div>
+
+                    {/* Result */}
+                    <div className="shrink-0 text-right">
+                      {entry.status === "syncing" ? (
+                        <span className="text-[10px] text-primary font-medium">syncing…</span>
+                      ) : entry.status === "success" ? (
+                        <Badge variant="outline" className="text-[9px] h-4 bg-primary/10 text-primary border-primary/20">
+                          +{entry.jobCount} roles
+                        </Badge>
+                      ) : entry.status === "failed" ? (
+                        <Badge variant="outline" className="text-[9px] h-4 border-destructive/30 text-destructive">error</Badge>
+                      ) : (
+                        <span className="text-[9px] text-muted-foreground">0 roles</span>
+                      )}
+                    </div>
+                  </motion.div>
+                ))}
+              </AnimatePresence>
+              <div ref={syncStreamEndRef} />
+            </div>
+          </ScrollArea>
+
+          <div className="flex items-center justify-between pt-3 border-t border-border mt-2">
+            {syncAllRunning ? (
+              <Button variant="outline" size="sm" className="gap-1.5" onClick={() => { syncAbortRef.current = true; }}>
+                <Pause className="h-3 w-3" /> Stop
+              </Button>
+            ) : (
+              <span className="text-[10px] text-muted-foreground">
+                {syncStreamEntries.length > 0 ? "Sync finished" : "—"}
+              </span>
+            )}
+            <Button variant="ghost" size="sm" className="text-[10px]" onClick={() => setSyncStreamOpen(false)}>
+              Close
+            </Button>
+          </div>
+        </SheetContent>
+      </Sheet>
     </div>
   );
 }
