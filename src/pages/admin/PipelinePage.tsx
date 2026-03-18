@@ -986,6 +986,11 @@ export default function PipelinePage() {
                       <AlertTriangle className="h-2.5 w-2.5 shrink-0" /><span>{queueMessage}</span>
                     </div>
                   )}
+                  {bulkScoreResult && (
+                    <div className="flex items-center gap-1.5 text-[10px] text-primary bg-primary/5 rounded px-2 py-1 mt-2">
+                      <Zap className="h-2.5 w-2.5 shrink-0" /><span>{bulkScoreResult}</span>
+                    </div>
+                  )}
 
                   {/* Search + dept pills */}
                   {jobs.length > 0 && (
