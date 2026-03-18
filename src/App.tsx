@@ -49,8 +49,6 @@ const App = () => (
               <Route path="/card-styles" element={<><Navbar /><CardStyleMockup /></>} />
 
               {/* Redirects — old routes all go to feed */}
-              <Route path="/dashboard" element={<Navigate to="/" replace />} />
-              <Route path="/dashboard/*" element={<Navigate to="/" replace />} />
               <Route path="/practice" element={<Navigate to="/" replace />} />
               <Route path="/simulations" element={<Navigate to="/" replace />} />
               <Route path="/learning-path" element={<Navigate to="/" replace />} />

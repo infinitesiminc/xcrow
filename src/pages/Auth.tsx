@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Mail, Lock, User, ArrowLeft, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -16,8 +16,11 @@ const Auth = () => {
   const [displayName, setDisplayName] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { toast } = useToast();
   const { user, loading: authLoading } = useAuth();
+
+  const redirectTo = searchParams.get("redirect") || "/";
 
   useEffect(() => {
     if (!authLoading && user) {
@@ -28,7 +31,6 @@ const Auth = () => {
         try {
           const data = JSON.parse(pending);
           const returnUrl = data.return_url;
-          // Fire bookmark insert asynchronously
           supabase.from("bookmarked_roles").insert({
             user_id: user.id,
             job_title: data.job_title,
@@ -37,7 +39,6 @@ const Auth = () => {
             automation_risk_percent: data.automation_risk_percent,
             new_skills_percent: data.new_skills_percent,
           }).then(() => {});
-          // Redirect back to the analysis they were viewing
           if (returnUrl) {
             const url = new URL(returnUrl);
             navigate(url.pathname + url.search);
@@ -45,9 +46,9 @@ const Auth = () => {
           }
         } catch {}
       }
-      navigate("/hr/team-progress");
+      navigate(redirectTo);
     }
-  }, [user, authLoading, navigate]);
+  }, [user, authLoading, navigate, redirectTo]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -71,7 +72,7 @@ const Auth = () => {
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
-        navigate("/dashboard");
+        // Navigation handled by the useEffect above
       }
     } catch (err: any) {
       toast({
