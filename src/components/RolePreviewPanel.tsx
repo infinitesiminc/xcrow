@@ -71,7 +71,7 @@ export default function RolePreviewPanel({ role, onClose }: RolePreviewPanelProp
   const { user, openAuthModal } = useAuth();
   const [tasks, setTasks] = useState<TaskCluster[]>([]);
   const [summary, setSummary] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [sourceUrl, setSourceUrl] = useState<string | null>(role.sourceUrl || null);
   const [view, setView] = useState<PanelView>("details");
   const [simTask, setSimTask] = useState<TaskCluster | null>(null);
   const [completedTasks, setCompletedTasks] = useState<Set<string>>(new Set());
