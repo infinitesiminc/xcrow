@@ -433,6 +433,7 @@ export default function JourneySkillProfileView({ practicedRoles = [], onNavigat
   const rand = useMemo(() => seeded(2026), []);
   const skills = useMemo(() => buildTaxonomy(practicedRoles, rand), [practicedRoles, rand]);
   const jobMatches = useMemo(() => computeJobMatches(skills), [skills]);
+  const isRealData = practicedRoles.length > 0;
 
   const [view, setView] = useState<ViewMode>("strengths");
   const [expandedSkill, setExpandedSkill] = useState<string | null>(null);
