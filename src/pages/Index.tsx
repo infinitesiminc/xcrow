@@ -22,6 +22,11 @@ interface RoleCard {
   logo?: string;
   country?: string;
   workMode?: string;
+  description?: string;
+  seniority?: string;
+  taskCount?: number;
+  aiTaskCount?: number;
+  jobId?: string;
 }
 
 function calcToolsToLearn(risk: number, augmented: number, newSkills: number): number {
@@ -73,7 +78,7 @@ const Index = () => {
       while (hasMore) {
         const { data, error } = await supabase
           .from("jobs")
-          .select("title, department, location, city, country, work_mode, augmented_percent, automation_risk_percent, new_skills_percent, companies(name, logo_url, website)")
+          .select("id, title, department, location, city, country, work_mode, description, seniority, augmented_percent, automation_risk_percent, new_skills_percent, companies(name, logo_url, website)")
           .order("augmented_percent", { ascending: false })
           .range(page * PAGE_SIZE, (page + 1) * PAGE_SIZE - 1);
 
@@ -81,6 +86,22 @@ const Index = () => {
         allData = allData.concat(data);
         hasMore = data.length === PAGE_SIZE;
         page++;
+      }
+
+      // Fetch task cluster counts per job
+      let taskCountMap: Record<string, { total: number; aiLed: number }> = {};
+      {
+        const { data: clusters } = await supabase
+          .from("job_task_clusters")
+          .select("job_id, ai_exposure_score");
+
+        if (clusters) {
+          for (const c of clusters) {
+            if (!taskCountMap[c.job_id]) taskCountMap[c.job_id] = { total: 0, aiLed: 0 };
+            taskCountMap[c.job_id].total++;
+            if ((c.ai_exposure_score ?? 0) >= 60) taskCountMap[c.job_id].aiLed++;
+          }
+        }
       }
 
       if (allData.length === 0) {
@@ -100,6 +121,7 @@ const Index = () => {
         const companyData = j.companies as unknown as { name: string; logo_url?: string; website?: string } | null;
         const companyName = companyData?.name || undefined;
         const logoUrl = companyData?.logo_url || (companyData?.website ? `https://logo.clearbit.com/${companyData.website.replace(/^https?:\/\//, '').replace(/\/.*$/, '')}` : undefined);
+        const tc = taskCountMap[j.id];
         return {
           title: j.title,
           image: getDepartmentImage(j.department),
@@ -116,6 +138,11 @@ const Index = () => {
           logo: logoUrl,
           country: j.country || undefined,
           workMode: j.work_mode || undefined,
+          description: j.description || undefined,
+          seniority: j.seniority || undefined,
+          taskCount: tc?.total || 0,
+          aiTaskCount: tc?.aiLed || 0,
+          jobId: j.id,
         };
       });
 
