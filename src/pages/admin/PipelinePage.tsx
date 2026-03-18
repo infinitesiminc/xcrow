@@ -282,6 +282,37 @@ export default function PipelinePage() {
     return { totalCompanies, withATS, withJobs, noJobs, totalJobs, openFlags };
   }, [companies, flags]);
 
+  /* ═══════ COMPANIES BROWSER COMPUTED ═══════ */
+  const uniqueIndustries = useMemo(() => {
+    const set = new Set<string>();
+    companies.forEach(c => { if (c.industry) set.add(c.industry); });
+    return Array.from(set).sort();
+  }, [companies]);
+
+  const uniqueAts = useMemo(() => {
+    const set = new Set<string>();
+    companies.forEach(c => { if (c.detected_ats_platform && c.detected_ats_platform !== "unknown") set.add(c.detected_ats_platform); });
+    return Array.from(set).sort();
+  }, [companies]);
+
+  const uniqueFunding = useMemo(() => {
+    const set = new Set<string>();
+    companies.forEach(c => { if (c.funding_stage) set.add(c.funding_stage); });
+    return Array.from(set).sort();
+  }, [companies]);
+
+  const filteredCompanies = useMemo(() => {
+    let list = companies;
+    if (compSearch) {
+      const q = compSearch.toLowerCase();
+      list = list.filter(c => c.name.toLowerCase().includes(q) || c.industry?.toLowerCase().includes(q) || c.headquarters?.toLowerCase().includes(q));
+    }
+    if (compAtsFilter) list = list.filter(c => c.detected_ats_platform === compAtsFilter);
+    if (compIndustryFilter) list = list.filter(c => c.industry === compIndustryFilter);
+    if (compFundingFilter) list = list.filter(c => c.funding_stage === compFundingFilter);
+    return list.sort((a, b) => (b.job_count || 0) - (a.job_count || 0));
+  }, [companies, compSearch, compAtsFilter, compIndustryFilter, compFundingFilter]);
+
   /* ═══════ DISCOVER LOGIC ═══════ */
   const buildApolloBody = (pg = 1): Record<string, unknown> => {
     const body: Record<string, unknown> = { page: pg, per_page: 25, import_results: false };
