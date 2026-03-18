@@ -226,7 +226,10 @@ function buildCoachingChatSystem(
   learningObjectives?: any[], objectiveStatus?: Record<string, boolean>,
   scaffoldingTiers?: Record<string, number>,
 ): string {
-  const posInRound = ((turnCount - 1) % 3);
+  // turnCount includes the AI opening message (turn 1), so user's first response is turn 2.
+  // The 3-turn cycle should start from the user's first response, not the AI opening.
+  // Subtract 2 to align: user's 1st response → pos 0 (feedback), AI reply → pos 1 (insight), next scenario → pos 2.
+  const posInRound = Math.max(0, (turnCount - 2) % 3);
 
   // Build objectives context with scaffolding tiers
   let objectivesContext = "";
