@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
@@ -22,18 +22,11 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
 import {
-  Loader2, Save, Trash2, KeyRound, Bookmark, Zap, Search,
+  Loader2, Save, Trash2, KeyRound, Bookmark,
   Linkedin, Upload, FileText, GraduationCap, Briefcase, X, School,
-  Shield, Target, User, Lock, AlertOctagon, ArrowLeft,
-  Radar, CircleDot, GitBranch, LayoutGrid, BarChart3,
+  Shield, User, Lock, AlertOctagon, ArrowLeft,
 } from "lucide-react";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { buildInterestGraph, type InterestGraph, type CompletionSignal, type AnalysisSignal, type BookmarkSignal } from "@/lib/interest-graph";
-import JourneyRadarView from "@/components/settings/JourneyRadarView";
-import JourneyBubbleView from "@/components/settings/JourneyBubbleView";
-import JourneyTimelineView from "@/components/settings/JourneyTimelineView";
-import JourneyHeatmapView from "@/components/settings/JourneyHeatmapView";
-import JourneySkillProfileView from "@/components/settings/JourneySkillProfileView";
+import JourneyDashboard from "@/components/settings/JourneyDashboard";
 
 /* ── helpers ─────────────────────────────────────────── */
 
@@ -58,34 +51,9 @@ interface PracticedRole {
   domain_judgment_score: number | null;
 }
 
-function hashToHue(str: string): number {
-  let hash = 0;
-  for (let i = 0; i < str.length; i++) hash = str.charCodeAt(i) + ((hash << 5) - hash);
-  return Math.abs(hash) % 360;
-}
-
-function MiniGauge({ value, size = 32 }: { value: number; size?: number }) {
-  const radius = (size / 2) - 3;
-  const stroke = 3;
-  const circumference = 2 * Math.PI * radius;
-  const arcLength = circumference * 0.75;
-  const fillLength = arcLength * (value / 100);
-  const rotation = 135;
-  return (
-    <div className="relative" style={{ width: size, height: size }}>
-      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
-        <circle cx={size/2} cy={size/2} r={radius} fill="none" stroke="rgba(255,255,255,0.15)" strokeWidth={stroke} strokeLinecap="round" strokeDasharray={`${arcLength} ${circumference}`} transform={`rotate(${rotation} ${size/2} ${size/2})`} />
-        <circle cx={size/2} cy={size/2} r={radius} fill="none" stroke="rgba(255,255,255,0.9)" strokeWidth={stroke} strokeLinecap="round" strokeDasharray={`${arcLength} ${circumference}`} strokeDashoffset={arcLength - fillLength} transform={`rotate(${rotation} ${size/2} ${size/2})`} />
-      </svg>
-      <div className="absolute inset-0 flex items-center justify-center">
-        <span className="text-[9px] font-bold text-white">{value}</span>
-      </div>
-    </div>
-  );
-}
 
 const NAV_ITEMS = [
-  { key: "roles", label: "My Roles", icon: Bookmark },
+  { key: "roles", label: "My Journey", icon: Bookmark },
   { key: "profile", label: "Profile", icon: User },
   { key: "security", label: "Security", icon: Lock },
   { key: "danger", label: "Danger Zone", icon: AlertOctagon },
@@ -127,9 +95,6 @@ export default function Settings() {
   const [practicedRoles, setPracticedRoles] = useState<PracticedRole[]>([]);
   const [savedLoading, setSavedLoading] = useState(true);
   const [practicedLoading, setPracticedLoading] = useState(true);
-  const [savedSearch, setSavedSearch] = useState("");
-  const [practicedSearch, setPracticedSearch] = useState("");
-  const [rolesTab, setRolesTab] = useState("saved");
 
   useEffect(() => {
     if (!authLoading && !user) navigate("/auth");
@@ -173,37 +138,6 @@ export default function Settings() {
         setPracticedLoading(false);
       });
   }, [user]);
-
-  const filteredRoles = useMemo(() => {
-    const q = savedSearch.toLowerCase().trim();
-    if (!q) return savedRoles;
-    return savedRoles.filter(r =>
-      r.job_title.toLowerCase().includes(q) || (r.company?.toLowerCase().includes(q) ?? false)
-    );
-  }, [savedRoles, savedSearch]);
-
-  const filteredPracticed = useMemo(() => {
-    const q = practicedSearch.toLowerCase().trim();
-    if (!q) return practicedRoles;
-    return practicedRoles.filter(r =>
-      r.job_title.toLowerCase().includes(q) || r.task_name.toLowerCase().includes(q) || (r.company?.toLowerCase().includes(q) ?? false)
-    );
-  }, [practicedRoles, practicedSearch]);
-
-  function avgScore(r: PracticedRole): number {
-    const scores = [r.tool_awareness_score, r.human_value_add_score, r.adaptive_thinking_score, r.domain_judgment_score].filter((s): s is number => s != null);
-    return scores.length ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) : 0;
-  }
-
-  function timeAgo(dateStr: string): string {
-    const diff = Date.now() - new Date(dateStr).getTime();
-    const mins = Math.floor(diff / 60000);
-    if (mins < 60) return `${mins}m ago`;
-    const hrs = Math.floor(mins / 60);
-    if (hrs < 24) return `${hrs}h ago`;
-    const days = Math.floor(hrs / 24);
-    return `${days}d ago`;
-  }
 
   const handleCvUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -306,11 +240,6 @@ export default function Settings() {
     setDeleting(false);
   };
 
-  const goToRole = (jobTitle: string, company: string | null) => {
-    const params = new URLSearchParams({ title: jobTitle });
-    if (company) params.set("company", company);
-    navigate(`/analysis?${params.toString()}`);
-  };
 
   if (authLoading) return null;
 
@@ -391,22 +320,10 @@ export default function Settings() {
             transition={{ duration: 0.2 }}
           >
             {activeSection === "roles" && (
-              <RolesSection
-                savedRoles={savedRoles}
+              <JourneyDashboard
                 practicedRoles={practicedRoles}
-                savedLoading={savedLoading}
-                practicedLoading={practicedLoading}
-                filteredRoles={filteredRoles}
-                filteredPracticed={filteredPracticed}
-                savedSearch={savedSearch}
-                setSavedSearch={setSavedSearch}
-                practicedSearch={practicedSearch}
-                setPracticedSearch={setPracticedSearch}
-                rolesTab={rolesTab}
-                setRolesTab={setRolesTab}
-                goToRole={goToRole}
-                avgScore={avgScore}
-                timeAgo={timeAgo}
+                savedRoles={savedRoles}
+                loading={savedLoading || practicedLoading}
               />
             )}
 
@@ -452,132 +369,6 @@ export default function Settings() {
 /* ══════════════════════════════════════════════════════
    Section Components
    ══════════════════════════════════════════════════════ */
-
-type VizMode = "radar" | "bubble" | "timeline" | "heatmap" | "skills";
-
-const VIZ_MODES: { key: VizMode; label: string; icon: typeof Radar }[] = [
-  { key: "radar", label: "Radar", icon: Radar },
-  { key: "bubble", label: "Galaxy", icon: CircleDot },
-  { key: "timeline", label: "Timeline", icon: GitBranch },
-  { key: "heatmap", label: "Heatmap", icon: LayoutGrid },
-  { key: "skills", label: "Skills", icon: BarChart3 },
-];
-
-function RolesSection({
-  savedRoles, practicedRoles, savedLoading, practicedLoading,
-  filteredRoles, filteredPracticed, savedSearch, setSavedSearch,
-  practicedSearch, setPracticedSearch, rolesTab, setRolesTab,
-  goToRole, avgScore, timeAgo,
-}: {
-  savedRoles: SavedRole[];
-  practicedRoles: PracticedRole[];
-  savedLoading: boolean;
-  practicedLoading: boolean;
-  filteredRoles: SavedRole[];
-  filteredPracticed: PracticedRole[];
-  savedSearch: string;
-  setSavedSearch: (v: string) => void;
-  practicedSearch: string;
-  setPracticedSearch: (v: string) => void;
-  rolesTab: string;
-  setRolesTab: (v: string) => void;
-  goToRole: (title: string, company: string | null) => void;
-  avgScore: (r: PracticedRole) => number;
-  timeAgo: (d: string) => string;
-}) {
-  const [vizMode, setVizMode] = useState<VizMode>("radar");
-  const { user } = useAuth();
-  const [analyses, setAnalyses] = useState<AnalysisSignal[]>([]);
-  const [graphLoading, setGraphLoading] = useState(true);
-
-  // Fetch analysis history for graph
-  useEffect(() => {
-    if (!user) return;
-    supabase
-      .from("analysis_history")
-      .select("job_title, company, analyzed_at")
-      .eq("user_id", user.id)
-      .order("analyzed_at", { ascending: false })
-      .then(({ data }) => {
-        setAnalyses((data || []).map(d => ({ job_title: d.job_title, company: d.company, analyzed_at: d.analyzed_at })));
-        setGraphLoading(false);
-      });
-  }, [user]);
-
-  // Build graph from all signals
-  const graph = useMemo<InterestGraph | null>(() => {
-    if (savedLoading || practicedLoading || graphLoading) return null;
-
-    const completions: CompletionSignal[] = practicedRoles.map(r => ({
-      task_name: r.task_name,
-      job_title: r.job_title,
-      company: r.company,
-      correct_answers: r.correct_answers,
-      total_questions: r.total_questions,
-      completed_at: r.completed_at,
-    }));
-
-    const bookmarks: BookmarkSignal[] = savedRoles.map(r => ({
-      job_title: r.job_title,
-      company: r.company,
-      augmented_percent: r.augmented_percent,
-      automation_risk_percent: r.automation_risk_percent,
-      bookmarked_at: new Date().toISOString(), // bookmarked_at not in our select, use now as fallback
-    }));
-
-    return buildInterestGraph(completions, analyses, bookmarks);
-  }, [savedRoles, practicedRoles, analyses, savedLoading, practicedLoading, graphLoading]);
-
-  const isLoading = savedLoading || practicedLoading || graphLoading;
-  const isEmpty = !isLoading && graph && graph.nodes.length === 0;
-
-  return (
-    <div>
-      <div className="flex items-center justify-between mb-1">
-        <h2 className="text-xl font-bold text-foreground">My Journey</h2>
-      </div>
-      <p className="text-sm text-muted-foreground mb-5">Your interest and skill map, unified.</p>
-
-      {/* Viz mode switcher */}
-      <div className="flex items-center gap-1 p-1 rounded-lg bg-muted/30 border border-border/40 mb-6 w-fit">
-        {VIZ_MODES.map(mode => (
-          <button
-            key={mode.key}
-            onClick={() => setVizMode(mode.key)}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
-              vizMode === mode.key
-                ? "bg-background text-foreground shadow-sm"
-                : "text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            <mode.icon className="h-3.5 w-3.5" />
-            {mode.label}
-          </button>
-        ))}
-      </div>
-
-      {isLoading ? (
-        <div className="flex items-center justify-center py-20">
-          <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
-        </div>
-      ) : isEmpty ? (
-        <div className="text-center py-20">
-          <Bookmark className="h-10 w-10 text-muted-foreground/20 mx-auto mb-4" />
-          <p className="text-sm text-muted-foreground">No data yet</p>
-          <p className="text-xs text-muted-foreground/60 mt-1">Explore, bookmark, and practice roles to build your journey map</p>
-        </div>
-      ) : graph && (
-        <motion.div key={vizMode} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }}>
-          {vizMode === "radar" && <JourneyRadarView graph={graph} onNavigate={goToRole} />}
-          {vizMode === "bubble" && <JourneyBubbleView graph={graph} onNavigate={goToRole} />}
-          {vizMode === "timeline" && <JourneyTimelineView graph={graph} onNavigate={goToRole} />}
-          {vizMode === "heatmap" && <JourneyHeatmapView graph={graph} onNavigate={goToRole} />}
-          {vizMode === "skills" && <JourneySkillProfileView practicedRoles={practicedRoles} onNavigate={goToRole} />}
-        </motion.div>
-      )}
-    </div>
-  );
-}
 
 function ProfileSection({
   displayName, setDisplayName, jobTitle, setJobTitle, company, setCompany,
