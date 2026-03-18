@@ -251,7 +251,7 @@ export default function RolePreviewPanel({ role, onClose }: RolePreviewPanelProp
                 <div className="flex items-center gap-2">
                   {done && <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 flex items-center gap-1"><CheckCircle2 className="h-3 w-3" />Done</span>}
                   <Button size="sm" variant={done ? "secondary" : "default"} className="h-7 text-xs rounded-full gap-1"
-                    onClick={() => startSimulation(t, true)}>
+                    onClick={() => startSimulation(t)}>
                     <Play className="h-3 w-3" />{done ? "Retry" : "Practice"}
                   </Button>
                 </div>
