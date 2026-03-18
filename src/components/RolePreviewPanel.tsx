@@ -366,6 +366,7 @@ export default function RolePreviewPanel({ role, onClose }: RolePreviewPanelProp
         </motion.div>
         {simulationOverlay}
       </>
+    );
   }
 
   // Details view (initial overview)
