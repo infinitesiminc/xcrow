@@ -1061,6 +1061,7 @@ export default function PipelinePage() {
           </div>
         </TabsContent>
       </Tabs>
+      </div>
 
       {/* ═══════ ADD COMPANY DIALOG ═══════ */}
       <Dialog open={addOpen} onOpenChange={setAddOpen}>
