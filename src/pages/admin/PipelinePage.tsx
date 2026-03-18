@@ -30,6 +30,7 @@ interface Company {
   detected_ats_platform: string | null;
   employee_range: string | null;
   headquarters: string | null;
+  description: string | null;
   job_count?: number;
 }
 
