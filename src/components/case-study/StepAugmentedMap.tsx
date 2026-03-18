@@ -22,10 +22,10 @@ const BUCKETS = [
 interface RoleScore {
   title: string;
   department: string | null;
-  avgExposure: number;
+  avgAugmented: number;
 }
 
-export default function StepExposureMap() {
+export default function StepAugmentedMap() {
   const [roles, setRoles] = useState<RoleScore[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -71,9 +71,9 @@ export default function StepExposureMap() {
         .map(([jobId, scores]) => ({
           title: jobMap[jobId]?.title ?? "Unknown",
           department: jobMap[jobId]?.department ?? null,
-          avgExposure: Math.round(scores.reduce((a, b) => a + b, 0) / scores.length),
+          avgAugmented: Math.round(scores.reduce((a, b) => a + b, 0) / scores.length),
         }))
-        .sort((a, b) => b.avgExposure - a.avgExposure);
+        .sort((a, b) => b.avgAugmented - a.avgAugmented);
 
       setRoles(result);
       setLoading(false);
@@ -83,13 +83,13 @@ export default function StepExposureMap() {
   const bucketCounts = useMemo(() => {
     return BUCKETS.map((b) => ({
       ...b,
-      count: roles.filter((r) => r.avgExposure >= b.min && r.avgExposure <= b.max).length,
+      count: roles.filter((r) => r.avgAugmented >= b.min && r.avgAugmented <= b.max).length,
     }));
   }, [roles]);
 
   const maxCount = Math.max(...bucketCounts.map((b) => b.count), 1);
   const avgRisk = roles.length
-    ? Math.round(roles.reduce((s, r) => s + r.avgExposure, 0) / roles.length)
+    ? Math.round(roles.reduce((s, r) => s + r.avgAugmented, 0) / roles.length)
     : 0;
 
   const BAR_COLORS = [
@@ -111,7 +111,7 @@ export default function StepExposureMap() {
   return (
     <div className="space-y-4">
       <p className="text-sm text-muted-foreground leading-relaxed">
-        After analysis, each role's tasks are scored for AI exposure. Here's how Anthropic's{" "}
+        After analysis, each role's tasks are scored for AI augmented. Here's how Anthropic's{" "}
         <span className="font-semibold text-foreground">{roles.length} analyzed roles</span>{" "}
         distribute across exposure bands — the org-wide average is{" "}
         <span className="font-semibold text-foreground">{avgRisk}%</span>.
@@ -120,7 +120,7 @@ export default function StepExposureMap() {
       {/* Bar chart */}
       <div className="rounded-xl border border-border bg-card p-4 space-y-3">
         <h4 className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
-          AI Exposure Distribution
+          AI Augmented Distribution
         </h4>
         <div className="space-y-2">
           {bucketCounts.map((b, i) => (
@@ -170,11 +170,11 @@ export default function StepExposureMap() {
                 )}
               </div>
               <span className={`text-xs font-mono ml-2 font-semibold ${
-                r.avgExposure >= 60 ? "text-brand-ai" :
-                r.avgExposure >= 35 ? "text-brand-mid" :
+                r.avgAugmented >= 60 ? "text-brand-ai" :
+                r.avgAugmented >= 35 ? "text-brand-mid" :
                 "text-brand-human"
               }`}>
-                {r.avgExposure}%
+                {r.avgAugmented}%
               </span>
             </motion.div>
           ))}

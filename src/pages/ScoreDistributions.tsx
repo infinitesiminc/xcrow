@@ -278,7 +278,7 @@ export default function ScoreDistributions() {
           <Database className="h-12 w-12 mx-auto text-muted-foreground/40" />
           <h2 className="text-lg font-semibold text-foreground">No analyzed roles yet</h2>
           <p className="text-sm text-muted-foreground max-w-md mx-auto">
-            Go to ATS Sync to import your company's roles, then run analysis to see AI exposure scores across your organization.
+            Go to ATS Sync to import your company's roles, then run analysis to see AI augmented scores across your organization.
           </p>
           <Button onClick={() => navigate("/hr/ats-sync")}>
             <Briefcase className="h-4 w-4 mr-2" />Import & Analyze Roles
@@ -296,7 +296,7 @@ export default function ScoreDistributions() {
         </Button>
 
         <div className="mb-8">
-          <h1 className="font-serif text-2xl sm:text-3xl font-bold text-foreground">AI Exposure Distributions</h1>
+          <h1 className="font-serif text-2xl sm:text-3xl font-bold text-foreground">AI Augmented Distributions</h1>
           <p className="text-sm text-muted-foreground mt-1">
             Score distributions across {jobs.length} analyzed jobs and {tasks.length} task clusters
           </p>
@@ -307,8 +307,8 @@ export default function ScoreDistributions() {
           {[
             { label: "Jobs Analyzed", value: jobs.length, icon: Briefcase },
             { label: "Task Clusters", value: tasks.length, icon: Layers },
-            { label: "Avg Job Exposure", value: `${avgJob}%`, icon: BarChart3 },
-            { label: "Avg Task Exposure", value: `${avgTask}%`, icon: BarChart3 },
+            { label: "Avg Job Augmented", value: `${avgJob}%`, icon: BarChart3 },
+            { label: "Avg Task Augmented", value: `${avgTask}%`, icon: BarChart3 },
           ].map((s, i) => (
             <motion.div key={s.label} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}>
               <Card className="border-border">
@@ -347,7 +347,7 @@ export default function ScoreDistributions() {
               <CardContent className="p-4 sm:p-6">
                 <div className="flex items-center justify-between mb-4">
                   <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                    All {sortedJobs.length} Jobs — Sorted by AI Exposure
+                    All {sortedJobs.length} Jobs — Sorted by AI Augmented
                   </p>
                   <div className="flex items-center gap-3 text-[10px] text-muted-foreground">
                     <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm bg-success inline-block" /> 0-39%</span>
@@ -402,7 +402,7 @@ export default function ScoreDistributions() {
                 </div>
                 {/* Average line label */}
                 <div className="mt-4 pt-3 border-t border-border/50 flex items-center justify-between text-xs text-muted-foreground">
-                  <span>Average AI Exposure: <span className="font-bold text-foreground">{avgJob}%</span></span>
+                  <span>Average AI Augmented: <span className="font-bold text-foreground">{avgJob}%</span></span>
                   <span>Median: <span className="font-bold text-foreground">{medianJob}%</span></span>
                   <span>Range: <span className="font-bold text-foreground">{minJob}%–{maxJob}%</span></span>
                 </div>
@@ -414,7 +414,7 @@ export default function ScoreDistributions() {
             <div className="grid md:grid-cols-2 gap-6">
               <Card className="border-border">
                 <CardContent className="p-6">
-                  <BarChartVisual data={jobBuckets} maxCount={jobMax} label="AI Exposure Distribution — Jobs" />
+                  <BarChartVisual data={jobBuckets} maxCount={jobMax} label="AI Augmented Distribution — Jobs" />
                   <p className="text-[11px] text-muted-foreground mt-4">
                     Average: <span className="font-bold text-foreground">{avgJob}%</span> across {jobs.length} jobs
                   </p>
@@ -425,7 +425,7 @@ export default function ScoreDistributions() {
               <div className="space-y-4">
                 <Card className="border-border">
                   <CardContent className="p-4">
-                    <p className="text-xs font-medium text-muted-foreground mb-2 uppercase tracking-wide">Highest AI Exposure</p>
+                    <p className="text-xs font-medium text-muted-foreground mb-2 uppercase tracking-wide">Most AI-Augmented</p>
                     <div className="space-y-1.5">
                       {sortedJobs.slice(0, 5).map(j => (
                         <div key={j.id} className="flex items-center justify-between gap-2 text-xs">
@@ -438,7 +438,7 @@ export default function ScoreDistributions() {
                 </Card>
                 <Card className="border-border">
                   <CardContent className="p-4">
-                    <p className="text-xs font-medium text-muted-foreground mb-2 uppercase tracking-wide">Lowest AI Exposure</p>
+                    <p className="text-xs font-medium text-muted-foreground mb-2 uppercase tracking-wide">Least AI-Augmented</p>
                     <div className="space-y-1.5">
                       {[...sortedJobs].reverse().slice(0, 5).map(j => (
                         <div key={j.id} className="flex items-center justify-between gap-2 text-xs">
@@ -457,7 +457,7 @@ export default function ScoreDistributions() {
             <div className="grid md:grid-cols-2 gap-6">
               <Card className="border-border">
                 <CardContent className="p-6">
-                  <BarChartVisual data={taskBuckets} maxCount={taskMax} label="AI Exposure Distribution — Tasks" />
+                  <BarChartVisual data={taskBuckets} maxCount={taskMax} label="AI Augmented Distribution — Tasks" />
                   <p className="text-[11px] text-muted-foreground mt-4">
                     Average: <span className="font-bold text-foreground">{avgTask}%</span> across {tasks.length} tasks
                   </p>
@@ -467,7 +467,7 @@ export default function ScoreDistributions() {
               {/* Top tasks */}
               <Card className="border-border">
                 <CardContent className="p-4">
-                  <p className="text-xs font-medium text-muted-foreground mb-2 uppercase tracking-wide">Highest AI Exposure Tasks</p>
+                  <p className="text-xs font-medium text-muted-foreground mb-2 uppercase tracking-wide">Most AI-Augmented Tasks</p>
                   <div className="space-y-1.5">
                     {[...tasks].sort((a, b) => (b.ai_exposure_score ?? 50) - (a.ai_exposure_score ?? 50)).slice(0, 10).map((t, i) => (
                       <div key={i} className="flex items-center justify-between gap-2 text-xs">

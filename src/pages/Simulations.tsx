@@ -448,7 +448,7 @@ export default function Simulations() {
                               <div className="flex items-center gap-2 mt-0.5">
                                 {job.augmented_percent != null && (
                                   <span className={`text-[10px] ${job.augmented_percent >= 70 ? "text-destructive" : job.augmented_percent >= 40 ? "text-warning" : "text-success"}`}>
-                                    {job.augmented_percent}% AI exposure
+                                    {job.augmented_percent}% AI augmented
                                   </span>
                                 )}
                                 {job.seniority && <span className="text-[10px] text-muted-foreground">{job.seniority}</span>}

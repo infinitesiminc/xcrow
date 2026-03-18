@@ -54,7 +54,7 @@ const loopNodes = [
     label: "Map",
     icon: Crosshair,
     tagline: "Detect what changed",
-    description: "Every role, every task — scored for AI exposure. When new models ship, exposure scores update automatically. Your risk surface is always current.",
+    description: "Every role, every task — scored for AI augmented. When new models ship, augmented scores update automatically. Your risk surface is always current.",
     highlights: ["Task-level scoring across entire org", "Auto-updates when AI capabilities shift", "400+ roles mapped in a single import"],
   },
   {
@@ -78,7 +78,7 @@ const loopNodes = [
     label: "Adapt",
     icon: RefreshCw,
     tagline: "Never stop improving",
-    description: "Scores below threshold trigger automatic re-simulation with coaching. When new models drop and exposure shifts, the loop accelerates. Your workforce evolves as fast as AI does.",
+    description: "Scores below threshold trigger automatic re-simulation with coaching. When new models drop and augmented levels shift, the loop accelerates. Your workforce evolves as fast as AI does.",
     highlights: ["Autonomous retry with coaching", "Model-aware re-scoring triggers", "Continuous — not quarterly"],
   },
 ];
@@ -230,7 +230,7 @@ function AccelerationGapVisual() {
 function ModelAwareVisual() {
   const timeline = [
     { event: "GPT-5.4 released", type: "model" as const },
-    { event: "12 tasks re-scored ↑ exposure", type: "rescore" as const },
+    { event: "12 tasks re-scored ↑ augmented", type: "rescore" as const },
     { event: "38 employees flagged for re-assessment", type: "trigger" as const },
     { event: "Simulations auto-dispatched", type: "action" as const },
     { event: "Readiness scores updated", type: "result" as const },
@@ -627,7 +627,7 @@ export default function Enterprise() {
               Model-aware adaptation
             </h2>
             <p className="mt-3 text-muted-foreground max-w-2xl mx-auto">
-              When a new frontier model ships, your exposure landscape changes. Our system detects
+              When a new frontier model ships, your augmented landscape changes. Our system detects
               the shift, re-scores affected tasks, and autonomously triggers re-assessment — before
               your competitors even notice the release.
             </p>
