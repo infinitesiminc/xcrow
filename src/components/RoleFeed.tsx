@@ -251,7 +251,7 @@ function DesktopGrid({ roles, onOpenSearch }: RoleFeedProps) {
             className={`px-3 py-1.5 text-xs font-medium rounded-full transition-colors ${
               !filter ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:text-foreground"
             }`}
-          >All</button>
+          >All <span className="opacity-60 ml-0.5">{roles.length}</span></button>
           {tags.map(tag => (
             <button
               key={tag}
