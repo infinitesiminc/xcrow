@@ -25,8 +25,14 @@ import {
   Loader2, Save, Trash2, KeyRound, Bookmark, Zap, Search,
   Linkedin, Upload, FileText, GraduationCap, Briefcase, X, School,
   Shield, Target, User, Lock, AlertOctagon, ArrowLeft,
+  Radar, CircleDot, GitBranch, LayoutGrid,
 } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { buildInterestGraph, type InterestGraph, type CompletionSignal, type AnalysisSignal, type BookmarkSignal } from "@/lib/interest-graph";
+import JourneyRadarView from "@/components/settings/JourneyRadarView";
+import JourneyBubbleView from "@/components/settings/JourneyBubbleView";
+import JourneyTimelineView from "@/components/settings/JourneyTimelineView";
+import JourneyHeatmapView from "@/components/settings/JourneyHeatmapView";
 
 /* ── helpers ─────────────────────────────────────────── */
 
