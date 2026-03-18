@@ -732,7 +732,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
     ? "Great progress! 💪"
     : "You showed up — that's step one 🌱";
 
-  const doneSubtitle = allObjectivesMet
+  const doneSubtitle = allDoneObjectivesMet
     ? "Every objective nailed. You're building real AI fluency."
     : objectiveMet > 0
     ? `${objectiveMet} of ${objectiveTotal} goals reached. Each attempt makes you sharper.`
