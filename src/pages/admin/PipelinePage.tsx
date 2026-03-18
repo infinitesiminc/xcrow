@@ -181,8 +181,6 @@ export default function PipelinePage() {
     finally { setSyncing(null); }
   };
 
-  const syncCompanyJobs = async (companyId: string, diagnostic = false) => {
-
   const bulkSyncAllJobs = async () => {
     const targets = filteredCompanies;
     if (targets.length === 0) return;
@@ -204,7 +202,7 @@ export default function PipelinePage() {
     toast({ title: "Bulk sync complete", description: `${synced} total roles synced across ${targets.length} companies` });
   };
 
-
+  const syncCompanyJobs = async (companyId: string, diagnostic = false) => {
     setSyncing(`jobs-${companyId}`);
     if (diagnostic) {
       setDiagLoading(true);
