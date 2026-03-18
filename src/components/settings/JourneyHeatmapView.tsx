@@ -100,8 +100,8 @@ export default function JourneyHeatmapView({ graph, onNavigate }: { graph: Inter
               style={{ width: tileSize, height: tileSize }}
             >
               {/* Color indicator */}
-              <div className="absolute inset-0 opacity-15" style={{ backgroundColor: color }} />
-              <div className="absolute bottom-0 left-0 right-0 h-1" style={{ backgroundColor: color }} />
+              <div className="absolute inset-0 opacity-25" style={{ backgroundColor: color }} />
+              <div className="absolute bottom-0 left-0 right-0 h-1.5 rounded-b" style={{ backgroundColor: color }} />
 
               <div className="relative p-2 h-full flex flex-col justify-between">
                 <div>
