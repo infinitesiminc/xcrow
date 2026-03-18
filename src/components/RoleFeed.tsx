@@ -694,7 +694,7 @@ function DesktopGrid({ roles, savedRoleTitles }: RoleFeedProps) {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.35, delay: Math.min(i * 0.03, 0.4) }}
                 onClick={() => setSelected(role)}
-                className="group text-left rounded-xl overflow-hidden bg-card border border-border/40 transition-all hover:shadow-lg hover:shadow-primary/5 flex flex-col"
+                className="group text-left rounded-xl overflow-hidden bg-card border border-border transition-all hover:shadow-lg hover:shadow-primary/5 hover:border-primary/40 flex flex-col"
               >
                 {/* ── Top: Key info (title, company, location) ── */}
                 <div className="p-3 pb-2">
