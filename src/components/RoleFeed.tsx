@@ -783,13 +783,24 @@ function DesktopGrid({ roles, savedRoleTitles }: RoleFeedProps) {
 
 /* ── Mobile: Vertical Swipe Feed ───────────────────── */
 
-function MobileFeed({ roles }: RoleFeedProps) {
+function MobileFeed({ roles, savedRoleTitles }: RoleFeedProps) {
   const navigate = useNavigate();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [direction, setDirection] = useState(0);
   const [showOverlay, setShowOverlay] = useState(false);
+  const [savedFilter, setSavedFilter] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const isAnimating = useRef(false);
+
+  const savedCount = useMemo(() => {
+    if (!savedRoleTitles || savedRoleTitles.size === 0) return 0;
+    return roles.filter(r => savedRoleTitles.has(r.title.toLowerCase())).length;
+  }, [roles, savedRoleTitles]);
+
+  const savedRoles = useMemo(() => {
+    if (!savedRoleTitles) return [];
+    return roles.filter(r => savedRoleTitles.has(r.title.toLowerCase()));
+  }, [roles, savedRoleTitles]);
 
   const goTo = useCallback((newIndex: number, dir: number) => {
     if (isAnimating.current || newIndex < 0 || newIndex >= roles.length) return;
@@ -807,6 +818,89 @@ function MobileFeed({ roles }: RoleFeedProps) {
     else if (info.offset.y > 60) goPrev();
   };
 
+  // Saved filter: show card list view
+  if (savedFilter) {
+    return (
+      <div className="flex flex-col h-full bg-background">
+        {/* Filter toggle */}
+        <div className="shrink-0 flex items-center gap-2 px-4 py-3 border-b border-border/40">
+          <button onClick={() => setSavedFilter(false)} className="px-3 py-1.5 text-xs font-medium rounded-full bg-muted text-muted-foreground hover:text-foreground transition-colors">
+            All <span className="opacity-60 ml-0.5">{roles.length}</span>
+          </button>
+          <button className="px-3 py-1.5 text-xs font-medium rounded-full bg-primary text-primary-foreground flex items-center gap-1">
+            <Bookmark className="h-3 w-3" /> Saved <span className="opacity-60 ml-0.5">{savedCount}</span>
+          </button>
+        </div>
+
+        {/* Scrollable card list */}
+        <div className="flex-1 overflow-y-auto px-4 py-4">
+          <div className="grid grid-cols-2 gap-3">
+            {savedRoles.map((role, i) => {
+              const hue1 = hashToHue(role.title);
+              const hue2 = (hue1 + 60) % 360;
+              const logoUrl = role.logo || (role.company ? `https://logo.clearbit.com/${role.company.toLowerCase().replace(/\s+/g, '')}.com` : '');
+              return (
+                <motion.button
+                  key={role.title + i}
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3, delay: Math.min(i * 0.04, 0.3) }}
+                  onClick={() => navigate(`/analysis?title=${encodeURIComponent(role.title)}&company=${encodeURIComponent(role.company || "")}`)}
+                  className="group text-left rounded-xl overflow-hidden bg-card border border-border transition-all hover:shadow-lg hover:border-primary/40 flex flex-col"
+                >
+                  <div className="p-3 pb-2">
+                    <div className="flex items-start gap-2">
+                      {logoUrl && (
+                        <img src={logoUrl} alt={role.company || ''} className="h-7 w-7 rounded-lg object-contain bg-muted/30 p-0.5 shrink-0 mt-0.5" onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
+                      )}
+                      <div className="min-w-0 flex-1">
+                        <h3 className="text-xs font-semibold text-foreground leading-snug line-clamp-2">{role.title}</h3>
+                        {role.company && (
+                          <p className="text-[10px] text-muted-foreground truncate mt-0.5">{role.company}</p>
+                        )}
+                      </div>
+                    </div>
+                    {role.location && (
+                      <div className="flex items-center gap-0.5 mt-1.5">
+                        <MapPin className="h-2.5 w-2.5 text-muted-foreground shrink-0" />
+                        <span className="text-[10px] text-muted-foreground truncate">{role.location}</span>
+                      </div>
+                    )}
+                  </div>
+                  <div className="mt-auto border-t border-border/30">
+                    <div className="px-3 py-2 flex items-center justify-between" style={{ background: `linear-gradient(135deg, hsl(${hue1} 60% 8%) 0%, hsl(${hue2} 50% 6%) 100%)` }}>
+                      {role.augmented > 0 ? (
+                        <div className="flex items-center gap-1.5">
+                          <CardMiniGauge value={role.augmented} />
+                          <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">Augmented</span>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-1">
+                          <Zap className="h-3 w-3 text-primary" />
+                          <span className="text-[10px] font-semibold text-muted-foreground">{role.aiOpportunity}%</span>
+                        </div>
+                      )}
+                      {(role.taskCount ?? 0) > 0 && (
+                        <span className="text-[10px] font-bold text-brand-human">{role.taskCount} tasks</span>
+                      )}
+                    </div>
+                  </div>
+                </motion.button>
+              );
+            })}
+          </div>
+          {savedRoles.length === 0 && (
+            <div className="text-center py-12">
+              <Bookmark className="h-8 w-8 text-muted-foreground/30 mx-auto mb-3" />
+              <p className="text-sm text-muted-foreground">No saved roles yet</p>
+              <p className="text-xs text-muted-foreground/60 mt-1">Explore and bookmark roles you're interested in</p>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
   const role = roles[currentIndex];
   if (!role) return null;
 
@@ -818,6 +912,15 @@ function MobileFeed({ roles }: RoleFeedProps) {
 
   return (
     <div ref={containerRef} className="relative w-full h-full overflow-hidden bg-background">
+      {/* Saved filter toggle */}
+      {savedRoleTitles && savedCount > 0 && (
+        <div className="absolute top-3 left-3 z-30">
+          <button onClick={() => setSavedFilter(true)} className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium rounded-full bg-black/40 backdrop-blur-sm text-white/70 border border-white/10 hover:bg-black/60 transition-colors">
+            <Bookmark className="h-3 w-3" /> Saved <span className="opacity-60 ml-0.5">{savedCount}</span>
+          </button>
+        </div>
+      )}
+
       <AnimatePresence initial={false} custom={direction} mode="popLayout">
         <motion.div
           key={currentIndex}
@@ -910,8 +1013,6 @@ function MobileFeed({ roles }: RoleFeedProps) {
           <span className="text-[10px] text-white/40 font-medium">Swipe up</span>
         </motion.div>
       )}
-
-      
 
       {/* Detail overlay on tap */}
       <AnimatePresence>
