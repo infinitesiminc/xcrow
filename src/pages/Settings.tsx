@@ -190,20 +190,28 @@ export default function Settings() {
       <h1 className="text-2xl font-bold text-foreground mb-1">Settings</h1>
       <p className="text-muted-foreground mb-8">Manage your account and preferences.</p>
 
-      {/* Saved Roles — full-width card grid */}
+      {/* Saved Roles — horizontal scroll */}
       <Card className="mb-6">
         <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle className="text-lg flex items-center gap-2">
-                <Bookmark className="h-4 w-4 text-primary fill-primary" />
-                Saved Roles
-                {savedRoles.length > 0 && (
-                  <span className="text-sm font-normal text-muted-foreground">· {savedRoles.length}</span>
-                )}
-              </CardTitle>
-              <CardDescription>Roles you've bookmarked for quick access.</CardDescription>
-            </div>
+          <div className="flex items-center justify-between gap-3">
+            <CardTitle className="text-lg flex items-center gap-2 shrink-0">
+              <Bookmark className="h-4 w-4 text-primary fill-primary" />
+              Saved Roles
+              {savedRoles.length > 0 && (
+                <span className="text-sm font-normal text-muted-foreground">· {savedRoles.length}</span>
+              )}
+            </CardTitle>
+            {savedRoles.length > 4 && (
+              <div className="relative flex-1 max-w-[240px]">
+                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                <Input
+                  value={savedSearch}
+                  onChange={e => setSavedSearch(e.target.value)}
+                  placeholder="Filter…"
+                  className="h-8 pl-8 text-xs bg-muted/20 border-border/50"
+                />
+              </div>
+            )}
           </div>
         </CardHeader>
         <CardContent>
@@ -217,20 +225,11 @@ export default function Settings() {
               <p className="text-sm text-muted-foreground">No saved roles yet</p>
               <p className="text-xs text-muted-foreground/60 mt-1">Explore and bookmark roles you're interested in</p>
             </div>
+          ) : filteredRoles.length === 0 ? (
+            <p className="text-sm text-muted-foreground py-6 text-center">No matches</p>
           ) : (
-            <div className="space-y-3">
-              {savedRoles.length > 6 && (
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    value={savedSearch}
-                    onChange={e => setSavedSearch(e.target.value)}
-                    placeholder="Filter saved roles…"
-                    className="pl-9 bg-muted/20 border-border/50"
-                  />
-                </div>
-              )}
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            <div className="overflow-x-auto -mx-6 px-6 pb-2">
+              <div className="flex gap-3" style={{ width: 'max-content' }}>
                 {filteredRoles.map((role, i) => {
                   const hue1 = hashToHue(role.job_title);
                   const hue2 = (hue1 + 60) % 360;
@@ -239,11 +238,12 @@ export default function Settings() {
                   return (
                     <motion.button
                       key={role.job_title + role.company + i}
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
+                      initial={{ opacity: 0, x: 12 }}
+                      animate={{ opacity: 1, x: 0 }}
                       transition={{ duration: 0.25, delay: Math.min(i * 0.03, 0.4) }}
                       onClick={() => goToRole(role.job_title, role.company)}
-                      className="group text-left rounded-xl overflow-hidden bg-card border border-border transition-all hover:shadow-lg hover:border-primary/40 flex flex-col"
+                      className="group text-left rounded-xl overflow-hidden bg-card border border-border transition-all hover:shadow-lg hover:border-primary/40 flex flex-col shrink-0"
+                      style={{ width: 180 }}
                     >
                       <div className="p-3 pb-2">
                         <div className="flex items-start gap-2">
@@ -271,7 +271,7 @@ export default function Settings() {
                           {aug > 0 ? (
                             <div className="flex items-center gap-1.5">
                               <MiniGauge value={aug} />
-                              <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">Augmented</span>
+                              <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">Aug</span>
                             </div>
                           ) : (
                             <div className="flex items-center gap-1">
@@ -286,9 +286,6 @@ export default function Settings() {
                   );
                 })}
               </div>
-              {filteredRoles.length === 0 && (
-                <p className="text-sm text-muted-foreground py-6 text-center">No matches</p>
-              )}
             </div>
           )}
         </CardContent>
