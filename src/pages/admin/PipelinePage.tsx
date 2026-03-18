@@ -5,7 +5,7 @@ import {
   Building2, Briefcase, Search, Loader2, RefreshCw, Download,
   Database, Play, Pause, Brain, ChevronDown, ChevronUp,
   MapPin, CheckCircle2, AlertTriangle, ArrowLeft,
-  Globe, Plus, Bug, Sparkles,
+  Globe, Plus, Bug, Sparkles, Telescope,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -176,6 +176,18 @@ export default function PipelinePage() {
   const [diagLoading, setDiagLoading] = useState(false);
   const [diagCompanyName, setDiagCompanyName] = useState("");
 
+  /* ── Apollo Search ── */
+  const [apolloOpen, setApolloOpen] = useState(false);
+  const [apolloKeywords, setApolloKeywords] = useState("");
+  const [apolloName, setApolloName] = useState("");
+  const [apolloLocation, setApolloLocation] = useState("United States");
+  const [apolloSize, setApolloSize] = useState("51,200");
+  const [apolloResults, setApolloResults] = useState<any[]>([]);
+  const [apolloLoading, setApolloLoading] = useState(false);
+  const [apolloImporting, setApolloImporting] = useState(false);
+  const [apolloPagination, setApolloPagination] = useState<{ page: number; total_entries: number; total_pages: number }>({ page: 1, total_entries: 0, total_pages: 0 });
+  const [apolloSelected, setApolloSelected] = useState<Set<number>>(new Set());
+
   const handleAddCompany = async () => {
     if (!addUrl.trim()) return;
     setAddLoading(true);
@@ -193,6 +205,53 @@ export default function PipelinePage() {
       toast({ title: "Failed", description: err.message || "Could not add company", variant: "destructive" });
     } finally {
       setAddLoading(false);
+    }
+  };
+
+  const handleApolloSearch = async (pg = 1) => {
+    setApolloLoading(true);
+    setApolloSelected(new Set());
+    try {
+      const body: Record<string, unknown> = { page: pg, per_page: 25, import_results: false };
+      if (apolloLocation.trim()) body.organization_locations = [apolloLocation.trim()];
+      if (apolloSize) body.organization_num_employees_ranges = [apolloSize];
+      if (apolloKeywords.trim()) body.q_organization_keyword_tags = apolloKeywords.split(",").map(s => s.trim()).filter(Boolean);
+      if (apolloName.trim()) body.q_organization_name = apolloName.trim();
+      const { data, error } = await supabase.functions.invoke("search-apollo", { body });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      setApolloResults(data.companies || []);
+      setApolloPagination(data.pagination || { page: pg, total_entries: 0, total_pages: 0 });
+    } catch (err: any) {
+      toast({ title: "Apollo search failed", description: err.message, variant: "destructive" });
+    } finally {
+      setApolloLoading(false);
+    }
+  };
+
+  const handleApolloImport = async () => {
+    // Import selected results by calling the edge function with import_results: true
+    setApolloImporting(true);
+    try {
+      const selectedCompanies = apolloResults.filter((_, i) => apolloSelected.has(i));
+      // We import by re-searching with same params but with import flag
+      // Actually, better: enrich each selected company by website
+      let imported = 0;
+      for (const co of selectedCompanies) {
+        const website = co.website || co.domain;
+        if (!website) continue;
+        try {
+          await supabase.functions.invoke("enrich-company", { body: { website } });
+          imported++;
+        } catch { /* skip */ }
+      }
+      toast({ title: "Import complete", description: `${imported} companies enriched and saved.` });
+      setApolloOpen(false);
+      fetchCompanies();
+    } catch (err: any) {
+      toast({ title: "Import failed", description: err.message, variant: "destructive" });
+    } finally {
+      setApolloImporting(false);
     }
   };
 
@@ -490,6 +549,10 @@ export default function PipelinePage() {
               <Button variant="outline" size="sm" onClick={() => setAddOpen(true)} className="text-xs h-7 gap-1">
                 <Plus className="h-3 w-3" />
                 Add
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => setApolloOpen(true)} className="text-xs h-7 gap-1">
+                <Telescope className="h-3 w-3" />
+                Apollo
               </Button>
             </div>
             {bulkSyncing && (
@@ -861,6 +924,124 @@ export default function PipelinePage() {
               </div>
             ) : null}
           </div>
+        </DialogContent>
+      </Dialog>
+      {/* Apollo Search Dialog */}
+      <Dialog open={apolloOpen} onOpenChange={setApolloOpen}>
+        <DialogContent className="sm:max-w-2xl max-h-[85vh] flex flex-col">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Telescope className="h-4 w-4" /> Apollo Company Search
+            </DialogTitle>
+            <DialogDescription>Search Apollo's database to find and import companies.</DialogDescription>
+          </DialogHeader>
+
+          {/* Filters */}
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">Company Name</label>
+              <Input placeholder="e.g. Stripe" value={apolloName} onChange={e => setApolloName(e.target.value)} className="h-8 text-xs" />
+            </div>
+            <div>
+              <label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">Keywords</label>
+              <Input placeholder="e.g. AI, fintech" value={apolloKeywords} onChange={e => setApolloKeywords(e.target.value)} className="h-8 text-xs" />
+            </div>
+            <div>
+              <label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">Location</label>
+              <Input placeholder="e.g. United States" value={apolloLocation} onChange={e => setApolloLocation(e.target.value)} className="h-8 text-xs" />
+            </div>
+            <div>
+              <label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">Employee Range</label>
+              <select
+                value={apolloSize}
+                onChange={e => setApolloSize(e.target.value)}
+                className="w-full h-8 text-xs rounded-md border border-input bg-background px-2"
+              >
+                <option value="">Any</option>
+                <option value="1,10">1-10</option>
+                <option value="11,50">11-50</option>
+                <option value="51,200">51-200</option>
+                <option value="201,500">201-500</option>
+                <option value="501,1000">501-1,000</option>
+                <option value="1001,5000">1,001-5,000</option>
+                <option value="5001,10000">5,001-10,000</option>
+                <option value="10001,1000000">10,000+</option>
+              </select>
+            </div>
+          </div>
+          <Button onClick={() => handleApolloSearch(1)} disabled={apolloLoading} size="sm" className="gap-2">
+            {apolloLoading ? <Loader2 className="h-3 w-3 animate-spin" /> : <Search className="h-3 w-3" />}
+            Search
+          </Button>
+
+          {/* Results */}
+          <ScrollArea className="flex-1 min-h-0">
+            {apolloResults.length > 0 ? (
+              <div className="space-y-1">
+                <div className="flex items-center justify-between px-1">
+                  <p className="text-[10px] text-muted-foreground">
+                    {apolloPagination.total_entries.toLocaleString()} results · Page {apolloPagination.page}/{apolloPagination.total_pages}
+                  </p>
+                  <div className="flex items-center gap-1">
+                    <Button variant="ghost" size="sm" className="h-6 text-[10px]" onClick={() => {
+                      if (apolloSelected.size === apolloResults.length) setApolloSelected(new Set());
+                      else setApolloSelected(new Set(apolloResults.map((_, i) => i)));
+                    }}>
+                      {apolloSelected.size === apolloResults.length ? "Deselect all" : "Select all"}
+                    </Button>
+                  </div>
+                </div>
+                {apolloResults.map((co, idx) => {
+                  const selected = apolloSelected.has(idx);
+                  return (
+                    <button
+                      key={idx}
+                      onClick={() => {
+                        const next = new Set(apolloSelected);
+                        selected ? next.delete(idx) : next.add(idx);
+                        setApolloSelected(next);
+                      }}
+                      className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-md text-left transition-colors ${
+                        selected ? "bg-primary/10 border border-primary/30" : "hover:bg-muted/50 border border-transparent"
+                      }`}
+                    >
+                      {co.logo_url ? (
+                        <img src={co.logo_url} alt="" className="h-7 w-7 rounded object-contain bg-muted shrink-0" />
+                      ) : (
+                        <div className="h-7 w-7 rounded bg-muted flex items-center justify-center text-[10px] font-bold text-muted-foreground shrink-0">{co.name?.charAt(0)}</div>
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-medium truncate">{co.name}</p>
+                        <p className="text-[10px] text-muted-foreground truncate">
+                          {[co.industry, co.headquarters, co.employee_range].filter(Boolean).join(" · ")}
+                        </p>
+                      </div>
+                      <div className="flex flex-col items-end gap-0.5 shrink-0">
+                        {co.funding_stage && <Badge variant="outline" className="text-[8px] h-4">{co.funding_stage}</Badge>}
+                        {co.funding_total && <span className="text-[9px] text-muted-foreground">{co.funding_total}</span>}
+                      </div>
+                    </button>
+                  );
+                })}
+                {/* Pagination */}
+                <div className="flex items-center justify-center gap-2 pt-2">
+                  <Button variant="outline" size="sm" className="h-6 text-xs" disabled={apolloPagination.page <= 1 || apolloLoading} onClick={() => handleApolloSearch(apolloPagination.page - 1)}>Prev</Button>
+                  <Button variant="outline" size="sm" className="h-6 text-xs" disabled={apolloPagination.page >= apolloPagination.total_pages || apolloLoading} onClick={() => handleApolloSearch(apolloPagination.page + 1)}>Next</Button>
+                </div>
+              </div>
+            ) : !apolloLoading ? (
+              <div className="text-center py-8">
+                <Telescope className="h-6 w-6 mx-auto mb-2 text-muted-foreground/40" />
+                <p className="text-xs text-muted-foreground">Search Apollo to find companies</p>
+              </div>
+            ) : null}
+          </ScrollArea>
+
+          {apolloSelected.size > 0 && (
+            <Button onClick={handleApolloImport} disabled={apolloImporting} className="gap-2">
+              {apolloImporting ? <><Loader2 className="h-4 w-4 animate-spin" /> Importing…</> : <><Download className="h-4 w-4" /> Import {apolloSelected.size} Companies</>}
+            </Button>
+          )}
         </DialogContent>
       </Dialog>
     </div>
