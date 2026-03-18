@@ -74,7 +74,7 @@ export default function JourneyHeatmapView({ graph, onNavigate }: { graph: Inter
         <span>Proficiency:</span>
         <div className="flex gap-0.5">
           {[0, 20, 40, 60, 80].map(v => (
-            <div key={v} className="w-4 h-2 rounded-sm" style={{ backgroundColor: profToColor(v + 10) }} />
+            <div key={v} className="w-4 h-2 rounded-sm" style={{ backgroundColor: profToColor(v + 10, true) }} />
           ))}
         </div>
         <span>Low → High</span>
