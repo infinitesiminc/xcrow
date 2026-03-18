@@ -144,8 +144,7 @@ export default function RolePreviewPanel({ role, onClose }: RolePreviewPanelProp
 
   const logoUrl = role.logo || (role.company ? `https://logo.clearbit.com/${role.company.toLowerCase().replace(/\s+/g, "")}.com` : "");
 
-  const startSimulation = (task: TaskCluster, fromEnlarged = false) => {
-    wasEnlargedRef.current = fromEnlarged;
+  const startSimulation = (task: TaskCluster) => {
     setSimTask(task);
     setView("simulation");
   };
@@ -155,20 +154,36 @@ export default function RolePreviewPanel({ role, onClose }: RolePreviewPanelProp
     const idx = tasks.findIndex(t => t.cluster_name === simTask.cluster_name);
     const next = tasks[idx + 1];
     if (next) setSimTask(next);
-    else {
-      setView(wasEnlargedRef.current ? "enlarged" : "breakdown");
-      setSimTask(null);
-    }
+    else { setView("breakdown"); setSimTask(null); }
   }, [tasks, simTask]);
 
-  // Simulation view
-  if (view === "simulation" && simTask) {
-    const returnView = wasEnlargedRef.current ? "enlarged" : "breakdown";
-    const simContent = (
-      <div className="h-full flex flex-col">
+  const closeSimulation = () => {
+    setView("breakdown");
+    setSimTask(null);
+  };
+
+  // Simulation overlay — always full-screen with one-click kill
+  const simulationOverlay = view === "simulation" && simTask && (
+    <div className="fixed inset-0 z-[100] bg-background flex flex-col">
+      {/* Top bar with close */}
+      <div className="flex items-center justify-between px-4 py-2 border-b border-border/50 shrink-0 bg-background">
+        <div className="min-w-0">
+          <p className="text-sm font-semibold text-foreground truncate">{simTask.cluster_name}</p>
+          <p className="text-[11px] text-muted-foreground truncate">{role.title}{role.company ? ` · ${role.company}` : ""}</p>
+        </div>
+        <button
+          onClick={closeSimulation}
+          className="p-2 rounded-lg hover:bg-muted/30 transition-colors shrink-0"
+          title="Back to chat"
+        >
+          <X className="h-5 w-5 text-muted-foreground" />
+        </button>
+      </div>
+      {/* Simulation content */}
+      <div className="flex-1 overflow-hidden">
         <SimulatorModal
           open={true}
-          onClose={() => { setView(returnView); setSimTask(null); }}
+          onClose={closeSimulation}
           taskName={simTask.cluster_name}
           jobTitle={role.title}
           company={role.company || undefined}
@@ -176,22 +191,13 @@ export default function RolePreviewPanel({ role, onClose }: RolePreviewPanelProp
           taskTrend={simTask.ai_trend || undefined}
           taskImpactLevel={simTask.impact_level || undefined}
           inline
-          onBackToFeed={() => { setView(returnView); setSimTask(null); }}
+          onBackToFeed={closeSimulation}
           onNextTask={pickNextTask}
           onCompleted={fetchCompletions}
         />
       </div>
-    );
-
-    if (wasEnlargedRef.current) {
-      return (
-        <div className="fixed inset-0 z-[100] bg-background/95 backdrop-blur-sm flex flex-col">
-          {simContent}
-        </div>
-      );
-    }
-    return simContent;
-  }
+    </div>
+  );
 
   // Enlarged overlay (full-screen portal)
   const enlargedOverlay = (
