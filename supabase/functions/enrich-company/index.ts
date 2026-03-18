@@ -94,6 +94,29 @@ Deno.serve(async (req) => {
 
     // Step 2: AI extraction
     console.log("Enriching with AI...");
+    const aiPromptFields = `{
+  "name": "Company Name",
+  "website": "The company's actual website URL (NOT an ATS platform like greenhouse.io, ashbyhq.com, lever.co, etc.)",
+  "industry": "e.g. AI/ML, Fintech, Healthcare",
+  "headquarters": "City, State or City, Country",
+  "employee_range": "e.g. 50-200, 1000-5000, 10000+",
+  "description": "1-2 sentence company description",
+  "careers_url": "URL to careers page if found, else null",
+  "brand_color": "hex color from branding if obvious, else null",
+  "company_type": "Public, Private, Non-profit, or Government",
+  "funding_stage": "e.g. Seed, Series A, Series B, Series C, Late Stage, IPO, Bootstrapped, or null",
+  "funding_total": "e.g. $50M, $1.2B, or null if unknown",
+  "founded_year": 2015
+}`;
+
+    const userContent = [
+      url ? `Provided website: ${url}` : "",
+      careers_url ? `ATS/Careers URL: ${careers_url}` : "",
+      `Page title: ${pageTitle}`,
+      atsMarkdown ? `\nATS page content (truncated):\n${atsMarkdown.slice(0, 3000)}` : "",
+      markdown && markdown !== atsMarkdown ? `\nWebsite content (truncated):\n${markdown.slice(0, 3000)}` : "",
+    ].filter(Boolean).join("\n");
+
     const aiRes = await fetch(AI_URL, {
       method: "POST",
       headers: {
@@ -105,25 +128,11 @@ Deno.serve(async (req) => {
         messages: [
           {
             role: "system",
-            content: `You extract structured company data from website content. Return ONLY valid JSON with these fields:
-{
-  "name": "Company Name",
-  "industry": "e.g. AI/ML, Fintech, Healthcare",
-  "headquarters": "City, State or City, Country",
-  "employee_range": "e.g. 50-200, 1000-5000, 10000+",
-  "description": "1-2 sentence company description",
-  "careers_url": "URL to careers page if found, else null",
-  "brand_color": "hex color from branding if obvious, else null",
-  "company_type": "Public, Private, Non-profit, or Government",
-  "funding_stage": "e.g. Seed, Series A, Series B, Series C, Late Stage, IPO, Bootstrapped, or null",
-  "funding_total": "e.g. $50M, $1.2B, or null if unknown",
-  "founded_year": 2015
-}
-If a field cannot be determined, use null.`,
+            content: `You extract structured company data from website content. Return ONLY valid JSON with these fields:\n${aiPromptFields}\nIMPORTANT: The "website" field must be the company's OWN domain, never an ATS platform domain (greenhouse.io, ashbyhq.com, lever.co, smartrecruiters.com, workday.com, etc.). If a field cannot be determined, use null.`,
           },
           {
             role: "user",
-            content: `Website: ${url}\nPage title: ${pageTitle}\n\nContent (truncated):\n${markdown.slice(0, 6000)}`,
+            content: userContent,
           },
         ],
         temperature: 0.1,
