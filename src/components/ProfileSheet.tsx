@@ -103,32 +103,11 @@ export default function ProfileSheet({ open, onClose, userId, displayName, email
 
   const completedCount = milestones.filter(m => m.completed).length;
 
-  const groupedRoles = useMemo<GroupedRoles[]>(() => {
+  const filteredRoles = useMemo(() => {
     const q = savedSearch.toLowerCase().trim();
-    const filtered = q
-      ? savedRoles.filter(r => r.job_title.toLowerCase().includes(q) || (r.company?.toLowerCase().includes(q) ?? false))
-      : savedRoles;
-
-    const map = new Map<string, SavedRole[]>();
-    for (const role of filtered) {
-      const key = role.company || "Other";
-      const arr = map.get(key) || [];
-      arr.push(role);
-      map.set(key, arr);
-    }
-
-    return Array.from(map.entries())
-      .sort(([a], [b]) => (a === "Other" ? 1 : b === "Other" ? -1 : a.localeCompare(b)))
-      .map(([company, roles]) => ({ company, roles }));
+    if (!q) return savedRoles;
+    return savedRoles.filter(r => r.job_title.toLowerCase().includes(q) || (r.company?.toLowerCase().includes(q) ?? false));
   }, [savedRoles, savedSearch]);
-
-  const toggleGroup = (company: string) => {
-    setOpenGroups(prev => {
-      const next = new Set(prev);
-      next.has(company) ? next.delete(company) : next.add(company);
-      return next;
-    });
-  };
 
   const goToRole = (jobTitle: string, company: string | null) => {
     onClose();
