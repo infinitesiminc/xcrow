@@ -1210,7 +1210,7 @@ export default function PipelinePage() {
         </TabsContent>
 
         {/* ═══════ TAB: COMPANIES ═══════ */}
-        <TabsContent value="companies" className="flex-1 min-h-0 m-0 px-6 py-4 flex flex-col overflow-hidden" style={{ display: activeTab === "companies" ? "flex" : "none" }} forceMount>
+        <TabsContent value="companies" className="flex-1 min-h-0 m-0 px-6 py-4 data-[state=active]:flex flex-col overflow-hidden">
           <div className="flex items-center gap-3 mb-4 flex-wrap">
             <div className="relative flex-1 min-w-[200px]">
               <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
