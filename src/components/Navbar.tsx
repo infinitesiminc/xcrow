@@ -125,20 +125,6 @@ export default function Navbar() {
         )}
       </header>
 
-      {/* Profile Sheet */}
-      {user && (
-        <ProfileSheet
-          open={profileOpen}
-          onClose={() => setProfileOpen(false)}
-          userId={user.id}
-          displayName={user.user_metadata?.display_name || null}
-          email={user.email || ""}
-          onSignOut={async () => {
-            await signOut();
-            navigate("/");
-          }}
-        />
-      )}
     </>
   );
 }
