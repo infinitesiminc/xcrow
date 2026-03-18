@@ -215,9 +215,10 @@ export default function HomepageChat({
                   className={`flex ${item.type === "user" ? "justify-end" : "justify-start"}`}
                 >
                   {item.type === "assistant" ? (
-                    <div className="chat-prose max-w-[92%]">
-                      <ReactMarkdown>{item.content}</ReactMarkdown>
-                    </div>
+                    <TypewriterMarkdown
+                      content={item.content}
+                      isStreaming={isStreaming && i === items.length - 1}
+                    />
                   ) : (
                     <div className="bg-primary/10 border border-primary/20 rounded-2xl rounded-br-md px-4 py-2 max-w-[80%]">
                       <p className="text-sm text-foreground">{item.content}</p>
