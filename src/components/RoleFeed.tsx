@@ -26,7 +26,6 @@ interface RoleCard {
 
 interface RoleFeedProps {
   roles: RoleCard[];
-  onOpenSearch: () => void;
   savedRoleTitles?: Set<string>;
 }
 
@@ -585,7 +584,7 @@ function RoleDetailOverlay({ role, onClose }: { role: RoleCard; onClose: () => v
 
 /* ── Desktop: Grid Layout ──────────────────────────── */
 
-function DesktopGrid({ roles, onOpenSearch, savedRoleTitles }: RoleFeedProps) {
+function DesktopGrid({ roles, savedRoleTitles }: RoleFeedProps) {
   const navigate = useNavigate();
   const [selected, setSelected] = useState<RoleCard | null>(null);
   const [filter, setFilter] = useState<string | null>(null);
@@ -633,7 +632,7 @@ function DesktopGrid({ roles, onOpenSearch, savedRoleTitles }: RoleFeedProps) {
   }, [roles, filter, countryFilter, workModeFilter, savedFilter, savedRoleTitles]);
 
   return (
-    <div className="h-full flex flex-col overflow-hidden">
+    <div className="flex flex-col">
       {/* Filter bar */}
       <div className="shrink-0 flex flex-wrap items-center gap-2 px-6 py-4 border-b border-border/40">
         <div className="flex items-center gap-1.5">
@@ -680,7 +679,7 @@ function DesktopGrid({ roles, onOpenSearch, savedRoleTitles }: RoleFeedProps) {
       </div>
 
       {/* Grid */}
-      <div className="flex-1 overflow-y-auto px-6 py-5">
+      <div className="px-6 py-5">
         <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
           {filtered.map((role, i) => {
             const hue1 = hashToHue(role.title);
@@ -776,7 +775,6 @@ function DesktopGrid({ roles, onOpenSearch, savedRoleTitles }: RoleFeedProps) {
         </div>
       </div>
 
-      <SearchFAB onClick={onOpenSearch} />
 
       <AnimatePresence>
         {selected && <RoleDetailOverlay role={selected} onClose={() => setSelected(null)} />}
@@ -787,7 +785,7 @@ function DesktopGrid({ roles, onOpenSearch, savedRoleTitles }: RoleFeedProps) {
 
 /* ── Mobile: Vertical Swipe Feed ───────────────────── */
 
-function MobileFeed({ roles, onOpenSearch }: RoleFeedProps) {
+function MobileFeed({ roles }: RoleFeedProps) {
   const navigate = useNavigate();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [direction, setDirection] = useState(0);
@@ -915,7 +913,7 @@ function MobileFeed({ roles, onOpenSearch }: RoleFeedProps) {
         </motion.div>
       )}
 
-      <SearchFAB onClick={onOpenSearch} />
+      
 
       {/* Detail overlay on tap */}
       <AnimatePresence>
