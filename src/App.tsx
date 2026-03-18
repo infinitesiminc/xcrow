@@ -17,8 +17,6 @@ import CardStyleMockup from "./pages/CardStyleMockup.tsx";
 // Admin (superadmin only)
 import HRLayout from "./layouts/HRLayout.tsx";
 import PipelinePage from "./pages/admin/PipelinePage.tsx";
-import StatsPage from "./pages/admin/StatsPage.tsx";
-import ImportLogPage from "./pages/admin/ImportLogPage.tsx";
 
 // Public company page
 const CompanyPage = lazy(() => import("./pages/CompanyPage.tsx"));
