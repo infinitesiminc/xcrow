@@ -718,9 +718,9 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
   // Done screen: always celebratory — progress is the goal
   const objectiveMet = scoreResult?.objectiveResults?.filter(r => r.met).length ?? 0;
   const objectiveTotal = scoreResult?.objectiveResults?.length ?? 0;
-  const allObjectivesMet = objectiveTotal > 0 && objectiveMet === objectiveTotal;
+  const allDoneObjectivesMet = objectiveTotal > 0 && objectiveMet === objectiveTotal;
 
-  const doneIcon = allObjectivesMet
+  const doneIcon = allDoneObjectivesMet
     ? { icon: Trophy, color: "text-primary", bg: "bg-primary/10" }
     : objectiveMet > 0
     ? { icon: TrendingUp, color: "text-primary", bg: "bg-primary/10" }
