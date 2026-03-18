@@ -856,17 +856,15 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                         className="space-y-2"
                       >
                         <div className={`flex ${isUser ? "justify-end" : "justify-start"}`}>
-                          <div
-                            className={`max-w-[90%] sm:max-w-[85%] rounded-2xl px-4 sm:px-5 py-3 text-sm sm:text-[15px] leading-[1.65] ${
-                              isUser
-                                ? "bg-foreground text-background rounded-br-lg"
-                                : "bg-accent/40 text-foreground rounded-bl-lg"
-                            }`}
-                          >
-                            <div className="prose prose-sm dark:prose-invert max-w-none [&>p]:m-0 [&>p]:mb-1 [&>ul]:mt-1.5 [&>ul]:mb-0">
+                          {isUser ? (
+                            <div className="max-w-[80%] bg-primary/10 border border-primary/20 rounded-2xl rounded-br-md px-4 py-2">
+                              <p className="text-sm text-foreground">{displayContent}</p>
+                            </div>
+                          ) : (
+                            <div className="chat-prose max-w-[92%]">
                               <ReactMarkdown>{displayContent}</ReactMarkdown>
                             </div>
-                          </div>
+                          )}
                         </div>
 
                         {/* Scaffolding tier indicator */}
