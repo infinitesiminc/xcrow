@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -24,8 +24,8 @@ import { useToast } from "@/hooks/use-toast";
 import {
   Loader2, Save, Trash2, KeyRound, Bookmark, Zap, Search,
   Linkedin, Upload, FileText, GraduationCap, Briefcase, X, School,
-  Shield, Target,
-}from "lucide-react";
+  Shield, Target, User, Lock, AlertOctagon, ArrowLeft,
+} from "lucide-react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
 /* ── helpers ─────────────────────────────────────────── */
@@ -77,12 +77,25 @@ function MiniGauge({ value, size = 32 }: { value: number; size?: number }) {
   );
 }
 
+const NAV_ITEMS = [
+  { key: "roles", label: "My Roles", icon: Bookmark },
+  { key: "profile", label: "Profile", icon: User },
+  { key: "security", label: "Security", icon: Lock },
+  { key: "danger", label: "Danger Zone", icon: AlertOctagon },
+] as const;
+
+type SectionKey = typeof NAV_ITEMS[number]["key"];
+
 /* ── page ────────────────────────────────────────────── */
 
 export default function Settings() {
   const { user, loading: authLoading, signOut, profile, refreshProfile } = useAuth();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { toast } = useToast();
+
+  const activeSection = (searchParams.get("section") as SectionKey) || "roles";
+  const setSection = (s: SectionKey) => setSearchParams({ section: s }, { replace: true });
 
   const [displayName, setDisplayName] = useState("");
   const [jobTitle, setJobTitle] = useState("");
@@ -130,7 +143,6 @@ export default function Settings() {
     }
   }, [profile]);
 
-  // Fetch saved roles & practiced roles
   useEffect(() => {
     if (!user) return;
     setSavedLoading(true);
@@ -186,7 +198,6 @@ export default function Settings() {
     return `${days}d ago`;
   }
 
-  /* ── CV upload ── */
   const handleCvUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !user) return;
@@ -206,7 +217,6 @@ export default function Settings() {
     if (error) {
       toast({ title: "Upload failed", description: error.message, variant: "destructive" });
     } else {
-      const { data: urlData } = supabase.storage.from("cv-uploads").getPublicUrl(path);
       setCvUrl(path);
       setCvFileName(file.name);
       toast({ title: "CV uploaded", description: file.name });
@@ -297,455 +307,551 @@ export default function Settings() {
 
   if (authLoading) return null;
 
+  const initials = profile?.displayName
+    ? profile.displayName.slice(0, 2).toUpperCase()
+    : (user?.email ?? "").slice(0, 2).toUpperCase();
+
   return (
-    <div className="mx-auto max-w-3xl px-4 py-10 sm:px-6">
-      <h1 className="text-2xl font-bold text-foreground mb-1">Settings</h1>
-      <p className="text-muted-foreground mb-8">Manage your account and preferences.</p>
-
-      {/* Saved & Practiced Roles — Tabbed */}
-      <Card className="mb-6">
-        <Tabs value={rolesTab} onValueChange={setRolesTab}>
-          <CardHeader className="pb-3">
-            <div className="flex items-center justify-between gap-3">
-              <TabsList className="bg-muted/30 h-9">
-                <TabsTrigger value="saved" className="text-xs gap-1.5 data-[state=active]:bg-background">
-                  <Bookmark className="h-3.5 w-3.5" />
-                  Saved
-                  {savedRoles.length > 0 && (
-                    <span className="text-[10px] text-muted-foreground ml-0.5">{savedRoles.length}</span>
-                  )}
-                </TabsTrigger>
-                <TabsTrigger value="practiced" className="text-xs gap-1.5 data-[state=active]:bg-background">
-                  <Shield className="h-3.5 w-3.5" />
-                  Practiced
-                  {practicedRoles.length > 0 && (
-                    <span className="text-[10px] text-muted-foreground ml-0.5">{practicedRoles.length}</span>
-                  )}
-                </TabsTrigger>
-              </TabsList>
-              {rolesTab === "saved" && savedRoles.length > 4 && (
-                <div className="relative flex-1 max-w-[240px]">
-                  <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
-                  <Input
-                    value={savedSearch}
-                    onChange={e => setSavedSearch(e.target.value)}
-                    placeholder="Filter…"
-                    className="h-8 pl-8 text-xs bg-muted/20 border-border/50"
-                  />
-                </div>
-              )}
-              {rolesTab === "practiced" && practicedRoles.length > 4 && (
-                <div className="relative flex-1 max-w-[240px]">
-                  <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
-                  <Input
-                    value={practicedSearch}
-                    onChange={e => setPracticedSearch(e.target.value)}
-                    placeholder="Filter…"
-                    className="h-8 pl-8 text-xs bg-muted/20 border-border/50"
-                  />
-                </div>
-              )}
+    <div className="min-h-[100dvh] bg-background flex">
+      {/* ── Sidebar ── */}
+      <aside className="hidden md:flex w-64 shrink-0 border-r border-border/50 flex-col bg-muted/5">
+        <div className="p-5 border-b border-border/30">
+          <button onClick={() => navigate("/")} className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors text-sm mb-5">
+            <ArrowLeft className="h-4 w-4" />
+            Back
+          </button>
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-sm font-bold shrink-0">
+              {initials}
             </div>
-          </CardHeader>
-          <CardContent>
-            {/* ── Saved tab ── */}
-            <TabsContent value="saved" className="mt-0">
-              {savedLoading ? (
-                <div className="flex items-center justify-center py-8">
-                  <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
-                </div>
-              ) : savedRoles.length === 0 ? (
-                <div className="text-center py-8">
-                  <Bookmark className="h-8 w-8 text-muted-foreground/30 mx-auto mb-3" />
-                  <p className="text-sm text-muted-foreground">No saved roles yet</p>
-                  <p className="text-xs text-muted-foreground/60 mt-1">Explore and bookmark roles you're interested in</p>
-                </div>
-              ) : filteredRoles.length === 0 ? (
-                <p className="text-sm text-muted-foreground py-6 text-center">No matches</p>
-              ) : (
-                <div className="overflow-x-auto -mx-6 px-6 pb-2">
-                  <div className="flex gap-3" style={{ width: 'max-content' }}>
-                    {filteredRoles.map((role, i) => {
-                      const hue1 = hashToHue(role.job_title);
-                      const hue2 = (hue1 + 60) % 360;
-                      const logoUrl = role.company ? `https://logo.clearbit.com/${role.company.toLowerCase().replace(/\s+/g, '')}.com` : '';
-                      const aug = role.augmented_percent ?? 0;
-                      return (
-                        <motion.button
-                          key={role.job_title + role.company + i}
-                          initial={{ opacity: 0, x: 12 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ duration: 0.25, delay: Math.min(i * 0.03, 0.4) }}
-                          onClick={() => goToRole(role.job_title, role.company)}
-                          className="group text-left rounded-xl overflow-hidden bg-card border border-border transition-all hover:shadow-lg hover:border-primary/40 flex flex-col shrink-0"
-                          style={{ width: 180 }}
-                        >
-                          <div className="p-3 pb-2">
-                            <div className="flex items-start gap-2">
-                              {logoUrl && (
-                                <img
-                                  src={logoUrl}
-                                  alt={role.company || ''}
-                                  className="h-7 w-7 rounded-lg object-contain bg-muted/30 p-0.5 shrink-0 mt-0.5"
-                                  onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
-                                />
-                              )}
-                              <div className="min-w-0 flex-1">
-                                <h4 className="text-xs font-semibold text-foreground leading-snug line-clamp-2">{role.job_title}</h4>
-                                {role.company && (
-                                  <p className="text-[10px] text-muted-foreground truncate mt-0.5">{role.company}</p>
-                                )}
-                              </div>
-                            </div>
-                          </div>
-                          <div className="mt-auto border-t border-border/30">
-                            <div
-                              className="px-3 py-2 flex items-center justify-between"
-                              style={{ background: `linear-gradient(135deg, hsl(${hue1} 60% 8%) 0%, hsl(${hue2} 50% 6%) 100%)` }}
-                            >
-                              {aug > 0 ? (
-                                <div className="flex items-center gap-1.5">
-                                  <MiniGauge value={aug} />
-                                  <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">Aug</span>
-                                </div>
-                              ) : (
-                                <div className="flex items-center gap-1">
-                                  <Zap className="h-3 w-3 text-primary" />
-                                  <span className="text-[10px] text-muted-foreground">—</span>
-                                </div>
-                              )}
-                              <Bookmark className="h-3 w-3 text-primary fill-primary shrink-0" />
-                            </div>
-                          </div>
-                        </motion.button>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
-            </TabsContent>
-
-            {/* ── Practiced tab ── */}
-            <TabsContent value="practiced" className="mt-0">
-              {practicedLoading ? (
-                <div className="flex items-center justify-center py-8">
-                  <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
-                </div>
-              ) : practicedRoles.length === 0 ? (
-                <div className="text-center py-8">
-                  <Shield className="h-8 w-8 text-muted-foreground/30 mx-auto mb-3" />
-                  <p className="text-sm text-muted-foreground">No practiced roles yet</p>
-                  <p className="text-xs text-muted-foreground/60 mt-1">Complete simulations to track your progress here</p>
-                </div>
-              ) : filteredPracticed.length === 0 ? (
-                <p className="text-sm text-muted-foreground py-6 text-center">No matches</p>
-              ) : (
-                <div className="overflow-x-auto -mx-6 px-6 pb-2">
-                  <div className="flex gap-3" style={{ width: 'max-content' }}>
-                    {filteredPracticed.map((sim, i) => {
-                      const hue1 = hashToHue(sim.task_name);
-                      const hue2 = (hue1 + 80) % 360;
-                      const avg = avgScore(sim);
-                      const logoUrl = sim.company ? `https://logo.clearbit.com/${sim.company.toLowerCase().replace(/\s+/g, '')}.com` : '';
-                      return (
-                        <motion.button
-                          key={sim.task_name + sim.completed_at + i}
-                          initial={{ opacity: 0, x: 12 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ duration: 0.25, delay: Math.min(i * 0.03, 0.4) }}
-                          onClick={() => goToRole(sim.job_title, sim.company)}
-                          className="group text-left rounded-xl overflow-hidden bg-card border border-border transition-all hover:shadow-lg hover:border-primary/40 flex flex-col shrink-0"
-                          style={{ width: 200 }}
-                        >
-                          <div className="p-3 pb-2">
-                            <div className="flex items-start gap-2">
-                              {logoUrl && (
-                                <img
-                                  src={logoUrl}
-                                  alt={sim.company || ''}
-                                  className="h-6 w-6 rounded-lg object-contain bg-muted/30 p-0.5 shrink-0 mt-0.5"
-                                  onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
-                                />
-                              )}
-                              <div className="min-w-0 flex-1">
-                                <h4 className="text-xs font-semibold text-foreground leading-snug line-clamp-2">{sim.task_name}</h4>
-                                <p className="text-[10px] text-muted-foreground truncate mt-0.5">{sim.job_title}</p>
-                              </div>
-                            </div>
-                          </div>
-                          <div className="mt-auto border-t border-border/30">
-                            <div
-                              className="px-3 py-2 flex items-center justify-between"
-                              style={{ background: `linear-gradient(135deg, hsl(${hue1} 50% 8%) 0%, hsl(${hue2} 40% 6%) 100%)` }}
-                            >
-                              <div className="flex items-center gap-1.5">
-                                <MiniGauge value={avg} />
-                                <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">Avg</span>
-                              </div>
-                              <div className="flex items-center gap-1.5">
-                                <span className="text-[10px] text-muted-foreground">{sim.correct_answers}/{sim.total_questions}</span>
-                                <Target className="h-3 w-3 text-primary shrink-0" />
-                              </div>
-                            </div>
-                          </div>
-                          <div className="px-3 py-1.5 border-t border-border/20">
-                            <span className="text-[9px] text-muted-foreground/60">{timeAgo(sim.completed_at)}</span>
-                          </div>
-                        </motion.button>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
-            </TabsContent>
-          </CardContent>
-        </Tabs>
-      </Card>
-
-      {/* Profile */}
-      <Card className="mb-6">
-        <CardHeader>
-          <CardTitle className="text-lg">Profile</CardTitle>
-          <CardDescription>Your personal and professional details for a customized experience.</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          {/* Basic info */}
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input id="email" value={user?.email ?? ""} disabled className="bg-muted" />
+            <div className="min-w-0">
+              <p className="text-sm font-semibold text-foreground truncate">{profile?.displayName || user?.email}</p>
+              <p className="text-[11px] text-muted-foreground truncate">{user?.email}</p>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="displayName">Display name</Label>
-              <Input
-                id="displayName"
-                value={displayName}
-                onChange={(e) => setDisplayName(e.target.value)}
-                placeholder="Your name"
+          </div>
+        </div>
+        <nav className="flex-1 p-3 space-y-0.5">
+          {NAV_ITEMS.map(item => (
+            <button
+              key={item.key}
+              onClick={() => setSection(item.key)}
+              className={`w-full flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-all ${
+                activeSection === item.key
+                  ? "bg-primary/10 text-primary font-medium"
+                  : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
+              } ${item.key === "danger" ? "mt-auto" : ""}`}
+            >
+              <item.icon className="h-4 w-4 shrink-0" />
+              {item.label}
+            </button>
+          ))}
+        </nav>
+      </aside>
+
+      {/* ── Mobile top nav ── */}
+      <div className="md:hidden fixed top-0 left-0 right-0 z-40 bg-background/90 backdrop-blur-md border-b border-border/50">
+        <div className="flex items-center gap-2 px-4 py-2">
+          <button onClick={() => navigate("/")} className="p-1.5 rounded-lg hover:bg-muted transition-colors">
+            <ArrowLeft className="h-4 w-4 text-muted-foreground" />
+          </button>
+          <h1 className="text-sm font-semibold text-foreground">Settings</h1>
+        </div>
+        <div className="flex gap-1 px-3 pb-2 overflow-x-auto">
+          {NAV_ITEMS.map(item => (
+            <button
+              key={item.key}
+              onClick={() => setSection(item.key)}
+              className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs whitespace-nowrap transition-all shrink-0 ${
+                activeSection === item.key
+                  ? "bg-primary/15 text-primary font-medium"
+                  : "text-muted-foreground hover:bg-muted/40"
+              }`}
+            >
+              <item.icon className="h-3 w-3" />
+              {item.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* ── Content ── */}
+      <main className="flex-1 min-w-0 md:overflow-y-auto">
+        <div className="max-w-3xl mx-auto px-4 sm:px-8 py-8 md:py-12 mt-[88px] md:mt-0">
+          <motion.div
+            key={activeSection}
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.2 }}
+          >
+            {activeSection === "roles" && (
+              <RolesSection
+                savedRoles={savedRoles}
+                practicedRoles={practicedRoles}
+                savedLoading={savedLoading}
+                practicedLoading={practicedLoading}
+                filteredRoles={filteredRoles}
+                filteredPracticed={filteredPracticed}
+                savedSearch={savedSearch}
+                setSavedSearch={setSavedSearch}
+                practicedSearch={practicedSearch}
+                setPracticedSearch={setPracticedSearch}
+                rolesTab={rolesTab}
+                setRolesTab={setRolesTab}
+                goToRole={goToRole}
+                avgScore={avgScore}
+                timeAgo={timeAgo}
               />
-            </div>
-          </div>
-
-          <Separator />
-
-          {/* Career stage toggle */}
-          <div className="space-y-3">
-            <Label className="text-xs uppercase tracking-wider text-muted-foreground">I am a</Label>
-            <div className="flex gap-2">
-              <button
-                type="button"
-                onClick={() => setCareerStage("student")}
-                className={`flex-1 flex items-center justify-center gap-2 rounded-xl border-2 px-4 py-3.5 transition-all ${
-                  careerStage === "student"
-                    ? "border-primary bg-primary/10 text-foreground shadow-sm"
-                    : "border-border/50 bg-muted/20 text-muted-foreground hover:border-border hover:bg-muted/40"
-                }`}
-              >
-                <GraduationCap className="h-5 w-5" />
-                <div className="text-left">
-                  <p className="text-sm font-semibold">Student</p>
-                  <p className="text-[10px] opacity-70">Exploring career paths</p>
-                </div>
-              </button>
-              <button
-                type="button"
-                onClick={() => setCareerStage("professional")}
-                className={`flex-1 flex items-center justify-center gap-2 rounded-xl border-2 px-4 py-3.5 transition-all ${
-                  careerStage === "professional"
-                    ? "border-primary bg-primary/10 text-foreground shadow-sm"
-                    : "border-border/50 bg-muted/20 text-muted-foreground hover:border-border hover:bg-muted/40"
-                }`}
-              >
-                <Briefcase className="h-5 w-5" />
-                <div className="text-left">
-                  <p className="text-sm font-semibold">Professional</p>
-                  <p className="text-[10px] opacity-70">Upskilling in my role</p>
-                </div>
-              </button>
-            </div>
-          </div>
-
-          <Separator />
-
-          {/* Role & org */}
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-2">
-              <Label htmlFor="jobTitle">
-                {careerStage === "student" ? "Target role" : "Job title"}
-              </Label>
-              <Input
-                id="jobTitle"
-                value={jobTitle}
-                onChange={(e) => setJobTitle(e.target.value)}
-                placeholder={careerStage === "student" ? "e.g. Data Scientist" : "e.g. Product Manager"}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="company">
-                {careerStage === "student" ? "Target company" : "Company"}
-              </Label>
-              <Input
-                id="company"
-                value={company}
-                onChange={(e) => setCompany(e.target.value)}
-                placeholder="e.g. Acme Corp or acme.com"
-              />
-            </div>
-          </div>
-
-          {/* School (shown for students, optional for professionals) */}
-          <div className="space-y-2">
-            <Label htmlFor="schoolName" className="flex items-center gap-1.5">
-              <School className="h-3.5 w-3.5 text-muted-foreground" />
-              {careerStage === "student" ? "School / University" : "School / University (optional)"}
-            </Label>
-            <Input
-              id="schoolName"
-              value={schoolName}
-              onChange={(e) => setSchoolName(e.target.value)}
-              placeholder="e.g. MIT, Stanford, University of London"
-            />
-          </div>
-
-          <Separator />
-
-          {/* LinkedIn */}
-          <div className="space-y-2">
-            <Label htmlFor="linkedinUrl" className="flex items-center gap-1.5">
-              <Linkedin className="h-3.5 w-3.5 text-muted-foreground" />
-              LinkedIn profile
-            </Label>
-            <Input
-              id="linkedinUrl"
-              value={linkedinUrl}
-              onChange={(e) => setLinkedinUrl(e.target.value)}
-              placeholder="https://linkedin.com/in/yourname"
-            />
-          </div>
-
-          {/* CV upload */}
-          <div className="space-y-2">
-            <Label className="flex items-center gap-1.5">
-              <FileText className="h-3.5 w-3.5 text-muted-foreground" />
-              CV / Resume
-            </Label>
-            {cvFileName ? (
-              <div className="flex items-center gap-2 rounded-lg border border-border bg-muted/20 px-3 py-2.5">
-                <FileText className="h-4 w-4 text-primary shrink-0" />
-                <span className="text-sm text-foreground truncate flex-1">{cvFileName}</span>
-                <Badge variant="secondary" className="text-[10px] shrink-0">Uploaded</Badge>
-                <button
-                  onClick={handleRemoveCv}
-                  className="ml-1 rounded-full p-1 hover:bg-destructive/10 transition-colors"
-                  title="Remove CV"
-                >
-                  <X className="h-3.5 w-3.5 text-destructive" />
-                </button>
-              </div>
-            ) : (
-              <button
-                type="button"
-                onClick={() => cvInputRef.current?.click()}
-                disabled={uploadingCv}
-                className="w-full rounded-xl border-2 border-dashed border-border/60 bg-muted/10 hover:border-primary/40 hover:bg-primary/5 transition-all px-4 py-6 flex flex-col items-center gap-2 text-center group"
-              >
-                {uploadingCv ? (
-                  <Loader2 className="h-6 w-6 animate-spin text-primary" />
-                ) : (
-                  <Upload className="h-6 w-6 text-muted-foreground group-hover:text-primary transition-colors" />
-                )}
-                <div>
-                  <p className="text-sm font-medium text-foreground">
-                    {uploadingCv ? "Uploading…" : "Upload your CV"}
-                  </p>
-                  <p className="text-[11px] text-muted-foreground mt-0.5">PDF, DOCX, or TXT · Max 5MB</p>
-                </div>
-              </button>
             )}
-            <input
-              ref={cvInputRef}
-              type="file"
-              accept=".pdf,.docx,.txt,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain"
-              onChange={handleCvUpload}
-              className="hidden"
-            />
-          </div>
 
-          <Button onClick={handleSaveProfile} disabled={saving} size="sm" className="mt-2">
-            {saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
-            Save profile
-          </Button>
-        </CardContent>
-      </Card>
-
-      {/* Password */}
-      <Card className="mb-6">
-        <CardHeader>
-          <CardTitle className="text-lg">Change password</CardTitle>
-          <CardDescription>Update your account password.</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-2">
-              <Label htmlFor="newPassword">New password</Label>
-              <Input
-                id="newPassword"
-                type="password"
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-                placeholder="••••••••"
+            {activeSection === "profile" && (
+              <ProfileSection
+                displayName={displayName} setDisplayName={setDisplayName}
+                jobTitle={jobTitle} setJobTitle={setJobTitle}
+                company={company} setCompany={setCompany}
+                linkedinUrl={linkedinUrl} setLinkedinUrl={setLinkedinUrl}
+                schoolName={schoolName} setSchoolName={setSchoolName}
+                careerStage={careerStage} setCareerStage={setCareerStage}
+                cvFileName={cvFileName} cvInputRef={cvInputRef}
+                uploadingCv={uploadingCv} saving={saving}
+                email={user?.email ?? ""}
+                handleCvUpload={handleCvUpload}
+                handleRemoveCv={handleRemoveCv}
+                handleSaveProfile={handleSaveProfile}
               />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="confirmPassword">Confirm new password</Label>
-              <Input
-                id="confirmPassword"
-                type="password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                placeholder="••••••••"
-              />
-            </div>
-          </div>
-          <Button onClick={handleChangePassword} disabled={changingPassword} size="sm" variant="outline">
-            {changingPassword ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <KeyRound className="mr-2 h-4 w-4" />}
-            Update password
-          </Button>
-        </CardContent>
-      </Card>
+            )}
 
-      {/* Delete account */}
-      <Card className="border-destructive/30">
-        <CardHeader>
-          <CardTitle className="text-lg text-destructive">Danger zone</CardTitle>
-          <CardDescription>Permanently delete your account and all associated data.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <Button variant="destructive" size="sm">
-                <Trash2 className="mr-2 h-4 w-4" />
-                Delete account
-              </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                <AlertDialogDescription>
-                  This will permanently delete your analysis history, upskill sessions, and profile data. This action cannot be undone.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction onClick={handleDeleteAccount} disabled={deleting} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-                  {deleting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-                  Yes, delete my account
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
-        </CardContent>
-      </Card>
+            {activeSection === "security" && (
+              <SecuritySection
+                newPassword={newPassword} setNewPassword={setNewPassword}
+                confirmPassword={confirmPassword} setConfirmPassword={setConfirmPassword}
+                changingPassword={changingPassword}
+                handleChangePassword={handleChangePassword}
+              />
+            )}
+
+            {activeSection === "danger" && (
+              <DangerSection
+                deleting={deleting}
+                handleDeleteAccount={handleDeleteAccount}
+              />
+            )}
+          </motion.div>
+        </div>
+      </main>
+    </div>
+  );
+}
+
+/* ══════════════════════════════════════════════════════
+   Section Components
+   ══════════════════════════════════════════════════════ */
+
+function RolesSection({
+  savedRoles, practicedRoles, savedLoading, practicedLoading,
+  filteredRoles, filteredPracticed, savedSearch, setSavedSearch,
+  practicedSearch, setPracticedSearch, rolesTab, setRolesTab,
+  goToRole, avgScore, timeAgo,
+}: {
+  savedRoles: SavedRole[];
+  practicedRoles: PracticedRole[];
+  savedLoading: boolean;
+  practicedLoading: boolean;
+  filteredRoles: SavedRole[];
+  filteredPracticed: PracticedRole[];
+  savedSearch: string;
+  setSavedSearch: (v: string) => void;
+  practicedSearch: string;
+  setPracticedSearch: (v: string) => void;
+  rolesTab: string;
+  setRolesTab: (v: string) => void;
+  goToRole: (title: string, company: string | null) => void;
+  avgScore: (r: PracticedRole) => number;
+  timeAgo: (d: string) => string;
+}) {
+  return (
+    <div>
+      <h2 className="text-xl font-bold text-foreground mb-1">My Roles</h2>
+      <p className="text-sm text-muted-foreground mb-6">Saved bookmarks and completed simulations.</p>
+
+      <Tabs value={rolesTab} onValueChange={setRolesTab}>
+        <div className="flex items-center justify-between gap-3 mb-4">
+          <TabsList className="bg-muted/30 h-9">
+            <TabsTrigger value="saved" className="text-xs gap-1.5 data-[state=active]:bg-background">
+              <Bookmark className="h-3.5 w-3.5" />
+              Saved
+              {savedRoles.length > 0 && <span className="text-[10px] text-muted-foreground ml-0.5">{savedRoles.length}</span>}
+            </TabsTrigger>
+            <TabsTrigger value="practiced" className="text-xs gap-1.5 data-[state=active]:bg-background">
+              <Shield className="h-3.5 w-3.5" />
+              Practiced
+              {practicedRoles.length > 0 && <span className="text-[10px] text-muted-foreground ml-0.5">{practicedRoles.length}</span>}
+            </TabsTrigger>
+          </TabsList>
+          {rolesTab === "saved" && savedRoles.length > 4 && (
+            <div className="relative flex-1 max-w-[280px]">
+              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+              <Input value={savedSearch} onChange={e => setSavedSearch(e.target.value)} placeholder="Filter…" className="h-8 pl-8 text-xs bg-muted/20 border-border/50" />
+            </div>
+          )}
+          {rolesTab === "practiced" && practicedRoles.length > 4 && (
+            <div className="relative flex-1 max-w-[280px]">
+              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+              <Input value={practicedSearch} onChange={e => setPracticedSearch(e.target.value)} placeholder="Filter…" className="h-8 pl-8 text-xs bg-muted/20 border-border/50" />
+            </div>
+          )}
+        </div>
+
+        <TabsContent value="saved" className="mt-0">
+          {savedLoading ? (
+            <div className="flex items-center justify-center py-16"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></div>
+          ) : savedRoles.length === 0 ? (
+            <div className="text-center py-16">
+              <Bookmark className="h-10 w-10 text-muted-foreground/20 mx-auto mb-4" />
+              <p className="text-sm text-muted-foreground">No saved roles yet</p>
+              <p className="text-xs text-muted-foreground/60 mt-1">Explore and bookmark roles you're interested in</p>
+            </div>
+          ) : filteredRoles.length === 0 ? (
+            <p className="text-sm text-muted-foreground py-12 text-center">No matches</p>
+          ) : (
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+              {filteredRoles.map((role, i) => {
+                const hue1 = hashToHue(role.job_title);
+                const hue2 = (hue1 + 60) % 360;
+                const logoUrl = role.company ? `https://logo.clearbit.com/${role.company.toLowerCase().replace(/\s+/g, '')}.com` : '';
+                const aug = role.augmented_percent ?? 0;
+                return (
+                  <motion.button
+                    key={role.job_title + role.company + i}
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.2, delay: Math.min(i * 0.03, 0.3) }}
+                    onClick={() => goToRole(role.job_title, role.company)}
+                    className="group text-left rounded-xl overflow-hidden bg-card border border-border transition-all hover:shadow-lg hover:border-primary/40 flex flex-col"
+                  >
+                    <div className="p-3 pb-2">
+                      <div className="flex items-start gap-2">
+                        {logoUrl && (
+                          <img src={logoUrl} alt={role.company || ''} className="h-7 w-7 rounded-lg object-contain bg-muted/30 p-0.5 shrink-0 mt-0.5" onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
+                        )}
+                        <div className="min-w-0 flex-1">
+                          <h4 className="text-xs font-semibold text-foreground leading-snug line-clamp-2">{role.job_title}</h4>
+                          {role.company && <p className="text-[10px] text-muted-foreground truncate mt-0.5">{role.company}</p>}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="mt-auto border-t border-border/30">
+                      <div className="px-3 py-2 flex items-center justify-between" style={{ background: `linear-gradient(135deg, hsl(${hue1} 60% 8%) 0%, hsl(${hue2} 50% 6%) 100%)` }}>
+                        {aug > 0 ? (
+                          <div className="flex items-center gap-1.5">
+                            <MiniGauge value={aug} />
+                            <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">Aug</span>
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-1">
+                            <Zap className="h-3 w-3 text-primary" />
+                            <span className="text-[10px] text-muted-foreground">—</span>
+                          </div>
+                        )}
+                        <Bookmark className="h-3 w-3 text-primary fill-primary shrink-0" />
+                      </div>
+                    </div>
+                  </motion.button>
+                );
+              })}
+            </div>
+          )}
+        </TabsContent>
+
+        <TabsContent value="practiced" className="mt-0">
+          {practicedLoading ? (
+            <div className="flex items-center justify-center py-16"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></div>
+          ) : practicedRoles.length === 0 ? (
+            <div className="text-center py-16">
+              <Shield className="h-10 w-10 text-muted-foreground/20 mx-auto mb-4" />
+              <p className="text-sm text-muted-foreground">No practiced roles yet</p>
+              <p className="text-xs text-muted-foreground/60 mt-1">Complete simulations to track your progress</p>
+            </div>
+          ) : filteredPracticed.length === 0 ? (
+            <p className="text-sm text-muted-foreground py-12 text-center">No matches</p>
+          ) : (
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+              {filteredPracticed.map((sim, i) => {
+                const hue1 = hashToHue(sim.task_name);
+                const hue2 = (hue1 + 80) % 360;
+                const avg = avgScore(sim);
+                const logoUrl = sim.company ? `https://logo.clearbit.com/${sim.company.toLowerCase().replace(/\s+/g, '')}.com` : '';
+                return (
+                  <motion.button
+                    key={sim.task_name + sim.completed_at + i}
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.2, delay: Math.min(i * 0.03, 0.3) }}
+                    onClick={() => goToRole(sim.job_title, sim.company)}
+                    className="group text-left rounded-xl overflow-hidden bg-card border border-border transition-all hover:shadow-lg hover:border-primary/40 flex flex-col"
+                  >
+                    <div className="p-3 pb-2">
+                      <div className="flex items-start gap-2">
+                        {logoUrl && (
+                          <img src={logoUrl} alt={sim.company || ''} className="h-6 w-6 rounded-lg object-contain bg-muted/30 p-0.5 shrink-0 mt-0.5" onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
+                        )}
+                        <div className="min-w-0 flex-1">
+                          <h4 className="text-xs font-semibold text-foreground leading-snug line-clamp-2">{sim.task_name}</h4>
+                          <p className="text-[10px] text-muted-foreground truncate mt-0.5">{sim.job_title}</p>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="mt-auto border-t border-border/30">
+                      <div className="px-3 py-2 flex items-center justify-between" style={{ background: `linear-gradient(135deg, hsl(${hue1} 50% 8%) 0%, hsl(${hue2} 40% 6%) 100%)` }}>
+                        <div className="flex items-center gap-1.5">
+                          <MiniGauge value={avg} />
+                          <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">Avg</span>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-[10px] text-muted-foreground">{sim.correct_answers}/{sim.total_questions}</span>
+                          <Target className="h-3 w-3 text-primary shrink-0" />
+                        </div>
+                      </div>
+                    </div>
+                    <div className="px-3 py-1.5 border-t border-border/20">
+                      <span className="text-[9px] text-muted-foreground/60">{timeAgo(sim.completed_at)}</span>
+                    </div>
+                  </motion.button>
+                );
+              })}
+            </div>
+          )}
+        </TabsContent>
+      </Tabs>
+    </div>
+  );
+}
+
+function ProfileSection({
+  displayName, setDisplayName, jobTitle, setJobTitle, company, setCompany,
+  linkedinUrl, setLinkedinUrl, schoolName, setSchoolName,
+  careerStage, setCareerStage, cvFileName, cvInputRef, uploadingCv, saving, email,
+  handleCvUpload, handleRemoveCv, handleSaveProfile,
+}: {
+  displayName: string; setDisplayName: (v: string) => void;
+  jobTitle: string; setJobTitle: (v: string) => void;
+  company: string; setCompany: (v: string) => void;
+  linkedinUrl: string; setLinkedinUrl: (v: string) => void;
+  schoolName: string; setSchoolName: (v: string) => void;
+  careerStage: "student" | "professional"; setCareerStage: (v: "student" | "professional") => void;
+  cvFileName: string | null; cvInputRef: React.RefObject<HTMLInputElement>;
+  uploadingCv: boolean; saving: boolean; email: string;
+  handleCvUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  handleRemoveCv: () => void;
+  handleSaveProfile: () => void;
+}) {
+  return (
+    <div>
+      <h2 className="text-xl font-bold text-foreground mb-1">Profile</h2>
+      <p className="text-sm text-muted-foreground mb-6">Your personal and professional details for a customized experience.</p>
+
+      <div className="space-y-8">
+        {/* Basic info */}
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div className="space-y-2">
+            <Label htmlFor="email">Email</Label>
+            <Input id="email" value={email} disabled className="bg-muted" />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="displayName">Display name</Label>
+            <Input id="displayName" value={displayName} onChange={(e) => setDisplayName(e.target.value)} placeholder="Your name" />
+          </div>
+        </div>
+
+        <Separator />
+
+        {/* Career stage toggle */}
+        <div className="space-y-3">
+          <Label className="text-xs uppercase tracking-wider text-muted-foreground">I am a</Label>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={() => setCareerStage("student")}
+              className={`flex-1 flex items-center justify-center gap-2 rounded-xl border-2 px-4 py-3.5 transition-all ${
+                careerStage === "student"
+                  ? "border-primary bg-primary/10 text-foreground shadow-sm"
+                  : "border-border/50 bg-muted/20 text-muted-foreground hover:border-border hover:bg-muted/40"
+              }`}
+            >
+              <GraduationCap className="h-5 w-5" />
+              <div className="text-left">
+                <p className="text-sm font-semibold">Student</p>
+                <p className="text-[10px] opacity-70">Exploring career paths</p>
+              </div>
+            </button>
+            <button
+              type="button"
+              onClick={() => setCareerStage("professional")}
+              className={`flex-1 flex items-center justify-center gap-2 rounded-xl border-2 px-4 py-3.5 transition-all ${
+                careerStage === "professional"
+                  ? "border-primary bg-primary/10 text-foreground shadow-sm"
+                  : "border-border/50 bg-muted/20 text-muted-foreground hover:border-border hover:bg-muted/40"
+              }`}
+            >
+              <Briefcase className="h-5 w-5" />
+              <div className="text-left">
+                <p className="text-sm font-semibold">Professional</p>
+                <p className="text-[10px] opacity-70">Upskilling in my role</p>
+              </div>
+            </button>
+          </div>
+        </div>
+
+        <Separator />
+
+        {/* Role & org */}
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div className="space-y-2">
+            <Label htmlFor="jobTitle">{careerStage === "student" ? "Target role" : "Job title"}</Label>
+            <Input id="jobTitle" value={jobTitle} onChange={(e) => setJobTitle(e.target.value)} placeholder={careerStage === "student" ? "e.g. Data Scientist" : "e.g. Product Manager"} />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="company">{careerStage === "student" ? "Target company" : "Company"}</Label>
+            <Input id="company" value={company} onChange={(e) => setCompany(e.target.value)} placeholder="e.g. Acme Corp or acme.com" />
+          </div>
+        </div>
+
+        {/* School */}
+        <div className="space-y-2">
+          <Label htmlFor="schoolName" className="flex items-center gap-1.5">
+            <School className="h-3.5 w-3.5 text-muted-foreground" />
+            {careerStage === "student" ? "School / University" : "School / University (optional)"}
+          </Label>
+          <Input id="schoolName" value={schoolName} onChange={(e) => setSchoolName(e.target.value)} placeholder="e.g. MIT, Stanford, University of London" />
+        </div>
+
+        <Separator />
+
+        {/* LinkedIn */}
+        <div className="space-y-2">
+          <Label htmlFor="linkedinUrl" className="flex items-center gap-1.5">
+            <Linkedin className="h-3.5 w-3.5 text-muted-foreground" />
+            LinkedIn profile
+          </Label>
+          <Input id="linkedinUrl" value={linkedinUrl} onChange={(e) => setLinkedinUrl(e.target.value)} placeholder="https://linkedin.com/in/yourname" />
+        </div>
+
+        {/* CV upload */}
+        <div className="space-y-2">
+          <Label className="flex items-center gap-1.5">
+            <FileText className="h-3.5 w-3.5 text-muted-foreground" />
+            CV / Resume
+          </Label>
+          {cvFileName ? (
+            <div className="flex items-center gap-2 rounded-lg border border-border bg-muted/20 px-3 py-2.5">
+              <FileText className="h-4 w-4 text-primary shrink-0" />
+              <span className="text-sm text-foreground truncate flex-1">{cvFileName}</span>
+              <Badge variant="secondary" className="text-[10px] shrink-0">Uploaded</Badge>
+              <button onClick={handleRemoveCv} className="ml-1 rounded-full p-1 hover:bg-destructive/10 transition-colors" title="Remove CV">
+                <X className="h-3.5 w-3.5 text-destructive" />
+              </button>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => cvInputRef.current?.click()}
+              disabled={uploadingCv}
+              className="w-full rounded-xl border-2 border-dashed border-border/60 bg-muted/10 hover:border-primary/40 hover:bg-primary/5 transition-all px-4 py-6 flex flex-col items-center gap-2 text-center group"
+            >
+              {uploadingCv ? (
+                <Loader2 className="h-6 w-6 animate-spin text-primary" />
+              ) : (
+                <Upload className="h-6 w-6 text-muted-foreground group-hover:text-primary transition-colors" />
+              )}
+              <div>
+                <p className="text-sm font-medium text-foreground">{uploadingCv ? "Uploading…" : "Upload your CV"}</p>
+                <p className="text-[11px] text-muted-foreground mt-0.5">PDF, DOCX, or TXT · Max 5MB</p>
+              </div>
+            </button>
+          )}
+          <input
+            ref={cvInputRef}
+            type="file"
+            accept=".pdf,.docx,.txt,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain"
+            onChange={handleCvUpload}
+            className="hidden"
+          />
+        </div>
+
+        <Button onClick={handleSaveProfile} disabled={saving} size="sm">
+          {saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+          Save profile
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+function SecuritySection({
+  newPassword, setNewPassword, confirmPassword, setConfirmPassword,
+  changingPassword, handleChangePassword,
+}: {
+  newPassword: string; setNewPassword: (v: string) => void;
+  confirmPassword: string; setConfirmPassword: (v: string) => void;
+  changingPassword: boolean;
+  handleChangePassword: () => void;
+}) {
+  return (
+    <div>
+      <h2 className="text-xl font-bold text-foreground mb-1">Security</h2>
+      <p className="text-sm text-muted-foreground mb-6">Update your account password.</p>
+
+      <div className="space-y-4 max-w-md">
+        <div className="space-y-2">
+          <Label htmlFor="newPassword">New password</Label>
+          <Input id="newPassword" type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} placeholder="••••••••" />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="confirmPassword">Confirm new password</Label>
+          <Input id="confirmPassword" type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder="••••••••" />
+        </div>
+        <Button onClick={handleChangePassword} disabled={changingPassword} size="sm" variant="outline">
+          {changingPassword ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <KeyRound className="mr-2 h-4 w-4" />}
+          Update password
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+function DangerSection({
+  deleting, handleDeleteAccount,
+}: {
+  deleting: boolean;
+  handleDeleteAccount: () => void;
+}) {
+  return (
+    <div>
+      <h2 className="text-xl font-bold text-destructive mb-1">Danger Zone</h2>
+      <p className="text-sm text-muted-foreground mb-6">Permanently delete your account and all associated data.</p>
+
+      <AlertDialog>
+        <AlertDialogTrigger asChild>
+          <Button variant="destructive" size="sm">
+            <Trash2 className="mr-2 h-4 w-4" />
+            Delete account
+          </Button>
+        </AlertDialogTrigger>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete your analysis history, upskill sessions, and profile data. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteAccount} disabled={deleting} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              {deleting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+              Yes, delete my account
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
