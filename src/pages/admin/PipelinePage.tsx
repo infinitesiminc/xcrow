@@ -961,25 +961,25 @@ export default function PipelinePage() {
           </div>
         </DialogContent>
       </Dialog>
-      {/* Apollo Search Dialog */}
-      <Dialog open={apolloOpen} onOpenChange={setApolloOpen}>
+      {/* Apollo Bulk Discovery Dialog */}
+      <Dialog open={apolloOpen} onOpenChange={v => { if (!v) apolloBulkAbort.current = true; setApolloOpen(v); }}>
         <DialogContent className="sm:max-w-2xl max-h-[85vh] flex flex-col">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <Telescope className="h-4 w-4" /> Apollo Company Search
+              <Telescope className="h-4 w-4" /> Apollo Bulk Discovery
             </DialogTitle>
-            <DialogDescription>Search Apollo's database to find and import companies.</DialogDescription>
+            <DialogDescription>Discover companies by filters and bulk-import all results into the pipeline.</DialogDescription>
           </DialogHeader>
 
           {/* Filters */}
           <div className="grid grid-cols-2 gap-2">
             <div>
               <label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">Company Name</label>
-              <Input placeholder="e.g. Stripe" value={apolloName} onChange={e => setApolloName(e.target.value)} className="h-8 text-xs" />
+              <Input placeholder="e.g. Stripe (optional)" value={apolloName} onChange={e => setApolloName(e.target.value)} className="h-8 text-xs" />
             </div>
             <div>
-              <label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">Keywords</label>
-              <Input placeholder="e.g. AI, fintech" value={apolloKeywords} onChange={e => setApolloKeywords(e.target.value)} className="h-8 text-xs" />
+              <label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">Keywords (comma-separated)</label>
+              <Input placeholder="e.g. AI, fintech, SaaS" value={apolloKeywords} onChange={e => setApolloKeywords(e.target.value)} className="h-8 text-xs" />
             </div>
             <div>
               <label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">Location</label>
@@ -1003,13 +1003,54 @@ export default function PipelinePage() {
                 <option value="10001,1000000">10,000+</option>
               </select>
             </div>
+            <div className="col-span-2">
+              <label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">Funding Stage</label>
+              <select
+                value={apolloFunding}
+                onChange={e => setApolloFunding(e.target.value)}
+                className="w-full h-8 text-xs rounded-md border border-input bg-background px-2"
+              >
+                <option value="">Any</option>
+                <option value="pre_seed">Pre-Seed</option>
+                <option value="seed">Seed</option>
+                <option value="series_a">Series A</option>
+                <option value="series_b">Series B</option>
+                <option value="series_c">Series C</option>
+                <option value="series_d">Series D</option>
+                <option value="series_e">Series E+</option>
+                <option value="growth">Growth</option>
+                <option value="ipo">IPO</option>
+              </select>
+            </div>
           </div>
-          <Button onClick={() => handleApolloSearch(1)} disabled={apolloLoading} size="sm" className="gap-2">
-            {apolloLoading ? <Loader2 className="h-3 w-3 animate-spin" /> : <Search className="h-3 w-3" />}
-            Search
-          </Button>
+          <div className="flex gap-2">
+            <Button onClick={() => handleApolloSearch(1)} disabled={apolloLoading || apolloImporting} size="sm" className="gap-2">
+              {apolloLoading ? <Loader2 className="h-3 w-3 animate-spin" /> : <Search className="h-3 w-3" />}
+              Preview Results
+            </Button>
+            {apolloPagination.total_entries > 0 && !apolloBulkProgress && (
+              <Button onClick={handleApolloBulkImport} disabled={apolloImporting} size="sm" variant="default" className="gap-2">
+                <Download className="h-3 w-3" />
+                Import All ({Math.min(apolloPagination.total_entries, 500).toLocaleString()} companies)
+              </Button>
+            )}
+          </div>
 
-          {/* Results */}
+          {/* Bulk progress */}
+          {apolloBulkProgress && (
+            <div className="space-y-1.5 rounded-md border border-primary/20 bg-primary/5 p-3">
+              <div className="flex items-center justify-between text-xs">
+                <span className="font-medium">Importing page {apolloBulkProgress.current}/{apolloBulkProgress.total}…</span>
+                <span className="text-muted-foreground">{apolloBulkProgress.imported} companies saved</span>
+              </div>
+              <Progress value={(apolloBulkProgress.current / apolloBulkProgress.total) * 100} className="h-1.5" />
+              <Button variant="outline" size="sm" className="h-6 text-[10px]" onClick={() => { apolloBulkAbort.current = true; }}>
+                <Pause className="h-3 w-3 mr-1" /> Stop
+              </Button>
+            </div>
+          )}
+
+          {/* Results preview */}
           <ScrollArea className="flex-1 min-h-0">
             {apolloResults.length > 0 ? (
               <div className="space-y-1">
@@ -1067,14 +1108,14 @@ export default function PipelinePage() {
             ) : !apolloLoading ? (
               <div className="text-center py-8">
                 <Telescope className="h-6 w-6 mx-auto mb-2 text-muted-foreground/40" />
-                <p className="text-xs text-muted-foreground">Search Apollo to find companies</p>
+                <p className="text-xs text-muted-foreground">Set filters above and preview to discover companies</p>
               </div>
             ) : null}
           </ScrollArea>
 
-          {apolloSelected.size > 0 && (
+          {apolloSelected.size > 0 && !apolloBulkProgress && (
             <Button onClick={handleApolloImport} disabled={apolloImporting} className="gap-2">
-              {apolloImporting ? <><Loader2 className="h-4 w-4 animate-spin" /> Importing…</> : <><Download className="h-4 w-4" /> Import {apolloSelected.size} Companies</>}
+              {apolloImporting ? <><Loader2 className="h-4 w-4 animate-spin" /> Importing…</> : <><Download className="h-4 w-4" /> Import {apolloSelected.size} Selected</>}
             </Button>
           )}
         </DialogContent>
