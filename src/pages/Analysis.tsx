@@ -347,6 +347,8 @@ const Analysis = () => {
                 total={sortedTasks.length}
                 isCompleted={completedTasks.has(sortedTasks[currentIndex - 1].name)}
                 onPractice={() => setSimTask(sortedTasks[currentIndex - 1])}
+                jobTitle={result.jobTitle}
+                company={company}
               />
             )}
             {currentIndex === totalCards - 1 && (
@@ -479,19 +481,28 @@ function HeroCard({
 }
 
 function TaskCard({
-  task, index, total, isCompleted, onPractice,
+  task, index, total, isCompleted, onPractice, jobTitle, company,
 }: {
   task: TaskAnalysis;
   index: number;
   total: number;
   isCompleted: boolean;
   onPractice: () => void;
+  jobTitle: string;
+  company: string;
 }) {
   const aiScore = task.aiExposureScore ?? 50;
   const style = taskChipStyle(aiScore);
 
   return (
     <div className="h-full flex flex-col items-center justify-center px-6 max-w-lg mx-auto">
+      {/* Role context + task counter */}
+      <div className="text-center mb-4">
+        <p className="text-sm font-semibold text-foreground">{jobTitle}</p>
+        {company && !isWebsite(company) && (
+          <p className="text-[11px] text-muted-foreground">at {company}</p>
+        )}
+      </div>
       <div className="text-xs text-muted-foreground mb-6 uppercase tracking-widest">
         Task {index + 1} of {total}
       </div>
