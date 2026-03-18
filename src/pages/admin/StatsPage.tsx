@@ -4,7 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { Building2, Briefcase, Brain, Users, Loader2, Settings2 } from "lucide-react";
+import { Building2, Briefcase, Brain, Users, Loader2, Settings2, CheckCircle2 } from "lucide-react";
 
 interface FeatureFlag {
   key: string;
