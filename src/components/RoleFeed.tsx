@@ -279,7 +279,7 @@ function RoleDetailOverlay({ role, onClose }: { role: RoleCard; onClose: () => v
         })()}
 
         {/* Snap-scroll content area with dot nav */}
-        <div className="relative flex-1 overflow-hidden bg-card">
+        <div className="relative flex-1 min-h-0 overflow-hidden bg-card">
           <DotNav active={activeSection} total={3} onDot={scrollToSection} />
 
           <div
