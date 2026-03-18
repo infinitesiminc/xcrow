@@ -212,6 +212,8 @@ function RoleDetailOverlay({ role, onClose }: { role: RoleCard; onClose: () => v
   const [tasks, setTasks] = useState<TaskCluster[]>([]);
   const [loadingTasks, setLoadingTasks] = useState(false);
   const [activeSection, setActiveSection] = useState(0);
+  const [aiSummary, setAiSummary] = useState<string | null>(null);
+  const [summaryLoading, setSummaryLoading] = useState(false);
 
   // Fetch task clusters on open
   useEffect(() => {
@@ -228,6 +230,23 @@ function RoleDetailOverlay({ role, onClose }: { role: RoleCard; onClose: () => v
         setLoadingTasks(false);
       });
   }, [role.jobId]);
+
+  // Fetch or generate AI summary
+  useEffect(() => {
+    if (!role.jobId || !role.description) return;
+    setSummaryLoading(true);
+    supabase.functions.invoke("summarize-role", {
+      body: {
+        jobId: role.jobId,
+        jobTitle: role.title,
+        company: role.company || "",
+        description: role.description,
+      },
+    }).then(({ data, error }) => {
+      if (data?.summary) setAiSummary(data.summary);
+      setSummaryLoading(false);
+    }).catch(() => setSummaryLoading(false));
+  }, [role.jobId, role.description, role.title, role.company]);
 
   const seniorityLabel: Record<string, string> = {
     junior: "Junior", mid: "Mid-Level", senior: "Senior", lead: "Lead", manager: "Manager", director: "Director", vp: "VP", c_level: "C-Level",
