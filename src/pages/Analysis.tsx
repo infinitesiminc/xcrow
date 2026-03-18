@@ -396,18 +396,15 @@ const Analysis = () => {
 };
 
 function HeroCard({
-  result, company, readiness, completedCount, totalTasks, onNext,
+  result, company, augmented, completedCount, totalTasks, onNext,
 }: {
   result: JobAnalysisResult;
   company: string;
-  readiness: number;
+  augmented: number;
   completedCount: number;
   totalTasks: number;
   onNext: () => void;
 }) {
-  const risk = result.summary.automationRiskPercent;
-  const augmented = result.summary.augmentedPercent;
-
   return (
     <div className="h-full flex flex-col items-center justify-center px-6 text-center max-w-lg mx-auto">
       <div className="relative mb-6">
@@ -420,36 +417,43 @@ function HeroCard({
             strokeLinecap="round"
             strokeDasharray={2 * Math.PI * 60}
             initial={{ strokeDashoffset: 2 * Math.PI * 60 }}
-            animate={{ strokeDashoffset: 2 * Math.PI * 60 * (1 - readiness / 100) }}
+            animate={{ strokeDashoffset: 2 * Math.PI * 60 * (1 - augmented / 100) }}
             transition={{ duration: 1.2, ease: "easeOut" }}
           />
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <span className="text-3xl font-display font-bold text-foreground tabular-nums">{readiness}%</span>
-          <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Ready</span>
+          <span className="text-3xl font-display font-bold text-foreground tabular-nums">{augmented}%</span>
+          <span className="text-[10px] text-muted-foreground uppercase tracking-wider">AI-Augmented</span>
         </div>
       </div>
 
       <h1 className="text-2xl font-display font-bold text-foreground mb-1">{result.jobTitle}</h1>
       {company && !isWebsite(company) && (
-        <p className="text-sm text-muted-foreground mb-6">at {company}</p>
+        <p className="text-sm text-muted-foreground mb-4">at {company}</p>
       )}
 
+      <p className="text-xs text-muted-foreground mb-6 max-w-xs leading-relaxed">
+        {augmented >= 70
+          ? `${augmented}% of this role's tasks can be supercharged with AI tools — tons to learn here 🚀`
+          : augmented >= 40
+          ? `${augmented}% of tasks are enhanced by AI — a great blend of human skill and AI tools 💡`
+          : `This role is mostly human-driven — AI plays a supporting role in ${augmented}% of tasks ✨`}
+      </p>
+
       <div className="flex gap-6 mb-8">
-        <div className="text-center">
-          <div className="text-lg font-bold text-foreground tabular-nums">{risk}%</div>
-          <div className="text-[10px] text-muted-foreground uppercase tracking-wider">AI Risk</div>
-        </div>
-        <div className="h-8 w-px bg-border" />
-        <div className="text-center">
-          <div className="text-lg font-bold text-foreground tabular-nums">{augmented}%</div>
-          <div className="text-[10px] text-muted-foreground uppercase tracking-wider">Augmented</div>
-        </div>
-        <div className="h-8 w-px bg-border" />
         <div className="text-center">
           <div className="text-lg font-bold text-foreground tabular-nums">{totalTasks}</div>
           <div className="text-[10px] text-muted-foreground uppercase tracking-wider">Tasks</div>
         </div>
+        {completedCount > 0 && (
+          <>
+            <div className="h-8 w-px bg-border" />
+            <div className="text-center">
+              <div className="text-lg font-bold text-foreground tabular-nums">{completedCount}</div>
+              <div className="text-[10px] text-muted-foreground uppercase tracking-wider">Practiced</div>
+            </div>
+          </>
+        )}
       </div>
 
       {completedCount > 0 && (
