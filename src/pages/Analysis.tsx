@@ -571,11 +571,11 @@ function TaskCard({
 }
 
 function CompletionCard({
-  completedCount, totalTasks, readiness, isBookmarked, onBookmark, onBack, user, onSignIn,
+  completedCount, totalTasks, augmented, isBookmarked, onBookmark, onBack, user, onSignIn,
 }: {
   completedCount: number;
   totalTasks: number;
-  readiness: number;
+  augmented: number;
   isBookmarked: boolean;
   onBookmark: () => void;
   onBack: () => void;
@@ -599,7 +599,7 @@ function CompletionCard({
         {completedCount === totalTasks && completedCount > 0 ? "All Tasks Complete!" : "Role Overview Complete"}
       </h2>
       <p className="text-sm text-muted-foreground mb-8">
-        {completedCount}/{totalTasks} tasks practiced · {readiness}% readiness
+        {completedCount}/{totalTasks} tasks practiced · {augmented}% AI-augmented
       </p>
 
       <div className="flex flex-col gap-3 w-full max-w-xs">
