@@ -144,7 +144,11 @@ export default function RolePreviewPanel({ role, onClose }: RolePreviewPanelProp
 
   const logoUrl = role.logo || (role.company ? `https://logo.clearbit.com/${role.company.toLowerCase().replace(/\s+/g, "")}.com` : "");
 
-  const startSimulation = (task: TaskCluster) => { setSimTask(task); setView("simulation"); };
+  const startSimulation = (task: TaskCluster, fromEnlarged = false) => {
+    wasEnlargedRef.current = fromEnlarged;
+    setSimTask(task);
+    setView("simulation");
+  };
 
   const pickNextTask = useCallback(() => {
     if (!simTask) return;
