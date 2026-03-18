@@ -251,14 +251,17 @@ function DesktopGrid({ roles, onOpenSearch }: RoleFeedProps) {
                 onClick={() => setSelected(role)}
                 className="group text-left rounded-xl overflow-hidden bg-card border-none transition-all hover:shadow-lg hover:shadow-primary/5"
               >
-                {/* Generative gradient header */}
+                {/* Title at top */}
+                <div className="p-3 pb-0">
+                  <h3 className="text-sm font-semibold text-foreground leading-snug group-hover:text-primary transition-colors truncate">{role.title}</h3>
+                </div>
+                {/* Generative gradient */}
                 <div
-                  className="relative h-28"
+                  className="relative h-24 mx-3 mt-2 rounded-lg overflow-hidden"
                   style={{
                     background: `linear-gradient(135deg, hsl(${hue1} 70% 15%) 0%, hsl(${hue2} 60% 12%) 50%, hsl(${hue3} 50% 10%) 100%)`,
                   }}
                 >
-                  {/* Geometric shapes */}
                   <div
                     className="absolute rounded-full opacity-20"
                     style={{
@@ -290,25 +293,22 @@ function DesktopGrid({ roles, onOpenSearch }: RoleFeedProps) {
                     </span>
                   </div>
                 </div>
-                {/* Bottom section with logo + text */}
-                <div className="p-3">
-                  <div className="flex items-start gap-2.5">
+                {/* Bottom section with logo + company */}
+                <div className="p-3 pt-2">
+                  <div className="flex items-center gap-2">
                     {logoUrl && (
                       <img
                         src={logoUrl}
                         alt={role.company || ''}
-                        className="h-9 w-9 rounded-lg object-contain bg-white/10 p-1 shrink-0"
+                        className="h-7 w-7 rounded-md object-contain bg-white/10 p-0.5 shrink-0"
                         onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
                       />
                     )}
-                    <div className="min-w-0">
-                      <h3 className="text-sm font-semibold text-foreground leading-snug group-hover:text-primary transition-colors truncate">{role.title}</h3>
-                      <p className="text-[11px] text-muted-foreground truncate mt-0.5">
-                        {[role.company, role.location].filter(Boolean).join(" · ")}
-                      </p>
-                    </div>
+                    <p className="text-[11px] text-muted-foreground truncate">
+                      {[role.company, role.location].filter(Boolean).join(" · ")}
+                    </p>
                   </div>
-                  <span className={`inline-block mt-2 px-2 py-0.5 text-[10px] font-medium rounded-full border ${TAG_BADGE[role.tag] || TAG_BADGE.Other}`}>
+                  <span className={`inline-block mt-1.5 px-2 py-0.5 text-[10px] font-medium rounded-full border ${TAG_BADGE[role.tag] || TAG_BADGE.Other}`}>
                     {role.tag}
                   </span>
                 </div>
