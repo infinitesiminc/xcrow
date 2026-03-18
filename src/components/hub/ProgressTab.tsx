@@ -245,9 +245,8 @@ export default function ProgressTab({ userId }: { userId: string }) {
 
       const realC = (simRes.data as CompletedSim[]) || [];
       const realA = (analysisRes.data as AnalysisEntry[]) || [];
-      const useMock = realC.length < 3 && realA.length < 3;
-      setCompletions(useMock ? MOCK.completions : realC);
-      setAnalyses(useMock ? MOCK.analyses : realA);
+      setCompletions(realC);
+      setAnalyses(realA);
       setLoading(false);
     })();
   }, [userId]);
@@ -385,10 +384,10 @@ export default function ProgressTab({ userId }: { userId: string }) {
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: i * 0.015 }}
               onClick={() => goToRole(item.jobTitle, item.company)}
-              className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-xs transition-all hover:shadow-md cursor-pointer border ${
+              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs transition-all hover:shadow-md cursor-pointer border ${
                 item.practiced
-                  ? "bg-success/10 border-success/20 text-foreground hover:border-success/40"
-                  : "bg-muted/30 border-border text-muted-foreground hover:border-primary/30 hover:text-foreground"
+                  ? "bg-success/20 border-success/40 text-success-foreground ring-1 ring-success/20 hover:bg-success/30"
+                  : "bg-muted/40 border-border/50 text-muted-foreground hover:border-primary/30 hover:text-foreground"
               }`}
             >
               <span className="truncate max-w-[140px]">{item.jobTitle}</span>
