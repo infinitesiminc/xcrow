@@ -31,3 +31,5 @@ project_id = "xtfubistkgodiksegtcx"
     verify_jwt = false
   [functions.summarize-role]
     verify_jwt = false
+  [functions.search-apollo]
+    verify_jwt = false
