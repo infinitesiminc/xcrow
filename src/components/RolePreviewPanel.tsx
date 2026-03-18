@@ -215,6 +215,19 @@ export default function RolePreviewPanel({ role, onClose }: RolePreviewPanelProp
           </div>
         </div>
 
+        {/* Progress */}
+        {completedCount > 0 && (
+          <div className="mb-4">
+            <div className="flex justify-between text-[10px] text-muted-foreground mb-1">
+              <span>Progress</span>
+              <span>{completedCount}/{tasks.length} practiced</span>
+            </div>
+            <div className="h-1.5 rounded-full bg-secondary overflow-hidden">
+              <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${(completedCount / tasks.length) * 100}%` }} />
+            </div>
+          </div>
+        )}
+
         {/* Task cards */}
         <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">Tasks & AI Impact</h3>
         <div className="space-y-3">
