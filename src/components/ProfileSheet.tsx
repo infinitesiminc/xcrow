@@ -89,13 +89,8 @@ export default function ProfileSheet({ open, onClose, userId, displayName, email
     })();
   }, [open, userId]);
 
-  // Reset expanded state when sheet closes
   useEffect(() => {
-    if (!open) {
-      setExpandedSaved(false);
-      setSavedSearch("");
-      setOpenGroups(new Set());
-    }
+    if (!open) setSavedSearch("");
   }, [open]);
 
   const milestones = useMemo<Milestone[]>(() => [
