@@ -247,8 +247,8 @@ function RoleDetailOverlay({ role, onClose }: { role: RoleCard; onClose: () => v
                       )}
                     </div>
                     {task.ai_exposure_score != null && task.ai_exposure_score > 0 && (
-                      <span className={`shrink-0 text-[10px] font-medium px-1.5 py-0.5 rounded-full ${
-                        task.ai_exposure_score >= 70 ? "bg-destructive/15 text-destructive" : task.ai_exposure_score >= 40 ? "bg-warning/15 text-warning" : "bg-success/15 text-success"
+                      <span className={`shrink-0 text-[11px] font-semibold px-2 py-0.5 rounded-full ${
+                        task.ai_exposure_score >= 70 ? "bg-brand-ai/15 text-brand-ai" : task.ai_exposure_score >= 40 ? "bg-brand-mid/15 text-brand-mid" : "bg-brand-human/15 text-brand-human"
                       }`}>
                         {task.ai_exposure_score}% AI
                       </span>
