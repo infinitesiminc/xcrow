@@ -82,10 +82,9 @@ const Index = () => {
       });
 
       const mapped: RoleCard[] = unique.map(j => {
-        const companyData = j.companies as unknown as { name: string } | null;
+        const companyData = j.companies as unknown as { name: string; logo_url: string | null } | null;
         return {
           title: j.title,
-          image: getDepartmentImage(j.department),
           augmented: j.augmented_percent ?? 0,
           risk: j.automation_risk_percent ?? 0,
           aiOpportunity: calcToolsToLearn(
@@ -96,6 +95,7 @@ const Index = () => {
           tag: departmentToTag(j.department),
           company: companyData?.name || undefined,
           location: j.location || undefined,
+          logoUrl: companyData?.logo_url || undefined,
         };
       });
 
