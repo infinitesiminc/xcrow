@@ -7,19 +7,19 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import Index from "./pages/Index.tsx";
-import Analysis from "./pages/Analysis.tsx";
-import Auth from "./pages/Auth.tsx";
-import Settings from "./pages/Settings.tsx";
-import NotFound from "./pages/NotFound.tsx";
-import CardStyleMockup from "./pages/CardStyleMockup.tsx";
 
-// Admin (superadmin only)
-import HRLayout from "./layouts/HRLayout.tsx";
-import PipelinePage from "./pages/admin/PipelinePage.tsx";
-
-// Public company page
+// Lazy-load all page components
+const Index = lazy(() => import("./pages/Index.tsx"));
+const Analysis = lazy(() => import("./pages/Analysis.tsx"));
+const Auth = lazy(() => import("./pages/Auth.tsx"));
+const Settings = lazy(() => import("./pages/Settings.tsx"));
+const NotFound = lazy(() => import("./pages/NotFound.tsx"));
+const CardStyleMockup = lazy(() => import("./pages/CardStyleMockup.tsx"));
 const CompanyPage = lazy(() => import("./pages/CompanyPage.tsx"));
+
+// Admin (lazy)
+const HRLayout = lazy(() => import("./layouts/HRLayout.tsx"));
+const PipelinePage = lazy(() => import("./pages/admin/PipelinePage.tsx"));
 
 const queryClient = new QueryClient();
 
