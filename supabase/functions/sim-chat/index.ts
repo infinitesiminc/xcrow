@@ -6,7 +6,10 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-const MAX_ROUNDS = 8;
+// Dynamic: min rounds = objective count, max = 2× objectives
+const DEFAULT_OBJECTIVES_COUNT = 3;
+const MIN_ROUNDS = DEFAULT_OBJECTIVES_COUNT;      // 3
+const MAX_ROUNDS = DEFAULT_OBJECTIVES_COUNT * 2;   // 6
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -115,7 +118,7 @@ Role: ${jobTitle}${company ? ` at ${company}` : ""}
 Task: ${taskName}
 ${aiContext}
 Mode: ${isAssess ? "ASSESS — broad baseline check across the task" : "UPSKILL — deeper practice on specific sub-skills"}
-Format: Structured coaching conversation, 8 rounds, ${isAssess ? "~10" : "~15"} minutes
+Format: Structured coaching conversation, ${MIN_ROUNDS}-${MAX_ROUNDS} rounds (objective-driven — ends when all goals met), ${isAssess ? "~10" : "~15"} minutes
 
 You are a COACH helping someone learn to use AI tools effectively for their job.
 
@@ -186,6 +189,12 @@ Respond ONLY with valid JSON, no markdown.`;
       slug: "dynamic",
       difficulty,
     },
+    // Pass dynamic config to client
+    config: {
+      minRounds: MIN_ROUNDS,
+      maxRounds: MAX_ROUNDS,
+      objectiveCount: objectives.length,
+    },
   }), {
     headers: { ...corsHeaders, "Content-Type": "application/json" },
   });
@@ -194,13 +203,13 @@ Respond ONLY with valid JSON, no markdown.`;
 // ─── CHAT ───
 
 async function handleChat(payload: any, apiKey: string) {
-  const { messages, role, round, turnCount, mode = "assess", taskMeta, learningObjectives, objectiveStatus } = payload;
+  const { messages, role, round, turnCount, mode = "assess", taskMeta, learningObjectives, objectiveStatus, scaffoldingTiers } = payload;
   const aiContext = aiStateDescription(taskMeta);
   const dateCtx = currentDateContext();
 
   const systemMsg = {
     role: "system",
-    content: buildCoachingChatSystem(role, aiContext, dateCtx, round, turnCount, mode, learningObjectives, objectiveStatus),
+    content: buildCoachingChatSystem(role, aiContext, dateCtx, round, turnCount, mode, learningObjectives, objectiveStatus, scaffoldingTiers),
   };
 
   const aiMessages = [systemMsg, ...messages];
@@ -211,21 +220,72 @@ async function handleChat(payload: any, apiKey: string) {
   });
 }
 
-function buildCoachingChatSystem(role: string, aiContext: string, dateCtx: string, round: number, turnCount: number, mode: string, learningObjectives?: any[], objectiveStatus?: Record<string, boolean>): string {
+function buildCoachingChatSystem(
+  role: string, aiContext: string, dateCtx: string,
+  round: number, turnCount: number, mode: string,
+  learningObjectives?: any[], objectiveStatus?: Record<string, boolean>,
+  scaffoldingTiers?: Record<string, number>,
+): string {
   const posInRound = ((turnCount - 1) % 3);
 
-  // Build objectives context for the AI
+  // Build objectives context with scaffolding tiers
   let objectivesContext = "";
   if (learningObjectives && Array.isArray(learningObjectives)) {
     const statusMap = objectiveStatus || {};
+    const tierMap = scaffoldingTiers || {};
     const met = learningObjectives.filter(o => statusMap[o.id]);
     const unmet = learningObjectives.filter(o => !statusMap[o.id]);
     objectivesContext = `\n\nLEARNING OBJECTIVES FOR THIS SESSION:
-${learningObjectives.map(o => `- [${statusMap[o.id] ? "✅ MET" : "⬜ NOT YET"}] ${o.label}: ${o.description}`).join("\n")}
+${learningObjectives.map(o => {
+  const tier = tierMap[o.id] || 0;
+  const tierLabel = tier === 0 ? "no help given" : tier === 1 ? "nudged" : tier === 2 ? "hinted" : "taught";
+  return `- [${statusMap[o.id] ? "✅ MET" : "⬜ NOT YET"}] ${o.label}: ${o.description} (scaffolding: ${tierLabel})`;
+}).join("\n")}
 ${met.length > 0 ? `\nAlready covered: ${met.map(o => o.label).join(", ")}` : ""}
 ${unmet.length > 0 ? `\nStill need to cover: ${unmet.map(o => o.label).join(", ")}` : ""}
 
-IMPORTANT: Steer scenarios toward uncovered objectives. When giving feedback, note if the user demonstrated mastery of an objective. If they did, include the tag [OBJECTIVE_MET:objective_id] at the very end of your message (after all visible text). This tag will be parsed programmatically — only include it when the user has clearly demonstrated the skill, not just mentioned it.`;
+IMPORTANT: Steer scenarios toward uncovered objectives. When giving feedback, note if the user demonstrated mastery of an objective. If they did, include the tag [OBJECTIVE_MET:objective_id] at the very end of your message (after all visible text). This tag will be parsed programmatically — only include it when the user has clearly demonstrated the skill, not just mentioned it.
+
+OBJECTIVE COMPLETION: If ALL objectives have been met, include [ALL_OBJECTIVES_MET] at the end of your message. The session can then end early.`;
+  }
+
+  // ─── 3-Tier Scaffolding Logic ───
+  let scaffoldingInstruction = "";
+  if (posInRound === 0) {
+    const tierMap = scaffoldingTiers || {};
+    
+    scaffoldingInstruction = `
+3-TIER SCAFFOLDING RULES — Apply in order based on user response quality:
+
+TIER 1 — NUDGE (vague/short response, under 15 words, or generic):
+Tag: [SCAFFOLD_TIER:1]
+- Normalize warmly: "Good starting point — let's dig deeper."
+- Reframe the question from a different angle WITHOUT revealing the answer.
+- Ask ONE sharper question that narrows their focus to a specific aspect.
+- Example: "Think about who the stakeholders are here — how might their needs shape which tool you pick?"
+- Do NOT share any insights, tools, or answers.
+
+TIER 2 — HINT (second weak attempt on same objective, or user explicitly asks for help):
+Tag: [SCAFFOLD_TIER:2]
+- Give a directional clue: "In situations like this, tools like [category] tend to help with [aspect]..."
+- Reference a specific concept but don't solve it fully.
+- Ask a question that uses the hint: "Given that, how would you apply it here?"
+- Example: "Sequence-building tools can automate the timing — but what would you still need to decide manually?"
+
+TIER 3 — TEACH (third weak attempt, or stuck after hint):
+Tag: [SCAFFOLD_TIER:3]
+- Briefly explain the approach: "Here's how experienced [role]s handle this: [explain in 2 sentences]."
+- Then IMMEDIATELY test transfer with a variation: "Now, if [slightly different scenario], how would you adapt this?"
+- The objective can still be met but will be marked as "assisted".
+
+Current scaffolding state per objective:
+${learningObjectives?.map(o => `- ${o.label}: tier ${tierMap[o.id] || 0}/3`).join("\n") || "No objectives tracked"}
+
+RULES:
+- Always progress through tiers: 1 → 2 → 3. Never skip to tier 3.
+- Track per objective, not per session — user might nail one but struggle on another.
+- Include the appropriate [SCAFFOLD_TIER:N] tag when scaffolding is triggered.
+- If NO scaffolding is needed (strong response), proceed normally without any scaffold tag.`;
   }
 
   let turnInstruction: string;
@@ -233,13 +293,7 @@ IMPORTANT: Steer scenarios toward uncovered objectives. When giving feedback, no
   if (posInRound === 0) {
     turnInstruction = `The user just shared their approach to your scenario. 
 
-FIRST — CHECK FOR UNCERTAINTY: If the user expresses uncertainty ("I'm not sure", "I don't know", "no idea", "hmm", "not really"), gives a very short/vague answer (under 15 words), or doesn't engage with the specifics of the scenario, do NOT follow the normal flow. Instead:
-- Normalize it warmly (1 sentence): "Totally fair — this is a meaty one." or "No worries, let's unpack it together."
-- Break the scenario into ONE smaller, concrete piece they can grab onto. Reference a specific detail FROM the scenario (a stakeholder, a constraint, a number).
-- Ask ONE simpler, more specific question about just that piece.
-- Do NOT give the answer or share insights. Help them find a starting thread.
-- Do NOT include 🤖, 💡, or "Ready for next" — stay in scaffolding mode.
-- End your message with exactly: [SCAFFOLDING]
+FIRST — EVALUATE RESPONSE QUALITY and apply scaffolding if needed (see rules above).
 
 IF THE USER GAVE A SUBSTANTIVE ANSWER (15+ words engaging with the scenario), do this:
 
@@ -280,13 +334,20 @@ Total: under 60 words. NOTHING else — no tips, no preamble, no context.`;
     ? "You're doing a broad baseline check — each scenario should cover a different facet of the task."
     : "You're doing deeper upskilling — scenarios can drill into specific sub-skills and edge cases.";
 
-  // Check if we're near the end and have unmet objectives
+  // Dynamic round management
+  const allMet = learningObjectives?.every(o => objectiveStatus?.[o.id]) ?? false;
+  let dynamicEndNote = "";
+  if (allMet && round >= MIN_ROUNDS) {
+    dynamicEndNote = `\n\nALL OBJECTIVES MET! The user has demonstrated all learning goals. On the next insight turn, replace "Ready for next scenario?" with: "🎉 You've covered all your learning goals! Click **Finish** to see your results." Include [ALL_OBJECTIVES_MET] at the end.`;
+  }
+
+  // Urgency for approaching max
   const nearEnd = round >= MAX_ROUNDS - 1;
   let urgencyNote = "";
-  if (nearEnd && objectiveStatus) {
+  if (nearEnd && objectiveStatus && !allMet) {
     const unmetIds = learningObjectives?.filter(o => !objectiveStatus[o.id]) || [];
     if (unmetIds.length > 0) {
-      urgencyNote = `\n\nURGENT: Only ${MAX_ROUNDS - round} round(s) left and ${unmetIds.length} objective(s) still uncovered: ${unmetIds.map(o => o.label).join(", ")}. Focus your next scenario directly on these.`;
+      urgencyNote = `\n\nURGENT: Only ${MAX_ROUNDS - round} round(s) left and ${unmetIds.length} objective(s) still uncovered: ${unmetIds.map(o => o.label).join(", ")}. Focus your next scenario directly on these. Consider using Tier 2 hints proactively to help the user get there.`;
     }
   }
 
@@ -296,9 +357,10 @@ ${dateCtx}
 ${aiContext}
 ${modeContext}
 ${objectivesContext}
+${dynamicEndNote}
 ${urgencyNote}
 
-Round ${round || 1} of ${MAX_ROUNDS}.
+Round ${round || 1} of ${MAX_ROUNDS} (session ends early if all objectives met after round ${MIN_ROUNDS}).
 
 YOUR PERSONA:
 - Warm, curious, encouraging — like a great colleague who's genuinely interested in how they think
@@ -314,6 +376,7 @@ ABSOLUTE RULES:
 
 YOUR TASK RIGHT NOW:
 ${turnInstruction}
+${scaffoldingInstruction}
 
 ${round >= MAX_ROUNDS && posInRound === 1 ? "This is the FINAL round. Replace 'Ready for next scenario?' with: 'Great conversation! 🎉 Click Finish to see how you did.'" : ""}
 ${posInRound === 2 && "If user said no: 'Great conversation! Click Finish to see your results.'"}`;
@@ -322,14 +385,25 @@ ${posInRound === 2 && "If user said no: 'Great conversation! Click Finish to see
 // ─── SCORE ───
 
 async function handleScore(payload: any, apiKey: string) {
-  const { transcript, scenario, mode = "assess", learningObjectives } = payload;
+  const { transcript, scenario, mode = "assess", learningObjectives, scaffoldingTiers } = payload;
 
   const conversationText = transcript
     .map((m: any) => `${m.role === "user" ? "Candidate" : "Coach"}: ${m.content}`)
     .join("\n\n");
 
+  // Build scaffolding context for scoring
+  const tierMap = scaffoldingTiers || {};
+  const scaffoldingContext = learningObjectives && Array.isArray(learningObjectives)
+    ? `\n\nScaffolding provided during session:\n${learningObjectives.map((o: any) => {
+        const tier = tierMap[o.id] || 0;
+        const label = tier === 0 ? "No assistance" : tier === 1 ? "Nudged (reframed question)" : tier === 2 ? "Hinted (directional clue given)" : "Taught (answer provided, tested transfer)";
+        const multiplier = tier === 0 ? "1.0×" : tier === 1 ? "0.9×" : tier === 2 ? "0.7×" : "0.4×";
+        return `- ${o.label}: ${label} → score multiplier ${multiplier}`;
+      }).join("\n")}\n\nIMPORTANT: Apply the score multiplier to the relevant pillar score. An objective completed with heavy scaffolding (Tier 3) should score significantly lower than one demonstrated independently.`
+    : "";
+
   const objectivesSection = learningObjectives && Array.isArray(learningObjectives)
-    ? `\n\nLearning Objectives for this session:\n${learningObjectives.map((o: any) => `- ${o.label}: ${o.description} (pillar: ${o.pillar})`).join("\n")}\n\nFor each objective, determine if it was MET or NOT MET based on the conversation evidence.`
+    ? `\n\nLearning Objectives for this session:\n${learningObjectives.map((o: any) => `- ${o.label}: ${o.description} (pillar: ${o.pillar})`).join("\n")}\n\nFor each objective, determine if it was MET or NOT MET based on the conversation evidence. An objective met with Tier 3 scaffolding should be marked as met but noted as "assisted".${scaffoldingContext}`
     : "";
 
   const prompt = `Evaluate this AI-readiness coaching conversation. Task: "${scenario?.title || "a work task"}"
@@ -345,6 +419,7 @@ Score on these 4 pillars (0-100 each):
 4. Domain Judgment - Did they demonstrate real understanding of the task's nuances and constraints?
 
 Score based on the depth and specificity of their responses. Vague answers = lower scores. Specific tool names, concrete strategies, and nuanced thinking = higher scores.
+Apply scaffolding score multipliers if applicable.
 
 Respond with ONLY valid JSON:
 {
@@ -356,7 +431,7 @@ Respond with ONLY valid JSON:
     {"name": "Domain Judgment", "score": <0-100>, "feedback": "<1 encouraging sentence>"}
   ],
   "summary": "<2 sentence encouraging overall feedback with one growth area>",
-  "objectiveResults": [${learningObjectives ? learningObjectives.map((o: any) => `{"id": "${o.id}", "label": "${o.label}", "met": <true/false>, "evidence": "<1 sentence explaining why met or not>"}`).join(", ") : ""}]
+  "objectiveResults": [${learningObjectives ? learningObjectives.map((o: any) => `{"id": "${o.id}", "label": "${o.label}", "met": <true/false>, "evidence": "<1 sentence explaining why met or not>", "assisted": <true if Tier 3 scaffolding was used, false otherwise>}`).join(", ") : ""}]
 }`;
 
   const result = await callAI(apiKey, [{ role: "user", content: prompt }], 0.3);
