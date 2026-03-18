@@ -130,10 +130,11 @@ export default function Settings() {
     }
   }, [profile]);
 
-  // Fetch saved roles
+  // Fetch saved roles & practiced roles
   useEffect(() => {
     if (!user) return;
     setSavedLoading(true);
+    setPracticedLoading(true);
     supabase
       .from("bookmarked_roles")
       .select("job_title, company, augmented_percent, automation_risk_percent, new_skills_percent")
@@ -142,6 +143,15 @@ export default function Settings() {
       .then(({ data }) => {
         setSavedRoles((data as SavedRole[]) || []);
         setSavedLoading(false);
+      });
+    supabase
+      .from("completed_simulations")
+      .select("job_title, task_name, company, completed_at, correct_answers, total_questions, tool_awareness_score, human_value_add_score, adaptive_thinking_score, domain_judgment_score")
+      .eq("user_id", user.id)
+      .order("completed_at", { ascending: false })
+      .then(({ data }) => {
+        setPracticedRoles((data as PracticedRole[]) || []);
+        setPracticedLoading(false);
       });
   }, [user]);
 
@@ -152,6 +162,29 @@ export default function Settings() {
       r.job_title.toLowerCase().includes(q) || (r.company?.toLowerCase().includes(q) ?? false)
     );
   }, [savedRoles, savedSearch]);
+
+  const filteredPracticed = useMemo(() => {
+    const q = practicedSearch.toLowerCase().trim();
+    if (!q) return practicedRoles;
+    return practicedRoles.filter(r =>
+      r.job_title.toLowerCase().includes(q) || r.task_name.toLowerCase().includes(q) || (r.company?.toLowerCase().includes(q) ?? false)
+    );
+  }, [practicedRoles, practicedSearch]);
+
+  function avgScore(r: PracticedRole): number {
+    const scores = [r.tool_awareness_score, r.human_value_add_score, r.adaptive_thinking_score, r.domain_judgment_score].filter((s): s is number => s != null);
+    return scores.length ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) : 0;
+  }
+
+  function timeAgo(dateStr: string): string {
+    const diff = Date.now() - new Date(dateStr).getTime();
+    const mins = Math.floor(diff / 60000);
+    if (mins < 60) return `${mins}m ago`;
+    const hrs = Math.floor(mins / 60);
+    if (hrs < 24) return `${hrs}h ago`;
+    const days = Math.floor(hrs / 24);
+    return `${days}d ago`;
+  }
 
   /* ── CV upload ── */
   const handleCvUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
