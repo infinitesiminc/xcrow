@@ -241,11 +241,6 @@ export default function Settings() {
     setDeleting(false);
   };
 
-  const goToRole = (jobTitle: string, company: string | null) => {
-    const params = new URLSearchParams({ title: jobTitle });
-    if (company) params.set("company", company);
-    navigate(`/analysis?${params.toString()}`);
-  };
 
   if (authLoading) return null;
 
