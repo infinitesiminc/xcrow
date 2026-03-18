@@ -208,6 +208,53 @@ export default function PipelinePage() {
     }
   };
 
+  const handleApolloSearch = async (pg = 1) => {
+    setApolloLoading(true);
+    setApolloSelected(new Set());
+    try {
+      const body: Record<string, unknown> = { page: pg, per_page: 25, import_results: false };
+      if (apolloLocation.trim()) body.organization_locations = [apolloLocation.trim()];
+      if (apolloSize) body.organization_num_employees_ranges = [apolloSize];
+      if (apolloKeywords.trim()) body.q_organization_keyword_tags = apolloKeywords.split(",").map(s => s.trim()).filter(Boolean);
+      if (apolloName.trim()) body.q_organization_name = apolloName.trim();
+      const { data, error } = await supabase.functions.invoke("search-apollo", { body });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      setApolloResults(data.companies || []);
+      setApolloPagination(data.pagination || { page: pg, total_entries: 0, total_pages: 0 });
+    } catch (err: any) {
+      toast({ title: "Apollo search failed", description: err.message, variant: "destructive" });
+    } finally {
+      setApolloLoading(false);
+    }
+  };
+
+  const handleApolloImport = async () => {
+    // Import selected results by calling the edge function with import_results: true
+    setApolloImporting(true);
+    try {
+      const selectedCompanies = apolloResults.filter((_, i) => apolloSelected.has(i));
+      // We import by re-searching with same params but with import flag
+      // Actually, better: enrich each selected company by website
+      let imported = 0;
+      for (const co of selectedCompanies) {
+        const website = co.website || co.domain;
+        if (!website) continue;
+        try {
+          await supabase.functions.invoke("enrich-company", { body: { website } });
+          imported++;
+        } catch { /* skip */ }
+      }
+      toast({ title: "Import complete", description: `${imported} companies enriched and saved.` });
+      setApolloOpen(false);
+      fetchCompanies();
+    } catch (err: any) {
+      toast({ title: "Import failed", description: err.message, variant: "destructive" });
+    } finally {
+      setApolloImporting(false);
+    }
+  };
+
   /* ── Sims ── */
   const [completedSims, setCompletedSims] = useState<CompletedSim[]>([]);
   useEffect(() => {
