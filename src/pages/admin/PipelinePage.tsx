@@ -682,7 +682,16 @@ export default function PipelinePage() {
               <span className="text-xs font-semibold text-foreground">Analyze</span>
             </div>
             <p className="text-lg font-bold text-foreground">{stats.withJobs}</p>
-            <p className="text-[10px] text-muted-foreground">companies with roles ready for analysis</p>
+            <p className="text-[10px] text-muted-foreground">companies with roles ready</p>
+          </button>
+
+          <button onClick={() => setActiveTab("companies")} className={`rounded-lg border p-3 text-left transition-all ${activeTab === "companies" ? "border-primary bg-primary/5" : "border-border hover:border-primary/30"}`}>
+            <div className="flex items-center gap-2 mb-1">
+              <List className="h-3.5 w-3.5 text-primary" />
+              <span className="text-xs font-semibold text-foreground">Companies</span>
+            </div>
+            <p className="text-lg font-bold text-foreground">{stats.totalCompanies.toLocaleString()}</p>
+            <p className="text-[10px] text-muted-foreground">browse full library</p>
           </button>
         </div>
       </div>
