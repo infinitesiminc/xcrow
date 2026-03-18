@@ -374,15 +374,26 @@ export default function PipelinePage() {
               ))}
             </div>
             <div className="flex gap-1">
-              <Button variant="outline" size="sm" onClick={importCompanies} disabled={!!syncing} className="flex-1 text-xs h-7 gap-1">
+              <Button variant="outline" size="sm" onClick={importCompanies} disabled={!!syncing || bulkSyncing} className="flex-1 text-xs h-7 gap-1">
                 {syncing === "import" ? <Loader2 className="h-3 w-3 animate-spin" /> : <Download className="h-3 w-3" />}
                 Import
+              </Button>
+              <Button variant="outline" size="sm" onClick={bulkSyncing ? () => { bulkAbortRef.current = true; } : bulkSyncAllJobs} disabled={!!syncing} className="flex-1 text-xs h-7 gap-1">
+                {bulkSyncing ? <><Loader2 className="h-3 w-3 animate-spin" /> Stop</> : <><RefreshCw className="h-3 w-3" /> Sync All</>}
               </Button>
               <Button variant="outline" size="sm" onClick={() => setAddOpen(true)} className="text-xs h-7 gap-1">
                 <Plus className="h-3 w-3" />
                 Add
               </Button>
             </div>
+            {bulkSyncing && (
+              <div className="space-y-1">
+                <Progress value={(bulkProgress.done / Math.max(bulkProgress.total, 1)) * 100} className="h-1.5" />
+                <p className="text-[10px] text-muted-foreground truncate">
+                  {bulkProgress.done}/{bulkProgress.total} — {bulkProgress.current}
+                </p>
+              </div>
+            )}
             <div className="relative">
               <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground" />
               <Input placeholder="Search companies…" value={companySearch} onChange={e => setCompanySearch(e.target.value)} className="pl-7 h-7 text-xs" />
