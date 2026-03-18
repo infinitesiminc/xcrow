@@ -1061,8 +1061,8 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                               <span className={`text-sm font-medium ${r.met ? "text-foreground" : "text-muted-foreground"}`}>
                                 {objectives.find(o => o.id === r.id)?.label || r.id}
                               </span>
-                              {r.feedback && (
-                                <p className="text-xs text-muted-foreground/70 mt-0.5 leading-relaxed">{r.feedback}</p>
+                              {r.evidence && (
+                                <p className="text-xs text-muted-foreground/70 mt-0.5 leading-relaxed">{r.evidence}</p>
                               )}
                             </div>
                           </motion.li>
