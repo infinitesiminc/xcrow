@@ -852,7 +852,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                 </motion.div>
               )}
 
-              {(phase === "chat" || phase === "done") && !error && (
+              {phase === "chat" && !error && (
                 <div className="max-w-2xl mx-auto space-y-4">
                   {messages.map((msg, i) => {
                     const isUser = msg.role === "user";
