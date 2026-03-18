@@ -212,11 +212,12 @@ function RoleDetailOverlay({ role, onClose }: { role: RoleCard; onClose: () => v
   const navigate = useNavigate();
   const [tasks, setTasks] = useState<TaskCluster[]>([]);
   const [loadingTasks, setLoadingTasks] = useState(false);
+  const [analyzingTasks, setAnalyzingTasks] = useState(false);
   const [activeSection, setActiveSection] = useState(0);
   const [aiSummary, setAiSummary] = useState<string | null>(null);
   const [summaryLoading, setSummaryLoading] = useState(false);
 
-  // Fetch task clusters on open
+  // Fetch task clusters on open, auto-trigger analysis if none exist
   useEffect(() => {
     if (!role.jobId) return;
     setLoadingTasks(true);
@@ -227,10 +228,37 @@ function RoleDetailOverlay({ role, onClose }: { role: RoleCard; onClose: () => v
       .order("sort_order", { ascending: true })
       .limit(10)
       .then(({ data }) => {
-        setTasks(data || []);
-        setLoadingTasks(false);
+        if (data && data.length > 0) {
+          setTasks(data);
+          setLoadingTasks(false);
+        } else if (role.description && role.description.length > 50) {
+          // Layer 2: Auto-trigger deep analysis
+          setLoadingTasks(false);
+          setAnalyzingTasks(true);
+          supabase.functions.invoke("analyze-role-tasks", {
+            body: {
+              jobId: role.jobId,
+              jobTitle: role.title,
+              company: role.company || "",
+              description: role.description,
+            },
+          }).then(({ data: analysisData }) => {
+            if (analysisData?.tasks) {
+              setTasks(analysisData.tasks.map((t: any) => ({
+                cluster_name: t.cluster_name,
+                description: t.description,
+                ai_exposure_score: t.ai_exposure_score,
+                priority: t.priority,
+              })));
+            }
+            setAnalyzingTasks(false);
+          }).catch(() => setAnalyzingTasks(false));
+        } else {
+          setTasks([]);
+          setLoadingTasks(false);
+        }
       });
-  }, [role.jobId]);
+  }, [role.jobId, role.title, role.company, role.description]);
 
   // Fetch or generate AI summary
   useEffect(() => {
