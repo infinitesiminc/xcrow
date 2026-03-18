@@ -148,10 +148,7 @@ const Analysis = () => {
     analyze();
   }, [jobTitle, company, hasJd, navigate]);
 
-  const readiness = useMemo(() => {
-    if (!result) return 0;
-    return calcReadiness(result.summary.automationRiskPercent, result.summary.augmentedPercent, result.summary.newSkillsPercent);
-  }, [result]);
+  const augmentedPercent = result?.summary?.augmentedPercent ?? 0;
 
   const sortedTasks = useMemo(() => {
     if (!result) return [];
