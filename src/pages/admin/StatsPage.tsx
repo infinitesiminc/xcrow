@@ -20,18 +20,23 @@ export default function StatsPage() {
 
   useEffect(() => {
     (async () => {
-      const [companies, jobs, clusters, sims, users, flagsRes] = await Promise.all([
+      const [companies, jobs, clusters, sims, users, flagsRes, analyzedJobs] = await Promise.all([
         supabase.from("companies").select("id", { count: "exact", head: true }),
         supabase.from("jobs").select("id", { count: "exact", head: true }),
         supabase.from("job_task_clusters").select("id", { count: "exact", head: true }),
         supabase.from("completed_simulations").select("id", { count: "exact", head: true }),
         supabase.from("profiles").select("id", { count: "exact", head: true }),
         supabase.from("feature_flags" as any).select("key, enabled, description").order("key"),
+        supabase.from("job_task_clusters").select("job_id").then(res => {
+          const unique = new Set((res.data || []).map((r: any) => r.job_id));
+          return { count: unique.size };
+        }),
       ]);
 
       setStats({
         companies: companies.count || 0,
         jobs: jobs.count || 0,
+        analyzedJobs: analyzedJobs.count || 0,
         clusters: clusters.count || 0,
         sims: sims.count || 0,
         users: users.count || 0,
