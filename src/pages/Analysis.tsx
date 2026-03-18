@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, useMemo } from "react";
+import { useEffect, useState, useCallback, useMemo, useRef, type WheelEvent as ReactWheelEvent } from "react";
 import { useSearchParams, useNavigate, useLocation } from "react-router-dom";
 import { motion, AnimatePresence, PanInfo } from "framer-motion";
 import {
@@ -17,8 +17,6 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import SimulatorModal from "@/components/SimulatorModal";
 
-type Verdict = "upskill" | "pivot" | "leverage";
-
 function calcReadiness(automationRisk: number, augmented: number, newSkills: number): number {
   return 100 - Math.round(automationRisk * 0.55 + (100 - augmented) * 0.25 + newSkills * 0.20);
 }
@@ -32,7 +30,6 @@ function taskChipStyle(aiScore: number) {
   return { border: "border-brand-human/30", bg: "bg-brand-human/5", badge: "bg-brand-human/15 text-brand-human", accent: "text-brand-human" };
 }
 
-/* ── Swipe threshold ─── */
 const SWIPE_THRESHOLD = 50;
 
 const Analysis = () => {
@@ -59,6 +56,7 @@ const Analysis = () => {
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [bookmarkLoading, setBookmarkLoading] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const wheelLockRef = useRef<number | null>(null);
   const { user, openAuthModal } = useAuth();
 
   const fetchCompletions = useCallback(async () => {
@@ -185,7 +183,44 @@ const Analysis = () => {
     }
   }, [currentIndex, goTo]);
 
-  // Loading
+  const handleWheel = useCallback((e: ReactWheelEvent<HTMLDivElement>) => {
+    if (Math.abs(e.deltaY) < 12) return;
+    e.preventDefault();
+    if (wheelLockRef.current) return;
+
+    goTo(currentIndex + (e.deltaY > 0 ? 1 : -1));
+    wheelLockRef.current = window.setTimeout(() => {
+      wheelLockRef.current = null;
+    }, 320);
+  }, [currentIndex, goTo]);
+
+  useEffect(() => {
+    return () => {
+      if (wheelLockRef.current) {
+        window.clearTimeout(wheelLockRef.current);
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement | null;
+      if (target?.tagName === "INPUT" || target?.tagName === "TEXTAREA" || target?.isContentEditable) return;
+
+      if (e.key === "ArrowDown" || e.key === "PageDown") {
+        e.preventDefault();
+        goTo(currentIndex + 1);
+      }
+      if (e.key === "ArrowUp" || e.key === "PageUp") {
+        e.preventDefault();
+        goTo(currentIndex - 1);
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [currentIndex, goTo]);
+
   if (loading) {
     return (
       <div className="h-[100dvh] bg-background flex flex-col items-center justify-center px-4">
@@ -203,7 +238,6 @@ const Analysis = () => {
     );
   }
 
-  // Error
   if (error || !result) {
     return (
       <div className="h-[100dvh] bg-background flex items-center justify-center px-4">
@@ -222,7 +256,7 @@ const Analysis = () => {
   const completedCount = sortedTasks.filter(t => completedTasks.has(t.name)).length;
 
   return (
-    <div className="h-[100dvh] bg-background overflow-hidden relative">
+    <div className="h-[100dvh] bg-background overflow-hidden relative overscroll-none" onWheel={handleWheel}>
       {/* Progress dots */}
       <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 flex items-center gap-1.5">
         {Array.from({ length: totalCards }).map((_, i) => (
@@ -258,7 +292,28 @@ const Analysis = () => {
         }
       </button>
 
-      {/* Card stack container */}
+      {/* Desktop nav controls */}
+      <div className="hidden md:flex fixed right-4 top-1/2 -translate-y-1/2 z-50 flex-col gap-2">
+        <Button
+          size="icon"
+          variant="secondary"
+          onClick={() => goTo(currentIndex - 1)}
+          disabled={currentIndex === 0}
+          className="rounded-full"
+        >
+          <ChevronUp className="h-4 w-4" />
+        </Button>
+        <Button
+          size="icon"
+          variant="secondary"
+          onClick={() => goTo(currentIndex + 1)}
+          disabled={currentIndex === totalCards - 1}
+          className="rounded-full"
+        >
+          <ArrowDown className="h-4 w-4" />
+        </Button>
+      </div>
+
       <motion.div
         className="h-full w-full"
         drag="y"
@@ -310,7 +365,7 @@ const Analysis = () => {
         </AnimatePresence>
       </motion.div>
 
-      {/* Swipe hint on hero */}
+      {/* Swipe/wheel hint on hero */}
       {currentIndex === 0 && (
         <motion.div
           className="fixed bottom-8 left-1/2 -translate-x-1/2 z-40 flex flex-col items-center gap-1"
@@ -319,13 +374,13 @@ const Analysis = () => {
           transition={{ delay: 1 }}
         >
           <span className="text-xs text-muted-foreground">Swipe up</span>
+          <span className="hidden md:block text-[10px] text-muted-foreground/80">or use mouse wheel / ↑ ↓</span>
           <motion.div animate={{ y: [0, 6, 0] }} transition={{ repeat: Infinity, duration: 1.5 }}>
             <ChevronUp className="h-4 w-4 text-muted-foreground rotate-180" />
           </motion.div>
         </motion.div>
       )}
 
-      {/* Simulator Modal */}
       <SimulatorModal
         open={!!simTask}
         onClose={() => setSimTask(null)}
@@ -343,9 +398,6 @@ const Analysis = () => {
   );
 };
 
-/* ════════════════════════════════════════════
-   Hero Card
-   ════════════════════════════════════════════ */
 function HeroCard({
   result, company, readiness, completedCount, totalTasks, onNext,
 }: {
@@ -361,7 +413,6 @@ function HeroCard({
 
   return (
     <div className="h-full flex flex-col items-center justify-center px-6 text-center max-w-lg mx-auto">
-      {/* Readiness ring */}
       <div className="relative mb-6">
         <svg width="140" height="140" viewBox="0 0 140 140" className="transform -rotate-90">
           <circle cx="70" cy="70" r="60" fill="none" stroke="hsl(var(--secondary))" strokeWidth="8" />
@@ -387,7 +438,6 @@ function HeroCard({
         <p className="text-sm text-muted-foreground mb-6">at {company}</p>
       )}
 
-      {/* Key stats */}
       <div className="flex gap-6 mb-8">
         <div className="text-center">
           <div className="text-lg font-bold text-foreground tabular-nums">{risk}%</div>
@@ -405,7 +455,6 @@ function HeroCard({
         </div>
       </div>
 
-      {/* Progress */}
       {completedCount > 0 && (
         <div className="w-full max-w-xs mb-6">
           <div className="flex justify-between text-[10px] text-muted-foreground mb-1">
@@ -429,9 +478,6 @@ function HeroCard({
   );
 }
 
-/* ════════════════════════════════════════════
-   Task Card
-   ════════════════════════════════════════════ */
 function TaskCard({
   task, index, total, isCompleted, onPractice,
 }: {
@@ -446,12 +492,10 @@ function TaskCard({
 
   return (
     <div className="h-full flex flex-col items-center justify-center px-6 max-w-lg mx-auto">
-      {/* Task number */}
       <div className="text-xs text-muted-foreground mb-6 uppercase tracking-widest">
         Task {index + 1} of {total}
       </div>
 
-      {/* AI exposure arc */}
       <div className="relative mb-8">
         <svg width="180" height="180" viewBox="0 0 180 180" className="transform -rotate-90">
           <circle cx="90" cy="90" r="76" fill="none" stroke="hsl(var(--secondary))" strokeWidth="6" />
@@ -474,19 +518,16 @@ function TaskCard({
         </div>
       </div>
 
-      {/* Task name */}
       <h2 className="text-xl font-display font-bold text-foreground text-center mb-3 leading-tight">
         {task.name}
       </h2>
 
-      {/* Description */}
       {task.description && (
         <p className="text-sm text-muted-foreground text-center mb-6 line-clamp-3 max-w-sm">
           {task.description}
         </p>
       )}
 
-      {/* Priority + status badges */}
       <div className="flex items-center gap-2 mb-8">
         {task.priority === "high" && (
           <span className="text-[10px] font-semibold px-3 py-1 rounded-full bg-primary/15 text-primary">
@@ -503,7 +544,6 @@ function TaskCard({
         </span>
       </div>
 
-      {/* Practice CTA */}
       <Button
         onClick={onPractice}
         size="lg"
@@ -520,9 +560,6 @@ function TaskCard({
   );
 }
 
-/* ════════════════════════════════════════════
-   Completion Card
-   ════════════════════════════════════════════ */
 function CompletionCard({
   completedCount, totalTasks, readiness, isBookmarked, onBookmark, onBack, user, onSignIn,
 }: {
