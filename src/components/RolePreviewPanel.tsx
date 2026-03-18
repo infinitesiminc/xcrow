@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
-import { X, MapPin, Loader2, ArrowRight, Play, Maximize2, ChevronLeft, CheckCircle2, Bot, Trophy, Bookmark, BookmarkCheck } from "lucide-react";
+import { X, MapPin, Loader2, Play, Maximize2, ChevronLeft, CheckCircle2, Bot, Trophy, Bookmark, BookmarkCheck, GraduationCap, MessageSquare, BarChart3, FileText, Users, Search, Settings, Globe, Shield, Lightbulb, PenTool, Code, TrendingUp, Megaphone, Target, Briefcase, Heart, Layers, Zap } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import ReactMarkdown from "react-markdown";
 import { supabase } from "@/integrations/supabase/client";
@@ -25,6 +25,34 @@ function taskChipStyle(aiScore: number) {
 interface RolePreviewPanelProps {
   role: RoleResult;
   onClose: () => void;
+}
+
+const TASK_ICON_MAP: [RegExp, React.ComponentType<any>][] = [
+  [/communicat|messag|email|write|copywriting|narrative|story/i, MessageSquare],
+  [/analys|analytic|data|report|metric|insight|dashboard/i, BarChart3],
+  [/document|compliance|audit|policy|legal|contract|regulat/i, FileText],
+  [/team|collaborat|stakeholder|manag|lead|mentor|hire|recruit/i, Users],
+  [/research|discover|investigat|explor|survey/i, Search],
+  [/engineer|develop|code|software|technical|architect|system/i, Code],
+  [/design|creat|ux|ui|visual|brand|content/i, PenTool],
+  [/strateg|plan|roadmap|vision|initiative|growth/i, TrendingUp],
+  [/market|campaign|advertis|promot|launch|gtm|seo|social/i, Megaphone],
+  [/sales|revenue|pipeline|deal|prospect|client|customer/i, Target],
+  [/security|risk|protect|threat|vulnerab|fraud/i, Shield],
+  [/innovat|ideation|brainstorm|concept/i, Lightbulb],
+  [/operat|process|workflow|automat|efficien|optim/i, Settings],
+  [/global|international|region|market.*expan|locali/i, Globe],
+  [/train|learn|educat|onboard|develop.*program/i, GraduationCap],
+  [/finance|budget|cost|invest|forecast|revenue/i, Briefcase],
+  [/culture|wellbeing|engagement|diversity|inclusion/i, Heart],
+  [/integrat|platform|infrastructure|stack|tool/i, Layers],
+];
+
+function getTaskIcon(taskName: string) {
+  for (const [pattern, Icon] of TASK_ICON_MAP) {
+    if (pattern.test(taskName)) return Icon;
+  }
+  return Zap;
 }
 
 interface TaskCluster {
@@ -270,8 +298,8 @@ export default function RolePreviewPanel({ role, onClose }: RolePreviewPanelProp
                 return (
                   <div key={i} className="group rounded-lg border border-border/50 bg-muted/20 p-2.5 hover:border-primary/30 transition-colors">
                     <div className="flex items-start justify-between gap-2">
-                      <div className="flex items-center gap-1.5 min-w-0">
-                        {done && <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400 shrink-0" />}
+                      <div className="flex items-center gap-2 min-w-0">
+                        {done ? <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400 shrink-0" /> : (() => { const TaskIcon = getTaskIcon(t.cluster_name); return <TaskIcon className="h-3.5 w-3.5 text-muted-foreground shrink-0" />; })()}
                         <span className="text-sm font-medium text-foreground leading-snug">{t.cluster_name}</span>
                       </div>
                       <div className="flex items-center gap-2 shrink-0">
@@ -369,7 +397,10 @@ export default function RolePreviewPanel({ role, onClose }: RolePreviewPanelProp
                   {tasks.slice(0, 8).map((t, i) => (
                     <div key={i} className="group rounded-lg border border-border/50 bg-muted/20 p-2.5 hover:border-primary/30 transition-colors">
                       <div className="flex items-start justify-between gap-2">
-                        <span className="text-sm font-medium text-foreground leading-snug">{t.cluster_name}</span>
+                        <div className="flex items-center gap-2 min-w-0">
+                          {(() => { const TaskIcon = getTaskIcon(t.cluster_name); return <TaskIcon className="h-3.5 w-3.5 text-muted-foreground shrink-0" />; })()}
+                          <span className="text-sm font-medium text-foreground leading-snug">{t.cluster_name}</span>
+                        </div>
                         <div className="flex items-center gap-2 shrink-0">
                           {t.ai_exposure_score != null && <span className="text-xs font-semibold text-primary">{t.ai_exposure_score}%</span>}
                           {user && (
@@ -399,7 +430,7 @@ export default function RolePreviewPanel({ role, onClose }: RolePreviewPanelProp
           onClick={() => setView("breakdown")}
           className="w-full flex items-center justify-center gap-2 rounded-xl bg-primary text-primary-foreground py-2.5 text-sm font-medium hover:bg-primary/90 transition-colors"
         >
-          Full breakdown <ArrowRight className="h-4 w-4" />
+          <GraduationCap className="h-4 w-4" /> Start Learning
         </button>
       </div>
     </motion.div>
