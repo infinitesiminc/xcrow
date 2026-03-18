@@ -663,6 +663,15 @@ export default function JourneySkillProfileView({ practicedRoles = [], onNavigat
         >
           <Sparkles className="inline h-3 w-3 mr-1" />AI Unlocks
         </button>
+        <button
+          onClick={() => { setView("edge-path"); setSearchQ(""); }}
+          className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${view === "edge-path" ? "bg-primary text-primary-foreground" : "bg-muted/40 text-muted-foreground hover:bg-muted/60"}`}
+        >
+          <Route className="inline h-3 w-3 mr-1" />Edge Path
+          {edgePath.length > 0 && (
+            <span className="ml-1 text-[8px] opacity-70">{edgePath.filter(e => e.practiced).length}/{edgePath.length}</span>
+          )}
+        </button>
         {!isRealData && (
           <Badge variant="outline" className="text-[8px] px-1.5 py-0 border-border/40 text-muted-foreground ml-auto">
             Demo data — practice roles to personalize
