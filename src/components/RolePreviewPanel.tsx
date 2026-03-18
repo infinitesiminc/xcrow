@@ -461,7 +461,7 @@ export default function RolePreviewPanel({ role, onClose }: RolePreviewPanelProp
       {/* Footer */}
       <div className="p-3 border-t border-border shrink-0">
         <button
-          onClick={() => setView("breakdown")}
+          onClick={() => setView("enlarged")}
           className="w-full flex items-center justify-center gap-2 rounded-xl bg-primary text-primary-foreground py-2.5 text-sm font-medium hover:bg-primary/90 transition-colors"
         >
           <GraduationCap className="h-4 w-4" /> Start Learning
