@@ -11,7 +11,7 @@ export default function HRLayout() {
     <>
       <Navbar />
       <SidebarProvider>
-        <div className="min-h-[calc(100vh-64px)] flex w-full">
+        <div className="h-[calc(100vh-64px)] flex w-full overflow-hidden">
           <HRSidebar />
           <div className="flex-1 flex flex-col">
             <header className="h-10 flex items-center border-b border-border px-4 gap-3">
