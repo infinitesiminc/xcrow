@@ -150,7 +150,7 @@ export default function StatsPage() {
         </Card>
       </div>
 
-
+      {flags.length > 0 && (
         <>
           <Separator />
           <div className="space-y-4">
