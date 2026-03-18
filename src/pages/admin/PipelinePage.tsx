@@ -226,7 +226,18 @@ export default function PipelinePage() {
       if (jobRows.length < pageSize) break;
       from += pageSize;
     }
-    setCompanies(all.map(c => ({ ...c, job_count: jm.get(c.id) || 0 })));
+    // Compute industry distribution for diversity scoring
+    const industryCounts = new Map<string, number>();
+    all.forEach(c => {
+      const ind = (c.industry || "Other").toLowerCase();
+      industryCounts.set(ind, (industryCounts.get(ind) || 0) + 1);
+    });
+
+    const scored = all.map(c => {
+      const withJobs = { ...c, job_count: jm.get(c.id) || 0 };
+      return { ...withJobs, priority_score: computePriorityScore(withJobs, industryCounts, all.length) };
+    });
+    setCompanies(scored);
     setLoadingCompanies(false);
   }, []);
 
@@ -236,8 +247,9 @@ export default function PipelinePage() {
     const q = companySearch.trim().toLowerCase();
     // When searching, show across all ATS platforms; otherwise filter by selected ATS
     const af = q ? companies : companies.filter(c => c.detected_ats_platform === selectedATS);
-    if (!q) return af;
-    return af.filter(c => c.name.toLowerCase().includes(q));
+    const matched = q ? af.filter(c => c.name.toLowerCase().includes(q)) : af;
+    // Sort by priority score descending
+    return [...matched].sort((a, b) => (b.priority_score || 0) - (a.priority_score || 0));
   }, [companies, selectedATS, companySearch]);
 
   const selectedCompany = companies.find(c => c.id === selectedCompanyId);
