@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { X, MapPin, Loader2, Play, Maximize2, ChevronLeft, CheckCircle2, Bot, Trophy, Bookmark, BookmarkCheck, GraduationCap, MessageSquare, BarChart3, FileText, Users, Search, Settings, Globe, Shield, Lightbulb, PenTool, Code, TrendingUp, Megaphone, Target, Briefcase, Heart, Layers, Zap, ExternalLink } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import ReactMarkdown from "react-markdown";
@@ -77,6 +77,7 @@ export default function RolePreviewPanel({ role, onClose }: RolePreviewPanelProp
   const [simTask, setSimTask] = useState<TaskCluster | null>(null);
   const [completedTasks, setCompletedTasks] = useState<Set<string>>(new Set());
   const [isBookmarked, setIsBookmarked] = useState(false);
+  const wasEnlargedRef = useRef(false);
 
   const hue1 = hashToHue(role.title);
   const hue2 = (hue1 + 60) % 360;
@@ -143,23 +144,31 @@ export default function RolePreviewPanel({ role, onClose }: RolePreviewPanelProp
 
   const logoUrl = role.logo || (role.company ? `https://logo.clearbit.com/${role.company.toLowerCase().replace(/\s+/g, "")}.com` : "");
 
-  const startSimulation = (task: TaskCluster) => { setSimTask(task); setView("simulation"); };
+  const startSimulation = (task: TaskCluster, fromEnlarged = false) => {
+    wasEnlargedRef.current = fromEnlarged;
+    setSimTask(task);
+    setView("simulation");
+  };
 
   const pickNextTask = useCallback(() => {
     if (!simTask) return;
     const idx = tasks.findIndex(t => t.cluster_name === simTask.cluster_name);
     const next = tasks[idx + 1];
     if (next) setSimTask(next);
-    else { setView("breakdown"); setSimTask(null); }
+    else {
+      setView(wasEnlargedRef.current ? "enlarged" : "breakdown");
+      setSimTask(null);
+    }
   }, [tasks, simTask]);
 
   // Simulation view
   if (view === "simulation" && simTask) {
-    const content = (
+    const returnView = wasEnlargedRef.current ? "enlarged" : "breakdown";
+    const simContent = (
       <div className="h-full flex flex-col">
         <SimulatorModal
           open={true}
-          onClose={() => { setView("breakdown"); setSimTask(null); }}
+          onClose={() => { setView(returnView); setSimTask(null); }}
           taskName={simTask.cluster_name}
           jobTitle={role.title}
           company={role.company || undefined}
@@ -167,14 +176,21 @@ export default function RolePreviewPanel({ role, onClose }: RolePreviewPanelProp
           taskTrend={simTask.ai_trend || undefined}
           taskImpactLevel={simTask.impact_level || undefined}
           inline
-          onBackToFeed={() => { setView("breakdown"); setSimTask(null); }}
+          onBackToFeed={() => { setView(returnView); setSimTask(null); }}
           onNextTask={pickNextTask}
           onCompleted={fetchCompletions}
         />
       </div>
     );
 
-    if (view === "simulation") return content;
+    if (wasEnlargedRef.current) {
+      return (
+        <div className="fixed inset-0 z-[100] bg-background/95 backdrop-blur-sm flex flex-col">
+          {simContent}
+        </div>
+      );
+    }
+    return simContent;
   }
 
   // Enlarged overlay (full-screen portal)
@@ -229,7 +245,7 @@ export default function RolePreviewPanel({ role, onClose }: RolePreviewPanelProp
                 <div className="flex items-center gap-2">
                   {done && <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 flex items-center gap-1"><CheckCircle2 className="h-3 w-3" />Done</span>}
                   <Button size="sm" variant={done ? "secondary" : "default"} className="h-7 text-xs rounded-full gap-1"
-                    onClick={() => { setView("simulation"); setSimTask(t); }}>
+                    onClick={() => startSimulation(t, true)}>
                     <Play className="h-3 w-3" />{done ? "Retry" : "Practice"}
                   </Button>
                 </div>
