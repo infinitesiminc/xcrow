@@ -45,6 +45,7 @@ Deno.serve(async (req) => {
     if (organization_num_employees_ranges?.length) apolloBody.organization_num_employees_ranges = organization_num_employees_ranges;
     if (q_organization_keyword_tags?.length) apolloBody.q_organization_keyword_tags = q_organization_keyword_tags;
     if (q_organization_name) apolloBody.q_organization_name = q_organization_name;
+    if (latest_funding_stage) apolloBody.latest_funding_stage_cd = [latest_funding_stage];
 
     console.log("Apollo search:", JSON.stringify(apolloBody));
 
