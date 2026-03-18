@@ -416,7 +416,7 @@ const UnmetObjectivesReview = ({
         </h3>
         <p className="text-sm text-muted-foreground leading-relaxed">
           {tooEarly
-            ? `You've only completed ${roundCount} of at least ${minRounds} rounds. Finishing now means less practice and a lower score.`
+            ? `You've only completed ${roundCount} of at least ${minRounds} rounds. Keep going to cover more learning goals.`
             : `You haven't covered ${unmet.length === 1 ? "this learning goal" : `${unmet.length} learning goals`} yet. Want to do ${unmet.length === 1 ? "one more scenario" : "a few more scenarios"} to cover ${unmet.length === 1 ? "it" : "them"}?`
           }
         </p>
