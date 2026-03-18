@@ -160,6 +160,7 @@ export default function RolePreviewPanel({ role, onClose }: RolePreviewPanelProp
   const closeSimulation = () => {
     setView("enlarged");
     setSimTask(null);
+    fetchCompletions();
   };
 
   // Simulation overlay — always full-screen with one-click kill
@@ -186,6 +187,7 @@ export default function RolePreviewPanel({ role, onClose }: RolePreviewPanelProp
   );
 
   // Enlarged overlay (full-screen portal)
+  const completedCount = tasks.filter(t => completedTasks.has(t.cluster_name)).length;
   const enlargedOverlay = (
     <div className="fixed inset-0 z-[100] bg-background overflow-y-auto">
       {/* Sticky header */}
@@ -213,6 +215,19 @@ export default function RolePreviewPanel({ role, onClose }: RolePreviewPanelProp
             <StatItem value={`${tasks.length}`} label="Tasks" />
           </div>
         </div>
+
+        {/* Progress */}
+        {completedCount > 0 && (
+          <div className="mb-4">
+            <div className="flex justify-between text-[10px] text-muted-foreground mb-1">
+              <span>Progress</span>
+              <span>{completedCount}/{tasks.length} practiced</span>
+            </div>
+            <div className="h-1.5 rounded-full bg-secondary overflow-hidden">
+              <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${(completedCount / tasks.length) * 100}%` }} />
+            </div>
+          </div>
+        )}
 
         {/* Task cards */}
         <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">Tasks & AI Impact</h3>
@@ -274,7 +289,6 @@ export default function RolePreviewPanel({ role, onClose }: RolePreviewPanelProp
 
   // Breakdown view (inline in panel)
   if (view === "breakdown") {
-    const completedCount = tasks.filter(t => completedTasks.has(t.cluster_name)).length;
     return (
       <>{simulationOverlay}
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="h-full flex flex-col bg-card overflow-hidden">
