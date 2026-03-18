@@ -1,10 +1,12 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { Building2, Briefcase, Brain, Users, Loader2, Settings2, CheckCircle2 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { Building2, Briefcase, Brain, Users, Loader2, Settings2, CheckCircle2, MapPin } from "lucide-react";
 
 interface FeatureFlag {
   key: string;
