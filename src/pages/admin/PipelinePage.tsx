@@ -476,9 +476,17 @@ export default function PipelinePage() {
                       <span>{jobs.length} roles</span>
                       <span>·</span>
                       <span className="text-primary">{analyzedJobIds.size} analyzed</span>
+                      {selectedCompany?.headquarters && <><span>·</span><span>{selectedCompany.headquarters}</span></>}
+                      {selectedCompany?.employee_range && <><span>·</span><span>{selectedCompany.employee_range}</span></>}
                     </div>
+                    {selectedCompany?.website && (
+                      <a href={selectedCompany.website} target="_blank" rel="noopener" className="text-[10px] text-muted-foreground hover:text-primary truncate block mt-0.5">{selectedCompany.website}</a>
+                    )}
                   </div>
                 </div>
+                {selectedCompany?.description && (
+                  <p className="text-[11px] text-muted-foreground mt-2 line-clamp-2 leading-relaxed">{selectedCompany.description}</p>
+                )}
 
                 {/* Queue bar */}
                 {jobs.length > 0 && (
