@@ -97,6 +97,11 @@ export default function PipelinePage() {
   const pauseRef = useRef(false);
   const abortRef = useRef(false);
 
+  /* ── Bulk job sync ── */
+  const [bulkSyncing, setBulkSyncing] = useState(false);
+  const [bulkProgress, setBulkProgress] = useState({ done: 0, total: 0, current: "" });
+  const bulkAbortRef = useRef(false);
+
   /* ── Add Company ── */
   const [addOpen, setAddOpen] = useState(false);
   const [addUrl, setAddUrl] = useState("");
@@ -174,6 +179,27 @@ export default function PipelinePage() {
       await fetchCompanies();
     } catch (err: any) { toast({ title: "Import failed", description: err.message, variant: "destructive" }); }
     finally { setSyncing(null); }
+  };
+
+  const bulkSyncAllJobs = async () => {
+    const targets = filteredCompanies;
+    if (targets.length === 0) return;
+    bulkAbortRef.current = false;
+    setBulkSyncing(true);
+    setBulkProgress({ done: 0, total: targets.length, current: "" });
+    let synced = 0;
+    for (const co of targets) {
+      if (bulkAbortRef.current) break;
+      setBulkProgress(p => ({ ...p, current: co.name }));
+      try {
+        const { data, error } = await supabase.functions.invoke("sync-company-jobs", { body: { step: "jobs", company_id: co.id } });
+        if (!error && data?.synced) synced += data.synced;
+      } catch {}
+      setBulkProgress(p => ({ ...p, done: p.done + 1 }));
+    }
+    await fetchCompanies();
+    setBulkSyncing(false);
+    toast({ title: "Bulk sync complete", description: `${synced} total roles synced across ${targets.length} companies` });
   };
 
   const syncCompanyJobs = async (companyId: string, diagnostic = false) => {
@@ -346,15 +372,26 @@ export default function PipelinePage() {
               ))}
             </div>
             <div className="flex gap-1">
-              <Button variant="outline" size="sm" onClick={importCompanies} disabled={!!syncing} className="flex-1 text-xs h-7 gap-1">
+              <Button variant="outline" size="sm" onClick={importCompanies} disabled={!!syncing || bulkSyncing} className="flex-1 text-xs h-7 gap-1">
                 {syncing === "import" ? <Loader2 className="h-3 w-3 animate-spin" /> : <Download className="h-3 w-3" />}
                 Import
+              </Button>
+              <Button variant="outline" size="sm" onClick={bulkSyncing ? () => { bulkAbortRef.current = true; } : bulkSyncAllJobs} disabled={!!syncing} className="flex-1 text-xs h-7 gap-1">
+                {bulkSyncing ? <><Loader2 className="h-3 w-3 animate-spin" /> Stop</> : <><RefreshCw className="h-3 w-3" /> Sync All</>}
               </Button>
               <Button variant="outline" size="sm" onClick={() => setAddOpen(true)} className="text-xs h-7 gap-1">
                 <Plus className="h-3 w-3" />
                 Add
               </Button>
             </div>
+            {bulkSyncing && (
+              <div className="space-y-1">
+                <Progress value={(bulkProgress.done / Math.max(bulkProgress.total, 1)) * 100} className="h-1.5" />
+                <p className="text-[10px] text-muted-foreground truncate">
+                  {bulkProgress.done}/{bulkProgress.total} — {bulkProgress.current}
+                </p>
+              </div>
+            )}
             <div className="relative">
               <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground" />
               <Input placeholder="Search companies…" value={companySearch} onChange={e => setCompanySearch(e.target.value)} className="pl-7 h-7 text-xs" />
