@@ -183,6 +183,10 @@ export default function PipelinePage() {
   const pauseRef = useRef(false);
   const abortRef = useRef(false);
 
+  /* ── Bulk Layer 1 scoring ── */
+  const [bulkScoring, setBulkScoring] = useState(false);
+  const [bulkScoreResult, setBulkScoreResult] = useState<string | null>(null);
+
   /* ── Diagnostics ── */
   const [diagOpen, setDiagOpen] = useState(false);
   const [diagData, setDiagData] = useState<any>(null);
