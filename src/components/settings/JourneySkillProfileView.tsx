@@ -617,9 +617,10 @@ export default function JourneySkillProfileView({ practicedRoles = [], onNavigat
                       className="w-full flex items-center gap-3 p-3 hover:bg-muted/20 transition-colors text-left"
                     >
                       {/* Match circle */}
-                      <div className="relative shrink-0">
-                        <div className={`w-10 h-10 rounded-full flex items-center justify-center text-xs font-bold ${profBg(job.aiBoostMatch)} ${profColor(job.aiBoostMatch)}`}>
-                          {job.aiBoostMatch}%
+                      <div className="relative shrink-0" title={`Skill match: ${job.humanMatch}% human + ${job.aiBoostMatch - job.humanMatch}% AI-assisted = ${job.aiBoostMatch}% total`}>
+                        <div className={`w-10 h-10 rounded-full flex flex-col items-center justify-center ${profBg(job.aiBoostMatch)} ${profColor(job.aiBoostMatch)}`}>
+                          <span className="text-xs font-bold leading-none">{job.aiBoostMatch}%</span>
+                          <span className="text-[7px] opacity-70 leading-none mt-0.5">match</span>
                         </div>
                         {job.unlocked && (
                           <div className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-primary flex items-center justify-center">
