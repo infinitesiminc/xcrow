@@ -62,24 +62,35 @@ const Index = () => {
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Fetch real jobs from DB
+  // Fetch all jobs from DB in paginated batches
   useEffect(() => {
     (async () => {
-      const { data, error } = await supabase
-        .from("jobs")
-        .select("title, department, location, city, country, work_mode, augmented_percent, automation_risk_percent, new_skills_percent, companies(name, logo_url, website)")
-        .gt("augmented_percent", 0)
-        .order("augmented_percent", { ascending: false })
-        .limit(100);
+      const PAGE_SIZE = 1000;
+      let allData: any[] = [];
+      let page = 0;
+      let hasMore = true;
 
-      if (error || !data || data.length === 0) {
+      while (hasMore) {
+        const { data, error } = await supabase
+          .from("jobs")
+          .select("title, department, location, city, country, work_mode, augmented_percent, automation_risk_percent, new_skills_percent, companies(name, logo_url, website)")
+          .order("augmented_percent", { ascending: false })
+          .range(page * PAGE_SIZE, (page + 1) * PAGE_SIZE - 1);
+
+        if (error || !data) break;
+        allData = allData.concat(data);
+        hasMore = data.length === PAGE_SIZE;
+        page++;
+      }
+
+      if (allData.length === 0) {
         setLoadingRoles(false);
         return;
       }
 
       const seen = new Set<string>();
-      const unique = data.filter(j => {
-        const key = j.title.toLowerCase().trim();
+      const unique = allData.filter(j => {
+        const key = (j.title + '|' + (j.companies as any)?.name).toLowerCase().trim();
         if (seen.has(key)) return false;
         seen.add(key);
         return true;
@@ -108,8 +119,10 @@ const Index = () => {
         };
       });
 
-      const shuffled = mapped.sort(() => Math.random() - 0.5);
-      setRoles(shuffled);
+      // Sort: analyzed roles first (have augmented data), then shuffle within groups
+      const analyzed = mapped.filter(r => r.augmented > 0).sort(() => Math.random() - 0.5);
+      const unanalyzed = mapped.filter(r => r.augmented === 0).sort(() => Math.random() - 0.5);
+      setRoles([...analyzed, ...unanalyzed]);
       setLoadingRoles(false);
     })();
   }, []);
