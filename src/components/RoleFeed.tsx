@@ -171,7 +171,7 @@ function CardMiniGauge({ value, size = 32 }: { value: number; size?: number }) {
   const arcLength = circumference * 0.75;
   const fillLength = arcLength * (value / 100);
   const rotation = 135;
-  const color = value >= 60 ? "hsl(var(--brand-ai))" : value >= 30 ? "hsl(var(--primary))" : "hsl(var(--brand-human))";
+  const color = "rgba(255,255,255,0.9)";
 
   return (
     <div className="relative" style={{ width: size, height: size }}>
