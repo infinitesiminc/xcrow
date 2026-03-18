@@ -4,8 +4,9 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Building2, Briefcase, Search, Loader2, RefreshCw, Download,
   Database, Play, Pause, Brain, ChevronDown, ChevronUp,
-  MapPin, CheckCircle2, AlertTriangle, ArrowLeft,
-  Globe, Plus, Bug, Sparkles, Telescope,
+  MapPin, CheckCircle2, AlertTriangle, ArrowRight,
+  Globe, Plus, Bug, Sparkles, Telescope, Flag,
+  X, FileText, Clock, Zap,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -14,6 +15,8 @@ import { Progress } from "@/components/ui/progress";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -39,63 +42,6 @@ interface Company {
   priority_score?: number;
 }
 
-/* ── Priority Scoring ── */
-const FUNDING_SCORES: Record<string, number> = {
-  "seed": 15, "pre-seed": 12, "series a": 25, "series b": 30, "series c": 25,
-  "series d": 20, "series e": 15, "growth": 20, "late stage": 15,
-  "ipo": 10, "public": 5, "bootstrapped": 8, "acquired": 5,
-};
-
-const EMPLOYEE_SCORES: Record<string, number> = {
-  "1-10": 5, "11-50": 15, "51-200": 25, "201-500": 20,
-  "501-1000": 15, "1001-5000": 10, "5001-10000": 8, "10000+": 5,
-};
-
-function computePriorityScore(
-  company: Company,
-  industryCounts: Map<string, number>,
-  totalCompanies: number,
-): number {
-  let score = 0;
-
-  // 1. Role count signal (0-30 pts) — more open roles = more data value
-  const roles = company.job_count || 0;
-  score += Math.min(30, roles * 0.5);
-
-  // 2. Funding stage signal (0-30 pts) — Series A-C startups are highest value
-  const funding = (company.funding_stage || "").toLowerCase().trim();
-  score += FUNDING_SCORES[funding] || 0;
-
-  // 3. Employee range signal (0-25 pts) — 51-500 is the growth sweet spot
-  const size = (company.employee_range || "").trim();
-  score += EMPLOYEE_SCORES[size] || 0;
-
-  // 4. Industry diversity bonus (0-25 pts) — underrepresented industries get a boost
-  const industry = (company.industry || "Other").toLowerCase();
-  const industryShare = (industryCounts.get(industry) || 1) / Math.max(totalCompanies, 1);
-  // If this industry is <5% of our DB, full bonus. >20%, no bonus.
-  if (industryShare < 0.05) score += 25;
-  else if (industryShare < 0.10) score += 18;
-  else if (industryShare < 0.15) score += 10;
-  else if (industryShare < 0.20) score += 5;
-
-  return Math.round(score);
-}
-
-function scoreColor(score: number): string {
-  if (score >= 60) return "text-green-500";
-  if (score >= 40) return "text-yellow-500";
-  if (score >= 20) return "text-orange-400";
-  return "text-muted-foreground";
-}
-
-function scoreLabel(score: number): string {
-  if (score >= 60) return "High priority";
-  if (score >= 40) return "Medium";
-  if (score >= 20) return "Low";
-  return "Minimal";
-}
-
 interface DbJob {
   id: string;
   title: string;
@@ -109,15 +55,58 @@ interface DbJob {
   source_url: string | null;
 }
 
-interface CompletedSim { task_name: string; job_title: string }
+interface ImportFlag {
+  id: string;
+  flag_type: string;
+  severity: string;
+  status: string;
+  company_name: string | null;
+  suggested_action: string | null;
+  created_at: string;
+  details: any;
+}
 
-const ATS_PLATFORMS = [
-  { id: "greenhouse", label: "Greenhouse" },
-  { id: "ashby", label: "Ashby" },
-  { id: "lever", label: "Lever" },
-  { id: "smartrecruiters", label: "SmartRecruiters" },
-  { id: "workday", label: "Workday" },
-] as const;
+interface ImportLog {
+  id: string;
+  source: string;
+  action: string;
+  result_status: string;
+  items_processed: number;
+  items_created: number;
+  items_updated: number;
+  items_skipped: number;
+  flags_raised: number;
+  duration_ms: number | null;
+  created_at: string;
+}
+
+/* ── Priority Scoring ── */
+const FUNDING_SCORES: Record<string, number> = {
+  "seed": 15, "pre-seed": 12, "series a": 25, "series b": 30, "series c": 25,
+  "series d": 20, "series e": 15, "growth": 20, "late stage": 15,
+  "ipo": 10, "public": 5, "bootstrapped": 8, "acquired": 5,
+};
+const EMPLOYEE_SCORES: Record<string, number> = {
+  "1-10": 5, "11-50": 15, "51-200": 25, "201-500": 20,
+  "501-1000": 15, "1001-5000": 10, "5001-10000": 8, "10000+": 5,
+};
+
+function computePriorityScore(company: Company, industryCounts: Map<string, number>, totalCompanies: number): number {
+  let score = 0;
+  const roles = company.job_count || 0;
+  score += Math.min(30, roles * 0.5);
+  const funding = (company.funding_stage || "").toLowerCase().trim();
+  score += FUNDING_SCORES[funding] || 0;
+  const size = (company.employee_range || "").trim();
+  score += EMPLOYEE_SCORES[size] || 0;
+  const industry = (company.industry || "Other").toLowerCase();
+  const industryShare = (industryCounts.get(industry) || 1) / Math.max(totalCompanies, 1);
+  if (industryShare < 0.05) score += 25;
+  else if (industryShare < 0.10) score += 18;
+  else if (industryShare < 0.15) score += 10;
+  else if (industryShare < 0.20) score += 5;
+  return Math.round(score);
+}
 
 /* ── Logo ── */
 function CompanyLogo({ url, name, size = "h-6 w-6" }: { url: string | null; name: string; size?: string }) {
@@ -130,54 +119,32 @@ function CompanyLogo({ url, name, size = "h-6 w-6" }: { url: string | null; name
   return <img src={src} alt="" className={`${size} rounded object-contain bg-background shrink-0`} onError={() => { if (!tried) { setSrc(cb); setTried(true); } else setSrc(null); }} />;
 }
 
+const SEVERITY_STYLES: Record<string, string> = {
+  info: "bg-blue-500/10 text-blue-600 border-blue-500/20",
+  warning: "bg-amber-500/10 text-amber-600 border-amber-500/20",
+  error: "bg-destructive/10 text-destructive border-destructive/20",
+};
+
 /* ══════════════════════════════════════════════════════════════ */
 export default function PipelinePage() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { user } = useAuth();
 
-  /* ── Left panel ── */
-  const [selectedATS, setSelectedATS] = useState<string>("greenhouse");
+  const [activeTab, setActiveTab] = useState("discover");
+
+  /* ── Core data ── */
   const [companies, setCompanies] = useState<Company[]>([]);
-  const [atsCounts, setAtsCounts] = useState<Record<string, number>>({});
-  const [companySearch, setCompanySearch] = useState("");
   const [loadingCompanies, setLoadingCompanies] = useState(true);
-  const [syncing, setSyncing] = useState<string | null>(null);
+  const [atsCounts, setAtsCounts] = useState<Record<string, number>>({});
 
-  /* ── Right panel ── */
-  const [selectedCompanyId, setSelectedCompanyId] = useState<string | null>(null);
-  const [jobs, setJobs] = useState<DbJob[]>([]);
-  const [loadingJobs, setLoadingJobs] = useState(false);
-  const [jobSearch, setJobSearch] = useState("");
-  const [collapsedDepts, setCollapsedDepts] = useState<Set<string>>(new Set());
-  const [analyzedJobIds, setAnalyzedJobIds] = useState<Set<string>>(new Set());
+  /* ── Flags drawer ── */
+  const [flagsOpen, setFlagsOpen] = useState(false);
+  const [flags, setFlags] = useState<ImportFlag[]>([]);
+  const [logs, setLogs] = useState<ImportLog[]>([]);
+  const [loadingFlags, setLoadingFlags] = useState(false);
 
-  /* ── Queue ── */
-  const [queueRunning, setQueueRunning] = useState(false);
-  const [queueCurrentJob, setQueueCurrentJob] = useState<string | null>(null);
-  const [queueProcessed, setQueueProcessed] = useState(0);
-  const [queueMessage, setQueueMessage] = useState<string | null>(null);
-  const pauseRef = useRef(false);
-  const abortRef = useRef(false);
-
-  /* ── Bulk job sync ── */
-  const [bulkSyncing, setBulkSyncing] = useState(false);
-  const [bulkProgress, setBulkProgress] = useState({ done: 0, total: 0, current: "" });
-  const bulkAbortRef = useRef(false);
-
-  /* ── Add Company ── */
-  const [addOpen, setAddOpen] = useState(false);
-  const [addUrl, setAddUrl] = useState("");
-  const [addLoading, setAddLoading] = useState(false);
-
-  /* ── Diagnostics ── */
-  const [diagOpen, setDiagOpen] = useState(false);
-  const [diagData, setDiagData] = useState<any>(null);
-  const [diagLoading, setDiagLoading] = useState(false);
-  const [diagCompanyName, setDiagCompanyName] = useState("");
-
-  /* ── Apollo Bulk Discovery ── */
-  const [apolloOpen, setApolloOpen] = useState(false);
+  /* ═══════ DISCOVER STATE ═══════ */
   const [apolloKeywords, setApolloKeywords] = useState("");
   const [apolloName, setApolloName] = useState("");
   const [apolloLocation, setApolloLocation] = useState("United States");
@@ -191,26 +158,105 @@ export default function PipelinePage() {
   const [apolloBulkProgress, setApolloBulkProgress] = useState<{ current: number; total: number; imported: number } | null>(null);
   const apolloBulkAbort = useRef(false);
 
-  const handleAddCompany = async () => {
-    if (!addUrl.trim()) return;
-    setAddLoading(true);
-    try {
-      const { data, error } = await supabase.functions.invoke("enrich-company", {
-        body: { website: addUrl.trim() },
-      });
-      if (error) throw error;
-      if (data?.error) throw new Error(data.error);
-      toast({ title: "Company added", description: `${data.company.name} enriched and saved.` });
-      setAddOpen(false);
-      setAddUrl("");
-      fetchCompanies();
-    } catch (err: any) {
-      toast({ title: "Failed", description: err.message || "Could not add company", variant: "destructive" });
-    } finally {
-      setAddLoading(false);
-    }
-  };
+  /* ── Add Company ── */
+  const [addOpen, setAddOpen] = useState(false);
+  const [addUrl, setAddUrl] = useState("");
+  const [addLoading, setAddLoading] = useState(false);
 
+  /* ═══════ SYNC STATE ═══════ */
+  const [syncing, setSyncing] = useState<string | null>(null);
+  const [syncAllRunning, setSyncAllRunning] = useState(false);
+  const [syncAllProgress, setSyncAllProgress] = useState({ done: 0, total: 0, current: "", synced: 0 });
+  const syncAbortRef = useRef(false);
+
+  /* ═══════ ANALYZE STATE ═══════ */
+  const [selectedCompanyId, setSelectedCompanyId] = useState<string | null>(null);
+  const [jobs, setJobs] = useState<DbJob[]>([]);
+  const [loadingJobs, setLoadingJobs] = useState(false);
+  const [jobSearch, setJobSearch] = useState("");
+  const [collapsedDepts, setCollapsedDepts] = useState<Set<string>>(new Set());
+  const [analyzedJobIds, setAnalyzedJobIds] = useState<Set<string>>(new Set());
+  const [queueRunning, setQueueRunning] = useState(false);
+  const [queueCurrentJob, setQueueCurrentJob] = useState<string | null>(null);
+  const [queueProcessed, setQueueProcessed] = useState(0);
+  const [queueMessage, setQueueMessage] = useState<string | null>(null);
+  const pauseRef = useRef(false);
+  const abortRef = useRef(false);
+
+  /* ── Diagnostics ── */
+  const [diagOpen, setDiagOpen] = useState(false);
+  const [diagData, setDiagData] = useState<any>(null);
+  const [diagLoading, setDiagLoading] = useState(false);
+  const [diagCompanyName, setDiagCompanyName] = useState("");
+
+  /* ═══════ DATA FETCHING ═══════ */
+  const fetchCompanies = useCallback(async () => {
+    setLoadingCompanies(true);
+    let allCompanies: Company[] = [];
+    let compFrom = 0;
+    const compPageSize = 1000;
+    while (true) {
+      const { data: batch } = await supabase.from("companies").select("id, name, industry, logo_url, website, careers_url, detected_ats_platform, employee_range, headquarters, description, company_type, funding_stage, funding_total, founded_year").order("name").range(compFrom, compFrom + compPageSize - 1);
+      if (!batch || batch.length === 0) break;
+      allCompanies = allCompanies.concat(batch as Company[]);
+      if (batch.length < compPageSize) break;
+      compFrom += compPageSize;
+    }
+
+    const counts: Record<string, number> = {};
+    allCompanies.forEach(c => { const a = c.detected_ats_platform || "unknown"; counts[a] = (counts[a] || 0) + 1; });
+    setAtsCounts(counts);
+
+    const jm = new Map<string, number>();
+    let from = 0;
+    const pageSize = 1000;
+    while (true) {
+      const { data: jobRows } = await supabase.from("jobs").select("company_id").range(from, from + pageSize - 1);
+      if (!jobRows || jobRows.length === 0) break;
+      jobRows.forEach((j: any) => { if (j.company_id) jm.set(j.company_id, (jm.get(j.company_id) || 0) + 1); });
+      if (jobRows.length < pageSize) break;
+      from += pageSize;
+    }
+
+    const industryCounts = new Map<string, number>();
+    allCompanies.forEach(c => {
+      const ind = (c.industry || "Other").toLowerCase();
+      industryCounts.set(ind, (industryCounts.get(ind) || 0) + 1);
+    });
+
+    const scored = allCompanies.map(c => {
+      const withJobs = { ...c, job_count: jm.get(c.id) || 0 };
+      return { ...withJobs, priority_score: computePriorityScore(withJobs, industryCounts, allCompanies.length) };
+    });
+    setCompanies(scored);
+    setLoadingCompanies(false);
+  }, []);
+
+  useEffect(() => { fetchCompanies(); }, [fetchCompanies]);
+
+  const fetchFlagsAndLogs = useCallback(async () => {
+    setLoadingFlags(true);
+    const [{ data: f }, { data: l }] = await Promise.all([
+      supabase.from("import_flags").select("*").order("created_at", { ascending: false }).limit(100),
+      supabase.from("import_log").select("*").order("created_at", { ascending: false }).limit(50),
+    ]);
+    setFlags((f || []) as ImportFlag[]);
+    setLogs((l || []) as ImportLog[]);
+    setLoadingFlags(false);
+  }, []);
+
+  /* ═══════ COMPUTED STATS ═══════ */
+  const stats = useMemo(() => {
+    const totalCompanies = companies.length;
+    const withATS = companies.filter(c => c.detected_ats_platform && c.detected_ats_platform !== "unknown").length;
+    const withJobs = companies.filter(c => (c.job_count || 0) > 0).length;
+    const noJobs = companies.filter(c => (c.job_count || 0) === 0 && c.detected_ats_platform && c.detected_ats_platform !== "unknown").length;
+    const totalJobs = companies.reduce((sum, c) => sum + (c.job_count || 0), 0);
+    const openFlags = flags.filter(f => f.status === "open").length;
+    return { totalCompanies, withATS, withJobs, noJobs, totalJobs, openFlags };
+  }, [companies, flags]);
+
+  /* ═══════ DISCOVER LOGIC ═══════ */
   const buildApolloBody = (pg = 1): Record<string, unknown> => {
     const body: Record<string, unknown> = { page: pg, per_page: 25, import_results: false };
     if (apolloLocation.trim()) body.organization_locations = [apolloLocation.trim()];
@@ -238,7 +284,6 @@ export default function PipelinePage() {
     }
   };
 
-  /** Import selected companies from current page */
   const handleApolloImport = async () => {
     setApolloImporting(true);
     try {
@@ -253,7 +298,6 @@ export default function PipelinePage() {
         } catch { /* skip */ }
       }
       toast({ title: "Import complete", description: `${imported} companies enriched and saved.` });
-      setApolloOpen(false);
       fetchCompanies();
     } catch (err: any) {
       toast({ title: "Import failed", description: err.message, variant: "destructive" });
@@ -262,11 +306,10 @@ export default function PipelinePage() {
     }
   };
 
-  /** Bulk import: auto-page through ALL Apollo results and import each page */
   const handleApolloBulkImport = async () => {
     apolloBulkAbort.current = false;
     setApolloImporting(true);
-    const maxPages = Math.min(apolloPagination.total_pages, 20); // cap at 500 companies
+    const maxPages = Math.min(apolloPagination.total_pages, 20);
     setApolloBulkProgress({ current: 0, total: maxPages, imported: 0 });
     let totalImported = 0;
     try {
@@ -280,8 +323,7 @@ export default function PipelinePage() {
         totalImported += (data.stats?.created || 0) + (data.stats?.updated || 0);
         setApolloBulkProgress(prev => prev ? { ...prev, imported: totalImported } : null);
       }
-      toast({ title: "Bulk discovery complete", description: `${totalImported} companies imported across ${apolloBulkAbort.current ? "stopped early" : maxPages} pages.` });
-      setApolloOpen(false);
+      toast({ title: "Bulk discovery complete", description: `${totalImported} companies imported.` });
       fetchCompanies();
     } catch (err: any) {
       toast({ title: "Bulk import failed", description: err.message, variant: "destructive" });
@@ -291,124 +333,60 @@ export default function PipelinePage() {
     }
   };
 
-  /* ── Sims ── */
-  const [completedSims, setCompletedSims] = useState<CompletedSim[]>([]);
-  useEffect(() => {
-    if (!user) return;
-    (async () => {
-      const { data } = await supabase.from("completed_simulations").select("task_name, job_title").eq("user_id", user.id);
-      setCompletedSims(data || []);
-    })();
-  }, [user]);
-
-  /* ═══════ LEFT LOGIC ═══════ */
-  const fetchCompanies = useCallback(async () => {
-    setLoadingCompanies(true);
-    // Paginate through all companies (default limit is 1000)
-    let allCompanies: Company[] = [];
-    let compFrom = 0;
-    const compPageSize = 1000;
-    while (true) {
-      const { data: batch } = await supabase.from("companies").select("id, name, industry, logo_url, website, careers_url, detected_ats_platform, employee_range, headquarters, description, company_type, funding_stage, funding_total, founded_year").order("name").range(compFrom, compFrom + compPageSize - 1);
-      if (!batch || batch.length === 0) break;
-      allCompanies = allCompanies.concat(batch as Company[]);
-      if (batch.length < compPageSize) break;
-      compFrom += compPageSize;
-    }
-    const all = allCompanies;
-    const counts: Record<string, number> = {};
-    all.forEach(c => { const a = c.detected_ats_platform || "unknown"; counts[a] = (counts[a] || 0) + 1; });
-    setAtsCounts(counts);
-
-    // Paginate through all jobs to count per company (default limit is 1000)
-    const jm = new Map<string, number>();
-    let from = 0;
-    const pageSize = 1000;
-    while (true) {
-      const { data: jobRows } = await supabase.from("jobs").select("company_id").range(from, from + pageSize - 1);
-      if (!jobRows || jobRows.length === 0) break;
-      jobRows.forEach((j: any) => { if (j.company_id) jm.set(j.company_id, (jm.get(j.company_id) || 0) + 1); });
-      if (jobRows.length < pageSize) break;
-      from += pageSize;
-    }
-    // Compute industry distribution for diversity scoring
-    const industryCounts = new Map<string, number>();
-    all.forEach(c => {
-      const ind = (c.industry || "Other").toLowerCase();
-      industryCounts.set(ind, (industryCounts.get(ind) || 0) + 1);
-    });
-
-    const scored = all.map(c => {
-      const withJobs = { ...c, job_count: jm.get(c.id) || 0 };
-      return { ...withJobs, priority_score: computePriorityScore(withJobs, industryCounts, all.length) };
-    });
-    setCompanies(scored);
-    setLoadingCompanies(false);
-  }, []);
-
-  useEffect(() => { fetchCompanies(); }, [fetchCompanies]);
-
-  const filteredCompanies = useMemo(() => {
-    const q = companySearch.trim().toLowerCase();
-    // When searching, show across all ATS platforms; otherwise filter by selected ATS
-    const af = q ? companies : companies.filter(c => c.detected_ats_platform === selectedATS);
-    const matched = q ? af.filter(c => c.name.toLowerCase().includes(q)) : af;
-    // Sort by priority score descending
-    return [...matched].sort((a, b) => (b.priority_score || 0) - (a.priority_score || 0));
-  }, [companies, selectedATS, companySearch]);
-
-  const selectedCompany = companies.find(c => c.id === selectedCompanyId);
-
-  const importCompanies = async () => {
-    setSyncing("import");
+  const handleAddCompany = async () => {
+    if (!addUrl.trim()) return;
+    setAddLoading(true);
     try {
-      const PAGE = 200;
-      let offset = 0;
-      let totalSynced = 0;
-      let hasMore = true;
-
-      while (hasMore) {
-        const { data, error } = await supabase.functions.invoke("sync-company-jobs", {
-          body: { step: "companies", ats_platform: selectedATS, us_only: true, limit: PAGE, offset },
-        });
-        if (error) throw error;
-        totalSynced += data.synced || 0;
-        hasMore = data.hasMore === true;
-        offset += PAGE;
-      }
-
-      toast({ title: "Import complete", description: `${totalSynced} companies imported across ${Math.ceil(offset / PAGE)} batches` });
-      await fetchCompanies();
-    } catch (err: any) { toast({ title: "Import failed", description: err.message, variant: "destructive" }); }
-    finally { setSyncing(null); }
+      const website = addUrl.trim().startsWith("http") ? addUrl.trim() : `https://${addUrl.trim()}`;
+      const { data, error } = await supabase.functions.invoke("enrich-company", { body: { website } });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      toast({ title: "Company added", description: data.company?.name || "Enriched successfully" });
+      setAddOpen(false);
+      setAddUrl("");
+      fetchCompanies();
+    } catch (err: any) {
+      toast({ title: "Failed", description: err.message, variant: "destructive" });
+    } finally {
+      setAddLoading(false);
+    }
   };
 
-  const bulkSyncAllJobs = async () => {
-    const targets = filteredCompanies;
-    if (targets.length === 0) return;
-    bulkAbortRef.current = false;
-    setBulkSyncing(true);
-    setBulkProgress({ done: 0, total: targets.length, current: "" });
-    let synced = 0;
+  /* ═══════ SYNC LOGIC ═══════ */
+  // Companies needing sync: have ATS detected but 0 jobs
+  const unsyncedCompanies = useMemo(() =>
+    companies.filter(c => c.detected_ats_platform && c.detected_ats_platform !== "unknown" && (c.job_count || 0) === 0)
+      .sort((a, b) => (b.priority_score || 0) - (a.priority_score || 0)),
+  [companies]);
+
+  const syncAllNew = async () => {
+    const targets = unsyncedCompanies;
+    if (targets.length === 0) {
+      toast({ title: "Nothing to sync", description: "All companies with detected ATS already have jobs." });
+      return;
+    }
+    syncAbortRef.current = false;
+    setSyncAllRunning(true);
+    setSyncAllProgress({ done: 0, total: targets.length, current: "", synced: 0 });
+    let totalSynced = 0;
     for (const co of targets) {
-      if (bulkAbortRef.current) break;
-      setBulkProgress(p => ({ ...p, current: co.name }));
+      if (syncAbortRef.current) break;
+      setSyncAllProgress(p => ({ ...p, current: co.name }));
       try {
         const { data, error } = await supabase.functions.invoke("sync-company-jobs", { body: { step: "jobs", company_id: co.id } });
-        if (!error && data?.synced) synced += data.synced;
-      } catch {}
-      setBulkProgress(p => ({ ...p, done: p.done + 1 }));
+        if (!error && data?.synced) totalSynced += data.synced;
+      } catch { /* continue */ }
+      setSyncAllProgress(p => ({ ...p, done: p.done + 1, synced: totalSynced }));
     }
     await fetchCompanies();
-    setBulkSyncing(false);
-    toast({ title: "Bulk sync complete", description: `${synced} total roles synced across ${targets.length} companies` });
+    setSyncAllRunning(false);
+    toast({ title: "Sync complete", description: `${totalSynced} roles synced across ${targets.length} companies.` });
   };
 
-  const syncCompanyJobs = async (companyId: string, diagnostic = false) => {
+  const syncSingleCompany = async (companyId: string, diagnostic = false) => {
     setSyncing(`jobs-${companyId}`);
     if (diagnostic) {
-      setDiagLoading(true);
-      setDiagData(null);
+      setDiagLoading(true); setDiagData(null);
       const co = companies.find(c => c.id === companyId);
       setDiagCompanyName(co?.name || companyId);
       setDiagOpen(true);
@@ -416,24 +394,25 @@ export default function PipelinePage() {
     try {
       const { data, error } = await supabase.functions.invoke("sync-company-jobs", { body: { step: "jobs", company_id: companyId } });
       if (error) throw error;
-      if (diagnostic) {
-        setDiagData({ success: true, ...data });
-      } else {
-        toast({ title: "Sync complete", description: `${data.synced} roles synced` });
-      }
+      if (diagnostic) { setDiagData({ success: true, ...data }); }
+      else { toast({ title: "Sync complete", description: `${data.synced} roles synced` }); }
       if (companyId === selectedCompanyId) fetchJobs(companyId);
       await fetchCompanies();
     } catch (err: any) {
-      if (diagnostic) {
-        setDiagData({ success: false, error: err.message });
-      } else {
-        toast({ title: "Sync failed", description: err.message, variant: "destructive" });
-      }
+      if (diagnostic) { setDiagData({ success: false, error: err.message }); }
+      else { toast({ title: "Sync failed", description: err.message, variant: "destructive" }); }
+    } finally {
+      setSyncing(null); setDiagLoading(false);
     }
-    finally { setSyncing(null); setDiagLoading(false); }
   };
 
-  /* ═══════ RIGHT LOGIC ═══════ */
+  /* ═══════ ANALYZE LOGIC ═══════ */
+  const companiesWithJobs = useMemo(() =>
+    companies.filter(c => (c.job_count || 0) > 0).sort((a, b) => (b.priority_score || 0) - (a.priority_score || 0)),
+  [companies]);
+
+  const selectedCompany = companies.find(c => c.id === selectedCompanyId);
+
   const fetchJobs = useCallback(async (cid: string) => {
     setLoadingJobs(true);
     const { data } = await supabase.from("jobs")
@@ -445,7 +424,7 @@ export default function PipelinePage() {
 
   useEffect(() => {
     if (!selectedCompanyId) { setJobs([]); setAnalyzedJobIds(new Set()); return; }
-    setAnalyzedJobIds(new Set()); // Reset immediately on company switch
+    setAnalyzedJobIds(new Set());
     fetchJobs(selectedCompanyId);
     setJobSearch(""); setCollapsedDepts(new Set()); setQueueRunning(false); setQueueMessage(null);
   }, [selectedCompanyId, fetchJobs]);
@@ -488,13 +467,6 @@ export default function PipelinePage() {
 
   const pendingCount = useMemo(() => jobs.filter(j => !analyzedJobIds.has(j.id)).length, [jobs, analyzedJobIds]);
 
-  const getJobPct = useCallback((job: DbJob) => {
-    const s = completedSims.filter(x => x.job_title === job.title);
-    if (!s.length) return 0;
-    return Math.min(100, Math.round((new Set(s.map(x => x.task_name)).size / 10) * 100));
-  }, [completedSims]);
-
-  /* ── Queue ── */
   const startQueue = useCallback(async () => {
     if (queueRunning || !selectedCompany) return;
     pauseRef.current = false; abortRef.current = false;
@@ -511,7 +483,8 @@ export default function PipelinePage() {
       f += 1000;
     }
     const pending = jobs.filter(j => !done.has(j.id));
-    let proc = 0; const fail: string[] = [];
+    let proc = 0;
+    const fail: string[] = [];
 
     for (const job of pending) {
       if (abortRef.current) { setQueueMessage("Stopped."); break; }
@@ -533,7 +506,7 @@ export default function PipelinePage() {
         proc++; setQueueProcessed(proc);
         setAnalyzedJobIds(prev => new Set([...prev, job.id]));
         await new Promise(r => setTimeout(r, 1500));
-      } catch (err: any) {
+      } catch {
         fail.push(job.title);
         setQueueMessage(`${proc} done, ${fail.length} errors`);
         await new Promise(r => setTimeout(r, 3000));
@@ -546,317 +519,511 @@ export default function PipelinePage() {
 
   const currentJobTitle = useMemo(() => queueCurrentJob ? jobs.find(j => j.id === queueCurrentJob)?.title || null : null, [queueCurrentJob, jobs]);
 
+  /* ═══════ FLAGS ═══════ */
+  const resolveFlag = async (flagId: string, note: string) => {
+    await supabase.from("import_flags").update({ status: "resolved", resolution_note: note, resolved_at: new Date().toISOString() }).eq("id", flagId);
+    setFlags(prev => prev.map(f => f.id === flagId ? { ...f, status: "resolved" } : f));
+  };
+
   /* ═══════ RENDER ═══════ */
   return (
     <div className="flex flex-col h-[calc(100vh-4rem)]">
-      {/* Header */}
+      {/* ── Header with stage summary ── */}
       <div className="px-6 pt-5 pb-3 border-b border-border shrink-0">
-        <h1 className="text-xl font-bold text-foreground">Pipeline</h1>
-        <p className="text-xs text-muted-foreground mt-0.5">Select ATS → pick company → browse &amp; analyze roles</p>
+        <div className="flex items-center justify-between mb-3">
+          <div>
+            <h1 className="text-xl font-bold text-foreground">Pipeline</h1>
+            <p className="text-xs text-muted-foreground mt-0.5">Discover → Sync → Analyze</p>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm" className="text-xs h-7 gap-1" onClick={() => { fetchFlagsAndLogs(); setFlagsOpen(true); }}>
+              <Flag className="h-3 w-3" />
+              Flags {stats.openFlags > 0 && <Badge variant="destructive" className="h-4 text-[9px] px-1 ml-0.5">{stats.openFlags}</Badge>}
+            </Button>
+            <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={fetchCompanies} disabled={loadingCompanies}>
+              <RefreshCw className={`h-3 w-3 ${loadingCompanies ? "animate-spin" : ""}`} />
+            </Button>
+          </div>
+        </div>
+
+        {/* Stage cards */}
+        <div className="grid grid-cols-3 gap-3">
+          <button onClick={() => setActiveTab("discover")} className={`rounded-lg border p-3 text-left transition-all ${activeTab === "discover" ? "border-primary bg-primary/5" : "border-border hover:border-primary/30"}`}>
+            <div className="flex items-center gap-2 mb-1">
+              <Telescope className="h-3.5 w-3.5 text-primary" />
+              <span className="text-xs font-semibold text-foreground">Discover</span>
+            </div>
+            <p className="text-lg font-bold text-foreground">{stats.totalCompanies}</p>
+            <p className="text-[10px] text-muted-foreground">companies · {Object.keys(atsCounts).filter(k => k !== "unknown").length} ATS platforms</p>
+          </button>
+
+          <button onClick={() => setActiveTab("sync")} className={`rounded-lg border p-3 text-left transition-all ${activeTab === "sync" ? "border-primary bg-primary/5" : "border-border hover:border-primary/30"}`}>
+            <div className="flex items-center gap-2 mb-1">
+              <RefreshCw className="h-3.5 w-3.5 text-primary" />
+              <span className="text-xs font-semibold text-foreground">Sync</span>
+              {stats.noJobs > 0 && <Badge variant="secondary" className="h-4 text-[9px] px-1">{stats.noJobs} pending</Badge>}
+            </div>
+            <p className="text-lg font-bold text-foreground">{stats.totalJobs.toLocaleString()}</p>
+            <p className="text-[10px] text-muted-foreground">roles across {stats.withJobs} companies</p>
+          </button>
+
+          <button onClick={() => setActiveTab("analyze")} className={`rounded-lg border p-3 text-left transition-all ${activeTab === "analyze" ? "border-primary bg-primary/5" : "border-border hover:border-primary/30"}`}>
+            <div className="flex items-center gap-2 mb-1">
+              <Brain className="h-3.5 w-3.5 text-primary" />
+              <span className="text-xs font-semibold text-foreground">Analyze</span>
+            </div>
+            <p className="text-lg font-bold text-foreground">{stats.withJobs}</p>
+            <p className="text-[10px] text-muted-foreground">companies with roles ready for analysis</p>
+          </button>
+        </div>
       </div>
 
-      <div className="flex flex-1 min-h-0">
-        {/* ═══════ LEFT: ATS + Companies ═══════ */}
-        <div className="w-72 xl:w-80 border-r border-border flex flex-col shrink-0">
-          <div className="px-3 pt-3 pb-2 space-y-2 shrink-0">
-            <div className="flex flex-wrap gap-1">
-              {ATS_PLATFORMS.map(ats => (
-                <button
-                  key={ats.id}
-                  onClick={() => { setSelectedATS(ats.id); setSelectedCompanyId(null); setCompanySearch(""); }}
-                  className={`flex items-center gap-1 px-2 py-1 rounded-md text-[11px] font-medium border transition-all ${
-                    selectedATS === ats.id ? "border-primary bg-primary/10 text-primary" : "border-border bg-card text-muted-foreground hover:text-foreground hover:border-primary/30"
-                  }`}
-                >
-                  <Database className="h-2.5 w-2.5" />
-                  {ats.label}
-                  <span className="text-[9px] opacity-60">({atsCounts[ats.id] || 0})</span>
-                </button>
-              ))}
-            </div>
-            <div className="flex flex-wrap gap-1">
-              <Button variant="outline" size="sm" onClick={importCompanies} disabled={!!syncing || bulkSyncing} className="flex-1 text-xs h-7 gap-1 min-w-0">
-                {syncing === "import" ? <Loader2 className="h-3 w-3 animate-spin" /> : <Download className="h-3 w-3" />}
-                Import
-              </Button>
-              <Button variant="outline" size="sm" onClick={bulkSyncing ? () => { bulkAbortRef.current = true; } : bulkSyncAllJobs} disabled={!!syncing} className="flex-1 text-xs h-7 gap-1 min-w-0">
-                {bulkSyncing ? <><Loader2 className="h-3 w-3 animate-spin" /> Stop</> : <><RefreshCw className="h-3 w-3" /> Sync</>}
-              </Button>
-              <Button variant="outline" size="sm" onClick={() => setAddOpen(true)} className="text-xs h-7 gap-1">
-                <Plus className="h-3 w-3" />
-              </Button>
-              <Button variant="outline" size="sm" onClick={() => setApolloOpen(true)} className="text-xs h-7 gap-1">
-                <Telescope className="h-3 w-3" />
-                Apollo
-              </Button>
-            </div>
-            {bulkSyncing && (
-              <div className="space-y-1">
-                <Progress value={(bulkProgress.done / Math.max(bulkProgress.total, 1)) * 100} className="h-1.5" />
-                <p className="text-[10px] text-muted-foreground truncate">
-                  {bulkProgress.done}/{bulkProgress.total} — {bulkProgress.current}
-                </p>
+      {/* ── Tabbed content ── */}
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col min-h-0">
+        <TabsList className="mx-6 mt-3 w-fit">
+          <TabsTrigger value="discover" className="text-xs gap-1"><Telescope className="h-3 w-3" /> Discover</TabsTrigger>
+          <TabsTrigger value="sync" className="text-xs gap-1"><RefreshCw className="h-3 w-3" /> Sync</TabsTrigger>
+          <TabsTrigger value="analyze" className="text-xs gap-1"><Brain className="h-3 w-3" /> Analyze</TabsTrigger>
+        </TabsList>
+
+        {/* ═══════ TAB: DISCOVER ═══════ */}
+        <TabsContent value="discover" className="flex-1 min-h-0 m-0 px-6 py-4">
+          <div className="flex gap-6 h-full">
+            {/* Apollo filters */}
+            <div className="w-80 shrink-0 space-y-3">
+              <h3 className="text-sm font-semibold text-foreground">Apollo Bulk Discovery</h3>
+              <div className="space-y-2">
+                <div>
+                  <label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">Keywords (comma-separated)</label>
+                  <Input placeholder="e.g. AI, fintech, SaaS" value={apolloKeywords} onChange={e => setApolloKeywords(e.target.value)} className="h-8 text-xs" />
+                </div>
+                <div>
+                  <label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">Company Name (optional)</label>
+                  <Input placeholder="e.g. Stripe" value={apolloName} onChange={e => setApolloName(e.target.value)} className="h-8 text-xs" />
+                </div>
+                <div>
+                  <label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">Location</label>
+                  <Input placeholder="e.g. United States" value={apolloLocation} onChange={e => setApolloLocation(e.target.value)} className="h-8 text-xs" />
+                </div>
+                <div>
+                  <label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">Employee Range</label>
+                  <select value={apolloSize} onChange={e => setApolloSize(e.target.value)} className="w-full h-8 text-xs rounded-md border border-input bg-background px-2">
+                    <option value="">Any</option>
+                    <option value="1,10">1-10</option>
+                    <option value="11,50">11-50</option>
+                    <option value="51,200">51-200</option>
+                    <option value="201,500">201-500</option>
+                    <option value="501,1000">501-1,000</option>
+                    <option value="1001,5000">1,001-5,000</option>
+                    <option value="5001,10000">5,001-10,000</option>
+                    <option value="10001,1000000">10,000+</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">Funding Stage</label>
+                  <select value={apolloFunding} onChange={e => setApolloFunding(e.target.value)} className="w-full h-8 text-xs rounded-md border border-input bg-background px-2">
+                    <option value="">Any</option>
+                    <option value="pre_seed">Pre-Seed</option>
+                    <option value="seed">Seed</option>
+                    <option value="series_a">Series A</option>
+                    <option value="series_b">Series B</option>
+                    <option value="series_c">Series C</option>
+                    <option value="series_d">Series D</option>
+                    <option value="series_e">Series E+</option>
+                    <option value="growth">Growth</option>
+                    <option value="ipo">IPO</option>
+                  </select>
+                </div>
               </div>
-            )}
-            <div className="relative">
-              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground" />
-              <Input placeholder="Search companies…" value={companySearch} onChange={e => setCompanySearch(e.target.value)} className="pl-7 h-7 text-xs" />
+
+              <div className="flex gap-2">
+                <Button onClick={() => handleApolloSearch(1)} disabled={apolloLoading || apolloImporting} size="sm" className="gap-1.5 flex-1">
+                  {apolloLoading ? <Loader2 className="h-3 w-3 animate-spin" /> : <Search className="h-3 w-3" />}
+                  Preview
+                </Button>
+                {apolloPagination.total_entries > 0 && !apolloBulkProgress && (
+                  <Button onClick={handleApolloBulkImport} disabled={apolloImporting} size="sm" variant="default" className="gap-1.5 flex-1">
+                    <Download className="h-3 w-3" />
+                    Import All ({Math.min(apolloPagination.total_entries, 500).toLocaleString()})
+                  </Button>
+                )}
+              </div>
+
+              {apolloBulkProgress && (
+                <div className="space-y-1.5 rounded-md border border-primary/20 bg-primary/5 p-3">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="font-medium">Page {apolloBulkProgress.current}/{apolloBulkProgress.total}</span>
+                    <span className="text-muted-foreground">{apolloBulkProgress.imported} saved</span>
+                  </div>
+                  <Progress value={(apolloBulkProgress.current / apolloBulkProgress.total) * 100} className="h-1.5" />
+                  <Button variant="outline" size="sm" className="h-6 text-[10px]" onClick={() => { apolloBulkAbort.current = true; }}>
+                    <Pause className="h-3 w-3 mr-1" /> Stop
+                  </Button>
+                </div>
+              )}
+
+              <Separator />
+              <Button variant="outline" size="sm" onClick={() => setAddOpen(true)} className="w-full text-xs gap-1.5">
+                <Plus className="h-3 w-3" /> Add Single Company
+              </Button>
+            </div>
+
+            {/* Results preview */}
+            <div className="flex-1 min-w-0 flex flex-col">
+              <ScrollArea className="flex-1">
+                {apolloResults.length > 0 ? (
+                  <div className="space-y-1">
+                    <div className="flex items-center justify-between px-1 mb-2">
+                      <p className="text-xs text-muted-foreground">
+                        {apolloPagination.total_entries.toLocaleString()} results · Page {apolloPagination.page}/{apolloPagination.total_pages}
+                      </p>
+                      <div className="flex items-center gap-2">
+                        <Button variant="ghost" size="sm" className="h-6 text-[10px]" onClick={() => {
+                          if (apolloSelected.size === apolloResults.length) setApolloSelected(new Set());
+                          else setApolloSelected(new Set(apolloResults.map((_, i) => i)));
+                        }}>
+                          {apolloSelected.size === apolloResults.length ? "Deselect all" : "Select all"}
+                        </Button>
+                        {apolloSelected.size > 0 && (
+                          <Button onClick={handleApolloImport} disabled={apolloImporting} size="sm" className="h-6 text-xs gap-1">
+                            {apolloImporting ? <Loader2 className="h-3 w-3 animate-spin" /> : <Download className="h-3 w-3" />}
+                            Import {apolloSelected.size}
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                    {apolloResults.map((co, idx) => {
+                      const selected = apolloSelected.has(idx);
+                      return (
+                        <button
+                          key={idx}
+                          onClick={() => {
+                            const next = new Set(apolloSelected);
+                            selected ? next.delete(idx) : next.add(idx);
+                            setApolloSelected(next);
+                          }}
+                          className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-md text-left transition-colors ${
+                            selected ? "bg-primary/10 border border-primary/30" : "hover:bg-muted/50 border border-transparent"
+                          }`}
+                        >
+                          {co.logo_url ? (
+                            <img src={co.logo_url} alt="" className="h-7 w-7 rounded object-contain bg-muted shrink-0" />
+                          ) : (
+                            <div className="h-7 w-7 rounded bg-muted flex items-center justify-center text-[10px] font-bold text-muted-foreground shrink-0">{co.name?.charAt(0)}</div>
+                          )}
+                          <div className="flex-1 min-w-0">
+                            <p className="text-xs font-medium truncate">{co.name}</p>
+                            <p className="text-[10px] text-muted-foreground truncate">
+                              {[co.industry, co.headquarters, co.employee_range].filter(Boolean).join(" · ")}
+                            </p>
+                          </div>
+                          <div className="flex flex-col items-end gap-0.5 shrink-0">
+                            {co.funding_stage && <Badge variant="outline" className="text-[8px] h-4">{co.funding_stage}</Badge>}
+                            {co.funding_total && <span className="text-[9px] text-muted-foreground">{co.funding_total}</span>}
+                          </div>
+                        </button>
+                      );
+                    })}
+                    <div className="flex items-center justify-center gap-2 pt-3">
+                      <Button variant="outline" size="sm" className="h-6 text-xs" disabled={apolloPagination.page <= 1 || apolloLoading} onClick={() => handleApolloSearch(apolloPagination.page - 1)}>Prev</Button>
+                      <span className="text-[10px] text-muted-foreground">Page {apolloPagination.page}</span>
+                      <Button variant="outline" size="sm" className="h-6 text-xs" disabled={apolloPagination.page >= apolloPagination.total_pages || apolloLoading} onClick={() => handleApolloSearch(apolloPagination.page + 1)}>Next</Button>
+                    </div>
+                  </div>
+                ) : !apolloLoading ? (
+                  <div className="flex-1 flex items-center justify-center py-16">
+                    <div className="text-center">
+                      <Telescope className="h-8 w-8 mx-auto mb-3 text-muted-foreground/30" />
+                      <p className="text-sm text-muted-foreground">Set filters and click Preview to discover companies</p>
+                      <p className="text-[10px] text-muted-foreground mt-1">Or use "Import All" to bulk-import across all pages</p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-center py-16">
+                    <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                  </div>
+                )}
+              </ScrollArea>
             </div>
           </div>
-          <Separator />
-          <ScrollArea className="flex-1">
-            {loadingCompanies ? (
-              <div className="flex items-center justify-center py-12"><Loader2 className="h-4 w-4 animate-spin text-muted-foreground" /></div>
-            ) : filteredCompanies.length === 0 ? (
-              <div className="text-center py-12 px-4">
-                <Building2 className="h-6 w-6 mx-auto mb-2 text-muted-foreground/40" />
-                <p className="text-xs text-muted-foreground">{companySearch ? "No match." : "No companies. Import above."}</p>
+        </TabsContent>
+
+        {/* ═══════ TAB: SYNC ═══════ */}
+        <TabsContent value="sync" className="flex-1 min-h-0 m-0 px-6 py-4 flex flex-col">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h3 className="text-sm font-semibold text-foreground">Auto-Sync Jobs</h3>
+              <p className="text-xs text-muted-foreground">{unsyncedCompanies.length} companies with detected ATS need job sync</p>
+            </div>
+            <div className="flex items-center gap-2">
+              {!syncAllRunning ? (
+                <Button onClick={syncAllNew} disabled={unsyncedCompanies.length === 0} size="sm" className="gap-1.5">
+                  <Zap className="h-3 w-3" />
+                  Sync All New ({unsyncedCompanies.length})
+                </Button>
+              ) : (
+                <Button onClick={() => { syncAbortRef.current = true; }} variant="outline" size="sm" className="gap-1.5">
+                  <Pause className="h-3 w-3" /> Stop
+                </Button>
+              )}
+            </div>
+          </div>
+
+          {syncAllRunning && (
+            <div className="mb-4 space-y-1.5 rounded-md border border-primary/20 bg-primary/5 p-3">
+              <div className="flex items-center justify-between text-xs">
+                <span className="font-medium">Syncing {syncAllProgress.current}…</span>
+                <span className="text-muted-foreground">{syncAllProgress.done}/{syncAllProgress.total} · {syncAllProgress.synced} roles found</span>
               </div>
-            ) : (
+              <Progress value={(syncAllProgress.done / Math.max(syncAllProgress.total, 1)) * 100} className="h-1.5" />
+            </div>
+          )}
+
+          <ScrollArea className="flex-1">
+            <div className="space-y-1">
+              {unsyncedCompanies.length === 0 && !loadingCompanies ? (
+                <div className="text-center py-16">
+                  <CheckCircle2 className="h-8 w-8 mx-auto mb-3 text-primary/40" />
+                  <p className="text-sm text-muted-foreground">All companies with detected ATS have been synced</p>
+                  <p className="text-[10px] text-muted-foreground mt-1">Import more companies from the Discover tab</p>
+                </div>
+              ) : (
+                unsyncedCompanies.map(co => (
+                  <div key={co.id} className="flex items-center gap-3 px-3 py-2 rounded-md hover:bg-muted/50 border border-transparent hover:border-border transition-colors">
+                    <CompanyLogo url={co.logo_url} name={co.name} size="h-7 w-7" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-medium truncate">{co.name}</p>
+                      <p className="text-[10px] text-muted-foreground truncate">
+                        {[co.detected_ats_platform?.toUpperCase(), co.industry, co.employee_range].filter(Boolean).join(" · ")}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-1 shrink-0">
+                      <Button variant="outline" size="sm" className="h-6 text-[10px] gap-1" onClick={() => syncSingleCompany(co.id)} disabled={!!syncing}>
+                        {syncing === `jobs-${co.id}` ? <Loader2 className="h-2.5 w-2.5 animate-spin" /> : <RefreshCw className="h-2.5 w-2.5" />}
+                        Sync
+                      </Button>
+                      <Button variant="ghost" size="sm" className="h-6 w-6 p-0" onClick={() => syncSingleCompany(co.id, true)} disabled={!!syncing} title="Diagnose">
+                        <Bug className="h-2.5 w-2.5 text-muted-foreground" />
+                      </Button>
+                    </div>
+                  </div>
+                ))
+              )}
+
+              {/* Also show all synced companies below */}
+              {companies.filter(c => (c.job_count || 0) > 0).length > 0 && (
+                <>
+                  <Separator className="my-4" />
+                  <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide px-3 mb-2">
+                    Synced ({companies.filter(c => (c.job_count || 0) > 0).length} companies · {stats.totalJobs.toLocaleString()} roles)
+                  </p>
+                  {companies.filter(c => (c.job_count || 0) > 0).sort((a, b) => (b.job_count || 0) - (a.job_count || 0)).map(co => (
+                    <div key={co.id} className="flex items-center gap-3 px-3 py-1.5 text-muted-foreground">
+                      <CompanyLogo url={co.logo_url} name={co.name} size="h-5 w-5" />
+                      <span className="text-[11px] truncate flex-1">{co.name}</span>
+                      <span className="text-[10px]">{co.job_count} roles</span>
+                      <Button variant="ghost" size="sm" className="h-5 w-5 p-0" onClick={() => syncSingleCompany(co.id)} disabled={!!syncing}>
+                        <RefreshCw className="h-2.5 w-2.5" />
+                      </Button>
+                    </div>
+                  ))}
+                </>
+              )}
+            </div>
+          </ScrollArea>
+        </TabsContent>
+
+        {/* ═══════ TAB: ANALYZE ═══════ */}
+        <TabsContent value="analyze" className="flex-1 min-h-0 m-0 flex">
+          {/* Company selector sidebar */}
+          <div className="w-64 border-r border-border flex flex-col shrink-0">
+            <div className="p-3 shrink-0">
+              <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide mb-2">Select Company</p>
+              <div className="relative">
+                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground" />
+                <Input placeholder="Search…" className="pl-7 h-7 text-xs" />
+              </div>
+            </div>
+            <ScrollArea className="flex-1">
               <div className="py-1">
-                {filteredCompanies.map(c => {
+                {companiesWithJobs.map(c => {
                   const sel = c.id === selectedCompanyId;
                   return (
                     <button
                       key={c.id}
                       onClick={() => setSelectedCompanyId(sel ? null : c.id)}
-                      className={`w-full flex items-center gap-2.5 px-3 py-2 text-left transition-colors ${
+                      className={`w-full flex items-center gap-2 px-3 py-2 text-left transition-colors ${
                         sel ? "bg-primary/8 border-l-2 border-primary" : "hover:bg-muted/50 border-l-2 border-transparent"
                       }`}
                     >
-                      <CompanyLogo url={c.logo_url} name={c.name} size="h-7 w-7" />
+                      <CompanyLogo url={c.logo_url} name={c.name} size="h-6 w-6" />
                       <div className="flex-1 min-w-0">
-                        <p className={`text-xs font-medium truncate ${sel ? "text-primary" : "text-foreground"}`}>
-                          {c.name}
-                          {(c.job_count || 0) > 0 && <span className="text-muted-foreground font-normal"> · {c.job_count}</span>}
-                        </p>
-                        <div className="flex items-center gap-1 mt-0.5">
-                          {c.industry && <span className="text-[9px] text-muted-foreground truncate">{c.industry}</span>}
-                          {c.priority_score != null && (
-                            <span className={`text-[9px] font-semibold ${scoreColor(c.priority_score)}`} title={scoreLabel(c.priority_score)}>
-                              ★{c.priority_score}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-0.5 shrink-0">
-                        <Button variant="ghost" size="sm" className="h-5 w-5 p-0" onClick={e => { e.stopPropagation(); syncCompanyJobs(c.id); }} disabled={!!syncing} title="Sync jobs">
-                          {syncing === `jobs-${c.id}` ? <Loader2 className="h-2.5 w-2.5 animate-spin" /> : <RefreshCw className="h-2.5 w-2.5 text-muted-foreground" />}
-                        </Button>
-                        <Button variant="ghost" size="sm" className="h-5 w-5 p-0" onClick={e => { e.stopPropagation(); syncCompanyJobs(c.id, true); }} disabled={!!syncing} title="Diagnose sync">
-                          <Bug className="h-2.5 w-2.5 text-muted-foreground" />
-                        </Button>
+                        <p className="text-xs font-medium truncate">{c.name}</p>
+                        <p className="text-[10px] text-muted-foreground">{c.job_count} roles</p>
                       </div>
                     </button>
                   );
                 })}
               </div>
-            )}
-          </ScrollArea>
-        </div>
+            </ScrollArea>
+          </div>
 
-        {/* ═══════ RIGHT: Roles ═══════ */}
-        <div className="flex-1 flex flex-col min-w-0">
-          {!selectedCompanyId ? (
-            <div className="flex-1 flex items-center justify-center">
-              <div className="text-center max-w-sm px-4">
-                <ArrowLeft className="h-8 w-8 mx-auto text-muted-foreground/30 mb-3" />
-                <p className="text-sm text-muted-foreground">Select a company to view and analyze its roles</p>
-              </div>
-            </div>
-          ) : (
-            <>
-              {/* Company header */}
-              <div className="px-4 pt-4 pb-3 border-b border-border shrink-0">
-                <div className="flex items-center gap-3">
-                  <CompanyLogo url={selectedCompany?.logo_url || null} name={selectedCompany?.name || ""} size="h-8 w-8" />
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <h2 className="text-base font-semibold text-foreground truncate">{selectedCompany?.name}</h2>
-                      {selectedCompany?.website && (
-                        <a href={selectedCompany.website} target="_blank" rel="noopener" className="text-muted-foreground hover:text-foreground"><Globe className="h-3.5 w-3.5" /></a>
-                      )}
-                      {selectedCompany?.careers_url && (
-                        <a href={selectedCompany.careers_url} target="_blank" rel="noopener" className="text-xs text-primary hover:underline truncate max-w-[200px]" title={selectedCompany.careers_url}>ATS ↗</a>
-                      )}
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-5 px-1.5 text-[10px] gap-1 text-muted-foreground hover:text-primary"
-                        disabled={syncing === "enrich"}
-                        onClick={async () => {
-                          setSyncing("enrich");
-                          try {
-                            const { data, error } = await supabase.functions.invoke("enrich-company", {
-                              body: {
-                                company_id: selectedCompany?.id,
-                                website: selectedCompany?.website || undefined,
-                                careers_url: selectedCompany?.careers_url || undefined,
-                              },
-                            });
-                            if (error) throw error;
-                            if (data?.error) throw new Error(data.error);
-                            toast({ title: "Re-enriched", description: `${data.company?.name || "Company"} updated with new data` });
-                            fetchCompanies();
-                          } catch (err: any) {
-                            toast({ title: "Enrich failed", description: err.message, variant: "destructive" });
-                          } finally { setSyncing(null); }
-                        }}
-                      >
-                        {syncing === "enrich" ? <Loader2 className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3" />}
-                        Re-enrich
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-6 px-2 text-[10px] gap-1"
-                        disabled={!!syncing}
-                        onClick={() => selectedCompanyId && syncCompanyJobs(selectedCompanyId)}
-                      >
-                        {syncing === `jobs-${selectedCompanyId}` ? <Loader2 className="h-3 w-3 animate-spin" /> : <RefreshCw className="h-3 w-3" />}
-                        Sync Jobs
-                      </Button>
-                    </div>
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                      {selectedCompany?.industry && <span>{selectedCompany.industry}</span>}
-                      {selectedCompany?.detected_ats_platform && <><span>·</span><span className="uppercase text-[10px] font-medium">{selectedCompany.detected_ats_platform}</span></>}
-                      <span>·</span>
-                      <span>{jobs.length} roles</span>
-                      <span>·</span>
-                      <span className="text-primary">{analyzedJobIds.size} analyzed</span>
-                      {selectedCompany?.headquarters && <><span>·</span><span>{selectedCompany.headquarters}</span></>}
-                      {selectedCompany?.employee_range && <><span>·</span><span>{selectedCompany.employee_range}</span></>}
-                    </div>
-                    {selectedCompany?.website && (
-                      <a href={selectedCompany.website} target="_blank" rel="noopener" className="text-[10px] text-muted-foreground hover:text-primary truncate block mt-0.5">{selectedCompany.website}</a>
-                    )}
-                  </div>
+          {/* Job analysis view */}
+          <div className="flex-1 flex flex-col min-w-0">
+            {!selectedCompanyId ? (
+              <div className="flex-1 flex items-center justify-center">
+                <div className="text-center">
+                  <Brain className="h-8 w-8 mx-auto text-muted-foreground/30 mb-3" />
+                  <p className="text-sm text-muted-foreground">Select a company to analyze its roles</p>
                 </div>
-                {selectedCompany?.description && (
-                  <p className="text-[11px] text-muted-foreground mt-2 line-clamp-2 leading-relaxed">{selectedCompany.description}</p>
-                )}
-                {(selectedCompany?.company_type || selectedCompany?.funding_stage || selectedCompany?.funding_total || selectedCompany?.founded_year) && (
-                  <div className="flex flex-wrap gap-1.5 mt-2">
-                    {selectedCompany.company_type && (
-                      <span className="text-[10px] px-1.5 py-0.5 rounded bg-secondary text-secondary-foreground">{selectedCompany.company_type}</span>
-                    )}
-                    {selectedCompany.funding_stage && (
-                      <span className="text-[10px] px-1.5 py-0.5 rounded bg-secondary text-secondary-foreground">{selectedCompany.funding_stage}</span>
-                    )}
-                    {selectedCompany.funding_total && (
-                      <span className="text-[10px] px-1.5 py-0.5 rounded bg-secondary text-secondary-foreground">Raised {selectedCompany.funding_total}</span>
-                    )}
-                    {selectedCompany.founded_year && (
-                      <span className="text-[10px] px-1.5 py-0.5 rounded bg-secondary text-secondary-foreground">Est. {selectedCompany.founded_year}</span>
-                    )}
-                  </div>
-                )}
-
-                {/* Queue bar */}
-                {jobs.length > 0 && (
-                  <div className="mt-3 flex items-center gap-3">
-                    <div className="flex items-center gap-1.5 text-xs shrink-0">
-                      <Brain className="h-3.5 w-3.5 text-primary" />
-                      <span className="font-semibold text-foreground">{analyzedJobIds.size}</span>
-                      <span className="text-muted-foreground">/ {jobs.length}</span>
-                    </div>
-                    <Progress value={jobs.length > 0 ? (analyzedJobIds.size / jobs.length) * 100 : 0} className="h-1.5 flex-1" />
-                    {queueRunning && currentJobTitle && <span className="text-[10px] text-primary truncate max-w-[140px]">{currentJobTitle}</span>}
-                    <div className="flex items-center gap-1 shrink-0">
-                      {!queueRunning && pendingCount > 0 && (
-                        <Button size="sm" onClick={startQueue} className="gap-1 text-[10px] h-6 px-2">
-                          <Play className="h-2.5 w-2.5" />
-                          {queueMessage ? "Resume" : "Analyze"} ({pendingCount})
-                        </Button>
-                      )}
-                      {queueRunning && (
-                        <>
-                          <Button size="sm" variant="outline" onClick={() => { pauseRef.current = true; }} className="text-[10px] h-6 px-2 gap-1"><Pause className="h-2.5 w-2.5" /> Pause</Button>
-                          <Button size="sm" variant="ghost" onClick={() => { abortRef.current = true; pauseRef.current = true; }} className="text-[10px] h-6 px-2 text-destructive">Stop</Button>
-                        </>
-                      )}
-                      {!queueRunning && pendingCount === 0 && jobs.length > 0 && (
-                        <span className="flex items-center gap-1 text-[10px] text-primary"><CheckCircle2 className="h-3 w-3" /> All analyzed</span>
-                      )}
-                    </div>
-                  </div>
-                )}
-                {queueMessage && !queueRunning && (
-                  <div className="flex items-center gap-1.5 text-[10px] text-amber-500 bg-amber-500/5 rounded px-2 py-1 mt-2">
-                    <AlertTriangle className="h-2.5 w-2.5 shrink-0" /><span>{queueMessage}</span>
-                  </div>
-                )}
-
-                {/* Search + dept pills */}
-                {jobs.length > 0 && (
-                  <div className="mt-3 flex items-center gap-2 flex-wrap">
-                    <div className="relative">
-                      <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground" />
-                      <Input placeholder={`Search ${jobs.length} roles…`} value={jobSearch} onChange={e => setJobSearch(e.target.value)} className="pl-7 h-7 text-xs w-48" />
-                    </div>
-                    {departments.slice(0, 8).map(([dept, count]) => (
-                      <button
-                        key={dept}
-                        onClick={() => setJobSearch(jobSearch === dept ? "" : dept)}
-                        className={`rounded-full px-2 py-0.5 text-[9px] font-medium border transition-colors ${
-                          jobSearch === dept ? "bg-primary text-primary-foreground border-primary" : "bg-card text-muted-foreground border-border hover:border-primary/30"
-                        }`}
-                      >
-                        {dept} ({count})
-                      </button>
-                    ))}
-                  </div>
-                )}
               </div>
+            ) : (
+              <>
+                {/* Company header + queue */}
+                <div className="px-4 pt-4 pb-3 border-b border-border shrink-0">
+                  <div className="flex items-center gap-3">
+                    <CompanyLogo url={selectedCompany?.logo_url || null} name={selectedCompany?.name || ""} size="h-8 w-8" />
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <h2 className="text-base font-semibold text-foreground truncate">{selectedCompany?.name}</h2>
+                        {selectedCompany?.website && (
+                          <a href={selectedCompany.website} target="_blank" rel="noopener" className="text-muted-foreground hover:text-foreground"><Globe className="h-3.5 w-3.5" /></a>
+                        )}
+                        <Button
+                          variant="ghost" size="sm"
+                          className="h-5 px-1.5 text-[10px] gap-1 text-muted-foreground hover:text-primary"
+                          disabled={syncing === "enrich"}
+                          onClick={async () => {
+                            setSyncing("enrich");
+                            try {
+                              const { data, error } = await supabase.functions.invoke("enrich-company", {
+                                body: { company_id: selectedCompany?.id, website: selectedCompany?.website || undefined, careers_url: selectedCompany?.careers_url || undefined },
+                              });
+                              if (error) throw error;
+                              if (data?.error) throw new Error(data.error);
+                              toast({ title: "Re-enriched", description: `${data.company?.name || "Company"} updated` });
+                              fetchCompanies();
+                            } catch (err: any) {
+                              toast({ title: "Enrich failed", description: err.message, variant: "destructive" });
+                            } finally { setSyncing(null); }
+                          }}
+                        >
+                          {syncing === "enrich" ? <Loader2 className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3" />}
+                          Re-enrich
+                        </Button>
+                      </div>
+                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                        {selectedCompany?.industry && <span>{selectedCompany.industry}</span>}
+                        <span>·</span>
+                        <span>{jobs.length} roles</span>
+                        <span>·</span>
+                        <span className="text-primary">{analyzedJobIds.size} analyzed</span>
+                        {selectedCompany?.employee_range && <><span>·</span><span>{selectedCompany.employee_range}</span></>}
+                      </div>
+                    </div>
+                  </div>
 
-              {/* Role grid */}
-              <ScrollArea className="flex-1">
-                <div className="p-4">
-                  {loadingJobs ? (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
-                      {Array.from({ length: 9 }).map((_, i) => <div key={i} className="h-14 rounded-lg border border-border bg-card animate-pulse" />)}
+                  {/* Queue bar */}
+                  {jobs.length > 0 && (
+                    <div className="mt-3 flex items-center gap-3">
+                      <div className="flex items-center gap-1.5 text-xs shrink-0">
+                        <Brain className="h-3.5 w-3.5 text-primary" />
+                        <span className="font-semibold text-foreground">{analyzedJobIds.size}</span>
+                        <span className="text-muted-foreground">/ {jobs.length}</span>
+                      </div>
+                      <Progress value={jobs.length > 0 ? (analyzedJobIds.size / jobs.length) * 100 : 0} className="h-1.5 flex-1" />
+                      {queueRunning && currentJobTitle && <span className="text-[10px] text-primary truncate max-w-[140px]">{currentJobTitle}</span>}
+                      <div className="flex items-center gap-1 shrink-0">
+                        {!queueRunning && pendingCount > 0 && (
+                          <Button size="sm" onClick={startQueue} className="gap-1 text-[10px] h-6 px-2">
+                            <Play className="h-2.5 w-2.5" />
+                            {queueMessage ? "Resume" : "Analyze"} ({pendingCount})
+                          </Button>
+                        )}
+                        {queueRunning && (
+                          <>
+                            <Button size="sm" variant="outline" onClick={() => { pauseRef.current = true; }} className="text-[10px] h-6 px-2 gap-1"><Pause className="h-2.5 w-2.5" /> Pause</Button>
+                            <Button size="sm" variant="ghost" onClick={() => { abortRef.current = true; pauseRef.current = true; }} className="text-[10px] h-6 px-2 text-destructive">Stop</Button>
+                          </>
+                        )}
+                        {!queueRunning && pendingCount === 0 && jobs.length > 0 && (
+                          <span className="flex items-center gap-1 text-[10px] text-primary"><CheckCircle2 className="h-3 w-3" /> All analyzed</span>
+                        )}
+                      </div>
                     </div>
-                  ) : jobs.length === 0 ? (
-                    <div className="text-center py-12">
-                      <Briefcase className="h-8 w-8 mx-auto text-muted-foreground/30 mb-2" />
-                      <p className="text-sm text-muted-foreground">No roles yet.</p>
-                      <Button variant="outline" size="sm" className="mt-2 text-xs gap-1" onClick={() => selectedCompanyId && syncCompanyJobs(selectedCompanyId)} disabled={!!syncing}>
-                        <RefreshCw className="h-3 w-3" /> Sync Roles
-                      </Button>
+                  )}
+                  {queueMessage && !queueRunning && (
+                    <div className="flex items-center gap-1.5 text-[10px] text-amber-600 bg-amber-500/5 rounded px-2 py-1 mt-2">
+                      <AlertTriangle className="h-2.5 w-2.5 shrink-0" /><span>{queueMessage}</span>
                     </div>
-                  ) : groupedJobs.length === 0 ? (
-                    <div className="text-center py-8">
-                      <p className="text-sm text-muted-foreground">No roles match "{jobSearch}"</p>
-                      <Button variant="ghost" size="sm" onClick={() => setJobSearch("")} className="mt-1 text-xs">Clear</Button>
+                  )}
+
+                  {/* Search + dept pills */}
+                  {jobs.length > 0 && (
+                    <div className="mt-3 flex items-center gap-2 flex-wrap">
+                      <div className="relative">
+                        <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground" />
+                        <Input placeholder={`Search ${jobs.length} roles…`} value={jobSearch} onChange={e => setJobSearch(e.target.value)} className="pl-7 h-7 text-xs w-48" />
+                      </div>
+                      {departments.slice(0, 8).map(([dept, count]) => (
+                        <button
+                          key={dept}
+                          onClick={() => setJobSearch(jobSearch === dept ? "" : dept)}
+                          className={`rounded-full px-2 py-0.5 text-[9px] font-medium border transition-colors ${
+                            jobSearch === dept ? "bg-primary text-primary-foreground border-primary" : "bg-card text-muted-foreground border-border hover:border-primary/30"
+                          }`}
+                        >
+                          {dept} ({count})
+                        </button>
+                      ))}
                     </div>
-                  ) : (
-                    <div className="space-y-3">
-                      {groupedJobs.map(([dept, deptJobs]) => {
-                        const collapsed = collapsedDepts.has(dept);
-                        const ready = deptJobs.filter(j => analyzedJobIds.has(j.id)).length;
-                        return (
-                          <div key={dept}>
-                            <button
-                              onClick={() => setCollapsedDepts(prev => { const n = new Set(prev); n.has(dept) ? n.delete(dept) : n.add(dept); return n; })}
-                              className="w-full flex items-center gap-2 py-1 px-1 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors"
-                            >
-                              {collapsed ? <ChevronDown className="h-3 w-3" /> : <ChevronUp className="h-3 w-3" />}
-                              <Briefcase className="h-3 w-3" />
-                              <span>{dept}</span>
-                              <span className="text-[10px] font-normal">({deptJobs.length})</span>
-                              {ready > 0 && <Badge variant="secondary" className="ml-auto text-[9px] px-1.5 py-0 h-4 bg-primary/10 text-primary border-0">{ready} ready</Badge>}
-                            </button>
-                            <AnimatePresence>
-                              {!collapsed && (
-                                <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }} className="overflow-hidden">
-                                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-1.5 pl-1 pt-1">
-                                    {deptJobs.slice(0, 30).map(job => {
-                                      const isReady = analyzedJobIds.has(job.id);
-                                      const isAn = queueCurrentJob === job.id;
-                                      const pct = getJobPct(job);
-                                      return (
-                                        <motion.div key={job.id} whileHover={{ scale: 1.01 }} transition={{ duration: 0.1 }}>
+                  )}
+                </div>
+
+                {/* Role grid */}
+                <ScrollArea className="flex-1">
+                  <div className="p-4">
+                    {loadingJobs ? (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+                        {Array.from({ length: 9 }).map((_, i) => <div key={i} className="h-14 rounded-lg border border-border bg-card animate-pulse" />)}
+                      </div>
+                    ) : jobs.length === 0 ? (
+                      <div className="text-center py-12">
+                        <Briefcase className="h-8 w-8 mx-auto text-muted-foreground/30 mb-2" />
+                        <p className="text-sm text-muted-foreground">No roles yet. Sync from the Sync tab.</p>
+                      </div>
+                    ) : groupedJobs.length === 0 ? (
+                      <div className="text-center py-8">
+                        <p className="text-sm text-muted-foreground">No roles match "{jobSearch}"</p>
+                        <Button variant="ghost" size="sm" onClick={() => setJobSearch("")} className="mt-1 text-xs">Clear</Button>
+                      </div>
+                    ) : (
+                      <div className="space-y-3">
+                        {groupedJobs.map(([dept, deptJobs]) => {
+                          const collapsed = collapsedDepts.has(dept);
+                          const ready = deptJobs.filter(j => analyzedJobIds.has(j.id)).length;
+                          return (
+                            <div key={dept}>
+                              <button
+                                onClick={() => setCollapsedDepts(prev => { const n = new Set(prev); n.has(dept) ? n.delete(dept) : n.add(dept); return n; })}
+                                className="w-full flex items-center gap-2 py-1 px-1 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors"
+                              >
+                                {collapsed ? <ChevronDown className="h-3 w-3" /> : <ChevronUp className="h-3 w-3" />}
+                                <Briefcase className="h-3 w-3" />
+                                <span>{dept}</span>
+                                <span className="text-[10px] font-normal">({deptJobs.length})</span>
+                                {ready > 0 && <Badge variant="secondary" className="ml-auto text-[9px] px-1.5 py-0 h-4 bg-primary/10 text-primary border-0">{ready} ready</Badge>}
+                              </button>
+                              <AnimatePresence>
+                                {!collapsed && (
+                                  <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }} className="overflow-hidden">
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-1.5 pl-1 pt-1">
+                                      {deptJobs.slice(0, 30).map(job => {
+                                        const isReady = analyzedJobIds.has(job.id);
+                                        const isAn = queueCurrentJob === job.id;
+                                        return (
                                           <button
+                                            key={job.id}
                                             onClick={() => navigate(`/learning-path?jobId=${job.id}`)}
                                             className={`w-full text-left p-2.5 rounded-lg border transition-all duration-200 ${
                                               isAn ? "border-primary/40 bg-primary/5 ring-1 ring-primary/20" : isReady ? "border-primary/20 bg-card hover:border-primary/30" : "border-border bg-card hover:border-primary/30"
@@ -867,41 +1034,34 @@ export default function PipelinePage() {
                                                 <h3 className="font-medium text-foreground text-xs leading-tight truncate">{job.title}</h3>
                                                 {job.location && <span className="flex items-center gap-1 text-[9px] text-muted-foreground mt-0.5"><MapPin className="h-2 w-2" />{job.location}</span>}
                                               </div>
-                                              <div className="flex items-center gap-1 shrink-0">
-                                                {pct > 0 && (
-                                                  <svg width="18" height="18" className="-rotate-90">
-                                                    <circle cx="9" cy="9" r="6.5" fill="none" strokeWidth="1.5" className="stroke-muted/30" />
-                                                    <circle cx="9" cy="9" r="6.5" fill="none" strokeWidth="1.5" className="stroke-primary" strokeDasharray={2 * Math.PI * 6.5} strokeDashoffset={2 * Math.PI * 6.5 - (pct / 100) * 2 * Math.PI * 6.5} strokeLinecap="round" />
-                                                  </svg>
-                                                )}
-                                                {isAn ? <Loader2 className="h-3 w-3 animate-spin text-primary" /> : (
-                                                  <Badge variant="outline" className={`text-[8px] px-1 py-0 h-3.5 ${isReady ? "bg-primary/10 text-primary border-primary/20" : "bg-muted/50 text-muted-foreground border-border"}`}>
-                                                    {isReady ? "Ready" : "—"}
-                                                  </Badge>
-                                                )}
-                                              </div>
+                                              {isAn ? <Loader2 className="h-3 w-3 animate-spin text-primary shrink-0" /> : (
+                                                <Badge variant="outline" className={`text-[8px] px-1 py-0 h-3.5 shrink-0 ${isReady ? "bg-primary/10 text-primary border-primary/20" : "bg-muted/50 text-muted-foreground border-border"}`}>
+                                                  {isReady ? "Ready" : "—"}
+                                                </Badge>
+                                              )}
                                             </div>
                                           </button>
-                                        </motion.div>
-                                      );
-                                    })}
-                                  </div>
-                                  {deptJobs.length > 30 && <p className="text-center text-[10px] text-muted-foreground py-1">+{deptJobs.length - 30} more</p>}
-                                </motion.div>
-                              )}
-                            </AnimatePresence>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )}
-                </div>
-              </ScrollArea>
-            </>
-          )}
-        </div>
-      </div>
-      {/* Add Company Dialog */}
+                                        );
+                                      })}
+                                    </div>
+                                    {deptJobs.length > 30 && <p className="text-center text-[10px] text-muted-foreground py-1">+{deptJobs.length - 30} more</p>}
+                                  </motion.div>
+                                )}
+                              </AnimatePresence>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                </ScrollArea>
+              </>
+            )}
+          </div>
+        </TabsContent>
+      </Tabs>
+
+      {/* ═══════ ADD COMPANY DIALOG ═══════ */}
       <Dialog open={addOpen} onOpenChange={setAddOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
@@ -927,31 +1087,25 @@ export default function PipelinePage() {
         </DialogContent>
       </Dialog>
 
-      {/* Diagnostic Dialog */}
+      {/* ═══════ DIAGNOSTIC DIALOG ═══════ */}
       <Dialog open={diagOpen} onOpenChange={setDiagOpen}>
         <DialogContent className="sm:max-w-lg max-h-[80vh] flex flex-col">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Bug className="h-4 w-4" /> Sync Diagnostic — {diagCompanyName}
             </DialogTitle>
-            <DialogDescription>Raw response from the sync-company-jobs edge function.</DialogDescription>
+            <DialogDescription>Raw response from the sync edge function.</DialogDescription>
           </DialogHeader>
           <div className="flex-1 overflow-auto">
             {diagLoading ? (
               <div className="flex items-center justify-center py-12">
                 <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
-                <span className="ml-2 text-sm text-muted-foreground">Calling sim-api…</span>
               </div>
             ) : diagData ? (
               <div className="space-y-3">
                 <div className="flex items-center gap-2">
-                  {diagData.success ? (
-                    <Badge variant="default" className="bg-emerald-500/15 text-emerald-600 border-emerald-500/30">Success</Badge>
-                  ) : (
-                    <Badge variant="destructive">Failed</Badge>
-                  )}
+                  {diagData.success ? <Badge className="bg-emerald-500/15 text-emerald-600 border-emerald-500/30">Success</Badge> : <Badge variant="destructive">Failed</Badge>}
                   {diagData.synced != null && <span className="text-sm text-muted-foreground">{diagData.synced} roles synced</span>}
-                  {diagData.hasMore && <Badge variant="outline" className="text-xs">hasMore: true</Badge>}
                 </div>
                 <pre className="text-xs bg-muted/50 rounded-lg p-3 overflow-auto max-h-[400px] whitespace-pre-wrap break-all font-mono text-foreground border border-border">
                   {JSON.stringify(diagData, null, 2)}
@@ -961,165 +1115,81 @@ export default function PipelinePage() {
           </div>
         </DialogContent>
       </Dialog>
-      {/* Apollo Bulk Discovery Dialog */}
-      <Dialog open={apolloOpen} onOpenChange={v => { if (!v) apolloBulkAbort.current = true; setApolloOpen(v); }}>
-        <DialogContent className="sm:max-w-2xl max-h-[85vh] flex flex-col">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Telescope className="h-4 w-4" /> Apollo Bulk Discovery
-            </DialogTitle>
-            <DialogDescription>Discover companies by filters and bulk-import all results into the pipeline.</DialogDescription>
-          </DialogHeader>
 
-          {/* Filters */}
-          <div className="grid grid-cols-2 gap-2">
-            <div>
-              <label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">Company Name</label>
-              <Input placeholder="e.g. Stripe (optional)" value={apolloName} onChange={e => setApolloName(e.target.value)} className="h-8 text-xs" />
-            </div>
-            <div>
-              <label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">Keywords (comma-separated)</label>
-              <Input placeholder="e.g. AI, fintech, SaaS" value={apolloKeywords} onChange={e => setApolloKeywords(e.target.value)} className="h-8 text-xs" />
-            </div>
-            <div>
-              <label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">Location</label>
-              <Input placeholder="e.g. United States" value={apolloLocation} onChange={e => setApolloLocation(e.target.value)} className="h-8 text-xs" />
-            </div>
-            <div>
-              <label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">Employee Range</label>
-              <select
-                value={apolloSize}
-                onChange={e => setApolloSize(e.target.value)}
-                className="w-full h-8 text-xs rounded-md border border-input bg-background px-2"
-              >
-                <option value="">Any</option>
-                <option value="1,10">1-10</option>
-                <option value="11,50">11-50</option>
-                <option value="51,200">51-200</option>
-                <option value="201,500">201-500</option>
-                <option value="501,1000">501-1,000</option>
-                <option value="1001,5000">1,001-5,000</option>
-                <option value="5001,10000">5,001-10,000</option>
-                <option value="10001,1000000">10,000+</option>
-              </select>
-            </div>
-            <div className="col-span-2">
-              <label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">Funding Stage</label>
-              <select
-                value={apolloFunding}
-                onChange={e => setApolloFunding(e.target.value)}
-                className="w-full h-8 text-xs rounded-md border border-input bg-background px-2"
-              >
-                <option value="">Any</option>
-                <option value="pre_seed">Pre-Seed</option>
-                <option value="seed">Seed</option>
-                <option value="series_a">Series A</option>
-                <option value="series_b">Series B</option>
-                <option value="series_c">Series C</option>
-                <option value="series_d">Series D</option>
-                <option value="series_e">Series E+</option>
-                <option value="growth">Growth</option>
-                <option value="ipo">IPO</option>
-              </select>
-            </div>
-          </div>
-          <div className="flex gap-2">
-            <Button onClick={() => handleApolloSearch(1)} disabled={apolloLoading || apolloImporting} size="sm" className="gap-2">
-              {apolloLoading ? <Loader2 className="h-3 w-3 animate-spin" /> : <Search className="h-3 w-3" />}
-              Preview Results
-            </Button>
-            {apolloPagination.total_entries > 0 && !apolloBulkProgress && (
-              <Button onClick={handleApolloBulkImport} disabled={apolloImporting} size="sm" variant="default" className="gap-2">
-                <Download className="h-3 w-3" />
-                Import All ({Math.min(apolloPagination.total_entries, 500).toLocaleString()} companies)
-              </Button>
-            )}
-          </div>
+      {/* ═══════ FLAGS & LOGS DRAWER ═══════ */}
+      <Sheet open={flagsOpen} onOpenChange={setFlagsOpen}>
+        <SheetContent className="w-[450px] sm:max-w-[500px] flex flex-col">
+          <SheetHeader>
+            <SheetTitle className="flex items-center gap-2">
+              <Flag className="h-4 w-4" /> Import Flags & Logs
+            </SheetTitle>
+            <SheetDescription>{flags.filter(f => f.status === "open").length} open flags · {logs.length} recent imports</SheetDescription>
+          </SheetHeader>
 
-          {/* Bulk progress */}
-          {apolloBulkProgress && (
-            <div className="space-y-1.5 rounded-md border border-primary/20 bg-primary/5 p-3">
-              <div className="flex items-center justify-between text-xs">
-                <span className="font-medium">Importing page {apolloBulkProgress.current}/{apolloBulkProgress.total}…</span>
-                <span className="text-muted-foreground">{apolloBulkProgress.imported} companies saved</span>
-              </div>
-              <Progress value={(apolloBulkProgress.current / apolloBulkProgress.total) * 100} className="h-1.5" />
-              <Button variant="outline" size="sm" className="h-6 text-[10px]" onClick={() => { apolloBulkAbort.current = true; }}>
-                <Pause className="h-3 w-3 mr-1" /> Stop
-              </Button>
-            </div>
-          )}
+          <ScrollArea className="flex-1 mt-4">
+            {loadingFlags ? (
+              <div className="flex items-center justify-center py-12"><Loader2 className="h-4 w-4 animate-spin text-muted-foreground" /></div>
+            ) : (
+              <div className="space-y-6">
+                {/* Flags */}
+                <div>
+                  <p className="text-xs font-semibold text-foreground mb-2">Open Flags</p>
+                  {flags.filter(f => f.status === "open").length === 0 ? (
+                    <p className="text-xs text-muted-foreground">No open flags 🎉</p>
+                  ) : (
+                    <div className="space-y-1.5">
+                      {flags.filter(f => f.status === "open").map(flag => (
+                        <div key={flag.id} className={`rounded-md border p-2.5 ${SEVERITY_STYLES[flag.severity] || "border-border"}`}>
+                          <div className="flex items-center justify-between mb-1">
+                            <Badge variant="outline" className="text-[9px] h-4">{flag.flag_type}</Badge>
+                            <span className="text-[9px] text-muted-foreground">{new Date(flag.created_at).toLocaleDateString()}</span>
+                          </div>
+                          {flag.company_name && <p className="text-xs font-medium">{flag.company_name}</p>}
+                          {flag.suggested_action && <p className="text-[10px] text-muted-foreground mt-0.5">{flag.suggested_action}</p>}
+                          <div className="flex gap-1 mt-1.5">
+                            <Button variant="outline" size="sm" className="h-5 text-[9px] px-1.5" onClick={() => resolveFlag(flag.id, "Dismissed")}>
+                              Dismiss
+                            </Button>
+                            <Button variant="outline" size="sm" className="h-5 text-[9px] px-1.5" onClick={() => resolveFlag(flag.id, "Resolved")}>
+                              Resolve
+                            </Button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
 
-          {/* Results preview */}
-          <ScrollArea className="flex-1 min-h-0">
-            {apolloResults.length > 0 ? (
-              <div className="space-y-1">
-                <div className="flex items-center justify-between px-1">
-                  <p className="text-[10px] text-muted-foreground">
-                    {apolloPagination.total_entries.toLocaleString()} results · Page {apolloPagination.page}/{apolloPagination.total_pages}
-                  </p>
-                  <div className="flex items-center gap-1">
-                    <Button variant="ghost" size="sm" className="h-6 text-[10px]" onClick={() => {
-                      if (apolloSelected.size === apolloResults.length) setApolloSelected(new Set());
-                      else setApolloSelected(new Set(apolloResults.map((_, i) => i)));
-                    }}>
-                      {apolloSelected.size === apolloResults.length ? "Deselect all" : "Select all"}
-                    </Button>
+                <Separator />
+
+                {/* Recent logs */}
+                <div>
+                  <p className="text-xs font-semibold text-foreground mb-2">Recent Imports</p>
+                  <div className="space-y-1">
+                    {logs.map(log => (
+                      <div key={log.id} className="flex items-center gap-2 px-2 py-1.5 rounded-md bg-muted/30">
+                        {log.result_status === "success" ? (
+                          <CheckCircle2 className="h-3 w-3 text-primary shrink-0" />
+                        ) : (
+                          <AlertTriangle className="h-3 w-3 text-destructive shrink-0" />
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <p className="text-[10px] font-medium truncate">{log.source} · {log.action}</p>
+                          <p className="text-[9px] text-muted-foreground">
+                            {log.items_created} created · {log.items_updated} updated · {log.items_skipped} skipped
+                            {log.duration_ms && ` · ${(log.duration_ms / 1000).toFixed(1)}s`}
+                          </p>
+                        </div>
+                        <span className="text-[9px] text-muted-foreground shrink-0">{new Date(log.created_at).toLocaleDateString()}</span>
+                      </div>
+                    ))}
                   </div>
                 </div>
-                {apolloResults.map((co, idx) => {
-                  const selected = apolloSelected.has(idx);
-                  return (
-                    <button
-                      key={idx}
-                      onClick={() => {
-                        const next = new Set(apolloSelected);
-                        selected ? next.delete(idx) : next.add(idx);
-                        setApolloSelected(next);
-                      }}
-                      className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-md text-left transition-colors ${
-                        selected ? "bg-primary/10 border border-primary/30" : "hover:bg-muted/50 border border-transparent"
-                      }`}
-                    >
-                      {co.logo_url ? (
-                        <img src={co.logo_url} alt="" className="h-7 w-7 rounded object-contain bg-muted shrink-0" />
-                      ) : (
-                        <div className="h-7 w-7 rounded bg-muted flex items-center justify-center text-[10px] font-bold text-muted-foreground shrink-0">{co.name?.charAt(0)}</div>
-                      )}
-                      <div className="flex-1 min-w-0">
-                        <p className="text-xs font-medium truncate">{co.name}</p>
-                        <p className="text-[10px] text-muted-foreground truncate">
-                          {[co.industry, co.headquarters, co.employee_range].filter(Boolean).join(" · ")}
-                        </p>
-                      </div>
-                      <div className="flex flex-col items-end gap-0.5 shrink-0">
-                        {co.funding_stage && <Badge variant="outline" className="text-[8px] h-4">{co.funding_stage}</Badge>}
-                        {co.funding_total && <span className="text-[9px] text-muted-foreground">{co.funding_total}</span>}
-                      </div>
-                    </button>
-                  );
-                })}
-                {/* Pagination */}
-                <div className="flex items-center justify-center gap-2 pt-2">
-                  <Button variant="outline" size="sm" className="h-6 text-xs" disabled={apolloPagination.page <= 1 || apolloLoading} onClick={() => handleApolloSearch(apolloPagination.page - 1)}>Prev</Button>
-                  <Button variant="outline" size="sm" className="h-6 text-xs" disabled={apolloPagination.page >= apolloPagination.total_pages || apolloLoading} onClick={() => handleApolloSearch(apolloPagination.page + 1)}>Next</Button>
-                </div>
               </div>
-            ) : !apolloLoading ? (
-              <div className="text-center py-8">
-                <Telescope className="h-6 w-6 mx-auto mb-2 text-muted-foreground/40" />
-                <p className="text-xs text-muted-foreground">Set filters above and preview to discover companies</p>
-              </div>
-            ) : null}
+            )}
           </ScrollArea>
-
-          {apolloSelected.size > 0 && !apolloBulkProgress && (
-            <Button onClick={handleApolloImport} disabled={apolloImporting} className="gap-2">
-              {apolloImporting ? <><Loader2 className="h-4 w-4 animate-spin" /> Importing…</> : <><Download className="h-4 w-4" /> Import {apolloSelected.size} Selected</>}
-            </Button>
-          )}
-        </DialogContent>
-      </Dialog>
+        </SheetContent>
+      </Sheet>
     </div>
   );
 }
