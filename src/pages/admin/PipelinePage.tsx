@@ -703,6 +703,7 @@ export default function PipelinePage() {
           <TabsTrigger value="discover" className="text-xs gap-1"><Telescope className="h-3 w-3" /> Discover</TabsTrigger>
           <TabsTrigger value="sync" className="text-xs gap-1"><RefreshCw className="h-3 w-3" /> Sync</TabsTrigger>
           <TabsTrigger value="analyze" className="text-xs gap-1"><Brain className="h-3 w-3" /> Analyze</TabsTrigger>
+          <TabsTrigger value="companies" className="text-xs gap-1"><List className="h-3 w-3" /> Companies</TabsTrigger>
         </TabsList>
 
         {/* ═══════ TAB: DISCOVER ═══════ */}
