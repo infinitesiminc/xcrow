@@ -362,10 +362,15 @@ export default function RolePreviewPanel({ role, onClose }: RolePreviewPanelProp
             <X className="h-4 w-4 text-muted-foreground" />
           </button>
         </div>
-        <div className="flex items-center gap-3 text-xs text-muted-foreground">
+        <div className="flex items-center gap-3 text-xs text-muted-foreground flex-wrap">
           {role.location && <span className="flex items-center gap-0.5"><MapPin className="h-3 w-3" />{role.location}</span>}
           {role.workMode && <span className="capitalize">{role.workMode}</span>}
           {role.seniority && <span className="capitalize">{role.seniority}</span>}
+          {sourceUrl && (
+            <a href={sourceUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-0.5 text-primary hover:underline">
+              <ExternalLink className="h-3 w-3" />Original posting
+            </a>
+          )}
         </div>
         {role.augmented > 0 && (
           <div className="mt-3 flex items-center gap-2">
