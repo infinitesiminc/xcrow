@@ -938,6 +938,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                         {/* Collapsible insight card */}
                         {!isUser && <InsightCard content={msg.content} />}
                       </motion.div>
+                      </>
                     );
                   })}
 
