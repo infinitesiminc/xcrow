@@ -918,6 +918,191 @@ export default function JourneySkillProfileView({ practicedRoles = [], onNavigat
             </div>
           </motion.div>
         )}
+        {view === "edge-path" && (
+          <motion.div key="edge-path" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-5">
+            {/* Summary stats */}
+            <div className="grid grid-cols-3 gap-2">
+              <div className="rounded-lg bg-primary/10 border border-primary/20 p-3 text-center">
+                <p className="text-lg font-bold text-primary">{edgePath.length}</p>
+                <p className="text-[9px] text-muted-foreground uppercase tracking-wider">Edges to Build</p>
+              </div>
+              <div className="rounded-lg bg-success/10 border border-success/20 p-3 text-center">
+                <p className="text-lg font-bold text-success">{edgePath.filter(e => e.practiced).length}</p>
+                <p className="text-[9px] text-muted-foreground uppercase tracking-wider">In Progress</p>
+              </div>
+              <div className="rounded-lg bg-brand-human/10 border border-brand-human/20 p-3 text-center">
+                <p className="text-lg font-bold text-brand-human">{edgePath.filter(e => (e.bestScore ?? 0) >= 70).length}</p>
+                <p className="text-[9px] text-muted-foreground uppercase tracking-wider">Mastered</p>
+              </div>
+            </div>
+
+            {/* Path narrative */}
+            <div className="rounded-xl border border-primary/20 bg-primary/5 p-4 space-y-2">
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                <strong className="text-foreground">Your personalized edge path.</strong>{" "}
+                These are the human skills AI can't replace — ranked by how many AI-unlocked roles need them.
+                Follow this path to build the strategic edges that make you irreplaceable.
+              </p>
+            </div>
+
+            {/* Overall progress bar */}
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between">
+                <p className="text-xs text-muted-foreground font-medium">Overall Progress</p>
+                <p className="text-xs font-bold text-foreground">
+                  {edgePath.length > 0 ? Math.round((edgePath.filter(e => (e.bestScore ?? 0) >= 70).length / edgePath.length) * 100) : 0}%
+                </p>
+              </div>
+              <Progress
+                value={edgePath.length > 0 ? (edgePath.filter(e => (e.bestScore ?? 0) >= 70).length / edgePath.length) * 100 : 0}
+                className="h-2"
+              />
+            </div>
+
+            {/* Edge steps */}
+            <div className="space-y-2">
+              {edgePath.map((step, i) => {
+                const isOpen = expandedEdge === i;
+                const mastered = (step.bestScore ?? 0) >= 70;
+                const inProgress = step.practiced && !mastered;
+                const statusIcon = mastered ? (
+                  <Trophy className="h-4 w-4 text-brand-human" />
+                ) : inProgress ? (
+                  <TrendingUp className="h-4 w-4 text-warning" />
+                ) : (
+                  <div className="w-4 h-4 rounded-full border-2 border-muted-foreground/30 flex items-center justify-center">
+                    <span className="text-[8px] text-muted-foreground font-bold">{i + 1}</span>
+                  </div>
+                );
+
+                return (
+                  <motion.div
+                    key={i}
+                    initial={{ opacity: 0, y: 4 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: i * 0.03 }}
+                    className={`rounded-lg border overflow-hidden ${mastered ? "border-brand-human/30 bg-brand-human/5" : "border-border/40 bg-card"}`}
+                  >
+                    <button
+                      onClick={() => setExpandedEdge(isOpen ? null : i)}
+                      className="w-full flex items-center gap-3 p-3 hover:bg-muted/20 transition-colors text-left"
+                    >
+                      {/* Status */}
+                      <div className="shrink-0">{statusIcon}</div>
+
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-1.5">
+                          <p className="text-xs font-semibold text-foreground truncate">{step.edge}</p>
+                          <Badge variant="outline" className="text-[8px] px-1 py-0 shrink-0 border-border/40 text-muted-foreground">
+                            {step.frequency} roles
+                          </Badge>
+                        </div>
+                        <p className="text-[10px] text-muted-foreground mt-0.5">
+                          {PILLAR_LABELS[step.pillar]} · {CATEGORY_META[step.category]?.label || step.category}
+                        </p>
+
+                        {/* Score bar */}
+                        {step.bestScore !== null && (
+                          <div className="flex items-center gap-1.5 mt-1.5">
+                            <Progress value={step.bestScore} className="h-1.5 flex-1" />
+                            <span className={`text-[10px] font-bold ${profColor(step.bestScore)}`}>{step.bestScore}%</span>
+                          </div>
+                        )}
+                      </div>
+
+                      {isOpen ? <ChevronDown className="h-3.5 w-3.5 text-muted-foreground shrink-0" /> : <ChevronRight className="h-3.5 w-3.5 text-muted-foreground shrink-0" />}
+                    </button>
+
+                    <AnimatePresence>
+                      {isOpen && (
+                        <motion.div
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: "auto", opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          className="border-t border-border/30"
+                        >
+                          <div className="p-3 space-y-3">
+                            {/* What AI covers */}
+                            {step.relatedSkills.length > 0 && (
+                              <div className="space-y-1.5">
+                                <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider flex items-center gap-1">
+                                  <Bot className="h-3 w-3" /> AI Handles the Technical Side
+                                </p>
+                                <div className="flex flex-wrap gap-1">
+                                  {step.relatedSkills.map((rs, ri) => (
+                                    <Badge key={ri} variant="outline" className="text-[9px] border-primary/30 text-primary">
+                                      {rs.name} — <span className="opacity-70">{rs.aiEnabler}</span>
+                                    </Badge>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Practice tasks */}
+                            {step.practiceTasks.length > 0 && (
+                              <div className="space-y-1.5">
+                                <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider flex items-center gap-1">
+                                  <Play className="h-3 w-3" /> Practice Simulations
+                                </p>
+                                <div className="space-y-1">
+                                  {step.practiceTasks.map((task, ti) => (
+                                    <button
+                                      key={ti}
+                                      onClick={() => onNavigate(task.jobTitle, task.company)}
+                                      className="w-full flex items-center gap-2 p-2 rounded-md bg-muted/20 hover:bg-muted/40 transition-colors text-left group"
+                                    >
+                                      <Play className="h-3 w-3 text-primary shrink-0 group-hover:scale-110 transition-transform" />
+                                      <div className="flex-1 min-w-0">
+                                        <p className="text-[11px] font-medium text-foreground truncate">{task.taskName}</p>
+                                        <p className="text-[10px] text-muted-foreground">{task.jobTitle} · {task.company}</p>
+                                      </div>
+                                      <ArrowRight className="h-3 w-3 text-muted-foreground shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                    </button>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Score history */}
+                            {step.scoreHistory.length > 1 && (
+                              <div className="space-y-1.5">
+                                <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider flex items-center gap-1">
+                                  <Clock className="h-3 w-3" /> Progress Over Time
+                                </p>
+                                <div className="flex items-end gap-1 h-12">
+                                  {step.scoreHistory.map((sh, si) => (
+                                    <div
+                                      key={si}
+                                      className="flex-1 rounded-t bg-primary/40 transition-all"
+                                      style={{ height: `${sh.score}%` }}
+                                      title={`${new Date(sh.date).toLocaleDateString()}: ${sh.score}%`}
+                                    />
+                                  ))}
+                                </div>
+                                <div className="flex justify-between text-[8px] text-muted-foreground">
+                                  <span>{new Date(step.scoreHistory[0].date).toLocaleDateString()}</span>
+                                  <span>{new Date(step.scoreHistory[step.scoreHistory.length - 1].date).toLocaleDateString()}</span>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </motion.div>
+                );
+              })}
+            </div>
+
+            {edgePath.length === 0 && (
+              <div className="text-center py-10">
+                <Route className="h-8 w-8 text-muted-foreground/20 mx-auto mb-3" />
+                <p className="text-sm text-muted-foreground">No edges identified yet</p>
+                <p className="text-xs text-muted-foreground/60 mt-1">Explore the AI Unlocks tab to discover roles and their human edges</p>
+              </div>
+            )}
+          </motion.div>
+        )}
       </AnimatePresence>
     </div>
   );
