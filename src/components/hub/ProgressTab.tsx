@@ -3,344 +3,92 @@ import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Loader2, Eye, Zap, Compass, ArrowRight, Sparkles, ChevronDown,
+  TrendingUp, Target, BarChart3, Activity,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
+import {
+  buildInterestGraph,
+  type CompletionSignal,
+  type AnalysisSignal,
+  type BookmarkSignal,
+  type InterestGraph,
+  type RoleNode,
+} from "@/lib/interest-graph";
 
-interface CompletedSim {
-  id: string;
-  task_name: string;
-  job_title: string;
-  company: string | null;
-  correct_answers: number;
-  total_questions: number;
-  completed_at: string;
-}
-
-interface AnalysisEntry {
-  id: string;
-  job_title: string;
-  company: string | null;
-  tasks_count: number;
-  augmented_percent: number;
-  analyzed_at: string;
-}
-
-/* ── Large-scale mock data: 40 jobs, 100+ tasks ── */
-const ROLE_TASKS: { role: string; company: string | null; tasks: { name: string; score: number }[] }[] = [
-  { role: "Product Manager", company: "Stripe", tasks: [
-    { name: "Write product requirements", score: 85 }, { name: "Prioritize feature backlog", score: 72 },
-    { name: "Stakeholder presentation", score: 68 }, { name: "Competitive analysis", score: 90 },
-  ]},
-  { role: "Data Analyst", company: null, tasks: [
-    { name: "Analyze user funnel data", score: 95 }, { name: "Create SQL dashboards", score: 88 },
-    { name: "A/B test analysis", score: 76 }, { name: "Build data models", score: 82 },
-  ]},
-  { role: "Software Engineer", company: "Vercel", tasks: [
-    { name: "Write API documentation", score: 92 }, { name: "Code review pull requests", score: 85 },
-    { name: "Debug production issues", score: 78 }, { name: "Design system architecture", score: 70 },
-  ]},
-  { role: "Marketing Manager", company: "HubSpot", tasks: [
-    { name: "Build campaign brief", score: 65 }, { name: "Channel attribution modeling", score: 58 },
-    { name: "Content calendar planning", score: 74 },
-  ]},
-  { role: "UX Designer", company: "Figma", tasks: [
-    { name: "Design user onboarding flow", score: 45 }, { name: "Usability testing", score: 62 },
-    { name: "Create design system tokens", score: 71 },
-  ]},
-  { role: "Content Strategist", company: null, tasks: [
-    { name: "SEO content audit", score: 42 }, { name: "Editorial calendar management", score: 55 },
-  ]},
-  { role: "Financial Analyst", company: "Goldman Sachs", tasks: [
-    { name: "Build financial models", score: 88 }, { name: "Variance analysis reporting", score: 79 },
-    { name: "Cash flow forecasting", score: 83 },
-  ]},
-  { role: "HR Manager", company: "Deel", tasks: [
-    { name: "Design compensation bands", score: 60 }, { name: "Employee engagement survey", score: 72 },
-    { name: "Performance review calibration", score: 55 },
-  ]},
-  { role: "Sales Engineer", company: "Datadog", tasks: [
-    { name: "Technical demo preparation", score: 91 }, { name: "POC scoping", score: 84 },
-    { name: "RFP response drafting", score: 76 },
-  ]},
-  { role: "DevOps Engineer", company: "GitLab", tasks: [
-    { name: "CI/CD pipeline setup", score: 87 }, { name: "Infrastructure as code", score: 79 },
-  ]},
-  { role: "Project Manager", company: "Asana", tasks: [
-    { name: "Risk assessment matrix", score: 73 }, { name: "Sprint retrospective facilitation", score: 68 },
-    { name: "Resource allocation planning", score: 61 },
-  ]},
-  { role: "Customer Success Manager", company: "Gainsight", tasks: [
-    { name: "Quarterly business reviews", score: 82 }, { name: "Churn risk identification", score: 75 },
-  ]},
-  { role: "Business Analyst", company: "McKinsey", tasks: [
-    { name: "Process mapping", score: 78 }, { name: "Requirements elicitation", score: 85 },
-    { name: "Gap analysis documentation", score: 70 },
-  ]},
-  { role: "Operations Manager", company: "Amazon", tasks: [
-    { name: "Supply chain optimization", score: 66 }, { name: "SLA monitoring", score: 72 },
-  ]},
-  { role: "Compliance Officer", company: "JPMorgan", tasks: [
-    { name: "Regulatory change assessment", score: 80 }, { name: "Policy drafting", score: 74 },
-  ]},
-  { role: "Technical Writer", company: null, tasks: [
-    { name: "API reference docs", score: 90 }, { name: "User guide creation", score: 85 },
-  ]},
-  { role: "Data Engineer", company: "Snowflake", tasks: [
-    { name: "ETL pipeline design", score: 83 }, { name: "Data quality checks", score: 77 },
-    { name: "Schema migration planning", score: 69 },
-  ]},
-  { role: "QA Engineer", company: null, tasks: [
-    { name: "Test plan creation", score: 76 }, { name: "Regression test automation", score: 68 },
-  ]},
-  { role: "Growth Manager", company: "Notion", tasks: [
-    { name: "Activation funnel optimization", score: 73 }, { name: "Referral program design", score: 60 },
-  ]},
-  { role: "Brand Strategist", company: "Nike", tasks: [
-    { name: "Brand positioning framework", score: 55 }, { name: "Competitive brand audit", score: 62 },
-  ]},
-  { role: "Security Analyst", company: "CrowdStrike", tasks: [{ name: "Threat modeling", score: 81 }] },
-  { role: "Machine Learning Engineer", company: "OpenAI", tasks: [{ name: "Model evaluation pipeline", score: 74 }, { name: "Feature engineering", score: 69 }] },
-  { role: "Account Executive", company: "Salesforce", tasks: [{ name: "Discovery call frameworks", score: 78 }, { name: "Proposal creation", score: 70 }] },
-  { role: "Product Designer", company: "Linear", tasks: [{ name: "Interaction design specs", score: 82 }] },
-  { role: "Recruiter", company: "Greenhouse", tasks: [{ name: "Sourcing strategy", score: 63 }] },
-  { role: "Tax Advisor", company: "Deloitte", tasks: [{ name: "Tax provision calculations", score: 71 }] },
-  { role: "Legal Ops Manager", company: null, tasks: [{ name: "Contract lifecycle management", score: 67 }] },
-  { role: "Copywriter", company: "Jasper", tasks: [{ name: "Ad copy A/B testing", score: 58 }] },
-  { role: "Event Manager", company: null, tasks: [{ name: "Event logistics planning", score: 64 }] },
-  { role: "Partnerships Manager", company: "Shopify", tasks: [{ name: "Partner program design", score: 72 }] },
-  { role: "Solutions Architect", company: "AWS", tasks: [{ name: "Architecture design review", score: 86 }] },
-  { role: "Procurement Manager", company: null, tasks: [{ name: "Vendor evaluation matrix", score: 69 }] },
-  { role: "Investment Analyst", company: "Blackrock", tasks: [{ name: "Portfolio risk analysis", score: 77 }] },
-  { role: "Scrum Master", company: null, tasks: [{ name: "Agile ceremony facilitation", score: 71 }] },
-  { role: "Support Engineer", company: "Zendesk", tasks: [{ name: "Escalation workflow design", score: 65 }] },
-  { role: "Research Scientist", company: "DeepMind", tasks: [{ name: "Experiment design", score: 88 }] },
-  { role: "Social Media Manager", company: null, tasks: [{ name: "Community engagement strategy", score: 56 }] },
-  { role: "Chief of Staff", company: null, tasks: [{ name: "Executive briefing preparation", score: 80 }] },
-  { role: "Supply Chain Analyst", company: "Flexport", tasks: [{ name: "Demand forecasting", score: 73 }] },
-  { role: "Sustainability Manager", company: null, tasks: [{ name: "ESG reporting framework", score: 61 }] },
-];
-
-function buildMockData() {
-  const analyses: AnalysisEntry[] = [];
-  const completions: CompletedSim[] = [];
-  let simId = 0;
-  const baseDate = new Date("2026-03-17T10:00:00Z");
-
-  for (let r = 0; r < ROLE_TASKS.length; r++) {
-    const rt = ROLE_TASKS[r];
-    const analysisDate = new Date(baseDate.getTime() - r * 86400000 * 0.7);
-    analyses.push({
-      id: `ma-${r}`, job_title: rt.role, company: rt.company,
-      tasks_count: rt.tasks.length + Math.floor(Math.random() * 5),
-      augmented_percent: 40 + Math.floor(Math.random() * 45),
-      analyzed_at: analysisDate.toISOString(),
-    });
-
-    for (const t of rt.tasks) {
-      simId++;
-      const completedDate = new Date(analysisDate.getTime() + Math.random() * 3600000 * 4);
-      completions.push({
-        id: `ms-${simId}`, task_name: t.name, job_title: rt.role, company: rt.company,
-        correct_answers: Math.round(t.score / 20), total_questions: 5,
-        completed_at: completedDate.toISOString(),
-      });
-    }
-  }
-  return { analyses, completions };
-}
-
-const MOCK = buildMockData();
-
-/* ── Types ── */
-interface Recommendation {
-  jobTitle: string;
-  company: string | null;
-  matchScore: number;
-  reason: string;
-  tag: "interest" | "skill" | "growth";
-}
-
-interface RoleGroup {
-  role: string;
-  company: string | null;
-  avgScore: number;
-  taskCount: number;
-  sessions: number;
-  tasks: { name: string; score: number; sessions: number }[];
-}
-
-function generateRecommendations(
-  interestMap: { jobTitle: string; practiced: boolean; practiceCount: number }[],
-  roleGroups: RoleGroup[],
-): Recommendation[] {
-  const recs: Recommendation[] = [];
-  const strong = roleGroups.filter(g => g.avgScore >= 75).slice(0, 3);
-  const weak = roleGroups.filter(g => g.avgScore > 0 && g.avgScore < 55).slice(0, 2);
-
-  const adjacentRoles: Record<string, { title: string; company: string; reason: string }[]> = {
-    "product manager": [{ title: "Product Operations Manager", company: "Notion", reason: "Your product skills transfer directly" }],
-    "data analyst": [{ title: "Analytics Engineer", company: "dbt Labs", reason: "Strong data fundamentals — this role builds on them" }],
-    "software engineer": [{ title: "Platform Engineer", company: "Vercel", reason: "Your code review & architecture skills are a natural fit" }],
-    "financial analyst": [{ title: "FP&A Manager", company: "Stripe", reason: "Your modeling & forecasting scores are well above average" }],
-    "sales engineer": [{ title: "Solutions Architect", company: "AWS", reason: "Your demo & scoping skills translate perfectly" }],
-    "business analyst": [{ title: "Strategy Consultant", company: "Bain", reason: "Strong process & requirements skills map to consulting" }],
-    "technical writer": [{ title: "Developer Advocate", company: "Vercel", reason: "Top documentation skills + API knowledge = great fit" }],
-    "research scientist": [{ title: "Applied ML Engineer", company: "Anthropic", reason: "Experiment design strength pairs well with production ML" }],
-  };
-
-  for (const s of strong) {
-    const adj = adjacentRoles[s.role.toLowerCase()];
-    if (adj) {
-      for (const a of adj) {
-        recs.push({ jobTitle: a.title, company: a.company, matchScore: 80 + Math.floor(Math.random() * 12), reason: a.reason, tag: "skill" });
-      }
-    }
-  }
-
-  const viewedOnly = interestMap.filter(i => !i.practiced);
-  for (const v of viewedOnly.slice(0, 2)) {
-    recs.push({ jobTitle: v.jobTitle, company: null, matchScore: 68 + Math.floor(Math.random() * 10), reason: "You explored this role — try practicing to see how your skills match", tag: "interest" });
-  }
-
-  for (const w of weak) {
-    recs.push({ jobTitle: w.role, company: null, matchScore: 58 + Math.floor(Math.random() * 10), reason: `Improving your ${w.tasks[0]?.name || "skills"} would unlock stronger opportunities`, tag: "growth" });
-  }
-
-  return recs.sort((a, b) => b.matchScore - a.matchScore).slice(0, 5);
-}
-
+/* ── Styles ── */
 const TAG_STYLES: Record<string, string> = {
-  skill: "border-success/30 text-success",
-  interest: "border-primary/30 text-primary",
-  growth: "border-warning/30 text-warning",
+  adjacent: "border-primary/30 text-primary",
+  deepen: "border-warning/40 text-warning",
+  stretch: "border-accent/40 text-accent-foreground",
 };
 const TAG_LABELS: Record<string, string> = {
-  skill: "Skills match",
-  interest: "Based on interest",
-  growth: "Growth opportunity",
+  adjacent: "Adjacent role",
+  deepen: "Deepen skills",
+  stretch: "Stretch goal",
+};
+const TIER_STYLES: Record<string, { bg: string; ring: string; text: string; label: string }> = {
+  core: { bg: "bg-success/15", ring: "ring-success/30", text: "text-success", label: "Core" },
+  exploring: { bg: "bg-primary/10", ring: "ring-primary/20", text: "text-primary", label: "Exploring" },
+  peripheral: { bg: "bg-muted/30", ring: "ring-border/30", text: "text-muted-foreground", label: "Peripheral" },
 };
 
 export default function ProgressTab({ userId }: { userId: string }) {
   const navigate = useNavigate();
-  const [completions, setCompletions] = useState<CompletedSim[]>([]);
-  const [analyses, setAnalyses] = useState<AnalysisEntry[]>([]);
+  const [graph, setGraph] = useState<InterestGraph | null>(null);
   const [loading, setLoading] = useState(true);
   const [expandedRole, setExpandedRole] = useState<string | null>(null);
-  const [showAllInterests, setShowAllInterests] = useState(false);
+  const [showAllNodes, setShowAllNodes] = useState(false);
+  const [tierFilter, setTierFilter] = useState<"all" | "core" | "exploring" | "peripheral">("all");
 
   useEffect(() => {
     (async () => {
-      const [simRes, analysisRes] = await Promise.all([
+      const [simRes, analysisRes, bookmarkRes] = await Promise.all([
         supabase.from("completed_simulations")
-          .select("id, task_name, job_title, company, correct_answers, total_questions, completed_at")
+          .select("task_name, job_title, company, correct_answers, total_questions, completed_at")
           .eq("user_id", userId).order("completed_at", { ascending: false }),
         supabase.from("analysis_history")
-          .select("id, job_title, company, tasks_count, augmented_percent, analyzed_at")
+          .select("job_title, company, analyzed_at")
           .eq("user_id", userId).order("analyzed_at", { ascending: false }),
+        supabase.from("bookmarked_roles")
+          .select("job_title, company, augmented_percent, automation_risk_percent, bookmarked_at")
+          .eq("user_id", userId).order("bookmarked_at", { ascending: false }),
       ]);
 
-      const realC = (simRes.data as CompletedSim[]) || [];
-      const realA = (analysisRes.data as AnalysisEntry[]) || [];
-      setCompletions(realC);
-      setAnalyses(realA);
+      const completions = (simRes.data as CompletionSignal[]) || [];
+      const analyses = (analysisRes.data as AnalysisSignal[]) || [];
+      const bookmarks = (bookmarkRes.data as BookmarkSignal[]) || [];
+
+      const result = buildInterestGraph(completions, analyses, bookmarks);
+      setGraph(result);
       setLoading(false);
     })();
   }, [userId]);
 
-  /* ── Interest Map ── */
-  const interestMap = useMemo(() => {
-    const map = new Map<string, {
-      jobTitle: string; company: string | null;
-      viewed: boolean; practiced: boolean; practiceCount: number; lastActivity: string;
-    }>();
+  const filteredNodes = useMemo(() => {
+    if (!graph) return [];
+    const nodes = tierFilter === "all" ? graph.nodes : graph.nodes.filter(n => n.tier === tierFilter);
+    return showAllNodes ? nodes : nodes.slice(0, 15);
+  }, [graph, tierFilter, showAllNodes]);
 
-    for (const a of analyses) {
-      const key = a.job_title.toLowerCase();
-      if (!map.has(key)) {
-        map.set(key, { jobTitle: a.job_title, company: a.company, viewed: true, practiced: false, practiceCount: 0, lastActivity: a.analyzed_at });
-      }
-    }
-
-    for (const c of completions) {
-      const key = c.job_title.toLowerCase();
-      const existing = map.get(key);
-      if (existing) {
-        existing.practiced = true;
-        existing.practiceCount += 1;
-        if (c.completed_at > existing.lastActivity) existing.lastActivity = c.completed_at;
-      } else {
-        map.set(key, { jobTitle: c.job_title, company: c.company, viewed: false, practiced: true, practiceCount: 1, lastActivity: c.completed_at });
-      }
-    }
-
-    return Array.from(map.values()).sort((a, b) => new Date(b.lastActivity).getTime() - new Date(a.lastActivity).getTime());
-  }, [analyses, completions]);
-
-  const interestSummary = useMemo(() => {
-    const practiced = interestMap.filter(i => i.practiced);
-    const viewedOnly = interestMap.filter(i => !i.practiced);
-    return { practiced, viewedOnly, total: interestMap.length };
-  }, [interestMap]);
-
-  /* ── Skill Map: grouped by role ── */
-  const roleGroups = useMemo(() => {
-    const map = new Map<string, RoleGroup>();
-
-    for (const c of completions) {
-      const key = c.job_title.toLowerCase();
-      const score = c.total_questions > 0 ? Math.round((c.correct_answers / c.total_questions) * 100) : 0;
-
-      if (!map.has(key)) {
-        map.set(key, { role: c.job_title, company: c.company, avgScore: 0, taskCount: 0, sessions: 0, tasks: [] });
-      }
-
-      const group = map.get(key)!;
-      group.sessions += 1;
-
-      const existingTask = group.tasks.find(t => t.name === c.task_name);
-      if (existingTask) {
-        existingTask.score = Math.max(existingTask.score, score); // best score
-        existingTask.sessions += 1;
-      } else {
-        group.tasks.push({ name: c.task_name, score, sessions: 1 });
-        group.taskCount += 1;
-      }
-    }
-
-    // Calculate avg score per group
-    for (const g of map.values()) {
-      g.avgScore = g.tasks.length > 0 ? Math.round(g.tasks.reduce((s, t) => s + t.score, 0) / g.tasks.length) : 0;
-      g.tasks.sort((a, b) => b.score - a.score);
-    }
-
-    return Array.from(map.values()).sort((a, b) => b.avgScore - a.avgScore);
-  }, [completions]);
-
-  const totalTasks = useMemo(() => roleGroups.reduce((s, g) => s + g.taskCount, 0), [roleGroups]);
-  const overallAvg = useMemo(() => {
-    if (roleGroups.length === 0) return null;
-    return Math.round(roleGroups.reduce((s, g) => s + g.avgScore, 0) / roleGroups.length);
-  }, [roleGroups]);
-
-  const recommendations = useMemo(
-    () => generateRecommendations(interestMap, roleGroups),
-    [interestMap, roleGroups]
-  );
+  const totalFilteredCount = useMemo(() => {
+    if (!graph) return 0;
+    return tierFilter === "all" ? graph.nodes.length : graph.nodes.filter(n => n.tier === tierFilter).length;
+  }, [graph, tierFilter]);
 
   if (loading) {
     return <div className="flex justify-center py-12"><Loader2 className="h-5 w-5 text-primary animate-spin" /></div>;
   }
 
-  if (interestMap.length === 0 && roleGroups.length === 0) {
+  if (!graph || graph.nodes.length === 0) {
     return (
       <Card>
         <CardContent className="p-8 text-center">
           <Compass className="h-8 w-8 text-muted-foreground/40 mx-auto mb-3" />
-          <p className="text-sm text-muted-foreground mb-3">Explore roles and practice tasks to build your maps.</p>
+          <p className="text-sm text-muted-foreground mb-3">Explore roles and practice tasks to build your interest graph.</p>
           <Button size="sm" onClick={() => navigate("/")}>Explore Roles</Button>
         </CardContent>
       </Card>
@@ -356,149 +104,242 @@ export default function ProgressTab({ userId }: { userId: string }) {
   const scoreColor = (s: number) => s >= 75 ? "text-success" : s >= 50 ? "text-warning" : "text-destructive";
   const barColor = (s: number) => s >= 75 ? "bg-success" : s >= 50 ? "bg-warning" : "bg-destructive";
 
-  const displayedInterests = showAllInterests ? interestMap : interestMap.slice(0, 12);
+  const { stats, clusters, recommendations } = graph;
+  const tierCounts = {
+    core: graph.nodes.filter(n => n.tier === "core").length,
+    exploring: graph.nodes.filter(n => n.tier === "exploring").length,
+    peripheral: graph.nodes.filter(n => n.tier === "peripheral").length,
+  };
 
   return (
     <div className="space-y-6">
-      {/* ── Interest Map: compact pill layout ── */}
+
+      {/* ── Engagement Stats ── */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        {[
+          { label: "Roles Explored", value: stats.rolesExplored, icon: Eye, color: "text-primary" },
+          { label: "Roles Practiced", value: stats.rolesPracticed, icon: Target, color: "text-success" },
+          { label: "Total Sessions", value: stats.totalSessions, icon: Activity, color: "text-warning" },
+          { label: "Engagement", value: stats.totalEngagement, icon: TrendingUp, color: "text-accent-foreground" },
+        ].map((s, i) => (
+          <motion.div key={i} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}>
+            <Card>
+              <CardContent className="p-3 flex items-center gap-3">
+                <s.icon className={`h-4 w-4 shrink-0 ${s.color}`} />
+                <div>
+                  <p className="text-lg font-bold text-foreground leading-none">{s.value}</p>
+                  <p className="text-[10px] text-muted-foreground mt-0.5">{s.label}</p>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        ))}
+      </div>
+
+      {/* ── Interest Graph: node pills with tier filtering ── */}
       <section>
         <div className="flex items-center gap-2 mb-2">
-          <Eye className="h-4 w-4 text-primary" />
-          <h2 className="text-xs font-medium uppercase tracking-widest text-muted-foreground">Interest Map</h2>
-          <Badge variant="secondary" className="text-[10px]">{interestSummary.total} roles</Badge>
-        </div>
-        <div className="flex items-center gap-3 text-[11px] text-muted-foreground mb-3">
-          <span className="flex items-center gap-1">
-            <span className="w-2 h-2 rounded-full bg-success" /> {interestSummary.practiced.length} practiced
-          </span>
-          <span className="flex items-center gap-1">
-            <span className="w-2 h-2 rounded-full bg-muted-foreground/30" /> {interestSummary.viewedOnly.length} viewed only
-          </span>
+          <BarChart3 className="h-4 w-4 text-primary" />
+          <h2 className="text-xs font-medium uppercase tracking-widest text-muted-foreground">Interest Graph</h2>
+          <Badge variant="secondary" className="text-[10px]">{stats.rolesExplored} roles</Badge>
         </div>
 
+        {stats.strongestCluster && (
+          <p className="text-[11px] text-muted-foreground mb-2">
+            Strongest cluster: <span className="text-foreground font-medium">{stats.strongestCluster}</span>
+          </p>
+        )}
+
+        {/* Tier filter chips */}
+        <div className="flex items-center gap-1.5 mb-3">
+          {(["all", "core", "exploring", "peripheral"] as const).map(tier => {
+            const count = tier === "all" ? graph.nodes.length : tierCounts[tier];
+            const isActive = tierFilter === tier;
+            return (
+              <button
+                key={tier}
+                onClick={() => { setTierFilter(tier); setShowAllNodes(false); }}
+                className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] transition-all border ${
+                  isActive
+                    ? "bg-primary/10 border-primary/30 text-primary font-medium"
+                    : "bg-muted/20 border-border/40 text-muted-foreground hover:border-primary/20"
+                }`}
+              >
+                {tier === "all" ? "All" : TIER_STYLES[tier].label}
+                <span className="text-[9px] opacity-70">{count}</span>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Node pills — sized by engagement score */}
         <div className="flex flex-wrap gap-1.5">
-          {displayedInterests.map((item, i) => (
-            <motion.button
-              key={i}
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: i * 0.015 }}
-              onClick={() => goToRole(item.jobTitle, item.company)}
-              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs transition-all hover:shadow-md cursor-pointer border ${
-                item.practiced
-                  ? "bg-success/20 border-success/40 text-success-foreground ring-1 ring-success/20 hover:bg-success/30"
-                  : "bg-muted/40 border-border/50 text-muted-foreground hover:border-primary/30 hover:text-foreground"
-              }`}
-            >
-              <span className="truncate max-w-[140px]">{item.jobTitle}</span>
-              {item.practiced && (
-                <span className="text-[9px] text-success font-medium">{item.practiceCount}</span>
-              )}
-            </motion.button>
-          ))}
+          {filteredNodes.map((node, i) => {
+            const tier = TIER_STYLES[node.tier];
+            const maxScore = graph.nodes[0]?.score || 1;
+            const relativeSize = 0.85 + (node.score / maxScore) * 0.25; // 0.85x–1.1x
+            return (
+              <motion.button
+                key={node.role}
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: i * 0.012 }}
+                onClick={() => goToRole(node.role, node.company)}
+                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs transition-all 
+                  hover:shadow-md cursor-pointer border ring-1 ${tier.bg} ${tier.ring} ${tier.text}`}
+                style={{ fontSize: `${relativeSize * 0.75}rem` }}
+              >
+                <span className="truncate max-w-[160px]">{node.role}</span>
+                {node.signals.practices > 0 && (
+                  <span className="text-[9px] font-semibold opacity-80">{node.signals.practices}</span>
+                )}
+                {node.signals.bookmarks > 0 && (
+                  <span className="text-[9px] opacity-60">★</span>
+                )}
+              </motion.button>
+            );
+          })}
         </div>
 
-        {interestMap.length > 12 && (
+        {totalFilteredCount > 15 && !showAllNodes && (
           <button
-            onClick={() => setShowAllInterests(!showAllInterests)}
+            onClick={() => setShowAllNodes(true)}
             className="text-[11px] text-primary hover:underline mt-2 flex items-center gap-1"
           >
-            {showAllInterests ? "Show less" : `+${interestMap.length - 12} more roles`}
-            <ChevronDown className={`h-3 w-3 transition-transform ${showAllInterests ? "rotate-180" : ""}`} />
+            +{totalFilteredCount - 15} more roles
+            <ChevronDown className="h-3 w-3" />
+          </button>
+        )}
+        {showAllNodes && totalFilteredCount > 15 && (
+          <button
+            onClick={() => setShowAllNodes(false)}
+            className="text-[11px] text-primary hover:underline mt-2 flex items-center gap-1"
+          >
+            Show less
+            <ChevronDown className="h-3 w-3 rotate-180" />
           </button>
         )}
       </section>
 
-      {/* ── Skill Map: grouped by role, expandable ── */}
-      {roleGroups.length > 0 && (
+      {/* ── Skill Depth: practiced roles with expandable tasks ── */}
+      {graph.nodes.some(n => n.tasks.length > 0) && (
         <section>
           <div className="flex items-center gap-2 mb-2">
             <Zap className="h-4 w-4 text-warning" />
-            <h2 className="text-xs font-medium uppercase tracking-widest text-muted-foreground">Skill Map</h2>
-            <Badge variant="secondary" className="text-[10px]">{totalTasks} tasks · {roleGroups.length} roles</Badge>
-            {overallAvg !== null && (
-              <Badge variant="outline" className={`text-[10px] ${scoreColor(overallAvg)}`}>Avg {overallAvg}%</Badge>
-            )}
+            <h2 className="text-xs font-medium uppercase tracking-widest text-muted-foreground">Skill Depth</h2>
+            {(() => {
+              const practiced = graph.nodes.filter(n => n.tasks.length > 0);
+              const totalTasks = practiced.reduce((s, n) => s + n.taskCount, 0);
+              const avgProf = practiced.length > 0
+                ? Math.round(practiced.reduce((s, n) => s + n.avgProficiency, 0) / practiced.length)
+                : 0;
+              return (
+                <>
+                  <Badge variant="secondary" className="text-[10px]">{totalTasks} tasks · {practiced.length} roles</Badge>
+                  <Badge variant="outline" className={`text-[10px] ${scoreColor(avgProf)}`}>Avg {avgProf}%</Badge>
+                </>
+              );
+            })()}
           </div>
-          <p className="text-[11px] text-muted-foreground mb-3">Tap a role to see individual task scores.</p>
 
           <div className="space-y-1.5">
-            {roleGroups.map((group, gi) => {
-              const isExpanded = expandedRole === group.role;
-              return (
-                <motion.div
-                  key={group.role}
-                  initial={{ opacity: 0, y: 4 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: gi * 0.02 }}
-                >
-                  <Card className={`transition-colors ${isExpanded ? "border-primary/20" : ""}`}>
-                    {/* Role header row */}
-                    <button
-                      onClick={() => setExpandedRole(isExpanded ? null : group.role)}
-                      className="w-full text-left"
-                    >
-                      <CardContent className="p-3 flex items-center gap-3">
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2">
-                            <p className="text-sm font-medium text-foreground truncate">{group.role}</p>
-                            <span className="text-[10px] text-muted-foreground shrink-0">{group.taskCount} task{group.taskCount !== 1 ? "s" : ""}</span>
+            {graph.nodes
+              .filter(n => n.tasks.length > 0)
+              .map((node, gi) => {
+                const isExpanded = expandedRole === node.role;
+                const tier = TIER_STYLES[node.tier];
+                return (
+                  <motion.div
+                    key={node.role}
+                    initial={{ opacity: 0, y: 4 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: gi * 0.02 }}
+                  >
+                    <Card className={`transition-colors ${isExpanded ? "border-primary/20" : ""}`}>
+                      <button
+                        onClick={() => setExpandedRole(isExpanded ? null : node.role)}
+                        className="w-full text-left"
+                      >
+                        <CardContent className="p-3 flex items-center gap-3">
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2">
+                              <p className="text-sm font-medium text-foreground truncate">{node.role}</p>
+                              <Badge variant="outline" className={`text-[9px] px-1.5 py-0 ${tier.text} border-current/20`}>
+                                {tier.label}
+                              </Badge>
+                              <span className="text-[10px] text-muted-foreground shrink-0">
+                                {node.taskCount} task{node.taskCount !== 1 ? "s" : ""} · {node.signals.practices}×
+                              </span>
+                            </div>
+                            {node.company && <p className="text-[10px] text-muted-foreground">{node.company}</p>}
                           </div>
-                          {group.company && <p className="text-[10px] text-muted-foreground">{group.company}</p>}
-                        </div>
 
-                        {/* Mini bar */}
-                        <div className="flex items-center gap-2 w-28 shrink-0">
-                          <div className="flex-1 h-2 rounded-full bg-muted/30 overflow-hidden">
-                            <div className={`h-full rounded-full transition-all ${barColor(group.avgScore)}`} style={{ width: `${group.avgScore}%` }} />
+                          <div className="flex items-center gap-2 w-28 shrink-0">
+                            <div className="flex-1 h-2 rounded-full bg-muted/30 overflow-hidden">
+                              <div
+                                className={`h-full rounded-full transition-all ${barColor(node.avgProficiency)}`}
+                                style={{ width: `${node.avgProficiency}%` }}
+                              />
+                            </div>
+                            <span className={`text-xs font-bold w-8 text-right ${scoreColor(node.avgProficiency)}`}>
+                              {node.avgProficiency}%
+                            </span>
                           </div>
-                          <span className={`text-xs font-bold w-8 text-right ${scoreColor(group.avgScore)}`}>{group.avgScore}%</span>
-                        </div>
 
-                        <ChevronDown className={`h-3.5 w-3.5 text-muted-foreground transition-transform shrink-0 ${isExpanded ? "rotate-180" : ""}`} />
-                      </CardContent>
-                    </button>
+                          <ChevronDown className={`h-3.5 w-3.5 text-muted-foreground transition-transform shrink-0 ${isExpanded ? "rotate-180" : ""}`} />
+                        </CardContent>
+                      </button>
 
-                    {/* Expanded task list */}
-                    <AnimatePresence>
-                      {isExpanded && (
-                        <motion.div
-                          initial={{ height: 0, opacity: 0 }}
-                          animate={{ height: "auto", opacity: 1 }}
-                          exit={{ height: 0, opacity: 0 }}
-                          transition={{ duration: 0.2 }}
-                          className="overflow-hidden"
-                        >
-                          <div className="px-3 pb-3 pt-0 space-y-1 border-t border-border/30">
-                            {group.tasks.map((task, ti) => (
-                              <div key={ti} className="flex items-center gap-3 py-1.5">
-                                <p className="text-[12px] text-foreground flex-1 truncate pl-2">{task.name}</p>
-                                <div className="flex items-center gap-2 w-24 shrink-0">
-                                  <Progress value={task.score} className="h-1 flex-1" />
-                                  <span className={`text-[11px] font-semibold w-7 text-right ${scoreColor(task.score)}`}>{task.score}%</span>
-                                </div>
-                                <span className="text-[9px] text-muted-foreground w-6 text-right">{task.sessions}×</span>
+                      <AnimatePresence>
+                        {isExpanded && (
+                          <motion.div
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={{ height: "auto", opacity: 1 }}
+                            exit={{ height: 0, opacity: 0 }}
+                            transition={{ duration: 0.2 }}
+                            className="overflow-hidden"
+                          >
+                            <div className="px-3 pb-3 pt-0 space-y-1 border-t border-border/30">
+                              {/* Signal breakdown */}
+                              <div className="flex items-center gap-3 py-1.5 text-[10px] text-muted-foreground">
+                                <span>👁 {node.signals.views} views</span>
+                                <span>⚡ {node.signals.practices} practices</span>
+                                {node.signals.rePractices > 0 && <span>🔄 {node.signals.rePractices} re-practices</span>}
+                                {node.signals.bookmarks > 0 && <span>★ bookmarked</span>}
+                                <span className="ml-auto font-medium">Score: {Math.round(node.score)}</span>
                               </div>
-                            ))}
-                            <button
-                              onClick={() => goToRole(group.role, group.company)}
-                              className="text-[11px] text-primary hover:underline flex items-center gap-1 pt-1 pl-2"
-                            >
-                              View full analysis <ArrowRight className="h-3 w-3" />
-                            </button>
-                          </div>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </Card>
-                </motion.div>
-              );
-            })}
+
+                              {node.tasks.map((task, ti) => (
+                                <div key={ti} className="flex items-center gap-3 py-1.5">
+                                  <p className="text-[12px] text-foreground flex-1 truncate pl-2">{task.name}</p>
+                                  <div className="flex items-center gap-2 w-24 shrink-0">
+                                    <Progress value={task.bestScore} className="h-1 flex-1" />
+                                    <span className={`text-[11px] font-semibold w-7 text-right ${scoreColor(task.bestScore)}`}>
+                                      {Math.round(task.bestScore)}%
+                                    </span>
+                                  </div>
+                                  <span className="text-[9px] text-muted-foreground w-6 text-right">{task.sessions}×</span>
+                                </div>
+                              ))}
+                              <button
+                                onClick={() => goToRole(node.role, node.company)}
+                                className="text-[11px] text-primary hover:underline flex items-center gap-1 pt-1 pl-2"
+                              >
+                                View full analysis <ArrowRight className="h-3 w-3" />
+                              </button>
+                            </div>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </Card>
+                  </motion.div>
+                );
+              })}
           </div>
         </section>
       )}
 
-      {/* ── Job Recommendations ── */}
+      {/* ── Recommendations (graph-powered) ── */}
       {recommendations.length > 0 && (
         <section>
           <div className="flex items-center gap-2 mb-3">
@@ -506,7 +347,7 @@ export default function ProgressTab({ userId }: { userId: string }) {
             <h2 className="text-xs font-medium uppercase tracking-widest text-muted-foreground">Recommended for You</h2>
             <Badge variant="secondary" className="text-[10px]">{recommendations.length} matches</Badge>
           </div>
-          <p className="text-[11px] text-muted-foreground mb-3">Based on your interests and practice scores.</p>
+          <p className="text-[11px] text-muted-foreground mb-3">Powered by your interest graph — weighted by practice depth, bookmarks, and role clusters.</p>
 
           <div className="space-y-2">
             {recommendations.map((rec, i) => (
@@ -520,8 +361,8 @@ export default function ProgressTab({ userId }: { userId: string }) {
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">
                           <p className="text-sm font-semibold text-foreground truncate">{rec.jobTitle}</p>
-                          <Badge variant="outline" className={`text-[9px] px-1.5 py-0 shrink-0 ${TAG_STYLES[rec.tag]}`}>
-                            {TAG_LABELS[rec.tag]}
+                          <Badge variant="outline" className={`text-[9px] px-1.5 py-0 shrink-0 ${TAG_STYLES[rec.tag] || ""}`}>
+                            {TAG_LABELS[rec.tag] || rec.tag}
                           </Badge>
                         </div>
                         {rec.company && <p className="text-[11px] text-muted-foreground mb-1">{rec.company}</p>}
