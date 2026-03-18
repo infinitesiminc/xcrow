@@ -57,8 +57,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     if (data) {
       const row = data as any;
+      // Fall back to Google OAuth metadata name if profile display_name is empty
+      const { data: { user: authUser } } = await supabase.auth.getUser();
+      const metaName = authUser?.user_metadata?.full_name ?? authUser?.user_metadata?.name ?? null;
       setProfile({
-        displayName: row.display_name ?? null,
+        displayName: row.display_name || metaName || null,
         jobTitle: row.job_title ?? null,
         company: row.company ?? null,
         onboardingCompleted: row.onboarding_completed ?? false,
