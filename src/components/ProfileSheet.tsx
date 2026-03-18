@@ -3,9 +3,10 @@ import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   X, Compass, Bookmark, Zap, Trophy, CheckCircle2, Circle,
-  Settings, LogOut, ArrowRight,
+  Settings, LogOut, ArrowRight, Search, ChevronDown, ChevronRight,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 
 interface ProfileSheetProps {
@@ -28,6 +29,11 @@ interface SavedRole {
   company: string | null;
 }
 
+interface GroupedRoles {
+  company: string;
+  roles: SavedRole[];
+}
+
 export default function ProfileSheet({ open, onClose, userId, displayName, email, onSignOut }: ProfileSheetProps) {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
@@ -36,6 +42,9 @@ export default function ProfileSheet({ open, onClose, userId, displayName, email
   const [tasksPracticed, setTasksPracticed] = useState(0);
   const [uniqueTasks, setUniqueTasks] = useState(0);
   const [savedRoles, setSavedRoles] = useState<SavedRole[]>([]);
+  const [expandedSaved, setExpandedSaved] = useState(false);
+  const [savedSearch, setSavedSearch] = useState("");
+  const [openGroups, setOpenGroups] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     if (!open || !userId) return;
@@ -58,6 +67,15 @@ export default function ProfileSheet({ open, onClose, userId, displayName, email
     })();
   }, [open, userId]);
 
+  // Reset expanded state when sheet closes
+  useEffect(() => {
+    if (!open) {
+      setExpandedSaved(false);
+      setSavedSearch("");
+      setOpenGroups(new Set());
+    }
+  }, [open]);
+
   const milestones = useMemo<Milestone[]>(() => [
     { label: "First role explored", completed: rolesExplored >= 1, icon: Compass },
     { label: "First task practiced", completed: tasksPracticed >= 1, icon: Zap },
@@ -68,12 +86,38 @@ export default function ProfileSheet({ open, onClose, userId, displayName, email
 
   const completedCount = milestones.filter(m => m.completed).length;
 
+  const groupedRoles = useMemo<GroupedRoles[]>(() => {
+    const q = savedSearch.toLowerCase().trim();
+    const filtered = q
+      ? savedRoles.filter(r => r.job_title.toLowerCase().includes(q) || (r.company?.toLowerCase().includes(q) ?? false))
+      : savedRoles;
+
+    const map = new Map<string, SavedRole[]>();
+    for (const role of filtered) {
+      const key = role.company || "Other";
+      const arr = map.get(key) || [];
+      arr.push(role);
+      map.set(key, arr);
+    }
+
+    return Array.from(map.entries())
+      .sort(([a], [b]) => (a === "Other" ? 1 : b === "Other" ? -1 : a.localeCompare(b)))
+      .map(([company, roles]) => ({ company, roles }));
+  }, [savedRoles, savedSearch]);
+
+  const toggleGroup = (company: string) => {
+    setOpenGroups(prev => {
+      const next = new Set(prev);
+      next.has(company) ? next.delete(company) : next.add(company);
+      return next;
+    });
+  };
+
   const goToRole = (jobTitle: string, company: string | null) => {
     onClose();
     const params = new URLSearchParams({ title: jobTitle });
     if (company) params.set("company", company);
     const target = `/analysis?${params.toString()}`;
-    // Force navigation even if already on the same route
     if (window.location.pathname + window.location.search === target) {
       navigate("/", { replace: true });
       setTimeout(() => navigate(target, { replace: true }), 0);
@@ -189,9 +233,10 @@ export default function ProfileSheet({ open, onClose, userId, displayName, email
                       <p className="text-xs text-muted-foreground">
                         No saved roles yet — explore and bookmark roles you're interested in.
                       </p>
-                    ) : (
+                    ) : !expandedSaved ? (
+                      /* Compact view: show first 3 + "View all" */
                       <div className="space-y-1">
-                        {savedRoles.slice(0, 8).map((role, i) => (
+                        {savedRoles.slice(0, 3).map((role, i) => (
                           <button
                             key={i}
                             onClick={() => goToRole(role.job_title, role.company)}
@@ -207,11 +252,79 @@ export default function ProfileSheet({ open, onClose, userId, displayName, email
                             <ArrowRight className="h-3 w-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
                           </button>
                         ))}
-                        {savedRoles.length > 8 && (
-                          <p className="text-[10px] text-muted-foreground px-2 pt-1">
-                            +{savedRoles.length - 8} more
-                          </p>
+                        {savedRoles.length > 3 && (
+                          <button
+                            onClick={() => {
+                              setExpandedSaved(true);
+                              // Auto-open all groups initially
+                              setOpenGroups(new Set(groupedRoles.map(g => g.company)));
+                            }}
+                            className="w-full text-xs text-primary hover:text-primary/80 font-medium py-2 transition-colors"
+                          >
+                            View all {savedRoles.length} saved →
+                          </button>
                         )}
+                      </div>
+                    ) : (
+                      /* Expanded view: search + grouped list */
+                      <div className="space-y-2">
+                        <div className="relative">
+                          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                          <Input
+                            value={savedSearch}
+                            onChange={e => setSavedSearch(e.target.value)}
+                            placeholder="Filter saved roles…"
+                            className="h-8 pl-8 text-xs bg-muted/20 border-border/50"
+                          />
+                        </div>
+
+                        <div className="max-h-[280px] overflow-y-auto space-y-0.5 pr-1">
+                          {groupedRoles.length === 0 ? (
+                            <p className="text-xs text-muted-foreground py-3 text-center">No matches</p>
+                          ) : (
+                            groupedRoles.map(group => {
+                              const isOpen = openGroups.has(group.company);
+                              return (
+                                <div key={group.company}>
+                                  <button
+                                    onClick={() => toggleGroup(group.company)}
+                                    className="w-full flex items-center gap-1.5 px-2 py-1.5 rounded-md hover:bg-muted/30 transition-colors"
+                                  >
+                                    {isOpen ? (
+                                      <ChevronDown className="h-3 w-3 text-muted-foreground shrink-0" />
+                                    ) : (
+                                      <ChevronRight className="h-3 w-3 text-muted-foreground shrink-0" />
+                                    )}
+                                    <span className="text-[11px] font-semibold text-foreground">{group.company}</span>
+                                    <span className="text-[10px] text-muted-foreground ml-auto">{group.roles.length}</span>
+                                  </button>
+                                  {isOpen && (
+                                    <div className="ml-4 space-y-0.5">
+                                      {group.roles.map((role, i) => (
+                                        <button
+                                          key={i}
+                                          onClick={() => goToRole(role.job_title, role.company)}
+                                          className="w-full flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-muted/30 transition-colors group"
+                                        >
+                                          <Bookmark className="h-2.5 w-2.5 text-primary fill-primary shrink-0" />
+                                          <p className="text-xs text-foreground truncate flex-1 text-left">{role.job_title}</p>
+                                          <ArrowRight className="h-3 w-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
+                                        </button>
+                                      ))}
+                                    </div>
+                                  )}
+                                </div>
+                              );
+                            })
+                          )}
+                        </div>
+
+                        <button
+                          onClick={() => { setExpandedSaved(false); setSavedSearch(""); }}
+                          className="w-full text-[10px] text-muted-foreground hover:text-foreground py-1 transition-colors"
+                        >
+                          Collapse
+                        </button>
                       </div>
                     )}
                   </section>
