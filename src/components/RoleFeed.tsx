@@ -320,34 +320,54 @@ function RoleDetailOverlay({ role, onClose }: { role: RoleCard; onClose: () => v
                 transition={{ duration: 0.15 }}
                 className="p-5 space-y-4"
               >
-                {/* Company context */}
-                {role.company && (
-                  <div className="flex items-start gap-3 p-3 rounded-xl bg-accent/40 border border-border/30">
-                    {role.logo && (
-                      <img src={role.logo} alt={role.company} className="h-8 w-8 rounded-lg object-contain bg-white/10 p-0.5 shrink-0 mt-0.5" onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
-                    )}
-                    <div className="min-w-0">
-                      <p className="text-xs font-semibold text-foreground">{role.company}</p>
-                      <p className="text-[11px] text-muted-foreground leading-snug mt-0.5">
-                        {[role.tag && `${role.tag} company`, role.location, role.workMode === "remote" ? "Remote-friendly" : role.workMode === "hybrid" ? "Hybrid workplace" : null].filter(Boolean).join(" · ")}
-                      </p>
+                {/* AI-generated summary or loading state */}
+                {summaryLoading ? (
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                      <Sparkles className="h-3.5 w-3.5 animate-pulse text-primary" />
+                      <span>Generating role briefing…</span>
+                    </div>
+                    <div className="space-y-2">
+                      <div className="h-3 w-full rounded bg-muted animate-pulse" />
+                      <div className="h-3 w-4/5 rounded bg-muted animate-pulse" />
+                      <div className="h-3 w-3/5 rounded bg-muted animate-pulse" />
                     </div>
                   </div>
+                ) : aiSummary ? (
+                  <div className="space-y-1 text-sm text-muted-foreground leading-relaxed whitespace-pre-line">
+                    {aiSummary}
+                  </div>
+                ) : (
+                  <>
+                    {/* Fallback: company context card */}
+                    {role.company && (
+                      <div className="flex items-start gap-3 p-3 rounded-xl bg-accent/40 border border-border/30">
+                        {role.logo && (
+                          <img src={role.logo} alt={role.company} className="h-8 w-8 rounded-lg object-contain bg-white/10 p-0.5 shrink-0 mt-0.5" onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
+                        )}
+                        <div className="min-w-0">
+                          <p className="text-xs font-semibold text-foreground">{role.company}</p>
+                          <p className="text-[11px] text-muted-foreground leading-snug mt-0.5">
+                            {[role.tag && `${role.tag} company`, role.location].filter(Boolean).join(" · ")}
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                    {/* Fallback: cleaned raw description */}
+                    <div>
+                      <h3 className="text-xs font-semibold text-foreground uppercase tracking-wider mb-1.5">What you'd do</h3>
+                      {(() => {
+                        const display = cleanDescription(role.description || "");
+                        const trimmed = display.length > 280 ? display.slice(0, 280) + "…" : display;
+                        return trimmed ? (
+                          <p className="text-sm text-muted-foreground leading-relaxed">{trimmed}</p>
+                        ) : (
+                          <p className="text-sm text-muted-foreground/60 italic">No description available yet.</p>
+                        );
+                      })()}
+                    </div>
+                  </>
                 )}
-
-                {/* What this role does */}
-                <div>
-                  <h3 className="text-xs font-semibold text-foreground uppercase tracking-wider mb-1.5">What you'd do</h3>
-                  {(() => {
-                    const display = cleanDescription(role.description || "");
-                    const trimmed = display.length > 280 ? display.slice(0, 280) + "…" : display;
-                    return trimmed ? (
-                      <p className="text-sm text-muted-foreground leading-relaxed">{trimmed}</p>
-                    ) : (
-                      <p className="text-sm text-muted-foreground/60 italic">No description available yet.</p>
-                    );
-                  })()}
-                </div>
 
                 {/* Quick facts pills */}
                 <div className="flex flex-wrap gap-2">
