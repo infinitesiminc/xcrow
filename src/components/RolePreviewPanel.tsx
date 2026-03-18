@@ -77,7 +77,7 @@ export default function RolePreviewPanel({ role, onClose }: RolePreviewPanelProp
   const [simTask, setSimTask] = useState<TaskCluster | null>(null);
   const [completedTasks, setCompletedTasks] = useState<Set<string>>(new Set());
   const [isBookmarked, setIsBookmarked] = useState(false);
-  const wasEnlargedRef = useRef(false);
+  
 
   const hue1 = hashToHue(role.title);
   const hue2 = (hue1 + 60) % 360;
