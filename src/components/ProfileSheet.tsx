@@ -2,21 +2,11 @@ import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  X, Eye, Zap, Sparkles, ChevronDown, ArrowRight,
-  TrendingUp, Target, Activity, Settings, LogOut,
+  X, Compass, Bookmark, Zap, Trophy, CheckCircle2, Circle,
+  Settings, LogOut, ArrowRight,
 } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
-import {
-  buildInterestGraph,
-  type CompletionSignal,
-  type AnalysisSignal,
-  type BookmarkSignal,
-  type InterestGraph,
-} from "@/lib/interest-graph";
 
 interface ProfileSheetProps {
   open: boolean;
@@ -27,65 +17,56 @@ interface ProfileSheetProps {
   onSignOut: () => void;
 }
 
-const TIER_STYLES: Record<string, { bg: string; ring: string; text: string; label: string }> = {
-  core: { bg: "bg-success/15", ring: "ring-success/30", text: "text-success", label: "Core" },
-  exploring: { bg: "bg-primary/10", ring: "ring-primary/20", text: "text-primary", label: "Exploring" },
-  peripheral: { bg: "bg-muted/30", ring: "ring-border/30", text: "text-muted-foreground", label: "Peripheral" },
-};
+interface Milestone {
+  label: string;
+  completed: boolean;
+  icon: typeof Trophy;
+}
 
-const TAG_STYLES: Record<string, string> = {
-  adjacent: "border-primary/30 text-primary",
-  deepen: "border-warning/40 text-warning",
-  stretch: "border-accent/40 text-accent-foreground",
-};
-const TAG_LABELS: Record<string, string> = {
-  adjacent: "Adjacent role",
-  deepen: "Deepen skills",
-  stretch: "Stretch goal",
-};
+interface SavedRole {
+  job_title: string;
+  company: string | null;
+}
 
 export default function ProfileSheet({ open, onClose, userId, displayName, email, onSignOut }: ProfileSheetProps) {
   const navigate = useNavigate();
-  const [graph, setGraph] = useState<InterestGraph | null>(null);
   const [loading, setLoading] = useState(true);
-  const [expandedRole, setExpandedRole] = useState<string | null>(null);
-  const [showAllNodes, setShowAllNodes] = useState(false);
+  const [rolesExplored, setRolesExplored] = useState(0);
+  const [rolesSaved, setRolesSaved] = useState(0);
+  const [tasksPracticed, setTasksPracticed] = useState(0);
+  const [uniqueTasks, setUniqueTasks] = useState(0);
+  const [savedRoles, setSavedRoles] = useState<SavedRole[]>([]);
 
   useEffect(() => {
     if (!open || !userId) return;
     setLoading(true);
     (async () => {
-      const [simRes, analysisRes, bookmarkRes] = await Promise.all([
-        supabase.from("completed_simulations")
-          .select("task_name, job_title, company, correct_answers, total_questions, completed_at")
-          .eq("user_id", userId).order("completed_at", { ascending: false }),
-        supabase.from("analysis_history")
-          .select("job_title, company, analyzed_at")
-          .eq("user_id", userId).order("analyzed_at", { ascending: false }),
-        supabase.from("bookmarked_roles")
-          .select("job_title, company, augmented_percent, automation_risk_percent, bookmarked_at")
-          .eq("user_id", userId).order("bookmarked_at", { ascending: false }),
+      const [analysisRes, bookmarkRes, simRes] = await Promise.all([
+        supabase.from("analysis_history").select("id", { count: "exact", head: true }).eq("user_id", userId),
+        supabase.from("bookmarked_roles").select("job_title, company").eq("user_id", userId).order("bookmarked_at", { ascending: false }),
+        supabase.from("completed_simulations").select("task_name").eq("user_id", userId),
       ]);
 
-      const result = buildInterestGraph(
-        (simRes.data as CompletionSignal[]) || [],
-        (analysisRes.data as AnalysisSignal[]) || [],
-        (bookmarkRes.data as BookmarkSignal[]) || [],
-      );
-      setGraph(result);
+      setRolesExplored(analysisRes.count ?? 0);
+      const bk = (bookmarkRes.data as SavedRole[]) || [];
+      setSavedRoles(bk);
+      setRolesSaved(bk.length);
+      const sims = (simRes.data as { task_name: string }[]) || [];
+      setTasksPracticed(sims.length);
+      setUniqueTasks(new Set(sims.map(s => s.task_name)).size);
       setLoading(false);
     })();
   }, [open, userId]);
 
-  const displayedNodes = useMemo(() => {
-    if (!graph) return [];
-    return showAllNodes ? graph.nodes : graph.nodes.slice(0, 10);
-  }, [graph, showAllNodes]);
+  const milestones = useMemo<Milestone[]>(() => [
+    { label: "First role explored", completed: rolesExplored >= 1, icon: Compass },
+    { label: "First task practiced", completed: tasksPracticed >= 1, icon: Zap },
+    { label: "Saved 3 roles", completed: rolesSaved >= 3, icon: Bookmark },
+    { label: "Practiced 5 unique tasks", completed: uniqueTasks >= 5, icon: Trophy },
+    { label: "Explored 10 roles", completed: rolesExplored >= 10, icon: Compass },
+  ], [rolesExplored, tasksPracticed, rolesSaved, uniqueTasks]);
 
-  const practicedNodes = useMemo(() => {
-    if (!graph) return [];
-    return graph.nodes.filter(n => n.tasks.length > 0);
-  }, [graph]);
+  const completedCount = milestones.filter(m => m.completed).length;
 
   const goToRole = (jobTitle: string, company: string | null) => {
     const params = new URLSearchParams({ title: jobTitle });
@@ -93,9 +74,6 @@ export default function ProfileSheet({ open, onClose, userId, displayName, email
     navigate(`/analysis?${params.toString()}`);
     onClose();
   };
-
-  const scoreColor = (s: number) => s >= 75 ? "text-success" : s >= 50 ? "text-warning" : "text-destructive";
-  const barColor = (s: number) => s >= 75 ? "bg-success" : s >= 50 ? "bg-warning" : "bg-destructive";
 
   const initials = displayName
     ? displayName.slice(0, 2).toUpperCase()
@@ -105,7 +83,6 @@ export default function ProfileSheet({ open, onClose, userId, displayName, email
     <AnimatePresence>
       {open && (
         <>
-          {/* Backdrop */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -114,7 +91,6 @@ export default function ProfileSheet({ open, onClose, userId, displayName, email
             onClick={onClose}
           />
 
-          {/* Sheet */}
           <motion.div
             initial={{ x: "100%" }}
             animate={{ x: 0 }}
@@ -137,162 +113,106 @@ export default function ProfileSheet({ open, onClose, userId, displayName, email
             </div>
 
             {/* Content */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-5">
+            <div className="flex-1 overflow-y-auto p-4 space-y-6">
               {loading ? (
                 <div className="flex items-center justify-center py-12">
                   <div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
                 </div>
-              ) : !graph || graph.nodes.length === 0 ? (
-                <div className="text-center py-8">
-                  <p className="text-sm text-muted-foreground mb-3">Start exploring roles to build your interest graph.</p>
-                  <Button size="sm" onClick={() => { navigate("/"); onClose(); }}>Explore Roles</Button>
-                </div>
               ) : (
                 <>
-                  {/* Stats row */}
-                  <div className="grid grid-cols-4 gap-2">
-                    {[
-                      { value: graph.stats.rolesExplored, label: "Explored", icon: Eye },
-                      { value: graph.stats.rolesPracticed, label: "Practiced", icon: Target },
-                      { value: graph.stats.totalSessions, label: "Sessions", icon: Activity },
-                      { value: graph.stats.totalEngagement, label: "Score", icon: TrendingUp },
-                    ].map((s, i) => (
-                      <div key={i} className="text-center">
-                        <p className="text-lg font-bold text-foreground">{s.value}</p>
-                        <p className="text-[9px] text-muted-foreground uppercase tracking-wider">{s.label}</p>
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* Interest Graph pills */}
+                  {/* Journey Stats */}
                   <section>
-                    <h3 className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground mb-2">
-                      Interest Graph
-                      {graph.stats.strongestCluster && (
-                        <span className="ml-2 normal-case tracking-normal text-foreground font-normal">
-                          · strongest: {graph.stats.strongestCluster}
-                        </span>
-                      )}
+                    <h3 className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground mb-3">
+                      🎯 Journey so far
                     </h3>
-                    <div className="flex flex-wrap gap-1">
-                      {displayedNodes.map((node, i) => {
-                        const tier = TIER_STYLES[node.tier];
-                        return (
-                          <button
-                            key={node.role}
-                            onClick={() => goToRole(node.role, node.company)}
-                            className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] transition-all 
-                              border ring-1 ${tier.bg} ${tier.ring} ${tier.text} hover:shadow-sm`}
-                          >
-                            <span className="truncate max-w-[120px]">{node.role}</span>
-                            {node.signals.practices > 0 && (
-                              <span className="text-[9px] font-semibold opacity-80">{node.signals.practices}</span>
-                            )}
-                            {node.signals.bookmarks > 0 && (
-                              <span className="text-[9px] opacity-60">★</span>
-                            )}
-                          </button>
-                        );
-                      })}
+                    <div className="grid grid-cols-3 gap-3">
+                      {[
+                        { value: rolesExplored, label: "Explored", icon: Compass },
+                        { value: rolesSaved, label: "Saved", icon: Bookmark },
+                        { value: tasksPracticed, label: "Practiced", icon: Zap },
+                      ].map((s, i) => (
+                        <motion.div
+                          key={s.label}
+                          initial={{ opacity: 0, y: 8 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: i * 0.08 }}
+                          className="rounded-xl border border-border/50 bg-muted/20 p-3 text-center"
+                        >
+                          <s.icon className="h-4 w-4 text-primary mx-auto mb-1.5" />
+                          <p className="text-xl font-bold text-foreground">{s.value}</p>
+                          <p className="text-[9px] text-muted-foreground uppercase tracking-wider mt-0.5">{s.label}</p>
+                        </motion.div>
+                      ))}
                     </div>
-                    {graph.nodes.length > 10 && (
-                      <button
-                        onClick={() => setShowAllNodes(!showAllNodes)}
-                        className="text-[10px] text-primary hover:underline mt-1.5 flex items-center gap-0.5"
-                      >
-                        {showAllNodes ? "Show less" : `+${graph.nodes.length - 10} more`}
-                        <ChevronDown className={`h-2.5 w-2.5 transition-transform ${showAllNodes ? "rotate-180" : ""}`} />
-                      </button>
-                    )}
                   </section>
 
-                  {/* Skill Depth */}
-                  {practicedNodes.length > 0 && (
-                    <section>
-                      <h3 className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground mb-2">
-                        Skill Depth · {practicedNodes.length} roles
-                      </h3>
-                      <div className="space-y-1">
-                        {practicedNodes.map((node) => {
-                          const isExpanded = expandedRole === node.role;
-                          return (
-                            <div key={node.role}>
-                              <button
-                                onClick={() => setExpandedRole(isExpanded ? null : node.role)}
-                                className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-muted/30 transition-colors"
-                              >
-                                <p className="text-xs font-medium text-foreground truncate flex-1 text-left">{node.role}</p>
-                                <div className="flex items-center gap-1.5 w-20 shrink-0">
-                                  <div className="flex-1 h-1.5 rounded-full bg-muted/30 overflow-hidden">
-                                    <div className={`h-full rounded-full ${barColor(node.avgProficiency)}`} style={{ width: `${node.avgProficiency}%` }} />
-                                  </div>
-                                  <span className={`text-[10px] font-bold w-7 text-right ${scoreColor(node.avgProficiency)}`}>{node.avgProficiency}%</span>
-                                </div>
-                                <ChevronDown className={`h-3 w-3 text-muted-foreground transition-transform ${isExpanded ? "rotate-180" : ""}`} />
-                              </button>
-                              <AnimatePresence>
-                                {isExpanded && (
-                                  <motion.div
-                                    initial={{ height: 0, opacity: 0 }}
-                                    animate={{ height: "auto", opacity: 1 }}
-                                    exit={{ height: 0, opacity: 0 }}
-                                    className="overflow-hidden"
-                                  >
-                                    <div className="pl-4 pb-2 space-y-1">
-                                      {node.tasks.map((task, ti) => (
-                                        <div key={ti} className="flex items-center gap-2 py-0.5">
-                                          <p className="text-[11px] text-muted-foreground flex-1 truncate">{task.name}</p>
-                                          <span className={`text-[10px] font-semibold ${scoreColor(task.bestScore)}`}>{Math.round(task.bestScore)}%</span>
-                                          <span className="text-[9px] text-muted-foreground">{task.sessions}×</span>
-                                        </div>
-                                      ))}
-                                    </div>
-                                  </motion.div>
-                                )}
-                              </AnimatePresence>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </section>
-                  )}
+                  {/* Milestones */}
+                  <section>
+                    <h3 className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground mb-3">
+                      🏆 Milestones · {completedCount}/{milestones.length}
+                    </h3>
+                    <div className="space-y-1.5">
+                      {milestones.map((m, i) => (
+                        <motion.div
+                          key={m.label}
+                          initial={{ opacity: 0, x: -8 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: i * 0.05 }}
+                          className="flex items-center gap-2.5 px-2 py-1.5"
+                        >
+                          {m.completed ? (
+                            <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />
+                          ) : (
+                            <Circle className="h-4 w-4 text-muted-foreground/40 shrink-0" />
+                          )}
+                          <span className={`text-xs ${m.completed ? "text-foreground" : "text-muted-foreground"}`}>
+                            {m.label}
+                          </span>
+                        </motion.div>
+                      ))}
+                    </div>
+                  </section>
 
-                  {/* Recommendations */}
-                  {graph.recommendations.length > 0 && (
-                    <section>
-                      <div className="flex items-center gap-1.5 mb-2">
-                        <Sparkles className="h-3.5 w-3.5 text-primary" />
-                        <h3 className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground">
-                          Recommended · {graph.recommendations.length} matches
-                        </h3>
-                      </div>
-                      <div className="space-y-1.5">
-                        {graph.recommendations.slice(0, 4).map((rec, i) => (
+                  {/* Saved Roles */}
+                  <section>
+                    <h3 className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground mb-3">
+                      📚 Saved Roles{rolesSaved > 0 && ` · ${rolesSaved}`}
+                    </h3>
+                    {savedRoles.length === 0 ? (
+                      <p className="text-xs text-muted-foreground">
+                        No saved roles yet — explore and bookmark roles you're interested in.
+                      </p>
+                    ) : (
+                      <div className="space-y-1">
+                        {savedRoles.slice(0, 8).map((role, i) => (
                           <button
                             key={i}
-                            onClick={() => goToRole(rec.jobTitle, rec.company)}
-                            className="w-full text-left flex items-center gap-2 p-2.5 rounded-lg border border-border/40 hover:border-primary/30 hover:bg-muted/20 transition-all"
+                            onClick={() => goToRole(role.job_title, role.company)}
+                            className="w-full flex items-center gap-2 px-2 py-2 rounded-lg hover:bg-muted/30 transition-colors group"
                           >
-                            <div className="flex-1 min-w-0">
-                              <div className="flex items-center gap-1.5">
-                                <p className="text-xs font-medium text-foreground truncate">{rec.jobTitle}</p>
-                                <Badge variant="outline" className={`text-[8px] px-1 py-0 shrink-0 ${TAG_STYLES[rec.tag] || ""}`}>
-                                  {TAG_LABELS[rec.tag] || rec.tag}
-                                </Badge>
-                              </div>
-                              <p className="text-[10px] text-muted-foreground mt-0.5 line-clamp-1">{rec.reason}</p>
+                            <Bookmark className="h-3 w-3 text-primary fill-primary shrink-0" />
+                            <div className="flex-1 min-w-0 text-left">
+                              <p className="text-xs font-medium text-foreground truncate">{role.job_title}</p>
+                              {role.company && (
+                                <p className="text-[10px] text-muted-foreground truncate">{role.company}</p>
+                              )}
                             </div>
-                            <span className="text-xs font-bold text-foreground shrink-0">{rec.matchScore}</span>
+                            <ArrowRight className="h-3 w-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
                           </button>
                         ))}
+                        {savedRoles.length > 8 && (
+                          <p className="text-[10px] text-muted-foreground px-2 pt-1">
+                            +{savedRoles.length - 8} more
+                          </p>
+                        )}
                       </div>
-                    </section>
-                  )}
+                    )}
+                  </section>
                 </>
               )}
             </div>
 
-            {/* Footer actions */}
+            {/* Footer */}
             <div className="shrink-0 border-t border-border/50 p-3 flex items-center gap-2">
               <Button
                 variant="ghost"
