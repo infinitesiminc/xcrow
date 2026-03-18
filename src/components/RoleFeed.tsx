@@ -263,7 +263,7 @@ function DesktopGrid({ roles, onOpenSearch }: RoleFeedProps) {
               className={`px-3 py-1.5 text-xs font-medium rounded-full transition-colors ${
                 filter === tag ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:text-foreground"
               }`}
-            >{tag}</button>
+            >{tag} <span className="opacity-60 ml-0.5">{tagCounts[tag] || 0}</span></button>
           ))}
         </div>
 
