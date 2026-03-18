@@ -606,11 +606,13 @@ export default function JourneySkillProfileView({ practicedRoles = [], onNavigat
   const rand = useMemo(() => seeded(2026), []);
   const skills = useMemo(() => buildTaxonomy(practicedRoles, rand), [practicedRoles, rand]);
   const jobMatches = useMemo(() => computeJobMatches(skills), [skills]);
+  const edgePath = useMemo(() => buildEdgePath(jobMatches, practicedRoles), [jobMatches, practicedRoles]);
   const isRealData = practicedRoles.length > 0;
 
   const [view, setView] = useState<ViewMode>("strengths");
   const [expandedSkill, setExpandedSkill] = useState<string | null>(null);
   const [expandedJob, setExpandedJob] = useState<number | null>(null);
+  const [expandedEdge, setExpandedEdge] = useState<number | null>(null);
   const [searchQ, setSearchQ] = useState("");
 
   // Split into strengths / developing / gaps
