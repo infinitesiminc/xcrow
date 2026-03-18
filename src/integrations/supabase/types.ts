@@ -528,7 +528,9 @@ export type Database = {
         Row: {
           augmented_percent: number | null
           automation_risk_percent: number | null
+          city: string | null
           company_id: string | null
+          country: string | null
           department: string | null
           description: string | null
           difficulty: number | null
@@ -542,12 +544,15 @@ export type Database = {
           source_url: string | null
           status: string | null
           title: string
+          work_mode: string | null
           workspace_id: string | null
         }
         Insert: {
           augmented_percent?: number | null
           automation_risk_percent?: number | null
+          city?: string | null
           company_id?: string | null
+          country?: string | null
           department?: string | null
           description?: string | null
           difficulty?: number | null
@@ -561,12 +566,15 @@ export type Database = {
           source_url?: string | null
           status?: string | null
           title: string
+          work_mode?: string | null
           workspace_id?: string | null
         }
         Update: {
           augmented_percent?: number | null
           automation_risk_percent?: number | null
+          city?: string | null
           company_id?: string | null
+          country?: string | null
           department?: string | null
           description?: string | null
           difficulty?: number | null
@@ -580,6 +588,7 @@ export type Database = {
           source_url?: string | null
           status?: string | null
           title?: string
+          work_mode?: string | null
           workspace_id?: string | null
         }
         Relationships: [

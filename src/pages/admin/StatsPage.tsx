@@ -1,10 +1,12 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { Building2, Briefcase, Brain, Users, Loader2, Settings2, CheckCircle2 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { Building2, Briefcase, Brain, Users, Loader2, Settings2, CheckCircle2, MapPin } from "lucide-react";
 
 interface FeatureFlag {
   key: string;
@@ -13,10 +15,13 @@ interface FeatureFlag {
 }
 
 export default function StatsPage() {
+  const { toast } = useToast();
   const [stats, setStats] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [flags, setFlags] = useState<FeatureFlag[]>([]);
   const [togglingKey, setTogglingKey] = useState<string | null>(null);
+  const [parsingLocations, setParsingLocations] = useState(false);
+  const [parseProgress, setParseProgress] = useState("");
 
   useEffect(() => {
     (async () => {
@@ -89,6 +94,60 @@ export default function StatsPage() {
             </CardContent>
           </Card>
         ))}
+      </div>
+
+      <Separator />
+      <div className="space-y-4">
+        <div className="flex items-center gap-2">
+          <MapPin className="h-5 w-5 text-muted-foreground" />
+          <h2 className="text-lg font-semibold">Data Tools</h2>
+        </div>
+        <Card>
+          <CardContent className="p-4 flex items-center justify-between gap-4">
+            <div className="space-y-0.5">
+              <p className="text-sm font-medium">Parse Job Locations</p>
+              <p className="text-xs text-muted-foreground">
+                AI-parse raw location strings into structured city/country/work_mode.
+                {parseProgress && <span className="ml-1 text-primary">{parseProgress}</span>}
+              </p>
+            </div>
+            <Button
+              size="sm"
+              variant="outline"
+              disabled={parsingLocations}
+              onClick={async () => {
+                setParsingLocations(true);
+                let totalParsed = 0;
+                let offset = 0;
+                try {
+                  while (true) {
+                    setParseProgress(`Batch at offset ${offset}...`);
+                    const { data, error } = await supabase.functions.invoke("parse-locations", {
+                      body: { batch_size: 100, offset: 0 },
+                    });
+                    if (error) throw error;
+                    if (data?.error) throw new Error(data.error);
+                    totalParsed += data.parsed || 0;
+                    setParseProgress(`${totalParsed} jobs parsed so far...`);
+                    if (data.done) break;
+                    offset += 100;
+                    await new Promise(r => setTimeout(r, 1500));
+                  }
+                  toast({ title: "Locations parsed", description: `${totalParsed} jobs updated with city/country/work_mode` });
+                  setParseProgress("");
+                } catch (err: any) {
+                  toast({ title: "Parse failed", description: err.message, variant: "destructive" });
+                  setParseProgress("");
+                } finally {
+                  setParsingLocations(false);
+                }
+              }}
+            >
+              {parsingLocations ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : <MapPin className="h-3 w-3 mr-1" />}
+              {parsingLocations ? "Parsing..." : "Run"}
+            </Button>
+          </CardContent>
+        </Card>
       </div>
 
       {flags.length > 0 && (
