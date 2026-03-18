@@ -521,7 +521,14 @@ export default function PipelinePage() {
                           {c.name}
                           {(c.job_count || 0) > 0 && <span className="text-muted-foreground font-normal"> · {c.job_count}</span>}
                         </p>
-                        {c.industry && <p className="text-[9px] text-muted-foreground truncate mt-0.5">{c.industry}</p>}
+                        <div className="flex items-center gap-1 mt-0.5">
+                          {c.industry && <span className="text-[9px] text-muted-foreground truncate">{c.industry}</span>}
+                          {c.priority_score != null && (
+                            <span className={`text-[9px] font-semibold ${scoreColor(c.priority_score)}`} title={scoreLabel(c.priority_score)}>
+                              ★{c.priority_score}
+                            </span>
+                          )}
+                        </div>
                       </div>
                       <div className="flex items-center gap-0.5 shrink-0">
                         <Button variant="ghost" size="sm" className="h-5 w-5 p-0" onClick={e => { e.stopPropagation(); syncCompanyJobs(c.id); }} disabled={!!syncing} title="Sync jobs">
