@@ -19,30 +19,33 @@ function getSupabaseAdmin() {
   );
 }
 
-async function simApi(
-  action: string,
-  payload: Record<string, unknown> = {}
-): Promise<any> {
+async function safeFetch(url: string, opts: RequestInit, timeoutMs = 30000): Promise<Response> {
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 30000);
+  const timeout = setTimeout(() => controller.abort(), timeoutMs);
   try {
-    const res = await fetch(SIM_API_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", apikey: SIM_API_KEY },
-      body: JSON.stringify({ action, payload }),
-      signal: controller.signal,
-    });
-    const text = await res.text();
-    if (!res.ok) throw new Error(`sim-api ${res.status}: ${text}`);
-    return JSON.parse(text);
+    return await fetch(url, { ...opts, signal: controller.signal });
   } finally {
     clearTimeout(timeout);
   }
 }
 
+async function simApi(
+  action: string,
+  payload: Record<string, unknown> = {}
+): Promise<any> {
+  const res = await safeFetch(SIM_API_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", apikey: SIM_API_KEY },
+    body: JSON.stringify({ action, payload }),
+  });
+  const text = await res.text();
+  if (!res.ok) throw new Error(`sim-api ${res.status}: ${text}`);
+  return JSON.parse(text);
+}
+
 /** Check if HQ string looks like a non-US location (exclude known non-US) */
 function isLikelyNonUS(hq: string | null | undefined): boolean {
-  if (!hq) return false; // unknown = keep (assume US)
+  if (!hq) return false;
   const lower = hq.toLowerCase().trim();
   const nonUSPatterns = [
     /\b(uk|united kingdom|london|england|scotland|wales)\b/,
@@ -58,6 +61,106 @@ function isLikelyNonUS(hq: string | null | undefined): boolean {
     /\b(mexico|mexico city)\b/, /\b(switzerland|zurich)\b/,
   ];
   return nonUSPatterns.some((p) => p.test(lower));
+}
+
+/* ── Direct ATS public API scrapers ── */
+
+function extractAtsSlug(careersUrl: string, platform: string): string | null {
+  if (!careersUrl) return null;
+  try {
+    const u = new URL(careersUrl);
+    if (platform === "ashby" && u.hostname.includes("ashbyhq.com")) {
+      // https://jobs.ashbyhq.com/{slug} or https://jobs.ashbyhq.com/{slug}/...
+      const parts = u.pathname.split("/").filter(Boolean);
+      return parts[0] || null;
+    }
+    if (platform === "greenhouse" && u.hostname.includes("greenhouse.io")) {
+      // https://boards.greenhouse.io/{slug}
+      const parts = u.pathname.split("/").filter(Boolean);
+      return parts[0] || null;
+    }
+    if (platform === "lever" && u.hostname.includes("lever.co")) {
+      // https://jobs.lever.co/{slug}
+      const parts = u.pathname.split("/").filter(Boolean);
+      return parts[0] || null;
+    }
+  } catch { /* invalid URL */ }
+  return null;
+}
+
+async function fetchAshbyJobs(slug: string): Promise<any[]> {
+  const res = await safeFetch(
+    `https://api.ashbyhq.com/posting-api/job-board/${slug}?includeCompensation=true`,
+    { method: "GET", headers: { "Accept": "application/json" } },
+    15000
+  );
+  const text = await res.text();
+  if (!res.ok) { console.error("Ashby API error:", res.status, text); return []; }
+  const data = JSON.parse(text);
+  return (data.jobs || []).map((j: any) => ({
+    external_id: `ashby-${slug}-${j.id}`,
+    title: j.title,
+    department: j.department || j.departmentName || null,
+    location: j.location || j.locationName || null,
+    description: j.descriptionPlain || j.descriptionHtml?.slice(0, 5000) || null,
+    source_url: j.jobUrl || `https://jobs.ashbyhq.com/${slug}/${j.id}`,
+    status: j.isListed === false ? "unlisted" : "active",
+  }));
+}
+
+async function fetchGreenhouseJobs(slug: string): Promise<any[]> {
+  const res = await safeFetch(
+    `https://api.greenhouse.io/v1/boards/${slug}/jobs?content=true`,
+    { method: "GET", headers: { "Accept": "application/json" } },
+    15000
+  );
+  const text = await res.text();
+  if (!res.ok) { console.error("Greenhouse API error:", res.status, text); return []; }
+  const data = JSON.parse(text);
+  return (data.jobs || []).map((j: any) => ({
+    external_id: `gh-${slug}-${j.id}`,
+    title: j.title,
+    department: j.departments?.[0]?.name || null,
+    location: j.location?.name || null,
+    description: j.content?.slice(0, 5000) || null,
+    source_url: j.absolute_url || null,
+    status: "active",
+  }));
+}
+
+async function fetchLeverJobs(slug: string): Promise<any[]> {
+  const res = await safeFetch(
+    `https://api.lever.co/v0/postings/${slug}?mode=json`,
+    { method: "GET", headers: { "Accept": "application/json" } },
+    15000
+  );
+  const text = await res.text();
+  if (!res.ok) { console.error("Lever API error:", res.status, text); return []; }
+  const data = JSON.parse(text);
+  return (Array.isArray(data) ? data : []).map((j: any) => ({
+    external_id: `lever-${slug}-${j.id}`,
+    title: j.text,
+    department: j.categories?.department || j.categories?.team || null,
+    location: j.categories?.location || null,
+    description: j.descriptionPlain?.slice(0, 5000) || null,
+    source_url: j.hostedUrl || null,
+    status: "active",
+  }));
+}
+
+async function fetchDirectAtsJobs(careersUrl: string, platform: string): Promise<any[]> {
+  const slug = extractAtsSlug(careersUrl, platform);
+  if (!slug) {
+    console.log(`Could not extract slug from ${careersUrl} for platform ${platform}`);
+    return [];
+  }
+  console.log(`Direct ATS fetch: platform=${platform}, slug=${slug}`);
+  switch (platform) {
+    case "ashby": return fetchAshbyJobs(slug);
+    case "greenhouse": return fetchGreenhouseJobs(slug);
+    case "lever": return fetchLeverJobs(slug);
+    default: return [];
+  }
 }
 
 serve(async (req) => {
@@ -78,7 +181,6 @@ serve(async (req) => {
       const data = await simApi("list_companies", apiPayload);
       const companies = data.companies || [];
 
-      // Filter: exclude known non-US HQs (keep unknowns as likely US)
       const filtered = us_only
         ? companies.filter((c: any) => !isLikelyNonUS(c.headquarters || c.location || c.hq))
         : companies;
@@ -118,29 +220,69 @@ serve(async (req) => {
     if (step === "jobs") {
       let externalCompanyId = company_id;
       let localCompanyId: string | null = null;
+      let companyRow: any = null;
 
       if (company_id) {
         const { data: found } = await sb
           .from("companies")
-          .select("id, external_id")
+          .select("id, external_id, careers_url, detected_ats_platform")
           .or(`id.eq.${company_id},external_id.eq.${company_id}`)
           .limit(1)
           .single();
         if (found) {
           externalCompanyId = found.external_id;
           localCompanyId = found.id;
+          companyRow = found;
         }
       }
 
-      if (!externalCompanyId) throw new Error("No company ID resolved");
+      // Try sim-api first (if company has an external_id)
+      let jobs: any[] = [];
+      let source = "sim-api";
 
-      const data = await simApi("list_jobs", {
-        company_id: externalCompanyId,
-        limit,
-        offset,
-      });
-      const jobs = data.jobs || [];
+      if (externalCompanyId) {
+        try {
+          const data = await simApi("list_jobs", {
+            company_id: externalCompanyId,
+            limit,
+            offset,
+          });
+          jobs = data.jobs || [];
+        } catch (e) {
+          console.warn("sim-api job fetch failed:", e);
+        }
+      }
 
+      // Fallback: direct ATS public API if sim-api returned 0 jobs
+      if (jobs.length === 0 && companyRow?.careers_url && companyRow?.detected_ats_platform) {
+        console.log("sim-api returned 0 jobs, trying direct ATS scrape...");
+        source = "direct-ats";
+        const directJobs = await fetchDirectAtsJobs(companyRow.careers_url, companyRow.detected_ats_platform);
+        if (directJobs.length > 0) {
+          // Direct jobs already have the right shape
+          if (!localCompanyId) {
+            const { data: co } = await sb.from("companies").select("id").eq("external_id", externalCompanyId).single();
+            localCompanyId = co?.id || null;
+          }
+          const rows = directJobs.map(j => ({
+            ...j,
+            company_id: localCompanyId,
+            difficulty: 3,
+          }));
+          if (rows.length > 0) {
+            const { error } = await sb.from("jobs").upsert(rows, { onConflict: "external_id" });
+            if (error) throw new Error(`Upsert direct jobs: ${error.message}`);
+          }
+          return respond({
+            company: company_id,
+            synced: rows.length,
+            source,
+            hasMore: false,
+          });
+        }
+      }
+
+      // Standard sim-api path
       if (!localCompanyId) {
         const { data: co } = await sb
           .from("companies")
@@ -173,6 +315,7 @@ serve(async (req) => {
       return respond({
         company: company_id,
         synced: rows.length,
+        source,
         hasMore: jobs.length === limit,
       });
     }
