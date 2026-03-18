@@ -656,7 +656,7 @@ export default function PipelinePage() {
         </div>
 
         {/* Stage cards */}
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-4 gap-3">
           <button onClick={() => setActiveTab("discover")} className={`rounded-lg border p-3 text-left transition-all ${activeTab === "discover" ? "border-primary bg-primary/5" : "border-border hover:border-primary/30"}`}>
             <div className="flex items-center gap-2 mb-1">
               <Telescope className="h-3.5 w-3.5 text-primary" />
