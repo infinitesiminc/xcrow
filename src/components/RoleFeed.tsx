@@ -785,7 +785,7 @@ function DesktopGrid({ roles, savedRoleTitles }: RoleFeedProps) {
 
 /* ── Mobile: Vertical Swipe Feed ───────────────────── */
 
-function MobileFeed({ roles, onOpenSearch }: RoleFeedProps) {
+function MobileFeed({ roles }: RoleFeedProps) {
   const navigate = useNavigate();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [direction, setDirection] = useState(0);
