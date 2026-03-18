@@ -10,13 +10,19 @@ import { Badge } from "@/components/ui/badge";
 import { Sparkles, Eye, Shield, Bookmark } from "lucide-react";
 import type { InterestGraph, Recommendation } from "@/lib/interest-graph";
 
-function profToColor(prof: number): string {
-  if (prof >= 80) return "hsl(142 70% 45%)";
-  if (prof >= 60) return "hsl(80 60% 45%)";
-  if (prof >= 40) return "hsl(45 80% 50%)";
+function profToColor(prof: number, hasPractice: boolean): string {
+  if (!hasPractice) return "hsl(var(--muted))";
+  if (prof >= 80) return "hsl(var(--brand-human))";
+  if (prof >= 60) return "hsl(142 70% 45%)";
+  if (prof >= 40) return "hsl(var(--brand-mid))";
   if (prof >= 20) return "hsl(25 80% 50%)";
-  if (prof > 0) return "hsl(0 70% 50%)";
-  return "hsl(var(--muted-foreground))";
+  return "hsl(var(--brand-ai))";
+}
+
+function tierColor(tier: "core" | "exploring" | "peripheral"): string {
+  if (tier === "core") return "hsl(var(--brand-human))";
+  if (tier === "exploring") return "hsl(var(--brand-mid))";
+  return "hsl(var(--muted))";
 }
 
 type TierFilter = "all" | "core" | "exploring" | "peripheral";
@@ -68,7 +74,7 @@ export default function JourneyHeatmapView({ graph, onNavigate }: { graph: Inter
         <span>Proficiency:</span>
         <div className="flex gap-0.5">
           {[0, 20, 40, 60, 80].map(v => (
-            <div key={v} className="w-4 h-2 rounded-sm" style={{ backgroundColor: profToColor(v + 10) }} />
+            <div key={v} className="w-4 h-2 rounded-sm" style={{ backgroundColor: profToColor(v + 10, true) }} />
           ))}
         </div>
         <span>Low → High</span>
@@ -80,7 +86,8 @@ export default function JourneyHeatmapView({ graph, onNavigate }: { graph: Inter
         {filteredNodes.map((node, i) => {
           const engNorm = node.score / maxScore;
           const tileSize = 72 + engNorm * 56; // 72px to 128px
-          const color = profToColor(node.avgProficiency);
+          const hasPractice = node.signals.practices > 0;
+          const color = hasPractice ? profToColor(node.avgProficiency, true) : tierColor(node.tier);
 
           return (
             <motion.button
@@ -93,8 +100,8 @@ export default function JourneyHeatmapView({ graph, onNavigate }: { graph: Inter
               style={{ width: tileSize, height: tileSize }}
             >
               {/* Color indicator */}
-              <div className="absolute inset-0 opacity-15" style={{ backgroundColor: color }} />
-              <div className="absolute bottom-0 left-0 right-0 h-1" style={{ backgroundColor: color }} />
+              <div className="absolute inset-0 opacity-25" style={{ backgroundColor: color }} />
+              <div className="absolute bottom-0 left-0 right-0 h-1.5 rounded-b" style={{ backgroundColor: color }} />
 
               <div className="relative p-2 h-full flex flex-col justify-between">
                 <div>
