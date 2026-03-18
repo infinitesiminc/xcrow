@@ -176,17 +176,20 @@ export default function PipelinePage() {
   const [diagLoading, setDiagLoading] = useState(false);
   const [diagCompanyName, setDiagCompanyName] = useState("");
 
-  /* ── Apollo Search ── */
+  /* ── Apollo Bulk Discovery ── */
   const [apolloOpen, setApolloOpen] = useState(false);
   const [apolloKeywords, setApolloKeywords] = useState("");
   const [apolloName, setApolloName] = useState("");
   const [apolloLocation, setApolloLocation] = useState("United States");
   const [apolloSize, setApolloSize] = useState("51,200");
+  const [apolloFunding, setApolloFunding] = useState("");
   const [apolloResults, setApolloResults] = useState<any[]>([]);
   const [apolloLoading, setApolloLoading] = useState(false);
   const [apolloImporting, setApolloImporting] = useState(false);
   const [apolloPagination, setApolloPagination] = useState<{ page: number; total_entries: number; total_pages: number }>({ page: 1, total_entries: 0, total_pages: 0 });
   const [apolloSelected, setApolloSelected] = useState<Set<number>>(new Set());
+  const [apolloBulkProgress, setApolloBulkProgress] = useState<{ current: number; total: number; imported: number } | null>(null);
+  const apolloBulkAbort = useRef(false);
 
   const handleAddCompany = async () => {
     if (!addUrl.trim()) return;
@@ -208,15 +211,21 @@ export default function PipelinePage() {
     }
   };
 
+  const buildApolloBody = (pg = 1): Record<string, unknown> => {
+    const body: Record<string, unknown> = { page: pg, per_page: 25, import_results: false };
+    if (apolloLocation.trim()) body.organization_locations = [apolloLocation.trim()];
+    if (apolloSize) body.organization_num_employees_ranges = [apolloSize];
+    if (apolloKeywords.trim()) body.q_organization_keyword_tags = apolloKeywords.split(",").map(s => s.trim()).filter(Boolean);
+    if (apolloName.trim()) body.q_organization_name = apolloName.trim();
+    if (apolloFunding) body.latest_funding_stage = apolloFunding;
+    return body;
+  };
+
   const handleApolloSearch = async (pg = 1) => {
     setApolloLoading(true);
     setApolloSelected(new Set());
     try {
-      const body: Record<string, unknown> = { page: pg, per_page: 25, import_results: false };
-      if (apolloLocation.trim()) body.organization_locations = [apolloLocation.trim()];
-      if (apolloSize) body.organization_num_employees_ranges = [apolloSize];
-      if (apolloKeywords.trim()) body.q_organization_keyword_tags = apolloKeywords.split(",").map(s => s.trim()).filter(Boolean);
-      if (apolloName.trim()) body.q_organization_name = apolloName.trim();
+      const body = buildApolloBody(pg);
       const { data, error } = await supabase.functions.invoke("search-apollo", { body });
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
@@ -229,13 +238,11 @@ export default function PipelinePage() {
     }
   };
 
+  /** Import selected companies from current page */
   const handleApolloImport = async () => {
-    // Import selected results by calling the edge function with import_results: true
     setApolloImporting(true);
     try {
       const selectedCompanies = apolloResults.filter((_, i) => apolloSelected.has(i));
-      // We import by re-searching with same params but with import flag
-      // Actually, better: enrich each selected company by website
       let imported = 0;
       for (const co of selectedCompanies) {
         const website = co.website || co.domain;
@@ -252,6 +259,35 @@ export default function PipelinePage() {
       toast({ title: "Import failed", description: err.message, variant: "destructive" });
     } finally {
       setApolloImporting(false);
+    }
+  };
+
+  /** Bulk import: auto-page through ALL Apollo results and import each page */
+  const handleApolloBulkImport = async () => {
+    apolloBulkAbort.current = false;
+    setApolloImporting(true);
+    const maxPages = Math.min(apolloPagination.total_pages, 20); // cap at 500 companies
+    setApolloBulkProgress({ current: 0, total: maxPages, imported: 0 });
+    let totalImported = 0;
+    try {
+      for (let pg = 1; pg <= maxPages; pg++) {
+        if (apolloBulkAbort.current) break;
+        setApolloBulkProgress(prev => prev ? { ...prev, current: pg } : null);
+        const body = { ...buildApolloBody(pg), import_results: true };
+        const { data, error } = await supabase.functions.invoke("search-apollo", { body });
+        if (error) throw error;
+        if (data?.error) throw new Error(data.error);
+        totalImported += (data.stats?.created || 0) + (data.stats?.updated || 0);
+        setApolloBulkProgress(prev => prev ? { ...prev, imported: totalImported } : null);
+      }
+      toast({ title: "Bulk discovery complete", description: `${totalImported} companies imported across ${apolloBulkAbort.current ? "stopped early" : maxPages} pages.` });
+      setApolloOpen(false);
+      fetchCompanies();
+    } catch (err: any) {
+      toast({ title: "Bulk import failed", description: err.message, variant: "destructive" });
+    } finally {
+      setApolloImporting(false);
+      setApolloBulkProgress(null);
     }
   };
 
@@ -925,25 +961,25 @@ export default function PipelinePage() {
           </div>
         </DialogContent>
       </Dialog>
-      {/* Apollo Search Dialog */}
-      <Dialog open={apolloOpen} onOpenChange={setApolloOpen}>
+      {/* Apollo Bulk Discovery Dialog */}
+      <Dialog open={apolloOpen} onOpenChange={v => { if (!v) apolloBulkAbort.current = true; setApolloOpen(v); }}>
         <DialogContent className="sm:max-w-2xl max-h-[85vh] flex flex-col">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <Telescope className="h-4 w-4" /> Apollo Company Search
+              <Telescope className="h-4 w-4" /> Apollo Bulk Discovery
             </DialogTitle>
-            <DialogDescription>Search Apollo's database to find and import companies.</DialogDescription>
+            <DialogDescription>Discover companies by filters and bulk-import all results into the pipeline.</DialogDescription>
           </DialogHeader>
 
           {/* Filters */}
           <div className="grid grid-cols-2 gap-2">
             <div>
               <label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">Company Name</label>
-              <Input placeholder="e.g. Stripe" value={apolloName} onChange={e => setApolloName(e.target.value)} className="h-8 text-xs" />
+              <Input placeholder="e.g. Stripe (optional)" value={apolloName} onChange={e => setApolloName(e.target.value)} className="h-8 text-xs" />
             </div>
             <div>
-              <label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">Keywords</label>
-              <Input placeholder="e.g. AI, fintech" value={apolloKeywords} onChange={e => setApolloKeywords(e.target.value)} className="h-8 text-xs" />
+              <label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">Keywords (comma-separated)</label>
+              <Input placeholder="e.g. AI, fintech, SaaS" value={apolloKeywords} onChange={e => setApolloKeywords(e.target.value)} className="h-8 text-xs" />
             </div>
             <div>
               <label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">Location</label>
@@ -967,13 +1003,54 @@ export default function PipelinePage() {
                 <option value="10001,1000000">10,000+</option>
               </select>
             </div>
+            <div className="col-span-2">
+              <label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">Funding Stage</label>
+              <select
+                value={apolloFunding}
+                onChange={e => setApolloFunding(e.target.value)}
+                className="w-full h-8 text-xs rounded-md border border-input bg-background px-2"
+              >
+                <option value="">Any</option>
+                <option value="pre_seed">Pre-Seed</option>
+                <option value="seed">Seed</option>
+                <option value="series_a">Series A</option>
+                <option value="series_b">Series B</option>
+                <option value="series_c">Series C</option>
+                <option value="series_d">Series D</option>
+                <option value="series_e">Series E+</option>
+                <option value="growth">Growth</option>
+                <option value="ipo">IPO</option>
+              </select>
+            </div>
           </div>
-          <Button onClick={() => handleApolloSearch(1)} disabled={apolloLoading} size="sm" className="gap-2">
-            {apolloLoading ? <Loader2 className="h-3 w-3 animate-spin" /> : <Search className="h-3 w-3" />}
-            Search
-          </Button>
+          <div className="flex gap-2">
+            <Button onClick={() => handleApolloSearch(1)} disabled={apolloLoading || apolloImporting} size="sm" className="gap-2">
+              {apolloLoading ? <Loader2 className="h-3 w-3 animate-spin" /> : <Search className="h-3 w-3" />}
+              Preview Results
+            </Button>
+            {apolloPagination.total_entries > 0 && !apolloBulkProgress && (
+              <Button onClick={handleApolloBulkImport} disabled={apolloImporting} size="sm" variant="default" className="gap-2">
+                <Download className="h-3 w-3" />
+                Import All ({Math.min(apolloPagination.total_entries, 500).toLocaleString()} companies)
+              </Button>
+            )}
+          </div>
 
-          {/* Results */}
+          {/* Bulk progress */}
+          {apolloBulkProgress && (
+            <div className="space-y-1.5 rounded-md border border-primary/20 bg-primary/5 p-3">
+              <div className="flex items-center justify-between text-xs">
+                <span className="font-medium">Importing page {apolloBulkProgress.current}/{apolloBulkProgress.total}…</span>
+                <span className="text-muted-foreground">{apolloBulkProgress.imported} companies saved</span>
+              </div>
+              <Progress value={(apolloBulkProgress.current / apolloBulkProgress.total) * 100} className="h-1.5" />
+              <Button variant="outline" size="sm" className="h-6 text-[10px]" onClick={() => { apolloBulkAbort.current = true; }}>
+                <Pause className="h-3 w-3 mr-1" /> Stop
+              </Button>
+            </div>
+          )}
+
+          {/* Results preview */}
           <ScrollArea className="flex-1 min-h-0">
             {apolloResults.length > 0 ? (
               <div className="space-y-1">
@@ -1031,14 +1108,14 @@ export default function PipelinePage() {
             ) : !apolloLoading ? (
               <div className="text-center py-8">
                 <Telescope className="h-6 w-6 mx-auto mb-2 text-muted-foreground/40" />
-                <p className="text-xs text-muted-foreground">Search Apollo to find companies</p>
+                <p className="text-xs text-muted-foreground">Set filters above and preview to discover companies</p>
               </div>
             ) : null}
           </ScrollArea>
 
-          {apolloSelected.size > 0 && (
+          {apolloSelected.size > 0 && !apolloBulkProgress && (
             <Button onClick={handleApolloImport} disabled={apolloImporting} className="gap-2">
-              {apolloImporting ? <><Loader2 className="h-4 w-4 animate-spin" /> Importing…</> : <><Download className="h-4 w-4" /> Import {apolloSelected.size} Companies</>}
+              {apolloImporting ? <><Loader2 className="h-4 w-4 animate-spin" /> Importing…</> : <><Download className="h-4 w-4" /> Import {apolloSelected.size} Selected</>}
             </Button>
           )}
         </DialogContent>
