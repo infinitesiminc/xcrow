@@ -615,6 +615,41 @@ export default function PipelinePage() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Diagnostic Dialog */}
+      <Dialog open={diagOpen} onOpenChange={setDiagOpen}>
+        <DialogContent className="sm:max-w-lg max-h-[80vh] flex flex-col">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Bug className="h-4 w-4" /> Sync Diagnostic — {diagCompanyName}
+            </DialogTitle>
+            <DialogDescription>Raw response from the sync-company-jobs edge function.</DialogDescription>
+          </DialogHeader>
+          <div className="flex-1 overflow-auto">
+            {diagLoading ? (
+              <div className="flex items-center justify-center py-12">
+                <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                <span className="ml-2 text-sm text-muted-foreground">Calling sim-api…</span>
+              </div>
+            ) : diagData ? (
+              <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                  {diagData.success ? (
+                    <Badge variant="default" className="bg-emerald-500/15 text-emerald-600 border-emerald-500/30">Success</Badge>
+                  ) : (
+                    <Badge variant="destructive">Failed</Badge>
+                  )}
+                  {diagData.synced != null && <span className="text-sm text-muted-foreground">{diagData.synced} roles synced</span>}
+                  {diagData.hasMore && <Badge variant="outline" className="text-xs">hasMore: true</Badge>}
+                </div>
+                <pre className="text-xs bg-muted/50 rounded-lg p-3 overflow-auto max-h-[400px] whitespace-pre-wrap break-all font-mono text-foreground border border-border">
+                  {JSON.stringify(diagData, null, 2)}
+                </pre>
+              </div>
+            ) : null}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
