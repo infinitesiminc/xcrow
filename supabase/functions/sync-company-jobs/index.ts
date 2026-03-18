@@ -132,10 +132,11 @@ async function fetchAshbyJobs(slug: string): Promise<any[]> {
 }
 
 async function fetchGreenhouseJobs(slug: string): Promise<any[]> {
+  // First fetch without content (fast, handles large boards)
   const res = await safeFetch(
-    `https://api.greenhouse.io/v1/boards/${slug}/jobs?content=true`,
+    `https://api.greenhouse.io/v1/boards/${slug}/jobs?content=false`,
     { method: "GET", headers: { "Accept": "application/json" } },
-    15000
+    30000
   );
   const text = await res.text();
   if (!res.ok) { console.error("Greenhouse API error:", res.status, text); return []; }
@@ -145,7 +146,7 @@ async function fetchGreenhouseJobs(slug: string): Promise<any[]> {
     title: j.title,
     department: j.departments?.[0]?.name || null,
     location: j.location?.name || null,
-    description: j.content?.slice(0, 5000) || null,
+    description: null, // skip descriptions for speed — can backfill later
     source_url: j.absolute_url || null,
     status: "active",
   }));
