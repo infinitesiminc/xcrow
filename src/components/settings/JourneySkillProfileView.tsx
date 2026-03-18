@@ -429,9 +429,9 @@ function ReachMap({ humanOnly, aiUnlocked, total }: { humanOnly: number; aiUnloc
   );
 }
 
-export default function JourneySkillProfileView({ onNavigate }: { onNavigate: (title: string, company: string | null) => void }) {
+export default function JourneySkillProfileView({ practicedRoles = [], onNavigate }: { practicedRoles?: PracticedRoleData[]; onNavigate: (title: string, company: string | null) => void }) {
   const rand = useMemo(() => seeded(2026), []);
-  const skills = useMemo(() => buildTaxonomy(rand), [rand]);
+  const skills = useMemo(() => buildTaxonomy(practicedRoles, rand), [practicedRoles, rand]);
   const jobMatches = useMemo(() => computeJobMatches(skills), [skills]);
 
   const [view, setView] = useState<ViewMode>("strengths");
