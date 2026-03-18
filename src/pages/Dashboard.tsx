@@ -82,10 +82,25 @@ const Dashboard = () => {
 
   const uniqueTasks = useMemo(() => new Set(completions.map(c => c.task_name)).size, [completions]);
 
-  const myRoleAnalysis = useMemo(() => {
-    if (!profile?.jobTitle) return null;
-    return analyses.find(a => a.job_title.toLowerCase() === profile.jobTitle!.toLowerCase()) || null;
-  }, [analyses, profile]);
+  const recentSession = useMemo(() => {
+    if (completions.length === 0) return null;
+    const c = completions[0];
+    return {
+      task_name: c.task_name,
+      job_title: c.job_title,
+      company: c.company,
+      score: c.total_questions > 0 ? c.correct_answers / c.total_questions : 0,
+      completed_at: c.completed_at,
+    };
+  }, [completions]);
+
+  const savedRolesPreview = useMemo(() =>
+    bookmarks.slice(0, 3).map(b => ({
+      job_title: b.job_title,
+      company: b.company,
+      augmented_percent: b.augmented_percent ?? 0,
+    })),
+  [bookmarks]);
 
   if (authLoading || !user) {
     return (
@@ -132,7 +147,8 @@ const Dashboard = () => {
                 bookmarksCount={bookmarks.length}
                 simsCompleted={completions.length}
                 uniqueTasks={uniqueTasks}
-                myRoleAnalysis={myRoleAnalysis ? { augmented_percent: myRoleAnalysis.augmented_percent, automation_risk_percent: myRoleAnalysis.automation_risk_percent } : null}
+                recentSession={recentSession}
+                savedRoles={savedRolesPreview}
                 hasCompletions={completions.length > 0}
               />
             )}
