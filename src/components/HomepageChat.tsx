@@ -117,7 +117,10 @@ export default function HomepageChat({
       };
 
       const insertRoles = (roles: RoleResult[]) => {
-        setItems((prev) => [...prev, { type: "roles", roles }]);
+        onRolesFound?.(roles);
+        if (inlineCards) {
+          setItems((prev) => [...prev, { type: "roles", roles }]);
+        }
       };
 
       while (true) {
