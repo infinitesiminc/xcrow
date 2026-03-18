@@ -389,9 +389,14 @@ export default function PipelinePage() {
                           {(c.job_count || 0) > 0 && <span className="text-[9px] text-muted-foreground shrink-0">· {c.job_count} roles</span>}
                         </div>
                       </div>
-                      <Button variant="ghost" size="sm" className="h-5 w-5 p-0 shrink-0" onClick={e => { e.stopPropagation(); syncCompanyJobs(c.id); }} disabled={!!syncing}>
-                        {syncing === `jobs-${c.id}` ? <Loader2 className="h-2.5 w-2.5 animate-spin" /> : <RefreshCw className="h-2.5 w-2.5 text-muted-foreground" />}
-                      </Button>
+                      <div className="flex items-center gap-0.5 shrink-0">
+                        <Button variant="ghost" size="sm" className="h-5 w-5 p-0" onClick={e => { e.stopPropagation(); syncCompanyJobs(c.id); }} disabled={!!syncing} title="Sync jobs">
+                          {syncing === `jobs-${c.id}` ? <Loader2 className="h-2.5 w-2.5 animate-spin" /> : <RefreshCw className="h-2.5 w-2.5 text-muted-foreground" />}
+                        </Button>
+                        <Button variant="ghost" size="sm" className="h-5 w-5 p-0" onClick={e => { e.stopPropagation(); syncCompanyJobs(c.id, true); }} disabled={!!syncing} title="Diagnose sync">
+                          <Bug className="h-2.5 w-2.5 text-muted-foreground" />
+                        </Button>
+                      </div>
                     </button>
                   );
                 })}
