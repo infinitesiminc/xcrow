@@ -572,6 +572,7 @@ function RolesSection({
           {vizMode === "bubble" && <JourneyBubbleView graph={graph} onNavigate={goToRole} />}
           {vizMode === "timeline" && <JourneyTimelineView graph={graph} onNavigate={goToRole} />}
           {vizMode === "heatmap" && <JourneyHeatmapView graph={graph} onNavigate={goToRole} />}
+          {vizMode === "skills" && <JourneySkillProfileView onNavigate={goToRole} />}
         </motion.div>
       )}
     </div>
