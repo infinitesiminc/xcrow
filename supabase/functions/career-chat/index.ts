@@ -33,7 +33,7 @@ Rules:
 - Never use words like "automated," "replaced," or "at risk." Instead say "enhanced," "supercharged," or "augmented."
 - Location vs. market: The "location" field shows where the role is physically based (office location). If the job title mentions a different region (e.g., "Hong Kong Market"), clarify that the role is based in [location] but covers the [market] region. Example: "This role is based in Singapore but covers the Hong Kong market."
 - Always end with a question or suggestion to keep the conversation going
-- Use emoji sparingly (1-2 per message max)`;
+- Use emoji naturally throughout your responses (2-4 per message). Place them inline where they add energy — e.g. "This role is 🔥" or "45% AI augmented 💡 means..." Don't clump them or use them as bullet markers.`;
 serve(async (req) => {
   if (req.method === "OPTIONS")
     return new Response(null, { headers: corsHeaders });
