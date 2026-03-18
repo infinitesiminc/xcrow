@@ -1211,24 +1211,24 @@ export default function PipelinePage() {
 
         {/* ═══════ TAB: COMPANIES ═══════ */}
         <TabsContent value="companies" className="m-0 px-6 py-4">
-          <div className="flex items-center gap-3 mb-4 flex-wrap">
-            <div className="relative flex-1 min-w-[200px]">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="relative w-64 shrink-0">
               <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
               <Input placeholder="Search companies…" value={compSearch} onChange={e => setCompSearch(e.target.value)} className="pl-8 h-8 text-xs" />
             </div>
-            <select value={compAtsFilter} onChange={e => setCompAtsFilter(e.target.value)} className="h-8 text-xs rounded-md border border-input bg-background px-2">
+            <select value={compAtsFilter} onChange={e => setCompAtsFilter(e.target.value)} className="h-8 text-xs rounded-md border border-input bg-background px-2 shrink-0">
               <option value="">All ATS</option>
               {uniqueAts.map(a => <option key={a} value={a}>{a.charAt(0).toUpperCase() + a.slice(1)}</option>)}
             </select>
-            <select value={compIndustryFilter} onChange={e => setCompIndustryFilter(e.target.value)} className="h-8 text-xs rounded-md border border-input bg-background px-2 max-w-[180px]">
+            <select value={compIndustryFilter} onChange={e => setCompIndustryFilter(e.target.value)} className="h-8 text-xs rounded-md border border-input bg-background px-2 max-w-[180px] shrink-0">
               <option value="">All Industries</option>
               {uniqueIndustries.map(i => <option key={i} value={i}>{i}</option>)}
             </select>
-            <select value={compFundingFilter} onChange={e => setCompFundingFilter(e.target.value)} className="h-8 text-xs rounded-md border border-input bg-background px-2">
+            <select value={compFundingFilter} onChange={e => setCompFundingFilter(e.target.value)} className="h-8 text-xs rounded-md border border-input bg-background px-2 shrink-0">
               <option value="">All Funding</option>
               {uniqueFunding.map(f => <option key={f} value={f}>{f}</option>)}
             </select>
-            <span className="text-[10px] text-muted-foreground shrink-0">{filteredCompanies.length} companies</span>
+            <span className="text-[10px] text-muted-foreground shrink-0 ml-auto">{filteredCompanies.length} companies</span>
           </div>
 
           {/* Table header */}
