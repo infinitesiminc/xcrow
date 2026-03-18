@@ -71,7 +71,7 @@ const Index = () => {
   }, []);
 
   const greeting = getGreeting();
-  const userName = profile?.display_name?.split(" ")[0];
+  const userName = profile?.displayName?.split(" ")[0];
 
   return (
     <div className="min-h-[calc(100vh-3.5rem)] flex flex-col">
