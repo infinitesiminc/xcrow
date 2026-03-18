@@ -2,15 +2,11 @@ import { useEffect, useState, useCallback, useMemo, useRef } from "react";
 import { useSearchParams, useNavigate, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  ArrowLeft, Zap, AlertTriangle, Bot, ExternalLink,
-  Building2, Users, MapPin, Calendar,
-  ShieldAlert, GraduationCap, Rocket, CheckCircle2, LogIn,
-  ListChecks, Route, Target, BarChart3, Wrench, Bookmark, BookmarkCheck,
-  ChevronRight,
+  ArrowLeft, Zap, AlertTriangle, Bot,
+  GraduationCap, Rocket, CheckCircle2, LogIn,
+  Bookmark, BookmarkCheck, ChevronRight, Play,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 import { JobAnalysisResult, TaskAnalysis } from "@/types/analysis";
 import { findPrebuiltRole } from "@/data/prebuilt-roles";
@@ -18,18 +14,8 @@ import { analyzeJobWithAI } from "@/lib/ai-analysis";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { getRiskTier } from "@/lib/risk-colors";
-import { generateLocalPathways, type CareerMatchResult, type CareerPathway } from "@/lib/local-pathways";
 
 import SimulatorModal from "@/components/SimulatorModal";
-import { RiskGauge } from "@/components/analysis/RiskGauge";
-import { TaskTable } from "@/components/analysis/TaskTable";
-import { CareerPathways } from "@/components/analysis/CareerPathways";
-import { ActionPlan } from "@/components/analysis/ActionPlan";
-import { RoleContext } from "@/components/analysis/RoleContext";
-import { IndustryBenchmarkCard } from "@/components/analysis/IndustryBenchmark";
-
-import { CuratedSkillsBadge } from "@/components/analysis/CuratedSkills";
 
 interface CompanySnapshot {
   success: boolean;
