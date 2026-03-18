@@ -539,6 +539,7 @@ export type Database = {
           imported_at: string
           location: string | null
           new_skills_percent: number | null
+          role_summary: string | null
           seniority: string | null
           slug: string | null
           source_url: string | null
@@ -561,6 +562,7 @@ export type Database = {
           imported_at?: string
           location?: string | null
           new_skills_percent?: number | null
+          role_summary?: string | null
           seniority?: string | null
           slug?: string | null
           source_url?: string | null
@@ -583,6 +585,7 @@ export type Database = {
           imported_at?: string
           location?: string | null
           new_skills_percent?: number | null
+          role_summary?: string | null
           seniority?: string | null
           slug?: string | null
           source_url?: string | null
