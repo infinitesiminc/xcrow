@@ -178,24 +178,30 @@ const Analysis = () => {
     }
   }, [currentIndex, goTo]);
 
-  const handleWheel = useCallback((e: ReactWheelEvent<HTMLDivElement>) => {
-    if (Math.abs(e.deltaY) < 12) return;
-    e.preventDefault();
-    if (wheelLockRef.current) return;
+  const containerRef = useRef<HTMLDivElement>(null);
 
-    goTo(currentIndex + (e.deltaY > 0 ? 1 : -1));
-    wheelLockRef.current = window.setTimeout(() => {
-      wheelLockRef.current = null;
-    }, 320);
-  }, [currentIndex, goTo]);
-
+  // Attach non-passive wheel listener so preventDefault() actually works
   useEffect(() => {
-    return () => {
-      if (wheelLockRef.current) {
-        window.clearTimeout(wheelLockRef.current);
-      }
+    const el = containerRef.current;
+    if (!el) return;
+
+    const onWheel = (e: WheelEvent) => {
+      if (Math.abs(e.deltaY) < 12) return;
+      e.preventDefault();
+      if (wheelLockRef.current) return;
+
+      goTo(currentIndex + (e.deltaY > 0 ? 1 : -1));
+      wheelLockRef.current = window.setTimeout(() => {
+        wheelLockRef.current = null;
+      }, 320);
     };
-  }, []);
+
+    el.addEventListener("wheel", onWheel, { passive: false });
+    return () => {
+      el.removeEventListener("wheel", onWheel);
+      if (wheelLockRef.current) window.clearTimeout(wheelLockRef.current);
+    };
+  }, [currentIndex, goTo]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
