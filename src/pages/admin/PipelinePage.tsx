@@ -157,9 +157,17 @@ export default function PipelinePage() {
     all.forEach(c => { const a = c.detected_ats_platform || "unknown"; counts[a] = (counts[a] || 0) + 1; });
     setAtsCounts(counts);
 
-    const { data: jobRows } = await supabase.from("jobs").select("company_id");
+    // Paginate through all jobs to count per company (default limit is 1000)
     const jm = new Map<string, number>();
-    (jobRows || []).forEach((j: any) => { if (j.company_id) jm.set(j.company_id, (jm.get(j.company_id) || 0) + 1); });
+    let from = 0;
+    const pageSize = 1000;
+    while (true) {
+      const { data: jobRows } = await supabase.from("jobs").select("company_id").range(from, from + pageSize - 1);
+      if (!jobRows || jobRows.length === 0) break;
+      jobRows.forEach((j: any) => { if (j.company_id) jm.set(j.company_id, (jm.get(j.company_id) || 0) + 1); });
+      if (jobRows.length < pageSize) break;
+      from += pageSize;
+    }
     setCompanies(all.map(c => ({ ...c, job_count: jm.get(c.id) || 0 })));
     setLoadingCompanies(false);
   }, []);
