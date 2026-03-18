@@ -220,7 +220,7 @@ export default function ProfileSheet({ open, onClose, userId, displayName, email
                     </div>
                   </section>
 
-                  {/* Saved Roles */}
+                  {/* Saved Roles — Card Grid */}
                   <section>
                     <h3 className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground mb-3">
                       📚 Saved Roles{rolesSaved > 0 && ` · ${rolesSaved}`}
@@ -229,98 +229,72 @@ export default function ProfileSheet({ open, onClose, userId, displayName, email
                       <p className="text-xs text-muted-foreground">
                         No saved roles yet — explore and bookmark roles you're interested in.
                       </p>
-                    ) : !expandedSaved ? (
-                      /* Compact view: show first 3 + "View all" */
-                      <div className="space-y-1">
-                        {savedRoles.slice(0, 3).map((role, i) => (
-                          <button
-                            key={i}
-                            onClick={() => goToRole(role.job_title, role.company)}
-                            className="w-full flex items-center gap-2 px-2 py-2 rounded-lg hover:bg-muted/30 transition-colors group"
-                          >
-                            <Bookmark className="h-3 w-3 text-primary fill-primary shrink-0" />
-                            <div className="flex-1 min-w-0 text-left">
-                              <p className="text-xs font-medium text-foreground truncate">{role.job_title}</p>
-                              {role.company && (
-                                <p className="text-[10px] text-muted-foreground truncate">{role.company}</p>
-                              )}
-                            </div>
-                            <ArrowRight className="h-3 w-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
-                          </button>
-                        ))}
-                        {savedRoles.length > 3 && (
-                          <button
-                            onClick={() => {
-                              setExpandedSaved(true);
-                              // Auto-open all groups initially
-                              setOpenGroups(new Set(groupedRoles.map(g => g.company)));
-                            }}
-                            className="w-full text-xs text-primary hover:text-primary/80 font-medium py-2 transition-colors"
-                          >
-                            View all {savedRoles.length} saved →
-                          </button>
-                        )}
-                      </div>
                     ) : (
-                      /* Expanded view: search + grouped list */
                       <div className="space-y-2">
-                        <div className="relative">
-                          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
-                          <Input
-                            value={savedSearch}
-                            onChange={e => setSavedSearch(e.target.value)}
-                            placeholder="Filter saved roles…"
-                            className="h-8 pl-8 text-xs bg-muted/20 border-border/50"
-                          />
-                        </div>
-
-                        <div className="max-h-[280px] overflow-y-auto space-y-0.5 pr-1">
-                          {groupedRoles.length === 0 ? (
-                            <p className="text-xs text-muted-foreground py-3 text-center">No matches</p>
-                          ) : (
-                            groupedRoles.map(group => {
-                              const isOpen = openGroups.has(group.company);
+                        {rolesSaved > 6 && (
+                          <div className="relative">
+                            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                            <Input
+                              value={savedSearch}
+                              onChange={e => setSavedSearch(e.target.value)}
+                              placeholder="Filter saved roles…"
+                              className="h-8 pl-8 text-xs bg-muted/20 border-border/50"
+                            />
+                          </div>
+                        )}
+                        <div className="max-h-[340px] overflow-y-auto pr-1">
+                          <div className="grid grid-cols-2 gap-2">
+                            {filteredRoles.map((role, i) => {
+                              const hue1 = hashToHue(role.job_title);
+                              const hue2 = (hue1 + 60) % 360;
+                              const logoUrl = role.company ? `https://logo.clearbit.com/${role.company.toLowerCase().replace(/\s+/g, '')}.com` : '';
+                              const aug = role.augmented_percent ?? 0;
                               return (
-                                <div key={group.company}>
-                                  <button
-                                    onClick={() => toggleGroup(group.company)}
-                                    className="w-full flex items-center gap-1.5 px-2 py-1.5 rounded-md hover:bg-muted/30 transition-colors"
-                                  >
-                                    {isOpen ? (
-                                      <ChevronDown className="h-3 w-3 text-muted-foreground shrink-0" />
-                                    ) : (
-                                      <ChevronRight className="h-3 w-3 text-muted-foreground shrink-0" />
-                                    )}
-                                    <span className="text-[11px] font-semibold text-foreground">{group.company}</span>
-                                    <span className="text-[10px] text-muted-foreground ml-auto">{group.roles.length}</span>
-                                  </button>
-                                  {isOpen && (
-                                    <div className="ml-4 space-y-0.5">
-                                      {group.roles.map((role, i) => (
-                                        <button
-                                          key={i}
-                                          onClick={() => goToRole(role.job_title, role.company)}
-                                          className="w-full flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-muted/30 transition-colors group"
-                                        >
-                                          <Bookmark className="h-2.5 w-2.5 text-primary fill-primary shrink-0" />
-                                          <p className="text-xs text-foreground truncate flex-1 text-left">{role.job_title}</p>
-                                          <ArrowRight className="h-3 w-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
-                                        </button>
-                                      ))}
+                                <motion.button
+                                  key={role.job_title + role.company + i}
+                                  initial={{ opacity: 0, y: 8 }}
+                                  animate={{ opacity: 1, y: 0 }}
+                                  transition={{ duration: 0.25, delay: Math.min(i * 0.03, 0.3) }}
+                                  onClick={() => goToRole(role.job_title, role.company)}
+                                  className="group text-left rounded-xl overflow-hidden bg-card border border-border transition-all hover:shadow-lg hover:border-primary/40 flex flex-col"
+                                >
+                                  <div className="p-2.5 pb-2">
+                                    <div className="flex items-start gap-1.5">
+                                      {logoUrl && (
+                                        <img src={logoUrl} alt={role.company || ''} className="h-6 w-6 rounded-md object-contain bg-muted/30 p-0.5 shrink-0 mt-0.5" onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
+                                      )}
+                                      <div className="min-w-0 flex-1">
+                                        <h4 className="text-[11px] font-semibold text-foreground leading-snug line-clamp-2">{role.job_title}</h4>
+                                        {role.company && (
+                                          <p className="text-[10px] text-muted-foreground truncate mt-0.5">{role.company}</p>
+                                        )}
+                                      </div>
                                     </div>
-                                  )}
-                                </div>
+                                  </div>
+                                  <div className="mt-auto border-t border-border/30">
+                                    <div className="px-2.5 py-1.5 flex items-center justify-between" style={{ background: `linear-gradient(135deg, hsl(${hue1} 60% 8%) 0%, hsl(${hue2} 50% 6%) 100%)` }}>
+                                      {aug > 0 ? (
+                                        <div className="flex items-center gap-1">
+                                          <MiniGauge value={aug} />
+                                          <span className="text-[9px] font-medium text-muted-foreground uppercase tracking-wide">Aug</span>
+                                        </div>
+                                      ) : (
+                                        <div className="flex items-center gap-0.5">
+                                          <Zap className="h-2.5 w-2.5 text-primary" />
+                                          <span className="text-[9px] text-muted-foreground">—</span>
+                                        </div>
+                                      )}
+                                      <Bookmark className="h-2.5 w-2.5 text-primary fill-primary shrink-0" />
+                                    </div>
+                                  </div>
+                                </motion.button>
                               );
-                            })
+                            })}
+                          </div>
+                          {filteredRoles.length === 0 && (
+                            <p className="text-xs text-muted-foreground py-4 text-center">No matches</p>
                           )}
                         </div>
-
-                        <button
-                          onClick={() => { setExpandedSaved(false); setSavedSearch(""); }}
-                          className="w-full text-[10px] text-muted-foreground hover:text-foreground py-1 transition-colors"
-                        >
-                          Collapse
-                        </button>
                       </div>
                     )}
                   </section>
