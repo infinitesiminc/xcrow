@@ -744,28 +744,40 @@ export type Database = {
       }
       profiles: {
         Row: {
+          career_stage: string | null
           company: string | null
           created_at: string
+          cv_url: string | null
           display_name: string | null
           id: string
           job_title: string | null
+          linkedin_url: string | null
           onboarding_completed: boolean
+          school_name: string | null
         }
         Insert: {
+          career_stage?: string | null
           company?: string | null
           created_at?: string
+          cv_url?: string | null
           display_name?: string | null
           id: string
           job_title?: string | null
+          linkedin_url?: string | null
           onboarding_completed?: boolean
+          school_name?: string | null
         }
         Update: {
+          career_stage?: string | null
           company?: string | null
           created_at?: string
+          cv_url?: string | null
           display_name?: string | null
           id?: string
           job_title?: string | null
+          linkedin_url?: string | null
           onboarding_completed?: boolean
+          school_name?: string | null
         }
         Relationships: []
       }
