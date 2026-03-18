@@ -349,7 +349,8 @@ export default function PipelinePage() {
   }, []);
 
   useEffect(() => {
-    if (!selectedCompanyId) { setJobs([]); return; }
+    if (!selectedCompanyId) { setJobs([]); setAnalyzedJobIds(new Set()); return; }
+    setAnalyzedJobIds(new Set()); // Reset immediately on company switch
     fetchJobs(selectedCompanyId);
     setJobSearch(""); setCollapsedDepts(new Set()); setQueueRunning(false); setQueueMessage(null);
   }, [selectedCompanyId, fetchJobs]);
