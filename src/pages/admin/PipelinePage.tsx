@@ -426,11 +426,11 @@ export default function PipelinePage() {
                     >
                       <CompanyLogo url={c.logo_url} name={c.name} size="h-7 w-7" />
                       <div className="flex-1 min-w-0">
-                        <p className={`text-xs font-medium truncate ${sel ? "text-primary" : "text-foreground"}`}>{c.name}</p>
-                        <div className="flex items-center gap-1.5 mt-0.5">
-                          {c.industry && <span className="text-[9px] text-muted-foreground truncate">{c.industry}</span>}
-                          {(c.job_count || 0) > 0 && <span className="text-[9px] text-muted-foreground shrink-0">· {c.job_count} roles</span>}
-                        </div>
+                        <p className={`text-xs font-medium truncate ${sel ? "text-primary" : "text-foreground"}`}>
+                          {c.name}
+                          {(c.job_count || 0) > 0 && <span className="text-muted-foreground font-normal"> · {c.job_count}</span>}
+                        </p>
+                        {c.industry && <p className="text-[9px] text-muted-foreground truncate mt-0.5">{c.industry}</p>}
                       </div>
                       <div className="flex items-center gap-0.5 shrink-0">
                         <Button variant="ghost" size="sm" className="h-5 w-5 p-0" onClick={e => { e.stopPropagation(); syncCompanyJobs(c.id); }} disabled={!!syncing} title="Sync jobs">
