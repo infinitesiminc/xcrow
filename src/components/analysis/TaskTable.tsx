@@ -33,9 +33,9 @@ function insightLabel(aiExposure: number, jobImpact: number): { label: string; c
 }
 
 function priorityBadge(p?: string) {
-  if (p === "high") return <Badge className="bg-destructive/10 text-destructive border-destructive/20 text-[9px]">High</Badge>;
-  if (p === "medium") return <Badge className="bg-warning/10 text-warning border-warning/20 text-[9px]">Medium</Badge>;
-  return <Badge className="bg-success/10 text-success border-success/20 text-[9px]">Low</Badge>;
+  if (p === "high") return <Badge className="bg-primary/10 text-primary border-primary/20 text-[9px]">High</Badge>;
+  if (p === "medium") return <Badge className="bg-brand-mid/10 text-brand-mid border-brand-mid/20 text-[9px]">Medium</Badge>;
+  return <Badge className="bg-muted/50 text-muted-foreground border-border/20 text-[9px]">Low</Badge>;
 }
 
 export function TaskTable({ tasks, skills, completedTasks, onPractice }: TaskTableProps) {
