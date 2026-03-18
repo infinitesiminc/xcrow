@@ -579,6 +579,7 @@ export default function PipelinePage() {
       </div>
 
       {/* ── Tabbed content ── */}
+      <div className="flex-1 flex flex-col min-h-0">
       <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col min-h-0">
         <TabsList className="mx-6 mt-3 w-fit">
           <TabsTrigger value="discover" className="text-xs gap-1"><Telescope className="h-3 w-3" /> Discover</TabsTrigger>
@@ -1060,6 +1061,7 @@ export default function PipelinePage() {
           </div>
         </TabsContent>
       </Tabs>
+      </div>
 
       {/* ═══════ ADD COMPANY DIALOG ═══════ */}
       <Dialog open={addOpen} onOpenChange={setAddOpen}>
