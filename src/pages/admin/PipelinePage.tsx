@@ -378,16 +378,42 @@ export default function PipelinePage() {
     }
     syncAbortRef.current = false;
     setSyncAllRunning(true);
+    setSyncStreamEntries([]);
+    setSyncStreamOpen(true);
     setSyncAllProgress({ done: 0, total: targets.length, current: "", synced: 0 });
     let totalSynced = 0;
     for (const co of targets) {
       if (syncAbortRef.current) break;
       setSyncAllProgress(p => ({ ...p, current: co.name }));
+      // Add "syncing" entry
+      const entryTs = Date.now();
+      setSyncStreamEntries(prev => [...prev, {
+        company: co.name, logo: co.logo_url, platform: co.detected_ats_platform,
+        status: "syncing", jobCount: 0, timestamp: entryTs,
+      }]);
+      setTimeout(() => syncStreamEndRef.current?.scrollIntoView({ behavior: "smooth" }), 50);
+      const startMs = Date.now();
       try {
         const { data, error } = await supabase.functions.invoke("sync-company-jobs", { body: { step: "jobs", company_id: co.id } });
-        if (!error && data?.synced) totalSynced += data.synced;
-      } catch { /* continue */ }
+        const dur = Date.now() - startMs;
+        if (!error && data?.synced) {
+          totalSynced += data.synced;
+          setSyncStreamEntries(prev => prev.map(e => e.timestamp === entryTs ? {
+            ...e, status: data.synced > 0 ? "success" : "skipped",
+            jobCount: data.synced, source: data.source, duration: dur,
+          } : e));
+        } else {
+          setSyncStreamEntries(prev => prev.map(e => e.timestamp === entryTs ? {
+            ...e, status: "skipped", jobCount: 0, source: data?.source, duration: dur,
+          } : e));
+        }
+      } catch {
+        setSyncStreamEntries(prev => prev.map(e => e.timestamp === entryTs ? {
+          ...e, status: "failed", duration: Date.now() - startMs,
+        } : e));
+      }
       setSyncAllProgress(p => ({ ...p, done: p.done + 1, synced: totalSynced }));
+      setTimeout(() => syncStreamEndRef.current?.scrollIntoView({ behavior: "smooth" }), 50);
     }
     await fetchCompanies();
     setSyncAllRunning(false);
