@@ -258,6 +258,61 @@ html:not(.light) {
   pointer-events: none;
 }
 
+/* ── Chat prose (Claude-inspired clean typography) ── */
+.chat-prose {
+  color: hsl(var(--foreground) / 0.92);
+  font-size: 0.9375rem; /* 15px */
+  line-height: 1.7;
+}
+.chat-prose p {
+  margin-bottom: 0.75em;
+}
+.chat-prose p:last-child {
+  margin-bottom: 0;
+}
+.chat-prose h1, .chat-prose h2, .chat-prose h3, .chat-prose h4 {
+  color: hsl(var(--foreground));
+  font-weight: 700;
+  margin-top: 1.25em;
+  margin-bottom: 0.4em;
+  line-height: 1.3;
+}
+.chat-prose h2 { font-size: 1.15rem; }
+.chat-prose h3 { font-size: 1.05rem; }
+.chat-prose h4 { font-size: 0.95rem; }
+.chat-prose strong {
+  color: hsl(var(--foreground));
+  font-weight: 600;
+}
+.chat-prose ul, .chat-prose ol {
+  padding-left: 1.25em;
+  margin-bottom: 0.75em;
+}
+.chat-prose li {
+  margin-bottom: 0.3em;
+}
+.chat-prose li::marker {
+  color: hsl(var(--muted-foreground));
+}
+.chat-prose a {
+  color: hsl(var(--primary));
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.chat-prose code {
+  background: hsl(var(--muted));
+  padding: 0.15em 0.35em;
+  border-radius: 4px;
+  font-size: 0.85em;
+}
+.chat-prose blockquote {
+  border-left: 3px solid hsl(var(--primary) / 0.4);
+  padding-left: 1em;
+  margin-left: 0;
+  color: hsl(var(--muted-foreground));
+  font-style: italic;
+}
+
 @layer utilities {
   [class*="text-[9px]"],
   [class*="text-[10px]"] {
