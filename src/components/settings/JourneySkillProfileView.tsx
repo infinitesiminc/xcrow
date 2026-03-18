@@ -488,6 +488,16 @@ export default function JourneySkillProfileView({ practicedRoles = [], onNavigat
         >
           <Sparkles className="inline h-3 w-3 mr-1" />AI Unlocks
         </button>
+        {!isRealData && (
+          <Badge variant="outline" className="text-[8px] px-1.5 py-0 border-border/40 text-muted-foreground ml-auto">
+            Demo data — practice roles to personalize
+          </Badge>
+        )}
+        {isRealData && (
+          <Badge variant="outline" className="text-[8px] px-1.5 py-0 border-brand-human/30 text-brand-human ml-auto">
+            Based on {practicedRoles.length} sessions
+          </Badge>
+        )}
       </div>
 
       <AnimatePresence mode="wait">
