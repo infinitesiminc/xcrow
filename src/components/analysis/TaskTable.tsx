@@ -14,9 +14,9 @@ interface TaskTableProps {
 }
 
 function exposureColor(score: number) {
-  if (score >= 70) return "bg-destructive/10 text-destructive border-destructive/20";
-  if (score >= 40) return "bg-warning/10 text-warning border-warning/20";
-  return "bg-success/10 text-success border-success/20";
+  if (score >= 70) return "bg-brand-ai/10 text-brand-ai border-brand-ai/20";
+  if (score >= 40) return "bg-brand-mid/10 text-brand-mid border-brand-mid/20";
+  return "bg-brand-human/10 text-brand-human border-brand-human/20";
 }
 
 function impactColor(score: number) {
