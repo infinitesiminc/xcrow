@@ -10,7 +10,6 @@ import Footer from "@/components/Footer";
 import Index from "./pages/Index.tsx";
 import Analysis from "./pages/Analysis.tsx";
 import Auth from "./pages/Auth.tsx";
-import Dashboard from "./pages/Dashboard.tsx";
 import Settings from "./pages/Settings.tsx";
 import NotFound from "./pages/NotFound.tsx";
 import CardStyleMockup from "./pages/CardStyleMockup.tsx";
@@ -45,15 +44,16 @@ const App = () => (
             <Route path="/" element={<><Navbar /><Index /></>} />
             <Route path="/analysis" element={<><Navbar /><Analysis /><Footer /></>} />
             <Route path="/auth" element={<><Navbar /><Auth /></>} />
-            <Route path="/dashboard" element={<><Navbar /><Dashboard /><Footer /></>} />
             <Route path="/settings" element={<><Navbar /><Settings /><Footer /></>} />
             <Route path="/company/:slug" element={<><Navbar /><Suspense fallback={null}><CompanyPage /></Suspense><Footer /></>} />
             <Route path="/card-styles" element={<><Navbar /><CardStyleMockup /></>} />
 
-            {/* Redirects for old routes */}
-            <Route path="/practice" element={<Navigate to="/dashboard?tab=practice" replace />} />
-            <Route path="/simulations" element={<Navigate to="/dashboard?tab=practice" replace />} />
-            <Route path="/learning-path" element={<Navigate to="/dashboard?tab=progress" replace />} />
+            {/* Redirects — old routes all go to feed */}
+            <Route path="/dashboard" element={<Navigate to="/" replace />} />
+            <Route path="/dashboard/*" element={<Navigate to="/" replace />} />
+            <Route path="/practice" element={<Navigate to="/" replace />} />
+            <Route path="/simulations" element={<Navigate to="/" replace />} />
+            <Route path="/learning-path" element={<Navigate to="/" replace />} />
 
             {/* Superadmin content pipeline */}
             <Route path="/admin" element={<AdminGate />}>
