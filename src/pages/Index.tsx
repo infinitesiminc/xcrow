@@ -54,6 +54,7 @@ const Index = () => {
 
   const [roles, setRoles] = useState<RoleCard[]>([]);
   const [loadingRoles, setLoadingRoles] = useState(true);
+  const [savedRoleTitles, setSavedRoleTitles] = useState<Set<string>>(new Set());
 
   const [searchOpen, setSearchOpen] = useState(false);
   const [jobTitle, setJobTitle] = useState("");
