@@ -267,36 +267,8 @@ const BriefingScreen = ({
   );
 };
 
-/* ── Score Display ── */
-const ScoreDisplay = ({ scoreResult }: { scoreResult: SimScoreResult }) => (
-  <motion.div
-    initial={{ opacity: 0, y: 8 }}
-    animate={{ opacity: 1, y: 0 }}
-    transition={{ delay: 0.2 }}
-    className="w-full space-y-4 mt-4"
-  >
-    <div className="grid grid-cols-2 gap-3">
-      {scoreResult.categories.map((cat, i) => (
-        <motion.div
-          key={cat.name}
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.3 + i * 0.08 }}
-          className="rounded-xl border border-border/30 p-3 text-center"
-        >
-          <div className={`text-xl font-bold ${
-            cat.score >= 70 ? "text-success" : cat.score >= 40 ? "text-warning" : "text-destructive"
-          }`}>
-            {cat.score}%
-          </div>
-          <div className="text-[11px] text-muted-foreground mt-0.5 leading-tight">{cat.name}</div>
-          <div className="text-[11px] text-muted-foreground/70 mt-1 leading-snug">{cat.feedback}</div>
-        </motion.div>
-      ))}
-    </div>
-    <p className="text-sm text-muted-foreground leading-relaxed text-center">{scoreResult.summary}</p>
-  </motion.div>
-);
+/* ── Score Display (legacy — kept for data persistence, hidden from UI) ── */
+const ScoreDisplay = ({ scoreResult: _sr }: { scoreResult: SimScoreResult }) => null;
 
 /* ── Objective Results ── */
 const ObjectiveResultsDisplay = ({
