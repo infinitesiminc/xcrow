@@ -54,6 +54,7 @@ const Index = () => {
 
   const [roles, setRoles] = useState<RoleCard[]>([]);
   const [loadingRoles, setLoadingRoles] = useState(true);
+  const [savedRoleTitles, setSavedRoleTitles] = useState<Set<string>>(new Set());
 
   const [searchOpen, setSearchOpen] = useState(false);
   const [jobTitle, setJobTitle] = useState("");
@@ -154,6 +155,19 @@ const Index = () => {
     })();
   }, []);
 
+  // Fetch saved/bookmarked role titles for the "Saved" filter
+  useEffect(() => {
+    if (!user) { setSavedRoleTitles(new Set()); return; }
+    supabase.from("bookmarked_roles")
+      .select("job_title")
+      .eq("user_id", user.id)
+      .then(({ data }) => {
+        if (data) {
+          setSavedRoleTitles(new Set(data.map(d => d.job_title.toLowerCase())));
+        }
+      });
+  }, [user]);
+
   useEffect(() => {
     if (profile?.jobTitle && !jobTitle) setJobTitle(profile.jobTitle);
     if (profile?.company && !website) setWebsite(profile.company);
@@ -246,7 +260,7 @@ const Index = () => {
 
   return (
     <div className="h-[calc(100vh-3.5rem)] relative">
-      <RoleFeed roles={roles} onOpenSearch={() => setSearchOpen(true)} />
+      <RoleFeed roles={roles} onOpenSearch={() => setSearchOpen(true)} savedRoleTitles={savedRoleTitles} />
 
       {/* ── Full-Screen Search Overlay ──────────────── */}
       <AnimatePresence>
