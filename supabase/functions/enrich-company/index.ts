@@ -196,15 +196,36 @@ Deno.serve(async (req) => {
       result = data;
       console.log("Company updated:", result.id);
     } else {
-      // New company: insert
-      const { data, error } = await sb
+      // Check for existing company by name (dedup)
+      const { data: existing } = await sb
         .from("companies")
-        .insert(row)
-        .select("id, name, industry, headquarters, employee_range, description, website, logo_url, careers_url, brand_color, company_type, funding_stage, funding_total, founded_year")
-        .single();
-      if (error) throw new Error(`Insert failed: ${error.message}`);
-      result = data;
-      console.log("Company created:", result.id);
+        .select("id")
+        .ilike("name", row.name)
+        .is("workspace_id", null)
+        .limit(1)
+        .maybeSingle();
+
+      if (existing) {
+        // Merge into existing record
+        const { data, error } = await sb
+          .from("companies")
+          .update(row)
+          .eq("id", existing.id)
+          .select("id, name, industry, headquarters, employee_range, description, website, logo_url, careers_url, brand_color, company_type, funding_stage, funding_total, founded_year")
+          .single();
+        if (error) throw new Error(`Merge update failed: ${error.message}`);
+        result = data;
+        console.log("Company merged into existing:", result.id);
+      } else {
+        const { data, error } = await sb
+          .from("companies")
+          .insert(row)
+          .select("id, name, industry, headquarters, employee_range, description, website, logo_url, careers_url, brand_color, company_type, funding_stage, funding_total, founded_year")
+          .single();
+        if (error) throw new Error(`Insert failed: ${error.message}`);
+        result = data;
+        console.log("Company created:", result.id);
+      }
     }
 
     return respond({ success: true, company: result });
