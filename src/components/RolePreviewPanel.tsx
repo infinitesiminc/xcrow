@@ -158,7 +158,7 @@ export default function RolePreviewPanel({ role, onClose }: RolePreviewPanelProp
   }, [tasks, simTask]);
 
   const closeSimulation = () => {
-    setView("breakdown");
+    setView("enlarged");
     setSimTask(null);
   };
 
@@ -204,8 +204,8 @@ export default function RolePreviewPanel({ role, onClose }: RolePreviewPanelProp
     <div className="fixed inset-0 z-[100] bg-background/95 backdrop-blur-sm overflow-y-auto">
       <div className="max-w-2xl mx-auto px-4 py-8">
         <div className="flex items-center justify-between mb-6">
-          <button onClick={() => setView("breakdown")} className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
-            <ChevronLeft className="h-4 w-4" /> Back to panel
+          <button onClick={onClose} className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
+            <ChevronLeft className="h-4 w-4" /> Back to chat
           </button>
           <button onClick={toggleBookmark} className="p-2 rounded-lg hover:bg-muted/30 transition-colors">
             {isBookmarked ? <BookmarkCheck className="h-4 w-4 text-primary" /> : <Bookmark className="h-4 w-4 text-muted-foreground" />}
