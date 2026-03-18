@@ -200,6 +200,12 @@ export default function PipelinePage() {
   const [diagLoading, setDiagLoading] = useState(false);
   const [diagCompanyName, setDiagCompanyName] = useState("");
 
+  /* ═══════ COMPANIES BROWSER STATE ═══════ */
+  const [compSearch, setCompSearch] = useState("");
+  const [compAtsFilter, setCompAtsFilter] = useState("");
+  const [compIndustryFilter, setCompIndustryFilter] = useState("");
+  const [compFundingFilter, setCompFundingFilter] = useState("");
+
   /* ═══════ DATA FETCHING ═══════ */
   const fetchCompanies = useCallback(async () => {
     setLoadingCompanies(true);
