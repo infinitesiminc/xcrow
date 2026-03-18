@@ -1,8 +1,10 @@
 import { useState, useRef, useCallback, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence, PanInfo } from "framer-motion";
-import { BarChart3, Zap, Bookmark, Share2, Search, ChevronUp, X, ArrowRight, Globe, MapPin, Laptop } from "lucide-react";
+import { BarChart3, Zap, Bookmark, Share2, Search, ChevronUp, X, ArrowRight, Globe, MapPin, Laptop, Loader2, Briefcase, Bot, Sparkles } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { supabase } from "@/integrations/supabase/client";
+import { Progress } from "@/components/ui/progress";
 
 interface RoleCard {
   title: string;
@@ -16,11 +18,23 @@ interface RoleCard {
   logo?: string;
   country?: string;
   workMode?: string;
+  description?: string;
+  seniority?: string;
+  taskCount?: number;
+  aiTaskCount?: number;
+  jobId?: string;
 }
 
 interface RoleFeedProps {
   roles: RoleCard[];
   onOpenSearch: () => void;
+}
+
+interface TaskCluster {
+  cluster_name: string;
+  description: string | null;
+  ai_exposure_score: number | null;
+  priority: string | null;
 }
 
 /* ── Hash to hue (for generative patterns) ─────────── */
@@ -41,39 +55,13 @@ const TAG_BADGE: Record<string, string> = {
   Other: "bg-muted text-muted-foreground border-border/40",
 };
 
-/* ── Shared: Gauge ─────────────────────────────────── */
-
-function RiskGaugeMini({ value, label, color, size = 96 }: { value: number; label: string; color: string; size?: number }) {
-  const radius = size * 0.4;
-  const circumference = 2 * Math.PI * radius;
-  const offset = circumference - (value / 100) * circumference;
-  const center = size / 2;
-
-  return (
-    <div className="flex flex-col items-center gap-1">
-      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="drop-shadow-lg">
-        <circle cx={center} cy={center} r={radius} fill="none" stroke="hsl(var(--muted) / 0.3)" strokeWidth="5" />
-        <motion.circle
-          cx={center} cy={center} r={radius}
-          fill="none" stroke={color} strokeWidth="5" strokeLinecap="round"
-          strokeDasharray={circumference}
-          initial={{ strokeDashoffset: circumference }}
-          animate={{ strokeDashoffset: offset }}
-          transition={{ duration: 1, ease: "easeOut", delay: 0.2 }}
-          transform={`rotate(-90 ${center} ${center})`}
-        />
-        <motion.text
-          x={center} y={center - 4} textAnchor="middle" dominantBaseline="middle"
-          className="fill-white font-display font-bold"
-          style={{ fontSize: `${size * 0.22}px` }}
-          initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }}
-        >{value}%</motion.text>
-        <text x={center} y={center + size * 0.14} textAnchor="middle" dominantBaseline="middle"
-          className="fill-white/60" style={{ fontSize: `${Math.max(7, size * 0.08)}px`, textTransform: "uppercase", letterSpacing: "1px" }}
-        >{label}</text>
-      </svg>
-    </div>
-  );
+/* ── Plain-English AI summary ──────────────────────── */
+function aiSummaryLine(risk: number, augmented: number): string {
+  if (augmented >= 60 && risk < 30) return "AI amplifies most of your work here";
+  if (risk >= 50) return "High automation potential — upskilling is critical";
+  if (risk >= 30) return "Some tasks are shifting to AI — adapt early";
+  if (augmented >= 40) return "AI tools enhance key parts of this role";
+  return "Mostly human-driven with growing AI opportunities";
 }
 
 /* ── Shared: Action button ─────────────────────────── */
@@ -116,7 +104,6 @@ function SearchFAB({ onClick }: { onClick: () => void }) {
       <span className="text-sm font-semibold text-primary-foreground whitespace-nowrap">
         {isMobile ? "Search" : "Search any role"}
       </span>
-      {/* Pulse ring */}
       <motion.div
         className="absolute inset-0 rounded-full border border-primary/40"
         animate={{ scale: [1, 1.15, 1], opacity: [0.5, 0, 0.5] }}
@@ -126,11 +113,32 @@ function SearchFAB({ onClick }: { onClick: () => void }) {
   );
 }
 
-/* ── Detail Overlay (shared between desktop & mobile) ── */
+/* ── Three-Section Detail Overlay ──────────────────── */
 
 function RoleDetailOverlay({ role, onClose }: { role: RoleCard; onClose: () => void }) {
   const navigate = useNavigate();
-  const riskColor = role.risk >= 40 ? "hsl(var(--destructive))" : role.risk >= 20 ? "hsl(var(--warning))" : "hsl(var(--success))";
+  const [tasks, setTasks] = useState<TaskCluster[]>([]);
+  const [loadingTasks, setLoadingTasks] = useState(false);
+
+  // Fetch task clusters on open
+  useEffect(() => {
+    if (!role.jobId) return;
+    setLoadingTasks(true);
+    supabase
+      .from("job_task_clusters")
+      .select("cluster_name, description, ai_exposure_score, priority")
+      .eq("job_id", role.jobId)
+      .order("sort_order", { ascending: true })
+      .limit(5)
+      .then(({ data }) => {
+        setTasks(data || []);
+        setLoadingTasks(false);
+      });
+  }, [role.jobId]);
+
+  const seniorityLabel: Record<string, string> = {
+    junior: "Junior", mid: "Mid-Level", senior: "Senior", lead: "Lead", manager: "Manager", director: "Director", vp: "VP", c_level: "C-Level",
+  };
 
   return (
     <motion.div
@@ -145,38 +153,166 @@ function RoleDetailOverlay({ role, onClose }: { role: RoleCard; onClose: () => v
         animate={{ y: 0, opacity: 1 }}
         exit={{ y: "100%", opacity: 0 }}
         transition={{ type: "spring", damping: 28, stiffness: 300 }}
-        className="relative w-full sm:max-w-lg sm:rounded-2xl overflow-hidden"
+        className="relative w-full sm:max-w-lg sm:rounded-2xl overflow-hidden max-h-[90vh] flex flex-col"
       >
-        <div className="relative h-64 sm:h-72">
-          <img src={role.image} alt={role.title} className="w-full h-full object-cover" />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-black/10" />
-          <button onClick={onClose} className="absolute top-4 right-4 w-9 h-9 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center hover:bg-black/60 transition-colors">
-            <X className="h-4 w-4 text-white" />
-          </button>
-          <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-4">
-            <RiskGaugeMini value={role.risk} label="AI Risk" color={riskColor} size={80} />
-            <RiskGaugeMini value={role.augmented} label="Augmented" color="hsl(var(--neon-blue))" size={80} />
-            <RiskGaugeMini value={role.aiOpportunity} label="To Learn" color="hsl(var(--neon-purple))" size={80} />
+        {/* Header with gradient */}
+        {(() => {
+          const hue1 = hashToHue(role.title);
+          const hue2 = (hue1 + 60) % 360;
+          const hue3 = (hue1 + 180) % 360;
+          return (
+            <div
+              className="relative h-32 shrink-0"
+              style={{
+                background: `linear-gradient(135deg, hsl(${hue1} 70% 15%) 0%, hsl(${hue2} 60% 12%) 50%, hsl(${hue3} 50% 10%) 100%)`,
+              }}
+            >
+              <div className="absolute rounded-full opacity-20" style={{ width: 80, height: 80, top: -20, right: 20, background: `radial-gradient(circle, hsl(${hue1} 80% 50% / 0.4), transparent)` }} />
+              <button onClick={onClose} className="absolute top-4 right-4 w-9 h-9 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center hover:bg-black/60 transition-colors z-10">
+                <X className="h-4 w-4 text-white" />
+              </button>
+              <div className="absolute bottom-4 left-5 right-5">
+                <div className="flex items-center gap-3">
+                  {role.logo && (
+                    <img src={role.logo} alt={role.company || ''} className="h-10 w-10 rounded-lg object-contain bg-white/10 p-1 shrink-0" onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
+                  )}
+                  <div className="min-w-0">
+                    <h2 className="text-lg font-display font-bold text-white leading-snug truncate">{role.title}</h2>
+                    <p className="text-xs text-white/60 truncate">
+                      {[role.company, role.location].filter(Boolean).join(" · ")}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          );
+        })()}
+
+        {/* Scrollable content — 3 sections */}
+        <div className="flex-1 overflow-y-auto bg-card">
+          {/* Section A: What is this role */}
+          <div className="p-5 border-b border-border/40">
+            <div className="flex items-center gap-2 mb-3">
+              <Briefcase className="h-4 w-4 text-primary" />
+              <h3 className="text-sm font-semibold text-foreground">What is this role</h3>
+            </div>
+            {role.description ? (
+              <p className="text-sm text-muted-foreground leading-relaxed">{role.description.length > 300 ? role.description.slice(0, 300) + "…" : role.description}</p>
+            ) : (
+              <p className="text-sm text-muted-foreground/60 italic">No description available — run a full analysis for details.</p>
+            )}
+            {/* Metadata pills */}
+            <div className="flex flex-wrap gap-1.5 mt-3">
+              {role.seniority && (
+                <span className="px-2 py-0.5 text-[10px] font-medium rounded-full bg-accent text-accent-foreground">
+                  {seniorityLabel[role.seniority] || role.seniority}
+                </span>
+              )}
+              <span className={`px-2 py-0.5 text-[10px] font-medium rounded-full border ${TAG_BADGE[role.tag] || TAG_BADGE.Other}`}>
+                {role.tag}
+              </span>
+              {role.workMode && (
+                <span className="px-2 py-0.5 text-[10px] font-medium rounded-full bg-muted text-muted-foreground">
+                  {role.workMode === "remote" ? "Remote" : role.workMode === "hybrid" ? "Hybrid" : "On-site"}
+                </span>
+              )}
+              {role.country && (
+                <span className="px-2 py-0.5 text-[10px] font-medium rounded-full bg-muted text-muted-foreground">
+                  {role.country}
+                </span>
+              )}
+            </div>
+          </div>
+
+          {/* Section B: Key responsibilities */}
+          <div className="p-5 border-b border-border/40">
+            <div className="flex items-center gap-2 mb-3">
+              <Sparkles className="h-4 w-4 text-primary" />
+              <h3 className="text-sm font-semibold text-foreground">Key responsibilities</h3>
+            </div>
+            {loadingTasks ? (
+              <div className="flex items-center gap-2 py-3">
+                <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                <span className="text-xs text-muted-foreground">Loading tasks…</span>
+              </div>
+            ) : tasks.length > 0 ? (
+              <div className="space-y-2.5">
+                {tasks.map((task, i) => (
+                  <div key={i} className="flex items-start gap-3">
+                    <div className="w-1.5 h-1.5 rounded-full bg-primary mt-1.5 shrink-0" />
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-medium text-foreground leading-snug">{task.cluster_name}</p>
+                      {task.description && (
+                        <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">{task.description.length > 120 ? task.description.slice(0, 120) + "…" : task.description}</p>
+                      )}
+                    </div>
+                    {task.ai_exposure_score != null && task.ai_exposure_score > 0 && (
+                      <span className={`shrink-0 text-[10px] font-medium px-1.5 py-0.5 rounded-full ${
+                        task.ai_exposure_score >= 70 ? "bg-destructive/15 text-destructive" : task.ai_exposure_score >= 40 ? "bg-warning/15 text-warning" : "bg-success/15 text-success"
+                      }`}>
+                        {task.ai_exposure_score}% AI
+                      </span>
+                    )}
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <button
+                onClick={() => navigate(`/analysis?title=${encodeURIComponent(role.title)}&company=${encodeURIComponent(role.company || "")}`)}
+                className="w-full py-3 rounded-lg border border-dashed border-border text-sm text-muted-foreground hover:text-foreground hover:border-primary/40 transition-colors"
+              >
+                Run full analysis to see tasks →
+              </button>
+            )}
+          </div>
+
+          {/* Section C: AI in this role */}
+          <div className="p-5">
+            <div className="flex items-center gap-2 mb-3">
+              <Bot className="h-4 w-4 text-primary" />
+              <h3 className="text-sm font-semibold text-foreground">AI in this role</h3>
+            </div>
+
+            {role.augmented > 0 || role.risk > 0 ? (
+              <div className="space-y-3">
+                {/* Automation risk */}
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-xs text-muted-foreground">{role.risk}% of tasks could be automated</span>
+                  </div>
+                  <Progress value={role.risk} className="h-1.5 bg-muted/50" />
+                </div>
+                {/* Augmented */}
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-xs text-muted-foreground">{role.augmented}% of work enhanced by AI tools</span>
+                  </div>
+                  <Progress value={role.augmented} className="h-1.5 bg-muted/50" />
+                </div>
+                {/* AI Opportunity */}
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-xs text-muted-foreground">{role.aiOpportunity}% AI skill opportunity</span>
+                  </div>
+                  <Progress value={role.aiOpportunity} className="h-1.5 bg-muted/50" />
+                </div>
+
+                {/* Summary */}
+                <p className="text-xs text-muted-foreground/80 italic pt-1">
+                  {aiSummaryLine(role.risk, role.augmented)}
+                </p>
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground/60 italic">
+                AI impact data not yet available — run an analysis to generate insights.
+              </p>
+            )}
           </div>
         </div>
-        <div className="bg-card p-5 sm:p-6">
-          <span className="inline-block px-2 py-0.5 text-[10px] font-semibold uppercase tracking-widest rounded bg-accent text-accent-foreground mb-2">
-            {role.tag}
-          </span>
-          <h2 className="text-xl sm:text-2xl font-display font-bold text-foreground">{role.title}</h2>
-          {(role.company || role.location) && (
-            <p className="mt-1 text-sm text-muted-foreground">
-              {[role.company, role.location].filter(Boolean).join(" · ")}
-            </p>
-          )}
-          <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
-            {role.risk >= 40
-              ? "High disruption potential — critical upskilling opportunity ahead."
-              : role.risk >= 20
-                ? "Moderate AI exposure — skill requirements are evolving fast."
-                : "Strong human-AI synergy — AI augments rather than replaces."}
-          </p>
-          <div className="flex gap-3 mt-5">
+
+        {/* Sticky CTA */}
+        <div className="shrink-0 p-4 border-t border-border/40 bg-card">
+          <div className="flex gap-3">
             <motion.button
               whileTap={{ scale: 0.95 }}
               onClick={() => navigate(`/analysis?title=${encodeURIComponent(role.title)}&company=${encodeURIComponent(role.company || "")}`)}
@@ -248,42 +384,24 @@ function DesktopGrid({ roles, onOpenSearch }: RoleFeedProps) {
     <div className="h-full flex flex-col overflow-hidden">
       {/* Filter bar */}
       <div className="shrink-0 flex flex-wrap items-center gap-2 px-6 py-4 border-b border-border/40">
-        {/* Department filters */}
         <div className="flex items-center gap-1.5">
-          <button
-            onClick={() => setFilter(null)}
-            className={`px-3 py-1.5 text-xs font-medium rounded-full transition-colors ${
-              !filter ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:text-foreground"
-            }`}
-          >All <span className="opacity-60 ml-0.5">{roles.length}</span></button>
+          <button onClick={() => setFilter(null)} className={`px-3 py-1.5 text-xs font-medium rounded-full transition-colors ${!filter ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:text-foreground"}`}>
+            All <span className="opacity-60 ml-0.5">{roles.length}</span>
+          </button>
           {tags.map(tag => (
-            <button
-              key={tag}
-              onClick={() => setFilter(f => f === tag ? null : tag)}
-              className={`px-3 py-1.5 text-xs font-medium rounded-full transition-colors ${
-                filter === tag ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:text-foreground"
-              }`}
-            >{tag} <span className="opacity-60 ml-0.5">{tagCounts[tag] || 0}</span></button>
+            <button key={tag} onClick={() => setFilter(f => f === tag ? null : tag)} className={`px-3 py-1.5 text-xs font-medium rounded-full transition-colors ${filter === tag ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:text-foreground"}`}>
+              {tag} <span className="opacity-60 ml-0.5">{tagCounts[tag] || 0}</span>
+            </button>
           ))}
         </div>
 
-        {/* Separator */}
         <div className="w-px h-5 bg-border/60 mx-1" />
 
-        {/* Work mode filters */}
         <div className="flex items-center gap-1.5">
           {workModes.map(mode => {
             const Icon = workModeIcon[mode] || Globe;
             return (
-              <button
-                key={mode}
-                onClick={() => setWorkModeFilter(f => f === mode ? null : mode)}
-                className={`flex items-center gap-1 px-3 py-1.5 text-xs font-medium rounded-full transition-colors ${
-                  workModeFilter === mode
-                    ? "bg-accent text-accent-foreground ring-1 ring-accent"
-                    : "bg-muted text-muted-foreground hover:text-foreground"
-                }`}
-              >
+              <button key={mode} onClick={() => setWorkModeFilter(f => f === mode ? null : mode)} className={`flex items-center gap-1 px-3 py-1.5 text-xs font-medium rounded-full transition-colors ${workModeFilter === mode ? "bg-accent text-accent-foreground ring-1 ring-accent" : "bg-muted text-muted-foreground hover:text-foreground"}`}>
                 <Icon className="h-3 w-3" />
                 {workModeLabel[mode] || mode} <span className="opacity-60 ml-0.5">{roles.filter(r => r.workMode === mode).length}</span>
               </button>
@@ -291,22 +409,14 @@ function DesktopGrid({ roles, onOpenSearch }: RoleFeedProps) {
           })}
         </div>
 
-        {/* Separator */}
         {countries.length > 0 && <div className="w-px h-5 bg-border/60 mx-1" />}
 
-        {/* Country filters */}
         {countries.length > 0 && (
           <div className="flex items-center gap-1.5 flex-wrap">
             {countries.map(country => (
-              <button
-                key={country}
-                onClick={() => setCountryFilter(f => f === country ? null : country)}
-                className={`px-3 py-1.5 text-xs font-medium rounded-full transition-colors ${
-                  countryFilter === country
-                    ? "bg-accent text-accent-foreground ring-1 ring-accent"
-                    : "bg-muted text-muted-foreground hover:text-foreground"
-                }`}
-              >{country} <span className="opacity-60 ml-0.5">{roles.filter(r => r.country === country).length}</span></button>
+              <button key={country} onClick={() => setCountryFilter(f => f === country ? null : country)} className={`px-3 py-1.5 text-xs font-medium rounded-full transition-colors ${countryFilter === country ? "bg-accent text-accent-foreground ring-1 ring-accent" : "bg-muted text-muted-foreground hover:text-foreground"}`}>
+                {country} <span className="opacity-60 ml-0.5">{roles.filter(r => r.country === country).length}</span>
+              </button>
             ))}
           </div>
         )}
@@ -337,28 +447,8 @@ function DesktopGrid({ roles, onOpenSearch }: RoleFeedProps) {
                     background: `linear-gradient(135deg, hsl(${hue1} 70% 15%) 0%, hsl(${hue2} 60% 12%) 50%, hsl(${hue3} 50% 10%) 100%)`,
                   }}
                 >
-                  {/* Geometric shapes */}
-                  <div
-                    className="absolute rounded-full opacity-20"
-                    style={{
-                      width: 60 + (hue1 % 40),
-                      height: 60 + (hue1 % 40),
-                      top: -10 + (hue2 % 30),
-                      right: -10 + (hue1 % 30),
-                      background: `radial-gradient(circle, hsl(${hue1} 80% 50% / 0.4), transparent)`,
-                    }}
-                  />
-                  <div
-                    className="absolute rounded-full opacity-15"
-                    style={{
-                      width: 40 + (hue2 % 30),
-                      height: 40 + (hue2 % 30),
-                      bottom: -5 + (hue3 % 20),
-                      left: 10 + (hue2 % 40),
-                      background: `radial-gradient(circle, hsl(${hue2} 70% 60% / 0.3), transparent)`,
-                    }}
-                  />
-                  {/* Metrics overlay */}
+                  <div className="absolute rounded-full opacity-20" style={{ width: 60 + (hue1 % 40), height: 60 + (hue1 % 40), top: -10 + (hue2 % 30), right: -10 + (hue1 % 30), background: `radial-gradient(circle, hsl(${hue1} 80% 50% / 0.4), transparent)` }} />
+                  <div className="absolute rounded-full opacity-15" style={{ width: 40 + (hue2 % 30), height: 40 + (hue2 % 30), bottom: -5 + (hue3 % 20), left: 10 + (hue2 % 40), background: `radial-gradient(circle, hsl(${hue2} 70% 60% / 0.3), transparent)` }} />
                   <div className="absolute bottom-2 left-2 right-2 flex items-center justify-between">
                     <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-black/40 backdrop-blur-sm">
                       <Zap className="h-3 w-3 text-primary" />
@@ -369,16 +459,11 @@ function DesktopGrid({ roles, onOpenSearch }: RoleFeedProps) {
                     </span>
                   </div>
                 </div>
-                {/* Bottom section with logo + text */}
+                {/* Bottom section */}
                 <div className="p-3">
                   <div className="flex items-start gap-2.5">
                     {logoUrl && (
-                      <img
-                        src={logoUrl}
-                        alt={role.company || ''}
-                        className="h-9 w-9 rounded-lg object-contain bg-white/10 p-1 shrink-0"
-                        onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
-                      />
+                      <img src={logoUrl} alt={role.company || ''} className="h-9 w-9 rounded-lg object-contain bg-white/10 p-1 shrink-0" onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
                     )}
                     <div className="min-w-0">
                       <h3 className="text-sm font-semibold text-foreground leading-snug group-hover:text-primary transition-colors truncate">{role.title}</h3>
@@ -387,9 +472,23 @@ function DesktopGrid({ roles, onOpenSearch }: RoleFeedProps) {
                       </p>
                     </div>
                   </div>
-                  <span className={`inline-block mt-2 px-2 py-0.5 text-[10px] font-medium rounded-full border ${TAG_BADGE[role.tag] || TAG_BADGE.Other}`}>
-                    {role.tag}
-                  </span>
+                  {/* Description teaser */}
+                  {role.description && (
+                    <p className="text-[11px] text-muted-foreground/70 italic mt-1.5 line-clamp-1">
+                      {role.description}
+                    </p>
+                  )}
+                  {/* Bottom row: tag + task signal */}
+                  <div className="flex items-center gap-1.5 mt-2">
+                    <span className={`px-2 py-0.5 text-[10px] font-medium rounded-full border ${TAG_BADGE[role.tag] || TAG_BADGE.Other}`}>
+                      {role.tag}
+                    </span>
+                    {(role.taskCount ?? 0) > 0 && (
+                      <span className="px-2 py-0.5 text-[10px] font-medium rounded-full bg-primary/10 text-primary border border-primary/20">
+                        ⚡ {role.taskCount} tasks{(role.aiTaskCount ?? 0) > 0 ? ` · ${role.aiTaskCount} AI-led` : ""}
+                      </span>
+                    )}
+                  </div>
                 </div>
               </motion.button>
             );
@@ -397,10 +496,8 @@ function DesktopGrid({ roles, onOpenSearch }: RoleFeedProps) {
         </div>
       </div>
 
-      {/* Floating FAB */}
       <SearchFAB onClick={onOpenSearch} />
 
-      {/* Detail overlay */}
       <AnimatePresence>
         {selected && <RoleDetailOverlay role={selected} onClose={() => setSelected(null)} />}
       </AnimatePresence>
@@ -414,6 +511,7 @@ function MobileFeed({ roles, onOpenSearch }: RoleFeedProps) {
   const navigate = useNavigate();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [direction, setDirection] = useState(0);
+  const [showOverlay, setShowOverlay] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const isAnimating = useRef(false);
 
@@ -435,8 +533,6 @@ function MobileFeed({ roles, onOpenSearch }: RoleFeedProps) {
 
   const role = roles[currentIndex];
   if (!role) return null;
-
-  const riskColor = role.risk >= 40 ? "hsl(var(--destructive))" : role.risk >= 20 ? "hsl(var(--warning))" : "hsl(var(--success))";
 
   const variants = {
     enter: (dir: number) => ({ y: dir > 0 ? "100%" : "-100%", opacity: 0 }),
@@ -463,13 +559,21 @@ function MobileFeed({ roles, onOpenSearch }: RoleFeedProps) {
             <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-black/10" />
           </div>
 
-          <div className="relative flex-1 flex flex-col justify-end p-5 pb-8">
-            {/* Center gauges */}
+          <div className="relative flex-1 flex flex-col justify-end p-5 pb-8" onClick={() => setShowOverlay(true)}>
+            {/* Center: summary signal instead of gauges */}
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-              <motion.div initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ delay: 0.2, type: "spring", damping: 20 }} className="flex gap-4">
-                <RiskGaugeMini value={role.risk} label="AI Risk" color={riskColor} size={80} />
-                <RiskGaugeMini value={role.augmented} label="Augmented" color="hsl(var(--neon-blue))" size={80} />
-                <RiskGaugeMini value={role.aiOpportunity} label="To Learn" color="hsl(var(--neon-purple))" size={80} />
+              <motion.div initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ delay: 0.2, type: "spring", damping: 20 }}
+                className="flex items-center gap-2 px-4 py-2 rounded-full bg-black/40 backdrop-blur-md border border-white/10"
+              >
+                {(role.taskCount ?? 0) > 0 && (
+                  <span className="text-xs font-medium text-white/80">
+                    {role.taskCount} tasks{(role.aiTaskCount ?? 0) > 0 ? ` · ${role.aiTaskCount} AI-led` : ""}
+                  </span>
+                )}
+                {(role.taskCount ?? 0) > 0 && role.augmented > 0 && <span className="text-white/30">·</span>}
+                {role.augmented > 0 && (
+                  <span className="text-xs font-medium text-primary">{role.augmented}% augmented</span>
+                )}
               </motion.div>
             </div>
 
@@ -480,18 +584,21 @@ function MobileFeed({ roles, onOpenSearch }: RoleFeedProps) {
               {(role.company || role.location) && (
                 <p className="mt-1 text-xs text-white/50">{[role.company, role.location].filter(Boolean).join(" · ")}</p>
               )}
-              <p className="mt-1.5 text-xs text-white/60 leading-relaxed">
-                {role.risk >= 40 ? "High disruption — upskill now" : role.risk >= 20 ? "Evolving skill requirements" : "Strong human-AI synergy"}
+              {role.description && (
+                <p className="mt-1.5 text-xs text-white/50 leading-relaxed line-clamp-1">{role.description}</p>
+              )}
+              <p className="mt-1 text-xs text-white/60 leading-relaxed">
+                {aiSummaryLine(role.risk, role.augmented)}
               </p>
             </motion.div>
           </div>
 
-          {/* Right rail — removed Search button, FAB handles it */}
+          {/* Right rail */}
           <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.3 }}
             className="absolute right-3 bottom-24 flex flex-col items-center gap-4"
           >
             <ActionButton icon={BarChart3} label="Analyze" glow onClick={() => navigate(`/analysis?title=${encodeURIComponent(role.title)}&company=${encodeURIComponent(role.company || "")}`)} />
-            <ActionButton icon={Zap} label="Practice" onClick={() => navigate(`/analysis?title=${encodeURIComponent(role.title)}&company=${encodeURIComponent(role.company || "")}`)} />
+            <ActionButton icon={Zap} label="Details" onClick={() => setShowOverlay(true)} />
             <ActionButton icon={Bookmark} label="Save" onClick={() => {}} />
             <ActionButton icon={Share2} label="Share" onClick={() => { navigator.share?.({ title: role.title, url: window.location.href }).catch(() => {}); }} />
           </motion.div>
@@ -516,8 +623,12 @@ function MobileFeed({ roles, onOpenSearch }: RoleFeedProps) {
         </motion.div>
       )}
 
-      {/* Floating FAB */}
       <SearchFAB onClick={onOpenSearch} />
+
+      {/* Detail overlay on tap */}
+      <AnimatePresence>
+        {showOverlay && <RoleDetailOverlay role={role} onClose={() => setShowOverlay(false)} />}
+      </AnimatePresence>
     </div>
   );
 }
