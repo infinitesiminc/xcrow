@@ -491,6 +491,22 @@ export default function PipelinePage() {
                 {selectedCompany?.description && (
                   <p className="text-[11px] text-muted-foreground mt-2 line-clamp-2 leading-relaxed">{selectedCompany.description}</p>
                 )}
+                {(selectedCompany?.company_type || selectedCompany?.funding_stage || selectedCompany?.funding_total || selectedCompany?.founded_year) && (
+                  <div className="flex flex-wrap gap-1.5 mt-2">
+                    {selectedCompany.company_type && (
+                      <span className="text-[10px] px-1.5 py-0.5 rounded bg-secondary text-secondary-foreground">{selectedCompany.company_type}</span>
+                    )}
+                    {selectedCompany.funding_stage && (
+                      <span className="text-[10px] px-1.5 py-0.5 rounded bg-secondary text-secondary-foreground">{selectedCompany.funding_stage}</span>
+                    )}
+                    {selectedCompany.funding_total && (
+                      <span className="text-[10px] px-1.5 py-0.5 rounded bg-secondary text-secondary-foreground">Raised {selectedCompany.funding_total}</span>
+                    )}
+                    {selectedCompany.founded_year && (
+                      <span className="text-[10px] px-1.5 py-0.5 rounded bg-secondary text-secondary-foreground">Est. {selectedCompany.founded_year}</span>
+                    )}
+                  </div>
+                )}
 
                 {/* Queue bar */}
                 {jobs.length > 0 && (
