@@ -608,6 +608,16 @@ export default function PipelinePage() {
                         {syncing === "enrich" ? <Loader2 className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3" />}
                         Re-enrich
                       </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-6 px-2 text-[10px] gap-1"
+                        disabled={!!syncing}
+                        onClick={() => selectedCompanyId && syncCompanyJobs(selectedCompanyId)}
+                      >
+                        {syncing === `jobs-${selectedCompanyId}` ? <Loader2 className="h-3 w-3 animate-spin" /> : <RefreshCw className="h-3 w-3" />}
+                        Sync Jobs
+                      </Button>
                     </div>
                     <div className="flex items-center gap-2 text-xs text-muted-foreground">
                       {selectedCompany?.industry && <span>{selectedCompany.industry}</span>}
