@@ -17,7 +17,8 @@ import { Progress } from "@/components/ui/progress";
 import {
   ChevronDown, ChevronRight, Layers, Zap, Brain, Users, Shield,
   BarChart3, Search, Sparkles, Target, ArrowRight, TrendingUp,
-  Lock, Unlock, Bot, ArrowUpRight, Compass,
+  Lock, Unlock, Bot, ArrowUpRight, Compass, Play, CheckCircle2,
+  Route, Star, Trophy, Clock,
 } from "lucide-react";
 
 /* ── Seeded RNG ── */
@@ -348,7 +349,179 @@ function aiTag(exposure: number): { label: string; className: string } {
   return { label: "Human Core", className: "border-brand-human/40 text-brand-human" };
 }
 
-type ViewMode = "strengths" | "ai-unlocks";
+type ViewMode = "strengths" | "ai-unlocks" | "edge-path";
+
+/* ── Edge Learning Path types & logic ── */
+interface EdgeStep {
+  edge: string;
+  frequency: number; // how many AI-unlocked jobs need this edge
+  category: SkillCategory;
+  relatedSkills: { name: string; aiEnabler: string }[];
+  /** Simulation tasks that develop this edge */
+  practiceTasks: { jobTitle: string; company: string; taskName: string }[];
+  /** Pillar most related to this edge */
+  pillar: "human_value_add" | "adaptive_thinking" | "domain_judgment" | "tool_awareness";
+  /** User's best score on related tasks (null if never practiced) */
+  bestScore: number | null;
+  /** Historical scores over time */
+  scoreHistory: { date: string; score: number }[];
+  practiced: boolean;
+}
+
+function buildEdgePath(
+  jobMatches: JobMatch[],
+  practicedRoles: PracticedRoleData[],
+): EdgeStep[] {
+  // 1. Aggregate edges across AI-unlocked jobs
+  const edgeMap = new Map<string, {
+    frequency: number;
+    relatedSkills: Map<string, string>;
+    jobs: Set<string>;
+    tasks: { jobTitle: string; company: string; taskName: string }[];
+    category: SkillCategory;
+  }>();
+
+  const unlockedJobs = jobMatches.filter(j => j.unlocked || j.aiBoostMatch >= 60);
+
+  for (const job of unlockedJobs) {
+    for (const gap of job.aiCoveredGaps) {
+      if (!gap.humanEdge) continue;
+      const edge = gap.humanEdge;
+      if (!edgeMap.has(edge)) {
+        edgeMap.set(edge, {
+          frequency: 0,
+          relatedSkills: new Map(),
+          jobs: new Set(),
+          tasks: [],
+          category: TAXONOMY.find(t => t.humanEdge === edge)?.category || "leadership",
+        });
+      }
+      const entry = edgeMap.get(edge)!;
+      entry.frequency++;
+      entry.jobs.add(job.title);
+      entry.relatedSkills.set(gap.name, gap.aiEnabler);
+    }
+    // Also capture edges from newEdges
+    for (const edge of job.newEdges) {
+      if (!edgeMap.has(edge)) {
+        edgeMap.set(edge, {
+          frequency: 0,
+          relatedSkills: new Map(),
+          jobs: new Set(),
+          tasks: [],
+          category: TAXONOMY.find(t => t.humanEdge === edge)?.category || "leadership",
+        });
+      }
+      const entry = edgeMap.get(edge)!;
+      if (!entry.jobs.has(job.title)) {
+        entry.frequency++;
+        entry.jobs.add(job.title);
+      }
+    }
+  }
+
+  // 2. Map edges to simulation tasks via taxonomy keywords
+  const edgeToPillar: Record<string, EdgeStep["pillar"]> = {
+    "System thinking & product judgment": "adaptive_thinking",
+    "Trade-off reasoning at scale": "domain_judgment",
+    "Edge-case intuition": "adaptive_thinking",
+    "Adversarial thinking": "domain_judgment",
+    "Data governance & domain modeling": "domain_judgment",
+    "Problem framing & evaluation design": "adaptive_thinking",
+    "Incident judgment & reliability culture": "domain_judgment",
+    "Asking the right questions": "adaptive_thinking",
+    "Assumption judgment & scenario framing": "domain_judgment",
+    "Novel hypothesis formation": "adaptive_thinking",
+    "Change management & adoption": "human_value_add",
+    "Contextual judgment under uncertainty": "domain_judgment",
+    "Trust building & political navigation": "human_value_add",
+    "Voice, narrative, and persuasion": "human_value_add",
+    "Storytelling & executive presence": "human_value_add",
+    "Empathy & leverage intuition": "human_value_add",
+    "Team dynamics & priority judgment": "human_value_add",
+    "Vision & competitive intuition": "adaptive_thinking",
+    "Empathy & cultural leadership": "human_value_add",
+    "Relationship & negotiation leverage": "human_value_add",
+    "Empathy-driven design thinking": "human_value_add",
+    "Cultural resonance & originality": "adaptive_thinking",
+    "Audience intuition & trend sensing": "adaptive_thinking",
+    "Jurisdictional judgment & precedent": "domain_judgment",
+    "Materiality judgment & ethics": "domain_judgment",
+  };
+
+  // Find practice tasks from JOB_TEMPLATES that exercise the related skills
+  for (const [edge, entry] of edgeMap) {
+    const skill = TAXONOMY.find(t => t.humanEdge === edge);
+    if (!skill) continue;
+    for (const job of JOB_TEMPLATES) {
+      for (const taskName of job.tasks) {
+        const matchedIds = matchTaskToSkills(taskName);
+        if (matchedIds.includes(skill.id)) {
+          entry.tasks.push({ jobTitle: job.title, company: job.company, taskName });
+        }
+      }
+    }
+  }
+
+  // 3. Calculate user progress on each edge using pillar scores
+  const steps: EdgeStep[] = [];
+  for (const [edge, entry] of edgeMap) {
+    if (entry.frequency === 0) continue;
+
+    const pillar = edgeToPillar[edge] || "human_value_add";
+    const pillarKey = `${pillar}_score` as keyof PracticedRoleData;
+
+    // Find all practiced simulations relevant to this edge's skill
+    const skill = TAXONOMY.find(t => t.humanEdge === edge);
+    const relevantPractice: PracticedRoleData[] = [];
+    if (skill) {
+      for (const pr of practicedRoles) {
+        const matchedIds = [...matchTaskToSkills(pr.task_name), ...matchTaskToSkills(pr.job_title)];
+        if (matchedIds.includes(skill.id)) {
+          relevantPractice.push(pr);
+        }
+      }
+    }
+
+    const scoreHistory: { date: string; score: number }[] = [];
+    let bestScore: number | null = null;
+    for (const pr of relevantPractice) {
+      const score = pr[pillarKey] as number | null;
+      if (score != null) {
+        scoreHistory.push({ date: pr.completed_at, score });
+        if (bestScore === null || score > bestScore) bestScore = score;
+      }
+    }
+    scoreHistory.sort((a, b) => a.date.localeCompare(b.date));
+
+    steps.push({
+      edge,
+      frequency: entry.frequency,
+      category: entry.category,
+      relatedSkills: Array.from(entry.relatedSkills.entries()).map(([name, aiEnabler]) => ({ name, aiEnabler })),
+      practiceTasks: entry.tasks.slice(0, 5), // top 5
+      pillar,
+      bestScore,
+      scoreHistory,
+      practiced: relevantPractice.length > 0,
+    });
+  }
+
+  // Sort: most frequent (most impactful) first, then unpracticed first
+  steps.sort((a, b) => {
+    if (a.practiced !== b.practiced) return a.practiced ? 1 : -1;
+    return b.frequency - a.frequency;
+  });
+
+  return steps;
+}
+
+const PILLAR_LABELS: Record<string, string> = {
+  human_value_add: "Human Value-Add",
+  adaptive_thinking: "Adaptive Thinking",
+  domain_judgment: "Domain Judgment",
+  tool_awareness: "Tool Awareness",
+};
 
 /* ── Reach Map SVG ── */
 function ReachMap({ humanOnly, aiUnlocked, total }: { humanOnly: number; aiUnlocked: number; total: number }) {
@@ -433,11 +606,13 @@ export default function JourneySkillProfileView({ practicedRoles = [], onNavigat
   const rand = useMemo(() => seeded(2026), []);
   const skills = useMemo(() => buildTaxonomy(practicedRoles, rand), [practicedRoles, rand]);
   const jobMatches = useMemo(() => computeJobMatches(skills), [skills]);
+  const edgePath = useMemo(() => buildEdgePath(jobMatches, practicedRoles), [jobMatches, practicedRoles]);
   const isRealData = practicedRoles.length > 0;
 
   const [view, setView] = useState<ViewMode>("strengths");
   const [expandedSkill, setExpandedSkill] = useState<string | null>(null);
   const [expandedJob, setExpandedJob] = useState<number | null>(null);
+  const [expandedEdge, setExpandedEdge] = useState<number | null>(null);
   const [searchQ, setSearchQ] = useState("");
 
   // Split into strengths / developing / gaps
@@ -488,6 +663,15 @@ export default function JourneySkillProfileView({ practicedRoles = [], onNavigat
         >
           <Sparkles className="inline h-3 w-3 mr-1" />AI Unlocks
         </button>
+        <button
+          onClick={() => { setView("edge-path"); setSearchQ(""); }}
+          className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${view === "edge-path" ? "bg-primary text-primary-foreground" : "bg-muted/40 text-muted-foreground hover:bg-muted/60"}`}
+        >
+          <Route className="inline h-3 w-3 mr-1" />Edge Path
+          {edgePath.length > 0 && (
+            <span className="ml-1 text-[8px] opacity-70">{edgePath.filter(e => e.practiced).length}/{edgePath.length}</span>
+          )}
+        </button>
         {!isRealData && (
           <Badge variant="outline" className="text-[8px] px-1.5 py-0 border-border/40 text-muted-foreground ml-auto">
             Demo data — practice roles to personalize
@@ -501,7 +685,7 @@ export default function JourneySkillProfileView({ practicedRoles = [], onNavigat
       </div>
 
       <AnimatePresence mode="wait">
-        {view === "strengths" ? (
+        {view === "strengths" && (
           <motion.div key="strengths" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-5">
             {/* Summary bar */}
             <div className="grid grid-cols-3 gap-2">
@@ -570,7 +754,8 @@ export default function JourneySkillProfileView({ practicedRoles = [], onNavigat
               </>
             )}
           </motion.div>
-        ) : (
+        )}
+        {view === "ai-unlocks" && (
           <motion.div key="ai-unlocks" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-5">
             {/* Reach Map */}
             <ReachMap
@@ -731,6 +916,191 @@ export default function JourneySkillProfileView({ practicedRoles = [], onNavigat
                 );
               })}
             </div>
+          </motion.div>
+        )}
+        {view === "edge-path" && (
+          <motion.div key="edge-path" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-5">
+            {/* Summary stats */}
+            <div className="grid grid-cols-3 gap-2">
+              <div className="rounded-lg bg-primary/10 border border-primary/20 p-3 text-center">
+                <p className="text-lg font-bold text-primary">{edgePath.length}</p>
+                <p className="text-[9px] text-muted-foreground uppercase tracking-wider">Edges to Build</p>
+              </div>
+              <div className="rounded-lg bg-success/10 border border-success/20 p-3 text-center">
+                <p className="text-lg font-bold text-success">{edgePath.filter(e => e.practiced).length}</p>
+                <p className="text-[9px] text-muted-foreground uppercase tracking-wider">In Progress</p>
+              </div>
+              <div className="rounded-lg bg-brand-human/10 border border-brand-human/20 p-3 text-center">
+                <p className="text-lg font-bold text-brand-human">{edgePath.filter(e => (e.bestScore ?? 0) >= 70).length}</p>
+                <p className="text-[9px] text-muted-foreground uppercase tracking-wider">Mastered</p>
+              </div>
+            </div>
+
+            {/* Path narrative */}
+            <div className="rounded-xl border border-primary/20 bg-primary/5 p-4 space-y-2">
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                <strong className="text-foreground">Your personalized edge path.</strong>{" "}
+                These are the human skills AI can't replace — ranked by how many AI-unlocked roles need them.
+                Follow this path to build the strategic edges that make you irreplaceable.
+              </p>
+            </div>
+
+            {/* Overall progress bar */}
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between">
+                <p className="text-xs text-muted-foreground font-medium">Overall Progress</p>
+                <p className="text-xs font-bold text-foreground">
+                  {edgePath.length > 0 ? Math.round((edgePath.filter(e => (e.bestScore ?? 0) >= 70).length / edgePath.length) * 100) : 0}%
+                </p>
+              </div>
+              <Progress
+                value={edgePath.length > 0 ? (edgePath.filter(e => (e.bestScore ?? 0) >= 70).length / edgePath.length) * 100 : 0}
+                className="h-2"
+              />
+            </div>
+
+            {/* Edge steps */}
+            <div className="space-y-2">
+              {edgePath.map((step, i) => {
+                const isOpen = expandedEdge === i;
+                const mastered = (step.bestScore ?? 0) >= 70;
+                const inProgress = step.practiced && !mastered;
+                const statusIcon = mastered ? (
+                  <Trophy className="h-4 w-4 text-brand-human" />
+                ) : inProgress ? (
+                  <TrendingUp className="h-4 w-4 text-warning" />
+                ) : (
+                  <div className="w-4 h-4 rounded-full border-2 border-muted-foreground/30 flex items-center justify-center">
+                    <span className="text-[8px] text-muted-foreground font-bold">{i + 1}</span>
+                  </div>
+                );
+
+                return (
+                  <motion.div
+                    key={i}
+                    initial={{ opacity: 0, y: 4 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: i * 0.03 }}
+                    className={`rounded-lg border overflow-hidden ${mastered ? "border-brand-human/30 bg-brand-human/5" : "border-border/40 bg-card"}`}
+                  >
+                    <button
+                      onClick={() => setExpandedEdge(isOpen ? null : i)}
+                      className="w-full flex items-center gap-3 p-3 hover:bg-muted/20 transition-colors text-left"
+                    >
+                      {/* Status */}
+                      <div className="shrink-0">{statusIcon}</div>
+
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-1.5">
+                          <p className="text-xs font-semibold text-foreground truncate">{step.edge}</p>
+                          <Badge variant="outline" className="text-[8px] px-1 py-0 shrink-0 border-border/40 text-muted-foreground">
+                            {step.frequency} roles
+                          </Badge>
+                        </div>
+                        <p className="text-[10px] text-muted-foreground mt-0.5">
+                          {PILLAR_LABELS[step.pillar]} · {CATEGORY_META[step.category]?.label || step.category}
+                        </p>
+
+                        {/* Score bar */}
+                        {step.bestScore !== null && (
+                          <div className="flex items-center gap-1.5 mt-1.5">
+                            <Progress value={step.bestScore} className="h-1.5 flex-1" />
+                            <span className={`text-[10px] font-bold ${profColor(step.bestScore)}`}>{step.bestScore}%</span>
+                          </div>
+                        )}
+                      </div>
+
+                      {isOpen ? <ChevronDown className="h-3.5 w-3.5 text-muted-foreground shrink-0" /> : <ChevronRight className="h-3.5 w-3.5 text-muted-foreground shrink-0" />}
+                    </button>
+
+                    <AnimatePresence>
+                      {isOpen && (
+                        <motion.div
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: "auto", opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          className="border-t border-border/30"
+                        >
+                          <div className="p-3 space-y-3">
+                            {/* What AI covers */}
+                            {step.relatedSkills.length > 0 && (
+                              <div className="space-y-1.5">
+                                <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider flex items-center gap-1">
+                                  <Bot className="h-3 w-3" /> AI Handles the Technical Side
+                                </p>
+                                <div className="flex flex-wrap gap-1">
+                                  {step.relatedSkills.map((rs, ri) => (
+                                    <Badge key={ri} variant="outline" className="text-[9px] border-primary/30 text-primary">
+                                      {rs.name} — <span className="opacity-70">{rs.aiEnabler}</span>
+                                    </Badge>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Practice tasks */}
+                            {step.practiceTasks.length > 0 && (
+                              <div className="space-y-1.5">
+                                <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider flex items-center gap-1">
+                                  <Play className="h-3 w-3" /> Practice Simulations
+                                </p>
+                                <div className="space-y-1">
+                                  {step.practiceTasks.map((task, ti) => (
+                                    <button
+                                      key={ti}
+                                      onClick={() => onNavigate(task.jobTitle, task.company)}
+                                      className="w-full flex items-center gap-2 p-2 rounded-md bg-muted/20 hover:bg-muted/40 transition-colors text-left group"
+                                    >
+                                      <Play className="h-3 w-3 text-primary shrink-0 group-hover:scale-110 transition-transform" />
+                                      <div className="flex-1 min-w-0">
+                                        <p className="text-[11px] font-medium text-foreground truncate">{task.taskName}</p>
+                                        <p className="text-[10px] text-muted-foreground">{task.jobTitle} · {task.company}</p>
+                                      </div>
+                                      <ArrowRight className="h-3 w-3 text-muted-foreground shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                    </button>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Score history */}
+                            {step.scoreHistory.length > 1 && (
+                              <div className="space-y-1.5">
+                                <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider flex items-center gap-1">
+                                  <Clock className="h-3 w-3" /> Progress Over Time
+                                </p>
+                                <div className="flex items-end gap-1 h-12">
+                                  {step.scoreHistory.map((sh, si) => (
+                                    <div
+                                      key={si}
+                                      className="flex-1 rounded-t bg-primary/40 transition-all"
+                                      style={{ height: `${sh.score}%` }}
+                                      title={`${new Date(sh.date).toLocaleDateString()}: ${sh.score}%`}
+                                    />
+                                  ))}
+                                </div>
+                                <div className="flex justify-between text-[8px] text-muted-foreground">
+                                  <span>{new Date(step.scoreHistory[0].date).toLocaleDateString()}</span>
+                                  <span>{new Date(step.scoreHistory[step.scoreHistory.length - 1].date).toLocaleDateString()}</span>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </motion.div>
+                );
+              })}
+            </div>
+
+            {edgePath.length === 0 && (
+              <div className="text-center py-10">
+                <Route className="h-8 w-8 text-muted-foreground/20 mx-auto mb-3" />
+                <p className="text-sm text-muted-foreground">No edges identified yet</p>
+                <p className="text-xs text-muted-foreground/60 mt-1">Explore the AI Unlocks tab to discover roles and their human edges</p>
+              </div>
+            )}
           </motion.div>
         )}
       </AnimatePresence>
