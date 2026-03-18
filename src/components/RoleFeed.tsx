@@ -1,10 +1,9 @@
 import { useState, useRef, useCallback, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence, PanInfo } from "framer-motion";
-import { BarChart3, Zap, Bookmark, Share2, Search, ChevronUp, X, ArrowRight, Globe, MapPin, Laptop, Loader2, Briefcase, Bot, Sparkles } from "lucide-react";
+import { BarChart3, Zap, Bookmark, Share2, Search, ChevronUp, X, ArrowRight, Globe, MapPin, Laptop, Loader2, Briefcase, Bot, Sparkles, Play } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { supabase } from "@/integrations/supabase/client";
-import { Progress } from "@/components/ui/progress";
 
 interface RoleCard {
   title: string;
