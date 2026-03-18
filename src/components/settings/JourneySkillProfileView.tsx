@@ -156,6 +156,20 @@ function matchTaskToSkills(taskName: string): string[] {
   return matched;
 }
 
+/* ── User performance data ── */
+export interface PracticedRoleData {
+  job_title: string;
+  task_name: string;
+  company: string | null;
+  completed_at: string;
+  correct_answers: number;
+  total_questions: number;
+  tool_awareness_score: number | null;
+  human_value_add_score: number | null;
+  adaptive_thinking_score: number | null;
+  domain_judgment_score: number | null;
+}
+
 /* ── Aggregated skill data ── */
 interface AggregatedSkill {
   id: string;
@@ -167,6 +181,7 @@ interface AggregatedSkill {
   humanEdge?: string;
   jobCount: number;
   taskCount: number;
+  practiced: boolean; // true if derived from real user data
   jobs: { title: string; company: string; taskName: string; score: number }[];
 }
 
@@ -183,25 +198,71 @@ interface JobMatch {
   newEdges: string[]; // human edges needed to truly excel
 }
 
-function buildTaxonomy(rand: () => number) {
+function buildTaxonomy(practicedRoles: PracticedRoleData[], rand: () => number) {
   const skillMap = new Map<string, AggregatedSkill>();
 
   for (const ts of TAXONOMY) {
     skillMap.set(ts.id, {
       id: ts.id, name: ts.name, category: ts.category,
       aiExposure: ts.aiExposure, aiEnabler: ts.aiEnabler, humanEdge: ts.humanEdge,
-      proficiency: 0, jobCount: 0, taskCount: 0, jobs: [],
+      proficiency: 0, jobCount: 0, taskCount: 0, practiced: false, jobs: [],
     });
   }
 
-  for (const job of JOB_TEMPLATES) {
-    for (const taskName of job.tasks) {
-      const matchedIds = matchTaskToSkills(taskName);
-      for (const skillId of matchedIds) {
-        const skill = skillMap.get(skillId)!;
-        const score = Math.round(45 + rand() * 50);
-        skill.jobs.push({ title: job.title, company: job.company, taskName, score });
+  const hasRealData = practicedRoles.length > 0;
+
+  if (hasRealData) {
+    // Use real performance data: map each practiced task to taxonomy skills
+    for (const pr of practicedRoles) {
+      const matchedIds = matchTaskToSkills(pr.task_name);
+      // Also try matching the job title for broader skill coverage
+      const jobMatchedIds = matchTaskToSkills(pr.job_title);
+      const allIds = [...new Set([...matchedIds, ...jobMatchedIds])];
+
+      // Average the 4 pillar scores into a proficiency score (0-100)
+      const pillars = [pr.tool_awareness_score, pr.human_value_add_score, pr.adaptive_thinking_score, pr.domain_judgment_score].filter((s): s is number => s != null);
+      const avgPillar = pillars.length > 0 ? Math.round(pillars.reduce((a, b) => a + b, 0) / pillars.length) : 50;
+
+      for (const skillId of allIds) {
+        const skill = skillMap.get(skillId);
+        if (!skill) continue;
+        skill.jobs.push({
+          title: pr.job_title,
+          company: pr.company || "—",
+          taskName: pr.task_name,
+          score: avgPillar,
+        });
         skill.taskCount++;
+        skill.practiced = true;
+      }
+    }
+
+    // For skills with no real data, populate from job templates with zero proficiency
+    // so they appear as gaps the user hasn't touched
+    for (const job of JOB_TEMPLATES) {
+      for (const taskName of job.tasks) {
+        const matchedIds = matchTaskToSkills(taskName);
+        for (const skillId of matchedIds) {
+          const skill = skillMap.get(skillId)!;
+          if (!skill.practiced) {
+            // Only add job evidence (not proficiency) to show what's available
+            skill.jobs.push({ title: job.title, company: job.company, taskName, score: 0 });
+            skill.taskCount++;
+          }
+        }
+      }
+    }
+  } else {
+    // Demo mode: use seeded random data
+    for (const job of JOB_TEMPLATES) {
+      for (const taskName of job.tasks) {
+        const matchedIds = matchTaskToSkills(taskName);
+        for (const skillId of matchedIds) {
+          const skill = skillMap.get(skillId)!;
+          const score = Math.round(45 + rand() * 50);
+          skill.jobs.push({ title: job.title, company: job.company, taskName, score });
+          skill.taskCount++;
+        }
       }
     }
   }
@@ -368,10 +429,11 @@ function ReachMap({ humanOnly, aiUnlocked, total }: { humanOnly: number; aiUnloc
   );
 }
 
-export default function JourneySkillProfileView({ onNavigate }: { onNavigate: (title: string, company: string | null) => void }) {
+export default function JourneySkillProfileView({ practicedRoles = [], onNavigate }: { practicedRoles?: PracticedRoleData[]; onNavigate: (title: string, company: string | null) => void }) {
   const rand = useMemo(() => seeded(2026), []);
-  const skills = useMemo(() => buildTaxonomy(rand), [rand]);
+  const skills = useMemo(() => buildTaxonomy(practicedRoles, rand), [practicedRoles, rand]);
   const jobMatches = useMemo(() => computeJobMatches(skills), [skills]);
+  const isRealData = practicedRoles.length > 0;
 
   const [view, setView] = useState<ViewMode>("strengths");
   const [expandedSkill, setExpandedSkill] = useState<string | null>(null);
@@ -426,6 +488,16 @@ export default function JourneySkillProfileView({ onNavigate }: { onNavigate: (t
         >
           <Sparkles className="inline h-3 w-3 mr-1" />AI Unlocks
         </button>
+        {!isRealData && (
+          <Badge variant="outline" className="text-[8px] px-1.5 py-0 border-border/40 text-muted-foreground ml-auto">
+            Demo data — practice roles to personalize
+          </Badge>
+        )}
+        {isRealData && (
+          <Badge variant="outline" className="text-[8px] px-1.5 py-0 border-brand-human/30 text-brand-human ml-auto">
+            Based on {practicedRoles.length} sessions
+          </Badge>
+        )}
       </div>
 
       <AnimatePresence mode="wait">
