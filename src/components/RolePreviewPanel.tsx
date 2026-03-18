@@ -399,7 +399,7 @@ export default function RolePreviewPanel({ role, onClose }: RolePreviewPanelProp
           onClick={() => setView("breakdown")}
           className="w-full flex items-center justify-center gap-2 rounded-xl bg-primary text-primary-foreground py-2.5 text-sm font-medium hover:bg-primary/90 transition-colors"
         >
-          Full breakdown <ArrowRight className="h-4 w-4" />
+          <GraduationCap className="h-4 w-4" /> Start Learning
         </button>
       </div>
     </motion.div>
