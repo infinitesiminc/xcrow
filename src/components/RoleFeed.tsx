@@ -162,6 +162,43 @@ function MiniArc({ value, label, color }: { value: number; label: string; color:
   );
 }
 
+/* ── Tiny gauge for role cards ─────────────────────── */
+
+function CardMiniGauge({ value, size = 32 }: { value: number; size?: number }) {
+  const radius = (size / 2) - 3;
+  const stroke = 3;
+  const circumference = 2 * Math.PI * radius;
+  const arcLength = circumference * 0.75;
+  const fillLength = arcLength * (value / 100);
+  const rotation = 135;
+  const color = value >= 60 ? "hsl(var(--brand-ai))" : value >= 30 ? "hsl(var(--primary))" : "hsl(var(--brand-human))";
+
+  return (
+    <div className="relative" style={{ width: size, height: size }}>
+      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
+        <circle
+          cx={size/2} cy={size/2} r={radius} fill="none"
+          stroke="rgba(255,255,255,0.15)" strokeWidth={stroke}
+          strokeLinecap="round"
+          strokeDasharray={`${arcLength} ${circumference}`}
+          transform={`rotate(${rotation} ${size/2} ${size/2})`}
+        />
+        <circle
+          cx={size/2} cy={size/2} r={radius} fill="none"
+          stroke={color} strokeWidth={stroke}
+          strokeLinecap="round"
+          strokeDasharray={`${arcLength} ${circumference}`}
+          strokeDashoffset={arcLength - fillLength}
+          transform={`rotate(${rotation} ${size/2} ${size/2})`}
+        />
+      </svg>
+      <div className="absolute inset-0 flex items-center justify-center">
+        <span className="text-[9px] font-bold text-white">{value}</span>
+      </div>
+    </div>
+  );
+}
+
 /* ── Section Tab Nav ────────────────────────────────── */
 
 const SECTIONS = [
