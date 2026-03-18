@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Send, Loader2, RotateCcw, ChevronDown, ChevronUp, CheckCircle2, X, ArrowRight, Target, Circle, CircleCheck, AlertTriangle, TrendingUp, Trophy } from "lucide-react";
+import { Send, Loader2, RotateCcw, ChevronDown, ChevronUp, CheckCircle2, X, ArrowRight, Target, Circle, CircleCheck, AlertTriangle, TrendingUp, Trophy, Zap } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -857,6 +857,11 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                   {messages.map((msg, i) => {
                     const isUser = msg.role === "user";
                     const displayContent = isUser ? msg.content : cleanMessageForDisplay(msg.content);
+
+                    // Detect scenario transition: assistant message right after a "yes" user message
+                    const prevMsg = i > 0 ? messages[i - 1] : null;
+                    const isNewScenario = !isUser && prevMsg?.role === "user" && 
+                      ["yes", "y", "yeah", "sure"].includes(prevMsg.content.toLowerCase().trim());
                     
                     const objectiveMetInMsg = !isUser ? (msg.content.match(/\[OBJECTIVE_MET:(\w+)\]/g) || []).map(t => {
                       const m = t.match(/\[OBJECTIVE_MET:(\w+)\]/);
@@ -868,13 +873,29 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                     const tierLabels = ["", "💭 Let's break this down...", "💡 Here's a direction...", "📚 Teaching moment"];
 
                     return (
-                      <motion.div
-                        key={i}
-                        initial={{ opacity: 0, y: 8 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.25 }}
-                        className="space-y-2"
-                      >
+                      <>
+                        {/* Scenario transition divider */}
+                        {isNewScenario && (
+                          <motion.div
+                            initial={{ opacity: 0, scaleX: 0 }}
+                            animate={{ opacity: 1, scaleX: 1 }}
+                            transition={{ duration: 0.4 }}
+                            className="flex items-center gap-3 py-2"
+                          >
+                            <div className="flex-1 h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
+                            <span className="text-[11px] font-medium text-primary/70 flex items-center gap-1.5 shrink-0">
+                              <Zap className="h-3 w-3" /> New Scenario
+                            </span>
+                            <div className="flex-1 h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
+                          </motion.div>
+                        )}
+                        <motion.div
+                          key={i}
+                          initial={{ opacity: 0, y: 8 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ duration: 0.25 }}
+                          className="space-y-2"
+                        >
                         <div className={`flex ${isUser ? "justify-end" : "justify-start"}`}>
                           {isUser ? (
                             <div className="max-w-[80%] bg-primary/10 border border-primary/20 rounded-2xl rounded-br-md px-4 py-2">
@@ -917,6 +938,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                         {/* Collapsible insight card */}
                         {!isUser && <InsightCard content={msg.content} />}
                       </motion.div>
+                      </>
                     );
                   })}
 
