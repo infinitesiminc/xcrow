@@ -43,6 +43,8 @@ interface SimulatorModalProps {
   taskImpactLevel?: string;
   mode?: SimMode;
   onCompleted?: () => void;
+  onNextTask?: () => void;
+  onBackToFeed?: () => void;
 }
 
 /* ── Objective Checklist (sidebar / inline) ── */
