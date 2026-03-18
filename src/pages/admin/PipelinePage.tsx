@@ -538,17 +538,16 @@ export default function PipelinePage() {
                 </button>
               ))}
             </div>
-            <div className="flex gap-1">
-              <Button variant="outline" size="sm" onClick={importCompanies} disabled={!!syncing || bulkSyncing} className="flex-1 text-xs h-7 gap-1">
+            <div className="flex flex-wrap gap-1">
+              <Button variant="outline" size="sm" onClick={importCompanies} disabled={!!syncing || bulkSyncing} className="flex-1 text-xs h-7 gap-1 min-w-0">
                 {syncing === "import" ? <Loader2 className="h-3 w-3 animate-spin" /> : <Download className="h-3 w-3" />}
                 Import
               </Button>
-              <Button variant="outline" size="sm" onClick={bulkSyncing ? () => { bulkAbortRef.current = true; } : bulkSyncAllJobs} disabled={!!syncing} className="flex-1 text-xs h-7 gap-1">
-                {bulkSyncing ? <><Loader2 className="h-3 w-3 animate-spin" /> Stop</> : <><RefreshCw className="h-3 w-3" /> Sync All</>}
+              <Button variant="outline" size="sm" onClick={bulkSyncing ? () => { bulkAbortRef.current = true; } : bulkSyncAllJobs} disabled={!!syncing} className="flex-1 text-xs h-7 gap-1 min-w-0">
+                {bulkSyncing ? <><Loader2 className="h-3 w-3 animate-spin" /> Stop</> : <><RefreshCw className="h-3 w-3" /> Sync</>}
               </Button>
               <Button variant="outline" size="sm" onClick={() => setAddOpen(true)} className="text-xs h-7 gap-1">
                 <Plus className="h-3 w-3" />
-                Add
               </Button>
               <Button variant="outline" size="sm" onClick={() => setApolloOpen(true)} className="text-xs h-7 gap-1">
                 <Telescope className="h-3 w-3" />
