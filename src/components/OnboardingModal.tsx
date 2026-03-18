@@ -83,18 +83,18 @@ export default function OnboardingModal({ open, onComplete, userId }: Onboarding
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium text-foreground">Company website <span className="text-muted-foreground font-normal">(optional)</span></label>
+            <label className="text-sm font-medium text-foreground">University / School <span className="text-muted-foreground font-normal">(optional)</span></label>
             <div className="relative">
               <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <input
                 type="text"
-                placeholder="e.g. acme.com"
+                placeholder="e.g. MIT, Stanford, University of Lagos"
                 value={company}
                 onChange={(e) => setCompany(e.target.value)}
                 className="w-full rounded-xl border border-input bg-background pl-10 pr-3 py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-ring"
               />
             </div>
-            <p className="text-[11px] text-muted-foreground">We'll use this to contextualize your analysis</p>
+            <p className="text-[11px] text-muted-foreground">We'll tailor recommendations to your academic context</p>
           </div>
 
           <div className="flex gap-3 pt-2">
