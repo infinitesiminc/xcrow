@@ -147,7 +147,7 @@ export default function PipelinePage() {
   /* ═══════ LEFT LOGIC ═══════ */
   const fetchCompanies = useCallback(async () => {
     setLoadingCompanies(true);
-    const { data } = await supabase.from("companies").select("id, name, industry, logo_url, website, careers_url, detected_ats_platform, employee_range, headquarters").order("name");
+    const { data } = await supabase.from("companies").select("id, name, industry, logo_url, website, careers_url, detected_ats_platform, employee_range, headquarters, description").order("name");
     const all = (data as Company[]) || [];
     const counts: Record<string, number> = {};
     all.forEach(c => { const a = c.detected_ats_platform || "unknown"; counts[a] = (counts[a] || 0) + 1; });
