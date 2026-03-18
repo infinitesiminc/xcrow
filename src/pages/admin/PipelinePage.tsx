@@ -287,6 +287,22 @@ export default function PipelinePage() {
     return body;
   };
 
+  const resolveInvokeErrorMessage = async (error: any, fallback: string) => {
+    try {
+      const payload = await error?.context?.json?.();
+      if (payload?.error && payload?.details) return `${payload.error} ${payload.details}`;
+      if (payload?.error) return payload.error;
+    } catch {
+      // Fall through to generic message handling
+    }
+
+    if (typeof error?.message === "string" && !error.message.includes("non-2xx")) {
+      return error.message;
+    }
+
+    return fallback;
+  };
+
   const handleApolloSearch = async (pg = 1) => {
     setApolloLoading(true);
     setApolloSelected(new Set());
@@ -294,11 +310,15 @@ export default function PipelinePage() {
       const body = buildApolloBody(pg);
       const { data, error } = await supabase.functions.invoke("search-apollo", { body });
       if (error) throw error;
-      if (data?.error) throw new Error(data.error);
+      if (data?.error) {
+        const details = data?.details ? ` ${data.details}` : "";
+        throw new Error(`${data.error}${details}`.trim());
+      }
       setApolloResults(data.companies || []);
       setApolloPagination(data.pagination || { page: pg, total_entries: 0, total_pages: 0 });
     } catch (err: any) {
-      toast({ title: "Apollo search failed", description: err.message, variant: "destructive" });
+      const message = await resolveInvokeErrorMessage(err, "Apollo search is unavailable for this API key/plan.");
+      toast({ title: "Apollo search failed", description: message, variant: "destructive" });
     } finally {
       setApolloLoading(false);
     }
@@ -339,14 +359,18 @@ export default function PipelinePage() {
         const body = { ...buildApolloBody(pg), import_results: true };
         const { data, error } = await supabase.functions.invoke("search-apollo", { body });
         if (error) throw error;
-        if (data?.error) throw new Error(data.error);
+        if (data?.error) {
+          const details = data?.details ? ` ${data.details}` : "";
+          throw new Error(`${data.error}${details}`.trim());
+        }
         totalImported += (data.stats?.created || 0) + (data.stats?.updated || 0);
         setApolloBulkProgress(prev => prev ? { ...prev, imported: totalImported } : null);
       }
       toast({ title: "Bulk discovery complete", description: `${totalImported} companies imported.` });
       fetchCompanies();
     } catch (err: any) {
-      toast({ title: "Bulk import failed", description: err.message, variant: "destructive" });
+      const message = await resolveInvokeErrorMessage(err, "Apollo bulk import is unavailable for this API key/plan.");
+      toast({ title: "Bulk import failed", description: message, variant: "destructive" });
     } finally {
       setApolloImporting(false);
       setApolloBulkProgress(null);
