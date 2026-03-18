@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   X, Compass, Bookmark, Zap, Trophy, CheckCircle2, Circle,
-  Settings, LogOut, ArrowRight, Search, ChevronDown, ChevronRight,
+  Settings, LogOut, Search,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -27,11 +27,35 @@ interface Milestone {
 interface SavedRole {
   job_title: string;
   company: string | null;
+  augmented_percent: number | null;
+  automation_risk_percent: number | null;
+  new_skills_percent: number | null;
 }
 
-interface GroupedRoles {
-  company: string;
-  roles: SavedRole[];
+function hashToHue(str: string): number {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) hash = str.charCodeAt(i) + ((hash << 5) - hash);
+  return Math.abs(hash) % 360;
+}
+
+function MiniGauge({ value, size = 28 }: { value: number; size?: number }) {
+  const radius = (size / 2) - 2.5;
+  const stroke = 2.5;
+  const circumference = 2 * Math.PI * radius;
+  const arcLength = circumference * 0.75;
+  const fillLength = arcLength * (value / 100);
+  const rotation = 135;
+  return (
+    <div className="relative" style={{ width: size, height: size }}>
+      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
+        <circle cx={size/2} cy={size/2} r={radius} fill="none" stroke="rgba(255,255,255,0.15)" strokeWidth={stroke} strokeLinecap="round" strokeDasharray={`${arcLength} ${circumference}`} transform={`rotate(${rotation} ${size/2} ${size/2})`} />
+        <circle cx={size/2} cy={size/2} r={radius} fill="none" stroke="rgba(255,255,255,0.9)" strokeWidth={stroke} strokeLinecap="round" strokeDasharray={`${arcLength} ${circumference}`} strokeDashoffset={arcLength - fillLength} transform={`rotate(${rotation} ${size/2} ${size/2})`} />
+      </svg>
+      <div className="absolute inset-0 flex items-center justify-center">
+        <span className="text-[8px] font-bold text-white">{value}</span>
+      </div>
+    </div>
+  );
 }
 
 export default function ProfileSheet({ open, onClose, userId, displayName, email, onSignOut }: ProfileSheetProps) {
@@ -42,9 +66,7 @@ export default function ProfileSheet({ open, onClose, userId, displayName, email
   const [tasksPracticed, setTasksPracticed] = useState(0);
   const [uniqueTasks, setUniqueTasks] = useState(0);
   const [savedRoles, setSavedRoles] = useState<SavedRole[]>([]);
-  const [expandedSaved, setExpandedSaved] = useState(false);
   const [savedSearch, setSavedSearch] = useState("");
-  const [openGroups, setOpenGroups] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     if (!open || !userId) return;
@@ -52,7 +74,7 @@ export default function ProfileSheet({ open, onClose, userId, displayName, email
     (async () => {
       const [analysisRes, bookmarkRes, simRes] = await Promise.all([
         supabase.from("analysis_history").select("id", { count: "exact", head: true }).eq("user_id", userId),
-        supabase.from("bookmarked_roles").select("job_title, company").eq("user_id", userId).order("bookmarked_at", { ascending: false }),
+        supabase.from("bookmarked_roles").select("job_title, company, augmented_percent, automation_risk_percent, new_skills_percent").eq("user_id", userId).order("bookmarked_at", { ascending: false }),
         supabase.from("completed_simulations").select("task_name").eq("user_id", userId),
       ]);
 
@@ -67,13 +89,8 @@ export default function ProfileSheet({ open, onClose, userId, displayName, email
     })();
   }, [open, userId]);
 
-  // Reset expanded state when sheet closes
   useEffect(() => {
-    if (!open) {
-      setExpandedSaved(false);
-      setSavedSearch("");
-      setOpenGroups(new Set());
-    }
+    if (!open) setSavedSearch("");
   }, [open]);
 
   const milestones = useMemo<Milestone[]>(() => [
@@ -86,32 +103,11 @@ export default function ProfileSheet({ open, onClose, userId, displayName, email
 
   const completedCount = milestones.filter(m => m.completed).length;
 
-  const groupedRoles = useMemo<GroupedRoles[]>(() => {
+  const filteredRoles = useMemo(() => {
     const q = savedSearch.toLowerCase().trim();
-    const filtered = q
-      ? savedRoles.filter(r => r.job_title.toLowerCase().includes(q) || (r.company?.toLowerCase().includes(q) ?? false))
-      : savedRoles;
-
-    const map = new Map<string, SavedRole[]>();
-    for (const role of filtered) {
-      const key = role.company || "Other";
-      const arr = map.get(key) || [];
-      arr.push(role);
-      map.set(key, arr);
-    }
-
-    return Array.from(map.entries())
-      .sort(([a], [b]) => (a === "Other" ? 1 : b === "Other" ? -1 : a.localeCompare(b)))
-      .map(([company, roles]) => ({ company, roles }));
+    if (!q) return savedRoles;
+    return savedRoles.filter(r => r.job_title.toLowerCase().includes(q) || (r.company?.toLowerCase().includes(q) ?? false));
   }, [savedRoles, savedSearch]);
-
-  const toggleGroup = (company: string) => {
-    setOpenGroups(prev => {
-      const next = new Set(prev);
-      next.has(company) ? next.delete(company) : next.add(company);
-      return next;
-    });
-  };
 
   const goToRole = (jobTitle: string, company: string | null) => {
     onClose();
@@ -224,7 +220,7 @@ export default function ProfileSheet({ open, onClose, userId, displayName, email
                     </div>
                   </section>
 
-                  {/* Saved Roles */}
+                  {/* Saved Roles — Card Grid */}
                   <section>
                     <h3 className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground mb-3">
                       📚 Saved Roles{rolesSaved > 0 && ` · ${rolesSaved}`}
@@ -233,98 +229,72 @@ export default function ProfileSheet({ open, onClose, userId, displayName, email
                       <p className="text-xs text-muted-foreground">
                         No saved roles yet — explore and bookmark roles you're interested in.
                       </p>
-                    ) : !expandedSaved ? (
-                      /* Compact view: show first 3 + "View all" */
-                      <div className="space-y-1">
-                        {savedRoles.slice(0, 3).map((role, i) => (
-                          <button
-                            key={i}
-                            onClick={() => goToRole(role.job_title, role.company)}
-                            className="w-full flex items-center gap-2 px-2 py-2 rounded-lg hover:bg-muted/30 transition-colors group"
-                          >
-                            <Bookmark className="h-3 w-3 text-primary fill-primary shrink-0" />
-                            <div className="flex-1 min-w-0 text-left">
-                              <p className="text-xs font-medium text-foreground truncate">{role.job_title}</p>
-                              {role.company && (
-                                <p className="text-[10px] text-muted-foreground truncate">{role.company}</p>
-                              )}
-                            </div>
-                            <ArrowRight className="h-3 w-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
-                          </button>
-                        ))}
-                        {savedRoles.length > 3 && (
-                          <button
-                            onClick={() => {
-                              setExpandedSaved(true);
-                              // Auto-open all groups initially
-                              setOpenGroups(new Set(groupedRoles.map(g => g.company)));
-                            }}
-                            className="w-full text-xs text-primary hover:text-primary/80 font-medium py-2 transition-colors"
-                          >
-                            View all {savedRoles.length} saved →
-                          </button>
-                        )}
-                      </div>
                     ) : (
-                      /* Expanded view: search + grouped list */
                       <div className="space-y-2">
-                        <div className="relative">
-                          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
-                          <Input
-                            value={savedSearch}
-                            onChange={e => setSavedSearch(e.target.value)}
-                            placeholder="Filter saved roles…"
-                            className="h-8 pl-8 text-xs bg-muted/20 border-border/50"
-                          />
-                        </div>
-
-                        <div className="max-h-[280px] overflow-y-auto space-y-0.5 pr-1">
-                          {groupedRoles.length === 0 ? (
-                            <p className="text-xs text-muted-foreground py-3 text-center">No matches</p>
-                          ) : (
-                            groupedRoles.map(group => {
-                              const isOpen = openGroups.has(group.company);
+                        {rolesSaved > 6 && (
+                          <div className="relative">
+                            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                            <Input
+                              value={savedSearch}
+                              onChange={e => setSavedSearch(e.target.value)}
+                              placeholder="Filter saved roles…"
+                              className="h-8 pl-8 text-xs bg-muted/20 border-border/50"
+                            />
+                          </div>
+                        )}
+                        <div className="max-h-[340px] overflow-y-auto pr-1">
+                          <div className="grid grid-cols-2 gap-2">
+                            {filteredRoles.map((role, i) => {
+                              const hue1 = hashToHue(role.job_title);
+                              const hue2 = (hue1 + 60) % 360;
+                              const logoUrl = role.company ? `https://logo.clearbit.com/${role.company.toLowerCase().replace(/\s+/g, '')}.com` : '';
+                              const aug = role.augmented_percent ?? 0;
                               return (
-                                <div key={group.company}>
-                                  <button
-                                    onClick={() => toggleGroup(group.company)}
-                                    className="w-full flex items-center gap-1.5 px-2 py-1.5 rounded-md hover:bg-muted/30 transition-colors"
-                                  >
-                                    {isOpen ? (
-                                      <ChevronDown className="h-3 w-3 text-muted-foreground shrink-0" />
-                                    ) : (
-                                      <ChevronRight className="h-3 w-3 text-muted-foreground shrink-0" />
-                                    )}
-                                    <span className="text-[11px] font-semibold text-foreground">{group.company}</span>
-                                    <span className="text-[10px] text-muted-foreground ml-auto">{group.roles.length}</span>
-                                  </button>
-                                  {isOpen && (
-                                    <div className="ml-4 space-y-0.5">
-                                      {group.roles.map((role, i) => (
-                                        <button
-                                          key={i}
-                                          onClick={() => goToRole(role.job_title, role.company)}
-                                          className="w-full flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-muted/30 transition-colors group"
-                                        >
-                                          <Bookmark className="h-2.5 w-2.5 text-primary fill-primary shrink-0" />
-                                          <p className="text-xs text-foreground truncate flex-1 text-left">{role.job_title}</p>
-                                          <ArrowRight className="h-3 w-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
-                                        </button>
-                                      ))}
+                                <motion.button
+                                  key={role.job_title + role.company + i}
+                                  initial={{ opacity: 0, y: 8 }}
+                                  animate={{ opacity: 1, y: 0 }}
+                                  transition={{ duration: 0.25, delay: Math.min(i * 0.03, 0.3) }}
+                                  onClick={() => goToRole(role.job_title, role.company)}
+                                  className="group text-left rounded-xl overflow-hidden bg-card border border-border transition-all hover:shadow-lg hover:border-primary/40 flex flex-col"
+                                >
+                                  <div className="p-2.5 pb-2">
+                                    <div className="flex items-start gap-1.5">
+                                      {logoUrl && (
+                                        <img src={logoUrl} alt={role.company || ''} className="h-6 w-6 rounded-md object-contain bg-muted/30 p-0.5 shrink-0 mt-0.5" onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
+                                      )}
+                                      <div className="min-w-0 flex-1">
+                                        <h4 className="text-[11px] font-semibold text-foreground leading-snug line-clamp-2">{role.job_title}</h4>
+                                        {role.company && (
+                                          <p className="text-[10px] text-muted-foreground truncate mt-0.5">{role.company}</p>
+                                        )}
+                                      </div>
                                     </div>
-                                  )}
-                                </div>
+                                  </div>
+                                  <div className="mt-auto border-t border-border/30">
+                                    <div className="px-2.5 py-1.5 flex items-center justify-between" style={{ background: `linear-gradient(135deg, hsl(${hue1} 60% 8%) 0%, hsl(${hue2} 50% 6%) 100%)` }}>
+                                      {aug > 0 ? (
+                                        <div className="flex items-center gap-1">
+                                          <MiniGauge value={aug} />
+                                          <span className="text-[9px] font-medium text-muted-foreground uppercase tracking-wide">Aug</span>
+                                        </div>
+                                      ) : (
+                                        <div className="flex items-center gap-0.5">
+                                          <Zap className="h-2.5 w-2.5 text-primary" />
+                                          <span className="text-[9px] text-muted-foreground">—</span>
+                                        </div>
+                                      )}
+                                      <Bookmark className="h-2.5 w-2.5 text-primary fill-primary shrink-0" />
+                                    </div>
+                                  </div>
+                                </motion.button>
                               );
-                            })
+                            })}
+                          </div>
+                          {filteredRoles.length === 0 && (
+                            <p className="text-xs text-muted-foreground py-4 text-center">No matches</p>
                           )}
                         </div>
-
-                        <button
-                          onClick={() => { setExpandedSaved(false); setSavedSearch(""); }}
-                          className="w-full text-[10px] text-muted-foreground hover:text-foreground py-1 transition-colors"
-                        >
-                          Collapse
-                        </button>
                       </div>
                     )}
                   </section>
