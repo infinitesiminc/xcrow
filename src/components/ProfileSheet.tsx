@@ -74,7 +74,7 @@ export default function ProfileSheet({ open, onClose, userId, displayName, email
     (async () => {
       const [analysisRes, bookmarkRes, simRes] = await Promise.all([
         supabase.from("analysis_history").select("id", { count: "exact", head: true }).eq("user_id", userId),
-        supabase.from("bookmarked_roles").select("job_title, company").eq("user_id", userId).order("bookmarked_at", { ascending: false }),
+        supabase.from("bookmarked_roles").select("job_title, company, augmented_percent, automation_risk_percent, new_skills_percent").eq("user_id", userId).order("bookmarked_at", { ascending: false }),
         supabase.from("completed_simulations").select("task_name").eq("user_id", userId),
       ]);
 
