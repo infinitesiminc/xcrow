@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { Badge } from "@/components/ui/badge";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -20,7 +21,10 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Save, Trash2, KeyRound, Bookmark, Zap, Search } from "lucide-react";
+import {
+  Loader2, Save, Trash2, KeyRound, Bookmark, Zap, Search,
+  Linkedin, Upload, FileText, GraduationCap, Briefcase, X, School,
+} from "lucide-react";
 
 /* ── helpers ─────────────────────────────────────────── */
 
@@ -68,7 +72,14 @@ export default function Settings() {
   const [displayName, setDisplayName] = useState("");
   const [jobTitle, setJobTitle] = useState("");
   const [company, setCompany] = useState("");
+  const [linkedinUrl, setLinkedinUrl] = useState("");
+  const [schoolName, setSchoolName] = useState("");
+  const [careerStage, setCareerStage] = useState<"student" | "professional">("professional");
+  const [cvUrl, setCvUrl] = useState<string | null>(null);
+  const [cvFileName, setCvFileName] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [uploadingCv, setUploadingCv] = useState(false);
+  const cvInputRef = useRef<HTMLInputElement>(null);
 
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -90,6 +101,14 @@ export default function Settings() {
     setDisplayName(profile.displayName || "");
     setJobTitle(profile.jobTitle || "");
     setCompany(profile.company || "");
+    setLinkedinUrl(profile.linkedinUrl || "");
+    setSchoolName(profile.schoolName || "");
+    setCareerStage((profile.careerStage as "student" | "professional") || "professional");
+    setCvUrl(profile.cvUrl || null);
+    if (profile.cvUrl) {
+      const parts = profile.cvUrl.split("/");
+      setCvFileName(decodeURIComponent(parts[parts.length - 1] || "CV"));
+    }
   }, [profile]);
 
   // Fetch saved roles
@@ -115,6 +134,43 @@ export default function Settings() {
     );
   }, [savedRoles, savedSearch]);
 
+  /* ── CV upload ── */
+  const handleCvUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !user) return;
+    const allowedTypes = ["application/pdf", "application/vnd.openxmlformats-officedocument.wordprocessingml.document", "text/plain"];
+    if (!allowedTypes.includes(file.type)) {
+      toast({ title: "Invalid file type", description: "Please upload a PDF, DOCX, or TXT file.", variant: "destructive" });
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast({ title: "File too large", description: "Max file size is 5MB.", variant: "destructive" });
+      return;
+    }
+    setUploadingCv(true);
+    const ext = file.name.split(".").pop();
+    const path = `${user.id}/cv.${ext}`;
+    const { error } = await supabase.storage.from("cv-uploads").upload(path, file, { upsert: true });
+    if (error) {
+      toast({ title: "Upload failed", description: error.message, variant: "destructive" });
+    } else {
+      const { data: urlData } = supabase.storage.from("cv-uploads").getPublicUrl(path);
+      setCvUrl(path);
+      setCvFileName(file.name);
+      toast({ title: "CV uploaded", description: file.name });
+    }
+    setUploadingCv(false);
+    if (cvInputRef.current) cvInputRef.current.value = "";
+  };
+
+  const handleRemoveCv = async () => {
+    if (!user || !cvUrl) return;
+    await supabase.storage.from("cv-uploads").remove([cvUrl]);
+    setCvUrl(null);
+    setCvFileName(null);
+    toast({ title: "CV removed" });
+  };
+
   const handleSaveProfile = async () => {
     if (!user) return;
     setSaving(true);
@@ -124,6 +180,10 @@ export default function Settings() {
         display_name: displayName,
         job_title: jobTitle.trim() || null,
         company: company.trim() || null,
+        linkedin_url: linkedinUrl.trim() || null,
+        school_name: schoolName.trim() || null,
+        career_stage: careerStage,
+        cv_url: cvUrl || null,
       } as any)
       .eq("id", user.id);
 
@@ -295,44 +355,174 @@ export default function Settings() {
       <Card className="mb-6">
         <CardHeader>
           <CardTitle className="text-lg">Profile</CardTitle>
-          <CardDescription>Your personal and professional details.</CardDescription>
+          <CardDescription>Your personal and professional details for a customized experience.</CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
-            <Input id="email" value={user?.email ?? ""} disabled className="bg-muted" />
+        <CardContent className="space-y-6">
+          {/* Basic info */}
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <Input id="email" value={user?.email ?? ""} disabled className="bg-muted" />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="displayName">Display name</Label>
+              <Input
+                id="displayName"
+                value={displayName}
+                onChange={(e) => setDisplayName(e.target.value)}
+                placeholder="Your name"
+              />
+            </div>
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="displayName">Display name</Label>
-            <Input
-              id="displayName"
-              value={displayName}
-              onChange={(e) => setDisplayName(e.target.value)}
-              placeholder="Your name"
-            />
-          </div>
+
           <Separator />
+
+          {/* Career stage toggle */}
+          <div className="space-y-3">
+            <Label className="text-xs uppercase tracking-wider text-muted-foreground">I am a</Label>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => setCareerStage("student")}
+                className={`flex-1 flex items-center justify-center gap-2 rounded-xl border-2 px-4 py-3.5 transition-all ${
+                  careerStage === "student"
+                    ? "border-primary bg-primary/10 text-foreground shadow-sm"
+                    : "border-border/50 bg-muted/20 text-muted-foreground hover:border-border hover:bg-muted/40"
+                }`}
+              >
+                <GraduationCap className="h-5 w-5" />
+                <div className="text-left">
+                  <p className="text-sm font-semibold">Student</p>
+                  <p className="text-[10px] opacity-70">Exploring career paths</p>
+                </div>
+              </button>
+              <button
+                type="button"
+                onClick={() => setCareerStage("professional")}
+                className={`flex-1 flex items-center justify-center gap-2 rounded-xl border-2 px-4 py-3.5 transition-all ${
+                  careerStage === "professional"
+                    ? "border-primary bg-primary/10 text-foreground shadow-sm"
+                    : "border-border/50 bg-muted/20 text-muted-foreground hover:border-border hover:bg-muted/40"
+                }`}
+              >
+                <Briefcase className="h-5 w-5" />
+                <div className="text-left">
+                  <p className="text-sm font-semibold">Professional</p>
+                  <p className="text-[10px] opacity-70">Upskilling in my role</p>
+                </div>
+              </button>
+            </div>
+          </div>
+
+          <Separator />
+
+          {/* Role & org */}
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="space-y-2">
+              <Label htmlFor="jobTitle">
+                {careerStage === "student" ? "Target role" : "Job title"}
+              </Label>
+              <Input
+                id="jobTitle"
+                value={jobTitle}
+                onChange={(e) => setJobTitle(e.target.value)}
+                placeholder={careerStage === "student" ? "e.g. Data Scientist" : "e.g. Product Manager"}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="company">
+                {careerStage === "student" ? "Target company" : "Company"}
+              </Label>
+              <Input
+                id="company"
+                value={company}
+                onChange={(e) => setCompany(e.target.value)}
+                placeholder="e.g. Acme Corp or acme.com"
+              />
+            </div>
+          </div>
+
+          {/* School (shown for students, optional for professionals) */}
           <div className="space-y-2">
-            <Label htmlFor="jobTitle">Job title</Label>
+            <Label htmlFor="schoolName" className="flex items-center gap-1.5">
+              <School className="h-3.5 w-3.5 text-muted-foreground" />
+              {careerStage === "student" ? "School / University" : "School / University (optional)"}
+            </Label>
             <Input
-              id="jobTitle"
-              value={jobTitle}
-              onChange={(e) => setJobTitle(e.target.value)}
-              placeholder="e.g. Product Manager"
+              id="schoolName"
+              value={schoolName}
+              onChange={(e) => setSchoolName(e.target.value)}
+              placeholder="e.g. MIT, Stanford, University of London"
             />
           </div>
+
+          <Separator />
+
+          {/* LinkedIn */}
           <div className="space-y-2">
-            <Label htmlFor="company">Company</Label>
+            <Label htmlFor="linkedinUrl" className="flex items-center gap-1.5">
+              <Linkedin className="h-3.5 w-3.5 text-muted-foreground" />
+              LinkedIn profile
+            </Label>
             <Input
-              id="company"
-              value={company}
-              onChange={(e) => setCompany(e.target.value)}
-              placeholder="e.g. Acme Corp or acme.com"
+              id="linkedinUrl"
+              value={linkedinUrl}
+              onChange={(e) => setLinkedinUrl(e.target.value)}
+              placeholder="https://linkedin.com/in/yourname"
             />
           </div>
-          <Button onClick={handleSaveProfile} disabled={saving} size="sm">
+
+          {/* CV upload */}
+          <div className="space-y-2">
+            <Label className="flex items-center gap-1.5">
+              <FileText className="h-3.5 w-3.5 text-muted-foreground" />
+              CV / Resume
+            </Label>
+            {cvFileName ? (
+              <div className="flex items-center gap-2 rounded-lg border border-border bg-muted/20 px-3 py-2.5">
+                <FileText className="h-4 w-4 text-primary shrink-0" />
+                <span className="text-sm text-foreground truncate flex-1">{cvFileName}</span>
+                <Badge variant="secondary" className="text-[10px] shrink-0">Uploaded</Badge>
+                <button
+                  onClick={handleRemoveCv}
+                  className="ml-1 rounded-full p-1 hover:bg-destructive/10 transition-colors"
+                  title="Remove CV"
+                >
+                  <X className="h-3.5 w-3.5 text-destructive" />
+                </button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => cvInputRef.current?.click()}
+                disabled={uploadingCv}
+                className="w-full rounded-xl border-2 border-dashed border-border/60 bg-muted/10 hover:border-primary/40 hover:bg-primary/5 transition-all px-4 py-6 flex flex-col items-center gap-2 text-center group"
+              >
+                {uploadingCv ? (
+                  <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                ) : (
+                  <Upload className="h-6 w-6 text-muted-foreground group-hover:text-primary transition-colors" />
+                )}
+                <div>
+                  <p className="text-sm font-medium text-foreground">
+                    {uploadingCv ? "Uploading…" : "Upload your CV"}
+                  </p>
+                  <p className="text-[11px] text-muted-foreground mt-0.5">PDF, DOCX, or TXT · Max 5MB</p>
+                </div>
+              </button>
+            )}
+            <input
+              ref={cvInputRef}
+              type="file"
+              accept=".pdf,.docx,.txt,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain"
+              onChange={handleCvUpload}
+              className="hidden"
+            />
+          </div>
+
+          <Button onClick={handleSaveProfile} disabled={saving} size="sm" className="mt-2">
             {saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
-            Save
+            Save profile
           </Button>
         </CardContent>
       </Card>
@@ -344,25 +534,27 @@ export default function Settings() {
           <CardDescription>Update your account password.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="newPassword">New password</Label>
-            <Input
-              id="newPassword"
-              type="password"
-              value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value)}
-              placeholder="••••••••"
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="confirmPassword">Confirm new password</Label>
-            <Input
-              id="confirmPassword"
-              type="password"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              placeholder="••••••••"
-            />
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="space-y-2">
+              <Label htmlFor="newPassword">New password</Label>
+              <Input
+                id="newPassword"
+                type="password"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                placeholder="••••••••"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="confirmPassword">Confirm new password</Label>
+              <Input
+                id="confirmPassword"
+                type="password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                placeholder="••••••••"
+              />
+            </div>
           </div>
           <Button onClick={handleChangePassword} disabled={changingPassword} size="sm" variant="outline">
             {changingPassword ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <KeyRound className="mr-2 h-4 w-4" />}
