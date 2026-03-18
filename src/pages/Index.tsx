@@ -19,6 +19,7 @@ interface RoleCard {
   tag: string;
   company?: string;
   location?: string;
+  logo?: string;
 }
 
 function calcToolsToLearn(risk: number, augmented: number, newSkills: number): number {
