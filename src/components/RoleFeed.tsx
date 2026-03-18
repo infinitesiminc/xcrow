@@ -14,6 +14,8 @@ interface RoleCard {
   company?: string;
   location?: string;
   logo?: string;
+  country?: string;
+  workMode?: string;
 }
 
 interface RoleFeedProps {

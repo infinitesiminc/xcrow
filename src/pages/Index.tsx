@@ -20,6 +20,8 @@ interface RoleCard {
   company?: string;
   location?: string;
   logo?: string;
+  country?: string;
+  workMode?: string;
 }
 
 function calcToolsToLearn(risk: number, augmented: number, newSkills: number): number {
