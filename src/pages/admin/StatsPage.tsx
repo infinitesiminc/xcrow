@@ -15,10 +15,13 @@ interface FeatureFlag {
 }
 
 export default function StatsPage() {
+  const { toast } = useToast();
   const [stats, setStats] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [flags, setFlags] = useState<FeatureFlag[]>([]);
   const [togglingKey, setTogglingKey] = useState<string | null>(null);
+  const [parsingLocations, setParsingLocations] = useState(false);
+  const [parseProgress, setParseProgress] = useState("");
 
   useEffect(() => {
     (async () => {
