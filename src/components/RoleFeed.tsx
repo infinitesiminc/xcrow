@@ -297,11 +297,22 @@ function RoleDetailOverlay({ role, onClose }: { role: RoleCard; onClose: () => v
               className="snap-start min-h-full flex flex-col justify-center p-6"
             >
               <h3 className="text-base font-bold text-foreground mb-3">🎯 The Role</h3>
-              {role.description ? (
-                <p className="text-sm text-muted-foreground leading-relaxed mb-4">{role.description.length > 280 ? role.description.slice(0, 280) + "…" : role.description}</p>
-              ) : (
-                <p className="text-sm text-muted-foreground/60 italic mb-4">No description available — run a full analysis for details.</p>
-              )}
+              {(() => {
+                // Extract clean description — strip raw metadata prefixes
+                let clean = role.description || "";
+                const jdIdx = clean.indexOf("JD Content:");
+                if (jdIdx !== -1) clean = clean.slice(jdIdx + 11).trim();
+                const aboutIdx = clean.indexOf("About ");
+                if (aboutIdx !== -1 && aboutIdx < 40) clean = clean.slice(aboutIdx).trim();
+                // Remove leading "Title: ... Company: ... Department: ... Location: ..."
+                clean = clean.replace(/^(Title|Company|Department|Location|Content):\s*[^.]*\.\s*/gi, "").trim();
+                const display = clean.length > 280 ? clean.slice(0, 280) + "…" : clean;
+                return display ? (
+                  <p className="text-sm text-muted-foreground leading-relaxed mb-4">{display}</p>
+                ) : (
+                  <p className="text-sm text-muted-foreground/60 italic mb-4">No description available — run a full analysis for details.</p>
+                );
+              })()}
               {/* Metadata pills */}
               <div className="flex flex-wrap gap-2">
                 {role.seniority && (
