@@ -471,6 +471,7 @@ export default function PipelinePage() {
 
   useEffect(() => {
     if (!selectedCompanyId) { setJobs([]); setAnalyzedJobIds(new Set()); return; }
+    setJobs([]);
     setAnalyzedJobIds(new Set());
     fetchJobs(selectedCompanyId);
     setJobSearch(""); setCollapsedDepts(new Set()); setQueueRunning(false); setQueueMessage(null);
