@@ -206,7 +206,9 @@ export default function RolePreviewPanel({ role, onClose }: RolePreviewPanelProp
                 <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">
                   About this role
                 </h3>
-                <p className="text-sm text-foreground/80 leading-relaxed">{summary}</p>
+                <div className="text-sm text-foreground/80 leading-relaxed prose prose-sm prose-invert max-w-none">
+                  <ReactMarkdown>{summary}</ReactMarkdown>
+                </div>
               </div>
             )}
 
