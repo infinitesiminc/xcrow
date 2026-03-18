@@ -17,6 +17,12 @@ export interface SimScenario {
   difficulty?: number;
 }
 
+export interface SimConfig {
+  minRounds: number;
+  maxRounds: number;
+  objectiveCount: number;
+}
+
 export interface SimSession {
   sessionId: string;
   systemPrompt: string;
@@ -25,6 +31,7 @@ export interface SimSession {
   tips: string[];
   learningObjectives: LearningObjective[];
   scenario: SimScenario;
+  config?: SimConfig;
 }
 
 export interface SimMessage {
@@ -37,6 +44,7 @@ export interface ObjectiveResult {
   label: string;
   met: boolean;
   evidence: string;
+  assisted?: boolean;
 }
 
 export interface SimScoreResult {
@@ -74,9 +82,10 @@ export async function chatTurn(
   taskMeta?: { currentState?: string; trend?: string; impactLevel?: string },
   learningObjectives?: LearningObjective[],
   objectiveStatus?: Record<string, boolean>,
+  scaffoldingTiers?: Record<string, number>,
 ): Promise<string> {
   const { data, error } = await supabase.functions.invoke("sim-chat", {
-    body: { action: "chat", payload: { messages, round, turnCount, role, mode, taskMeta, learningObjectives, objectiveStatus } },
+    body: { action: "chat", payload: { messages, round, turnCount, role, mode, taskMeta, learningObjectives, objectiveStatus, scaffoldingTiers } },
   });
   if (error) throw new Error(`Chat error: ${error.message}`);
   return typeof data === "string" ? data : JSON.stringify(data);
@@ -87,6 +96,7 @@ export async function scoreSession(
   scenario: SimScenario | null,
   mode: SimMode = "assess",
   learningObjectives?: LearningObjective[],
+  scaffoldingTiers?: Record<string, number>,
 ): Promise<SimScoreResult> {
-  return simFetch("score", { transcript, scenario, mode, learningObjectives });
+  return simFetch("score", { transcript, scenario, mode, learningObjectives, scaffoldingTiers });
 }
