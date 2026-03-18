@@ -289,7 +289,7 @@ serve(async (req) => {
       if (company_id) {
         const { data: found } = await sb
           .from("companies")
-          .select("id, external_id, careers_url, detected_ats_platform")
+          .select("id, external_id, name, careers_url, detected_ats_platform")
           .or(`id.eq.${company_id},external_id.eq.${company_id}`)
           .limit(1)
           .single();
