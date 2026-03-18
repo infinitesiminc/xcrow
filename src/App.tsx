@@ -7,19 +7,19 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import Index from "./pages/Index.tsx";
-import Analysis from "./pages/Analysis.tsx";
-import Auth from "./pages/Auth.tsx";
-import Settings from "./pages/Settings.tsx";
-import NotFound from "./pages/NotFound.tsx";
-import CardStyleMockup from "./pages/CardStyleMockup.tsx";
 
-// Admin (superadmin only)
-import HRLayout from "./layouts/HRLayout.tsx";
-import PipelinePage from "./pages/admin/PipelinePage.tsx";
-
-// Public company page
+// Lazy-load all page components
+const Index = lazy(() => import("./pages/Index.tsx"));
+const Analysis = lazy(() => import("./pages/Analysis.tsx"));
+const Auth = lazy(() => import("./pages/Auth.tsx"));
+const Settings = lazy(() => import("./pages/Settings.tsx"));
+const NotFound = lazy(() => import("./pages/NotFound.tsx"));
+const CardStyleMockup = lazy(() => import("./pages/CardStyleMockup.tsx"));
 const CompanyPage = lazy(() => import("./pages/CompanyPage.tsx"));
+
+// Admin (lazy)
+const HRLayout = lazy(() => import("./layouts/HRLayout.tsx"));
+const PipelinePage = lazy(() => import("./pages/admin/PipelinePage.tsx"));
 
 const queryClient = new QueryClient();
 
@@ -28,7 +28,7 @@ function AdminGate() {
   const { user, loading, isSuperAdmin } = useAuth();
   if (loading) return null;
   if (!user || !isSuperAdmin) return <Navigate to="/" replace />;
-  return <HRLayout />;
+  return <Suspense fallback={null}><HRLayout /></Suspense>;
 }
 
 const App = () => (
@@ -38,29 +38,31 @@ const App = () => (
         <TooltipProvider>
           <Toaster />
           <Sonner />
-          <Routes>
-            {/* Public B2C routes */}
-            <Route path="/" element={<><Navbar /><Index /></>} />
-            <Route path="/analysis" element={<><Navbar /><Analysis /><Footer /></>} />
-            <Route path="/auth" element={<><Navbar /><Auth /></>} />
-            <Route path="/settings" element={<><Navbar /><Settings /><Footer /></>} />
-            <Route path="/company/:slug" element={<><Navbar /><Suspense fallback={null}><CompanyPage /></Suspense><Footer /></>} />
-            <Route path="/card-styles" element={<><Navbar /><CardStyleMockup /></>} />
+          <Suspense fallback={null}>
+            <Routes>
+              {/* Public B2C routes */}
+              <Route path="/" element={<><Navbar /><Index /></>} />
+              <Route path="/analysis" element={<><Navbar /><Analysis /><Footer /></>} />
+              <Route path="/auth" element={<><Navbar /><Auth /></>} />
+              <Route path="/settings" element={<><Navbar /><Settings /><Footer /></>} />
+              <Route path="/company/:slug" element={<><Navbar /><CompanyPage /><Footer /></>} />
+              <Route path="/card-styles" element={<><Navbar /><CardStyleMockup /></>} />
 
-            {/* Redirects — old routes all go to feed */}
-            <Route path="/dashboard" element={<Navigate to="/" replace />} />
-            <Route path="/dashboard/*" element={<Navigate to="/" replace />} />
-            <Route path="/practice" element={<Navigate to="/" replace />} />
-            <Route path="/simulations" element={<Navigate to="/" replace />} />
-            <Route path="/learning-path" element={<Navigate to="/" replace />} />
+              {/* Redirects — old routes all go to feed */}
+              <Route path="/dashboard" element={<Navigate to="/" replace />} />
+              <Route path="/dashboard/*" element={<Navigate to="/" replace />} />
+              <Route path="/practice" element={<Navigate to="/" replace />} />
+              <Route path="/simulations" element={<Navigate to="/" replace />} />
+              <Route path="/learning-path" element={<Navigate to="/" replace />} />
 
-            {/* Superadmin content pipeline */}
-            <Route path="/admin" element={<AdminGate />}>
-              <Route index element={<PipelinePage />} />
-            </Route>
+              {/* Superadmin content pipeline */}
+              <Route path="/admin" element={<AdminGate />}>
+                <Route index element={<PipelinePage />} />
+              </Route>
 
-            <Route path="*" element={<NotFound />} />
-          </Routes>
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </Suspense>
         </TooltipProvider>
       </AuthProvider>
     </BrowserRouter>

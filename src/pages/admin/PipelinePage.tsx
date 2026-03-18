@@ -218,15 +218,19 @@ export default function PipelinePage() {
     allCompanies.forEach(c => { const a = c.detected_ats_platform || "unknown"; counts[a] = (counts[a] || 0) + 1; });
     setAtsCounts(counts);
 
+    // Get job counts per company using a single aggregated query
     const jm = new Map<string, number>();
-    let from = 0;
-    const pageSize = 1000;
-    while (true) {
-      const { data: jobRows } = await supabase.from("jobs").select("company_id").range(from, from + pageSize - 1);
-      if (!jobRows || jobRows.length === 0) break;
-      jobRows.forEach((j: any) => { if (j.company_id) jm.set(j.company_id, (jm.get(j.company_id) || 0) + 1); });
-      if (jobRows.length < pageSize) break;
-      from += pageSize;
+    const companyIds = allCompanies.map(c => c.id);
+    // Batch fetch in chunks of 200 company IDs using count per company
+    for (let i = 0; i < companyIds.length; i += 200) {
+      const batch = companyIds.slice(i, i + 200);
+      const { data: jobRows } = await supabase
+        .from("jobs")
+        .select("company_id")
+        .in("company_id", batch);
+      if (jobRows) {
+        jobRows.forEach((j: any) => { if (j.company_id) jm.set(j.company_id, (jm.get(j.company_id) || 0) + 1); });
+      }
     }
 
     const industryCounts = new Map<string, number>();

@@ -68,33 +68,32 @@ const Index = () => {
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Fetch all jobs from DB in paginated batches
+  // Fetch jobs from DB — limited initial batch for fast load
   useEffect(() => {
     (async () => {
-      const PAGE_SIZE = 1000;
-      let allData: any[] = [];
-      let page = 0;
-      let hasMore = true;
+      const INITIAL_LIMIT = 200;
 
-      while (hasMore) {
-        const { data, error } = await supabase
-          .from("jobs")
-          .select("id, title, department, location, city, country, work_mode, description, seniority, augmented_percent, automation_risk_percent, new_skills_percent, companies(name, logo_url, website)")
-          .order("augmented_percent", { ascending: false })
-          .range(page * PAGE_SIZE, (page + 1) * PAGE_SIZE - 1);
+      const { data, error } = await supabase
+        .from("jobs")
+        .select("id, title, department, location, city, country, work_mode, description, seniority, augmented_percent, automation_risk_percent, new_skills_percent, companies(name, logo_url, website)")
+        .order("augmented_percent", { ascending: false })
+        .limit(INITIAL_LIMIT);
 
-        if (error || !data) break;
-        allData = allData.concat(data);
-        hasMore = data.length === PAGE_SIZE;
-        page++;
+      if (error || !data) {
+        setLoadingRoles(false);
+        return;
       }
 
-      // Fetch task cluster counts per job
+      const allData = data;
+
+      // Fetch task cluster counts only for the jobs we loaded
+      const jobIds = allData.map((j: any) => j.id);
       let taskCountMap: Record<string, { total: number; aiLed: number }> = {};
-      {
+      if (jobIds.length > 0) {
         const { data: clusters } = await supabase
           .from("job_task_clusters")
-          .select("job_id, ai_exposure_score");
+          .select("job_id, ai_exposure_score")
+          .in("job_id", jobIds);
 
         if (clusters) {
           for (const c of clusters) {
