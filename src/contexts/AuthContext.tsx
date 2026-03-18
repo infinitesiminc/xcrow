@@ -69,6 +69,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         jobTitle: row.job_title ?? null,
         company: row.company ?? null,
         onboardingCompleted: row.onboarding_completed ?? false,
+        linkedinUrl: row.linkedin_url ?? null,
+        schoolName: row.school_name ?? null,
+        careerStage: row.career_stage ?? 'professional',
+        cvUrl: row.cv_url ?? null,
       });
     }
   }, []);
