@@ -775,7 +775,6 @@ function DesktopGrid({ roles, savedRoleTitles }: RoleFeedProps) {
         </div>
       </div>
 
-      <SearchFAB onClick={onOpenSearch} />
 
       <AnimatePresence>
         {selected && <RoleDetailOverlay role={selected} onClose={() => setSelected(null)} />}
