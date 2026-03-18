@@ -707,13 +707,29 @@ function DesktopGrid({ roles, onOpenSearch, savedRoleTitles }: RoleFeedProps) {
                   <div className="absolute rounded-full opacity-20" style={{ width: 60 + (hue1 % 40), height: 60 + (hue1 % 40), top: -10 + (hue2 % 30), right: -10 + (hue1 % 30), background: `radial-gradient(circle, hsl(${hue1} 80% 50% / 0.4), transparent)` }} />
                   <div className="absolute rounded-full opacity-15" style={{ width: 40 + (hue2 % 30), height: 40 + (hue2 % 30), bottom: -5 + (hue3 % 20), left: 10 + (hue2 % 40), background: `radial-gradient(circle, hsl(${hue2} 70% 60% / 0.3), transparent)` }} />
                   <div className="absolute bottom-2 left-2 right-2 flex items-center justify-between">
-                    <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-black/40 backdrop-blur-sm">
-                      <Zap className="h-3 w-3 text-primary" />
-                      <span className="text-xs font-bold text-white">{role.aiOpportunity}%</span>
-                    </div>
-                    <span className={`text-xs font-bold px-2 py-0.5 rounded-full bg-black/40 backdrop-blur-sm ${riskColor}`}>
-                      {role.risk}% risk
-                    </span>
+                    {role.augmented > 0 ? (
+                      <div className="flex items-center gap-1.5">
+                        <CardMiniGauge value={role.augmented} />
+                        <span className="text-[10px] font-semibold text-white/80 uppercase tracking-wide">AI Exposure</span>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-black/40 backdrop-blur-sm">
+                        <Zap className="h-3 w-3 text-primary" />
+                        <span className="text-xs font-bold text-white">{role.aiOpportunity}%</span>
+                      </div>
+                    )}
+                    {role.augmented > 0 && (
+                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full bg-black/40 backdrop-blur-sm ${
+                        role.augmented >= 60 ? "text-brand-ai" : role.augmented >= 30 ? "text-primary" : "text-brand-human"
+                      }`}>
+                        {role.taskCount && role.taskCount > 0 ? "✓ Analyzed" : "Layer 1"}
+                      </span>
+                    )}
+                    {role.augmented === 0 && (
+                      <span className={`text-xs font-bold px-2 py-0.5 rounded-full bg-black/40 backdrop-blur-sm ${riskColor}`}>
+                        {role.risk}% risk
+                      </span>
+                    )}
                   </div>
                 </div>
                 {/* Bottom section */}
