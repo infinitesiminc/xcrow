@@ -187,6 +187,7 @@ export default function RolePreviewPanel({ role, onClose }: RolePreviewPanelProp
   );
 
   // Enlarged overlay (full-screen portal)
+  const completedCount = tasks.filter(t => completedTasks.has(t.cluster_name)).length;
   const enlargedOverlay = (
     <div className="fixed inset-0 z-[100] bg-background overflow-y-auto">
       {/* Sticky header */}
