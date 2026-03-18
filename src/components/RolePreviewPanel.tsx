@@ -187,61 +187,79 @@ export default function RolePreviewPanel({ role, onClose }: RolePreviewPanelProp
 
   // Enlarged overlay (full-screen portal)
   const enlargedOverlay = (
-    <div className="fixed inset-0 z-[100] bg-background/95 backdrop-blur-sm overflow-y-auto">
-      <div className="max-w-2xl mx-auto px-4 py-8">
-        <div className="flex items-center justify-between mb-6">
-          <button onClick={onClose} className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
-            <ChevronLeft className="h-4 w-4" /> Back to chat
-          </button>
-          <button onClick={toggleBookmark} className="p-2 rounded-lg hover:bg-muted/30 transition-colors">
-            {isBookmarked ? <BookmarkCheck className="h-4 w-4 text-primary" /> : <Bookmark className="h-4 w-4 text-muted-foreground" />}
-          </button>
-        </div>
+    <div className="fixed inset-0 z-[100] bg-background overflow-y-auto">
+      {/* Sticky header */}
+      <div className="sticky top-0 z-20 bg-background/95 backdrop-blur-md border-b border-border px-4 py-3 flex items-center justify-between">
+        <button onClick={onClose} className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
+          <ChevronLeft className="h-4 w-4" /> Back to chat
+        </button>
+        <span className="text-sm font-semibold text-foreground truncate max-w-[200px]">{role.title}</span>
+        <button onClick={toggleBookmark} className="p-2 rounded-lg hover:bg-muted/30 transition-colors">
+          {isBookmarked ? <BookmarkCheck className="h-4 w-4 text-primary" /> : <Bookmark className="h-4 w-4 text-muted-foreground" />}
+        </button>
+      </div>
 
-        {/* Hero */}
-        <div className="text-center mb-8">
-          <ReadinessRing readiness={readiness} size={120} />
-          <h1 className="text-2xl font-display font-bold text-foreground mt-4">{role.title}</h1>
-          {role.company && <p className="text-sm text-muted-foreground mt-1">at {role.company}</p>}
-          <div className="flex justify-center gap-6 mt-4">
-            <StatItem value={`${role.risk || 0}%`} label="AI Risk" />
-            <div className="h-8 w-px bg-border" />
+      <div className="max-w-2xl mx-auto px-4 py-5">
+        {/* Compact hero row */}
+        <div className="flex items-center gap-4 mb-6">
+          <ReadinessRing readiness={readiness} size={64} />
+          <div className="min-w-0 flex-1">
+            <h1 className="text-lg font-display font-bold text-foreground leading-snug">{role.title}</h1>
+            {role.company && <p className="text-sm text-muted-foreground">at {role.company}</p>}
+          </div>
+          <div className="flex gap-4 shrink-0">
+            <StatItem value={`${role.risk || 0}%`} label="Risk" />
             <StatItem value={`${role.augmented}%`} label="Augmented" />
-            <div className="h-8 w-px bg-border" />
             <StatItem value={`${tasks.length}`} label="Tasks" />
           </div>
         </div>
 
-        {summary && (
-          <div className="mb-6">
-            <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">About</h3>
-            <div className="text-sm text-foreground/80 leading-relaxed prose prose-sm prose-invert max-w-none">
-              <ReactMarkdown>{summary}</ReactMarkdown>
-            </div>
-          </div>
-        )}
-
+        {/* Task cards */}
         <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">Tasks & AI Impact</h3>
         <div className="space-y-3">
           {tasks.map((t, i) => {
             const score = t.ai_exposure_score ?? 0;
             const style = taskChipStyle(score);
             const done = completedTasks.has(t.cluster_name);
+            const TaskIcon = getTaskIcon(t.cluster_name);
+            const taskHue = hashToHue(t.cluster_name);
             return (
-              <div key={i} className="rounded-xl border border-border/50 bg-card p-4">
-                <div className="flex items-center justify-between mb-2">
-                  <h4 className="text-sm font-semibold text-foreground">{t.cluster_name}</h4>
-                  <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full ${style.badge}`}>{score}%</span>
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.04 }}
+                className="group rounded-xl border border-border/50 bg-card hover:border-primary/30 transition-all overflow-hidden"
+              >
+                {/* Accent top strip */}
+                <div className="h-1" style={{ background: `linear-gradient(90deg, hsl(${taskHue} 60% 50%), hsl(${(taskHue + 40) % 360} 50% 45%))` }} />
+                <div className="p-4">
+                  <div className="flex items-start gap-3">
+                    <div className="mt-0.5 h-8 w-8 rounded-lg flex items-center justify-center shrink-0"
+                      style={{ background: `hsl(${taskHue} 40% 15%)` }}>
+                      <TaskIcon className="h-4 w-4" style={{ color: `hsl(${taskHue} 60% 65%)` }} />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <h4 className="text-sm font-semibold text-foreground leading-snug">{t.cluster_name}</h4>
+                        {done && <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400 shrink-0" />}
+                      </div>
+                      {t.description && <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2">{t.description}</p>}
+                    </div>
+                    <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full shrink-0 ${style.badge}`}>{score}%</span>
+                  </div>
+                  <div className="flex items-center justify-between mt-3 pt-3 border-t border-border/30">
+                    <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
+                      {t.ai_state && <span className="px-2 py-0.5 rounded-full bg-muted/40">{t.ai_state}</span>}
+                      {t.impact_level && <span className="px-2 py-0.5 rounded-full bg-muted/40">{t.impact_level}</span>}
+                    </div>
+                    <Button size="sm" variant={done ? "secondary" : "default"} className="h-7 text-xs rounded-full gap-1"
+                      onClick={() => startSimulation(t)}>
+                      <Play className="h-3 w-3" />{done ? "Retry" : "Practice"}
+                    </Button>
+                  </div>
                 </div>
-                {t.description && <p className="text-xs text-muted-foreground mb-3 leading-relaxed">{t.description}</p>}
-                <div className="flex items-center gap-2">
-                  {done && <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 flex items-center gap-1"><CheckCircle2 className="h-3 w-3" />Done</span>}
-                  <Button size="sm" variant={done ? "secondary" : "default"} className="h-7 text-xs rounded-full gap-1"
-                    onClick={() => startSimulation(t)}>
-                    <Play className="h-3 w-3" />{done ? "Retry" : "Practice"}
-                  </Button>
-                </div>
-              </div>
+              </motion.div>
             );
           })}
         </div>
