@@ -24,7 +24,7 @@ import { useToast } from "@/hooks/use-toast";
 import {
   Loader2, Save, Trash2, KeyRound, Bookmark,
   Linkedin, Upload, FileText, GraduationCap, Briefcase, X, School,
-  Shield, User, Lock, AlertOctagon, ArrowLeft,
+  Shield, User, Lock, AlertOctagon, ArrowLeft, LogOut,
 } from "lucide-react";
 import JourneyDashboard from "@/components/settings/JourneyDashboard";
 
