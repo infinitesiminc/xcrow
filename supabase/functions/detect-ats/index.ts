@@ -162,6 +162,9 @@ serve(async (req) => {
           if (careersUrl) upd.careers_url = careersUrl;
           await sb.from("companies").update(upd).eq("id", id);
           console.log(`✓ ${name} → ${platform}`);
+        } else {
+          // Mark as scanned so we skip it next time
+          await sb.from("companies").update({ detected_ats_platform: "none" }).eq("id", id);
         }
       }
     }
