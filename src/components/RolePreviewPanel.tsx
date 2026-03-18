@@ -102,9 +102,9 @@ export default function RolePreviewPanel({ role, onClose }: RolePreviewPanelProp
       setJobDescription(jobRes.data?.description || null);
       setLoading(false);
 
-      // Auto-trigger analysis if no tasks exist and we have a job description
-      if ((!taskRes.data || taskRes.data.length === 0) && jobRes.data?.description) {
-        triggerAnalysis(role.jobId!, role.title, role.company || undefined, jobRes.data.description);
+      // Auto-trigger analysis if no tasks exist
+      if ((!taskRes.data || taskRes.data.length === 0) && role.jobId) {
+        triggerAnalysis(role.jobId, role.title, role.company || undefined, jobRes.data?.description || undefined);
       }
     })();
   }, [role.jobId]);
