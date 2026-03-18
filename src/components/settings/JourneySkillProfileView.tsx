@@ -198,25 +198,71 @@ interface JobMatch {
   newEdges: string[]; // human edges needed to truly excel
 }
 
-function buildTaxonomy(rand: () => number) {
+function buildTaxonomy(practicedRoles: PracticedRoleData[], rand: () => number) {
   const skillMap = new Map<string, AggregatedSkill>();
 
   for (const ts of TAXONOMY) {
     skillMap.set(ts.id, {
       id: ts.id, name: ts.name, category: ts.category,
       aiExposure: ts.aiExposure, aiEnabler: ts.aiEnabler, humanEdge: ts.humanEdge,
-      proficiency: 0, jobCount: 0, taskCount: 0, jobs: [],
+      proficiency: 0, jobCount: 0, taskCount: 0, practiced: false, jobs: [],
     });
   }
 
-  for (const job of JOB_TEMPLATES) {
-    for (const taskName of job.tasks) {
-      const matchedIds = matchTaskToSkills(taskName);
-      for (const skillId of matchedIds) {
-        const skill = skillMap.get(skillId)!;
-        const score = Math.round(45 + rand() * 50);
-        skill.jobs.push({ title: job.title, company: job.company, taskName, score });
+  const hasRealData = practicedRoles.length > 0;
+
+  if (hasRealData) {
+    // Use real performance data: map each practiced task to taxonomy skills
+    for (const pr of practicedRoles) {
+      const matchedIds = matchTaskToSkills(pr.task_name);
+      // Also try matching the job title for broader skill coverage
+      const jobMatchedIds = matchTaskToSkills(pr.job_title);
+      const allIds = [...new Set([...matchedIds, ...jobMatchedIds])];
+
+      // Average the 4 pillar scores into a proficiency score (0-100)
+      const pillars = [pr.tool_awareness_score, pr.human_value_add_score, pr.adaptive_thinking_score, pr.domain_judgment_score].filter((s): s is number => s != null);
+      const avgPillar = pillars.length > 0 ? Math.round(pillars.reduce((a, b) => a + b, 0) / pillars.length) : 50;
+
+      for (const skillId of allIds) {
+        const skill = skillMap.get(skillId);
+        if (!skill) continue;
+        skill.jobs.push({
+          title: pr.job_title,
+          company: pr.company || "—",
+          taskName: pr.task_name,
+          score: avgPillar,
+        });
         skill.taskCount++;
+        skill.practiced = true;
+      }
+    }
+
+    // For skills with no real data, populate from job templates with zero proficiency
+    // so they appear as gaps the user hasn't touched
+    for (const job of JOB_TEMPLATES) {
+      for (const taskName of job.tasks) {
+        const matchedIds = matchTaskToSkills(taskName);
+        for (const skillId of matchedIds) {
+          const skill = skillMap.get(skillId)!;
+          if (!skill.practiced) {
+            // Only add job evidence (not proficiency) to show what's available
+            skill.jobs.push({ title: job.title, company: job.company, taskName, score: 0 });
+            skill.taskCount++;
+          }
+        }
+      }
+    }
+  } else {
+    // Demo mode: use seeded random data
+    for (const job of JOB_TEMPLATES) {
+      for (const taskName of job.tasks) {
+        const matchedIds = matchTaskToSkills(taskName);
+        for (const skillId of matchedIds) {
+          const skill = skillMap.get(skillId)!;
+          const score = Math.round(45 + rand() * 50);
+          skill.jobs.push({ title: job.title, company: job.company, taskName, score });
+          skill.taskCount++;
+        }
       }
     }
   }
