@@ -71,7 +71,7 @@ export default function RolePreviewPanel({ role, onClose }: RolePreviewPanelProp
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: 20 }}
       transition={{ duration: 0.3 }}
-      className="h-full flex flex-col bg-card border-l border-border overflow-hidden"
+      className="h-full flex flex-col bg-card overflow-hidden"
     >
       {/* Header */}
       <div
