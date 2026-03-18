@@ -166,6 +166,15 @@ const Index = () => {
             Search any role. See which tasks AI will change — and practice the skills that matter.
           </p>
 
+          {/* Stats */}
+          <div className="flex items-center justify-center gap-6 text-xs text-muted-foreground">
+            <span><strong className="text-foreground font-semibold">20,000+</strong> roles</span>
+            <span className="w-px h-3 bg-border" />
+            <span><strong className="text-foreground font-semibold">290+</strong> companies</span>
+            <span className="w-px h-3 bg-border" />
+            <span><strong className="text-foreground font-semibold">70+</strong> countries</span>
+          </div>
+
           {/* Inline search */}
           <div className="mt-6">
             <RoleSearchAutocomplete
