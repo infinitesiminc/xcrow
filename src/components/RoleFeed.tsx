@@ -515,12 +515,13 @@ function RoleDetailOverlay({ role, onClose }: { role: RoleCard; onClose: () => v
 
 /* ── Desktop: Grid Layout ──────────────────────────── */
 
-function DesktopGrid({ roles, onOpenSearch }: RoleFeedProps) {
+function DesktopGrid({ roles, onOpenSearch, savedRoleTitles }: RoleFeedProps) {
   const navigate = useNavigate();
   const [selected, setSelected] = useState<RoleCard | null>(null);
   const [filter, setFilter] = useState<string | null>(null);
   const [countryFilter, setCountryFilter] = useState<string | null>(null);
   const [workModeFilter, setWorkModeFilter] = useState<string | null>(null);
+  const [savedFilter, setSavedFilter] = useState(false);
 
   const tags = Array.from(new Set(roles.map(r => r.tag)));
   const tagCounts = useMemo(() => {
@@ -546,14 +547,20 @@ function DesktopGrid({ roles, onOpenSearch }: RoleFeedProps) {
   const workModeLabel: Record<string, string> = { remote: "Remote", onsite: "On-site", hybrid: "Hybrid" };
   const workModeIcon: Record<string, typeof Globe> = { remote: Globe, onsite: MapPin, hybrid: Laptop };
 
+  const savedCount = useMemo(() => {
+    if (!savedRoleTitles || savedRoleTitles.size === 0) return 0;
+    return roles.filter(r => savedRoleTitles.has(r.title.toLowerCase())).length;
+  }, [roles, savedRoleTitles]);
+
   const filtered = useMemo(() => {
     return roles.filter(r => {
+      if (savedFilter && savedRoleTitles && !savedRoleTitles.has(r.title.toLowerCase())) return false;
       if (filter && r.tag !== filter) return false;
       if (countryFilter && r.country !== countryFilter) return false;
       if (workModeFilter && r.workMode !== workModeFilter) return false;
       return true;
     });
-  }, [roles, filter, countryFilter, workModeFilter]);
+  }, [roles, filter, countryFilter, workModeFilter, savedFilter, savedRoleTitles]);
 
   return (
     <div className="h-full flex flex-col overflow-hidden">
