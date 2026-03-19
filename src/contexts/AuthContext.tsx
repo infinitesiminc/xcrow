@@ -18,6 +18,7 @@ interface UserProfile {
   schoolName: string | null;
   careerStage: string | null;
   cvUrl: string | null;
+  programName: string | null;
 }
 
 interface AuthContextType {
@@ -93,6 +94,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         schoolName: row.school_name ?? null,
         careerStage: row.career_stage ?? 'professional',
         cvUrl: row.cv_url ?? null,
+        programName: row.program_name ?? null,
       });
     }
   }, []);

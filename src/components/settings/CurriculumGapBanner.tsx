@@ -6,8 +6,9 @@
  */
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { GraduationCap, Zap, ChevronDown, ChevronUp, TrendingUp, Play } from "lucide-react";
+import { GraduationCap, Zap, ChevronDown, ChevronUp, TrendingUp, Play, BookOpen } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 import SimulatorModal from "@/components/SimulatorModal";
 
 interface GapTask {
@@ -26,12 +27,14 @@ interface GapRecommendation {
 
 interface GapData {
   school: { name: string; short_name: string | null } | null;
+  program_name: string | null;
   curriculum_skills_count: number;
   programs_count: number;
   recommendations: GapRecommendation[];
 }
 
 export default function CurriculumGapBanner() {
+  const { profile } = useAuth();
   const [data, setData] = useState<GapData | null>(null);
   const [loading, setLoading] = useState(true);
   const [expanded, setExpanded] = useState(false);
@@ -59,6 +62,7 @@ export default function CurriculumGapBanner() {
   if (loading || !data || data.recommendations.length === 0) return null;
 
   const schoolLabel = data.school?.short_name || data.school?.name || "Your School";
+  const programLabel = data.program_name;
   const visibleRecs = expanded ? data.recommendations : data.recommendations.slice(0, 3);
 
   return (
@@ -69,17 +73,21 @@ export default function CurriculumGapBanner() {
         transition={{ duration: 0.4 }}
         className="rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/5 via-card to-card p-4 mb-6"
       >
-        {/* Header */}
+      {/* Header */}
         <div className="flex items-start gap-3 mb-3">
           <div className="rounded-lg bg-primary/10 p-2 shrink-0">
-            <GraduationCap className="h-4 w-4 text-primary" />
+            {programLabel ? <BookOpen className="h-4 w-4 text-primary" /> : <GraduationCap className="h-4 w-4 text-primary" />}
           </div>
           <div className="flex-1 min-w-0">
             <h3 className="text-sm font-semibold text-foreground">
-              Skills {schoolLabel} doesn't teach yet
+              {programLabel
+                ? `Skills to build for ${programLabel}`
+                : `Skills ${schoolLabel} doesn't teach yet`}
             </h3>
             <p className="text-xs text-muted-foreground mt-0.5">
-              Based on {data.programs_count} programs & {data.curriculum_skills_count} curriculum skills vs market demand
+              {programLabel
+                ? `Based on your ${programLabel} curriculum at ${schoolLabel} vs market demand`
+                : `Based on ${data.programs_count} programs & ${data.curriculum_skills_count} curriculum skills vs market demand`}
             </p>
           </div>
         </div>

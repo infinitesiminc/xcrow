@@ -771,6 +771,7 @@ export type Database = {
           job_title: string | null
           linkedin_url: string | null
           onboarding_completed: boolean
+          program_name: string | null
           school_name: string | null
         }
         Insert: {
@@ -783,6 +784,7 @@ export type Database = {
           job_title?: string | null
           linkedin_url?: string | null
           onboarding_completed?: boolean
+          program_name?: string | null
           school_name?: string | null
         }
         Update: {
@@ -795,6 +797,7 @@ export type Database = {
           job_title?: string | null
           linkedin_url?: string | null
           onboarding_completed?: boolean
+          program_name?: string | null
           school_name?: string | null
         }
         Relationships: []
