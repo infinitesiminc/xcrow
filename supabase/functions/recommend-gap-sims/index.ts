@@ -27,7 +27,7 @@ serve(async (req) => {
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, serviceKey);
 
-    const { school_id: overrideSchoolId } = await req.json().catch(() => ({}));
+    const { school_id: overrideSchoolId, program_name: programFilter } = await req.json().catch(() => ({}));
 
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) {
