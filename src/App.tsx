@@ -19,6 +19,7 @@ const CompanyPage = lazy(() => import("./pages/CompanyPage.tsx"));
 const Journey = lazy(() => import("./pages/Journey.tsx"));
 const Students = lazy(() => import("./pages/Students.tsx"));
 const Leaderboard = lazy(() => import("./pages/Leaderboard.tsx"));
+const Pricing = lazy(() => import("./pages/Pricing.tsx"));
 
 // Admin (lazy)
 const HRLayout = lazy(() => import("./layouts/HRLayout.tsx"));
