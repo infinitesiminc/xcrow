@@ -61,7 +61,31 @@ export default function SchoolAnalyticsDashboard({ onFilterPipeline }: { onFilte
         supabase.from("school_accounts").select("id,name,state,carnegie_class,institution_type,enrollment,pipeline_stage,is_hbcu,plan_status,used_seats,total_seats"),
         supabase.from("school_curricula").select("school_id,status"),
       ]);
-      if (schoolRes.data) setSchools(schoolRes.data as SchoolRow[]);
+
+      // Paginate school_accounts to get all 4k+ rows
+      let allSchools: SchoolRow[] = [];
+      if (schoolRes.data) {
+        allSchools = schoolRes.data as SchoolRow[];
+        if (allSchools.length === 1000) {
+          let from = 1000;
+          const batchSize = 1000;
+          let done = false;
+          while (!done) {
+            const { data } = await supabase
+              .from("school_accounts")
+              .select("id,name,state,carnegie_class,institution_type,enrollment,pipeline_stage,is_hbcu,plan_status,used_seats,total_seats")
+              .range(from, from + batchSize - 1);
+            if (data && data.length > 0) {
+              allSchools = allSchools.concat(data as SchoolRow[]);
+              from += batchSize;
+              if (data.length < batchSize) done = true;
+            } else {
+              done = true;
+            }
+          }
+        }
+      }
+      setSchools(allSchools);
       if (scrapeRes.data) setScrapes(scrapeRes.data as ScrapeRow[]);
       setLoading(false);
     }
