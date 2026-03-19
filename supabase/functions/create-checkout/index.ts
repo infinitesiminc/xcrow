@@ -25,8 +25,10 @@ serve(async (req) => {
     const user = data.user;
     if (!user?.email) throw new Error("User not authenticated or email not available");
 
-    const { priceId } = await req.json();
-    if (!priceId) throw new Error("priceId is required");
+    let body: any = {};
+    try { body = await req.json(); } catch {}
+    // Default to Student Pro Monthly if no priceId provided
+    const priceId = body.priceId || "price_1TChXtGqMIbud5Ha7Rubrrg9";
 
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
       apiVersion: "2025-08-27.basil",
@@ -45,7 +47,7 @@ serve(async (req) => {
       customer_email: customerId ? undefined : user.email,
       line_items: [{ price: priceId, quantity: 1 }],
       mode: "subscription",
-      success_url: `${origin}/dashboard?checkout=success`,
+      success_url: `${origin}/journey?checkout=success`,
       cancel_url: `${origin}/pricing`,
     });
 
