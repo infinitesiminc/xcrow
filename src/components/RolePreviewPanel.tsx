@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
-import { X, MapPin, Loader2, Play, Maximize2, ChevronLeft, CheckCircle2, Bot, Trophy, Bookmark, BookmarkCheck, GraduationCap, MessageSquare, BarChart3, FileText, Users, Search, Settings, Globe, Shield, Lightbulb, PenTool, Code, TrendingUp, Megaphone, Target, Briefcase, Heart, Layers, Zap, ExternalLink, Star } from "lucide-react";
+import { X, MapPin, Loader2, Play, Maximize2, ChevronLeft, CheckCircle2, Bot, Trophy, Bookmark, BookmarkCheck, GraduationCap, MessageSquare, BarChart3, FileText, Users, Search, Settings, Globe, Shield, Lightbulb, PenTool, Code, TrendingUp, Megaphone, Target, Briefcase, Heart, Layers, Zap, ExternalLink, Star, Sparkles } from "lucide-react";
 import { matchTaskToSkills, SKILL_TAXONOMY } from "@/lib/skill-map";
 import { motion, AnimatePresence } from "framer-motion";
 import ReactMarkdown from "react-markdown";
@@ -8,6 +8,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import SimulatorModal from "@/components/SimulatorModal";
 import { Button } from "@/components/ui/button";
 import type { RoleResult } from "@/components/InlineRoleCarousel";
+import type { EdgeContext } from "@/components/HumanEdgesCard";
 
 function hashToHue(str: string): number {
   let h = 0;
@@ -26,6 +27,7 @@ function taskChipStyle(aiScore: number) {
 interface RolePreviewPanelProps {
   role: RoleResult;
   onClose: () => void;
+  edgeContext?: EdgeContext | null;
 }
 
 const TASK_ICON_MAP: [RegExp, React.ComponentType<any>][] = [
@@ -68,7 +70,7 @@ interface TaskCluster {
 
 type PanelView = "details" | "breakdown" | "simulation" | "enlarged" | "task-detail";
 
-export default function RolePreviewPanel({ role, onClose }: RolePreviewPanelProps) {
+export default function RolePreviewPanel({ role, onClose, edgeContext }: RolePreviewPanelProps) {
   const { user, openAuthModal } = useAuth();
   const [tasks, setTasks] = useState<TaskCluster[]>([]);
   const [summary, setSummary] = useState<string | null>(null);
@@ -85,6 +87,24 @@ export default function RolePreviewPanel({ role, onClose }: RolePreviewPanelProp
 
   const hue1 = hashToHue(role.title);
   const hue2 = (hue1 + 60) % 360;
+
+  // Determine which tasks relate to the active edge context
+  const edgeTaskSet = useMemo(() => {
+    if (!edgeContext?.skillIds?.length || !tasks.length) return new Set<string>();
+    const edgeKeywords = edgeContext.skillIds.flatMap(id => {
+      const tax = SKILL_TAXONOMY.find(s => s.id === id);
+      return tax ? tax.keywords : [];
+    });
+    const matches = new Set<string>();
+    for (const t of tasks) {
+      const name = t.cluster_name.toLowerCase();
+      const desc = (t.description || "").toLowerCase();
+      if (edgeKeywords.some(kw => name.includes(kw) || desc.includes(kw))) {
+        matches.add(t.cluster_name);
+      }
+    }
+    return matches;
+  }, [edgeContext, tasks]);
 
   useEffect(() => {
     setView("details");
@@ -577,25 +597,45 @@ export default function RolePreviewPanel({ role, onClose }: RolePreviewPanelProp
             {/* Task pills — primary content */}
             {tasks.length > 0 && !analyzing && (
               <div>
+                {/* Edge context banner */}
+                {edgeContext && edgeTaskSet.size > 0 && (
+                  <div className="flex items-center gap-2 mb-3 px-3 py-2 rounded-xl bg-primary/10 border border-primary/20">
+                    <Sparkles className="h-3.5 w-3.5 text-primary shrink-0" />
+                    <p className="text-[11px] text-primary font-medium">
+                      Exploring <span className="font-bold">{edgeContext.label}</span> — {edgeTaskSet.size} task{edgeTaskSet.size > 1 ? "s" : ""} build{edgeTaskSet.size === 1 ? "s" : ""} this edge
+                    </p>
+                  </div>
+                )}
+
                 <div className="flex items-center gap-2 mb-3">
                   <Layers className="h-4 w-4 text-primary" />
                   <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{tasks.length} tasks analyzed</h4>
                 </div>
+
+                {/* Edge-relevant tasks first, then the rest */}
                 <div className="flex flex-wrap gap-2">
-                  {tasks.map((t, i) => {
-                    const score = t.ai_exposure_score ?? 0;
-                    const style = taskChipStyle(score);
-                    return (
-                      <button
-                        key={i}
-                        onClick={() => { setFocusedTask(t); setView("task-detail"); }}
-                        className={`text-[12px] px-3 py-1.5 rounded-lg border transition-colors cursor-pointer hover:border-primary/40 ${style.badge}`}
-                      >
-                        {t.cluster_name}
-                        {score > 0 && <span className="ml-1.5 opacity-60">{score}%</span>}
-                      </button>
-                    );
-                  })}
+                  {[...tasks]
+                    .sort((a, b) => {
+                      const aEdge = edgeTaskSet.has(a.cluster_name) ? 1 : 0;
+                      const bEdge = edgeTaskSet.has(b.cluster_name) ? 1 : 0;
+                      return bEdge - aEdge;
+                    })
+                    .map((t, i) => {
+                      const score = t.ai_exposure_score ?? 0;
+                      const style = taskChipStyle(score);
+                      const isEdgeTask = edgeTaskSet.has(t.cluster_name);
+                      return (
+                        <button
+                          key={i}
+                          onClick={() => { setFocusedTask(t); setView("task-detail"); }}
+                          className={`text-[12px] px-3 py-1.5 rounded-lg border transition-colors cursor-pointer hover:border-primary/40 ${isEdgeTask ? "ring-1 ring-primary/50 bg-primary/15 text-primary font-medium" : style.badge}`}
+                        >
+                          {isEdgeTask && <Sparkles className="inline h-3 w-3 mr-1 -mt-0.5" />}
+                          {t.cluster_name}
+                          {score > 0 && <span className="ml-1.5 opacity-60">{score}%</span>}
+                        </button>
+                      );
+                    })}
                 </div>
               </div>
             )}

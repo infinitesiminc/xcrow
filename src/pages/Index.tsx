@@ -6,7 +6,7 @@ import HomepageChat from "@/components/HomepageChat";
 import RolePreviewPanel from "@/components/RolePreviewPanel";
 import InlineRoleCarousel, { type RoleResult } from "@/components/InlineRoleCarousel";
 import SkillSuggestionCards from "@/components/SkillSuggestionCards";
-import HumanEdgesCard from "@/components/HumanEdgesCard";
+import HumanEdgesCard, { type EdgeContext } from "@/components/HumanEdgesCard";
 
 function getGreeting(): string {
   const hour = new Date().getHours();
@@ -23,6 +23,7 @@ const Index = () => {
   const [selectedRole, setSelectedRole] = useState<RoleResult | null>(null);
   const [allRoles, setAllRoles] = useState<RoleResult[]>([]);
   const [externalPrompt, setExternalPrompt] = useState<string | null>(null);
+  const [activeEdge, setActiveEdge] = useState<EdgeContext | null>(null);
 
   const handleChatStart = useCallback(() => {
     setHasInteracted(true);
@@ -36,8 +37,9 @@ const Index = () => {
     setSelectedRole((prev) => (prev?.jobId === role.jobId ? null : role));
   }, []);
 
-  const handleEdgeClick = useCallback((prompt: string) => {
+  const handleEdgeClick = useCallback((prompt: string, edge: EdgeContext) => {
     setExternalPrompt(prompt);
+    setActiveEdge(edge);
   }, []);
 
   const greeting = getGreeting();
@@ -92,7 +94,7 @@ const Index = () => {
               transition={{ type: "spring", damping: 25, stiffness: 300 }}
               className="fixed inset-0 z-50 bg-background"
             >
-              <RolePreviewPanel role={selectedRole} onClose={() => setSelectedRole(null)} />
+              <RolePreviewPanel role={selectedRole} onClose={() => setSelectedRole(null)} edgeContext={activeEdge} />
             </motion.div>
           )}
         </AnimatePresence>
@@ -178,7 +180,7 @@ const Index = () => {
                 transition={{ duration: 0.2 }}
                 className="h-full"
               >
-                <RolePreviewPanel role={selectedRole} onClose={() => setSelectedRole(null)} />
+                <RolePreviewPanel role={selectedRole} onClose={() => setSelectedRole(null)} edgeContext={activeEdge} />
               </motion.div>
             ) : (
               <motion.div
