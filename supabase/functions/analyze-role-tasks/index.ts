@@ -129,10 +129,21 @@ Respond ONLY with a valid JSON array, no markdown.`;
       // Try markdown code block first, then raw JSON
       const jsonMatch = raw.match(/```(?:json)?\s*([\s\S]*?)```/);
       const jsonStr = jsonMatch ? jsonMatch[1].trim() : raw.trim();
-      // Also handle case where response starts with text before JSON array
-      const arrayMatch = jsonStr.match(/\[[\s\S]*\]/);
-      if (arrayMatch) {
-        tasks = JSON.parse(arrayMatch[0]);
+
+      // Extract JSON array using bracket counting to handle trailing text
+      const startIdx = jsonStr.indexOf("[");
+      if (startIdx !== -1) {
+        let depth = 0;
+        let endIdx = -1;
+        for (let i = startIdx; i < jsonStr.length; i++) {
+          if (jsonStr[i] === "[") depth++;
+          else if (jsonStr[i] === "]") { depth--; if (depth === 0) { endIdx = i; break; } }
+        }
+        if (endIdx !== -1) {
+          tasks = JSON.parse(jsonStr.slice(startIdx, endIdx + 1));
+        } else {
+          tasks = JSON.parse(jsonStr);
+        }
       } else {
         tasks = JSON.parse(jsonStr);
       }
