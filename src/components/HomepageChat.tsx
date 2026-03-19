@@ -118,6 +118,8 @@ export default function HomepageChat({
 
       const upsert = (chunk: string) => {
         assistantSoFar += chunk;
+        // Don't display raw tool call text
+        if (TOOL_CALL_RE.test(assistantSoFar.trim())) return;
         setItems((prev) => {
           const last = prev[prev.length - 1];
           if (last?.type === "assistant") {
