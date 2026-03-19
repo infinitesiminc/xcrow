@@ -71,7 +71,7 @@ const STEPS = [
   {
     icon: BarChart3,
     title: "Map to market demand",
-    desc: "We cross-reference your curriculum against 33,000+ real job task clusters to calculate coverage, gaps, and AI readiness scores.",
+    desc: "We cross-reference your curriculum against 1M+ real job task clusters to calculate coverage, gaps, and AI readiness scores.",
     color: "text-brand-mid",
   },
   {
@@ -117,7 +117,7 @@ export default function Schools() {
             </motion.h1>
 
             <motion.p variants={fadeUp} custom={2} className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto mb-4 leading-relaxed">
-              We scan your course catalog, map it against 33,000+ real job tasks, and show you exactly
+              We scan your course catalog, map it against 1M+ real job tasks, and show you exactly
               where your students are falling behind — and how to close the gap.
             </motion.p>
 
