@@ -208,7 +208,7 @@ export default function Schools() {
               <div className="flex items-center justify-between mb-6">
                 <div>
                   <h3 className="text-lg font-bold">Sample University — CS Department</h3>
-                  <p className="text-sm text-muted-foreground">42 courses analyzed · 156 skills mapped</p>
+                  <p className="text-sm text-muted-foreground">42 courses analyzed · 1,280 task clusters mapped</p>
                 </div>
                 <div className="flex items-center gap-4">
                   <div className="text-center">
