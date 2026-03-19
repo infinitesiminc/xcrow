@@ -117,6 +117,7 @@ export default function SchoolDetailPage() {
           <TabsTrigger value="extraction">Data Extraction</TabsTrigger>
           <TabsTrigger value="skills">Skills Gap</TabsTrigger>
           {school.total_seats > 0 && <TabsTrigger value="students">Students</TabsTrigger>}
+          <TabsTrigger value="student-preview">Student Preview</TabsTrigger>
         </TabsList>
         <TabsContent value="overview">
           <SchoolOverview school={school} onUpdate={fetchSchool} />
