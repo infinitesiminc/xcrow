@@ -43,6 +43,14 @@ function AdminGate() {
   return <Suspense fallback={null}><HRLayout /></Suspense>;
 }
 
+/** Gate school admin routes */
+function SchoolAdminGate() {
+  const { user, loading, isSchoolAdmin } = useAuth();
+  if (loading) return null;
+  if (!user || !isSchoolAdmin) return <Navigate to="/" replace />;
+  return <Suspense fallback={null}><SchoolLayout /></Suspense>;
+}
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <BrowserRouter>
