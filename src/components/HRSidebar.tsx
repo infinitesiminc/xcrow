@@ -1,4 +1,4 @@
-import { Layers } from "lucide-react";
+import { Layers, BarChart3 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import {
   Sidebar,
@@ -14,6 +14,7 @@ import {
 
 const pipelineItems = [
   { title: "Pipeline", url: "/admin", icon: Layers },
+  { title: "Task Analytics", url: "/admin/analytics", icon: BarChart3 },
 ];
 
 export function HRSidebar() {
