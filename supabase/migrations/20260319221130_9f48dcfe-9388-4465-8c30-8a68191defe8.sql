@@ -1,0 +1,1 @@
+UPDATE profiles SET career_stage = 'student', school_name = 'UCLA' WHERE id = '560e7930-f51f-4618-83eb-f4532c1eee2c';
