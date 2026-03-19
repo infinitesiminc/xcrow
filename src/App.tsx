@@ -92,6 +92,7 @@ const App = () => (
                 <Route index element={<PipelinePage />} />
                 <Route path="analytics" element={<TaskAnalyticsPage />} />
                 <Route path="schools" element={<SchoolsPage />} />
+                <Route path="schools/:schoolId" element={<SchoolDetailPage />} />
               </Route>
 
               <Route path="*" element={<NotFound />} />
