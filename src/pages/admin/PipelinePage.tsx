@@ -6,7 +6,7 @@ import {
   Database, Play, Pause, Brain, ChevronDown, ChevronUp,
   MapPin, CheckCircle2, AlertTriangle, ArrowRight,
   Globe, Plus, Bug, Sparkles, Telescope, Flag,
-  X, FileText, Clock, Zap, List, ExternalLink,
+  X, FileText, Clock, Zap, List, ExternalLink, Pencil, Check,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
