@@ -192,7 +192,11 @@ function buildTaxonomy(practicedRoles: PracticedRoleData[], templates: DbJobTemp
   for (const skill of skillMap.values()) {
     if (skill.taskCount === 0) continue;
     skill.jobCount = new Set(skill.jobs.map(j => j.title)).size;
-    skill.proficiency = Math.round(skill.jobs.reduce((s, j) => s + j.score, 0) / skill.jobs.length);
+    // Only average from practiced entries (score > 0) to avoid dilution
+    const practicedEntries = skill.jobs.filter(j => j.score > 0);
+    skill.proficiency = practicedEntries.length > 0
+      ? Math.round(practicedEntries.reduce((s, j) => s + j.score, 0) / practicedEntries.length)
+      : 0;
     result.push(skill);
   }
   result.sort((a, b) => b.taskCount - a.taskCount);
