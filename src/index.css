@@ -122,6 +122,15 @@
     --brand-human: 217 91% 65%;
     --brand-mid: 262 83% 65%;
 
+    /* 7-stop spectrum — dark mode (slightly lifted lightness) */
+    --spectrum-0: 217 91% 65%;
+    --spectrum-1: 185 80% 52%;
+    --spectrum-2: 152 60% 50%;
+    --spectrum-3: 262 83% 65%;
+    --spectrum-4: 38 92% 55%;
+    --spectrum-5: 20 90% 58%;
+    --spectrum-6: 330 90% 65%;
+
     --dot-blue: 217 91% 65%;
     --dot-teal: 185 95% 55%;
     --dot-purple: 262 83% 65%;
