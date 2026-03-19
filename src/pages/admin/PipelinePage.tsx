@@ -40,6 +40,7 @@ interface Company {
   founded_year: number | null;
   imported_at: string;
   job_count?: number;
+  analyzed_count?: number;
   priority_score?: number;
 }
 
@@ -245,6 +246,31 @@ export default function PipelinePage() {
       }
     }
 
+    // Get analyzed counts per company (jobs that have task clusters)
+    const am = new Map<string, number>();
+    const jobToCompany = new Map<string, string>();
+    // We already fetched job rows above for counts — re-fetch with id
+    for (let i = 0; i < companyIds.length; i += 100) {
+      const batch = companyIds.slice(i, i + 100);
+      let from = 0;
+      while (true) {
+        const { data: jRows } = await supabase.from("jobs").select("id, company_id").in("company_id", batch).range(from, from + 999);
+        if (!jRows || jRows.length === 0) break;
+        jRows.forEach((j: any) => { if (j.company_id) jobToCompany.set(j.id, j.company_id); });
+        if (jRows.length < 1000) break;
+        from += 1000;
+      }
+    }
+    const allJobIds = Array.from(jobToCompany.keys());
+    for (let i = 0; i < allJobIds.length; i += 100) {
+      const batch = allJobIds.slice(i, i + 100);
+      const { data: clusterRows } = await supabase.from("job_task_clusters").select("job_id").in("job_id", batch).limit(1000);
+      if (clusterRows) {
+        const seen = new Set<string>();
+        clusterRows.forEach((c: any) => { if (!seen.has(c.job_id)) { seen.add(c.job_id); const cid = jobToCompany.get(c.job_id); if (cid) am.set(cid, (am.get(cid) || 0) + 1); } });
+      }
+    }
+
     const industryCounts = new Map<string, number>();
     allCompanies.forEach(c => {
       const ind = (c.industry || "Other").toLowerCase();
@@ -252,7 +278,7 @@ export default function PipelinePage() {
     });
 
     const scored = allCompanies.map(c => {
-      const withJobs = { ...c, job_count: jm.get(c.id) || 0 };
+      const withJobs = { ...c, job_count: jm.get(c.id) || 0, analyzed_count: am.get(c.id) || 0 };
       return { ...withJobs, priority_score: computePriorityScore(withJobs, industryCounts, allCompanies.length) };
     });
     setCompanies(scored);
@@ -970,12 +996,13 @@ export default function PipelinePage() {
           </div>
 
           {/* Table header */}
-          <div className="grid grid-cols-[2fr_1fr_1fr_1fr_80px_80px_90px] gap-2 px-3 py-1.5 text-[10px] font-medium text-muted-foreground uppercase tracking-wide border-b border-border">
+          <div className="grid grid-cols-[2fr_1fr_1fr_1fr_80px_80px_80px_90px] gap-2 px-3 py-1.5 text-[10px] font-medium text-muted-foreground uppercase tracking-wide border-b border-border">
             <span>Company</span>
             <span>Industry</span>
             <span>HQ</span>
             <span>ATS</span>
             <span className="text-right">Roles</span>
+            <span className="text-right">Analyzed</span>
             <span className="text-right">Funding</span>
             <span className="text-right">Imported</span>
           </div>
@@ -992,7 +1019,7 @@ export default function PipelinePage() {
           ) : (
             <div className="divide-y divide-border/50">
               {filteredCompanies.slice(0, 200).map(co => (
-                <div key={co.id} onClick={() => { setSelectedCompanyId(co.id); }} className="grid grid-cols-[2fr_1fr_1fr_1fr_80px_80px_90px] gap-2 px-3 py-2 items-center hover:bg-muted/30 transition-colors group cursor-pointer">
+                <div key={co.id} onClick={() => { setSelectedCompanyId(co.id); }} className="grid grid-cols-[2fr_1fr_1fr_1fr_80px_80px_80px_90px] gap-2 px-3 py-2 items-center hover:bg-muted/30 transition-colors group cursor-pointer">
                   <div className="flex items-center gap-2 min-w-0">
                     <CompanyLogo url={co.logo_url} name={co.name} size="h-6 w-6" />
                     <div className="min-w-0">
@@ -1017,6 +1044,13 @@ export default function PipelinePage() {
                       <span className="text-primary">{co.job_count}</span>
                     ) : (
                       <span className="text-muted-foreground">0</span>
+                    )}
+                  </span>
+                  <span className="text-[11px] text-right font-medium">
+                    {(co.analyzed_count || 0) > 0 ? (
+                      <span className="text-emerald-400">{co.analyzed_count}</span>
+                    ) : (
+                      <span className="text-muted-foreground">—</span>
                     )}
                   </span>
                   <span className="text-[11px] text-right text-muted-foreground truncate">{co.funding_stage || "—"}</span>
