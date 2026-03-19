@@ -5,6 +5,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import HomepageChat from "@/components/HomepageChat";
 import RolePreviewPanel from "@/components/RolePreviewPanel";
 import InlineRoleCarousel, { type RoleResult } from "@/components/InlineRoleCarousel";
+import SkillSuggestionCards from "@/components/SkillSuggestionCards";
 
 function getGreeting(): string {
   const hour = new Date().getHours();
