@@ -92,6 +92,8 @@ const Analysis = () => {
   const [loading, setLoading] = useState(!initialResult);
   const [error, setError] = useState<string | null>(null);
   const [simTask, setSimTask] = useState<TaskAnalysis | null>(null);
+  const [focusedTask, setFocusedTask] = useState<TaskAnalysis | null>(null);
+  const [showAllTasks, setShowAllTasks] = useState(!focusTaskParam);
   const [completedTasks, setCompletedTasks] = useState<Set<string>>(new Set());
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [bookmarkLoading, setBookmarkLoading] = useState(false);
