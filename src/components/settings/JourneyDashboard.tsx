@@ -1,8 +1,8 @@
 /**
  * Journey Dashboard — unified Career Reach Map
  *
- * Stats ribbon → Scatter chart (Human Match % vs AI Boost %)
- * Click a dot → slide-out panel with gap analysis + CTA
+ * Stats ribbon → Skill-first bullseye with leverage suggestions
+ * Click a dot → slide-out panel with best skill to practice + CTA
  */
 import { useMemo, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -11,7 +11,7 @@ import {
   Play, Target, Briefcase, Bookmark, BookOpen, ArrowRight,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import CareerReachMap, { type JobMatchDot } from "./CareerReachMap";
+import CareerReachMap, { type JobMatchDot, type SkillLeverage } from "./CareerReachMap";
 
 /* ─── Types ─── */
 export interface PracticedRoleData {
