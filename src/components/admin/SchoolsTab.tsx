@@ -410,7 +410,24 @@ export default function SchoolsTab() {
         </div>
       )}
 
-      {/* Create Dialog */}
+      {/* Skills Gap Matrix */}
+      {gapSchool && (
+        <Card className="border-primary/20">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <BarChart3 className="h-4 w-4 text-primary" />
+                <span className="text-sm font-semibold text-foreground">Skills Gap Analysis — {gapSchool.name}</span>
+              </div>
+              <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => setGapSchool(null)}>
+                <X className="h-3 w-3" />
+              </Button>
+            </div>
+            <SkillsGapMatrix schoolId={gapSchool.id} schoolName={gapSchool.name} />
+          </CardContent>
+        </Card>
+      )}
+
       <Dialog open={createOpen} onOpenChange={setCreateOpen}>
         <DialogContent className="max-w-md">
           <DialogHeader>
