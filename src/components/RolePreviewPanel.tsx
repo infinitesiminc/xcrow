@@ -88,6 +88,24 @@ export default function RolePreviewPanel({ role, onClose, edgeContext }: RolePre
   const hue1 = hashToHue(role.title);
   const hue2 = (hue1 + 60) % 360;
 
+  // Determine which tasks relate to the active edge context
+  const edgeTaskSet = useMemo(() => {
+    if (!edgeContext?.skillIds?.length || !tasks.length) return new Set<string>();
+    const edgeKeywords = edgeContext.skillIds.flatMap(id => {
+      const tax = SKILL_TAXONOMY.find(s => s.id === id);
+      return tax ? tax.keywords : [];
+    });
+    const matches = new Set<string>();
+    for (const t of tasks) {
+      const name = t.cluster_name.toLowerCase();
+      const desc = (t.description || "").toLowerCase();
+      if (edgeKeywords.some(kw => name.includes(kw) || desc.includes(kw))) {
+        matches.add(t.cluster_name);
+      }
+    }
+    return matches;
+  }, [edgeContext, tasks]);
+
   useEffect(() => {
     setView("details");
     setSimTask(null);
