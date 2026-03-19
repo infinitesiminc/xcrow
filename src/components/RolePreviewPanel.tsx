@@ -457,7 +457,11 @@ export default function RolePreviewPanel({ role, onClose }: RolePreviewPanelProp
                 const style = taskChipStyle(score);
                 const done = completedTasks.has(t.cluster_name);
                 return (
-                  <div key={i} className="group rounded-lg border border-border/50 bg-muted/20 p-2.5 hover:border-primary/30 transition-colors">
+                  <button
+                    key={i}
+                    onClick={() => { setFocusedTask(t); setView("task-detail"); }}
+                    className="group w-full text-left rounded-lg border border-border/50 bg-muted/20 p-2.5 hover:border-primary/30 transition-colors"
+                  >
                     <div className="flex items-start justify-between gap-2">
                       <div className="flex items-center gap-2 min-w-0">
                         {done ? <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400 shrink-0" /> : (() => { const TaskIcon = getTaskIcon(t.cluster_name); return <TaskIcon className="h-3.5 w-3.5 text-muted-foreground shrink-0" />; })()}
@@ -465,19 +469,12 @@ export default function RolePreviewPanel({ role, onClose }: RolePreviewPanelProp
                       </div>
                       <div className="flex items-center gap-2 shrink-0">
                         <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${style.badge}`}>{score}%</span>
-                        <button
-                          onClick={() => startSimulation(t)}
-                          className="opacity-0 group-hover:opacity-100 flex items-center gap-1 text-[10px] font-medium text-primary bg-primary/10 hover:bg-primary/20 rounded-full px-2 py-0.5 transition-all"
-                        >
-                          <Play className="h-2.5 w-2.5" />
-                          {done ? "Retry" : "Practice"}
-                        </button>
                       </div>
                     </div>
                     {t.description && (
                       <p className="text-xs text-muted-foreground mt-1 leading-relaxed line-clamp-2">{t.description}</p>
                     )}
-                  </div>
+                  </button>
                 );
               })}
             </div>
