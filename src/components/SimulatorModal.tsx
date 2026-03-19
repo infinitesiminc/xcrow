@@ -772,18 +772,6 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
               <p className="text-[11px] sm:text-xs text-muted-foreground mt-0.5 truncate">{jobTitle}{company ? ` · ${company}` : ""}</p>
             </div>
             <div className="flex items-center gap-2 shrink-0">
-              {phase === "chat" && objectives.length > 0 && (
-                <button
-                  onClick={() => setShowObjectives(!showObjectives)}
-                  className={`flex items-center gap-1.5 text-xs px-3 py-1 rounded-full transition-colors ${
-                    showObjectives ? "bg-primary text-primary-foreground" : "bg-primary/10 text-primary hover:bg-primary/20"
-                  }`}
-                >
-                  <Target className="h-3 w-3" />
-                  {metCount}/{objectives.length}
-                  {allObjectivesMet && <span className="ml-0.5">✓</span>}
-                </button>
-              )}
               {phase === "chat" && (
                 <motion.span
                   initial={{ opacity: 0, scale: 0.9 }}
