@@ -27,6 +27,7 @@ function taskChipStyle(aiScore: number) {
 interface RolePreviewPanelProps {
   role: RoleResult;
   onClose: () => void;
+  edgeContext?: EdgeContext | null;
 }
 
 const TASK_ICON_MAP: [RegExp, React.ComponentType<any>][] = [
