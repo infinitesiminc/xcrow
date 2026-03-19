@@ -18,6 +18,7 @@ const CardStyleMockup = lazy(() => import("./pages/CardStyleMockup.tsx"));
 const CompanyPage = lazy(() => import("./pages/CompanyPage.tsx"));
 const Journey = lazy(() => import("./pages/Journey.tsx"));
 const Students = lazy(() => import("./pages/Students.tsx"));
+const Leaderboard = lazy(() => import("./pages/Leaderboard.tsx"));
 
 // Admin (lazy)
 const HRLayout = lazy(() => import("./layouts/HRLayout.tsx"));
@@ -52,6 +53,7 @@ const App = () => (
               <Route path="/card-styles" element={<><Navbar /><CardStyleMockup /></>} />
               <Route path="/journey" element={<Journey />} />
               <Route path="/students" element={<><Navbar /><Students /><Footer /></>} />
+              <Route path="/leaderboard" element={<Leaderboard />} />
 
               {/* Redirects — old routes all go to feed */}
               <Route path="/practice" element={<Navigate to="/" replace />} />

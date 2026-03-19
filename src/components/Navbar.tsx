@@ -11,7 +11,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { User, Menu, X, Compass, Shield, Bookmark, ArrowRight, Clock, Map, Settings, LogOut } from "lucide-react";
+import { User, Menu, X, Compass, Shield, Bookmark, ArrowRight, Clock, Map, Settings, LogOut, Trophy } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 interface RecentActivity {
@@ -41,6 +41,7 @@ export default function Navbar() {
 
   const navItems = [
     { label: "Explore", path: "/", icon: Compass },
+    { label: "Leaderboard", path: "/leaderboard", icon: Trophy },
     ...(user ? [
       { label: "Skill Map", path: "/journey", icon: Map },
     ] : []),
