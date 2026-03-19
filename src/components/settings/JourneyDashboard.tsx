@@ -275,12 +275,72 @@ export default function JourneyDashboard({ practicedRoles, savedRoles, loading }
         </div>
       )}
 
-      {/* ── Career Reach Map ── */}
-      {!isEmpty && (
-        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
-          <CareerReachMap jobMatches={jobMatches} isEmpty={isEmpty} />
-        </motion.div>
-      )}
+      {/* ── Minimum-data gate ── */}
+      {!isEmpty && (() => {
+        const MIN_SIMS = 5;
+        const MIN_TASKS = 3;
+        const simsOk = practicedRoles.length >= MIN_SIMS;
+        const tasksOk = uniqueTasks >= MIN_TASKS;
+        const ready = simsOk && tasksOk;
+
+        if (!ready) {
+          const simsLeft = Math.max(0, MIN_SIMS - practicedRoles.length);
+          const tasksLeft = Math.max(0, MIN_TASKS - uniqueTasks);
+          const totalNeeded = MIN_SIMS + MIN_TASKS;
+          const totalDone = Math.min(practicedRoles.length, MIN_SIMS) + Math.min(uniqueTasks, MIN_TASKS);
+          const pct = Math.round((totalDone / totalNeeded) * 100);
+
+          return (
+            <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="rounded-xl border border-border/40 bg-card p-6 text-center space-y-4">
+              <div className="flex items-center justify-center gap-2 text-primary">
+                <Target className="h-5 w-5" />
+                <span className="font-semibold text-sm">Unlock Your Career Map</span>
+              </div>
+              <p className="text-xs text-muted-foreground max-w-sm mx-auto">
+                Complete a few more simulations to generate statistically reliable career matches.
+              </p>
+
+              {/* Progress bar */}
+              <div className="max-w-xs mx-auto">
+                <div className="h-2 rounded-full bg-muted/40 overflow-hidden">
+                  <motion.div
+                    className="h-full rounded-full bg-primary"
+                    initial={{ width: 0 }}
+                    animate={{ width: `${pct}%` }}
+                    transition={{ duration: 0.6, ease: "easeOut" }}
+                  />
+                </div>
+                <p className="text-[10px] text-muted-foreground mt-1.5">{pct}% ready</p>
+              </div>
+
+              {/* Remaining checklist */}
+              <div className="flex justify-center gap-4 text-xs">
+                <div className={`flex items-center gap-1.5 ${simsOk ? "text-brand-human" : "text-muted-foreground"}`}>
+                  <Play className="h-3 w-3" />
+                  {simsOk ? "✓ 5+ simulations" : `${simsLeft} more simulation${simsLeft !== 1 ? "s" : ""}`}
+                </div>
+                <div className={`flex items-center gap-1.5 ${tasksOk ? "text-brand-human" : "text-muted-foreground"}`}>
+                  <Target className="h-3 w-3" />
+                  {tasksOk ? "✓ 3+ tasks" : `${tasksLeft} more task${tasksLeft !== 1 ? "s" : ""}`}
+                </div>
+              </div>
+
+              <button
+                onClick={() => navigate("/")}
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-primary text-primary-foreground text-xs font-medium hover:bg-primary/90 transition-colors"
+              >
+                Practice Now <ArrowRight className="h-3.5 w-3.5" />
+              </button>
+            </motion.div>
+          );
+        }
+
+        return (
+          <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
+            <CareerReachMap jobMatches={jobMatches} isEmpty={isEmpty} />
+          </motion.div>
+        );
+      })()}
     </div>
   );
 }
