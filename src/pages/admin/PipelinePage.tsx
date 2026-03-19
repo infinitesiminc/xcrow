@@ -181,6 +181,8 @@ export default function PipelinePage() {
 
   /* ═══════ ANALYZE STATE ═══════ */
   const [selectedCompanyId, setSelectedCompanyId] = useState<string | null>(null);
+  const [editingCareersUrl, setEditingCareersUrl] = useState(false);
+  const [careersUrlDraft, setCareersUrlDraft] = useState("");
   const [jobs, setJobs] = useState<DbJob[]>([]);
   const [loadingJobs, setLoadingJobs] = useState(false);
   const [jobSearch, setJobSearch] = useState("");
