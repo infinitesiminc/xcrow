@@ -1022,6 +1022,14 @@ export type Database = {
         Args: { category: string; score: number }
         Returns: string
       }
+      get_company_stats: {
+        Args: never
+        Returns: {
+          analyzed_count: number
+          company_id: string
+          job_count: number
+        }[]
+      }
       get_workspace_progress: {
         Args: { p_workspace_id: string }
         Returns: {
