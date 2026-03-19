@@ -133,6 +133,9 @@ export default function SchoolDetailPage() {
             <SchoolStudentsAdmin schoolId={school.id} />
           </TabsContent>
         )}
+        <TabsContent value="student-preview">
+          <StudentGapPreview schoolId={school.id} schoolName={school.name} />
+        </TabsContent>
       </Tabs>
     </div>
   );
