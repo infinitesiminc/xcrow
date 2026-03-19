@@ -161,7 +161,7 @@ export default function Navbar() {
                   onClick={() => navigate(item.path)}
                   className={`text-sm gap-1.5 ${isActive(item.path) ? "text-primary" : ""}`}
                 >
-                  <Icon className="h-4 w-4" />
+                  {Icon && <Icon className="h-4 w-4" />}
                   {item.label}
                 </Button>
               );
