@@ -1319,6 +1319,24 @@ export default function PipelinePage() {
                         {syncing === "enrich" ? <Loader2 className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3" />}
                         Re-enrich
                       </Button>
+                      <Button
+                        variant="ghost" size="sm"
+                        className="h-5 px-1.5 text-[10px] gap-1 text-muted-foreground hover:text-primary"
+                        disabled={!!syncing}
+                        onClick={() => syncSingleCompany(selectedCompany.id)}
+                      >
+                        {syncing === `jobs-${selectedCompany.id}` ? <Loader2 className="h-3 w-3 animate-spin" /> : <RefreshCw className="h-3 w-3" />}
+                        Sync Jobs
+                      </Button>
+                      <Button
+                        variant="ghost" size="sm"
+                        className="h-5 px-1.5 text-[10px] gap-1 text-muted-foreground hover:text-primary"
+                        disabled={!!syncing}
+                        onClick={() => { setDiagCompanyName(selectedCompany.name); syncSingleCompany(selectedCompany.id, true); }}
+                        title="Diagnose sync"
+                      >
+                        <Bug className="h-3 w-3" />
+                      </Button>
                     </div>
                     <div className="flex items-center gap-2 text-xs text-muted-foreground">
                       {selectedCompany.industry && <span>{selectedCompany.industry}</span>}
