@@ -1428,7 +1428,6 @@ export default function PipelinePage() {
                     )}
                   </div>
                 </div>
-              </div>
 
                 {/* Queue bar */}
                 {jobs.length > 0 && (
