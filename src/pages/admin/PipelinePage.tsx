@@ -575,7 +575,8 @@ export default function PipelinePage() {
     return Array.from(g.entries()).sort((a, b) => b[1].filter(j => analyzedJobIds.has(j.id)).length - a[1].filter(j => analyzedJobIds.has(j.id)).length);
   }, [filteredJobs, analyzedJobIds]);
 
-  const pendingCount = useMemo(() => jobs.filter(j => !analyzedJobIds.has(j.id)).length, [jobs, analyzedJobIds]);
+  const validAnalyzedCount = useMemo(() => jobs.filter(j => analyzedJobIds.has(j.id)).length, [jobs, analyzedJobIds]);
+  const pendingCount = useMemo(() => jobs.length - validAnalyzedCount, [jobs.length, validAnalyzedCount]);
 
   const startQueue = useCallback(async () => {
     if (queueRunning || !selectedCompany) return;
