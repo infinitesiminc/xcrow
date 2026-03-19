@@ -109,7 +109,7 @@ Deno.serve(async (req) => {
   const sb = createClient(supabaseUrl, serviceKey);
 
   try {
-    const { school_id, catalog_url, max_programs } = await req.json();
+    const { school_id, catalog_url, max_programs, skip } = await req.json();
     if (!school_id || !catalog_url) {
       return new Response(JSON.stringify({ error: "school_id and catalog_url are required" }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -117,6 +117,7 @@ Deno.serve(async (req) => {
     }
 
     const programCap = max_programs || 10;
+    const skipCount = skip || 0;
 
     // Create curriculum record
     const { data: curriculum, error: insertErr } = await sb
