@@ -188,7 +188,7 @@ export default function Schools() {
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {STEPS.map((step, i) => (
-                <motion.div key={step.title} variants={fadeUp} custom={i + 1} className="relative rounded-xl overflow-hidden">
+                <motion.div key={step.title} variants={fadeUp} custom={i + 1} className="relative rounded-xl">
                   <div className={`absolute top-0 inset-x-0 h-[3px] bg-gradient-to-r ${step.gradient}`} />
                   <div className="border border-border/60 bg-card/80 backdrop-blur-sm rounded-xl p-6 sm:p-8 relative h-full">
                     <div className="absolute -top-3 -left-3 w-8 h-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-sm font-bold shadow-lg shadow-primary/30">
