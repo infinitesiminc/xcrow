@@ -6,7 +6,7 @@ import HomepageChat from "@/components/HomepageChat";
 import RolePreviewPanel from "@/components/RolePreviewPanel";
 import InlineRoleCarousel, { type RoleResult } from "@/components/InlineRoleCarousel";
 import SkillSuggestionCards from "@/components/SkillSuggestionCards";
-import HumanEdgesCard from "@/components/HumanEdgesCard";
+import HumanEdgesCard, { type EdgeContext } from "@/components/HumanEdgesCard";
 
 function getGreeting(): string {
   const hour = new Date().getHours();
