@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
 import {
   GraduationCap, Plus, Loader2, Pencil, Check, X, Trash2, Users, Calendar, Mail,
-  Globe, BookOpen, Sparkles, ChevronDown, ChevronUp,
+  Globe, BookOpen, Sparkles, ChevronDown, ChevronUp, BarChart3,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import SkillsGapMatrix from "./SkillsGapMatrix";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -71,6 +72,7 @@ export default function SchoolsTab() {
   const [expandedSchool, setExpandedSchool] = useState<string | null>(null);
   const [courses, setCourses] = useState<Record<string, SchoolCourse[]>>({});
   const [loadingCourses, setLoadingCourses] = useState<Record<string, boolean>>({});
+  const [gapSchool, setGapSchool] = useState<{ id: string; name: string } | null>(null);
 
   async function fetchSchools() {
     setLoading(true);
@@ -293,6 +295,9 @@ export default function SchoolsTab() {
                         </div>
                       ) : (
                         <>
+                          <Button size="sm" variant="outline" className="h-7 text-[10px] gap-1" onClick={() => setGapSchool({ id: school.id, name: school.name })}>
+                            <BarChart3 className="h-3 w-3" /> Skills Gap
+                          </Button>
                           <Button size="sm" variant="outline" className="h-7 text-[10px] gap-1" onClick={() => setScrapeDialogId(school.id)}>
                             <BookOpen className="h-3 w-3" /> Scrape Curriculum
                           </Button>
@@ -405,7 +410,24 @@ export default function SchoolsTab() {
         </div>
       )}
 
-      {/* Create Dialog */}
+      {/* Skills Gap Matrix */}
+      {gapSchool && (
+        <Card className="border-primary/20">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <BarChart3 className="h-4 w-4 text-primary" />
+                <span className="text-sm font-semibold text-foreground">Skills Gap Analysis — {gapSchool.name}</span>
+              </div>
+              <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => setGapSchool(null)}>
+                <X className="h-3 w-3" />
+              </Button>
+            </div>
+            <SkillsGapMatrix schoolId={gapSchool.id} schoolName={gapSchool.name} />
+          </CardContent>
+        </Card>
+      )}
+
       <Dialog open={createOpen} onOpenChange={setCreateOpen}>
         <DialogContent className="max-w-md">
           <DialogHeader>
