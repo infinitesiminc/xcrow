@@ -26,6 +26,8 @@ export default function HomepageChat({
   hasInteracted,
   selectedJobId,
   inlineCards = true,
+  externalPrompt,
+  onExternalPromptConsumed,
 }: {
   onRolesFound?: (roles: RoleResult[]) => void;
   onRoleSelect: (role: RoleResult) => void;
@@ -33,6 +35,8 @@ export default function HomepageChat({
   hasInteracted: boolean;
   selectedJobId?: string;
   inlineCards?: boolean;
+  externalPrompt?: string | null;
+  onExternalPromptConsumed?: () => void;
 }) {
   const { toast } = useToast();
   const [items, setItems] = useState<ChatItem[]>([]);
