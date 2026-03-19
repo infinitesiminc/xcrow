@@ -77,6 +77,9 @@ const App = () => (
               <Route path="/students" element={<><Navbar /><Students /><Footer /></>} />
               <Route path="/leaderboard" element={<Leaderboard />} />
               <Route path="/pricing" element={<><Navbar /><Pricing /><Footer /></>} />
+              <Route path="/schools" element={<Schools />} />
+              <Route path="/about" element={<About />} />
+              <Route path="/blog" element={<Blog />} />
 
               {/* Redirects — old routes all go to feed */}
               <Route path="/practice" element={<Navigate to="/" replace />} />
