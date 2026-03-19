@@ -204,7 +204,7 @@ export default function Pricing() {
         >
           <Building2 className="h-8 w-8 text-primary mx-auto mb-3" />
           <h3 className="text-lg font-bold text-foreground mb-1">
-            Bring Infinite Sim to your university
+            Bring crowy.ai to your university
           </h3>
           <p className="text-sm text-muted-foreground max-w-md mx-auto mb-4">
             Give every student Pro access with institutional pricing. Volume discounts available for 500+ seats.
