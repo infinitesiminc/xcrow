@@ -4,32 +4,12 @@ import {
   GraduationCap, Globe, Users, BookOpen, Loader2, TrendingUp,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { supabase } from "@/integrations/supabase/client";
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip as RechartsTooltip,
   ResponsiveContainer, PieChart, Pie, Cell, CartesianGrid,
 } from "recharts";
-
-interface SchoolRow {
-  id: string;
-  name: string;
-  state: string | null;
-  carnegie_class: string | null;
-  institution_type: string | null;
-  enrollment: number | null;
-  pipeline_stage: string | null;
-  is_hbcu: boolean | null;
-  plan_status: string;
-  used_seats: number;
-  total_seats: number;
-}
-
-interface ScrapeRow {
-  school_id: string;
-  status: string;
-}
 
 const PIPELINE_ORDER = ["prospect", "contacted", "scraped", "demo", "customer"];
 const PIPELINE_COLORS: Record<string, string> = {
@@ -51,95 +31,61 @@ const CARNEGIE_COLORS = [
 ];
 
 export default function SchoolAnalyticsDashboard({ onFilterPipeline }: { onFilterPipeline?: (stage: string) => void }) {
-  const [schools, setSchools] = useState<SchoolRow[]>([]);
-  const [scrapes, setScrapes] = useState<ScrapeRow[]>([]);
   const [loading, setLoading] = useState(true);
+  const [statsData, setStatsData] = useState<any[]>([]);
 
   useEffect(() => {
     async function load() {
-      const [schoolRes, scrapeRes] = await Promise.all([
-        supabase.from("school_accounts").select("id,name,state,carnegie_class,institution_type,enrollment,pipeline_stage,is_hbcu,plan_status,used_seats,total_seats"),
-        supabase.from("school_curricula").select("school_id,status"),
-      ]);
-
-      // Paginate school_accounts to get all 4k+ rows
-      let allSchools: SchoolRow[] = [];
-      if (schoolRes.data) {
-        allSchools = schoolRes.data as SchoolRow[];
-        if (allSchools.length === 1000) {
-          let from = 1000;
-          const batchSize = 1000;
-          let done = false;
-          while (!done) {
-            const { data } = await supabase
-              .from("school_accounts")
-              .select("id,name,state,carnegie_class,institution_type,enrollment,pipeline_stage,is_hbcu,plan_status,used_seats,total_seats")
-              .range(from, from + batchSize - 1);
-            if (data && data.length > 0) {
-              allSchools = allSchools.concat(data as SchoolRow[]);
-              from += batchSize;
-              if (data.length < batchSize) done = true;
-            } else {
-              done = true;
-            }
-          }
-        }
-      }
-      setSchools(allSchools);
-      if (scrapeRes.data) setScrapes(scrapeRes.data as ScrapeRow[]);
+      const { data } = await supabase.rpc("get_school_dashboard_stats");
+      setStatsData(data || []);
       setLoading(false);
     }
     load();
   }, []);
 
-  const stats = useMemo(() => {
-    const scrapedSchoolIds = new Set(scrapes.filter(s => s.status === "completed").map(s => s.school_id));
-    const customers = schools.filter(s => s.pipeline_stage === "customer" || (s.plan_status === "active" && s.used_seats > 0));
-    const hbcus = schools.filter(s => s.is_hbcu);
-    return {
-      total: schools.length,
-      scraped: scrapedSchoolIds.size,
-      customers: customers.length,
-      hbcus: hbcus.length,
+  const parsed = useMemo(() => {
+    if (statsData.length === 0) return null;
+    const first = statsData[0];
+    const kpis = {
+      total: Number(first.total_schools),
+      customers: Number(first.total_customers),
+      hbcus: Number(first.total_hbcus),
+      scraped: Number(first.total_scraped),
+      totalEnrollment: Number(first.total_enrollment),
     };
-  }, [schools, scrapes]);
 
-  const pipelineData = useMemo(() => {
-    const counts: Record<string, number> = {};
-    PIPELINE_ORDER.forEach(s => counts[s] = 0);
-    schools.forEach(s => {
-      const stage = s.pipeline_stage || "prospect";
-      counts[stage] = (counts[stage] || 0) + 1;
-    });
-    return PIPELINE_ORDER.map(stage => ({ stage, count: counts[stage] || 0 }));
-  }, [schools]);
+    // Deduplicate pipeline, carnegie, states from cross-join rows
+    const pipelineMap = new Map<string, number>();
+    const carnegieMap = new Map<string, number>();
+    const stateMap = new Map<string, number>();
 
-  const carnegieData = useMemo(() => {
-    const counts: Record<string, number> = {};
-    schools.forEach(s => {
-      const cls = s.carnegie_class || "Unknown";
-      counts[cls] = (counts[cls] || 0) + 1;
+    statsData.forEach((row: any) => {
+      if (row.pipeline_stage && !pipelineMap.has(row.pipeline_stage)) {
+        pipelineMap.set(row.pipeline_stage, Number(row.pipeline_count));
+      }
+      if (row.carnegie_class && !carnegieMap.has(row.carnegie_class)) {
+        carnegieMap.set(row.carnegie_class, Number(row.carnegie_count));
+      }
+      if (row.state && !stateMap.has(row.state)) {
+        stateMap.set(row.state, Number(row.state_count));
+      }
     });
-    return Object.entries(counts)
+
+    const pipelineData = PIPELINE_ORDER.map(stage => ({
+      stage,
+      count: pipelineMap.get(stage) || 0,
+    }));
+
+    const carnegieData = [...carnegieMap.entries()]
       .sort((a, b) => b[1] - a[1])
-      .slice(0, 7)
       .map(([name, value]) => ({ name, value }));
-  }, [schools]);
 
-  const stateData = useMemo(() => {
-    const counts: Record<string, number> = {};
-    schools.forEach(s => {
-      if (s.state) counts[s.state] = (counts[s.state] || 0) + 1;
-    });
-    return Object.entries(counts)
+    const stateData = [...stateMap.entries()]
       .sort((a, b) => b[1] - a[1])
-      .slice(0, 15)
       .map(([state, count]) => ({ state, count }));
-  }, [schools]);
 
-  const totalEnrollment = useMemo(() =>
-    schools.reduce((sum, s) => sum + (s.enrollment || 0), 0),
-  [schools]);
+    return { kpis, pipelineData, carnegieData, stateData };
+  }, [statsData]);
 
   if (loading) {
     return (
@@ -149,18 +95,21 @@ export default function SchoolAnalyticsDashboard({ onFilterPipeline }: { onFilte
     );
   }
 
-  const kpis = [
-    { label: "Total Institutions", value: stats.total.toLocaleString(), icon: GraduationCap, color: "text-[hsl(var(--neon-purple))]" },
-    { label: "Scraped", value: stats.scraped.toLocaleString(), icon: BookOpen, color: "text-[hsl(var(--neon-cyan))]" },
-    { label: "Customers", value: stats.customers.toLocaleString(), icon: Users, color: "text-[hsl(var(--success))]" },
-    { label: "HBCUs", value: stats.hbcus.toLocaleString(), icon: Globe, color: "text-[hsl(var(--neon-pink))]" },
+  if (!parsed) return null;
+
+  const { kpis, pipelineData, carnegieData, stateData } = parsed;
+  const kpiCards = [
+    { label: "Total Institutions", value: kpis.total.toLocaleString(), icon: GraduationCap, color: "text-[hsl(var(--neon-purple))]" },
+    { label: "Scraped", value: kpis.scraped.toLocaleString(), icon: BookOpen, color: "text-[hsl(var(--neon-cyan))]" },
+    { label: "Customers", value: kpis.customers.toLocaleString(), icon: Users, color: "text-[hsl(var(--success))]" },
+    { label: "HBCUs", value: kpis.hbcus.toLocaleString(), icon: Globe, color: "text-[hsl(var(--neon-pink))]" },
   ];
 
   return (
     <div className="space-y-6">
       {/* KPI Row */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {kpis.map((kpi, i) => (
+        {kpiCards.map((kpi, i) => (
           <motion.div key={kpi.label} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}>
             <Card className="border-border/50 bg-card/80">
               <CardContent className="p-4">
@@ -270,18 +219,18 @@ export default function SchoolAnalyticsDashboard({ onFilterPipeline }: { onFilte
           <div>
             <div className="flex justify-between text-sm mb-1">
               <span className="text-muted-foreground">Scraped</span>
-              <span className="font-medium">{stats.scraped} / {stats.total}</span>
+              <span className="font-medium">{kpis.scraped} / {kpis.total}</span>
             </div>
-            <Progress value={(stats.scraped / Math.max(stats.total, 1)) * 100} className="h-2" />
+            <Progress value={(kpis.scraped / Math.max(kpis.total, 1)) * 100} className="h-2" />
           </div>
           <div className="grid grid-cols-2 gap-4 text-sm">
             <div>
               <p className="text-muted-foreground">Total Enrollment</p>
-              <p className="text-lg font-bold font-[Space_Grotesk]">{totalEnrollment.toLocaleString()}</p>
+              <p className="text-lg font-bold font-[Space_Grotesk]">{kpis.totalEnrollment.toLocaleString()}</p>
             </div>
             <div>
               <p className="text-muted-foreground">Avg Enrollment</p>
-              <p className="text-lg font-bold font-[Space_Grotesk]">{stats.total ? Math.round(totalEnrollment / stats.total).toLocaleString() : 0}</p>
+              <p className="text-lg font-bold font-[Space_Grotesk]">{kpis.total ? Math.round(kpis.totalEnrollment / kpis.total).toLocaleString() : 0}</p>
             </div>
           </div>
         </CardContent>
