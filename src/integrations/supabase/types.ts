@@ -1406,6 +1406,22 @@ export type Database = {
           user_id: string
         }[]
       }
+      get_school_dashboard_stats: {
+        Args: never
+        Returns: {
+          carnegie_class: string
+          carnegie_count: number
+          pipeline_count: number
+          pipeline_stage: string
+          state: string
+          state_count: number
+          total_customers: number
+          total_enrollment: number
+          total_hbcus: number
+          total_schools: number
+          total_scraped: number
+        }[]
+      }
       get_school_students: {
         Args: { _school_id: string }
         Returns: {
