@@ -202,15 +202,41 @@ function buildTaxonomy(practicedRoles: PracticedRoleData[], templates: DbJobTemp
 function computeJobMatches(skills: AggregatedSkill[], templates: DbJobTemplate[]): JobMatchDot[] {
   const userSkillMap = new Map(skills.map(s => [s.id, s]));
   return templates.map(job => {
+    // Map job tasks → skill IDs, tracking how many tasks map to each skill
     const jobSkillIds = new Set<string>();
-    for (const t of job.tasks) for (const id of matchTaskToSkills(t)) jobSkillIds.add(id);
+    const taskSkillHits = new Map<string, number>(); // track task→skill coverage
+    let mappedTasks = 0;
+    for (const t of job.tasks) {
+      const ids = matchTaskToSkills(t);
+      if (ids.length > 0) mappedTasks++;
+      for (const id of ids) {
+        jobSkillIds.add(id);
+        taskSkillHits.set(id, (taskSkillHits.get(id) || 0) + 1);
+      }
+    }
     const allIds = Array.from(jobSkillIds);
+    if (allIds.length === 0) return null; // skip jobs with no skill mapping
+
+    // Task coverage factor: penalize when most tasks don't map to known skills
+    const coverageRatio = job.tasks.length > 0 ? mappedTasks / job.tasks.length : 0;
+    const coveragePenalty = 0.5 + 0.5 * coverageRatio; // 50-100% multiplier
+
     const matched: string[] = [], gaps: JobMatchDot["gapSkills"] = [], aiCovered: JobMatchDot["aiCoveredGaps"] = [], newEdges: string[] = [];
+    let weightedScore = 0;
+
     for (const id of allIds) {
       const us = userSkillMap.get(id);
-      if (us && us.proficiency >= 50) { matched.push(us.name); }
-      else {
-        const tax = TAXONOMY.find(t => t.id === id);
+      const tax = TAXONOMY.find(t => t.id === id);
+      const weight = taskSkillHits.get(id) || 1; // skills that appear in more tasks weigh more
+
+      if (us && us.practiced && us.proficiency > 0) {
+        // Weighted contribution: proficiency/100 instead of binary 1 or 0
+        weightedScore += (us.proficiency / 100) * weight;
+        if (us.proficiency >= 50) matched.push(us.name);
+        else if (tax) {
+          gaps.push({ name: tax.name, aiExposure: tax.aiExposure, aiEnabler: tax.aiEnabler, humanEdge: tax.humanEdge });
+        }
+      } else {
         if (tax) {
           gaps.push({ name: tax.name, aiExposure: tax.aiExposure, aiEnabler: tax.aiEnabler, humanEdge: tax.humanEdge });
           if (tax.aiExposure >= 60 && tax.aiEnabler) {
@@ -220,15 +246,32 @@ function computeJobMatches(skills: AggregatedSkill[], templates: DbJobTemplate[]
         }
       }
     }
-    const humanMatch = allIds.length > 0 ? Math.round((matched.length / allIds.length) * 100) : 0;
-    // Partial credit: AI covers gaps proportionally to aiExposure (e.g. 80% exposure = 0.8 credit, not 1.0)
+
+    const totalWeight = allIds.reduce((s, id) => s + (taskSkillHits.get(id) || 1), 0);
+    const humanMatch = totalWeight > 0
+      ? Math.round((weightedScore / totalWeight) * 100 * coveragePenalty)
+      : 0;
+
+    // AI partial credit on gap skills
     const aiPartialCredit = aiCovered.reduce((sum, gap) => {
       const tax = TAXONOMY.find(t => t.name === gap.name);
-      return sum + (tax ? tax.aiExposure / 100 : 0.6);
+      const weight = taskSkillHits.get(tax?.id || "") || 1;
+      return sum + (tax ? (tax.aiExposure / 100) * weight : 0.6);
     }, 0);
-    const aiBoostMatch = allIds.length > 0 ? Math.min(95, Math.max(humanMatch, Math.round(((matched.length + aiPartialCredit) / allIds.length) * 100))) : 0;
-    return { title: job.title, company: job.company, dept: job.dept, humanMatch, aiBoostMatch, unlocked: humanMatch < 60 && aiBoostMatch >= 60, matchedSkills: matched, gapSkills: gaps, aiCoveredGaps: aiCovered, newEdges: [...new Set(newEdges)] };
-  }).filter(j => j.humanMatch > 0 || j.aiBoostMatch > 0).sort((a, b) => b.aiBoostMatch - a.aiBoostMatch);
+
+    const aiBoostMatch = totalWeight > 0
+      ? Math.max(humanMatch, Math.round(((weightedScore + aiPartialCredit) / totalWeight) * 100 * coveragePenalty))
+      : 0;
+
+    return {
+      title: job.title, company: job.company, dept: job.dept,
+      humanMatch, aiBoostMatch,
+      unlocked: humanMatch < 60 && aiBoostMatch >= 60,
+      matchedSkills: matched, gapSkills: gaps, aiCoveredGaps: aiCovered,
+      newEdges: [...new Set(newEdges)],
+    };
+  }).filter((j): j is JobMatchDot => j !== null && (j.humanMatch > 0 || j.aiBoostMatch > 0))
+    .sort((a, b) => b.aiBoostMatch - a.aiBoostMatch);
 }
 
 /* ══════════════════════════════════════════════════════════════════
