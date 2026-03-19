@@ -837,6 +837,127 @@ export type Database = {
           },
         ]
       }
+      school_accounts: {
+        Row: {
+          billing_interval: string
+          contact_email: string | null
+          created_at: string
+          created_by: string | null
+          domain: string | null
+          expires_at: string | null
+          id: string
+          name: string
+          plan_status: string
+          price_per_seat_cents: number
+          stripe_customer_id: string | null
+          stripe_subscription_id: string | null
+          total_seats: number
+          used_seats: number
+        }
+        Insert: {
+          billing_interval?: string
+          contact_email?: string | null
+          created_at?: string
+          created_by?: string | null
+          domain?: string | null
+          expires_at?: string | null
+          id?: string
+          name: string
+          plan_status?: string
+          price_per_seat_cents?: number
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          total_seats?: number
+          used_seats?: number
+        }
+        Update: {
+          billing_interval?: string
+          contact_email?: string | null
+          created_at?: string
+          created_by?: string | null
+          domain?: string | null
+          expires_at?: string | null
+          id?: string
+          name?: string
+          plan_status?: string
+          price_per_seat_cents?: number
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          total_seats?: number
+          used_seats?: number
+        }
+        Relationships: []
+      }
+      school_admins: {
+        Row: {
+          added_at: string
+          id: string
+          role: string
+          school_id: string
+          user_id: string
+        }
+        Insert: {
+          added_at?: string
+          id?: string
+          role?: string
+          school_id: string
+          user_id: string
+        }
+        Update: {
+          added_at?: string
+          id?: string
+          role?: string
+          school_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "school_admins_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "school_accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      school_seats: {
+        Row: {
+          activated_at: string | null
+          id: string
+          invite_email: string | null
+          provisioned_at: string
+          school_id: string
+          status: string
+          user_id: string | null
+        }
+        Insert: {
+          activated_at?: string | null
+          id?: string
+          invite_email?: string | null
+          provisioned_at?: string
+          school_id: string
+          status?: string
+          user_id?: string | null
+        }
+        Update: {
+          activated_at?: string | null
+          id?: string
+          invite_email?: string | null
+          provisioned_at?: string
+          school_id?: string
+          status?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "school_seats_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "school_accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       simulation_queue: {
         Row: {
           attempt_number: number
@@ -1074,9 +1195,14 @@ export type Database = {
           user_id: string
         }[]
       }
+      has_school_seat: { Args: { _user_id: string }; Returns: boolean }
       increment_usage: {
         Args: { _type: string; _user_id: string }
         Returns: Json
+      }
+      is_school_admin: {
+        Args: { _school_id: string; _user_id: string }
+        Returns: boolean
       }
       is_superadmin: { Args: { _user_id: string }; Returns: boolean }
       is_workspace_admin: {
