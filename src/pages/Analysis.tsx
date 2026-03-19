@@ -170,17 +170,17 @@ const Analysis = () => {
 
   useEffect(() => {
     if (!jobTitle && !hasJd) { navigate("/"); return; }
+
+    // If we already resolved a prebuilt role synchronously, just save history
+    if (initialResult) {
+      saveAnalysisHistory(initialResult);
+      return;
+    }
+
     const analyze = async () => {
       setLoading(true); setError(null);
 
-      // 1. Check prebuilt roles (instant)
-      const prebuilt = jobTitle ? findPrebuiltRole(jobTitle) : null;
-      if (prebuilt && !hasJd) {
-        const r = { ...prebuilt, company };
-        setResult(r); saveAnalysisHistory(r); setLoading(false); return;
-      }
-
-      // 2. Check cached analyses (fast DB lookup)
+      // 1. Check cached analyses (fast DB lookup)
       if (jobTitle && !hasJd) {
         try {
           const { data: cached } = await supabase
@@ -196,7 +196,7 @@ const Analysis = () => {
         } catch (err) { console.error("Cache lookup failed:", err); }
       }
 
-      // 3. Fall back to AI analysis
+      // 2. Fall back to AI analysis
       try {
         const aiResult = await analyzeJobWithAI(jobTitle, company, jdText || undefined, jdUrlParam || undefined);
         setResult(aiResult); saveAnalysisHistory(aiResult);
@@ -204,7 +204,7 @@ const Analysis = () => {
       setLoading(false);
     };
     analyze();
-  }, [jobTitle, company, hasJd, navigate]);
+  }, [jobTitle, company, hasJd, navigate, initialResult]);
 
   const augmentedPercent = result?.summary?.augmentedPercent ?? 0;
   const riskPercent = result?.summary?.automationRiskPercent ?? 0;
