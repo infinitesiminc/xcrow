@@ -1,0 +1,1 @@
+ALTER TABLE public.completed_simulations ADD COLUMN IF NOT EXISTS skills_earned jsonb DEFAULT '[]'::jsonb;

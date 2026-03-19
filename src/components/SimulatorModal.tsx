@@ -1,7 +1,8 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Send, Loader2, RotateCcw, ChevronDown, ChevronUp, CheckCircle2, X, ArrowRight, Target, Circle, CircleCheck, AlertTriangle, TrendingUp, Trophy, Zap, Map } from "lucide-react";
+import { Send, Loader2, RotateCcw, ChevronDown, ChevronUp, CheckCircle2, X, ArrowRight, Target, Circle, CircleCheck, AlertTriangle, TrendingUp, Trophy, Zap, Map, Star } from "lucide-react";
+import { matchTaskToSkills, SKILL_TAXONOMY, XP_PER_SIM, getLevel, getNextLevel, type SkillXP } from "@/lib/skill-map";
 import ReactMarkdown from "react-markdown";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -617,13 +618,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
   };
 
   const handleFinishAttempt = () => {
-    const objectives = session?.learningObjectives || [];
-    const unmet = objectives.filter(o => !objectiveStatus[o.id]);
-    const tooEarly = roundCount < minRounds;
-    if ((unmet.length > 0 || tooEarly) && roundCount < maxRounds + 3) {
-      setPhase("review");
-      return;
-    }
+    // Skip review screen — go straight to scoring
     handleFinish();
   };
 
@@ -648,6 +643,9 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
     }).finally(() => setSending(false));
   };
 
+  // Compute skills earned for this simulation
+  const [earnedSkills, setEarnedSkills] = useState<{ skill_id: string; xp: number; name: string; levelBefore: string; levelAfter: string; leveledUp: boolean }[]>([]);
+
   const handleFinish = async () => {
     setPhase("completing");
     clearInactivityTimer();
@@ -661,6 +659,26 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
         console.error("Failed to get scores:", err);
       }
     }
+
+    // Compute skill XP earned
+    const skillIds = matchTaskToSkills(taskName, jobTitle);
+    const xpEach = skillIds.length > 0 ? Math.round(XP_PER_SIM / skillIds.length) : 0;
+    const skillsEarnedData = skillIds.map(id => ({ skill_id: id, xp: xpEach }));
+
+    // For display: compute level changes
+    // We'd need existing XP to show level-ups accurately, but we can show what was earned
+    const earned = skillIds.map(id => {
+      const tax = SKILL_TAXONOMY.find(s => s.id === id);
+      return {
+        skill_id: id,
+        xp: xpEach,
+        name: tax?.name || id,
+        levelBefore: "Beginner",
+        levelAfter: "Beginner",
+        leveledUp: false,
+      };
+    });
+    setEarnedSkills(earned);
     
     if (user) {
       try {
@@ -677,9 +695,10 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
           human_value_add_score: scores?.categories.find(c => c.name === "Human Value-Add")?.score ?? null,
           adaptive_thinking_score: scores?.categories.find(c => c.name === "Adaptive Thinking")?.score ?? null,
           domain_judgment_score: scores?.categories.find(c => c.name === "Domain Judgment")?.score ?? null,
+          skills_earned: skillsEarnedData,
         } as any);
         onCompleted?.();
-        toast({ title: "Nice work — your career map updated", description: "See how this shifts your journey →", action: <Button variant="link" className="text-xs p-0 h-auto" onClick={() => navigate("/journey")}>View</Button> });
+        toast({ title: "Skills updated! 🎯", description: `+${xpEach} XP in ${earned.map(e => e.name).join(", ")}`, action: <Button variant="link" className="text-xs p-0 h-auto" onClick={() => navigate("/journey")}>Skill Map</Button> });
       } catch (err) {
         console.error("Failed to save completion:", err);
       }
@@ -753,18 +772,6 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
               <p className="text-[11px] sm:text-xs text-muted-foreground mt-0.5 truncate">{jobTitle}{company ? ` · ${company}` : ""}</p>
             </div>
             <div className="flex items-center gap-2 shrink-0">
-              {phase === "chat" && objectives.length > 0 && (
-                <button
-                  onClick={() => setShowObjectives(!showObjectives)}
-                  className={`flex items-center gap-1.5 text-xs px-3 py-1 rounded-full transition-colors ${
-                    showObjectives ? "bg-primary text-primary-foreground" : "bg-primary/10 text-primary hover:bg-primary/20"
-                  }`}
-                >
-                  <Target className="h-3 w-3" />
-                  {metCount}/{objectives.length}
-                  {allObjectivesMet && <span className="ml-0.5">✓</span>}
-                </button>
-              )}
               {phase === "chat" && (
                 <motion.span
                   initial={{ opacity: 0, scale: 0.9 }}
@@ -789,25 +796,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
           )}
         </div>
 
-        {/* Body */}
         <div className="flex-1 flex min-h-0">
-          {/* Objectives sidebar */}
-          <AnimatePresence>
-            {showObjectives && phase === "chat" && objectives.length > 0 && (
-              <motion.div
-                initial={{ width: 0, opacity: 0 }}
-                animate={{ width: 220, opacity: 1 }}
-                exit={{ width: 0, opacity: 0 }}
-                transition={{ duration: 0.2 }}
-                className="border-r border-border/40 overflow-hidden shrink-0"
-              >
-                <div className="p-3 w-[220px]">
-                  <ObjectiveChecklist objectives={objectives} status={objectiveStatus} scaffoldingTiers={scaffoldingTiers} />
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-
           <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 sm:px-6 py-4 sm:py-6 scrollbar-thin">
             <AnimatePresence mode="popLayout">
               {phase === "loading" && (
@@ -911,33 +900,6 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                           )}
                         </div>
 
-                        {/* Scaffolding tier indicator */}
-                        {scaffoldTierInMsg && (
-                          <motion.div
-                            initial={{ opacity: 0, scale: 0.9 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-accent/30 border border-border/30 w-fit"
-                          >
-                            <span className="text-[11px] font-medium text-muted-foreground">
-                              {tierLabels[parseInt(scaffoldTierInMsg[1])] || "Scaffolding"}
-                            </span>
-                          </motion.div>
-                        )}
-
-                        {/* Objective met notification */}
-                        {objectiveMetInMsg.length > 0 && (
-                          <motion.div
-                            initial={{ opacity: 0, scale: 0.9 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-success/10 border border-success/20 w-fit"
-                          >
-                            <CircleCheck className="h-3.5 w-3.5 text-success" />
-                            <span className="text-[11px] font-medium text-success">
-                              Goal achieved: {objectives.find(o => o.id === objectiveMetInMsg[0])?.label || "Objective met"}
-                            </span>
-                          </motion.div>
-                        )}
-
                         {/* Collapsible insight card */}
                         {!isUser && <InsightCard content={msg.content} />}
                       </motion.div>
@@ -1040,60 +1002,55 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                     initial={{ scale: 0.5, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
                     transition={{ delay: 0.15, type: "spring", stiffness: 200 }}
-                    className={`inline-flex items-center justify-center w-20 h-20 rounded-full ${doneIcon.bg}`}
+                    className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-primary/10"
                   >
-                    <DoneIconComponent className={`h-10 w-10 ${doneIcon.color}`} />
+                    <Trophy className="h-10 w-10 text-primary" />
                   </motion.div>
 
                   {/* Encouragement */}
                   <div className="space-y-2">
-                    <h3 className="text-xl font-display font-bold text-foreground">{doneTitle}</h3>
-                    <p className="text-sm text-muted-foreground leading-relaxed">{doneSubtitle}</p>
-                    <p className="text-xs text-muted-foreground/70">
+                    <h3 className="text-xl font-display font-bold text-foreground">
+                      {earnedSkills.length > 0 ? "Skills earned! 🎉" : "Great practice! 💪"}
+                    </h3>
+                    <p className="text-sm text-muted-foreground leading-relaxed">
                       {roundCount} round{roundCount !== 1 ? "s" : ""} on "{taskName}"
                     </p>
                   </div>
 
-                  {/* Objectives achieved — simple, no scores */}
-                  {scoreResult?.objectiveResults && scoreResult.objectiveResults.length > 0 && (
-                    <motion.div
-                      initial={{ opacity: 0, y: 8 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.3 }}
-                      className="w-full rounded-2xl border border-border/40 p-5 text-left"
-                    >
-                      <div className="flex items-center gap-2 mb-3">
-                        <Target className="h-4 w-4 text-primary" />
-                        <span className="text-sm font-semibold text-foreground">
-                          {objectiveMet} of {objectiveTotal} goals reached
-                        </span>
-                      </div>
-                      <ul className="space-y-2.5">
-                        {scoreResult.objectiveResults.map((r, i) => (
-                          <motion.li
-                            key={i}
-                            initial={{ opacity: 0, x: -8 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ delay: 0.35 + i * 0.06 }}
-                            className="flex items-start gap-2.5"
+                  {/* Skills Earned Cards */}
+                  {earnedSkills.length > 0 && (
+                    <div className="w-full space-y-2">
+                      {earnedSkills.map((skill, i) => (
+                        <motion.div
+                          key={skill.skill_id}
+                          initial={{ opacity: 0, x: -16 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: 0.3 + i * 0.1, type: "spring", stiffness: 150 }}
+                          className="flex items-center gap-3 rounded-xl border border-primary/20 bg-primary/5 p-3"
+                        >
+                          <motion.div
+                            initial={{ scale: 0, rotate: -45 }}
+                            animate={{ scale: 1, rotate: 0 }}
+                            transition={{ delay: 0.5 + i * 0.1, type: "spring" }}
+                            className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0"
                           >
-                            {r.met ? (
-                              <CircleCheck className="h-4 w-4 text-primary shrink-0 mt-0.5" />
-                            ) : (
-                              <Circle className="h-4 w-4 text-muted-foreground/40 shrink-0 mt-0.5" />
-                            )}
-                            <div>
-                              <span className={`text-sm font-medium ${r.met ? "text-foreground" : "text-muted-foreground"}`}>
-                                {objectives.find(o => o.id === r.id)?.label || r.id}
-                              </span>
-                              {r.evidence && (
-                                <p className="text-xs text-muted-foreground/70 mt-0.5 leading-relaxed">{r.evidence}</p>
-                              )}
-                            </div>
-                          </motion.li>
-                        ))}
-                      </ul>
-                    </motion.div>
+                            <Star className="h-5 w-5 text-primary" />
+                          </motion.div>
+                          <div className="text-left flex-1 min-w-0">
+                            <p className="text-sm font-semibold text-foreground truncate">{skill.name}</p>
+                            <p className="text-xs text-primary font-medium">+{skill.xp} XP</p>
+                          </div>
+                          <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            transition={{ delay: 0.7 + i * 0.1 }}
+                            className="text-xs text-muted-foreground shrink-0"
+                          >
+                            ⚡
+                          </motion.div>
+                        </motion.div>
+                      ))}
+                    </div>
                   )}
 
                   {!user && (
@@ -1102,7 +1059,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                     </p>
                   )}
 
-                  {/* CTAs — always encouraging */}
+                  {/* CTAs */}
                   <div className="flex flex-col gap-3 pt-2 w-full max-w-xs">
                     {onNextTask ? (
                       <Button onClick={() => { onClose(); onNextTask(); }} className="gap-2 rounded-xl w-full">
@@ -1117,7 +1074,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                         onClick={() => { onClose(); navigate("/journey"); }}
                         className="gap-2 rounded-xl w-full text-xs"
                       >
-                        <Map className="h-3.5 w-3.5" /> View My Journey
+                        <Map className="h-3.5 w-3.5" /> View Skill Map
                       </Button>
                     )}
                     <div className="flex gap-2">

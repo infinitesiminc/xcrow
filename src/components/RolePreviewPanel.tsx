@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
-import { X, MapPin, Loader2, Play, Maximize2, ChevronLeft, CheckCircle2, Bot, Trophy, Bookmark, BookmarkCheck, GraduationCap, MessageSquare, BarChart3, FileText, Users, Search, Settings, Globe, Shield, Lightbulb, PenTool, Code, TrendingUp, Megaphone, Target, Briefcase, Heart, Layers, Zap, ExternalLink } from "lucide-react";
+import { X, MapPin, Loader2, Play, Maximize2, ChevronLeft, CheckCircle2, Bot, Trophy, Bookmark, BookmarkCheck, GraduationCap, MessageSquare, BarChart3, FileText, Users, Search, Settings, Globe, Shield, Lightbulb, PenTool, Code, TrendingUp, Megaphone, Target, Briefcase, Heart, Layers, Zap, ExternalLink, Star } from "lucide-react";
+import { matchTaskToSkills, SKILL_TAXONOMY } from "@/lib/skill-map";
 import { motion, AnimatePresence } from "framer-motion";
 import ReactMarkdown from "react-markdown";
 import { supabase } from "@/integrations/supabase/client";
@@ -285,6 +286,24 @@ export default function RolePreviewPanel({ role, onClose }: RolePreviewPanelProp
                         {done && <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400 shrink-0" />}
                       </div>
                       {t.description && <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2">{t.description}</p>}
+                      {/* Skill pills */}
+                      {(() => {
+                        const skillIds = matchTaskToSkills(t.cluster_name);
+                        if (skillIds.length === 0) return null;
+                        return (
+                          <div className="flex flex-wrap gap-1 mt-1.5">
+                            {skillIds.slice(0, 3).map(id => {
+                              const tax = SKILL_TAXONOMY.find(s => s.id === id);
+                              if (!tax) return null;
+                              return (
+                                <span key={id} className="text-[9px] px-1.5 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/15 font-medium">
+                                  +{tax.name}
+                                </span>
+                              );
+                            })}
+                          </div>
+                        );
+                      })()}
                     </div>
                     <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full shrink-0 ${style.badge}`}>{score}%</span>
                   </div>

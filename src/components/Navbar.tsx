@@ -35,7 +35,7 @@ export default function Navbar() {
   const navItems = [
     { label: "Explore", path: "/", icon: Compass },
     ...(user ? [
-      { label: "My Journey", path: "/journey", icon: Map },
+      { label: "Skill Map", path: "/journey", icon: Map },
     ] : []),
     ...(isSuperAdmin ? [
       { label: "Admin", path: "/admin", icon: Shield },

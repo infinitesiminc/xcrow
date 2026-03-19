@@ -13,10 +13,10 @@ type ChatItem =
   | { type: "roles"; roles: RoleResult[] };
 
 const SUGGESTIONS = [
-  "What tech roles are safe from AI?",
-  "Show me marketing jobs in London",
-  "I'm studying finance — what should I know?",
-  "Remote data science roles",
+  "I'm graduating next year — what skills matter most?",
+  "What does a product manager actually do day-to-day?",
+  "Show me roles where AI helps the most",
+  "I'm studying finance — what should I practice?",
 ];
 
 export default function HomepageChat({
