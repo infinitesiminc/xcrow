@@ -77,6 +77,14 @@ const App = () => (
               <Route path="/simulations" element={<Navigate to="/" replace />} />
               <Route path="/learning-path" element={<Navigate to="/" replace />} />
 
+              {/* School admin */}
+              <Route path="/school" element={<SchoolAdminGate />}>
+                <Route index element={<SchoolDashboard />} />
+                <Route path="students" element={<SchoolStudents />} />
+                <Route path="invite" element={<SchoolInvite />} />
+                <Route path="analytics" element={<SchoolAnalytics />} />
+              </Route>
+
               {/* Superadmin content pipeline */}
               <Route path="/admin" element={<AdminGate />}>
                 <Route index element={<PipelinePage />} />

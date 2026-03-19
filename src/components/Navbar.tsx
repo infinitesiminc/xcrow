@@ -45,6 +45,9 @@ export default function Navbar() {
     ...(user ? [
       { label: "Skill Map", path: "/journey", icon: Map },
     ] : []),
+    ...(isSchoolAdmin ? [
+      { label: "School", path: "/school", icon: GraduationCap },
+    ] : []),
     ...(isSuperAdmin ? [
       { label: "Admin", path: "/admin", icon: Shield },
     ] : []),
