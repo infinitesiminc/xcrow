@@ -62,6 +62,7 @@ export default function CurriculumGapBanner() {
   if (loading || !data || data.recommendations.length === 0) return null;
 
   const schoolLabel = data.school?.short_name || data.school?.name || "Your School";
+  const programLabel = data.program_name;
   const visibleRecs = expanded ? data.recommendations : data.recommendations.slice(0, 3);
 
   return (
