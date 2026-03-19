@@ -41,6 +41,9 @@ export default function Navbar() {
 
   const navItems = [
     { label: "Explore", path: "/", icon: Compass },
+    { label: "For Students", path: "/students", icon: GraduationCap },
+    { label: "For Schools", path: "/schools", icon: GraduationCap },
+    { label: "Pricing", path: "/pricing", icon: null },
     { label: "Leaderboard", path: "/leaderboard", icon: Trophy },
     ...(user ? [
       { label: "Skill Map", path: "/journey", icon: Map },
