@@ -246,9 +246,9 @@ function computeJobMatches(skills: AggregatedSkill[], templates: DbJobTemplate[]
       const tax = TAXONOMY.find(t => t.name === gap.name);
       return sum + (tax ? tax.aiExposure / 100 : 0.6);
     }, 0);
-    const aiBoostMatch = allIds.length > 0 ? Math.min(95, Math.round(((matched.length + aiPartialCredit) / allIds.length) * 100)) : 0;
+    const aiBoostMatch = allIds.length > 0 ? Math.min(95, Math.max(humanMatch, Math.round(((matched.length + aiPartialCredit) / allIds.length) * 100))) : 0;
     return { title: job.title, company: job.company, dept: job.dept, humanMatch, aiBoostMatch, unlocked: humanMatch < 60 && aiBoostMatch >= 60, matchedSkills: matched, gapSkills: gaps, aiCoveredGaps: aiCovered, newEdges: [...new Set(newEdges)] };
-  }).sort((a, b) => b.aiBoostMatch - a.aiBoostMatch);
+  }).filter(j => j.humanMatch > 0 || j.aiBoostMatch > 0).sort((a, b) => b.aiBoostMatch - a.aiBoostMatch);
 }
 
 /* ══════════════════════════════════════════════════════════════════
