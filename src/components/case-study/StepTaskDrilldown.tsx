@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Layers, ArrowUpRight } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { exposureStyle } from "@/lib/exposure-colors";
 
 interface TaskCluster {
   id: string;
