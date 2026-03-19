@@ -55,15 +55,25 @@ interface SkillBlockProps {
 }
 
 function SkillBlock({ label, color, className = "", small, glow, delay = 0 }: SkillBlockProps) {
-  const gradient = {
-    ai: "from-brand-ai/80 via-brand-ai/60 to-pink-500/70",
-    human: "from-brand-human/80 via-brand-human/60 to-indigo-400/70",
-    mid: "from-brand-mid/80 via-brand-mid/60 to-violet-400/70",
+  const borderGradient = {
+    ai: "from-brand-ai/60 via-pink-500/40 to-brand-ai/20",
+    human: "from-brand-human/60 via-indigo-400/40 to-brand-human/20",
+    mid: "from-brand-mid/60 via-violet-400/40 to-brand-mid/20",
+  }[color];
+  const innerGlow = {
+    ai: "from-brand-ai/15 via-pink-500/8 to-transparent",
+    human: "from-brand-human/15 via-indigo-400/8 to-transparent",
+    mid: "from-brand-mid/15 via-violet-400/8 to-transparent",
+  }[color];
+  const textColor = {
+    ai: "text-brand-ai",
+    human: "text-brand-human",
+    mid: "text-brand-mid",
   }[color];
   const shadow = {
-    ai: "shadow-brand-ai/25",
-    human: "shadow-brand-human/25",
-    mid: "shadow-brand-mid/25",
+    ai: "shadow-brand-ai/15",
+    human: "shadow-brand-human/15",
+    mid: "shadow-brand-mid/15",
   }[color];
 
   return (
@@ -71,13 +81,22 @@ function SkillBlock({ label, color, className = "", small, glow, delay = 0 }: Sk
       variants={fadeUp}
       custom={delay}
       className={`
-        bg-gradient-to-br ${gradient} rounded-xl flex items-center justify-center font-semibold text-white backdrop-blur-sm
-        ${small ? "h-10 text-xs px-3" : "h-12 sm:h-14 text-sm px-4"}
-        ${glow ? `shadow-lg ${shadow} ring-1 ring-white/25` : `shadow-md ${shadow}`}
+        relative rounded-xl overflow-hidden
+        ${small ? "h-10" : "h-12 sm:h-14"}
+        ${glow ? `shadow-lg ${shadow}` : `shadow-md ${shadow}`}
         ${className}
       `}
     >
-      {label}
+      {/* Gradient border effect */}
+      <div className={`absolute inset-0 bg-gradient-to-br ${borderGradient} rounded-xl`} />
+      {/* Inner card */}
+      <div className={`absolute inset-[1px] rounded-[11px] bg-card/90 backdrop-blur-sm`}>
+        <div className={`absolute inset-0 bg-gradient-to-br ${innerGlow} rounded-[11px]`} />
+      </div>
+      {/* Content */}
+      <div className={`relative h-full flex items-center justify-center font-semibold ${textColor} ${small ? "text-xs px-3" : "text-sm px-4"}`}>
+        {label}
+      </div>
     </motion.div>
   );
 }
