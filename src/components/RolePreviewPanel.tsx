@@ -312,6 +312,96 @@ export default function RolePreviewPanel({ role, onClose }: RolePreviewPanelProp
     return <>{view === "enlarged" && enlargedOverlay}{simulationOverlay}</>;
   }
 
+  // Task detail card — focused single-task view
+  if (view === "task-detail" && focusedTask) {
+    const score = focusedTask.ai_exposure_score ?? 0;
+    const style = taskChipStyle(score);
+    const done = completedTasks.has(focusedTask.cluster_name);
+    const TaskIcon = getTaskIcon(focusedTask.cluster_name);
+    const taskHue = hashToHue(focusedTask.cluster_name);
+
+    return (
+      <>{simulationOverlay}
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="h-full flex flex-col bg-card overflow-hidden">
+          {/* Header */}
+          <div className="flex items-center justify-between px-3 py-2 border-b border-border shrink-0">
+            <button onClick={() => setView("details")} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors">
+              <ChevronLeft className="h-3.5 w-3.5" /> Back
+            </button>
+            <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-muted/30 transition-colors">
+              <X className="h-3.5 w-3.5 text-muted-foreground" />
+            </button>
+          </div>
+
+          {/* Task detail content */}
+          <div className="flex-1 overflow-y-auto p-5 flex flex-col items-center justify-center">
+            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-sm space-y-5">
+              {/* Task icon + accent */}
+              <div className="flex flex-col items-center text-center gap-3">
+                <div className="h-14 w-14 rounded-2xl flex items-center justify-center" style={{ background: `hsl(${taskHue} 40% 15%)` }}>
+                  <TaskIcon className="h-7 w-7" style={{ color: `hsl(${taskHue} 60% 65%)` }} />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-foreground leading-snug">{focusedTask.cluster_name}</h3>
+                  <p className="text-xs text-muted-foreground mt-0.5">{role.title}{role.company ? ` · ${role.company}` : ""}</p>
+                </div>
+                {done && (
+                  <span className="inline-flex items-center gap-1 text-xs text-emerald-400 font-medium">
+                    <CheckCircle2 className="h-3.5 w-3.5" /> Previously practiced
+                  </span>
+                )}
+              </div>
+
+              {/* AI exposure badge */}
+              <div className="flex justify-center">
+                <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl ${style.badge}`}>
+                  <Bot className="h-4 w-4" />
+                  <span className="text-sm font-semibold">{score}% AI Exposure</span>
+                </div>
+              </div>
+
+              {/* Description */}
+              {focusedTask.description && (
+                <div className="rounded-xl bg-muted/20 p-4">
+                  <p className="text-sm text-foreground/80 leading-relaxed">{focusedTask.description}</p>
+                </div>
+              )}
+
+              {/* Meta tags */}
+              <div className="flex items-center justify-center gap-2 flex-wrap">
+                {focusedTask.ai_state && (
+                  <span className="text-[10px] px-2.5 py-1 rounded-full bg-muted/40 text-muted-foreground">{focusedTask.ai_state}</span>
+                )}
+                {focusedTask.impact_level && (
+                  <span className="text-[10px] px-2.5 py-1 rounded-full bg-muted/40 text-muted-foreground">{focusedTask.impact_level} impact</span>
+                )}
+                {focusedTask.priority && (
+                  <span className="text-[10px] px-2.5 py-1 rounded-full bg-muted/40 text-muted-foreground">{focusedTask.priority} priority</span>
+                )}
+              </div>
+            </motion.div>
+          </div>
+
+          {/* Footer CTA */}
+          <div className="p-4 border-t border-border shrink-0 space-y-2">
+            <button
+              onClick={() => startSimulation(focusedTask)}
+              className="w-full flex items-center justify-center gap-2 rounded-xl bg-primary text-primary-foreground py-3 text-sm font-semibold hover:bg-primary/90 transition-colors"
+            >
+              <Play className="h-4 w-4" /> {done ? "Practice Again" : "Practice Now"}
+            </button>
+            <button
+              onClick={() => setView("breakdown")}
+              className="w-full flex items-center justify-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors py-1.5"
+            >
+              See all {tasks.length} tasks →
+            </button>
+          </div>
+        </motion.div>
+      </>
+    );
+  }
+
   // Breakdown view (inline in panel)
   if (view === "breakdown") {
     return (
