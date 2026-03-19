@@ -91,6 +91,8 @@ const App = () => (
               <Route path="/admin" element={<AdminGate />}>
                 <Route index element={<PipelinePage />} />
                 <Route path="analytics" element={<TaskAnalyticsPage />} />
+                <Route path="companies" element={<CompaniesAdminPage />} />
+                <Route path="schools" element={<SchoolsPage />} />
               </Route>
 
               <Route path="*" element={<NotFound />} />
