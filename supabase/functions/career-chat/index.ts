@@ -211,12 +211,12 @@ serve(async (req) => {
 
     // Fallback: detect tool calls emitted as plain text (e.g. search_roles{...})
     if (!hasToolCall && fullTextContent) {
-      const textToolMatch = fullTextContent.match(/search_roles\s*\{([^}]+)\}/);
+      const textToolMatch = fullTextContent.match(/search_roles\s*[\({]([^)}\n]+)[\)}]/);
       if (textToolMatch) {
         hasToolCall = true;
         const rawArgs = textToolMatch[1];
         // Parse key:value pairs from the text format
-        const queryMatch = rawArgs.match(/query\s*:\s*(?:<ctrl46>|"|')?\s*([^"'}<]+)\s*(?:<ctrl46>|"|')?/);
+        const queryMatch = rawArgs.match(/query\s*:\s*(?:<ctrl46>|"|')?\s*([^"')}<,]+)\s*(?:<ctrl46>|"|')?/);
         const limitMatch = rawArgs.match(/limit\s*:\s*(\d+)/);
         const parsedArgs: any = {};
         if (queryMatch) parsedArgs.query = queryMatch[1].trim();
