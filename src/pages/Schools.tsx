@@ -71,7 +71,7 @@ const STEPS = [
   {
     icon: BarChart3,
     title: "Map to market demand",
-    desc: "We cross-reference your curriculum against 33,000+ real job task clusters to calculate coverage, gaps, and AI readiness scores.",
+    desc: "We cross-reference your curriculum against 1M+ real job task clusters to calculate coverage, gaps, and AI readiness scores.",
     color: "text-brand-mid",
   },
   {
