@@ -232,6 +232,7 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({
         school: school ? { name: school.name, short_name: school.short_name } : null,
+        program_name: userProgramName || null,
         curriculum_skills_count: curriculumSkills.size,
         programs_count: courses.length,
         recommendations: recommendations.filter((r) => r.tasks.length > 0),
