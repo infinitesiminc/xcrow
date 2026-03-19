@@ -214,7 +214,7 @@ export default function PipelinePage() {
     let compFrom = 0;
     const compPageSize = 1000;
     while (true) {
-      const { data: batch } = await supabase.from("companies").select("id, name, industry, logo_url, website, careers_url, detected_ats_platform, employee_range, headquarters, description, company_type, funding_stage, funding_total, founded_year").order("name").range(compFrom, compFrom + compPageSize - 1);
+      const { data: batch } = await supabase.from("companies").select("id, name, industry, logo_url, website, careers_url, detected_ats_platform, employee_range, headquarters, description, company_type, funding_stage, funding_total, founded_year, imported_at").order("imported_at", { ascending: false }).range(compFrom, compFrom + compPageSize - 1);
       if (!batch || batch.length === 0) break;
       allCompanies = allCompanies.concat(batch as Company[]);
       if (batch.length < compPageSize) break;
