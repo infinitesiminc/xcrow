@@ -246,6 +246,34 @@ export default function PipelinePage() {
       }
     }
 
+    // Get analyzed counts (distinct job_ids in job_task_clusters)
+    const am = new Map<string, number>();
+    for (let i = 0; i < companyIds.length; i += 100) {
+      const batch = companyIds.slice(i, i + 100);
+      // Get job IDs for this batch first
+      const jobIdsForBatch: string[] = [];
+      let jf = 0;
+      while (true) {
+        const { data: jRows } = await supabase.from("jobs").select("id, company_id").in("company_id", batch).range(jf, jf + 999);
+        if (!jRows || jRows.length === 0) break;
+        jRows.forEach((j: any) => jobIdsForBatch.push(j.id));
+        // Build a map of job_id -> company_id
+        jRows.forEach((j: any) => { if (j.company_id) (am as any).__jobToCompany = (am as any).__jobToCompany || new Map(); (am as any).__jobToCompany.set(j.id, j.company_id); });
+        if (jRows.length < 1000) break;
+        jf += 1000;
+      }
+      // Now check which job_ids have task clusters
+      for (let k = 0; k < jobIdsForBatch.length; k += 100) {
+        const jidBatch = jobIdsForBatch.slice(k, k + 100);
+        const { data: clusterRows } = await supabase.from("job_task_clusters").select("job_id").in("job_id", jidBatch).limit(1000);
+        if (clusterRows) {
+          const seen = new Set<string>();
+          clusterRows.forEach((c: any) => { if (!seen.has(c.job_id)) { seen.add(c.job_id); const cid = (am as any).__jobToCompany?.get(c.job_id); if (cid) am.set(cid, (am.get(cid) || 0) + 1); } });
+        }
+      }
+    }
+    delete (am as any).__jobToCompany;
+
     const industryCounts = new Map<string, number>();
     allCompanies.forEach(c => {
       const ind = (c.industry || "Other").toLowerCase();
@@ -253,7 +281,7 @@ export default function PipelinePage() {
     });
 
     const scored = allCompanies.map(c => {
-      const withJobs = { ...c, job_count: jm.get(c.id) || 0 };
+      const withJobs = { ...c, job_count: jm.get(c.id) || 0, analyzed_count: am.get(c.id) || 0 };
       return { ...withJobs, priority_score: computePriorityScore(withJobs, industryCounts, allCompanies.length) };
     });
     setCompanies(scored);
