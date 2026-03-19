@@ -1,59 +1,82 @@
 
 
-# Schools Analytics Dashboard — Design Plan
+## Build Plan: 4 Marketing Pages
 
-## Context
-We have 4,177 US institutions imported from IPEDS with metadata (state, Carnegie class, enrollment, HBCU flag, pipeline_stage). The goal is a sales pipeline analytics view.
+### Priority Order
+1. `/schools` — University landing page (B2B revenue driver)
+2. `/students` — Redesign existing page with updated messaging
+3. `/about` — Mission / brand story
+4. `/blog` — SEO content hub (static MVP)
 
-## Dashboard Layout
+---
 
-### 1. Top KPI Row (4 cards)
-- **Total Institutions** — count of all schools
-- **Scraped** — schools with at least one curriculum scrape completed
-- **Customers** — schools with pipeline_stage = 'customer' or plan_status = 'active' with seats > 0
-- **HBCUs** — count of HBCU institutions
+### Page 1: `/schools` — For Universities
 
-### 2. Pipeline Funnel (horizontal bar or stacked bar)
-- Breakdown by `pipeline_stage`: Prospect → Contacted → Scraped → Demo → Customer
-- Each segment color-coded, clickable to filter the table below
+**Hero**: "Your curriculum was designed before GPT. Your students weren't." + bold stat (e.g. "67% of skills in your catalog are AI-exposed") + CTA: "Get a Free Curriculum Audit"
 
-### 3. Two-Column Charts Row
-- **Left: Institution Type Distribution** — Pie/donut chart of Carnegie classifications (R1, R2, Master's, Baccalaureate, Associate's, etc.)
-- **Right: Geographic Heatmap / Top States** — Bar chart of top 15 states by school count, with scrape coverage overlay
+**Sections**:
+- **The Problem**: Visual showing traditional curriculum vs market skill demand gap (reuse the skill block component pattern from `/students`)
+- **How It Works** (3 steps): 1) We scrape your catalog 2) Map skills to market demand 3) Identify gaps + recommend simulations
+- **Live Preview**: Mock curriculum gap analysis card showing a sample school's coverage %, gaps, and AI readiness — styled like the existing `SkillsGapMatrix` output
+- **What Schools Get**: Feature grid — gap analysis, simulation library, student dashboards, leaderboard, auto-enroll, cohort analytics
+- **Social Proof**: School logos marquee (UCLA, MIT, Stanford, etc. — mock for now) + a testimonial quote placeholder
+- **CTA**: "Book a Curriculum Audit" → links to `/contact`
 
-### 4. Scrape Coverage & AI Readiness
-- **Scrape Progress** — X of Y schools scraped, with progress bar
-- **Avg AI Readiness** — For scraped schools, average AI readiness score from skills gap analysis
-- **Top Skill Gaps** — Aggregated across all scraped schools, showing most common missing skills
+**New file**: `src/pages/Schools.tsx`
+**Route**: Add to `App.tsx` with `<Navbar />` + `<Footer />`
 
-### 5. Filterable Data Table (replaces current card view)
-- Columns: Name, State, Carnegie Class, Enrollment, Pipeline Stage, Scrape Status, Programs, AI Readiness Score
-- Search by name, filter by state/Carnegie/pipeline_stage/HBCU
-- Sortable columns, pagination (50 per page)
-- Row actions: View details, trigger scrape, change pipeline stage
+---
 
-## Technical Approach
+### Page 2: `/students` — Redesign
 
-### Files to create/modify:
-1. **`src/pages/admin/SchoolsPage.tsx`** — Restructure with Tabs: "Analytics" (default) and "All Schools" (table)
-2. **`src/components/admin/SchoolAnalyticsDashboard.tsx`** — New component for KPIs, charts, funnel
-3. **`src/components/admin/SchoolsDataTable.tsx`** — New component replacing card view with filterable table
-4. Keep existing `SchoolsTab.tsx` logic for CRUD/scrape actions, refactor into table row actions
+**Keep**: The Lego skill-stack thesis section (it's strong). The before/after AI shift comparison.
 
-### Data queries:
-- All data comes from `school_accounts` table (already has all IPEDS fields)
-- Join with `school_curricula` for scrape status counts
-- Join with `school_courses` for program counts and AI readiness aggregation
-- All queries use existing superadmin RLS policies
+**Add/Update**:
+- New hero copy: "Your degree teaches subjects. The job market needs skills."
+- **Practice section**: Show simulation preview — mock chat bubble + pillar scores
+- **Skill Map preview**: Visual of a student's radar/heatmap (pull from existing `JourneyRadarView` style)
+- **Leaderboard teaser**: Mini leaderboard preview + "Join 5,000+ students" 
+- **Viral CTA**: "Your school isn't on crowy yet? Tell your professor." → mailto or `/contact` link
+- Final CTA: "Get Started — Free"
 
-### Charts:
-- Use existing `recharts` library (already in project via `src/components/ui/chart.tsx`)
-- Pipeline funnel: horizontal BarChart
-- Carnegie distribution: PieChart
-- State breakdown: vertical BarChart
+**Edit**: `src/pages/Students.tsx`
 
-### Design:
-- Follow existing dark-mode admin aesthetic from TaskAnalyticsPage
-- Use same Card/Badge/Tabs patterns
-- Neon accent colors consistent with brand palette
+---
+
+### Page 3: `/about` — Mission & Brand
+
+**Sections**:
+- **Hero**: "We're building the bridge between education and the AI economy"
+- **The Problem**: The acceleration gap — AI evolves monthly, curricula update yearly, careers span decades
+- **The Crow**: Brand story — crows are adaptive problem-solvers, tool-users, pattern-recognizers. That's the skillset the future demands.
+- **What We Build**: Jobs → Tasks → Skills framework explanation with the Lego visual
+- **Team**: Founder card(s) with photo placeholder, title, one-liner
+- **Backed By / Advisors**: Placeholder section for future use
+
+**New file**: `src/pages/About.tsx`
+**Route**: Add to `App.tsx`
+
+---
+
+### Page 4: `/blog` — Static MVP
+
+**Simple layout**:
+- Hero: "Insights" or "Resources" header
+- Grid of 3-4 hardcoded article cards with title, excerpt, date, category tag
+- Cards link to `#` for now (no actual blog engine)
+- Categories: "AI & Work", "Skills Research", "For Educators"
+
+**New file**: `src/pages/Blog.tsx`
+**Route**: Add to `App.tsx`
+
+---
+
+### Shared Changes
+
+- **`App.tsx`**: Add 3 new lazy imports + routes (`/schools`, `/about`, `/blog`)
+- **`Navbar.tsx`**: May need nav links updated (check if these pages should appear in nav)
+- **Design**: All pages use the existing bold/dark aesthetic — `fadeUp` animations, `Section` wrapper pattern from Students.tsx, brand colors (`brand-ai`, `brand-human`, `brand-mid`)
+
+### Implementation Order
+Build one page per message, starting with `/schools`.
 
