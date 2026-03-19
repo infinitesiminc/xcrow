@@ -167,6 +167,7 @@ export default function SkillSuggestionCards() {
             onClick={() => {
               const params = new URLSearchParams({ title: s.jobTitle });
               if (s.company) params.set("company", s.company);
+              params.set("task", s.taskName);
               navigate(`/analysis?${params.toString()}`);
             }}
             className="flex-1 min-w-[150px] max-w-[200px] rounded-xl border border-primary/20 bg-primary/5 hover:bg-primary/10 p-3 text-left transition-all hover:shadow-md hover:shadow-primary/10 group"
