@@ -1028,6 +1028,7 @@ export type Database = {
           analyzed_count: number
           company_id: string
           job_count: number
+          task_cluster_count: number
         }[]
       }
       get_workspace_progress: {
