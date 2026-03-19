@@ -14,6 +14,7 @@ import { supabase } from "@/integrations/supabase/client";
 interface SchoolRow {
   id: string;
   name: string;
+  short_name: string | null;
   state: string | null;
   carnegie_class: string | null;
   enrollment: number | null;
@@ -91,7 +92,7 @@ export default function SchoolsDataTable({ initialPipelineFilter }: { initialPip
     setLoading(true);
     let query = supabase
       .from("school_accounts")
-      .select("id,name,state,carnegie_class,enrollment,pipeline_stage,is_hbcu,plan_status,website,domain", { count: "exact" });
+      .select("id,name,short_name,state,carnegie_class,enrollment,pipeline_stage,is_hbcu,plan_status,website,domain", { count: "exact" }) as any;
 
     if (debouncedSearch) {
       query = query.ilike("name", `%${debouncedSearch}%`);
@@ -180,6 +181,7 @@ export default function SchoolsDataTable({ initialPipelineFilter }: { initialPip
           <TableHeader>
             <TableRow className="bg-muted/30">
               <TableHead className="cursor-pointer" onClick={() => toggleSort("name")}>Name <SortIcon col="name" /></TableHead>
+              <TableHead>Short</TableHead>
               <TableHead className="cursor-pointer" onClick={() => toggleSort("state")}>State <SortIcon col="state" /></TableHead>
               <TableHead>Carnegie</TableHead>
               <TableHead className="cursor-pointer text-right" onClick={() => toggleSort("enrollment")}>Enrollment <SortIcon col="enrollment" /></TableHead>
@@ -191,18 +193,19 @@ export default function SchoolsDataTable({ initialPipelineFilter }: { initialPip
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={7} className="text-center py-12">
+                <TableCell colSpan={8} className="text-center py-12">
                   <Loader2 className="h-6 w-6 animate-spin text-muted-foreground mx-auto" />
                 </TableCell>
               </TableRow>
             ) : schools.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={7} className="text-center py-12 text-muted-foreground">No schools found</TableCell>
+                <TableCell colSpan={8} className="text-center py-12 text-muted-foreground">No schools found</TableCell>
               </TableRow>
             ) : (
               schools.map(school => (
                 <TableRow key={school.id} className="hover:bg-muted/20 cursor-pointer" onClick={() => navigate(`/admin/schools/${school.id}`)}>
                   <TableCell className="font-medium max-w-[300px] truncate text-[hsl(var(--neon-blue))] hover:underline">{school.name}</TableCell>
+                  <TableCell className="text-xs text-muted-foreground font-mono">{school.short_name || "—"}</TableCell>
                   <TableCell>{school.state || "—"}</TableCell>
                   <TableCell>
                     <span className="text-xs text-muted-foreground">{school.carnegie_class || "—"}</span>

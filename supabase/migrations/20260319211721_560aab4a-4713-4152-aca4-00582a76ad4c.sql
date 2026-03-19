@@ -1,0 +1,1 @@
+ALTER TABLE public.school_accounts ADD COLUMN short_name text;
