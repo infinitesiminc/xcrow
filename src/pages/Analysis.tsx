@@ -78,8 +78,17 @@ const Analysis = () => {
   const jdText = jdMarker === "session" ? (sessionStorage.getItem("jd_text") || "") : jdMarker;
   const hasJd = !!(jdText || jdUrlParam);
 
-  const [result, setResult] = useState<JobAnalysisResult | null>(null);
-  const [loading, setLoading] = useState(true);
+  // Pre-resolve prebuilt roles synchronously to avoid any loading flash
+  const initialResult = useMemo(() => {
+    if (jobTitle && !hasJd) {
+      const prebuilt = findPrebuiltRole(jobTitle);
+      if (prebuilt) return { ...prebuilt, company };
+    }
+    return null;
+  }, [jobTitle, company, hasJd]);
+
+  const [result, setResult] = useState<JobAnalysisResult | null>(initialResult);
+  const [loading, setLoading] = useState(!initialResult);
   const [error, setError] = useState<string | null>(null);
   const [simTask, setSimTask] = useState<TaskAnalysis | null>(null);
   const [completedTasks, setCompletedTasks] = useState<Set<string>>(new Set());
