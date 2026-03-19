@@ -900,33 +900,6 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                           )}
                         </div>
 
-                        {/* Scaffolding tier indicator */}
-                        {scaffoldTierInMsg && (
-                          <motion.div
-                            initial={{ opacity: 0, scale: 0.9 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-accent/30 border border-border/30 w-fit"
-                          >
-                            <span className="text-[11px] font-medium text-muted-foreground">
-                              {tierLabels[parseInt(scaffoldTierInMsg[1])] || "Scaffolding"}
-                            </span>
-                          </motion.div>
-                        )}
-
-                        {/* Objective met notification */}
-                        {objectiveMetInMsg.length > 0 && (
-                          <motion.div
-                            initial={{ opacity: 0, scale: 0.9 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-success/10 border border-success/20 w-fit"
-                          >
-                            <CircleCheck className="h-3.5 w-3.5 text-success" />
-                            <span className="text-[11px] font-medium text-success">
-                              Goal achieved: {objectives.find(o => o.id === objectiveMetInMsg[0])?.label || "Objective met"}
-                            </span>
-                          </motion.div>
-                        )}
-
                         {/* Collapsible insight card */}
                         {!isUser && <InsightCard content={msg.content} />}
                       </motion.div>
