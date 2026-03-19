@@ -314,9 +314,13 @@ export default function RolePreviewPanel({ role, onClose, edgeContext }: RolePre
                     </div>
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2 mb-1">
+                        {isEdgeTask && <Sparkles className="h-3.5 w-3.5 text-primary shrink-0" />}
                         <h4 className="text-sm font-semibold text-foreground leading-snug">{t.cluster_name}</h4>
                         {done && <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400 shrink-0" />}
                       </div>
+                      {isEdgeTask && (
+                        <p className="text-[10px] text-primary font-medium mb-1">Builds your {edgeContext!.label} edge</p>
+                      )}
                       {t.description && <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2">{t.description}</p>}
                       {/* Skill pills */}
                       {(() => {
