@@ -16,6 +16,7 @@ const Settings = lazy(() => import("./pages/Settings.tsx"));
 const NotFound = lazy(() => import("./pages/NotFound.tsx"));
 const CardStyleMockup = lazy(() => import("./pages/CardStyleMockup.tsx"));
 const CompanyPage = lazy(() => import("./pages/CompanyPage.tsx"));
+const Journey = lazy(() => import("./pages/Journey.tsx"));
 
 // Admin (lazy)
 const HRLayout = lazy(() => import("./layouts/HRLayout.tsx"));
@@ -48,6 +49,7 @@ const App = () => (
               <Route path="/settings" element={<><Navbar /><Settings /><Footer /></>} />
               <Route path="/company/:slug" element={<><Navbar /><CompanyPage /><Footer /></>} />
               <Route path="/card-styles" element={<><Navbar /><CardStyleMockup /></>} />
+              <Route path="/journey" element={<Journey />} />
 
               {/* Redirects — old routes all go to feed */}
               <Route path="/practice" element={<Navigate to="/" replace />} />

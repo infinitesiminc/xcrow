@@ -4,7 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import logo from "@/assets/logo.png";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { User, Menu, X, Compass, Shield, Bookmark, ArrowRight, Clock } from "lucide-react";
+import { User, Menu, X, Compass, Shield, Bookmark, ArrowRight, Clock, Map } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 interface RecentActivity {
@@ -34,6 +34,9 @@ export default function Navbar() {
 
   const navItems = [
     { label: "Explore", path: "/", icon: Compass },
+    ...(user ? [
+      { label: "My Journey", path: "/journey", icon: Map },
+    ] : []),
     ...(isSuperAdmin ? [
       { label: "Admin", path: "/admin", icon: Shield },
     ] : []),

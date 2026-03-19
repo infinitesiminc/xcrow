@@ -26,7 +26,7 @@ import {
   Linkedin, Upload, FileText, GraduationCap, Briefcase, X, School,
   Shield, User, Lock, AlertOctagon, ArrowLeft, LogOut,
 } from "lucide-react";
-import JourneyDashboard from "@/components/settings/JourneyDashboard";
+
 
 /* ── helpers ─────────────────────────────────────────── */
 
@@ -53,7 +53,6 @@ interface PracticedRole {
 
 
 const NAV_ITEMS = [
-  { key: "roles", label: "My Journey", icon: Bookmark },
   { key: "profile", label: "Profile", icon: User },
   { key: "security", label: "Security", icon: Lock },
   { key: "danger", label: "Danger Zone", icon: AlertOctagon },
@@ -69,7 +68,7 @@ export default function Settings() {
   const [searchParams, setSearchParams] = useSearchParams();
   const { toast } = useToast();
 
-  const activeSection = (searchParams.get("section") as SectionKey) || "roles";
+  const activeSection = (searchParams.get("section") as SectionKey) || "profile";
   const setSection = (s: SectionKey) => setSearchParams({ section: s }, { replace: true });
 
   const [displayName, setDisplayName] = useState("");
@@ -328,14 +327,6 @@ export default function Settings() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.2 }}
           >
-            {activeSection === "roles" && (
-              <JourneyDashboard
-                practicedRoles={practicedRoles}
-                savedRoles={savedRoles}
-                loading={savedLoading || practicedLoading}
-              />
-            )}
-
             {activeSection === "profile" && (
               <ProfileSection
                 displayName={displayName} setDisplayName={setDisplayName}

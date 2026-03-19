@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Send, Loader2, RotateCcw, ChevronDown, ChevronUp, CheckCircle2, X, ArrowRight, Target, Circle, CircleCheck, AlertTriangle, TrendingUp, Trophy, Zap } from "lucide-react";
+import { Send, Loader2, RotateCcw, ChevronDown, ChevronUp, CheckCircle2, X, ArrowRight, Target, Circle, CircleCheck, AlertTriangle, TrendingUp, Trophy, Zap, Map } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -463,6 +464,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
   const scrollRef = useRef<HTMLDivElement>(null);
   const { user } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const taskMeta = { currentState: taskState, trend: taskTrend, impactLevel: taskImpactLevel };
 
@@ -677,6 +679,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
           domain_judgment_score: scores?.categories.find(c => c.name === "Domain Judgment")?.score ?? null,
         } as any);
         onCompleted?.();
+        toast({ title: "Nice work — your career map updated", description: "See how this shifts your journey →", action: <Button variant="link" className="text-xs p-0 h-auto" onClick={() => navigate("/journey")}>View</Button> });
       } catch (err) {
         console.error("Failed to save completion:", err);
       }
@@ -1107,6 +1110,15 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                       </Button>
                     ) : (
                       <Button onClick={onClose} className="rounded-xl w-full">Done</Button>
+                    )}
+                    {user && (
+                      <Button
+                        variant="secondary"
+                        onClick={() => { onClose(); navigate("/journey"); }}
+                        className="gap-2 rounded-xl w-full text-xs"
+                      >
+                        <Map className="h-3.5 w-3.5" /> View My Journey
+                      </Button>
                     )}
                     <div className="flex gap-2">
                       <Button variant="outline" onClick={startCompile} className="gap-2 rounded-xl flex-1 text-xs">
