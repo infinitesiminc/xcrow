@@ -11,6 +11,7 @@ import {
   Play, Target, ArrowRight, Zap, Sparkles, ShieldCheck, Lock,
 } from "lucide-react";
 import SkillMapGrid from "./SkillMapGrid";
+import CurriculumGapBanner from "./CurriculumGapBanner";
 import HumanEdgesSection from "./HumanEdgesSection";
 import {
   aggregateSkillXP,
