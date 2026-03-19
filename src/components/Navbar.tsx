@@ -231,18 +231,41 @@ export default function Navbar() {
             )}
 
             {user ? (
-              <Button
-                variant="ghost"
-                size="icon"
-                className="rounded-full"
-                onClick={() => navigate("/settings")}
-              >
-                <Avatar className="h-8 w-8">
-                  <AvatarFallback className="bg-primary text-primary-foreground text-xs font-semibold">
-                    {initials}
-                  </AvatarFallback>
-                </Avatar>
-              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon" className="rounded-full">
+                    <Avatar className="h-8 w-8">
+                      <AvatarFallback className="bg-primary text-primary-foreground text-xs font-semibold">
+                        {initials}
+                      </AvatarFallback>
+                    </Avatar>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-48">
+                  <div className="px-3 py-2">
+                    <p className="text-sm font-medium text-foreground truncate">
+                      {user.user_metadata?.display_name || user.email}
+                    </p>
+                    {user.user_metadata?.display_name && (
+                      <p className="text-xs text-muted-foreground truncate">{user.email}</p>
+                    )}
+                  </div>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => navigate("/settings")}>
+                    <Settings className="mr-2 h-4 w-4" />
+                    Settings
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate("/journey")}>
+                    <Map className="mr-2 h-4 w-4" />
+                    Skill Map
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={signOut} className="text-destructive focus:text-destructive">
+                    <LogOut className="mr-2 h-4 w-4" />
+                    Sign out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             ) : (
               <Button size="sm" onClick={openAuthModal} className="bg-primary hover:bg-primary/90 glow-purple">
                 <User className="mr-1.5 h-4 w-4" />
