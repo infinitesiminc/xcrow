@@ -5,6 +5,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import HomepageChat from "@/components/HomepageChat";
 import RolePreviewPanel from "@/components/RolePreviewPanel";
 import InlineRoleCarousel, { type RoleResult } from "@/components/InlineRoleCarousel";
+import SkillSuggestionCards from "@/components/SkillSuggestionCards";
 
 function getGreeting(): string {
   const hour = new Date().getHours();
@@ -14,7 +15,7 @@ function getGreeting(): string {
 }
 
 const Index = () => {
-  const { profile } = useAuth();
+  const { profile, user } = useAuth();
   const isMobile = useIsMobile();
 
   const [hasInteracted, setHasInteracted] = useState(false);
@@ -59,6 +60,7 @@ const Index = () => {
               </motion.div>
             )}
           </AnimatePresence>
+          {!hasInteracted && user && <SkillSuggestionCards />}
           <div className={`w-full max-w-lg ${hasInteracted ? "flex-1 flex flex-col min-h-0" : ""}`}>
             <HomepageChat
               onRolesFound={handleRolesFound}
@@ -115,6 +117,7 @@ const Index = () => {
             )}
           </AnimatePresence>
 
+          {!hasInteracted && user && <SkillSuggestionCards />}
           <div className={`w-full max-w-xl ${hasInteracted ? "flex-1 flex flex-col min-h-0" : ""}`}>
             <HomepageChat
               onRolesFound={handleRolesFound}
