@@ -5,8 +5,6 @@
  */
 import { motion } from "framer-motion";
 import { Sparkles, Brain, Heart, Shield, ArrowRight } from "lucide-react";
-import { useAuth } from "@/contexts/AuthContext";
-
 const EDGE_EXAMPLES = [
   {
     icon: Brain,
@@ -33,15 +31,6 @@ interface HumanEdgesCardProps {
 }
 
 export default function HumanEdgesCard({ onEdgeClick }: HumanEdgesCardProps) {
-  const { user, openAuthModal } = useAuth();
-
-  const handleClick = (prompt: string) => {
-    if (!user) {
-      openAuthModal();
-      return;
-    }
-    onEdgeClick?.(prompt);
-  };
 
   return (
     <motion.div
