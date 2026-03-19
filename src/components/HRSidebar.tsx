@@ -27,7 +27,7 @@ export function HRSidebar() {
       <SidebarContent className="pt-4">
         <SidebarGroup>
           <SidebarGroupLabel className="flex items-center gap-2">
-            {!collapsed && <span>Content Pipeline</span>}
+            {!collapsed && <span>Admin</span>}
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
