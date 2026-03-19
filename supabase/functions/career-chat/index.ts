@@ -242,6 +242,7 @@ serve(async (req) => {
           .from("jobs")
           .select("id, title, department, location, country, work_mode, seniority, augmented_percent, automation_risk_percent, source_url, companies(name, logo_url, website)")
           .or(orConditions)
+          .gt("augmented_percent", 0)
           .limit(poolSize);
         
         if (dbError) console.error("DB search error:", dbError);
