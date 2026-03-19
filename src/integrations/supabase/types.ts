@@ -920,45 +920,114 @@ export type Database = {
           },
         ]
       }
+      school_course_items: {
+        Row: {
+          competency_level: string | null
+          course_code: string | null
+          course_id: string
+          course_name: string
+          created_at: string | null
+          description: string | null
+          id: string
+          is_ai_related: boolean | null
+          school_id: string
+          skills: Json | null
+          tools: Json | null
+        }
+        Insert: {
+          competency_level?: string | null
+          course_code?: string | null
+          course_id: string
+          course_name: string
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_ai_related?: boolean | null
+          school_id: string
+          skills?: Json | null
+          tools?: Json | null
+        }
+        Update: {
+          competency_level?: string | null
+          course_code?: string | null
+          course_id?: string
+          course_name?: string
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_ai_related?: boolean | null
+          school_id?: string
+          skills?: Json | null
+          tools?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "school_course_items_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "school_courses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "school_course_items_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "school_accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       school_courses: {
         Row: {
+          ai_content_flag: boolean | null
           created_at: string
           curriculum_id: string
           degree_type: string | null
           department: string | null
           description: string | null
           id: string
+          industry_sectors: Json | null
+          learning_outcomes: Json | null
           program_name: string
           school_id: string
           skill_categories: Json | null
           skills_extracted: Json | null
           source_url: string | null
+          tools_taught: Json | null
         }
         Insert: {
+          ai_content_flag?: boolean | null
           created_at?: string
           curriculum_id: string
           degree_type?: string | null
           department?: string | null
           description?: string | null
           id?: string
+          industry_sectors?: Json | null
+          learning_outcomes?: Json | null
           program_name: string
           school_id: string
           skill_categories?: Json | null
           skills_extracted?: Json | null
           source_url?: string | null
+          tools_taught?: Json | null
         }
         Update: {
+          ai_content_flag?: boolean | null
           created_at?: string
           curriculum_id?: string
           degree_type?: string | null
           department?: string | null
           description?: string | null
           id?: string
+          industry_sectors?: Json | null
+          learning_outcomes?: Json | null
           program_name?: string
           school_id?: string
           skill_categories?: Json | null
           skills_extracted?: Json | null
           source_url?: string | null
+          tools_taught?: Json | null
         }
         Relationships: [
           {
