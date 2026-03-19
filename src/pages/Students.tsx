@@ -236,37 +236,37 @@ export default function Students() {
               <Zap className="h-5 w-5 text-brand-ai" />
               <span className="text-sm font-mono text-brand-ai tracking-widest uppercase">The AI Shift</span>
             </div>
-            <h2 className="text-3xl sm:text-4xl font-bold mb-4">AI is reshuffling the deck</h2>
+            <h2 className="text-3xl sm:text-4xl font-bold mb-4">AI is rewriting the skill stack</h2>
             <p className="text-muted-foreground max-w-xl mx-auto">
-              Some skills are being automated. New ones are emerging. The stack you graduate with
-              won't be the stack the market needs in two years.
+              New capabilities are emerging every quarter. The skills that land you a job in 2027
+              don't exist in most curricula today.
             </p>
           </motion.div>
 
-          {/* Before / After comparison */}
+          {/* Today / Tomorrow comparison */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 max-w-3xl mx-auto">
-            {/* Before */}
+            {/* Today */}
             <motion.div variants={fadeUp} custom={1} className="rounded-xl border border-border bg-card p-6">
-              <span className="text-xs font-mono text-muted-foreground tracking-widest uppercase mb-4 block">2023 Stack</span>
+              <span className="text-xs font-mono text-muted-foreground tracking-widest uppercase mb-4 block">What you're learning now</span>
               <div className="flex flex-col gap-1.5">
                 <SkillBlock label="Data Analysis" color="mid" small delay={2} />
                 <SkillBlock label="Programming" color="mid" small delay={3} />
                 <SkillBlock label="Communication" color="human" small delay={4} />
                 <SkillBlock label="Leadership" color="human" small delay={5} />
-                <SkillBlock label="Domain Judgment" color="human" small delay={6} />
+                <SkillBlock label="Domain Knowledge" color="human" small delay={6} />
               </div>
             </motion.div>
 
-            {/* After */}
+            {/* Tomorrow */}
             <motion.div variants={fadeUp} custom={2} className="rounded-xl border border-brand-ai/30 bg-card p-6 relative overflow-hidden">
               <div className="absolute inset-0 bg-gradient-to-b from-brand-ai/5 to-transparent pointer-events-none" />
-              <span className="text-xs font-mono text-brand-ai tracking-widest uppercase mb-4 block relative">2026 Stack</span>
+              <span className="text-xs font-mono text-brand-ai tracking-widest uppercase mb-4 block relative">What employers will need</span>
               <div className="flex flex-col gap-1.5 relative">
-                <SkillBlock label="AI / ML Tools" color="ai" small glow delay={3} />
+                <SkillBlock label="AI Agent Orchestration" color="ai" small glow delay={3} />
                 <SkillBlock label="Prompt Engineering" color="ai" small glow delay={4} />
-                <SkillBlock label="Data Analysis + AI" color="ai" small delay={5} />
+                <SkillBlock label="Human-AI Collaboration" color="ai" small delay={5} />
                 <SkillBlock label="Strategic Judgment" color="human" small delay={6} />
-                <SkillBlock label="Communication" color="human" small delay={7} />
+                <SkillBlock label="Cross-Functional Comm." color="human" small delay={7} />
                 <SkillBlock label="Adaptive Thinking" color="human" small glow delay={8} />
               </div>
             </motion.div>
@@ -274,7 +274,7 @@ export default function Students() {
 
           <motion.p variants={fadeUp} custom={9} className="text-center text-sm text-muted-foreground mt-8 max-w-lg mx-auto">
             The students who thrive won't be the ones with the most knowledge —
-            they'll be the ones who practiced the right skills.
+            they'll be the ones who practiced the skills the market is moving toward.
           </motion.p>
         </div>
       </Section>
