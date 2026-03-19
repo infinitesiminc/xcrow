@@ -80,7 +80,7 @@ function placeDots(jobs: JobMatchDot[], cx: number, cy: number, maxRadius: numbe
     // Golden angle distribution with slight randomness for visual variety
     const angle = i * golden + (i % 3) * 0.15;
     const zone = getZone(job.humanMatch, job.aiBoostMatch);
-    const dotR = zone === "ready" ? 5 : zone === "fast-track" ? 4.5 : 4;
+    const dotR = zone === "ready" ? 8 : zone === "fast-track" ? 7 : 6.5;
 
     return {
       x: cx + Math.cos(angle) * dist,
@@ -120,10 +120,10 @@ export default function CareerReachMap({ jobMatches, isEmpty }: CareerReachMapPr
   const [hovered, setHovered] = useState<PlacedDot | null>(null);
   const svgRef = useRef<SVGSVGElement>(null);
 
-  const SIZE = 420;
+  const SIZE = 520;
   const CX = SIZE / 2;
   const CY = SIZE / 2;
-  const MAX_R = SIZE / 2 - 24;
+  const MAX_R = SIZE / 2 - 28;
 
   const placed = useMemo(() => placeDots(jobMatches, CX, CY, MAX_R), [jobMatches, CX, CY, MAX_R]);
 
@@ -175,7 +175,7 @@ export default function CareerReachMap({ jobMatches, isEmpty }: CareerReachMapPr
         <svg
           ref={svgRef}
           viewBox={`0 0 ${SIZE} ${SIZE}`}
-          className="w-full max-w-[420px] mx-auto"
+          className="w-full max-w-[520px] mx-auto"
           style={{ aspectRatio: "1" }}
         >
           {/* Concentric rings */}
@@ -219,8 +219,8 @@ export default function CareerReachMap({ jobMatches, isEmpty }: CareerReachMapPr
           ))}
 
           {/* Center "YOU" marker */}
-          <circle cx={CX} cy={CY} r={8} fill="hsl(var(--foreground))" fillOpacity={0.9} />
-          <text x={CX} y={CY + 3} textAnchor="middle" fill="hsl(var(--background))" fontSize={6} fontWeight="bold">
+          <circle cx={CX} cy={CY} r={10} fill="hsl(var(--foreground))" fillOpacity={0.9} />
+          <text x={CX} y={CY + 3.5} textAnchor="middle" fill="hsl(var(--background))" fontSize={7} fontWeight="bold">
             YOU
           </text>
 
