@@ -94,7 +94,7 @@ const Index = () => {
               transition={{ type: "spring", damping: 25, stiffness: 300 }}
               className="fixed inset-0 z-50 bg-background"
             >
-              <RolePreviewPanel role={selectedRole} onClose={() => setSelectedRole(null)} />
+              <RolePreviewPanel role={selectedRole} onClose={() => setSelectedRole(null)} edgeContext={activeEdge} />
             </motion.div>
           )}
         </AnimatePresence>
