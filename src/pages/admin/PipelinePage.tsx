@@ -682,8 +682,11 @@ export default function PipelinePage() {
               <List className="h-3.5 w-3.5 text-primary" />
               <span className="text-xs font-semibold text-foreground">Companies</span>
             </div>
-            <p className="text-lg font-bold text-foreground">{stats.totalCompanies.toLocaleString()}</p>
-            <p className="text-[10px] text-muted-foreground">browse & analyze · {stats.totalAnalyzed.toLocaleString()} tasks analyzed</p>
+            <div className="flex items-baseline gap-2">
+              <p className="text-lg font-bold text-foreground">{stats.totalCompanies.toLocaleString()}</p>
+              <p className="text-xs font-semibold text-primary">{stats.totalAnalyzed.toLocaleString()} analyzed</p>
+            </div>
+            <p className="text-[10px] text-muted-foreground">browse & analyze · tasks analyzed across {stats.withJobs} companies</p>
           </button>
         </div>
       </div>
