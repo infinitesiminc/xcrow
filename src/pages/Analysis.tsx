@@ -78,8 +78,17 @@ const Analysis = () => {
   const jdText = jdMarker === "session" ? (sessionStorage.getItem("jd_text") || "") : jdMarker;
   const hasJd = !!(jdText || jdUrlParam);
 
-  const [result, setResult] = useState<JobAnalysisResult | null>(null);
-  const [loading, setLoading] = useState(true);
+  // Pre-resolve prebuilt roles synchronously to avoid any loading flash
+  const initialResult = useMemo(() => {
+    if (jobTitle && !hasJd) {
+      const prebuilt = findPrebuiltRole(jobTitle);
+      if (prebuilt) return { ...prebuilt, company };
+    }
+    return null;
+  }, [jobTitle, company, hasJd]);
+
+  const [result, setResult] = useState<JobAnalysisResult | null>(initialResult);
+  const [loading, setLoading] = useState(!initialResult);
   const [error, setError] = useState<string | null>(null);
   const [simTask, setSimTask] = useState<TaskAnalysis | null>(null);
   const [completedTasks, setCompletedTasks] = useState<Set<string>>(new Set());
@@ -161,17 +170,17 @@ const Analysis = () => {
 
   useEffect(() => {
     if (!jobTitle && !hasJd) { navigate("/"); return; }
+
+    // If we already resolved a prebuilt role synchronously, just save history
+    if (initialResult) {
+      saveAnalysisHistory(initialResult);
+      return;
+    }
+
     const analyze = async () => {
       setLoading(true); setError(null);
 
-      // 1. Check prebuilt roles (instant)
-      const prebuilt = jobTitle ? findPrebuiltRole(jobTitle) : null;
-      if (prebuilt && !hasJd) {
-        const r = { ...prebuilt, company };
-        setResult(r); saveAnalysisHistory(r); setLoading(false); return;
-      }
-
-      // 2. Check cached analyses (fast DB lookup)
+      // 1. Check cached analyses (fast DB lookup)
       if (jobTitle && !hasJd) {
         try {
           const { data: cached } = await supabase
@@ -187,7 +196,7 @@ const Analysis = () => {
         } catch (err) { console.error("Cache lookup failed:", err); }
       }
 
-      // 3. Fall back to AI analysis
+      // 2. Fall back to AI analysis
       try {
         const aiResult = await analyzeJobWithAI(jobTitle, company, jdText || undefined, jdUrlParam || undefined);
         setResult(aiResult); saveAnalysisHistory(aiResult);
@@ -195,7 +204,7 @@ const Analysis = () => {
       setLoading(false);
     };
     analyze();
-  }, [jobTitle, company, hasJd, navigate]);
+  }, [jobTitle, company, hasJd, navigate, initialResult]);
 
   const augmentedPercent = result?.summary?.augmentedPercent ?? 0;
   const riskPercent = result?.summary?.automationRiskPercent ?? 0;
