@@ -9,6 +9,7 @@ import SchoolOverview from "@/components/admin/school/SchoolOverview";
 import SchoolDataExtraction from "@/components/admin/school/SchoolDataExtraction";
 import SchoolSkillsGap from "@/components/admin/school/SchoolSkillsGap";
 import SchoolStudentsAdmin from "@/components/admin/school/SchoolStudentsAdmin";
+import StudentGapPreview from "@/components/admin/school/StudentGapPreview";
 
 interface SchoolData {
   id: string;
