@@ -53,7 +53,6 @@ interface PracticedRole {
 
 
 const NAV_ITEMS = [
-  { key: "roles", label: "My Journey", icon: Bookmark },
   { key: "profile", label: "Profile", icon: User },
   { key: "security", label: "Security", icon: Lock },
   { key: "danger", label: "Danger Zone", icon: AlertOctagon },
