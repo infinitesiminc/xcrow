@@ -218,9 +218,9 @@ function buildTaxonomy(practicedRoles: PracticedRoleData[], templates: DbJobTemp
   return result;
 }
 
-function computeJobMatches(skills: AggregatedSkill[]): JobMatchDot[] {
+function computeJobMatches(skills: AggregatedSkill[], templates: DbJobTemplate[]): JobMatchDot[] {
   const userSkillMap = new Map(skills.map(s => [s.id, s]));
-  return JOB_TEMPLATES.map(job => {
+  return templates.map(job => {
     const jobSkillIds = new Set<string>();
     for (const t of job.tasks) for (const id of matchTaskToSkills(t)) jobSkillIds.add(id);
     const allIds = Array.from(jobSkillIds);
