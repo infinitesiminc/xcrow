@@ -1,0 +1,352 @@
+/**
+ * /students — Marketing page targeting university students.
+ * Explains the brand thesis via the "Skill Stack" Lego-block metaphor:
+ *   Jobs → Tasks → Skills (transferable) → AI is shifting the stack.
+ */
+import { useRef } from "react";
+import { useNavigate } from "react-router-dom";
+import { motion, useInView } from "framer-motion";
+import { ArrowRight, Blocks, Brain, Sparkles, Target, TrendingUp, Zap } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useAuth } from "@/contexts/AuthContext";
+
+/* ─── Shared animation helpers ─── */
+const fadeUp = {
+  hidden: { opacity: 0, y: 24 },
+  visible: (d: number) => ({ opacity: 1, y: 0, transition: { delay: d * 0.12, duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] } }),
+};
+
+function Section({ children, className = "" }: { children: React.ReactNode; className?: string }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const inView = useInView(ref, { once: true, margin: "-60px" });
+  return (
+    <motion.section
+      ref={ref}
+      initial="hidden"
+      animate={inView ? "visible" : "hidden"}
+      className={`relative ${className}`}
+    >
+      {children}
+    </motion.section>
+  );
+}
+
+/* ─── Skill block component (the Lego brick) ─── */
+interface SkillBlockProps {
+  label: string;
+  color: "ai" | "human" | "mid";
+  className?: string;
+  small?: boolean;
+  glow?: boolean;
+  delay?: number;
+}
+
+function SkillBlock({ label, color, className = "", small, glow, delay = 0 }: SkillBlockProps) {
+  const bg = {
+    ai: "bg-brand-ai/90",
+    human: "bg-brand-human/90",
+    mid: "bg-brand-mid/90",
+  }[color];
+  const shadow = {
+    ai: "shadow-brand-ai/20",
+    human: "shadow-brand-human/20",
+    mid: "shadow-brand-mid/20",
+  }[color];
+
+  return (
+    <motion.div
+      variants={fadeUp}
+      custom={delay}
+      className={`
+        ${bg} rounded-lg flex items-center justify-center font-semibold text-white
+        ${small ? "h-10 text-xs px-3" : "h-12 sm:h-14 text-sm px-4"}
+        ${glow ? `shadow-lg ${shadow} ring-1 ring-white/20` : `shadow-md ${shadow}`}
+        ${className}
+      `}
+    >
+      {label}
+    </motion.div>
+  );
+}
+
+/* ─── Job stack (vertical column of blocks) ─── */
+function JobStack({ title, skills, delay = 0 }: {
+  title: string;
+  skills: { label: string; color: "ai" | "human" | "mid" }[];
+  delay?: number;
+}) {
+  return (
+    <div className="flex flex-col items-center gap-1.5 min-w-[140px] sm:min-w-[180px]">
+      <div className="flex flex-col-reverse gap-1.5 w-full">
+        {skills.map((s, i) => (
+          <SkillBlock key={s.label} {...s} delay={delay + i} />
+        ))}
+      </div>
+      <motion.span variants={fadeUp} custom={delay + skills.length} className="text-xs font-mono text-muted-foreground mt-2 tracking-wide">
+        {title}
+      </motion.span>
+    </div>
+  );
+}
+
+/* ─── Proof stat pill ─── */
+function Stat({ value, label, delay }: { value: string; label: string; delay: number }) {
+  return (
+    <motion.div variants={fadeUp} custom={delay} className="flex flex-col items-center gap-1">
+      <span className="text-2xl sm:text-3xl font-bold text-foreground">{value}</span>
+      <span className="text-xs text-muted-foreground font-mono tracking-wide">{label}</span>
+    </motion.div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════ */
+export default function Students() {
+  const navigate = useNavigate();
+  const { user, openAuthModal } = useAuth();
+
+  const handleGetStarted = () => {
+    if (user) navigate("/");
+    else openAuthModal?.();
+  };
+
+  return (
+    <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
+
+      {/* ═══ HERO ═══ */}
+      <Section className="pt-24 pb-20 px-6">
+        <div className="max-w-4xl mx-auto text-center">
+          <motion.div variants={fadeUp} custom={0} className="inline-flex items-center gap-2 rounded-full border border-brand-mid/30 bg-brand-mid/5 px-4 py-1.5 mb-6">
+            <Sparkles className="h-3.5 w-3.5 text-brand-mid" />
+            <span className="text-xs font-medium text-brand-mid">Built for the next generation of work</span>
+          </motion.div>
+
+          <motion.h1 variants={fadeUp} custom={1} className="text-4xl sm:text-5xl lg:text-6xl font-bold leading-[1.1] tracking-tight mb-6">
+            Your degree teaches you subjects.
+            <br />
+            <span className="text-brand-human">The job market</span> needs <span className="text-brand-ai">skills</span>.
+          </motion.h1>
+
+          <motion.p variants={fadeUp} custom={2} className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto mb-10 leading-relaxed">
+            Every job is a stack of skills — and AI is reshuffling which ones matter.
+            We help you see what's changing and practice what counts, before you graduate.
+          </motion.p>
+
+          <motion.div variants={fadeUp} custom={3} className="flex flex-col sm:flex-row items-center justify-center gap-3">
+            <Button size="lg" onClick={handleGetStarted} className="gap-2 text-base px-8">
+              Explore Your First Role <ArrowRight className="h-4 w-4" />
+            </Button>
+            <Button size="lg" variant="outline" onClick={() => document.getElementById("how-it-works")?.scrollIntoView({ behavior: "smooth" })} className="text-base px-8">
+              See How It Works
+            </Button>
+          </motion.div>
+        </div>
+      </Section>
+
+      {/* ═══ PROOF BAR ═══ */}
+      <Section className="py-10 border-y border-border/50">
+        <div className="max-w-3xl mx-auto flex items-center justify-around gap-6 px-6">
+          <Stat value="5,000+" label="ROLES MAPPED" delay={0} />
+          <Stat value="3,600+" label="COMPANIES" delay={1} />
+          <Stat value="10,000+" label="SIMULATIONS" delay={2} />
+          <Stat value="1M+" label="DATA POINTS" delay={3} />
+        </div>
+      </Section>
+
+      {/* ═══ THE THESIS — Skill Stack Diagram ═══ */}
+      <Section className="py-20 sm:py-28 px-6" >
+        <div id="how-it-works" className="max-w-5xl mx-auto">
+          <motion.div variants={fadeUp} custom={0} className="text-center mb-16">
+            <div className="inline-flex items-center gap-2 mb-4">
+              <Blocks className="h-5 w-5 text-brand-mid" />
+              <span className="text-sm font-mono text-muted-foreground tracking-widest uppercase">The Skill Stack</span>
+            </div>
+            <h2 className="text-3xl sm:text-4xl font-bold mb-4">Every job is made of the same building blocks</h2>
+            <p className="text-muted-foreground max-w-xl mx-auto">
+              Different roles share the same underlying skills — learn one, and you unlock many.
+            </p>
+          </motion.div>
+
+          {/* Three job stacks side by side */}
+          <div className="flex items-end justify-center gap-4 sm:gap-8 mb-8 overflow-x-auto pb-4">
+            <JobStack
+              title="Product Manager"
+              delay={1}
+              skills={[
+                { label: "Strategy", color: "human" },
+                { label: "Communication", color: "human" },
+                { label: "Data Analysis", color: "ai" },
+                { label: "Leadership", color: "human" },
+                { label: "Judgment", color: "human" },
+              ]}
+            />
+            <JobStack
+              title="Software Engineer"
+              delay={3}
+              skills={[
+                { label: "Programming", color: "ai" },
+                { label: "Data Analysis", color: "ai" },
+                { label: "Design & UX", color: "mid" },
+                { label: "Judgment", color: "human" },
+                { label: "Communication", color: "human" },
+              ]}
+            />
+            <JobStack
+              title="Data Scientist"
+              delay={5}
+              skills={[
+                { label: "Data Analysis", color: "ai" },
+                { label: "AI / ML Tools", color: "ai" },
+                { label: "Programming", color: "ai" },
+                { label: "Strategy", color: "human" },
+                { label: "Communication", color: "human" },
+              ]}
+            />
+          </div>
+
+          {/* Arrow annotation */}
+          <motion.div variants={fadeUp} custom={8} className="flex items-center justify-center gap-3 text-sm text-muted-foreground">
+            <div className="h-px w-12 bg-brand-human/40" />
+            <span>Same skills, different stacks</span>
+            <div className="h-px w-12 bg-brand-ai/40" />
+          </motion.div>
+
+          {/* Color legend */}
+          <motion.div variants={fadeUp} custom={9} className="flex items-center justify-center gap-6 mt-6">
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 rounded-sm bg-brand-human" />
+              <span className="text-xs text-muted-foreground">Human-dominant</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 rounded-sm bg-brand-mid" />
+              <span className="text-xs text-muted-foreground">Augmented</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 rounded-sm bg-brand-ai" />
+              <span className="text-xs text-muted-foreground">AI-exposed</span>
+            </div>
+          </motion.div>
+        </div>
+      </Section>
+
+      {/* ═══ AI IS SHIFTING THE STACK ═══ */}
+      <Section className="py-20 sm:py-28 px-6 bg-secondary/30">
+        <div className="max-w-4xl mx-auto">
+          <motion.div variants={fadeUp} custom={0} className="text-center mb-14">
+            <div className="inline-flex items-center gap-2 mb-4">
+              <Zap className="h-5 w-5 text-brand-ai" />
+              <span className="text-sm font-mono text-brand-ai tracking-widest uppercase">The AI Shift</span>
+            </div>
+            <h2 className="text-3xl sm:text-4xl font-bold mb-4">AI is reshuffling the deck</h2>
+            <p className="text-muted-foreground max-w-xl mx-auto">
+              Some skills are being automated. New ones are emerging. The stack you graduate with
+              won't be the stack the market needs in two years.
+            </p>
+          </motion.div>
+
+          {/* Before / After comparison */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 max-w-3xl mx-auto">
+            {/* Before */}
+            <motion.div variants={fadeUp} custom={1} className="rounded-xl border border-border bg-card p-6">
+              <span className="text-xs font-mono text-muted-foreground tracking-widest uppercase mb-4 block">2023 Stack</span>
+              <div className="flex flex-col gap-1.5">
+                <SkillBlock label="Data Analysis" color="mid" small delay={2} />
+                <SkillBlock label="Programming" color="mid" small delay={3} />
+                <SkillBlock label="Communication" color="human" small delay={4} />
+                <SkillBlock label="Leadership" color="human" small delay={5} />
+                <SkillBlock label="Domain Judgment" color="human" small delay={6} />
+              </div>
+            </motion.div>
+
+            {/* After */}
+            <motion.div variants={fadeUp} custom={2} className="rounded-xl border border-brand-ai/30 bg-card p-6 relative overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-b from-brand-ai/5 to-transparent pointer-events-none" />
+              <span className="text-xs font-mono text-brand-ai tracking-widest uppercase mb-4 block relative">2026 Stack</span>
+              <div className="flex flex-col gap-1.5 relative">
+                <SkillBlock label="AI / ML Tools" color="ai" small glow delay={3} />
+                <SkillBlock label="Prompt Engineering" color="ai" small glow delay={4} />
+                <SkillBlock label="Data Analysis + AI" color="ai" small delay={5} />
+                <SkillBlock label="Strategic Judgment" color="human" small delay={6} />
+                <SkillBlock label="Communication" color="human" small delay={7} />
+                <SkillBlock label="Adaptive Thinking" color="human" small glow delay={8} />
+              </div>
+            </motion.div>
+          </div>
+
+          <motion.p variants={fadeUp} custom={9} className="text-center text-sm text-muted-foreground mt-8 max-w-lg mx-auto">
+            The students who thrive won't be the ones with the most knowledge —
+            they'll be the ones who practiced the right skills.
+          </motion.p>
+        </div>
+      </Section>
+
+      {/* ═══ WHAT WE DO (3 pillars) ═══ */}
+      <Section className="py-20 sm:py-28 px-6">
+        <div className="max-w-5xl mx-auto">
+          <motion.div variants={fadeUp} custom={0} className="text-center mb-14">
+            <h2 className="text-3xl sm:text-4xl font-bold mb-4">How we prepare you</h2>
+            <p className="text-muted-foreground max-w-lg mx-auto">
+              Three steps from "what should I learn?" to "I'm ready."
+            </p>
+          </motion.div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {[
+              {
+                icon: Target,
+                title: "See What's Changing",
+                desc: "We break every role into its core tasks and score each one for AI exposure. See exactly which skills are growing, shrinking, or shifting.",
+                color: "text-brand-human",
+              },
+              {
+                icon: Brain,
+                title: "Practice What Counts",
+                desc: "AI-powered simulations let you practice real workplace tasks — not generic quizzes. Build the four pillars: Tool Awareness, Human Value-Add, Adaptive Thinking, Domain Judgment.",
+                color: "text-brand-mid",
+              },
+              {
+                icon: TrendingUp,
+                title: "Track Your Readiness",
+                desc: "Your skill profile maps which roles you're closest to and which skills unlock the most career paths. Every simulation moves you closer.",
+                color: "text-brand-ai",
+              },
+            ].map((pillar, i) => (
+              <motion.div
+                key={pillar.title}
+                variants={fadeUp}
+                custom={i + 1}
+                className="rounded-xl border border-border bg-card p-6 sm:p-8"
+              >
+                <pillar.icon className={`h-8 w-8 ${pillar.color} mb-4`} />
+                <h3 className="text-lg font-bold mb-2">{pillar.title}</h3>
+                <p className="text-sm text-muted-foreground leading-relaxed">{pillar.desc}</p>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </Section>
+
+      {/* ═══ FINAL CTA ═══ */}
+      <Section className="py-20 sm:py-28 px-6 bg-secondary/30">
+        <div className="max-w-3xl mx-auto text-center">
+          <motion.h2 variants={fadeUp} custom={0} className="text-3xl sm:text-4xl font-bold mb-4">
+            Don't chase job titles.
+            <br />
+            <span className="text-brand-human">Build</span> the <span className="text-brand-ai">skills</span>.
+          </motion.h2>
+          <motion.p variants={fadeUp} custom={1} className="text-muted-foreground mb-8 max-w-md mx-auto">
+            Start with any role you're curious about. We'll show you what it's really made of — and what to practice first.
+          </motion.p>
+          <motion.div variants={fadeUp} custom={2}>
+            <Button size="lg" onClick={handleGetStarted} className="gap-2 text-base px-10 h-12">
+              Get Started — Free <ArrowRight className="h-4 w-4" />
+            </Button>
+          </motion.div>
+          <motion.p variants={fadeUp} custom={3} className="text-xs text-muted-foreground mt-4">
+            No credit card required. Explore 5,000+ roles instantly.
+          </motion.p>
+        </div>
+      </Section>
+
+    </div>
+  );
+}
