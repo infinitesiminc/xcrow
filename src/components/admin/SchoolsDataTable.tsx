@@ -37,6 +37,7 @@ const PIPELINE_BADGE: Record<string, string> = {
 type SortKey = "name" | "enrollment" | "state" | "pipeline_stage";
 
 export default function SchoolsDataTable({ initialPipelineFilter }: { initialPipelineFilter?: string }) {
+  const navigate = useNavigate();
   const [schools, setSchools] = useState<SchoolRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
