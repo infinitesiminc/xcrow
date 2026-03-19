@@ -150,7 +150,7 @@ export default function Pricing() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.1 }}
-              className="relative rounded-2xl overflow-hidden"
+              className="relative rounded-2xl"
             >
               {/* Spectrum gradient top border */}
               <div className={`absolute top-0 inset-x-0 h-[3px] bg-gradient-to-r ${TIER_GRADIENTS[i]}`} />
