@@ -57,7 +57,7 @@ export default function HumanEdgesCard({ onEdgeClick }: HumanEdgesCardProps) {
         {EDGE_EXAMPLES.map(({ icon: Icon, label, desc, prompt }) => (
           <button
             key={label}
-            onClick={() => handleClick(prompt)}
+            onClick={() => onEdgeClick?.(prompt)}
             className="w-full flex items-center gap-3 rounded-xl bg-muted/20 px-3 py-2.5 text-left hover:bg-muted/40 hover:border-primary/20 transition-colors group"
           >
             <Icon className="h-4 w-4 text-primary shrink-0" />
