@@ -513,83 +513,52 @@ export default function RolePreviewPanel({ role, onClose }: RolePreviewPanelProp
     );
   }
 
-  // Details view (initial overview — role brief first, tasks behind a tap)
+  // Details view (task-first — compact header, tasks immediately visible)
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.2 }} className="h-full flex flex-col bg-card overflow-hidden">
-      {/* Header */}
-      <div className="p-4 pb-3 shrink-0" style={{ background: `linear-gradient(135deg, hsl(${hue1} 50% 10%) 0%, hsl(${hue2} 40% 8%) 100%)` }}>
-        <div className="flex items-start justify-between mb-3">
-          <div className="flex items-center gap-2.5 min-w-0 flex-1">
-            {logoUrl && (
-              <img src={logoUrl} alt="" className="h-10 w-10 rounded-lg object-contain bg-muted/20 p-0.5 shrink-0"
-                onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
-            )}
-            <div className="min-w-0">
-              <h2 className="text-base font-bold text-foreground leading-snug line-clamp-2">{role.title}</h2>
-              {role.company && <p className="text-sm text-muted-foreground truncate">{role.company}</p>}
+      {/* Compact header */}
+      <div className="px-3 py-2.5 shrink-0 border-b border-border/50" style={{ background: `linear-gradient(135deg, hsl(${hue1} 50% 10%) 0%, hsl(${hue2} 40% 8%) 100%)` }}>
+        <div className="flex items-center gap-2.5">
+          {logoUrl && (
+            <img src={logoUrl} alt="" className="h-7 w-7 rounded-md object-contain bg-muted/20 p-0.5 shrink-0"
+              onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
+          )}
+          <div className="min-w-0 flex-1">
+            <h2 className="text-sm font-bold text-foreground leading-snug truncate">{role.title}</h2>
+            <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
+              {role.company && <span>{role.company}</span>}
+              {role.location && <span className="flex items-center gap-0.5"><MapPin className="h-2.5 w-2.5" />{role.location}</span>}
+              {role.workMode && <span className="capitalize">{role.workMode}</span>}
             </div>
           </div>
-          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-muted/30 transition-colors shrink-0">
-            <X className="h-4 w-4 text-muted-foreground" />
-          </button>
-        </div>
-        <div className="flex items-center gap-3 text-xs text-muted-foreground flex-wrap">
-          {role.location && <span className="flex items-center gap-0.5"><MapPin className="h-3 w-3" />{role.location}</span>}
-          {role.workMode && <span className="capitalize">{role.workMode}</span>}
-          {role.seniority && <span className="capitalize">{role.seniority}</span>}
-          {sourceUrl && (
-            <a href={sourceUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-0.5 text-primary hover:underline">
-              <ExternalLink className="h-3 w-3" />Original posting
-            </a>
-          )}
+          <div className="flex items-center gap-1 shrink-0">
+            {sourceUrl && (
+              <a href={sourceUrl} target="_blank" rel="noopener noreferrer" className="p-1.5 rounded-lg hover:bg-muted/30 transition-colors" title="Original posting">
+                <ExternalLink className="h-3.5 w-3.5 text-primary" />
+              </a>
+            )}
+            <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-muted/30 transition-colors">
+              <X className="h-3.5 w-3.5 text-muted-foreground" />
+            </button>
+          </div>
         </div>
         {role.augmented > 0 && (
-          <div className="mt-3 flex items-center gap-2">
-            <div className="flex-1 h-1.5 rounded-full bg-muted/30 overflow-hidden">
+          <div className="mt-2 flex items-center gap-2">
+            <div className="flex-1 h-1 rounded-full bg-muted/30 overflow-hidden">
               <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${role.augmented}%` }} />
             </div>
-            <span className="text-xs font-semibold text-primary">{role.augmented}%</span>
-            <span className="text-[10px] text-muted-foreground uppercase tracking-wide">AI Augmented</span>
+            <span className="text-[11px] font-semibold text-primary">{role.augmented}%</span>
+            <span className="text-[10px] text-muted-foreground uppercase tracking-wide">AI</span>
           </div>
         )}
       </div>
 
-      {/* Content — Role Brief (no tasks here) */}
+      {/* Content — Tasks first */}
       <div className="flex-1 overflow-y-auto p-4 scrollbar-thin">
         {loading ? (
           <div className="flex items-center justify-center py-8"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></div>
         ) : (
           <>
-            {/* Role summary or tasks below */}
-
-            {/* Role summary */}
-            {summary ? (
-              <div className="mb-4">
-                <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">About this role</h3>
-                <div className="text-sm text-foreground/80 leading-relaxed prose prose-sm prose-invert max-w-none">
-                  <ReactMarkdown>{summary}</ReactMarkdown>
-                </div>
-              </div>
-            ) : !analyzing && tasks.length === 0 ? (
-              <div className="text-center py-6 space-y-3">
-                <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-primary/10 mx-auto">
-                  <Bot className="h-6 w-6 text-primary" />
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-foreground mb-1">No summary yet</p>
-                  <p className="text-xs text-muted-foreground leading-relaxed max-w-[220px] mx-auto">
-                    We can analyze this role right now.
-                  </p>
-                </div>
-                {role.jobId && (
-                  <Button size="sm" className="gap-2 rounded-xl"
-                    onClick={() => triggerAnalysis(role.jobId!, role.title, role.company || undefined, jobDescription || undefined)}>
-                    <Zap className="h-3.5 w-3.5" /> Analyze Now
-                  </Button>
-                )}
-              </div>
-            ) : null}
-
             {analyzing && (
               <div className="text-center py-6 space-y-3">
                 <motion.div animate={{ rotate: 360 }} transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
@@ -605,37 +574,59 @@ export default function RolePreviewPanel({ role, onClose }: RolePreviewPanelProp
               </div>
             )}
 
-            {/* Task preview teaser (shows count, not full list) */}
+            {/* Task pills — primary content */}
             {tasks.length > 0 && !analyzing && (
-              <div className="mt-2 rounded-xl border border-border/50 bg-muted/10 p-4">
-                <div className="flex items-center gap-3 mb-2">
-                  <div className="h-9 w-9 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-                    <Layers className="h-4 w-4 text-primary" />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <h4 className="text-sm font-semibold text-foreground">{tasks.length} tasks analyzed</h4>
-                    <p className="text-xs text-muted-foreground">See how AI impacts each responsibility</p>
-                  </div>
+              <div>
+                <div className="flex items-center gap-2 mb-3">
+                  <Layers className="h-4 w-4 text-primary" />
+                  <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{tasks.length} tasks analyzed</h4>
                 </div>
-                {/* Task pills — show more now that stats are gone */}
-                <div className="flex flex-wrap gap-1.5 mt-2">
-                  {tasks.slice(0, 6).map((t, i) => (
-                    <button
-                      key={i}
-                      onClick={() => { setFocusedTask(t); setView("task-detail"); }}
-                      className="text-[11px] px-2.5 py-1 rounded-full bg-muted/40 text-muted-foreground hover:bg-primary/15 hover:text-primary transition-colors cursor-pointer"
-                    >
-                      {t.cluster_name}
-                    </button>
-                  ))}
-                  {tasks.length > 6 && (
-                    <button
-                      onClick={() => setView("breakdown")}
-                      className="text-[11px] px-2.5 py-1 rounded-full bg-muted/40 text-muted-foreground hover:bg-primary/15 hover:text-primary transition-colors cursor-pointer"
-                    >
-                      +{tasks.length - 6} more
-                    </button>
-                  )}
+                <div className="flex flex-wrap gap-2">
+                  {tasks.map((t, i) => {
+                    const score = t.ai_exposure_score ?? 0;
+                    const style = taskChipStyle(score);
+                    return (
+                      <button
+                        key={i}
+                        onClick={() => { setFocusedTask(t); setView("task-detail"); }}
+                        className={`text-[12px] px-3 py-1.5 rounded-lg border transition-colors cursor-pointer hover:border-primary/40 ${style.badge}`}
+                      >
+                        {t.cluster_name}
+                        {score > 0 && <span className="ml-1.5 opacity-60">{score}%</span>}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* No tasks — offer analysis */}
+            {!analyzing && tasks.length === 0 && (
+              <div className="text-center py-6 space-y-3">
+                <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-primary/10 mx-auto">
+                  <Bot className="h-6 w-6 text-primary" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-foreground mb-1">No tasks analyzed yet</p>
+                  <p className="text-xs text-muted-foreground leading-relaxed max-w-[220px] mx-auto">
+                    We can analyze this role right now.
+                  </p>
+                </div>
+                {role.jobId && (
+                  <Button size="sm" className="gap-2 rounded-xl"
+                    onClick={() => triggerAnalysis(role.jobId!, role.title, role.company || undefined, jobDescription || undefined)}>
+                    <Zap className="h-3.5 w-3.5" /> Analyze Now
+                  </Button>
+                )}
+              </div>
+            )}
+
+            {/* Role summary — below tasks */}
+            {summary && (
+              <div className={tasks.length > 0 ? "mt-5 pt-4 border-t border-border/30" : "mb-4"}>
+                <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">About this role</h3>
+                <div className="text-sm text-foreground/80 leading-relaxed prose prose-sm prose-invert max-w-none">
+                  <ReactMarkdown>{summary}</ReactMarkdown>
                 </div>
               </div>
             )}
