@@ -42,6 +42,7 @@ interface Company {
   imported_at: string;
   job_count?: number;
   analyzed_count?: number;
+  task_cluster_count?: number;
   priority_score?: number;
 }
 
@@ -232,11 +233,13 @@ export default function PipelinePage() {
     // Get job counts + analyzed counts in a single DB call
     const jm = new Map<string, number>();
     const am = new Map<string, number>();
+    const tcm = new Map<string, number>();
     const { data: statsRows } = await supabase.rpc("get_company_stats");
     if (statsRows) {
       (statsRows as any[]).forEach((r: any) => {
         jm.set(r.company_id, Number(r.job_count));
         am.set(r.company_id, Number(r.analyzed_count));
+        tcm.set(r.company_id, Number(r.task_cluster_count || 0));
       });
     }
 
@@ -247,7 +250,7 @@ export default function PipelinePage() {
     });
 
     const scored = allCompanies.map(c => {
-      const withJobs = { ...c, job_count: jm.get(c.id) || 0, analyzed_count: am.get(c.id) || 0 };
+      const withJobs = { ...c, job_count: jm.get(c.id) || 0, analyzed_count: am.get(c.id) || 0, task_cluster_count: tcm.get(c.id) || 0 };
       return { ...withJobs, priority_score: computePriorityScore(withJobs, industryCounts, allCompanies.length) };
     });
     setCompanies(scored);
@@ -274,7 +277,7 @@ export default function PipelinePage() {
     const withJobs = companies.filter(c => (c.job_count || 0) > 0).length;
     const noJobs = companies.filter(c => (c.job_count || 0) === 0 && c.detected_ats_platform && c.detected_ats_platform !== "unknown").length;
     const totalJobs = companies.reduce((sum, c) => sum + (c.job_count || 0), 0);
-    const totalAnalyzed = companies.reduce((sum, c) => sum + (c.analyzed_count || 0), 0);
+    const totalAnalyzed = companies.reduce((sum, c) => sum + (c.task_cluster_count || 0), 0);
     const openFlags = flags.filter(f => f.status === "open").length;
     return { totalCompanies, withATS, withJobs, noJobs, totalJobs, totalAnalyzed, openFlags };
   }, [companies, flags]);
