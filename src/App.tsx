@@ -26,6 +26,7 @@ const HRLayout = lazy(() => import("./layouts/HRLayout.tsx"));
 const PipelinePage = lazy(() => import("./pages/admin/PipelinePage.tsx"));
 const TaskAnalyticsPage = lazy(() => import("./pages/admin/TaskAnalyticsPage.tsx"));
 const SchoolsPage = lazy(() => import("./pages/admin/SchoolsPage.tsx"));
+const SchoolDetailPage = lazy(() => import("./pages/admin/SchoolDetailPage.tsx"));
 
 // School admin (lazy)
 const SchoolLayout = lazy(() => import("./layouts/SchoolLayout.tsx"));
