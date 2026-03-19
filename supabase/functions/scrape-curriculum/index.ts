@@ -98,9 +98,9 @@ Deno.serve(async (req) => {
       },
       body: JSON.stringify({
         url: catalog_url,
-        formats: ["markdown"],
-        onlyMainContent: true,
-        waitFor: 3000,
+        formats: ["markdown", "links"],
+        onlyMainContent: false,
+        waitFor: 5000,
       }),
     });
 
@@ -120,8 +120,30 @@ Deno.serve(async (req) => {
       throw new Error("Listing page scrape failed");
     }
 
+    // Try parsing from markdown first, then fall back to links array
     const listingMarkdown = listingData.data?.markdown || listingData.markdown || "";
-    const programs = parseProgramLinks(listingMarkdown, catalog_url);
+    const rawLinks: string[] = listingData.data?.links || listingData.links || [];
+    
+    console.log(`Scrape returned markdown length: ${listingMarkdown.length}, raw links: ${rawLinks.length}`);
+    
+    let programs = parseProgramLinks(listingMarkdown, catalog_url);
+    
+    // If markdown parsing found nothing, build from raw links array
+    if (programs.length === 0 && rawLinks.length > 0) {
+      console.log("Markdown parsing found 0 programs, falling back to raw links array");
+      const programUrls = rawLinks.filter((url: string) =>
+        url.includes("preview_program")
+      );
+      programs = programUrls.map((url: string) => {
+        // Try to extract name from URL params or use generic name
+        const poidMatch = url.match(/poid=(\d+)/);
+        return {
+          name: `Program ${poidMatch?.[1] || "Unknown"}`,
+          degreeType: "Other",
+          url: url.split("#")[0],
+        };
+      }).filter((p, i, arr) => arr.findIndex((x) => x.url === p.url) === i);
+    }
 
     console.log(`Found ${programs.length} programs from listing page`);
     console.log("Sample programs:", programs.slice(0, 5).map((p) => `${p.name} (${p.degreeType})`));
