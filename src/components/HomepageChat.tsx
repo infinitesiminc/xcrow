@@ -26,6 +26,8 @@ export default function HomepageChat({
   hasInteracted,
   selectedJobId,
   inlineCards = true,
+  externalPrompt,
+  onExternalPromptConsumed,
 }: {
   onRolesFound?: (roles: RoleResult[]) => void;
   onRoleSelect: (role: RoleResult) => void;
@@ -33,6 +35,8 @@ export default function HomepageChat({
   hasInteracted: boolean;
   selectedJobId?: string;
   inlineCards?: boolean;
+  externalPrompt?: string | null;
+  onExternalPromptConsumed?: () => void;
 }) {
   const { toast } = useToast();
   const [items, setItems] = useState<ChatItem[]>([]);
@@ -57,6 +61,15 @@ export default function HomepageChat({
   useEffect(() => {
     resizeTextarea();
   }, [input, resizeTextarea]);
+
+  // Handle external prompt injection (e.g. from Human Edges card)
+  useEffect(() => {
+    if (externalPrompt) {
+      sendMessage(externalPrompt);
+      onExternalPromptConsumed?.();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [externalPrompt]);
 
   // Extract only text messages for the API
   const getApiMessages = (chatItems: ChatItem[]) =>

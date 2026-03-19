@@ -22,6 +22,7 @@ const Index = () => {
   const [hasInteracted, setHasInteracted] = useState(false);
   const [selectedRole, setSelectedRole] = useState<RoleResult | null>(null);
   const [allRoles, setAllRoles] = useState<RoleResult[]>([]);
+  const [externalPrompt, setExternalPrompt] = useState<string | null>(null);
 
   const handleChatStart = useCallback(() => {
     setHasInteracted(true);
@@ -33,6 +34,10 @@ const Index = () => {
 
   const handleRoleSelect = useCallback((role: RoleResult) => {
     setSelectedRole((prev) => (prev?.jobId === role.jobId ? null : role));
+  }, []);
+
+  const handleEdgeClick = useCallback((prompt: string) => {
+    setExternalPrompt(prompt);
   }, []);
 
   const greeting = getGreeting();
@@ -70,6 +75,8 @@ const Index = () => {
               hasInteracted={hasInteracted}
               selectedJobId={selectedRole?.jobId}
               inlineCards
+              externalPrompt={externalPrompt}
+              onExternalPromptConsumed={() => setExternalPrompt(null)}
             />
           </div>
         </div>
@@ -127,6 +134,8 @@ const Index = () => {
               hasInteracted={hasInteracted}
               selectedJobId={selectedRole?.jobId}
               inlineCards={false}
+              externalPrompt={externalPrompt}
+              onExternalPromptConsumed={() => setExternalPrompt(null)}
             />
           </div>
         </div>
@@ -153,7 +162,7 @@ const Index = () => {
                 ? "Ask about a role to see matching jobs here"
                 : "Roles will appear here as you explore"}
             </p>
-            {!hasInteracted && <HumanEdgesCard />}
+            {!hasInteracted && <HumanEdgesCard onEdgeClick={handleEdgeClick} />}
           </div>
         )}
 
