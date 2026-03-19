@@ -30,6 +30,7 @@ interface Company {
   logo_url: string | null;
   website: string | null;
   careers_url: string | null;
+  manual_careers_url: string | null;
   detected_ats_platform: string | null;
   employee_range: string | null;
   headquarters: string | null;
@@ -1408,19 +1409,21 @@ export default function PipelinePage() {
                       <span className="text-primary">{validAnalyzedCount} analyzed</span>
                       {selectedCompany.employee_range && <><span>·</span><span>{selectedCompany.employee_range}</span></>}
                     </div>
-                    {(selectedCompany.careers_url || selectedCompany.website) && (
+                    {(selectedCompany.careers_url || selectedCompany.manual_careers_url) && (
                       <div className="flex items-center gap-3 text-[10px] mt-0.5">
                         {selectedCompany.careers_url && (
-                          <a href={selectedCompany.careers_url} target="_blank" rel="noopener" className="inline-flex items-center gap-1 text-muted-foreground hover:text-foreground truncate max-w-[300px]">
+                          <a href={selectedCompany.careers_url} target="_blank" rel="noopener" className="inline-flex items-center gap-1 text-muted-foreground hover:text-foreground truncate max-w-[350px]">
                             <Briefcase className="h-2.5 w-2.5 shrink-0" />
+                            <span className="text-muted-foreground/60 shrink-0">ATS</span>
                             <span className="truncate">{selectedCompany.careers_url.replace(/^https?:\/\//, '')}</span>
                             <ExternalLink className="h-2 w-2 shrink-0" />
                           </a>
                         )}
-                        {selectedCompany.website && (
-                          <a href={selectedCompany.website} target="_blank" rel="noopener" className="inline-flex items-center gap-1 text-muted-foreground hover:text-foreground truncate max-w-[300px]">
+                        {selectedCompany.manual_careers_url && (
+                          <a href={selectedCompany.manual_careers_url} target="_blank" rel="noopener" className="inline-flex items-center gap-1 text-muted-foreground hover:text-foreground truncate max-w-[350px]">
                             <Globe className="h-2.5 w-2.5 shrink-0" />
-                            <span className="truncate">{selectedCompany.website.replace(/^https?:\/\//, '')}</span>
+                            <span className="text-muted-foreground/60 shrink-0">Careers</span>
+                            <span className="truncate">{selectedCompany.manual_careers_url.replace(/^https?:\/\//, '')}</span>
                             <ExternalLink className="h-2 w-2 shrink-0" />
                           </a>
                         )}

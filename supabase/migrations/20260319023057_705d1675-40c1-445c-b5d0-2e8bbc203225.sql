@@ -1,0 +1,1 @@
+ALTER TABLE public.companies ADD COLUMN manual_careers_url text;
