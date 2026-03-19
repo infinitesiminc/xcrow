@@ -18,6 +18,7 @@ const CardStyleMockup = lazy(() => import("./pages/CardStyleMockup.tsx"));
 const CompanyPage = lazy(() => import("./pages/CompanyPage.tsx"));
 const Journey = lazy(() => import("./pages/Journey.tsx"));
 const Students = lazy(() => import("./pages/Students.tsx"));
+const Leaderboard = lazy(() => import("./pages/Leaderboard.tsx"));
 
 // Admin (lazy)
 const HRLayout = lazy(() => import("./layouts/HRLayout.tsx"));
