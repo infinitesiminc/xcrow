@@ -182,6 +182,7 @@ export default function SchoolsDataTable({ initialPipelineFilter }: { initialPip
             <TableRow className="bg-muted/30">
               <TableHead className="cursor-pointer" onClick={() => toggleSort("name")}>Name <SortIcon col="name" /></TableHead>
               <TableHead>Short</TableHead>
+              <TableHead className="cursor-pointer" onClick={() => toggleSort("state")}>State <SortIcon col="state" /></TableHead>
               <TableHead>Carnegie</TableHead>
               <TableHead className="cursor-pointer text-right" onClick={() => toggleSort("enrollment")}>Enrollment <SortIcon col="enrollment" /></TableHead>
               <TableHead className="cursor-pointer" onClick={() => toggleSort("pipeline_stage")}>Pipeline <SortIcon col="pipeline_stage" /></TableHead>
