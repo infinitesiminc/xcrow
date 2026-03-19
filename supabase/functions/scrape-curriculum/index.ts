@@ -15,19 +15,14 @@ interface ProgramEntry {
 /** Parse program entries from the listing page markdown/HTML */
 function parseProgramLinks(markdown: string, baseUrl: string): ProgramEntry[] {
   const programs: ProgramEntry[] = [];
-  // Match links like [Accounting (BS)](https://catalogue.usc.edu/preview_program.php?catoid=21&poid=29561...)
   const linkRegex = /\[([^\]]+)\]\((https?:\/\/[^\s)]*preview_program[^\s)]*)\)/g;
   let match;
   while ((match = linkRegex.exec(markdown)) !== null) {
-    const rawName = match[1].replace(/\*$/, "").trim(); // remove trailing asterisk
-    const url = match[2].split("#")[0]; // remove fragment
-
-    // Extract degree type from parentheses: "Accounting (BS)" → BS
+    const rawName = match[1].replace(/\*$/, "").trim();
+    const url = match[2].split("#")[0];
     const degreeMatch = rawName.match(/\(([A-Z][A-Za-z]{1,5})\)\s*$/);
     const degreeType = degreeMatch ? degreeMatch[1] : "Other";
     const name = degreeMatch ? rawName.replace(/\s*\([A-Z][A-Za-z]{1,5}\)\s*$/, "").trim() : rawName;
-
-    // Deduplicate by URL
     if (!programs.some((p) => p.url === url)) {
       programs.push({ name, degreeType, url });
     }
@@ -45,6 +40,50 @@ async function safeFetch(url: string, options: RequestInit, timeoutMs = 30000): 
     clearTimeout(timer);
   }
 }
+
+/** AI extraction prompt for deep course-level analysis */
+const EXTRACTION_PROMPT = `You are a curriculum analyst. Given a university program page, extract DETAILED course-level data.
+
+Return ONLY valid JSON (no markdown fences) with this schema:
+{
+  "department": "string — school or college name",
+  "description": "string — 1-2 sentence summary of career outcomes",
+  "skills": ["array of 8-20 specific, job-relevant skills"],
+  "skill_categories": {
+    "technical": ["concrete technical skills"],
+    "analytical": ["analytical/quantitative skills"],
+    "communication": ["communication/writing skills"],
+    "leadership": ["management/leadership skills"],
+    "creative": ["creative/design skills"],
+    "domain_specific": ["field-specific professional competencies"]
+  },
+  "tools_taught": ["specific software, platforms, languages, frameworks mentioned (e.g. Python, Excel, Tableau, AutoCAD, SPSS, Figma, SQL)"],
+  "ai_content_flag": true/false,
+  "ai_topics": ["any AI/ML/automation/data science topics if present"],
+  "learning_outcomes": [
+    {"outcome": "verb-led competency statement", "level": "introductory|intermediate|advanced"}
+  ],
+  "industry_sectors": ["target industries this program prepares for (e.g. Healthcare, Finance, Technology)"],
+  "courses": [
+    {
+      "code": "course code if visible (e.g. ACCT 410)",
+      "name": "course title",
+      "description": "1 sentence summary if available",
+      "skills": ["2-5 skills this specific course teaches"],
+      "tools": ["specific tools/software if mentioned"],
+      "is_ai_related": true/false,
+      "level": "introductory|intermediate|advanced|capstone"
+    }
+  ]
+}
+
+IMPORTANT:
+- Extract EVERY individual course listed on the page
+- For tools_taught, only list specific named tools/technologies, not generic terms
+- Set ai_content_flag=true if ANY course covers AI, machine learning, automation, or data science
+- Learning outcomes should use action verbs (analyze, design, evaluate, implement)
+- Industry sectors should map to real job market categories
+- Focus on practical, job-relevant capabilities — not academic requirements`;
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -70,12 +109,14 @@ Deno.serve(async (req) => {
   const sb = createClient(supabaseUrl, serviceKey);
 
   try {
-    const { school_id, catalog_url } = await req.json();
+    const { school_id, catalog_url, max_programs } = await req.json();
     if (!school_id || !catalog_url) {
       return new Response(JSON.stringify({ error: "school_id and catalog_url are required" }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+
+    const programCap = max_programs || 10;
 
     // Create curriculum record
     const { data: curriculum, error: insertErr } = await sb
@@ -87,7 +128,7 @@ Deno.serve(async (req) => {
     if (insertErr) throw new Error(`Failed to create curriculum: ${insertErr.message}`);
     const curriculumId = curriculum.id;
 
-    // ─── Step 1: Scrape the listing page to discover all programs ───
+    // ─── Step 1: Scrape the listing page ───
     console.log("Step 1: Scraping listing page:", catalog_url);
 
     const listingRes = await safeFetch("https://api.firecrawl.dev/v1/scrape", {
@@ -108,7 +149,7 @@ Deno.serve(async (req) => {
     let listingData: any;
     try { listingData = JSON.parse(listingText); } catch {
       await sb.from("school_curricula").update({
-        status: "failed", error_message: `Listing page returned non-JSON`,
+        status: "failed", error_message: "Listing page returned non-JSON",
       }).eq("id", curriculumId);
       throw new Error("Listing page returned non-JSON");
     }
@@ -120,58 +161,43 @@ Deno.serve(async (req) => {
       throw new Error("Listing page scrape failed");
     }
 
-    // Try parsing from markdown first, then fall back to links array
     const listingMarkdown = listingData.data?.markdown || listingData.markdown || "";
     const rawLinks: string[] = listingData.data?.links || listingData.links || [];
-    
-    console.log(`Scrape returned markdown length: ${listingMarkdown.length}, raw links: ${rawLinks.length}`);
-    
+
     let programs = parseProgramLinks(listingMarkdown, catalog_url);
-    
-    // If markdown parsing found nothing, build from raw links array
+
+    // Fallback to raw links array
     if (programs.length === 0 && rawLinks.length > 0) {
-      console.log("Markdown parsing found 0 programs, falling back to raw links array");
-      const programUrls = rawLinks.filter((url: string) =>
-        url.includes("preview_program")
-      );
+      const programUrls = rawLinks.filter((url: string) => url.includes("preview_program"));
       programs = programUrls.map((url: string) => {
-        // Try to extract name from URL params or use generic name
         const poidMatch = url.match(/poid=(\d+)/);
-        return {
-          name: `Program ${poidMatch?.[1] || "Unknown"}`,
-          degreeType: "Other",
-          url: url.split("#")[0],
-        };
+        return { name: `Program ${poidMatch?.[1] || "Unknown"}`, degreeType: "Other", url: url.split("#")[0] };
       }).filter((p, i, arr) => arr.findIndex((x) => x.url === p.url) === i);
     }
 
-    // Cap to first 10 programs for testing
-    if (programs.length > 10) {
-      console.log(`Capping from ${programs.length} to 10 programs`);
-      programs = programs.slice(0, 10);
+    // Cap programs
+    if (programs.length > programCap) {
+      console.log(`Capping from ${programs.length} to ${programCap} programs`);
+      programs = programs.slice(0, programCap);
     }
     console.log(`Processing ${programs.length} programs`);
-    console.log("Sample programs:", programs.slice(0, 5).map((p) => `${p.name} (${p.degreeType})`));
 
     await sb.from("school_curricula").update({ programs_found: programs.length }).eq("id", curriculumId);
 
     if (programs.length === 0) {
       await sb.from("school_curricula").update({
-        status: "completed",
-        completed_at: new Date().toISOString(),
-        error_message: "No program links found on listing page. Try a more specific programs listing URL.",
+        status: "completed", completed_at: new Date().toISOString(),
+        error_message: "No program links found on listing page.",
       }).eq("id", curriculumId);
       return new Response(JSON.stringify({
-        curriculum_id: curriculumId,
-        programs_found: 0,
-        message: "No program links found",
+        curriculum_id: curriculumId, programs_found: 0, message: "No program links found",
       }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
-    // ─── Step 2: Scrape each program page + AI skill extraction ───
-    console.log("Step 2: Scraping program pages for skill extraction...");
+    // ─── Step 2: Scrape each program page + deep AI extraction ───
+    console.log("Step 2: Deep course-level extraction...");
     let programsParsed = 0;
-    const batchSize = 5;
+    const batchSize = 3; // smaller batches for deeper extraction
 
     for (let i = 0; i < programs.length; i += batchSize) {
       const batch = programs.slice(i, i + batchSize);
@@ -223,30 +249,10 @@ Deno.serve(async (req) => {
             body: JSON.stringify({
               model: "google/gemini-2.5-flash",
               messages: [
-                {
-                  role: "system",
-                  content: `You are a curriculum analyst. Given a university program overview, extract the key professional skills and competencies this program develops.
-
-Return ONLY valid JSON (no markdown fences) with this schema:
-{
-  "department": "string — school or college name",
-  "description": "string — 1-2 sentence summary of what this program prepares students for",
-  "skills": ["array of 5-15 specific, job-relevant skills this program teaches"],
-  "skill_categories": {
-    "technical": ["concrete technical skills"],
-    "analytical": ["analytical/quantitative skills"],
-    "communication": ["communication/writing skills"],
-    "leadership": ["management/leadership skills"],
-    "creative": ["creative/design skills"],
-    "domain_specific": ["field-specific professional competencies"]
-  }
-}
-
-Focus on practical, job-relevant capabilities — not course codes or academic requirements.`,
-                },
+                { role: "system", content: EXTRACTION_PROMPT },
                 {
                   role: "user",
-                  content: `Program: ${result.name} (${result.degreeType})\nURL: ${result.url}\n\n${result.markdown.slice(0, 5000)}`,
+                  content: `Program: ${result.name} (${result.degreeType})\nURL: ${result.url}\n\n${result.markdown.slice(0, 8000)}`,
                 },
               ],
               temperature: 0.1,
@@ -261,7 +267,7 @@ Focus on practical, job-relevant capabilities — not course codes or academic r
 
           let aiData: any;
           try { aiData = JSON.parse(aiText); } catch {
-            console.warn(`AI non-JSON for ${result.name}: ${aiText.slice(0, 200)}`);
+            console.warn(`AI non-JSON for ${result.name}`);
             continue;
           }
 
@@ -274,7 +280,8 @@ Focus on practical, job-relevant capabilities — not course codes or academic r
 
           const parsed = JSON.parse(jsonMatch[0]);
 
-          await sb.from("school_courses").insert({
+          // Insert enriched program record
+          const { data: courseRecord } = await sb.from("school_courses").insert({
             curriculum_id: curriculumId,
             school_id,
             program_name: result.name,
@@ -284,19 +291,44 @@ Focus on practical, job-relevant capabilities — not course codes or academic r
             description: parsed.description || result.markdown.slice(0, 500),
             skills_extracted: parsed.skills || [],
             skill_categories: parsed.skill_categories || {},
-          });
+            tools_taught: parsed.tools_taught || [],
+            ai_content_flag: parsed.ai_content_flag || false,
+            learning_outcomes: parsed.learning_outcomes || [],
+            industry_sectors: parsed.industry_sectors || [],
+          }).select("id").single();
+
+          // Insert individual course items
+          if (courseRecord && parsed.courses && Array.isArray(parsed.courses)) {
+            const courseItems = parsed.courses.map((c: any) => ({
+              course_id: courseRecord.id,
+              school_id,
+              course_code: c.code || null,
+              course_name: c.name,
+              description: c.description || null,
+              skills: c.skills || [],
+              tools: c.tools || [],
+              is_ai_related: c.is_ai_related || false,
+              competency_level: c.level || "introductory",
+            }));
+
+            if (courseItems.length > 0) {
+              const { error: itemsErr } = await sb.from("school_course_items").insert(courseItems);
+              if (itemsErr) console.warn(`Course items insert error for ${result.name}:`, itemsErr.message);
+              else console.log(`  → ${courseItems.length} individual courses stored`);
+            }
+          }
 
           programsParsed++;
           await sb.from("school_curricula").update({ programs_parsed: programsParsed }).eq("id", curriculumId);
-          console.log(`✓ [${programsParsed}/${programs.length}] ${result.name} (${result.degreeType})`);
+          console.log(`✓ [${programsParsed}/${programs.length}] ${result.name} (${result.degreeType}) — ${parsed.courses?.length || 0} courses, ${parsed.tools_taught?.length || 0} tools, AI: ${parsed.ai_content_flag}`);
         } catch (aiErr) {
           console.warn(`AI parsing failed for ${result.name}:`, aiErr);
         }
       }
 
-      // Rate limit pause between batches
+      // Rate limit pause
       if (i + batchSize < programs.length) {
-        await new Promise((r) => setTimeout(r, 1500));
+        await new Promise((r) => setTimeout(r, 2000));
       }
     }
 
