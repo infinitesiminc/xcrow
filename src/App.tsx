@@ -55,6 +55,7 @@ const App = () => (
               <Route path="/journey" element={<Journey />} />
               <Route path="/students" element={<><Navbar /><Students /><Footer /></>} />
               <Route path="/leaderboard" element={<Leaderboard />} />
+              <Route path="/pricing" element={<><Navbar /><Pricing /><Footer /></>} />
 
               {/* Redirects — old routes all go to feed */}
               <Route path="/practice" element={<Navigate to="/" replace />} />
