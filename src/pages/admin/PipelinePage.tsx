@@ -657,7 +657,7 @@ export default function PipelinePage() {
         </div>
 
         {/* Stage cards */}
-        <div className="grid grid-cols-4 gap-3">
+        <div className="grid grid-cols-3 gap-3">
           <button onClick={() => setActiveTab("discover")} className={`rounded-lg border p-3 text-left transition-all ${activeTab === "discover" ? "border-primary bg-primary/5" : "border-border hover:border-primary/30"}`}>
             <div className="flex items-center gap-2 mb-1">
               <Telescope className="h-3.5 w-3.5 text-primary" />
@@ -677,22 +677,13 @@ export default function PipelinePage() {
             <p className="text-[10px] text-muted-foreground">roles across {stats.withJobs} companies</p>
           </button>
 
-          <button onClick={() => setActiveTab("analyze")} className={`rounded-lg border p-3 text-left transition-all ${activeTab === "analyze" ? "border-primary bg-primary/5" : "border-border hover:border-primary/30"}`}>
-            <div className="flex items-center gap-2 mb-1">
-              <Brain className="h-3.5 w-3.5 text-primary" />
-              <span className="text-xs font-semibold text-foreground">Analyze</span>
-            </div>
-            <p className="text-lg font-bold text-foreground">{stats.withJobs}</p>
-            <p className="text-[10px] text-muted-foreground">companies with roles ready</p>
-          </button>
-
           <button onClick={() => setActiveTab("companies")} className={`rounded-lg border p-3 text-left transition-all ${activeTab === "companies" ? "border-primary bg-primary/5" : "border-border hover:border-primary/30"}`}>
             <div className="flex items-center gap-2 mb-1">
               <List className="h-3.5 w-3.5 text-primary" />
               <span className="text-xs font-semibold text-foreground">Companies</span>
             </div>
             <p className="text-lg font-bold text-foreground">{stats.totalCompanies.toLocaleString()}</p>
-            <p className="text-[10px] text-muted-foreground">browse full library</p>
+            <p className="text-[10px] text-muted-foreground">browse & analyze · {stats.withJobs} with roles</p>
           </button>
         </div>
       </div>
