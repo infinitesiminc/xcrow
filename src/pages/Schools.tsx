@@ -1,6 +1,7 @@
 /**
  * /schools — B2B university landing page targeting deans & provosts.
  * Key hook: "Free Curriculum Audit" showing gap between catalog and market demand.
+ * Visual vibe: gamified dark-mode with spectrum gradient borders, neon accents.
  */
 import { useRef } from "react";
 import { useNavigate } from "react-router-dom";
@@ -66,30 +67,33 @@ const STEPS = [
     icon: Search,
     title: "We scan your catalog",
     desc: "Point us at your course catalog URL. Our AI parses every program, course, and learning outcome — no LMS integration needed.",
-    color: "text-brand-human",
+    color: "text-spectrum-0",
+    gradient: "from-spectrum-0 via-spectrum-1 to-spectrum-2",
   },
   {
     icon: BarChart3,
     title: "Map to market demand",
     desc: "We cross-reference your curriculum against 1M+ real job task clusters to calculate coverage, gaps, and AI readiness scores.",
-    color: "text-brand-mid",
+    color: "text-spectrum-3",
+    gradient: "from-spectrum-3 via-spectrum-4 to-spectrum-5",
   },
   {
     icon: Zap,
     title: "Close the gaps with simulations",
     desc: "For every gap we find, students get targeted AI simulations that build the exact skills employers are hiring for.",
-    color: "text-brand-ai",
+    color: "text-spectrum-6",
+    gradient: "from-spectrum-6 via-spectrum-5 to-spectrum-4",
   },
 ];
 
 /* ─── Feature Grid Items ─── */
 const FEATURES = [
-  { icon: BookOpen, title: "Curriculum Gap Analysis", desc: "Program-by-program breakdown of skill coverage vs. market demand." },
-  { icon: Brain, title: "AI Simulation Library", desc: "10,000+ simulations mapped to your courses and learning outcomes." },
-  { icon: LayoutDashboard, title: "Admin Dashboard", desc: "Cohort analytics, engagement tracking, and accreditation-ready reports." },
-  { icon: Users, title: "Bulk Provisioning", desc: "Domain auto-enroll, CSV import, or SSO — seat students in minutes." },
-  { icon: GraduationCap, title: "Student Skill Maps", desc: "Every student gets a visual profile of their AI-readiness across 4 pillars." },
-  { icon: BarChart3, title: "XP Leaderboard", desc: "Gamified engagement that drives practice and healthy competition." },
+  { icon: BookOpen, title: "Curriculum Gap Analysis", desc: "Program-by-program breakdown of skill coverage vs. market demand.", gradient: "from-spectrum-0 to-spectrum-1" },
+  { icon: Brain, title: "AI Simulation Library", desc: "10,000+ simulations mapped to your courses and learning outcomes.", gradient: "from-spectrum-6 to-spectrum-5" },
+  { icon: LayoutDashboard, title: "Admin Dashboard", desc: "Cohort analytics, engagement tracking, and accreditation-ready reports.", gradient: "from-spectrum-3 to-spectrum-4" },
+  { icon: Users, title: "Bulk Provisioning", desc: "Domain auto-enroll, CSV import, or SSO — seat students in minutes.", gradient: "from-spectrum-1 to-spectrum-2" },
+  { icon: GraduationCap, title: "Student Skill Maps", desc: "Every student gets a visual profile of their AI-readiness across 4 pillars.", gradient: "from-spectrum-4 to-spectrum-5" },
+  { icon: BarChart3, title: "XP Leaderboard", desc: "Gamified engagement that drives practice and healthy competition.", gradient: "from-spectrum-5 to-spectrum-6" },
 ];
 
 export default function Schools() {
@@ -100,18 +104,20 @@ export default function Schools() {
       <Navbar />
       <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
         {/* ═══ HERO ═══ */}
-        <Section className="pt-28 pb-20 px-6">
-          <div className="max-w-4xl mx-auto text-center">
-            <motion.div variants={fadeUp} custom={0} className="inline-flex items-center gap-2 rounded-full border border-brand-mid/30 bg-brand-mid/5 px-4 py-1.5 mb-6">
-              <GraduationCap className="h-3.5 w-3.5 text-brand-mid" />
-              <span className="text-xs font-medium text-brand-mid">For Universities & Colleges</span>
+        <Section className="pt-28 pb-20 px-6 relative">
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[400px] bg-primary/8 rounded-full blur-[120px] pointer-events-none" />
+
+          <div className="max-w-4xl mx-auto text-center relative">
+            <motion.div variants={fadeUp} custom={0} className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-4 py-1.5 mb-6 glow-purple">
+              <GraduationCap className="h-3.5 w-3.5 text-primary" />
+              <span className="text-xs font-medium text-primary">For Universities & Colleges</span>
             </motion.div>
 
             <motion.h1 variants={fadeUp} custom={1} className="text-4xl sm:text-5xl lg:text-6xl font-bold font-display leading-[1.08] tracking-tight mb-6">
               Your curriculum was designed
               <br />
               before GPT.{" "}
-              <span className="bg-gradient-to-r from-brand-human to-brand-mid bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-brand-human to-brand-ai bg-clip-text text-transparent">
                 Your students weren't.
               </span>
             </motion.h1>
@@ -129,10 +135,10 @@ export default function Schools() {
             </motion.div>
 
             <motion.div variants={fadeUp} custom={4} className="flex flex-col sm:flex-row items-center justify-center gap-3">
-              <Button size="lg" onClick={() => navigate("/contact")} className="gap-2 text-base px-8 h-12">
+              <Button size="lg" onClick={() => navigate("/contact")} className="gap-2 text-base px-8 h-12 glow-purple">
                 Get a Free Curriculum Audit <ArrowRight className="h-4 w-4" />
               </Button>
-              <Button size="lg" variant="outline" onClick={() => document.getElementById("how-it-works")?.scrollIntoView({ behavior: "smooth" })} className="text-base px-8 h-12">
+              <Button size="lg" variant="outline" onClick={() => document.getElementById("how-it-works")?.scrollIntoView({ behavior: "smooth" })} className="text-base px-8 h-12 border-border/60">
                 See How It Works
               </Button>
             </motion.div>
@@ -140,7 +146,7 @@ export default function Schools() {
         </Section>
 
         {/* ═══ THE PROBLEM ═══ */}
-        <Section className="py-20 sm:py-28 px-6 bg-secondary/30">
+        <Section className="py-20 sm:py-28 px-6">
           <div className="max-w-4xl mx-auto text-center">
             <motion.div variants={fadeUp} custom={0} className="inline-flex items-center gap-2 mb-4">
               <span className="text-sm font-mono text-muted-foreground tracking-widest uppercase">The Problem</span>
@@ -151,13 +157,16 @@ export default function Schools() {
             </motion.h2>
             <motion.div variants={fadeUp} custom={2} className="grid grid-cols-1 sm:grid-cols-3 gap-6 mt-12">
               {[
-                { value: "Monthly", label: "AI capabilities evolve", color: "text-brand-ai" },
-                { value: "Yearly", label: "Curricula update", color: "text-brand-mid" },
-                { value: "Decades", label: "Careers span", color: "text-brand-human" },
+                { value: "Monthly", label: "AI capabilities evolve", color: "text-spectrum-6", gradient: "from-spectrum-6 to-spectrum-5" },
+                { value: "Yearly", label: "Curricula update", color: "text-spectrum-4", gradient: "from-spectrum-4 to-spectrum-3" },
+                { value: "Decades", label: "Careers span", color: "text-spectrum-0", gradient: "from-spectrum-0 to-spectrum-1" },
               ].map((item, i) => (
-                <motion.div key={item.label} variants={fadeUp} custom={i + 3} className="rounded-xl border border-border bg-card p-6">
-                  <span className={`text-3xl sm:text-4xl font-bold font-display ${item.color}`}>{item.value}</span>
-                  <p className="text-sm text-muted-foreground mt-2">{item.label}</p>
+                <motion.div key={item.label} variants={fadeUp} custom={i + 3} className="relative rounded-xl overflow-hidden">
+                  <div className={`absolute top-0 inset-x-0 h-[3px] bg-gradient-to-r ${item.gradient}`} />
+                  <div className="border border-border/60 bg-card/80 backdrop-blur-sm rounded-xl p-6">
+                    <span className={`text-3xl sm:text-4xl font-bold font-display ${item.color}`}>{item.value}</span>
+                    <p className="text-sm text-muted-foreground mt-2">{item.label}</p>
+                  </div>
                 </motion.div>
               ))}
             </motion.div>
@@ -179,13 +188,18 @@ export default function Schools() {
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {STEPS.map((step, i) => (
-                <motion.div key={step.title} variants={fadeUp} custom={i + 1} className="rounded-xl border border-border bg-card p-6 sm:p-8 relative">
-                  <div className="absolute -top-3 -left-3 w-8 h-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-sm font-bold">
-                    {i + 1}
+                <motion.div key={step.title} variants={fadeUp} custom={i + 1} className="relative rounded-xl overflow-hidden">
+                  <div className={`absolute top-0 inset-x-0 h-[3px] bg-gradient-to-r ${step.gradient}`} />
+                  <div className="border border-border/60 bg-card/80 backdrop-blur-sm rounded-xl p-6 sm:p-8 relative h-full">
+                    <div className="absolute -top-3 -left-3 w-8 h-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-sm font-bold shadow-lg shadow-primary/30">
+                      {i + 1}
+                    </div>
+                    <div className="h-10 w-10 rounded-xl bg-card border border-border/60 flex items-center justify-center mb-4 mt-2">
+                      <step.icon className={`h-5 w-5 ${step.color}`} />
+                    </div>
+                    <h3 className="text-lg font-bold mb-2">{step.title}</h3>
+                    <p className="text-sm text-muted-foreground leading-relaxed">{step.desc}</p>
                   </div>
-                  <step.icon className={`h-8 w-8 ${step.color} mb-4`} />
-                  <h3 className="text-lg font-bold mb-2">{step.title}</h3>
-                  <p className="text-sm text-muted-foreground leading-relaxed">{step.desc}</p>
                 </motion.div>
               ))}
             </div>
@@ -193,7 +207,7 @@ export default function Schools() {
         </Section>
 
         {/* ═══ LIVE GAP PREVIEW ═══ */}
-        <Section className="py-20 sm:py-28 px-6 bg-secondary/30">
+        <Section className="py-20 sm:py-28 px-6">
           <div className="max-w-5xl mx-auto">
             <motion.div variants={fadeUp} custom={0} className="text-center mb-12">
               <span className="text-sm font-mono text-muted-foreground tracking-widest uppercase">Live Preview</span>
@@ -203,59 +217,60 @@ export default function Schools() {
               </p>
             </motion.div>
 
-            <motion.div variants={fadeUp} custom={1} className="rounded-2xl border border-border bg-card p-6 sm:p-8 max-w-3xl mx-auto">
-              {/* Mock header */}
-              <div className="flex items-center justify-between mb-6">
-                <div>
-                  <h3 className="text-lg font-bold">Sample University — CS Department</h3>
-                  <p className="text-sm text-muted-foreground">42 courses analyzed · 1,280 task clusters mapped</p>
-                </div>
-                <div className="flex items-center gap-4">
-                  <div className="text-center">
-                    <span className="text-2xl font-bold text-brand-ai">38%</span>
-                    <p className="text-[10px] text-muted-foreground font-mono">COVERAGE</p>
+            <motion.div variants={fadeUp} custom={1} className="relative rounded-2xl overflow-hidden max-w-3xl mx-auto">
+              <div className="absolute top-0 inset-x-0 h-[3px] bg-gradient-to-r from-spectrum-6 via-spectrum-3 to-spectrum-0" />
+              <div className="border border-border/60 bg-card/80 backdrop-blur-sm rounded-2xl p-6 sm:p-8">
+                {/* Mock header */}
+                <div className="flex items-center justify-between mb-6">
+                  <div>
+                    <h3 className="text-lg font-bold">Sample University — CS Department</h3>
+                    <p className="text-sm text-muted-foreground">42 courses analyzed · 1,280 task clusters mapped</p>
                   </div>
-                  <div className="text-center">
-                    <span className="text-2xl font-bold text-warning">72%</span>
-                    <p className="text-[10px] text-muted-foreground font-mono">AI READINESS</p>
+                  <div className="flex items-center gap-4">
+                    <div className="text-center">
+                      <span className="text-2xl font-bold text-spectrum-6">38%</span>
+                      <p className="text-[10px] text-muted-foreground font-mono">COVERAGE</p>
+                    </div>
+                    <div className="text-center">
+                      <span className="text-2xl font-bold text-spectrum-4">72%</span>
+                      <p className="text-[10px] text-muted-foreground font-mono">AI READINESS</p>
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              {/* Gap list */}
-              <div className="space-y-2">
-                {MOCK_GAPS.map((gap, i) => (
-                  <motion.div
-                    key={gap.skill}
-                    variants={fadeUp}
-                    custom={i + 2}
-                    className="flex items-center justify-between py-2.5 px-3 rounded-lg bg-secondary/50"
-                  >
-                    <div className="flex items-center gap-3">
-                      {gap.coverage ? (
-                        <CheckCircle2 className="h-4 w-4 text-success shrink-0" />
-                      ) : (
-                        <div className="h-4 w-4 rounded-full border-2 border-brand-ai/40 shrink-0" />
-                      )}
-                      <span className={`text-sm font-medium ${gap.coverage ? "text-foreground" : "text-foreground"}`}>
-                        {gap.skill}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <span className="text-xs text-muted-foreground font-mono">{gap.demand.toLocaleString()} tasks</span>
-                      {!gap.coverage && (
-                        <span className="text-[10px] font-medium text-brand-ai bg-brand-ai/10 px-2 py-0.5 rounded-full">GAP</span>
-                      )}
-                    </div>
-                  </motion.div>
-                ))}
-              </div>
+                {/* Gap list */}
+                <div className="space-y-2">
+                  {MOCK_GAPS.map((gap, i) => (
+                    <motion.div
+                      key={gap.skill}
+                      variants={fadeUp}
+                      custom={i + 2}
+                      className="flex items-center justify-between py-2.5 px-3 rounded-lg bg-secondary/50 border border-border/30"
+                    >
+                      <div className="flex items-center gap-3">
+                        {gap.coverage ? (
+                          <CheckCircle2 className="h-4 w-4 text-spectrum-2 shrink-0" />
+                        ) : (
+                          <div className="h-4 w-4 rounded-full border-2 border-spectrum-6/40 shrink-0" />
+                        )}
+                        <span className="text-sm font-medium">{gap.skill}</span>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <span className="text-xs text-muted-foreground font-mono">{gap.demand.toLocaleString()} tasks</span>
+                        {!gap.coverage && (
+                          <span className="text-[10px] font-medium text-spectrum-6 bg-spectrum-6/10 px-2 py-0.5 rounded-full border border-spectrum-6/20">GAP</span>
+                        )}
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
 
-              <div className="mt-6 pt-4 border-t border-border flex items-center justify-between">
-                <p className="text-xs text-muted-foreground">5 of 8 high-demand skills missing from your catalog</p>
-                <Button size="sm" variant="outline" onClick={() => navigate("/contact")} className="text-xs">
-                  Get your full report <ArrowRight className="h-3 w-3 ml-1" />
-                </Button>
+                <div className="mt-6 pt-4 border-t border-border/50 flex items-center justify-between">
+                  <p className="text-xs text-muted-foreground">5 of 8 high-demand skills missing from your catalog</p>
+                  <Button size="sm" variant="outline" onClick={() => navigate("/contact")} className="text-xs border-border/60">
+                    Get your full report <ArrowRight className="h-3 w-3 ml-1" />
+                  </Button>
+                </div>
               </div>
             </motion.div>
           </div>
@@ -273,10 +288,15 @@ export default function Schools() {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {FEATURES.map((feat, i) => (
-                <motion.div key={feat.title} variants={fadeUp} custom={i + 1} className="rounded-xl border border-border bg-card p-6">
-                  <feat.icon className="h-7 w-7 text-primary mb-3" />
-                  <h3 className="font-bold mb-1">{feat.title}</h3>
-                  <p className="text-sm text-muted-foreground leading-relaxed">{feat.desc}</p>
+                <motion.div key={feat.title} variants={fadeUp} custom={i + 1} className="relative rounded-xl overflow-hidden group">
+                  <div className={`absolute top-0 inset-x-0 h-[3px] bg-gradient-to-r ${feat.gradient} opacity-70 group-hover:opacity-100 transition-opacity`} />
+                  <div className="border border-border/60 bg-card/80 backdrop-blur-sm rounded-xl p-6 h-full">
+                    <div className="h-9 w-9 rounded-xl bg-card border border-border/60 flex items-center justify-center mb-3">
+                      <feat.icon className="h-5 w-5 text-primary" />
+                    </div>
+                    <h3 className="font-bold mb-1">{feat.title}</h3>
+                    <p className="text-sm text-muted-foreground leading-relaxed">{feat.desc}</p>
+                  </div>
                 </motion.div>
               ))}
             </div>
@@ -284,7 +304,7 @@ export default function Schools() {
         </Section>
 
         {/* ═══ SOCIAL PROOF ═══ */}
-        <Section className="py-16 px-6 bg-secondary/30">
+        <Section className="py-16 px-6">
           <div className="max-w-5xl mx-auto">
             <motion.div variants={fadeUp} custom={0} className="text-center mb-8">
               <p className="text-sm font-mono text-muted-foreground tracking-widest uppercase">
@@ -293,23 +313,27 @@ export default function Schools() {
             </motion.div>
             <CompanyMarquee rows={SCHOOL_LOGOS} />
 
-            {/* Testimonial placeholder */}
-            <motion.blockquote variants={fadeUp} custom={1} className="max-w-2xl mx-auto mt-12 text-center">
-              <p className="text-lg sm:text-xl italic text-foreground/80 leading-relaxed">
-                "We discovered that 62% of the skills employers want from our CS graduates weren't
-                being taught in any course. crowy.ai showed us exactly where — and gave students
-                a way to practice immediately."
-              </p>
-              <footer className="mt-4 text-sm text-muted-foreground">
-                — Department Chair, R1 University (pilot participant)
-              </footer>
-            </motion.blockquote>
+            {/* Testimonial */}
+            <motion.div variants={fadeUp} custom={1} className="relative rounded-2xl overflow-hidden max-w-2xl mx-auto mt-12">
+              <div className="absolute top-0 inset-x-0 h-[3px] bg-gradient-to-r from-spectrum-3 via-spectrum-0 to-spectrum-1" />
+              <blockquote className="border border-border/60 bg-card/80 backdrop-blur-sm rounded-2xl p-8 text-center">
+                <p className="text-lg sm:text-xl italic text-foreground/80 leading-relaxed">
+                  "We discovered that 62% of the skills employers want from our CS graduates weren't
+                  being taught in any course. crowy.ai showed us exactly where — and gave students
+                  a way to practice immediately."
+                </p>
+                <footer className="mt-4 text-sm text-muted-foreground">
+                  — Department Chair, R1 University (pilot participant)
+                </footer>
+              </blockquote>
+            </motion.div>
           </div>
         </Section>
 
         {/* ═══ FINAL CTA ═══ */}
-        <Section className="py-20 sm:py-28 px-6">
-          <div className="max-w-3xl mx-auto text-center">
+        <Section className="py-20 sm:py-28 px-6 relative">
+          <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[500px] h-[300px] bg-primary/6 rounded-full blur-[100px] pointer-events-none" />
+          <div className="max-w-3xl mx-auto text-center relative">
             <motion.h2 variants={fadeUp} custom={0} className="text-3xl sm:text-4xl font-bold mb-4">
               Your students are already falling behind.
               <br />
@@ -320,7 +344,7 @@ export default function Schools() {
               skills gap report within 48 hours.
             </motion.p>
             <motion.div variants={fadeUp} custom={2}>
-              <Button size="lg" onClick={() => navigate("/contact")} className="gap-2 text-base px-10 h-12">
+              <Button size="lg" onClick={() => navigate("/contact")} className="gap-2 text-base px-10 h-12 glow-purple">
                 Book a Curriculum Audit <ArrowRight className="h-4 w-4" />
               </Button>
             </motion.div>
