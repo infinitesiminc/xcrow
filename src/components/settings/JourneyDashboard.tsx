@@ -442,7 +442,7 @@ export default function JourneyDashboard({ practicedRoles, savedRoles, loading }
 
         return (
           <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
-            <CareerReachMap jobMatches={jobMatches} isEmpty={isEmpty} />
+            <CareerReachMap jobMatches={jobMatches} isEmpty={isEmpty} leverageSkills={leverageSkills} />
           </motion.div>
         );
       })()}
