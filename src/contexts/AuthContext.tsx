@@ -47,6 +47,8 @@ const AuthContext = createContext<AuthContextType>({
   plan: "free",
   subscriptionEnd: null,
   schoolName: null,
+  schoolId: null,
+  isSchoolAdmin: false,
   isPro: false,
   refreshProfile: async () => {},
   refreshSubscription: async () => {},
