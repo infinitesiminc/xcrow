@@ -236,16 +236,39 @@ serve(async (req) => {
           `country.ilike.${p}`,
         ]).join(",");
         
+        // Fetch a wider pool to allow diversity filtering
+        const poolSize = Math.max(limit * 5, 15);
         const { data: jobs, error: dbError } = await sb
           .from("jobs")
           .select("id, title, department, location, country, work_mode, seniority, augmented_percent, automation_risk_percent, source_url, companies(name, logo_url, website)")
           .or(orConditions)
-          .order("augmented_percent", { ascending: false, nullsFirst: false })
-          .limit(limit);
+          .limit(poolSize);
         
         if (dbError) console.error("DB search error:", dbError);
 
-        const jobIds = (jobs || []).map((j: any) => j.id);
+        // Diversify: max 1 role per company, then shuffle
+        const byCompany = new Map<string, any>();
+        const noCompany: any[] = [];
+        for (const j of (jobs || [])) {
+          const companyName = (j as any).companies?.name?.toLowerCase() || "";
+          if (!companyName) {
+            noCompany.push(j);
+            continue;
+          }
+          if (!byCompany.has(companyName)) {
+            byCompany.set(companyName, j);
+          }
+        }
+        // Combine unique-per-company + no-company, then shuffle
+        let diversePool = [...byCompany.values(), ...noCompany];
+        // Fisher-Yates shuffle for fair ordering
+        for (let i = diversePool.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [diversePool[i], diversePool[j]] = [diversePool[j], diversePool[i]];
+        }
+        const selectedJobs = diversePool.slice(0, limit);
+
+        const jobIds = selectedJobs.map((j: any) => j.id);
 
         // Fetch top 3 task clusters per job for enrichment
         let tasksByJob: Record<string, { name: string; aiScore: number }[]> = {};
@@ -269,7 +292,7 @@ serve(async (req) => {
           }
         }
 
-        roleResults = (jobs || []).map((j: any) => ({
+        roleResults = selectedJobs.map((j: any) => ({
           jobId: j.id,
           title: j.title,
           company: j.companies?.name || null,
