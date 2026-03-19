@@ -8,14 +8,17 @@ import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
-  Play, Target, Briefcase, ArrowRight, BookOpen, Zap,
+  Play, Target, ArrowRight, Zap, Sparkles, ShieldCheck, Lock,
 } from "lucide-react";
 import SkillMapGrid from "./SkillMapGrid";
 import HumanEdgesSection from "./HumanEdgesSection";
 import {
   aggregateSkillXP,
   matchTaskToSkills,
+  SKILL_TAXONOMY,
+  CATEGORY_META,
   type SimRecord,
+  type SkillCategory,
 } from "@/lib/skill-map";
 
 /* ─── Types ─── */
@@ -41,6 +44,22 @@ export interface SavedRoleData {
   new_skills_percent: number | null;
 }
 
+/* ─── Preview data for empty state ─── */
+const PREVIEW_SKILLS: { id: string; name: string; category: SkillCategory; humanEdge: string; aiExposure: number }[] = [
+  { id: "code-dev", name: "Software Development", category: "technical", humanEdge: "System thinking", aiExposure: 72 },
+  { id: "data-analysis", name: "Data Analysis", category: "analytical", humanEdge: "Asking the right questions", aiExposure: 80 },
+  { id: "stakeholder-mgmt", name: "Stakeholder Management", category: "communication", humanEdge: "Trust building", aiExposure: 15 },
+  { id: "strategy", name: "Strategy & Planning", category: "leadership", humanEdge: "Competitive intuition", aiExposure: 25 },
+  { id: "design-ux", name: "Design & UX", category: "creative", humanEdge: "Empathy-driven design", aiExposure: 55 },
+  { id: "regulatory", name: "Regulatory & Legal", category: "compliance", humanEdge: "Jurisdictional judgment", aiExposure: 45 },
+];
+
+const PREVIEW_EDGES = [
+  { label: "System thinking", skill: "Software Development", emoji: "⚙️", aiExposure: 72 },
+  { label: "Trust building", skill: "Stakeholder Management", emoji: "💬", aiExposure: 15 },
+  { label: "Competitive intuition", skill: "Strategy & Planning", emoji: "🎯", aiExposure: 25 },
+];
+
 /* ─── Main Component ─── */
 
 interface JourneyDashboardProps {
@@ -52,7 +71,6 @@ interface JourneyDashboardProps {
 export default function JourneyDashboard({ practicedRoles, savedRoles, loading }: JourneyDashboardProps) {
   const navigate = useNavigate();
 
-  // Convert to SimRecord for aggregation
   const simRecords: SimRecord[] = useMemo(() =>
     practicedRoles.map(r => ({
       task_name: r.task_name,
@@ -67,7 +85,6 @@ export default function JourneyDashboard({ practicedRoles, savedRoles, loading }
   const leveledUp = useMemo(() => activeSkills.filter(s => s.levelIndex >= 1).length, [activeSkills]);
   const uniqueTasks = useMemo(() => new Set(practicedRoles.map(r => r.task_name)).size, [practicedRoles]);
 
-  // Build skill → tasks map for detail panel
   const skillTasks = useMemo(() => {
     const map = new Map<string, string[]>();
     for (const sim of practicedRoles) {
@@ -101,7 +118,7 @@ export default function JourneyDashboard({ practicedRoles, savedRoles, loading }
       {/* ── Stats Ribbon ── */}
       <div className="grid grid-cols-3 gap-2 mt-4 mb-5">
         {[
-          { label: "Skills", value: activeSkills.length, icon: Zap },
+          { label: "Skills", value: isEmpty ? `0 / ${SKILL_TAXONOMY.length}` : `${activeSkills.length} / ${SKILL_TAXONOMY.length}`, icon: Zap },
           { label: "Leveled Up", value: leveledUp, icon: Target },
           { label: "Tasks Practiced", value: uniqueTasks, icon: Play },
         ].map(stat => (
@@ -113,18 +130,82 @@ export default function JourneyDashboard({ practicedRoles, savedRoles, loading }
         ))}
       </div>
 
-      {/* ── Empty State ── */}
+      {/* ── Empty State with Preview ── */}
       {isEmpty && (
-        <div className="text-center py-16">
-          <BookOpen className="h-10 w-10 text-muted-foreground/20 mx-auto mb-4" />
-          <p className="text-sm text-muted-foreground">No skills yet</p>
-          <p className="text-xs text-muted-foreground/60 mt-1 mb-4">Practice tasks to start building your skill map</p>
-          <button
-            onClick={() => navigate("/")}
-            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors"
-          >
-            Start Exploring <ArrowRight className="h-3.5 w-3.5" />
-          </button>
+        <div className="space-y-6">
+          {/* Preview skill categories */}
+          <div>
+            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-3">
+              {SKILL_TAXONOMY.length} skills to unlock across {Object.keys(CATEGORY_META).length} categories
+            </p>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+              {PREVIEW_SKILLS.map((skill, i) => {
+                const catMeta = CATEGORY_META[skill.category];
+                return (
+                  <motion.div
+                    key={skill.id}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 0.6, y: 0 }}
+                    transition={{ delay: i * 0.06 }}
+                    className="rounded-xl border border-dashed border-border/40 bg-card/50 p-3 relative overflow-hidden"
+                  >
+                    <div className="flex items-center gap-1.5 mb-1.5">
+                      <span className="text-xs">{catMeta.emoji}</span>
+                      <p className="text-[11px] font-medium text-foreground/70 truncate">{skill.name}</p>
+                    </div>
+                    <div className="h-1.5 rounded-full bg-muted/30 overflow-hidden">
+                      <div className="h-full rounded-full bg-primary/20 w-0" />
+                    </div>
+                    <p className="text-[9px] text-muted-foreground mt-1">Beginner · 0 XP</p>
+                    <Lock className="absolute top-2 right-2 h-3 w-3 text-muted-foreground/30" />
+                  </motion.div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Preview human edges */}
+          <div>
+            <div className="flex items-center gap-2 mb-3">
+              <Sparkles className="h-3.5 w-3.5 text-primary/40" />
+              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                {SKILL_TAXONOMY.length} human edges to discover
+              </p>
+            </div>
+            <div className="space-y-1.5">
+              {PREVIEW_EDGES.map((edge, i) => (
+                <motion.div
+                  key={edge.label}
+                  initial={{ opacity: 0, x: -8 }}
+                  animate={{ opacity: 0.5, x: 0 }}
+                  transition={{ delay: 0.3 + i * 0.08 }}
+                  className="flex items-center gap-3 rounded-xl border border-dashed border-border/30 bg-card/30 px-4 py-2.5"
+                >
+                  <ShieldCheck className="h-4 w-4 text-primary/30 shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-foreground/50">{edge.label}</p>
+                    <p className="text-[10px] text-muted-foreground/50">
+                      {edge.emoji} {edge.skill} · {edge.aiExposure}% AI exposure
+                    </p>
+                  </div>
+                  <Lock className="h-3 w-3 text-muted-foreground/20 shrink-0" />
+                </motion.div>
+              ))}
+            </div>
+          </div>
+
+          {/* CTA */}
+          <div className="text-center pt-2 pb-4">
+            <p className="text-xs text-muted-foreground/60 mb-3">
+              Practice your first task to start unlocking skills & edges
+            </p>
+            <button
+              onClick={() => navigate("/")}
+              className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors"
+            >
+              Start Exploring <ArrowRight className="h-3.5 w-3.5" />
+            </button>
+          </div>
         </div>
       )}
 
