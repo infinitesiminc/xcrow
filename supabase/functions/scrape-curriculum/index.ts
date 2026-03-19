@@ -203,15 +203,39 @@ Deno.serve(async (req) => {
     const listingMarkdown = listingData.data?.markdown || listingData.markdown || "";
     const rawLinks: string[] = listingData.data?.links || listingData.links || [];
 
-    let programs = parseProgramLinks(listingMarkdown, catalog_url);
+    console.log(`Listing markdown length: ${listingMarkdown.length}, raw links: ${rawLinks.length}`);
 
-    // Fallback to raw links array
+    let programs = parseProgramLinks(listingMarkdown, catalog_url);
+    console.log(`Parsed ${programs.length} programs from markdown`);
+
+    // Fallback 1: raw links for catalog software
     if (programs.length === 0 && rawLinks.length > 0) {
       const programUrls = rawLinks.filter((url: string) => url.includes("preview_program"));
       programs = programUrls.map((url: string) => {
         const poidMatch = url.match(/poid=(\d+)/);
         return { name: `Program ${poidMatch?.[1] || "Unknown"}`, degreeType: "Other", url: url.split("#")[0] };
       }).filter((p, i, arr) => arr.findIndex((x) => x.url === p.url) === i);
+    }
+
+    // Fallback 2: extract edu links that look like program/department pages
+    if (programs.length === 0 && rawLinks.length > 0) {
+      const eduLinks = rawLinks.filter((url: string) =>
+        url.includes(".edu") &&
+        !url.includes("ucla.edu/academics/programs") &&
+        (url.includes("undergraduate") || url.includes("graduate") || url.includes("major") || url.includes("minor") || url.includes("program") || url.includes("degree") || url.includes("admissions"))
+      );
+      const seen = new Set<string>();
+      for (const url of eduLinks) {
+        const clean = url.split("#")[0];
+        if (!seen.has(clean)) {
+          seen.add(clean);
+          // Try to extract a name from the URL path
+          const pathParts = new URL(clean).pathname.split("/").filter(Boolean);
+          const name = pathParts[0]?.replace(/-/g, " ").replace(/\b\w/g, (c: string) => c.toUpperCase()) || "Unknown";
+          programs.push({ name, degreeType: "Other", url: clean });
+        }
+      }
+      console.log(`Fallback 2: found ${programs.length} edu program links`);
     }
 
     // Cap programs
