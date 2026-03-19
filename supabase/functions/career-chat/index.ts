@@ -183,7 +183,7 @@ serve(async (req) => {
       const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
       const sb = createClient(supabaseUrl, supabaseKey);
 
-      const limit = args.limit || 6;
+      const limit = args.limit || 3;
       // Split query into words for broader matching
       const words = args.query.split(/\s+/).filter(Boolean);
       const patterns = words.map(w => `%${w}%`);
