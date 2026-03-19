@@ -42,6 +42,7 @@ interface Company {
   imported_at: string;
   job_count?: number;
   analyzed_count?: number;
+  task_cluster_count?: number;
   priority_score?: number;
 }
 
