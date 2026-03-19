@@ -24,8 +24,13 @@ const Footer = () => (
           </div>
         </div>
       </div>
-      <div className="mt-6 pt-4 border-t border-border/20">
+      <div className="mt-6 pt-4 border-t border-border/20 flex flex-col sm:flex-row items-center justify-between gap-2">
         <p className="text-xs text-muted-foreground">© {new Date().getFullYear()} crowy.ai</p>
+        <div className="flex items-center gap-4">
+          <Link to="/privacy" className="text-xs text-muted-foreground hover:text-foreground transition-colors">Privacy</Link>
+          <Link to="/terms" className="text-xs text-muted-foreground hover:text-foreground transition-colors">Terms</Link>
+          <Link to="/cookies" className="text-xs text-muted-foreground hover:text-foreground transition-colors">Cookies</Link>
+        </div>
       </div>
     </div>
   </footer>
