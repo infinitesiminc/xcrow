@@ -162,7 +162,7 @@ const Index = () => {
                 ? "Ask about a role to see matching jobs here"
                 : "Roles will appear here as you explore"}
             </p>
-            {!hasInteracted && <HumanEdgesCard />}
+            {!hasInteracted && <HumanEdgesCard onEdgeClick={handleEdgeClick} />}
           </div>
         )}
 
