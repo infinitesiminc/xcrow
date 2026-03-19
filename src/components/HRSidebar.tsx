@@ -1,4 +1,4 @@
-import { Building2, BarChart3, GraduationCap } from "lucide-react";
+import { Building2, BarChart3, GraduationCap, PieChart, List } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import {
   Sidebar,
@@ -12,10 +12,14 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 
-const pipelineItems = [
+const mainItems = [
   { title: "Companies", url: "/admin", icon: Building2 },
   { title: "Task Analytics", url: "/admin/analytics", icon: BarChart3 },
-  { title: "Schools", url: "/admin/schools", icon: GraduationCap },
+];
+
+const schoolItems = [
+  { title: "Analytics", url: "/admin/schools/analytics", icon: PieChart },
+  { title: "All Schools", url: "/admin/schools", icon: List },
 ];
 
 export function HRSidebar() {
