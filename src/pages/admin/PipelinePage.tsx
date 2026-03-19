@@ -30,6 +30,7 @@ interface Company {
   logo_url: string | null;
   website: string | null;
   careers_url: string | null;
+  manual_careers_url: string | null;
   detected_ats_platform: string | null;
   employee_range: string | null;
   headquarters: string | null;
