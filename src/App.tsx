@@ -23,6 +23,9 @@ const Pricing = lazy(() => import("./pages/Pricing.tsx"));
 const Schools = lazy(() => import("./pages/Schools.tsx"));
 const About = lazy(() => import("./pages/About.tsx"));
 const Blog = lazy(() => import("./pages/Blog.tsx"));
+const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy.tsx"));
+const Terms = lazy(() => import("./pages/Terms.tsx"));
+const CookiePolicy = lazy(() => import("./pages/CookiePolicy.tsx"));
 
 // Admin (lazy)
 const HRLayout = lazy(() => import("./layouts/HRLayout.tsx"));
