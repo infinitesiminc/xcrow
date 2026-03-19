@@ -465,9 +465,11 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
   const [showInactivityNudge, setShowInactivityNudge] = useState(false);
   const inactivityTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
-  const { user } = useAuth();
+  const { user, isPro } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const simGate = useUsageGate("simulation");
+  const [showUpgrade, setShowUpgrade] = useState(false);
 
   const taskMeta = { currentState: taskState, trend: taskTrend, impactLevel: taskImpactLevel };
 
