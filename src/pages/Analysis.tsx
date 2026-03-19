@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback, useMemo } from "react";
 import { useSearchParams, useNavigate, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
-  ArrowLeft, Zap, AlertTriangle,
+  ArrowLeft, ArrowRight, Zap, AlertTriangle,
   Play, CheckCircle2, LogIn,
   Bookmark, BookmarkCheck, ChevronLeft,
   MessageSquare, BarChart3, FileText, Users, Search, Settings, Globe, Shield, Lightbulb, PenTool, Code, TrendingUp, Megaphone, Target, Briefcase, Heart, Layers, GraduationCap,
