@@ -235,11 +235,6 @@ export default function RolePreviewPanel({ role, onClose }: RolePreviewPanelProp
             <h1 className="text-lg font-display font-bold text-foreground leading-snug">{role.title}</h1>
             {role.company && <p className="text-sm text-muted-foreground">at {role.company}</p>}
           </div>
-          <div className="flex gap-4 shrink-0">
-            <StatItem value={`${role.risk || 0}%`} label="Risk" />
-            <StatItem value={`${role.augmented}%`} label="Augmented" />
-            <StatItem value={`${tasks.length}`} label="Tasks" />
-          </div>
         </div>
 
         {/* Progress */}
