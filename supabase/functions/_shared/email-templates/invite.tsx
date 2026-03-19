@@ -28,15 +28,15 @@ export const InviteEmail = ({
 }: InviteEmailProps) => (
   <Html lang="en" dir="ltr">
     <Head />
-    <Preview>You've been invited to join Infinite Sim</Preview>
+    <Preview>You've been invited to join crowy.ai</Preview>
     <Body style={main}>
       <Container style={container}>
-        <Img src="https://xtfubistkgodiksegtcx.supabase.co/storage/v1/object/public/email-assets/logo.png" alt="Infinite Sim" width="140" height="auto" style={{ marginBottom: '30px' }} />
+        <Img src="https://xtfubistkgodiksegtcx.supabase.co/storage/v1/object/public/email-assets/logo.png" alt="crowy.ai" width="140" height="auto" style={{ marginBottom: '30px' }} />
         <Heading style={h1}>You've been invited</Heading>
         <Text style={text}>
           You've been invited to join{' '}
           <Link href={siteUrl} style={link}>
-            <strong>Infinite Sim</strong>
+            <strong>crowy.ai</strong>
           </Link>
           . Click below to accept and start analyzing how AI impacts your role.
         </Text>
