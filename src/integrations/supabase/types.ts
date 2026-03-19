@@ -674,6 +674,10 @@ export type Database = {
           location: string | null
           new_skills_percent: number | null
           role_summary: string | null
+          salary_currency: string | null
+          salary_max: number | null
+          salary_min: number | null
+          salary_period: string | null
           seniority: string | null
           slug: string | null
           source_url: string | null
@@ -697,6 +701,10 @@ export type Database = {
           location?: string | null
           new_skills_percent?: number | null
           role_summary?: string | null
+          salary_currency?: string | null
+          salary_max?: number | null
+          salary_min?: number | null
+          salary_period?: string | null
           seniority?: string | null
           slug?: string | null
           source_url?: string | null
@@ -720,6 +728,10 @@ export type Database = {
           location?: string | null
           new_skills_percent?: number | null
           role_summary?: string | null
+          salary_currency?: string | null
+          salary_max?: number | null
+          salary_min?: number | null
+          salary_period?: string | null
           seniority?: string | null
           slug?: string | null
           source_url?: string | null
