@@ -325,8 +325,77 @@ export default function Students() {
           </div>
         </div>
       </Section>
+      {/* ═══ SOCIAL PROOF — Company Marquee ═══ */}
+      <Section className="py-16 px-6">
+        <div className="max-w-5xl mx-auto">
+          <motion.div variants={fadeUp} custom={0} className="text-center mb-8">
+            <span className="text-sm font-mono text-muted-foreground tracking-widest uppercase">Practice on roles from</span>
+          </motion.div>
+          <motion.div variants={fadeUp} custom={1}>
+            <CompanyMarquee rows={[
+              ["Anthropic", "OpenAI", "Google DeepMind", "Meta", "Stripe", "Nvidia", "Apple"],
+              ["McKinsey", "Deloitte", "Boeing", "Databricks", "Cohere", "Mistral", "FedEx"],
+            ]} />
+          </motion.div>
+        </div>
+      </Section>
 
-      {/* ═══ FINAL CTA ═══ */}
+      {/* ═══ SIMULATION EXPERIENCE — Live Jobs ═══ */}
+      <Section className="py-20 sm:py-28 px-6 bg-secondary/30">
+        <div className="max-w-5xl mx-auto">
+          <motion.div variants={fadeUp} custom={0} className="text-center mb-14">
+            <div className="inline-flex items-center gap-2 mb-4">
+              <Play className="h-5 w-5 text-primary" />
+              <span className="text-sm font-mono text-primary tracking-widest uppercase">Not Hypothetical</span>
+            </div>
+            <h2 className="text-3xl sm:text-4xl font-bold mb-4">Practice on real jobs, not textbook exercises</h2>
+            <p className="text-muted-foreground max-w-xl mx-auto">
+              Every simulation is built from a live job posting — the same roles companies are hiring for right now.
+            </p>
+          </motion.div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 max-w-4xl mx-auto">
+            {[
+              { role: "AI Research Engineer", company: "Anthropic", dept: "Research", exposure: 62, tasks: 12 },
+              { role: "Product Marketing Manager", company: "Stripe", dept: "Marketing", exposure: 71, tasks: 9 },
+              { role: "Data Scientist", company: "Meta", dept: "Analytics", exposure: 78, tasks: 11 },
+              { role: "Solutions Architect", company: "Databricks", dept: "Engineering", exposure: 55, tasks: 8 },
+              { role: "Strategy Consultant", company: "McKinsey", dept: "Advisory", exposure: 45, tasks: 10 },
+              { role: "ML Platform Engineer", company: "OpenAI", dept: "Infrastructure", exposure: 68, tasks: 14 },
+            ].map((job, i) => (
+              <motion.div
+                key={job.role}
+                variants={fadeUp}
+                custom={i + 1}
+                className="rounded-xl border border-border bg-card p-5 hover:border-primary/40 transition-colors group cursor-pointer"
+                onClick={handleGetStarted}
+              >
+                <div className="flex items-center gap-2 mb-3">
+                  <Briefcase className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider">{job.company}</span>
+                </div>
+                <h3 className="text-sm font-bold mb-1 group-hover:text-primary transition-colors">{job.role}</h3>
+                <p className="text-xs text-muted-foreground mb-3">{job.dept} · {job.tasks} practiceable tasks</p>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-1.5">
+                    <Bot className="h-3.5 w-3.5 text-brand-ai" />
+                    <span className="text-xs font-mono text-brand-ai">{job.exposure}% AI exposed</span>
+                  </div>
+                  <span className="text-[10px] text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity">
+                    Practice →
+                  </span>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+
+          <motion.p variants={fadeUp} custom={8} className="text-center text-sm text-muted-foreground mt-8">
+            5,000+ roles across 3,600+ companies — all mapped, scored, and ready to practice.
+          </motion.p>
+        </div>
+      </Section>
+
+
       <Section className="py-20 sm:py-28 px-6 bg-secondary/30">
         <div className="max-w-3xl mx-auto text-center">
           <motion.h2 variants={fadeUp} custom={0} className="text-3xl sm:text-4xl font-bold mb-4">
