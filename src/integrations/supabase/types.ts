@@ -1386,6 +1386,16 @@ export type Database = {
           user_id: string
         }[]
       }
+      get_market_skill_demand: {
+        Args: { top_n?: number }
+        Returns: {
+          avg_exposure: number
+          avg_impact: number
+          demand_count: number
+          high_priority_count: number
+          skill_name: string
+        }[]
+      }
       get_school_analytics: {
         Args: { _school_id: string }
         Returns: {
@@ -1394,6 +1404,22 @@ export type Database = {
           total_sims: number
           total_xp: number
           user_id: string
+        }[]
+      }
+      get_school_dashboard_stats: {
+        Args: never
+        Returns: {
+          carnegie_class: string
+          carnegie_count: number
+          pipeline_count: number
+          pipeline_stage: string
+          state: string
+          state_count: number
+          total_customers: number
+          total_enrollment: number
+          total_hbcus: number
+          total_schools: number
+          total_scraped: number
         }[]
       }
       get_school_students: {

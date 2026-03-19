@@ -20,11 +20,12 @@ interface CourseData {
   skill_categories: Record<string, string[]> | null;
 }
 
-interface TaskCluster {
-  skill_names: string[] | null;
-  ai_exposure_score: number | null;
-  job_impact_score: number | null;
-  priority: string | null;
+interface MarketSkill {
+  skill_name: string;
+  demand_count: number;
+  avg_exposure: number;
+  avg_impact: number;
+  high_priority_count: number;
 }
 
 function normalize(s: string): string {
@@ -41,43 +42,31 @@ function fuzzyMatch(a: string, b: string): boolean {
 
 export default function SkillsGapMatrix({ schoolId, schoolName }: Props) {
   const [courses, setCourses] = useState<CourseData[]>([]);
-  const [taskClusters, setTaskClusters] = useState<TaskCluster[]>([]);
+  const [marketSkills, setMarketSkills] = useState<MarketSkill[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function load() {
       setLoading(true);
 
-      // Fetch school courses
-      const { data: courseData } = await supabase
-        .from("school_courses")
-        .select("program_name, degree_type, skills_extracted, tools_taught, ai_content_flag, industry_sectors, skill_categories")
-        .eq("school_id", schoolId);
+      // Fetch school courses AND aggregated market skills in parallel
+      const [courseRes, marketRes] = await Promise.all([
+        supabase
+          .from("school_courses")
+          .select("program_name, degree_type, skills_extracted, tools_taught, ai_content_flag, industry_sectors, skill_categories")
+          .eq("school_id", schoolId),
+        supabase.rpc("get_market_skill_demand", { top_n: 100 }),
+      ]);
 
-      setCourses((courseData as CourseData[]) || []);
-
-      // Fetch job market skills from task clusters (batched)
-      const allClusters: TaskCluster[] = [];
-      let from = 0;
-      const batchSize = 1000;
-      while (true) {
-        const { data } = await supabase
-          .from("job_task_clusters")
-          .select("skill_names, ai_exposure_score, job_impact_score, priority")
-          .range(from, from + batchSize - 1);
-        if (!data || data.length === 0) break;
-        allClusters.push(...(data as TaskCluster[]));
-        if (data.length < batchSize) break;
-        from += batchSize;
-      }
-      setTaskClusters(allClusters);
+      setCourses((courseRes.data as CourseData[]) || []);
+      setMarketSkills((marketRes.data as MarketSkill[]) || []);
       setLoading(false);
     }
     load();
   }, [schoolId]);
 
   const analysis = useMemo(() => {
-    if (courses.length === 0 || taskClusters.length === 0) return null;
+    if (courses.length === 0 || marketSkills.length === 0) return null;
 
     // Aggregate all school skills (normalized)
     const schoolSkillsSet = new Set<string>();
@@ -90,47 +79,21 @@ export default function SkillsGapMatrix({ schoolId, schoolName }: Props) {
       if (c.ai_content_flag) aiProgramCount++;
     });
 
-    // Aggregate job market skills with demand counts & impact
-    const marketSkillDemand: Record<string, { count: number; avgExposure: number; avgImpact: number; highPriority: number }> = {};
-    
-    taskClusters.forEach((tc) => {
-      (tc.skill_names || []).forEach((skill) => {
-        const ns = normalize(skill);
-        if (!ns) return;
-        if (!marketSkillDemand[ns]) {
-          marketSkillDemand[ns] = { count: 0, avgExposure: 0, avgImpact: 0, highPriority: 0 };
-        }
-        const d = marketSkillDemand[ns];
-        d.count++;
-        d.avgExposure += tc.ai_exposure_score || 50;
-        d.avgImpact += tc.job_impact_score || 50;
-        if (tc.priority === "high") d.highPriority++;
-      });
-    });
-
-    // Finalize averages
-    Object.values(marketSkillDemand).forEach((d) => {
-      d.avgExposure = Math.round(d.avgExposure / d.count);
-      d.avgImpact = Math.round(d.avgImpact / d.count);
-    });
-
-    // Sort by demand count
-    const topMarketSkills = Object.entries(marketSkillDemand)
-      .sort((a, b) => b[1].count - a[1].count)
-      .slice(0, 100);
-
     // Match each market skill against school skills
-    const matched: { skill: string; demand: typeof marketSkillDemand[string]; covered: boolean }[] = [];
+    const matched: { skill: string; demand: { count: number; avgExposure: number; avgImpact: number; highPriority: number }; covered: boolean }[] = [];
     
-    topMarketSkills.forEach(([normalizedSkill, demand]) => {
-      const covered = [...schoolSkillsSet].some((ss) => fuzzyMatch(ss, normalizedSkill));
-      // Find original casing from task clusters
-      let originalName = normalizedSkill;
-      for (const tc of taskClusters) {
-        const found = (tc.skill_names || []).find((s) => normalize(s) === normalizedSkill);
-        if (found) { originalName = found; break; }
-      }
-      matched.push({ skill: originalName, demand, covered });
+    marketSkills.forEach((ms) => {
+      const covered = [...schoolSkillsSet].some((ss) => fuzzyMatch(ss, normalize(ms.skill_name)));
+      matched.push({
+        skill: ms.skill_name,
+        demand: {
+          count: Number(ms.demand_count),
+          avgExposure: ms.avg_exposure,
+          avgImpact: ms.avg_impact,
+          highPriority: Number(ms.high_priority_count),
+        },
+        covered,
+      });
     });
 
     // Gaps = high demand but not covered
@@ -154,11 +117,11 @@ export default function SkillsGapMatrix({ schoolId, schoolName }: Props) {
       aiReadinessPercent,
       aiProgramCount,
       totalPrograms: courses.length,
-      totalMarketSkills: topMarketSkills.length,
+      totalMarketSkills: matched.length,
       schoolSkillCount: schoolSkillsSet.size,
       schoolToolCount: schoolToolsSet.size,
     };
-  }, [courses, taskClusters]);
+  }, [courses, marketSkills]);
 
   if (loading) {
     return (
@@ -221,7 +184,7 @@ export default function SkillsGapMatrix({ schoolId, schoolName }: Props) {
             </span>
           </div>
           <p className="text-[10px] text-muted-foreground mb-3">
-            These skills appear in {taskClusters.length.toLocaleString()} job task clusters but aren't covered by any program.
+            These high-demand market skills aren't covered by any program.
           </p>
           <div className="space-y-1.5 max-h-64 overflow-y-auto pr-1">
             {analysis.gaps.slice(0, 30).map((g) => (
