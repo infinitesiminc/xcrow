@@ -44,7 +44,7 @@ const faqs = [
   { q: "What does Pro unlock?", a: "Pro removes all limits on simulations and analyses, unlocks the full skill map with XP tracking, and gives you access to the AI career coach." },
   { q: "How does the School plan work?", a: "Schools purchase seats in bulk at $7/student/year. Each student gets full Pro access. School admins get a dashboard to manage seats and track cohort progress." },
   { q: "Can I cancel anytime?", a: "Absolutely. Cancel from your settings and you'll keep access until the end of your billing period." },
-  { q: "What if my school already has a license?", a: "If your university has an Infinite Sim license, your school admin will invite you via email. You'll automatically get Pro access at no cost to you." },
+  { q: "What if my school already has a license?", a: "If your university has a crowy.ai license, your school admin will invite you via email. You'll automatically get Pro access at no cost to you." },
 ];
 
 export default function Pricing() {
@@ -204,7 +204,7 @@ export default function Pricing() {
         >
           <Building2 className="h-8 w-8 text-primary mx-auto mb-3" />
           <h3 className="text-lg font-bold text-foreground mb-1">
-            Bring Infinite Sim to your university
+            Bring crowy.ai to your university
           </h3>
           <p className="text-sm text-muted-foreground max-w-md mx-auto mb-4">
             Give every student Pro access with institutional pricing. Volume discounts available for 500+ seats.

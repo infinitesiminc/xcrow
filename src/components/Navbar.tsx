@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import logo from "@/assets/logo.png";
+import crowLogo from "@/assets/crow-logo.png";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
@@ -142,8 +142,10 @@ export default function Navbar() {
             onClick={() => handleNav("/")}
             className="flex items-center gap-2 font-display text-lg font-bold tracking-tight text-foreground hover:opacity-80 transition-opacity"
           >
-            <img src={logo} alt="Infinite Sim" className="h-7 w-7" />
-            <span className="hidden sm:inline neon-text font-extrabold">Infinite Sim</span>
+            <div className="h-8 w-8 rounded-lg flex items-center justify-center" style={{ background: 'linear-gradient(135deg, hsl(262 83% 58%), hsl(330 90% 60%))' }}>
+              <img src={crowLogo} alt="crowy.ai" className="h-5 w-5 invert" />
+            </div>
+            <span className="hidden sm:inline neon-text font-extrabold">crowy.ai</span>
           </button>
 
           {/* Desktop nav */}

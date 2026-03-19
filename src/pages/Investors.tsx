@@ -262,7 +262,7 @@ export default function Investors() {
                     className="absolute flex flex-col items-center"
                     style={{ left: "95%", bottom: "95%", transform: "translate(-50%, 50%)" }}
                   >
-                    <span className="text-sm font-bold mb-1 whitespace-nowrap text-brand-ai">Infinite Sim</span>
+                    <span className="text-sm font-bold mb-1 whitespace-nowrap text-brand-ai">crowy.ai</span>
                     <div className="h-4 w-4 rounded-full bg-brand-ai ring-4 ring-brand-ai/20 shadow-lg shadow-brand-ai/30" />
                   </div>
                 </div>
@@ -617,7 +617,7 @@ export default function Investors() {
                       className="absolute flex flex-col items-center"
                       style={{ left: "95%", bottom: "95%", transform: "translate(-50%, 50%)" }}
                     >
-                      <span className="text-sm font-bold mb-1 whitespace-nowrap text-brand-ai">Infinite Sim</span>
+                      <span className="text-sm font-bold mb-1 whitespace-nowrap text-brand-ai">crowy.ai</span>
                       <div className="h-4 w-4 rounded-full bg-brand-ai ring-4 ring-brand-ai/20 shadow-lg shadow-brand-ai/30" />
                     </div>
                   </div>

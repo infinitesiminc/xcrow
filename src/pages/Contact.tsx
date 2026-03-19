@@ -50,8 +50,8 @@ const Contact = () => {
 
         <div className="grid md:grid-cols-3 gap-6 mb-12">
           {[
-            { icon: Mail, title: "Email", detail: "jackson@infinitesim.co", sub: "We respond within 24 hours" },
-            { icon: MessageSquare, title: "Support", detail: "jackson@infinitesim.co", sub: "For account & technical issues" },
+            { icon: Mail, title: "Email", detail: "jackson@crowy.ai", sub: "We respond within 24 hours" },
+            { icon: MessageSquare, title: "Support", detail: "jackson@crowy.ai", sub: "For account & technical issues" },
             { icon: MapPin, title: "Location", detail: "San Francisco, CA", sub: "Remote-first team" },
           ].map((item, i) => (
             <motion.div key={item.title} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 + i * 0.05 }}>
