@@ -623,14 +623,21 @@ export default function RolePreviewPanel({ role, onClose }: RolePreviewPanelProp
                 {/* Mini preview of top 3 task names */}
                 <div className="flex flex-wrap gap-1.5 mt-2">
                   {tasks.slice(0, 3).map((t, i) => (
-                    <span key={i} className="text-[11px] px-2 py-0.5 rounded-full bg-muted/40 text-muted-foreground truncate max-w-[160px]">
+                    <button
+                      key={i}
+                      onClick={() => { setFocusedTask(t); setView("task-detail"); }}
+                      className="text-[11px] px-2 py-0.5 rounded-full bg-muted/40 text-muted-foreground truncate max-w-[160px] hover:bg-primary/15 hover:text-primary transition-colors cursor-pointer"
+                    >
                       {t.cluster_name}
-                    </span>
+                    </button>
                   ))}
                   {tasks.length > 3 && (
-                    <span className="text-[11px] px-2 py-0.5 rounded-full bg-muted/40 text-muted-foreground">
+                    <button
+                      onClick={() => setView("breakdown")}
+                      className="text-[11px] px-2 py-0.5 rounded-full bg-muted/40 text-muted-foreground hover:bg-primary/15 hover:text-primary transition-colors cursor-pointer"
+                    >
                       +{tasks.length - 3} more
-                    </span>
+                    </button>
                   )}
                 </div>
               </div>
