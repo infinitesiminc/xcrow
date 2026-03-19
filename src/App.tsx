@@ -16,6 +16,7 @@ const Settings = lazy(() => import("./pages/Settings.tsx"));
 const NotFound = lazy(() => import("./pages/NotFound.tsx"));
 const CardStyleMockup = lazy(() => import("./pages/CardStyleMockup.tsx"));
 const CompanyPage = lazy(() => import("./pages/CompanyPage.tsx"));
+const Journey = lazy(() => import("./pages/Journey.tsx"));
 
 // Admin (lazy)
 const HRLayout = lazy(() => import("./layouts/HRLayout.tsx"));
