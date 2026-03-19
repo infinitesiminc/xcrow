@@ -131,6 +131,9 @@ export default function JourneyDashboard({ practicedRoles, savedRoles, loading }
         ))}
       </div>
 
+      {/* ── Curriculum Gap Recommendations (school students only) ── */}
+      <CurriculumGapBanner />
+
       {/* ── Empty State with Preview ── */}
       {isEmpty && (
         <div className="space-y-6">
