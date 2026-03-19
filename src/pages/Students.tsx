@@ -42,15 +42,15 @@ interface SkillBlockProps {
 }
 
 function SkillBlock({ label, color, className = "", small, glow, delay = 0 }: SkillBlockProps) {
-  const bg = {
-    ai: "bg-brand-ai/90",
-    human: "bg-brand-human/90",
-    mid: "bg-brand-mid/90",
+  const gradient = {
+    ai: "from-brand-ai/80 via-brand-ai/60 to-pink-500/70",
+    human: "from-brand-human/80 via-brand-human/60 to-indigo-400/70",
+    mid: "from-brand-mid/80 via-brand-mid/60 to-violet-400/70",
   }[color];
   const shadow = {
-    ai: "shadow-brand-ai/20",
-    human: "shadow-brand-human/20",
-    mid: "shadow-brand-mid/20",
+    ai: "shadow-brand-ai/25",
+    human: "shadow-brand-human/25",
+    mid: "shadow-brand-mid/25",
   }[color];
 
   return (
@@ -58,9 +58,9 @@ function SkillBlock({ label, color, className = "", small, glow, delay = 0 }: Sk
       variants={fadeUp}
       custom={delay}
       className={`
-        ${bg} rounded-lg flex items-center justify-center font-semibold text-white
+        bg-gradient-to-br ${gradient} rounded-xl flex items-center justify-center font-semibold text-white backdrop-blur-sm
         ${small ? "h-10 text-xs px-3" : "h-12 sm:h-14 text-sm px-4"}
-        ${glow ? `shadow-lg ${shadow} ring-1 ring-white/20` : `shadow-md ${shadow}`}
+        ${glow ? `shadow-lg ${shadow} ring-1 ring-white/25` : `shadow-md ${shadow}`}
         ${className}
       `}
     >
