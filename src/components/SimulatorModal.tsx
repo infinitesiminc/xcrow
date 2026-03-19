@@ -1108,6 +1108,15 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                     ) : (
                       <Button onClick={onClose} className="rounded-xl w-full">Done</Button>
                     )}
+                    {user && (
+                      <Button
+                        variant="secondary"
+                        onClick={() => { onClose(); navigate("/journey"); }}
+                        className="gap-2 rounded-xl w-full text-xs"
+                      >
+                        <Map className="h-3.5 w-3.5" /> View My Journey
+                      </Button>
+                    )}
                     <div className="flex gap-2">
                       <Button variant="outline" onClick={startCompile} className="gap-2 rounded-xl flex-1 text-xs">
                         <RotateCcw className="h-3 w-3" /> Practice Again

@@ -327,14 +327,6 @@ export default function Settings() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.2 }}
           >
-            {activeSection === "roles" && (
-              <JourneyDashboard
-                practicedRoles={practicedRoles}
-                savedRoles={savedRoles}
-                loading={savedLoading || practicedLoading}
-              />
-            )}
-
             {activeSection === "profile" && (
               <ProfileSection
                 displayName={displayName} setDisplayName={setDisplayName}
