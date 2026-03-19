@@ -219,8 +219,8 @@ export default function CareerReachMap({ jobMatches, isEmpty }: CareerReachMapPr
           ))}
 
           {/* Center "YOU" marker */}
-          <circle cx={CX} cy={CY} r={8} fill="hsl(var(--foreground))" fillOpacity={0.9} />
-          <text x={CX} y={CY + 3} textAnchor="middle" fill="hsl(var(--background))" fontSize={6} fontWeight="bold">
+          <circle cx={CX} cy={CY} r={10} fill="hsl(var(--foreground))" fillOpacity={0.9} />
+          <text x={CX} y={CY + 3.5} textAnchor="middle" fill="hsl(var(--background))" fontSize={7} fontWeight="bold">
             YOU
           </text>
 
