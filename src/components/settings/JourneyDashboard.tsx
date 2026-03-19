@@ -1,8 +1,8 @@
 /**
  * Journey Dashboard — unified Career Reach Map
  *
- * Stats ribbon → Scatter chart (Human Match % vs AI Boost %)
- * Click a dot → slide-out panel with gap analysis + CTA
+ * Stats ribbon → Skill-first bullseye with leverage suggestions
+ * Click a dot → slide-out panel with best skill to practice + CTA
  */
 import { useMemo, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -11,7 +11,7 @@ import {
   Play, Target, Briefcase, Bookmark, BookOpen, ArrowRight,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import CareerReachMap, { type JobMatchDot } from "./CareerReachMap";
+import CareerReachMap, { type JobMatchDot, type SkillLeverage } from "./CareerReachMap";
 
 /* ─── Types ─── */
 export interface PracticedRoleData {
@@ -206,40 +206,30 @@ function buildTaxonomy(practicedRoles: PracticedRoleData[], templates: DbJobTemp
 function computeJobMatches(skills: AggregatedSkill[], templates: DbJobTemplate[]): JobMatchDot[] {
   const userSkillMap = new Map(skills.map(s => [s.id, s]));
   return templates.map(job => {
-    // Map job tasks → skill IDs, tracking how many tasks map to each skill
     const jobSkillIds = new Set<string>();
-    const taskSkillHits = new Map<string, number>(); // track task→skill coverage
+    const taskSkillHits = new Map<string, number>();
     let mappedTasks = 0;
     for (const t of job.tasks) {
       const ids = matchTaskToSkills(t);
       if (ids.length > 0) mappedTasks++;
-      for (const id of ids) {
-        jobSkillIds.add(id);
-        taskSkillHits.set(id, (taskSkillHits.get(id) || 0) + 1);
-      }
+      for (const id of ids) { jobSkillIds.add(id); taskSkillHits.set(id, (taskSkillHits.get(id) || 0) + 1); }
     }
     const allIds = Array.from(jobSkillIds);
-    if (allIds.length === 0) return null; // skip jobs with no skill mapping
+    if (allIds.length === 0) return null;
 
-    // Task coverage factor: penalize when most tasks don't map to known skills
     const coverageRatio = job.tasks.length > 0 ? mappedTasks / job.tasks.length : 0;
-    const coveragePenalty = 0.5 + 0.5 * coverageRatio; // 50-100% multiplier
-
+    const coveragePenalty = 0.5 + 0.5 * coverageRatio;
     const matched: string[] = [], gaps: JobMatchDot["gapSkills"] = [], aiCovered: JobMatchDot["aiCoveredGaps"] = [], newEdges: string[] = [];
     let weightedScore = 0;
 
     for (const id of allIds) {
       const us = userSkillMap.get(id);
       const tax = TAXONOMY.find(t => t.id === id);
-      const weight = taskSkillHits.get(id) || 1; // skills that appear in more tasks weigh more
-
+      const weight = taskSkillHits.get(id) || 1;
       if (us && us.practiced && us.proficiency > 0) {
-        // Weighted contribution: proficiency/100 instead of binary 1 or 0
         weightedScore += (us.proficiency / 100) * weight;
         if (us.proficiency >= 50) matched.push(us.name);
-        else if (tax) {
-          gaps.push({ name: tax.name, aiExposure: tax.aiExposure, aiEnabler: tax.aiEnabler, humanEdge: tax.humanEdge });
-        }
+        else if (tax) gaps.push({ name: tax.name, aiExposure: tax.aiExposure, aiEnabler: tax.aiEnabler, humanEdge: tax.humanEdge });
       } else {
         if (tax) {
           gaps.push({ name: tax.name, aiExposure: tax.aiExposure, aiEnabler: tax.aiEnabler, humanEdge: tax.humanEdge });
@@ -252,30 +242,73 @@ function computeJobMatches(skills: AggregatedSkill[], templates: DbJobTemplate[]
     }
 
     const totalWeight = allIds.reduce((s, id) => s + (taskSkillHits.get(id) || 1), 0);
-    const humanMatch = totalWeight > 0
-      ? Math.round((weightedScore / totalWeight) * 100 * coveragePenalty)
-      : 0;
-
-    // AI partial credit on gap skills
+    const humanMatch = totalWeight > 0 ? Math.round((weightedScore / totalWeight) * 100 * coveragePenalty) : 0;
     const aiPartialCredit = aiCovered.reduce((sum, gap) => {
       const tax = TAXONOMY.find(t => t.name === gap.name);
       const weight = taskSkillHits.get(tax?.id || "") || 1;
       return sum + (tax ? (tax.aiExposure / 100) * weight : 0.6);
     }, 0);
-
-    const aiBoostMatch = totalWeight > 0
-      ? Math.max(humanMatch, Math.round(((weightedScore + aiPartialCredit) / totalWeight) * 100 * coveragePenalty))
-      : 0;
+    const aiBoostMatch = totalWeight > 0 ? Math.max(humanMatch, Math.round(((weightedScore + aiPartialCredit) / totalWeight) * 100 * coveragePenalty)) : 0;
 
     return {
       title: job.title, company: job.company, dept: job.dept,
-      humanMatch, aiBoostMatch,
-      unlocked: humanMatch < 60 && aiBoostMatch >= 60,
-      matchedSkills: matched, gapSkills: gaps, aiCoveredGaps: aiCovered,
-      newEdges: [...new Set(newEdges)],
+      humanMatch, aiBoostMatch, unlocked: humanMatch < 60 && aiBoostMatch >= 60,
+      matchedSkills: matched, gapSkills: gaps, aiCoveredGaps: aiCovered, newEdges: [...new Set(newEdges)],
     };
   }).filter((j): j is JobMatchDot => j !== null && (j.humanMatch > 0 || j.aiBoostMatch > 0))
     .sort((a, b) => b.aiBoostMatch - a.aiBoostMatch);
+}
+
+/* ─── Skill Leverage Engine ─── */
+function computeSkillLeverage(
+  skills: AggregatedSkill[],
+  jobMatches: JobMatchDot[],
+  templates: DbJobTemplate[]
+): SkillLeverage[] {
+  // For each gap skill, count how many job dots it appears in
+  const skillImpact = new Map<string, { count: number; roles: { title: string; company: string }[] }>();
+
+  for (const job of jobMatches) {
+    for (const gap of job.gapSkills) {
+      const entry = skillImpact.get(gap.name) || { count: 0, roles: [] };
+      entry.count++;
+      entry.roles.push({ title: job.title, company: job.company });
+      skillImpact.set(gap.name, entry);
+    }
+  }
+
+  // Build leverage entries sorted by impact
+  const leverages: SkillLeverage[] = [];
+  for (const [skillName, impact] of skillImpact) {
+    const tax = TAXONOMY.find(t => t.name === skillName);
+    if (!tax) continue;
+
+    // Find the best task to practice this skill — from any company
+    let bestTask: SkillLeverage["bestTask"] = null;
+    for (const tmpl of templates) {
+      for (const task of tmpl.tasks) {
+        const ids = matchTaskToSkills(task);
+        if (ids.includes(tax.id)) {
+          bestTask = { taskName: task, company: tmpl.company, jobTitle: tmpl.title };
+          break;
+        }
+      }
+      if (bestTask) break;
+    }
+
+    leverages.push({
+      skillName,
+      skillId: tax.id,
+      category: tax.category,
+      dotsAffected: impact.count,
+      affectedRoles: impact.roles,
+      bestTask,
+      aiExposure: tax.aiExposure,
+      humanEdge: tax.humanEdge,
+    });
+  }
+
+  return leverages.sort((a, b) => b.dotsAffected - a.dotsAffected);
 }
 
 /* ══════════════════════════════════════════════════════════════════
@@ -294,6 +327,7 @@ export default function JourneyDashboard({ practicedRoles, savedRoles, loading }
 
   const skills = useMemo(() => buildTaxonomy(practicedRoles, templates), [practicedRoles, templates]);
   const jobMatches = useMemo(() => computeJobMatches(skills, templates), [skills, templates]);
+  const leverageSkills = useMemo(() => computeSkillLeverage(skills, jobMatches, templates), [skills, jobMatches, templates]);
 
   const uniqueRoles = useMemo(() => new Set(practicedRoles.map(r => r.job_title)).size, [practicedRoles]);
   const uniqueTasks = useMemo(() => new Set(practicedRoles.map(r => r.task_name)).size, [practicedRoles]);
@@ -408,7 +442,7 @@ export default function JourneyDashboard({ practicedRoles, savedRoles, loading }
 
         return (
           <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
-            <CareerReachMap jobMatches={jobMatches} isEmpty={isEmpty} />
+            <CareerReachMap jobMatches={jobMatches} isEmpty={isEmpty} leverageSkills={leverageSkills} />
           </motion.div>
         );
       })()}
