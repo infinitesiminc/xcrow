@@ -20,11 +20,12 @@ interface CourseData {
   skill_categories: Record<string, string[]> | null;
 }
 
-interface TaskCluster {
-  skill_names: string[] | null;
-  ai_exposure_score: number | null;
-  job_impact_score: number | null;
-  priority: string | null;
+interface MarketSkill {
+  skill_name: string;
+  demand_count: number;
+  avg_exposure: number;
+  avg_impact: number;
+  high_priority_count: number;
 }
 
 function normalize(s: string): string {
@@ -41,36 +42,24 @@ function fuzzyMatch(a: string, b: string): boolean {
 
 export default function SkillsGapMatrix({ schoolId, schoolName }: Props) {
   const [courses, setCourses] = useState<CourseData[]>([]);
-  const [taskClusters, setTaskClusters] = useState<TaskCluster[]>([]);
+  const [marketSkills, setMarketSkills] = useState<MarketSkill[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function load() {
       setLoading(true);
 
-      // Fetch school courses
-      const { data: courseData } = await supabase
-        .from("school_courses")
-        .select("program_name, degree_type, skills_extracted, tools_taught, ai_content_flag, industry_sectors, skill_categories")
-        .eq("school_id", schoolId);
+      // Fetch school courses AND aggregated market skills in parallel
+      const [courseRes, marketRes] = await Promise.all([
+        supabase
+          .from("school_courses")
+          .select("program_name, degree_type, skills_extracted, tools_taught, ai_content_flag, industry_sectors, skill_categories")
+          .eq("school_id", schoolId),
+        supabase.rpc("get_market_skill_demand", { top_n: 100 }),
+      ]);
 
-      setCourses((courseData as CourseData[]) || []);
-
-      // Fetch job market skills from task clusters (batched)
-      const allClusters: TaskCluster[] = [];
-      let from = 0;
-      const batchSize = 1000;
-      while (true) {
-        const { data } = await supabase
-          .from("job_task_clusters")
-          .select("skill_names, ai_exposure_score, job_impact_score, priority")
-          .range(from, from + batchSize - 1);
-        if (!data || data.length === 0) break;
-        allClusters.push(...(data as TaskCluster[]));
-        if (data.length < batchSize) break;
-        from += batchSize;
-      }
-      setTaskClusters(allClusters);
+      setCourses((courseRes.data as CourseData[]) || []);
+      setMarketSkills((marketRes.data as MarketSkill[]) || []);
       setLoading(false);
     }
     load();
