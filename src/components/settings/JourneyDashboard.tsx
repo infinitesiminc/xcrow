@@ -134,6 +134,8 @@ export default function JourneyDashboard({ practicedRoles, savedRoles, loading }
 
       {/* ── Curriculum Gap Recommendations (school students only) ── */}
       <CurriculumGapBanner />
+      {/* ── School Teaser (students whose school hasn't signed up) ── */}
+      <SchoolTeaser />
 
       {/* ── Empty State with Preview ── */}
       {isEmpty && (
