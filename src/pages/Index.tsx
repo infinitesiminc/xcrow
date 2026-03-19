@@ -15,7 +15,7 @@ function getGreeting(): string {
 }
 
 const Index = () => {
-  const { profile } = useAuth();
+  const { profile, user } = useAuth();
   const isMobile = useIsMobile();
 
   const [hasInteracted, setHasInteracted] = useState(false);
