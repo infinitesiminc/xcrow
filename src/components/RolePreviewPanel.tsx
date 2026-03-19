@@ -270,25 +270,42 @@ export default function RolePreviewPanel({ role, onClose, edgeContext }: RolePre
           </div>
         )}
 
+        {/* Edge context banner in breakdown */}
+        {edgeContext && edgeTaskSet.size > 0 && (
+          <div className="flex items-center gap-2 mb-4 px-3 py-2 rounded-xl bg-primary/10 border border-primary/20">
+            <Sparkles className="h-3.5 w-3.5 text-primary shrink-0" />
+            <p className="text-[11px] text-primary font-medium">
+              Exploring <span className="font-bold">{edgeContext.label}</span> — {edgeTaskSet.size} task{edgeTaskSet.size > 1 ? "s" : ""} build{edgeTaskSet.size === 1 ? "s" : ""} this edge
+            </p>
+          </div>
+        )}
+
         {/* Task cards */}
         <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">Tasks & AI Impact</h3>
         <div className="space-y-3">
-          {tasks.map((t, i) => {
+          {[...tasks]
+            .sort((a, b) => {
+              const aEdge = edgeTaskSet.has(a.cluster_name) ? 1 : 0;
+              const bEdge = edgeTaskSet.has(b.cluster_name) ? 1 : 0;
+              return bEdge - aEdge;
+            })
+            .map((t, i) => {
             const score = t.ai_exposure_score ?? 0;
             const style = taskChipStyle(score);
             const done = completedTasks.has(t.cluster_name);
             const TaskIcon = getTaskIcon(t.cluster_name);
             const taskHue = hashToHue(t.cluster_name);
+            const isEdgeTask = edgeTaskSet.has(t.cluster_name);
             return (
               <motion.div
-                key={i}
+                key={t.cluster_name}
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.04 }}
-                className="group rounded-xl border border-border/50 bg-card hover:border-primary/30 transition-all overflow-hidden"
+                className={`group rounded-xl border bg-card hover:border-primary/30 transition-all overflow-hidden ${isEdgeTask ? "border-primary/40 ring-1 ring-primary/20" : "border-border/50"}`}
               >
                 {/* Accent top strip */}
-                <div className="h-1" style={{ background: `linear-gradient(90deg, hsl(${taskHue} 60% 50%), hsl(${(taskHue + 40) % 360} 50% 45%))` }} />
+                <div className="h-1" style={{ background: isEdgeTask ? `hsl(var(--primary))` : `linear-gradient(90deg, hsl(${taskHue} 60% 50%), hsl(${(taskHue + 40) % 360} 50% 45%))` }} />
                 <div className="p-4">
                   <div className="flex items-start gap-3">
                     <div className="mt-0.5 h-8 w-8 rounded-lg flex items-center justify-center shrink-0"
@@ -297,9 +314,13 @@ export default function RolePreviewPanel({ role, onClose, edgeContext }: RolePre
                     </div>
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2 mb-1">
+                        {isEdgeTask && <Sparkles className="h-3.5 w-3.5 text-primary shrink-0" />}
                         <h4 className="text-sm font-semibold text-foreground leading-snug">{t.cluster_name}</h4>
                         {done && <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400 shrink-0" />}
                       </div>
+                      {isEdgeTask && (
+                        <p className="text-[10px] text-primary font-medium mb-1">Builds your {edgeContext!.label} edge</p>
+                      )}
                       {t.description && <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2">{t.description}</p>}
                       {/* Skill pills */}
                       {(() => {
