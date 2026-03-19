@@ -850,10 +850,12 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                     const isUser = msg.role === "user";
                     const displayContent = isUser ? msg.content : cleanMessageForDisplay(msg.content);
 
-                    // Detect scenario transition: assistant message right after a "yes" user message
+                    // Detect scenario transition: assistant message containing a new scenario marker or following a topic-change user message
                     const prevMsg = i > 0 ? messages[i - 1] : null;
-                    const isNewScenario = !isUser && prevMsg?.role === "user" && 
-                      ["yes", "y", "yeah", "sure"].includes(prevMsg.content.toLowerCase().trim());
+                    const topicChangeWords = ["yes", "y", "yeah", "sure", "next", "new topic", "move on", "continue", "let's go", "skip"];
+                    const prevIsTopicChange = prevMsg?.role === "user" && topicChangeWords.some(w => prevMsg.content.toLowerCase().trim().includes(w));
+                    const hasScenarioMarker = !isUser && (displayContent.includes("📖 Scenario") || displayContent.includes("📖 **Scenario"));
+                    const isNewScenario = !isUser && (prevIsTopicChange || hasScenarioMarker) && i > 1;
                     
                     const objectiveMetInMsg = !isUser ? (msg.content.match(/\[OBJECTIVE_MET:(\w+)\]/g) || []).map(t => {
                       const m = t.match(/\[OBJECTIVE_MET:(\w+)\]/);
