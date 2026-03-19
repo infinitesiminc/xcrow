@@ -11,7 +11,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { User, Menu, X, Compass, Shield, Bookmark, ArrowRight, Clock, Map, Settings, LogOut, Trophy } from "lucide-react";
+import { User, Menu, X, Compass, Shield, Bookmark, ArrowRight, Clock, Map, Settings, LogOut, Trophy, GraduationCap } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 interface RecentActivity {
