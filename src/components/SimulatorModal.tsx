@@ -1047,60 +1047,55 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                     initial={{ scale: 0.5, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
                     transition={{ delay: 0.15, type: "spring", stiffness: 200 }}
-                    className={`inline-flex items-center justify-center w-20 h-20 rounded-full ${doneIcon.bg}`}
+                    className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-primary/10"
                   >
-                    <DoneIconComponent className={`h-10 w-10 ${doneIcon.color}`} />
+                    <Trophy className="h-10 w-10 text-primary" />
                   </motion.div>
 
                   {/* Encouragement */}
                   <div className="space-y-2">
-                    <h3 className="text-xl font-display font-bold text-foreground">{doneTitle}</h3>
-                    <p className="text-sm text-muted-foreground leading-relaxed">{doneSubtitle}</p>
-                    <p className="text-xs text-muted-foreground/70">
+                    <h3 className="text-xl font-display font-bold text-foreground">
+                      {earnedSkills.length > 0 ? "Skills earned! 🎉" : "Great practice! 💪"}
+                    </h3>
+                    <p className="text-sm text-muted-foreground leading-relaxed">
                       {roundCount} round{roundCount !== 1 ? "s" : ""} on "{taskName}"
                     </p>
                   </div>
 
-                  {/* Objectives achieved — simple, no scores */}
-                  {scoreResult?.objectiveResults && scoreResult.objectiveResults.length > 0 && (
-                    <motion.div
-                      initial={{ opacity: 0, y: 8 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.3 }}
-                      className="w-full rounded-2xl border border-border/40 p-5 text-left"
-                    >
-                      <div className="flex items-center gap-2 mb-3">
-                        <Target className="h-4 w-4 text-primary" />
-                        <span className="text-sm font-semibold text-foreground">
-                          {objectiveMet} of {objectiveTotal} goals reached
-                        </span>
-                      </div>
-                      <ul className="space-y-2.5">
-                        {scoreResult.objectiveResults.map((r, i) => (
-                          <motion.li
-                            key={i}
-                            initial={{ opacity: 0, x: -8 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ delay: 0.35 + i * 0.06 }}
-                            className="flex items-start gap-2.5"
+                  {/* Skills Earned Cards */}
+                  {earnedSkills.length > 0 && (
+                    <div className="w-full space-y-2">
+                      {earnedSkills.map((skill, i) => (
+                        <motion.div
+                          key={skill.skill_id}
+                          initial={{ opacity: 0, x: -16 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: 0.3 + i * 0.1, type: "spring", stiffness: 150 }}
+                          className="flex items-center gap-3 rounded-xl border border-primary/20 bg-primary/5 p-3"
+                        >
+                          <motion.div
+                            initial={{ scale: 0, rotate: -45 }}
+                            animate={{ scale: 1, rotate: 0 }}
+                            transition={{ delay: 0.5 + i * 0.1, type: "spring" }}
+                            className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0"
                           >
-                            {r.met ? (
-                              <CircleCheck className="h-4 w-4 text-primary shrink-0 mt-0.5" />
-                            ) : (
-                              <Circle className="h-4 w-4 text-muted-foreground/40 shrink-0 mt-0.5" />
-                            )}
-                            <div>
-                              <span className={`text-sm font-medium ${r.met ? "text-foreground" : "text-muted-foreground"}`}>
-                                {objectives.find(o => o.id === r.id)?.label || r.id}
-                              </span>
-                              {r.evidence && (
-                                <p className="text-xs text-muted-foreground/70 mt-0.5 leading-relaxed">{r.evidence}</p>
-                              )}
-                            </div>
-                          </motion.li>
-                        ))}
-                      </ul>
-                    </motion.div>
+                            <Star className="h-5 w-5 text-primary" />
+                          </motion.div>
+                          <div className="text-left flex-1 min-w-0">
+                            <p className="text-sm font-semibold text-foreground truncate">{skill.name}</p>
+                            <p className="text-xs text-primary font-medium">+{skill.xp} XP</p>
+                          </div>
+                          <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            transition={{ delay: 0.7 + i * 0.1 }}
+                            className="text-xs text-muted-foreground shrink-0"
+                          >
+                            ⚡
+                          </motion.div>
+                        </motion.div>
+                      ))}
+                    </div>
                   )}
 
                   {!user && (
@@ -1109,7 +1104,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                     </p>
                   )}
 
-                  {/* CTAs — always encouraging */}
+                  {/* CTAs */}
                   <div className="flex flex-col gap-3 pt-2 w-full max-w-xs">
                     {onNextTask ? (
                       <Button onClick={() => { onClose(); onNextTask(); }} className="gap-2 rounded-xl w-full">
@@ -1124,7 +1119,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                         onClick={() => { onClose(); navigate("/journey"); }}
                         className="gap-2 rounded-xl w-full text-xs"
                       >
-                        <Map className="h-3.5 w-3.5" /> View My Journey
+                        <Map className="h-3.5 w-3.5" /> View Skill Map
                       </Button>
                     )}
                     <div className="flex gap-2">
