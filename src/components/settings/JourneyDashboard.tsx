@@ -1,24 +1,16 @@
 /**
- * Journey Dashboard — 5-step narrative
+ * Journey Dashboard — unified Career Reach Map
  *
- * 1. What I've Done        — activity log
- * 2. How My Skills Develop — skill proficiency & growth
- * 3. Jobs I'm Ready For    — current matches
- * 4. Jobs I Can Fast-Track — AI-unlocked roles
- * 5. How Do I Get There    — learning path
+ * Stats ribbon → Scatter chart (Human Match % vs AI Boost %)
+ * Click a dot → slide-out panel with gap analysis + CTA
  */
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
-import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
-import { Card, CardContent } from "@/components/ui/card";
+import { motion } from "framer-motion";
 import {
-  CheckCircle2, ChevronDown, ChevronRight, Clock, Layers,
-  Zap, Brain, Users, Shield, BarChart3, Target, Sparkles,
-  TrendingUp, Unlock, Bot, ArrowRight, Route, Trophy,
-  Play, Briefcase, BookOpen, ArrowUpRight, Search, Bookmark,
+  Play, Target, Briefcase, Bookmark, BookOpen, ArrowRight,
 } from "lucide-react";
+import CareerReachMap, { type JobMatchDot } from "./CareerReachMap";
 
 /* ─── Types ─── */
 export interface PracticedRoleData {
@@ -42,7 +34,7 @@ export interface SavedRoleData {
   new_skills_percent: number | null;
 }
 
-/* ─── Taxonomy (same as before, inlined for self-containment) ─── */
+/* ─── Taxonomy ─── */
 type SkillCategory = "technical" | "analytical" | "communication" | "leadership" | "creative" | "compliance";
 
 interface TaxonomySkill {
@@ -50,15 +42,6 @@ interface TaxonomySkill {
   keywords: string[]; aiExposure: number;
   aiEnabler?: string; humanEdge?: string;
 }
-
-const CATEGORY_META: Record<SkillCategory, { label: string; icon: typeof Layers; color: string }> = {
-  technical:      { label: "Technical",         icon: Zap,       color: "hsl(var(--chart-1))" },
-  analytical:     { label: "Analytical",        icon: BarChart3, color: "hsl(var(--chart-2))" },
-  communication:  { label: "Communication",     icon: Users,     color: "hsl(var(--chart-3))" },
-  leadership:     { label: "Leadership",        icon: Target,    color: "hsl(var(--chart-4))" },
-  creative:       { label: "Creative",          icon: Brain,     color: "hsl(var(--chart-5))" },
-  compliance:     { label: "Compliance & Risk",  icon: Shield,    color: "hsl(var(--primary))" },
-};
 
 const TAXONOMY: TaxonomySkill[] = [
   { id: "code-dev", name: "Software Development", category: "technical", aiExposure: 72, keywords: ["code", "development", "engineering", "component", "pipeline", "etl", "ci/cd", "deploy", "refactor", "responsive", "schema", "integration"], aiEnabler: "No-code platforms, Copilot, Cursor", humanEdge: "System thinking & product judgment" },
@@ -155,15 +138,6 @@ interface AggregatedSkill {
   jobs: { title: string; company: string; taskName: string; score: number }[];
 }
 
-interface JobMatch {
-  title: string; company: string; dept: string;
-  humanMatch: number; aiBoostMatch: number; unlocked: boolean;
-  matchedSkills: string[];
-  gapSkills: { name: string; aiExposure: number; aiEnabler?: string; humanEdge?: string }[];
-  aiCoveredGaps: { name: string; aiEnabler: string; humanEdge: string }[];
-  newEdges: string[];
-}
-
 function buildTaxonomy(practicedRoles: PracticedRoleData[]) {
   const skillMap = new Map<string, AggregatedSkill>();
   for (const ts of TAXONOMY) {
@@ -202,13 +176,13 @@ function buildTaxonomy(practicedRoles: PracticedRoleData[]) {
   return result;
 }
 
-function computeJobMatches(skills: AggregatedSkill[]): JobMatch[] {
+function computeJobMatches(skills: AggregatedSkill[]): JobMatchDot[] {
   const userSkillMap = new Map(skills.map(s => [s.id, s]));
   return JOB_TEMPLATES.map(job => {
     const jobSkillIds = new Set<string>();
     for (const t of job.tasks) for (const id of matchTaskToSkills(t)) jobSkillIds.add(id);
     const allIds = Array.from(jobSkillIds);
-    const matched: string[] = [], gaps: JobMatch["gapSkills"] = [], aiCovered: JobMatch["aiCoveredGaps"] = [], newEdges: string[] = [];
+    const matched: string[] = [], gaps: JobMatchDot["gapSkills"] = [], aiCovered: JobMatchDot["aiCoveredGaps"] = [], newEdges: string[] = [];
     for (const id of allIds) {
       const us = userSkillMap.get(id);
       if (us && us.proficiency >= 50) { matched.push(us.name); }
@@ -229,106 +203,6 @@ function computeJobMatches(skills: AggregatedSkill[]): JobMatch[] {
   }).sort((a, b) => b.aiBoostMatch - a.aiBoostMatch);
 }
 
-/* ─── Edge path ─── */
-interface EdgeStep {
-  edge: string; frequency: number; category: SkillCategory;
-  relatedSkills: { name: string; aiEnabler: string }[];
-  practiceTasks: { jobTitle: string; company: string; taskName: string }[];
-  pillar: string; bestScore: number | null; practiced: boolean;
-}
-
-const EDGE_PILLAR: Record<string, string> = {
-  "System thinking & product judgment": "adaptive_thinking",
-  "Trade-off reasoning at scale": "domain_judgment",
-  "Edge-case intuition": "adaptive_thinking",
-  "Adversarial thinking": "domain_judgment",
-  "Data governance & domain modeling": "domain_judgment",
-  "Problem framing & evaluation design": "adaptive_thinking",
-  "Incident judgment & reliability culture": "domain_judgment",
-  "Asking the right questions": "adaptive_thinking",
-  "Assumption judgment & scenario framing": "domain_judgment",
-  "Novel hypothesis formation": "adaptive_thinking",
-  "Change management & adoption": "human_value_add",
-  "Contextual judgment under uncertainty": "domain_judgment",
-  "Trust building & political navigation": "human_value_add",
-  "Voice, narrative, and persuasion": "human_value_add",
-  "Storytelling & executive presence": "human_value_add",
-  "Empathy & leverage intuition": "human_value_add",
-  "Team dynamics & priority judgment": "human_value_add",
-  "Vision & competitive intuition": "adaptive_thinking",
-  "Empathy & cultural leadership": "human_value_add",
-  "Relationship & negotiation leverage": "human_value_add",
-  "Empathy-driven design thinking": "human_value_add",
-  "Cultural resonance & originality": "adaptive_thinking",
-  "Audience intuition & trend sensing": "adaptive_thinking",
-  "Jurisdictional judgment & precedent": "domain_judgment",
-  "Materiality judgment & ethics": "domain_judgment",
-};
-
-function buildEdgePath(jobMatches: JobMatch[], practicedRoles: PracticedRoleData[]): EdgeStep[] {
-  const edgeMap = new Map<string, { frequency: number; relatedSkills: Map<string, string>; jobs: Set<string>; tasks: { jobTitle: string; company: string; taskName: string }[]; category: SkillCategory }>();
-  for (const job of jobMatches.filter(j => j.unlocked || j.aiBoostMatch >= 60)) {
-    for (const gap of job.aiCoveredGaps) {
-      if (!gap.humanEdge) continue;
-      if (!edgeMap.has(gap.humanEdge)) edgeMap.set(gap.humanEdge, { frequency: 0, relatedSkills: new Map(), jobs: new Set(), tasks: [], category: TAXONOMY.find(t => t.humanEdge === gap.humanEdge)?.category || "leadership" });
-      const e = edgeMap.get(gap.humanEdge)!;
-      e.frequency++; e.jobs.add(job.title); e.relatedSkills.set(gap.name, gap.aiEnabler);
-    }
-  }
-  for (const [edge, entry] of edgeMap) {
-    const skill = TAXONOMY.find(t => t.humanEdge === edge);
-    if (!skill) continue;
-    for (const job of JOB_TEMPLATES) {
-      for (const t of job.tasks) {
-        if (matchTaskToSkills(t).includes(skill.id)) entry.tasks.push({ jobTitle: job.title, company: job.company, taskName: t });
-      }
-    }
-  }
-  const steps: EdgeStep[] = [];
-  for (const [edge, entry] of edgeMap) {
-    if (entry.frequency === 0) continue;
-    const pillar = EDGE_PILLAR[edge] || "human_value_add";
-    const pillarKey = `${pillar}_score` as keyof PracticedRoleData;
-    const skill = TAXONOMY.find(t => t.humanEdge === edge);
-    let bestScore: number | null = null;
-    let practiced = false;
-    if (skill) {
-      for (const pr of practicedRoles) {
-        if ([...matchTaskToSkills(pr.task_name), ...matchTaskToSkills(pr.job_title)].includes(skill.id)) {
-          practiced = true;
-          const s = pr[pillarKey] as number | null;
-          if (s != null && (bestScore === null || s > bestScore)) bestScore = s;
-        }
-      }
-    }
-    steps.push({ edge, frequency: entry.frequency, category: entry.category, relatedSkills: Array.from(entry.relatedSkills.entries()).map(([n, a]) => ({ name: n, aiEnabler: a })), practiceTasks: entry.tasks.slice(0, 3), pillar, bestScore, practiced });
-  }
-  steps.sort((a, b) => { if (a.practiced !== b.practiced) return a.practiced ? 1 : -1; return b.frequency - a.frequency; });
-  return steps;
-}
-
-/* ─── Helpers ─── */
-function profColor(s: number) { return s >= 75 ? "text-brand-human" : s >= 55 ? "text-brand-mid" : "text-brand-ai"; }
-function profBg(s: number) { return s >= 75 ? "bg-brand-human/15" : s >= 55 ? "bg-brand-mid/15" : "bg-brand-ai/15"; }
-function timeAgo(d: string) { const diff = Date.now() - new Date(d).getTime(); const m = Math.floor(diff / 60000); if (m < 60) return `${m}m ago`; const h = Math.floor(m / 60); if (h < 24) return `${h}h ago`; return `${Math.floor(h / 24)}d ago`; }
-function avgPillar(r: PracticedRoleData) {
-  const s = [r.tool_awareness_score, r.human_value_add_score, r.adaptive_thinking_score, r.domain_judgment_score].filter((v): v is number => v != null);
-  return s.length ? Math.round(s.reduce((a, b) => a + b, 0) / s.length) : 0;
-}
-
-const PILLAR_LABELS: Record<string, string> = { human_value_add: "Human Value-Add", adaptive_thinking: "Adaptive Thinking", domain_judgment: "Domain Judgment", tool_awareness: "Tool Awareness" };
-
-/* ─── Steps ─── */
-type Step = "done" | "skills" | "ready" | "fast-track" | "path";
-
-const STEPS: { key: Step; label: string; icon: typeof CheckCircle2; shortLabel: string }[] = [
-  { key: "done",       label: "What I've Done",       icon: CheckCircle2, shortLabel: "Done" },
-  { key: "skills",     label: "My Skills",            icon: TrendingUp,   shortLabel: "Skills" },
-  { key: "ready",      label: "Ready For",            icon: Briefcase,    shortLabel: "Ready" },
-  { key: "fast-track", label: "Fast-Track with AI",   icon: Sparkles,     shortLabel: "AI Boost" },
-  { key: "path",       label: "How to Get There",     icon: Route,        shortLabel: "Path" },
-];
-
 /* ══════════════════════════════════════════════════════════════════
    Main Component
    ══════════════════════════════════════════════════════════════════ */
@@ -341,36 +215,12 @@ interface JourneyDashboardProps {
 
 export default function JourneyDashboard({ practicedRoles, savedRoles, loading }: JourneyDashboardProps) {
   const navigate = useNavigate();
-  const [step, setStep] = useState<Step>("done");
-  const [expandedIdx, setExpandedIdx] = useState<number | null>(null);
 
   const skills = useMemo(() => buildTaxonomy(practicedRoles), [practicedRoles]);
   const jobMatches = useMemo(() => computeJobMatches(skills), [skills]);
-  const edgePath = useMemo(() => buildEdgePath(jobMatches, practicedRoles), [jobMatches, practicedRoles]);
 
-  const readyJobs = useMemo(() => jobMatches.filter(j => j.humanMatch >= 60).sort((a, b) => b.humanMatch - a.humanMatch), [jobMatches]);
-  const fastTrackJobs = useMemo(() => jobMatches.filter(j => j.unlocked).sort((a, b) => b.aiBoostMatch - a.aiBoostMatch), [jobMatches]);
-
-  const { strengths, developing, gaps } = useMemo(() => {
-    const s: AggregatedSkill[] = [], d: AggregatedSkill[] = [], g: AggregatedSkill[] = [];
-    for (const sk of skills) {
-      if (!sk.practiced) continue; // Only show practiced skills
-      if (sk.proficiency >= 75) s.push(sk);
-      else if (sk.proficiency >= 55) d.push(sk);
-      else g.push(sk);
-    }
-    return { strengths: s.sort((a, b) => b.proficiency - a.proficiency), developing: d, gaps: g.sort((a, b) => a.proficiency - b.proficiency) };
-  }, [skills]);
-
-  // Unique roles & tasks practiced
   const uniqueRoles = useMemo(() => new Set(practicedRoles.map(r => r.job_title)).size, [practicedRoles]);
   const uniqueTasks = useMemo(() => new Set(practicedRoles.map(r => r.task_name)).size, [practicedRoles]);
-
-  const goToRole = (title: string, company?: string | null) => {
-    const params = new URLSearchParams({ title });
-    if (company) params.set("company", company);
-    navigate(`/analysis?${params.toString()}`);
-  };
 
   if (loading) {
     return (
@@ -386,33 +236,23 @@ export default function JourneyDashboard({ practicedRoles, savedRoles, loading }
     <div>
       <div className="mb-1">
         <h2 className="text-xl font-bold text-foreground">My Journey</h2>
-        <p className="text-sm text-muted-foreground">Your career development at a glance.</p>
+        <p className="text-sm text-muted-foreground">See which roles you're ready for — and which AI can unlock.</p>
       </div>
 
-      {/* ── Step Navigation ── */}
-      <div className="flex items-center gap-0.5 mt-5 mb-6 overflow-x-auto pb-1">
-        {STEPS.map((s, i) => {
-          const active = step === s.key;
-          const Icon = s.icon;
-          return (
-            <button
-              key={s.key}
-              onClick={() => { setStep(s.key); setExpandedIdx(null); }}
-              className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-all whitespace-nowrap shrink-0 ${
-                active
-                  ? "bg-primary text-primary-foreground shadow-sm"
-                  : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
-              }`}
-            >
-              <Icon className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">{s.label}</span>
-              <span className="sm:hidden">{s.shortLabel}</span>
-              {i < STEPS.length - 1 && !active && (
-                <ArrowRight className="h-3 w-3 text-border ml-1 hidden sm:block" />
-              )}
-            </button>
-          );
-        })}
+      {/* ── Stats Ribbon ── */}
+      <div className="grid grid-cols-4 gap-2 mt-4 mb-5">
+        {[
+          { label: "Simulations", value: practicedRoles.length, icon: Play },
+          { label: "Unique Tasks", value: uniqueTasks, icon: Target },
+          { label: "Roles Explored", value: uniqueRoles, icon: Briefcase },
+          { label: "Roles Saved", value: savedRoles.length, icon: Bookmark },
+        ].map(stat => (
+          <div key={stat.label} className="rounded-xl border border-border/40 bg-card p-2.5 text-center">
+            <stat.icon className="h-3.5 w-3.5 text-muted-foreground mx-auto mb-1" />
+            <p className="text-lg font-bold text-foreground">{stat.value}</p>
+            <p className="text-[9px] text-muted-foreground uppercase tracking-wider">{stat.label}</p>
+          </div>
+        ))}
       </div>
 
       {/* ── Empty State ── */}
@@ -420,7 +260,7 @@ export default function JourneyDashboard({ practicedRoles, savedRoles, loading }
         <div className="text-center py-16">
           <BookOpen className="h-10 w-10 text-muted-foreground/20 mx-auto mb-4" />
           <p className="text-sm text-muted-foreground">No activity yet</p>
-          <p className="text-xs text-muted-foreground/60 mt-1 mb-4">Explore roles, practice tasks, and bookmark positions to build your journey</p>
+          <p className="text-xs text-muted-foreground/60 mt-1 mb-4">Explore roles, practice tasks, and bookmark positions to build your career map</p>
           <button
             onClick={() => navigate("/")}
             className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors"
@@ -430,478 +270,11 @@ export default function JourneyDashboard({ practicedRoles, savedRoles, loading }
         </div>
       )}
 
+      {/* ── Career Reach Map ── */}
       {!isEmpty && (
-        <AnimatePresence mode="wait">
-          <motion.div key={step} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }} transition={{ duration: 0.2 }}>
-
-            {/* ═══ STEP 1: What I've Done ═══ */}
-            {step === "done" && (
-              <div className="space-y-5">
-                {/* Summary cards */}
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                  {[
-                    { label: "Simulations", value: practicedRoles.length, icon: Play },
-                    { label: "Unique Tasks", value: uniqueTasks, icon: Target },
-                    { label: "Roles Explored", value: uniqueRoles, icon: Briefcase },
-                    { label: "Roles Saved", value: savedRoles.length, icon: Bookmark },
-                  ].map(stat => (
-                    <div key={stat.label} className="rounded-xl border border-border/40 bg-card p-3 text-center">
-                      <stat.icon className="h-4 w-4 text-muted-foreground mx-auto mb-1.5" />
-                      <p className="text-xl font-bold text-foreground">{stat.value}</p>
-                      <p className="text-[10px] text-muted-foreground uppercase tracking-wider">{stat.label}</p>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Recent activity */}
-                <div>
-                  <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Recent Activity</h3>
-                  {practicedRoles.length === 0 ? (
-                    <p className="text-xs text-muted-foreground">No simulations completed yet. Practice a role to see your activity here.</p>
-                  ) : (
-                    <div className="space-y-1.5">
-                      {practicedRoles.slice(0, 10).map((pr, i) => {
-                        const score = avgPillar(pr);
-                        return (
-                          <motion.button
-                            key={i}
-                            initial={{ opacity: 0, x: -8 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ delay: i * 0.03 }}
-                            onClick={() => goToRole(pr.job_title, pr.company)}
-                            className="w-full flex items-center gap-3 p-3 rounded-lg border border-border/30 bg-card hover:bg-muted/20 transition-colors text-left group"
-                          >
-                            <div className={`w-9 h-9 rounded-full flex items-center justify-center shrink-0 ${profBg(score)}`}>
-                              <span className={`text-xs font-bold ${profColor(score)}`}>{score}</span>
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <p className="text-xs font-medium text-foreground truncate">{pr.task_name}</p>
-                              <p className="text-[10px] text-muted-foreground truncate">{pr.job_title}{pr.company ? ` · ${pr.company}` : ""}</p>
-                            </div>
-                            <span className="text-[10px] text-muted-foreground shrink-0">{timeAgo(pr.completed_at)}</span>
-                            <ArrowRight className="h-3 w-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
-                          </motion.button>
-                        );
-                      })}
-                    </div>
-                  )}
-                </div>
-
-                {/* Saved roles */}
-                {savedRoles.length > 0 && (
-                  <div>
-                    <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Saved Roles</h3>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                      {savedRoles.slice(0, 6).map((sr, i) => (
-                        <button
-                          key={i}
-                          onClick={() => goToRole(sr.job_title, sr.company)}
-                          className="flex items-center gap-3 p-3 rounded-lg border border-border/30 bg-card hover:bg-muted/20 transition-colors text-left"
-                        >
-                          <Bookmark className="h-4 w-4 text-primary shrink-0" />
-                          <div className="min-w-0 flex-1">
-                            <p className="text-xs font-medium text-foreground truncate">{sr.job_title}</p>
-                            {sr.company && <p className="text-[10px] text-muted-foreground">{sr.company}</p>}
-                          </div>
-                          {sr.augmented_percent != null && (
-                            <span className="text-[10px] text-muted-foreground shrink-0">{sr.augmented_percent}% augmented</span>
-                          )}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* ═══ STEP 2: How My Skills Are Developing ═══ */}
-            {step === "skills" && (
-              <div className="space-y-5">
-                {/* Summary */}
-                <div className="grid grid-cols-3 gap-2">
-                  <div className="rounded-xl border border-brand-human/20 bg-brand-human/5 p-3 text-center">
-                    <p className="text-xl font-bold text-brand-human">{strengths.length}</p>
-                    <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Strong</p>
-                  </div>
-                  <div className="rounded-xl border border-brand-mid/20 bg-brand-mid/5 p-3 text-center">
-                    <p className="text-xl font-bold text-brand-mid">{developing.length}</p>
-                    <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Growing</p>
-                  </div>
-                  <div className="rounded-xl border border-brand-ai/20 bg-brand-ai/5 p-3 text-center">
-                    <p className="text-xl font-bold text-brand-ai">{gaps.length}</p>
-                    <p className="text-[10px] text-muted-foreground uppercase tracking-wider">To Build</p>
-                  </div>
-                </div>
-
-                {practicedRoles.length === 0 ? (
-                  <div className="rounded-xl border border-border/40 bg-muted/10 p-6 text-center">
-                    <TrendingUp className="h-8 w-8 text-muted-foreground/20 mx-auto mb-3" />
-                    <p className="text-sm text-muted-foreground">Complete simulations to see your skills develop</p>
-                    <p className="text-xs text-muted-foreground/60 mt-1">Each simulation measures 4 pillars: Tool Awareness, Human Value-Add, Adaptive Thinking, Domain Judgment</p>
-                  </div>
-                ) : (
-                  <>
-                    {/* Pillar overview */}
-                    <div>
-                      <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Pillar Averages</h3>
-                      <div className="grid grid-cols-2 gap-2">
-                        {(["tool_awareness", "human_value_add", "adaptive_thinking", "domain_judgment"] as const).map(pillar => {
-                          const key = `${pillar}_score` as keyof PracticedRoleData;
-                          const scores = practicedRoles.map(r => r[key] as number | null).filter((s): s is number => s != null);
-                          const avg = scores.length ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) : 0;
-                          return (
-                            <div key={pillar} className="rounded-xl border border-border/40 bg-card p-3">
-                              <div className="flex items-center justify-between mb-2">
-                                <p className="text-[10px] font-medium text-muted-foreground">{PILLAR_LABELS[pillar]}</p>
-                                <span className={`text-sm font-bold ${profColor(avg)}`}>{avg}%</span>
-                              </div>
-                              <Progress value={avg} className="h-1.5" />
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-
-                    {/* Skills by category */}
-                    {[
-                      { title: "Strengths", subtitle: "You perform consistently well here", items: strengths, icon: <Trophy className="h-3.5 w-3.5 text-brand-human" /> },
-                      { title: "Developing", subtitle: "Building momentum — keep practicing", items: developing, icon: <TrendingUp className="h-3.5 w-3.5 text-brand-mid" /> },
-                      { title: "Gaps", subtitle: "Focus areas — or let AI handle them", items: gaps, icon: <Target className="h-3.5 w-3.5 text-brand-ai" /> },
-                    ].filter(g => g.items.length > 0).map(group => (
-                      <div key={group.title}>
-                        <div className="flex items-center gap-2 mb-2">
-                          {group.icon}
-                          <div>
-                            <h3 className="text-xs font-semibold text-foreground">{group.title}</h3>
-                            <p className="text-[10px] text-muted-foreground">{group.subtitle}</p>
-                          </div>
-                        </div>
-                        <div className="space-y-1">
-                          {group.items.map(sk => (
-                            <div key={sk.id} className="flex items-center gap-3 p-2.5 rounded-lg border border-border/30 bg-card">
-                              <div className="flex-1 min-w-0">
-                                <p className="text-xs font-medium text-foreground truncate">{sk.name}</p>
-                                <p className="text-[10px] text-muted-foreground">{CATEGORY_META[sk.category].label} · {sk.taskCount} tasks</p>
-                              </div>
-                              <div className="w-16 hidden sm:block">
-                                <Progress value={sk.proficiency} className="h-1.5" />
-                              </div>
-                              <span className={`text-xs font-bold w-10 text-right ${profColor(sk.proficiency)}`}>{sk.proficiency}%</span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    ))}
-                  </>
-                )}
-              </div>
-            )}
-
-            {/* ═══ STEP 3: Jobs I'm Ready For ═══ */}
-            {step === "ready" && (
-              <div className="space-y-4">
-                <div className="rounded-xl border border-brand-human/20 bg-brand-human/5 p-4">
-                  <p className="text-xs text-muted-foreground">
-                    <strong className="text-foreground">{readyJobs.length} roles</strong> where your current skills already match 60%+ of what's needed.
-                  </p>
-                </div>
-
-                {readyJobs.length === 0 ? (
-                  <div className="text-center py-10">
-                    <Briefcase className="h-8 w-8 text-muted-foreground/20 mx-auto mb-3" />
-                    <p className="text-sm text-muted-foreground">Complete more simulations to unlock role matches</p>
-                  </div>
-                ) : (
-                  <div className="space-y-1.5">
-                    {readyJobs.slice(0, 15).map((job, i) => (
-                      <motion.button
-                        key={i}
-                        initial={{ opacity: 0, y: 4 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: i * 0.02 }}
-                        onClick={() => goToRole(job.title, job.company)}
-                        className="w-full flex items-center gap-3 p-3 rounded-lg border border-border/30 bg-card hover:bg-muted/20 transition-colors text-left group"
-                      >
-                        <div className={`w-10 h-10 rounded-full flex flex-col items-center justify-center shrink-0 ${profBg(job.humanMatch)}`}>
-                          <span className={`text-xs font-bold ${profColor(job.humanMatch)}`}>{job.humanMatch}%</span>
-                          <span className="text-[7px] text-muted-foreground">match</span>
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-xs font-medium text-foreground truncate">{job.title}</p>
-                          <p className="text-[10px] text-muted-foreground">{job.company} · {job.dept}</p>
-                          <div className="flex flex-wrap gap-1 mt-1">
-                            {job.matchedSkills.slice(0, 3).map((s, si) => (
-                              <Badge key={si} variant="outline" className="text-[8px] px-1 py-0 border-brand-human/30 text-brand-human">{s}</Badge>
-                            ))}
-                            {job.matchedSkills.length > 3 && (
-                              <span className="text-[8px] text-muted-foreground">+{job.matchedSkills.length - 3}</span>
-                            )}
-                          </div>
-                        </div>
-                        <ArrowRight className="h-3.5 w-3.5 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
-                      </motion.button>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* ═══ STEP 4: Fast-Track with AI ═══ */}
-            {step === "fast-track" && (
-              <div className="space-y-4">
-                <div className="rounded-xl border border-primary/20 bg-primary/5 p-4">
-                  <p className="text-xs text-muted-foreground">
-                    <strong className="text-foreground">{fastTrackJobs.length} roles</strong> you can't do alone, but <strong className="text-primary">AI bridges the gap</strong>. Your skills + AI tools = qualified.
-                  </p>
-                </div>
-
-                {fastTrackJobs.length === 0 ? (
-                  <div className="text-center py-10">
-                    <Sparkles className="h-8 w-8 text-muted-foreground/20 mx-auto mb-3" />
-                    <p className="text-sm text-muted-foreground">Practice more tasks to discover AI-unlocked opportunities</p>
-                  </div>
-                ) : (
-                  <div className="space-y-1.5">
-                    {fastTrackJobs.slice(0, 15).map((job, i) => {
-                      const boost = job.aiBoostMatch - job.humanMatch;
-                      const isOpen = expandedIdx === i;
-                      return (
-                        <motion.div
-                          key={i}
-                          initial={{ opacity: 0, y: 4 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: i * 0.02 }}
-                          className="rounded-lg border border-border/40 bg-card overflow-hidden"
-                        >
-                          <button
-                            onClick={() => setExpandedIdx(isOpen ? null : i)}
-                            className="w-full flex items-center gap-3 p-3 hover:bg-muted/20 transition-colors text-left"
-                          >
-                            <div className={`w-10 h-10 rounded-full flex flex-col items-center justify-center shrink-0 ${profBg(job.aiBoostMatch)}`}>
-                              <span className={`text-xs font-bold ${profColor(job.aiBoostMatch)}`}>{job.aiBoostMatch}%</span>
-                              <span className="text-[7px] text-muted-foreground">total</span>
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <div className="flex items-center gap-1.5">
-                                <p className="text-xs font-medium text-foreground truncate">{job.title}</p>
-                                <Badge variant="outline" className="text-[8px] px-1 py-0 border-primary/40 text-primary shrink-0">
-                                  <Unlock className="h-2 w-2 mr-0.5" />+{boost}% AI
-                                </Badge>
-                              </div>
-                              <p className="text-[10px] text-muted-foreground">{job.company} · {job.dept}</p>
-                              {/* Boost bar */}
-                              <div className="flex items-center gap-1.5 mt-1.5">
-                                <div className="flex-1 h-1.5 rounded-full bg-muted/40 overflow-hidden">
-                                  <div className="h-full rounded-full relative" style={{ width: `${job.aiBoostMatch}%` }}>
-                                    <div className="absolute inset-0 rounded-full bg-muted-foreground/30" style={{ width: `${(job.humanMatch / job.aiBoostMatch) * 100}%` }} />
-                                    <div className="absolute inset-0 rounded-full bg-primary/50" style={{ left: `${(job.humanMatch / job.aiBoostMatch) * 100}%` }} />
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            {isOpen ? <ChevronDown className="h-3.5 w-3.5 text-muted-foreground shrink-0" /> : <ChevronRight className="h-3.5 w-3.5 text-muted-foreground shrink-0" />}
-                          </button>
-
-                          <AnimatePresence>
-                            {isOpen && (
-                              <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="border-t border-border/30">
-                                <div className="p-3 space-y-3">
-                                  {job.aiCoveredGaps.length > 0 && (
-                                    <div className="space-y-1.5">
-                                      <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider flex items-center gap-1">
-                                        <Bot className="h-3 w-3" /> AI Bridges These Gaps
-                                      </p>
-                                      {job.aiCoveredGaps.map((gap, gi) => (
-                                        <div key={gi} className="flex items-start gap-2 p-2 rounded-md bg-primary/5 border border-primary/10">
-                                          <Bot className="h-3.5 w-3.5 text-primary mt-0.5 shrink-0" />
-                                          <div className="min-w-0">
-                                            <p className="text-[11px] font-medium text-foreground">{gap.name}</p>
-                                            <p className="text-[10px] text-primary/80">{gap.aiEnabler}</p>
-                                          </div>
-                                        </div>
-                                      ))}
-                                    </div>
-                                  )}
-                                  {job.newEdges.length > 0 && (
-                                    <div className="space-y-1.5">
-                                      <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider flex items-center gap-1">
-                                        <ArrowUpRight className="h-3 w-3" /> Human Edges to Develop
-                                      </p>
-                                      <div className="flex flex-wrap gap-1">
-                                        {job.newEdges.map((edge, ei) => (
-                                          <Badge key={ei} variant="outline" className="text-[9px] border-brand-human/30 text-brand-human">{edge}</Badge>
-                                        ))}
-                                      </div>
-                                    </div>
-                                  )}
-                                  <button
-                                    onClick={() => goToRole(job.title, job.company)}
-                                    className="w-full flex items-center justify-center gap-1.5 p-2 rounded-md bg-muted/30 hover:bg-muted/50 transition-colors text-xs text-muted-foreground hover:text-foreground"
-                                  >
-                                    Explore this role <ArrowRight className="h-3 w-3" />
-                                  </button>
-                                </div>
-                              </motion.div>
-                            )}
-                          </AnimatePresence>
-                        </motion.div>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* ═══ STEP 5: How Do I Get There ═══ */}
-            {step === "path" && (
-              <div className="space-y-5">
-                {/* Progress summary */}
-                <div className="grid grid-cols-3 gap-2">
-                  <div className="rounded-xl border border-primary/20 bg-primary/5 p-3 text-center">
-                    <p className="text-xl font-bold text-primary">{edgePath.length}</p>
-                    <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Skills to Build</p>
-                  </div>
-                  <div className="rounded-xl border border-brand-mid/20 bg-brand-mid/5 p-3 text-center">
-                    <p className="text-xl font-bold text-brand-mid">{edgePath.filter(e => e.practiced).length}</p>
-                    <p className="text-[10px] text-muted-foreground uppercase tracking-wider">In Progress</p>
-                  </div>
-                  <div className="rounded-xl border border-brand-human/20 bg-brand-human/5 p-3 text-center">
-                    <p className="text-xl font-bold text-brand-human">{edgePath.filter(e => (e.bestScore ?? 0) >= 70).length}</p>
-                    <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Mastered</p>
-                  </div>
-                </div>
-
-                {/* Explanation */}
-                <div className="rounded-xl border border-primary/20 bg-primary/5 p-4">
-                  <p className="text-xs text-muted-foreground leading-relaxed">
-                    <strong className="text-foreground">Your learning path.</strong>{" "}
-                    These are uniquely human skills that AI can't replace — ranked by how many fast-track roles need them. Master these to thrive, not just access, AI-unlocked opportunities.
-                  </p>
-                </div>
-
-                {/* Overall progress */}
-                {edgePath.length > 0 && (
-                  <div className="space-y-1.5">
-                    <div className="flex items-center justify-between">
-                      <p className="text-xs text-muted-foreground font-medium">Overall Progress</p>
-                      <p className="text-xs font-bold text-foreground">
-                        {Math.round((edgePath.filter(e => (e.bestScore ?? 0) >= 70).length / edgePath.length) * 100)}%
-                      </p>
-                    </div>
-                    <Progress value={(edgePath.filter(e => (e.bestScore ?? 0) >= 70).length / edgePath.length) * 100} className="h-2" />
-                  </div>
-                )}
-
-                {/* Edge steps */}
-                {edgePath.length === 0 ? (
-                  <div className="text-center py-10">
-                    <Route className="h-8 w-8 text-muted-foreground/20 mx-auto mb-3" />
-                    <p className="text-sm text-muted-foreground">Complete simulations to generate your learning path</p>
-                  </div>
-                ) : (
-                  <div className="space-y-1.5">
-                    {edgePath.map((es, i) => {
-                      const mastered = (es.bestScore ?? 0) >= 70;
-                      const isOpen = expandedIdx === i;
-                      return (
-                        <motion.div
-                          key={i}
-                          initial={{ opacity: 0, y: 4 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: i * 0.03 }}
-                          className={`rounded-lg border overflow-hidden ${mastered ? "border-brand-human/30 bg-brand-human/5" : "border-border/40 bg-card"}`}
-                        >
-                          <button
-                            onClick={() => setExpandedIdx(isOpen ? null : i)}
-                            className="w-full flex items-center gap-3 p-3 hover:bg-muted/20 transition-colors text-left"
-                          >
-                            {/* Step indicator */}
-                            <div className="shrink-0">
-                              {mastered ? (
-                                <Trophy className="h-4 w-4 text-brand-human" />
-                              ) : es.practiced ? (
-                                <TrendingUp className="h-4 w-4 text-brand-mid" />
-                              ) : (
-                                <div className="w-5 h-5 rounded-full border-2 border-muted-foreground/30 flex items-center justify-center">
-                                  <span className="text-[8px] text-muted-foreground font-bold">{i + 1}</span>
-                                </div>
-                              )}
-                            </div>
-
-                            <div className="flex-1 min-w-0">
-                              <div className="flex items-center gap-1.5">
-                                <p className="text-xs font-semibold text-foreground truncate">{es.edge}</p>
-                                <Badge variant="outline" className="text-[8px] px-1 py-0 shrink-0 border-border/40 text-muted-foreground">
-                                  {es.frequency} roles
-                                </Badge>
-                              </div>
-                              <p className="text-[10px] text-muted-foreground mt-0.5">
-                                {PILLAR_LABELS[es.pillar] || es.pillar} · {CATEGORY_META[es.category]?.label}
-                              </p>
-                              {es.bestScore !== null && (
-                                <div className="flex items-center gap-1.5 mt-1.5">
-                                  <Progress value={es.bestScore} className="h-1.5 flex-1" />
-                                  <span className={`text-[10px] font-bold ${profColor(es.bestScore)}`}>{es.bestScore}%</span>
-                                </div>
-                              )}
-                            </div>
-
-                            {isOpen ? <ChevronDown className="h-3.5 w-3.5 text-muted-foreground shrink-0" /> : <ChevronRight className="h-3.5 w-3.5 text-muted-foreground shrink-0" />}
-                          </button>
-
-                          <AnimatePresence>
-                            {isOpen && (
-                              <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="border-t border-border/30">
-                                <div className="p-3 space-y-3">
-                                  {es.relatedSkills.length > 0 && (
-                                    <div className="space-y-1.5">
-                                      <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider flex items-center gap-1">
-                                        <Bot className="h-3 w-3" /> AI Handles the Technical Side
-                                      </p>
-                                      <div className="flex flex-wrap gap-1">
-                                        {es.relatedSkills.map((rs, ri) => (
-                                          <Badge key={ri} variant="outline" className="text-[9px] border-primary/30 text-primary">
-                                            {rs.name}
-                                          </Badge>
-                                        ))}
-                                      </div>
-                                    </div>
-                                  )}
-                                  {es.practiceTasks.length > 0 && (
-                                    <div className="space-y-1.5">
-                                      <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider flex items-center gap-1">
-                                        <Play className="h-3 w-3" /> Practice This Edge
-                                      </p>
-                                      {es.practiceTasks.map((task, ti) => (
-                                        <button
-                                          key={ti}
-                                          onClick={() => goToRole(task.jobTitle, task.company)}
-                                          className="w-full flex items-center gap-2 p-2 rounded-md bg-muted/20 hover:bg-muted/40 transition-colors text-left group"
-                                        >
-                                          <Play className="h-3 w-3 text-primary shrink-0" />
-                                          <div className="flex-1 min-w-0">
-                                            <p className="text-[11px] font-medium text-foreground truncate">{task.taskName}</p>
-                                            <p className="text-[10px] text-muted-foreground">{task.jobTitle} · {task.company}</p>
-                                          </div>
-                                          <ArrowRight className="h-3 w-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
-                                        </button>
-                                      ))}
-                                    </div>
-                                  )}
-                                </div>
-                              </motion.div>
-                            )}
-                          </AnimatePresence>
-                        </motion.div>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-            )}
-
-          </motion.div>
-        </AnimatePresence>
+        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
+          <CareerReachMap jobMatches={jobMatches} isEmpty={isEmpty} />
+        </motion.div>
       )}
     </div>
   );
