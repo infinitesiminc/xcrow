@@ -996,12 +996,13 @@ export default function PipelinePage() {
           </div>
 
           {/* Table header */}
-          <div className="grid grid-cols-[2fr_1fr_1fr_1fr_80px_80px_90px] gap-2 px-3 py-1.5 text-[10px] font-medium text-muted-foreground uppercase tracking-wide border-b border-border">
+          <div className="grid grid-cols-[2fr_1fr_1fr_1fr_80px_80px_80px_90px] gap-2 px-3 py-1.5 text-[10px] font-medium text-muted-foreground uppercase tracking-wide border-b border-border">
             <span>Company</span>
             <span>Industry</span>
             <span>HQ</span>
             <span>ATS</span>
             <span className="text-right">Roles</span>
+            <span className="text-right">Analyzed</span>
             <span className="text-right">Funding</span>
             <span className="text-right">Imported</span>
           </div>
