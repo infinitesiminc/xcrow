@@ -23,6 +23,7 @@ Your personality: encouraging, concise, slightly bold. You speak like a smart ca
 - After showing role cards, suggest which task to practice first and why: "Start with the Roadmap Planning task — it builds your Strategy skill, which unlocks the most roles"
 - Frame everything as skill-building, not job-seeking: "You're not just learning about PM — you're leveling up Strategy"
 - For students unsure about careers, help them explore by skills: "You seem drawn to analytical thinking — let me show you roles that build those skills"
+- When you have task data for a role, mention specific tasks: "This role has 8 tasks — try 'Customer Feedback Synthesis' first, it builds your Communication and Data Analysis skills"
 
 ## CRITICAL: Narrowing Before Searching
 
@@ -45,7 +46,8 @@ When presenting roles after searching:
 a) **What is the job** — role title, company
 b) **What skills you'd build** — mention 2-3 specific skills from the taxonomy
 c) **AI's role** — what % is AI augmented and what that means practically
-d) **Next step** — "Tap a card to see tasks you can practice right now"
+d) **Key tasks** — if task data is available, mention 1-2 top tasks they can practice
+e) **Next step** — "Tap a card to see tasks you can practice right now"
 
 Rules:
 - Keep responses SHORT (3-5 sentences per role, max 2-3 roles described in text)
@@ -58,14 +60,43 @@ Rules:
 - Never use "automated," "replaced," or "at risk." Instead say "enhanced," "supercharged," or "augmented."
 - Always end with a question or suggestion to keep building their skill map
 - Use emoji naturally throughout your responses (2-4 per message)`;
+
+// In-memory cache for search results (per-isolate, short-lived)
+const searchCache = new Map<string, { roles: any[]; ts: number }>();
+const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
+
+function getCachedSearch(key: string) {
+  const entry = searchCache.get(key);
+  if (!entry) return null;
+  if (Date.now() - entry.ts > CACHE_TTL_MS) {
+    searchCache.delete(key);
+    return null;
+  }
+  return entry.roles;
+}
+
+// Trim conversation to last N turns to reduce token usage
+function trimMessages(messages: any[], maxTurns: number = 10): any[] {
+  if (messages.length <= maxTurns * 2) return messages;
+  // Always keep the first user message for context, then take last N*2 messages
+  const first = messages[0];
+  const recent = messages.slice(-(maxTurns * 2));
+  // Avoid duplicating the first message if it's already in recent
+  if (recent[0] === first) return recent;
+  return [first, ...recent];
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS")
     return new Response(null, { headers: corsHeaders });
 
   try {
-    const { messages } = await req.json();
+    const { messages: rawMessages } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
+
+    // Trim conversation history
+    const messages = trimMessages(rawMessages);
 
     const response = await fetch(
       "https://ai.gateway.lovable.dev/v1/chat/completions",
@@ -88,7 +119,7 @@ serve(async (req) => {
               function: {
                 name: "search_roles",
                 description:
-                  "Search the job database for roles matching keywords. Returns matching roles with AI metrics.",
+                  "Search the job database for roles matching keywords. Returns matching roles with AI metrics and top tasks.",
                 parameters: {
                   type: "object",
                   properties: {
@@ -99,7 +130,7 @@ serve(async (req) => {
                     },
                     limit: {
                       type: "number",
-                      description: "Max results to return (default 6)",
+                      description: "Max results to return (default 3)",
                     },
                   },
                   required: ["query"],
@@ -182,45 +213,83 @@ serve(async (req) => {
         args = { query: toolCallAccumulator.arguments };
       }
 
-      const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-      const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-      const sb = createClient(supabaseUrl, supabaseKey);
-
       const limit = args.limit || 3;
-      // Split query into words for broader matching
-      const words = args.query.split(/\s+/).filter(Boolean);
-      const patterns = words.map(w => `%${w}%`);
+      const cacheKey = `${args.query.toLowerCase().trim()}:${limit}`;
       
-      // Build OR conditions: match any word in title, department, location, or country
-      const orConditions = patterns.flatMap(p => [
-        `title.ilike.${p}`,
-        `department.ilike.${p}`,
-        `location.ilike.${p}`,
-        `country.ilike.${p}`,
-      ]).join(",");
-      
-      const { data: jobs, error: dbError } = await sb
-        .from("jobs")
-        .select("id, title, department, location, country, work_mode, seniority, augmented_percent, automation_risk_percent, source_url, companies(name, logo_url, website)")
-        .or(orConditions)
-        .order("augmented_percent", { ascending: false, nullsFirst: false })
-        .limit(limit);
-      
-      if (dbError) console.error("DB search error:", dbError);
+      // Check in-memory cache first
+      let roleResults = getCachedSearch(cacheKey);
 
-      const roleResults = (jobs || []).map((j: any) => ({
-        jobId: j.id,
-        title: j.title,
-        company: j.companies?.name || null,
-        logo: j.companies?.logo_url || (j.companies?.website ? `https://logo.clearbit.com/${j.companies.website.replace(/^https?:\/\//, '').replace(/\/.*$/, '')}` : null),
-        location: j.location,
-        country: j.country,
-        workMode: j.work_mode,
-        seniority: j.seniority,
-        augmented: j.augmented_percent || 0,
-        risk: j.automation_risk_percent || 0,
-        sourceUrl: j.source_url || null,
-      }));
+      if (!roleResults) {
+        const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+        const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+        const sb = createClient(supabaseUrl, supabaseKey);
+
+        // Split query into words for broader matching
+        const words = args.query.split(/\s+/).filter(Boolean);
+        const patterns = words.map(w => `%${w}%`);
+        
+        // Build OR conditions: match any word in title, department, location, or country
+        const orConditions = patterns.flatMap(p => [
+          `title.ilike.${p}`,
+          `department.ilike.${p}`,
+          `location.ilike.${p}`,
+          `country.ilike.${p}`,
+        ]).join(",");
+        
+        const { data: jobs, error: dbError } = await sb
+          .from("jobs")
+          .select("id, title, department, location, country, work_mode, seniority, augmented_percent, automation_risk_percent, source_url, companies(name, logo_url, website)")
+          .or(orConditions)
+          .order("augmented_percent", { ascending: false, nullsFirst: false })
+          .limit(limit);
+        
+        if (dbError) console.error("DB search error:", dbError);
+
+        const jobIds = (jobs || []).map((j: any) => j.id);
+
+        // Fetch top 3 task clusters per job for enrichment
+        let tasksByJob: Record<string, { name: string; aiScore: number }[]> = {};
+        if (jobIds.length > 0) {
+          const { data: tasks } = await sb
+            .from("job_task_clusters")
+            .select("job_id, cluster_name, ai_exposure_score, sort_order")
+            .in("job_id", jobIds)
+            .order("sort_order", { ascending: true });
+          
+          if (tasks) {
+            for (const t of tasks) {
+              if (!tasksByJob[t.job_id]) tasksByJob[t.job_id] = [];
+              if (tasksByJob[t.job_id].length < 3) {
+                tasksByJob[t.job_id].push({
+                  name: t.cluster_name,
+                  aiScore: t.ai_exposure_score || 0,
+                });
+              }
+            }
+          }
+        }
+
+        roleResults = (jobs || []).map((j: any) => ({
+          jobId: j.id,
+          title: j.title,
+          company: j.companies?.name || null,
+          logo: j.companies?.logo_url || (j.companies?.website ? `https://logo.clearbit.com/${j.companies.website.replace(/^https?:\/\//, '').replace(/\/.*$/, '')}` : null),
+          location: j.location,
+          country: j.country,
+          workMode: j.work_mode,
+          seniority: j.seniority,
+          augmented: j.augmented_percent || 0,
+          risk: j.automation_risk_percent || 0,
+          sourceUrl: j.source_url || null,
+          topTasks: tasksByJob[j.id] || [],
+        }));
+
+        // Store in cache
+        searchCache.set(cacheKey, { roles: roleResults, ts: Date.now() });
+        console.log("Cached search for:", cacheKey, "results:", roleResults.length);
+      } else {
+        console.log("Cache hit for:", cacheKey);
+      }
 
       // Second AI call with tool result — this time streamed back to client
       const followUp = await fetch(
@@ -268,8 +337,12 @@ serve(async (req) => {
         );
       }
 
-      // Prepend a custom SSE event with the role cards data
-      const roleEvent = `data: ${JSON.stringify({ type: "role_cards", roles: roleResults })}\n\n`;
+      // Prepend a custom SSE event with the role cards data (strip topTasks for client — it's for AI context only)
+      const clientRoles = roleResults.map((r: any) => {
+        const { topTasks, ...rest } = r;
+        return rest;
+      });
+      const roleEvent = `data: ${JSON.stringify({ type: "role_cards", roles: clientRoles })}\n\n`;
       const encoder = new TextEncoder();
       const roleStream = new ReadableStream({
         start(controller) {
