@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback, useMemo } from "react";
 import { useSearchParams, useNavigate, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
-  ArrowLeft, Zap, AlertTriangle,
+  ArrowLeft, ArrowRight, Zap, AlertTriangle,
   Play, CheckCircle2, LogIn,
   Bookmark, BookmarkCheck, ChevronLeft,
   MessageSquare, BarChart3, FileText, Users, Search, Settings, Globe, Shield, Lightbulb, PenTool, Code, TrendingUp, Megaphone, Target, Briefcase, Heart, Layers, GraduationCap,
@@ -73,6 +73,7 @@ const Analysis = () => {
 
   const company = searchParams.get("company") || "";
   const jobTitle = searchParams.get("title") || "";
+  const focusTaskParam = searchParams.get("task") || "";
   const jdMarker = searchParams.get("jd") || "";
   const jdUrlParam = searchParams.get("jdUrl") || "";
   const jdText = jdMarker === "session" ? (sessionStorage.getItem("jd_text") || "") : jdMarker;
@@ -91,6 +92,8 @@ const Analysis = () => {
   const [loading, setLoading] = useState(!initialResult);
   const [error, setError] = useState<string | null>(null);
   const [simTask, setSimTask] = useState<TaskAnalysis | null>(null);
+  const [focusedTask, setFocusedTask] = useState<TaskAnalysis | null>(null);
+  const [showAllTasks, setShowAllTasks] = useState(!focusTaskParam);
   const [completedTasks, setCompletedTasks] = useState<Set<string>>(new Set());
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [bookmarkLoading, setBookmarkLoading] = useState(false);
@@ -214,6 +217,22 @@ const Analysis = () => {
     return [...result.tasks].sort((a, b) => (b.aiExposureScore ?? 50) - (a.aiExposureScore ?? 50));
   }, [result]);
 
+  useEffect(() => {
+    if (!focusTaskParam || sortedTasks.length === 0) return;
+    const normalized = focusTaskParam.trim().toLowerCase();
+    const match =
+      sortedTasks.find((t) => t.name.trim().toLowerCase() === normalized) ||
+      sortedTasks.find((t) => t.name.toLowerCase().includes(normalized) || normalized.includes(t.name.toLowerCase()));
+
+    if (match) {
+      setFocusedTask(match);
+      setShowAllTasks(false);
+    } else {
+      setFocusedTask(null);
+      setShowAllTasks(true);
+    }
+  }, [focusTaskParam, sortedTasks]);
+
   const pickNextTask = useCallback(() => {
     const uncompleted = sortedTasks.filter(t => !completedTasks.has(t.name));
     if (uncompleted.length > 0) {
@@ -310,56 +329,105 @@ const Analysis = () => {
           </div>
         )}
 
-        {/* Task cards */}
-        <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">Tasks & AI Impact</h3>
-        <div className="space-y-3 pb-8">
-          {sortedTasks.map((task, i) => {
-            const aiScore = task.aiExposureScore ?? 50;
-            const style = taskChipStyle(aiScore);
-            const done = completedTasks.has(task.name);
-            const TaskIcon = getTaskIcon(task.name);
-            const taskHue = hashToHue(task.name);
+        {focusedTask && !showAllTasks && (() => {
+          const aiScore = focusedTask.aiExposureScore ?? 50;
+          const style = taskChipStyle(aiScore);
+          const done = completedTasks.has(focusedTask.name);
+          const TaskIcon = getTaskIcon(focusedTask.name);
+          const taskHue = hashToHue(focusedTask.name);
 
-            return (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.04 }}
-                className="group rounded-xl border border-border/50 bg-card hover:border-primary/30 transition-all overflow-hidden"
-              >
-                {/* Accent top strip */}
-                <div className="h-1" style={{ background: `linear-gradient(90deg, hsl(${taskHue} 60% 50%), hsl(${(taskHue + 40) % 360} 50% 45%))` }} />
-                <div className="p-4">
-                  <div className="flex items-start gap-3">
-                    <div className="mt-0.5 h-8 w-8 rounded-lg flex items-center justify-center shrink-0"
-                      style={{ background: `hsl(${taskHue} 40% 15%)` }}>
-                      <TaskIcon className="h-4 w-4" style={{ color: `hsl(${taskHue} 60% 65%)` }} />
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-2 mb-1">
-                        <h4 className="text-sm font-semibold text-foreground leading-snug">{task.name}</h4>
-                        {done && <CheckCircle2 className="h-3.5 w-3.5 text-success shrink-0" />}
-                      </div>
-                      {task.description && <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2">{task.description}</p>}
-                    </div>
-                    <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full shrink-0 ${style.badge}`}>{aiScore}%</span>
+          return (
+            <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="mb-5 rounded-2xl border border-border/50 bg-card overflow-hidden">
+              <div className="h-1" style={{ background: `linear-gradient(90deg, hsl(${taskHue} 60% 50%), hsl(${(taskHue + 40) % 360} 50% 45%))` }} />
+              <div className="p-5">
+                <div className="flex items-center gap-2 mb-4">
+                  <div className="h-10 w-10 rounded-xl flex items-center justify-center" style={{ background: `hsl(${taskHue} 40% 15%)` }}>
+                    <TaskIcon className="h-5 w-5" style={{ color: `hsl(${taskHue} 60% 65%)` }} />
                   </div>
-                  <div className="flex items-center justify-between mt-3 pt-3 border-t border-border/30">
-                    <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
-                      {task.currentState && <span className="px-2 py-0.5 rounded-full bg-muted/40">{task.currentState}</span>}
-                      {task.impactLevel && <span className="px-2 py-0.5 rounded-full bg-muted/40">{task.impactLevel}</span>}
-                    </div>
-                    <Button size="sm" variant={done ? "secondary" : "default"} className="h-7 text-xs rounded-full gap-1"
-                      onClick={() => setSimTask(task)}>
-                      <Play className="h-3 w-3" />{done ? "Retry" : "Practice"}
-                    </Button>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Focused task</p>
+                    <h3 className="text-base font-semibold text-foreground leading-snug">{focusedTask.name}</h3>
                   </div>
+                  <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full shrink-0 ${style.badge}`}>{aiScore}%</span>
                 </div>
-              </motion.div>
-            );
-          })}
-        </div>
+
+                {focusedTask.description && (
+                  <p className="text-sm text-muted-foreground leading-relaxed mb-3">{focusedTask.description}</p>
+                )}
+
+                <div className="flex items-center gap-2 text-[10px] text-muted-foreground mb-4 flex-wrap">
+                  {focusedTask.currentState && <span className="px-2 py-0.5 rounded-full bg-muted/40">{focusedTask.currentState}</span>}
+                  {focusedTask.impactLevel && <span className="px-2 py-0.5 rounded-full bg-muted/40">{focusedTask.impactLevel}</span>}
+                  {done && <span className="px-2 py-0.5 rounded-full bg-muted/40">Practiced</span>}
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <Button size="sm" variant={done ? "secondary" : "default"} className="h-8 rounded-full gap-1.5" onClick={() => setSimTask(focusedTask)}>
+                    <Play className="h-3.5 w-3.5" /> {done ? "Practice Again" : "Practice Now"}
+                  </Button>
+                  <Button size="sm" variant="ghost" className="h-8 rounded-full text-xs" onClick={() => setShowAllTasks(true)}>
+                    See full task list <ArrowRight className="h-3 w-3" />
+                  </Button>
+                </div>
+              </div>
+            </motion.div>
+          );
+        })()}
+
+        {(!focusedTask || showAllTasks) && (
+          <>
+            {/* Task cards */}
+            <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">Tasks & AI Impact</h3>
+            <div className="space-y-3 pb-8">
+              {sortedTasks.map((task, i) => {
+                const aiScore = task.aiExposureScore ?? 50;
+                const style = taskChipStyle(aiScore);
+                const done = completedTasks.has(task.name);
+                const TaskIcon = getTaskIcon(task.name);
+                const taskHue = hashToHue(task.name);
+
+                return (
+                  <motion.div
+                    key={i}
+                    initial={{ opacity: 0, y: 12 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: i * 0.04 }}
+                    className="group rounded-xl border border-border/50 bg-card hover:border-primary/30 transition-all overflow-hidden"
+                  >
+                    {/* Accent top strip */}
+                    <div className="h-1" style={{ background: `linear-gradient(90deg, hsl(${taskHue} 60% 50%), hsl(${(taskHue + 40) % 360} 50% 45%))` }} />
+                    <div className="p-4">
+                      <div className="flex items-start gap-3">
+                        <div className="mt-0.5 h-8 w-8 rounded-lg flex items-center justify-center shrink-0"
+                          style={{ background: `hsl(${taskHue} 40% 15%)` }}>
+                          <TaskIcon className="h-4 w-4" style={{ color: `hsl(${taskHue} 60% 65%)` }} />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-2 mb-1">
+                            <h4 className="text-sm font-semibold text-foreground leading-snug">{task.name}</h4>
+                            {done && <CheckCircle2 className="h-3.5 w-3.5 text-success shrink-0" />}
+                          </div>
+                          {task.description && <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2">{task.description}</p>}
+                        </div>
+                        <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full shrink-0 ${style.badge}`}>{aiScore}%</span>
+                      </div>
+                      <div className="flex items-center justify-between mt-3 pt-3 border-t border-border/30">
+                        <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
+                          {task.currentState && <span className="px-2 py-0.5 rounded-full bg-muted/40">{task.currentState}</span>}
+                          {task.impactLevel && <span className="px-2 py-0.5 rounded-full bg-muted/40">{task.impactLevel}</span>}
+                        </div>
+                        <Button size="sm" variant={done ? "secondary" : "default"} className="h-7 text-xs rounded-full gap-1"
+                          onClick={() => setSimTask(task)}>
+                          <Play className="h-3 w-3" />{done ? "Retry" : "Practice"}
+                        </Button>
+                      </div>
+                    </div>
+                  </motion.div>
+                );
+              })}
+            </div>
+          </>
+        )}
 
         {/* Sign-in CTA for anonymous users */}
         {!user && (
