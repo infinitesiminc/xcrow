@@ -26,7 +26,7 @@ import {
   Linkedin, Upload, FileText, GraduationCap, Briefcase, X, School,
   Shield, User, Lock, AlertOctagon, ArrowLeft, LogOut,
 } from "lucide-react";
-import JourneyDashboard from "@/components/settings/JourneyDashboard";
+
 
 /* ── helpers ─────────────────────────────────────────── */
 
