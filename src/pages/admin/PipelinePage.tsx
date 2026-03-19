@@ -246,33 +246,30 @@ export default function PipelinePage() {
       }
     }
 
-    // Get analyzed counts (distinct job_ids in job_task_clusters)
+    // Get analyzed counts per company (jobs that have task clusters)
     const am = new Map<string, number>();
+    const jobToCompany = new Map<string, string>();
+    // We already fetched job rows above for counts — re-fetch with id
     for (let i = 0; i < companyIds.length; i += 100) {
       const batch = companyIds.slice(i, i + 100);
-      // Get job IDs for this batch first
-      const jobIdsForBatch: string[] = [];
-      let jf = 0;
+      let from = 0;
       while (true) {
-        const { data: jRows } = await supabase.from("jobs").select("id, company_id").in("company_id", batch).range(jf, jf + 999);
+        const { data: jRows } = await supabase.from("jobs").select("id, company_id").in("company_id", batch).range(from, from + 999);
         if (!jRows || jRows.length === 0) break;
-        jRows.forEach((j: any) => jobIdsForBatch.push(j.id));
-        // Build a map of job_id -> company_id
-        jRows.forEach((j: any) => { if (j.company_id) (am as any).__jobToCompany = (am as any).__jobToCompany || new Map(); (am as any).__jobToCompany.set(j.id, j.company_id); });
+        jRows.forEach((j: any) => { if (j.company_id) jobToCompany.set(j.id, j.company_id); });
         if (jRows.length < 1000) break;
-        jf += 1000;
-      }
-      // Now check which job_ids have task clusters
-      for (let k = 0; k < jobIdsForBatch.length; k += 100) {
-        const jidBatch = jobIdsForBatch.slice(k, k + 100);
-        const { data: clusterRows } = await supabase.from("job_task_clusters").select("job_id").in("job_id", jidBatch).limit(1000);
-        if (clusterRows) {
-          const seen = new Set<string>();
-          clusterRows.forEach((c: any) => { if (!seen.has(c.job_id)) { seen.add(c.job_id); const cid = (am as any).__jobToCompany?.get(c.job_id); if (cid) am.set(cid, (am.get(cid) || 0) + 1); } });
-        }
+        from += 1000;
       }
     }
-    delete (am as any).__jobToCompany;
+    const allJobIds = Array.from(jobToCompany.keys());
+    for (let i = 0; i < allJobIds.length; i += 100) {
+      const batch = allJobIds.slice(i, i + 100);
+      const { data: clusterRows } = await supabase.from("job_task_clusters").select("job_id").in("job_id", batch).limit(1000);
+      if (clusterRows) {
+        const seen = new Set<string>();
+        clusterRows.forEach((c: any) => { if (!seen.has(c.job_id)) { seen.add(c.job_id); const cid = jobToCompany.get(c.job_id); if (cid) am.set(cid, (am.get(cid) || 0) + 1); } });
+      }
+    }
 
     const industryCounts = new Map<string, number>();
     allCompanies.forEach(c => {
