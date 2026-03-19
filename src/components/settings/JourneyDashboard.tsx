@@ -11,6 +11,7 @@ import {
   Play, Target, Briefcase, ArrowRight, BookOpen, Zap,
 } from "lucide-react";
 import SkillMapGrid from "./SkillMapGrid";
+import HumanEdgesSection from "./HumanEdgesSection";
 import {
   aggregateSkillXP,
   matchTaskToSkills,
