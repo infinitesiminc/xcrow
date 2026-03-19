@@ -205,8 +205,8 @@ export default function SchoolsDataTable({ initialPipelineFilter }: { initialPip
               schools.map(school => (
                 <TableRow key={school.id} className="hover:bg-muted/20 cursor-pointer" onClick={() => navigate(`/admin/schools/${school.id}`)}>
                   <TableCell className="font-medium max-w-[300px] truncate text-[hsl(var(--neon-blue))] hover:underline">{school.name}</TableCell>
+                  <TableCell className="text-xs text-muted-foreground font-mono">{school.short_name || "—"}</TableCell>
                   <TableCell>{school.state || "—"}</TableCell>
-                  <TableCell>
                     <span className="text-xs text-muted-foreground">{school.carnegie_class || "—"}</span>
                   </TableCell>
                   <TableCell className="text-right font-mono text-sm">
