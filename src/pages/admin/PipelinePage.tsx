@@ -1323,6 +1323,28 @@ export default function PipelinePage() {
                         variant="ghost" size="sm"
                         className="h-5 px-1.5 text-[10px] gap-1 text-muted-foreground hover:text-primary"
                         disabled={!!syncing}
+                        onClick={async () => {
+                          setSyncing("detect-ats");
+                          try {
+                            const { data, error } = await supabase.functions.invoke("detect-ats", {
+                              body: { company_id: selectedCompany.id },
+                            });
+                            if (error) throw error;
+                            if (data?.error) throw new Error(data.error);
+                            toast({ title: "ATS Detection", description: data.platform ? `Detected: ${data.platform}` : "No ATS found" });
+                            fetchCompanies();
+                          } catch (err: any) {
+                            toast({ title: "Detection failed", description: err.message, variant: "destructive" });
+                          } finally { setSyncing(null); }
+                        }}
+                      >
+                        {syncing === "detect-ats" ? <Loader2 className="h-3 w-3 animate-spin" /> : <Telescope className="h-3 w-3" />}
+                        Detect ATS
+                      </Button>
+                      <Button
+                        variant="ghost" size="sm"
+                        className="h-5 px-1.5 text-[10px] gap-1 text-muted-foreground hover:text-primary"
+                        disabled={!!syncing}
                         onClick={() => syncSingleCompany(selectedCompany.id)}
                       >
                         {syncing === `jobs-${selectedCompany.id}` ? <Loader2 className="h-3 w-3 animate-spin" /> : <RefreshCw className="h-3 w-3" />}
@@ -1339,7 +1361,12 @@ export default function PipelinePage() {
                       </Button>
                     </div>
                     <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                      {selectedCompany.industry && <span>{selectedCompany.industry}</span>}
+                      {selectedCompany.detected_ats_platform && selectedCompany.detected_ats_platform !== "unknown" ? (
+                        <Badge variant="outline" className="text-[9px] h-4">{selectedCompany.detected_ats_platform}</Badge>
+                      ) : (
+                        <span className="text-destructive/70">No ATS detected</span>
+                      )}
+                      {selectedCompany.industry && <><span>·</span><span>{selectedCompany.industry}</span></>}
                       <span>·</span>
                       <span>{jobs.length} roles</span>
                       <span>·</span>
