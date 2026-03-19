@@ -338,11 +338,11 @@ const Analysis = () => {
 
           return (
             <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="mb-5 rounded-2xl border border-border/50 bg-card overflow-hidden">
-              <div className="h-1" style={{ background: `linear-gradient(90deg, hsl(${taskHue} 60% 50%), hsl(${(taskHue + 40) % 360} 50% 45%))` }} />
+              <div className="h-1" style={{ background: style.gradient }} />
               <div className="p-5">
                 <div className="flex items-center gap-2 mb-4">
-                  <div className="h-10 w-10 rounded-xl flex items-center justify-center" style={{ background: `hsl(${taskHue} 40% 15%)` }}>
-                    <TaskIcon className="h-5 w-5" style={{ color: `hsl(${taskHue} 60% 65%)` }} />
+                  <div className="h-10 w-10 rounded-xl flex items-center justify-center" style={{ background: style.iconBg }}>
+                    <TaskIcon className="h-5 w-5" style={{ color: style.iconColor }} />
                   </div>
                   <div className="min-w-0 flex-1">
                     <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Focused task</p>
