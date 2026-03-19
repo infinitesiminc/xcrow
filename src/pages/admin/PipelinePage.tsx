@@ -1043,6 +1043,11 @@ export default function PipelinePage() {
             </div>
           )}
         </TabsContent>
+
+        {/* ═══════ TAB: SCHOOLS ═══════ */}
+        <TabsContent value="schools" className="m-0 px-6 py-4">
+          <SchoolsTab />
+        </TabsContent>
       </Tabs>
       </div>
 
