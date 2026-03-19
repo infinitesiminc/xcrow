@@ -29,6 +29,8 @@ interface AuthContextType {
   plan: PlanTier;
   subscriptionEnd: string | null;
   schoolName: string | null;
+  schoolId: string | null;
+  isSchoolAdmin: boolean;
   isPro: boolean;
   refreshProfile: () => Promise<void>;
   refreshSubscription: () => Promise<void>;
