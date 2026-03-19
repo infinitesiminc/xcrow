@@ -380,21 +380,21 @@ export default function SchoolsTab() {
               Scrape Curriculum
             </DialogTitle>
             <DialogDescription>
-              Enter the school's course catalog URL. We'll scrape program pages and extract skills using AI.
+              Paste the programs listing page URL (the page that links to all degree programs). We'll extract each program and its skills using AI.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-3">
             <div>
-              <label className="text-xs font-medium text-muted-foreground">Catalog URL *</label>
+              <label className="text-xs font-medium text-muted-foreground">Programs Listing URL *</label>
               <Input
                 value={scrapeUrl[scrapeDialogId || ""] || ""}
                 onChange={(e) => setScrapeUrl((prev) => ({ ...prev, [scrapeDialogId || ""]: e.target.value }))}
-                placeholder="e.g. https://catalogue.usc.edu/"
+                placeholder="e.g. https://catalogue.usc.edu/content.php?catoid=21&navoid=8873"
                 className="h-8 text-sm"
               />
               <p className="text-[10px] text-muted-foreground mt-1">
                 <Globe className="h-3 w-3 inline mr-0.5" />
-                The scraper will map the site, find program pages, scrape content, and extract skills.
+                Use the page that lists all programs/degrees — not the catalog homepage.
               </p>
             </div>
             <Button
