@@ -41,6 +41,7 @@ export default function Navbar() {
 
   const navItems = [
     { label: "Explore", path: "/", icon: Compass },
+    { label: "Leaderboard", path: "/leaderboard", icon: Trophy },
     ...(user ? [
       { label: "Skill Map", path: "/journey", icon: Map },
     ] : []),
