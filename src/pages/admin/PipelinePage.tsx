@@ -1019,7 +1019,7 @@ export default function PipelinePage() {
           ) : (
             <div className="divide-y divide-border/50">
               {filteredCompanies.slice(0, 200).map(co => (
-                <div key={co.id} onClick={() => { setSelectedCompanyId(co.id); }} className="grid grid-cols-[2fr_1fr_1fr_1fr_80px_80px_90px] gap-2 px-3 py-2 items-center hover:bg-muted/30 transition-colors group cursor-pointer">
+                <div key={co.id} onClick={() => { setSelectedCompanyId(co.id); }} className="grid grid-cols-[2fr_1fr_1fr_1fr_80px_80px_80px_90px] gap-2 px-3 py-2 items-center hover:bg-muted/30 transition-colors group cursor-pointer">
                   <div className="flex items-center gap-2 min-w-0">
                     <CompanyLogo url={co.logo_url} name={co.name} size="h-6 w-6" />
                     <div className="min-w-0">
@@ -1044,6 +1044,13 @@ export default function PipelinePage() {
                       <span className="text-primary">{co.job_count}</span>
                     ) : (
                       <span className="text-muted-foreground">0</span>
+                    )}
+                  </span>
+                  <span className="text-[11px] text-right font-medium">
+                    {(co.analyzed_count || 0) > 0 ? (
+                      <span className="text-emerald-400">{co.analyzed_count}</span>
+                    ) : (
+                      <span className="text-muted-foreground">—</span>
                     )}
                   </span>
                   <span className="text-[11px] text-right text-muted-foreground truncate">{co.funding_stage || "—"}</span>
