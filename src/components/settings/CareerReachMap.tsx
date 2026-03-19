@@ -80,7 +80,7 @@ function placeDots(jobs: JobMatchDot[], cx: number, cy: number, maxRadius: numbe
     // Golden angle distribution with slight randomness for visual variety
     const angle = i * golden + (i % 3) * 0.15;
     const zone = getZone(job.humanMatch, job.aiBoostMatch);
-    const dotR = zone === "ready" ? 5 : zone === "fast-track" ? 4.5 : 4;
+    const dotR = zone === "ready" ? 8 : zone === "fast-track" ? 7 : 6.5;
 
     return {
       x: cx + Math.cos(angle) * dist,
