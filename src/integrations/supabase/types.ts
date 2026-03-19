@@ -123,6 +123,7 @@ export type Database = {
           industry: string | null
           is_demo: boolean | null
           logo_url: string | null
+          manual_careers_url: string | null
           name: string
           slug: string | null
           website: string | null
@@ -146,6 +147,7 @@ export type Database = {
           industry?: string | null
           is_demo?: boolean | null
           logo_url?: string | null
+          manual_careers_url?: string | null
           name: string
           slug?: string | null
           website?: string | null
@@ -169,6 +171,7 @@ export type Database = {
           industry?: string | null
           is_demo?: boolean | null
           logo_url?: string | null
+          manual_careers_url?: string | null
           name?: string
           slug?: string | null
           website?: string | null
