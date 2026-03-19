@@ -193,13 +193,13 @@ export default function SchoolsDataTable({ initialPipelineFilter }: { initialPip
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={7} className="text-center py-12">
+                <TableCell colSpan={8} className="text-center py-12">
                   <Loader2 className="h-6 w-6 animate-spin text-muted-foreground mx-auto" />
                 </TableCell>
               </TableRow>
             ) : schools.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={7} className="text-center py-12 text-muted-foreground">No schools found</TableCell>
+                <TableCell colSpan={8} className="text-center py-12 text-muted-foreground">No schools found</TableCell>
               </TableRow>
             ) : (
               schools.map(school => (
