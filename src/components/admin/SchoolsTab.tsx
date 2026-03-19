@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import {
   GraduationCap, Plus, Loader2, Pencil, Check, X, Trash2, Users, Calendar, Mail,
-  Globe, BookOpen, Sparkles,
+  Globe, BookOpen, Sparkles, ChevronDown, ChevronUp,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -36,13 +36,21 @@ interface CurriculumScrape {
   completed_at: string | null;
 }
 
+interface SchoolCourse {
+  id: string;
+  program_name: string;
+  degree_type: string | null;
+  department: string | null;
+  skills_extracted: string[] | null;
+  skill_categories: Record<string, string[]> | null;
+}
+
 export default function SchoolsTab() {
   const { toast } = useToast();
   const [schools, setSchools] = useState<School[]>([]);
   const [loading, setLoading] = useState(true);
   const [createOpen, setCreateOpen] = useState(false);
 
-  // Create form
   const [newName, setNewName] = useState("");
   const [newDomain, setNewDomain] = useState("");
   const [newSeats, setNewSeats] = useState("50");
@@ -50,17 +58,19 @@ export default function SchoolsTab() {
   const [newAdminId, setNewAdminId] = useState("");
   const [creating, setCreating] = useState(false);
 
-  // Edit inline
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editSeats, setEditSeats] = useState("");
   const [editStatus, setEditStatus] = useState("");
   const [saving, setSaving] = useState(false);
 
-  // Curriculum scraping
   const [scrapeUrl, setScrapeUrl] = useState<Record<string, string>>({});
   const [scraping, setScraping] = useState<Record<string, boolean>>({});
   const [curricula, setCurricula] = useState<Record<string, CurriculumScrape[]>>({});
   const [scrapeDialogId, setScrapeDialogId] = useState<string | null>(null);
+
+  const [expandedSchool, setExpandedSchool] = useState<string | null>(null);
+  const [courses, setCourses] = useState<Record<string, SchoolCourse[]>>({});
+  const [loadingCourses, setLoadingCourses] = useState<Record<string, boolean>>({});
 
   async function fetchSchools() {
     setLoading(true);
@@ -70,7 +80,6 @@ export default function SchoolsTab() {
       .order("created_at", { ascending: false });
     setSchools((data as School[]) || []);
 
-    // Fetch curricula for all schools
     if (data && data.length > 0) {
       const ids = data.map((s: any) => s.id);
       const { data: currData } = await (supabase.from("school_curricula" as any) as any)
@@ -89,6 +98,27 @@ export default function SchoolsTab() {
   }
 
   useEffect(() => { fetchSchools(); }, []);
+
+  async function fetchCourses(schoolId: string) {
+    if (courses[schoolId]) return;
+    setLoadingCourses((prev) => ({ ...prev, [schoolId]: true }));
+    const { data } = await supabase
+      .from("school_courses")
+      .select("id, program_name, degree_type, department, skills_extracted, skill_categories")
+      .eq("school_id", schoolId)
+      .order("department", { ascending: true });
+    setCourses((prev) => ({ ...prev, [schoolId]: (data as SchoolCourse[]) || [] }));
+    setLoadingCourses((prev) => ({ ...prev, [schoolId]: false }));
+  }
+
+  function toggleExpand(schoolId: string) {
+    if (expandedSchool === schoolId) {
+      setExpandedSchool(null);
+    } else {
+      setExpandedSchool(schoolId);
+      fetchCourses(schoolId);
+    }
+  }
 
   async function handleCreate() {
     if (!newName.trim()) return;
@@ -182,6 +212,15 @@ export default function SchoolsTab() {
     s === "scraping" ? "text-primary" :
     "text-muted-foreground";
 
+  const degreeColor = (d: string | null) => {
+    if (!d) return "bg-muted text-muted-foreground";
+    const dl = d.toLowerCase();
+    if (dl.includes("bs")) return "bg-primary/10 text-primary border-primary/20";
+    if (dl.includes("ba")) return "bg-accent/10 text-accent-foreground border-accent/20";
+    if (dl.includes("bf") || dl.includes("bm")) return "bg-secondary/10 text-secondary-foreground border-secondary/20";
+    return "bg-muted text-muted-foreground";
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
@@ -210,6 +249,9 @@ export default function SchoolsTab() {
             const isEditing = editingId === school.id;
             const schoolCurricula = curricula[school.id] || [];
             const latestScrape = schoolCurricula[0];
+            const isExpanded = expandedSchool === school.id;
+            const schoolCourses = courses[school.id] || [];
+            const isLoadingCourses = loadingCourses[school.id];
 
             return (
               <Card key={school.id} className="overflow-hidden">
@@ -236,18 +278,8 @@ export default function SchoolsTab() {
 
                       {isEditing ? (
                         <div className="flex items-center gap-1">
-                          <Input
-                            value={editSeats}
-                            onChange={(e) => setEditSeats(e.target.value)}
-                            className="h-7 w-16 text-xs"
-                            placeholder="Seats"
-                            type="number"
-                          />
-                          <select
-                            value={editStatus}
-                            onChange={(e) => setEditStatus(e.target.value)}
-                            className="h-7 text-xs rounded border border-input bg-background px-2"
-                          >
+                          <Input value={editSeats} onChange={(e) => setEditSeats(e.target.value)} className="h-7 w-16 text-xs" placeholder="Seats" type="number" />
+                          <select value={editStatus} onChange={(e) => setEditStatus(e.target.value)} className="h-7 text-xs rounded border border-input bg-background px-2">
                             <option value="active">active</option>
                             <option value="expired">expired</option>
                             <option value="cancelled">cancelled</option>
@@ -261,24 +293,10 @@ export default function SchoolsTab() {
                         </div>
                       ) : (
                         <>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="h-7 text-[10px] gap-1"
-                            onClick={() => setScrapeDialogId(school.id)}
-                          >
+                          <Button size="sm" variant="outline" className="h-7 text-[10px] gap-1" onClick={() => setScrapeDialogId(school.id)}>
                             <BookOpen className="h-3 w-3" /> Scrape Curriculum
                           </Button>
-                          <Button
-                            size="icon"
-                            variant="ghost"
-                            className="h-7 w-7"
-                            onClick={() => {
-                              setEditingId(school.id);
-                              setEditSeats(String(school.total_seats));
-                              setEditStatus(school.plan_status);
-                            }}
-                          >
+                          <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => { setEditingId(school.id); setEditSeats(String(school.total_seats)); setEditStatus(school.plan_status); }}>
                             <Pencil className="h-3 w-3" />
                           </Button>
                           <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive" onClick={() => handleDelete(school.id, school.name)}>
@@ -289,40 +307,94 @@ export default function SchoolsTab() {
                     </div>
                   </div>
 
-                  {/* Seat usage bar */}
                   <div className="mt-3">
                     <div className="h-1.5 rounded-full bg-muted overflow-hidden">
-                      <div
-                        className="h-full rounded-full bg-primary transition-all"
-                        style={{ width: `${Math.min(100, (school.used_seats / Math.max(school.total_seats, 1)) * 100)}%` }}
-                      />
+                      <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${Math.min(100, (school.used_seats / Math.max(school.total_seats, 1)) * 100)}%` }} />
                     </div>
                   </div>
 
-                  {/* Curriculum scrape status */}
                   {latestScrape && (
-                    <div className="mt-3 p-2 rounded-md bg-muted/50 border border-border">
+                    <div
+                      className="mt-3 p-2 rounded-md bg-muted/50 border border-border cursor-pointer hover:bg-muted/70 transition-colors"
+                      onClick={() => toggleExpand(school.id)}
+                    >
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2 text-xs">
                           <Sparkles className={`h-3 w-3 ${scrapeStatusColor(latestScrape.status)}`} />
                           <span className="font-medium">Curriculum</span>
                           <span className="text-muted-foreground">·</span>
-                          <span className={scrapeStatusColor(latestScrape.status)}>
-                            {latestScrape.status}
-                          </span>
+                          <span className={scrapeStatusColor(latestScrape.status)}>{latestScrape.status}</span>
                         </div>
-                        <span className="text-[10px] text-muted-foreground">
-                          {latestScrape.programs_parsed}/{latestScrape.programs_found} programs
-                        </span>
+                        <div className="flex items-center gap-2">
+                          <span className="text-[10px] text-muted-foreground">{latestScrape.programs_parsed}/{latestScrape.programs_found} programs</span>
+                          {isExpanded ? <ChevronUp className="h-3 w-3 text-muted-foreground" /> : <ChevronDown className="h-3 w-3 text-muted-foreground" />}
+                        </div>
                       </div>
                       {latestScrape.status === "scraping" && latestScrape.programs_found > 0 && (
-                        <Progress
-                          value={(latestScrape.programs_parsed / latestScrape.programs_found) * 100}
-                          className="h-1 mt-2"
-                        />
+                        <Progress value={(latestScrape.programs_parsed / latestScrape.programs_found) * 100} className="h-1 mt-2" />
                       )}
                       {latestScrape.error_message && (
                         <p className="text-[10px] text-destructive mt-1">{latestScrape.error_message}</p>
+                      )}
+                    </div>
+                  )}
+
+                  {isExpanded && (
+                    <div className="mt-3 space-y-1">
+                      {isLoadingCourses ? (
+                        <div className="flex items-center justify-center py-6">
+                          <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                        </div>
+                      ) : schoolCourses.length === 0 ? (
+                        <p className="text-xs text-muted-foreground text-center py-4">No programs imported yet.</p>
+                      ) : (
+                        <>
+                          <div className="flex items-center justify-between px-2 pb-1">
+                            <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
+                              {schoolCourses.length} Programs Imported
+                            </span>
+                            <span className="text-[10px] text-muted-foreground">
+                              {new Set(schoolCourses.map(c => c.department).filter(Boolean)).size} departments
+                            </span>
+                          </div>
+                          <div className="max-h-80 overflow-y-auto rounded-md border border-border divide-y divide-border">
+                            {schoolCourses.map((course) => {
+                              const skillCount = course.skills_extracted?.length || 0;
+                              const categories = course.skill_categories || {};
+                              const categoryKeys = Object.keys(categories).filter(k => (categories[k]?.length || 0) > 0);
+
+                              return (
+                                <div key={course.id} className="px-3 py-2 hover:bg-muted/30 transition-colors">
+                                  <div className="flex items-start justify-between gap-2">
+                                    <div className="min-w-0">
+                                      <div className="flex items-center gap-2">
+                                        <span className="text-xs font-medium text-foreground truncate">{course.program_name}</span>
+                                        {course.degree_type && (
+                                          <Badge variant="outline" className={`text-[9px] px-1.5 py-0 shrink-0 ${degreeColor(course.degree_type)}`}>
+                                            {course.degree_type}
+                                          </Badge>
+                                        )}
+                                      </div>
+                                      {course.department && (
+                                        <p className="text-[10px] text-muted-foreground mt-0.5">{course.department}</p>
+                                      )}
+                                    </div>
+                                    <span className="text-[10px] text-muted-foreground shrink-0">{skillCount} skills</span>
+                                  </div>
+                                  {categoryKeys.length > 0 && (
+                                    <div className="flex flex-wrap gap-1 mt-1.5">
+                                      {categoryKeys.map(cat => (
+                                        <span key={cat} className="text-[9px] px-1.5 py-0.5 rounded-full bg-muted text-muted-foreground">
+                                          {cat.replace(/_/g, " ")} ({categories[cat].length})
+                                        </span>
+                                      ))}
+                                    </div>
+                                  )}
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </>
                       )}
                     </div>
                   )}
@@ -380,7 +452,7 @@ export default function SchoolsTab() {
               Scrape Curriculum
             </DialogTitle>
             <DialogDescription>
-              Paste the programs listing page URL (the page that links to all degree programs). We'll extract each program and its skills using AI.
+              Paste the programs listing page URL. We'll extract each program and its skills using AI.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-3">
@@ -389,12 +461,12 @@ export default function SchoolsTab() {
               <Input
                 value={scrapeUrl[scrapeDialogId || ""] || ""}
                 onChange={(e) => setScrapeUrl((prev) => ({ ...prev, [scrapeDialogId || ""]: e.target.value }))}
-                placeholder="e.g. https://catalogue.usc.edu/content.php?catoid=21&navoid=8873"
+                placeholder="e.g. https://catalogue.usc.edu/..."
                 className="h-8 text-sm"
               />
               <p className="text-[10px] text-muted-foreground mt-1">
                 <Globe className="h-3 w-3 inline mr-0.5" />
-                Use the page that lists all programs/degrees — not the catalog homepage.
+                Use the page that lists all programs/degrees.
               </p>
             </div>
             <Button
