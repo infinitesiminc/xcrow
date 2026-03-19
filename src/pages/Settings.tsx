@@ -68,7 +68,7 @@ export default function Settings() {
   const [searchParams, setSearchParams] = useSearchParams();
   const { toast } = useToast();
 
-  const activeSection = (searchParams.get("section") as SectionKey) || "roles";
+  const activeSection = (searchParams.get("section") as SectionKey) || "profile";
   const setSection = (s: SectionKey) => setSearchParams({ section: s }, { replace: true });
 
   const [displayName, setDisplayName] = useState("");
