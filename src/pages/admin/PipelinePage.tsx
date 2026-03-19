@@ -38,6 +38,7 @@ interface Company {
   funding_stage: string | null;
   funding_total: string | null;
   founded_year: number | null;
+  imported_at: string;
   job_count?: number;
   priority_score?: number;
 }
