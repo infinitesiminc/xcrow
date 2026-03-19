@@ -1,11 +1,13 @@
 import { useState, useEffect } from "react";
 import {
   GraduationCap, Plus, Loader2, Pencil, Check, X, Trash2, Users, Calendar, Mail,
+  Globe, BookOpen, Sparkles,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { Progress } from "@/components/ui/progress";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -22,11 +24,16 @@ interface School {
   created_at: string;
 }
 
-interface SchoolAdmin {
+interface CurriculumScrape {
   id: string;
-  user_id: string;
-  role: string;
   school_id: string;
+  source_url: string;
+  status: string;
+  programs_found: number;
+  programs_parsed: number;
+  error_message: string | null;
+  created_at: string;
+  completed_at: string | null;
 }
 
 export default function SchoolsTab() {
@@ -49,6 +56,12 @@ export default function SchoolsTab() {
   const [editStatus, setEditStatus] = useState("");
   const [saving, setSaving] = useState(false);
 
+  // Curriculum scraping
+  const [scrapeUrl, setScrapeUrl] = useState<Record<string, string>>({});
+  const [scraping, setScraping] = useState<Record<string, boolean>>({});
+  const [curricula, setCurricula] = useState<Record<string, CurriculumScrape[]>>({});
+  const [scrapeDialogId, setScrapeDialogId] = useState<string | null>(null);
+
   async function fetchSchools() {
     setLoading(true);
     const { data } = await supabase
@@ -56,6 +69,22 @@ export default function SchoolsTab() {
       .select("*")
       .order("created_at", { ascending: false });
     setSchools((data as School[]) || []);
+
+    // Fetch curricula for all schools
+    if (data && data.length > 0) {
+      const ids = data.map((s: any) => s.id);
+      const { data: currData } = await (supabase.from("school_curricula" as any) as any)
+        .select("*")
+        .in("school_id", ids)
+        .order("created_at", { ascending: false });
+      
+      const grouped: Record<string, CurriculumScrape[]> = {};
+      (currData || []).forEach((c: any) => {
+        if (!grouped[c.school_id]) grouped[c.school_id] = [];
+        grouped[c.school_id].push(c);
+      });
+      setCurricula(grouped);
+    }
     setLoading(false);
   }
 
@@ -74,7 +103,6 @@ export default function SchoolsTab() {
     if (error) {
       toast({ title: "Error creating school", description: error.message, variant: "destructive" });
     } else {
-      // Add admin if provided
       if (newAdminId.trim() && data) {
         await supabase.from("school_admins").insert({
           school_id: data.id,
@@ -118,10 +146,41 @@ export default function SchoolsTab() {
     }
   }
 
+  async function handleScrape(schoolId: string) {
+    const url = scrapeUrl[schoolId];
+    if (!url?.trim()) {
+      toast({ title: "Enter a catalog URL", variant: "destructive" });
+      return;
+    }
+    setScraping((prev) => ({ ...prev, [schoolId]: true }));
+    try {
+      const { data, error } = await supabase.functions.invoke("scrape-curriculum", {
+        body: { school_id: schoolId, catalog_url: url.trim() },
+      });
+      if (error) throw error;
+      toast({
+        title: "Scraping started",
+        description: `Found ${data.programs_found} programs. ${data.programs_parsed} parsed so far.`,
+      });
+      setScrapeDialogId(null);
+      fetchSchools();
+    } catch (err: any) {
+      toast({ title: "Scrape failed", description: err.message, variant: "destructive" });
+    } finally {
+      setScraping((prev) => ({ ...prev, [schoolId]: false }));
+    }
+  }
+
   const statusColor = (s: string) =>
     s === "active" ? "bg-success/10 text-success border-success/20" :
     s === "expired" ? "bg-destructive/10 text-destructive border-destructive/20" :
     "bg-muted text-muted-foreground";
+
+  const scrapeStatusColor = (s: string) =>
+    s === "completed" ? "text-success" :
+    s === "failed" ? "text-destructive" :
+    s === "scraping" ? "text-primary" :
+    "text-muted-foreground";
 
   if (loading) {
     return (
@@ -149,6 +208,9 @@ export default function SchoolsTab() {
         <div className="space-y-2">
           {schools.map((school) => {
             const isEditing = editingId === school.id;
+            const schoolCurricula = curricula[school.id] || [];
+            const latestScrape = schoolCurricula[0];
+
             return (
               <Card key={school.id} className="overflow-hidden">
                 <CardContent className="p-4">
@@ -200,6 +262,14 @@ export default function SchoolsTab() {
                       ) : (
                         <>
                           <Button
+                            size="sm"
+                            variant="outline"
+                            className="h-7 text-[10px] gap-1"
+                            onClick={() => setScrapeDialogId(school.id)}
+                          >
+                            <BookOpen className="h-3 w-3" /> Scrape Curriculum
+                          </Button>
+                          <Button
                             size="icon"
                             variant="ghost"
                             className="h-7 w-7"
@@ -228,6 +298,34 @@ export default function SchoolsTab() {
                       />
                     </div>
                   </div>
+
+                  {/* Curriculum scrape status */}
+                  {latestScrape && (
+                    <div className="mt-3 p-2 rounded-md bg-muted/50 border border-border">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2 text-xs">
+                          <Sparkles className={`h-3 w-3 ${scrapeStatusColor(latestScrape.status)}`} />
+                          <span className="font-medium">Curriculum</span>
+                          <span className="text-muted-foreground">·</span>
+                          <span className={scrapeStatusColor(latestScrape.status)}>
+                            {latestScrape.status}
+                          </span>
+                        </div>
+                        <span className="text-[10px] text-muted-foreground">
+                          {latestScrape.programs_parsed}/{latestScrape.programs_found} programs
+                        </span>
+                      </div>
+                      {latestScrape.status === "scraping" && latestScrape.programs_found > 0 && (
+                        <Progress
+                          value={(latestScrape.programs_parsed / latestScrape.programs_found) * 100}
+                          className="h-1 mt-2"
+                        />
+                      )}
+                      {latestScrape.error_message && (
+                        <p className="text-[10px] text-destructive mt-1">{latestScrape.error_message}</p>
+                      )}
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             );
@@ -268,6 +366,47 @@ export default function SchoolsTab() {
             <Button onClick={handleCreate} disabled={creating || !newName.trim()} className="w-full h-8 text-xs">
               {creating ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : <Plus className="h-3 w-3 mr-1" />}
               Create School
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Scrape Curriculum Dialog */}
+      <Dialog open={!!scrapeDialogId} onOpenChange={(open) => !open && setScrapeDialogId(null)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <BookOpen className="h-4 w-4 text-primary" />
+              Scrape Curriculum
+            </DialogTitle>
+            <DialogDescription>
+              Enter the school's course catalog URL. We'll scrape program pages and extract skills using AI.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3">
+            <div>
+              <label className="text-xs font-medium text-muted-foreground">Catalog URL *</label>
+              <Input
+                value={scrapeUrl[scrapeDialogId || ""] || ""}
+                onChange={(e) => setScrapeUrl((prev) => ({ ...prev, [scrapeDialogId || ""]: e.target.value }))}
+                placeholder="e.g. https://catalogue.usc.edu/"
+                className="h-8 text-sm"
+              />
+              <p className="text-[10px] text-muted-foreground mt-1">
+                <Globe className="h-3 w-3 inline mr-0.5" />
+                The scraper will map the site, find program pages, scrape content, and extract skills.
+              </p>
+            </div>
+            <Button
+              onClick={() => scrapeDialogId && handleScrape(scrapeDialogId)}
+              disabled={scraping[scrapeDialogId || ""] || !scrapeUrl[scrapeDialogId || ""]?.trim()}
+              className="w-full h-8 text-xs"
+            >
+              {scraping[scrapeDialogId || ""] ? (
+                <><Loader2 className="h-3 w-3 animate-spin mr-1" /> Scraping…</>
+              ) : (
+                <><Sparkles className="h-3 w-3 mr-1" /> Start Scraping</>
+              )}
             </Button>
           </div>
         </DialogContent>
