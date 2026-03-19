@@ -348,7 +348,7 @@ export default function RolePreviewPanel({ role, onClose }: RolePreviewPanelProp
           </div>
 
           {/* Task detail content */}
-          <div className="flex-1 overflow-y-auto p-5 flex flex-col items-center justify-center">
+          <div className="flex-1 overflow-y-auto p-5">
             <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-sm space-y-5">
               {/* Task icon + accent */}
               <div className="flex flex-col items-center text-center gap-3">
