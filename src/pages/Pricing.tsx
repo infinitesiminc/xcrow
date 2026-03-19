@@ -208,7 +208,7 @@ export default function Pricing() {
             Bring crowy.ai to your university
           </h3>
           <p className="text-sm text-muted-foreground max-w-md mx-auto mb-4">
-            Give every student Pro access with institutional pricing. Volume discounts available for 500+ seats.
+            Give every student personalized AI-readiness training mapped to your curriculum. Free pilot available.
           </p>
           <Button variant="outline" onClick={() => navigate("/contact")}>
             Talk to Sales <ArrowRight className="h-3.5 w-3.5 ml-1.5" />
