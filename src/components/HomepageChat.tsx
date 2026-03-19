@@ -72,7 +72,7 @@ export default function HomepageChat({
   }, [externalPrompt]);
 
   // Extract only text messages for the API, filtering out raw tool call text
-  const TOOL_CALL_RE = /^search_roles\s*\{[^}]*\}$/;
+  const TOOL_CALL_RE = /search_roles\s*[\({][^)}\n]+[\)}]/;
   const getApiMessages = (chatItems: ChatItem[]) =>
     chatItems
       .filter((it): it is ChatItem & { type: "user" | "assistant" } => it.type !== "roles")
