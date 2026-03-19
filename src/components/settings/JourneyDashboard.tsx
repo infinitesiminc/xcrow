@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import SkillMapGrid from "./SkillMapGrid";
 import CurriculumGapBanner from "./CurriculumGapBanner";
+import SchoolTeaser from "./SchoolTeaser";
 import HumanEdgesSection from "./HumanEdgesSection";
 import {
   aggregateSkillXP,
