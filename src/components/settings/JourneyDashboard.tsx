@@ -262,14 +262,15 @@ interface JourneyDashboardProps {
 
 export default function JourneyDashboard({ practicedRoles, savedRoles, loading }: JourneyDashboardProps) {
   const navigate = useNavigate();
+  const { templates, loading: templatesLoading } = useDbJobTemplates();
 
-  const skills = useMemo(() => buildTaxonomy(practicedRoles), [practicedRoles]);
-  const jobMatches = useMemo(() => computeJobMatches(skills), [skills]);
+  const skills = useMemo(() => buildTaxonomy(practicedRoles, templates), [practicedRoles, templates]);
+  const jobMatches = useMemo(() => computeJobMatches(skills, templates), [skills, templates]);
 
   const uniqueRoles = useMemo(() => new Set(practicedRoles.map(r => r.job_title)).size, [practicedRoles]);
   const uniqueTasks = useMemo(() => new Set(practicedRoles.map(r => r.task_name)).size, [practicedRoles]);
 
-  if (loading) {
+  if (loading || templatesLoading) {
     return (
       <div className="flex items-center justify-center py-20">
         <div className="h-5 w-5 animate-spin rounded-full border-2 border-primary border-t-transparent" />
