@@ -796,25 +796,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
           )}
         </div>
 
-        {/* Body */}
         <div className="flex-1 flex min-h-0">
-          {/* Objectives sidebar */}
-          <AnimatePresence>
-            {showObjectives && phase === "chat" && objectives.length > 0 && (
-              <motion.div
-                initial={{ width: 0, opacity: 0 }}
-                animate={{ width: 220, opacity: 1 }}
-                exit={{ width: 0, opacity: 0 }}
-                transition={{ duration: 0.2 }}
-                className="border-r border-border/40 overflow-hidden shrink-0"
-              >
-                <div className="p-3 w-[220px]">
-                  <ObjectiveChecklist objectives={objectives} status={objectiveStatus} scaffoldingTiers={scaffoldingTiers} />
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-
           <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 sm:px-6 py-4 sm:py-6 scrollbar-thin">
             <AnimatePresence mode="popLayout">
               {phase === "loading" && (
