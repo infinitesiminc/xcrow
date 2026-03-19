@@ -242,7 +242,7 @@ export default function Schools() {
                       </span>
                     </div>
                     <div className="flex items-center gap-3">
-                      <span className="text-xs text-muted-foreground font-mono">{gap.demand.toLocaleString()} jobs</span>
+                      <span className="text-xs text-muted-foreground font-mono">{gap.demand.toLocaleString()} tasks</span>
                       {!gap.coverage && (
                         <span className="text-[10px] font-medium text-brand-ai bg-brand-ai/10 px-2 py-0.5 rounded-full">GAP</span>
                       )}
