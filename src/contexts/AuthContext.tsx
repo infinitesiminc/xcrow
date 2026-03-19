@@ -29,6 +29,8 @@ interface AuthContextType {
   plan: PlanTier;
   subscriptionEnd: string | null;
   schoolName: string | null;
+  schoolId: string | null;
+  isSchoolAdmin: boolean;
   isPro: boolean;
   refreshProfile: () => Promise<void>;
   refreshSubscription: () => Promise<void>;
@@ -45,6 +47,8 @@ const AuthContext = createContext<AuthContextType>({
   plan: "free",
   subscriptionEnd: null,
   schoolName: null,
+  schoolId: null,
+  isSchoolAdmin: false,
   isPro: false,
   refreshProfile: async () => {},
   refreshSubscription: async () => {},
@@ -63,6 +67,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [plan, setPlan] = useState<PlanTier>("free");
   const [subscriptionEnd, setSubscriptionEnd] = useState<string | null>(null);
   const [schoolName, setSchoolName] = useState<string | null>(null);
+  const [schoolId, setSchoolId] = useState<string | null>(null);
+  const [isSchoolAdmin, setIsSchoolAdmin] = useState(false);
 
   const isSuperAdmin = !!user && SUPERADMIN_IDS.includes(user.id);
   const isPro = plan === "pro" || plan === "school" || isSuperAdmin;
@@ -175,6 +181,29 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     if (user) checkSubscription();
   }, [user, checkSubscription]);
 
+  // Check school admin status
+  useEffect(() => {
+    if (!user) {
+      setSchoolId(null);
+      setIsSchoolAdmin(false);
+      return;
+    }
+    (async () => {
+      const { data } = await (supabase.from("school_admins" as any) as any)
+        .select("school_id")
+        .eq("user_id", user.id)
+        .limit(1)
+        .maybeSingle();
+      if (data) {
+        setSchoolId(data.school_id);
+        setIsSchoolAdmin(true);
+      } else {
+        setSchoolId(null);
+        setIsSchoolAdmin(false);
+      }
+    })();
+  }, [user]);
+
   const signOut = async () => {
     await supabase.auth.signOut();
     setProfile(null);
@@ -190,7 +219,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   return (
     <AuthContext.Provider value={{
       user, session, loading, profile, isSuperAdmin,
-      plan, subscriptionEnd, schoolName, isPro,
+      plan, subscriptionEnd, schoolName, schoolId, isSchoolAdmin, isPro,
       refreshProfile, refreshSubscription, signOut, openAuthModal,
     }}>
       {children}

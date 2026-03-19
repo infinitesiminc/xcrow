@@ -26,6 +26,13 @@ const HRLayout = lazy(() => import("./layouts/HRLayout.tsx"));
 const PipelinePage = lazy(() => import("./pages/admin/PipelinePage.tsx"));
 const TaskAnalyticsPage = lazy(() => import("./pages/admin/TaskAnalyticsPage.tsx"));
 
+// School admin (lazy)
+const SchoolLayout = lazy(() => import("./layouts/SchoolLayout.tsx"));
+const SchoolDashboard = lazy(() => import("./pages/school/SchoolDashboard.tsx"));
+const SchoolStudents = lazy(() => import("./pages/school/SchoolStudents.tsx"));
+const SchoolInvite = lazy(() => import("./pages/school/SchoolInvite.tsx"));
+const SchoolAnalytics = lazy(() => import("./pages/school/SchoolAnalytics.tsx"));
+
 const queryClient = new QueryClient();
 
 /** Gate admin routes to superadmins */
@@ -34,6 +41,14 @@ function AdminGate() {
   if (loading) return null;
   if (!user || !isSuperAdmin) return <Navigate to="/" replace />;
   return <Suspense fallback={null}><HRLayout /></Suspense>;
+}
+
+/** Gate school admin routes */
+function SchoolAdminGate() {
+  const { user, loading, isSchoolAdmin } = useAuth();
+  if (loading) return null;
+  if (!user || !isSchoolAdmin) return <Navigate to="/" replace />;
+  return <Suspense fallback={null}><SchoolLayout /></Suspense>;
 }
 
 const App = () => (
@@ -61,6 +76,14 @@ const App = () => (
               <Route path="/practice" element={<Navigate to="/" replace />} />
               <Route path="/simulations" element={<Navigate to="/" replace />} />
               <Route path="/learning-path" element={<Navigate to="/" replace />} />
+
+              {/* School admin */}
+              <Route path="/school" element={<SchoolAdminGate />}>
+                <Route index element={<SchoolDashboard />} />
+                <Route path="students" element={<SchoolStudents />} />
+                <Route path="invite" element={<SchoolInvite />} />
+                <Route path="analytics" element={<SchoolAnalytics />} />
+              </Route>
 
               {/* Superadmin content pipeline */}
               <Route path="/admin" element={<AdminGate />}>

@@ -11,7 +11,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { User, Menu, X, Compass, Shield, Bookmark, ArrowRight, Clock, Map, Settings, LogOut, Trophy } from "lucide-react";
+import { User, Menu, X, Compass, Shield, Bookmark, ArrowRight, Clock, Map, Settings, LogOut, Trophy, GraduationCap } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 interface RecentActivity {
@@ -24,7 +24,7 @@ interface RecentActivity {
 }
 
 export default function Navbar() {
-  const { user, signOut, openAuthModal, isSuperAdmin } = useAuth();
+  const { user, signOut, openAuthModal, isSuperAdmin, isSchoolAdmin } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -44,6 +44,9 @@ export default function Navbar() {
     { label: "Leaderboard", path: "/leaderboard", icon: Trophy },
     ...(user ? [
       { label: "Skill Map", path: "/journey", icon: Map },
+    ] : []),
+    ...(isSchoolAdmin ? [
+      { label: "School", path: "/school", icon: GraduationCap },
     ] : []),
     ...(isSuperAdmin ? [
       { label: "Admin", path: "/admin", icon: Shield },

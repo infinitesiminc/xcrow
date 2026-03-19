@@ -17,6 +17,8 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import SimulatorModal from "@/components/SimulatorModal";
+import { useUsageGate } from "@/hooks/use-usage-gate";
+import UpgradeModal from "@/components/UpgradeModal";
 
 const isWebsite = (value: string) =>
   /^(https?:\/\/)?([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}(\/.*)?$/.test(value.trim());
@@ -97,7 +99,9 @@ const Analysis = () => {
   const [completedTasks, setCompletedTasks] = useState<Set<string>>(new Set());
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [bookmarkLoading, setBookmarkLoading] = useState(false);
-  const { user, openAuthModal } = useAuth();
+  const { user, openAuthModal, isPro } = useAuth();
+  const analysisGate = useUsageGate("analysis");
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
 
   const fetchCompletions = useCallback(async () => {
     if (!user) return;
@@ -199,10 +203,22 @@ const Analysis = () => {
         } catch (err) { console.error("Cache lookup failed:", err); }
       }
 
-      // 2. Fall back to AI analysis
+      // 2. Usage gate for AI analysis (free tier)
+      if (user && !isPro) {
+        const allowed = await analysisGate.check();
+        if (!allowed) {
+          setShowUpgradeModal(true);
+          setLoading(false);
+          return;
+        }
+      }
+
+      // 3. Fall back to AI analysis
       try {
         const aiResult = await analyzeJobWithAI(jobTitle, company, jdText || undefined, jdUrlParam || undefined);
         setResult(aiResult); saveAnalysisHistory(aiResult);
+        // Increment usage after successful AI analysis
+        await analysisGate.increment();
       } catch (err: any) { setError("Unable to analyze this role right now. Please try again."); console.error(err); }
       setLoading(false);
     };
@@ -452,6 +468,7 @@ const Analysis = () => {
         onNextTask={pickNextTask}
         onBackToFeed={() => navigate("/")}
       />
+      <UpgradeModal open={showUpgradeModal} onOpenChange={setShowUpgradeModal} type="analysis" used={analysisGate.used} limit={analysisGate.limit} />
     </div>
   );
 };

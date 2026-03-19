@@ -24,6 +24,8 @@ import {
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useUsageGate } from "@/hooks/use-usage-gate";
+import UpgradeModal from "@/components/UpgradeModal";
 
 type Phase = "loading" | "briefing" | "chat" | "review" | "completing" | "done";
 
@@ -463,9 +465,11 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
   const [showInactivityNudge, setShowInactivityNudge] = useState(false);
   const inactivityTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
-  const { user } = useAuth();
+  const { user, isPro } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const simGate = useUsageGate("simulation");
+  const [showUpgrade, setShowUpgrade] = useState(false);
 
   const taskMeta = { currentState: taskState, trend: taskTrend, impactLevel: taskImpactLevel };
 
@@ -541,6 +545,14 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
   }, [session, objectiveStatus]);
 
   const startCompile = useCallback(async () => {
+    // Usage gate check for free users
+    if (user && !isPro) {
+      const allowed = await simGate.check();
+      if (!allowed) {
+        setShowUpgrade(true);
+        return;
+      }
+    }
     setPhase("loading");
     setError(null);
     setMessages([]);
@@ -559,7 +571,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
       setError("Couldn't start the simulation. Please try again.");
       setPhase("chat");
     }
-  }, [taskName, jobTitle, company, mode, taskState, taskTrend, taskImpactLevel]);
+  }, [taskName, jobTitle, company, mode, taskState, taskTrend, taskImpactLevel, user, isPro, simGate]);
 
   useEffect(() => {
     if (open) startCompile();
@@ -698,6 +710,8 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
           skills_earned: skillsEarnedData,
         } as any);
         onCompleted?.();
+        // Increment usage counter for free tier
+        await simGate.increment();
         toast({ title: "Skills updated! 🎯", description: `+${xpEach} XP in ${earned.map(e => e.name).join(", ")}`, action: <Button variant="link" className="text-xs p-0 h-auto" onClick={() => navigate("/journey")}>Skill Map</Button> });
       } catch (err) {
         console.error("Failed to save completion:", err);
@@ -1179,11 +1193,14 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
   if (inline) return content;
 
   return (
-    <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
-      <DialogContent className="max-w-3xl w-[95vw] h-[90vh] sm:h-[90vh] h-[100dvh] sm:rounded-2xl rounded-none p-0 flex flex-col overflow-hidden gap-0 border-border/50 [&>button]:hidden">
-        {content}
-      </DialogContent>
-    </Dialog>
+    <>
+      <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
+        <DialogContent className="max-w-3xl w-[95vw] h-[90vh] sm:h-[90vh] h-[100dvh] sm:rounded-2xl rounded-none p-0 flex flex-col overflow-hidden gap-0 border-border/50 [&>button]:hidden">
+          {content}
+        </DialogContent>
+      </Dialog>
+      <UpgradeModal open={showUpgrade} onOpenChange={(v) => { setShowUpgrade(v); if (!v) onClose(); }} type="simulation" used={simGate.used} limit={simGate.limit} />
+    </>
   );
 };
 
