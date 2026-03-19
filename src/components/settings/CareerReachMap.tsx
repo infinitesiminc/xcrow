@@ -120,10 +120,10 @@ export default function CareerReachMap({ jobMatches, isEmpty }: CareerReachMapPr
   const [hovered, setHovered] = useState<PlacedDot | null>(null);
   const svgRef = useRef<SVGSVGElement>(null);
 
-  const SIZE = 420;
+  const SIZE = 520;
   const CX = SIZE / 2;
   const CY = SIZE / 2;
-  const MAX_R = SIZE / 2 - 24;
+  const MAX_R = SIZE / 2 - 28;
 
   const placed = useMemo(() => placeDots(jobMatches, CX, CY, MAX_R), [jobMatches, CX, CY, MAX_R]);
 
