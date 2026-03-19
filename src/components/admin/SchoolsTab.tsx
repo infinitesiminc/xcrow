@@ -102,6 +102,43 @@ export default function SchoolsTab() {
 
   useEffect(() => { fetchSchools(); }, []);
 
+  // Realtime subscription for scrape progress
+  useEffect(() => {
+    const channel = supabase
+      .channel('curricula-progress')
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'school_curricula' },
+        (payload: any) => {
+          const updated = payload.new as CurriculumScrape;
+          setCurricula((prev) => {
+            const schoolCurrs = prev[updated.school_id] || [];
+            const idx = schoolCurrs.findIndex((c) => c.id === updated.id);
+            if (idx >= 0) {
+              const copy = [...schoolCurrs];
+              copy[idx] = updated;
+              return { ...prev, [updated.school_id]: copy };
+            }
+            return { ...prev, [updated.school_id]: [updated, ...schoolCurrs] };
+          });
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'school_curricula' },
+        (payload: any) => {
+          const inserted = payload.new as CurriculumScrape;
+          setCurricula((prev) => ({
+            ...prev,
+            [inserted.school_id]: [inserted, ...(prev[inserted.school_id] || [])],
+          }));
+        }
+      )
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
+  }, []);
+
   async function fetchCourses(schoolId: string) {
     if (courses[schoolId]) return;
     setLoadingCourses((prev) => ({ ...prev, [schoolId]: true }));

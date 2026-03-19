@@ -181,6 +181,13 @@ Deno.serve(async (req) => {
       console.log(`Capping from ${programs.length} to ${programCap} programs`);
       programs = programs.slice(0, programCap);
     }
+
+    // Skip already-parsed programs
+    if (skipCount > 0 && skipCount < programs.length) {
+      console.log(`Skipping first ${skipCount} programs (already parsed)`);
+      programs = programs.slice(skipCount);
+    }
+
     console.log(`Processing ${programs.length} programs`);
 
     await sb.from("school_curricula").update({ programs_found: programs.length }).eq("id", curriculumId);
