@@ -1,8 +1,8 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Search, ChevronUp, ChevronDown, ChevronLeft, ChevronRight, Loader2,
-  Globe, ExternalLink,
+  ExternalLink,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -40,7 +40,9 @@ export default function SchoolsDataTable({ initialPipelineFilter }: { initialPip
   const navigate = useNavigate();
   const [schools, setSchools] = useState<SchoolRow[]>([]);
   const [loading, setLoading] = useState(true);
+  const [totalCount, setTotalCount] = useState(0);
   const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [stateFilter, setStateFilter] = useState("all");
   const [carnegieFilter, setCarnegieFilter] = useState("all");
   const [pipelineFilter, setPipelineFilter] = useState(initialPipelineFilter || "all");
@@ -49,74 +51,72 @@ export default function SchoolsDataTable({ initialPipelineFilter }: { initialPip
   const [sortAsc, setSortAsc] = useState(true);
   const [page, setPage] = useState(0);
 
+  // Static filter options (loaded once)
+  const [states, setStates] = useState<string[]>([]);
+  const [carnegieClasses, setCarnegieClasses] = useState<string[]>([]);
+
   useEffect(() => {
     if (initialPipelineFilter) setPipelineFilter(initialPipelineFilter);
   }, [initialPipelineFilter]);
 
+  // Debounce search
   useEffect(() => {
-    async function load() {
-      // Fetch in batches to get all 4k+ rows
-      let allData: SchoolRow[] = [];
-      let from = 0;
-      const batchSize = 1000;
-      let done = false;
-      while (!done) {
-        const { data } = await supabase
-          .from("school_accounts")
-          .select("id,name,state,carnegie_class,enrollment,pipeline_stage,is_hbcu,plan_status,website,domain")
-          .range(from, from + batchSize - 1);
-        if (data && data.length > 0) {
-          allData = allData.concat(data as SchoolRow[]);
-          from += batchSize;
-          if (data.length < batchSize) done = true;
-        } else {
-          done = true;
-        }
+    const timer = setTimeout(() => setDebouncedSearch(search), 300);
+    return () => clearTimeout(timer);
+  }, [search]);
+
+  // Load filter options once
+  useEffect(() => {
+    async function loadFilters() {
+      const { data } = await supabase
+        .from("school_accounts")
+        .select("state, carnegie_class")
+        .not("state", "is", null);
+      if (data) {
+        const stateSet = new Set<string>();
+        const carnSet = new Set<string>();
+        data.forEach((r: any) => {
+          if (r.state) stateSet.add(r.state);
+          if (r.carnegie_class) carnSet.add(r.carnegie_class);
+        });
+        setStates(Array.from(stateSet).sort());
+        setCarnegieClasses(Array.from(carnSet).sort());
       }
-      setSchools(allData);
-      setLoading(false);
     }
-    load();
+    loadFilters();
   }, []);
 
-  const states = useMemo(() => {
-    const s = new Set(schools.map(s => s.state).filter(Boolean) as string[]);
-    return Array.from(s).sort();
-  }, [schools]);
+  // Fetch data with server-side pagination + filters
+  const fetchData = useCallback(async () => {
+    setLoading(true);
+    let query = supabase
+      .from("school_accounts")
+      .select("id,name,state,carnegie_class,enrollment,pipeline_stage,is_hbcu,plan_status,website,domain", { count: "exact" });
 
-  const carnegieClasses = useMemo(() => {
-    const s = new Set(schools.map(s => s.carnegie_class).filter(Boolean) as string[]);
-    return Array.from(s).sort();
-  }, [schools]);
-
-  const filtered = useMemo(() => {
-    let result = schools;
-    if (search) {
-      const q = search.toLowerCase();
-      result = result.filter(s => s.name.toLowerCase().includes(q));
+    if (debouncedSearch) {
+      query = query.ilike("name", `%${debouncedSearch}%`);
     }
-    if (stateFilter !== "all") result = result.filter(s => s.state === stateFilter);
-    if (carnegieFilter !== "all") result = result.filter(s => s.carnegie_class === carnegieFilter);
-    if (pipelineFilter !== "all") result = result.filter(s => s.pipeline_stage === pipelineFilter);
-    if (hbcuFilter !== "all") result = result.filter(s => hbcuFilter === "yes" ? s.is_hbcu : !s.is_hbcu);
+    if (stateFilter !== "all") query = query.eq("state", stateFilter);
+    if (carnegieFilter !== "all") query = query.eq("carnegie_class", carnegieFilter);
+    if (pipelineFilter !== "all") query = query.eq("pipeline_stage", pipelineFilter);
+    if (hbcuFilter === "yes") query = query.eq("is_hbcu", true);
+    if (hbcuFilter === "no") query = query.eq("is_hbcu", false);
 
-    result.sort((a, b) => {
-      let cmp = 0;
-      if (sortKey === "enrollment") cmp = (a.enrollment || 0) - (b.enrollment || 0);
-      else {
-        const av = (a[sortKey] || "") as string;
-        const bv = (b[sortKey] || "") as string;
-        cmp = av.localeCompare(bv);
-      }
-      return sortAsc ? cmp : -cmp;
-    });
-    return result;
-  }, [schools, search, stateFilter, carnegieFilter, pipelineFilter, hbcuFilter, sortKey, sortAsc]);
+    query = query.order(sortKey, { ascending: sortAsc });
+    query = query.range(page * PAGE_SIZE, (page + 1) * PAGE_SIZE - 1);
 
-  const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
-  const pageData = filtered.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
+    const { data, count } = await query;
+    setSchools((data as SchoolRow[]) || []);
+    setTotalCount(count || 0);
+    setLoading(false);
+  }, [debouncedSearch, stateFilter, carnegieFilter, pipelineFilter, hbcuFilter, sortKey, sortAsc, page]);
 
-  useEffect(() => { setPage(0); }, [search, stateFilter, carnegieFilter, pipelineFilter, hbcuFilter]);
+  useEffect(() => { fetchData(); }, [fetchData]);
+
+  // Reset page on filter change
+  useEffect(() => { setPage(0); }, [debouncedSearch, stateFilter, carnegieFilter, pipelineFilter, hbcuFilter]);
+
+  const totalPages = Math.ceil(totalCount / PAGE_SIZE);
 
   function toggleSort(key: SortKey) {
     if (sortKey === key) setSortAsc(!sortAsc);
@@ -127,14 +127,6 @@ export default function SchoolsDataTable({ initialPipelineFilter }: { initialPip
     if (sortKey !== col) return null;
     return sortAsc ? <ChevronUp className="h-3 w-3 inline ml-1" /> : <ChevronDown className="h-3 w-3 inline ml-1" />;
   };
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center py-20">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-      </div>
-    );
-  }
 
   return (
     <div className="space-y-4">
@@ -178,7 +170,9 @@ export default function SchoolsDataTable({ initialPipelineFilter }: { initialPip
       </div>
 
       {/* Count */}
-      <p className="text-sm text-muted-foreground">{filtered.length.toLocaleString()} institutions</p>
+      <p className="text-sm text-muted-foreground">
+        {loading ? "Loading..." : `${totalCount.toLocaleString()} institutions`}
+      </p>
 
       {/* Table */}
       <div className="rounded-lg border border-border/50 overflow-hidden">
@@ -195,31 +189,43 @@ export default function SchoolsDataTable({ initialPipelineFilter }: { initialPip
             </TableRow>
           </TableHeader>
           <TableBody>
-            {pageData.map(school => (
-              <TableRow key={school.id} className="hover:bg-muted/20 cursor-pointer" onClick={() => navigate(`/admin/schools/${school.id}`)}>
-                <TableCell className="font-medium max-w-[300px] truncate text-[hsl(var(--neon-blue))] hover:underline">{school.name}</TableCell>
-                <TableCell>{school.state || "—"}</TableCell>
-                <TableCell>
-                  <span className="text-xs text-muted-foreground">{school.carnegie_class || "—"}</span>
-                </TableCell>
-                <TableCell className="text-right font-mono text-sm">
-                  {school.enrollment?.toLocaleString() || "—"}
-                </TableCell>
-                <TableCell>
-                  <Badge variant="outline" className={`text-xs ${PIPELINE_BADGE[school.pipeline_stage || "prospect"] || ""}`}>
-                    {(school.pipeline_stage || "prospect").charAt(0).toUpperCase() + (school.pipeline_stage || "prospect").slice(1)}
-                  </Badge>
-                </TableCell>
-                <TableCell>{school.is_hbcu ? <Badge className="bg-[hsl(var(--neon-pink))]/15 text-[hsl(var(--neon-pink))] text-xs">HBCU</Badge> : null}</TableCell>
-                <TableCell>
-                  {school.website && (
-                    <a href={school.website.startsWith("http") ? school.website : `https://${school.website}`} target="_blank" rel="noopener noreferrer">
-                      <ExternalLink className="h-3.5 w-3.5 text-muted-foreground hover:text-foreground" />
-                    </a>
-                  )}
+            {loading ? (
+              <TableRow>
+                <TableCell colSpan={7} className="text-center py-12">
+                  <Loader2 className="h-6 w-6 animate-spin text-muted-foreground mx-auto" />
                 </TableCell>
               </TableRow>
-            ))}
+            ) : schools.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={7} className="text-center py-12 text-muted-foreground">No schools found</TableCell>
+              </TableRow>
+            ) : (
+              schools.map(school => (
+                <TableRow key={school.id} className="hover:bg-muted/20 cursor-pointer" onClick={() => navigate(`/admin/schools/${school.id}`)}>
+                  <TableCell className="font-medium max-w-[300px] truncate text-[hsl(var(--neon-blue))] hover:underline">{school.name}</TableCell>
+                  <TableCell>{school.state || "—"}</TableCell>
+                  <TableCell>
+                    <span className="text-xs text-muted-foreground">{school.carnegie_class || "—"}</span>
+                  </TableCell>
+                  <TableCell className="text-right font-mono text-sm">
+                    {school.enrollment?.toLocaleString() || "—"}
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant="outline" className={`text-xs ${PIPELINE_BADGE[school.pipeline_stage || "prospect"] || ""}`}>
+                      {(school.pipeline_stage || "prospect").charAt(0).toUpperCase() + (school.pipeline_stage || "prospect").slice(1)}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>{school.is_hbcu ? <Badge className="bg-[hsl(var(--neon-pink))]/15 text-[hsl(var(--neon-pink))] text-xs">HBCU</Badge> : null}</TableCell>
+                  <TableCell>
+                    {school.website && (
+                      <a href={school.website.startsWith("http") ? school.website : `https://${school.website}`} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()}>
+                        <ExternalLink className="h-3.5 w-3.5 text-muted-foreground hover:text-foreground" />
+                      </a>
+                    )}
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
           </TableBody>
         </Table>
       </div>
