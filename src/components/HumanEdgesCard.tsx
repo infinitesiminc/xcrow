@@ -5,33 +5,41 @@
  */
 import { motion } from "framer-motion";
 import { Sparkles, Brain, Heart, Shield, ArrowRight } from "lucide-react";
+
+export interface EdgeContext {
+  label: string;
+  skillIds: string[]; // matching skill IDs from SKILL_TAXONOMY
+}
+
 const EDGE_EXAMPLES = [
   {
     icon: Brain,
     label: "System Thinking",
     desc: "Connecting dots AI can't see",
     prompt: "Show me roles where system thinking matters most — where connecting the big picture gives humans an edge over AI",
+    skillIds: ["code-dev", "system-design", "process-optimization"],
   },
   {
     icon: Heart,
     label: "Empathy & Culture",
     desc: "Building trust humans value",
     prompt: "What jobs rely most on empathy and cultural understanding? Show me where human connection is the real skill",
+    skillIds: ["team-mgmt", "stakeholder-mgmt", "negotiation", "design-ux"],
   },
   {
     icon: Shield,
     label: "Judgment Under Uncertainty",
     desc: "Deciding when data isn't enough",
     prompt: "Find me roles where judgment under uncertainty is critical — where humans must decide when AI can't",
+    skillIds: ["risk-assessment", "strategy", "financial-modeling", "regulatory"],
   },
 ];
 
 interface HumanEdgesCardProps {
-  onEdgeClick?: (prompt: string) => void;
+  onEdgeClick?: (prompt: string, edge: EdgeContext) => void;
 }
 
 export default function HumanEdgesCard({ onEdgeClick }: HumanEdgesCardProps) {
-
   return (
     <motion.div
       initial={{ opacity: 0, y: 12 }}
@@ -54,10 +62,10 @@ export default function HumanEdgesCard({ onEdgeClick }: HumanEdgesCardProps) {
 
       {/* Edge buttons */}
       <div className="space-y-2">
-        {EDGE_EXAMPLES.map(({ icon: Icon, label, desc, prompt }) => (
+        {EDGE_EXAMPLES.map(({ icon: Icon, label, desc, prompt, skillIds }) => (
           <button
             key={label}
-            onClick={() => onEdgeClick?.(prompt)}
+            onClick={() => onEdgeClick?.(prompt, { label, skillIds })}
             className="w-full flex items-center gap-3 rounded-xl bg-muted/20 px-3 py-2.5 text-left hover:bg-muted/40 hover:border-primary/20 transition-colors group"
           >
             <Icon className="h-4 w-4 text-primary shrink-0" />
