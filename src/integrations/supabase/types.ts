@@ -859,6 +859,7 @@ export type Database = {
           pipeline_stage: string | null
           plan_status: string
           price_per_seat_cents: number
+          short_name: string | null
           state: string | null
           stripe_customer_id: string | null
           stripe_subscription_id: string | null
@@ -887,6 +888,7 @@ export type Database = {
           pipeline_stage?: string | null
           plan_status?: string
           price_per_seat_cents?: number
+          short_name?: string | null
           state?: string | null
           stripe_customer_id?: string | null
           stripe_subscription_id?: string | null
@@ -915,6 +917,7 @@ export type Database = {
           pipeline_stage?: string | null
           plan_status?: string
           price_per_seat_cents?: number
+          short_name?: string | null
           state?: string | null
           stripe_customer_id?: string | null
           stripe_subscription_id?: string | null
