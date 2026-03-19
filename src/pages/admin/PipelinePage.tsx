@@ -1371,7 +1371,7 @@ export default function PipelinePage() {
                       <span>·</span>
                       <span>{jobs.length} roles</span>
                       <span>·</span>
-                      <span className="text-primary">{analyzedJobIds.size} analyzed</span>
+                      <span className="text-primary">{validAnalyzedCount} analyzed</span>
                       {selectedCompany.employee_range && <><span>·</span><span>{selectedCompany.employee_range}</span></>}
                     </div>
                   </div>
