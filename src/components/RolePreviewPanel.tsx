@@ -560,21 +560,7 @@ export default function RolePreviewPanel({ role, onClose }: RolePreviewPanelProp
           <div className="flex items-center justify-center py-8"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></div>
         ) : (
           <>
-            {/* Key stats row */}
-            <div className="grid grid-cols-3 gap-3 mb-5">
-              <div className="rounded-xl bg-muted/30 p-3 text-center">
-                <div className="text-lg font-bold text-foreground tabular-nums">{role.risk || 0}%</div>
-                <div className="text-[10px] text-muted-foreground uppercase tracking-wider">Risk</div>
-              </div>
-              <div className="rounded-xl bg-muted/30 p-3 text-center">
-                <div className="text-lg font-bold text-foreground tabular-nums">{role.augmented}%</div>
-                <div className="text-[10px] text-muted-foreground uppercase tracking-wider">Augmented</div>
-              </div>
-              <div className="rounded-xl bg-muted/30 p-3 text-center">
-                <div className="text-lg font-bold text-foreground tabular-nums">{tasks.length}</div>
-                <div className="text-[10px] text-muted-foreground uppercase tracking-wider">Tasks</div>
-              </div>
-            </div>
+            {/* Role summary or tasks below */}
 
             {/* Role summary */}
             {summary ? (
