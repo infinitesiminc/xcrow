@@ -6,6 +6,46 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type",
 };
 
+interface ProgramEntry {
+  name: string;
+  degreeType: string;
+  url: string;
+}
+
+/** Parse program entries from the listing page markdown/HTML */
+function parseProgramLinks(markdown: string, baseUrl: string): ProgramEntry[] {
+  const programs: ProgramEntry[] = [];
+  // Match links like [Accounting (BS)](https://catalogue.usc.edu/preview_program.php?catoid=21&poid=29561...)
+  const linkRegex = /\[([^\]]+)\]\((https?:\/\/[^\s)]*preview_program[^\s)]*)\)/g;
+  let match;
+  while ((match = linkRegex.exec(markdown)) !== null) {
+    const rawName = match[1].replace(/\*$/, "").trim(); // remove trailing asterisk
+    const url = match[2].split("#")[0]; // remove fragment
+
+    // Extract degree type from parentheses: "Accounting (BS)" → BS
+    const degreeMatch = rawName.match(/\(([A-Z][A-Za-z]{1,5})\)\s*$/);
+    const degreeType = degreeMatch ? degreeMatch[1] : "Other";
+    const name = degreeMatch ? rawName.replace(/\s*\([A-Z][A-Za-z]{1,5}\)\s*$/, "").trim() : rawName;
+
+    // Deduplicate by URL
+    if (!programs.some((p) => p.url === url)) {
+      programs.push({ name, degreeType, url });
+    }
+  }
+  return programs;
+}
+
+/** Safe fetch wrapper with timeout */
+async function safeFetch(url: string, options: RequestInit, timeoutMs = 30000): Promise<Response> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    return await fetch(url, { ...options, signal: controller.signal });
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -17,16 +57,14 @@ Deno.serve(async (req) => {
   const lovableKey = Deno.env.get("LOVABLE_API_KEY");
 
   if (!firecrawlKey) {
-    return new Response(
-      JSON.stringify({ error: "FIRECRAWL_API_KEY not configured" }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
+    return new Response(JSON.stringify({ error: "FIRECRAWL_API_KEY not configured" }), {
+      status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
   }
   if (!lovableKey) {
-    return new Response(
-      JSON.stringify({ error: "LOVABLE_API_KEY not configured" }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
+    return new Response(JSON.stringify({ error: "LOVABLE_API_KEY not configured" }), {
+      status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
   }
 
   const sb = createClient(supabaseUrl, serviceKey);
@@ -34,25 +72,9 @@ Deno.serve(async (req) => {
   try {
     const { school_id, catalog_url } = await req.json();
     if (!school_id || !catalog_url) {
-      return new Response(
-        JSON.stringify({ error: "school_id and catalog_url are required" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    // Auth check
-    const authHeader = req.headers.get("Authorization");
-    if (authHeader) {
-      const token = authHeader.replace("Bearer ", "");
-      const userSb = createClient(supabaseUrl, Deno.env.get("SUPABASE_ANON_KEY")!, {
-        global: { headers: { Authorization: `Bearer ${token}` } },
+      return new Response(JSON.stringify({ error: "school_id and catalog_url are required" }), {
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
-      const { data: { user } } = await userSb.auth.getUser(token);
-      if (!user) {
-        return new Response(JSON.stringify({ error: "Unauthorized" }), {
-          status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
     }
 
     // Create curriculum record
@@ -65,9 +87,10 @@ Deno.serve(async (req) => {
     if (insertErr) throw new Error(`Failed to create curriculum: ${insertErr.message}`);
     const curriculumId = curriculum.id;
 
-    // Step 1: Map the catalog — use broader search terms
-    console.log("Step 1: Mapping catalog URL:", catalog_url);
-    const mapRes = await fetch("https://api.firecrawl.dev/v1/map", {
+    // ─── Step 1: Scrape the listing page to discover all programs ───
+    console.log("Step 1: Scraping listing page:", catalog_url);
+
+    const listingRes = await safeFetch("https://api.firecrawl.dev/v1/scrape", {
       method: "POST",
       headers: {
         Authorization: `Bearer ${firecrawlKey}`,
@@ -75,127 +98,96 @@ Deno.serve(async (req) => {
       },
       body: JSON.stringify({
         url: catalog_url,
-        search: "program degree major minor bachelor master certificate department school",
-        limit: 2000,
-        includeSubdomains: true,
+        formats: ["markdown"],
+        onlyMainContent: true,
+        waitFor: 3000,
       }),
     });
 
-    const mapText = await mapRes.text();
-    let mapData: any;
-    try { mapData = JSON.parse(mapText); } catch {
+    const listingText = await listingRes.text();
+    let listingData: any;
+    try { listingData = JSON.parse(listingText); } catch {
       await sb.from("school_curricula").update({
-        status: "failed", error_message: `Map returned non-JSON: ${mapText.slice(0, 200)}`,
+        status: "failed", error_message: `Listing page returned non-JSON`,
       }).eq("id", curriculumId);
-      throw new Error("Firecrawl map returned non-JSON");
+      throw new Error("Listing page returned non-JSON");
     }
 
-    if (!mapRes.ok) {
+    if (!listingRes.ok) {
       await sb.from("school_curricula").update({
-        status: "failed", error_message: `Map failed: ${JSON.stringify(mapData).slice(0, 500)}`,
+        status: "failed", error_message: `Listing scrape failed: ${listingData?.error || listingRes.status}`,
       }).eq("id", curriculumId);
-      throw new Error(`Firecrawl map failed`);
+      throw new Error("Listing page scrape failed");
     }
 
-    // Filter for program URLs — broader matching for various catalog systems
-    const allLinks: string[] = mapData.links || [];
-    console.log(`Map returned ${allLinks.length} total links. Sample:`, allLinks.slice(0, 10));
+    const listingMarkdown = listingData.data?.markdown || listingData.markdown || "";
+    const programs = parseProgramLinks(listingMarkdown, catalog_url);
 
-    const programLinks = allLinks.filter((url: string) => {
-      const lower = url.toLowerCase();
-      // Match common catalog URL patterns
-      return (
-        lower.includes("preview_program") ||
-        lower.includes("poid=") ||
-        lower.includes("/program") ||
-        lower.includes("/major") ||
-        lower.includes("/degree") ||
-        lower.includes("/minor") ||
-        lower.includes("/certificate") ||
-        lower.includes("preview_entity") ||
-        lower.includes("catoid=")
-      );
-    })
-    // Exclude non-program pages
-    .filter((url: string) => {
-      const lower = url.toLowerCase();
-      return !lower.includes("preview_course") && !lower.includes("login") && !lower.includes("search");
-    })
-    // Deduplicate
-    .filter((url: string, idx: number, arr: string[]) => arr.indexOf(url) === idx)
-    .slice(0, 80);
+    console.log(`Found ${programs.length} programs from listing page`);
+    console.log("Sample programs:", programs.slice(0, 5).map((p) => `${p.name} (${p.degreeType})`));
 
-    console.log(`Filtered to ${programLinks.length} program links. Sample:`, programLinks.slice(0, 5));
+    await sb.from("school_curricula").update({ programs_found: programs.length }).eq("id", curriculumId);
 
-    await sb.from("school_curricula").update({
-      programs_found: programLinks.length,
-    }).eq("id", curriculumId);
-
-    if (programLinks.length === 0) {
+    if (programs.length === 0) {
       await sb.from("school_curricula").update({
-        status: "completed", completed_at: new Date().toISOString(),
-        error_message: "No program pages found. Check if the catalog URL uses a supported format.",
+        status: "completed",
+        completed_at: new Date().toISOString(),
+        error_message: "No program links found on listing page. Try a more specific programs listing URL.",
       }).eq("id", curriculumId);
-      return new Response(
-        JSON.stringify({ curriculum_id: curriculumId, programs_found: 0, all_links_sample: allLinks.slice(0, 20) }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return new Response(JSON.stringify({
+        curriculum_id: curriculumId,
+        programs_found: 0,
+        message: "No program links found",
+      }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
-    // Step 2: Scrape + parse in batches
-    console.log("Step 2: Scraping program pages...");
+    // ─── Step 2: Scrape each program page + AI skill extraction ───
+    console.log("Step 2: Scraping program pages for skill extraction...");
     let programsParsed = 0;
     const batchSize = 5;
 
-    for (let i = 0; i < programLinks.length; i += batchSize) {
-      const batch = programLinks.slice(i, i + batchSize);
-      const scrapePromises = batch.map(async (url: string) => {
-        try {
-          const scrapeRes = await fetch("https://api.firecrawl.dev/v1/scrape", {
-            method: "POST",
-            headers: {
-              Authorization: `Bearer ${firecrawlKey}`,
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              url,
-              formats: ["markdown"],
-              onlyMainContent: true,
-              waitFor: 3000,
-            }),
-          });
+    for (let i = 0; i < programs.length; i += batchSize) {
+      const batch = programs.slice(i, i + batchSize);
 
-          const scrapeText = await scrapeRes.text();
-          let scrapeData: any;
-          try { scrapeData = JSON.parse(scrapeText); } catch {
-            console.warn(`Scrape returned non-JSON for ${url}`);
+      const batchResults = await Promise.all(
+        batch.map(async (program) => {
+          try {
+            const scrapeRes = await safeFetch("https://api.firecrawl.dev/v1/scrape", {
+              method: "POST",
+              headers: {
+                Authorization: `Bearer ${firecrawlKey}`,
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                url: program.url,
+                formats: ["markdown"],
+                onlyMainContent: true,
+                waitFor: 3000,
+              }),
+            });
+
+            const scrapeText = await scrapeRes.text();
+            let scrapeData: any;
+            try { scrapeData = JSON.parse(scrapeText); } catch { return null; }
+            if (!scrapeRes.ok) return null;
+
+            const markdown = scrapeData.data?.markdown || scrapeData.markdown || "";
+            if (!markdown || markdown.length < 80) return null;
+
+            return { ...program, markdown };
+          } catch (err) {
+            console.warn(`Scrape error for ${program.name}:`, err);
             return null;
           }
-          if (!scrapeRes.ok) {
-            console.warn(`Scrape failed for ${url}:`, scrapeData?.error);
-            return null;
-          }
+        })
+      );
 
-          const markdown = scrapeData.data?.markdown || scrapeData.markdown || "";
-          const title = scrapeData.data?.metadata?.title || scrapeData.metadata?.title || "";
-
-          if (!markdown || markdown.length < 100) return null;
-          return { url, markdown, title };
-        } catch (err) {
-          console.warn(`Error scraping ${url}:`, err);
-          return null;
-        }
-      });
-
-      const results = await Promise.all(scrapePromises);
-      const validResults = results.filter(Boolean);
-      if (validResults.length === 0) continue;
-
-      // Step 3: AI extraction
-      for (const result of validResults) {
+      // AI extraction for each successful scrape
+      for (const result of batchResults) {
         if (!result) continue;
+
         try {
-          const aiRes = await fetch("https://api.lovable.dev/v1/chat/completions", {
+          const aiRes = await safeFetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
             method: "POST",
             headers: {
               Authorization: `Bearer ${lovableKey}`,
@@ -206,50 +198,50 @@ Deno.serve(async (req) => {
               messages: [
                 {
                   role: "system",
-                  content: `You are a curriculum analyst. Extract structured information from university program descriptions.
+                  content: `You are a curriculum analyst. Given a university program overview, extract the key professional skills and competencies this program develops.
+
 Return ONLY valid JSON (no markdown fences) with this schema:
 {
-  "program_name": "string",
-  "degree_type": "BS|BA|BFA|MS|MA|MBA|PhD|Certificate|Minor|Other",
-  "department": "string",
-  "skills": ["array of 5-20 specific, job-relevant skills"],
+  "department": "string — school or college name",
+  "description": "string — 1-2 sentence summary of what this program prepares students for",
+  "skills": ["array of 5-15 specific, job-relevant skills this program teaches"],
   "skill_categories": {
-    "technical": ["skills"],
-    "analytical": ["skills"],
-    "communication": ["skills"],
-    "leadership": ["skills"],
-    "creative": ["skills"],
-    "compliance": ["skills"]
+    "technical": ["concrete technical skills"],
+    "analytical": ["analytical/quantitative skills"],
+    "communication": ["communication/writing skills"],
+    "leadership": ["management/leadership skills"],
+    "creative": ["creative/design skills"],
+    "domain_specific": ["field-specific professional competencies"]
   }
 }
-Focus on practical capabilities, not course names.`,
+
+Focus on practical, job-relevant capabilities — not course codes or academic requirements.`,
                 },
                 {
                   role: "user",
-                  content: `Extract skills from this program page:\n\nTitle: ${result.title}\nURL: ${result.url}\n\n${result.markdown.slice(0, 4000)}`,
+                  content: `Program: ${result.name} (${result.degreeType})\nURL: ${result.url}\n\n${result.markdown.slice(0, 5000)}`,
                 },
               ],
               temperature: 0.1,
             }),
           });
 
-          // Safe response parsing
           const aiText = await aiRes.text();
           if (!aiRes.ok) {
-            console.warn(`AI API error for ${result.url}: ${aiRes.status} ${aiText.slice(0, 200)}`);
+            console.warn(`AI error for ${result.name}: ${aiRes.status} ${aiText.slice(0, 200)}`);
             continue;
           }
 
           let aiData: any;
           try { aiData = JSON.parse(aiText); } catch {
-            console.warn(`AI returned non-JSON for ${result.url}: ${aiText.slice(0, 200)}`);
+            console.warn(`AI non-JSON for ${result.name}: ${aiText.slice(0, 200)}`);
             continue;
           }
 
           const content = aiData.choices?.[0]?.message?.content || "";
           const jsonMatch = content.match(/\{[\s\S]*\}/);
           if (!jsonMatch) {
-            console.warn(`No JSON in AI response for ${result.url}:`, content.slice(0, 200));
+            console.warn(`No JSON in AI response for ${result.name}`);
             continue;
           }
 
@@ -258,53 +250,47 @@ Focus on practical capabilities, not course names.`,
           await sb.from("school_courses").insert({
             curriculum_id: curriculumId,
             school_id,
-            program_name: parsed.program_name || result.title || "Unknown Program",
-            degree_type: parsed.degree_type || null,
+            program_name: result.name,
+            degree_type: result.degreeType,
             department: parsed.department || null,
             source_url: result.url,
-            description: result.markdown.slice(0, 2000),
+            description: parsed.description || result.markdown.slice(0, 500),
             skills_extracted: parsed.skills || [],
             skill_categories: parsed.skill_categories || {},
           });
 
           programsParsed++;
-          await sb.from("school_curricula").update({
-            programs_parsed: programsParsed,
-          }).eq("id", curriculumId);
-
-          console.log(`Parsed program ${programsParsed}: ${parsed.program_name || result.title}`);
+          await sb.from("school_curricula").update({ programs_parsed: programsParsed }).eq("id", curriculumId);
+          console.log(`✓ [${programsParsed}/${programs.length}] ${result.name} (${result.degreeType})`);
         } catch (aiErr) {
-          console.warn(`AI parsing failed for ${result.url}:`, aiErr);
+          console.warn(`AI parsing failed for ${result.name}:`, aiErr);
         }
       }
 
-      if (i + batchSize < programLinks.length) {
+      // Rate limit pause between batches
+      if (i + batchSize < programs.length) {
         await new Promise((r) => setTimeout(r, 1500));
       }
     }
 
+    // ─── Done ───
     await sb.from("school_curricula").update({
       status: "completed",
       completed_at: new Date().toISOString(),
       programs_parsed: programsParsed,
     }).eq("id", curriculumId);
 
-    console.log(`Done! Parsed ${programsParsed} programs from ${programLinks.length} links`);
+    console.log(`Done! Parsed ${programsParsed}/${programs.length} programs`);
 
-    return new Response(
-      JSON.stringify({
-        curriculum_id: curriculumId,
-        programs_found: programLinks.length,
-        programs_parsed: programsParsed,
-      }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
+    return new Response(JSON.stringify({
+      curriculum_id: curriculumId,
+      programs_found: programs.length,
+      programs_parsed: programsParsed,
+    }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
   } catch (err) {
     console.error("scrape-curriculum error:", err);
-    const msg = err instanceof Error ? err.message : "Unknown error";
-    return new Response(
-      JSON.stringify({ error: msg }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
+    return new Response(JSON.stringify({
+      error: err instanceof Error ? err.message : "Unknown error",
+    }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
   }
 });
