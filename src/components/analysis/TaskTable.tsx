@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { TaskAnalysis } from "@/types/analysis";
 import type { JobAnalysisResult } from "@/types/analysis";
+import { exposureStyle } from "@/lib/exposure-colors";
 
 interface TaskTableProps {
   tasks: TaskAnalysis[];
