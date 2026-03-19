@@ -464,6 +464,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
   const scrollRef = useRef<HTMLDivElement>(null);
   const { user } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const taskMeta = { currentState: taskState, trend: taskTrend, impactLevel: taskImpactLevel };
 
