@@ -110,18 +110,21 @@ export default function CurriculumGapBanner() {
                 </div>
 
                 {rec.tasks.length > 0 && (
-                  <div className="flex flex-wrap gap-1.5 mt-2">
+                  <div className="flex flex-wrap gap-2 mt-2.5">
                     {rec.tasks.map((task) => (
-                      <button
+                      <motion.button
                         key={task.cluster_name}
+                        whileHover={{ scale: 1.03, y: -1 }}
+                        whileTap={{ scale: 0.97 }}
                         onClick={() => setSimTask(task)}
-                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-primary/8 hover:bg-primary/15 border border-primary/10 text-[11px] font-medium text-primary transition-colors"
+                        className="group relative inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-[hsl(var(--neon-purple))]/15 to-[hsl(var(--neon-blue))]/10 hover:from-[hsl(var(--neon-purple))]/25 hover:to-[hsl(var(--neon-blue))]/20 border border-[hsl(var(--neon-purple))]/20 hover:border-[hsl(var(--neon-purple))]/40 text-[11px] font-medium text-primary transition-all duration-200 shadow-sm hover:shadow-[0_0_12px_hsl(var(--neon-purple)/0.15)]"
                       >
-                        <Play className="h-2.5 w-2.5" />
-                        {task.cluster_name.length > 35
-                          ? task.cluster_name.slice(0, 35) + "…"
-                          : task.cluster_name}
-                      </button>
+                        <Play className="h-2.5 w-2.5 text-[hsl(var(--neon-purple))] group-hover:text-[hsl(var(--neon-pink))] transition-colors" />
+                        <span className="truncate max-w-[180px]">{task.cluster_name}</span>
+                        <span className="ml-1 px-1.5 py-0.5 rounded-full bg-[hsl(var(--neon-purple))]/10 text-[9px] text-[hsl(var(--neon-purple))] font-semibold opacity-0 group-hover:opacity-100 transition-opacity">
+                          GO
+                        </span>
+                      </motion.button>
                     ))}
                   </div>
                 )}
