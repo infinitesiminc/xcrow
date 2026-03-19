@@ -15,9 +15,11 @@ interface ProgramEntry {
 /** Parse program entries from the listing page markdown/HTML */
 function parseProgramLinks(markdown: string, baseUrl: string): ProgramEntry[] {
   const programs: ProgramEntry[] = [];
-  const linkRegex = /\[([^\]]+)\]\((https?:\/\/[^\s)]*preview_program[^\s)]*)\)/g;
+
+  // Strategy 1: Traditional catalog software (preview_program URLs)
+  const catalogRegex = /\[([^\]]+)\]\((https?:\/\/[^\s)]*preview_program[^\s)]*)\)/g;
   let match;
-  while ((match = linkRegex.exec(markdown)) !== null) {
+  while ((match = catalogRegex.exec(markdown)) !== null) {
     const rawName = match[1].replace(/\*$/, "").trim();
     const url = match[2].split("#")[0];
     const degreeMatch = rawName.match(/\(([A-Z][A-Za-z]{1,5})\)\s*$/);
@@ -27,6 +29,42 @@ function parseProgramLinks(markdown: string, baseUrl: string): ProgramEntry[] {
       programs.push({ name, degreeType, url });
     }
   }
+
+  // Strategy 2: UCLA-style listing (program name on one line, degree links on next)
+  // Pattern: "- Program Name\n\n\n\n[BS](url) [MS](url)"
+  if (programs.length === 0) {
+    const degreeAbbrevs = /^(BA|BS|BFA|BM|MA|MS|MBA|MFA|MArch|MPH|MEd|MSW|MSBA|EMBA|FEMBA|GEMBA|MAT|MFA|MM|MPP|MUD|PhD|JD|MD|DDS|DrPH|EdD|DMA|DEnv|Minor|MA\/JD|MPH-HP)$/;
+    const lines = markdown.split("\n");
+    let currentProgram: string | null = null;
+
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i].trim();
+      // Detect program name lines: "- Program Name"
+      const programMatch = line.match(/^-\s+(.+)$/);
+      if (programMatch) {
+        const candidateName = programMatch[1].trim();
+        // Skip if it looks like a filter category or navigation
+        if (!degreeAbbrevs.test(candidateName) && candidateName.length > 2 && !candidateName.startsWith("[")) {
+          currentProgram = candidateName;
+        }
+        continue;
+      }
+
+      // Detect degree link lines: "[BS](url) [MS](url)"
+      if (currentProgram && line.includes("](")) {
+        const linkMatches = [...line.matchAll(/\[([A-Za-z\/\-]+)\]\((https?:\/\/[^\s)]+)\)/g)];
+        for (const lm of linkMatches) {
+          const degreeType = lm[1].trim();
+          const url = lm[2].split("#")[0];
+          if (degreeAbbrevs.test(degreeType) && !programs.some((p) => p.url === url && p.name === currentProgram)) {
+            programs.push({ name: currentProgram, degreeType, url });
+          }
+        }
+        if (linkMatches.length > 0) currentProgram = null;
+      }
+    }
+  }
+
   return programs;
 }
 
@@ -109,7 +147,7 @@ Deno.serve(async (req) => {
   const sb = createClient(supabaseUrl, serviceKey);
 
   try {
-    const { school_id, catalog_url, max_programs, skip } = await req.json();
+    const { school_id, catalog_url, max_programs, skip, pre_parsed_programs } = await req.json();
     if (!school_id || !catalog_url) {
       return new Response(JSON.stringify({ error: "school_id and catalog_url are required" }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -129,51 +167,86 @@ Deno.serve(async (req) => {
     if (insertErr) throw new Error(`Failed to create curriculum: ${insertErr.message}`);
     const curriculumId = curriculum.id;
 
-    // ─── Step 1: Scrape the listing page ───
-    console.log("Step 1: Scraping listing page:", catalog_url);
+    let programs: ProgramEntry[] = [];
 
-    const listingRes = await safeFetch("https://api.firecrawl.dev/v1/scrape", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${firecrawlKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        url: catalog_url,
-        formats: ["markdown", "links"],
-        onlyMainContent: false,
-        waitFor: 5000,
-      }),
-    });
+    if (pre_parsed_programs && Array.isArray(pre_parsed_programs) && pre_parsed_programs.length > 0) {
+      // Use pre-parsed programs (bypass scraping the listing page)
+      programs = pre_parsed_programs.map((p: any) => ({
+        name: p.name || "Unknown",
+        degreeType: p.degreeType || "Other",
+        url: p.url,
+      }));
+      console.log(`Using ${programs.length} pre-parsed programs`);
+    } else {
+      // ─── Step 1: Scrape the listing page ───
+      console.log("Step 1: Scraping listing page:", catalog_url);
 
-    const listingText = await listingRes.text();
-    let listingData: any;
-    try { listingData = JSON.parse(listingText); } catch {
-      await sb.from("school_curricula").update({
-        status: "failed", error_message: "Listing page returned non-JSON",
-      }).eq("id", curriculumId);
-      throw new Error("Listing page returned non-JSON");
-    }
+      const listingRes = await safeFetch("https://api.firecrawl.dev/v1/scrape", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${firecrawlKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          url: catalog_url,
+          formats: ["markdown", "links"],
+          onlyMainContent: false,
+          waitFor: 5000,
+        }),
+      });
 
-    if (!listingRes.ok) {
-      await sb.from("school_curricula").update({
-        status: "failed", error_message: `Listing scrape failed: ${listingData?.error || listingRes.status}`,
-      }).eq("id", curriculumId);
-      throw new Error("Listing page scrape failed");
-    }
+      const listingText = await listingRes.text();
+      let listingData: any;
+      try { listingData = JSON.parse(listingText); } catch {
+        await sb.from("school_curricula").update({
+          status: "failed", error_message: "Listing page returned non-JSON",
+        }).eq("id", curriculumId);
+        throw new Error("Listing page returned non-JSON");
+      }
 
-    const listingMarkdown = listingData.data?.markdown || listingData.markdown || "";
-    const rawLinks: string[] = listingData.data?.links || listingData.links || [];
+      if (!listingRes.ok) {
+        await sb.from("school_curricula").update({
+          status: "failed", error_message: `Listing scrape failed: ${listingData?.error || listingRes.status}`,
+        }).eq("id", curriculumId);
+        throw new Error("Listing page scrape failed");
+      }
 
-    let programs = parseProgramLinks(listingMarkdown, catalog_url);
+      const listingMarkdown = listingData.data?.markdown || listingData.markdown || "";
+      const rawLinks: string[] = listingData.data?.links || listingData.links || [];
 
-    // Fallback to raw links array
-    if (programs.length === 0 && rawLinks.length > 0) {
-      const programUrls = rawLinks.filter((url: string) => url.includes("preview_program"));
-      programs = programUrls.map((url: string) => {
-        const poidMatch = url.match(/poid=(\d+)/);
-        return { name: `Program ${poidMatch?.[1] || "Unknown"}`, degreeType: "Other", url: url.split("#")[0] };
-      }).filter((p, i, arr) => arr.findIndex((x) => x.url === p.url) === i);
+      console.log(`Listing markdown length: ${listingMarkdown.length}, raw links: ${rawLinks.length}`);
+
+      programs = parseProgramLinks(listingMarkdown, catalog_url);
+      console.log(`Parsed ${programs.length} programs from markdown`);
+
+      // Fallback 1: raw links for catalog software
+      if (programs.length === 0 && rawLinks.length > 0) {
+        const programUrls = rawLinks.filter((url: string) => url.includes("preview_program"));
+        programs = programUrls.map((url: string) => {
+          const poidMatch = url.match(/poid=(\d+)/);
+          return { name: `Program ${poidMatch?.[1] || "Unknown"}`, degreeType: "Other", url: url.split("#")[0] };
+        }).filter((p, i, arr) => arr.findIndex((x) => x.url === p.url) === i);
+      }
+
+      // Fallback 2: extract edu links that look like program/department pages
+      if (programs.length === 0 && rawLinks.length > 0) {
+        const eduLinks = rawLinks.filter((url: string) =>
+          url.includes(".edu") &&
+          !url.includes("ucla.edu/academics/programs") &&
+          (url.includes("undergraduate") || url.includes("graduate") || url.includes("major") || url.includes("minor") || url.includes("program") || url.includes("degree") || url.includes("admissions"))
+        );
+        const seen = new Set<string>();
+        for (const url of eduLinks) {
+          const clean = url.split("#")[0];
+          if (!seen.has(clean)) {
+            seen.add(clean);
+            const pathParts = new URL(clean).pathname.split("/").filter(Boolean);
+            const name = pathParts[0]?.replace(/-/g, " ").replace(/\b\w/g, (c: string) => c.toUpperCase()) || "Unknown";
+            programs.push({ name, degreeType: "Other", url: clean });
+          }
+        }
+        console.log(`Fallback 2: found ${programs.length} edu program links`);
+      }
     }
 
     // Cap programs
