@@ -29,9 +29,9 @@ function hashToHue(str: string): number {
 }
 
 function taskChipStyle(aiScore: number) {
-  if (aiScore >= 70) return { badge: "bg-brand-ai/15 text-brand-ai", accent: "text-brand-ai" };
-  if (aiScore >= 40) return { badge: "bg-brand-mid/15 text-brand-mid", accent: "text-brand-mid" };
-  return { badge: "bg-brand-human/15 text-brand-human", accent: "text-brand-human" };
+  if (aiScore >= 70) return { badge: "bg-brand-ai/15 text-brand-ai", accent: "text-brand-ai", gradient: "linear-gradient(90deg, hsl(var(--brand-ai)), hsl(var(--brand-mid)))", iconBg: "hsl(var(--brand-ai) / 0.15)", iconColor: "hsl(var(--brand-ai))" };
+  if (aiScore >= 40) return { badge: "bg-brand-mid/15 text-brand-mid", accent: "text-brand-mid", gradient: "linear-gradient(90deg, hsl(var(--brand-mid)), hsl(var(--brand-human)))", iconBg: "hsl(var(--brand-mid) / 0.15)", iconColor: "hsl(var(--brand-mid))" };
+  return { badge: "bg-brand-human/15 text-brand-human", accent: "text-brand-human", gradient: "linear-gradient(90deg, hsl(var(--brand-human)), hsl(var(--neon-cyan)))", iconBg: "hsl(var(--brand-human) / 0.15)", iconColor: "hsl(var(--brand-human))" };
 }
 
 const TASK_ICON_MAP: [RegExp, React.ComponentType<any>][] = [
