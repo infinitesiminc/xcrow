@@ -1361,7 +1361,12 @@ export default function PipelinePage() {
                       </Button>
                     </div>
                     <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                      {selectedCompany.industry && <span>{selectedCompany.industry}</span>}
+                      {selectedCompany.detected_ats_platform && selectedCompany.detected_ats_platform !== "unknown" ? (
+                        <Badge variant="outline" className="text-[9px] h-4">{selectedCompany.detected_ats_platform}</Badge>
+                      ) : (
+                        <span className="text-destructive/70">No ATS detected</span>
+                      )}
+                      {selectedCompany.industry && <><span>·</span><span>{selectedCompany.industry}</span></>}
                       <span>·</span>
                       <span>{jobs.length} roles</span>
                       <span>·</span>
