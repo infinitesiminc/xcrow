@@ -203,10 +203,22 @@ const Analysis = () => {
         } catch (err) { console.error("Cache lookup failed:", err); }
       }
 
-      // 2. Fall back to AI analysis
+      // 2. Usage gate for AI analysis (free tier)
+      if (user && !isPro) {
+        const allowed = await analysisGate.check();
+        if (!allowed) {
+          setShowUpgradeModal(true);
+          setLoading(false);
+          return;
+        }
+      }
+
+      // 3. Fall back to AI analysis
       try {
         const aiResult = await analyzeJobWithAI(jobTitle, company, jdText || undefined, jdUrlParam || undefined);
         setResult(aiResult); saveAnalysisHistory(aiResult);
+        // Increment usage after successful AI analysis
+        await analysisGate.increment();
       } catch (err: any) { setError("Unable to analyze this role right now. Please try again."); console.error(err); }
       setLoading(false);
     };
