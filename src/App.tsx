@@ -20,6 +20,9 @@ const Journey = lazy(() => import("./pages/Journey.tsx"));
 const Students = lazy(() => import("./pages/Students.tsx"));
 const Leaderboard = lazy(() => import("./pages/Leaderboard.tsx"));
 const Pricing = lazy(() => import("./pages/Pricing.tsx"));
+const Schools = lazy(() => import("./pages/Schools.tsx"));
+const About = lazy(() => import("./pages/About.tsx"));
+const Blog = lazy(() => import("./pages/Blog.tsx"));
 
 // Admin (lazy)
 const HRLayout = lazy(() => import("./layouts/HRLayout.tsx"));
@@ -74,6 +77,9 @@ const App = () => (
               <Route path="/students" element={<><Navbar /><Students /><Footer /></>} />
               <Route path="/leaderboard" element={<Leaderboard />} />
               <Route path="/pricing" element={<><Navbar /><Pricing /><Footer /></>} />
+              <Route path="/schools" element={<Schools />} />
+              <Route path="/about" element={<About />} />
+              <Route path="/blog" element={<Blog />} />
 
               {/* Redirects — old routes all go to feed */}
               <Route path="/practice" element={<Navigate to="/" replace />} />
