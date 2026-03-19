@@ -224,6 +224,7 @@ export type Database = {
           id: string
           job_title: string
           rounds_completed: number
+          skills_earned: Json | null
           task_name: string
           tool_awareness_score: number | null
           total_questions: number
@@ -241,6 +242,7 @@ export type Database = {
           id?: string
           job_title: string
           rounds_completed?: number
+          skills_earned?: Json | null
           task_name: string
           tool_awareness_score?: number | null
           total_questions?: number
@@ -258,6 +260,7 @@ export type Database = {
           id?: string
           job_title?: string
           rounds_completed?: number
+          skills_earned?: Json | null
           task_name?: string
           tool_awareness_score?: number | null
           total_questions?: number
