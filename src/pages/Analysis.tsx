@@ -17,6 +17,8 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import SimulatorModal from "@/components/SimulatorModal";
+import { useUsageGate } from "@/hooks/use-usage-gate";
+import UpgradeModal from "@/components/UpgradeModal";
 
 const isWebsite = (value: string) =>
   /^(https?:\/\/)?([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}(\/.*)?$/.test(value.trim());
