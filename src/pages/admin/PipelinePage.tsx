@@ -1408,6 +1408,24 @@ export default function PipelinePage() {
                       <span className="text-primary">{validAnalyzedCount} analyzed</span>
                       {selectedCompany.employee_range && <><span>·</span><span>{selectedCompany.employee_range}</span></>}
                     </div>
+                    {(selectedCompany.careers_url || selectedCompany.website) && (
+                      <div className="flex items-center gap-3 text-[10px] mt-0.5">
+                        {selectedCompany.careers_url && (
+                          <a href={selectedCompany.careers_url} target="_blank" rel="noopener" className="inline-flex items-center gap-1 text-muted-foreground hover:text-foreground truncate max-w-[300px]">
+                            <Briefcase className="h-2.5 w-2.5 shrink-0" />
+                            <span className="truncate">{selectedCompany.careers_url.replace(/^https?:\/\//, '')}</span>
+                            <ExternalLink className="h-2 w-2 shrink-0" />
+                          </a>
+                        )}
+                        {selectedCompany.website && (
+                          <a href={selectedCompany.website} target="_blank" rel="noopener" className="inline-flex items-center gap-1 text-muted-foreground hover:text-foreground truncate max-w-[300px]">
+                            <Globe className="h-2.5 w-2.5 shrink-0" />
+                            <span className="truncate">{selectedCompany.website.replace(/^https?:\/\//, '')}</span>
+                            <ExternalLink className="h-2 w-2 shrink-0" />
+                          </a>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
 
