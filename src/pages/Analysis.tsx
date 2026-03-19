@@ -217,6 +217,22 @@ const Analysis = () => {
     return [...result.tasks].sort((a, b) => (b.aiExposureScore ?? 50) - (a.aiExposureScore ?? 50));
   }, [result]);
 
+  useEffect(() => {
+    if (!focusTaskParam || sortedTasks.length === 0) return;
+    const normalized = focusTaskParam.trim().toLowerCase();
+    const match =
+      sortedTasks.find((t) => t.name.trim().toLowerCase() === normalized) ||
+      sortedTasks.find((t) => t.name.toLowerCase().includes(normalized) || normalized.includes(t.name.toLowerCase()));
+
+    if (match) {
+      setFocusedTask(match);
+      setShowAllTasks(false);
+    } else {
+      setFocusedTask(null);
+      setShowAllTasks(true);
+    }
+  }, [focusTaskParam, sortedTasks]);
+
   const pickNextTask = useCallback(() => {
     const uncompleted = sortedTasks.filter(t => !completedTasks.has(t.name));
     if (uncompleted.length > 0) {
