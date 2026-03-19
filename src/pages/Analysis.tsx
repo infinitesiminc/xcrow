@@ -395,12 +395,12 @@ const Analysis = () => {
                     className="group rounded-xl border border-border/50 bg-card hover:border-primary/30 transition-all overflow-hidden"
                   >
                     {/* Accent top strip */}
-                    <div className="h-1" style={{ background: `linear-gradient(90deg, hsl(${taskHue} 60% 50%), hsl(${(taskHue + 40) % 360} 50% 45%))` }} />
+                    <div className="h-1" style={{ background: style.gradient }} />
                     <div className="p-4">
                       <div className="flex items-start gap-3">
                         <div className="mt-0.5 h-8 w-8 rounded-lg flex items-center justify-center shrink-0"
-                          style={{ background: `hsl(${taskHue} 40% 15%)` }}>
-                          <TaskIcon className="h-4 w-4" style={{ color: `hsl(${taskHue} 60% 65%)` }} />
+                          style={{ background: style.iconBg }}>
+                          <TaskIcon className="h-4 w-4" style={{ color: style.iconColor }} />
                         </div>
                         <div className="min-w-0 flex-1">
                           <div className="flex items-center gap-2 mb-1">
