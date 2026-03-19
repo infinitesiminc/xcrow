@@ -20,6 +20,7 @@ const CompanyPage = lazy(() => import("./pages/CompanyPage.tsx"));
 // Admin (lazy)
 const HRLayout = lazy(() => import("./layouts/HRLayout.tsx"));
 const PipelinePage = lazy(() => import("./pages/admin/PipelinePage.tsx"));
+const TaskAnalyticsPage = lazy(() => import("./pages/admin/TaskAnalyticsPage.tsx"));
 
 const queryClient = new QueryClient();
 
