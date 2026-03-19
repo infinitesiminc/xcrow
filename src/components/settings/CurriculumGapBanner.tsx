@@ -27,6 +27,7 @@ interface GapRecommendation {
 
 interface GapData {
   school: { name: string; short_name: string | null } | null;
+  program_name: string | null;
   curriculum_skills_count: number;
   programs_count: number;
   recommendations: GapRecommendation[];
