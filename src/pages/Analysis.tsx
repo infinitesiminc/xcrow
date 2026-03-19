@@ -468,6 +468,7 @@ const Analysis = () => {
         onNextTask={pickNextTask}
         onBackToFeed={() => navigate("/")}
       />
+      <UpgradeModal open={showUpgradeModal} onOpenChange={setShowUpgradeModal} type="analysis" used={analysisGate.used} limit={analysisGate.limit} />
     </div>
   );
 };
