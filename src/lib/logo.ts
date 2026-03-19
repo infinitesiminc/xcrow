@@ -23,6 +23,19 @@ const DOMAIN_MAP: Record<string, string> = {
   nvidia: 'nvidia.com',
   stripe: 'stripe.com',
   deloitte: 'deloitte.com',
+  // Universities
+  ucla: 'ucla.edu',
+  mit: 'mit.edu',
+  stanford: 'stanford.edu',
+  'carnegie mellon': 'cmu.edu',
+  'georgia tech': 'gatech.edu',
+  'ut austin': 'utexas.edu',
+  nyu: 'nyu.edu',
+  michigan: 'umich.edu',
+  berkeley: 'berkeley.edu',
+  purdue: 'purdue.edu',
+  'virginia tech': 'vt.edu',
+  usc: 'usc.edu',
 };
 
 export function brandfetchUrl(domain: string): string {
