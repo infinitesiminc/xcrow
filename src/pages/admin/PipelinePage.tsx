@@ -680,7 +680,7 @@ export default function PipelinePage() {
               <span className="text-xs font-semibold text-foreground">Companies</span>
             </div>
             <p className="text-lg font-bold text-foreground">{stats.totalCompanies.toLocaleString()}</p>
-            <p className="text-[10px] text-muted-foreground">browse & analyze · {stats.withJobs} with roles</p>
+            <p className="text-[10px] text-muted-foreground">browse & analyze · {stats.totalAnalyzed.toLocaleString()} tasks analyzed</p>
           </button>
         </div>
       </div>
