@@ -15,9 +15,11 @@ interface ProgramEntry {
 /** Parse program entries from the listing page markdown/HTML */
 function parseProgramLinks(markdown: string, baseUrl: string): ProgramEntry[] {
   const programs: ProgramEntry[] = [];
-  const linkRegex = /\[([^\]]+)\]\((https?:\/\/[^\s)]*preview_program[^\s)]*)\)/g;
+
+  // Strategy 1: Traditional catalog software (preview_program URLs)
+  const catalogRegex = /\[([^\]]+)\]\((https?:\/\/[^\s)]*preview_program[^\s)]*)\)/g;
   let match;
-  while ((match = linkRegex.exec(markdown)) !== null) {
+  while ((match = catalogRegex.exec(markdown)) !== null) {
     const rawName = match[1].replace(/\*$/, "").trim();
     const url = match[2].split("#")[0];
     const degreeMatch = rawName.match(/\(([A-Z][A-Za-z]{1,5})\)\s*$/);
@@ -27,6 +29,42 @@ function parseProgramLinks(markdown: string, baseUrl: string): ProgramEntry[] {
       programs.push({ name, degreeType, url });
     }
   }
+
+  // Strategy 2: UCLA-style listing (program name on one line, degree links on next)
+  // Pattern: "- Program Name\n\n\n\n[BS](url) [MS](url)"
+  if (programs.length === 0) {
+    const degreeAbbrevs = /^(BA|BS|BFA|BM|MA|MS|MBA|MFA|MArch|MPH|MEd|MSW|MSBA|EMBA|FEMBA|GEMBA|MAT|MFA|MM|MPP|MUD|PhD|JD|MD|DDS|DrPH|EdD|DMA|DEnv|Minor|MA\/JD|MPH-HP)$/;
+    const lines = markdown.split("\n");
+    let currentProgram: string | null = null;
+
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i].trim();
+      // Detect program name lines: "- Program Name"
+      const programMatch = line.match(/^-\s+(.+)$/);
+      if (programMatch) {
+        const candidateName = programMatch[1].trim();
+        // Skip if it looks like a filter category or navigation
+        if (!degreeAbbrevs.test(candidateName) && candidateName.length > 2 && !candidateName.startsWith("[")) {
+          currentProgram = candidateName;
+        }
+        continue;
+      }
+
+      // Detect degree link lines: "[BS](url) [MS](url)"
+      if (currentProgram && line.includes("](")) {
+        const linkMatches = [...line.matchAll(/\[([A-Za-z\/\-]+)\]\((https?:\/\/[^\s)]+)\)/g)];
+        for (const lm of linkMatches) {
+          const degreeType = lm[1].trim();
+          const url = lm[2].split("#")[0];
+          if (degreeAbbrevs.test(degreeType) && !programs.some((p) => p.url === url && p.name === currentProgram)) {
+            programs.push({ name: currentProgram, degreeType, url });
+          }
+        }
+        if (linkMatches.length > 0) currentProgram = null;
+      }
+    }
+  }
+
   return programs;
 }
 
