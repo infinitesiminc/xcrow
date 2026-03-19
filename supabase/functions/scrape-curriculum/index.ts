@@ -145,7 +145,12 @@ Deno.serve(async (req) => {
       }).filter((p, i, arr) => arr.findIndex((x) => x.url === p.url) === i);
     }
 
-    console.log(`Found ${programs.length} programs from listing page`);
+    // Cap to first 10 programs for testing
+    if (programs.length > 10) {
+      console.log(`Capping from ${programs.length} to 10 programs`);
+      programs = programs.slice(0, 10);
+    }
+    console.log(`Processing ${programs.length} programs`);
     console.log("Sample programs:", programs.slice(0, 5).map((p) => `${p.name} (${p.degreeType})`));
 
     await sb.from("school_curricula").update({ programs_found: programs.length }).eq("id", curriculumId);
