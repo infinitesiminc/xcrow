@@ -216,6 +216,7 @@ export default function SchoolOverview({ school, onUpdate }: { school: SchoolDat
         </Card>
       )}
     </div>
+  );
 }
 
 function Row({ label, value }: { label: string; value: React.ReactNode }) {
