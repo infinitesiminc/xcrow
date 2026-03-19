@@ -1,21 +1,47 @@
 /**
  * HumanEdgesCard — homepage discovery card that introduces the concept of
  * uniquely human skills ("edges") that AI cannot replace.
+ * Each edge is a button that feeds a prompt into the homepage chat.
  */
 import { motion } from "framer-motion";
 import { Sparkles, Brain, Heart, Shield, ArrowRight } from "lucide-react";
-import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 
 const EDGE_EXAMPLES = [
-  { icon: Brain, label: "System Thinking", desc: "Connecting dots AI can't see" },
-  { icon: Heart, label: "Empathy & Culture", desc: "Building trust humans value" },
-  { icon: Shield, label: "Judgment Under Uncertainty", desc: "Deciding when data isn't enough" },
+  {
+    icon: Brain,
+    label: "System Thinking",
+    desc: "Connecting dots AI can't see",
+    prompt: "Show me roles where system thinking matters most — where connecting the big picture gives humans an edge over AI",
+  },
+  {
+    icon: Heart,
+    label: "Empathy & Culture",
+    desc: "Building trust humans value",
+    prompt: "What jobs rely most on empathy and cultural understanding? Show me where human connection is the real skill",
+  },
+  {
+    icon: Shield,
+    label: "Judgment Under Uncertainty",
+    desc: "Deciding when data isn't enough",
+    prompt: "Find me roles where judgment under uncertainty is critical — where humans must decide when AI can't",
+  },
 ];
 
-export default function HumanEdgesCard() {
-  const navigate = useNavigate();
+interface HumanEdgesCardProps {
+  onEdgeClick?: (prompt: string) => void;
+}
+
+export default function HumanEdgesCard({ onEdgeClick }: HumanEdgesCardProps) {
   const { user, openAuthModal } = useAuth();
+
+  const handleClick = (prompt: string) => {
+    if (!user) {
+      openAuthModal();
+      return;
+    }
+    onEdgeClick?.(prompt);
+  };
 
   return (
     <motion.div
@@ -32,35 +58,28 @@ export default function HumanEdgesCard() {
         <div>
           <h3 className="text-sm font-semibold text-foreground">Your Human Edges</h3>
           <p className="text-[11px] text-muted-foreground leading-tight">
-            Skills AI can't replace — and employers will pay a premium for
+            Skills AI can't replace — click one to explore
           </p>
         </div>
       </div>
 
-      {/* Edge examples */}
+      {/* Edge buttons */}
       <div className="space-y-2">
-        {EDGE_EXAMPLES.map(({ icon: Icon, label, desc }) => (
-          <div
+        {EDGE_EXAMPLES.map(({ icon: Icon, label, desc, prompt }) => (
+          <button
             key={label}
-            className="flex items-center gap-3 rounded-xl bg-muted/20 px-3 py-2.5"
+            onClick={() => handleClick(prompt)}
+            className="w-full flex items-center gap-3 rounded-xl bg-muted/20 px-3 py-2.5 text-left hover:bg-muted/40 hover:border-primary/20 transition-colors group"
           >
             <Icon className="h-4 w-4 text-primary shrink-0" />
-            <div className="min-w-0">
+            <div className="min-w-0 flex-1">
               <p className="text-xs font-medium text-foreground">{label}</p>
               <p className="text-[10px] text-muted-foreground">{desc}</p>
             </div>
-          </div>
+            <ArrowRight className="h-3 w-3 text-muted-foreground/40 group-hover:text-primary transition-colors shrink-0" />
+          </button>
         ))}
       </div>
-
-      {/* CTA */}
-      <button
-        onClick={() => (user ? navigate("/journey") : openAuthModal())}
-        className="w-full flex items-center justify-center gap-1.5 text-xs font-medium text-primary hover:text-primary/80 transition-colors py-1.5"
-      >
-        {user ? "Discover your edges" : "Sign in to discover your edges"}
-        <ArrowRight className="h-3.5 w-3.5" />
-      </button>
     </motion.div>
   );
 }

@@ -22,6 +22,7 @@ const Index = () => {
   const [hasInteracted, setHasInteracted] = useState(false);
   const [selectedRole, setSelectedRole] = useState<RoleResult | null>(null);
   const [allRoles, setAllRoles] = useState<RoleResult[]>([]);
+  const [externalPrompt, setExternalPrompt] = useState<string | null>(null);
 
   const handleChatStart = useCallback(() => {
     setHasInteracted(true);
@@ -33,6 +34,10 @@ const Index = () => {
 
   const handleRoleSelect = useCallback((role: RoleResult) => {
     setSelectedRole((prev) => (prev?.jobId === role.jobId ? null : role));
+  }, []);
+
+  const handleEdgeClick = useCallback((prompt: string) => {
+    setExternalPrompt(prompt);
   }, []);
 
   const greeting = getGreeting();

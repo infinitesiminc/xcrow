@@ -62,6 +62,15 @@ export default function HomepageChat({
     resizeTextarea();
   }, [input, resizeTextarea]);
 
+  // Handle external prompt injection (e.g. from Human Edges card)
+  useEffect(() => {
+    if (externalPrompt) {
+      sendMessage(externalPrompt);
+      onExternalPromptConsumed?.();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [externalPrompt]);
+
   // Extract only text messages for the API
   const getApiMessages = (chatItems: ChatItem[]) =>
     chatItems
