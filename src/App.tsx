@@ -26,6 +26,13 @@ const HRLayout = lazy(() => import("./layouts/HRLayout.tsx"));
 const PipelinePage = lazy(() => import("./pages/admin/PipelinePage.tsx"));
 const TaskAnalyticsPage = lazy(() => import("./pages/admin/TaskAnalyticsPage.tsx"));
 
+// School admin (lazy)
+const SchoolLayout = lazy(() => import("./layouts/SchoolLayout.tsx"));
+const SchoolDashboard = lazy(() => import("./pages/school/SchoolDashboard.tsx"));
+const SchoolStudents = lazy(() => import("./pages/school/SchoolStudents.tsx"));
+const SchoolInvite = lazy(() => import("./pages/school/SchoolInvite.tsx"));
+const SchoolAnalytics = lazy(() => import("./pages/school/SchoolAnalytics.tsx"));
+
 const queryClient = new QueryClient();
 
 /** Gate admin routes to superadmins */
