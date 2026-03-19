@@ -15,9 +15,8 @@ interface TaskTableProps {
 }
 
 function exposureColor(score: number) {
-  if (score >= 70) return "bg-brand-ai/10 text-brand-ai border-brand-ai/20";
-  if (score >= 40) return "bg-brand-mid/10 text-brand-mid border-brand-mid/20";
-  return "bg-brand-human/10 text-brand-human border-brand-human/20";
+  const s = exposureStyle(score);
+  return s.badge;
 }
 
 function impactColor(score: number) {
