@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Search, ChevronUp, ChevronDown, ChevronLeft, ChevronRight, Loader2,
   Globe, ExternalLink,
