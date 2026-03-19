@@ -13,7 +13,7 @@ import { useAuth } from "@/contexts/AuthContext";
 /* ─── Shared animation helpers ─── */
 const fadeUp = {
   hidden: { opacity: 0, y: 24 },
-  visible: (d: number) => ({ opacity: 1, y: 0, transition: { delay: d * 0.12, duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] } }),
+  visible: (d: number) => ({ opacity: 1, y: 0, transition: { delay: d * 0.12, duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] as const } }),
 };
 
 function Section({ children, className = "" }: { children: React.ReactNode; className?: string }) {
