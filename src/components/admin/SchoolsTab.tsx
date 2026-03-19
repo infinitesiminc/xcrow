@@ -72,6 +72,7 @@ export default function SchoolsTab() {
   const [expandedSchool, setExpandedSchool] = useState<string | null>(null);
   const [courses, setCourses] = useState<Record<string, SchoolCourse[]>>({});
   const [loadingCourses, setLoadingCourses] = useState<Record<string, boolean>>({});
+  const [gapSchool, setGapSchool] = useState<{ id: string; name: string } | null>(null);
 
   async function fetchSchools() {
     setLoading(true);
