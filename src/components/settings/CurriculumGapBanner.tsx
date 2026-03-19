@@ -6,8 +6,9 @@
  */
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { GraduationCap, Zap, ChevronDown, ChevronUp, TrendingUp, Play } from "lucide-react";
+import { GraduationCap, Zap, ChevronDown, ChevronUp, TrendingUp, Play, BookOpen } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 import SimulatorModal from "@/components/SimulatorModal";
 
 interface GapTask {
