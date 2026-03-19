@@ -355,16 +355,32 @@ export default function SchoolsTab() {
                         <p className="text-xs text-muted-foreground text-center py-4">No programs imported yet.</p>
                       ) : (
                         <>
-                          <div className="flex items-center justify-between px-2 pb-1">
-                            <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
-                              {schoolCourses.length} Programs Imported
+                          <div className="flex items-center justify-between gap-2 px-2 pb-2">
+                            <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider shrink-0">
+                              {schoolCourses.length} Programs
                             </span>
-                            <span className="text-[10px] text-muted-foreground">
-                              {new Set(schoolCourses.map(c => c.department).filter(Boolean)).size} departments
+                            <Input
+                              value={programSearch[school.id] || ""}
+                              onChange={(e) => setProgramSearch((prev) => ({ ...prev, [school.id]: e.target.value }))}
+                              placeholder="Search programs…"
+                              className="h-6 text-[11px] max-w-[200px]"
+                            />
+                            <span className="text-[10px] text-muted-foreground shrink-0">
+                              {new Set(schoolCourses.map(c => c.department).filter(Boolean)).size} depts
                             </span>
                           </div>
                           <div className="max-h-80 overflow-y-auto rounded-md border border-border divide-y divide-border">
-                            {schoolCourses.map((course) => {
+                            {schoolCourses
+                              .filter((c) => {
+                                const q = (programSearch[school.id] || "").toLowerCase();
+                                if (!q) return true;
+                                return (
+                                  c.program_name.toLowerCase().includes(q) ||
+                                  (c.department || "").toLowerCase().includes(q) ||
+                                  (c.degree_type || "").toLowerCase().includes(q)
+                                );
+                              })
+                              .map((course) => {
                               const skillCount = course.skills_extracted?.length || 0;
                               const categories = course.skill_categories || {};
                               const categoryKeys = Object.keys(categories).filter(k => (categories[k]?.length || 0) > 0);
