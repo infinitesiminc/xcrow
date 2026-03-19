@@ -117,7 +117,7 @@ export default function Schools() {
             </motion.h1>
 
             <motion.p variants={fadeUp} custom={2} className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto mb-4 leading-relaxed">
-              We scan your course catalog, map it against 33,000+ real job tasks, and show you exactly
+              We scan your course catalog, map it against 1M+ real job tasks, and show you exactly
               where your students are falling behind — and how to close the gap.
             </motion.p>
 
