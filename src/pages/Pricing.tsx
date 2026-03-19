@@ -31,20 +31,21 @@ const PRO_FEATURES = [
 
 const SCHOOL_FEATURES = [
   "Everything in Pro for every student",
-  "School admin dashboard",
-  "Bulk student provisioning",
-  "Cohort progress analytics",
-  "Usage reporting & exports",
-  "Dedicated support",
-  "Custom branding (coming soon)",
+  "Program-specific curriculum gap analysis",
+  "AI simulation library mapped to your courses",
+  "School admin dashboard & cohort analytics",
+  "Bulk student provisioning & domain auto-enroll",
+  "Student skill map & XP leaderboard",
+  "Dedicated onboarding & support",
 ];
 
 const faqs = [
   { q: "Is it really free?", a: "Yes! The Free plan gives you 3 simulations and 3 analyses per month — perfect for getting started. Upgrade to Pro for unlimited access." },
   { q: "What does Pro unlock?", a: "Pro removes all limits on simulations and analyses, unlocks the full skill map with XP tracking, and gives you access to the AI career coach." },
-  { q: "How does the School plan work?", a: "Schools purchase seats in bulk at $7/student/year. Each student gets full Pro access. School admins get a dashboard to manage seats and track cohort progress." },
+  { q: "How does the School plan work?", a: "We work with universities to create custom packages based on student count, programs, and desired outcomes. Contact our team to discuss pricing and start a free pilot." },
   { q: "Can I cancel anytime?", a: "Absolutely. Cancel from your settings and you'll keep access until the end of your billing period." },
   { q: "What if my school already has a license?", a: "If your university has a crowy.ai license, your school admin will invite you via email. You'll automatically get Pro access at no cost to you." },
+  { q: "Do schools get a free pilot?", a: "Yes — we offer a no-cost pilot so schools can see the impact before committing. Talk to our team to get started." },
 ];
 
 export default function Pricing() {
