@@ -5,7 +5,7 @@ import {
   Building2, Briefcase, Search, Loader2, RefreshCw, Download,
   Database, Play, Pause, Brain, ChevronDown, ChevronUp,
   MapPin, CheckCircle2, AlertTriangle, ArrowRight,
-  Globe, Plus, Bug, Sparkles, Telescope, Flag,
+  Globe, Plus, Bug, Sparkles, Telescope, Flag, GraduationCap,
   X, FileText, Clock, Zap, List, ExternalLink, Pencil, Check,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
