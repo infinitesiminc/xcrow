@@ -184,7 +184,7 @@ export default function SkillsGapMatrix({ schoolId, schoolName }: Props) {
             </span>
           </div>
           <p className="text-[10px] text-muted-foreground mb-3">
-            These skills appear in {taskClusters.length.toLocaleString()} job task clusters but aren't covered by any program.
+            These high-demand market skills aren't covered by any program.
           </p>
           <div className="space-y-1.5 max-h-64 overflow-y-auto pr-1">
             {analysis.gaps.slice(0, 30).map((g) => (
