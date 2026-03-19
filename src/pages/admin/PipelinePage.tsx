@@ -310,7 +310,7 @@ export default function PipelinePage() {
     if (compAtsFilter) list = list.filter(c => c.detected_ats_platform === compAtsFilter);
     if (compIndustryFilter) list = list.filter(c => c.industry === compIndustryFilter);
     if (compFundingFilter) list = list.filter(c => c.funding_stage === compFundingFilter);
-    return list.sort((a, b) => (b.job_count || 0) - (a.job_count || 0));
+    return list.sort((a, b) => new Date(b.imported_at).getTime() - new Date(a.imported_at).getTime());
   }, [companies, compSearch, compAtsFilter, compIndustryFilter, compFundingFilter]);
 
   /* ═══════ DISCOVER LOGIC ═══════ */
