@@ -5,7 +5,7 @@ import {
   Building2, Briefcase, Search, Loader2, RefreshCw, Download,
   Database, Play, Pause, Brain, ChevronDown, ChevronUp,
   MapPin, CheckCircle2, AlertTriangle, ArrowRight,
-  Globe, Plus, Bug, Sparkles, Telescope, Flag,
+  Globe, Plus, Bug, Sparkles, Telescope, Flag, GraduationCap,
   X, FileText, Clock, Zap, List, ExternalLink, Pencil, Check,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -21,6 +21,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
+import SchoolsTab from "@/components/admin/SchoolsTab";
 
 /* ── Types ── */
 interface Company {
@@ -698,6 +699,7 @@ export default function PipelinePage() {
           <TabsTrigger value="discover" className="text-xs gap-1"><Telescope className="h-3 w-3" /> Discover</TabsTrigger>
           <TabsTrigger value="sync" className="text-xs gap-1"><RefreshCw className="h-3 w-3" /> Sync</TabsTrigger>
           <TabsTrigger value="companies" className="text-xs gap-1"><List className="h-3 w-3" /> Companies</TabsTrigger>
+          <TabsTrigger value="schools" className="text-xs gap-1"><GraduationCap className="h-3 w-3" /> Schools</TabsTrigger>
         </TabsList>
 
         {/* ═══════ TAB: DISCOVER ═══════ */}
@@ -1040,6 +1042,11 @@ export default function PipelinePage() {
               )}
             </div>
           )}
+        </TabsContent>
+
+        {/* ═══════ TAB: SCHOOLS ═══════ */}
+        <TabsContent value="schools" className="m-0 px-6 py-4">
+          <SchoolsTab />
         </TabsContent>
       </Tabs>
       </div>
