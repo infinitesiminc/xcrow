@@ -198,7 +198,7 @@ function buildTaxonomy(practicedRoles: PracticedRoleData[], templates: DbJobTemp
         skill.practiced = true;
       }
     }
-    for (const job of JOB_TEMPLATES) {
+    for (const job of templates) {
       for (const t of job.tasks) {
         for (const id of matchTaskToSkills(t)) {
           const skill = skillMap.get(id)!;
