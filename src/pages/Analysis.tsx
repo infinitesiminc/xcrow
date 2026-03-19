@@ -29,9 +29,9 @@ function hashToHue(str: string): number {
 }
 
 function taskChipStyle(aiScore: number) {
-  if (aiScore >= 70) return { badge: "bg-brand-ai/15 text-brand-ai", accent: "text-brand-ai", gradient: "linear-gradient(90deg, hsl(var(--brand-ai)), hsl(var(--brand-mid)))", iconBg: "hsl(var(--brand-ai) / 0.15)", iconColor: "hsl(var(--brand-ai))" };
-  if (aiScore >= 40) return { badge: "bg-brand-mid/15 text-brand-mid", accent: "text-brand-mid", gradient: "linear-gradient(90deg, hsl(var(--brand-mid)), hsl(var(--brand-human)))", iconBg: "hsl(var(--brand-mid) / 0.15)", iconColor: "hsl(var(--brand-mid))" };
-  return { badge: "bg-brand-human/15 text-brand-human", accent: "text-brand-human", gradient: "linear-gradient(90deg, hsl(var(--brand-human)), hsl(var(--neon-cyan)))", iconBg: "hsl(var(--brand-human) / 0.15)", iconColor: "hsl(var(--brand-human))" };
+  if (aiScore >= 70) return { badge: "bg-brand-ai/15 text-brand-ai", accent: "text-brand-ai" };
+  if (aiScore >= 40) return { badge: "bg-brand-mid/15 text-brand-mid", accent: "text-brand-mid" };
+  return { badge: "bg-brand-human/15 text-brand-human", accent: "text-brand-human" };
 }
 
 const TASK_ICON_MAP: [RegExp, React.ComponentType<any>][] = [
@@ -338,11 +338,11 @@ const Analysis = () => {
 
           return (
             <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="mb-5 rounded-2xl border border-border/50 bg-card overflow-hidden">
-              <div className="h-1" style={{ background: style.gradient }} />
+              <div className="h-1" style={{ background: `linear-gradient(90deg, hsl(${taskHue} 60% 50%), hsl(${(taskHue + 40) % 360} 50% 45%))` }} />
               <div className="p-5">
                 <div className="flex items-center gap-2 mb-4">
-                  <div className="h-10 w-10 rounded-xl flex items-center justify-center" style={{ background: style.iconBg }}>
-                    <TaskIcon className="h-5 w-5" style={{ color: style.iconColor }} />
+                  <div className="h-10 w-10 rounded-xl flex items-center justify-center" style={{ background: `hsl(${taskHue} 40% 15%)` }}>
+                    <TaskIcon className="h-5 w-5" style={{ color: `hsl(${taskHue} 60% 65%)` }} />
                   </div>
                   <div className="min-w-0 flex-1">
                     <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Focused task</p>
@@ -395,12 +395,12 @@ const Analysis = () => {
                     className="group rounded-xl border border-border/50 bg-card hover:border-primary/30 transition-all overflow-hidden"
                   >
                     {/* Accent top strip */}
-                    <div className="h-1" style={{ background: style.gradient }} />
+                    <div className="h-1" style={{ background: `linear-gradient(90deg, hsl(${taskHue} 60% 50%), hsl(${(taskHue + 40) % 360} 50% 45%))` }} />
                     <div className="p-4">
                       <div className="flex items-start gap-3">
                         <div className="mt-0.5 h-8 w-8 rounded-lg flex items-center justify-center shrink-0"
-                          style={{ background: style.iconBg }}>
-                          <TaskIcon className="h-4 w-4" style={{ color: style.iconColor }} />
+                          style={{ background: `hsl(${taskHue} 40% 15%)` }}>
+                          <TaskIcon className="h-4 w-4" style={{ color: `hsl(${taskHue} 60% 65%)` }} />
                         </div>
                         <div className="min-w-0 flex-1">
                           <div className="flex items-center gap-2 mb-1">
