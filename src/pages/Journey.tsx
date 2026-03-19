@@ -9,7 +9,6 @@ import Footer from "@/components/Footer";
 
 export default function Journey() {
   const { user, loading: authLoading, openAuthModal } = useAuth();
-  const navigate = useNavigate();
 
   const [savedRoles, setSavedRoles] = useState<SavedRoleData[]>([]);
   const [practicedRoles, setPracticedRoles] = useState<PracticedRoleData[]>([]);
@@ -35,7 +34,7 @@ export default function Journey() {
       });
     supabase
       .from("completed_simulations")
-      .select("job_title, task_name, company, completed_at, correct_answers, total_questions, tool_awareness_score, human_value_add_score, adaptive_thinking_score, domain_judgment_score")
+      .select("job_title, task_name, company, completed_at, correct_answers, total_questions, tool_awareness_score, human_value_add_score, adaptive_thinking_score, domain_judgment_score, skills_earned")
       .eq("user_id", user.id)
       .order("completed_at", { ascending: false })
       .then(({ data }) => {
