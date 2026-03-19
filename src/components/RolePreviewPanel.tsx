@@ -65,7 +65,7 @@ interface TaskCluster {
   impact_level?: string | null;
 }
 
-type PanelView = "details" | "breakdown" | "simulation" | "enlarged";
+type PanelView = "details" | "breakdown" | "simulation" | "enlarged" | "task-detail";
 
 export default function RolePreviewPanel({ role, onClose }: RolePreviewPanelProps) {
   const { user, openAuthModal } = useAuth();
