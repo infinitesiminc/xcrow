@@ -1,27 +1,19 @@
 /**
- * Career Reach Map — unified scatter chart replacing the 5-step journey.
+ * Career Reach Map — Bullseye target visualization.
  *
- * X-axis = Human Skill Match %
- * Y-axis = AI Fast-Track Potential (aiBoostMatch - humanMatch)
- * Dots = job roles from computed matches
- * Zones: Ready Now (right), AI Fast-Track (top-left), Growth Path (bottom-left)
- * Click dot → slide-out panel with gap analysis + CTA
+ * You at center. Jobs placed on concentric rings by aiBoostMatch distance.
+ * Closest to center = best match. Colored by zone.
+ * Click dot → slide-out panel with gap analysis + CTA.
  */
-import { useState, useMemo, useCallback, useRef, useEffect } from "react";
+import { useState, useMemo, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import {
-  ScatterChart, Scatter, XAxis, YAxis, CartesianGrid,
-  ResponsiveContainer, Cell, Tooltip as RechartsTooltip,
-  ReferenceArea, ReferenceLine,
-} from "recharts";
-import {
-  ArrowRight, Bot, X, Play, ArrowUpRight, Briefcase,
-  Sparkles, Target, Unlock, Bookmark, Shield,
+  ArrowRight, Bot, Play, ArrowUpRight,
+  Target, Shield,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 
 /* ─── Types ─── */
@@ -44,13 +36,13 @@ interface CareerReachMapProps {
 }
 
 /* ─── Zone helpers ─── */
-function getZone(humanMatch: number, aiBoost: number): "ready" | "fast-track" | "growth" {
+function getZone(humanMatch: number, aiBoostMatch: number): "ready" | "fast-track" | "growth" {
   if (humanMatch >= 60) return "ready";
-  if (humanMatch + aiBoost >= 60) return "fast-track";
+  if (aiBoostMatch >= 60) return "fast-track";
   return "growth";
 }
 
-function zoneDotColor(zone: "ready" | "fast-track" | "growth") {
+function zoneColor(zone: "ready" | "fast-track" | "growth") {
   switch (zone) {
     case "ready":      return "hsl(var(--brand-human))";
     case "fast-track": return "hsl(var(--primary))";
@@ -58,18 +50,57 @@ function zoneDotColor(zone: "ready" | "fast-track" | "growth") {
   }
 }
 
-/* ─── Custom tooltip ─── */
-function DotTooltip({ active, payload }: any) {
-  if (!active || !payload?.length) return null;
-  const d = payload[0].payload as JobMatchDot & { aiBoost: number };
-  const zone = getZone(d.humanMatch, d.aiBoost);
+function zoneRingColor(zone: "ready" | "fast-track" | "growth") {
+  switch (zone) {
+    case "ready":      return "hsl(var(--brand-human) / 0.12)";
+    case "fast-track": return "hsl(var(--primary) / 0.08)";
+    case "growth":     return "hsl(var(--brand-ai) / 0.06)";
+  }
+}
+
+/* ─── Position jobs on bullseye ─── */
+interface PlacedDot {
+  x: number;
+  y: number;
+  r: number;
+  job: JobMatchDot;
+  zone: "ready" | "fast-track" | "growth";
+}
+
+function placeDots(jobs: JobMatchDot[], cx: number, cy: number, maxRadius: number): PlacedDot[] {
+  // Distance from center = inverse of aiBoostMatch (100% = center, 0% = edge)
+  // Use golden angle for even angular distribution
+  const golden = Math.PI * (3 - Math.sqrt(5));
+  const sorted = [...jobs].sort((a, b) => b.aiBoostMatch - a.aiBoostMatch);
+
+  return sorted.map((job, i) => {
+    const matchScore = Math.max(job.humanMatch, job.aiBoostMatch);
+    // Map match to distance: 100% match → 0 distance, 0% → maxRadius
+    const dist = maxRadius * (1 - matchScore / 100) * 0.85 + maxRadius * 0.08;
+    // Golden angle distribution with slight randomness for visual variety
+    const angle = i * golden + (i % 3) * 0.15;
+    const zone = getZone(job.humanMatch, job.aiBoostMatch);
+    const dotR = zone === "ready" ? 5 : zone === "fast-track" ? 4.5 : 4;
+
+    return {
+      x: cx + Math.cos(angle) * dist,
+      y: cy + Math.sin(angle) * dist,
+      r: dotR,
+      job,
+      zone,
+    };
+  });
+}
+
+/* ─── Tooltip component ─── */
+function DotTooltipContent({ job, zone }: { job: JobMatchDot; zone: "ready" | "fast-track" | "growth" }) {
   return (
-    <div className="rounded-lg border border-border/50 bg-background px-3 py-2 shadow-xl text-xs max-w-[200px]">
-      <p className="font-semibold text-foreground truncate">{d.title}</p>
-      <p className="text-[10px] text-muted-foreground">{d.company} · {d.dept}</p>
+    <div className="rounded-lg border border-border/50 bg-background px-3 py-2 shadow-xl text-xs max-w-[200px] pointer-events-none">
+      <p className="font-semibold text-foreground truncate">{job.title}</p>
+      <p className="text-[10px] text-muted-foreground">{job.company} · {job.dept}</p>
       <div className="flex gap-3 mt-1.5">
-        <span className="text-muted-foreground">Skills: <strong className="text-foreground">{d.humanMatch}%</strong></span>
-        <span className="text-muted-foreground">AI+: <strong className="text-primary">+{d.aiBoost}%</strong></span>
+        <span className="text-muted-foreground">Skills: <strong className="text-foreground">{job.humanMatch}%</strong></span>
+        <span className="text-muted-foreground">+AI: <strong className="text-primary">{job.aiBoostMatch}%</strong></span>
       </div>
       <Badge variant="outline" className={`mt-1.5 text-[9px] ${
         zone === "ready" ? "border-brand-human/40 text-brand-human" :
@@ -85,33 +116,39 @@ function DotTooltip({ active, payload }: any) {
 /* ─── Main Component ─── */
 export default function CareerReachMap({ jobMatches, isEmpty }: CareerReachMapProps) {
   const navigate = useNavigate();
-  const [selected, setSelected] = useState<(JobMatchDot & { aiBoost: number }) | null>(null);
+  const [selected, setSelected] = useState<JobMatchDot | null>(null);
+  const [hovered, setHovered] = useState<PlacedDot | null>(null);
+  const svgRef = useRef<SVGSVGElement>(null);
 
-  // Compute chart data
-  const chartData = useMemo(() =>
-    jobMatches.map(j => ({
-      ...j,
-      aiBoost: j.aiBoostMatch - j.humanMatch,
-    })),
-    [jobMatches]
-  );
+  const SIZE = 420;
+  const CX = SIZE / 2;
+  const CY = SIZE / 2;
+  const MAX_R = SIZE / 2 - 24;
 
-  // Zone counts
+  const placed = useMemo(() => placeDots(jobMatches, CX, CY, MAX_R), [jobMatches, CX, CY, MAX_R]);
+
   const zoneCounts = useMemo(() => {
     const c = { ready: 0, "fast-track": 0, growth: 0 };
-    for (const d of chartData) c[getZone(d.humanMatch, d.aiBoost)]++;
+    for (const d of placed) c[d.zone]++;
     return c;
-  }, [chartData]);
+  }, [placed]);
+
+  // Ring thresholds (distance from center → match %)
+  // Ring 1 (innermost): 80-100% = Ready
+  // Ring 2: 60-80% = Fast-Track
+  // Ring 3 (outermost): 0-60% = Growth
+  const rings = [
+    { r: MAX_R * 0.25, fill: zoneRingColor("ready"), label: "80%+" },
+    { r: MAX_R * 0.50, fill: zoneRingColor("fast-track"), label: "60%" },
+    { r: MAX_R * 0.75, fill: zoneRingColor("growth"), label: "40%" },
+    { r: MAX_R, fill: "hsl(var(--muted) / 0.08)", label: "20%" },
+  ];
 
   const goToRole = useCallback((title: string, company?: string | null) => {
     const params = new URLSearchParams({ title });
     if (company) params.set("company", company);
     navigate(`/analysis?${params.toString()}`);
   }, [navigate]);
-
-  const handleDotClick = useCallback((data: any) => {
-    if (data?.payload) setSelected(data.payload);
-  }, []);
 
   if (isEmpty) return null;
 
@@ -130,58 +167,105 @@ export default function CareerReachMap({ jobMatches, isEmpty }: CareerReachMapPr
             <span className={`font-bold ${z.textColor}`}>{z.count}</span>
           </div>
         ))}
+        <span className="text-[10px] text-muted-foreground ml-auto">{jobMatches.length} roles</span>
       </div>
 
-      {/* ── Scatter Chart ── */}
-      <div className="rounded-xl border border-border/40 bg-card p-3 sm:p-4">
-        <ResponsiveContainer width="100%" height={380}>
-          <ScatterChart margin={{ top: 10, right: 16, bottom: 32, left: 8 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border) / 0.3)" />
-            
-            {/* Zone backgrounds */}
-            <ReferenceArea x1={60} x2={100} y1={0} y2={50} fill="hsl(var(--brand-human) / 0.04)" />
-            <ReferenceArea x1={0} x2={60} y1={20} y2={50} fill="hsl(var(--primary) / 0.04)" />
-            
-            {/* Threshold line */}
-            <ReferenceLine x={60} stroke="hsl(var(--brand-human) / 0.3)" strokeDasharray="6 4" label={{ value: "60% ready", position: "top", fontSize: 10, fill: "hsl(var(--muted-foreground))" }} />
+      {/* ── Bullseye SVG ── */}
+      <div className="rounded-xl border border-border/40 bg-card p-3 sm:p-4 relative">
+        <svg
+          ref={svgRef}
+          viewBox={`0 0 ${SIZE} ${SIZE}`}
+          className="w-full max-w-[420px] mx-auto"
+          style={{ aspectRatio: "1" }}
+        >
+          {/* Concentric rings */}
+          {rings.map((ring, i) => (
+            <circle
+              key={i}
+              cx={CX} cy={CY} r={ring.r}
+              fill="none"
+              stroke="hsl(var(--border) / 0.2)"
+              strokeWidth={1}
+              strokeDasharray="4 4"
+            />
+          ))}
 
-            <XAxis
-              dataKey="humanMatch"
-              type="number"
-              domain={[0, 100]}
-              tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }}
-              label={{ value: "Your Skill Match %", position: "bottom", offset: 16, fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
-            />
-            <YAxis
-              dataKey="aiBoost"
-              type="number"
-              domain={[0, 50]}
-              tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }}
-              label={{ value: "AI Boost %", angle: -90, position: "insideLeft", offset: 4, fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
-              width={48}
-            />
-            <RechartsTooltip content={<DotTooltip />} cursor={false} />
-            <Scatter
-              data={chartData}
-              onClick={handleDotClick}
-              cursor="pointer"
+          {/* Zone fills (outermost first) */}
+          <circle cx={CX} cy={CY} r={MAX_R} fill="hsl(var(--brand-ai) / 0.03)" />
+          <circle cx={CX} cy={CY} r={MAX_R * 0.5} fill="hsl(var(--primary) / 0.04)" />
+          <circle cx={CX} cy={CY} r={MAX_R * 0.25} fill="hsl(var(--brand-human) / 0.06)" />
+
+          {/* 60% threshold ring */}
+          <circle
+            cx={CX} cy={CY} r={MAX_R * 0.42}
+            fill="none"
+            stroke="hsl(var(--brand-human) / 0.25)"
+            strokeWidth={1.5}
+            strokeDasharray="6 4"
+          />
+
+          {/* Ring labels */}
+          {rings.map((ring, i) => (
+            <text
+              key={i}
+              x={CX + ring.r - 4}
+              y={CY - 4}
+              fill="hsl(var(--muted-foreground) / 0.4)"
+              fontSize={8}
+              textAnchor="end"
             >
-              {chartData.map((d, i) => (
-                <Cell
-                  key={i}
-                  fill={zoneDotColor(getZone(d.humanMatch, d.aiBoost))}
-                  fillOpacity={0.75}
-                  r={selected?.title === d.title ? 8 : 5}
-                  stroke={selected?.title === d.title ? "hsl(var(--foreground))" : "transparent"}
-                  strokeWidth={selected?.title === d.title ? 2 : 0}
-                />
-              ))}
-            </Scatter>
-          </ScatterChart>
-        </ResponsiveContainer>
+              {ring.label}
+            </text>
+          ))}
 
-        <p className="text-[10px] text-muted-foreground text-center mt-1">
-          Click any dot to see your gap analysis and action plan
+          {/* Center "YOU" marker */}
+          <circle cx={CX} cy={CY} r={8} fill="hsl(var(--foreground))" fillOpacity={0.9} />
+          <text x={CX} y={CY + 3} textAnchor="middle" fill="hsl(var(--background))" fontSize={6} fontWeight="bold">
+            YOU
+          </text>
+
+          {/* Job dots */}
+          {placed.map((dot, i) => {
+            const isSelected = selected?.title === dot.job.title && selected?.company === dot.job.company;
+            const isHovered = hovered === dot;
+            return (
+              <motion.circle
+                key={`${dot.job.title}-${dot.job.company}-${i}`}
+                cx={dot.x}
+                cy={dot.y}
+                r={isSelected || isHovered ? dot.r + 2 : dot.r}
+                fill={zoneColor(dot.zone)}
+                fillOpacity={isSelected ? 1 : isHovered ? 0.9 : 0.6}
+                stroke={isSelected ? "hsl(var(--foreground))" : isHovered ? "hsl(var(--foreground) / 0.5)" : "transparent"}
+                strokeWidth={isSelected ? 2 : isHovered ? 1.5 : 0}
+                className="cursor-pointer transition-all duration-150"
+                onClick={() => setSelected(dot.job)}
+                onMouseEnter={() => setHovered(dot)}
+                onMouseLeave={() => setHovered(null)}
+                initial={{ cx: CX, cy: CY, r: 0, opacity: 0 }}
+                animate={{ cx: dot.x, cy: dot.y, r: isSelected || isHovered ? dot.r + 2 : dot.r, opacity: 1 }}
+                transition={{ duration: 0.5, delay: i * 0.008, ease: "easeOut" }}
+              />
+            );
+          })}
+        </svg>
+
+        {/* Hover tooltip */}
+        {hovered && (
+          <div
+            className="absolute z-10"
+            style={{
+              left: `${((hovered.x / SIZE) * 100)}%`,
+              top: `${((hovered.y / SIZE) * 100) - 12}%`,
+              transform: "translate(-50%, -100%)",
+            }}
+          >
+            <DotTooltipContent job={hovered.job} zone={hovered.zone} />
+          </div>
+        )}
+
+        <p className="text-[10px] text-muted-foreground text-center mt-2">
+          Closer to center = stronger match · Click any dot to explore
         </p>
       </div>
 
