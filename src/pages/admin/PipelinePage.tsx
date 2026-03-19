@@ -277,7 +277,7 @@ export default function PipelinePage() {
     const withJobs = companies.filter(c => (c.job_count || 0) > 0).length;
     const noJobs = companies.filter(c => (c.job_count || 0) === 0 && c.detected_ats_platform && c.detected_ats_platform !== "unknown").length;
     const totalJobs = companies.reduce((sum, c) => sum + (c.job_count || 0), 0);
-    const totalAnalyzed = companies.reduce((sum, c) => sum + (c.analyzed_count || 0), 0);
+    const totalAnalyzed = companies.reduce((sum, c) => sum + (c.task_cluster_count || 0), 0);
     const openFlags = flags.filter(f => f.status === "open").length;
     return { totalCompanies, withATS, withJobs, noJobs, totalJobs, totalAnalyzed, openFlags };
   }, [companies, flags]);
