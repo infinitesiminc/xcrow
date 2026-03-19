@@ -175,7 +175,7 @@ export default function CareerReachMap({ jobMatches, isEmpty }: CareerReachMapPr
         <svg
           ref={svgRef}
           viewBox={`0 0 ${SIZE} ${SIZE}`}
-          className="w-full max-w-[420px] mx-auto"
+          className="w-full max-w-[520px] mx-auto"
           style={{ aspectRatio: "1" }}
         >
           {/* Concentric rings */}
