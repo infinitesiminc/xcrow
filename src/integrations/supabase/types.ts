@@ -1046,6 +1046,16 @@ export type Database = {
           task_cluster_count: number
         }[]
       }
+      get_leaderboard: {
+        Args: never
+        Returns: {
+          display_name: string
+          skills_unlocked: number
+          tasks_completed: number
+          total_xp: number
+          user_id: string
+        }[]
+      }
       get_workspace_progress: {
         Args: { p_workspace_id: string }
         Returns: {
