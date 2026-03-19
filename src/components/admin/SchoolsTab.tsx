@@ -295,6 +295,9 @@ export default function SchoolsTab() {
                         </div>
                       ) : (
                         <>
+                          <Button size="sm" variant="outline" className="h-7 text-[10px] gap-1" onClick={() => setGapSchool({ id: school.id, name: school.name })}>
+                            <BarChart3 className="h-3 w-3" /> Skills Gap
+                          </Button>
                           <Button size="sm" variant="outline" className="h-7 text-[10px] gap-1" onClick={() => setScrapeDialogId(school.id)}>
                             <BookOpen className="h-3 w-3" /> Scrape Curriculum
                           </Button>
