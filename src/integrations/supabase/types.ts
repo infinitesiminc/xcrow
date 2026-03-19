@@ -840,51 +840,87 @@ export type Database = {
       school_accounts: {
         Row: {
           billing_interval: string
+          carnegie_class: string | null
+          catalog_url: string | null
+          city: string | null
           contact_email: string | null
           created_at: string
           created_by: string | null
           domain: string | null
+          enrollment: number | null
           expires_at: string | null
           id: string
+          institution_type: string | null
+          ipeds_id: string | null
+          is_hbcu: boolean | null
+          latitude: number | null
+          longitude: number | null
           name: string
+          pipeline_stage: string | null
           plan_status: string
           price_per_seat_cents: number
+          state: string | null
           stripe_customer_id: string | null
           stripe_subscription_id: string | null
           total_seats: number
           used_seats: number
+          website: string | null
         }
         Insert: {
           billing_interval?: string
+          carnegie_class?: string | null
+          catalog_url?: string | null
+          city?: string | null
           contact_email?: string | null
           created_at?: string
           created_by?: string | null
           domain?: string | null
+          enrollment?: number | null
           expires_at?: string | null
           id?: string
+          institution_type?: string | null
+          ipeds_id?: string | null
+          is_hbcu?: boolean | null
+          latitude?: number | null
+          longitude?: number | null
           name: string
+          pipeline_stage?: string | null
           plan_status?: string
           price_per_seat_cents?: number
+          state?: string | null
           stripe_customer_id?: string | null
           stripe_subscription_id?: string | null
           total_seats?: number
           used_seats?: number
+          website?: string | null
         }
         Update: {
           billing_interval?: string
+          carnegie_class?: string | null
+          catalog_url?: string | null
+          city?: string | null
           contact_email?: string | null
           created_at?: string
           created_by?: string | null
           domain?: string | null
+          enrollment?: number | null
           expires_at?: string | null
           id?: string
+          institution_type?: string | null
+          ipeds_id?: string | null
+          is_hbcu?: boolean | null
+          latitude?: number | null
+          longitude?: number | null
           name?: string
+          pipeline_stage?: string | null
           plan_status?: string
           price_per_seat_cents?: number
+          state?: string | null
           stripe_customer_id?: string | null
           stripe_subscription_id?: string | null
           total_seats?: number
           used_seats?: number
+          website?: string | null
         }
         Relationships: []
       }
