@@ -274,8 +274,9 @@ export default function PipelinePage() {
     const withJobs = companies.filter(c => (c.job_count || 0) > 0).length;
     const noJobs = companies.filter(c => (c.job_count || 0) === 0 && c.detected_ats_platform && c.detected_ats_platform !== "unknown").length;
     const totalJobs = companies.reduce((sum, c) => sum + (c.job_count || 0), 0);
+    const totalAnalyzed = companies.reduce((sum, c) => sum + (c.analyzed_count || 0), 0);
     const openFlags = flags.filter(f => f.status === "open").length;
-    return { totalCompanies, withATS, withJobs, noJobs, totalJobs, openFlags };
+    return { totalCompanies, withATS, withJobs, noJobs, totalJobs, totalAnalyzed, openFlags };
   }, [companies, flags]);
 
   /* ═══════ COMPANIES BROWSER COMPUTED ═══════ */
@@ -679,7 +680,7 @@ export default function PipelinePage() {
               <span className="text-xs font-semibold text-foreground">Companies</span>
             </div>
             <p className="text-lg font-bold text-foreground">{stats.totalCompanies.toLocaleString()}</p>
-            <p className="text-[10px] text-muted-foreground">browse & analyze · {stats.withJobs} with roles</p>
+            <p className="text-[10px] text-muted-foreground">browse & analyze · {stats.totalAnalyzed.toLocaleString()} tasks analyzed</p>
           </button>
         </div>
       </div>
