@@ -1377,8 +1377,7 @@ export default function PipelinePage() {
                       <span className="text-primary">{validAnalyzedCount} analyzed</span>
                       {selectedCompany.employee_range && <><span>·</span><span>{selectedCompany.employee_range}</span></>}
                     </div>
-                    {(selectedCompany.careers_url || selectedCompany.manual_careers_url) && (
-                      <div className="flex items-center gap-3 text-[10px] mt-0.5">
+                    <div className="flex items-center gap-3 text-[10px] mt-0.5">
                         {selectedCompany.careers_url && (
                           <a href={selectedCompany.careers_url} target="_blank" rel="noopener" className="inline-flex items-center gap-1 text-muted-foreground hover:text-foreground truncate max-w-[350px]">
                             <Briefcase className="h-2.5 w-2.5 shrink-0" />
@@ -1387,16 +1386,52 @@ export default function PipelinePage() {
                             <ExternalLink className="h-2 w-2 shrink-0" />
                           </a>
                         )}
-                        {selectedCompany.manual_careers_url && (
-                          <a href={selectedCompany.manual_careers_url} target="_blank" rel="noopener" className="inline-flex items-center gap-1 text-muted-foreground hover:text-foreground truncate max-w-[350px]">
-                            <Globe className="h-2.5 w-2.5 shrink-0" />
-                            <span className="text-muted-foreground/60 shrink-0">Careers</span>
-                            <span className="truncate">{selectedCompany.manual_careers_url.replace(/^https?:\/\//, '')}</span>
-                            <ExternalLink className="h-2 w-2 shrink-0" />
-                          </a>
+                        {editingCareersUrl ? (
+                          <form
+                            className="inline-flex items-center gap-1"
+                            onSubmit={async (e) => {
+                              e.preventDefault();
+                              const url = careersUrlDraft.trim() || null;
+                              await supabase.from("companies").update({ manual_careers_url: url }).eq("id", selectedCompany.id);
+                              setEditingCareersUrl(false);
+                              fetchCompanies();
+                            }}
+                          >
+                            <Globe className="h-2.5 w-2.5 shrink-0 text-muted-foreground" />
+                            <input
+                              autoFocus
+                              className="h-5 w-[250px] bg-muted border border-border rounded px-1.5 text-[10px] text-foreground outline-none focus:ring-1 focus:ring-primary"
+                              placeholder="https://company.com/careers"
+                              value={careersUrlDraft}
+                              onChange={(e) => setCareersUrlDraft(e.target.value)}
+                            />
+                            <button type="submit" className="text-primary hover:text-primary/80"><Check className="h-3 w-3" /></button>
+                            <button type="button" className="text-muted-foreground hover:text-foreground" onClick={() => setEditingCareersUrl(false)}><X className="h-3 w-3" /></button>
+                          </form>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 text-muted-foreground">
+                            {selectedCompany.manual_careers_url ? (
+                              <a href={selectedCompany.manual_careers_url} target="_blank" rel="noopener" className="inline-flex items-center gap-1 hover:text-foreground truncate max-w-[350px]">
+                                <Globe className="h-2.5 w-2.5 shrink-0" />
+                                <span className="text-muted-foreground/60 shrink-0">Careers</span>
+                                <span className="truncate">{selectedCompany.manual_careers_url.replace(/^https?:\/\//, '')}</span>
+                                <ExternalLink className="h-2 w-2 shrink-0" />
+                              </a>
+                            ) : (
+                              <span className="text-muted-foreground/40 inline-flex items-center gap-1">
+                                <Globe className="h-2.5 w-2.5 shrink-0" />
+                                <span>No careers URL</span>
+                              </span>
+                            )}
+                            <button
+                              className="text-muted-foreground hover:text-primary ml-0.5"
+                              onClick={() => { setCareersUrlDraft(selectedCompany.manual_careers_url || ""); setEditingCareersUrl(true); }}
+                            >
+                              <Pencil className="h-2.5 w-2.5" />
+                            </button>
+                          </span>
                         )}
                       </div>
-                    )}
                   </div>
                 </div>
 
