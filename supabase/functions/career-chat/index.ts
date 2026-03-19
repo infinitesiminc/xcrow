@@ -59,7 +59,8 @@ Rules:
 - Frame everything positively — focus on skill-building and opportunity
 - Never use "automated," "replaced," or "at risk." Instead say "enhanced," "supercharged," or "augmented."
 - Always end with a question or suggestion to keep building their skill map
-- Use emoji naturally throughout your responses (2-4 per message)`;
+- Use emoji naturally throughout your responses (2-4 per message)
+- When presenting multiple options or choices, put EACH option on its own line using markdown line breaks. Format choices as a short bulleted or numbered list so they're easy to scan — never cram multiple options into one paragraph.`;
 
 // In-memory cache for search results (per-isolate, short-lived)
 const searchCache = new Map<string, { roles: any[]; ts: number }>();
