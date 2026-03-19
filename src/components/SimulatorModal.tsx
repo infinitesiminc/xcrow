@@ -545,6 +545,14 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
   }, [session, objectiveStatus]);
 
   const startCompile = useCallback(async () => {
+    // Usage gate check for free users
+    if (user && !isPro) {
+      const allowed = await simGate.check();
+      if (!allowed) {
+        setShowUpgrade(true);
+        return;
+      }
+    }
     setPhase("loading");
     setError(null);
     setMessages([]);
@@ -563,7 +571,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
       setError("Couldn't start the simulation. Please try again.");
       setPhase("chat");
     }
-  }, [taskName, jobTitle, company, mode, taskState, taskTrend, taskImpactLevel]);
+  }, [taskName, jobTitle, company, mode, taskState, taskTrend, taskImpactLevel, user, isPro, simGate]);
 
   useEffect(() => {
     if (open) startCompile();
