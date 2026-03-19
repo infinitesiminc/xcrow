@@ -92,7 +92,7 @@ export default function SchoolsDataTable({ initialPipelineFilter }: { initialPip
     setLoading(true);
     let query = supabase
       .from("school_accounts")
-      .select("id,name,abbrev,state,carnegie_class,enrollment,pipeline_stage,is_hbcu,plan_status,website,domain", { count: "exact" });
+      .select("id,name,short_name,state,carnegie_class,enrollment,pipeline_stage,is_hbcu,plan_status,website,domain", { count: "exact" }) as any;
 
     if (debouncedSearch) {
       query = query.ilike("name", `%${debouncedSearch}%`);
