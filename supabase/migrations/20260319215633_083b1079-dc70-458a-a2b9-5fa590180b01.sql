@@ -1,0 +1,1 @@
+ALTER TABLE public.profiles ADD COLUMN program_name text;
