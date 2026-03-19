@@ -134,6 +134,8 @@ const Index = () => {
               hasInteracted={hasInteracted}
               selectedJobId={selectedRole?.jobId}
               inlineCards={false}
+              externalPrompt={externalPrompt}
+              onExternalPromptConsumed={() => setExternalPrompt(null)}
             />
           </div>
         </div>
