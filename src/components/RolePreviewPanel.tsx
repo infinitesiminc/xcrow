@@ -617,23 +617,23 @@ export default function RolePreviewPanel({ role, onClose }: RolePreviewPanelProp
                     <p className="text-xs text-muted-foreground">See how AI impacts each responsibility</p>
                   </div>
                 </div>
-                {/* Mini preview of top 3 task names */}
+                {/* Task pills — show more now that stats are gone */}
                 <div className="flex flex-wrap gap-1.5 mt-2">
-                  {tasks.slice(0, 3).map((t, i) => (
+                  {tasks.slice(0, 6).map((t, i) => (
                     <button
                       key={i}
                       onClick={() => { setFocusedTask(t); setView("task-detail"); }}
-                      className="text-[11px] px-2 py-0.5 rounded-full bg-muted/40 text-muted-foreground truncate max-w-[160px] hover:bg-primary/15 hover:text-primary transition-colors cursor-pointer"
+                      className="text-[11px] px-2.5 py-1 rounded-full bg-muted/40 text-muted-foreground hover:bg-primary/15 hover:text-primary transition-colors cursor-pointer"
                     >
                       {t.cluster_name}
                     </button>
                   ))}
-                  {tasks.length > 3 && (
+                  {tasks.length > 6 && (
                     <button
                       onClick={() => setView("breakdown")}
-                      className="text-[11px] px-2 py-0.5 rounded-full bg-muted/40 text-muted-foreground hover:bg-primary/15 hover:text-primary transition-colors cursor-pointer"
+                      className="text-[11px] px-2.5 py-1 rounded-full bg-muted/40 text-muted-foreground hover:bg-primary/15 hover:text-primary transition-colors cursor-pointer"
                     >
-                      +{tasks.length - 3} more
+                      +{tasks.length - 6} more
                     </button>
                   )}
                 </div>
