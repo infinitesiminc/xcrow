@@ -76,6 +76,7 @@ export default function RolePreviewPanel({ role, onClose }: RolePreviewPanelProp
   const [analyzing, setAnalyzing] = useState(false);
   const [view, setView] = useState<PanelView>("details");
   const [simTask, setSimTask] = useState<TaskCluster | null>(null);
+  const [focusedTask, setFocusedTask] = useState<TaskCluster | null>(null);
   const [completedTasks, setCompletedTasks] = useState<Set<string>>(new Set());
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [jobDescription, setJobDescription] = useState<string | null>(null);
