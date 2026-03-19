@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
 import {
   GraduationCap, Plus, Loader2, Pencil, Check, X, Trash2, Users, Calendar, Mail,
-  Globe, BookOpen, Sparkles, ChevronDown, ChevronUp,
+  Globe, BookOpen, Sparkles, ChevronDown, ChevronUp, BarChart3,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import SkillsGapMatrix from "./SkillsGapMatrix";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
