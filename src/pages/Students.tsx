@@ -6,7 +6,8 @@
 import { useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, useInView } from "framer-motion";
-import { ArrowRight, Blocks, Brain, Sparkles, Target, TrendingUp, Zap } from "lucide-react";
+import { ArrowRight, Blocks, Bot, Brain, Briefcase, Play, Sparkles, Target, TrendingUp, Zap } from "lucide-react";
+import CompanyMarquee from "@/components/CompanyMarquee";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 
