@@ -9,6 +9,7 @@ import SchoolOverview from "@/components/admin/school/SchoolOverview";
 import SchoolDataExtraction from "@/components/admin/school/SchoolDataExtraction";
 import SchoolSkillsGap from "@/components/admin/school/SchoolSkillsGap";
 import SchoolStudentsAdmin from "@/components/admin/school/SchoolStudentsAdmin";
+import StudentGapPreview from "@/components/admin/school/StudentGapPreview";
 
 interface SchoolData {
   id: string;
@@ -116,6 +117,7 @@ export default function SchoolDetailPage() {
           <TabsTrigger value="extraction">Data Extraction</TabsTrigger>
           <TabsTrigger value="skills">Skills Gap</TabsTrigger>
           {school.total_seats > 0 && <TabsTrigger value="students">Students</TabsTrigger>}
+          <TabsTrigger value="student-preview">Student Preview</TabsTrigger>
         </TabsList>
         <TabsContent value="overview">
           <SchoolOverview school={school} onUpdate={fetchSchool} />
@@ -131,6 +133,9 @@ export default function SchoolDetailPage() {
             <SchoolStudentsAdmin schoolId={school.id} />
           </TabsContent>
         )}
+        <TabsContent value="student-preview">
+          <StudentGapPreview schoolId={school.id} schoolName={school.name} />
+        </TabsContent>
       </Tabs>
     </div>
   );
