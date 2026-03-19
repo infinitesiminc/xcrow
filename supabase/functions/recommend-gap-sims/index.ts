@@ -87,12 +87,12 @@ serve(async (req) => {
       supabase
         .from("school_accounts")
         .select("id, name, short_name")
-        .eq("id", seat.school_id)
+        .eq("id", schoolId)
         .single(),
       supabase
         .from("school_courses")
         .select("program_name, skills_extracted, skill_categories, department, degree_type")
-        .eq("school_id", seat.school_id),
+        .eq("school_id", schoolId),
     ]);
 
     const school = schoolRes.data;
