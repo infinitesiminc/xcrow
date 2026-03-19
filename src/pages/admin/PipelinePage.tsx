@@ -40,6 +40,7 @@ interface Company {
   founded_year: number | null;
   imported_at: string;
   job_count?: number;
+  analyzed_count?: number;
   priority_score?: number;
 }
 
