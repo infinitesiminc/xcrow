@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Pencil, Check, X, Trash2, Users, Calendar, Mail, Globe } from "lucide-react";
+import { Pencil, Check, X, Trash2, Users, Calendar, Globe, Eye, Sparkles, GraduationCap } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import StudentGapPreview from "@/components/admin/school/StudentGapPreview";
 
 interface SchoolData {
   id: string;
@@ -170,6 +171,50 @@ export default function SchoolOverview({ school, onUpdate }: { school: SchoolDat
           </CardContent>
         </Card>
       </div>
+
+      {/* Student Experience Preview — shown for non-customer schools */}
+      {school.total_seats === 0 && (
+        <Card className="border-[hsl(var(--neon-purple))]/20 bg-gradient-to-br from-[hsl(var(--neon-purple))]/5 via-card to-card overflow-hidden">
+          <CardContent className="p-5 space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="rounded-lg bg-[hsl(var(--neon-purple))]/10 p-2">
+                <Eye className="h-4 w-4 text-[hsl(var(--neon-purple))]" />
+              </div>
+              <div>
+                <h3 className="text-sm font-semibold flex items-center gap-2">
+                  Student Experience Preview
+                  <Badge className="bg-[hsl(var(--neon-cyan))]/15 text-[hsl(var(--neon-cyan))] text-[10px]">
+                    <Sparkles className="h-2.5 w-2.5 mr-0.5" /> Demo
+                  </Badge>
+                </h3>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Preview the personalized skill gap analysis students at {school.name} would receive
+                </p>
+              </div>
+            </div>
+
+            <div className="grid sm:grid-cols-3 gap-3 text-center">
+              <div className="rounded-lg border border-border/40 bg-background/50 p-3">
+                <GraduationCap className="h-4 w-4 text-muted-foreground mx-auto mb-1" />
+                <p className="text-xs text-muted-foreground">Program-specific</p>
+                <p className="text-sm font-semibold">Gap Analysis</p>
+              </div>
+              <div className="rounded-lg border border-border/40 bg-background/50 p-3">
+                <Sparkles className="h-4 w-4 text-muted-foreground mx-auto mb-1" />
+                <p className="text-xs text-muted-foreground">AI-powered</p>
+                <p className="text-sm font-semibold">Simulations</p>
+              </div>
+              <div className="rounded-lg border border-border/40 bg-background/50 p-3">
+                <Users className="h-4 w-4 text-muted-foreground mx-auto mb-1" />
+                <p className="text-xs text-muted-foreground">Career readiness</p>
+                <p className="text-sm font-semibold">Skill Map</p>
+              </div>
+            </div>
+
+            <StudentGapPreview schoolId={school.id} schoolName={school.name} />
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }
