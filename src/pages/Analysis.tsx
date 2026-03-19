@@ -163,12 +163,31 @@ const Analysis = () => {
     if (!jobTitle && !hasJd) { navigate("/"); return; }
     const analyze = async () => {
       setLoading(true); setError(null);
+
+      // 1. Check prebuilt roles (instant)
       const prebuilt = jobTitle ? findPrebuiltRole(jobTitle) : null;
       if (prebuilt && !hasJd) {
-        await new Promise(r => setTimeout(r, 1200));
         const r = { ...prebuilt, company };
         setResult(r); saveAnalysisHistory(r); setLoading(false); return;
       }
+
+      // 2. Check cached analyses (fast DB lookup)
+      if (jobTitle && !hasJd) {
+        try {
+          const { data: cached } = await supabase
+            .from("cached_analyses")
+            .select("result")
+            .eq("job_title_lower", jobTitle.toLowerCase())
+            .eq("company_lower", (company || "").toLowerCase())
+            .maybeSingle();
+          if (cached?.result) {
+            const r = cached.result as unknown as JobAnalysisResult;
+            setResult(r); saveAnalysisHistory(r); setLoading(false); return;
+          }
+        } catch (err) { console.error("Cache lookup failed:", err); }
+      }
+
+      // 3. Fall back to AI analysis
       try {
         const aiResult = await analyzeJobWithAI(jobTitle, company, jdText || undefined, jdUrlParam || undefined);
         setResult(aiResult); saveAnalysisHistory(aiResult);
