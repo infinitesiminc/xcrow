@@ -4,12 +4,13 @@
  * Stats ribbon → Scatter chart (Human Match % vs AI Boost %)
  * Click a dot → slide-out panel with gap analysis + CTA
  */
-import { useMemo } from "react";
+import { useMemo, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   Play, Target, Briefcase, Bookmark, BookOpen, ArrowRight,
 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 import CareerReachMap, { type JobMatchDot } from "./CareerReachMap";
 
 /* ─── Types ─── */
@@ -32,6 +33,13 @@ export interface SavedRoleData {
   augmented_percent: number | null;
   automation_risk_percent: number | null;
   new_skills_percent: number | null;
+}
+
+interface DbJobTemplate {
+  title: string;
+  company: string;
+  dept: string;
+  tasks: string[];
 }
 
 /* ─── Taxonomy ─── */
