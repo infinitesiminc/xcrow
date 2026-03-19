@@ -83,16 +83,35 @@ serve(async (req) => {
     }
 
     // 2. Fetch school info + curriculum skills
+    // If program_name is provided, also fetch user's program-specific data
+    let userProgramName = programFilter || null;
+    if (!userProgramName && !overrideSchoolId) {
+      // Look up from profile
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("program_name")
+        .eq("id", user.id)
+        .single();
+      userProgramName = profile?.program_name || null;
+    }
+
+    const coursesQuery = supabase
+      .from("school_courses")
+      .select("program_name, skills_extracted, skill_categories, department, degree_type")
+      .eq("school_id", schoolId);
+
+    // If student has a program, filter to that program for personalized gaps
+    if (userProgramName) {
+      coursesQuery.eq("program_name", userProgramName);
+    }
+
     const [schoolRes, coursesRes] = await Promise.all([
       supabase
         .from("school_accounts")
         .select("id, name, short_name")
         .eq("id", schoolId)
         .single(),
-      supabase
-        .from("school_courses")
-        .select("program_name, skills_extracted, skill_categories, department, degree_type")
-        .eq("school_id", schoolId),
+      coursesQuery,
     ]);
 
     const school = schoolRes.data;
