@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import SkillMapGrid from "./SkillMapGrid";
 import CurriculumGapBanner from "./CurriculumGapBanner";
+import SchoolTeaser from "./SchoolTeaser";
 import HumanEdgesSection from "./HumanEdgesSection";
 import {
   aggregateSkillXP,
@@ -133,6 +134,8 @@ export default function JourneyDashboard({ practicedRoles, savedRoles, loading }
 
       {/* ── Curriculum Gap Recommendations (school students only) ── */}
       <CurriculumGapBanner />
+      {/* ── School Teaser (students whose school hasn't signed up) ── */}
+      <SchoolTeaser />
 
       {/* ── Empty State with Preview ── */}
       {isEmpty && (
