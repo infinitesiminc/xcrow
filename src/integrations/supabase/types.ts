@@ -920,6 +920,110 @@ export type Database = {
           },
         ]
       }
+      school_courses: {
+        Row: {
+          created_at: string
+          curriculum_id: string
+          degree_type: string | null
+          department: string | null
+          description: string | null
+          id: string
+          program_name: string
+          school_id: string
+          skill_categories: Json | null
+          skills_extracted: Json | null
+          source_url: string | null
+        }
+        Insert: {
+          created_at?: string
+          curriculum_id: string
+          degree_type?: string | null
+          department?: string | null
+          description?: string | null
+          id?: string
+          program_name: string
+          school_id: string
+          skill_categories?: Json | null
+          skills_extracted?: Json | null
+          source_url?: string | null
+        }
+        Update: {
+          created_at?: string
+          curriculum_id?: string
+          degree_type?: string | null
+          department?: string | null
+          description?: string | null
+          id?: string
+          program_name?: string
+          school_id?: string
+          skill_categories?: Json | null
+          skills_extracted?: Json | null
+          source_url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "school_courses_curriculum_id_fkey"
+            columns: ["curriculum_id"]
+            isOneToOne: false
+            referencedRelation: "school_curricula"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "school_courses_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "school_accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      school_curricula: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          error_message: string | null
+          id: string
+          initiated_by: string | null
+          programs_found: number
+          programs_parsed: number
+          school_id: string
+          source_url: string
+          status: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          initiated_by?: string | null
+          programs_found?: number
+          programs_parsed?: number
+          school_id: string
+          source_url: string
+          status?: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          initiated_by?: string | null
+          programs_found?: number
+          programs_parsed?: number
+          school_id?: string
+          source_url?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "school_curricula_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "school_accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       school_seats: {
         Row: {
           activated_at: string | null
