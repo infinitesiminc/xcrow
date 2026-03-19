@@ -1,4 +1,4 @@
-import { Layers, BarChart3, Building2, GraduationCap } from "lucide-react";
+import { Building2, BarChart3, GraduationCap } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import {
   Sidebar,
@@ -13,9 +13,8 @@ import {
 } from "@/components/ui/sidebar";
 
 const pipelineItems = [
-  { title: "Pipeline", url: "/admin", icon: Layers },
+  { title: "Companies", url: "/admin", icon: Building2 },
   { title: "Task Analytics", url: "/admin/analytics", icon: BarChart3 },
-  { title: "Companies", url: "/admin/companies", icon: Building2 },
   { title: "Schools", url: "/admin/schools", icon: GraduationCap },
 ];
 
@@ -28,7 +27,7 @@ export function HRSidebar() {
       <SidebarContent className="pt-4">
         <SidebarGroup>
           <SidebarGroupLabel className="flex items-center gap-2">
-            {!collapsed && <span>Content Pipeline</span>}
+            {!collapsed && <span>Admin</span>}
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
