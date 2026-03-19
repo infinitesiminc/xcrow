@@ -109,7 +109,7 @@ Deno.serve(async (req) => {
   const sb = createClient(supabaseUrl, serviceKey);
 
   try {
-    const { school_id, catalog_url, max_programs } = await req.json();
+    const { school_id, catalog_url, max_programs, skip } = await req.json();
     if (!school_id || !catalog_url) {
       return new Response(JSON.stringify({ error: "school_id and catalog_url are required" }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -117,6 +117,7 @@ Deno.serve(async (req) => {
     }
 
     const programCap = max_programs || 10;
+    const skipCount = skip || 0;
 
     // Create curriculum record
     const { data: curriculum, error: insertErr } = await sb
@@ -180,6 +181,13 @@ Deno.serve(async (req) => {
       console.log(`Capping from ${programs.length} to ${programCap} programs`);
       programs = programs.slice(0, programCap);
     }
+
+    // Skip already-parsed programs
+    if (skipCount > 0 && skipCount < programs.length) {
+      console.log(`Skipping first ${skipCount} programs (already parsed)`);
+      programs = programs.slice(skipCount);
+    }
+
     console.log(`Processing ${programs.length} programs`);
 
     await sb.from("school_curricula").update({ programs_found: programs.length }).eq("id", curriculumId);
