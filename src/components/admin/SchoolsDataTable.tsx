@@ -14,7 +14,7 @@ import { supabase } from "@/integrations/supabase/client";
 interface SchoolRow {
   id: string;
   name: string;
-  abbrev: string | null;
+  short_name: string | null;
   state: string | null;
   carnegie_class: string | null;
   enrollment: number | null;
