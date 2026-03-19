@@ -710,6 +710,8 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
           skills_earned: skillsEarnedData,
         } as any);
         onCompleted?.();
+        // Increment usage counter for free tier
+        await simGate.increment();
         toast({ title: "Skills updated! 🎯", description: `+${xpEach} XP in ${earned.map(e => e.name).join(", ")}`, action: <Button variant="link" className="text-xs p-0 h-auto" onClick={() => navigate("/journey")}>Skill Map</Button> });
       } catch (err) {
         console.error("Failed to save completion:", err);
