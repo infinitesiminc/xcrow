@@ -1,11 +1,11 @@
-import { useEffect, useState, useCallback, useMemo, useRef } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import { useSearchParams, useNavigate, useLocation } from "react-router-dom";
-import { motion, AnimatePresence, PanInfo } from "framer-motion";
+import { motion } from "framer-motion";
 import {
-  ArrowLeft, Zap, AlertTriangle, Bot,
-  Rocket, CheckCircle2, LogIn,
-  Bookmark, BookmarkCheck, ChevronUp, Play,
-  Trophy, ArrowDown,
+  ArrowLeft, Zap, AlertTriangle,
+  Play, CheckCircle2, LogIn,
+  Bookmark, BookmarkCheck, ChevronLeft,
+  MessageSquare, BarChart3, FileText, Users, Search, Settings, Globe, Shield, Lightbulb, PenTool, Code, TrendingUp, Megaphone, Target, Briefcase, Heart, Layers, GraduationCap,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -17,18 +17,50 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import SimulatorModal from "@/components/SimulatorModal";
 
-// AI Augmented % is the single hero metric across every job
-
 const isWebsite = (value: string) =>
   /^(https?:\/\/)?([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}(\/.*)?$/.test(value.trim());
 
-function taskChipStyle(aiScore: number) {
-  if (aiScore >= 70) return { border: "border-brand-ai/30", bg: "bg-brand-ai/5", badge: "bg-brand-ai/15 text-brand-ai", accent: "text-brand-ai" };
-  if (aiScore >= 40) return { border: "border-brand-mid/30", bg: "bg-brand-mid/5", badge: "bg-brand-mid/15 text-brand-mid", accent: "text-brand-mid" };
-  return { border: "border-brand-human/30", bg: "bg-brand-human/5", badge: "bg-brand-human/15 text-brand-human", accent: "text-brand-human" };
+function hashToHue(str: string): number {
+  let h = 0;
+  for (let i = 0; i < str.length; i++) {
+    h = str.charCodeAt(i) + ((h << 5) - h);
+  }
+  return Math.abs(h) % 360;
 }
 
-const SWIPE_THRESHOLD = 50;
+function taskChipStyle(aiScore: number) {
+  if (aiScore >= 70) return { badge: "bg-brand-ai/15 text-brand-ai", accent: "text-brand-ai" };
+  if (aiScore >= 40) return { badge: "bg-brand-mid/15 text-brand-mid", accent: "text-brand-mid" };
+  return { badge: "bg-brand-human/15 text-brand-human", accent: "text-brand-human" };
+}
+
+const TASK_ICON_MAP: [RegExp, React.ComponentType<any>][] = [
+  [/communicat|messag|email|write|copywriting|narrative|story/i, MessageSquare],
+  [/analys|analytic|data|report|metric|insight|dashboard/i, BarChart3],
+  [/document|compliance|audit|policy|legal|contract|regulat/i, FileText],
+  [/team|collaborat|stakeholder|manag|lead|mentor|hire|recruit/i, Users],
+  [/research|discover|investigat|explor|survey/i, Search],
+  [/engineer|develop|code|software|technical|architect|system/i, Code],
+  [/design|creat|ux|ui|visual|brand|content/i, PenTool],
+  [/strateg|plan|roadmap|vision|initiative|growth/i, TrendingUp],
+  [/market|campaign|advertis|promot|launch|gtm|seo|social/i, Megaphone],
+  [/sales|revenue|pipeline|deal|prospect|client|customer/i, Target],
+  [/security|risk|protect|threat|vulnerab|fraud/i, Shield],
+  [/innovat|ideation|brainstorm|concept/i, Lightbulb],
+  [/operat|process|workflow|automat|efficien|optim/i, Settings],
+  [/global|international|region|market.*expan|locali/i, Globe],
+  [/train|learn|educat|onboard|develop.*program/i, GraduationCap],
+  [/finance|budget|cost|invest|forecast|revenue/i, Briefcase],
+  [/culture|wellbeing|engagement|diversity|inclusion/i, Heart],
+  [/integrat|platform|infrastructure|stack|tool/i, Layers],
+];
+
+function getTaskIcon(taskName: string) {
+  for (const [pattern, Icon] of TASK_ICON_MAP) {
+    if (pattern.test(taskName)) return Icon;
+  }
+  return Zap;
+}
 
 const Analysis = () => {
   const [searchParams] = useSearchParams();
@@ -53,8 +85,6 @@ const Analysis = () => {
   const [completedTasks, setCompletedTasks] = useState<Set<string>>(new Set());
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [bookmarkLoading, setBookmarkLoading] = useState(false);
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const wheelLockRef = useRef<number | null>(null);
   const { user, openAuthModal } = useAuth();
 
   const fetchCompletions = useCallback(async () => {
@@ -149,13 +179,12 @@ const Analysis = () => {
   }, [jobTitle, company, hasJd, navigate]);
 
   const augmentedPercent = result?.summary?.augmentedPercent ?? 0;
+  const riskPercent = result?.summary?.automationRiskPercent ?? 0;
 
   const sortedTasks = useMemo(() => {
     if (!result) return [];
     return [...result.tasks].sort((a, b) => (b.aiExposureScore ?? 50) - (a.aiExposureScore ?? 50));
   }, [result]);
-
-  const totalCards = sortedTasks.length + 2; // hero + tasks + completion
 
   const pickNextTask = useCallback(() => {
     const uncompleted = sortedTasks.filter(t => !completedTasks.has(t.name));
@@ -166,61 +195,10 @@ const Analysis = () => {
     }
   }, [sortedTasks, completedTasks]);
 
-  const goTo = useCallback((idx: number) => {
-    setCurrentIndex(Math.max(0, Math.min(idx, totalCards - 1)));
-  }, [totalCards]);
-
-  const handleDragEnd = useCallback((_: any, info: PanInfo) => {
-    if (info.offset.y < -SWIPE_THRESHOLD) {
-      goTo(currentIndex + 1);
-    } else if (info.offset.y > SWIPE_THRESHOLD) {
-      goTo(currentIndex - 1);
-    }
-  }, [currentIndex, goTo]);
-
-  const containerRef = useRef<HTMLDivElement>(null);
-
-  // Attach non-passive wheel listener so preventDefault() actually works
-  useEffect(() => {
-    const el = containerRef.current;
-    if (!el) return;
-
-    const onWheel = (e: WheelEvent) => {
-      if (Math.abs(e.deltaY) < 12) return;
-      e.preventDefault();
-      if (wheelLockRef.current) return;
-
-      goTo(currentIndex + (e.deltaY > 0 ? 1 : -1));
-      wheelLockRef.current = window.setTimeout(() => {
-        wheelLockRef.current = null;
-      }, 320);
-    };
-
-    el.addEventListener("wheel", onWheel, { passive: false });
-    return () => {
-      el.removeEventListener("wheel", onWheel);
-      if (wheelLockRef.current) window.clearTimeout(wheelLockRef.current);
-    };
-  }, [currentIndex, goTo]);
-
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      const target = e.target as HTMLElement | null;
-      if (target?.tagName === "INPUT" || target?.tagName === "TEXTAREA" || target?.isContentEditable) return;
-
-      if (e.key === "ArrowDown" || e.key === "PageDown") {
-        e.preventDefault();
-        goTo(currentIndex + 1);
-      }
-      if (e.key === "ArrowUp" || e.key === "PageUp") {
-        e.preventDefault();
-        goTo(currentIndex - 1);
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [currentIndex, goTo]);
+  const readiness = useMemo(() => {
+    if (!augmentedPercent && !riskPercent) return 0;
+    return 100 - Math.round(riskPercent * 0.55 + (100 - augmentedPercent) * 0.25 + 20);
+  }, [augmentedPercent, riskPercent]);
 
   if (loading) {
     return (
@@ -257,136 +235,117 @@ const Analysis = () => {
   const completedCount = sortedTasks.filter(t => completedTasks.has(t.name)).length;
 
   return (
-    <div ref={containerRef} className="h-[100dvh] bg-background overflow-hidden relative overscroll-none">
-      {/* Progress dots */}
-      <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 flex items-center gap-1.5">
-        {Array.from({ length: totalCards }).map((_, i) => (
-          <button
-            key={i}
-            onClick={() => goTo(i)}
-            className={`rounded-full transition-all duration-300 ${
-              i === currentIndex
-                ? "w-6 h-2 bg-primary"
-                : "w-2 h-2 bg-muted-foreground/30"
-            }`}
-          />
-        ))}
+    <div className="min-h-[100dvh] bg-background overflow-y-auto">
+      {/* Sticky header */}
+      <div className="sticky top-0 z-20 bg-background/95 backdrop-blur-md border-b border-border px-4 py-3 flex items-center justify-between">
+        <button onClick={() => navigate(backPath)} className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
+          <ChevronLeft className="h-4 w-4" /> Back
+        </button>
+        <span className="text-sm font-semibold text-foreground truncate max-w-[200px]">{result.jobTitle}</span>
+        <button
+          onClick={toggleBookmark}
+          disabled={bookmarkLoading}
+          className="p-2 rounded-lg hover:bg-muted/30 transition-colors"
+        >
+          {isBookmarked
+            ? <BookmarkCheck className="h-4 w-4 text-primary" />
+            : <Bookmark className="h-4 w-4 text-muted-foreground" />
+          }
+        </button>
       </div>
 
-      {/* Back button */}
-      <button
-        onClick={() => navigate(backPath)}
-        className="fixed top-4 left-4 z-50 p-2 rounded-xl bg-background/80 backdrop-blur-sm border border-border/50 hover:bg-accent transition-colors"
-      >
-        <ArrowLeft className="h-4 w-4 text-foreground" />
-      </button>
+      <div className="max-w-2xl mx-auto px-4 py-5">
+        {/* Compact hero row */}
+        <div className="flex items-center gap-4 mb-6">
+          <ReadinessRing readiness={readiness} size={64} />
+          <div className="min-w-0 flex-1">
+            <h1 className="text-lg font-display font-bold text-foreground leading-snug">{result.jobTitle}</h1>
+            {company && !isWebsite(company) && <p className="text-sm text-muted-foreground">at {company}</p>}
+          </div>
+          <div className="flex gap-4 shrink-0">
+            <StatItem value={`${riskPercent}%`} label="Risk" />
+            <StatItem value={`${augmentedPercent}%`} label="Augmented" />
+            <StatItem value={`${sortedTasks.length}`} label="Tasks" />
+          </div>
+        </div>
 
-      {/* Bookmark button */}
-      <button
-        onClick={toggleBookmark}
-        disabled={bookmarkLoading}
-        className="fixed top-4 right-4 z-50 p-2 rounded-xl bg-background/80 backdrop-blur-sm border border-border/50 hover:bg-accent transition-colors"
-      >
-        {isBookmarked
-          ? <BookmarkCheck className="h-4 w-4 text-primary" />
-          : <Bookmark className="h-4 w-4 text-muted-foreground" />
-        }
-      </button>
+        {/* Progress */}
+        {completedCount > 0 && (
+          <div className="mb-4">
+            <div className="flex justify-between text-[10px] text-muted-foreground mb-1">
+              <span>Progress</span>
+              <span>{completedCount}/{sortedTasks.length} practiced</span>
+            </div>
+            <div className="h-1.5 rounded-full bg-secondary overflow-hidden">
+              <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${(completedCount / sortedTasks.length) * 100}%` }} />
+            </div>
+          </div>
+        )}
 
-      {/* Desktop nav controls */}
-      <div className="hidden md:flex fixed right-4 top-1/2 -translate-y-1/2 z-50 flex-col gap-2">
-        <Button
-          size="icon"
-          variant="secondary"
-          onClick={() => goTo(currentIndex - 1)}
-          disabled={currentIndex === 0}
-          className="rounded-full"
-        >
-          <ChevronUp className="h-4 w-4" />
-        </Button>
-        <Button
-          size="icon"
-          variant="secondary"
-          onClick={() => goTo(currentIndex + 1)}
-          disabled={currentIndex === totalCards - 1}
-          className="rounded-full"
-        >
-          <ArrowDown className="h-4 w-4" />
-        </Button>
+        {/* Task cards */}
+        <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">Tasks & AI Impact</h3>
+        <div className="space-y-3 pb-8">
+          {sortedTasks.map((task, i) => {
+            const aiScore = task.aiExposureScore ?? 50;
+            const style = taskChipStyle(aiScore);
+            const done = completedTasks.has(task.name);
+            const TaskIcon = getTaskIcon(task.name);
+            const taskHue = hashToHue(task.name);
+
+            return (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.04 }}
+                className="group rounded-xl border border-border/50 bg-card hover:border-primary/30 transition-all overflow-hidden"
+              >
+                {/* Accent top strip */}
+                <div className="h-1" style={{ background: `linear-gradient(90deg, hsl(${taskHue} 60% 50%), hsl(${(taskHue + 40) % 360} 50% 45%))` }} />
+                <div className="p-4">
+                  <div className="flex items-start gap-3">
+                    <div className="mt-0.5 h-8 w-8 rounded-lg flex items-center justify-center shrink-0"
+                      style={{ background: `hsl(${taskHue} 40% 15%)` }}>
+                      <TaskIcon className="h-4 w-4" style={{ color: `hsl(${taskHue} 60% 65%)` }} />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <h4 className="text-sm font-semibold text-foreground leading-snug">{task.name}</h4>
+                        {done && <CheckCircle2 className="h-3.5 w-3.5 text-success shrink-0" />}
+                      </div>
+                      {task.description && <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2">{task.description}</p>}
+                    </div>
+                    <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full shrink-0 ${style.badge}`}>{aiScore}%</span>
+                  </div>
+                  <div className="flex items-center justify-between mt-3 pt-3 border-t border-border/30">
+                    <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
+                      {task.currentState && <span className="px-2 py-0.5 rounded-full bg-muted/40">{task.currentState}</span>}
+                      {task.impactLevel && <span className="px-2 py-0.5 rounded-full bg-muted/40">{task.impactLevel}</span>}
+                    </div>
+                    <Button size="sm" variant={done ? "secondary" : "default"} className="h-7 text-xs rounded-full gap-1"
+                      onClick={() => setSimTask(task)}>
+                      <Play className="h-3 w-3" />{done ? "Retry" : "Practice"}
+                    </Button>
+                  </div>
+                </div>
+              </motion.div>
+            );
+          })}
+        </div>
+
+        {/* Sign-in CTA for anonymous users */}
+        {!user && (
+          <div className="text-center py-6 border-t border-border/30">
+            <Button onClick={() => navigate("/auth")} variant="ghost" className="gap-2 rounded-full text-primary">
+              <LogIn className="h-4 w-4" /> Sign in to save progress
+            </Button>
+          </div>
+        )}
       </div>
-
-      <motion.div
-        className="h-full w-full"
-        drag="y"
-        dragConstraints={{ top: 0, bottom: 0 }}
-        dragElastic={0.15}
-        onDragEnd={handleDragEnd}
-      >
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={currentIndex}
-            initial={{ opacity: 0, y: 60 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -60 }}
-            transition={{ type: "spring", stiffness: 300, damping: 30 }}
-            className="h-full w-full"
-          >
-            {currentIndex === 0 && (
-              <HeroCard
-                result={result}
-                company={company}
-                augmented={augmentedPercent}
-                completedCount={completedCount}
-                totalTasks={sortedTasks.length}
-                onNext={() => goTo(1)}
-              />
-            )}
-            {currentIndex > 0 && currentIndex <= sortedTasks.length && (
-              <TaskCard
-                task={sortedTasks[currentIndex - 1]}
-                index={currentIndex - 1}
-                total={sortedTasks.length}
-                isCompleted={completedTasks.has(sortedTasks[currentIndex - 1].name)}
-                onPractice={() => setSimTask(sortedTasks[currentIndex - 1])}
-                jobTitle={result.jobTitle}
-                company={company}
-              />
-            )}
-            {currentIndex === totalCards - 1 && (
-              <CompletionCard
-                completedCount={completedCount}
-                totalTasks={sortedTasks.length}
-                augmented={augmentedPercent}
-                isBookmarked={isBookmarked}
-                onBookmark={toggleBookmark}
-                onBack={() => navigate(backPath)}
-                user={user}
-                onSignIn={() => navigate("/auth")}
-              />
-            )}
-          </motion.div>
-        </AnimatePresence>
-      </motion.div>
-
-      {/* Swipe/wheel hint on hero */}
-      {currentIndex === 0 && (
-        <motion.div
-          className="fixed bottom-8 left-1/2 -translate-x-1/2 z-40 flex flex-col items-center gap-1"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 1 }}
-        >
-          <span className="text-xs text-muted-foreground">Swipe up</span>
-          <span className="hidden md:block text-[10px] text-muted-foreground/80">or use mouse wheel / ↑ ↓</span>
-          <motion.div animate={{ y: [0, 6, 0] }} transition={{ repeat: Infinity, duration: 1.5 }}>
-            <ChevronUp className="h-4 w-4 text-muted-foreground rotate-180" />
-          </motion.div>
-        </motion.div>
-      )}
 
       <SimulatorModal
         open={!!simTask}
-        onClose={() => setSimTask(null)}
+        onClose={() => { setSimTask(null); fetchCompletions(); }}
         taskName={simTask?.name || ""}
         jobTitle={result.jobTitle}
         company={result.company}
@@ -401,233 +360,38 @@ const Analysis = () => {
   );
 };
 
-function HeroCard({
-  result, company, augmented, completedCount, totalTasks, onNext,
-}: {
-  result: JobAnalysisResult;
-  company: string;
-  augmented: number;
-  completedCount: number;
-  totalTasks: number;
-  onNext: () => void;
-}) {
+/* ── Shared UI Components ── */
+
+function ReadinessRing({ readiness, size = 64 }: { readiness: number; size?: number }) {
+  const r = (size - 8) / 2;
+  const circ = 2 * Math.PI * r;
   return (
-    <div className="h-full flex flex-col items-center justify-center px-6 text-center max-w-lg mx-auto">
-      <div className="relative mb-6">
-        <svg width="140" height="140" viewBox="0 0 140 140" className="transform -rotate-90">
-          <circle cx="70" cy="70" r="60" fill="none" stroke="hsl(var(--secondary))" strokeWidth="8" />
-          <motion.circle
-            cx="70" cy="70" r="60" fill="none"
-            stroke="hsl(var(--primary))"
-            strokeWidth="8"
-            strokeLinecap="round"
-            strokeDasharray={2 * Math.PI * 60}
-            initial={{ strokeDashoffset: 2 * Math.PI * 60 }}
-            animate={{ strokeDashoffset: 2 * Math.PI * 60 * (1 - augmented / 100) }}
-            transition={{ duration: 1.2, ease: "easeOut" }}
-          />
-        </svg>
-        <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <span className="text-3xl font-display font-bold text-foreground tabular-nums">{augmented}%</span>
-          <span className="text-[10px] text-muted-foreground uppercase tracking-wider">AI-Augmented</span>
-        </div>
+    <div className="relative shrink-0" style={{ width: size, height: size }}>
+      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="transform -rotate-90">
+        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="hsl(var(--secondary))" strokeWidth="5" />
+        <motion.circle
+          cx={size / 2} cy={size / 2} r={r} fill="none"
+          stroke="hsl(var(--primary))"
+          strokeWidth="5" strokeLinecap="round"
+          strokeDasharray={circ}
+          initial={{ strokeDashoffset: circ }}
+          animate={{ strokeDashoffset: circ * (1 - readiness / 100) }}
+          transition={{ duration: 1, ease: "easeOut" }}
+        />
+      </svg>
+      <div className="absolute inset-0 flex flex-col items-center justify-center">
+        <span className="text-base font-bold text-foreground tabular-nums">{readiness}%</span>
+        <span className="text-[8px] text-muted-foreground uppercase tracking-wider">Ready</span>
       </div>
-
-      <h1 className="text-2xl font-display font-bold text-foreground mb-1">{result.jobTitle}</h1>
-      {company && !isWebsite(company) && (
-        <p className="text-sm text-muted-foreground mb-4">at {company}</p>
-      )}
-
-      <p className="text-xs text-muted-foreground mb-6 max-w-xs leading-relaxed">
-        {augmented >= 70
-          ? `${augmented}% of this role's tasks can be supercharged with AI tools — tons to learn here 🚀`
-          : augmented >= 40
-          ? `${augmented}% of tasks are enhanced by AI — a great blend of human skill and AI tools 💡`
-          : `This role is mostly human-driven — AI plays a supporting role in ${augmented}% of tasks ✨`}
-      </p>
-
-      <div className="flex gap-6 mb-8">
-        <div className="text-center">
-          <div className="text-lg font-bold text-foreground tabular-nums">{totalTasks}</div>
-          <div className="text-[10px] text-muted-foreground uppercase tracking-wider">Tasks</div>
-        </div>
-        {completedCount > 0 && (
-          <>
-            <div className="h-8 w-px bg-border" />
-            <div className="text-center">
-              <div className="text-lg font-bold text-foreground tabular-nums">{completedCount}</div>
-              <div className="text-[10px] text-muted-foreground uppercase tracking-wider">Practiced</div>
-            </div>
-          </>
-        )}
-      </div>
-
-      {completedCount > 0 && (
-        <div className="w-full max-w-xs mb-6">
-          <div className="flex justify-between text-[10px] text-muted-foreground mb-1">
-            <span>Progress</span>
-            <span>{completedCount}/{totalTasks} done</span>
-          </div>
-          <div className="h-1.5 rounded-full bg-secondary overflow-hidden">
-            <motion.div
-              className="h-full rounded-full bg-primary"
-              initial={{ width: 0 }}
-              animate={{ width: `${(completedCount / totalTasks) * 100}%` }}
-            />
-          </div>
-        </div>
-      )}
-
-      <Button onClick={onNext} size="lg" className="gap-2 rounded-full px-8">
-        <Play className="h-4 w-4" /> Explore Tasks
-      </Button>
     </div>
   );
 }
 
-function TaskCard({
-  task, index, total, isCompleted, onPractice, jobTitle, company,
-}: {
-  task: TaskAnalysis;
-  index: number;
-  total: number;
-  isCompleted: boolean;
-  onPractice: () => void;
-  jobTitle: string;
-  company: string;
-}) {
-  const aiScore = task.aiExposureScore ?? 50;
-  const style = taskChipStyle(aiScore);
-
+function StatItem({ value, label }: { value: string; label: string }) {
   return (
-    <div className="h-full flex flex-col items-center justify-center px-6 max-w-lg mx-auto">
-      {/* Role context + task counter */}
-      <div className="text-center mb-4">
-        <p className="text-sm font-semibold text-foreground">{jobTitle}</p>
-        {company && !isWebsite(company) && (
-          <p className="text-[11px] text-muted-foreground">at {company}</p>
-        )}
-      </div>
-      <div className="text-xs text-muted-foreground mb-6 uppercase tracking-widest">
-        Task {index + 1} of {total}
-      </div>
-
-      <div className="relative mb-8">
-        <svg width="180" height="180" viewBox="0 0 180 180" className="transform -rotate-90">
-          <circle cx="90" cy="90" r="76" fill="none" stroke="hsl(var(--secondary))" strokeWidth="6" />
-          <motion.circle
-            cx="90" cy="90" r="76" fill="none"
-            className={style.accent}
-            stroke="currentColor"
-            strokeWidth="6"
-            strokeLinecap="round"
-            strokeDasharray={2 * Math.PI * 76}
-            initial={{ strokeDashoffset: 2 * Math.PI * 76 }}
-            animate={{ strokeDashoffset: 2 * Math.PI * 76 * (1 - aiScore / 100) }}
-            transition={{ duration: 1, ease: "easeOut" }}
-          />
-        </svg>
-        <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <Bot className={`h-5 w-5 mb-1 ${style.accent}`} />
-          <span className="text-4xl font-display font-bold text-foreground tabular-nums">{aiScore}%</span>
-          <span className="text-[10px] text-muted-foreground uppercase tracking-wider">AI Augmented</span>
-        </div>
-      </div>
-
-      <h2 className="text-xl font-display font-bold text-foreground text-center mb-3 leading-tight">
-        {task.name}
-      </h2>
-
-      {task.description && (
-        <p className="text-sm text-muted-foreground text-center mb-6 line-clamp-3 max-w-sm">
-          {task.description}
-        </p>
-      )}
-
-      <div className="flex items-center gap-2 mb-8">
-        {task.priority === "high" && (
-          <span className="text-[10px] font-semibold px-3 py-1 rounded-full bg-primary/15 text-primary">
-            🚀 Learn First
-          </span>
-        )}
-        {isCompleted && (
-          <span className="text-[10px] font-semibold px-3 py-1 rounded-full bg-success/15 text-success flex items-center gap-1">
-            <CheckCircle2 className="h-3 w-3" /> Done
-          </span>
-        )}
-        <span className={`text-[10px] font-semibold px-3 py-1 rounded-full ${style.badge}`}>
-          🤖 {aiScore >= 70 ? "High AI" : aiScore >= 40 ? "Blended" : "Human-Led"}
-        </span>
-      </div>
-
-      <Button
-        onClick={onPractice}
-        size="lg"
-        className="gap-2 rounded-full px-8"
-        variant={isCompleted ? "secondary" : "default"}
-      >
-        {isCompleted ? (
-          <><CheckCircle2 className="h-4 w-4" /> Practice Again</>
-        ) : (
-          <><Play className="h-4 w-4" /> Practice This</>
-        )}
-      </Button>
-    </div>
-  );
-}
-
-function CompletionCard({
-  completedCount, totalTasks, augmented, isBookmarked, onBookmark, onBack, user, onSignIn,
-}: {
-  completedCount: number;
-  totalTasks: number;
-  augmented: number;
-  isBookmarked: boolean;
-  onBookmark: () => void;
-  onBack: () => void;
-  user: any;
-  onSignIn: () => void;
-}) {
-  return (
-    <div className="h-full flex flex-col items-center justify-center px-6 text-center max-w-lg mx-auto">
-      <motion.div
-        initial={{ scale: 0.8, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        transition={{ type: "spring", stiffness: 200 }}
-        className="mb-6"
-      >
-        <div className="w-20 h-20 rounded-full bg-primary/15 flex items-center justify-center mx-auto">
-          <Trophy className="h-10 w-10 text-primary" />
-        </div>
-      </motion.div>
-
-      <h2 className="text-2xl font-display font-bold text-foreground mb-2">
-        {completedCount === totalTasks && completedCount > 0 ? "All Tasks Complete!" : "Role Overview Complete"}
-      </h2>
-      <p className="text-sm text-muted-foreground mb-8">
-        {completedCount}/{totalTasks} tasks practiced · {augmented}% AI-augmented
-      </p>
-
-      <div className="flex flex-col gap-3 w-full max-w-xs">
-        <Button
-          onClick={onBookmark}
-          variant={isBookmarked ? "secondary" : "outline"}
-          className="gap-2 rounded-full"
-        >
-          {isBookmarked ? <BookmarkCheck className="h-4 w-4" /> : <Bookmark className="h-4 w-4" />}
-          {isBookmarked ? "Bookmarked" : "Bookmark Role"}
-        </Button>
-
-        <Button onClick={onBack} variant="ghost" className="gap-2 rounded-full">
-          <ArrowLeft className="h-4 w-4" /> Back to Feed
-        </Button>
-
-        {!user && (
-          <Button onClick={onSignIn} variant="ghost" className="gap-2 rounded-full text-primary">
-            <LogIn className="h-4 w-4" /> Sign in to save progress
-          </Button>
-        )}
-      </div>
+    <div className="text-center">
+      <div className="text-base font-bold text-foreground tabular-nums">{value}</div>
+      <div className="text-[9px] text-muted-foreground uppercase tracking-wider">{label}</div>
     </div>
   );
 }
