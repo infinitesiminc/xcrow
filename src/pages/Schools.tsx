@@ -45,14 +45,14 @@ function Section({ children, className = "" }: { children: React.ReactNode; clas
 
 /* ─── Mock gap data for the live preview ─── */
 const MOCK_GAPS = [
-  { skill: "Prompt Engineering", demand: 2840, coverage: false },
-  { skill: "AI / ML Pipelines", demand: 2120, coverage: false },
-  { skill: "Data Visualization (Tableau/PowerBI)", demand: 1950, coverage: true },
-  { skill: "Cloud Architecture (AWS/GCP)", demand: 1780, coverage: false },
-  { skill: "Statistical Modeling", demand: 1640, coverage: true },
-  { skill: "API Integration", demand: 1520, coverage: false },
-  { skill: "UX Research", demand: 1380, coverage: false },
-  { skill: "Agile / Scrum", demand: 1210, coverage: true },
+  { skill: "Prompt Engineering", demand: 84200, coverage: false },
+  { skill: "AI / ML Pipelines", demand: 62400, coverage: false },
+  { skill: "Data Visualization (Tableau/PowerBI)", demand: 57800, coverage: true },
+  { skill: "Cloud Architecture (AWS/GCP)", demand: 51300, coverage: false },
+  { skill: "Statistical Modeling", demand: 48600, coverage: true },
+  { skill: "API Integration", demand: 43100, coverage: false },
+  { skill: "UX Research", demand: 38900, coverage: false },
+  { skill: "Agile / Scrum", demand: 35200, coverage: true },
 ];
 
 const SCHOOL_LOGOS = [
