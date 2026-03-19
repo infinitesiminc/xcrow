@@ -441,11 +441,16 @@ export default function TaskAnalyticsPage() {
               <p className="text-xs text-muted-foreground">Skills tagged across all task clusters — curriculum building blocks</p>
             </CardHeader>
             <CardContent>
-              <ResponsiveContainer width="100%" height={400}>
-                <BarChart data={stats.topSkills} layout="vertical" margin={{ left: 120 }}>
+              <ResponsiveContainer width="100%" height={Math.max(400, stats.topSkills.length * 28)}>
+                <BarChart data={stats.topSkills} layout="vertical" margin={{ left: 20, right: 20, top: 5, bottom: 5 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                  <XAxis type="number" tick={{ fontSize: 11 }} />
-                  <YAxis dataKey="name" type="category" tick={{ fontSize: 10 }} width={120} />
+                  <XAxis type="number" tick={{ fontSize: 11, fill: "hsl(var(--foreground))" }} />
+                  <YAxis
+                    dataKey="name"
+                    type="category"
+                    tick={{ fontSize: 11, fill: "hsl(var(--foreground))" }}
+                    width={160}
+                  />
                   <RechartsTooltip
                     contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8, fontSize: 12 }}
                   />
