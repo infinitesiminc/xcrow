@@ -27,7 +27,8 @@ serve(async (req) => {
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, serviceKey);
 
-    // Get user from auth header
+    const { school_id: overrideSchoolId } = await req.json().catch(() => ({}));
+
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
@@ -49,18 +50,34 @@ serve(async (req) => {
       });
     }
 
-    // 1. Find student's school
-    const { data: seat } = await supabase
-      .from("school_seats")
-      .select("school_id")
-      .eq("user_id", user.id)
-      .eq("status", "active")
-      .limit(1)
-      .maybeSingle();
+    // Determine school_id: superadmin override or student seat lookup
+    let schoolId: string | null = null;
 
-    if (!seat) {
+    if (overrideSchoolId) {
+      // Verify superadmin
+      const { data: isSuperadmin } = await supabase.rpc("is_superadmin", { _user_id: user.id });
+      if (!isSuperadmin) {
+        return new Response(JSON.stringify({ error: "Forbidden" }), {
+          status: 403,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      schoolId = overrideSchoolId;
+    } else {
+      // Student: find their school via seat
+      const { data: seat } = await supabase
+        .from("school_seats")
+        .select("school_id")
+        .eq("user_id", user.id)
+        .eq("status", "active")
+        .limit(1)
+        .maybeSingle();
+      schoolId = seat?.school_id || null;
+    }
+
+    if (!schoolId) {
       return new Response(
-        JSON.stringify({ recommendations: [], school: null, message: "No school seat found" }),
+        JSON.stringify({ recommendations: [], school: null, message: "No school found" }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
