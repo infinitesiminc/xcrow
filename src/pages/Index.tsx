@@ -180,7 +180,7 @@ const Index = () => {
                 transition={{ duration: 0.2 }}
                 className="h-full"
               >
-                <RolePreviewPanel role={selectedRole} onClose={() => setSelectedRole(null)} />
+                <RolePreviewPanel role={selectedRole} onClose={() => setSelectedRole(null)} edgeContext={activeEdge} />
               </motion.div>
             ) : (
               <motion.div
