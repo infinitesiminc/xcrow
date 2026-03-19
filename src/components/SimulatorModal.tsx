@@ -618,13 +618,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
   };
 
   const handleFinishAttempt = () => {
-    const objectives = session?.learningObjectives || [];
-    const unmet = objectives.filter(o => !objectiveStatus[o.id]);
-    const tooEarly = roundCount < minRounds;
-    if ((unmet.length > 0 || tooEarly) && roundCount < maxRounds + 3) {
-      setPhase("review");
-      return;
-    }
+    // Skip review screen — go straight to scoring
     handleFinish();
   };
 
@@ -649,6 +643,9 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
     }).finally(() => setSending(false));
   };
 
+  // Compute skills earned for this simulation
+  const [earnedSkills, setEarnedSkills] = useState<{ skill_id: string; xp: number; name: string; levelBefore: string; levelAfter: string; leveledUp: boolean }[]>([]);
+
   const handleFinish = async () => {
     setPhase("completing");
     clearInactivityTimer();
@@ -662,6 +659,26 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
         console.error("Failed to get scores:", err);
       }
     }
+
+    // Compute skill XP earned
+    const skillIds = matchTaskToSkills(taskName, jobTitle);
+    const xpEach = skillIds.length > 0 ? Math.round(XP_PER_SIM / skillIds.length) : 0;
+    const skillsEarnedData = skillIds.map(id => ({ skill_id: id, xp: xpEach }));
+
+    // For display: compute level changes
+    // We'd need existing XP to show level-ups accurately, but we can show what was earned
+    const earned = skillIds.map(id => {
+      const tax = SKILL_TAXONOMY.find(s => s.id === id);
+      return {
+        skill_id: id,
+        xp: xpEach,
+        name: tax?.name || id,
+        levelBefore: "Beginner",
+        levelAfter: "Beginner",
+        leveledUp: false,
+      };
+    });
+    setEarnedSkills(earned);
     
     if (user) {
       try {
@@ -678,9 +695,10 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
           human_value_add_score: scores?.categories.find(c => c.name === "Human Value-Add")?.score ?? null,
           adaptive_thinking_score: scores?.categories.find(c => c.name === "Adaptive Thinking")?.score ?? null,
           domain_judgment_score: scores?.categories.find(c => c.name === "Domain Judgment")?.score ?? null,
+          skills_earned: skillsEarnedData,
         } as any);
         onCompleted?.();
-        toast({ title: "Nice work — your career map updated", description: "See how this shifts your journey →", action: <Button variant="link" className="text-xs p-0 h-auto" onClick={() => navigate("/journey")}>View</Button> });
+        toast({ title: "Skills updated! 🎯", description: `+${xpEach} XP in ${earned.map(e => e.name).join(", ")}`, action: <Button variant="link" className="text-xs p-0 h-auto" onClick={() => navigate("/journey")}>Skill Map</Button> });
       } catch (err) {
         console.error("Failed to save completion:", err);
       }
