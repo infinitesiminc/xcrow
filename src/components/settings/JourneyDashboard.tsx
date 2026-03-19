@@ -327,6 +327,7 @@ export default function JourneyDashboard({ practicedRoles, savedRoles, loading }
 
   const skills = useMemo(() => buildTaxonomy(practicedRoles, templates), [practicedRoles, templates]);
   const jobMatches = useMemo(() => computeJobMatches(skills, templates), [skills, templates]);
+  const leverageSkills = useMemo(() => computeSkillLeverage(skills, jobMatches, templates), [skills, jobMatches, templates]);
 
   const uniqueRoles = useMemo(() => new Set(practicedRoles.map(r => r.job_title)).size, [practicedRoles]);
   const uniqueTasks = useMemo(() => new Set(practicedRoles.map(r => r.task_name)).size, [practicedRoles]);
