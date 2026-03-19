@@ -233,11 +233,13 @@ export default function PipelinePage() {
     // Get job counts + analyzed counts in a single DB call
     const jm = new Map<string, number>();
     const am = new Map<string, number>();
+    const tcm = new Map<string, number>();
     const { data: statsRows } = await supabase.rpc("get_company_stats");
     if (statsRows) {
       (statsRows as any[]).forEach((r: any) => {
         jm.set(r.company_id, Number(r.job_count));
         am.set(r.company_id, Number(r.analyzed_count));
+        tcm.set(r.company_id, Number(r.task_cluster_count || 0));
       });
     }
 
