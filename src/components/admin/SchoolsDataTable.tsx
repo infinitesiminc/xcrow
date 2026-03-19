@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Search, ChevronUp, ChevronDown, ChevronLeft, ChevronRight, Loader2,
   Globe, ExternalLink,
@@ -36,6 +37,7 @@ const PIPELINE_BADGE: Record<string, string> = {
 type SortKey = "name" | "enrollment" | "state" | "pipeline_stage";
 
 export default function SchoolsDataTable({ initialPipelineFilter }: { initialPipelineFilter?: string }) {
+  const navigate = useNavigate();
   const [schools, setSchools] = useState<SchoolRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -194,8 +196,8 @@ export default function SchoolsDataTable({ initialPipelineFilter }: { initialPip
           </TableHeader>
           <TableBody>
             {pageData.map(school => (
-              <TableRow key={school.id} className="hover:bg-muted/20">
-                <TableCell className="font-medium max-w-[300px] truncate">{school.name}</TableCell>
+              <TableRow key={school.id} className="hover:bg-muted/20 cursor-pointer" onClick={() => navigate(`/admin/schools/${school.id}`)}>
+                <TableCell className="font-medium max-w-[300px] truncate text-[hsl(var(--neon-blue))] hover:underline">{school.name}</TableCell>
                 <TableCell>{school.state || "—"}</TableCell>
                 <TableCell>
                   <span className="text-xs text-muted-foreground">{school.carnegie_class || "—"}</span>
