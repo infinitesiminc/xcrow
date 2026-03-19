@@ -18,6 +18,7 @@ interface UserProfile {
   schoolName: string | null;
   careerStage: string | null;
   cvUrl: string | null;
+  programName: string | null;
 }
 
 interface AuthContextType {
