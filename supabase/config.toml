@@ -55,3 +55,5 @@ project_id = "xtfubistkgodiksegtcx"
     verify_jwt = false
   [functions.bulk-score-jobs]
     verify_jwt = false
+  [functions.backfill-salary]
+    verify_jwt = false
