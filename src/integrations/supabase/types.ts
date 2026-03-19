@@ -1386,6 +1386,16 @@ export type Database = {
           user_id: string
         }[]
       }
+      get_market_skill_demand: {
+        Args: { top_n?: number }
+        Returns: {
+          avg_exposure: number
+          avg_impact: number
+          demand_count: number
+          high_priority_count: number
+          skill_name: string
+        }[]
+      }
       get_school_analytics: {
         Args: { _school_id: string }
         Returns: {
