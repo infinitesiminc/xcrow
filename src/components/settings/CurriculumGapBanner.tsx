@@ -34,6 +34,7 @@ interface GapData {
 }
 
 export default function CurriculumGapBanner() {
+  const { profile } = useAuth();
   const [data, setData] = useState<GapData | null>(null);
   const [loading, setLoading] = useState(true);
   const [expanded, setExpanded] = useState(false);
