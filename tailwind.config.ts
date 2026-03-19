@@ -78,6 +78,15 @@ export default {
           human: "hsl(var(--brand-human))",
           mid: "hsl(var(--brand-mid))",
         },
+        spectrum: {
+          0: "hsl(var(--spectrum-0))",
+          1: "hsl(var(--spectrum-1))",
+          2: "hsl(var(--spectrum-2))",
+          3: "hsl(var(--spectrum-3))",
+          4: "hsl(var(--spectrum-4))",
+          5: "hsl(var(--spectrum-5))",
+          6: "hsl(var(--spectrum-6))",
+        },
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
           foreground: "hsl(var(--sidebar-foreground))",

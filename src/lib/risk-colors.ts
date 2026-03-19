@@ -1,10 +1,10 @@
 /**
- * Unified risk tier color system used across the entire project.
- * Based on the brand metaphor: Red (AI) → Purple (mid) → Blue (Human)
- *   - brand-ai   → High Risk (≥35%)
- *   - brand-mid  → Moderate Risk (≥25%)
- *   - brand-human → Lower Risk (<25%)
+ * Unified risk tier color system.
+ * Now delegates to the 7-stop exposure spectrum for consistency.
+ * Kept for backward compatibility — prefer `exposureStyle()` for new code.
  */
+
+import { exposureStyle, heatmapColor, heatmapLabel, type ExposureStyle } from "./exposure-colors";
 
 export interface RiskTier {
   label: string;
@@ -17,34 +17,25 @@ export interface RiskTier {
   textClass: string;
 }
 
-const TIERS: RiskTier[] = [
-  { label: "High",     dotClass: "bg-brand-ai",    color: "hsl(var(--brand-ai))",    bgClass: "bg-brand-ai/10",    textClass: "text-brand-ai" },
-  { label: "Moderate", dotClass: "bg-brand-mid",    color: "hsl(var(--brand-mid))",   bgClass: "bg-brand-mid/10",   textClass: "text-brand-mid" },
-  { label: "Low",      dotClass: "bg-brand-human",  color: "hsl(var(--brand-human))", bgClass: "bg-brand-human/10", textClass: "text-brand-human" },
-];
-
 export function getRiskTier(risk: number): RiskTier {
-  if (risk >= 35) return TIERS[0]; // High
-  if (risk >= 25) return TIERS[1]; // Moderate
-  return TIERS[2];                 // Low
+  // Map risk % → exposure score so we hit the right spectrum stop
+  const style: ExposureStyle =
+    risk >= 35 ? exposureStyle(70) :
+    risk >= 25 ? exposureStyle(42) :
+    exposureStyle(10);
+
+  const label = risk >= 35 ? "High" : risk >= 25 ? "Moderate" : "Low";
+  return {
+    label,
+    dotClass: style.dot,
+    color: style.hsl,
+    bgClass: `${style.dot}/10`,
+    textClass: style.text,
+  };
 }
 
-/**
- * Heatmap disruption score (0–8) → color.
- * Uses the same brand-ai → brand-mid → brand-human palette.
- */
-export function getHeatColor(score: number | null): string {
-  if (score === null) return "hsl(var(--muted))";
-  if (score >= 7) return "hsl(var(--brand-ai))";
-  if (score >= 5) return "hsl(var(--brand-mid))";
-  if (score >= 3) return "hsl(var(--brand-mid) / 0.7)";
-  return "hsl(var(--brand-human))";
-}
+/** @deprecated Use heatmapColor from exposure-colors instead */
+export const getHeatColor = heatmapColor;
 
-export function getHeatLabel(score: number | null): string {
-  if (score === null) return "N/A";
-  if (score >= 7) return "Critical";
-  if (score >= 5) return "High";
-  if (score >= 3) return "Moderate";
-  return "Low";
-}
+/** @deprecated Use heatmapLabel from exposure-colors instead */
+export const getHeatLabel = heatmapLabel;

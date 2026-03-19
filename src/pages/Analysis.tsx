@@ -12,6 +12,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { JobAnalysisResult, TaskAnalysis } from "@/types/analysis";
 import { findPrebuiltRole } from "@/data/prebuilt-roles";
 import { analyzeJobWithAI } from "@/lib/ai-analysis";
+import { exposureStyle } from "@/lib/exposure-colors";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -29,9 +30,8 @@ function hashToHue(str: string): number {
 }
 
 function taskChipStyle(aiScore: number) {
-  if (aiScore >= 70) return { badge: "bg-brand-ai/15 text-brand-ai", accent: "text-brand-ai" };
-  if (aiScore >= 40) return { badge: "bg-brand-mid/15 text-brand-mid", accent: "text-brand-mid" };
-  return { badge: "bg-brand-human/15 text-brand-human", accent: "text-brand-human" };
+  const s = exposureStyle(aiScore);
+  return { badge: s.badge, accent: s.text };
 }
 
 const TASK_ICON_MAP: [RegExp, React.ComponentType<any>][] = [

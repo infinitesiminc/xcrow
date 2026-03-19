@@ -54,6 +54,15 @@
     --brand-human: 217 91% 60%;
     --brand-mid: 262 83% 58%;
 
+    /* 7-stop AI-exposure spectrum: blue → teal → green → purple → amber → orange → pink */
+    --spectrum-0: 217 91% 60%;   /* Blue   — Human-Led     (0–14%)  */
+    --spectrum-1: 185 80% 48%;   /* Teal   — Low Exposure   (15–24%) */
+    --spectrum-2: 152 60% 45%;   /* Green  — Emerging       (25–34%) */
+    --spectrum-3: 262 83% 58%;   /* Purple — Moderate       (35–49%) */
+    --spectrum-4: 38 92% 50%;    /* Amber  — Notable        (50–59%) */
+    --spectrum-5: 20 90% 55%;    /* Orange — High           (60–69%) */
+    --spectrum-6: 330 90% 60%;   /* Pink   — Critical       (70%+)   */
+
     --dot-blue: 217 91% 60%;
     --dot-teal: 185 95% 50%;
     --dot-purple: 262 83% 58%;
@@ -112,6 +121,15 @@
     --brand-ai: 330 90% 65%;
     --brand-human: 217 91% 65%;
     --brand-mid: 262 83% 65%;
+
+    /* 7-stop spectrum — dark mode (slightly lifted lightness) */
+    --spectrum-0: 217 91% 65%;
+    --spectrum-1: 185 80% 52%;
+    --spectrum-2: 152 60% 50%;
+    --spectrum-3: 262 83% 65%;
+    --spectrum-4: 38 92% 55%;
+    --spectrum-5: 20 90% 58%;
+    --spectrum-6: 330 90% 65%;
 
     --dot-blue: 217 91% 65%;
     --dot-teal: 185 95% 55%;

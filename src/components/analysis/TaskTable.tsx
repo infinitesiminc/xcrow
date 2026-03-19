@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { TaskAnalysis } from "@/types/analysis";
 import type { JobAnalysisResult } from "@/types/analysis";
+import { exposureStyle } from "@/lib/exposure-colors";
 
 interface TaskTableProps {
   tasks: TaskAnalysis[];
@@ -14,9 +15,8 @@ interface TaskTableProps {
 }
 
 function exposureColor(score: number) {
-  if (score >= 70) return "bg-brand-ai/10 text-brand-ai border-brand-ai/20";
-  if (score >= 40) return "bg-brand-mid/10 text-brand-mid border-brand-mid/20";
-  return "bg-brand-human/10 text-brand-human border-brand-human/20";
+  const s = exposureStyle(score);
+  return s.badge;
 }
 
 function impactColor(score: number) {

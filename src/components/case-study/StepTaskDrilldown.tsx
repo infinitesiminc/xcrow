@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Layers, ArrowUpRight } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { exposureStyle } from "@/lib/exposure-colors";
 
 interface TaskCluster {
   id: string;
@@ -14,12 +15,9 @@ interface TaskCluster {
 
 function scoreBadge(score: number | null) {
   if (score === null) return null;
-  const color =
-    score >= 70 ? "text-brand-ai bg-brand-ai/10" :
-    score >= 40 ? "text-brand-mid bg-brand-mid/10" :
-    "text-brand-human bg-brand-human/10";
+  const s = exposureStyle(score);
   return (
-    <span className={`text-[11px] font-mono font-semibold px-1.5 py-0.5 rounded ${color}`}>
+    <span className={`text-[11px] font-mono font-semibold px-1.5 py-0.5 rounded ${s.badge}`}>
       {score}%
     </span>
   );
