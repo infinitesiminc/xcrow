@@ -180,7 +180,7 @@ interface AggregatedSkill {
   jobs: { title: string; company: string; taskName: string; score: number }[];
 }
 
-function buildTaxonomy(practicedRoles: PracticedRoleData[]) {
+function buildTaxonomy(practicedRoles: PracticedRoleData[], templates: DbJobTemplate[]) {
   const skillMap = new Map<string, AggregatedSkill>();
   for (const ts of TAXONOMY) {
     skillMap.set(ts.id, { id: ts.id, name: ts.name, category: ts.category, aiExposure: ts.aiExposure, aiEnabler: ts.aiEnabler, humanEdge: ts.humanEdge, proficiency: 0, jobCount: 0, taskCount: 0, practiced: false, jobs: [] });
