@@ -145,19 +145,32 @@ serve(async (req) => {
     // 5. Get task clusters that teach these gap skills (for simulation recommendations)
     const topGapNames = gapSkills.slice(0, 15).map((g: any) => g.skill_name);
 
-    // Find task clusters containing these skill names
+    // Find task clusters containing these skill names — include job_id for title lookup
     const { data: taskClusters } = await supabase
       .from("job_task_clusters")
       .select("cluster_name, job_id, skill_names, ai_exposure_score, impact_level, ai_state")
       .not("skill_names", "is", null)
       .limit(500);
 
+    // Collect unique job_ids to look up titles
+    const jobIds = new Set<string>();
+    for (const tc of taskClusters || []) {
+      if (tc.job_id) jobIds.add(tc.job_id);
+    }
+    const { data: jobRows } = jobIds.size > 0
+      ? await supabase.from("jobs").select("id, title").in("id", [...jobIds])
+      : { data: [] };
+    const jobTitleMap = new Map<string, string>();
+    for (const j of jobRows || []) {
+      jobTitleMap.set(j.id, j.title);
+    }
+
     // Match task clusters to gap skills
     const recommendations: {
       skill_name: string;
       demand_count: number;
       avg_exposure: number;
-      tasks: { cluster_name: string; ai_exposure_score: number; impact_level: string }[];
+      tasks: { cluster_name: string; job_title: string; ai_exposure_score: number; impact_level: string }[];
     }[] = [];
 
     for (const gap of gapSkills.slice(0, 10)) {
@@ -171,6 +184,7 @@ serve(async (req) => {
         .slice(0, 3)
         .map((tc: any) => ({
           cluster_name: tc.cluster_name,
+          job_title: jobTitleMap.get(tc.job_id) || "General",
           ai_exposure_score: tc.ai_exposure_score,
           impact_level: tc.impact_level,
         }));
