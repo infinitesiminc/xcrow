@@ -250,7 +250,7 @@ export default function PipelinePage() {
     });
 
     const scored = allCompanies.map(c => {
-      const withJobs = { ...c, job_count: jm.get(c.id) || 0, analyzed_count: am.get(c.id) || 0 };
+      const withJobs = { ...c, job_count: jm.get(c.id) || 0, analyzed_count: am.get(c.id) || 0, task_cluster_count: tcm.get(c.id) || 0 };
       return { ...withJobs, priority_score: computePriorityScore(withJobs, industryCounts, allCompanies.length) };
     });
     setCompanies(scored);
