@@ -679,6 +679,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
           domain_judgment_score: scores?.categories.find(c => c.name === "Domain Judgment")?.score ?? null,
         } as any);
         onCompleted?.();
+        toast({ title: "Nice work — your career map updated", description: "See how this shifts your journey →", action: <Button variant="link" className="text-xs p-0 h-auto" onClick={() => navigate("/journey")}>View</Button> });
       } catch (err) {
         console.error("Failed to save completion:", err);
       }
