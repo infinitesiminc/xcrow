@@ -411,7 +411,7 @@ export default function RolePreviewPanel({ role, onClose }: RolePreviewPanelProp
     );
   }
 
-  // Details view (initial overview)
+  // Details view (initial overview — role brief first, tasks behind a tap)
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.2 }} className="h-full flex flex-col bg-card overflow-hidden">
       {/* Header */}
@@ -452,83 +452,95 @@ export default function RolePreviewPanel({ role, onClose }: RolePreviewPanelProp
         )}
       </div>
 
-      {/* Content */}
+      {/* Content — Role Brief (no tasks here) */}
       <div className="flex-1 overflow-y-auto p-4 scrollbar-thin">
         {loading ? (
           <div className="flex items-center justify-center py-8"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></div>
         ) : (
           <>
-            {summary && (
+            {/* Key stats row */}
+            <div className="grid grid-cols-3 gap-3 mb-5">
+              <div className="rounded-xl bg-muted/30 p-3 text-center">
+                <div className="text-lg font-bold text-foreground tabular-nums">{role.risk || 0}%</div>
+                <div className="text-[10px] text-muted-foreground uppercase tracking-wider">Risk</div>
+              </div>
+              <div className="rounded-xl bg-muted/30 p-3 text-center">
+                <div className="text-lg font-bold text-foreground tabular-nums">{role.augmented}%</div>
+                <div className="text-[10px] text-muted-foreground uppercase tracking-wider">Augmented</div>
+              </div>
+              <div className="rounded-xl bg-muted/30 p-3 text-center">
+                <div className="text-lg font-bold text-foreground tabular-nums">{tasks.length}</div>
+                <div className="text-[10px] text-muted-foreground uppercase tracking-wider">Tasks</div>
+              </div>
+            </div>
+
+            {/* Role summary */}
+            {summary ? (
               <div className="mb-4">
                 <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">About this role</h3>
                 <div className="text-sm text-foreground/80 leading-relaxed prose prose-sm prose-invert max-w-none">
                   <ReactMarkdown>{summary}</ReactMarkdown>
                 </div>
               </div>
-            )}
-            {tasks.length > 0 && (
-              <div>
-                <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">Key tasks & AI impact</h3>
-                <div className="space-y-2">
-                  {tasks.slice(0, 8).map((t, i) => (
-                    <div key={i} className="group rounded-lg border border-border/50 bg-muted/20 p-2.5 hover:border-primary/30 transition-colors">
-                      <div className="flex items-start justify-between gap-2">
-                        <div className="flex items-center gap-2 min-w-0">
-                          {(() => { const TaskIcon = getTaskIcon(t.cluster_name); return <TaskIcon className="h-3.5 w-3.5 text-muted-foreground shrink-0" />; })()}
-                          <span className="text-sm font-medium text-foreground leading-snug">{t.cluster_name}</span>
-                        </div>
-                        <div className="flex items-center gap-2 shrink-0">
-                          {t.ai_exposure_score != null && <span className="text-xs font-semibold text-primary">{t.ai_exposure_score}%</span>}
-                          {user && (
-                            <button onClick={() => startSimulation(t)}
-                              className="opacity-0 group-hover:opacity-100 flex items-center gap-1 text-[10px] font-medium text-primary bg-primary/10 hover:bg-primary/20 rounded-full px-2 py-0.5 transition-all">
-                              <Play className="h-2.5 w-2.5" />Practice
-                            </button>
-                          )}
-                        </div>
-                      </div>
-                      {t.description && <p className="text-xs text-muted-foreground mt-1 leading-relaxed line-clamp-2">{t.description}</p>}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-            {!summary && tasks.length === 0 && !analyzing && (
-              <div className="text-center py-8 space-y-4">
-                <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-primary/10 mx-auto">
-                  <Bot className="h-7 w-7 text-primary" />
+            ) : !analyzing && tasks.length === 0 ? (
+              <div className="text-center py-6 space-y-3">
+                <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-primary/10 mx-auto">
+                  <Bot className="h-6 w-6 text-primary" />
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-foreground mb-1">No task breakdown yet</p>
-                  <p className="text-xs text-muted-foreground leading-relaxed max-w-[240px] mx-auto">
-                    We can analyze this role's tasks and AI exposure right now.
+                  <p className="text-sm font-medium text-foreground mb-1">No summary yet</p>
+                  <p className="text-xs text-muted-foreground leading-relaxed max-w-[220px] mx-auto">
+                    We can analyze this role right now.
                   </p>
                 </div>
                 {role.jobId && (
-                  <Button
-                    size="sm"
-                    className="gap-2 rounded-xl"
-                    onClick={() => triggerAnalysis(role.jobId!, role.title, role.company || undefined, jobDescription || undefined)}
-                  >
+                  <Button size="sm" className="gap-2 rounded-xl"
+                    onClick={() => triggerAnalysis(role.jobId!, role.title, role.company || undefined, jobDescription || undefined)}>
                     <Zap className="h-3.5 w-3.5" /> Analyze Now
                   </Button>
                 )}
               </div>
-            )}
+            ) : null}
+
             {analyzing && (
-              <div className="text-center py-8 space-y-4">
-                <motion.div
-                  animate={{ rotate: 360 }}
-                  transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-                  className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-primary/10 mx-auto"
-                >
-                  <Bot className="h-7 w-7 text-primary" />
+              <div className="text-center py-6 space-y-3">
+                <motion.div animate={{ rotate: 360 }} transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+                  className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-primary/10 mx-auto">
+                  <Bot className="h-6 w-6 text-primary" />
                 </motion.div>
                 <div>
                   <p className="text-sm font-medium text-foreground mb-1">Analyzing tasks…</p>
-                  <p className="text-xs text-muted-foreground leading-relaxed max-w-[240px] mx-auto">
-                    Breaking down this role into tasks and measuring AI exposure. This takes ~10 seconds.
+                  <p className="text-xs text-muted-foreground leading-relaxed max-w-[220px] mx-auto">
+                    Breaking down this role into tasks. ~10 seconds.
                   </p>
+                </div>
+              </div>
+            )}
+
+            {/* Task preview teaser (shows count, not full list) */}
+            {tasks.length > 0 && !analyzing && (
+              <div className="mt-2 rounded-xl border border-border/50 bg-muted/10 p-4">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="h-9 w-9 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                    <Layers className="h-4 w-4 text-primary" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <h4 className="text-sm font-semibold text-foreground">{tasks.length} tasks analyzed</h4>
+                    <p className="text-xs text-muted-foreground">See how AI impacts each responsibility</p>
+                  </div>
+                </div>
+                {/* Mini preview of top 3 task names */}
+                <div className="flex flex-wrap gap-1.5 mt-2">
+                  {tasks.slice(0, 3).map((t, i) => (
+                    <span key={i} className="text-[11px] px-2 py-0.5 rounded-full bg-muted/40 text-muted-foreground truncate max-w-[160px]">
+                      {t.cluster_name}
+                    </span>
+                  ))}
+                  {tasks.length > 3 && (
+                    <span className="text-[11px] px-2 py-0.5 rounded-full bg-muted/40 text-muted-foreground">
+                      +{tasks.length - 3} more
+                    </span>
+                  )}
                 </div>
               </div>
             )}
@@ -536,14 +548,27 @@ export default function RolePreviewPanel({ role, onClose }: RolePreviewPanelProp
         )}
       </div>
 
-      {/* Footer */}
-      <div className="p-3 border-t border-border shrink-0">
-        <button
-          onClick={() => setView("enlarged")}
-          className="w-full flex items-center justify-center gap-2 rounded-xl bg-primary text-primary-foreground py-2.5 text-sm font-medium hover:bg-primary/90 transition-colors"
-        >
-          <GraduationCap className="h-4 w-4" /> Start Learning
+      {/* Footer — primary CTA goes to task breakdown */}
+      <div className="p-3 border-t border-border shrink-0 flex gap-2">
+        <button onClick={toggleBookmark} className="h-9 px-3 rounded-xl border border-border flex items-center gap-1.5 text-xs hover:bg-muted/30 transition-colors">
+          {isBookmarked ? <BookmarkCheck className="h-3.5 w-3.5 text-primary" /> : <Bookmark className="h-3.5 w-3.5 text-muted-foreground" />}
+          {isBookmarked ? "Saved" : "Save"}
         </button>
+        {tasks.length > 0 ? (
+          <button
+            onClick={() => setView("breakdown")}
+            className="flex-1 flex items-center justify-center gap-2 rounded-xl bg-primary text-primary-foreground py-2 text-sm font-medium hover:bg-primary/90 transition-colors"
+          >
+            <GraduationCap className="h-4 w-4" /> See AI Breakdown
+          </button>
+        ) : (
+          <button
+            onClick={() => setView("enlarged")}
+            className="flex-1 flex items-center justify-center gap-2 rounded-xl bg-primary text-primary-foreground py-2 text-sm font-medium hover:bg-primary/90 transition-colors"
+          >
+            <Maximize2 className="h-4 w-4" /> Full View
+          </button>
+        )}
       </div>
     </motion.div>
   );
