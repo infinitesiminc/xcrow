@@ -147,12 +147,13 @@ const Index = () => {
             />
           </div>
         ) : (
-          <div className="shrink-0 border-b border-border p-6 flex items-center justify-center">
-            <p className="text-sm text-muted-foreground/60">
+          <div className="shrink-0 border-b border-border p-5 space-y-4">
+            <p className="text-sm text-muted-foreground/60 text-center">
               {hasInteracted
                 ? "Ask about a role to see matching jobs here"
                 : "Roles will appear here as you explore"}
             </p>
+            {!hasInteracted && <HumanEdgesCard />}
           </div>
         )}
 
