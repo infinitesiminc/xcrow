@@ -65,6 +65,7 @@ export default function SchoolsTab() {
   const [saving, setSaving] = useState(false);
 
   const [scrapeUrl, setScrapeUrl] = useState<Record<string, string>>({});
+  const [programSearch, setProgramSearch] = useState<Record<string, string>>({});
   const [scraping, setScraping] = useState<Record<string, boolean>>({});
   const [curricula, setCurricula] = useState<Record<string, CurriculumScrape[]>>({});
   const [scrapeDialogId, setScrapeDialogId] = useState<string | null>(null);
