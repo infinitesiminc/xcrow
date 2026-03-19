@@ -1177,6 +1177,29 @@ export type Database = {
           user_id: string
         }[]
       }
+      get_school_analytics: {
+        Args: { _school_id: string }
+        Returns: {
+          avg_score: number
+          display_name: string
+          total_sims: number
+          total_xp: number
+          user_id: string
+        }[]
+      }
+      get_school_students: {
+        Args: { _school_id: string }
+        Returns: {
+          activated_at: string
+          display_name: string
+          email: string
+          invite_email: string
+          provisioned_at: string
+          seat_id: string
+          status: string
+          user_id: string
+        }[]
+      }
       get_workspace_progress: {
         Args: { p_workspace_id: string }
         Returns: {
