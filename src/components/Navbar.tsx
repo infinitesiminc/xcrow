@@ -4,7 +4,14 @@ import { useAuth } from "@/contexts/AuthContext";
 import logo from "@/assets/logo.png";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { User, Menu, X, Compass, Shield, Bookmark, ArrowRight, Clock, Map } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { User, Menu, X, Compass, Shield, Bookmark, ArrowRight, Clock, Map, Settings, LogOut } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 interface RecentActivity {
