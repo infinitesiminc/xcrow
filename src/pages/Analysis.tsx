@@ -73,6 +73,7 @@ const Analysis = () => {
 
   const company = searchParams.get("company") || "";
   const jobTitle = searchParams.get("title") || "";
+  const focusTaskParam = searchParams.get("task") || "";
   const jdMarker = searchParams.get("jd") || "";
   const jdUrlParam = searchParams.get("jdUrl") || "";
   const jdText = jdMarker === "session" ? (sessionStorage.getItem("jd_text") || "") : jdMarker;
