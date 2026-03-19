@@ -79,8 +79,9 @@ export default function SchoolsTab() {
     setLoading(true);
     const { data } = await supabase
       .from("school_accounts")
-      .select("*")
-      .order("created_at", { ascending: false });
+      .select("id,name,domain,total_seats,used_seats,plan_status,contact_email,expires_at,created_at")
+      .order("created_at", { ascending: false })
+      .limit(200);
     setSchools((data as School[]) || []);
 
     if (data && data.length > 0) {
