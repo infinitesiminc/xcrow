@@ -1255,7 +1255,7 @@ export default function PipelinePage() {
           ) : (
             <div className="divide-y divide-border/50">
               {filteredCompanies.slice(0, 200).map(co => (
-                <div key={co.id} className="grid grid-cols-[2fr_1fr_1fr_1fr_80px_80px] gap-2 px-3 py-2 items-center hover:bg-muted/30 transition-colors group">
+                <div key={co.id} className="grid grid-cols-[2fr_1fr_1fr_1fr_80px_80px_90px] gap-2 px-3 py-2 items-center hover:bg-muted/30 transition-colors group">
                   <div className="flex items-center gap-2 min-w-0">
                     <CompanyLogo url={co.logo_url} name={co.name} size="h-6 w-6" />
                     <div className="min-w-0">
@@ -1283,6 +1283,7 @@ export default function PipelinePage() {
                     )}
                   </span>
                   <span className="text-[11px] text-right text-muted-foreground truncate">{co.funding_stage || "—"}</span>
+                  <span className="text-[10px] text-right text-muted-foreground">{new Date(co.imported_at).toLocaleDateString("en-US", { month: "short", day: "numeric" })}</span>
                 </div>
               ))}
               {filteredCompanies.length > 200 && (
