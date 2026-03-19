@@ -1286,6 +1286,225 @@ export default function PipelinePage() {
           </div>
         </SheetContent>
       </Sheet>
+
+      {/* ═══════ COMPANY ANALYSIS SHEET ═══════ */}
+      <Sheet open={!!selectedCompanyId} onOpenChange={(open) => { if (!open) setSelectedCompanyId(null); }}>
+        <SheetContent side="right" className="w-[85vw] sm:max-w-[85vw] flex flex-col p-0">
+          <SheetHeader className="px-6 pt-5 pb-0 shrink-0">
+            <SheetTitle className="sr-only">Company Analysis</SheetTitle>
+            <SheetDescription className="sr-only">Analyze roles for the selected company</SheetDescription>
+          </SheetHeader>
+          {selectedCompany && (
+            <>
+              {/* Company header + queue */}
+              <div className="px-6 pt-2 pb-3 border-b border-border shrink-0">
+                <div className="flex items-center gap-3">
+                  <CompanyLogo url={selectedCompany.logo_url} name={selectedCompany.name} size="h-8 w-8" />
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <h2 className="text-base font-semibold text-foreground truncate">{selectedCompany.name}</h2>
+                      {selectedCompany.website && (
+                        <a href={selectedCompany.website} target="_blank" rel="noopener" className="text-muted-foreground hover:text-foreground"><Globe className="h-3.5 w-3.5" /></a>
+                      )}
+                      <Button
+                        variant="ghost" size="sm"
+                        className="h-5 px-1.5 text-[10px] gap-1 text-muted-foreground hover:text-primary"
+                        disabled={syncing === "enrich"}
+                        onClick={async () => {
+                          setSyncing("enrich");
+                          try {
+                            const { data, error } = await supabase.functions.invoke("enrich-company", {
+                              body: { company_id: selectedCompany.id, website: selectedCompany.website || undefined, careers_url: selectedCompany.careers_url || undefined },
+                            });
+                            if (error) throw error;
+                            if (data?.error) throw new Error(data.error);
+                            toast({ title: "Re-enriched", description: `${data.company?.name || "Company"} updated` });
+                            fetchCompanies();
+                          } catch (err: any) {
+                            toast({ title: "Enrich failed", description: err.message, variant: "destructive" });
+                          } finally { setSyncing(null); }
+                        }}
+                      >
+                        {syncing === "enrich" ? <Loader2 className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3" />}
+                        Re-enrich
+                      </Button>
+                    </div>
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                      {selectedCompany.industry && <span>{selectedCompany.industry}</span>}
+                      <span>·</span>
+                      <span>{jobs.length} roles</span>
+                      <span>·</span>
+                      <span className="text-primary">{analyzedJobIds.size} analyzed</span>
+                      {selectedCompany.employee_range && <><span>·</span><span>{selectedCompany.employee_range}</span></>}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Queue bar */}
+                {jobs.length > 0 && (
+                  <div className="mt-3 flex items-center gap-3">
+                    <div className="flex items-center gap-1.5 text-xs shrink-0">
+                      <Brain className="h-3.5 w-3.5 text-primary" />
+                      <span className="font-semibold text-foreground">{analyzedJobIds.size}</span>
+                      <span className="text-muted-foreground">/ {jobs.length}</span>
+                    </div>
+                    <Progress value={jobs.length > 0 ? (analyzedJobIds.size / jobs.length) * 100 : 0} className="h-1.5 flex-1" />
+                    {queueRunning && currentJobTitle && <span className="text-[10px] text-primary truncate max-w-[140px]">{currentJobTitle}</span>}
+                    <div className="flex items-center gap-1 shrink-0">
+                      {!queueRunning && pendingCount > 0 && (
+                        <Button size="sm" onClick={startQueue} className="gap-1 text-[10px] h-6 px-2">
+                          <Play className="h-2.5 w-2.5" />
+                          {queueMessage ? "Resume" : "Analyze"} ({pendingCount})
+                        </Button>
+                      )}
+                      {queueRunning && (
+                        <>
+                          <Button size="sm" variant="outline" onClick={() => { pauseRef.current = true; }} className="text-[10px] h-6 px-2 gap-1"><Pause className="h-2.5 w-2.5" /> Pause</Button>
+                          <Button size="sm" variant="ghost" onClick={() => { abortRef.current = true; pauseRef.current = true; }} className="text-[10px] h-6 px-2 text-destructive">Stop</Button>
+                        </>
+                      )}
+                      {!queueRunning && pendingCount === 0 && jobs.length > 0 && (
+                        <span className="flex items-center gap-1 text-[10px] text-primary"><CheckCircle2 className="h-3 w-3" /> All analyzed</span>
+                      )}
+                      {!queueRunning && (
+                        <Button
+                          size="sm" variant="outline"
+                          className="text-[10px] h-6 px-2 gap-1"
+                          disabled={bulkScoring}
+                          onClick={async () => {
+                            setBulkScoring(true);
+                            setBulkScoreResult(null);
+                            try {
+                              const { data, error } = await supabase.functions.invoke("bulk-score-jobs", {
+                                body: { batchSize: 25, companyId: selectedCompanyId },
+                              });
+                              if (error) throw error;
+                              setBulkScoreResult(`Scored ${data?.scored || 0}/${data?.processed || 0} roles`);
+                              fetchJobs(selectedCompanyId!);
+                            } catch (err: any) {
+                              setBulkScoreResult(`Error: ${err.message}`);
+                            } finally { setBulkScoring(false); }
+                          }}
+                        >
+                          {bulkScoring ? <Loader2 className="h-2.5 w-2.5 animate-spin" /> : <Zap className="h-2.5 w-2.5" />}
+                          Score L1
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                )}
+                {queueMessage && !queueRunning && (
+                  <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground bg-muted/30 rounded px-2 py-1 mt-2">
+                    <AlertTriangle className="h-2.5 w-2.5 shrink-0" /><span>{queueMessage}</span>
+                  </div>
+                )}
+                {bulkScoreResult && (
+                  <div className="flex items-center gap-1.5 text-[10px] text-primary bg-primary/5 rounded px-2 py-1 mt-2">
+                    <Zap className="h-2.5 w-2.5 shrink-0" /><span>{bulkScoreResult}</span>
+                  </div>
+                )}
+
+                {/* Search + dept pills */}
+                {jobs.length > 0 && (
+                  <div className="mt-3 flex items-center gap-2 flex-wrap">
+                    <div className="relative">
+                      <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground" />
+                      <Input placeholder={`Search ${jobs.length} roles…`} value={jobSearch} onChange={e => setJobSearch(e.target.value)} className="pl-7 h-7 text-xs w-48" />
+                    </div>
+                    {departments.slice(0, 8).map(([dept, count]) => (
+                      <button
+                        key={dept}
+                        onClick={() => setJobSearch(jobSearch === dept ? "" : dept)}
+                        className={`rounded-full px-2 py-0.5 text-[9px] font-medium border transition-colors ${
+                          jobSearch === dept ? "bg-primary text-primary-foreground border-primary" : "bg-card text-muted-foreground border-border hover:border-primary/30"
+                        }`}
+                      >
+                        {dept} ({count})
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Role grid */}
+              <ScrollArea className="flex-1">
+                <div className="p-4">
+                  {loadingJobs ? (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+                      {Array.from({ length: 9 }).map((_, i) => <div key={i} className="h-14 rounded-lg border border-border bg-card animate-pulse" />)}
+                    </div>
+                  ) : jobs.length === 0 ? (
+                    <div className="text-center py-12">
+                      <Briefcase className="h-8 w-8 mx-auto text-muted-foreground/30 mb-2" />
+                      <p className="text-sm text-muted-foreground">No roles yet. Sync this company first.</p>
+                    </div>
+                  ) : groupedJobs.length === 0 ? (
+                    <div className="text-center py-8">
+                      <p className="text-sm text-muted-foreground">No roles match "{jobSearch}"</p>
+                      <Button variant="ghost" size="sm" onClick={() => setJobSearch("")} className="mt-1 text-xs">Clear</Button>
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {groupedJobs.map(([dept, deptJobs]) => {
+                        const collapsed = collapsedDepts.has(dept);
+                        const ready = deptJobs.filter(j => analyzedJobIds.has(j.id)).length;
+                        return (
+                          <div key={dept}>
+                            <button
+                              onClick={() => setCollapsedDepts(prev => { const n = new Set(prev); n.has(dept) ? n.delete(dept) : n.add(dept); return n; })}
+                              className="w-full flex items-center gap-2 py-1 px-1 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors"
+                            >
+                              {collapsed ? <ChevronDown className="h-3 w-3" /> : <ChevronUp className="h-3 w-3" />}
+                              <Briefcase className="h-3 w-3" />
+                              <span>{dept}</span>
+                              <span className="text-[10px] font-normal">({deptJobs.length})</span>
+                              {ready > 0 && <Badge variant="secondary" className="ml-auto text-[9px] px-1.5 py-0 h-4 bg-primary/10 text-primary border-0">{ready} ready</Badge>}
+                            </button>
+                            <AnimatePresence>
+                              {!collapsed && (
+                                <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }} className="overflow-hidden">
+                                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-1.5 pl-1 pt-1">
+                                    {deptJobs.slice(0, 30).map(job => {
+                                      const isReady = analyzedJobIds.has(job.id);
+                                      const isAn = queueCurrentJob === job.id;
+                                      return (
+                                        <button
+                                          key={job.id}
+                                          onClick={() => navigate(`/learning-path?jobId=${job.id}`)}
+                                          className={`w-full text-left p-2.5 rounded-lg border transition-all duration-200 ${
+                                            isAn ? "border-primary/40 bg-primary/5 ring-1 ring-primary/20" : isReady ? "border-primary/20 bg-card hover:border-primary/30" : "border-border bg-card hover:border-primary/30"
+                                          }`}
+                                        >
+                                          <div className="flex items-center justify-between gap-2">
+                                            <div className="flex-1 min-w-0">
+                                              <h3 className="font-medium text-foreground text-xs leading-tight truncate">{job.title}</h3>
+                                              {job.location && <span className="flex items-center gap-1 text-[9px] text-muted-foreground mt-0.5"><MapPin className="h-2 w-2" />{job.location}</span>}
+                                            </div>
+                                            {isAn ? <Loader2 className="h-3 w-3 animate-spin text-primary shrink-0" /> : (
+                                              <Badge variant="outline" className={`text-[8px] px-1 py-0 h-3.5 shrink-0 ${isReady ? "bg-primary/10 text-primary border-primary/20" : "bg-muted/50 text-muted-foreground border-border"}`}>
+                                                {isReady ? "Ready" : "—"}
+                                              </Badge>
+                                            )}
+                                          </div>
+                                        </button>
+                                      );
+                                    })}
+                                  </div>
+                                  {deptJobs.length > 30 && <p className="text-center text-[10px] text-muted-foreground py-1">+{deptJobs.length - 30} more</p>}
+                                </motion.div>
+                              )}
+                            </AnimatePresence>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              </ScrollArea>
+            </>
+          )}
+        </SheetContent>
+      </Sheet>
     </div>
   );
 }
