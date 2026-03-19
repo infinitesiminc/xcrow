@@ -171,6 +171,7 @@ serve(async (req) => {
     let toolCallAccumulator: { name: string; arguments: string } | null = null;
     let regularChunks: string[] = [];
     let hasToolCall = false;
+    let fullTextContent = "";
 
     // First pass: collect the stream to check for tool calls
     while (true) {
@@ -199,8 +200,35 @@ serve(async (req) => {
               toolCallAccumulator.arguments += tc.function.arguments;
             }
           }
+          // Collect text content for fallback text-based tool call detection
+          const content = delta?.content;
+          if (content) fullTextContent += content;
           regularChunks.push(line + "\n");
         } catch { /* skip */ }
+      }
+    }
+
+    // Fallback: detect tool calls emitted as plain text (e.g. search_roles{...})
+    if (!hasToolCall && fullTextContent) {
+      const textToolMatch = fullTextContent.match(/search_roles\s*\{([^}]+)\}/);
+      if (textToolMatch) {
+        hasToolCall = true;
+        const rawArgs = textToolMatch[1];
+        // Parse key:value pairs from the text format
+        const queryMatch = rawArgs.match(/query\s*:\s*(?:<ctrl46>|"|')?\s*([^"'}<]+)\s*(?:<ctrl46>|"|')?/);
+        const limitMatch = rawArgs.match(/limit\s*:\s*(\d+)/);
+        const parsedArgs: any = {};
+        if (queryMatch) parsedArgs.query = queryMatch[1].trim();
+        if (limitMatch) parsedArgs.limit = parseInt(limitMatch[1]);
+        if (parsedArgs.query) {
+          toolCallAccumulator = {
+            name: "search_roles",
+            arguments: JSON.stringify(parsedArgs),
+          };
+          console.log("Detected text-based tool call:", parsedArgs);
+        } else {
+          hasToolCall = false;
+        }
       }
     }
 

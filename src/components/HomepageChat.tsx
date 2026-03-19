@@ -71,10 +71,12 @@ export default function HomepageChat({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [externalPrompt]);
 
-  // Extract only text messages for the API
+  // Extract only text messages for the API, filtering out raw tool call text
+  const TOOL_CALL_RE = /^search_roles\s*\{[^}]*\}$/;
   const getApiMessages = (chatItems: ChatItem[]) =>
     chatItems
       .filter((it): it is ChatItem & { type: "user" | "assistant" } => it.type !== "roles")
+      .filter((it) => !(it.type === "assistant" && TOOL_CALL_RE.test(it.content.trim())))
       .map((m) => ({ role: m.type, content: m.content }));
 
   const sendMessage = async (text: string) => {
