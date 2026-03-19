@@ -1382,10 +1382,10 @@ export default function PipelinePage() {
                   <div className="mt-3 flex items-center gap-3">
                     <div className="flex items-center gap-1.5 text-xs shrink-0">
                       <Brain className="h-3.5 w-3.5 text-primary" />
-                      <span className="font-semibold text-foreground">{analyzedJobIds.size}</span>
+                     <span className="font-semibold text-foreground">{validAnalyzedCount}</span>
                       <span className="text-muted-foreground">/ {jobs.length}</span>
                     </div>
-                    <Progress value={jobs.length > 0 ? (analyzedJobIds.size / jobs.length) * 100 : 0} className="h-1.5 flex-1" />
+                    <Progress value={jobs.length > 0 ? (validAnalyzedCount / jobs.length) * 100 : 0} className="h-1.5 flex-1" />
                     {queueRunning && currentJobTitle && <span className="text-[10px] text-primary truncate max-w-[140px]">{currentJobTitle}</span>}
                     <div className="flex items-center gap-1 shrink-0">
                       {!queueRunning && pendingCount > 0 && (
