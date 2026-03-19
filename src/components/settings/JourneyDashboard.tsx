@@ -98,59 +98,39 @@ function useDbJobTemplates(): { templates: DbJobTemplate[]; loading: boolean } {
 
   useEffect(() => {
     let cancelled = false;
-    async function fetch() {
+    async function load() {
       try {
-        // Get jobs that have task clusters, limited to 150 for performance
-        const { data: jobs, error } = await supabase
-          .from("jobs")
-          .select("id, title, department, company_id, companies(name)")
-          .not("company_id", "is", null)
-          .order("imported_at", { ascending: false })
-          .limit(300);
-
-        if (error || !jobs?.length) {
-          if (!cancelled) { setTemplates(FALLBACK_TEMPLATES); setLoading(false); }
-          return;
-        }
-
-        // Get task clusters for these jobs
-        const jobIds = jobs.map(j => j.id);
-        const { data: clusters } = await supabase
+        // Fetch task clusters with their parent job+company in one query
+        const { data: clusters, error } = await supabase
           .from("job_task_clusters")
-          .select("job_id, cluster_name")
-          .in("job_id", jobIds);
+          .select("cluster_name, job_id, jobs!inner(id, title, department, company_id, companies(name))")
+          .order("job_id")
+          .limit(1000);
 
-        if (!clusters?.length) {
+        if (error || !clusters?.length) {
           if (!cancelled) { setTemplates(FALLBACK_TEMPLATES); setLoading(false); }
           return;
         }
 
-        // Group clusters by job
-        const clustersByJob = new Map<string, string[]>();
+        // Group by job
+        const jobMap = new Map<string, DbJobTemplate>();
         for (const c of clusters) {
-          const arr = clustersByJob.get(c.job_id) || [];
-          arr.push(c.cluster_name);
-          clustersByJob.set(c.job_id, arr);
+          const job = (c as any).jobs;
+          if (!job) continue;
+          const companyName = job.companies?.name || "Unknown";
+          const key = `${job.title}|${companyName}`;
+          if (!jobMap.has(key)) {
+            jobMap.set(key, {
+              title: job.title,
+              company: companyName,
+              dept: job.department || "General",
+              tasks: [],
+            });
+          }
+          jobMap.get(key)!.tasks.push(c.cluster_name);
         }
 
-        // Build templates only for jobs that have clusters
-        const result: DbJobTemplate[] = [];
-        const seen = new Set<string>(); // dedupe by title+company
-        for (const job of jobs) {
-          const tasks = clustersByJob.get(job.id);
-          if (!tasks?.length) continue;
-          const companyName = (job.companies as any)?.name || "Unknown";
-          const key = `${job.title}|${companyName}`;
-          if (seen.has(key)) continue;
-          seen.add(key);
-          result.push({
-            title: job.title,
-            company: companyName,
-            dept: job.department || "General",
-            tasks,
-          });
-          if (result.length >= 150) break; // cap for performance
-        }
+        const result = Array.from(jobMap.values()).slice(0, 150);
 
         if (!cancelled) {
           setTemplates(result.length > 0 ? result : FALLBACK_TEMPLATES);
@@ -160,7 +140,7 @@ function useDbJobTemplates(): { templates: DbJobTemplate[]; loading: boolean } {
         if (!cancelled) { setTemplates(FALLBACK_TEMPLATES); setLoading(false); }
       }
     }
-    fetch();
+    load();
     return () => { cancelled = true; };
   }, []);
 
