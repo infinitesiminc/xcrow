@@ -38,6 +38,7 @@ interface Company {
   funding_stage: string | null;
   funding_total: string | null;
   founded_year: number | null;
+  imported_at: string;
   job_count?: number;
   priority_score?: number;
 }
@@ -310,7 +311,7 @@ export default function PipelinePage() {
     if (compAtsFilter) list = list.filter(c => c.detected_ats_platform === compAtsFilter);
     if (compIndustryFilter) list = list.filter(c => c.industry === compIndustryFilter);
     if (compFundingFilter) list = list.filter(c => c.funding_stage === compFundingFilter);
-    return list.sort((a, b) => (b.job_count || 0) - (a.job_count || 0));
+    return list.sort((a, b) => new Date(b.imported_at).getTime() - new Date(a.imported_at).getTime());
   }, [companies, compSearch, compAtsFilter, compIndustryFilter, compFundingFilter]);
 
   /* ═══════ DISCOVER LOGIC ═══════ */
