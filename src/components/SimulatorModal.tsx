@@ -884,6 +884,29 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
 
         <div className="flex-1 flex min-h-0">
           <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 sm:px-6 py-4 sm:py-6 scrollbar-thin">
+            {/* Coaching banner for retry sessions */}
+            {coachingContext && phase === "chat" && (
+              <motion.div
+                initial={{ opacity: 0, y: -8 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="max-w-2xl mx-auto mb-4 rounded-xl border border-primary/30 bg-primary/5 p-3"
+              >
+                <div className="flex items-start gap-2.5">
+                  <div className="h-7 w-7 rounded-lg bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
+                    <Target className="h-3.5 w-3.5 text-primary" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-xs font-semibold text-foreground">
+                      🎯 Coaching Focus: <span className="text-primary">{coachingContext.weakCategory}</span>
+                      <span className="text-muted-foreground font-normal ml-1.5">(previously {coachingContext.weakScore}%)</span>
+                    </p>
+                    <p className="text-[11px] text-muted-foreground mt-1 leading-relaxed">
+                      {coachingContext.tip}
+                    </p>
+                  </div>
+                </div>
+              </motion.div>
+            )}
             <AnimatePresence mode="popLayout">
               {phase === "loading" && (
                 <motion.div
