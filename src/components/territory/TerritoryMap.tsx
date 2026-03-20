@@ -275,8 +275,11 @@ export default function TerritoryMap({
 
                 {/* Skill nodes */}
                 {island.nodes.map(node => {
-                  const skill = SKILL_TAXONOMY.find(s => s.id === node.skillId)!;
-                  const data = skillStates.get(node.skillId)!;
+                  const skill = source.find(s => s.id === node.skillId);
+                  if (!skill) return null;
+                  const data = skillStates.get(node.skillId);
+                  if (!data) return null;
+                  const rarityInfo = rarityMap?.get(node.skillId);
 
                   return (
                     <SkillNode
@@ -291,6 +294,9 @@ export default function TerritoryMap({
                       level={data.level}
                       humanEdge={skill.humanEdge}
                       baseHue={island.theme.baseHue}
+                      rarity={rarityInfo?.rarity}
+                      dropExpiresAt={rarityInfo?.dropExpiresAt}
+                      iconEmoji={rarityInfo?.iconEmoji}
                       onClick={() => onTileClick?.(node.skillId, skill.name)}
                     />
                   );
