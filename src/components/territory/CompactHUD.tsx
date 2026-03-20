@@ -25,11 +25,9 @@ interface CompactHUDProps {
   skills: SkillXP[];
   targetSkillIds: Set<string>;
   userName?: string;
-  onToggleRoles?: () => void;
-  rolesOpen?: boolean;
 }
 
-export default function CompactHUD({ skills, targetSkillIds, userName, onToggleRoles, rolesOpen }: CompactHUDProps) {
+export default function CompactHUD({ skills, targetSkillIds, userName }: CompactHUDProps) {
   const { totalXP, tier, claimed, total, coveragePct } = useMemo(() => {
     const totalXP = skills.reduce((sum, s) => sum + s.xp, 0);
     const tier = getTier(totalXP);
