@@ -375,6 +375,7 @@ const Index = () => {
                       setRightTab("territory");
                     }}
                     onAskChat={handleRolesAskChat}
+                    onTabChange={setMyRolesTab}
                   />
                 </motion.div>
               ) : (

@@ -135,6 +135,27 @@ serve(async (req) => {
       systemPrompt += territoryBlock;
     }
 
+    // Append view context for awareness of what the student is currently looking at
+    if (viewContext) {
+      let viewBlock = "\n\n## CURRENT VIEW CONTEXT\n";
+      if (viewContext.activePanel === "role-preview" && viewContext.selectedRole) {
+        viewBlock += `Student is currently viewing: ${viewContext.selectedRole.title}${viewContext.selectedRole.company ? ` at ${viewContext.selectedRole.company}` : ""}\n`;
+        viewBlock += `Assume questions like "what should I practice" or "how ready am I" refer to THIS role unless they specify otherwise.\n`;
+      } else if (viewContext.activePanel === "roles") {
+        viewBlock += `Student is browsing their ${viewContext.selectedTab || "saved"} roles.\n`;
+        viewBlock += `Proactively help them prioritize which role to practice next, or summarize their overall progress across saved roles.\n`;
+      } else {
+        viewBlock += `Student is viewing their skill territory map.\n`;
+      }
+      if (viewContext.lastSimResult) {
+        const sim = viewContext.lastSimResult;
+        const scoreEntries = Object.entries(sim.scores || {}).map(([k, v]) => `${k}: ${v}%`).join(", ");
+        viewBlock += `\n🎉 Student just completed a simulation: "${sim.taskName}" for ${sim.jobTitle}. Scores: ${scoreEntries}.\n`;
+        viewBlock += `Acknowledge their progress, connect it to territory gains, and suggest the next task to practice.\n`;
+      }
+      systemPrompt += viewBlock;
+    }
+
     const response = await fetch(
       "https://ai.gateway.lovable.dev/v1/chat/completions",
       {
