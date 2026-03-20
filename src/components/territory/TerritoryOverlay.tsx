@@ -139,11 +139,15 @@ export default function TerritoryOverlay({
             </button>
           </motion.div>
 
-          {/* Scrollable Map */}
+          {/* Pannable Map */}
           <div
-            ref={scrollRef}
-            className="flex-1 overflow-auto"
-            style={{ scrollBehavior: "auto" }}
+            ref={containerRef}
+            className="flex-1 overflow-hidden select-none"
+            onWheel={handleWheel}
+            onPointerDown={handlePointerDown}
+            onPointerMove={handlePointerMove}
+            onPointerUp={handlePointerUp}
+            style={{ cursor: dragRef.current ? "grabbing" : "grab", touchAction: "none" }}
           >
             <TooltipProvider delayDuration={200}>
               <div
@@ -151,8 +155,8 @@ export default function TerritoryOverlay({
                 style={{
                   width: canvasSize.width,
                   height: canvasSize.height,
-                  minWidth: canvasSize.width,
-                  minHeight: canvasSize.height,
+                  transform: `translate(${pan.x}px, ${pan.y}px) scale(${pan.scale})`,
+                  transformOrigin: "0 0",
                 }}
               >
                 {/* Subtle grid pattern background */}
