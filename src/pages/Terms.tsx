@@ -11,7 +11,7 @@ export default function Terms() {
 
         <h2>1. Acceptance of Terms</h2>
         <p>
-          By accessing or using crowy.ai ("the Platform"), you agree to be bound by these Terms & Conditions. If you do not agree, do not use the Platform.
+          By accessing or using Crowy.ai ("the Platform"), you agree to be bound by these Terms & Conditions. If you do not agree, do not use the Platform.
         </p>
 
         <h2>2. Description of Service</h2>
