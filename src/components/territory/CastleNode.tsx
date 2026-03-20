@@ -1,5 +1,5 @@
 /**
- * CastleNode — isometric castle tile for the territory map.
+ * CastleNode — isometric castle tile using generated castle images.
  * Visual tiers: ruins → outpost → fortress → citadel.
  */
 
@@ -12,6 +12,18 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+
+import castleRuins from "@/assets/castle-ruins.png";
+import castleOutpost from "@/assets/castle-outpost.png";
+import castleFortress from "@/assets/castle-fortress.png";
+import castleCitadel from "@/assets/castle-citadel.png";
+
+const TIER_IMAGES: Record<string, string> = {
+  ruins: castleRuins,
+  outpost: castleOutpost,
+  fortress: castleFortress,
+  citadel: castleCitadel,
+};
 
 const CATEGORY_HUES: Record<SkillCategory, number> = {
   technical: 262,
@@ -28,7 +40,7 @@ interface CastleNodeProps {
   category: SkillCategory;
   castle: CastleState;
   xp: number;
-  isActive: boolean; // Crowy is here
+  isActive: boolean;
   onClick: () => void;
   delay?: number;
 }
@@ -46,19 +58,7 @@ export default function CastleNode({
   const hue = CATEGORY_HUES[category];
   const { tier, unlocked, tierProgress, emoji, label } = castle;
 
-  // Castle visual sizing by tier
-  const towerCount = tier === "citadel" ? 4 : tier === "fortress" ? 3 : tier === "outpost" ? 2 : 1;
-  const baseSize = tier === "citadel" ? 56 : tier === "fortress" ? 50 : tier === "outpost" ? 44 : 38;
-
-  const bgColor = unlocked
-    ? `hsl(${hue} 40% 18%)`
-    : `hsl(${hue} 10% 12%)`;
-  const borderColor = unlocked
-    ? `hsl(${hue} 50% 35%)`
-    : `hsl(${hue} 15% 22%)`;
-  const glowColor = unlocked
-    ? `hsl(${hue} 60% 45%)`
-    : "transparent";
+  const imgSize = tier === "citadel" ? 72 : tier === "fortress" ? 64 : tier === "outpost" ? 56 : 48;
 
   return (
     <Tooltip>
@@ -73,7 +73,7 @@ export default function CastleNode({
           }}
           onClick={onClick}
           className="relative flex flex-col items-center cursor-pointer group"
-          style={{ width: 80 }}
+          style={{ width: 88 }}
         >
           {/* Crowy indicator */}
           {isActive && (
@@ -86,51 +86,34 @@ export default function CastleNode({
             </motion.div>
           )}
 
-          {/* Castle container */}
+          {/* Castle image */}
           <motion.div
-            className="relative rounded-xl flex items-center justify-center transition-shadow duration-300"
-            style={{
-              width: baseSize,
-              height: baseSize,
-              background: bgColor,
-              border: `1.5px solid ${borderColor}`,
-              boxShadow: unlocked
-                ? `0 0 16px 2px ${glowColor}40, inset 0 1px 0 ${glowColor}20`
-                : "none",
-            }}
-            whileHover={{ scale: 1.08 }}
+            className="relative flex items-center justify-center"
+            style={{ width: imgSize, height: imgSize }}
+            whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.95 }}
           >
-            {/* Lock for ruins */}
-            {!unlocked && (
-              <Lock className="h-4 w-4 text-muted-foreground/40" />
-            )}
+            <img
+              src={TIER_IMAGES[tier]}
+              alt={`${label} castle`}
+              className="w-full h-full object-contain drop-shadow-lg"
+              style={{
+                filter: unlocked ? "none" : "grayscale(0.8) brightness(0.4)",
+              }}
+              draggable={false}
+            />
 
-            {/* Castle towers */}
-            {unlocked && (
-              <div className="flex items-end gap-0.5">
-                {Array.from({ length: towerCount }).map((_, i) => {
-                  const h = 10 + (i % 2 === 0 ? 6 : 3) + (tier === "citadel" ? 4 : 0);
-                  return (
-                    <div
-                      key={i}
-                      className="rounded-t-sm"
-                      style={{
-                        width: 6,
-                        height: h,
-                        background: `hsl(${hue} 45% ${35 + i * 5}%)`,
-                        borderTop: `2px solid hsl(${hue} 50% 50%)`,
-                      }}
-                    />
-                  );
-                })}
+            {/* Lock overlay for ruins */}
+            {!unlocked && (
+              <div className="absolute inset-0 flex items-center justify-center">
+                <Lock className="h-4 w-4 text-muted-foreground/60" />
               </div>
             )}
 
             {/* Tier progress ring */}
             {unlocked && castle.xpToNextTier !== null && (
               <svg
-                className="absolute inset-0 w-full h-full"
+                className="absolute -inset-1 w-[calc(100%+8px)] h-[calc(100%+8px)]"
                 viewBox="0 0 100 100"
               >
                 <circle
@@ -138,7 +121,7 @@ export default function CastleNode({
                   cy="50"
                   r="46"
                   fill="none"
-                  stroke={`hsl(${hue} 30% 25%)`}
+                  stroke={`hsl(${hue} 30% 25% / 0.4)`}
                   strokeWidth="2"
                 />
                 <circle
@@ -166,7 +149,7 @@ export default function CastleNode({
                 ? `hsl(${hue} 50% 70%)`
                 : `hsl(var(--muted-foreground))`,
               opacity: unlocked ? 1 : 0.5,
-              maxWidth: 76,
+              maxWidth: 84,
             }}
           >
             {name}
