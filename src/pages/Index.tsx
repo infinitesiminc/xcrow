@@ -4,6 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { supabase } from "@/integrations/supabase/client";
 import { Map, Bookmark, X, Sparkles } from "lucide-react";
+import { getLevel, levelProgress } from "@/lib/skill-map";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import HomepageChat, { type ViewContext } from "@/components/HomepageChat";
 import RolePreviewPanel from "@/components/RolePreviewPanel";
