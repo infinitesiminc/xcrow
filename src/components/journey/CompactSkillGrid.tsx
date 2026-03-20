@@ -130,7 +130,7 @@ export default function CompactSkillGrid({ skills, skillTasks }: CompactSkillGri
                                   }}
                                 />
                               </div>
-                              <p className="text-[7px] font-mono text-white/25 mt-0.5">{skill.xp} XP</p>
+                              <p className="text-[7px] font-mono text-white/30 mt-0.5">{skill.xp} XP</p>
                             </div>
                           ) : (
                             <p className="text-[7px] text-white/15 mt-1">locked</p>
