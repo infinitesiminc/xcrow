@@ -475,6 +475,7 @@ export default function Students() {
         jobTitle={simJob?.role ?? ""}
         company={simJob?.company ?? ""}
         mode="assess"
+        guestMaxTurns={!user ? 3 : undefined}
       />
 
       <Footer />
