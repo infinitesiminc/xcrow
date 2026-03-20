@@ -169,17 +169,16 @@ export default function Students() {
             </motion.div>
 
             <motion.h1 variants={fadeUp} custom={1} className="text-4xl sm:text-5xl lg:text-6xl font-bold font-display leading-[1.08] tracking-tight mb-6">
-              See the job market{" "}
-              <span className="bg-gradient-to-r from-brand-human to-brand-ai bg-clip-text text-transparent">
-                in real time.
-              </span>
+              AI doesn't replace you.{" "}
               <br />
-              Build the skills that actually get hired.
+              <span className="bg-gradient-to-r from-brand-human to-brand-ai bg-clip-text text-transparent">
+                It promotes you.
+              </span>
             </motion.h1>
 
             <motion.p variants={fadeUp} custom={2} className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto mb-10 leading-relaxed">
-              We break every role into its core tasks, show you which ones AI is changing,
-              and let you practice the skills employers are hiring for — right now.
+              Every role is shifting up the value chain. We show you the higher-purpose tasks
+              emerging in your field — and let you start practicing them today.
             </motion.p>
 
             <motion.div variants={fadeUp} custom={3} className="flex flex-col sm:flex-row items-center justify-center gap-3">
