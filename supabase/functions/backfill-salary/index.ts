@@ -130,6 +130,7 @@ If salary is listed as "competitive" or similar vague terms, return nulls.`;
               salary_max: salary.salary_max,
               salary_currency: salary.salary_currency || "USD",
               salary_period: salary.salary_period || "annual",
+              ...(salary.equity_text ? { equity_text: salary.equity_text } : {}),
             })
             .eq("id", job.id);
 
