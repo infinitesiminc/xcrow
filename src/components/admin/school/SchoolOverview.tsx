@@ -42,6 +42,17 @@ export default function SchoolOverview({ school, onUpdate }: { school: SchoolDat
     domain: school.domain || "",
   });
 
+  // Re-sync form when school prop updates (e.g. after save + refetch)
+  useEffect(() => {
+    setForm({
+      total_seats: school.total_seats,
+      plan_status: school.plan_status,
+      pipeline_stage: school.pipeline_stage || "prospect",
+      contact_email: school.contact_email || "",
+      domain: school.domain || "",
+    });
+  }, [school.id, school.total_seats, school.plan_status, school.pipeline_stage, school.contact_email, school.domain]);
+
   async function handleSave() {
     setSaving(true);
     const { error } = await supabase.from("school_accounts").update({
