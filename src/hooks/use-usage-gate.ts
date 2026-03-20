@@ -19,7 +19,8 @@ export function useUsageGate(type: "analysis" | "simulation"): UsageGateResult {
   const [loading, setLoading] = useState(false);
 
   const check = useCallback(async (): Promise<boolean> => {
-    if (isPro || !user) {
+    // Analysis is now unlimited for all users
+    if (type === "analysis" || isPro || !user) {
       setAllowed(true);
       return true;
     }

@@ -21,9 +21,18 @@ const Auth = () => {
   const { user, loading: authLoading } = useAuth();
 
   const redirectTo = searchParams.get("redirect") || "/";
+  const refCode = searchParams.get("ref");
 
   useEffect(() => {
     if (!authLoading && user) {
+      // Process referral code if present
+      if (refCode) {
+        supabase.rpc("process_referral" as any, {
+          _referred_user_id: user.id,
+          _referral_code: refCode,
+        }).then(() => {});
+      }
+
       // Process any pending bookmark from pre-login save attempt
       const pending = sessionStorage.getItem("pending_bookmark");
       if (pending) {
@@ -48,7 +57,7 @@ const Auth = () => {
       }
       navigate(redirectTo);
     }
-  }, [user, authLoading, navigate, redirectTo]);
+  }, [user, authLoading, navigate, redirectTo, refCode]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
