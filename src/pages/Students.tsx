@@ -150,10 +150,6 @@ export default function Students() {
   };
 
   const handleLaunchSim = (job: { role: string; company: string; task: string }) => {
-    if (!user) {
-      openAuthModal?.();
-      return;
-    }
     setSimJob(job);
   };
 

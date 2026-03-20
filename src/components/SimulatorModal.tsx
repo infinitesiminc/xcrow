@@ -50,6 +50,8 @@ interface SimulatorModalProps {
   onNextTask?: () => void;
   onBackToFeed?: () => void;
   inline?: boolean;
+  /** When set, unauthenticated users are capped at this many user turns before seeing a CTA */
+  guestMaxTurns?: number;
 }
 
 /* ── Objective Checklist (sidebar / inline) ── */
