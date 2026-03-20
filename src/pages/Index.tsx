@@ -138,7 +138,11 @@ const Index = () => {
 
   const handleTileClick = useCallback(
     (skillId: string, skillName: string) => {
-      setExternalPrompt(`Find me roles where I can practice ${skillName}`);
+      const skill = SKILL_TAXONOMY.find(s => s.id === skillId);
+      const humanEdge = skill?.humanEdge ? ` (human edge: ${skill.humanEdge})` : "";
+      setExternalPrompt(
+        `I clicked on "${skillName}" in my skill territory. Tell me about the 3 growth dimensions for this skill — how is AI reshaping it, what AI tools should I master, and what's the human edge${humanEdge}? Then suggest a role I can practice to grow this skill.`
+      );
     },
     []
   );
