@@ -19,6 +19,7 @@ const mainItems = [
 
 const schoolItems = [
   { title: "Analytics", url: "/admin/schools/analytics", icon: PieChart },
+  { title: "Skills Gap", url: "/admin/schools/skills-gap", icon: GitCompareArrows },
   { title: "All Schools", url: "/admin/schools", icon: List },
 ];
 
