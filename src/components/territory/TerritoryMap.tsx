@@ -158,7 +158,7 @@ export default function TerritoryMap({
             </span>
           </div>
           <span className="text-xs font-mono text-muted-foreground">
-            {litCount}/{SKILL_TAXONOMY.length} discovered
+            {litCount}/{source.length} discovered
           </span>
         </div>
 
