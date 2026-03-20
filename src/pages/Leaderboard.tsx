@@ -385,7 +385,7 @@ export default function Leaderboard() {
   const schoolCount = useMemo(() => new Set(MOCK_DATA.map(e => e.school)).size, []);
   const friendCount = MOCK_DATA.filter(e => e.isFriend).length;
   const friendEntries = useMemo(() => MOCK_DATA.filter(e => e.isFriend), []);
-
+  const totalUnread = Object.values(unreadCounts).reduce((a, b) => a + b, 0);
   const columns: { key: SortKey; label: string; icon: typeof Zap }[] = [
     { key: "total_xp", label: "XP", icon: Zap },
     { key: "skills_unlocked", label: "Skills", icon: Target },
