@@ -5,7 +5,8 @@ import Footer from "@/components/Footer";
 import { motion } from "framer-motion";
 import {
   Trophy, Zap, Target, Play, ArrowUpDown, Crown, Medal, Award,
-  UserPlus, Share2, Search, Filter, GraduationCap, Users, MessageCircle,
+  UserPlus, Share2, Search, GraduationCap, Users, MessageCircle,
+  Gamepad2, Clock, Flame, Eye,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -26,6 +27,12 @@ interface LeaderboardEntry {
   tasks_completed: number;
   isFriend?: boolean;
   isMe?: boolean;
+  currentActivity?: {
+    type: "practicing" | "exploring" | "completed";
+    skill: string;
+    task: string;
+    minutesAgo: number;
+  } | null;
 }
 
 const SCHOOLS = [
@@ -57,7 +64,21 @@ const LAST_NAMES = [
   "Wright", "Lopez", "Clark", "Hernandez", "Adams", "Baker", "Rivera", "Diaz",
 ];
 
-// Seeded random for stable mock data
+const ACTIVITY_SKILLS = [
+  "Prompt Engineering", "AI-Assisted Analysis", "Human Oversight",
+  "Workflow Automation", "Data Interpretation", "Stakeholder Communication",
+  "Ethical Judgment", "Tool Selection", "Adaptive Problem-Solving",
+  "Cross-Functional Collaboration", "Strategic Thinking", "AI Output Validation",
+];
+
+const ACTIVITY_TASKS = [
+  "Drafting marketing copy with AI", "Reviewing automated financial reports",
+  "Building a data pipeline", "Evaluating vendor proposals",
+  "Designing onboarding workflows", "Analyzing customer sentiment",
+  "Triaging support tickets", "Creating project roadmaps",
+  "Auditing AI-generated content", "Synthesizing research findings",
+];
+
 function seededRandom(seed: number) {
   let s = seed;
   return () => {
@@ -83,6 +104,10 @@ function generateMockData(): LeaderboardEntry[] {
     const xpBase = Math.floor(rng() * 8000) + 200;
     const skillsBase = Math.min(26, Math.floor(xpBase / 300) + Math.floor(rng() * 4));
     const tasksBase = Math.floor(xpBase / 100) + Math.floor(rng() * 5);
+    const isFriend = rng() > 0.85;
+
+    const activityTypes: ("practicing" | "exploring" | "completed")[] = ["practicing", "exploring", "completed"];
+    const hasActivity = isFriend && rng() > 0.3;
 
     entries.push({
       id: `mock-${i}`,
@@ -92,11 +117,16 @@ function generateMockData(): LeaderboardEntry[] {
       total_xp: xpBase,
       skills_unlocked: skillsBase,
       tasks_completed: tasksBase,
-      isFriend: rng() > 0.85,
+      isFriend,
+      currentActivity: hasActivity ? {
+        type: activityTypes[Math.floor(rng() * activityTypes.length)],
+        skill: ACTIVITY_SKILLS[Math.floor(rng() * ACTIVITY_SKILLS.length)],
+        task: ACTIVITY_TASKS[Math.floor(rng() * ACTIVITY_TASKS.length)],
+        minutesAgo: Math.floor(rng() * 120),
+      } : null,
     });
   }
 
-  // Sort by XP descending, assign "me" to a mid-range position
   entries.sort((a, b) => b.total_xp - a.total_xp);
   const meIdx = 12;
   entries[meIdx] = {
@@ -107,6 +137,7 @@ function generateMockData(): LeaderboardEntry[] {
     program: "Computer Science",
     isMe: true,
     isFriend: false,
+    currentActivity: null,
     total_xp: entries[meIdx].total_xp,
     skills_unlocked: entries[meIdx].skills_unlocked,
     tasks_completed: entries[meIdx].tasks_completed,
@@ -141,6 +172,87 @@ const SCHOOL_COLORS: Record<string, string> = {
   "Virginia Tech": "bg-orange-600/15 text-orange-400",
 };
 
+function timeAgo(mins: number) {
+  if (mins < 1) return "just now";
+  if (mins < 60) return `${mins}m ago`;
+  return `${Math.floor(mins / 60)}h ago`;
+}
+
+const ACTIVITY_COLORS = {
+  practicing: { bg: "bg-emerald-500/10", text: "text-emerald-400", dot: "bg-emerald-400", icon: Gamepad2 },
+  exploring: { bg: "bg-[hsl(var(--neon-blue))]/10", text: "text-[hsl(var(--neon-blue))]", dot: "bg-[hsl(var(--neon-blue))]", icon: Eye },
+  completed: { bg: "bg-[hsl(var(--neon-purple))]/10", text: "text-[hsl(var(--neon-purple))]", dot: "bg-[hsl(var(--neon-purple))]", icon: Flame },
+};
+
+function ActivityFeed({ entries }: { entries: LeaderboardEntry[] }) {
+  const active = entries
+    .filter(e => e.currentActivity && !e.isMe)
+    .sort((a, b) => (a.currentActivity!.minutesAgo) - (b.currentActivity!.minutesAgo));
+
+  if (active.length === 0) return null;
+
+  return (
+    <div className="mb-6">
+      <div className="flex items-center gap-2 mb-3">
+        <div className="relative">
+          <Gamepad2 className="h-4 w-4 text-emerald-400" />
+          <span className="absolute -top-0.5 -right-0.5 h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
+        </div>
+        <h2 className="text-sm font-semibold text-foreground">Friends Activity</h2>
+        <span className="text-[10px] text-muted-foreground">
+          {active.filter(a => a.currentActivity!.minutesAgo < 15).length} active now
+        </span>
+      </div>
+
+      <div className="space-y-1.5">
+        {active.map((entry, i) => {
+          const act = entry.currentActivity!;
+          const style = ACTIVITY_COLORS[act.type];
+          const Icon = style.icon;
+          return (
+            <motion.div
+              key={entry.id}
+              initial={{ opacity: 0, x: -8 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: i * 0.04, duration: 0.3 }}
+              className="flex items-center gap-3 rounded-lg border border-border/30 bg-card/50 px-3 py-2.5 hover:bg-card/80 transition-colors"
+            >
+              <div className="relative shrink-0">
+                <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center text-xs font-bold text-muted-foreground">
+                  {entry.display_name.split(" ").map(n => n[0]).join("")}
+                </div>
+                {act.minutesAgo < 15 && (
+                  <span className={`absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full ${style.dot} ring-2 ring-background`} />
+                )}
+              </div>
+
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-1.5">
+                  <span className="text-sm font-medium text-foreground truncate">{entry.display_name}</span>
+                  <Badge variant="outline" className={`text-[9px] px-1.5 py-0 h-4 border-0 ${style.bg} ${style.text} shrink-0`}>
+                    <Icon className="h-2.5 w-2.5 mr-0.5" />
+                    {act.type === "practicing" ? "Practicing" : act.type === "exploring" ? "Exploring" : "Just finished"}
+                  </Badge>
+                </div>
+                <p className="text-xs text-muted-foreground truncate mt-0.5">
+                  <span className="font-medium text-foreground/70">{act.skill}</span>
+                  <span className="mx-1">·</span>
+                  {act.task}
+                </p>
+              </div>
+
+              <div className="flex items-center gap-1 text-[10px] text-muted-foreground shrink-0">
+                <Clock className="h-2.5 w-2.5" />
+                {timeAgo(act.minutesAgo)}
+              </div>
+            </motion.div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 export default function Leaderboard() {
   const { user, openAuthModal } = useAuth();
   const { toast } = useToast();
@@ -169,9 +281,9 @@ export default function Leaderboard() {
     return allSorted.findIndex(e => e.isMe) + 1;
   }, [sortBy]);
 
-  // School stats for the "school" tab header
   const schoolCount = useMemo(() => new Set(MOCK_DATA.map(e => e.school)).size, []);
   const friendCount = MOCK_DATA.filter(e => e.isFriend).length;
+  const friendEntries = useMemo(() => MOCK_DATA.filter(e => e.isFriend), []);
 
   const columns: { key: SortKey; label: string; icon: typeof Zap }[] = [
     { key: "total_xp", label: "XP", icon: Zap },
@@ -212,17 +324,15 @@ export default function Leaderboard() {
         <div className="mx-auto max-w-3xl px-4 sm:px-6 py-8 sm:py-12">
           {/* Header */}
           <div className="flex items-start justify-between mb-6">
-            <div>
-              <div className="flex items-center gap-3 mb-1">
-                <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center">
-                  <Trophy className="h-5 w-5 text-primary" />
-                </div>
-                <div>
-                  <h1 className="text-2xl font-bold text-foreground font-[Space_Grotesk]">Leaderboard</h1>
-                  <p className="text-xs text-muted-foreground">
-                    {MOCK_DATA.length} students · {schoolCount} universities
-                  </p>
-                </div>
+            <div className="flex items-center gap-3 mb-1">
+              <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                <Trophy className="h-5 w-5 text-primary" />
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold text-foreground font-[Space_Grotesk]">Leaderboard</h1>
+                <p className="text-xs text-muted-foreground">
+                  {MOCK_DATA.length} students · {schoolCount} universities
+                </p>
               </div>
             </div>
             <Button size="sm" variant="outline" onClick={handleInvite} className="gap-1.5 shrink-0">
@@ -261,7 +371,10 @@ export default function Leaderboard() {
             </motion.div>
           )}
 
-          {/* Tabs: Global / My School / Friends */}
+          {/* Friends Activity Feed */}
+          <ActivityFeed entries={friendEntries} />
+
+          {/* Tabs */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
             <Tabs value={tab} onValueChange={v => setTab(v as TabKey)}>
               <TabsList className="h-9">
@@ -292,7 +405,7 @@ export default function Leaderboard() {
             </div>
           </div>
 
-          {/* Sort controls */}
+          {/* Sort */}
           <div className="flex items-center gap-2 mb-3">
             <ArrowUpDown className="h-3.5 w-3.5 text-muted-foreground" />
             <span className="text-xs text-muted-foreground">Sort:</span>
@@ -336,7 +449,6 @@ export default function Leaderboard() {
             </div>
           ) : (
             <div className="rounded-xl border border-border overflow-hidden">
-              {/* Table header */}
               <div className="grid grid-cols-[2.5rem_1fr_4.5rem_3.5rem_3.5rem_2.5rem] sm:grid-cols-[3rem_1fr_6rem_5rem_5rem_3rem] gap-1 px-3 sm:px-4 py-2.5 bg-muted/30 border-b border-border text-[10px] sm:text-xs font-medium text-muted-foreground uppercase tracking-wider">
                 <span>#</span>
                 <span>Student</span>
@@ -346,11 +458,11 @@ export default function Leaderboard() {
                 <span />
               </div>
 
-              {/* Rows */}
               {filtered.map((entry, i) => {
-                const globalIdx = MOCK_DATA.sort((a, b) => b[sortBy] - a[sortBy]).findIndex(e => e.id === entry.id);
-                const rank = filtered.sort((a, b) => b[sortBy] - a[sortBy]).indexOf(entry) + 1;
+                const rank = filtered.indexOf(entry) + 1;
                 const schoolColor = SCHOOL_COLORS[entry.school] || "bg-muted text-muted-foreground";
+                const act = entry.currentActivity;
+                const actStyle = act ? ACTIVITY_COLORS[act.type] : null;
                 return (
                   <motion.div
                     key={entry.id}
@@ -361,14 +473,12 @@ export default function Leaderboard() {
                       entry.isMe ? "bg-primary/5" : "hover:bg-muted/20"
                     }`}
                   >
-                    {/* Rank */}
                     <div className="flex items-center justify-center">
                       {rank <= 3 ? RANK_ICONS[rank - 1] : (
                         <span className="text-sm font-medium text-muted-foreground">{rank}</span>
                       )}
                     </div>
 
-                    {/* Student info */}
                     <div className="min-w-0">
                       <div className="flex items-center gap-1.5">
                         <p className={`text-sm font-medium truncate ${entry.isMe ? "text-primary" : "text-foreground"}`}>
@@ -381,36 +491,35 @@ export default function Leaderboard() {
                         <Badge variant="outline" className={`text-[9px] px-1.5 py-0 h-4 border-0 ${schoolColor}`}>
                           {entry.school}
                         </Badge>
-                        {entry.program && (
+                        {act && actStyle ? (
+                          <span className={`text-[9px] ${actStyle.text} flex items-center gap-0.5`}>
+                            <span className={`h-1.5 w-1.5 rounded-full ${actStyle.dot} ${act.minutesAgo < 15 ? "animate-pulse" : ""}`} />
+                            {act.skill}
+                          </span>
+                        ) : entry.program ? (
                           <span className="text-[10px] text-muted-foreground truncate hidden sm:inline">
                             {entry.program}
                           </span>
-                        )}
+                        ) : null}
                       </div>
                     </div>
 
-                    {/* XP */}
                     <div className="text-right">
                       <span className={`text-sm font-semibold tabular-nums ${sortBy === "total_xp" ? "text-primary" : "text-foreground"}`}>
                         {entry.total_xp.toLocaleString()}
                       </span>
                     </div>
-
-                    {/* Skills */}
                     <div className="text-right">
                       <span className={`text-sm font-semibold tabular-nums ${sortBy === "skills_unlocked" ? "text-primary" : "text-foreground"}`}>
                         {entry.skills_unlocked}
                       </span>
                     </div>
-
-                    {/* Tasks */}
                     <div className="text-right">
                       <span className={`text-sm font-semibold tabular-nums ${sortBy === "tasks_completed" ? "text-primary" : "text-foreground"}`}>
                         {entry.tasks_completed}
                       </span>
                     </div>
 
-                    {/* Add friend button */}
                     <div className="flex justify-center">
                       {!entry.isMe && !entry.isFriend && (
                         <button
@@ -428,7 +537,6 @@ export default function Leaderboard() {
             </div>
           )}
 
-          {/* Footer stats */}
           <div className="flex items-center justify-center gap-4 mt-6 text-xs text-muted-foreground">
             <span className="flex items-center gap-1"><GraduationCap className="h-3 w-3" /> {schoolCount} schools</span>
             <span className="flex items-center gap-1"><Users className="h-3 w-3" /> {MOCK_DATA.length} students</span>
