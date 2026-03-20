@@ -145,9 +145,8 @@ export default function Navbar() {
             onClick={() => handleNav("/")}
             className="flex items-center gap-2 font-display text-lg font-bold tracking-tight text-foreground hover:opacity-80 transition-opacity"
           >
-            <div className="relative h-11 w-11 flex items-center justify-center">
-              <img src={crowLogo} alt="Crowy.ai" className="h-9 w-9 object-contain" />
-              <div className="absolute inset-0 animate-neon-shift bg-[length:200%_auto] mix-blend-screen rounded-xl pointer-events-none" style={{ backgroundImage: "linear-gradient(135deg, hsl(180 90% 50%), hsl(270 80% 55%), hsl(330 90% 55%), hsl(180 90% 50%))" }} />
+            <div className="relative h-11 w-11 flex items-center justify-center" style={{ WebkitMaskImage: `url(${crowLogo})`, WebkitMaskSize: 'contain', WebkitMaskRepeat: 'no-repeat', WebkitMaskPosition: 'center', maskImage: `url(${crowLogo})`, maskSize: 'contain', maskRepeat: 'no-repeat', maskPosition: 'center' }}>
+              <div className="absolute inset-0 animate-neon-shift bg-[length:200%_auto]" style={{ backgroundImage: "linear-gradient(135deg, hsl(180 90% 50%), hsl(270 80% 55%), hsl(330 90% 55%), hsl(180 90% 50%))" }} />
             </div>
             <span className="hidden sm:inline font-extrabold text-foreground">Crowy.ai</span>
           </button>
