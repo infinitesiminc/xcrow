@@ -5,7 +5,7 @@ const Footer = () => (
     <div className="max-w-7xl mx-auto px-6 py-8">
       <div className="flex flex-col sm:flex-row items-start justify-between gap-6">
         <div>
-          <Link to="/" className="font-display font-bold neon-text">crowy.ai</Link>
+          <Link to="/" className="font-display font-bold neon-text">Crowy.ai</Link>
           <p className="text-xs text-muted-foreground mt-1">AI career prep for everyone 🚀</p>
         </div>
         <div className="flex gap-10">
