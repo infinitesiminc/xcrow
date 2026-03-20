@@ -18,17 +18,22 @@ Deno.serve(async (req) => {
     const lovableKey = Deno.env.get("LOVABLE_API_KEY")!;
     const sb = createClient(supabaseUrl, serviceKey);
 
-    const { offset = 0, dry_run = false } = await req.json().catch(() => ({}));
+    const { offset = 0, dry_run = false, company_id = null } = await req.json().catch(() => ({}));
 
-    console.log("Starting backfill, offset:", offset, "dry_run:", dry_run);
+    console.log("Starting backfill, offset:", offset, "dry_run:", dry_run, "company_id:", company_id);
     // Fetch jobs that have descriptions with likely salary data
-    const { data: jobs, error } = await sb
+    let query = sb
       .from("jobs")
       .select("id, title, description")
       .not("description", "is", null)
       .is("salary_min", null)
-      .order("imported_at", { ascending: false })
-      .range(offset, offset + BATCH_SIZE - 1);
+      .order("imported_at", { ascending: false });
+    
+    if (company_id) {
+      query = query.eq("company_id", company_id);
+    }
+    
+    const { data: jobs, error } = await query.range(offset, offset + BATCH_SIZE - 1);
 
     if (error) throw error;
     if (!jobs || jobs.length === 0) {
