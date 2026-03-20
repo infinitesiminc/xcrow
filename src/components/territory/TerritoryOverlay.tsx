@@ -236,6 +236,30 @@ export default function TerritoryOverlay({
                 })}
               </div>
             </TooltipProvider>
+
+            {/* Zoom controls */}
+            <div className="absolute bottom-4 right-4 flex flex-col gap-1 z-10">
+              <button
+                onClick={() => setPan(p => ({ ...p, scale: Math.min(2.5, p.scale * 1.2) }))}
+                className="w-8 h-8 rounded-lg bg-card/90 border border-border/50 text-muted-foreground hover:text-foreground flex items-center justify-center text-sm font-bold backdrop-blur-sm transition-colors active:scale-[0.95]"
+              >+</button>
+              <button
+                onClick={() => setPan(p => ({ ...p, scale: Math.max(0.5, p.scale * 0.8) }))}
+                className="w-8 h-8 rounded-lg bg-card/90 border border-border/50 text-muted-foreground hover:text-foreground flex items-center justify-center text-sm font-bold backdrop-blur-sm transition-colors active:scale-[0.95]"
+              >−</button>
+              <button
+                onClick={() => {
+                  if (!containerRef.current) return;
+                  const el = containerRef.current;
+                  setPan({
+                    x: -(canvasSize.width * 1.2 - el.clientWidth) / 2,
+                    y: -(canvasSize.height * 1.2 - el.clientHeight) / 3,
+                    scale: 1.2,
+                  });
+                }}
+                className="w-8 h-8 rounded-lg bg-card/90 border border-border/50 text-muted-foreground hover:text-foreground flex items-center justify-center text-[10px] font-bold backdrop-blur-sm transition-colors active:scale-[0.95]"
+              >⟲</button>
+            </div>
           </div>
 
           {/* Legend */}
