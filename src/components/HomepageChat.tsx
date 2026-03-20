@@ -15,11 +15,18 @@ type ChatItem =
   | { type: "assistant"; content: string }
   | { type: "roles"; roles: RoleResult[] };
 
-const SUGGESTIONS = [
+const GUEST_SUGGESTIONS = [
   "I'm graduating next year — what skills matter most?",
   "What does a product manager actually do day-to-day?",
   "Show me roles where AI helps the most",
   "I'm studying finance — what should I practice?",
+];
+
+const SIGNED_IN_SUGGESTIONS = [
+  "How ready am I for my target roles?",
+  "What should I practice next?",
+  "Find roles that build my frontier skills",
+  "What are my strongest skills right now?",
 ];
 
 export default function HomepageChat({
