@@ -497,8 +497,8 @@ export default function Students() {
               {[
                 {
                   num: "01",
-                  title: "Ask about any role",
-                  desc: "Type a job title — PM, data analyst, UX designer. Your AI scout breaks it into tasks and shows which skills matter most.",
+                  title: "Ask Crow about any role",
+                  desc: "Type a job title — PM, data analyst, UX designer. Crow breaks it into tasks and scouts which skills matter most.",
                   color: "text-spectrum-0",
                   border: "border-spectrum-0/20",
                 },
