@@ -448,12 +448,12 @@ export default function Students() {
 
           <div className="max-w-3xl mx-auto text-center relative">
             <motion.h2 variants={fadeUp} custom={0} className="text-3xl sm:text-4xl font-bold mb-4">
-              The market is moving.
+              AI is elevating every role.
               <br />
-              <span className="bg-gradient-to-r from-brand-human to-brand-ai bg-clip-text text-transparent">Start building.</span>
+              <span className="bg-gradient-to-r from-brand-human to-brand-ai bg-clip-text text-transparent">Start climbing.</span>
             </motion.h2>
             <motion.p variants={fadeUp} custom={1} className="text-muted-foreground mb-8 max-w-md mx-auto">
-              Pick any role you're curious about. We'll show you what it's really made of — and what to practice first.
+              Pick any role you're curious about. We'll show you where it's headed — and let you practice the tasks that put you at the top.
             </motion.p>
             <motion.div variants={fadeUp} custom={2}>
               <Button size="lg" onClick={handleGetStarted} className="gap-2 text-base px-10 h-12 glow-purple">
