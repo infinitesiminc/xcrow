@@ -10,6 +10,7 @@ import InlineRoleCarousel, { BatchedRoleCarousel, type RoleResult, type RoleBatc
 import SkillSuggestionCards from "@/components/SkillSuggestionCards";
 import HumanEdgesCard, { type EdgeContext } from "@/components/HumanEdgesCard";
 import TerritoryMap from "@/components/territory/TerritoryMap";
+import TerritoryOverlay from "@/components/territory/TerritoryOverlay";
 import CompactHUD from "@/components/territory/CompactHUD";
 import MyRolesPanel from "@/components/territory/MyRolesPanel";
 import {
@@ -60,6 +61,9 @@ const Index = () => {
   const [lastSimResult, setLastSimResult] = useState<ViewContext["lastSimResult"]>(null);
   const [myRolesTab, setMyRolesTab] = useState<"saved" | "practiced">("saved");
   const batchCounter = useRef(0);
+  const [territoryOpen, setTerritoryOpen] = useState(false);
+  const [lastPracticedSkillId, setLastPracticedSkillId] = useState<string | null>(null);
+  const [hasOpenedTerritory, setHasOpenedTerritory] = useState(false);
 
   const [realSkills, setRealSkills] = useState<SkillXP[]>([]);
   const [targetSkillIds, setTargetSkillIds] = useState<Set<string>>(new Set());
@@ -110,6 +114,14 @@ const Index = () => {
       }
     })();
   }, [user]);
+
+  // Auto-open territory after first simulation completion
+  useEffect(() => {
+    if (realSkills.some(s => s.xp > 0) && !hasOpenedTerritory && user) {
+      setTerritoryOpen(true);
+      setHasOpenedTerritory(true);
+    }
+  }, [realSkills, hasOpenedTerritory, user]);
 
   const handleChatStart = useCallback(() => setHasInteracted(true), []);
 
@@ -218,6 +230,25 @@ const Index = () => {
             </motion.div>
           )}
         </AnimatePresence>
+
+        {/* Territory overlay */}
+        <TerritoryOverlay
+          open={territoryOpen}
+          onClose={() => setTerritoryOpen(false)}
+          skills={realSkills}
+          lastPracticedSkillId={lastPracticedSkillId}
+        />
+
+        {/* Territory button (floating) */}
+        {isSignedIn && !territoryOpen && (
+          <button
+            onClick={() => setTerritoryOpen(true)}
+            className="fixed bottom-4 right-4 z-40 flex items-center gap-1.5 px-3 py-2 rounded-lg bg-card border border-border/50 text-xs font-medium text-muted-foreground hover:text-foreground shadow-lg hover:shadow-xl transition-all active:scale-[0.95]"
+          >
+            <Map className="h-3.5 w-3.5" />
+            Territory
+          </button>
+        )}
       </div>
     );
   }
@@ -457,6 +488,25 @@ const Index = () => {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Territory overlay */}
+      <TerritoryOverlay
+        open={territoryOpen}
+        onClose={() => setTerritoryOpen(false)}
+        skills={realSkills}
+        lastPracticedSkillId={lastPracticedSkillId}
+      />
+
+      {/* Territory button (floating) */}
+      {isSignedIn && !territoryOpen && (
+        <button
+          onClick={() => setTerritoryOpen(true)}
+          className="fixed bottom-4 right-4 z-40 flex items-center gap-1.5 px-3 py-2 rounded-lg bg-card border border-border/50 text-xs font-medium text-muted-foreground hover:text-foreground shadow-lg hover:shadow-xl transition-all active:scale-[0.95]"
+        >
+          <Map className="h-3.5 w-3.5" />
+          Territory
+        </button>
+      )}
     </div>
   );
 };
