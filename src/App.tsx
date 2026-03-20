@@ -85,7 +85,7 @@ const App = () => (
               <Route path="/settings" element={<><Navbar /><Settings /><Footer /></>} />
               <Route path="/company/:slug" element={<><Navbar /><CompanyPage /><Footer /></>} />
               <Route path="/card-styles" element={<><Navbar /><CardStyleMockup /></>} />
-              <Route path="/journey" element={<Journey />} />
+              <Route path="/journey" element={<JourneyGate />} />
               <Route path="/students" element={<Students />} />
               <Route path="/leaderboard" element={<Leaderboard />} />
               <Route path="/pricing" element={<><Navbar /><Pricing /><Footer /></>} />
