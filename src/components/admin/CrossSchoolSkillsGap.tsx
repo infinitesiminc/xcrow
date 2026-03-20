@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import { Loader2 } from "lucide-react";
+import { Loader2, ArrowUpDown, ChevronDown, ChevronRight } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 interface MarketSkill {
@@ -8,6 +8,9 @@ interface MarketSkill {
   avg_exposure: number;
   avg_impact: number;
 }
+
+type SortKey = "coverage" | "demand" | "exposure";
+type SortDir = "asc" | "desc";
 
 function normalize(s: string): string {
   return s.toLowerCase().replace(/[^a-z0-9]/g, "");
@@ -19,42 +22,87 @@ function fuzzyMatch(a: string, b: string): boolean {
   return na === nb || na.includes(nb) || nb.includes(na);
 }
 
-/** Map a 0–100 value to an HSL color going from deep red → amber → green */
 function coverageColor(pct: number): string {
-  // 0 = hue 0 (red), 50 = hue 40 (amber), 100 = hue 142 (green)
   const hue = Math.round((pct / 100) * 142);
   return `hsl(${hue} 70% 42%)`;
 }
 
-/** Map a 0–100 value to an HSL for AI exposure: low=slate, high=purple */
 function exposureColor(pct: number): string {
-  const alpha = Math.max(0.08, pct / 100);
+  const alpha = Math.max(0.1, pct / 100);
   return `hsla(270, 70%, 55%, ${alpha})`;
 }
 
-/** Map demand count to opacity for demand cells */
 function demandColor(count: number, max: number): string {
-  const alpha = Math.max(0.08, Math.min(1, count / max));
+  const alpha = Math.max(0.1, Math.min(1, count / max));
   return `hsla(200, 80%, 50%, ${alpha})`;
 }
+
+interface SkillRow {
+  skill: string;
+  demand: number;
+  exposure: number;
+  impact: number;
+  coveragePct: number;
+  maxDemand: number;
+  category: string;
+}
+
+/** Categorize a skill into a broad group */
+function categorize(skill: string): string {
+  const s = skill.toLowerCase();
+  if (/\b(python|javascript|typescript|sql|java|c\+\+|r\b|programming|coding|software|html|css|react|node|api|git|devops|cloud|aws|azure|docker|kubernetes)\b/.test(s))
+    return "Engineering & Development";
+  if (/\b(machine learning|deep learning|nlp|neural|computer vision|ai|artificial intelligence|llm|generative|gpt|model training|reinforcement)\b/.test(s))
+    return "AI & Machine Learning";
+  if (/\b(data analysis|data science|analytics|statistics|tableau|power bi|visualization|bi\b|etl|data engineer|pipeline|warehouse|big data|spark|hadoop)\b/.test(s))
+    return "Data & Analytics";
+  if (/\b(design|ux|ui|figma|user experience|user interface|wireframe|prototype|accessibility|graphic|visual)\b/.test(s))
+    return "Design & UX";
+  if (/\b(marketing|seo|content|social media|brand|advertising|growth|copywriting|email marketing|digital marketing)\b/.test(s))
+    return "Marketing & Growth";
+  if (/\b(project management|agile|scrum|leadership|stakeholder|communication|presentation|teamwork|collaboration|strategy|planning|management|operations)\b/.test(s))
+    return "Leadership & Management";
+  if (/\b(security|cybersecurity|encryption|compliance|gdpr|risk|audit|privacy|penetration|vulnerability)\b/.test(s))
+    return "Security & Compliance";
+  if (/\b(sales|crm|negotiation|customer|account management|business development|revenue|pipeline)\b/.test(s))
+    return "Sales & Business Dev";
+  if (/\b(finance|accounting|budg|forecast|financial|valuation|investment|tax|audit)\b/.test(s))
+    return "Finance & Accounting";
+  if (/\b(writing|research|critical thinking|problem solving|creativity|innovation|adaptability|emotional intelligence|ethics)\b/.test(s))
+    return "Human & Cognitive Skills";
+  return "Other Skills";
+}
+
+const CATEGORY_ORDER = [
+  "AI & Machine Learning",
+  "Data & Analytics",
+  "Engineering & Development",
+  "Design & UX",
+  "Marketing & Growth",
+  "Leadership & Management",
+  "Security & Compliance",
+  "Sales & Business Dev",
+  "Finance & Accounting",
+  "Human & Cognitive Skills",
+  "Other Skills",
+];
 
 export default function CrossSchoolSkillsGap() {
   const [loading, setLoading] = useState(true);
   const [marketSkills, setMarketSkills] = useState<MarketSkill[]>([]);
   const [schoolCount, setSchoolCount] = useState(0);
   const [schoolSkillSets, setSchoolSkillSets] = useState<Set<string>[]>([]);
+  const [sortKey, setSortKey] = useState<SortKey>("coverage");
+  const [sortDir, setSortDir] = useState<SortDir>("asc");
+  const [collapsedCats, setCollapsedCats] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     async function load() {
-      const [marketRes, coursesRes, schoolsRes] = await Promise.all([
+      const [marketRes, coursesRes] = await Promise.all([
         supabase.rpc("get_market_skill_demand", { top_n: 50 }),
         supabase
           .from("school_courses")
           .select("school_id, skills_extracted, skill_categories")
-          .limit(1000),
-        supabase
-          .from("school_accounts")
-          .select("id")
           .limit(1000),
       ]);
 
@@ -62,9 +110,6 @@ export default function CrossSchoolSkillsGap() {
       setMarketSkills(market);
 
       const courses = coursesRes.data || [];
-      const schoolIds = new Set((schoolsRes.data || []).map((s: any) => s.id));
-
-      // Aggregate skills per school
       const perSchool = new Map<string, Set<string>>();
       for (const c of courses as any[]) {
         if (!perSchool.has(c.school_id)) perSchool.set(c.school_id, new Set());
@@ -82,9 +127,8 @@ export default function CrossSchoolSkillsGap() {
     load();
   }, []);
 
-  const heatmapData = useMemo(() => {
+  const rows = useMemo(() => {
     if (marketSkills.length === 0 || schoolSkillSets.length === 0) return [];
-
     const totalSchools = schoolSkillSets.length;
     const maxDemand = Math.max(...marketSkills.map((m) => Number(m.demand_count)), 1);
 
@@ -94,18 +138,55 @@ export default function CrossSchoolSkillsGap() {
       for (const skillSet of schoolSkillSets) {
         if ([...skillSet].some((ss) => fuzzyMatch(ss, norm))) coverCount++;
       }
-      const coveragePct = Math.round((coverCount / totalSchools) * 100);
-
       return {
         skill: ms.skill_name,
         demand: Number(ms.demand_count),
         exposure: ms.avg_exposure,
         impact: ms.avg_impact,
-        coveragePct,
+        coveragePct: Math.round((coverCount / totalSchools) * 100),
         maxDemand,
-      };
+        category: categorize(ms.skill_name),
+      } as SkillRow;
     });
   }, [marketSkills, schoolSkillSets]);
+
+  const grouped = useMemo(() => {
+    const sorted = [...rows].sort((a, b) => {
+      const valA = sortKey === "coverage" ? a.coveragePct : sortKey === "demand" ? a.demand : a.exposure;
+      const valB = sortKey === "coverage" ? b.coveragePct : sortKey === "demand" ? b.demand : b.exposure;
+      return sortDir === "asc" ? valA - valB : valB - valA;
+    });
+
+    const groups = new Map<string, SkillRow[]>();
+    for (const cat of CATEGORY_ORDER) groups.set(cat, []);
+    for (const row of sorted) {
+      const arr = groups.get(row.category);
+      if (arr) arr.push(row);
+      else groups.set(row.category, [row]);
+    }
+    // Remove empty categories
+    for (const [key, val] of groups) {
+      if (val.length === 0) groups.delete(key);
+    }
+    return groups;
+  }, [rows, sortKey, sortDir]);
+
+  function toggleSort(key: SortKey) {
+    if (sortKey === key) {
+      setSortDir((d) => (d === "asc" ? "desc" : "asc"));
+    } else {
+      setSortKey(key);
+      setSortDir("asc");
+    }
+  }
+
+  function toggleCat(cat: string) {
+    setCollapsedCats((prev) => {
+      const next = new Set(prev);
+      next.has(cat) ? next.delete(cat) : next.add(cat);
+      return next;
+    });
+  }
 
   if (loading) {
     return (
@@ -116,7 +197,7 @@ export default function CrossSchoolSkillsGap() {
     );
   }
 
-  if (heatmapData.length === 0) {
+  if (rows.length === 0) {
     return (
       <p className="text-sm text-muted-foreground text-center py-12">
         No curriculum data available yet. Extract school data first.
@@ -124,129 +205,150 @@ export default function CrossSchoolSkillsGap() {
     );
   }
 
-  // Summary KPIs
-  const avgCoverage = Math.round(
-    heatmapData.reduce((s, d) => s + d.coveragePct, 0) / heatmapData.length
-  );
-  const universalGaps = heatmapData.filter((d) => d.coveragePct === 0).length;
-  const wellCovered = heatmapData.filter((d) => d.coveragePct >= 50).length;
+  const avgCoverage = Math.round(rows.reduce((s, d) => s + d.coveragePct, 0) / rows.length);
+  const universalGaps = rows.filter((d) => d.coveragePct === 0).length;
 
   return (
-    <div className="space-y-5">
-      {/* Summary row */}
-      <div className="flex flex-wrap gap-4 text-xs">
-        <Stat label="Institutions analyzed" value={String(schoolCount)} />
-        <Stat label="Skills tracked" value={String(heatmapData.length)} />
+    <div className="space-y-4">
+      {/* KPI chips */}
+      <div className="flex flex-wrap gap-3 text-xs">
+        <Stat label="Institutions" value={String(schoolCount)} />
+        <Stat label="Skills" value={String(rows.length)} />
         <Stat label="Avg coverage" value={`${avgCoverage}%`} accent={avgCoverage >= 50} />
-        <Stat label="Universal gaps" value={String(universalGaps)} warn={universalGaps > 0} />
-        <Stat label="Well-covered (≥50%)" value={String(wellCovered)} accent />
+        <Stat label="Zero coverage" value={String(universalGaps)} warn={universalGaps > 0} />
       </div>
 
       {/* Legend */}
-      <div className="flex flex-wrap items-center gap-6 text-[10px] text-muted-foreground">
-        <div className="flex items-center gap-1.5">
-          <span className="inline-block w-3 h-3 rounded-sm" style={{ background: coverageColor(0) }} />
-          <span>0% coverage</span>
-          <span className="inline-block w-3 h-3 rounded-sm" style={{ background: coverageColor(50) }} />
-          <span>50%</span>
-          <span className="inline-block w-3 h-3 rounded-sm" style={{ background: coverageColor(100) }} />
-          <span>100%</span>
-        </div>
-        <div className="flex items-center gap-1.5">
-          <span className="inline-block w-3 h-3 rounded-sm" style={{ background: exposureColor(20) }} />
-          <span>Low AI</span>
-          <span className="inline-block w-3 h-3 rounded-sm" style={{ background: exposureColor(80) }} />
-          <span>High AI</span>
-        </div>
-        <div className="flex items-center gap-1.5">
-          <span className="inline-block w-3 h-3 rounded-sm" style={{ background: demandColor(10, 100) }} />
-          <span>Low demand</span>
-          <span className="inline-block w-3 h-3 rounded-sm" style={{ background: demandColor(100, 100) }} />
-          <span>High demand</span>
-        </div>
+      <div className="flex flex-wrap items-center gap-5 text-[10px] text-muted-foreground">
+        <span className="flex items-center gap-1">
+          <span className="w-2.5 h-2.5 rounded-sm" style={{ background: coverageColor(0) }} />0%
+          <span className="w-2.5 h-2.5 rounded-sm" style={{ background: coverageColor(50) }} />50%
+          <span className="w-2.5 h-2.5 rounded-sm" style={{ background: coverageColor(100) }} />100%
+          coverage
+        </span>
+        <span className="flex items-center gap-1">
+          <span className="w-2.5 h-2.5 rounded-sm" style={{ background: exposureColor(20) }} />low
+          <span className="w-2.5 h-2.5 rounded-sm" style={{ background: exposureColor(80) }} />high AI
+        </span>
+        <span className="flex items-center gap-1">
+          <span className="w-2.5 h-2.5 rounded-sm" style={{ background: demandColor(10, 100) }} />low
+          <span className="w-2.5 h-2.5 rounded-sm" style={{ background: demandColor(100, 100) }} />high demand
+        </span>
       </div>
 
-      {/* Heatmap grid */}
+      {/* Heatmap */}
       <div className="rounded-xl border border-border/60 bg-card/80 overflow-hidden">
-        {/* Column headers */}
-        <div className="grid grid-cols-[1fr_80px_80px_80px] border-b border-border/40 bg-muted/30 px-3 py-2">
-          <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Skill</span>
-          <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground text-center">Coverage</span>
-          <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground text-center">AI Exposure</span>
-          <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground text-center">Demand</span>
+        {/* Header with sort buttons */}
+        <div className="grid grid-cols-[1fr_72px_72px_72px] bg-muted/40 px-2 py-1.5 border-b border-border/40 sticky top-0 z-10">
+          <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground pl-7">Skill</span>
+          <SortBtn label="Cov" active={sortKey === "coverage"} dir={sortDir} onClick={() => toggleSort("coverage")} />
+          <SortBtn label="AI" active={sortKey === "exposure"} dir={sortDir} onClick={() => toggleSort("exposure")} />
+          <SortBtn label="Demand" active={sortKey === "demand"} dir={sortDir} onClick={() => toggleSort("demand")} />
         </div>
 
-        {/* Rows */}
-        <div className="divide-y divide-border/20 max-h-[520px] overflow-y-auto">
-          {heatmapData.map((d) => (
-            <div
-              key={d.skill}
-              className="grid grid-cols-[1fr_80px_80px_80px] items-center px-3 py-1.5 hover:bg-muted/20 transition-colors"
-            >
-              <span className="text-xs text-foreground truncate pr-2">{d.skill}</span>
-
-              {/* Coverage cell */}
-              <div className="flex justify-center">
-                <span
-                  className="inline-flex items-center justify-center w-14 h-6 rounded text-[10px] font-mono font-bold text-white"
-                  style={{ background: coverageColor(d.coveragePct) }}
+        <div className="max-h-[520px] overflow-y-auto">
+          {[...grouped.entries()].map(([cat, skills]) => {
+            const collapsed = collapsedCats.has(cat);
+            const catAvg = Math.round(skills.reduce((s, r) => s + r.coveragePct, 0) / skills.length);
+            return (
+              <div key={cat}>
+                {/* Category header */}
+                <button
+                  onClick={() => toggleCat(cat)}
+                  className="w-full grid grid-cols-[1fr_72px_72px_72px] items-center px-2 py-1.5 bg-muted/20 hover:bg-muted/40 transition-colors border-b border-border/20 text-left"
                 >
-                  {d.coveragePct}%
-                </span>
-              </div>
+                  <span className="flex items-center gap-1.5 text-[11px] font-semibold text-foreground">
+                    {collapsed ? <ChevronRight className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
+                    {cat}
+                    <span className="text-[10px] font-normal text-muted-foreground ml-1">({skills.length})</span>
+                  </span>
+                  <span className="text-center">
+                    <span
+                      className="inline-block w-10 h-5 rounded text-[9px] font-mono font-bold text-white leading-5 text-center"
+                      style={{ background: coverageColor(catAvg) }}
+                    >
+                      {catAvg}%
+                    </span>
+                  </span>
+                  <span />
+                  <span />
+                </button>
 
-              {/* AI Exposure cell */}
-              <div className="flex justify-center">
-                <span
-                  className="inline-flex items-center justify-center w-14 h-6 rounded text-[10px] font-mono font-semibold"
-                  style={{
-                    background: exposureColor(d.exposure),
-                    color: d.exposure > 50 ? "white" : "hsl(var(--foreground))",
-                  }}
-                >
-                  {d.exposure}%
-                </span>
+                {/* Skill rows */}
+                {!collapsed &&
+                  skills.map((d) => (
+                    <div
+                      key={d.skill}
+                      className="grid grid-cols-[1fr_72px_72px_72px] items-center px-2 py-1 hover:bg-muted/10 transition-colors"
+                    >
+                      <span className="text-[11px] text-foreground truncate pl-5">{d.skill}</span>
+                      <Cell bg={coverageColor(d.coveragePct)} label={`${d.coveragePct}%`} light />
+                      <Cell
+                        bg={exposureColor(d.exposure)}
+                        label={`${d.exposure}%`}
+                        light={d.exposure > 50}
+                      />
+                      <Cell
+                        bg={demandColor(d.demand, d.maxDemand)}
+                        label={String(d.demand)}
+                        light={d.demand / d.maxDemand > 0.5}
+                      />
+                    </div>
+                  ))}
               </div>
-
-              {/* Demand cell */}
-              <div className="flex justify-center">
-                <span
-                  className="inline-flex items-center justify-center w-14 h-6 rounded text-[10px] font-mono font-semibold"
-                  style={{
-                    background: demandColor(d.demand, d.maxDemand),
-                    color: d.demand / d.maxDemand > 0.5 ? "white" : "hsl(var(--foreground))",
-                  }}
-                >
-                  {d.demand}
-                </span>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </div>
   );
 }
 
-function Stat({
+function Cell({ bg, label, light }: { bg: string; label: string; light?: boolean }) {
+  return (
+    <div className="flex justify-center">
+      <span
+        className={`inline-block w-12 h-5 rounded text-[10px] font-mono font-semibold leading-5 text-center ${
+          light ? "text-white" : "text-foreground"
+        }`}
+        style={{ background: bg }}
+      >
+        {label}
+      </span>
+    </div>
+  );
+}
+
+function SortBtn({
   label,
-  value,
-  accent,
-  warn,
+  active,
+  dir,
+  onClick,
 }: {
   label: string;
-  value: string;
-  accent?: boolean;
-  warn?: boolean;
+  active: boolean;
+  dir: SortDir;
+  onClick: () => void;
 }) {
+  return (
+    <button
+      onClick={onClick}
+      className={`flex items-center justify-center gap-0.5 text-[10px] font-semibold uppercase tracking-widest transition-colors ${
+        active ? "text-primary" : "text-muted-foreground hover:text-foreground"
+      }`}
+    >
+      {label}
+      <ArrowUpDown className={`h-2.5 w-2.5 ${active ? "text-primary" : "text-muted-foreground/50"}`} />
+      {active && <span className="text-[8px]">{dir === "asc" ? "↑" : "↓"}</span>}
+    </button>
+  );
+}
+
+function Stat({ label, value, accent, warn }: { label: string; value: string; accent?: boolean; warn?: boolean }) {
   return (
     <div className="flex items-center gap-1.5 bg-muted/30 rounded-lg px-3 py-1.5">
       <span className="text-muted-foreground">{label}</span>
-      <span
-        className={`font-bold font-[Space_Grotesk] ${
-          warn ? "text-destructive" : accent ? "text-[hsl(var(--success))]" : "text-foreground"
-        }`}
-      >
+      <span className={`font-bold font-[Space_Grotesk] ${warn ? "text-destructive" : accent ? "text-[hsl(var(--success))]" : "text-foreground"}`}>
         {value}
       </span>
     </div>
