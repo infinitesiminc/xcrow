@@ -422,6 +422,9 @@ export default function Leaderboard() {
           {/* Friends Activity Feed */}
           <ActivityFeed entries={friendEntries} />
 
+          {/* Trending Jobs */}
+          <TrendingJobs />
+
           {/* Tabs */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
             <Tabs value={tab} onValueChange={v => setTab(v as TabKey)}>
