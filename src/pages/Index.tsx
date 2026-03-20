@@ -115,6 +115,14 @@ const Index = () => {
     })();
   }, [user]);
 
+  // Auto-open territory after first simulation completion
+  useEffect(() => {
+    if (realSkills.some(s => s.xp > 0) && !hasOpenedTerritory && user) {
+      setTerritoryOpen(true);
+      setHasOpenedTerritory(true);
+    }
+  }, [realSkills, hasOpenedTerritory, user]);
+
   const handleChatStart = useCallback(() => setHasInteracted(true), []);
 
   const handleRolesAskChat = useCallback((prompt: string) => {
