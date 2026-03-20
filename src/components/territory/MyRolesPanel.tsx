@@ -1,29 +1,13 @@
 /**
- * MyRolesPanel — slide-down panel showing saved (bookmarked) and practiced roles.
- * Toggled from CompactHUD. Provides quick actions: practice, check readiness.
+ * MyRolesPanel — slide-down panel showing saved (bookmarked) and practiced roles
+ * using the same RoleCard design as the matching-roles carousel.
  */
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Bookmark, Play, ChevronRight, Trophy, X } from "lucide-react";
+import { Bookmark, Play, X, Trophy } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { Badge } from "@/components/ui/badge";
-
-interface SavedRole {
-  job_title: string;
-  company: string | null;
-  augmented_percent: number | null;
-  automation_risk_percent: number | null;
-}
-
-interface PracticedRole {
-  job_title: string;
-  task_name: string;
-  company: string | null;
-  completed_at: string;
-  correct_answers: number;
-  total_questions: number;
-}
+import { RoleCard, type RoleResult } from "@/components/InlineRoleCarousel";
 
 interface MyRolesPanelProps {
   open: boolean;
@@ -34,8 +18,8 @@ interface MyRolesPanelProps {
 export default function MyRolesPanel({ open, onClose, onAskChat }: MyRolesPanelProps) {
   const { user } = useAuth();
   const [tab, setTab] = useState<"saved" | "practiced">("saved");
-  const [savedRoles, setSavedRoles] = useState<SavedRole[]>([]);
-  const [practicedRoles, setPracticedRoles] = useState<PracticedRole[]>([]);
+  const [savedRoles, setSavedRoles] = useState<RoleResult[]>([]);
+  const [practicedRoles, setPracticedRoles] = useState<RoleResult[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -51,45 +35,58 @@ export default function MyRolesPanel({ open, onClose, onAskChat }: MyRolesPanelP
         .limit(20),
       supabase
         .from("completed_simulations")
-        .select("job_title, task_name, company, completed_at, correct_answers, total_questions")
+        .select("job_title, company, completed_at")
         .eq("user_id", user.id)
         .order("completed_at", { ascending: false })
-        .limit(30),
+        .limit(50),
     ]).then(([savedRes, practicedRes]) => {
-      setSavedRoles((savedRes.data as SavedRole[]) || []);
-      setPracticedRoles((practicedRes.data as PracticedRole[]) || []);
+      // Map saved roles to RoleResult format
+      const saved: RoleResult[] = (savedRes.data || []).map((r: any) => ({
+        jobId: `saved-${r.job_title}-${r.company || ""}`,
+        title: r.job_title,
+        company: r.company,
+        logo: null,
+        location: null,
+        country: null,
+        workMode: null,
+        seniority: null,
+        augmented: r.augmented_percent || 0,
+        risk: r.automation_risk_percent || 0,
+      }));
+      setSavedRoles(saved);
+
+      // Deduplicate practiced by job_title+company, map to RoleResult
+      const seen = new Set<string>();
+      const practiced: RoleResult[] = [];
+      for (const r of practicedRes.data || []) {
+        const key = `${(r as any).job_title}-${(r as any).company || ""}`;
+        if (seen.has(key)) continue;
+        seen.add(key);
+        practiced.push({
+          jobId: `practiced-${key}`,
+          title: (r as any).job_title,
+          company: (r as any).company,
+          logo: null,
+          location: null,
+          country: null,
+          workMode: null,
+          seniority: null,
+          augmented: 0,
+          risk: 0,
+        });
+      }
+      setPracticedRoles(practiced);
       setLoading(false);
     });
   }, [user, open]);
 
-  // Deduplicate practiced roles by job_title
-  const uniquePracticed = practicedRoles.reduce<
-    (PracticedRole & { taskCount: number; avgScore: number })[]
-  >((acc, r) => {
-    const existing = acc.find(
-      (a) => a.job_title === r.job_title && a.company === r.company
+  const handleSelect = (role: RoleResult) => {
+    onAskChat(
+      `How ready am I for ${role.title}${role.company ? ` at ${role.company}` : ""}? What should I practice?`
     );
-    if (existing) {
-      existing.taskCount += 1;
-      existing.avgScore = Math.round(
-        (existing.avgScore * (existing.taskCount - 1) +
-          (r.total_questions > 0
-            ? Math.round((r.correct_answers / r.total_questions) * 100)
-            : 0)) /
-          existing.taskCount
-      );
-    } else {
-      acc.push({
-        ...r,
-        taskCount: 1,
-        avgScore:
-          r.total_questions > 0
-            ? Math.round((r.correct_answers / r.total_questions) * 100)
-            : 0,
-      });
-    }
-    return acc;
-  }, []);
+  };
+
+  const activeRoles = tab === "saved" ? savedRoles : practicedRoles;
 
   return (
     <AnimatePresence>
@@ -101,7 +98,7 @@ export default function MyRolesPanel({ open, onClose, onAskChat }: MyRolesPanelP
           transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
           className="overflow-hidden border-b border-border bg-card"
         >
-          <div className="px-4 py-3 max-h-[320px] overflow-y-auto">
+          <div className="px-4 py-3">
             {/* Header */}
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-1 bg-muted/50 rounded-lg p-0.5">
@@ -125,7 +122,7 @@ export default function MyRolesPanel({ open, onClose, onAskChat }: MyRolesPanelP
                   }`}
                 >
                   <Trophy className="h-3 w-3" />
-                  Practiced ({uniquePracticed.length})
+                  Practiced ({practicedRoles.length})
                 </button>
               </div>
               <button
@@ -141,103 +138,29 @@ export default function MyRolesPanel({ open, onClose, onAskChat }: MyRolesPanelP
               <div className="flex items-center justify-center py-8">
                 <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
               </div>
-            ) : tab === "saved" ? (
-              savedRoles.length === 0 ? (
-                <div className="text-center py-6">
-                  <Bookmark className="h-5 w-5 text-muted-foreground/40 mx-auto mb-2" />
-                  <p className="text-xs text-muted-foreground">
-                    No saved roles yet. Ask the chat to find roles for you.
-                  </p>
-                </div>
-              ) : (
-                <div className="space-y-1.5">
-                  {savedRoles.map((role, i) => (
-                    <motion.div
-                      key={`${role.job_title}-${role.company}-${i}`}
-                      initial={{ opacity: 0, x: -8 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: i * 0.03, duration: 0.3 }}
-                      className="group flex items-center gap-3 rounded-lg border border-border/40 bg-background/50 px-3 py-2.5 hover:border-primary/30 hover:bg-primary/5 transition-all cursor-pointer"
-                      onClick={() =>
-                        onAskChat(
-                          `How ready am I for ${role.job_title}${role.company ? ` at ${role.company}` : ""}?`
-                        )
-                      }
-                    >
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-foreground truncate">
-                          {role.job_title}
-                        </p>
-                        {role.company && (
-                          <p className="text-[10px] text-muted-foreground truncate">
-                            {role.company}
-                          </p>
-                        )}
-                      </div>
-                      {role.augmented_percent != null && (
-                        <Badge
-                          variant="outline"
-                          className="text-[9px] shrink-0 border-primary/20 text-primary"
-                        >
-                          {role.augmented_percent}% augmented
-                        </Badge>
-                      )}
-                      <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/40 group-hover:text-primary transition-colors shrink-0" />
-                    </motion.div>
-                  ))}
-                </div>
-              )
-            ) : uniquePracticed.length === 0 ? (
+            ) : activeRoles.length === 0 ? (
               <div className="text-center py-6">
-                <Play className="h-5 w-5 text-muted-foreground/40 mx-auto mb-2" />
+                {tab === "saved" ? (
+                  <Bookmark className="h-5 w-5 text-muted-foreground/40 mx-auto mb-2" />
+                ) : (
+                  <Play className="h-5 w-5 text-muted-foreground/40 mx-auto mb-2" />
+                )}
                 <p className="text-xs text-muted-foreground">
-                  No practiced roles yet. Run a simulation to start building skills.
+                  {tab === "saved"
+                    ? "No saved roles yet. Ask the chat to find roles for you."
+                    : "No practiced roles yet. Run a simulation to start building skills."}
                 </p>
               </div>
             ) : (
-              <div className="space-y-1.5">
-                {uniquePracticed.map((role, i) => (
-                  <motion.div
-                    key={`${role.job_title}-${role.company}-${i}`}
-                    initial={{ opacity: 0, x: -8 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: i * 0.03, duration: 0.3 }}
-                    className="group flex items-center gap-3 rounded-lg border border-border/40 bg-background/50 px-3 py-2.5 hover:border-primary/30 hover:bg-primary/5 transition-all cursor-pointer"
-                    onClick={() =>
-                      onAskChat(
-                        `How ready am I for ${role.job_title}${role.company ? ` at ${role.company}` : ""}? What else should I practice?`
-                      )
-                    }
-                  >
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-foreground truncate">
-                        {role.job_title}
-                      </p>
-                      <p className="text-[10px] text-muted-foreground">
-                        {role.company ? `${role.company} · ` : ""}
-                        {role.taskCount} task{role.taskCount > 1 ? "s" : ""} practiced
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-2 shrink-0">
-                      <div className="text-right">
-                        <p
-                          className={`text-sm font-bold ${
-                            role.avgScore >= 70
-                              ? "text-success"
-                              : role.avgScore >= 50
-                              ? "text-warning"
-                              : "text-destructive"
-                          }`}
-                        >
-                          {role.avgScore}%
-                        </p>
-                        <p className="text-[8px] text-muted-foreground uppercase tracking-wider">
-                          Avg score
-                        </p>
-                      </div>
-                      <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/40 group-hover:text-primary transition-colors" />
-                    </div>
-                  </motion.div>
+              <div className="flex gap-2.5 overflow-x-auto pb-1.5 scrollbar-thin [mask-image:linear-gradient(to_right,transparent,black_1%,black_97%,transparent)]">
+                {activeRoles.map((role, i) => (
+                  <RoleCard
+                    key={role.jobId + i}
+                    role={role}
+                    index={i}
+                    isSelected={false}
+                    onSelect={handleSelect}
+                  />
                 ))}
               </div>
             )}

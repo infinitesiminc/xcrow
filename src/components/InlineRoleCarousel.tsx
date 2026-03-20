@@ -163,8 +163,8 @@ export function BatchedRoleCarousel({
   );
 }
 
-/** Shared role card */
-function RoleCard({
+/** Shared role card — exported for reuse */
+export function RoleCard({
   role,
   index,
   isSelected,
