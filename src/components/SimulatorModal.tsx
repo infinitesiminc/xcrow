@@ -1394,7 +1394,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                     {scoreTier === "mid" && (
                       <Button
                         variant="secondary"
-                        onClick={startCompile}
+                        onClick={() => startCompile()}
                         className="gap-2 rounded-xl w-full text-xs"
                       >
                         <RotateCcw className="h-3 w-3" /> Same Sim — Improve Score
