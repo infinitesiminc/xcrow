@@ -339,55 +339,132 @@ export default function Students() {
                 <Blocks className="h-5 w-5 text-brand-mid" />
                 <span className="text-sm font-mono text-muted-foreground tracking-widest uppercase">The Skill Stack</span>
               </div>
-              <h2 className="text-3xl sm:text-4xl font-bold mb-4">Every job is a stack of skills. AI reshuffles the deck — and adds new cards on top.</h2>
+              <h2 className="text-3xl sm:text-4xl font-bold mb-4">Every job is a stack of skills. AI reshuffles the deck.</h2>
               <p className="text-muted-foreground max-w-xl mx-auto">
-                Routine tasks shift to AI. Higher-purpose tasks emerge. The skills that define your value are moving up.
+                The same skills appear across many roles — but in every one, <span className="text-brand-human font-semibold">human skills rise to the top</span> and <span className="text-brand-ai font-semibold">AI-exposed skills shift down</span>.
               </p>
             </motion.div>
 
-            <div className="flex items-end justify-center gap-4 sm:gap-8 mb-8 overflow-x-auto pb-4">
-              <JobStack
-                title="Product Manager"
-                delay={1}
-                skills={[
-                  { label: "Strategy", color: "human" },
-                  { label: "Communication", color: "human" },
-                  { label: "Data Analysis", color: "ai" },
-                  { label: "Leadership", color: "human" },
-                  { label: "Judgment", color: "human" },
-                ]}
-              />
-              <JobStack
-                title="Software Engineer"
-                delay={3}
-                skills={[
-                  { label: "Programming", color: "ai" },
-                  { label: "Data Analysis", color: "ai" },
-                  { label: "Design & UX", color: "mid" },
-                  { label: "Judgment", color: "human" },
-                  { label: "Communication", color: "human" },
-                ]}
-              />
-              <JobStack
-                title="Data Scientist"
-                delay={5}
-                skills={[
-                  { label: "Data Analysis", color: "ai" },
-                  { label: "AI / ML Tools", color: "ai" },
-                  { label: "Programming", color: "ai" },
-                  { label: "Strategy", color: "human" },
-                  { label: "Communication", color: "human" },
-                ]}
-              />
+            {/* Stack diagram with zone labels */}
+            <div className="relative max-w-3xl mx-auto">
+              {/* Zone labels — left side */}
+              <div className="hidden md:flex absolute -left-2 top-0 bottom-0 flex-col justify-between pointer-events-none" style={{ width: 0 }}>
+                <motion.div variants={fadeUp} custom={1} className="flex items-center gap-2 -translate-x-full pr-4" style={{ marginTop: '8%' }}>
+                  <div className="flex flex-col items-end">
+                    <span className="text-xs font-bold text-brand-human uppercase tracking-wider">Your Edge</span>
+                    <span className="text-[10px] text-muted-foreground">Where you add value</span>
+                  </div>
+                  <TrendingUp className="h-4 w-4 text-brand-human" />
+                </motion.div>
+                <motion.div variants={fadeUp} custom={2} className="flex items-center gap-2 -translate-x-full pr-4" style={{ marginBottom: '8%' }}>
+                  <div className="flex flex-col items-end">
+                    <span className="text-xs font-bold text-brand-ai uppercase tracking-wider">AI Zone</span>
+                    <span className="text-[10px] text-muted-foreground">Being automated</span>
+                  </div>
+                  <Zap className="h-4 w-4 text-brand-ai" />
+                </motion.div>
+              </div>
+
+              {/* The stacks */}
+              <div className="relative flex items-stretch justify-center gap-4 sm:gap-6">
+                {[
+                  {
+                    title: "Product Manager",
+                    skills: [
+                      { label: "Judgment", color: "human" as const, zone: "top" },
+                      { label: "Leadership", color: "human" as const, zone: "top" },
+                      { label: "Communication", color: "human" as const, zone: "top" },
+                      { label: "Data Analysis", color: "ai" as const, zone: "bottom" },
+                      { label: "Strategy", color: "human" as const, zone: "bottom" },
+                    ],
+                  },
+                  {
+                    title: "Software Engineer",
+                    skills: [
+                      { label: "Communication", color: "human" as const, zone: "top" },
+                      { label: "Judgment", color: "human" as const, zone: "top" },
+                      { label: "Design & UX", color: "mid" as const, zone: "top" },
+                      { label: "Data Analysis", color: "ai" as const, zone: "bottom" },
+                      { label: "Programming", color: "ai" as const, zone: "bottom" },
+                    ],
+                  },
+                  {
+                    title: "Data Scientist",
+                    skills: [
+                      { label: "Communication", color: "human" as const, zone: "top" },
+                      { label: "Strategy", color: "human" as const, zone: "top" },
+                      { label: "Programming", color: "ai" as const, zone: "bottom" },
+                      { label: "AI / ML Tools", color: "ai" as const, zone: "bottom" },
+                      { label: "Data Analysis", color: "ai" as const, zone: "bottom" },
+                    ],
+                  },
+                ].map((stack, si) => {
+                  const topSkills = stack.skills.filter(s => s.zone === "top");
+                  const bottomSkills = stack.skills.filter(s => s.zone === "bottom");
+                  return (
+                    <motion.div
+                      key={stack.title}
+                      variants={fadeUp}
+                      custom={si + 1}
+                      className="flex-1 min-w-0 flex flex-col"
+                    >
+                      {/* Top zone — human edge */}
+                      <div className="flex flex-col gap-1.5 mb-3 p-2 sm:p-3 rounded-xl border border-brand-human/15 bg-brand-human/[0.03]">
+                        <span className="text-[9px] font-mono text-brand-human/60 uppercase tracking-widest text-center mb-1 md:hidden">Your Edge</span>
+                        {topSkills.map((s, i) => (
+                          <SkillBlock key={s.label} label={s.label} color={s.color} small delay={si * 2 + i + 1} />
+                        ))}
+                      </div>
+
+                      {/* Divider line */}
+                      <div className="relative flex items-center my-1">
+                        <div className="flex-1 h-px bg-gradient-to-r from-transparent via-muted-foreground/30 to-transparent" />
+                        {si === 1 && (
+                          <motion.span
+                            variants={fadeUp}
+                            custom={8}
+                            className="absolute left-1/2 -translate-x-1/2 bg-background px-2 text-[9px] font-mono text-muted-foreground/60 uppercase tracking-widest whitespace-nowrap hidden sm:block"
+                          >
+                            automation line
+                          </motion.span>
+                        )}
+                      </div>
+
+                      {/* Bottom zone — AI handles */}
+                      <div className="flex flex-col gap-1.5 mt-0 p-2 sm:p-3 rounded-xl border border-brand-ai/15 bg-brand-ai/[0.03]">
+                        <span className="text-[9px] font-mono text-brand-ai/60 uppercase tracking-widest text-center mb-1 md:hidden">AI Handles</span>
+                        {bottomSkills.map((s, i) => (
+                          <SkillBlock key={s.label} label={s.label} color={s.color} small delay={si * 2 + i + 4} />
+                        ))}
+                      </div>
+
+                      {/* Title */}
+                      <motion.span
+                        variants={fadeUp}
+                        custom={si + 7}
+                        className="text-xs font-mono text-muted-foreground mt-3 text-center tracking-wide"
+                      >
+                        {stack.title}
+                      </motion.span>
+                    </motion.div>
+                  );
+                })}
+              </div>
             </div>
 
-            <motion.div variants={fadeUp} custom={8} className="flex items-center justify-center gap-3 text-sm text-muted-foreground">
-              <div className="h-px w-12 bg-brand-human/40" />
-              <span>Same skills, different stacks</span>
-              <div className="h-px w-12 bg-brand-ai/40" />
+            {/* Takeaway */}
+            <motion.div variants={fadeUp} custom={10} className="mt-10 text-center">
+              <div className="inline-flex items-center gap-3 rounded-xl border border-border/60 bg-card/60 backdrop-blur-sm px-5 py-3">
+                <ArrowRight className="h-4 w-4 text-brand-human rotate-[-90deg]" />
+                <span className="text-sm text-muted-foreground">
+                  <span className="text-foreground font-semibold">Pattern:</span> Human skills float up. AI skills drift down.{" "}
+                  <span className="text-brand-human font-semibold">Your value is at the top.</span>
+                </span>
+              </div>
             </motion.div>
 
-            <motion.div variants={fadeUp} custom={9} className="flex items-center justify-center gap-6 mt-6">
+            {/* Legend */}
+            <motion.div variants={fadeUp} custom={11} className="flex items-center justify-center gap-6 mt-6">
               <div className="flex items-center gap-2">
                 <div className="w-3 h-3 rounded-sm bg-brand-human" />
                 <span className="text-xs text-muted-foreground">Human-dominant</span>
