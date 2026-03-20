@@ -21,6 +21,7 @@ const Auth = () => {
   const { user, loading: authLoading } = useAuth();
 
   const redirectTo = searchParams.get("redirect") || "/";
+  const refCode = searchParams.get("ref");
 
   useEffect(() => {
     if (!authLoading && user) {
