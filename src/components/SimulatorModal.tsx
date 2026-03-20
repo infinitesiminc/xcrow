@@ -676,6 +676,8 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
 
   // Compute skills earned for this simulation
   const [earnedSkills, setEarnedSkills] = useState<{ skill_id: string; xp: number; name: string; levelBefore: string; levelAfter: string; leveledUp: boolean }[]>([]);
+  const [elevation, setElevation] = useState<ElevationNarrative | null>(null);
+  const [elevationLoading, setElevationLoading] = useState(false);
 
   const handleFinish = async () => {
     setPhase("completing");
