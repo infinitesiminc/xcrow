@@ -500,7 +500,7 @@ export default function Students() {
               </Button>
             </motion.div>
             <motion.p variants={fadeUp} custom={3} className="text-xs text-muted-foreground mt-4">
-              No credit card required. Explore 5,000+ roles instantly.
+              No credit card required. Explore 21,000+ roles instantly.
             </motion.p>
           </div>
         </Section>
