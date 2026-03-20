@@ -31,6 +31,7 @@ serve(async (req) => {
     if (action === "compile") return await handleCompile(payload, apiKey);
     if (action === "chat") return await handleChat(payload, apiKey);
     if (action === "score") return await handleScore(payload, apiKey);
+    if (action === "elevate") return await handleElevate(payload, apiKey);
 
     return new Response(JSON.stringify({ error: "Unknown action" }), {
       status: 400,
