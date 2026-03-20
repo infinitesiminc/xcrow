@@ -99,7 +99,7 @@ export default function MyRolesPanel({ onSelectRole, onAskChat, onTabChange }: M
       {/* Tabs */}
       <div className="flex items-center gap-1 bg-muted/50 rounded-lg p-0.5 mb-3 shrink-0">
         <button
-          onClick={() => setTab("saved")}
+          onClick={() => { setTab("saved"); onTabChange?.("saved"); }}
           className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors flex-1 justify-center ${
             tab === "saved"
               ? "bg-background text-foreground shadow-sm"
