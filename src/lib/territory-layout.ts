@@ -100,7 +100,8 @@ export function buildMapLayout(taxonomy?: TaxonomySkill[]): IslandLayout[] {
  * Build connections between skills within the same island
  * and a few cross-island bridges.
  */
-export function buildConnections(layout: IslandLayout[]): PathConnection[] {
+export function buildConnections(layout: IslandLayout[], taxonomy?: TaxonomySkill[]): PathConnection[] {
+  const source = taxonomy || SKILL_TAXONOMY;
   const connections: PathConnection[] = [];
 
   // Intra-island: connect adjacent nodes in radial order
