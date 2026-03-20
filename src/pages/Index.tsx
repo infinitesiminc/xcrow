@@ -214,6 +214,13 @@ const Index = () => {
           skills={realSkills}
           targetSkillIds={targetSkillIds}
           userName={userName}
+          onToggleRoles={() => setRolesOpen((p) => !p)}
+          rolesOpen={rolesOpen}
+        />
+        <MyRolesPanel
+          open={rolesOpen}
+          onClose={() => setRolesOpen(false)}
+          onAskChat={handleRolesAskChat}
         />
       )}
 
