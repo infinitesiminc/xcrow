@@ -2,9 +2,9 @@
  * /about — Mission, brand story, and team.
  */
 import { useRef } from "react";
-import founderImg from "@/assets/founder-jackson-nobg.png";
+import founderImg from "@/assets/founder-jackson.png";
 import { motion, useInView } from "framer-motion";
-import { ArrowRight, Bird, Brain, Layers, TrendingUp } from "lucide-react";
+import { ArrowRight, Bird, Brain, Layers, Linkedin, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import Navbar from "@/components/Navbar";
