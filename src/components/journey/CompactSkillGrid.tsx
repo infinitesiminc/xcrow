@@ -63,7 +63,7 @@ export default function CompactSkillGrid({ skills, skillTasks }: CompactSkillGri
                 <div key={cat}>
                   <div className="flex items-center gap-1.5 mb-1.5">
                     <span className="text-xs">{meta.emoji}</span>
-                    <span className="text-[9px] font-bold uppercase tracking-[0.15em] text-white/30">{meta.label}</span>
+                    <span className="text-[9px] font-bold uppercase tracking-[0.15em] text-white/40">{meta.label}</span>
                   </div>
                   <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-5 gap-1.5">
                     {catSkills.map((skill, i) => {
