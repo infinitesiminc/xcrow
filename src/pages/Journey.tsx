@@ -22,7 +22,8 @@ export interface TargetRole {
 }
 
 export default function Journey() {
-  const { user, loading: authLoading, openAuthModal } = useAuth();
+  const { user, loading: authLoading } = useAuth();
+  const navigate = useNavigate();
   const isMobile = useIsMobile();
 
   const [savedRoles, setSavedRoles] = useState<SavedRoleData[]>([]);
