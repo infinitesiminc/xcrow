@@ -694,78 +694,52 @@ function DesktopGrid({ roles, savedRoleTitles }: RoleFeedProps) {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.35, delay: Math.min(i * 0.03, 0.4) }}
                 onClick={() => setSelected(role)}
-                className="group text-left rounded-xl overflow-hidden bg-card border border-border transition-all hover:shadow-lg hover:shadow-primary/5 hover:border-primary/40 flex flex-col"
+                className="group text-left rounded-2xl overflow-hidden flex flex-col transition-all hover:shadow-lg hover:shadow-black/20"
+                style={{
+                  background: "hsl(240 10% 10%)",
+                  border: "1px solid hsl(240 10% 16%)",
+                }}
               >
-                {/* ── Top: Key info (title, company, location) ── */}
-                <div className="p-3 pb-2">
-                  <div className="flex items-start gap-2.5">
-                    {logoUrl && (
-                      <img src={logoUrl} alt={role.company || ''} className="h-8 w-8 rounded-lg object-contain bg-muted/30 p-0.5 shrink-0 mt-0.5" onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
+                {/* ── Top: Key info (company label, title, department) ── */}
+                <div className="p-4 pb-3">
+                  {/* Company row */}
+                  <div className="flex items-center gap-2 mb-3">
+                    {logoUrl ? (
+                      <img src={logoUrl} alt={role.company || ''} className="h-5 w-5 rounded object-contain opacity-60 shrink-0" onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
+                    ) : (
+                      <Briefcase className="h-4 w-4 text-white/30 shrink-0" />
                     )}
-                    <div className="min-w-0 flex-1">
-                      <h3 className="text-sm font-semibold text-foreground leading-snug group-hover:text-primary transition-colors line-clamp-2">{role.title}</h3>
-                      {role.company && (
-                        <p className="text-xs text-muted-foreground truncate mt-0.5">{role.company}</p>
-                      )}
-                    </div>
-                  </div>
-                  {/* Meta row: location, seniority, work mode */}
-                  <div className="flex items-center gap-1.5 mt-2 flex-wrap">
-                    {role.location && (
-                      <span className="flex items-center gap-0.5 text-[11px] text-muted-foreground">
-                        <MapPin className="h-3 w-3 shrink-0" />{role.location}
-                      </span>
-                    )}
-                    {role.workMode && (
-                      <span className="text-[11px] text-muted-foreground capitalize">· {role.workMode}</span>
-                    )}
-                    {role.seniority && (
-                      <span className="text-[11px] text-muted-foreground capitalize">· {role.seniority}</span>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-1.5 mt-2">
-                    <span className={`px-2 py-0.5 text-[10px] font-medium rounded-full border ${TAG_BADGE[role.tag] || TAG_BADGE.Other}`}>
-                      {role.tag}
+                    <span className="text-[11px] font-semibold uppercase tracking-[0.12em] text-white/45">
+                      {role.company || "Unknown"}
                     </span>
                   </div>
+
+                  {/* Title */}
+                  <h3 className="text-[15px] font-bold text-white/90 leading-snug line-clamp-2 mb-1.5">
+                    {role.title}
+                  </h3>
+
+                  {/* Department tag */}
+                  <p className="text-xs text-white/35">{role.tag}</p>
                 </div>
 
-                {/* ── Bottom: AI metrics strip ── */}
-                <div className="mt-auto border-t border-border/30">
-                  <div
-                    className="relative px-3 py-2 flex items-center justify-between"
-                    style={{
-                      background: `linear-gradient(135deg, hsl(${hue1} 60% 8%) 0%, hsl(${hue2} 50% 6%) 100%)`,
-                    }}
-                  >
-                    {role.augmented > 0 ? (
-                      <div className="flex items-center gap-1.5">
-                        <CardMiniGauge value={role.augmented} />
-                        <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">Augmented</span>
-                      </div>
-                    ) : (
-                      <div className="flex items-center gap-1">
-                        <Zap className="h-3 w-3 text-primary" />
-                        <span className="text-[11px] font-semibold text-muted-foreground">{role.aiOpportunity}% opportunity</span>
-                      </div>
-                    )}
-                    {role.augmented > 0 ? (
-                      <div className="flex items-center gap-1">
-                        {(role.taskCount ?? 0) > 0 ? (
-                          <>
-                            <CircleDot className="h-3 w-3 text-brand-human" />
-                            <span className="text-[10px] font-bold text-brand-human">{role.taskCount} tasks</span>
-                          </>
-                        ) : (
-                          <span className="text-[10px] text-muted-foreground/60">Snapshot</span>
-                        )}
-                      </div>
-                    ) : (
-                      <span className={`text-[11px] font-semibold ${riskColor}`}>
-                        {role.risk}% risk
+                {/* ── Bottom: Single metric ── */}
+                <div className="mt-auto px-4 pb-4 pt-1">
+                  {role.augmented > 0 ? (
+                    <div className="flex items-center gap-1.5">
+                      <Bot className="h-3.5 w-3.5" style={{ color: "hsl(330 60% 60%)" }} />
+                      <span className="text-sm font-bold" style={{ color: "hsl(330 60% 60%)" }}>
+                        {role.augmented}%
                       </span>
-                    )}
-                  </div>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-1.5">
+                      <Zap className="h-3.5 w-3.5 text-white/25" />
+                      <span className="text-sm font-bold text-white/35">
+                        {role.aiOpportunity}%
+                      </span>
+                    </div>
+                  )}
                 </div>
               </motion.button>
             );

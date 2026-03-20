@@ -66,8 +66,8 @@ export default function PlayerHUD({ skills, uniqueTasks, isEmpty }: PlayerHUDPro
         {stats.map(stat => (
           <div
             key={stat.label}
-            className="rounded-lg p-2 text-center"
-            style={{ background: "hsla(240, 10%, 12%, 0.7)", border: "1px solid hsla(0,0%,100%,0.08)" }}
+            className="rounded-xl p-2 text-center"
+            style={{ background: "hsl(240 10% 12%)", border: "1px solid hsl(240 10% 18%)" }}
           >
             <stat.icon className="h-3 w-3 mx-auto mb-0.5" style={{ color: "hsl(180, 50%, 55%)" }} />
             <p className="text-sm font-bold text-white/85 font-mono tabular-nums">{stat.value}</p>
@@ -93,8 +93,8 @@ export default function PlayerHUD({ skills, uniqueTasks, isEmpty }: PlayerHUDPro
               initial={{ opacity: 0, x: -6 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: i * 0.04 }}
-              className="flex items-center gap-2 rounded-lg px-2 py-1.5"
-              style={{ background: "hsla(270, 20%, 18%, 0.3)", border: "1px solid hsla(270, 40%, 55%, 0.12)" }}
+              className="flex items-center gap-2 rounded-xl px-2 py-1.5"
+              style={{ background: "hsl(240 10% 12%)", border: "1px solid hsl(240 10% 18%)" }}
             >
               <ShieldCheck className="h-3 w-3 shrink-0" style={{ color: "hsl(270, 45%, 60%)" }} />
               <div className="flex-1 min-w-0">
@@ -112,8 +112,8 @@ export default function PlayerHUD({ skills, uniqueTasks, isEmpty }: PlayerHUDPro
           {lockedEdges.map((tax) => (
             <div
               key={tax.id}
-              className="flex items-center gap-2 rounded-lg px-2 py-1.5 opacity-40"
-              style={{ border: "1px dashed hsla(0,0%,100%,0.08)" }}
+              className="flex items-center gap-2 rounded-xl px-2 py-1.5"
+              style={{ border: "1px dashed hsl(240 10% 18%)" }}
             >
               <Lock className="h-2.5 w-2.5 shrink-0 text-white/20" />
               <p className="text-[10px] text-white/30 truncate flex-1">{tax.humanEdge}</p>
