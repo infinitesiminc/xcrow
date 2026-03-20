@@ -335,9 +335,9 @@ export default function Students() {
         <Section className="py-20 sm:py-28 px-6">
           <div className="max-w-5xl mx-auto">
             <motion.div variants={fadeUp} custom={0} className="text-center mb-14">
-              <h2 className="text-3xl sm:text-4xl font-bold mb-4">Three steps to job-market fluency</h2>
+              <h2 className="text-3xl sm:text-4xl font-bold mb-4">Three steps to owning the top of your stack</h2>
               <p className="text-muted-foreground max-w-lg mx-auto">
-                From "what should I learn?" to "I'm ready." Here's how.
+                From "what's changing?" to "I'm ready for it." Here's how.
               </p>
             </motion.div>
 
@@ -345,22 +345,22 @@ export default function Students() {
               {[
                 {
                   icon: Target,
-                  title: "See What's Changing",
-                  desc: "We break every role into its core tasks and score each one for AI exposure. See exactly which skills are growing, shifting, or emerging.",
+                  title: "See Where You're Being Promoted",
+                  desc: "We break every role into its core tasks and show you which ones AI is handling — and which higher-purpose tasks are emerging for you.",
                   color: "text-spectrum-0",
                   gradient: "from-spectrum-0 via-spectrum-1 to-spectrum-2",
                 },
                 {
                   icon: Brain,
-                  title: "Practice What Counts",
-                  desc: "AI-powered simulations let you practice real workplace tasks — not generic quizzes. Build the four pillars: Tool Awareness, Human Value-Add, Adaptive Thinking, Domain Judgment.",
+                  title: "Practice The Tasks At The Top",
+                  desc: "AI-powered simulations let you practice the strategic, human-centric tasks that define your new value — not the ones being automated away.",
                   color: "text-spectrum-3",
                   gradient: "from-spectrum-3 via-spectrum-4 to-spectrum-5",
                 },
                 {
                   icon: TrendingUp,
-                  title: "Track Your Growth",
-                  desc: "Your skill map shows which roles you're closest to and which skills unlock the most career paths. Every simulation moves you forward.",
+                  title: "Track Your Elevation",
+                  desc: "Your skill map shows how you're moving up the value chain — which roles you're closest to and which skills unlock the most career paths.",
                   color: "text-spectrum-6",
                   gradient: "from-spectrum-6 via-spectrum-5 to-spectrum-4",
                 },
