@@ -1,82 +1,62 @@
 
 
-## Build Plan: 4 Marketing Pages
+# Reframe /schools Page — 100% Positive Messaging
 
-### Priority Order
-1. `/schools` — University landing page (B2B revenue driver)
-2. `/students` — Redesign existing page with updated messaging
-3. `/about` — Mission / brand story
-4. `/blog` — SEO content hub (static MVP)
+## The Problem
+The current copy is fear-based and deficit-focused:
+- "Your curriculum was designed before GPT" — implies schools are outdated
+- "The skills gap isn't coming. It's already here." — alarmist
+- "where your students are falling behind" — blame
+- "Your students are already falling behind" — final CTA is the worst offender
+- "5 of 8 high-demand skills missing" — deficit framing
+- "GAP" badges — negative labeling
+- Testimonial: "62% of skills… weren't being taught" — shame
 
----
+This contradicts the brand's empowerment-first principle.
 
-### Page 1: `/schools` — For Universities
+## The Reframe Strategy
 
-**Hero**: "Your curriculum was designed before GPT. Your students weren't." + bold stat (e.g. "67% of skills in your catalog are AI-exposed") + CTA: "Get a Free Curriculum Audit"
+Shift from **"you're broken, we'll show you"** to **"you're already great — here's how to go further."**
 
-**Sections**:
-- **The Problem**: Visual showing traditional curriculum vs market skill demand gap (reuse the skill block component pattern from `/students`)
-- **How It Works** (3 steps): 1) We scrape your catalog 2) Map skills to market demand 3) Identify gaps + recommend simulations
-- **Live Preview**: Mock curriculum gap analysis card showing a sample school's coverage %, gaps, and AI readiness — styled like the existing `SkillsGapMatrix` output
-- **What Schools Get**: Feature grid — gap analysis, simulation library, student dashboards, leaderboard, auto-enroll, cohort analytics
-- **Social Proof**: School logos marquee (UCLA, MIT, Stanford, etc. — mock for now) + a testimonial quote placeholder
-- **CTA**: "Book a Curriculum Audit" → links to `/contact`
+| Current (fear) | Proposed (opportunity) |
+|---|---|
+| "Your curriculum was designed before GPT" | "Your curriculum built the foundation. Now let's build on it." |
+| "The skills gap isn't coming. It's already here." | "The Opportunity" — frame gaps as growth surface |
+| "falling behind" | "unlock new potential" |
+| "GAP" badges | "OPPORTUNITY" badges |
+| "missing from your catalog" | "ready to add to your catalog" |
+| "students are already falling behind" | "Give your students every advantage" |
+| "AI readiness" | "Growth potential" |
+| "Coverage 38%" | Flip to "62% growth surface" or keep coverage but pair with positive framing |
 
-**New file**: `src/pages/Schools.tsx`
-**Route**: Add to `App.tsx` with `<Navbar />` + `<Footer />`
+## Specific Copy Changes
 
----
+### Hero
+- **Headline**: "Your curriculum built the foundation. Now let's future-proof it." with gradient on "future-proof it."
+- **Subhead**: "We scan your course catalog, map it against 1M+ real job tasks, and spotlight the highest-impact skills you can add next."
+- **Stat**: "67% of in-demand skills can be added through simulations — no curriculum overhaul needed"
 
-### Page 2: `/students` — Redesign
+### "The Problem" → "The Opportunity"
+- Section label: "The Opportunity"
+- **Headline**: "Three timelines. One chance to connect them." (keep the Monthly/Yearly/Decades structure but reframe)
+- **Body**: "Your accreditation shows rigor. Market data shows where to grow next. We bring both together."
 
-**Keep**: The Lego skill-stack thesis section (it's strong). The before/after AI shift comparison.
+### Live Preview
+- "COVERAGE" stays, but "GAP" badges → "OPPORTUNITY" with a positive color
+- Footer: "5 high-impact skills ready to add" instead of "missing"
+- "AI READINESS" → "GROWTH POTENTIAL"
 
-**Add/Update**:
-- New hero copy: "Your degree teaches subjects. The job market needs skills."
-- **Practice section**: Show simulation preview — mock chat bubble + pillar scores
-- **Skill Map preview**: Visual of a student's radar/heatmap (pull from existing `JourneyRadarView` style)
-- **Leaderboard teaser**: Mini leaderboard preview + "Join 5,000+ students" 
-- **Viral CTA**: "Your school isn't on crowy yet? Tell your professor." → mailto or `/contact` link
-- Final CTA: "Get Started — Free"
+### Testimonial
+- Reframe to: "crowy.ai helped us identify 12 high-demand skills we could integrate into existing courses — our students started practicing them the same week."
 
-**Edit**: `src/pages/Students.tsx`
+### Final CTA
+- **Headline**: "Give your students every advantage." / "The future rewards prepared graduates."
+- **Body**: "Get a free curriculum insights report — we'll spotlight your highest-impact opportunities within 48 hours."
 
----
+### Steps & Features
+- Step 2 desc: "cross-reference… to spotlight your strongest coverage and highest-impact opportunities" (not "gaps and AI readiness scores")
+- Step 3: "Unlock new skills with simulations" instead of "Close the gaps"
 
-### Page 3: `/about` — Mission & Brand
-
-**Sections**:
-- **Hero**: "We're building the bridge between education and the AI economy"
-- **The Problem**: The acceleration gap — AI evolves monthly, curricula update yearly, careers span decades
-- **The Crow**: Brand story — crows are adaptive problem-solvers, tool-users, pattern-recognizers. That's the skillset the future demands.
-- **What We Build**: Jobs → Tasks → Skills framework explanation with the Lego visual
-- **Team**: Founder card(s) with photo placeholder, title, one-liner
-- **Backed By / Advisors**: Placeholder section for future use
-
-**New file**: `src/pages/About.tsx`
-**Route**: Add to `App.tsx`
-
----
-
-### Page 4: `/blog` — Static MVP
-
-**Simple layout**:
-- Hero: "Insights" or "Resources" header
-- Grid of 3-4 hardcoded article cards with title, excerpt, date, category tag
-- Cards link to `#` for now (no actual blog engine)
-- Categories: "AI & Work", "Skills Research", "For Educators"
-
-**New file**: `src/pages/Blog.tsx`
-**Route**: Add to `App.tsx`
-
----
-
-### Shared Changes
-
-- **`App.tsx`**: Add 3 new lazy imports + routes (`/schools`, `/about`, `/blog`)
-- **`Navbar.tsx`**: May need nav links updated (check if these pages should appear in nav)
-- **Design**: All pages use the existing bold/dark aesthetic — `fadeUp` animations, `Section` wrapper pattern from Students.tsx, brand colors (`brand-ai`, `brand-human`, `brand-mid`)
-
-### Implementation Order
-Build one page per message, starting with `/schools`.
+## Files Changed
+- `src/pages/Schools.tsx` — all copy updates, badge color/label changes, section header renames
 
