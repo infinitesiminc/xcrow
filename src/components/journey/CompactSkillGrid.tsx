@@ -95,8 +95,8 @@ export default function CompactSkillGrid({ skills, skillTasks }: CompactSkillGri
                             <div
                               className="absolute top-0 left-2 right-2 h-[2px] rounded-full"
                               style={{
-                                background: `linear-gradient(90deg, hsl(180, 90%, 60%), hsl(270, 80%, 65%))`,
-                                opacity: 0.6,
+                                background: `linear-gradient(90deg, hsl(180, 40%, 50%), hsl(270, 40%, 55%))`,
+                                opacity: 0.4,
                               }}
                             />
                           )}
