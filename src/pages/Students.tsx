@@ -280,52 +280,53 @@ export default function Students() {
           <div className="max-w-4xl mx-auto">
             <motion.div variants={fadeUp} custom={0} className="text-center mb-14">
               <div className="inline-flex items-center gap-2 mb-4">
-                <Zap className="h-5 w-5 text-brand-ai" />
-                <span className="text-sm font-mono text-brand-ai tracking-widest uppercase">The Market Is Moving</span>
+                <TrendingUp className="h-5 w-5 text-brand-ai" />
+                <span className="text-sm font-mono text-brand-ai tracking-widest uppercase">Shifting Up The Value Chain</span>
               </div>
-              <h2 className="text-3xl sm:text-4xl font-bold mb-4">The market is shifting. Now you can see it happening.</h2>
+              <h2 className="text-3xl sm:text-4xl font-bold mb-4">Radiologists used to read scans. Now they guide treatment strategy.</h2>
               <p className="text-muted-foreground max-w-xl mx-auto">
-                New skills are emerging every quarter — and you can start practicing them today.
+                Every role is being elevated. Here's what the shift looks like in skills.
               </p>
             </motion.div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 max-w-3xl mx-auto">
-              {/* What you're learning */}
+              {/* What AI handles */}
               <motion.div variants={fadeUp} custom={1} className="relative rounded-xl overflow-hidden">
                 <div className="absolute top-0 inset-x-0 h-[3px] bg-gradient-to-r from-spectrum-0 via-spectrum-1 to-spectrum-2" />
                 <div className="border border-border/60 bg-card/80 backdrop-blur-sm rounded-xl p-6 pt-5">
-                  <span className="text-xs font-mono text-muted-foreground tracking-widest uppercase mb-4 block">What you're learning now</span>
+                  <span className="text-xs font-mono text-muted-foreground tracking-widest uppercase mb-1 block">What AI handles for you</span>
+                  <p className="text-[11px] text-muted-foreground/60 mb-4">Routine execution → automated</p>
                   <div className="flex flex-col gap-1.5">
-                    <SkillBlock label="Data Analysis" color="mid" small delay={2} />
-                    <SkillBlock label="Programming" color="mid" small delay={3} />
-                    <SkillBlock label="Communication" color="human" small delay={4} />
-                    <SkillBlock label="Leadership" color="human" small delay={5} />
-                    <SkillBlock label="Domain Knowledge" color="human" small delay={6} />
+                    <SkillBlock label="Data Entry & Sorting" color="ai" small delay={2} />
+                    <SkillBlock label="Report Generation" color="ai" small delay={3} />
+                    <SkillBlock label="Basic Analysis" color="ai" small delay={4} />
+                    <SkillBlock label="Template Drafting" color="ai" small delay={5} />
+                    <SkillBlock label="Scheduling & Admin" color="ai" small delay={6} />
                   </div>
                 </div>
               </motion.div>
 
-              {/* What employers are hiring for */}
+              {/* Where you move up to */}
               <motion.div variants={fadeUp} custom={2} className="relative rounded-xl overflow-hidden">
                 <div className="absolute top-0 inset-x-0 h-[3px] bg-gradient-to-r from-spectrum-6 via-spectrum-5 to-spectrum-4" />
-                <div className="border border-brand-ai/20 bg-card/80 backdrop-blur-sm rounded-xl p-6 pt-5 relative overflow-hidden">
-                  <div className="absolute inset-0 bg-gradient-to-b from-brand-ai/5 to-transparent pointer-events-none" />
-                  <span className="text-xs font-mono text-brand-ai tracking-widest uppercase mb-4 block relative">What employers are hiring for</span>
+                <div className="border border-brand-human/20 bg-card/80 backdrop-blur-sm rounded-xl p-6 pt-5 relative overflow-hidden">
+                  <div className="absolute inset-0 bg-gradient-to-b from-brand-human/5 to-transparent pointer-events-none" />
+                  <span className="text-xs font-mono text-brand-human tracking-widest uppercase mb-1 block relative">Where you move up to</span>
+                  <p className="text-[11px] text-muted-foreground/60 mb-4 relative">Higher-purpose tasks → your new edge</p>
                   <div className="flex flex-col gap-1.5 relative">
-                    <SkillBlock label="AI Agent Orchestration" color="ai" small glow delay={3} />
-                    <SkillBlock label="Prompt Engineering" color="ai" small glow delay={4} />
-                    <SkillBlock label="Human-AI Collaboration" color="ai" small delay={5} />
-                    <SkillBlock label="Strategic Judgment" color="human" small delay={6} />
-                    <SkillBlock label="Cross-Functional Comm." color="human" small delay={7} />
-                    <SkillBlock label="Adaptive Thinking" color="human" small glow delay={8} />
+                    <SkillBlock label="Strategic Decision-Making" color="human" small glow delay={3} />
+                    <SkillBlock label="Human-AI Orchestration" color="mid" small glow delay={4} />
+                    <SkillBlock label="Stakeholder Communication" color="human" small delay={5} />
+                    <SkillBlock label="Ethical Judgment" color="human" small delay={6} />
+                    <SkillBlock label="Systems Thinking" color="human" small delay={7} />
+                    <SkillBlock label="Creative Problem-Solving" color="human" small glow delay={8} />
                   </div>
                 </div>
               </motion.div>
             </div>
 
             <motion.p variants={fadeUp} custom={9} className="text-center text-sm text-muted-foreground mt-8 max-w-lg mx-auto">
-              The students who thrive will be the ones who practiced the skills the market is moving toward.
-              That practice starts here.
+              AI handles the floor. You own the ceiling. The students who practice the tasks at the top of the stack are the ones who get hired.
             </motion.p>
           </div>
         </Section>
