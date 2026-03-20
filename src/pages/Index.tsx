@@ -74,7 +74,7 @@ const Index = () => {
       const [simsRes, profileRes] = await Promise.all([
         supabase
           .from("completed_simulations")
-          .select("task_name, job_title, skills_earned")
+          .select("task_name, job_title, skills_earned, tool_awareness_score, human_value_add_score, adaptive_thinking_score, domain_judgment_score")
           .eq("user_id", user.id),
         supabase
           .from("profiles")
