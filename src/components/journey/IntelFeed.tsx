@@ -137,7 +137,7 @@ export default function IntelFeed({ skills, savedRoles }: IntelFeedProps) {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.05 }}
                 className="flex items-center gap-2 rounded-lg px-2 py-1.5"
-                style={{ background: "hsla(0, 50%, 15%, 0.3)", border: "1px solid hsla(0, 80%, 50%, 0.12)" }}
+                style={{ background: "hsl(240 10% 12%)", border: "1px solid hsl(240 10% 18%)" }}
               >
                 <Zap className="h-2.5 w-2.5 shrink-0 text-destructive/60" />
                 <p className="text-[10px] font-mono font-medium text-white/60 truncate">{drop.model}</p>
