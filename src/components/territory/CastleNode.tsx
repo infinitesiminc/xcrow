@@ -4,6 +4,7 @@
  */
 
 import { motion } from "framer-motion";
+import crowLogo from "@/assets/crowy-logo.png";
 import { Lock } from "lucide-react";
 import type { CastleState } from "@/lib/castle-levels";
 import type { SkillCategory } from "@/lib/skill-map";
