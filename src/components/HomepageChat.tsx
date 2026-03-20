@@ -339,7 +339,7 @@ export default function HomepageChat({
         <div className="flex items-center justify-between px-3 pb-3">
           <div className="flex flex-wrap gap-1.5 flex-1 min-w-0">
             {!hasInteracted &&
-              SUGGESTIONS.map((s) => (
+              (user ? SIGNED_IN_SUGGESTIONS : GUEST_SUGGESTIONS).map((s) => (
                 <button
                   key={s}
                   onClick={() => sendMessage(s)}
