@@ -7,7 +7,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Flame, Zap, Target, TrendingUp, Scroll, MapPin } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { type SkillXP, SKILL_TAXONOMY } from "@/lib/skill-map";
-import type { SavedRoleData } from "@/components/settings/JourneyDashboard";
+import type { SavedRoleData } from "@/pages/Journey";
 import type { TargetRole } from "@/pages/Journey";
 
 const FRONTIER_RELEASES = [

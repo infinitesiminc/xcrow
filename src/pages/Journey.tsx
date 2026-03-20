@@ -3,7 +3,29 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useIsMobile } from "@/hooks/use-mobile";
-import type { PracticedRoleData, SavedRoleData } from "@/components/settings/JourneyDashboard";
+
+export interface SavedRoleData {
+  job_title: string;
+  company: string | null;
+  bookmarked_at: string;
+  augmented_percent: number | null;
+  automation_risk_percent: number | null;
+  new_skills_percent: number | null;
+}
+
+export interface PracticedRoleData {
+  job_title: string;
+  task_name: string;
+  company: string | null;
+  completed_at: string;
+  correct_answers: number;
+  total_questions: number;
+  skills_earned: any;
+  tool_awareness_score: number | null;
+  human_value_add_score: number | null;
+  adaptive_thinking_score: number | null;
+  domain_judgment_score: number | null;
+}
 import Navbar from "@/components/Navbar";
 import PlayerHUD from "@/components/journey/PlayerHUD";
 import CompactSkillGrid from "@/components/journey/CompactSkillGrid";
