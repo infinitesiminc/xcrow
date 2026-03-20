@@ -80,13 +80,13 @@ export default function CompactSkillGrid({ skills, skillTasks }: CompactSkillGri
                           className="relative rounded-lg p-2 text-left transition-all group"
                           style={{
                             background: active
-                              ? "hsla(240, 10%, 10%, 0.8)"
-                              : "hsla(240, 10%, 8%, 0.5)",
+                              ? "hsla(240, 10%, 12%, 0.8)"
+                              : "hsla(240, 10%, 9%, 0.5)",
                             border: active
-                              ? "1px solid hsla(180, 90%, 60%, 0.2)"
-                              : "1px solid hsla(0, 0%, 100%, 0.04)",
+                              ? "1px solid hsla(180, 40%, 50%, 0.15)"
+                              : "1px solid hsla(0, 0%, 100%, 0.05)",
                             boxShadow: active
-                              ? "0 0 12px hsla(180, 90%, 60%, 0.08)"
+                              ? "0 0 8px hsla(180, 40%, 50%, 0.06)"
                               : "none",
                           }}
                         >
