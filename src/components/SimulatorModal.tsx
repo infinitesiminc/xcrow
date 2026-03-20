@@ -917,8 +917,8 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                     const hasScenarioMarker = !isUser && (displayContent.includes("📖 Scenario") || displayContent.includes("📖 **Scenario"));
                     const isNewScenario = !isUser && (prevIsTopicChange || hasScenarioMarker) && i > 1;
                     
-                    const objectiveMetInMsg = !isUser ? (msg.content.match(/\[OBJECTIVE_MET:(\w+)\]/g) || []).map(t => {
-                      const m = t.match(/\[OBJECTIVE_MET:(\w+)\]/);
+                    const objectiveMetInMsg = !isUser ? (msg.content.match(/\[OBJECTIVE_MET:([^\]]+)\]/g) || []).map(t => {
+                      const m = t.match(/\[OBJECTIVE_MET:([^\]]+)\]/);
                       return m ? m[1] : null;
                     }).filter(Boolean) : [];
 
