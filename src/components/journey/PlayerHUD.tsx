@@ -60,7 +60,6 @@ export default function PlayerHUD({ skills, uniqueTasks, isEmpty }: PlayerHUDPro
       <div className="px-3 py-2.5 border-b border-white/5">
         <h2 className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/50">Player HUD</h2>
       </div>
-      </div>
 
       {/* Stats grid */}
       <div className="grid grid-cols-2 gap-1.5 p-3">
