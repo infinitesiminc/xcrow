@@ -129,9 +129,9 @@ export default function Journey() {
           {/* Center — Skill Map */}
           <div
             className="relative"
-            style={{ background: "hsla(240, 10%, 5%, 0.6)", backdropFilter: "blur(8px)" }}
+            style={{ background: "hsl(240 10% 8%)" }}
           >
-            <div className="absolute top-0 left-0 right-0 h-[2px]" style={{ background: "linear-gradient(90deg, hsl(180, 40%, 50%), hsl(270, 40%, 55%), hsl(330, 45%, 50%))" }} />
+            <div className="absolute top-0 left-0 right-0 h-[2px]" style={{ background: "linear-gradient(90deg, hsl(180 40% 50%), hsl(270 40% 55%), hsl(330 45% 50%))" }} />
             <CompactSkillGrid skills={skills} skillTasks={skillTasks} />
           </div>
 
