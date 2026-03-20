@@ -58,7 +58,8 @@ export default function PlayerHUD({ skills, uniqueTasks, isEmpty }: PlayerHUDPro
     <div className="h-full flex flex-col overflow-hidden">
       {/* Panel header */}
       <div className="px-3 py-2.5 border-b border-white/5">
-        <h2 className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/40">Player HUD</h2>
+        <h2 className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/50">Player HUD</h2>
+      </div>
       </div>
 
       {/* Stats grid */}
