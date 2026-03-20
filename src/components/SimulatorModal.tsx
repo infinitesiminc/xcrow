@@ -515,7 +515,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
 
   // Parse objective tags from AI responses
   const parseObjectiveTags = useCallback((reply: string) => {
-    const tagPattern = /\[OBJECTIVE_MET:(\w+)\]/g;
+    const tagPattern = /\[OBJECTIVE_MET:([^\]]+)\]/g;
     let match;
     const newStatus = { ...objectiveStatus };
     let changed = false;
@@ -787,7 +787,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
       .replace(/🤖\s*\*?\*?AI Today:?\*?\*?\s*.+/g, "")
       .replace(/💡\s*\*?\*?Human Edge:?\*?\*?\s*.+/g, "")
       .replace(/\[SCAFFOLDING\]/g, "")
-      .replace(/\[OBJECTIVE_MET:\w+\]/g, "")
+      .replace(/\[OBJECTIVE_MET:[^\]]+\]/g, "")
       .replace(/\[SCAFFOLD_TIER:\d\]/g, "")
       .replace(/\[ALL_OBJECTIVES_MET\]/g, "")
       .trim();
@@ -917,8 +917,8 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                     const hasScenarioMarker = !isUser && (displayContent.includes("📖 Scenario") || displayContent.includes("📖 **Scenario"));
                     const isNewScenario = !isUser && (prevIsTopicChange || hasScenarioMarker) && i > 1;
                     
-                    const objectiveMetInMsg = !isUser ? (msg.content.match(/\[OBJECTIVE_MET:(\w+)\]/g) || []).map(t => {
-                      const m = t.match(/\[OBJECTIVE_MET:(\w+)\]/);
+                    const objectiveMetInMsg = !isUser ? (msg.content.match(/\[OBJECTIVE_MET:([^\]]+)\]/g) || []).map(t => {
+                      const m = t.match(/\[OBJECTIVE_MET:([^\]]+)\]/);
                       return m ? m[1] : null;
                     }).filter(Boolean) : [];
 
