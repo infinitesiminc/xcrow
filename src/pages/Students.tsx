@@ -1,16 +1,16 @@
 /**
  * /students — Marketing page targeting university students.
- * Explains the brand thesis via the "Skill Stack" Lego-block metaphor:
- *   Jobs → Tasks → Skills (transferable) → AI is shifting the stack.
- *
- * Visual vibe: gamified dark-mode with spectrum gradient borders, neon accents.
- * Messaging: Skill Builder angle, empowering & direct tone, real-time market transparency.
+ * Benefits-first messaging: practice real employer tasks, build a skill territory,
+ * get hired faster. Gamified dark-mode with spectrum accents.
  */
 import { useRef, useState, useCallback, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { motion, useInView } from "framer-motion";
-import { ArrowRight, Blocks, Brain, GraduationCap, Lock, Sparkles, Star, Target, Trophy, TrendingUp, Zap } from "lucide-react";
+import {
+  ArrowRight, Brain, ChevronRight, Flame, GraduationCap, Lock, Map,
+  MessageSquare, Rocket, Sparkles, Star, Target, Trophy, TrendingUp, Zap,
+} from "lucide-react";
 import CompanyMarquee from "@/components/CompanyMarquee";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
@@ -19,246 +19,123 @@ import Footer from "@/components/Footer";
 import SimulatorModal from "@/components/SimulatorModal";
 import CompanyJobsPanel from "@/components/CompanyJobsPanel";
 
-/* ─── Shared animation helpers ─── */
+/* ─── Animation helpers ─── */
 const fadeUp = {
-  hidden: { opacity: 0, y: 24 },
-  visible: (d: number) => ({ opacity: 1, y: 0, transition: { delay: d * 0.12, duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] as const } }),
+  hidden: { opacity: 0, y: 20, filter: "blur(4px)" },
+  visible: (d: number) => ({
+    opacity: 1, y: 0, filter: "blur(0px)",
+    transition: { delay: d * 0.1, duration: 0.6, ease: [0.16, 1, 0.3, 1] as const },
+  }),
 };
 
-function Section({ children, className = "" }: { children: React.ReactNode; className?: string }) {
+function Section({ children, className = "", id }: { children: React.ReactNode; className?: string; id?: string }) {
   const ref = useRef<HTMLDivElement>(null);
   const inView = useInView(ref, { once: true, margin: "-60px" });
   return (
-    <motion.section
-      ref={ref}
-      initial="hidden"
-      animate={inView ? "visible" : "hidden"}
-      className={`relative ${className}`}
-    >
+    <motion.section ref={ref} id={id} initial="hidden" animate={inView ? "visible" : "hidden"} className={`relative ${className}`}>
       {children}
     </motion.section>
   );
 }
 
-/* ─── Spectrum gradient borders for cards ─── */
-const SPECTRUM_GRADIENTS = [
-  "from-spectrum-0 via-spectrum-1 to-spectrum-2",
-  "from-spectrum-6 via-spectrum-5 to-spectrum-4",
-  "from-spectrum-3 via-spectrum-4 to-spectrum-5",
-  "from-spectrum-1 via-spectrum-2 to-spectrum-3",
-  "from-spectrum-4 via-spectrum-3 to-spectrum-6",
-  "from-spectrum-2 via-spectrum-0 to-spectrum-1",
-];
-
-/* ─── Skill block component (the Lego brick) ─── */
-interface SkillBlockProps {
-  label: string;
-  color: "ai" | "human" | "mid";
-  className?: string;
-  small?: boolean;
-  glow?: boolean;
-  delay?: number;
-}
-
-function SkillBlock({ label, color, className = "", small, glow, delay = 0 }: SkillBlockProps) {
-  const borderGradient = {
-    ai: "from-brand-ai/60 via-pink-500/40 to-brand-ai/20",
-    human: "from-brand-human/60 via-indigo-400/40 to-brand-human/20",
-    mid: "from-brand-mid/60 via-violet-400/40 to-brand-mid/20",
-  }[color];
-  const innerGlow = {
-    ai: "from-brand-ai/15 via-pink-500/8 to-transparent",
-    human: "from-brand-human/15 via-indigo-400/8 to-transparent",
-    mid: "from-brand-mid/15 via-violet-400/8 to-transparent",
-  }[color];
-  const textColor = {
-    ai: "text-brand-ai",
-    human: "text-brand-human",
-    mid: "text-brand-mid",
-  }[color];
-  const shadow = {
-    ai: "shadow-brand-ai/15",
-    human: "shadow-brand-human/15",
-    mid: "shadow-brand-mid/15",
-  }[color];
-
-  return (
-    <motion.div
-      variants={fadeUp}
-      custom={delay}
-      className={`
-        relative rounded-xl overflow-hidden
-        ${small ? "h-10" : "h-12 sm:h-14"}
-        ${glow ? `shadow-lg ${shadow}` : `shadow-md ${shadow}`}
-        ${className}
-      `}
-    >
-      <div className={`absolute inset-0 bg-gradient-to-br ${borderGradient} rounded-xl`} />
-      <div className={`absolute inset-[1px] rounded-[11px] bg-card/90 backdrop-blur-sm`}>
-        <div className={`absolute inset-0 bg-gradient-to-br ${innerGlow} rounded-[11px]`} />
-      </div>
-      <div className={`relative h-full flex items-center justify-center font-semibold ${textColor} ${small ? "text-xs px-3" : "text-sm px-4"}`}>
-        {label}
-      </div>
-    </motion.div>
-  );
-}
-
-/* ─── Job stack (vertical column of blocks) ─── */
-function JobStack({ title, skills, delay = 0 }: {
-  title: string;
-  skills: { label: string; color: "ai" | "human" | "mid" }[];
-  delay?: number;
+/* ─── Benefit card ─── */
+function BenefitCard({ icon: Icon, title, desc, gradient, delay }: {
+  icon: any; title: string; desc: string; gradient: string; delay: number;
 }) {
   return (
-    <div className="flex flex-col items-center gap-1.5 min-w-[140px] sm:min-w-[180px]">
-      <div className="flex flex-col-reverse gap-1.5 w-full">
-        {skills.map((s, i) => (
-          <SkillBlock key={s.label} {...s} delay={delay + i} />
-        ))}
+    <motion.div variants={fadeUp} custom={delay} className="relative rounded-2xl overflow-hidden group">
+      <div className={`absolute top-0 inset-x-0 h-[3px] bg-gradient-to-r ${gradient} opacity-70 group-hover:opacity-100 transition-opacity`} />
+      <div className="border border-border/50 bg-card/80 backdrop-blur-sm rounded-2xl p-6 h-full hover:shadow-lg hover:shadow-primary/5 transition-shadow">
+        <div className="h-11 w-11 rounded-xl bg-primary/8 border border-primary/15 flex items-center justify-center mb-4">
+          <Icon className="h-5 w-5 text-primary" />
+        </div>
+        <h3 className="text-base font-bold mb-2 leading-snug">{title}</h3>
+        <p className="text-sm text-muted-foreground leading-relaxed">{desc}</p>
       </div>
-      <motion.span variants={fadeUp} custom={delay + skills.length} className="text-xs font-mono text-muted-foreground mt-2 tracking-wide">
-        {title}
-      </motion.span>
-    </div>
-  );
-}
-
-/* ─── Proof stat pill ─── */
-function Stat({ value, label, delay, color }: { value: string; label: string; delay: number; color: string }) {
-  return (
-    <motion.div variants={fadeUp} custom={delay} className="flex flex-col items-center gap-1 px-4">
-      <span className={`text-2xl sm:text-3xl font-bold ${color}`}>{value}</span>
-      <span className="text-xs text-muted-foreground font-mono tracking-wide">{label}</span>
     </motion.div>
   );
 }
 
-/* ─── Static Visual 1: Jobs share the same skill stack ─── */
-function SharedSkillsVisual() {
-  const ROLES = [
-    {
-      title: "Product Manager",
-      skills: [
-        { label: "Strategy", color: "human" as const },
-        { label: "Data Analysis", color: "mid" as const },
-        { label: "Communication", color: "human" as const },
-        { label: "Research", color: "mid" as const },
-      ],
-    },
-    {
-      title: "Software Engineer",
-      skills: [
-        { label: "Programming", color: "mid" as const },
-        { label: "Data Analysis", color: "mid" as const },
-        { label: "System Design", color: "human" as const },
-        { label: "Communication", color: "human" as const },
-      ],
-    },
-    {
-      title: "Data Scientist",
-      skills: [
-        { label: "Data Analysis", color: "mid" as const },
-        { label: "Programming", color: "mid" as const },
-        { label: "Research", color: "mid" as const },
-        { label: "Strategy", color: "human" as const },
-      ],
-    },
+/* ─── Live skill territory preview ─── */
+function TerritoryPreview() {
+  const TILES = [
+    { name: "Strategic Thinking", level: 3, color: "from-spectrum-0/60 to-spectrum-1/30" },
+    { name: "Data Analysis", level: 2, color: "from-spectrum-3/60 to-spectrum-4/30" },
+    { name: "Prompt Engineering", level: 1, color: "from-spectrum-6/60 to-spectrum-5/30" },
+    { name: "Stakeholder Mgmt", level: 3, color: "from-spectrum-0/60 to-spectrum-2/30" },
+    { name: "AI Tool Mastery", level: 2, color: "from-spectrum-4/60 to-spectrum-3/30" },
+    { name: "Creative Problem-Solving", level: 1, color: "from-spectrum-5/60 to-spectrum-6/30" },
+    { name: "Communication", level: 3, color: "from-spectrum-1/60 to-spectrum-0/30" },
+    { name: "Research", level: 2, color: "from-spectrum-2/60 to-spectrum-3/30" },
+    { name: "Risk Assessment", level: 1, color: "from-spectrum-6/60 to-spectrum-4/30" },
   ];
 
-  const SHARED = new Set(["Data Analysis", "Communication", "Strategy", "Programming", "Research"]);
-
   return (
-    <div className="grid grid-cols-3 gap-3 sm:gap-5 max-w-2xl mx-auto">
-      {ROLES.map((role, ri) => (
-        <div key={role.title} className="flex flex-col items-center gap-1">
-          <div className="flex flex-col gap-1 w-full">
-            {role.skills.map((s, si) => (
-              <motion.div
-                key={s.label}
-                variants={fadeUp}
-                custom={ri * 0.5 + si}
-                className={`relative rounded-lg overflow-hidden h-9 ${SHARED.has(s.label) ? "ring-1 ring-primary/30" : ""}`}
-              >
-                <div className={`absolute inset-0 bg-gradient-to-br ${
-                  s.color === "human" ? "from-brand-human/50 via-indigo-400/30 to-brand-human/15"
-                    : "from-brand-mid/50 via-violet-400/30 to-brand-mid/15"
-                } rounded-lg`} />
-                <div className="absolute inset-[1px] rounded-[7px] bg-card/90" />
-                <div className={`relative h-full flex items-center justify-center text-[11px] sm:text-xs font-semibold px-2 ${
-                  s.color === "human" ? "text-brand-human" : "text-brand-mid"
-                }`}>
-                  {s.label}
-                </div>
-              </motion.div>
-            ))}
+    <div className="grid grid-cols-3 gap-2 max-w-md mx-auto">
+      {TILES.map((tile, i) => (
+        <motion.div
+          key={tile.name}
+          variants={fadeUp}
+          custom={i * 0.5 + 1}
+          className="relative rounded-xl overflow-hidden aspect-square group cursor-default"
+        >
+          <div className={`absolute inset-0 bg-gradient-to-br ${tile.color} rounded-xl`} />
+          <div className="absolute inset-[1px] rounded-[11px] bg-card/85 backdrop-blur-sm" />
+          <div className="relative h-full flex flex-col items-center justify-center p-2 gap-1.5">
+            <span className="text-[10px] sm:text-xs font-semibold text-foreground text-center leading-tight">{tile.name}</span>
+            {/* 3 rings preview */}
+            <div className="flex gap-1">
+              {[0, 1, 2].map((ring) => (
+                <div
+                  key={ring}
+                  className={`w-2 h-2 rounded-full ${
+                    ring < tile.level
+                      ? "bg-primary"
+                      : "bg-muted-foreground/20"
+                  }`}
+                />
+              ))}
+            </div>
           </div>
-          <motion.span variants={fadeUp} custom={ri * 0.5 + 4} className="text-[10px] sm:text-xs font-mono text-muted-foreground mt-2 tracking-wide text-center">
-            {role.title}
-          </motion.span>
-        </div>
+        </motion.div>
       ))}
     </div>
   );
 }
 
-/* ─── Static Visual 2: AI shifts the stack ─── */
-function SkillShiftVisual() {
-  const AI_SKILLS = ["Data Entry & Sorting", "Report Generation", "Basic Analysis", "Template Drafting"];
-  const HUMAN_SKILLS = ["Strategic Judgment", "Stakeholder Mgmt", "Ethical Reasoning", "Creative Problem-Solving"];
+/* ─── Chat preview ─── */
+function ChatPreview() {
+  const messages = [
+    { role: "user", text: "What skills do I need for product management?" },
+    { role: "ai", text: "Great question! PMs need 3 key skill dimensions. Let me show you which ones AI is reshaping, what tools to master, and where your human edge matters most..." },
+    { role: "ai", text: "I found 14 live PM roles. Your territory shows strong Communication — try a Stakeholder Alignment sim to claim your next tile! 🎯" },
+  ];
 
   return (
-    <div className="grid grid-cols-2 gap-4 sm:gap-6 max-w-xl mx-auto">
-      <motion.div variants={fadeUp} custom={0} className="relative rounded-xl overflow-hidden">
-        <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-brand-ai/60 to-brand-ai/20" />
-        <div className="border border-border/60 bg-card/80 rounded-xl p-4 pt-3">
-          <div className="flex items-center gap-1.5 mb-1">
-            <Zap className="h-3.5 w-3.5 text-brand-ai" />
-            <span className="text-[10px] font-mono text-brand-ai tracking-widest uppercase">Shrinking</span>
+    <div className="space-y-3 max-w-sm mx-auto">
+      {messages.map((msg, i) => (
+        <motion.div
+          key={i}
+          variants={fadeUp}
+          custom={i + 1}
+          className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
+        >
+          <div className={`rounded-2xl px-4 py-2.5 max-w-[85%] text-xs leading-relaxed ${
+            msg.role === "user"
+              ? "bg-primary text-primary-foreground rounded-br-md"
+              : "bg-muted/60 border border-border/50 text-foreground rounded-bl-md"
+          }`}>
+            {msg.text}
           </div>
-          <p className="text-[10px] text-muted-foreground/60 mb-3">AI automates these</p>
-          <div className="flex flex-col gap-1">
-            {AI_SKILLS.map((label, i) => (
-              <motion.div key={label} variants={fadeUp} custom={i + 1} className="relative rounded-lg overflow-hidden h-9 opacity-60">
-                <div className="absolute inset-0 bg-gradient-to-br from-brand-ai/40 via-pink-500/20 to-brand-ai/10 rounded-lg" />
-                <div className="absolute inset-[1px] rounded-[7px] bg-card/90" />
-                <div className="relative h-full flex items-center justify-center text-[11px] font-semibold text-brand-ai px-2">{label}</div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </motion.div>
-
-      <motion.div variants={fadeUp} custom={1} className="relative rounded-xl overflow-hidden">
-        <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-brand-human/60 to-brand-human/20" />
-        <div className="border border-brand-human/20 bg-card/80 rounded-xl p-4 pt-3 relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-b from-brand-human/5 to-transparent pointer-events-none" />
-          <div className="flex items-center gap-1.5 mb-1 relative">
-            <TrendingUp className="h-3.5 w-3.5 text-brand-human" />
-            <span className="text-[10px] font-mono text-brand-human tracking-widest uppercase">Growing</span>
-          </div>
-          <p className="text-[10px] text-muted-foreground/60 mb-3 relative">Your new edge</p>
-          <div className="flex flex-col gap-1 relative">
-            {HUMAN_SKILLS.map((label, i) => (
-              <motion.div key={label} variants={fadeUp} custom={i + 2} className="relative rounded-lg overflow-hidden h-9">
-                <div className="absolute inset-0 bg-gradient-to-br from-brand-human/50 via-indigo-400/30 to-brand-human/15 rounded-lg" />
-                <div className="absolute inset-[1px] rounded-[7px] bg-card/90" />
-                <div className="relative h-full flex items-center justify-center text-[11px] font-semibold text-brand-human px-2">{label}</div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </motion.div>
+        </motion.div>
+      ))}
     </div>
   );
 }
 
-/* ─── Auto-select company panel — shows jobs immediately on scroll ─── */
+/* ─── Auto-select company panel ─── */
 function AutoSelectCompanyPanel({
-  selectedCompany,
-  onSelect,
-  onClose,
-  onJobSelect,
+  selectedCompany, onSelect, onClose, onJobSelect,
 }: {
   selectedCompany: string | null;
   onSelect: (name: string) => void;
@@ -271,46 +148,30 @@ function AutoSelectCompanyPanel({
 
   useEffect(() => {
     if (inView && !autoSelected && !selectedCompany) {
-      // Find a company with at least 6 sim-ready roles
       (async () => {
         const { data } = await supabase
           .from("job_task_clusters")
           .select("jobs!inner(company_id, companies!inner(name))")
           .limit(1000);
-
         if (!data?.length) return;
-
-        const companyCounts = new Map<string, number>();
+        const counts: globalThis.Map<string, number> = new globalThis.Map();
         for (const row of data) {
           const name = (row.jobs as any)?.companies?.name;
-          if (name) companyCounts.set(name, (companyCounts.get(name) || 0) + 1);
+          if (name) counts.set(name, (counts.get(name) || 0) + 1);
         }
-
-        // Pick the company with the most roles, minimum 6
         let best: string | null = null;
         let bestCount = 0;
-        for (const [name, count] of companyCounts) {
-          if (count >= 6 && count > bestCount) {
-            best = name;
-            bestCount = count;
-          }
+        for (const [name, count] of counts) {
+          if (count >= 6 && count > bestCount) { best = name; bestCount = count; }
         }
-
-        if (best) {
-          onSelect(best);
-          setAutoSelected(true);
-        }
+        if (best) { onSelect(best); setAutoSelected(true); }
       })();
     }
   }, [inView, autoSelected, selectedCompany, onSelect]);
 
   return (
     <div ref={ref}>
-      <CompanyJobsPanel
-        companyName={selectedCompany}
-        onClose={onClose}
-        onJobSelect={onJobSelect}
-      />
+      <CompanyJobsPanel companyName={selectedCompany} onClose={onClose} onJobSelect={onJobSelect} />
     </div>
   );
 }
@@ -331,71 +192,201 @@ export default function Students() {
     else openAuthModal?.();
   };
 
-  const handleLaunchSim = (job: { role: string; company: string; task: string }) => {
-    setSimJob(job);
-  };
-
   return (
     <>
       <Navbar />
       <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
 
         {/* ═══ HERO ═══ */}
-        <Section className="pt-28 pb-20 px-6 relative">
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[400px] bg-primary/8 rounded-full blur-[120px] pointer-events-none" />
+        <Section className="pt-28 pb-24 px-6 relative">
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[500px] bg-primary/6 rounded-full blur-[140px] pointer-events-none" />
 
           <div className="max-w-4xl mx-auto text-center relative">
-            <motion.div variants={fadeUp} custom={0} className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-4 py-1.5 mb-6 glow-purple">
-              <Sparkles className="h-3.5 w-3.5 text-primary" />
-              <span className="text-xs font-medium text-primary">Updated weekly from 5,000+ live job postings</span>
+            <motion.div variants={fadeUp} custom={0} className="inline-flex items-center gap-2 rounded-full border border-warning/30 bg-warning/8 px-4 py-1.5 mb-6">
+              <Flame className="h-3.5 w-3.5 text-warning" />
+              <span className="text-xs font-medium text-warning">73% of employers now test AI skills in interviews</span>
             </motion.div>
 
             <motion.h1 variants={fadeUp} custom={1} className="text-4xl sm:text-5xl lg:text-6xl font-bold font-display leading-[1.08] tracking-tight mb-6">
-              Your degree is the foundation.{" "}
-              <br />
-              <span className="bg-gradient-to-r from-brand-human to-brand-ai bg-clip-text text-transparent">
-                This is your edge.
+              Your classmates will apply.{" "}
+              <br className="hidden sm:block" />
+              <span className="bg-gradient-to-r from-spectrum-0 via-primary to-spectrum-6 bg-clip-text text-transparent">
+                You'll already know the job.
               </span>
             </motion.h1>
 
             <motion.p variants={fadeUp} custom={2} className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto mb-10 leading-relaxed">
-              See exactly which skills employers need that your courses don't cover —
-              then practice them before you graduate.
+              Practice the exact tasks employers hire for — before you graduate.
+              Build a skill territory that proves you're ready.
             </motion.p>
 
             <motion.div variants={fadeUp} custom={3} className="flex flex-col sm:flex-row items-center justify-center gap-3">
               <Button size="lg" onClick={handleGetStarted} className="gap-2 text-base px-8 h-12 glow-purple">
-                Explore Your First Role <ArrowRight className="h-4 w-4" />
+                Start Practicing — Free <ArrowRight className="h-4 w-4" />
               </Button>
-              <Button size="lg" variant="outline" onClick={() => document.getElementById("how-it-works")?.scrollIntoView({ behavior: "smooth" })} className="text-base px-8 h-12 border-border/60">
-                See How It Works
+              <Button size="lg" variant="outline" onClick={() => document.getElementById("benefits")?.scrollIntoView({ behavior: "smooth" })} className="text-base px-8 h-12 border-border/60">
+                See What You Get
               </Button>
             </motion.div>
+
+            <motion.p variants={fadeUp} custom={4} className="text-xs text-muted-foreground mt-5">
+              Free forever · No credit card · Used by students at 200+ universities
+            </motion.p>
           </div>
         </Section>
 
-        {/* ═══ GAMIFICATION HOOK — XP Preview ═══ */}
-        <Section className="py-16 px-6">
-          <div className="max-w-4xl mx-auto">
-            <motion.div variants={fadeUp} custom={0} className="text-center mb-10">
-              <div className="inline-flex items-center gap-2 mb-3">
-                <Trophy className="h-5 w-5 text-warning" />
-                <span className="text-sm font-mono text-warning tracking-widest uppercase">Level Up Your Career</span>
-              </div>
+        {/* ═══ PROOF BAR ═══ */}
+        <Section className="py-8 border-y border-border/30">
+          <div className="max-w-3xl mx-auto flex items-center justify-around gap-4 px-6">
+            {[
+              { value: "21,000+", label: "REAL ROLES", color: "text-spectrum-0" },
+              { value: "34,000+", label: "TASKS TO PRACTICE", color: "text-spectrum-3" },
+              { value: "3,600+", label: "COMPANIES", color: "text-spectrum-4" },
+              { value: "31", label: "SKILL DIMENSIONS", color: "text-spectrum-6" },
+            ].map((stat, i) => (
+              <motion.div key={stat.label} variants={fadeUp} custom={i} className="flex flex-col items-center gap-1 px-2">
+                <span className={`text-xl sm:text-2xl font-bold ${stat.color}`}>{stat.value}</span>
+                <span className="text-[10px] text-muted-foreground font-mono tracking-wide">{stat.label}</span>
+              </motion.div>
+            ))}
+          </div>
+        </Section>
+
+        {/* ═══ WHAT YOU GET — 6 benefits ═══ */}
+        <Section id="benefits" className="py-20 sm:py-28 px-6">
+          <div className="max-w-5xl mx-auto">
+            <motion.div variants={fadeUp} custom={0} className="text-center mb-14">
               <h2 className="text-3xl sm:text-4xl font-bold mb-3">
-                Every simulation unlocks{" "}
-                <span className="bg-gradient-to-r from-warning to-spectrum-6 bg-clip-text text-transparent">real career intelligence</span>
+                Everything you need to{" "}
+                <span className="bg-gradient-to-r from-spectrum-0 via-primary to-spectrum-6 bg-clip-text text-transparent">land the job</span>
               </h2>
               <p className="text-muted-foreground max-w-lg mx-auto">
-                Practice tasks. Earn XP. Unlock how your role is evolving — insights most people won't see for years.
+                Not another course. A practice ground built from what employers actually need right now.
               </p>
             </motion.div>
 
-            {/* Fake XP Dashboard */}
-            <motion.div variants={fadeUp} custom={1} className="relative rounded-2xl overflow-hidden max-w-3xl mx-auto">
-              <div className="absolute top-0 inset-x-0 h-[3px] bg-gradient-to-r from-warning via-spectrum-6 to-spectrum-4" />
-              <div className="border border-border/60 bg-card/80 backdrop-blur-sm rounded-2xl p-6 sm:p-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+              <BenefitCard
+                icon={Target}
+                title="See What Employers Actually Want"
+                desc="We analyze 21,000+ live roles to show you the exact skills and tasks companies hire for — updated weekly, not yearly."
+                gradient="from-spectrum-0 to-spectrum-1"
+                delay={1}
+              />
+              <BenefitCard
+                icon={Brain}
+                title="Practice Real Job Tasks With AI"
+                desc="Don't just read about product strategy or data analysis — simulate the actual tasks in AI-powered scenarios and get scored."
+                gradient="from-spectrum-3 to-spectrum-4"
+                delay={2}
+              />
+              <BenefitCard
+                icon={Map}
+                title="Build Your Skill Territory"
+                desc="Every simulation claims a tile on your personal skill map. Watch your territory grow as you master more dimensions."
+                gradient="from-spectrum-4 to-spectrum-6"
+                delay={3}
+              />
+              <BenefitCard
+                icon={MessageSquare}
+                title="AI Career Scout"
+                desc="Ask anything about any role. Your AI scout knows what you've practiced and guides you to the skills that matter most."
+                gradient="from-spectrum-1 to-spectrum-2"
+                delay={4}
+              />
+              <BenefitCard
+                icon={Sparkles}
+                title="Understand How AI Changes Every Role"
+                desc="For every skill, see 3 growth dimensions: how AI reshapes it, what tools to master, and where your human edge wins."
+                gradient="from-spectrum-5 to-spectrum-6"
+                delay={5}
+              />
+              <BenefitCard
+                icon={Rocket}
+                title="Stand Out in Interviews"
+                desc="Walk in knowing the tasks, the tools, and the human skills that matter. That's the difference between a resume and a story."
+                gradient="from-spectrum-6 to-spectrum-0"
+                delay={6}
+              />
+            </div>
+          </div>
+        </Section>
 
+        {/* ═══ VISUAL: SKILL TERRITORY + CHAT side by side ═══ */}
+        <Section className="py-20 sm:py-28 px-6">
+          <div className="max-w-5xl mx-auto">
+            <motion.div variants={fadeUp} custom={0} className="text-center mb-14">
+              <div className="inline-flex items-center gap-2 mb-3">
+                <Map className="h-5 w-5 text-primary" />
+                <span className="text-sm font-mono text-primary/80 tracking-widest uppercase">Your Skill Territory</span>
+              </div>
+              <h2 className="text-3xl sm:text-4xl font-bold mb-3">
+                Every skill has three layers to master
+              </h2>
+              <p className="text-muted-foreground max-w-lg mx-auto">
+                For each of the 31 skill dimensions, progress through: how AI reshapes it, what tools to learn, and your irreplaceable human edge.
+              </p>
+            </motion.div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
+              {/* Territory grid */}
+              <motion.div variants={fadeUp} custom={1} className="relative rounded-2xl overflow-hidden">
+                <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-spectrum-0 via-primary to-spectrum-6" />
+                <div className="border border-border/50 bg-card/80 backdrop-blur-sm rounded-2xl p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <div>
+                      <h3 className="text-sm font-semibold">Your Territory</h3>
+                      <p className="text-[10px] text-muted-foreground">9 of 31 skills explored</p>
+                    </div>
+                    <div className="flex items-center gap-3 text-[10px] text-muted-foreground">
+                      <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-primary" /> Mastered</span>
+                      <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-muted-foreground/20" /> Locked</span>
+                    </div>
+                  </div>
+                  <TerritoryPreview />
+                </div>
+              </motion.div>
+
+              {/* Chat preview */}
+              <motion.div variants={fadeUp} custom={2} className="relative rounded-2xl overflow-hidden">
+                <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-spectrum-3 via-spectrum-4 to-spectrum-5" />
+                <div className="border border-border/50 bg-card/80 backdrop-blur-sm rounded-2xl p-6">
+                  <div className="flex items-center gap-2 mb-4">
+                    <div className="h-7 w-7 rounded-lg bg-primary/10 flex items-center justify-center">
+                      <MessageSquare className="h-3.5 w-3.5 text-primary" />
+                    </div>
+                    <div>
+                      <h3 className="text-sm font-semibold">AI Career Scout</h3>
+                      <p className="text-[10px] text-muted-foreground">Context-aware guidance</p>
+                    </div>
+                  </div>
+                  <ChatPreview />
+                </div>
+              </motion.div>
+            </div>
+          </div>
+        </Section>
+
+        {/* ═══ GAMIFICATION — XP + Badges ═══ */}
+        <Section className="py-20 sm:py-28 px-6">
+          <div className="max-w-3xl mx-auto">
+            <motion.div variants={fadeUp} custom={0} className="text-center mb-10">
+              <div className="inline-flex items-center gap-2 mb-3">
+                <Trophy className="h-5 w-5 text-warning" />
+                <span className="text-sm font-mono text-warning tracking-widest uppercase">Level Up</span>
+              </div>
+              <h2 className="text-3xl sm:text-4xl font-bold mb-3">
+                Practice tasks.{" "}
+                <span className="bg-gradient-to-r from-warning to-spectrum-6 bg-clip-text text-transparent">Earn career intelligence.</span>
+              </h2>
+              <p className="text-muted-foreground max-w-md mx-auto">
+                Every simulation earns XP and unlocks insights about how your target role is evolving. Most people won't see this for years.
+              </p>
+            </motion.div>
+
+            <motion.div variants={fadeUp} custom={1} className="relative rounded-2xl overflow-hidden">
+              <div className="absolute top-0 inset-x-0 h-[3px] bg-gradient-to-r from-warning via-spectrum-6 to-spectrum-4" />
+              <div className="border border-border/50 bg-card/80 backdrop-blur-sm rounded-2xl p-6 sm:p-8">
                 {/* Player header */}
                 <div className="flex items-center gap-4 mb-6">
                   <div className="relative">
@@ -404,7 +395,7 @@ export default function Students() {
                     </div>
                     <motion.div
                       className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-warning flex items-center justify-center text-[10px] font-bold text-warning-foreground"
-                      animate={{ scale: [1, 1.2, 1] }}
+                      animate={{ scale: [1, 1.15, 1] }}
                       transition={{ duration: 2, repeat: Infinity }}
                     >
                       5
@@ -443,9 +434,7 @@ export default function Students() {
                       variants={fadeUp}
                       custom={i + 2}
                       className={`relative flex flex-col items-center gap-1.5 p-3 rounded-xl border ${
-                        badge.earned
-                          ? "border-border/60 bg-card/60"
-                          : "border-border/30 bg-card/30 opacity-50"
+                        badge.earned ? "border-border/60 bg-card/60" : "border-border/30 bg-card/30 opacity-50"
                       } ${i === 4 ? "hidden sm:flex" : ""}`}
                     >
                       {badge.earned ? (
@@ -453,9 +442,7 @@ export default function Students() {
                       ) : (
                         <Lock className="h-6 w-6 text-muted-foreground/40" />
                       )}
-                      <span className="text-[10px] font-mono text-muted-foreground text-center leading-tight">
-                        {badge.label}
-                      </span>
+                      <span className="text-[10px] font-mono text-muted-foreground text-center leading-tight">{badge.label}</span>
                       {badge.earned && (
                         <motion.div
                           className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-success flex items-center justify-center"
@@ -471,29 +458,22 @@ export default function Students() {
                   ))}
                 </div>
 
-                {/* Elevation Teaser — locked card */}
-                <motion.div
-                  variants={fadeUp}
-                  custom={7}
-                  className="relative rounded-xl overflow-hidden"
-                >
+                {/* Role Evolution teaser */}
+                <motion.div variants={fadeUp} custom={7} className="relative rounded-xl overflow-hidden">
                   <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-spectrum-6 via-spectrum-5 to-spectrum-4 opacity-60" />
-                  <div className="border border-brand-human/20 bg-gradient-to-br from-brand-human/5 via-card/60 to-card/80 backdrop-blur-sm rounded-xl p-5 flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-xl bg-brand-human/10 border border-brand-human/20 flex items-center justify-center flex-shrink-0">
-                      <motion.div
-                        animate={{ rotateY: [0, 180, 360] }}
-                        transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-                      >
-                        <Sparkles className="h-5 w-5 text-brand-human" />
+                  <div className="border border-primary/15 bg-primary/5 rounded-xl p-5 flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center flex-shrink-0">
+                      <motion.div animate={{ rotateY: [0, 180, 360] }} transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}>
+                        <Sparkles className="h-5 w-5 text-primary" />
                       </motion.div>
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="text-sm font-semibold mb-0.5">🔒 Role Evolution Insight</div>
                       <div className="text-xs text-muted-foreground">
-                        Score 60%+ in any simulation to unlock how that role is shifting up the value chain — your personal career intelligence brief.
+                        Score 60%+ in any simulation to unlock how that role is shifting — your personal career intelligence brief.
                       </div>
                     </div>
-                    <Button size="sm" variant="outline" onClick={handleGetStarted} className="flex-shrink-0 border-brand-human/30 text-brand-human hover:bg-brand-human/10 hidden sm:flex gap-1.5">
+                    <Button size="sm" variant="outline" onClick={handleGetStarted} className="flex-shrink-0 border-primary/30 text-primary hover:bg-primary/10 hidden sm:flex gap-1.5">
                       <Zap className="h-3.5 w-3.5" /> Unlock
                     </Button>
                   </div>
@@ -503,124 +483,68 @@ export default function Students() {
           </div>
         </Section>
 
-        {/* ═══ PROOF BAR ═══ */}
-        <Section className="py-10 border-y border-border/30">
-          <div className="max-w-3xl mx-auto flex items-center justify-around gap-6 px-6">
-          <Stat value="21,000+" label="ROLES MAPPED" delay={0} color="text-spectrum-3" />
-            <Stat value="3,600+" label="COMPANIES" delay={1} color="text-spectrum-0" />
-            <Stat value="34,000+" label="TASKS ANALYZED" delay={2} color="text-spectrum-4" />
-            <Stat value="300+" label="INDUSTRIES" delay={3} color="text-spectrum-6" />
-          </div>
-        </Section>
-
-        {/* ═══ VISUAL 1 — Jobs share skills ═══ */}
-        <Section className="py-20 sm:py-28 px-6">
-          <div id="how-it-works" className="max-w-4xl mx-auto">
-            <div className="text-center mb-12">
-              <div className="inline-flex items-center gap-2 mb-4">
-                <Blocks className="h-5 w-5 text-brand-mid" />
-                <span className="text-sm font-mono text-muted-foreground tracking-widest uppercase">The Skill Stack</span>
-              </div>
-              <h2 className="text-3xl sm:text-4xl font-bold mb-3">
-                Every job is a <span className="bg-gradient-to-r from-spectrum-0 via-spectrum-3 to-spectrum-6 bg-clip-text text-transparent">stack of skills</span>.
-              </h2>
-              <p className="text-muted-foreground max-w-lg mx-auto">
-                Different roles share the same building blocks. Skills are transferable — and that's your leverage.
-              </p>
-            </div>
-            <SharedSkillsVisual />
-          </div>
-        </Section>
-
-        {/* ═══ VISUAL 2 — AI shifts the stack ═══ */}
+        {/* ═══ HOW IT WORKS — 3 steps ═══ */}
         <Section className="py-20 sm:py-28 px-6">
           <div className="max-w-4xl mx-auto">
-            <motion.div variants={fadeUp} custom={0} className="text-center mb-12">
-              <div className="inline-flex items-center gap-2 mb-4">
-                <TrendingUp className="h-5 w-5 text-brand-ai" />
-                <span className="text-sm font-mono text-brand-ai tracking-widest uppercase">AI Reshuffles The Deck</span>
-              </div>
-              <h2 className="text-3xl sm:text-4xl font-bold mb-3">
-                Some skills <span className="text-brand-ai">shrink</span>. Others <span className="text-brand-human">grow</span>.
-              </h2>
-              <p className="text-muted-foreground max-w-lg mx-auto">
-                AI automates routine tasks while elevating human judgment. The students who practice the growing skills get hired.
-              </p>
-            </motion.div>
-            <SkillShiftVisual />
-          </div>
-        </Section>
-
-        {/* ═══ THREE STEPS TO JOB-MARKET FLUENCY ═══ */}
-        <Section className="py-20 sm:py-28 px-6">
-          <div className="max-w-5xl mx-auto">
             <motion.div variants={fadeUp} custom={0} className="text-center mb-14">
-              <h2 className="text-3xl sm:text-4xl font-bold mb-4">Three steps to owning the top of your stack</h2>
-              <p className="text-muted-foreground max-w-lg mx-auto">
-                From "what's changing?" to "I'm ready for it." Here's how.
+              <h2 className="text-3xl sm:text-4xl font-bold mb-3">Three steps. Zero fluff.</h2>
+              <p className="text-muted-foreground max-w-md mx-auto">
+                From "what do employers want?" to "I've practiced it" in minutes.
               </p>
             </motion.div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="space-y-4">
               {[
                 {
-                  icon: Target,
-                  title: "See Where You're Being Promoted",
-                  desc: "We break every role into its core tasks and show you which ones AI is handling — and which higher-purpose tasks are emerging for you.",
+                  num: "01",
+                  title: "Ask about any role",
+                  desc: "Type a job title — PM, data analyst, UX designer. Your AI scout breaks it into tasks and shows which skills matter most.",
                   color: "text-spectrum-0",
-                  gradient: "from-spectrum-0 via-spectrum-1 to-spectrum-2",
+                  border: "border-spectrum-0/20",
                 },
                 {
-                  icon: Brain,
-                  title: "Practice The Tasks At The Top",
-                  desc: "AI-powered simulations let you practice the strategic, human-centric tasks that define your new value — not the ones being automated away.",
+                  num: "02",
+                  title: "Practice the real tasks",
+                  desc: "Jump into AI-powered simulations of actual job tasks. Get scored on tool awareness, adaptive thinking, and human judgment.",
                   color: "text-spectrum-3",
-                  gradient: "from-spectrum-3 via-spectrum-4 to-spectrum-5",
+                  border: "border-spectrum-3/20",
                 },
                 {
-                  icon: TrendingUp,
-                  title: "Track Your Elevation",
-                  desc: "Your skill map shows how you're moving up the value chain — which roles you're closest to and which skills unlock the most career paths.",
+                  num: "03",
+                  title: "Grow your territory",
+                  desc: "Every sim claims a skill tile. Track 3 growth rings per skill: AI Reshaping, Tool Mastery, and Human Edge. Cover more ground than anyone.",
                   color: "text-spectrum-6",
-                  gradient: "from-spectrum-6 via-spectrum-5 to-spectrum-4",
+                  border: "border-spectrum-6/20",
                 },
-              ].map((pillar, i) => (
+              ].map((step, i) => (
                 <motion.div
-                  key={pillar.title}
+                  key={step.num}
                   variants={fadeUp}
                   custom={i + 1}
-                  className="relative rounded-xl overflow-hidden group"
+                  className={`flex items-start gap-5 rounded-2xl border ${step.border} bg-card/60 backdrop-blur-sm p-6 hover:bg-card/80 transition-colors`}
                 >
-                  <div className={`absolute top-0 inset-x-0 h-[3px] bg-gradient-to-r ${pillar.gradient} opacity-80 group-hover:opacity-100 transition-opacity`} />
-                  <div className="border border-border/60 bg-card/80 backdrop-blur-sm rounded-xl p-6 sm:p-8 h-full">
-                    <div className="h-10 w-10 rounded-xl bg-card border border-border/60 flex items-center justify-center mb-4">
-                      <pillar.icon className={`h-5 w-5 ${pillar.color}`} />
-                    </div>
-                    <h3 className="text-lg font-bold mb-2">{pillar.title}</h3>
-                    <p className="text-sm text-muted-foreground leading-relaxed">{pillar.desc}</p>
+                  <span className={`text-3xl font-bold ${step.color} font-mono shrink-0 leading-none mt-0.5`}>{step.num}</span>
+                  <div>
+                    <h3 className="text-base font-bold mb-1">{step.title}</h3>
+                    <p className="text-sm text-muted-foreground leading-relaxed">{step.desc}</p>
                   </div>
+                  <ChevronRight className={`h-5 w-5 ${step.color} shrink-0 mt-0.5 opacity-40`} />
                 </motion.div>
               ))}
             </div>
           </div>
         </Section>
 
-        {/* ═══ SOCIAL PROOF — Company Marquee ═══ */}
+        {/* ═══ COMPANY MARQUEE ═══ */}
         <Section className="py-16 px-6">
           <div className="max-w-5xl mx-auto">
-            <motion.div variants={fadeUp} custom={0} className="text-center mb-8 relative">
-              <motion.span
-                className="text-sm font-mono tracking-widest uppercase bg-clip-text text-transparent bg-gradient-to-r from-muted-foreground via-primary to-muted-foreground bg-[length:200%_100%]"
-                animate={{ backgroundPosition: ["100% 0%", "-100% 0%"] }}
-                transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
-              >
-                {selectedCompany ? `Exploring ${selectedCompany}` : "Click a company to explore real roles"}
-              </motion.span>
-              <motion.div
-                className="absolute -bottom-2 left-1/2 h-[1px] bg-gradient-to-r from-transparent via-primary/60 to-transparent"
-                animate={{ width: ["0%", "60%", "0%"], x: ["-50%", "-50%", "-50%"] }}
-                transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-              />
+            <motion.div variants={fadeUp} custom={0} className="text-center mb-8">
+              <h2 className="text-2xl sm:text-3xl font-bold mb-2">
+                Practice tasks from real companies
+              </h2>
+              <p className="text-sm text-muted-foreground">
+                {selectedCompany ? `Exploring ${selectedCompany}` : "Click any company to see their live roles"}
+              </p>
             </motion.div>
             <motion.div variants={fadeUp} custom={1}>
               <CompanyMarquee
@@ -631,34 +555,34 @@ export default function Students() {
                 onCompanyClick={handleCompanyClick}
               />
             </motion.div>
-            {/* Always show jobs panel — auto-select first company on scroll */}
             <AutoSelectCompanyPanel
               selectedCompany={selectedCompany}
               onSelect={setSelectedCompany}
               onClose={() => setSelectedCompany(null)}
-              onJobSelect={handleLaunchSim}
+              onJobSelect={(job) => setSimJob(job)}
             />
           </div>
         </Section>
 
-
-
-
-        {/* ═══ VIRAL CTA — Tell Your Professor ═══ */}
+        {/* ═══ INVITE CTA ═══ */}
         <Section className="py-16 px-6">
           <div className="max-w-2xl mx-auto">
             <motion.div variants={fadeUp} custom={0} className="relative rounded-2xl overflow-hidden">
               <div className="absolute top-0 inset-x-0 h-[3px] bg-gradient-to-r from-spectrum-3 via-spectrum-4 to-spectrum-5" />
-              <div className="border border-border/60 bg-card/80 backdrop-blur-sm rounded-2xl p-8 text-center">
+              <div className="border border-border/50 bg-card/80 backdrop-blur-sm rounded-2xl p-8 text-center">
                 <GraduationCap className="h-8 w-8 text-primary mx-auto mb-4" />
-                <h3 className="text-xl sm:text-2xl font-bold mb-2">Your school isn't on crowy yet?</h3>
+                <h3 className="text-xl sm:text-2xl font-bold mb-2">Bring your whole class</h3>
                 <p className="text-sm text-muted-foreground mb-6 max-w-md mx-auto">
-                  Tell your professor or career center. We'll give them a free curriculum audit
-                  and get your whole cohort set up.
+                  Invite friends and earn extra simulation credits. When your school joins, everyone gets a customized skill dashboard mapped to your employers.
                 </p>
-                <Button variant="outline" onClick={() => navigate("/contact")} className="gap-2 border-border/60">
-                  Share with your school <ArrowRight className="h-4 w-4" />
-                </Button>
+                <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+                  <Button onClick={handleGetStarted} className="gap-2 glow-purple">
+                    Start Practicing <ArrowRight className="h-4 w-4" />
+                  </Button>
+                  <Button variant="outline" onClick={() => navigate("/schools")} className="gap-2 border-border/60">
+                    Tell Your School <GraduationCap className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
             </motion.div>
           </div>
@@ -666,25 +590,22 @@ export default function Students() {
 
         {/* ═══ FINAL CTA ═══ */}
         <Section className="py-20 sm:py-28 px-6 relative">
-          <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[500px] h-[300px] bg-primary/6 rounded-full blur-[100px] pointer-events-none" />
-
+          <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[500px] h-[300px] bg-primary/5 rounded-full blur-[100px] pointer-events-none" />
           <div className="max-w-3xl mx-auto text-center relative">
             <motion.h2 variants={fadeUp} custom={0} className="text-3xl sm:text-4xl font-bold mb-4">
-              AI is elevating every role.
+              Your degree gets you in the room.
               <br />
-              <span className="bg-gradient-to-r from-brand-human to-brand-ai bg-clip-text text-transparent">Start climbing.</span>
+              <span className="bg-gradient-to-r from-spectrum-0 via-primary to-spectrum-6 bg-clip-text text-transparent">This gets you the job.</span>
             </motion.h2>
             <motion.p variants={fadeUp} custom={1} className="text-muted-foreground mb-8 max-w-md mx-auto">
-              Pick any role you're curious about. We'll show you where it's headed — and let you practice the tasks that put you at the top.
+              Pick any role. Practice the tasks. Build your territory.
+              By the time you interview, you'll already know the work.
             </motion.p>
             <motion.div variants={fadeUp} custom={2}>
               <Button size="lg" onClick={handleGetStarted} className="gap-2 text-base px-10 h-12 glow-purple">
                 Get Started — Free <ArrowRight className="h-4 w-4" />
               </Button>
             </motion.div>
-            <motion.p variants={fadeUp} custom={3} className="text-xs text-muted-foreground mt-4">
-              No credit card required. Explore 21,000+ roles instantly.
-            </motion.p>
           </div>
         </Section>
 
