@@ -193,7 +193,7 @@ export default function HomepageChat({
     let assistantSoFar = "";
 
     try {
-      const body: any = { messages: getApiMessages(allItems) };
+      const body: any = { messages: getApiMessages(apiSourceItems) };
       if (journeyContextRef.current) body.journeyContext = journeyContextRef.current;
       if (viewContext) body.viewContext = viewContext;
 
