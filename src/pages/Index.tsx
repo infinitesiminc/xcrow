@@ -210,18 +210,20 @@ const Index = () => {
   return (
     <div className="h-[calc(100vh-3.5rem)] flex flex-col">
       {isSignedIn && realSkills.length > 0 && (
-        <CompactHUD
-          skills={realSkills}
-          targetSkillIds={targetSkillIds}
-          userName={userName}
-          onToggleRoles={() => setRolesOpen((p) => !p)}
-          rolesOpen={rolesOpen}
-        />
-        <MyRolesPanel
-          open={rolesOpen}
-          onClose={() => setRolesOpen(false)}
-          onAskChat={handleRolesAskChat}
-        />
+        <>
+          <CompactHUD
+            skills={realSkills}
+            targetSkillIds={targetSkillIds}
+            userName={userName}
+            onToggleRoles={() => setRolesOpen((p) => !p)}
+            rolesOpen={rolesOpen}
+          />
+          <MyRolesPanel
+            open={rolesOpen}
+            onClose={() => setRolesOpen(false)}
+            onAskChat={handleRolesAskChat}
+          />
+        </>
       )}
 
       <div className="flex-1 flex min-h-0">
