@@ -15,11 +15,18 @@ type ChatItem =
   | { type: "assistant"; content: string }
   | { type: "roles"; roles: RoleResult[] };
 
-const SUGGESTIONS = [
+const GUEST_SUGGESTIONS = [
   "I'm graduating next year — what skills matter most?",
   "What does a product manager actually do day-to-day?",
   "Show me roles where AI helps the most",
   "I'm studying finance — what should I practice?",
+];
+
+const SIGNED_IN_SUGGESTIONS = [
+  "How ready am I for my target roles?",
+  "What should I practice next?",
+  "Find roles that build my frontier skills",
+  "What are my strongest skills right now?",
 ];
 
 export default function HomepageChat({
@@ -98,7 +105,9 @@ export default function HomepageChat({
       const sims = (simsRes.data || []) as SimRecord[];
       const skills = aggregateSkillXP(sims);
       const activeSkills = skills.filter(s => s.xp > 0);
-      const activeNames = activeSkills.map(s => s.name);
+
+      // Collect unique practiced task names
+      const practicedTasks = [...new Set(sims.map(s => s.task_name))];
 
       // Get target role skill names
       let frontierSkills: string[] = [];
@@ -110,7 +119,7 @@ export default function HomepageChat({
         for (const c of (clusters || [])) {
           for (const s of (c.skill_names || [])) targetNames.add(s);
         }
-        const activeSet = new Set(activeNames.map(n => n.toLowerCase()));
+        const activeSet = new Set(activeSkills.map(s => s.name.toLowerCase()));
         frontierSkills = Array.from(targetNames).filter(n => !activeSet.has(n.toLowerCase()));
         const claimed = Array.from(targetNames).filter(n => activeSet.has(n.toLowerCase())).length;
         coveragePct = targetNames.size > 0 ? Math.round((claimed / targetNames.size) * 100) : undefined;
@@ -120,11 +129,13 @@ export default function HomepageChat({
       const weakest = activeSkills.length > 0 ? activeSkills.reduce((a, b) => a.xp < b.xp ? a : b) : null;
 
       journeyContextRef.current = {
-        targetRoles: targetRoles.map(r => ({ title: r.title, company: r.company })),
-        activeSkills: activeNames,
+        userId: user.id,
+        targetRoles: targetRoles.map(r => ({ title: r.title, company: r.company, job_id: r.job_id })),
+        skillLevels: activeSkills.map(s => ({ name: s.name, level: s.level, xp: s.xp })),
         frontierSkills,
         weakestSkill: weakest?.name || null,
         coveragePct,
+        practicedTasks: practicedTasks.slice(0, 30), // cap to avoid huge payloads
       };
     })();
   }, [user]);
@@ -328,7 +339,7 @@ export default function HomepageChat({
         <div className="flex items-center justify-between px-3 pb-3">
           <div className="flex flex-wrap gap-1.5 flex-1 min-w-0">
             {!hasInteracted &&
-              SUGGESTIONS.map((s) => (
+              (user ? SIGNED_IN_SUGGESTIONS : GUEST_SUGGESTIONS).map((s) => (
                 <button
                   key={s}
                   onClick={() => sendMessage(s)}

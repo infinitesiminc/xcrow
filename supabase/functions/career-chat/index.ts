@@ -114,7 +114,9 @@ serve(async (req) => {
       if (ctx.targetRoles?.length > 0) {
         territoryBlock += `Target roles: ${ctx.targetRoles.map((r: any) => `${r.title}${r.company ? ` at ${r.company}` : ""}`).join(", ")}\n`;
       }
-      if (ctx.activeSkills?.length > 0) {
+      if (ctx.skillLevels?.length > 0) {
+        territoryBlock += `Claimed skills (with levels): ${ctx.skillLevels.map((s: any) => `${s.name} [${s.level}, ${s.xp} XP]`).join(", ")}\n`;
+      } else if (ctx.activeSkills?.length > 0) {
         territoryBlock += `Claimed territory (practiced skills): ${ctx.activeSkills.join(", ")}\n`;
       }
       if (ctx.frontierSkills?.length > 0) {
@@ -126,7 +128,10 @@ serve(async (req) => {
       if (ctx.coveragePct !== undefined) {
         territoryBlock += `Territory coverage: ${ctx.coveragePct}% of target-role skills claimed\n`;
       }
-      territoryBlock += "\nUse this context to personalize your coaching. Reference their specific gaps and progress.";
+      if (ctx.practicedTasks?.length > 0) {
+        territoryBlock += `Tasks already practiced: ${ctx.practicedTasks.join(", ")}\n`;
+      }
+      territoryBlock += `\nUse this context to personalize your coaching. When the student asks "how ready am I" for a role, use the check_readiness tool to get a detailed breakdown. Reference their specific gaps and what to practice next.`;
       systemPrompt += territoryBlock;
     }
 
@@ -169,6 +174,27 @@ serve(async (req) => {
                 },
               },
             },
+            ...(journeyContext?.userId ? [{
+              type: "function" as const,
+              function: {
+                name: "check_readiness",
+                description: "Check how ready the student is for a specific job role. Returns skill match %, gap skills, practiced vs unpracticed tasks, and a prioritized practice plan. Use when the student asks 'how ready am I', 'what should I practice', 'am I prepared for X interview', or similar readiness questions.",
+                parameters: {
+                  type: "object",
+                  properties: {
+                    job_title: {
+                      type: "string",
+                      description: "The job title to check readiness for, e.g. 'Product Manager'",
+                    },
+                    company: {
+                      type: "string",
+                      description: "Optional company name to narrow down the specific role",
+                    },
+                  },
+                  required: ["job_title"],
+                },
+              },
+            }] : []),
           ],
         }),
       }
@@ -255,144 +281,257 @@ serve(async (req) => {
             name: "search_roles",
             arguments: JSON.stringify(parsedArgs),
           };
-          console.log("Detected text-based tool call:", parsedArgs);
         } else {
           hasToolCall = false;
+        }
+      }
+      if (!hasToolCall) {
+        const readinessMatch = fullTextContent.match(/check_readiness\s*[\({]([^)}\n]+)[\)}]/);
+        if (readinessMatch) {
+          hasToolCall = true;
+          const rawArgs = readinessMatch[1];
+          const titleMatch = rawArgs.match(/job_title\s*:\s*(?:<ctrl46>|"|')?\s*([^"')}<,]+)/);
+          if (titleMatch) {
+            toolCallAccumulator = {
+              name: "check_readiness",
+              arguments: JSON.stringify({ job_title: titleMatch[1].trim() }),
+            };
+          } else {
+            hasToolCall = false;
+          }
         }
       }
     }
 
     // If there's a tool call, execute it and make a follow-up request
-    if (hasToolCall && toolCallAccumulator?.name === "search_roles") {
-      let args: { query: string; limit?: number };
-      try {
-        args = JSON.parse(toolCallAccumulator.arguments);
-      } catch {
-        args = { query: toolCallAccumulator.arguments };
-      }
+    if (hasToolCall && toolCallAccumulator) {
+      const toolName = toolCallAccumulator.name;
+      let toolResult: any = null;
+      let clientEvent = "";
 
-      const limit = args.limit || 3;
-      const cacheKey = `${args.query.toLowerCase().trim()}:${limit}`;
-      
-      let roleResults = getCachedSearch(cacheKey);
+      const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+      const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+      const sb = createClient(supabaseUrl, supabaseKey);
 
-      if (!roleResults) {
-        const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-        const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-        const sb = createClient(supabaseUrl, supabaseKey);
+      if (toolName === "check_readiness") {
+        // ── CHECK READINESS TOOL ──
+        let args: { job_title: string; company?: string };
+        try { args = JSON.parse(toolCallAccumulator.arguments); } catch { args = { job_title: toolCallAccumulator.arguments }; }
+        
+        const userId = journeyContext?.userId;
+        const practicedTaskNames = new Set((journeyContext?.practicedTasks || []).map((t: string) => t.toLowerCase()));
+        const userSkillLevels = new Map((journeyContext?.skillLevels || []).map((s: any) => [s.name.toLowerCase(), s]));
 
-        const words = args.query.split(/\s+/).filter(Boolean);
+        // Find matching job
+        const words = args.job_title.split(/\s+/).filter(Boolean);
         const patterns = words.map(w => `%${w}%`);
+        let jobQuery = sb.from("jobs").select("id, title, company_id, companies(name)");
+        for (const p of patterns) { jobQuery = jobQuery.ilike("title", p); }
+        if (args.company) {
+          const { data: cos } = await sb.from("companies").select("id").ilike("name", `%${args.company}%`).limit(3);
+          if (cos && cos.length > 0) jobQuery = jobQuery.in("company_id", cos.map((c: any) => c.id));
+        }
+        const { data: matchedJobs } = await jobQuery.limit(1);
         
-        const orConditions = patterns.flatMap(p => [
-          `title.ilike.${p}`,
-          `department.ilike.${p}`,
-          `location.ilike.${p}`,
-          `country.ilike.${p}`,
-        ]).join(",");
-        
-        const poolSize = Math.max(limit * 5, 15);
+        if (matchedJobs && matchedJobs.length > 0) {
+          const job = matchedJobs[0];
+          const { data: taskClusters } = await sb
+            .from("job_task_clusters")
+            .select("cluster_name, skill_names, ai_exposure_score, priority, sort_order")
+            .eq("job_id", job.id)
+            .order("sort_order", { ascending: true });
 
-        // Search by job fields first
-        const { data: jobsByFields, error: dbError } = await sb
-          .from("jobs")
-          .select("id, title, department, location, country, work_mode, seniority, augmented_percent, automation_risk_percent, source_url, company_id, companies(name, logo_url, website)")
-          .or(orConditions)
-          .limit(poolSize);
-        
-        if (dbError) console.error("DB search error:", dbError);
+          const tasks = taskClusters || [];
+          const allSkillNames = new Set<string>();
+          for (const t of tasks) {
+            for (const s of (t.skill_names || [])) allSkillNames.add(s);
+          }
 
-        // Also search by company name
-        const companyQuery = args.query.toLowerCase().trim();
-        const { data: companiesByName } = await sb
-          .from("companies")
-          .select("id")
-          .ilike("name", `%${companyQuery}%`)
-          .limit(5);
+          const matchedSkills: string[] = [];
+          const gapSkills: string[] = [];
+          for (const skillName of allSkillNames) {
+            if (userSkillLevels.has(skillName.toLowerCase())) {
+              matchedSkills.push(skillName);
+            } else {
+              gapSkills.push(skillName);
+            }
+          }
+
+          const matchPct = allSkillNames.size > 0 ? Math.round((matchedSkills.length / allSkillNames.size) * 100) : 0;
+
+          // Categorize tasks
+          const practicedTasks: string[] = [];
+          const unpracticedTasks: { name: string; priority: string; skills: string[] }[] = [];
+          for (const t of tasks) {
+            if (practicedTaskNames.has(t.cluster_name.toLowerCase())) {
+              practicedTasks.push(t.cluster_name);
+            } else {
+              unpracticedTasks.push({
+                name: t.cluster_name,
+                priority: t.priority || "medium",
+                skills: (t.skill_names || []).filter((s: string) => !userSkillLevels.has(s.toLowerCase())),
+              });
+            }
+          }
+
+          // Sort unpracticed by priority (high first) and gap skill count
+          unpracticedTasks.sort((a, b) => {
+            const pOrder: Record<string, number> = { high: 0, important: 1, medium: 2, low: 3 };
+            const pa = pOrder[a.priority] ?? 2;
+            const pb = pOrder[b.priority] ?? 2;
+            if (pa !== pb) return pa - pb;
+            return b.skills.length - a.skills.length;
+          });
+
+          // Build a "1-week drill plan" from top 3 unpracticed
+          const drillPlan = unpracticedTasks.slice(0, 3).map((t, i) => ({
+            order: i + 1,
+            task: t.name,
+            reason: t.skills.length > 0 ? `Builds: ${t.skills.join(", ")}` : "Key role task",
+          }));
+
+          toolResult = {
+            role: `${job.title}${(job as any).companies?.name ? ` at ${(job as any).companies.name}` : ""}`,
+            skillMatch: `${matchPct}%`,
+            matchedSkills,
+            gapSkills,
+            totalTasks: tasks.length,
+            practicedTasks,
+            unpracticedCount: unpracticedTasks.length,
+            drillPlan,
+            summary: matchPct >= 80 ? "Strong match — focus on the remaining gaps" :
+                     matchPct >= 50 ? "Good foundation — targeted practice will close the gaps" :
+                     "Early stage — a focused practice plan will build readiness fast",
+          };
+        } else {
+          toolResult = { error: "No matching role found in database", suggestion: "Try a more specific job title or company" };
+        }
+      } else if (toolName === "search_roles") {
+        // ── SEARCH ROLES TOOL (existing logic) ──
+        let args: { query: string; limit?: number };
+        try { args = JSON.parse(toolCallAccumulator.arguments); } catch { args = { query: toolCallAccumulator.arguments }; }
+
+        const limit = args.limit || 3;
+        const cacheKey = `${args.query.toLowerCase().trim()}:${limit}`;
         
-        let jobsByCompany: any[] = [];
-        if (companiesByName && companiesByName.length > 0) {
-          const companyIds = companiesByName.map((c: any) => c.id);
-          const { data: cJobs } = await sb
+        let roleResults = getCachedSearch(cacheKey);
+
+        if (!roleResults) {
+          const words = args.query.split(/\s+/).filter(Boolean);
+          const patterns = words.map(w => `%${w}%`);
+          
+          const orConditions = patterns.flatMap(p => [
+            `title.ilike.${p}`,
+            `department.ilike.${p}`,
+            `location.ilike.${p}`,
+            `country.ilike.${p}`,
+          ]).join(",");
+          
+          const poolSize = Math.max(limit * 5, 15);
+
+          const { data: jobsByFields, error: dbError } = await sb
             .from("jobs")
             .select("id, title, department, location, country, work_mode, seniority, augmented_percent, automation_risk_percent, source_url, company_id, companies(name, logo_url, website)")
-            .in("company_id", companyIds)
+            .or(orConditions)
             .limit(poolSize);
-          jobsByCompany = cJobs || [];
-        }
-
-        // Merge and deduplicate
-        const seenIds = new Set<string>();
-        const allJobs: any[] = [];
-        for (const j of [...(jobsByFields || []), ...jobsByCompany]) {
-          if (!seenIds.has(j.id)) {
-            seenIds.add(j.id);
-            allJobs.push(j);
-          }
-        }
-
-        // Prefer analyzed jobs, but include unanalyzed ones too
-        const analyzed = allJobs.filter((j: any) => (j.augmented_percent || 0) > 0);
-        const unanalyzed = allJobs.filter((j: any) => !(j.augmented_percent > 0));
-        const jobs = analyzed.length >= limit ? analyzed : [...analyzed, ...unanalyzed];
-        
-        if (dbError) console.error("DB search error:", dbError);
-
-        const byCompany = new Map<string, any>();
-        const noCompany: any[] = [];
-        for (const j of (jobs || [])) {
-          const companyName = (j as any).companies?.name?.toLowerCase() || "";
-          if (!companyName) { noCompany.push(j); continue; }
-          if (!byCompany.has(companyName)) byCompany.set(companyName, j);
-        }
-        let diversePool = [...byCompany.values(), ...noCompany];
-        for (let i = diversePool.length - 1; i > 0; i--) {
-          const j = Math.floor(Math.random() * (i + 1));
-          [diversePool[i], diversePool[j]] = [diversePool[j], diversePool[i]];
-        }
-        const selectedJobs = diversePool.slice(0, limit);
-
-        const jobIds = selectedJobs.map((j: any) => j.id);
-
-        let tasksByJob: Record<string, { name: string; aiScore: number }[]> = {};
-        if (jobIds.length > 0) {
-          const { data: tasks } = await sb
-            .from("job_task_clusters")
-            .select("job_id, cluster_name, ai_exposure_score, sort_order")
-            .in("job_id", jobIds)
-            .order("sort_order", { ascending: true });
           
-          if (tasks) {
-            for (const t of tasks) {
-              if (!tasksByJob[t.job_id]) tasksByJob[t.job_id] = [];
-              if (tasksByJob[t.job_id].length < 3) {
-                tasksByJob[t.job_id].push({ name: t.cluster_name, aiScore: t.ai_exposure_score || 0 });
+          if (dbError) console.error("DB search error:", dbError);
+
+          const companyQuery = args.query.toLowerCase().trim();
+          const { data: companiesByName } = await sb
+            .from("companies")
+            .select("id")
+            .ilike("name", `%${companyQuery}%`)
+            .limit(5);
+          
+          let jobsByCompany: any[] = [];
+          if (companiesByName && companiesByName.length > 0) {
+            const companyIds = companiesByName.map((c: any) => c.id);
+            const { data: cJobs } = await sb
+              .from("jobs")
+              .select("id, title, department, location, country, work_mode, seniority, augmented_percent, automation_risk_percent, source_url, company_id, companies(name, logo_url, website)")
+              .in("company_id", companyIds)
+              .limit(poolSize);
+            jobsByCompany = cJobs || [];
+          }
+
+          const seenIds = new Set<string>();
+          const allJobs: any[] = [];
+          for (const j of [...(jobsByFields || []), ...jobsByCompany]) {
+            if (!seenIds.has(j.id)) {
+              seenIds.add(j.id);
+              allJobs.push(j);
+            }
+          }
+
+          const analyzed = allJobs.filter((j: any) => (j.augmented_percent || 0) > 0);
+          const unanalyzed = allJobs.filter((j: any) => !(j.augmented_percent > 0));
+          const jobs = analyzed.length >= limit ? analyzed : [...analyzed, ...unanalyzed];
+
+          const byCompany = new Map<string, any>();
+          const noCompany: any[] = [];
+          for (const j of (jobs || [])) {
+            const companyName = (j as any).companies?.name?.toLowerCase() || "";
+            if (!companyName) { noCompany.push(j); continue; }
+            if (!byCompany.has(companyName)) byCompany.set(companyName, j);
+          }
+          let diversePool = [...byCompany.values(), ...noCompany];
+          for (let i = diversePool.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [diversePool[i], diversePool[j]] = [diversePool[j], diversePool[i]];
+          }
+          const selectedJobs = diversePool.slice(0, limit);
+
+          const jobIds = selectedJobs.map((j: any) => j.id);
+
+          let tasksByJob: Record<string, { name: string; aiScore: number }[]> = {};
+          if (jobIds.length > 0) {
+            const { data: tasks } = await sb
+              .from("job_task_clusters")
+              .select("job_id, cluster_name, ai_exposure_score, sort_order")
+              .in("job_id", jobIds)
+              .order("sort_order", { ascending: true });
+            
+            if (tasks) {
+              for (const t of tasks) {
+                if (!tasksByJob[t.job_id]) tasksByJob[t.job_id] = [];
+                if (tasksByJob[t.job_id].length < 3) {
+                  tasksByJob[t.job_id].push({ name: t.cluster_name, aiScore: t.ai_exposure_score || 0 });
+                }
               }
             }
           }
+
+          roleResults = selectedJobs.map((j: any) => ({
+            jobId: j.id,
+            title: j.title,
+            company: j.companies?.name || null,
+            logo: j.companies?.logo_url || (j.companies?.website ? `https://logo.clearbit.com/${j.companies.website.replace(/^https?:\/\//, '').replace(/\/.*$/, '')}` : null),
+            location: j.location,
+            country: j.country,
+            workMode: j.work_mode,
+            seniority: j.seniority,
+            augmented: j.augmented_percent || 0,
+            risk: j.automation_risk_percent || 0,
+            sourceUrl: j.source_url || null,
+            topTasks: tasksByJob[j.id] || [],
+          }));
+
+          searchCache.set(cacheKey, { roles: roleResults, ts: Date.now() });
         }
 
-        roleResults = selectedJobs.map((j: any) => ({
-          jobId: j.id,
-          title: j.title,
-          company: j.companies?.name || null,
-          logo: j.companies?.logo_url || (j.companies?.website ? `https://logo.clearbit.com/${j.companies.website.replace(/^https?:\/\//, '').replace(/\/.*$/, '')}` : null),
-          location: j.location,
-          country: j.country,
-          workMode: j.work_mode,
-          seniority: j.seniority,
-          augmented: j.augmented_percent || 0,
-          risk: j.automation_risk_percent || 0,
-          sourceUrl: j.source_url || null,
-          topTasks: tasksByJob[j.id] || [],
-        }));
+        toolResult = roleResults;
 
-        searchCache.set(cacheKey, { roles: roleResults, ts: Date.now() });
-        console.log("Cached search for:", cacheKey, "results:", roleResults.length);
-      } else {
-        console.log("Cache hit for:", cacheKey);
+        const clientRoles = roleResults.map((r: any) => {
+          const { topTasks, ...rest } = r;
+          return rest;
+        });
+        if (clientRoles.length > 0) {
+          clientEvent = `data: ${JSON.stringify({ type: "role_cards", roles: clientRoles })}\n\n`;
+        }
       }
 
+      // Follow-up AI call with tool result
       const followUp = await fetch(
         "https://ai.gateway.lovable.dev/v1/chat/completions",
         {
@@ -414,7 +553,7 @@ serve(async (req) => {
                     id: "call_1",
                     type: "function",
                     function: {
-                      name: "search_roles",
+                      name: toolName,
                       arguments: toolCallAccumulator.arguments,
                     },
                   },
@@ -423,7 +562,7 @@ serve(async (req) => {
               {
                 role: "tool",
                 tool_call_id: "call_1",
-                content: JSON.stringify(roleResults),
+                content: JSON.stringify(toolResult),
               },
             ],
             stream: true,
@@ -438,18 +577,10 @@ serve(async (req) => {
         );
       }
 
-      const clientRoles = roleResults.map((r: any) => {
-        const { topTasks, ...rest } = r;
-        return rest;
-      });
-      // Only emit role_cards event if we have results
-      const roleEvent = clientRoles.length > 0
-        ? `data: ${JSON.stringify({ type: "role_cards", roles: clientRoles })}\n\n`
-        : "";
       const encoder = new TextEncoder();
       const roleStream = new ReadableStream({
         start(controller) {
-          if (roleEvent) controller.enqueue(encoder.encode(roleEvent));
+          if (clientEvent) controller.enqueue(encoder.encode(clientEvent));
           const r = followUp.body!.getReader();
           function pump(): Promise<void> {
             return r.read().then(({ done, value }) => {
