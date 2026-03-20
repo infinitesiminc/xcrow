@@ -2,7 +2,7 @@
  * /about — Mission, brand story, and team.
  */
 import { useRef } from "react";
-import founderImg from "@/assets/founder-jackson.png";
+import founderImg from "@/assets/founder-jackson-nobg.png";
 import { motion, useInView } from "framer-motion";
 import { ArrowRight, Bird, Brain, Layers, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -129,8 +129,8 @@ export default function About() {
           <div className="max-w-3xl mx-auto text-center">
             <motion.h2 variants={fadeUp} custom={0} className="text-3xl sm:text-4xl font-bold mb-12">Team</motion.h2>
             <motion.div variants={fadeUp} custom={1} className="rounded-xl border border-border bg-card p-8 max-w-sm mx-auto">
-              <div className="w-24 h-24 rounded-full mx-auto mb-4 overflow-hidden bg-gradient-to-br from-primary to-[hsl(330,90%,60%)] p-[3px]">
-                <img src={founderImg} alt="Jackson Lam, Founder & CEO" className="w-full h-full rounded-full object-cover" />
+              <div className="w-28 h-28 rounded-2xl mx-auto mb-4 overflow-hidden bg-gradient-to-br from-primary to-[hsl(330,90%,60%)]">
+                <img src={founderImg} alt="Jackson Lam, Founder & CEO" className="w-full h-full object-cover object-top" />
               </div>
               <h3 className="text-lg font-bold">Jackson Lam</h3>
               <p className="text-sm text-muted-foreground">Founder & CEO</p>
