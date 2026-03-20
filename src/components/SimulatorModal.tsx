@@ -1403,7 +1403,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                     {scoreTier === "high" && (
                       <Button
                         variant="secondary"
-                        onClick={startCompile}
+                        onClick={() => startCompile()}
                         className="gap-2 rounded-xl w-full text-xs"
                       >
                         Same Skill, Different Industry
