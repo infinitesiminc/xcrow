@@ -99,7 +99,7 @@ export default function CastleNode({
               alt={`${label} castle`}
               className="w-full h-full object-contain drop-shadow-lg"
               style={{
-                filter: unlocked ? "none" : "grayscale(0.8) brightness(0.4)",
+                filter: unlocked ? "none" : "grayscale(0.5) brightness(0.7) opacity(0.8)",
               }}
               draggable={false}
             />
