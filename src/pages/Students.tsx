@@ -32,7 +32,7 @@ function Section({ children, className = "", id }: { children: React.ReactNode; 
   const ref = useRef<HTMLDivElement>(null);
   const inView = useInView(ref, { once: true, margin: "-60px" });
   return (
-    <motion.section ref={ref} initial="hidden" animate={inView ? "visible" : "hidden"} className={`relative ${className}`}>
+    <motion.section ref={ref} id={id} initial="hidden" animate={inView ? "visible" : "hidden"} className={`relative ${className}`}>
       {children}
     </motion.section>
   );
