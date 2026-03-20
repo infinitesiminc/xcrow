@@ -93,8 +93,8 @@ export default function PlayerHUD({ skills, uniqueTasks, isEmpty }: PlayerHUDPro
               initial={{ opacity: 0, x: -6 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: i * 0.04 }}
-              className="flex items-center gap-2 rounded-lg px-2 py-1.5"
-              style={{ background: "hsla(270, 20%, 18%, 0.3)", border: "1px solid hsla(270, 40%, 55%, 0.12)" }}
+              className="flex items-center gap-2 rounded-xl px-2 py-1.5"
+              style={{ background: "hsl(240 10% 12%)", border: "1px solid hsl(240 10% 18%)" }}
             >
               <ShieldCheck className="h-3 w-3 shrink-0" style={{ color: "hsl(270, 45%, 60%)" }} />
               <div className="flex-1 min-w-0">
