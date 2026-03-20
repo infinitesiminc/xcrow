@@ -14,7 +14,7 @@ import { supabase } from "@/integrations/supabase/client";
 const FREE_FEATURES = [
   "3 simulations per month",
   "3 role analyses per month",
-  "Basic skill map",
+  "Skill territory (view only)",
   "Leaderboard access",
   "Role exploration feed",
 ];
@@ -22,9 +22,9 @@ const FREE_FEATURES = [
 const PRO_FEATURES = [
   "Unlimited simulations",
   "Unlimited role analyses",
-  "Full skill map & XP tracking",
+  "Full skill territory with 3-ring growth tracking",
   "AI career coach",
-  "Human edges breakdown",
+  "Human edge & AI mastery insights",
   "Exportable skill profile",
   "Priority on leaderboard",
 ];
