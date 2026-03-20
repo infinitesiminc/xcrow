@@ -1,90 +1,130 @@
 
 
-## Mission Control Center — /journey Redesign
+## Unified Journey System: Goal-Locked Territory + Context-Driven Chat
 
-Transform the current scrollable Journey page into a **non-scrollable, full-viewport gaming-style dashboard** that acts as the command center for the entire student experience.
+### The Core Narrative
 
-### Design Concept
+Your skill map is a **territory map**. Each of the 26 skills is a hex/tile. Practiced skills are "claimed" (lit up in category color). Unpracticed adjacent skills are "frontiers" (dim, explorable). Skills required by your target roles but unclaimed are **"contested zones"** — high-value territory the market demands.
 
-A fixed-height viewport (100vh minus navbar) divided into panels using CSS Grid. Dark glassmorphism with neon spectrum accents — the same gaming style used on the bubble map and school detail pages.
+The chat doesn't just discover roles — it reads your territory and coaches you on where to expand next.
 
+---
+
+### Q1: Goal-Locked Personalization
+
+**How it works:**
+
+1. **Onboarding change**: After career stage + job title, add a step: "Pick 1-3 roles you want to be ready for." Pull from `jobs` table or let them type freeform. Store as a new `target_roles` JSONB column on `profiles`.
+
+2. **Skill tree reacts**: For each target role, look up its `job_task_clusters` → extract `skill_names` → highlight those skills on the territory map as **"objective markers"**. Skills outside all target roles are still visible but muted — available for organic exploration.
+
+3. **Coverage metric**: "You cover 6/14 skills needed for Product Manager at Stripe." This replaces generic XP as the primary progress indicator in the Player HUD.
+
+4. **Quest log adapts**: Instead of generic "Hot Skills," show "Skills your target roles need that you haven't practiced." Instead of generic "Role Unlocks," show "How close you are to each target role."
+
+**Data flow:**
 ```text
-┌─────────────────────────────────────────────────────┐
-│  NAVBAR (56px)                                      │
-├──────────┬──────────────────────┬───────────────────┤
-│          │                      │                   │
-│  STATS   │   SKILL MAP GRID    │  INTEL FEED       │
-│  COLUMN  │   (26 skills,       │                   │
-│          │    compact tiles)    │  • Hot Skills     │
-│  • Level │                     │    (market demand  │
-│  • XP    │                     │     not in school) │
-│  • Rank  │                     │                   │
-│  • Edges │                     │  • AI Drops       │
-│    count │                     │    (new model      │
-│          │                     │     releases)     │
-│  ────────│                     │                   │
-│  HUMAN   │                     │  • Role Unlocks   │
-│  EDGES   │                     │    (new roles      │
-│  (compact│                     │     you can reach) │
-│   list)  │                     │                   │
-│          │                     │                   │
-├──────────┴──────────────────────┴───────────────────┤
-│  AI TICKER BAR (model releases flying across)       │
-└─────────────────────────────────────────────────────┘
+profiles.target_roles → job_task_clusters.skill_names → 
+  filter SKILL_TAXONOMY → highlight on territory map
 ```
 
-### Layout: 3-Column Grid
+No new tables needed — just a JSONB column on `profiles` storing `[{job_id, title, company}]`.
 
-- **Left column (~200px)**: Player stats card + Human Edges mini-list (scrollable within panel)
-- **Center column (flex)**: Compact skill map grid — smaller tiles, all 26 visible without scrolling
-- **Right column (~240px)**: Intel feed with 3 sections stacked (each internally scrollable)
+---
 
-### Panel Details
+### Q2: Territory Expansion Story
 
-**Left — Player HUD**
-- Neon-bordered glassmorphic card
-- Total XP, active skills count, level-ups, tasks practiced
-- Human edges as compact chip list (discovered vs locked)
-- CTA: "Start Exploring" if empty
+**Visual model (center panel redesign):**
 
-**Center — Skill Map**
-- Reuse `SkillMapGrid` logic but with much smaller tiles (~60px) to fit all 26 in viewport
-- Category headers as thin dividers, not full sections
-- Click still opens detail sheet
-- Gaming card style: dark glass tiles with neon glow on active skills
+- Replace the branching skill tree with a **hex grid or bubble cluster** where proximity = category relatedness
+- Three visual states per tile:
+  - **Claimed** (practiced, XP > 0): Full color, category glow
+  - **Frontier** (adjacent to claimed, or in target role): Dim outline, pulsing border — "available to explore"
+  - **Undiscovered** (no connection to anything practiced): Dark silhouette with lock icon
+- **Contested zones**: Frontier tiles that are also in-demand by market AND required by target roles get a special marker (flame icon or ring)
 
-**Right — Intel Feed** (3 stacked panels)
-1. **Hot Skills** — fetch `get_market_skill_demand` RPC, cross-reference with user's skills to show gaps. No school data needed — purely "market wants X, you haven't practiced it yet." Neon pink accent for urgency.
-2. **AI Drops** — reuse `FRONTIER_RELEASES` data from StickyTicker, show as a compact live feed with flying animation or scrolling list. Red/destructive accent.
-3. **Role Unlocks** — based on user's current skills, show roles they're close to matching (from saved/bookmarked roles or computed from skill coverage). Purple/cyan accent.
+**Human Edges as territory bonuses:**
+- When you claim a skill that has a Human Edge, the edge appears as a "bonus" badge on that tile
+- Edges are the "rare loot" of territory expansion — you don't just get XP, you unlock something AI can't replicate
+- Player HUD shows edges as collected trophies, not a separate list
 
-**Bottom — Ticker Bar**
-- Compact version of StickyTicker showing AI model releases flying across
+**Progression feel:**
+- Territory % = skills claimed / skills needed for target roles
+- Each simulation "claims" or "levels up" a tile
+- Visual reward: tile animates from dim → lit when first practiced
 
-### Data Sources (all existing, no new DB tables)
-- User skills: `completed_simulations` → `aggregateSkillXP()` (existing)
-- Market demand: `get_market_skill_demand` RPC (existing)
-- AI releases: `FRONTIER_RELEASES` constant (existing)
-- Role unlocks: `bookmarked_roles` + skill matching (existing)
+---
 
-### Responsive
-- On mobile: stack into a vertical scrollable layout (mobile can't fit 3 columns)
-- On desktop: strict `h-[calc(100vh-56px)] overflow-hidden` grid
+### Q3: Journey Drives Chat Context
 
-### Files Changed
+**How chat becomes territory-aware:**
 
-1. **`src/pages/Journey.tsx`** — Replace with full-viewport grid layout, remove Footer, add `overflow-hidden`
-2. **`src/components/settings/JourneyDashboard.tsx`** — Major rewrite into `MissionControl` component with 3-column grid
-3. **New `src/components/journey/PlayerHUD.tsx`** — Left column: stats + edges
-4. **New `src/components/journey/CompactSkillGrid.tsx`** — Center: tiny gaming-style skill tiles
-5. **New `src/components/journey/IntelFeed.tsx`** — Right column: hot skills, AI drops, role unlocks
-6. **Remove** `CurriculumGapBanner` and `SchoolTeaser` imports (no longer gated behind school signup)
+1. **Pass journey state to career-chat edge function**: When user opens chat, include:
+   - `target_roles`: their goal roles
+   - `active_skills`: skills with XP > 0
+   - `frontier_skills`: skills adjacent to active that are in target roles
+   - `weakest_skill`: lowest XP among target-role skills
 
-### Gaming Style Applied
-- Dark gradient background (`hsl(240 10% 4%)` → `hsl(240 8% 8%)`)
-- 3px neon spectrum top-border on each panel
-- Glassmorphic panel backgrounds with `backdrop-blur`
-- Neon glow on active elements
-- Monospace numbers, Space Grotesk headings
-- Ambient blur orbs behind panels
+2. **Chat system prompt enhancement**: Add a section like:
+   ```
+   The user's territory map shows they've practiced: [Strategy, Data Analysis, Writing].
+   Their target role "Product Manager" needs: [Strategy, Stakeholder Mgmt, Project Mgmt, Data Analysis, Design UX].
+   Unpracticed gaps: [Stakeholder Mgmt, Project Mgmt, Design UX].
+   Suggest roles and tasks that would help them claim these frontier territories.
+   ```
+
+3. **Chat responses reference the map**:
+   - "This role would help you claim **Stakeholder Management** — one of 3 frontiers for your PM goal"
+   - "You're 2 skills away from full coverage on Product Manager"
+   - When user completes a sim, chat can say "Territory expanded! You just claimed Design & UX"
+
+4. **Skill tree nodes link back to chat**: Click a frontier tile → "Explore roles that build this skill" → opens chat with pre-filled prompt
+
+**No bidirectional sync complexity** — chat simply reads journey state on each message. Journey updates happen via simulation completions (existing flow). Chat is the scout, journey is the map.
+
+---
+
+### End-to-End UX Flow
+
+```text
+ONBOARDING
+  "What roles interest you?" → Pick 1-3 target roles
+  ↓
+HOMEPAGE CHAT (/)
+  Chat reads your territory + targets
+  "You need Stakeholder Mgmt for PM — here are 3 roles to practice it"
+  → User clicks role card → Preview panel → Launch simulation
+  ↓
+SIMULATION
+  Complete task → Earn XP → Skill tile claims/levels up
+  → Human Edge unlocked as bonus
+  → "Territory expanded" celebration
+  ↓
+MISSION CONTROL (/journey)
+  Territory map shows progress toward target roles
+  Contested zones highlight urgent gaps
+  Quest log shows: "3 more skills to cover PM at Stripe"
+  Click frontier tile → "Explore roles for this skill" → back to chat
+  ↓
+LOOP CONTINUES
+```
+
+---
+
+### Implementation Scope
+
+1. **DB**: Add `target_roles jsonb default '[]'` to `profiles`
+2. **Onboarding**: Add target role picker step (search `jobs` table)
+3. **Journey center panel**: Redesign from branching tree → territory map (hex/bubble cluster)
+4. **Player HUD**: Replace generic stats with target-role coverage %
+5. **Intel Feed**: Replace generic hot skills with goal-specific gap skills
+6. **career-chat edge function**: Add journey context to system prompt
+7. **HomepageChat**: Pass journey state when sending messages
+8. **Skill tile interaction**: Click frontier → pre-fill chat prompt
+
+### What This Does NOT Change
+- Simulation engine (untouched)
+- XP/level system (untouched)
+- Skill taxonomy (untouched)
+- Database schema for completions/bookmarks (untouched)
 
