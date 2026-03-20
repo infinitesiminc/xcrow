@@ -40,8 +40,8 @@ const SCHOOL_FEATURES = [
 ];
 
 const faqs = [
-  { q: "Is it really free?", a: "Yes! The Free plan gives you 3 simulations and 3 analyses per month with a view-only skill territory — perfect for getting started." },
-  { q: "What does Pro unlock?", a: "Pro removes all limits on simulations and analyses, unlocks full 3-ring growth tracking (Foundation, AI Mastery, Human Edge) on your skill territory, and gives you access to the AI career coach." },
+  { q: "Is it really free?", a: "Yes! The Free plan gives you 3 simulations per month with unlimited role analyses and a view-only skill territory. Invite friends to earn +2 bonus simulations each — no cap!" },
+  { q: "What does Pro unlock?", a: "Pro removes all simulation limits, unlocks full 3-ring growth tracking (Foundation, AI Mastery, Human Edge) on your skill territory, and gives you access to the AI career coach." },
   { q: "How does the School plan work?", a: "We work with universities to create custom packages based on student count, programs, and desired outcomes. Contact our team to discuss pricing and start a free pilot." },
   { q: "Can I cancel anytime?", a: "Absolutely. Cancel from your settings and you'll keep access until the end of your billing period." },
   { q: "What if my school already has a license?", a: "If your university has a crowy.ai license, your school admin will invite you via email. You'll automatically get Pro access at no cost to you." },
