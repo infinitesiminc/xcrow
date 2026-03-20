@@ -46,8 +46,8 @@ export default function CompactSkillGrid({ skills, skillTasks }: CompactSkillGri
     <>
       <div className="h-full flex flex-col overflow-hidden">
         <div className="px-3 py-2.5 border-b border-white/5 flex items-center justify-between">
-          <h2 className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/40">Skill Map</h2>
-          <span className="text-[9px] font-mono text-white/20">
+          <h2 className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/50">Skill Map</h2>
+          <span className="text-[9px] font-mono text-white/30">
             {skills.filter(s => s.xp > 0).length}/{skills.length} active
           </span>
         </div>
@@ -63,7 +63,7 @@ export default function CompactSkillGrid({ skills, skillTasks }: CompactSkillGri
                 <div key={cat}>
                   <div className="flex items-center gap-1.5 mb-1.5">
                     <span className="text-xs">{meta.emoji}</span>
-                    <span className="text-[9px] font-bold uppercase tracking-[0.15em] text-white/30">{meta.label}</span>
+                    <span className="text-[9px] font-bold uppercase tracking-[0.15em] text-white/40">{meta.label}</span>
                   </div>
                   <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-5 gap-1.5">
                     {catSkills.map((skill, i) => {
@@ -80,13 +80,13 @@ export default function CompactSkillGrid({ skills, skillTasks }: CompactSkillGri
                           className="relative rounded-lg p-2 text-left transition-all group"
                           style={{
                             background: active
-                              ? "hsla(240, 10%, 10%, 0.8)"
-                              : "hsla(240, 10%, 8%, 0.5)",
+                              ? "hsla(240, 10%, 12%, 0.8)"
+                              : "hsla(240, 10%, 9%, 0.5)",
                             border: active
-                              ? "1px solid hsla(180, 90%, 60%, 0.2)"
-                              : "1px solid hsla(0, 0%, 100%, 0.04)",
+                              ? "1px solid hsla(180, 40%, 50%, 0.15)"
+                              : "1px solid hsla(0, 0%, 100%, 0.05)",
                             boxShadow: active
-                              ? "0 0 12px hsla(180, 90%, 60%, 0.08)"
+                              ? "0 0 8px hsla(180, 40%, 50%, 0.06)"
                               : "none",
                           }}
                         >
@@ -95,8 +95,8 @@ export default function CompactSkillGrid({ skills, skillTasks }: CompactSkillGri
                             <div
                               className="absolute top-0 left-2 right-2 h-[2px] rounded-full"
                               style={{
-                                background: `linear-gradient(90deg, hsl(180, 90%, 60%), hsl(270, 80%, 65%))`,
-                                opacity: 0.6,
+                                background: `linear-gradient(90deg, hsl(180, 40%, 50%), hsl(270, 40%, 55%))`,
+                                opacity: 0.4,
                               }}
                             />
                           )}
@@ -105,17 +105,17 @@ export default function CompactSkillGrid({ skills, skillTasks }: CompactSkillGri
                             <LevelIcon
                               className="h-3 w-3"
                               style={{
-                                color: active ? "hsl(180, 90%, 60%)" : "hsla(0, 0%, 100%, 0.15)",
+                                color: active ? "hsl(180, 40%, 55%)" : "hsla(0, 0%, 100%, 0.18)",
                               }}
                             />
                             {active && (
-                              <span className="text-[7px] font-mono font-bold" style={{ color: "hsl(270, 80%, 65%)" }}>
+                              <span className="text-[7px] font-mono font-bold" style={{ color: "hsl(270, 40%, 60%)" }}>
                                 {skill.level.slice(0, 3).toUpperCase()}
                               </span>
                             )}
                           </div>
 
-                          <p className={`text-[9px] font-medium leading-tight truncate ${active ? "text-white/80" : "text-white/25"}`}>
+                          <p className={`text-[9px] font-medium leading-tight truncate ${active ? "text-white/75" : "text-white/30"}`}>
                             {skill.name}
                           </p>
 
@@ -126,14 +126,14 @@ export default function CompactSkillGrid({ skills, skillTasks }: CompactSkillGri
                                   className="h-full rounded-full transition-all"
                                   style={{
                                     width: `${skill.progress}%`,
-                                    background: "linear-gradient(90deg, hsl(180, 90%, 60%), hsl(270, 80%, 65%))",
+                                    background: "linear-gradient(90deg, hsl(180, 40%, 50%), hsl(270, 40%, 55%))",
                                   }}
                                 />
                               </div>
-                              <p className="text-[7px] font-mono text-white/25 mt-0.5">{skill.xp} XP</p>
+                              <p className="text-[7px] font-mono text-white/30 mt-0.5">{skill.xp} XP</p>
                             </div>
                           ) : (
-                            <p className="text-[7px] text-white/15 mt-1">locked</p>
+                            <p className="text-[7px] text-white/20 mt-1">locked</p>
                           )}
                         </motion.button>
                       );

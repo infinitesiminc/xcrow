@@ -110,9 +110,9 @@ export default function Journey() {
         style={{ background: "linear-gradient(180deg, hsl(240, 10%, 4%), hsl(240, 8%, 8%))" }}
       >
         {/* Ambient glow */}
-        <div className="pointer-events-none absolute inset-0 overflow-hidden">
-          <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] rounded-full opacity-[0.03]" style={{ background: "radial-gradient(circle, hsl(180, 90%, 60%), transparent 70%)" }} />
-          <div className="absolute bottom-1/3 right-1/4 w-[400px] h-[400px] rounded-full opacity-[0.03]" style={{ background: "radial-gradient(circle, hsl(270, 80%, 65%), transparent 70%)" }} />
+          <div className="pointer-events-none absolute inset-0 overflow-hidden">
+          <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] rounded-full opacity-[0.02]" style={{ background: "radial-gradient(circle, hsl(180, 40%, 50%), transparent 70%)" }} />
+          <div className="absolute bottom-1/3 right-1/4 w-[400px] h-[400px] rounded-full opacity-[0.02]" style={{ background: "radial-gradient(circle, hsl(270, 40%, 55%), transparent 70%)" }} />
         </div>
 
         {/* 3-column grid */}
@@ -122,7 +122,7 @@ export default function Journey() {
             className="border-r border-white/5 relative"
             style={{ background: "hsla(240, 10%, 6%, 0.85)", backdropFilter: "blur(12px)" }}
           >
-            <div className="absolute top-0 left-0 right-0 h-[3px]" style={{ background: "linear-gradient(90deg, hsl(270, 80%, 65%), hsl(180, 90%, 60%))" }} />
+            <div className="absolute top-0 left-0 right-0 h-[2px]" style={{ background: "linear-gradient(90deg, hsl(270, 40%, 55%), hsl(180, 40%, 50%))" }} />
             <PlayerHUD skills={skills} uniqueTasks={uniqueTasks} isEmpty={isEmpty} />
           </div>
 
@@ -131,7 +131,7 @@ export default function Journey() {
             className="relative"
             style={{ background: "hsla(240, 10%, 5%, 0.6)", backdropFilter: "blur(8px)" }}
           >
-            <div className="absolute top-0 left-0 right-0 h-[3px]" style={{ background: "linear-gradient(90deg, hsl(180, 90%, 60%), hsl(270, 80%, 65%), hsl(330, 90%, 60%))" }} />
+            <div className="absolute top-0 left-0 right-0 h-[2px]" style={{ background: "linear-gradient(90deg, hsl(180, 40%, 50%), hsl(270, 40%, 55%), hsl(330, 45%, 50%))" }} />
             <CompactSkillGrid skills={skills} skillTasks={skillTasks} />
           </div>
 
@@ -140,7 +140,7 @@ export default function Journey() {
             className="border-l border-white/5 relative"
             style={{ background: "hsla(240, 10%, 6%, 0.85)", backdropFilter: "blur(12px)" }}
           >
-            <div className="absolute top-0 left-0 right-0 h-[3px]" style={{ background: "linear-gradient(90deg, hsl(330, 90%, 60%), hsl(270, 80%, 65%))" }} />
+            <div className="absolute top-0 left-0 right-0 h-[2px]" style={{ background: "linear-gradient(90deg, hsl(330, 45%, 50%), hsl(270, 40%, 55%))" }} />
             <IntelFeed skills={skills} savedRoles={savedRoles} />
           </div>
         </div>

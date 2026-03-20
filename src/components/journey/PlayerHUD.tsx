@@ -58,7 +58,7 @@ export default function PlayerHUD({ skills, uniqueTasks, isEmpty }: PlayerHUDPro
     <div className="h-full flex flex-col overflow-hidden">
       {/* Panel header */}
       <div className="px-3 py-2.5 border-b border-white/5">
-        <h2 className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/40">Player HUD</h2>
+        <h2 className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/50">Player HUD</h2>
       </div>
 
       {/* Stats grid */}
@@ -67,11 +67,11 @@ export default function PlayerHUD({ skills, uniqueTasks, isEmpty }: PlayerHUDPro
           <div
             key={stat.label}
             className="rounded-lg p-2 text-center"
-            style={{ background: "hsla(240, 10%, 10%, 0.7)", border: "1px solid hsla(0,0%,100%,0.06)" }}
+            style={{ background: "hsla(240, 10%, 12%, 0.7)", border: "1px solid hsla(0,0%,100%,0.08)" }}
           >
-            <stat.icon className="h-3 w-3 mx-auto mb-0.5" style={{ color: "hsl(180, 90%, 60%)" }} />
-            <p className="text-sm font-bold text-white font-mono tabular-nums">{stat.value}</p>
-            <p className="text-[8px] uppercase tracking-wider text-white/30">{stat.label}</p>
+            <stat.icon className="h-3 w-3 mx-auto mb-0.5" style={{ color: "hsl(180, 50%, 55%)" }} />
+            <p className="text-sm font-bold text-white/85 font-mono tabular-nums">{stat.value}</p>
+            <p className="text-[8px] uppercase tracking-wider text-white/40">{stat.label}</p>
           </div>
         ))}
       </div>
@@ -79,9 +79,9 @@ export default function PlayerHUD({ skills, uniqueTasks, isEmpty }: PlayerHUDPro
       {/* Human Edges */}
       <div className="flex-1 overflow-y-auto px-3 pb-3 min-h-0">
         <div className="flex items-center gap-1.5 mb-2 mt-1">
-          <ShieldCheck className="h-3 w-3" style={{ color: "hsl(270, 80%, 65%)" }} />
-          <span className="text-[9px] font-bold uppercase tracking-[0.15em] text-white/40">Human Edges</span>
-          <span className="ml-auto text-[9px] font-mono text-white/20">
+          <ShieldCheck className="h-3 w-3" style={{ color: "hsl(270, 45%, 60%)" }} />
+          <span className="text-[9px] font-bold uppercase tracking-[0.15em] text-white/50">Human Edges</span>
+          <span className="ml-auto text-[9px] font-mono text-white/30">
             {discoveredEdges.length}/{discoveredEdges.length + lockedEdges.length}
           </span>
         </div>
@@ -94,16 +94,16 @@ export default function PlayerHUD({ skills, uniqueTasks, isEmpty }: PlayerHUDPro
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: i * 0.04 }}
               className="flex items-center gap-2 rounded-lg px-2 py-1.5"
-              style={{ background: "hsla(270, 40%, 20%, 0.3)", border: "1px solid hsla(270, 80%, 65%, 0.15)" }}
+              style={{ background: "hsla(270, 20%, 18%, 0.3)", border: "1px solid hsla(270, 40%, 55%, 0.12)" }}
             >
-              <ShieldCheck className="h-3 w-3 shrink-0" style={{ color: "hsl(270, 80%, 65%)" }} />
+              <ShieldCheck className="h-3 w-3 shrink-0" style={{ color: "hsl(270, 45%, 60%)" }} />
               <div className="flex-1 min-w-0">
-                <p className="text-[10px] font-medium text-white/80 truncate">{edge.label}</p>
-                <p className="text-[8px] text-white/30 truncate">
+                <p className="text-[10px] font-medium text-white/70 truncate">{edge.label}</p>
+                <p className="text-[8px] text-white/35 truncate">
                   {CATEGORY_META[edge.category].emoji} {edge.skill}
                 </p>
               </div>
-              <span className="text-[8px] font-mono shrink-0" style={{ color: "hsl(180, 90%, 60%)" }}>
+              <span className="text-[8px] font-mono shrink-0" style={{ color: "hsl(180, 40%, 55%)" }}>
                 {levelLabels[edge.levelIndex]}
               </span>
             </motion.div>
@@ -129,7 +129,7 @@ export default function PlayerHUD({ skills, uniqueTasks, isEmpty }: PlayerHUDPro
             onClick={() => navigate("/")}
             className="w-full flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-[11px] font-medium transition-colors"
             style={{
-              background: "linear-gradient(135deg, hsl(180, 90%, 50%), hsl(270, 80%, 60%))",
+              background: "linear-gradient(135deg, hsl(180, 40%, 42%), hsl(270, 40%, 50%))",
               color: "white",
             }}
           >

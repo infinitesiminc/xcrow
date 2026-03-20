@@ -84,15 +84,15 @@ export default function IntelFeed({ skills, savedRoles }: IntelFeedProps) {
   return (
     <div className="h-full flex flex-col overflow-hidden">
       <div className="px-3 py-2.5 border-b border-white/5">
-        <h2 className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/40">Intel Feed</h2>
+        <h2 className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/50">Intel Feed</h2>
       </div>
 
       <div className="flex-1 overflow-y-auto min-h-0">
         {/* Hot Skills */}
         <div className="p-3 border-b border-white/5">
           <div className="flex items-center gap-1.5 mb-2">
-            <Flame className="h-3 w-3" style={{ color: "hsl(330, 90%, 60%)" }} />
-            <span className="text-[9px] font-bold uppercase tracking-[0.15em]" style={{ color: "hsl(330, 90%, 60%)" }}>
+            <Flame className="h-3 w-3" style={{ color: "hsl(330, 50%, 55%)" }} />
+            <span className="text-[9px] font-bold uppercase tracking-[0.15em]" style={{ color: "hsl(330, 50%, 55%)" }}>
               Hot Skills
             </span>
           </div>
@@ -105,19 +105,19 @@ export default function IntelFeed({ skills, savedRoles }: IntelFeedProps) {
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: i * 0.05 }}
                   className="flex items-center gap-2 rounded-lg px-2 py-1.5"
-                  style={{ background: "hsla(330, 40%, 15%, 0.3)", border: "1px solid hsla(330, 90%, 60%, 0.12)" }}
+                  style={{ background: "hsla(330, 20%, 14%, 0.3)", border: "1px solid hsla(330, 50%, 50%, 0.1)" }}
                 >
-                  <TrendingUp className="h-2.5 w-2.5 shrink-0" style={{ color: "hsl(330, 90%, 60%)" }} />
+                  <TrendingUp className="h-2.5 w-2.5 shrink-0" style={{ color: "hsl(330, 45%, 55%)" }} />
                   <div className="flex-1 min-w-0">
-                    <p className="text-[10px] font-medium text-white/70 truncate">{hs.skill_name}</p>
-                    <p className="text-[8px] text-white/25">{hs.demand_count} roles · {Math.round(hs.avg_exposure)}% AI</p>
+                    <p className="text-[10px] font-medium text-white/65 truncate">{hs.skill_name}</p>
+                    <p className="text-[8px] text-white/30">{hs.demand_count} roles · {Math.round(hs.avg_exposure)}% AI</p>
                   </div>
-                  <AlertTriangle className="h-2.5 w-2.5 shrink-0" style={{ color: "hsl(330, 90%, 60%)", opacity: 0.5 }} />
+                  <AlertTriangle className="h-2.5 w-2.5 shrink-0" style={{ color: "hsl(330, 45%, 55%)", opacity: 0.4 }} />
                 </motion.div>
               ))}
             </div>
           ) : (
-            <p className="text-[9px] text-white/20">Loading market data…</p>
+            <p className="text-[9px] text-white/25">Loading market data…</p>
           )}
         </div>
 
@@ -150,8 +150,8 @@ export default function IntelFeed({ skills, savedRoles }: IntelFeedProps) {
         {/* Role Unlocks */}
         <div className="p-3">
           <div className="flex items-center gap-1.5 mb-2">
-            <Unlock className="h-3 w-3" style={{ color: "hsl(180, 90%, 60%)" }} />
-            <span className="text-[9px] font-bold uppercase tracking-[0.15em]" style={{ color: "hsl(180, 90%, 60%)" }}>
+            <Unlock className="h-3 w-3" style={{ color: "hsl(180, 40%, 55%)" }} />
+            <span className="text-[9px] font-bold uppercase tracking-[0.15em]" style={{ color: "hsl(180, 40%, 55%)" }}>
               Role Unlocks
             </span>
           </div>
@@ -164,25 +164,25 @@ export default function IntelFeed({ skills, savedRoles }: IntelFeedProps) {
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: i * 0.05 }}
                   className="flex items-center gap-2 rounded-lg px-2 py-1.5"
-                  style={{ background: "hsla(180, 30%, 12%, 0.3)", border: "1px solid hsla(180, 90%, 60%, 0.12)" }}
+                  style={{ background: "hsla(180, 15%, 13%, 0.3)", border: "1px solid hsla(180, 40%, 50%, 0.1)" }}
                 >
                   <div className="flex-1 min-w-0">
-                    <p className="text-[10px] font-medium text-white/70 truncate">{role.title}</p>
+                    <p className="text-[10px] font-medium text-white/65 truncate">{role.title}</p>
                     {role.company && (
-                      <p className="text-[8px] text-white/25 truncate">{role.company}</p>
+                      <p className="text-[8px] text-white/30 truncate">{role.company}</p>
                     )}
                   </div>
                   <div className="shrink-0 text-right">
-                    <p className="text-[9px] font-mono font-bold" style={{ color: "hsl(180, 90%, 60%)" }}>
+                    <p className="text-[9px] font-mono font-bold" style={{ color: "hsl(180, 40%, 55%)" }}>
                       {role.coverage}%
                     </p>
-                    <p className="text-[7px] text-white/20">match</p>
+                    <p className="text-[7px] text-white/25">match</p>
                   </div>
                 </motion.div>
               ))}
             </div>
           ) : (
-            <p className="text-[9px] text-white/20">Save roles to track unlocks</p>
+            <p className="text-[9px] text-white/25">Save roles to track unlocks</p>
           )}
         </div>
       </div>
