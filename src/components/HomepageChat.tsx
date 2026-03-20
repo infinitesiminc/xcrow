@@ -29,6 +29,13 @@ const SIGNED_IN_SUGGESTIONS = [
   "What are my strongest skills right now?",
 ];
 
+export interface ViewContext {
+  activePanel: "territory" | "roles" | "role-preview";
+  selectedRole?: { title: string; company: string | null; jobId: string } | null;
+  selectedTab?: "saved" | "practiced";
+  lastSimResult?: { taskName: string; jobTitle: string; scores: Record<string, number> } | null;
+}
+
 export default function HomepageChat({
   onRolesFound,
   onRoleSelect,
@@ -38,6 +45,7 @@ export default function HomepageChat({
   inlineCards = true,
   externalPrompt,
   onExternalPromptConsumed,
+  viewContext,
 }: {
   onRolesFound?: (roles: RoleResult[]) => void;
   onRoleSelect: (role: RoleResult) => void;
@@ -47,6 +55,7 @@ export default function HomepageChat({
   inlineCards?: boolean;
   externalPrompt?: string | null;
   onExternalPromptConsumed?: () => void;
+  viewContext?: ViewContext | null;
 }) {
   const { toast } = useToast();
   const [items, setItems] = useState<ChatItem[]>([]);
@@ -155,6 +164,7 @@ export default function HomepageChat({
     try {
       const body: any = { messages: getApiMessages(allItems) };
       if (journeyContextRef.current) body.journeyContext = journeyContextRef.current;
+      if (viewContext) body.viewContext = viewContext;
 
       const resp = await fetch(CHAT_URL, {
         method: "POST",

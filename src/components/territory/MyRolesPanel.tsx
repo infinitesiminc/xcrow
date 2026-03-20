@@ -12,9 +12,10 @@ import { RoleCard, type RoleResult } from "@/components/InlineRoleCarousel";
 interface MyRolesPanelProps {
   onSelectRole: (role: RoleResult) => void;
   onAskChat: (prompt: string) => void;
+  onTabChange?: (tab: "saved" | "practiced") => void;
 }
 
-export default function MyRolesPanel({ onSelectRole, onAskChat }: MyRolesPanelProps) {
+export default function MyRolesPanel({ onSelectRole, onAskChat, onTabChange }: MyRolesPanelProps) {
   const { user } = useAuth();
   const [tab, setTab] = useState<"saved" | "practiced">("saved");
   const [search, setSearch] = useState("");
@@ -98,7 +99,7 @@ export default function MyRolesPanel({ onSelectRole, onAskChat }: MyRolesPanelPr
       {/* Tabs */}
       <div className="flex items-center gap-1 bg-muted/50 rounded-lg p-0.5 mb-3 shrink-0">
         <button
-          onClick={() => setTab("saved")}
+          onClick={() => { setTab("saved"); onTabChange?.("saved"); }}
           className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors flex-1 justify-center ${
             tab === "saved"
               ? "bg-background text-foreground shadow-sm"
@@ -109,7 +110,7 @@ export default function MyRolesPanel({ onSelectRole, onAskChat }: MyRolesPanelPr
           Saved ({savedRoles.length})
         </button>
         <button
-          onClick={() => setTab("practiced")}
+          onClick={() => { setTab("practiced"); onTabChange?.("practiced"); }}
           className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors flex-1 justify-center ${
             tab === "practiced"
               ? "bg-background text-foreground shadow-sm"

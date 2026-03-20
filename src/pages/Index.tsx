@@ -4,7 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { supabase } from "@/integrations/supabase/client";
 import { Map, Bookmark, X } from "lucide-react";
-import HomepageChat from "@/components/HomepageChat";
+import HomepageChat, { type ViewContext } from "@/components/HomepageChat";
 import RolePreviewPanel from "@/components/RolePreviewPanel";
 import InlineRoleCarousel, { BatchedRoleCarousel, type RoleResult, type RoleBatch } from "@/components/InlineRoleCarousel";
 import SkillSuggestionCards from "@/components/SkillSuggestionCards";
@@ -57,6 +57,8 @@ const Index = () => {
   const [externalPrompt, setExternalPrompt] = useState<string | null>(null);
   const [activeEdge, setActiveEdge] = useState<EdgeContext | null>(null);
   const [rightTab, setRightTab] = useState<RightTab>("territory");
+  const [lastSimResult, setLastSimResult] = useState<ViewContext["lastSimResult"]>(null);
+  const [myRolesTab, setMyRolesTab] = useState<"saved" | "practiced">("saved");
   const batchCounter = useRef(0);
 
   const [realSkills, setRealSkills] = useState<SkillXP[]>([]);
@@ -149,6 +151,14 @@ const Index = () => {
   const userName = profile?.displayName?.split(" ")[0];
   const isSignedIn = !!user;
 
+  // Build live view context for AI chat
+  const viewContext = useMemo<ViewContext>(() => ({
+    activePanel: selectedRole ? "role-preview" : rightTab === "roles" ? "roles" : "territory",
+    selectedRole: selectedRole ? { title: selectedRole.title, company: selectedRole.company, jobId: selectedRole.jobId } : null,
+    selectedTab: rightTab === "roles" ? myRolesTab : undefined,
+    lastSimResult,
+  }), [selectedRole, rightTab, myRolesTab, lastSimResult]);
+
   /* ── Mobile ───────────────────────────────────── */
 
   if (isMobile) {
@@ -188,6 +198,7 @@ const Index = () => {
               inlineCards
               externalPrompt={externalPrompt}
               onExternalPromptConsumed={() => setExternalPrompt(null)}
+              viewContext={viewContext}
             />
           </div>
         </div>
@@ -263,6 +274,7 @@ const Index = () => {
                 inlineCards={false}
                 externalPrompt={externalPrompt}
                 onExternalPromptConsumed={() => setExternalPrompt(null)}
+                viewContext={viewContext}
               />
             </div>
           </div>
@@ -363,6 +375,7 @@ const Index = () => {
                       setRightTab("territory");
                     }}
                     onAskChat={handleRolesAskChat}
+                    onTabChange={setMyRolesTab}
                   />
                 </motion.div>
               ) : (
