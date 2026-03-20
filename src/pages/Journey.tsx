@@ -34,7 +34,7 @@ export default function Journey() {
 
   useEffect(() => {
     if (authLoading) return;
-    if (!user) { openAuthModal(); return; }
+    if (!user) { navigate("/"); return; }
 
     const p1 = supabase
       .from("bookmarked_roles")
