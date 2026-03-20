@@ -15,7 +15,7 @@ interface MyRolesPanelProps {
   onTabChange?: (tab: "saved" | "practiced") => void;
 }
 
-export default function MyRolesPanel({ onSelectRole, onAskChat }: MyRolesPanelProps) {
+export default function MyRolesPanel({ onSelectRole, onAskChat, onTabChange }: MyRolesPanelProps) {
   const { user } = useAuth();
   const [tab, setTab] = useState<"saved" | "practiced">("saved");
   const [search, setSearch] = useState("");
