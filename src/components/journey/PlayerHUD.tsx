@@ -66,8 +66,8 @@ export default function PlayerHUD({ skills, uniqueTasks, isEmpty }: PlayerHUDPro
         {stats.map(stat => (
           <div
             key={stat.label}
-            className="rounded-lg p-2 text-center"
-            style={{ background: "hsla(240, 10%, 12%, 0.7)", border: "1px solid hsla(0,0%,100%,0.08)" }}
+            className="rounded-xl p-2 text-center"
+            style={{ background: "hsl(240 10% 12%)", border: "1px solid hsl(240 10% 18%)" }}
           >
             <stat.icon className="h-3 w-3 mx-auto mb-0.5" style={{ color: "hsl(180, 50%, 55%)" }} />
             <p className="text-sm font-bold text-white/85 font-mono tabular-nums">{stat.value}</p>
