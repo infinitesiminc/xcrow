@@ -515,7 +515,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
 
   // Parse objective tags from AI responses
   const parseObjectiveTags = useCallback((reply: string) => {
-    const tagPattern = /\[OBJECTIVE_MET:(\w+)\]/g;
+    const tagPattern = /\[OBJECTIVE_MET:([^\]]+)\]/g;
     let match;
     const newStatus = { ...objectiveStatus };
     let changed = false;
