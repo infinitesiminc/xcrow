@@ -253,6 +253,54 @@ function ActivityFeed({ entries }: { entries: LeaderboardEntry[] }) {
   );
 }
 
+const TRENDING_JOBS = [
+  { title: "Product Manager", company: "Tech", practitioners: 847, trend: "+23%", emoji: "📊" },
+  { title: "Data Analyst", company: "Finance", practitioners: 712, trend: "+31%", emoji: "📈" },
+  { title: "UX Designer", company: "Design", practitioners: 634, trend: "+18%", emoji: "🎨" },
+  { title: "Software Engineer", company: "Tech", practitioners: 1243, trend: "+12%", emoji: "💻" },
+  { title: "Marketing Analyst", company: "Marketing", practitioners: 489, trend: "+27%", emoji: "📣" },
+  { title: "Financial Analyst", company: "Finance", practitioners: 398, trend: "+34%", emoji: "💰" },
+  { title: "Operations Manager", company: "Operations", practitioners: 356, trend: "+15%", emoji: "⚙️" },
+  { title: "Content Strategist", company: "Media", practitioners: 287, trend: "+41%", emoji: "✍️" },
+];
+
+function TrendingJobs() {
+  return (
+    <div className="mb-6">
+      <div className="flex items-center gap-2 mb-3">
+        <TrendingUp className="h-4 w-4 text-primary" />
+        <h2 className="text-sm font-semibold text-foreground">Trending Jobs</h2>
+        <span className="text-[10px] text-muted-foreground">most explored this week</span>
+      </div>
+      <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none -mx-1 px-1">
+        {TRENDING_JOBS.map((job, i) => (
+          <motion.div
+            key={job.title}
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: i * 0.04, duration: 0.3 }}
+            className="shrink-0 w-40 rounded-xl border border-border/40 bg-card/60 p-3 hover:bg-card hover:border-primary/30 transition-all cursor-pointer group"
+          >
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-lg">{job.emoji}</span>
+              <Badge variant="outline" className="text-[9px] px-1.5 py-0 h-4 border-0 bg-emerald-500/10 text-emerald-400">
+                {job.trend}
+              </Badge>
+            </div>
+            <p className="text-xs font-semibold text-foreground truncate group-hover:text-primary transition-colors">
+              {job.title}
+            </p>
+            <div className="flex items-center gap-1 mt-1.5">
+              <Briefcase className="h-2.5 w-2.5 text-muted-foreground" />
+              <span className="text-[10px] text-muted-foreground">{job.practitioners.toLocaleString()} practicing</span>
+            </div>
+          </motion.div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export default function Leaderboard() {
   const { user, openAuthModal } = useAuth();
   const { toast } = useToast();
