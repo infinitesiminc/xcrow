@@ -6,7 +6,7 @@
  * Visual vibe: gamified dark-mode with spectrum gradient borders, neon accents.
  * Messaging: Skill Builder angle, empowering & direct tone, real-time market transparency.
  */
-import { useRef, useState } from "react";
+import { useRef, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, useInView } from "framer-motion";
 import { ArrowRight, Blocks, Bot, Brain, Briefcase, GraduationCap, Play, Sparkles, Target, TrendingUp, Zap } from "lucide-react";
@@ -16,6 +16,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import SimulatorModal from "@/components/SimulatorModal";
+import CompanyJobsPanel from "@/components/CompanyJobsPanel";
 
 /* ─── Shared animation helpers ─── */
 const fadeUp = {
@@ -137,6 +138,11 @@ export default function Students() {
   const navigate = useNavigate();
   const { user, openAuthModal } = useAuth();
   const [simJob, setSimJob] = useState<{ role: string; company: string; task: string } | null>(null);
+  const [selectedCompany, setSelectedCompany] = useState<string | null>(null);
+
+  const handleCompanyClick = useCallback((name: string) => {
+    setSelectedCompany((prev) => (prev === name ? null : name));
+  }, []);
 
   const handleGetStarted = () => {
     if (user) navigate("/");
@@ -387,14 +393,22 @@ export default function Students() {
         <Section className="py-16 px-6">
           <div className="max-w-5xl mx-auto">
             <motion.div variants={fadeUp} custom={0} className="text-center mb-8">
-              <span className="text-sm font-mono text-muted-foreground tracking-widest uppercase">Practice on roles from</span>
+              <span className="text-sm font-mono text-muted-foreground tracking-widest uppercase">Click a company to explore real roles</span>
             </motion.div>
             <motion.div variants={fadeUp} custom={1}>
-              <CompanyMarquee rows={[
-                ["Anthropic", "OpenAI", "Google DeepMind", "Meta", "Stripe", "Nvidia", "Apple"],
-                ["McKinsey", "Deloitte", "Boeing", "Databricks", "Cohere", "Mistral", "FedEx"],
-              ]} />
+              <CompanyMarquee
+                rows={[
+                  ["Anthropic", "OpenAI", "Google DeepMind", "Stripe", "SpaceX", "Anduril", "xAI"],
+                  ["Databricks", "Cohere", "Notion", "Deel", "Rubrik", "Instacart", "Esri"],
+                ]}
+                onCompanyClick={handleCompanyClick}
+              />
             </motion.div>
+            <CompanyJobsPanel
+              companyName={selectedCompany}
+              onClose={() => setSelectedCompany(null)}
+              onJobSelect={handleLaunchSim}
+            />
           </div>
         </Section>
 

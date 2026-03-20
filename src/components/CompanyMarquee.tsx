@@ -2,15 +2,25 @@ import { motion, useReducedMotion } from 'framer-motion';
 import { useMemo, useState } from 'react';
 import { brandfetchFromName } from '@/lib/logo';
 
-type CompanyMarqueeProps = { rows: string[][] };
+type CompanyMarqueeProps = {
+  rows: string[][];
+  onCompanyClick?: (name: string) => void;
+};
 
-function CompanyChip({ name }: { name: string }) {
+function CompanyChip({ name, onClick }: { name: string; onClick?: () => void }) {
   const logoUrl = useMemo(() => brandfetchFromName(name), [name]);
   const [logoFailed, setLogoFailed] = useState(false);
   const showLogo = Boolean(logoUrl) && !logoFailed;
 
   return (
-    <div className="flex items-center gap-2 px-4 py-2 rounded-full border border-border bg-background/80 shrink-0">
+    <button
+      type="button"
+      onClick={(e) => {
+        e.stopPropagation();
+        onClick?.();
+      }}
+      className="flex items-center gap-2 px-4 py-2 rounded-full border border-border bg-background/80 shrink-0 hover:border-primary/40 hover:bg-primary/5 transition-colors cursor-pointer"
+    >
       <div className="w-5 h-5 rounded-full overflow-hidden flex items-center justify-center bg-muted">
         {showLogo ? (
           <img src={logoUrl!} alt={name} className="w-5 h-5 object-contain grayscale opacity-70" onError={() => setLogoFailed(true)} />
@@ -21,17 +31,19 @@ function CompanyChip({ name }: { name: string }) {
         )}
       </div>
       <span className="text-sm font-medium text-foreground whitespace-nowrap">{name}</span>
-    </div>
+    </button>
   );
 }
 
-export default function CompanyMarquee({ rows }: CompanyMarqueeProps) {
+export default function CompanyMarquee({ rows, onCompanyClick }: CompanyMarqueeProps) {
   const prefersReducedMotion = useReducedMotion();
 
   if (prefersReducedMotion) {
     return (
       <div className="flex flex-wrap gap-2 justify-center">
-        {rows.flat().map((name) => <CompanyChip key={name} name={name} />)}
+        {rows.flat().map((name) => (
+          <CompanyChip key={name} name={name} onClick={() => onCompanyClick?.(name)} />
+        ))}
       </div>
     );
   }
@@ -52,7 +64,7 @@ export default function CompanyMarquee({ rows }: CompanyMarqueeProps) {
               }}
             >
               {duplicated.map((name, index) => (
-                <CompanyChip key={`${name}-${index}`} name={name} />
+                <CompanyChip key={`${name}-${index}`} name={name} onClick={() => onCompanyClick?.(name)} />
               ))}
             </motion.div>
           </div>
