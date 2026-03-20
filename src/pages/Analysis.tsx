@@ -100,8 +100,6 @@ const Analysis = () => {
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [bookmarkLoading, setBookmarkLoading] = useState(false);
   const { user, openAuthModal, isPro } = useAuth();
-  const analysisGate = useUsageGate("analysis");
-  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
 
   const fetchCompletions = useCallback(async () => {
     if (!user) return;
