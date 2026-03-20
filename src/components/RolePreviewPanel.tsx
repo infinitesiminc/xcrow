@@ -24,6 +24,8 @@ function taskChipStyle(aiScore: number) {
   return { badge: "bg-emerald-500/15 text-emerald-400", accent: "text-emerald-400" };
 }
 
+
+
 interface RolePreviewPanelProps {
   role: RoleResult;
   onClose: () => void;
@@ -664,15 +666,16 @@ export default function RolePreviewPanel({ role, onClose, edgeContext }: RolePre
                       const score = t.ai_exposure_score ?? 0;
                       const style = taskChipStyle(score);
                       const isEdgeTask = edgeTaskSet.has(t.cluster_name);
+                      const TaskIcon = getTaskIcon(t.cluster_name);
                       return (
                         <button
                           key={i}
                           onClick={() => { setFocusedTask(t); setView("task-detail"); }}
-                          className={`text-[12px] px-3 py-1.5 rounded-lg border transition-colors cursor-pointer hover:border-primary/40 ${isEdgeTask ? "ring-1 ring-primary/50 bg-primary/15 text-primary font-medium" : style.badge}`}
+                          className={`flex items-center gap-1.5 text-[12px] px-3 py-1.5 rounded-lg border transition-colors cursor-pointer hover:border-primary/40 ${isEdgeTask ? "ring-1 ring-primary/50 bg-primary/15 text-primary font-medium" : style.badge}`}
                         >
-                          {isEdgeTask && <Sparkles className="inline h-3 w-3 mr-1 -mt-0.5" />}
+                          {isEdgeTask ? <Sparkles className="h-3 w-3 shrink-0" /> : <TaskIcon className="h-3 w-3 shrink-0 opacity-70" />}
                           {t.cluster_name}
-                          {score > 0 && <span className="ml-1.5 opacity-60">{score}%</span>}
+                          {score > 0 && <span className="ml-1 opacity-60">{score}%</span>}
                         </button>
                       );
                     })}
