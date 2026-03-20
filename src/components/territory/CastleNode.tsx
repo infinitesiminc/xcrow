@@ -4,6 +4,7 @@
  */
 
 import { motion } from "framer-motion";
+import crowLogo from "@/assets/crowy-logo.png";
 import { Lock } from "lucide-react";
 import type { CastleState } from "@/lib/castle-levels";
 import type { SkillCategory } from "@/lib/skill-map";
@@ -75,14 +76,14 @@ export default function CastleNode({
           className="relative flex flex-col items-center cursor-pointer group"
           style={{ width: 88 }}
         >
-          {/* Crowy indicator */}
+          {/* Crowy mascot */}
           {isActive && (
             <motion.div
-              className="absolute -top-5 z-10 text-lg"
-              animate={{ y: [0, -4, 0] }}
+              className="absolute -top-6 z-10"
+              animate={{ y: [0, -5, 0] }}
               transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
             >
-              🐦‍⬛
+              <img src={crowLogo} alt="Crowy" className="h-7 w-7 object-contain drop-shadow-[0_0_6px_hsl(270_80%_60%/0.6)]" draggable={false} />
             </motion.div>
           )}
 
