@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -21,7 +22,8 @@ export interface TargetRole {
 }
 
 export default function Journey() {
-  const { user, loading: authLoading, openAuthModal } = useAuth();
+  const { user, loading: authLoading } = useAuth();
+  const navigate = useNavigate();
   const isMobile = useIsMobile();
 
   const [savedRoles, setSavedRoles] = useState<SavedRoleData[]>([]);
@@ -32,7 +34,7 @@ export default function Journey() {
 
   useEffect(() => {
     if (authLoading) return;
-    if (!user) { openAuthModal(); return; }
+    if (!user) { navigate("/"); return; }
 
     const p1 = supabase
       .from("bookmarked_roles")
