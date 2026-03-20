@@ -110,9 +110,9 @@ export default function Journey() {
         style={{ background: "linear-gradient(180deg, hsl(240, 10%, 4%), hsl(240, 8%, 8%))" }}
       >
         {/* Ambient glow */}
-        <div className="pointer-events-none absolute inset-0 overflow-hidden">
-          <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] rounded-full opacity-[0.03]" style={{ background: "radial-gradient(circle, hsl(180, 90%, 60%), transparent 70%)" }} />
-          <div className="absolute bottom-1/3 right-1/4 w-[400px] h-[400px] rounded-full opacity-[0.03]" style={{ background: "radial-gradient(circle, hsl(270, 80%, 65%), transparent 70%)" }} />
+          <div className="pointer-events-none absolute inset-0 overflow-hidden">
+          <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] rounded-full opacity-[0.02]" style={{ background: "radial-gradient(circle, hsl(180, 40%, 50%), transparent 70%)" }} />
+          <div className="absolute bottom-1/3 right-1/4 w-[400px] h-[400px] rounded-full opacity-[0.02]" style={{ background: "radial-gradient(circle, hsl(270, 40%, 55%), transparent 70%)" }} />
         </div>
 
         {/* 3-column grid */}
