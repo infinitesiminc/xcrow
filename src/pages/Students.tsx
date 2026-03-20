@@ -154,7 +154,7 @@ function AutoSelectCompanyPanel({
           .select("jobs!inner(company_id, companies!inner(name))")
           .limit(1000);
         if (!data?.length) return;
-        const counts = new Map<string, number>();
+        const counts: globalThis.Map<string, number> = new globalThis.Map();
         for (const row of data) {
           const name = (row.jobs as any)?.companies?.name;
           if (name) counts.set(name, (counts.get(name) || 0) + 1);
