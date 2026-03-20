@@ -159,6 +159,22 @@ export default function HomepageChat({
     })();
   }, [user]);
 
+  // Send with a different display text vs AI instruction (for skill clicks)
+  const sendMessageWithDisplay = async (displayText: string, aiInstruction: string) => {
+    if (isStreaming) return;
+    if (!hasInteracted) onChatStart();
+
+    const userItem: ChatItem = { type: "user", content: displayText };
+    const allItems = [...items, userItem];
+    setItems(allItems);
+    setInput("");
+    setIsStreaming(true);
+
+    // For the API, replace the display message with the full instruction
+    const apiItems = [...items, { type: "user" as const, content: aiInstruction }];
+    await _streamChat(allItems, apiItems);
+  };
+
   const sendMessage = async (text: string) => {
     if (!text.trim() || isStreaming) return;
     if (!hasInteracted) onChatStart();
@@ -168,6 +184,11 @@ export default function HomepageChat({
     setItems(allItems);
     setInput("");
     setIsStreaming(true);
+
+    await _streamChat(allItems, allItems);
+  };
+
+  const _streamChat = async (displayItems: ChatItem[], apiSourceItems: ChatItem[]) => {
 
     let assistantSoFar = "";
 
