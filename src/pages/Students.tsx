@@ -138,6 +138,11 @@ export default function Students() {
   const navigate = useNavigate();
   const { user, openAuthModal } = useAuth();
   const [simJob, setSimJob] = useState<{ role: string; company: string; task: string } | null>(null);
+  const [selectedCompany, setSelectedCompany] = useState<string | null>(null);
+
+  const handleCompanyClick = useCallback((name: string) => {
+    setSelectedCompany((prev) => (prev === name ? null : name));
+  }, []);
 
   const handleGetStarted = () => {
     if (user) navigate("/");
