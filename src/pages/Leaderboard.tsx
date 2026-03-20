@@ -1,17 +1,19 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   Trophy, Zap, Target, Play, ArrowUpDown, Crown, Medal, Award,
   UserPlus, Share2, Search, GraduationCap, Users, MessageCircle,
-  Gamepad2, Clock, Flame, Eye, TrendingUp, Briefcase,
+  Gamepad2, Clock, Flame, Eye, TrendingUp, Briefcase, Send, X,
+  UserCheck, CheckCircle2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { useToast } from "@/hooks/use-toast";
 
 type SortKey = "total_xp" | "skills_unlocked" | "tasks_completed";
