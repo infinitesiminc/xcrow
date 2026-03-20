@@ -105,7 +105,7 @@ export default function CompactSkillGrid({ skills, skillTasks }: CompactSkillGri
                             <LevelIcon
                               className="h-3 w-3"
                               style={{
-                                color: active ? "hsl(180, 90%, 60%)" : "hsla(0, 0%, 100%, 0.15)",
+                                color: active ? "hsl(180, 40%, 55%)" : "hsla(0, 0%, 100%, 0.18)",
                               }}
                             />
                             {active && (
