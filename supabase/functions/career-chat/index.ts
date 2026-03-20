@@ -281,9 +281,24 @@ serve(async (req) => {
             name: "search_roles",
             arguments: JSON.stringify(parsedArgs),
           };
-          console.log("Detected text-based tool call:", parsedArgs);
         } else {
           hasToolCall = false;
+        }
+      }
+      if (!hasToolCall) {
+        const readinessMatch = fullTextContent.match(/check_readiness\s*[\({]([^)}\n]+)[\)}]/);
+        if (readinessMatch) {
+          hasToolCall = true;
+          const rawArgs = readinessMatch[1];
+          const titleMatch = rawArgs.match(/job_title\s*:\s*(?:<ctrl46>|"|')?\s*([^"')}<,]+)/);
+          if (titleMatch) {
+            toolCallAccumulator = {
+              name: "check_readiness",
+              arguments: JSON.stringify({ job_title: titleMatch[1].trim() }),
+            };
+          } else {
+            hasToolCall = false;
+          }
         }
       }
     }
