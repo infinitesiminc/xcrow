@@ -32,17 +32,18 @@ function seededRandom(seed: number): () => number {
   };
 }
 
-const LAYOUT_WIDTH = 900;
-const LAYOUT_HEIGHT = 700;
-const PADDING = 80;
-const ITERATIONS = 200;
+const LAYOUT_WIDTH = 1600;
+const LAYOUT_HEIGHT = 1200;
+const PADDING = 100;
+const ITERATIONS = 350;
+const MIN_NODE_DIST = 110; // Collision radius — no two nodes closer than this
 
 // Force parameters
-const REPULSION = 8000;       // Nodes push each other away
-const SPRING_LENGTH = 100;    // Ideal edge length (strength 2)
-const SPRING_K = 0.15;        // Spring stiffness
-const DAMPING = 0.92;         // Velocity dampening
-const CENTER_GRAVITY = 0.01;  // Pull toward center
+const REPULSION = 25000;      // Nodes push each other away (much stronger)
+const SPRING_LENGTH = 160;    // Ideal edge length (strength 2)
+const SPRING_K = 0.12;        // Spring stiffness
+const DAMPING = 0.90;         // Velocity dampening
+const CENTER_GRAVITY = 0.008; // Pull toward center
 
 /**
  * Compute force-directed positions for all skills.
@@ -117,6 +118,26 @@ export function computeForceLayout(): NodePosition[] {
     for (const node of nodes) {
       node.vx += (cx - node.x) * CENTER_GRAVITY;
       node.vy += (cy - node.y) * CENTER_GRAVITY;
+    }
+
+    // Collision resolution — hard constraint: no overlaps
+    for (let i = 0; i < nodes.length; i++) {
+      for (let j = i + 1; j < nodes.length; j++) {
+        const a = nodes[i];
+        const b = nodes[j];
+        const dx = b.x - a.x;
+        const dy = b.y - a.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < MIN_NODE_DIST && dist > 0) {
+          const overlap = (MIN_NODE_DIST - dist) / 2;
+          const nx = dx / dist;
+          const ny = dy / dist;
+          a.x -= nx * overlap;
+          a.y -= ny * overlap;
+          b.x += nx * overlap;
+          b.y += ny * overlap;
+        }
+      }
     }
 
     // Apply velocity + damping
