@@ -306,7 +306,7 @@ const Index = () => {
         <TerritoryOverlay
           open={territoryOpen}
           onClose={() => setTerritoryOpen(false)}
-          skills={realSkills}
+          skills={displaySkills}
           lastPracticedSkillId={lastPracticedSkillId}
         />
 
