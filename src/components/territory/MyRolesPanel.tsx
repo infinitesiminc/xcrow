@@ -12,6 +12,7 @@ import { RoleCard, type RoleResult } from "@/components/InlineRoleCarousel";
 interface MyRolesPanelProps {
   onSelectRole: (role: RoleResult) => void;
   onAskChat: (prompt: string) => void;
+  onTabChange?: (tab: "saved" | "practiced") => void;
 }
 
 export default function MyRolesPanel({ onSelectRole, onAskChat }: MyRolesPanelProps) {
