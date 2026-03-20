@@ -1,53 +1,33 @@
 
 
-## Reorganize Admin Sidebar — Schools Section
+## Add Bubble Map View to Skills Gap Page
 
-The user wants three clearly separated concerns in the Schools sidebar:
+Add an SVG bubble chart alongside the existing heatmap table, with toggleable views. The bubble map plots skills on an XY plane where:
 
-1. **Data Operations** — curriculum extraction, scraping status, pipeline management (currently inside SchoolDetailPage tabs)
-2. **Skills Gap Analysis** — cross-school skills gap (already a standalone page)
-3. **School Accounts** — the school list/table for managing individual accounts (already exists)
+- **X-axis**: Market Demand (task count)
+- **Y-axis**: AI Exposure (%)
+- **Bubble size**: Proportional to demand count
+- **Bubble color**: Coverage % (red=0% → green=100%, matching existing `coverageColor`)
+- **Labels**: Skill name inside/beside each bubble
+- **Hover tooltip**: Shows skill name, coverage %, demand, AI exposure
 
-### Current state
-- "Analytics" → pipeline KPIs dashboard
-- "Skills Gap" → cross-school gap analysis
-- "All Schools" → school accounts table
+### Layout
 
-### Proposed sidebar restructure
-
-```text
-Schools
-  ├─ Data Ops        → /admin/schools/data-ops    (NEW — extraction status across schools)
-  ├─ Skills Gap      → /admin/schools/skills-gap   (exists)
-  └─ Accounts        → /admin/schools               (rename from "All Schools")
-```
-
-The current "Analytics" page (pipeline funnel, KPIs, Carnegie breakdown) gets folded into the Accounts page as a summary header or moved into Data Ops since it tracks scrape coverage and pipeline stages — both operational concerns.
+Add a view toggle (Table | Bubble) at the top of `CrossSchoolSkillsGap`. When "Bubble" is selected, render an SVG scatter-bubble chart using the same `rows` data already computed.
 
 ### Changes
 
-1. **Rename sidebar items** in `HRSidebar.tsx`:
-   - "Analytics" → "Data Ops" with `Database` icon → `/admin/schools/data-ops`
-   - "Skills Gap" stays as-is
-   - "All Schools" → "Accounts" with `GraduationCap` icon
+**`src/components/admin/CrossSchoolSkillsGap.tsx`**:
+1. Add `view` state: `"table" | "bubble"` (default `"table"`)
+2. Add toggle buttons next to KPI chips
+3. Add `BubbleMap` inline component that:
+   - Renders a 600×400 SVG with axes
+   - X-axis: demand (0 → maxDemand), Y-axis: AI exposure (0–100%)
+   - Each skill = circle positioned by (demand, exposure), radius scaled by demand, fill by `coverageColor(coveragePct)`
+   - Category-colored ring or label grouping
+   - Hover state shows tooltip with details
+   - Axis labels and gridlines for readability
+4. Keep existing heatmap table as-is, just conditionally render based on `view`
 
-2. **Create `src/pages/admin/SchoolDataOpsPage.tsx`** — new standalone page combining:
-   - The existing `SchoolAnalyticsDashboard` (pipeline funnel, scrape coverage, KPIs)
-   - A table of recent extraction jobs with status indicators
-   - This replaces the current analytics page route
-
-3. **Update routing in `App.tsx`**:
-   - `/admin/schools/data-ops` → `SchoolDataOpsPage`
-   - Remove `/admin/schools/analytics` route (or redirect to data-ops)
-   - `/admin/schools/skills-gap` → stays
-   - `/admin/schools` → `SchoolsPage` (Accounts)
-
-4. **Update `SchoolsPage.tsx`** heading from "All Schools" to "School Accounts"
-
-### Files touched
-- `src/components/HRSidebar.tsx` — update menu items and icons
-- `src/pages/admin/SchoolDataOpsPage.tsx` — new page (wraps existing `SchoolAnalyticsDashboard`)
-- `src/pages/admin/SchoolAnalyticsPage.tsx` — remove or redirect
-- `src/pages/admin/SchoolsPage.tsx` — rename heading
-- `src/App.tsx` — update routes
+No database changes needed — uses existing computed `rows` data.
 
