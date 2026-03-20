@@ -10,6 +10,7 @@ import SkillSuggestionCards from "@/components/SkillSuggestionCards";
 import HumanEdgesCard, { type EdgeContext } from "@/components/HumanEdgesCard";
 import TerritoryGrid from "@/components/territory/TerritoryGrid";
 import CompactHUD from "@/components/territory/CompactHUD";
+import MyRolesPanel from "@/components/territory/MyRolesPanel";
 import {
   SKILL_TAXONOMY,
   aggregateSkillXP,
@@ -51,6 +52,7 @@ const Index = () => {
   const [roleBatches, setRoleBatches] = useState<RoleBatch[]>([]);
   const [externalPrompt, setExternalPrompt] = useState<string | null>(null);
   const [activeEdge, setActiveEdge] = useState<EdgeContext | null>(null);
+  const [rolesOpen, setRolesOpen] = useState(false);
   const batchCounter = useRef(0);
 
   // Real mode data (signed-in users)
@@ -107,6 +109,12 @@ const Index = () => {
   }, [user]);
 
   const handleChatStart = useCallback(() => setHasInteracted(true), []);
+
+  const handleRolesAskChat = useCallback((prompt: string) => {
+    setExternalPrompt(prompt);
+    setRolesOpen(false);
+    setHasInteracted(true);
+  }, []);
 
   // Accumulate role batches instead of replacing
   const handleRolesFound = useCallback((roles: RoleResult[]) => {
@@ -202,11 +210,20 @@ const Index = () => {
   return (
     <div className="h-[calc(100vh-3.5rem)] flex flex-col">
       {isSignedIn && realSkills.length > 0 && (
-        <CompactHUD
-          skills={realSkills}
-          targetSkillIds={targetSkillIds}
-          userName={userName}
-        />
+        <>
+          <CompactHUD
+            skills={realSkills}
+            targetSkillIds={targetSkillIds}
+            userName={userName}
+            onToggleRoles={() => setRolesOpen((p) => !p)}
+            rolesOpen={rolesOpen}
+          />
+          <MyRolesPanel
+            open={rolesOpen}
+            onClose={() => setRolesOpen(false)}
+            onAskChat={handleRolesAskChat}
+          />
+        </>
       )}
 
       <div className="flex-1 flex min-h-0">
