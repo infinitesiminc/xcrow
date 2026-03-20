@@ -1,6 +1,7 @@
 /**
  * SkillNode — individual skill node on the RPG territory map.
  * Visual states: claimed, frontier, undiscovered, contested, demo-lit, demo-dim.
+ * Rarity effects: rare (cyan glow), legendary (gold animated glow), common (default).
  */
 
 import { motion } from "framer-motion";
@@ -28,15 +29,38 @@ interface SkillNodeProps {
   humanEdge?: string;
   baseHue: number;
   onClick: () => void;
+  rarity?: string;
+  dropExpiresAt?: string | null;
+  iconEmoji?: string | null;
 }
+
+function getTimeLeft(expiresAt: string): string {
+  const diff = new Date(expiresAt).getTime() - Date.now();
+  if (diff <= 0) return "Expired";
+  const days = Math.floor(diff / 86400000);
+  const hours = Math.floor((diff % 86400000) / 3600000);
+  if (days > 0) return `${days}d ${hours}h`;
+  return `${hours}h`;
+}
+
+const RARITY_CONFIG: Record<string, { glowColor: string; outerGlow: string; badge: string; label: string }> = {
+  legendary: { glowColor: "hsl(45 100% 55%)", outerGlow: "hsl(45 100% 55% / 0.4)", badge: "hsl(45 100% 45%)", label: "✦ Legendary" },
+  rare:      { glowColor: "hsl(190 90% 55%)", outerGlow: "hsl(190 90% 55% / 0.3)", badge: "hsl(190 80% 45%)", label: "◆ Rare" },
+  common:    { glowColor: "", outerGlow: "", badge: "", label: "" },
+};
 
 export default function SkillNode({
   x, y, name, skillId, state, growth, xp, level, humanEdge, baseHue, onClick,
+  rarity = "common", dropExpiresAt, iconEmoji,
 }: SkillNodeProps) {
   const isDim = state === "demo-dim" || state === "undiscovered";
   const isLit = state === "claimed" || state === "demo-lit";
   const isContested = state === "contested";
   const isFrontier = state === "frontier";
+  const isSpecial = rarity === "rare" || rarity === "legendary";
+  const rarityConf = RARITY_CONFIG[rarity] || RARITY_CONFIG.common;
+
+  const isExpired = dropExpiresAt ? new Date(dropExpiresAt).getTime() < Date.now() : false;
 
   const nodeRadius = 22;
 
@@ -48,7 +72,9 @@ export default function SkillNode({
     ? `hsl(${baseHue} 20% 15%)`
     : `hsl(${baseHue} 10% 12%)`;
 
-  const strokeColor = isLit
+  const strokeColor = isSpecial && !isDim
+    ? rarityConf.glowColor
+    : isLit
     ? `hsl(${baseHue} 70% 55%)`
     : isContested
     ? `hsl(38 80% 55%)`
@@ -58,7 +84,19 @@ export default function SkillNode({
 
   const tooltipContent = (
     <div className="space-y-1.5 max-w-[180px]">
-      <div className="font-semibold text-xs">{name}</div>
+      <div className="font-semibold text-xs flex items-center gap-1">
+        {iconEmoji && <span>{iconEmoji}</span>}
+        {name}
+      </div>
+      {isSpecial && (
+        <div className="text-[10px] font-bold" style={{ color: rarityConf.glowColor }}>
+          {rarityConf.label}
+          {dropExpiresAt && !isExpired && (
+            <span className="ml-1 opacity-70">⏳ {getTimeLeft(dropExpiresAt)}</span>
+          )}
+          {isExpired && <span className="ml-1 text-destructive">Expired</span>}
+        </div>
+      )}
       {level && <div className="text-[10px] text-muted-foreground">{level}{xp ? ` • ${xp} XP` : ""}</div>}
       <div className="space-y-1 pt-1 border-t border-border/50">
         <div className="flex items-center justify-between text-[10px]">
@@ -96,8 +134,37 @@ export default function SkillNode({
           className="cursor-pointer"
           style={{ transformOrigin: `${x}px ${y}px` }}
         >
+          {/* Legendary outer pulse ring */}
+          {rarity === "legendary" && !isDim && (
+            <motion.circle
+              cx={x}
+              cy={y}
+              r={nodeRadius + 10}
+              fill="none"
+              stroke={rarityConf.outerGlow}
+              strokeWidth={2}
+              animate={{ r: [nodeRadius + 8, nodeRadius + 14, nodeRadius + 8], opacity: [0.2, 0.5, 0.2] }}
+              transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
+            />
+          )}
+
+          {/* Rare shimmer ring */}
+          {rarity === "rare" && !isDim && (
+            <motion.circle
+              cx={x}
+              cy={y}
+              r={nodeRadius + 8}
+              fill="none"
+              stroke={rarityConf.outerGlow}
+              strokeWidth={1.5}
+              strokeDasharray="6 4"
+              animate={{ opacity: [0.2, 0.45, 0.2], strokeDashoffset: [0, 20] }}
+              transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+            />
+          )}
+
           {/* Glow for claimed/contested */}
-          {(isLit || isContested) && (
+          {(isLit || isContested) && !isSpecial && (
             <motion.circle
               cx={x}
               cy={y}
@@ -118,7 +185,7 @@ export default function SkillNode({
             r={nodeRadius}
             fill={fillColor}
             stroke={strokeColor}
-            strokeWidth={isLit ? 2 : isFrontier ? 1.5 : 1}
+            strokeWidth={isSpecial && !isDim ? 2.5 : isLit ? 2 : isFrontier ? 1.5 : 1}
             strokeDasharray={isFrontier ? "4 3" : undefined}
           />
 
@@ -132,6 +199,18 @@ export default function SkillNode({
             >
               <GrowthRings growth={growth} size={16} />
             </foreignObject>
+          )}
+
+          {/* Emoji icon for drop skills */}
+          {iconEmoji && !isDim && (
+            <text
+              x={x}
+              y={y + 4}
+              textAnchor="middle"
+              style={{ fontSize: "10px" }}
+            >
+              {iconEmoji}
+            </text>
           )}
 
           {/* Contested flame */}
@@ -148,16 +227,60 @@ export default function SkillNode({
             </foreignObject>
           )}
 
+          {/* Expiration countdown badge */}
+          {dropExpiresAt && !isExpired && !isDim && (
+            <g>
+              <rect
+                x={x - nodeRadius}
+                y={y + nodeRadius + 2}
+                width={nodeRadius * 2}
+                height={10}
+                rx={5}
+                fill="hsl(var(--destructive) / 0.8)"
+              />
+              <text
+                x={x}
+                y={y + nodeRadius + 9}
+                textAnchor="middle"
+                style={{ fontSize: "6px", fontWeight: 700, fill: "white" }}
+              >
+                ⏳ {getTimeLeft(dropExpiresAt)}
+              </text>
+            </g>
+          )}
+
+          {/* Rarity badge */}
+          {isSpecial && !isDim && (
+            <g>
+              <rect
+                x={x - 14}
+                y={y - nodeRadius - 10}
+                width={28}
+                height={10}
+                rx={5}
+                fill={rarityConf.badge}
+              />
+              <text
+                x={x}
+                y={y - nodeRadius - 3}
+                textAnchor="middle"
+                style={{ fontSize: "5.5px", fontWeight: 800, fill: "white", textTransform: "uppercase" }}
+              >
+                {rarity}
+              </text>
+            </g>
+          )}
+
           {/* Label */}
           <text
             x={x}
-            y={y + nodeRadius + 12}
+            y={y + nodeRadius + (dropExpiresAt && !isExpired && !isDim ? 22 : 12)}
             textAnchor="middle"
             className="fill-current text-foreground"
             style={{
               fontSize: "8px",
               fontWeight: 600,
-              fill: isDim ? "hsl(var(--muted-foreground))" : isLit ? `hsl(${baseHue} 70% 70%)` : "hsl(var(--foreground))",
+              fill: isDim ? "hsl(var(--muted-foreground))" : isSpecial ? rarityConf.glowColor : isLit ? `hsl(${baseHue} 70% 70%)` : "hsl(var(--foreground))",
               opacity: isDim ? 0.5 : 0.9,
             }}
           >
