@@ -320,9 +320,10 @@ export default function HomepageChat({
               if (item.type === "roles") {
                 return (
                   <div key={`roles-${i}`} className="py-1">
-                    <InlineRoleCarousel
+                    <InlineChatRoleCards
                       roles={item.roles}
                       onSelectRole={onRoleSelect}
+                      onViewDetails={onRoleSelect}
                       selectedJobId={selectedJobId}
                     />
                   </div>
