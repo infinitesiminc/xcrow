@@ -14,12 +14,14 @@ import {
   compileSession,
   chatTurn,
   scoreSession,
+  generateElevation,
   type SimMessage,
   type SimSession,
   type SimScoreResult,
   type SimMode,
   type LearningObjective,
   type SimConfig,
+  type ElevationNarrative,
 } from "@/lib/simulator";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
