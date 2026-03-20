@@ -122,7 +122,7 @@ export default function Journey() {
             className="border-r border-white/5 relative"
             style={{ background: "hsla(240, 10%, 6%, 0.85)", backdropFilter: "blur(12px)" }}
           >
-            <div className="absolute top-0 left-0 right-0 h-[3px]" style={{ background: "linear-gradient(90deg, hsl(270, 80%, 65%), hsl(180, 90%, 60%))" }} />
+            <div className="absolute top-0 left-0 right-0 h-[2px]" style={{ background: "linear-gradient(90deg, hsl(270, 40%, 55%), hsl(180, 40%, 50%))" }} />
             <PlayerHUD skills={skills} uniqueTasks={uniqueTasks} isEmpty={isEmpty} />
           </div>
 
