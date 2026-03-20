@@ -167,13 +167,13 @@ export default function IntelFeed({ skills, savedRoles }: IntelFeedProps) {
                   style={{ background: "hsla(180, 15%, 13%, 0.3)", border: "1px solid hsla(180, 40%, 50%, 0.1)" }}
                 >
                   <div className="flex-1 min-w-0">
-                    <p className="text-[10px] font-medium text-white/70 truncate">{role.title}</p>
+                    <p className="text-[10px] font-medium text-white/65 truncate">{role.title}</p>
                     {role.company && (
-                      <p className="text-[8px] text-white/25 truncate">{role.company}</p>
+                      <p className="text-[8px] text-white/30 truncate">{role.company}</p>
                     )}
                   </div>
                   <div className="shrink-0 text-right">
-                    <p className="text-[9px] font-mono font-bold" style={{ color: "hsl(180, 90%, 60%)" }}>
+                    <p className="text-[9px] font-mono font-bold" style={{ color: "hsl(180, 40%, 55%)" }}>
                       {role.coverage}%
                     </p>
                     <p className="text-[7px] text-white/20">match</p>
