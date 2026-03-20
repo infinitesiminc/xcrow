@@ -2,6 +2,7 @@
  * /about — Mission, brand story, and team.
  */
 import { useRef } from "react";
+import founderImg from "@/assets/founder-jackson.png";
 import { motion, useInView } from "framer-motion";
 import { ArrowRight, Bird, Brain, Layers, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
