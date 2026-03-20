@@ -456,7 +456,7 @@ export default function Students() {
             </div>
 
             <motion.p variants={fadeUp} custom={8} className="text-center text-sm text-muted-foreground mt-8">
-              5,000+ roles across 3,600+ companies — all mapped, scored, and ready to practice.
+              21,000+ roles across 3,600+ companies — all mapped, scored, and ready to practice.
             </motion.p>
           </div>
         </Section>
