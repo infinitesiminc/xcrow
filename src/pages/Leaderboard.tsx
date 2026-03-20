@@ -7,7 +7,7 @@ import {
   Trophy, Zap, Target, Play, ArrowUpDown, Crown, Medal, Award,
   UserPlus, Share2, Search, GraduationCap, Users, MessageCircle,
   Gamepad2, Clock, Flame, Eye, TrendingUp, Briefcase, Send, X,
-  UserCheck, CheckCircle2,
+  UserCheck, CheckCircle2, Bell,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -314,7 +314,48 @@ export default function Leaderboard() {
   const [chatTarget, setChatTarget] = useState<LeaderboardEntry | null>(null);
   const [chatMessages, setChatMessages] = useState<Record<string, { from: "me" | "them"; text: string }[]>>({});
   const [chatInput, setChatInput] = useState("");
+  const [unreadCounts, setUnreadCounts] = useState<Record<string, number>>({});
   const chatEndRef = useRef<HTMLDivElement>(null);
+
+  // Simulate incoming messages from friends
+  useEffect(() => {
+    const friendsList = MOCK_DATA.filter(e => e.isFriend);
+    if (friendsList.length === 0) return;
+
+    const incomingMessages = [
+      "Just hit 5,000 XP! 🎉",
+      "Have you tried the new Product Manager sim?",
+      "Yo, I beat your score on Prompt Engineering 😏",
+      "Let's grind some sims tonight?",
+      "Check out Data Analyst — it's trending!",
+      "I got into the top 10 at my school 🔥",
+      "This AI Oversight simulation is wild",
+      "Can you help me with Stakeholder Communication?",
+    ];
+
+    const timers: NodeJS.Timeout[] = [];
+    // Send 2-3 simulated messages at staggered intervals
+    const count = 2 + Math.floor(Math.random() * 2);
+    for (let i = 0; i < count; i++) {
+      const delay = 3000 + i * 5000 + Math.random() * 4000;
+      timers.push(setTimeout(() => {
+        const friend = friendsList[Math.floor(Math.random() * friendsList.length)];
+        const msg = incomingMessages[Math.floor(Math.random() * incomingMessages.length)];
+        setChatMessages(prev => ({
+          ...prev,
+          [friend.id]: [...(prev[friend.id] || []), { from: "them", text: msg }],
+        }));
+        // Only add unread if chat isn't open for this friend
+        setChatTarget(current => {
+          if (!current || current.id !== friend.id || !chatOpen) {
+            setUnreadCounts(prev => ({ ...prev, [friend.id]: (prev[friend.id] || 0) + 1 }));
+          }
+          return current;
+        });
+      }, delay));
+    }
+    return () => timers.forEach(clearTimeout);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (chatOpen) chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -344,7 +385,7 @@ export default function Leaderboard() {
   const schoolCount = useMemo(() => new Set(MOCK_DATA.map(e => e.school)).size, []);
   const friendCount = MOCK_DATA.filter(e => e.isFriend).length;
   const friendEntries = useMemo(() => MOCK_DATA.filter(e => e.isFriend), []);
-
+  const totalUnread = Object.values(unreadCounts).reduce((a, b) => a + b, 0);
   const columns: { key: SortKey; label: string; icon: typeof Zap }[] = [
     { key: "total_xp", label: "XP", icon: Zap },
     { key: "skills_unlocked", label: "Skills", icon: Target },
@@ -376,6 +417,8 @@ export default function Leaderboard() {
   function handleOpenChat(entry: LeaderboardEntry) {
     setChatTarget(entry);
     setChatOpen(true);
+    // Clear unread for this friend
+    setUnreadCounts(prev => { const n = { ...prev }; delete n[entry.id]; return n; });
     // Seed a welcome message if no history
     if (!chatMessages[entry.id]) {
       setChatMessages(prev => ({
@@ -446,9 +489,22 @@ export default function Leaderboard() {
                 </p>
               </div>
             </div>
-            <Button size="sm" variant="outline" onClick={handleInvite} className="gap-1.5 shrink-0">
-              <Share2 className="h-3.5 w-3.5" /> Invite Friends
-            </Button>
+            <div className="flex items-center gap-2 shrink-0">
+              {totalUnread > 0 && (
+                <Button size="sm" variant="ghost" className="relative gap-1.5 text-muted-foreground" onClick={() => {
+                  const friendWithUnread = friendEntries.find(f => unreadCounts[f.id]);
+                  if (friendWithUnread) handleOpenChat(friendWithUnread);
+                }}>
+                  <Bell className="h-4 w-4" />
+                  <span className="absolute -top-0.5 -right-0.5 h-4 min-w-4 px-1 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold flex items-center justify-center animate-in zoom-in-50">
+                    {totalUnread}
+                  </span>
+                </Button>
+              )}
+              <Button size="sm" variant="outline" onClick={handleInvite} className="gap-1.5 shrink-0">
+                <Share2 className="h-3.5 w-3.5" /> Invite Friends
+              </Button>
+            </div>
           </div>
 
           {/* My rank banner */}
@@ -640,10 +696,15 @@ export default function Leaderboard() {
                       {!entry.isMe && entry.isFriend && (
                         <button
                           onClick={() => handleOpenChat(entry)}
-                          className="p-1 rounded-md hover:bg-[hsl(var(--neon-cyan))]/10 text-muted-foreground hover:text-[hsl(var(--neon-cyan))] transition-colors"
+                          className="relative p-1 rounded-md hover:bg-[hsl(var(--neon-cyan))]/10 text-muted-foreground hover:text-[hsl(var(--neon-cyan))] transition-colors"
                           title="Chat"
                         >
                           <MessageCircle className="h-3.5 w-3.5" />
+                          {unreadCounts[entry.id] && (
+                            <span className="absolute -top-0.5 -right-0.5 h-3.5 min-w-3.5 px-0.5 rounded-full bg-destructive text-destructive-foreground text-[8px] font-bold flex items-center justify-center animate-in zoom-in-50">
+                              {unreadCounts[entry.id]}
+                            </span>
+                          )}
                         </button>
                       )}
                       {!entry.isMe && !entry.isFriend && !isPending && (
