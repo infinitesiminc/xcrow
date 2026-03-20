@@ -84,22 +84,7 @@ export default function CompactHUD({ skills, targetSkillIds, userName }: Compact
         </div>
       )}
 
-      {/* My Roles toggle */}
-      {onToggleRoles && (
-        <button
-          onClick={onToggleRoles}
-          className={`ml-auto flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-medium transition-all active:scale-[0.97] ${
-            rolesOpen
-              ? "bg-primary/10 text-primary border border-primary/20"
-              : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
-          }`}
-        >
-          <Bookmark className="h-3 w-3" />
-          My Roles
-        </button>
-      )}
-
-      {userName && !onToggleRoles && (
+      {userName && (
         <span className="text-[11px] text-muted-foreground ml-auto truncate max-w-[100px]">
           {userName}
         </span>
