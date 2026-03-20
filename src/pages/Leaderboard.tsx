@@ -6,7 +6,7 @@ import { motion } from "framer-motion";
 import {
   Trophy, Zap, Target, Play, ArrowUpDown, Crown, Medal, Award,
   UserPlus, Share2, Search, GraduationCap, Users, MessageCircle,
-  Gamepad2, Clock, Flame, Eye,
+  Gamepad2, Clock, Flame, Eye, TrendingUp, Briefcase,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
