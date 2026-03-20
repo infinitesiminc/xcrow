@@ -376,6 +376,43 @@ function SkillStackSequence() {
   );
 }
 
+/* ─── Auto-select company panel — shows jobs immediately on scroll ─── */
+function AutoSelectCompanyPanel({
+  selectedCompany,
+  onSelect,
+  onClose,
+  onJobSelect,
+}: {
+  selectedCompany: string | null;
+  onSelect: (name: string) => void;
+  onClose: () => void;
+  onJobSelect: (job: { role: string; company: string; task: string }) => void;
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+  const inView = useInView(ref, { once: true, margin: "-40px" });
+  const [autoSelected, setAutoSelected] = useState(false);
+
+  useEffect(() => {
+    if (inView && !autoSelected && !selectedCompany) {
+      const timer = setTimeout(() => {
+        onSelect("Anthropic");
+        setAutoSelected(true);
+      }, 800);
+      return () => clearTimeout(timer);
+    }
+  }, [inView, autoSelected, selectedCompany, onSelect]);
+
+  return (
+    <div ref={ref}>
+      <CompanyJobsPanel
+        companyName={selectedCompany}
+        onClose={onClose}
+        onJobSelect={onJobSelect}
+      />
+    </div>
+  );
+}
+
 /* ═══════════════════════════════════════════════════ */
 export default function Students() {
   const navigate = useNavigate();
@@ -700,7 +737,7 @@ export default function Students() {
                 animate={{ backgroundPosition: ["100% 0%", "-100% 0%"] }}
                 transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
               >
-                Click a company to explore real roles
+                {selectedCompany ? `Exploring ${selectedCompany}` : "Click a company to explore real roles"}
               </motion.span>
               <motion.div
                 className="absolute -bottom-2 left-1/2 h-[1px] bg-gradient-to-r from-transparent via-primary/60 to-transparent"
@@ -717,8 +754,10 @@ export default function Students() {
                 onCompanyClick={handleCompanyClick}
               />
             </motion.div>
-            <CompanyJobsPanel
-              companyName={selectedCompany}
+            {/* Always show jobs panel — auto-select first company on scroll */}
+            <AutoSelectCompanyPanel
+              selectedCompany={selectedCompany}
+              onSelect={setSelectedCompany}
               onClose={() => setSelectedCompany(null)}
               onJobSelect={handleLaunchSim}
             />
