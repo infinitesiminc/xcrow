@@ -52,6 +52,7 @@ const Index = () => {
   const [roleBatches, setRoleBatches] = useState<RoleBatch[]>([]);
   const [externalPrompt, setExternalPrompt] = useState<string | null>(null);
   const [activeEdge, setActiveEdge] = useState<EdgeContext | null>(null);
+  const [rolesOpen, setRolesOpen] = useState(false);
   const batchCounter = useRef(0);
 
   // Real mode data (signed-in users)
