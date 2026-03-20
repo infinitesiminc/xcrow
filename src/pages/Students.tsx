@@ -6,7 +6,7 @@
  * Visual vibe: gamified dark-mode with spectrum gradient borders, neon accents.
  * Messaging: Skill Builder angle, empowering & direct tone, real-time market transparency.
  */
-import { useRef, useState } from "react";
+import { useRef, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, useInView } from "framer-motion";
 import { ArrowRight, Blocks, Bot, Brain, Briefcase, GraduationCap, Play, Sparkles, Target, TrendingUp, Zap } from "lucide-react";
