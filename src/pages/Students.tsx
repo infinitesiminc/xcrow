@@ -107,8 +107,8 @@ function TerritoryPreview() {
 function ChatPreview() {
   const messages = [
     { role: "user", text: "What skills do I need for product management?" },
-    { role: "ai", text: "Great question! PMs need 3 key skill dimensions. Let me show you which ones AI is reshaping, what tools to master, and where your human edge matters most..." },
-    { role: "ai", text: "I found 14 live PM roles. Your territory shows strong Communication — try a Stakeholder Alignment sim to claim your next tile! 🎯" },
+    { role: "ai", text: "🐦‍⬛ Great question! Let me scout that out. PMs need 3 key skill dimensions — I'll show you which ones AI is reshaping, what tools to master, and where your human edge wins..." },
+    { role: "ai", text: "Found 14 live PM roles. Your territory shows strong Communication — try a Stakeholder Alignment sim to claim your next tile! 🎯" },
   ];
 
   return (
@@ -289,8 +289,8 @@ export default function Students() {
               />
               <BenefitCard
                 icon={MessageSquare}
-                title="AI Career Scout"
-                desc="Ask anything about any role. Your AI scout knows what you've practiced and guides you to the skills that matter most."
+                title="Crow — Your AI Career Scout"
+                desc="The smartest bird in the job market. Ask Crow anything about any role — it knows what you've practiced and scouts the skills that matter most."
                 gradient="from-spectrum-1 to-spectrum-2"
                 delay={4}
               />
@@ -352,12 +352,12 @@ export default function Students() {
                 <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-spectrum-3 via-spectrum-4 to-spectrum-5" />
                 <div className="border border-border/50 bg-card/80 backdrop-blur-sm rounded-2xl p-6">
                   <div className="flex items-center gap-2 mb-4">
-                    <div className="h-7 w-7 rounded-lg bg-primary/10 flex items-center justify-center">
-                      <MessageSquare className="h-3.5 w-3.5 text-primary" />
+                    <div className="h-7 w-7 rounded-lg bg-primary/10 flex items-center justify-center text-sm">
+                      🐦‍⬛
                     </div>
                     <div>
-                      <h3 className="text-sm font-semibold">AI Career Scout</h3>
-                      <p className="text-[10px] text-muted-foreground">Context-aware guidance</p>
+                      <h3 className="text-sm font-semibold">Crow <span className="text-muted-foreground font-normal">· Career Scout</span></h3>
+                      <p className="text-[10px] text-muted-foreground">Knows your territory, scouts what's next</p>
                     </div>
                   </div>
                   <ChatPreview />
@@ -497,8 +497,8 @@ export default function Students() {
               {[
                 {
                   num: "01",
-                  title: "Ask about any role",
-                  desc: "Type a job title — PM, data analyst, UX designer. Your AI scout breaks it into tasks and shows which skills matter most.",
+                  title: "Ask Crow about any role",
+                  desc: "Type a job title — PM, data analyst, UX designer. Crow breaks it into tasks and scouts which skills matter most.",
                   color: "text-spectrum-0",
                   border: "border-spectrum-0/20",
                 },

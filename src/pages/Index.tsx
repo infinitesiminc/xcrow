@@ -261,7 +261,7 @@ const Index = () => {
                   </h1>
                   <p className="text-sm text-muted-foreground mt-2 max-w-sm mx-auto">
                     {isSignedIn
-                      ? "Your scout is ready. Explore roles and expand your territory."
+                      ? "Crow is ready to scout. Explore roles and expand your territory."
                       : "Ask about any career — watch your territory light up as you explore."}
                   </p>
                 </motion.div>
