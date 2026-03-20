@@ -696,10 +696,15 @@ export default function Leaderboard() {
                       {!entry.isMe && entry.isFriend && (
                         <button
                           onClick={() => handleOpenChat(entry)}
-                          className="p-1 rounded-md hover:bg-[hsl(var(--neon-cyan))]/10 text-muted-foreground hover:text-[hsl(var(--neon-cyan))] transition-colors"
+                          className="relative p-1 rounded-md hover:bg-[hsl(var(--neon-cyan))]/10 text-muted-foreground hover:text-[hsl(var(--neon-cyan))] transition-colors"
                           title="Chat"
                         >
                           <MessageCircle className="h-3.5 w-3.5" />
+                          {unreadCounts[entry.id] && (
+                            <span className="absolute -top-0.5 -right-0.5 h-3.5 min-w-3.5 px-0.5 rounded-full bg-destructive text-destructive-foreground text-[8px] font-bold flex items-center justify-center animate-in zoom-in-50">
+                              {unreadCounts[entry.id]}
+                            </span>
+                          )}
                         </button>
                       )}
                       {!entry.isMe && !entry.isFriend && !isPending && (
