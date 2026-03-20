@@ -475,6 +475,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
   const navigate = useNavigate();
   const simGate = useUsageGate("simulation");
   const [showUpgrade, setShowUpgrade] = useState(false);
+  const [coachingContext, setCoachingContext] = useState<CoachingContext | null>(null);
 
   const taskMeta = { currentState: taskState, trend: taskTrend, impactLevel: taskImpactLevel };
 
