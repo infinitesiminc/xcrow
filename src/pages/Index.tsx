@@ -53,6 +53,56 @@ function rolesToSkillIds(roles: RoleResult[]): Set<string> {
   return ids;
 }
 
+/* ── Demo seed data for mid-game visualization ── */
+const DEMO_SEED_SKILLS: SkillXP[] = [
+  // Citadel tier (600+ XP) - mastered skills
+  { id: "data-analysis", name: "Data Analysis", category: "analytical", xp: 720, ...skillMeta("data-analysis", 720) },
+  { id: "writing-docs", name: "Writing & Docs", category: "communication", xp: 650, ...skillMeta("writing-docs", 650) },
+  // Fortress tier (300-599 XP)
+  { id: "code-dev", name: "Software Dev", category: "technical", xp: 475, ...skillMeta("code-dev", 475) },
+  { id: "project-mgmt", name: "Project Mgmt", category: "leadership", xp: 380, ...skillMeta("project-mgmt", 380) },
+  { id: "research", name: "Research & Discovery", category: "analytical", xp: 340, ...skillMeta("research", 340) },
+  { id: "prompt-eng", name: "Prompt Engineering", category: "technical", xp: 310, ...skillMeta("prompt-eng", 310) },
+  // Outpost tier (100-299 XP)
+  { id: "design-ux", name: "Design & UX", category: "creative", xp: 250, ...skillMeta("design-ux", 250) },
+  { id: "stakeholder-mgmt", name: "Stakeholder Mgmt", category: "communication", xp: 200, ...skillMeta("stakeholder-mgmt", 200) },
+  { id: "risk-assessment", name: "Risk Assessment", category: "analytical", xp: 175, ...skillMeta("risk-assessment", 175) },
+  { id: "ai-ml", name: "AI & ML", category: "technical", xp: 150, ...skillMeta("ai-ml", 150) },
+  { id: "strategy", name: "Strategy & Planning", category: "leadership", xp: 130, ...skillMeta("strategy", 130) },
+  { id: "financial-modeling", name: "Financial Modeling", category: "analytical", xp: 100, ...skillMeta("financial-modeling", 100) },
+  // Ruins (locked) — rest of taxonomy fills automatically
+];
+
+function skillMeta(id: string, xp: number) {
+  const tax = SKILL_TAXONOMY.find(s => s.id === id);
+  const lvl = getLevel(xp);
+  return {
+    level: lvl.name,
+    levelIndex: lvl.index,
+    progress: levelProgress(xp),
+    aiExposure: tax?.aiExposure ?? 50,
+    humanEdge: tax?.humanEdge,
+    taskCount: Math.ceil(xp / 100),
+  };
+}
+
+/** Merge seed into full taxonomy so locked skills also appear */
+function buildDemoSkills(): SkillXP[] {
+  const seeded = new Map(DEMO_SEED_SKILLS.map(s => [s.id, s]));
+  return SKILL_TAXONOMY.map(t => seeded.get(t.id) ?? {
+    id: t.id,
+    name: t.name,
+    category: t.category,
+    xp: 0,
+    level: "Beginner" as const,
+    levelIndex: 0,
+    progress: 0,
+    aiExposure: t.aiExposure,
+    humanEdge: t.humanEdge,
+    taskCount: 0,
+  });
+}
+
 /* ── Right panel tab type ────────────────────────── */
 type RightTab = "territory" | "roles";
 
