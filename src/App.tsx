@@ -45,6 +45,14 @@ const SchoolAnalytics = lazy(() => import("./pages/school/SchoolAnalytics.tsx"))
 
 const queryClient = new QueryClient();
 
+/** Redirect /journey to / for signed-in users */
+function JourneyGate() {
+  const { user, loading } = useAuth();
+  if (loading) return null;
+  if (user) return <Navigate to="/" replace />;
+  return <Suspense fallback={null}><Journey /></Suspense>;
+}
+
 /** Gate admin routes to superadmins */
 function AdminGate() {
   const { user, loading, isSuperAdmin } = useAuth();
