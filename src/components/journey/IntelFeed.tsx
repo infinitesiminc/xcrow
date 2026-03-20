@@ -105,7 +105,7 @@ export default function IntelFeed({ skills, savedRoles }: IntelFeedProps) {
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: i * 0.05 }}
                   className="flex items-center gap-2 rounded-lg px-2 py-1.5"
-                  style={{ background: "hsla(330, 20%, 14%, 0.3)", border: "1px solid hsla(330, 50%, 50%, 0.1)" }}
+                  style={{ background: "hsl(240 10% 12%)", border: "1px solid hsl(240 10% 18%)" }}
                 >
                   <TrendingUp className="h-2.5 w-2.5 shrink-0" style={{ color: "hsl(330, 45%, 55%)" }} />
                   <div className="flex-1 min-w-0">
