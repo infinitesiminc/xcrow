@@ -1,10 +1,10 @@
 /**
  * TerritoryOverlay — full-screen RPG map with isometric grid layout.
  * Skills placed on a diamond grid, connected by relationship lines.
- * Scrollable container larger than viewport for natural panning.
+ * Drag-to-pan + scroll + pinch zoom for natural exploration.
  */
 
-import { useMemo, useCallback, useRef, useEffect } from "react";
+import { useMemo, useCallback, useRef, useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Sparkles } from "lucide-react";
 import { TooltipProvider } from "@/components/ui/tooltip";

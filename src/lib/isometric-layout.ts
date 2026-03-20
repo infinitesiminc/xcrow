@@ -19,9 +19,9 @@ export interface GridNode {
   y: number;
 }
 
-// Grid cell size in pixels (isometric diamond)
-const CELL_W = 180;
-const CELL_H = 110;
+// Grid cell size in pixels (isometric diamond) — large for readability
+const CELL_W = 260;
+const CELL_H = 160;
 
 // Grid dimensions — enough for ~35 skills with breathing room
 const GRID_COLS = 8;
