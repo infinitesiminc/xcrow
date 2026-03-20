@@ -201,16 +201,10 @@ const Analysis = () => {
         } catch (err) { console.error("Cache lookup failed:", err); }
       }
 
-      // 2. AI analysis (no usage gate — analyses are unlimited)
-      try {
-      }
-
-      // 3. Fall back to AI analysis
+      // 2. AI analysis (analyses are unlimited for all users)
       try {
         const aiResult = await analyzeJobWithAI(jobTitle, company, jdText || undefined, jdUrlParam || undefined);
         setResult(aiResult); saveAnalysisHistory(aiResult);
-        // Increment usage after successful AI analysis
-        await analysisGate.increment();
       } catch (err: any) { setError("Unable to analyze this role right now. Please try again."); console.error(err); }
       setLoading(false);
     };
