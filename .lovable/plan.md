@@ -1,45 +1,53 @@
 
 
-# Enhance Company Marquee with Real Job Previews
+## Reorganize Admin Sidebar — Schools Section
 
-## What changes
+The user wants three clearly separated concerns in the Schools sidebar:
 
-Turn the static company pill marquee into an interactive component. When a student clicks a company chip, a dropdown/popover appears showing 3-5 real jobs from that company (fetched from the `jobs` table), each clickable to launch a simulation.
+1. **Data Operations** — curriculum extraction, scraping status, pipeline management (currently inside SchoolDetailPage tabs)
+2. **Skills Gap Analysis** — cross-school skills gap (already a standalone page)
+3. **School Accounts** — the school list/table for managing individual accounts (already exists)
 
-## How it works
+### Current state
+- "Analytics" → pipeline KPIs dashboard
+- "Skills Gap" → cross-school gap analysis
+- "All Schools" → school accounts table
 
-1. **Make `CompanyChip` clickable** — on click, query `jobs` + `companies` tables for that company name, fetch up to 5 jobs with their task clusters
-2. **Show a popover/dropdown** below the chip with real job titles, departments, and AI exposure scores
-3. **Each job row is clickable** — launches the `SimulatorModal` with the job's top task (from `job_task_clusters`)
-4. **Auth gate** — if not logged in, clicking a job opens the auth modal first
+### Proposed sidebar restructure
 
-## Technical approach
-
-### File: `src/components/CompanyMarquee.tsx`
-- Add `onClick` callback prop to `CompanyChip`
-- Add `onJobSelect` callback prop to `CompanyMarquee`
-
-### File: `src/pages/Students.tsx`
-- Add state for selected company and its jobs
-- On company click: query `companies` by name -> get `company_id` -> fetch jobs with task clusters
-- Render a popover/panel showing the fetched jobs
-- Wire job clicks into the existing `SimulatorModal` flow (reuse `simJob` state + auth gate)
-
-### Data flow
 ```text
-Click chip "Anthropic"
-  → supabase.from("companies").select("id").eq("name", "Anthropic")
-  → supabase.from("jobs").select("id, title, department, augmented_percent")
-      .eq("company_id", id).limit(5)
-  → supabase.from("job_task_clusters").select("cluster_name, job_id")
-      .in("job_id", jobIds).limit(1 per job)
-  → Show popover with jobs + "Practice" buttons
+Schools
+  ├─ Data Ops        → /admin/schools/data-ops    (NEW — extraction status across schools)
+  ├─ Skills Gap      → /admin/schools/skills-gap   (exists)
+  └─ Accounts        → /admin/schools               (rename from "All Schools")
 ```
 
-### UI design
-- Popover anchored below the marquee area (not per-chip, to avoid layout issues with the scrolling animation)
-- Shows company name + logo at top
-- List of jobs: title, department badge, exposure %, and a "Practice" button
-- Clicking "Practice" launches simulator with that job's top task
-- Click outside or another company to dismiss
+The current "Analytics" page (pipeline funnel, KPIs, Carnegie breakdown) gets folded into the Accounts page as a summary header or moved into Data Ops since it tracks scrape coverage and pipeline stages — both operational concerns.
+
+### Changes
+
+1. **Rename sidebar items** in `HRSidebar.tsx`:
+   - "Analytics" → "Data Ops" with `Database` icon → `/admin/schools/data-ops`
+   - "Skills Gap" stays as-is
+   - "All Schools" → "Accounts" with `GraduationCap` icon
+
+2. **Create `src/pages/admin/SchoolDataOpsPage.tsx`** — new standalone page combining:
+   - The existing `SchoolAnalyticsDashboard` (pipeline funnel, scrape coverage, KPIs)
+   - A table of recent extraction jobs with status indicators
+   - This replaces the current analytics page route
+
+3. **Update routing in `App.tsx`**:
+   - `/admin/schools/data-ops` → `SchoolDataOpsPage`
+   - Remove `/admin/schools/analytics` route (or redirect to data-ops)
+   - `/admin/schools/skills-gap` → stays
+   - `/admin/schools` → `SchoolsPage` (Accounts)
+
+4. **Update `SchoolsPage.tsx`** heading from "All Schools" to "School Accounts"
+
+### Files touched
+- `src/components/HRSidebar.tsx` — update menu items and icons
+- `src/pages/admin/SchoolDataOpsPage.tsx` — new page (wraps existing `SchoolAnalyticsDashboard`)
+- `src/pages/admin/SchoolAnalyticsPage.tsx` — remove or redirect
+- `src/pages/admin/SchoolsPage.tsx` — rename heading
+- `src/App.tsx` — update routes
 
