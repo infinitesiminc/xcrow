@@ -120,6 +120,26 @@ export function computeForceLayout(): NodePosition[] {
       node.vy += (cy - node.y) * CENTER_GRAVITY;
     }
 
+    // Collision resolution — hard constraint: no overlaps
+    for (let i = 0; i < nodes.length; i++) {
+      for (let j = i + 1; j < nodes.length; j++) {
+        const a = nodes[i];
+        const b = nodes[j];
+        const dx = b.x - a.x;
+        const dy = b.y - a.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < MIN_NODE_DIST && dist > 0) {
+          const overlap = (MIN_NODE_DIST - dist) / 2;
+          const nx = dx / dist;
+          const ny = dy / dist;
+          a.x -= nx * overlap;
+          a.y -= ny * overlap;
+          b.x += nx * overlap;
+          b.y += ny * overlap;
+        }
+      }
+    }
+
     // Apply velocity + damping
     for (const node of nodes) {
       node.vx *= DAMPING;
