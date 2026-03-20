@@ -700,7 +700,7 @@ export default function Students() {
                 animate={{ backgroundPosition: ["100% 0%", "-100% 0%"] }}
                 transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
               >
-                Click a company to explore real roles
+                {selectedCompany ? `Exploring ${selectedCompany}` : "Click a company to explore real roles"}
               </motion.span>
               <motion.div
                 className="absolute -bottom-2 left-1/2 h-[1px] bg-gradient-to-r from-transparent via-primary/60 to-transparent"
@@ -717,8 +717,10 @@ export default function Students() {
                 onCompanyClick={handleCompanyClick}
               />
             </motion.div>
-            <CompanyJobsPanel
-              companyName={selectedCompany}
+            {/* Always show jobs panel — auto-select first company on scroll */}
+            <AutoSelectCompanyPanel
+              selectedCompany={selectedCompany}
+              onSelect={setSelectedCompany}
               onClose={() => setSelectedCompany(null)}
               onJobSelect={handleLaunchSim}
             />
