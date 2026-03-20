@@ -1,6 +1,7 @@
 /**
  * TerritoryMap — RPG-style SVG skill map with island regions,
  * connecting paths, fog-of-war, and a Crow avatar.
+ * Now supports dynamic skills from DB with rarity glow effects.
  */
 
 import { useMemo, useState, useRef, useCallback } from "react";
@@ -13,6 +14,7 @@ import {
   SKILL_TAXONOMY,
   type SkillCategory,
   type SkillXP,
+  type TaxonomySkill,
 } from "@/lib/skill-map";
 import { calculateGrowth } from "@/lib/skill-growth";
 import {
@@ -27,12 +29,22 @@ import SkillNode from "./SkillNode";
 
 type TileState = "claimed" | "frontier" | "undiscovered" | "contested" | "demo-lit" | "demo-dim";
 
+export interface SkillRarityInfo {
+  id: string;
+  rarity: string;
+  dropExpiresAt: string | null;
+  iconEmoji: string | null;
+  description: string | null;
+}
+
 interface TerritoryMapProps {
   skills?: SkillXP[];
   targetSkillIds?: Set<string>;
   demoMode?: boolean;
   highlightedSkillIds?: Set<string>;
   onTileClick?: (skillId: string, skillName: string) => void;
+  taxonomy?: TaxonomySkill[];
+  rarityMap?: Map<string, SkillRarityInfo>;
 }
 
 export default function TerritoryMap({
@@ -41,9 +53,12 @@ export default function TerritoryMap({
   demoMode = false,
   highlightedSkillIds,
   onTileClick,
+  taxonomy,
+  rarityMap,
 }: TerritoryMapProps) {
-  const layout = useMemo(() => buildMapLayout(), []);
-  const connections = useMemo(() => buildConnections(layout), [layout]);
+  const source = taxonomy || SKILL_TAXONOMY;
+  const layout = useMemo(() => buildMapLayout(source), [source]);
+  const connections = useMemo(() => buildConnections(layout, source), [layout, source]);
 
   // Pan & zoom state
   const svgRef = useRef<SVGSVGElement>(null);
