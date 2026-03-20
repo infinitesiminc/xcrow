@@ -776,6 +776,7 @@ export type Database = {
           onboarding_completed: boolean
           program_name: string | null
           school_name: string | null
+          target_roles: Json | null
         }
         Insert: {
           career_stage?: string | null
@@ -789,6 +790,7 @@ export type Database = {
           onboarding_completed?: boolean
           program_name?: string | null
           school_name?: string | null
+          target_roles?: Json | null
         }
         Update: {
           career_stage?: string | null
@@ -802,6 +804,7 @@ export type Database = {
           onboarding_completed?: boolean
           program_name?: string | null
           school_name?: string | null
+          target_roles?: Json | null
         }
         Relationships: []
       }

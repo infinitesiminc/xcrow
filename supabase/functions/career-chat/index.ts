@@ -17,13 +17,22 @@ Your personality: encouraging, concise, slightly bold. You speak like a smart ca
 - Practicing tasks earns XP toward specific skills on their Skill Map
 - Skills level up: Beginner → Developing → Proficient → Expert
 - The goal: build a verified skill map that proves job readiness to employers
+- Students have a Territory Map where practiced skills are "claimed" and target-role skills are "frontiers" to explore
 
 ## Your coaching approach:
 - Always connect roles back to SKILLS: "This PM role builds Strategy, Stakeholder Management, and Data Analysis"
 - After showing role cards, suggest which task to practice first and why: "Start with the Roadmap Planning task — it builds your Strategy skill, which unlocks the most roles"
-- Frame everything as skill-building, not job-seeking: "You're not just learning about PM — you're leveling up Strategy"
+- Frame everything as skill-building and territory expansion: "You're not just learning about PM — you're claiming Strategy territory"
 - For students unsure about careers, help them explore by skills: "You seem drawn to analytical thinking — let me show you roles that build those skills"
 - When you have task data for a role, mention specific tasks: "This role has 8 tasks — try 'Customer Feedback Synthesis' first, it builds your Communication and Data Analysis skills"
+
+## TERRITORY-AWARE COACHING
+When journey context is provided, personalize your responses:
+- Reference their target roles: "Since you're aiming for Product Manager, let's focus on your 3 frontier skills"
+- Highlight gaps: "You've claimed Strategy but Stakeholder Management is still a frontier — this role would help you claim it"
+- Celebrate progress: "Nice! You've covered 6 of 14 skills for your PM goal 🎯"
+- Suggest next moves: "Your weakest area is Design & UX — want to explore roles that build it?"
+- Use territory language naturally: "claimed", "frontier", "contested zone", "territory"
 
 ## CRITICAL: Narrowing Before Searching
 
@@ -79,10 +88,8 @@ function getCachedSearch(key: string) {
 // Trim conversation to last N turns to reduce token usage
 function trimMessages(messages: any[], maxTurns: number = 10): any[] {
   if (messages.length <= maxTurns * 2) return messages;
-  // Always keep the first user message for context, then take last N*2 messages
   const first = messages[0];
   const recent = messages.slice(-(maxTurns * 2));
-  // Avoid duplicating the first message if it's already in recent
   if (recent[0] === first) return recent;
   return [first, ...recent];
 }
@@ -92,12 +99,36 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
 
   try {
-    const { messages: rawMessages } = await req.json();
+    const { messages: rawMessages, journeyContext } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
     // Trim conversation history
     const messages = trimMessages(rawMessages);
+
+    // Build territory-aware system prompt
+    let systemPrompt = SYSTEM_PROMPT;
+    if (journeyContext) {
+      const ctx = journeyContext;
+      let territoryBlock = "\n\n## CURRENT STUDENT TERRITORY STATE\n";
+      if (ctx.targetRoles?.length > 0) {
+        territoryBlock += `Target roles: ${ctx.targetRoles.map((r: any) => `${r.title}${r.company ? ` at ${r.company}` : ""}`).join(", ")}\n`;
+      }
+      if (ctx.activeSkills?.length > 0) {
+        territoryBlock += `Claimed territory (practiced skills): ${ctx.activeSkills.join(", ")}\n`;
+      }
+      if (ctx.frontierSkills?.length > 0) {
+        territoryBlock += `Frontier skills (needed but not practiced): ${ctx.frontierSkills.join(", ")}\n`;
+      }
+      if (ctx.weakestSkill) {
+        territoryBlock += `Weakest skill among targets: ${ctx.weakestSkill}\n`;
+      }
+      if (ctx.coveragePct !== undefined) {
+        territoryBlock += `Territory coverage: ${ctx.coveragePct}% of target-role skills claimed\n`;
+      }
+      territoryBlock += "\nUse this context to personalize your coaching. Reference their specific gaps and progress.";
+      systemPrompt += territoryBlock;
+    }
 
     const response = await fetch(
       "https://ai.gateway.lovable.dev/v1/chat/completions",
@@ -110,7 +141,7 @@ serve(async (req) => {
         body: JSON.stringify({
           model: "google/gemini-3-flash-preview",
           messages: [
-            { role: "system", content: SYSTEM_PROMPT },
+            { role: "system", content: systemPrompt },
             ...messages,
           ],
           stream: true,
@@ -201,7 +232,6 @@ serve(async (req) => {
               toolCallAccumulator.arguments += tc.function.arguments;
             }
           }
-          // Collect text content for fallback text-based tool call detection
           const content = delta?.content;
           if (content) fullTextContent += content;
           regularChunks.push(line + "\n");
@@ -209,13 +239,12 @@ serve(async (req) => {
       }
     }
 
-    // Fallback: detect tool calls emitted as plain text (e.g. search_roles{...})
+    // Fallback: detect tool calls emitted as plain text
     if (!hasToolCall && fullTextContent) {
       const textToolMatch = fullTextContent.match(/search_roles\s*[\({]([^)}\n]+)[\)}]/);
       if (textToolMatch) {
         hasToolCall = true;
         const rawArgs = textToolMatch[1];
-        // Parse key:value pairs from the text format
         const queryMatch = rawArgs.match(/query\s*:\s*(?:<ctrl46>|"|')?\s*([^"')}<,]+)\s*(?:<ctrl46>|"|')?/);
         const limitMatch = rawArgs.match(/limit\s*:\s*(\d+)/);
         const parsedArgs: any = {};
@@ -245,7 +274,6 @@ serve(async (req) => {
       const limit = args.limit || 3;
       const cacheKey = `${args.query.toLowerCase().trim()}:${limit}`;
       
-      // Check in-memory cache first
       let roleResults = getCachedSearch(cacheKey);
 
       if (!roleResults) {
@@ -253,11 +281,9 @@ serve(async (req) => {
         const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
         const sb = createClient(supabaseUrl, supabaseKey);
 
-        // Split query into words for broader matching
         const words = args.query.split(/\s+/).filter(Boolean);
         const patterns = words.map(w => `%${w}%`);
         
-        // Build OR conditions: match any word in title, department, location, or country
         const orConditions = patterns.flatMap(p => [
           `title.ilike.${p}`,
           `department.ilike.${p}`,
@@ -265,7 +291,6 @@ serve(async (req) => {
           `country.ilike.${p}`,
         ]).join(",");
         
-        // Fetch a wider pool to allow diversity filtering
         const poolSize = Math.max(limit * 5, 15);
         const { data: jobs, error: dbError } = await sb
           .from("jobs")
@@ -276,22 +301,14 @@ serve(async (req) => {
         
         if (dbError) console.error("DB search error:", dbError);
 
-        // Diversify: max 1 role per company, then shuffle
         const byCompany = new Map<string, any>();
         const noCompany: any[] = [];
         for (const j of (jobs || [])) {
           const companyName = (j as any).companies?.name?.toLowerCase() || "";
-          if (!companyName) {
-            noCompany.push(j);
-            continue;
-          }
-          if (!byCompany.has(companyName)) {
-            byCompany.set(companyName, j);
-          }
+          if (!companyName) { noCompany.push(j); continue; }
+          if (!byCompany.has(companyName)) byCompany.set(companyName, j);
         }
-        // Combine unique-per-company + no-company, then shuffle
         let diversePool = [...byCompany.values(), ...noCompany];
-        // Fisher-Yates shuffle for fair ordering
         for (let i = diversePool.length - 1; i > 0; i--) {
           const j = Math.floor(Math.random() * (i + 1));
           [diversePool[i], diversePool[j]] = [diversePool[j], diversePool[i]];
@@ -300,7 +317,6 @@ serve(async (req) => {
 
         const jobIds = selectedJobs.map((j: any) => j.id);
 
-        // Fetch top 3 task clusters per job for enrichment
         let tasksByJob: Record<string, { name: string; aiScore: number }[]> = {};
         if (jobIds.length > 0) {
           const { data: tasks } = await sb
@@ -313,10 +329,7 @@ serve(async (req) => {
             for (const t of tasks) {
               if (!tasksByJob[t.job_id]) tasksByJob[t.job_id] = [];
               if (tasksByJob[t.job_id].length < 3) {
-                tasksByJob[t.job_id].push({
-                  name: t.cluster_name,
-                  aiScore: t.ai_exposure_score || 0,
-                });
+                tasksByJob[t.job_id].push({ name: t.cluster_name, aiScore: t.ai_exposure_score || 0 });
               }
             }
           }
@@ -337,14 +350,12 @@ serve(async (req) => {
           topTasks: tasksByJob[j.id] || [],
         }));
 
-        // Store in cache
         searchCache.set(cacheKey, { roles: roleResults, ts: Date.now() });
         console.log("Cached search for:", cacheKey, "results:", roleResults.length);
       } else {
         console.log("Cache hit for:", cacheKey);
       }
 
-      // Second AI call with tool result — this time streamed back to client
       const followUp = await fetch(
         "https://ai.gateway.lovable.dev/v1/chat/completions",
         {
@@ -356,7 +367,7 @@ serve(async (req) => {
           body: JSON.stringify({
             model: "google/gemini-3-flash-preview",
             messages: [
-              { role: "system", content: SYSTEM_PROMPT },
+              { role: "system", content: systemPrompt },
               ...messages,
               {
                 role: "assistant",
@@ -390,7 +401,6 @@ serve(async (req) => {
         );
       }
 
-      // Prepend a custom SSE event with the role cards data (strip topTasks for client — it's for AI context only)
       const clientRoles = roleResults.map((r: any) => {
         const { topTasks, ...rest } = r;
         return rest;

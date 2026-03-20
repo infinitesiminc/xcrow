@@ -4,6 +4,9 @@ import { motion, AnimatePresence } from "framer-motion";
 import TypewriterMarkdown from "@/components/TypewriterMarkdown";
 import { useToast } from "@/hooks/use-toast";
 import InlineRoleCarousel, { type RoleResult } from "@/components/InlineRoleCarousel";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
+import { aggregateSkillXP, type SimRecord } from "@/lib/skill-map";
 
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/career-chat`;
 
@@ -79,6 +82,53 @@ export default function HomepageChat({
       .filter((it) => !(it.type === "assistant" && TOOL_CALL_RE.test(it.content.trim())))
       .map((m) => ({ role: m.type, content: m.content }));
 
+  // Build journey context for territory-aware chat
+  const { user } = useAuth();
+  const journeyContextRef = useRef<any>(null);
+
+  useEffect(() => {
+    if (!user) return;
+    (async () => {
+      const [profileRes, simsRes] = await Promise.all([
+        supabase.from("profiles").select("target_roles").eq("id", user.id).single(),
+        supabase.from("completed_simulations").select("task_name, job_title, skills_earned").eq("user_id", user.id),
+      ]);
+
+      const targetRoles = ((profileRes.data as any)?.target_roles || []) as { job_id: string; title: string; company: string | null }[];
+      const sims = (simsRes.data || []) as SimRecord[];
+      const skills = aggregateSkillXP(sims);
+      const activeSkills = skills.filter(s => s.xp > 0);
+      const activeNames = activeSkills.map(s => s.name);
+
+      // Get target role skill names
+      let frontierSkills: string[] = [];
+      let coveragePct: number | undefined;
+      if (targetRoles.length > 0) {
+        const jobIds = targetRoles.map(r => r.job_id);
+        const { data: clusters } = await supabase.from("job_task_clusters").select("skill_names").in("job_id", jobIds);
+        const targetNames = new Set<string>();
+        for (const c of (clusters || [])) {
+          for (const s of (c.skill_names || [])) targetNames.add(s);
+        }
+        const activeSet = new Set(activeNames.map(n => n.toLowerCase()));
+        frontierSkills = Array.from(targetNames).filter(n => !activeSet.has(n.toLowerCase()));
+        const claimed = Array.from(targetNames).filter(n => activeSet.has(n.toLowerCase())).length;
+        coveragePct = targetNames.size > 0 ? Math.round((claimed / targetNames.size) * 100) : undefined;
+      }
+
+      // Find weakest skill among active
+      const weakest = activeSkills.length > 0 ? activeSkills.reduce((a, b) => a.xp < b.xp ? a : b) : null;
+
+      journeyContextRef.current = {
+        targetRoles: targetRoles.map(r => ({ title: r.title, company: r.company })),
+        activeSkills: activeNames,
+        frontierSkills,
+        weakestSkill: weakest?.name || null,
+        coveragePct,
+      };
+    })();
+  }, [user]);
+
   const sendMessage = async (text: string) => {
     if (!text.trim() || isStreaming) return;
     if (!hasInteracted) onChatStart();
@@ -92,13 +142,16 @@ export default function HomepageChat({
     let assistantSoFar = "";
 
     try {
+      const body: any = { messages: getApiMessages(allItems) };
+      if (journeyContextRef.current) body.journeyContext = journeyContextRef.current;
+
       const resp = await fetch(CHAT_URL, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
         },
-        body: JSON.stringify({ messages: getApiMessages(allItems) }),
+        body: JSON.stringify(body),
       });
 
       if (!resp.ok) {

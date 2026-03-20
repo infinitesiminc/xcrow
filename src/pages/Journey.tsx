@@ -14,12 +14,20 @@ import {
   type SimRecord,
 } from "@/lib/skill-map";
 
+export interface TargetRole {
+  job_id: string;
+  title: string;
+  company: string | null;
+}
+
 export default function Journey() {
   const { user, loading: authLoading, openAuthModal } = useAuth();
   const isMobile = useIsMobile();
 
   const [savedRoles, setSavedRoles] = useState<SavedRoleData[]>([]);
   const [practicedRoles, setPracticedRoles] = useState<PracticedRoleData[]>([]);
+  const [targetRoles, setTargetRoles] = useState<TargetRole[]>([]);
+  const [targetSkillNames, setTargetSkillNames] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -40,7 +48,35 @@ export default function Journey() {
       .order("completed_at", { ascending: false })
       .then(({ data }) => setPracticedRoles((data as PracticedRoleData[]) || []));
 
-    Promise.all([p1, p2]).then(() => setLoading(false));
+    // Fetch target roles from profile
+    const p3 = supabase
+      .from("profiles")
+      .select("target_roles")
+      .eq("id", user.id)
+      .single()
+      .then(async ({ data }) => {
+        const roles = ((data as any)?.target_roles || []) as TargetRole[];
+        setTargetRoles(roles);
+
+        // Fetch skill_names from job_task_clusters for target role job_ids
+        if (roles.length > 0) {
+          const jobIds = roles.map(r => r.job_id);
+          const { data: clusters } = await supabase
+            .from("job_task_clusters")
+            .select("skill_names")
+            .in("job_id", jobIds);
+
+          const names = new Set<string>();
+          for (const c of (clusters || [])) {
+            for (const s of (c.skill_names || [])) {
+              names.add(s.toLowerCase());
+            }
+          }
+          setTargetSkillNames(names);
+        }
+      });
+
+    Promise.all([p1, p2, p3]).then(() => setLoading(false));
   }, [user, authLoading]);
 
   const simRecords: SimRecord[] = useMemo(() =>
@@ -84,15 +120,15 @@ export default function Journey() {
         <Navbar />
         <div className="min-h-[calc(100vh-56px)] overflow-y-auto" style={{ background: "linear-gradient(180deg, hsl(240, 10%, 5%), hsl(240, 8%, 7%))" }}>
           <div className="border-b border-white/5">
-            <PlayerHUD skills={skills} uniqueTasks={uniqueTasks} isEmpty={isEmpty} />
+            <PlayerHUD skills={skills} uniqueTasks={uniqueTasks} isEmpty={isEmpty} targetRoles={targetRoles} targetSkillNames={targetSkillNames} />
           </div>
           <div className="border-b border-white/5">
             <div className="min-h-[400px]">
-              <CompactSkillGrid skills={skills} skillTasks={skillTasks} />
+              <CompactSkillGrid skills={skills} skillTasks={skillTasks} targetSkillNames={targetSkillNames} />
             </div>
           </div>
           <div>
-            <IntelFeed skills={skills} savedRoles={savedRoles} />
+            <IntelFeed skills={skills} savedRoles={savedRoles} targetRoles={targetRoles} targetSkillNames={targetSkillNames} />
           </div>
           <StickyTicker />
         </div>
@@ -108,34 +144,17 @@ export default function Journey() {
         className="h-[calc(100vh-56px)] overflow-hidden flex flex-col"
         style={{ background: "linear-gradient(180deg, hsl(240, 10%, 5%), hsl(240, 8%, 7%))" }}
       >
-        {/* 3-column grid */}
         <div className="flex-1 grid grid-cols-[240px_1fr_260px] gap-0 min-h-0 overflow-hidden relative z-10">
-          {/* Left — Player HUD / Character Sheet */}
-          <div
-            className="border-r border-white/[0.04] relative overflow-hidden"
-            style={{ background: "hsl(240, 10%, 7%)" }}
-          >
-            <PlayerHUD skills={skills} uniqueTasks={uniqueTasks} isEmpty={isEmpty} />
+          <div className="border-r border-white/[0.04] relative overflow-hidden" style={{ background: "hsl(240, 10%, 7%)" }}>
+            <PlayerHUD skills={skills} uniqueTasks={uniqueTasks} isEmpty={isEmpty} targetRoles={targetRoles} targetSkillNames={targetSkillNames} />
           </div>
-
-          {/* Center — Skill Tree */}
-          <div
-            className="relative overflow-hidden"
-            style={{ background: "hsl(240, 10%, 6%)" }}
-          >
-            <CompactSkillGrid skills={skills} skillTasks={skillTasks} />
+          <div className="relative overflow-hidden" style={{ background: "hsl(240, 10%, 6%)" }}>
+            <CompactSkillGrid skills={skills} skillTasks={skillTasks} targetSkillNames={targetSkillNames} />
           </div>
-
-          {/* Right — Quest Log */}
-          <div
-            className="border-l border-white/[0.04] relative overflow-hidden"
-            style={{ background: "hsl(240, 10%, 7%)" }}
-          >
-            <IntelFeed skills={skills} savedRoles={savedRoles} />
+          <div className="border-l border-white/[0.04] relative overflow-hidden" style={{ background: "hsl(240, 10%, 7%)" }}>
+            <IntelFeed skills={skills} savedRoles={savedRoles} targetRoles={targetRoles} targetSkillNames={targetSkillNames} />
           </div>
         </div>
-
-        {/* Bottom ticker */}
         <StickyTicker />
       </div>
     </>
