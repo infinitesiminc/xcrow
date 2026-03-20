@@ -16,6 +16,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import SimulatorModal from "@/components/SimulatorModal";
+import CompanyJobsPanel from "@/components/CompanyJobsPanel";
 
 /* ─── Shared animation helpers ─── */
 const fadeUp = {
