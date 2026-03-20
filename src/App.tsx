@@ -106,7 +106,7 @@ const App = () => (
                 <Route index element={<PipelinePage />} />
                 <Route path="analytics" element={<TaskAnalyticsPage />} />
                 <Route path="schools" element={<SchoolsPage />} />
-                <Route path="schools/analytics" element={<SchoolAnalyticsAdminPage />} />
+                <Route path="schools/data-ops" element={<SchoolDataOpsPage />} />
                 <Route path="schools/skills-gap" element={<SchoolSkillsGapPage />} />
                 <Route path="schools/:schoolId" element={<SchoolDetailPage />} />
               </Route>
