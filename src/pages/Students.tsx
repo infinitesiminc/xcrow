@@ -8,7 +8,7 @@
  */
 import { useRef, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { motion, useInView } from "framer-motion";
+import { motion, useInView, AnimatePresence } from "framer-motion";
 import { ArrowRight, Blocks, Brain, GraduationCap, Lock, Sparkles, Star, Target, Trophy, TrendingUp, Zap } from "lucide-react";
 import CompanyMarquee from "@/components/CompanyMarquee";
 import { Button } from "@/components/ui/button";
@@ -130,6 +130,264 @@ function Stat({ value, label, delay, color }: { value: string; label: string; de
       <span className={`text-2xl sm:text-3xl font-bold ${color}`}>{value}</span>
       <span className="text-xs text-muted-foreground font-mono tracking-wide">{label}</span>
     </motion.div>
+  );
+}
+
+/* ─── Sequential Skill Stack Animation ─── */
+type SkillItem = { label: string; color: "ai" | "human" | "mid" };
+
+const UNSORTED_SKILLS: SkillItem[] = [
+  { label: "Data Analysis", color: "ai" },
+  { label: "Communication", color: "human" },
+  { label: "Programming", color: "ai" },
+  { label: "Judgment", color: "human" },
+  { label: "Design & UX", color: "mid" },
+  { label: "Strategy", color: "human" },
+  { label: "Report Generation", color: "ai" },
+  { label: "Leadership", color: "human" },
+];
+
+const SORTED_SKILLS: SkillItem[] = [
+  { label: "Judgment", color: "human" },
+  { label: "Leadership", color: "human" },
+  { label: "Strategy", color: "human" },
+  { label: "Communication", color: "human" },
+  { label: "Design & UX", color: "mid" },
+  { label: "Programming", color: "ai" },
+  { label: "Data Analysis", color: "ai" },
+  { label: "Report Generation", color: "ai" },
+];
+
+function SkillStackSequence() {
+  const ref = useRef<HTMLDivElement>(null);
+  const inView = useInView(ref, { once: true, margin: "-100px" });
+  const [phase, setPhase] = useState<0 | 1 | 2>(0); // 0=hidden, 1=stack, 2=reshuffle
+
+  // Trigger phases sequentially when in view
+  useState(() => {});
+  // Using useEffect-like behavior via motion callbacks
+  if (inView && phase === 0) {
+    setTimeout(() => setPhase(1), 200);
+  }
+
+  const skills = phase < 2 ? UNSORTED_SKILLS : SORTED_SKILLS;
+  const dividerIndex = phase === 2 ? 4 : -1; // After the 4th skill (human/mid zone ends)
+
+  return (
+    <div ref={ref} className="relative">
+      {/* Phase indicator headlines */}
+      <div className="text-center mb-12">
+        <div className="inline-flex items-center gap-2 mb-4">
+          <Blocks className="h-5 w-5 text-brand-mid" />
+          <span className="text-sm font-mono text-muted-foreground tracking-widest uppercase">The Skill Stack</span>
+        </div>
+
+        <div className="relative h-[72px] sm:h-[80px] overflow-hidden">
+          <AnimatePresence mode="wait">
+            {phase < 2 ? (
+              <motion.h2
+                key="phase1"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                className="text-3xl sm:text-4xl font-bold absolute inset-x-0"
+              >
+                Every job is a <span className="bg-gradient-to-r from-spectrum-0 via-spectrum-3 to-spectrum-6 bg-clip-text text-transparent">stack of skills</span>.
+              </motion.h2>
+            ) : (
+              <motion.h2
+                key="phase2"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="text-3xl sm:text-4xl font-bold absolute inset-x-0"
+              >
+                AI <span className="text-brand-ai">reshuffles</span> the deck.
+              </motion.h2>
+            )}
+          </AnimatePresence>
+        </div>
+
+        <AnimatePresence mode="wait">
+          {phase < 2 ? (
+            <motion.p
+              key="sub1"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1, transition: { delay: 0.3 } }}
+              exit={{ opacity: 0 }}
+              className="text-muted-foreground max-w-md mx-auto mt-2"
+            >
+              Here's a Software Engineer's skill stack — a mix of technical, creative, and human skills.
+            </motion.p>
+          ) : (
+            <motion.p
+              key="sub2"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1, transition: { delay: 0.3 } }}
+              className="text-muted-foreground max-w-lg mx-auto mt-2"
+            >
+              <span className="text-brand-human font-semibold">Human skills float up.</span>{" "}
+              <span className="text-brand-ai font-semibold">AI-exposed skills drift down.</span>{" "}
+              Your value is at the top.
+            </motion.p>
+          )}
+        </AnimatePresence>
+      </div>
+
+      {/* The animated stack */}
+      <div className="max-w-xs sm:max-w-sm mx-auto relative">
+        {/* Zone labels — only in phase 2 */}
+        <AnimatePresence>
+          {phase === 2 && (
+            <>
+              <motion.div
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.8 }}
+                className="absolute -left-2 top-2 -translate-x-full pr-3 hidden md:block"
+              >
+                <div className="flex items-center gap-2">
+                  <div className="flex flex-col items-end">
+                    <span className="text-xs font-bold text-brand-human uppercase tracking-wider">Your Edge</span>
+                    <span className="text-[10px] text-muted-foreground">Where you add value</span>
+                  </div>
+                  <TrendingUp className="h-4 w-4 text-brand-human" />
+                </div>
+              </motion.div>
+              <motion.div
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 1 }}
+                className="absolute -left-2 bottom-10 -translate-x-full pr-3 hidden md:block"
+              >
+                <div className="flex items-center gap-2">
+                  <div className="flex flex-col items-end">
+                    <span className="text-xs font-bold text-brand-ai uppercase tracking-wider">AI Zone</span>
+                    <span className="text-[10px] text-muted-foreground">Being automated</span>
+                  </div>
+                  <Zap className="h-4 w-4 text-brand-ai" />
+                </div>
+              </motion.div>
+            </>
+          )}
+        </AnimatePresence>
+
+        {/* Blocks */}
+        <motion.div
+          className={`flex flex-col gap-2 p-3 sm:p-4 rounded-2xl border transition-colors duration-700 ${
+            phase === 2
+              ? "border-border/60 bg-gradient-to-b from-brand-human/[0.04] via-transparent to-brand-ai/[0.04]"
+              : "border-border/40 bg-card/40"
+          }`}
+          layout
+        >
+          {skills.map((skill, i) => {
+            const showDivider = phase === 2 && i === dividerIndex;
+            return (
+              <div key={skill.label}>
+                {showDivider && (
+                  <motion.div
+                    initial={{ opacity: 0, scaleX: 0 }}
+                    animate={{ opacity: 1, scaleX: 1 }}
+                    transition={{ delay: 0.6, duration: 0.4 }}
+                    className="relative flex items-center my-2"
+                  >
+                    <div className="flex-1 h-px bg-gradient-to-r from-transparent via-muted-foreground/40 to-transparent" />
+                    <span className="px-3 text-[9px] font-mono text-muted-foreground/60 uppercase tracking-widest whitespace-nowrap">
+                      automation line
+                    </span>
+                    <div className="flex-1 h-px bg-gradient-to-r from-transparent via-muted-foreground/40 to-transparent" />
+                  </motion.div>
+                )}
+                <motion.div
+                  layout
+                  initial={phase <= 1 ? { opacity: 0, x: -30 } : undefined}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={
+                    phase <= 1
+                      ? { delay: 0.4 + i * 0.12, duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] }
+                      : { type: "spring", stiffness: 300, damping: 30, delay: i * 0.06 }
+                  }
+                >
+                  <SkillBlock
+                    label={skill.label}
+                    color={phase === 2 ? skill.color : "mid"}
+                    glow={phase === 2 && skill.color === "human"}
+                    delay={0}
+                  />
+                </motion.div>
+              </div>
+            );
+          })}
+        </motion.div>
+
+        {/* Role label */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: phase >= 1 ? 1 : 0 }}
+          transition={{ delay: 1.2 }}
+          className="text-center mt-4"
+        >
+          <span className="text-xs font-mono text-muted-foreground tracking-wide">Software Engineer</span>
+        </motion.div>
+      </div>
+
+      {/* CTA to trigger phase 2 */}
+      <AnimatePresence>
+        {phase === 1 && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ delay: 1.5 }}
+            className="text-center mt-8"
+          >
+            <button
+              onClick={() => setPhase(2)}
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-xl border border-brand-ai/30 bg-brand-ai/10 hover:bg-brand-ai/20 transition-colors text-sm font-semibold text-brand-ai"
+            >
+              <Zap className="h-4 w-4" />
+              Now add AI →
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Takeaway — only after reshuffle */}
+      <AnimatePresence>
+        {phase === 2 && (
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 1.2 }}
+            className="mt-10 text-center"
+          >
+            <div className="inline-flex items-center gap-3 rounded-xl border border-border/60 bg-card/60 backdrop-blur-sm px-5 py-3">
+              <ArrowRight className="h-4 w-4 text-brand-human rotate-[-90deg]" />
+              <span className="text-sm text-muted-foreground">
+                <span className="text-foreground font-semibold">Pattern:</span> This happens in every role.{" "}
+                <span className="text-brand-human font-semibold">Your value is at the top.</span>
+              </span>
+            </div>
+
+            {/* Legend */}
+            <div className="flex items-center justify-center gap-6 mt-5">
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 rounded-sm bg-brand-human" />
+                <span className="text-xs text-muted-foreground">Human-dominant</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 rounded-sm bg-brand-mid" />
+                <span className="text-xs text-muted-foreground">Augmented</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 rounded-sm bg-brand-ai" />
+                <span className="text-xs text-muted-foreground">AI-exposed</span>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
   );
 }
 
@@ -331,153 +589,10 @@ export default function Students() {
           </div>
         </Section>
 
-        {/* ═══ THE THESIS — Skill Stack Diagram ═══ */}
+        {/* ═══ THE THESIS — Sequential Visual ═══ */}
         <Section className="py-20 sm:py-28 px-6">
-          <div id="how-it-works" className="max-w-5xl mx-auto">
-            <motion.div variants={fadeUp} custom={0} className="text-center mb-16">
-              <div className="inline-flex items-center gap-2 mb-4">
-                <Blocks className="h-5 w-5 text-brand-mid" />
-                <span className="text-sm font-mono text-muted-foreground tracking-widest uppercase">The Skill Stack</span>
-              </div>
-              <h2 className="text-3xl sm:text-4xl font-bold mb-4">Every job is a stack of skills. AI reshuffles the deck.</h2>
-              <p className="text-muted-foreground max-w-xl mx-auto">
-                The same skills appear across many roles — but in every one, <span className="text-brand-human font-semibold">human skills rise to the top</span> and <span className="text-brand-ai font-semibold">AI-exposed skills shift down</span>.
-              </p>
-            </motion.div>
-
-            {/* Stack diagram with zone labels */}
-            <div className="relative max-w-3xl mx-auto">
-              {/* Zone labels — left side */}
-              <div className="hidden md:flex absolute -left-2 top-0 bottom-0 flex-col justify-between pointer-events-none" style={{ width: 0 }}>
-                <motion.div variants={fadeUp} custom={1} className="flex items-center gap-2 -translate-x-full pr-4" style={{ marginTop: '8%' }}>
-                  <div className="flex flex-col items-end">
-                    <span className="text-xs font-bold text-brand-human uppercase tracking-wider">Your Edge</span>
-                    <span className="text-[10px] text-muted-foreground">Where you add value</span>
-                  </div>
-                  <TrendingUp className="h-4 w-4 text-brand-human" />
-                </motion.div>
-                <motion.div variants={fadeUp} custom={2} className="flex items-center gap-2 -translate-x-full pr-4" style={{ marginBottom: '8%' }}>
-                  <div className="flex flex-col items-end">
-                    <span className="text-xs font-bold text-brand-ai uppercase tracking-wider">AI Zone</span>
-                    <span className="text-[10px] text-muted-foreground">Being automated</span>
-                  </div>
-                  <Zap className="h-4 w-4 text-brand-ai" />
-                </motion.div>
-              </div>
-
-              {/* The stacks */}
-              <div className="relative flex items-stretch justify-center gap-4 sm:gap-6">
-                {[
-                  {
-                    title: "Product Manager",
-                    skills: [
-                      { label: "Judgment", color: "human" as const, zone: "top" },
-                      { label: "Leadership", color: "human" as const, zone: "top" },
-                      { label: "Communication", color: "human" as const, zone: "top" },
-                      { label: "Data Analysis", color: "ai" as const, zone: "bottom" },
-                      { label: "Strategy", color: "human" as const, zone: "bottom" },
-                    ],
-                  },
-                  {
-                    title: "Software Engineer",
-                    skills: [
-                      { label: "Communication", color: "human" as const, zone: "top" },
-                      { label: "Judgment", color: "human" as const, zone: "top" },
-                      { label: "Design & UX", color: "mid" as const, zone: "top" },
-                      { label: "Data Analysis", color: "ai" as const, zone: "bottom" },
-                      { label: "Programming", color: "ai" as const, zone: "bottom" },
-                    ],
-                  },
-                  {
-                    title: "Data Scientist",
-                    skills: [
-                      { label: "Communication", color: "human" as const, zone: "top" },
-                      { label: "Strategy", color: "human" as const, zone: "top" },
-                      { label: "Programming", color: "ai" as const, zone: "bottom" },
-                      { label: "AI / ML Tools", color: "ai" as const, zone: "bottom" },
-                      { label: "Data Analysis", color: "ai" as const, zone: "bottom" },
-                    ],
-                  },
-                ].map((stack, si) => {
-                  const topSkills = stack.skills.filter(s => s.zone === "top");
-                  const bottomSkills = stack.skills.filter(s => s.zone === "bottom");
-                  return (
-                    <motion.div
-                      key={stack.title}
-                      variants={fadeUp}
-                      custom={si + 1}
-                      className="flex-1 min-w-0 flex flex-col"
-                    >
-                      {/* Top zone — human edge */}
-                      <div className="flex flex-col gap-1.5 mb-3 p-2 sm:p-3 rounded-xl border border-brand-human/15 bg-brand-human/[0.03]">
-                        <span className="text-[9px] font-mono text-brand-human/60 uppercase tracking-widest text-center mb-1 md:hidden">Your Edge</span>
-                        {topSkills.map((s, i) => (
-                          <SkillBlock key={s.label} label={s.label} color={s.color} small delay={si * 2 + i + 1} />
-                        ))}
-                      </div>
-
-                      {/* Divider line */}
-                      <div className="relative flex items-center my-1">
-                        <div className="flex-1 h-px bg-gradient-to-r from-transparent via-muted-foreground/30 to-transparent" />
-                        {si === 1 && (
-                          <motion.span
-                            variants={fadeUp}
-                            custom={8}
-                            className="absolute left-1/2 -translate-x-1/2 bg-background px-2 text-[9px] font-mono text-muted-foreground/60 uppercase tracking-widest whitespace-nowrap hidden sm:block"
-                          >
-                            automation line
-                          </motion.span>
-                        )}
-                      </div>
-
-                      {/* Bottom zone — AI handles */}
-                      <div className="flex flex-col gap-1.5 mt-0 p-2 sm:p-3 rounded-xl border border-brand-ai/15 bg-brand-ai/[0.03]">
-                        <span className="text-[9px] font-mono text-brand-ai/60 uppercase tracking-widest text-center mb-1 md:hidden">AI Handles</span>
-                        {bottomSkills.map((s, i) => (
-                          <SkillBlock key={s.label} label={s.label} color={s.color} small delay={si * 2 + i + 4} />
-                        ))}
-                      </div>
-
-                      {/* Title */}
-                      <motion.span
-                        variants={fadeUp}
-                        custom={si + 7}
-                        className="text-xs font-mono text-muted-foreground mt-3 text-center tracking-wide"
-                      >
-                        {stack.title}
-                      </motion.span>
-                    </motion.div>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Takeaway */}
-            <motion.div variants={fadeUp} custom={10} className="mt-10 text-center">
-              <div className="inline-flex items-center gap-3 rounded-xl border border-border/60 bg-card/60 backdrop-blur-sm px-5 py-3">
-                <ArrowRight className="h-4 w-4 text-brand-human rotate-[-90deg]" />
-                <span className="text-sm text-muted-foreground">
-                  <span className="text-foreground font-semibold">Pattern:</span> Human skills float up. AI skills drift down.{" "}
-                  <span className="text-brand-human font-semibold">Your value is at the top.</span>
-                </span>
-              </div>
-            </motion.div>
-
-            {/* Legend */}
-            <motion.div variants={fadeUp} custom={11} className="flex items-center justify-center gap-6 mt-6">
-              <div className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded-sm bg-brand-human" />
-                <span className="text-xs text-muted-foreground">Human-dominant</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded-sm bg-brand-mid" />
-                <span className="text-xs text-muted-foreground">Augmented</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded-sm bg-brand-ai" />
-                <span className="text-xs text-muted-foreground">AI-exposed</span>
-              </div>
-            </motion.div>
+          <div id="how-it-works" className="max-w-4xl mx-auto">
+            <SkillStackSequence />
           </div>
         </Section>
 
