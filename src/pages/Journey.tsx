@@ -116,7 +116,7 @@ export default function Journey() {
         </div>
 
         {/* 3-column grid */}
-        <div className="flex-1 grid grid-cols-[220px_1fr_250px] gap-0 min-h-0 relative z-10">
+        <div className="flex-1 grid grid-cols-[220px_1fr_250px] gap-0 min-h-0 overflow-hidden relative z-10">
           {/* Left — Player HUD */}
           <div
             className="border-r border-white/5 relative"
