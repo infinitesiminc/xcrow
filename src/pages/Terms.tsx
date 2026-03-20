@@ -66,7 +66,7 @@ export default function Terms() {
 
         <h2>11. Governing Law</h2>
         <p>
-          These terms shall be governed by and construed in accordance with the laws of the jurisdiction in which crowy.ai operates, without regard to conflict of law principles.
+          These terms shall be governed by and construed in accordance with the laws of the jurisdiction in which Crowy.ai operates, without regard to conflict of law principles.
         </p>
 
         <h2>12. Changes to Terms</h2>

@@ -61,7 +61,7 @@ export default function PrivacyPolicy() {
 
         <h2>7. Children's Privacy</h2>
         <p>
-          crowy.ai is not intended for users under the age of 16. We do not knowingly collect personal information from children.
+          Crowy.ai is not intended for users under the age of 16. We do not knowingly collect personal information from children.
         </p>
 
         <h2>8. Changes to This Policy</h2>
