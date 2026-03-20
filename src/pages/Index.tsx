@@ -523,7 +523,7 @@ const Index = () => {
 
                     <TooltipProvider delayDuration={200}>
                       <div className="flex flex-wrap gap-3 justify-center">
-                        {SKILL_TAXONOMY.map((skill, si) => {
+                        {taxonomy.map((skill, si) => {
                           const sx = skillMap.get(skill.id);
                           const xp = sx?.xp ?? 0;
                           const castle = getCastleState(xp);
