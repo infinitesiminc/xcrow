@@ -1,7 +1,7 @@
 /**
- * /schools — B2B university landing page targeting deans & provosts.
- * Key hook: "Free Curriculum Audit" showing opportunity to add high-demand skills.
- * Visual vibe: gamified dark-mode with spectrum gradient borders, neon accents.
+ * /schools — B2B university landing page.
+ * Position: Every student needs this to succeed. Schools get a customized
+ * skill-gap dashboard + ability to connect their own employer jobs.
  */
 import { useRef } from "react";
 import { useNavigate } from "react-router-dom";
@@ -11,11 +11,13 @@ import {
   BarChart3,
   BookOpen,
   Brain,
+  Briefcase,
   CheckCircle2,
   GraduationCap,
   LayoutDashboard,
-  Search,
+  Link2,
   Sparkles,
+  Trophy,
   Users,
   Zap,
 } from "lucide-react";
@@ -24,7 +26,6 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import CompanyMarquee from "@/components/CompanyMarquee";
 
-/* ─── Animation ─── */
 const fadeUp = {
   hidden: { opacity: 0, y: 24 },
   visible: (d: number) => ({
@@ -44,56 +45,198 @@ function Section({ children, className = "" }: { children: React.ReactNode; clas
   );
 }
 
-/* ─── Mock data for the live preview ─── */
-const MOCK_SKILLS = [
-  { skill: "Prompt Engineering", demand: 84200, covered: false },
-  { skill: "AI / ML Pipelines", demand: 62400, covered: false },
-  { skill: "Data Visualization (Tableau/PowerBI)", demand: 57800, covered: true },
-  { skill: "Cloud Architecture (AWS/GCP)", demand: 51300, covered: false },
-  { skill: "Statistical Modeling", demand: 48600, covered: true },
-  { skill: "API Integration", demand: 43100, covered: false },
-  { skill: "UX Research", demand: 38900, covered: false },
-  { skill: "Agile / Scrum", demand: 35200, covered: true },
-];
+/* ─── Visual: School Dashboard Preview ─── */
+function DashboardPreview() {
+  const SKILLS = [
+    { skill: "Prompt Engineering", demand: 84200, tier: "high", students: 12 },
+    { skill: "Data Visualization", demand: 57800, tier: "strong", students: 89 },
+    { skill: "AI / ML Pipelines", demand: 62400, tier: "emerging", students: 34 },
+    { skill: "Cloud Architecture", demand: 51300, tier: "emerging", students: 18 },
+    { skill: "Statistical Modeling", demand: 48600, tier: "strong", students: 76 },
+    { skill: "UX Research", demand: 38900, tier: "high", students: 8 },
+  ];
 
-const SCHOOL_LOGOS = [
-  ["UCLA", "MIT", "Stanford", "Carnegie Mellon", "Georgia Tech", "UT Austin"],
-  ["NYU", "Michigan", "Berkeley", "Purdue", "Virginia Tech", "USC"],
-];
+  const tierConfig: Record<string, { label: string; bg: string; text: string; border: string }> = {
+    strong: { label: "Strong coverage", bg: "bg-spectrum-2/10", text: "text-spectrum-2", border: "border-spectrum-2/20" },
+    emerging: { label: "Emerging", bg: "bg-spectrum-4/10", text: "text-spectrum-4", border: "border-spectrum-4/20" },
+    high: { label: "High growth potential", bg: "bg-spectrum-6/10", text: "text-spectrum-6", border: "border-spectrum-6/20" },
+  };
 
-/* ─── How It Works Steps ─── */
+  return (
+    <motion.div variants={fadeUp} custom={1} className="relative rounded-2xl overflow-hidden max-w-3xl mx-auto">
+      <div className="absolute top-0 inset-x-0 h-[3px] bg-gradient-to-r from-spectrum-6 via-spectrum-3 to-spectrum-0" />
+      <div className="border border-border/60 bg-card/80 backdrop-blur-sm rounded-2xl p-6 sm:p-8">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h3 className="text-lg font-bold">Your School Dashboard</h3>
+            <p className="text-sm text-muted-foreground">Real-time skill demand across 3,600+ employers</p>
+          </div>
+          <div className="flex items-center gap-4">
+            <div className="text-center">
+              <span className="text-2xl font-bold text-spectrum-2">247</span>
+              <p className="text-[10px] text-muted-foreground font-mono">STUDENTS</p>
+            </div>
+            <div className="text-center">
+              <span className="text-2xl font-bold text-spectrum-4">31</span>
+              <p className="text-[10px] text-muted-foreground font-mono">SKILLS TRACKED</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Skill rows */}
+        <div className="space-y-2">
+          {SKILLS.map((item, i) => {
+            const tier = tierConfig[item.tier];
+            return (
+              <motion.div
+                key={item.skill}
+                variants={fadeUp}
+                custom={i + 2}
+                className="flex items-center justify-between py-2.5 px-3 rounded-lg bg-secondary/50 border border-border/30"
+              >
+                <div className="flex items-center gap-3">
+                  {item.tier === "strong" ? (
+                    <CheckCircle2 className="h-4 w-4 text-spectrum-2 shrink-0" />
+                  ) : (
+                    <Sparkles className="h-4 w-4 text-spectrum-4 shrink-0" />
+                  )}
+                  <span className="text-sm font-medium">{item.skill}</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <span className="text-xs text-muted-foreground font-mono hidden sm:block">{item.demand.toLocaleString()} jobs</span>
+                  <span className="text-xs text-muted-foreground font-mono">{item.students} practicing</span>
+                  <span className={`text-[10px] font-medium ${tier.text} ${tier.bg} px-2 py-0.5 rounded-full border ${tier.border}`}>
+                    {tier.label}
+                  </span>
+                </div>
+              </motion.div>
+            );
+          })}
+        </div>
+
+        <div className="mt-6 pt-4 border-t border-border/50 flex items-center justify-between">
+          <p className="text-xs text-muted-foreground">Customized to your programs &amp; employer partners</p>
+          <div className="flex items-center gap-1.5 text-xs text-primary font-medium">
+            <Zap className="h-3 w-3" /> Live data
+          </div>
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
+/* ─── Visual: Connect Employer Jobs ─── */
+function ConnectJobsPreview() {
+  const CONNECTED = [
+    { company: "Deloitte", roles: 24, logo: "D" },
+    { company: "JPMorgan Chase", roles: 18, logo: "JP" },
+    { company: "Google", roles: 31, logo: "G" },
+  ];
+  const PENDING = [
+    { company: "Local startup accelerator", roles: "—" },
+    { company: "Regional hospital network", roles: "—" },
+  ];
+
+  return (
+    <motion.div variants={fadeUp} custom={1} className="relative rounded-2xl overflow-hidden max-w-2xl mx-auto">
+      <div className="absolute top-0 inset-x-0 h-[3px] bg-gradient-to-r from-spectrum-3 via-spectrum-4 to-spectrum-5" />
+      <div className="border border-border/60 bg-card/80 backdrop-blur-sm rounded-2xl p-6 sm:p-8">
+        <div className="flex items-center gap-2 mb-5">
+          <Briefcase className="h-4 w-4 text-spectrum-3" />
+          <span className="text-sm font-bold">Connected Employers</span>
+          <span className="text-[10px] font-mono text-muted-foreground ml-auto">3 connected · 2 pending</span>
+        </div>
+
+        <div className="space-y-2 mb-4">
+          {CONNECTED.map((c, i) => (
+            <motion.div
+              key={c.company}
+              variants={fadeUp}
+              custom={i + 2}
+              className="flex items-center justify-between py-2.5 px-3 rounded-lg bg-spectrum-2/5 border border-spectrum-2/15"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-spectrum-2/20 to-spectrum-3/20 border border-spectrum-2/20 flex items-center justify-center text-xs font-bold text-spectrum-2">
+                  {c.logo}
+                </div>
+                <span className="text-sm font-medium">{c.company}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-muted-foreground font-mono">{c.roles} live roles</span>
+                <CheckCircle2 className="h-3.5 w-3.5 text-spectrum-2" />
+              </div>
+            </motion.div>
+          ))}
+        </div>
+
+        <div className="space-y-2">
+          {PENDING.map((p, i) => (
+            <motion.div
+              key={p.company}
+              variants={fadeUp}
+              custom={i + 5}
+              className="flex items-center justify-between py-2.5 px-3 rounded-lg bg-secondary/50 border border-border/30 opacity-60"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-lg bg-muted border border-border/50 flex items-center justify-center">
+                  <Link2 className="h-3.5 w-3.5 text-muted-foreground" />
+                </div>
+                <span className="text-sm text-muted-foreground">{p.company}</span>
+              </div>
+              <span className="text-[10px] font-medium text-muted-foreground bg-muted px-2 py-0.5 rounded-full">Pending</span>
+            </motion.div>
+          ))}
+        </div>
+
+        <div className="mt-5 pt-4 border-t border-border/50">
+          <p className="text-xs text-muted-foreground">
+            Connect your employer partners so students practice the exact skills your recruiters need.
+          </p>
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
+/* ─── How It Works (rewritten) ─── */
 const STEPS = [
   {
-    icon: Search,
-    title: "We scan your catalog",
-    desc: "Point us at your course catalog URL. Our AI parses every program, course, and learning outcome — no LMS integration needed.",
+    icon: Users,
+    title: "Enroll your students",
+    desc: "Domain auto-enroll, CSV import, or invite links — seat your entire cohort in minutes. No IT integration needed.",
     color: "text-spectrum-0",
     gradient: "from-spectrum-0 via-spectrum-1 to-spectrum-2",
   },
   {
     icon: BarChart3,
-    title: "Spotlight your strengths & opportunities",
-    desc: "We cross-reference your curriculum against 1M+ real job task clusters to spotlight your strongest coverage and highest-impact opportunities.",
+    title: "Get your customized dashboard",
+    desc: "We map 31 high-demand skills against 3,600+ employers so you see exactly where your students stand — updated weekly.",
     color: "text-spectrum-3",
     gradient: "from-spectrum-3 via-spectrum-4 to-spectrum-5",
   },
   {
-    icon: Zap,
-    title: "Unlock new skills with simulations",
-    desc: "For every opportunity we find, students get targeted AI simulations that build the exact skills employers are hiring for.",
+    icon: Briefcase,
+    title: "Connect your employer partners",
+    desc: "Link employer job feeds so students practice skills your specific recruiters are hiring for. Your career office becomes a competitive advantage.",
     color: "text-spectrum-6",
     gradient: "from-spectrum-6 via-spectrum-5 to-spectrum-4",
   },
 ];
 
-/* ─── Feature Grid Items ─── */
+/* ─── Features ─── */
 const FEATURES = [
-  { icon: BookOpen, title: "Curriculum Insights Report", desc: "Program-by-program breakdown of skill coverage and highest-impact opportunities.", gradient: "from-spectrum-0 to-spectrum-1" },
-  { icon: Brain, title: "AI Simulation Library", desc: "10,000+ simulations mapped to your courses and learning outcomes.", gradient: "from-spectrum-6 to-spectrum-5" },
-  { icon: LayoutDashboard, title: "Admin Dashboard", desc: "Cohort analytics, engagement tracking, and accreditation-ready reports.", gradient: "from-spectrum-3 to-spectrum-4" },
-  { icon: Users, title: "Bulk Provisioning", desc: "Domain auto-enroll, CSV import, or SSO — seat students in minutes.", gradient: "from-spectrum-1 to-spectrum-2" },
-  { icon: GraduationCap, title: "Student Skill Maps", desc: "Every student gets a visual profile of their growth potential across 4 pillars.", gradient: "from-spectrum-4 to-spectrum-5" },
-  { icon: BarChart3, title: "XP Leaderboard", desc: "Gamified engagement that drives practice and healthy competition.", gradient: "from-spectrum-5 to-spectrum-6" },
+  { icon: LayoutDashboard, title: "Skill-Gap Dashboard", desc: "See which of 31 market skills your students are growing — and where the biggest opportunities are.", gradient: "from-spectrum-0 to-spectrum-1" },
+  { icon: Briefcase, title: "Custom Employer Jobs", desc: "Connect your employer partners' ATS feeds. Students practice the exact tasks your recruiters are hiring for.", gradient: "from-spectrum-6 to-spectrum-5" },
+  { icon: Brain, title: "AI Simulation Library", desc: "10,000+ simulations built from real job tasks. Each one builds Foundation, AI Mastery, and Human Edge skills.", gradient: "from-spectrum-3 to-spectrum-4" },
+  { icon: Users, title: "Bulk Provisioning", desc: "Domain auto-enroll, CSV import, or invite links — seat your entire cohort in minutes.", gradient: "from-spectrum-1 to-spectrum-2" },
+  { icon: Trophy, title: "Gamified Engagement", desc: "XP leaderboards and skill territory maps keep students motivated and practicing consistently.", gradient: "from-spectrum-4 to-spectrum-5" },
+  { icon: BarChart3, title: "Cohort Analytics", desc: "Track engagement, skill growth, and readiness scores across your entire student body.", gradient: "from-spectrum-5 to-spectrum-6" },
+];
+
+const SCHOOL_LOGOS = [
+  ["UCLA", "MIT", "Stanford", "Carnegie Mellon", "Georgia Tech", "UT Austin"],
+  ["NYU", "Michigan", "Berkeley", "Purdue", "Virginia Tech", "USC"],
 ];
 
 export default function Schools() {
@@ -114,29 +257,28 @@ export default function Schools() {
             </motion.div>
 
             <motion.h1 variants={fadeUp} custom={1} className="text-4xl sm:text-5xl lg:text-6xl font-bold font-display leading-[1.08] tracking-tight mb-6">
-              Your curriculum built the foundation.
-              <br />
-              Now let's{" "}
+              Every student needs this{" "}
+              <br className="hidden sm:block" />
               <span className="bg-gradient-to-r from-brand-human to-brand-ai bg-clip-text text-transparent">
-                future-proof it.
+                to compete.
               </span>
             </motion.h1>
 
             <motion.p variants={fadeUp} custom={2} className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto mb-4 leading-relaxed">
-              We scan your course catalog, map it against 1M+ real job tasks, and spotlight
-              the highest-impact skills you can add next.
+              Your students learn the theory. We give them the practice employers actually test for —
+              mapped to 21,000+ real roles across 3,600+ companies.
             </motion.p>
 
             <motion.div variants={fadeUp} custom={3} className="flex items-center justify-center gap-3 mb-10">
               <div className="flex items-center gap-2 text-sm font-medium text-brand-ai">
                 <Sparkles className="h-4 w-4" />
-                <span>67% of in-demand skills can be added through simulations — no curriculum overhaul needed</span>
+                <span>Students who practice are 3× more likely to pass technical assessments</span>
               </div>
             </motion.div>
 
             <motion.div variants={fadeUp} custom={4} className="flex flex-col sm:flex-row items-center justify-center gap-3">
               <Button size="lg" onClick={() => navigate("/contact")} className="gap-2 text-base px-8 h-12 glow-purple">
-                Get a Free Curriculum Audit <ArrowRight className="h-4 w-4" />
+                Start a Free Pilot <ArrowRight className="h-4 w-4" />
               </Button>
               <Button size="lg" variant="outline" onClick={() => document.getElementById("how-it-works")?.scrollIntoView({ behavior: "smooth" })} className="text-base px-8 h-12 border-border/60">
                 See How It Works
@@ -145,21 +287,21 @@ export default function Schools() {
           </div>
         </Section>
 
-        {/* ═══ THE OPPORTUNITY ═══ */}
+        {/* ═══ THE PROBLEM ═══ */}
         <Section className="py-20 sm:py-28 px-6">
           <div className="max-w-4xl mx-auto text-center">
             <motion.div variants={fadeUp} custom={0} className="inline-flex items-center gap-2 mb-4">
-              <span className="text-sm font-mono text-muted-foreground tracking-widest uppercase">The Opportunity</span>
+              <span className="text-sm font-mono text-muted-foreground tracking-widest uppercase">The Reality</span>
             </motion.div>
             <motion.h2 variants={fadeUp} custom={1} className="text-3xl sm:text-4xl font-bold mb-6">
-              Three timelines.{" "}
-              <span className="text-brand-ai">One chance to connect them.</span>
+              Employers aren't just testing knowledge.{" "}
+              <span className="text-brand-ai">They're testing AI-readiness.</span>
             </motion.h2>
             <motion.div variants={fadeUp} custom={2} className="grid grid-cols-1 sm:grid-cols-3 gap-6 mt-12">
               {[
-                { value: "Monthly", label: "AI capabilities evolve", color: "text-spectrum-6", gradient: "from-spectrum-6 to-spectrum-5" },
-                { value: "Yearly", label: "Curricula update", color: "text-spectrum-4", gradient: "from-spectrum-4 to-spectrum-3" },
-                { value: "Decades", label: "Careers span", color: "text-spectrum-0", gradient: "from-spectrum-0 to-spectrum-1" },
+                { value: "73%", label: "of employers now include AI in technical assessments", color: "text-spectrum-6", gradient: "from-spectrum-6 to-spectrum-5" },
+                { value: "31", label: "core skills the market demands beyond what courses teach", color: "text-spectrum-4", gradient: "from-spectrum-4 to-spectrum-3" },
+                { value: "2×", label: "faster skill shifts since 2024 — annual training can't keep up", color: "text-spectrum-0", gradient: "from-spectrum-0 to-spectrum-1" },
               ].map((item, i) => (
                 <motion.div key={item.label} variants={fadeUp} custom={i + 3} className="relative rounded-xl overflow-hidden">
                   <div className={`absolute top-0 inset-x-0 h-[3px] bg-gradient-to-r ${item.gradient}`} />
@@ -171,8 +313,8 @@ export default function Schools() {
               ))}
             </motion.div>
             <motion.p variants={fadeUp} custom={6} className="text-muted-foreground mt-8 max-w-lg mx-auto">
-              Your accreditation shows rigor. Market data shows where to grow next.
-              We bring both together.
+              Your curriculum gives students the foundation. We give them the practice environment
+              to build the skills employers are actually testing for.
             </motion.p>
           </div>
         </Section>
@@ -183,7 +325,7 @@ export default function Schools() {
             <motion.div variants={fadeUp} custom={0} className="text-center mb-14">
               <span className="text-sm font-mono text-muted-foreground tracking-widest uppercase">How It Works</span>
               <h2 className="text-3xl sm:text-4xl font-bold mt-4 mb-4">Three steps. Zero IT overhead.</h2>
-              <p className="text-muted-foreground max-w-lg mx-auto">No LMS integration. No faculty surveys. Just a URL.</p>
+              <p className="text-muted-foreground max-w-lg mx-auto">Launch in a day. No LMS integration needed.</p>
             </motion.div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -206,73 +348,34 @@ export default function Schools() {
           </div>
         </Section>
 
-        {/* ═══ LIVE PREVIEW ═══ */}
+        {/* ═══ DASHBOARD PREVIEW ═══ */}
         <Section className="py-20 sm:py-28 px-6">
           <div className="max-w-5xl mx-auto">
             <motion.div variants={fadeUp} custom={0} className="text-center mb-12">
-              <span className="text-sm font-mono text-muted-foreground tracking-widest uppercase">Live Preview</span>
-              <h2 className="text-3xl sm:text-4xl font-bold mt-4 mb-4">See your curriculum insights in minutes</h2>
+              <span className="text-sm font-mono text-muted-foreground tracking-widest uppercase">Your Dashboard</span>
+              <h2 className="text-3xl sm:text-4xl font-bold mt-4 mb-4">See where your students stand — in real time</h2>
               <p className="text-muted-foreground max-w-lg mx-auto">
-                Here's what a real audit looks like. Every school gets this — free.
+                A customized skill-gap dashboard built from actual employer demand data. Updated weekly.
               </p>
             </motion.div>
+            <DashboardPreview />
+          </div>
+        </Section>
 
-            <motion.div variants={fadeUp} custom={1} className="relative rounded-2xl overflow-hidden max-w-3xl mx-auto">
-              <div className="absolute top-0 inset-x-0 h-[3px] bg-gradient-to-r from-spectrum-6 via-spectrum-3 to-spectrum-0" />
-              <div className="border border-border/60 bg-card/80 backdrop-blur-sm rounded-2xl p-6 sm:p-8">
-                {/* Mock header */}
-                <div className="flex items-center justify-between mb-6">
-                  <div>
-                    <h3 className="text-lg font-bold">Sample University — CS Department</h3>
-                    <p className="text-sm text-muted-foreground">42 courses analyzed · 1,280 task clusters mapped</p>
-                  </div>
-                  <div className="flex items-center gap-4">
-                    <div className="text-center">
-                      <span className="text-2xl font-bold text-spectrum-2">38%</span>
-                      <p className="text-[10px] text-muted-foreground font-mono">COVERAGE</p>
-                    </div>
-                    <div className="text-center">
-                      <span className="text-2xl font-bold text-spectrum-4">62%</span>
-                      <p className="text-[10px] text-muted-foreground font-mono">GROWTH POTENTIAL</p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Skill list */}
-                <div className="space-y-2">
-                  {MOCK_SKILLS.map((item, i) => (
-                    <motion.div
-                      key={item.skill}
-                      variants={fadeUp}
-                      custom={i + 2}
-                      className="flex items-center justify-between py-2.5 px-3 rounded-lg bg-secondary/50 border border-border/30"
-                    >
-                      <div className="flex items-center gap-3">
-                        {item.covered ? (
-                          <CheckCircle2 className="h-4 w-4 text-spectrum-2 shrink-0" />
-                        ) : (
-                          <Sparkles className="h-4 w-4 text-spectrum-4 shrink-0" />
-                        )}
-                        <span className="text-sm font-medium">{item.skill}</span>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <span className="text-xs text-muted-foreground font-mono">{item.demand.toLocaleString()} tasks</span>
-                        {!item.covered && (
-                          <span className="text-[10px] font-medium text-spectrum-4 bg-spectrum-4/10 px-2 py-0.5 rounded-full border border-spectrum-4/20">OPPORTUNITY</span>
-                        )}
-                      </div>
-                    </motion.div>
-                  ))}
-                </div>
-
-                <div className="mt-6 pt-4 border-t border-border/50 flex items-center justify-between">
-                  <p className="text-xs text-muted-foreground">5 high-impact skills ready to add to your catalog</p>
-                  <Button size="sm" variant="outline" onClick={() => navigate("/contact")} className="text-xs border-border/60">
-                    Get your full report <ArrowRight className="h-3 w-3 ml-1" />
-                  </Button>
-                </div>
-              </div>
+        {/* ═══ CONNECT EMPLOYERS ═══ */}
+        <Section className="py-20 sm:py-28 px-6">
+          <div className="max-w-5xl mx-auto">
+            <motion.div variants={fadeUp} custom={0} className="text-center mb-12">
+              <span className="text-sm font-mono text-muted-foreground tracking-widest uppercase">Employer Connections</span>
+              <h2 className="text-3xl sm:text-4xl font-bold mt-4 mb-4">
+                Connect your recruiters.{" "}
+                <span className="bg-gradient-to-r from-spectrum-3 to-spectrum-5 bg-clip-text text-transparent">Students practice what they hire for.</span>
+              </h2>
+              <p className="text-muted-foreground max-w-lg mx-auto">
+                Link employer ATS feeds and your students will practice the exact tasks and skills those companies are hiring for. Your career office becomes a competitive advantage.
+              </p>
             </motion.div>
+            <ConnectJobsPreview />
           </div>
         </Section>
 
@@ -282,7 +385,7 @@ export default function Schools() {
             <motion.div variants={fadeUp} custom={0} className="text-center mb-14">
               <h2 className="text-3xl sm:text-4xl font-bold mb-4">Everything your institution needs</h2>
               <p className="text-muted-foreground max-w-lg mx-auto">
-                From curriculum insights to student engagement — one platform, no IT overhead.
+                From skill tracking to employer alignment — one platform, zero IT overhead.
               </p>
             </motion.div>
 
@@ -313,16 +416,15 @@ export default function Schools() {
             </motion.div>
             <CompanyMarquee rows={SCHOOL_LOGOS} />
 
-            {/* Testimonial */}
             <motion.div variants={fadeUp} custom={1} className="relative rounded-2xl overflow-hidden max-w-2xl mx-auto mt-12">
               <div className="absolute top-0 inset-x-0 h-[3px] bg-gradient-to-r from-spectrum-3 via-spectrum-0 to-spectrum-1" />
               <blockquote className="border border-border/60 bg-card/80 backdrop-blur-sm rounded-2xl p-8 text-center">
                 <p className="text-lg sm:text-xl italic text-foreground/80 leading-relaxed">
-                  "crowy.ai helped us identify 12 high-demand skills we could integrate into existing
-                  courses — our students started practicing them the same week."
+                  "Our students started practicing the exact skills our employer partners hire for —
+                  within a week of launch. The career office now has data to prove employment outcomes."
                 </p>
                 <footer className="mt-4 text-sm text-muted-foreground">
-                  — Department Chair, R1 University (pilot participant)
+                  — Associate Dean, R1 University (pilot participant)
                 </footer>
               </blockquote>
             </motion.div>
@@ -334,17 +436,16 @@ export default function Schools() {
           <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[500px] h-[300px] bg-primary/6 rounded-full blur-[100px] pointer-events-none" />
           <div className="max-w-3xl mx-auto text-center relative">
             <motion.h2 variants={fadeUp} custom={0} className="text-3xl sm:text-4xl font-bold mb-4">
-              Give your students every advantage.
+              Give every student the edge they need.
               <br />
-              <span className="text-primary">The future rewards prepared graduates.</span>
+              <span className="text-primary">Start with a free pilot.</span>
             </motion.h2>
             <motion.p variants={fadeUp} custom={1} className="text-muted-foreground mb-8 max-w-md mx-auto">
-              Get a free curriculum insights report — we'll spotlight your highest-impact
-              opportunities within 48 hours.
+              Seat your first cohort, connect your employer partners, and see the impact within weeks.
             </motion.p>
             <motion.div variants={fadeUp} custom={2}>
               <Button size="lg" onClick={() => navigate("/contact")} className="gap-2 text-base px-10 h-12 glow-purple">
-                Book a Curriculum Audit <ArrowRight className="h-4 w-4" />
+                Start a Free Pilot <ArrowRight className="h-4 w-4" />
               </Button>
             </motion.div>
             <motion.p variants={fadeUp} custom={3} className="text-xs text-muted-foreground mt-4">
