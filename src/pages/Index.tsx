@@ -228,6 +228,15 @@ const Index = () => {
     }
   }, [displaySkills, hasOpenedTerritory]);
 
+  // Defer territory grid rendering so it doesn't block initial paint
+  useEffect(() => {
+    const id = requestIdleCallback?.(() => setTerritoryReady(true)) ?? setTimeout(() => setTerritoryReady(true), 150);
+    return () => {
+      if (typeof id === 'number' && 'cancelIdleCallback' in window) cancelIdleCallback(id);
+      else clearTimeout(id as any);
+    };
+  }, []);
+
   const handleChatStart = useCallback(() => setHasInteracted(true), []);
 
   const handleRolesAskChat = useCallback((prompt: string) => {
