@@ -96,6 +96,7 @@ export default function CrossSchoolSkillsGap() {
   const [sortKey, setSortKey] = useState<SortKey>("coverage");
   const [sortDir, setSortDir] = useState<SortDir>("asc");
   const [collapsedCats, setCollapsedCats] = useState<Set<string>>(new Set());
+  const [view, setView] = useState<"table" | "bubble">("table");
 
   useEffect(() => {
     async function load() {
