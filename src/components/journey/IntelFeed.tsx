@@ -105,12 +105,12 @@ export default function IntelFeed({ skills, savedRoles }: IntelFeedProps) {
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: i * 0.05 }}
                   className="flex items-center gap-2 rounded-lg px-2 py-1.5"
-                  style={{ background: "hsla(330, 40%, 15%, 0.3)", border: "1px solid hsla(330, 90%, 60%, 0.12)" }}
+                  style={{ background: "hsla(330, 20%, 14%, 0.3)", border: "1px solid hsla(330, 50%, 50%, 0.1)" }}
                 >
-                  <TrendingUp className="h-2.5 w-2.5 shrink-0" style={{ color: "hsl(330, 90%, 60%)" }} />
+                  <TrendingUp className="h-2.5 w-2.5 shrink-0" style={{ color: "hsl(330, 45%, 55%)" }} />
                   <div className="flex-1 min-w-0">
-                    <p className="text-[10px] font-medium text-white/70 truncate">{hs.skill_name}</p>
-                    <p className="text-[8px] text-white/25">{hs.demand_count} roles · {Math.round(hs.avg_exposure)}% AI</p>
+                    <p className="text-[10px] font-medium text-white/65 truncate">{hs.skill_name}</p>
+                    <p className="text-[8px] text-white/30">{hs.demand_count} roles · {Math.round(hs.avg_exposure)}% AI</p>
                   </div>
                   <AlertTriangle className="h-2.5 w-2.5 shrink-0" style={{ color: "hsl(330, 90%, 60%)", opacity: 0.5 }} />
                 </motion.div>
