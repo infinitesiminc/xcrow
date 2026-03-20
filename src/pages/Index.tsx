@@ -88,7 +88,7 @@ function skillMeta(id: string, xp: number) {
 
 /** Merge seed into full taxonomy so locked skills also appear */
 function buildDemoSkills(): SkillXP[] {
-  const seeded = new Map(DEMO_SEED_SKILLS.map(s => [s.id, s]));
+  const seeded = new globalThis.Map(DEMO_SEED_SKILLS.map(s => [s.id, s]));
   return SKILL_TAXONOMY.map(t => seeded.get(t.id) ?? {
     id: t.id,
     name: t.name,
