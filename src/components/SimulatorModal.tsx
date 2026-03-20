@@ -713,6 +713,9 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
     });
     setEarnedSkills(earned);
     
+    // Check if elevation unlock is earned (60%+ overall)
+    const elevationUnlocked = scores && scores.overall >= 60;
+
     if (user) {
       try {
         await supabase.from("completed_simulations").insert({
@@ -739,6 +742,28 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
       }
     }
     setPhase("done");
+
+    // Fire elevation generation async (non-blocking) if unlocked
+    if (elevationUnlocked) {
+      setElevationLoading(true);
+      generateElevation(jobTitle, taskName, company)
+        .then(narrative => {
+          setElevation(narrative);
+          // Persist to DB if user is logged in
+          if (user) {
+            supabase.from("completed_simulations" as any)
+              .update({ elevation_narrative: narrative } as any)
+              .eq("user_id", user.id)
+              .eq("task_name", taskName)
+              .eq("job_title", jobTitle)
+              .order("completed_at", { ascending: false })
+              .limit(1)
+              .then(() => {});
+          }
+        })
+        .catch(err => console.error("Elevation generation failed:", err))
+        .finally(() => setElevationLoading(false));
+    }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
