@@ -114,7 +114,9 @@ serve(async (req) => {
       if (ctx.targetRoles?.length > 0) {
         territoryBlock += `Target roles: ${ctx.targetRoles.map((r: any) => `${r.title}${r.company ? ` at ${r.company}` : ""}`).join(", ")}\n`;
       }
-      if (ctx.activeSkills?.length > 0) {
+      if (ctx.skillLevels?.length > 0) {
+        territoryBlock += `Claimed skills (with levels): ${ctx.skillLevels.map((s: any) => `${s.name} [${s.level}, ${s.xp} XP]`).join(", ")}\n`;
+      } else if (ctx.activeSkills?.length > 0) {
         territoryBlock += `Claimed territory (practiced skills): ${ctx.activeSkills.join(", ")}\n`;
       }
       if (ctx.frontierSkills?.length > 0) {
@@ -126,7 +128,10 @@ serve(async (req) => {
       if (ctx.coveragePct !== undefined) {
         territoryBlock += `Territory coverage: ${ctx.coveragePct}% of target-role skills claimed\n`;
       }
-      territoryBlock += "\nUse this context to personalize your coaching. Reference their specific gaps and progress.";
+      if (ctx.practicedTasks?.length > 0) {
+        territoryBlock += `Tasks already practiced: ${ctx.practicedTasks.join(", ")}\n`;
+      }
+      territoryBlock += `\nUse this context to personalize your coaching. When the student asks "how ready am I" for a role, use the check_readiness tool to get a detailed breakdown. Reference their specific gaps and what to practice next.`;
       systemPrompt += territoryBlock;
     }
 
