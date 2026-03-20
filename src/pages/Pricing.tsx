@@ -35,7 +35,7 @@ const SCHOOL_FEATURES = [
   "AI simulation library mapped to your courses",
   "School admin dashboard & cohort analytics",
   "Bulk student provisioning & domain auto-enroll",
-  "Student skill map & XP leaderboard",
+  "Cross-school skill territory benchmarks",
   "Dedicated onboarding & support",
 ];
 
