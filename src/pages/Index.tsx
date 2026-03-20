@@ -11,12 +11,13 @@ import RolePreviewPanel from "@/components/RolePreviewPanel";
 import InlineRoleCarousel, { BatchedRoleCarousel, type RoleResult, type RoleBatch } from "@/components/InlineRoleCarousel";
 import SkillSuggestionCards from "@/components/SkillSuggestionCards";
 import HumanEdgesCard, { type EdgeContext } from "@/components/HumanEdgesCard";
-import TerritoryMap from "@/components/territory/TerritoryMap";
+import TerritoryMap, { type SkillRarityInfo } from "@/components/territory/TerritoryMap";
 import TerritoryOverlay from "@/components/territory/TerritoryOverlay";
 import CompactHUD from "@/components/territory/CompactHUD";
 import MyRolesPanel from "@/components/territory/MyRolesPanel";
 import CastleNode from "@/components/territory/CastleNode";
 import { getCastleState } from "@/lib/castle-levels";
+import { useSkills, type DbSkill } from "@/hooks/use-skills";
 import {
   SKILL_TAXONOMY,
   CATEGORY_META,
@@ -24,6 +25,7 @@ import {
   type SkillCategory,
   type SkillXP,
   type SimRecord,
+  type TaxonomySkill,
 } from "@/lib/skill-map";
 
 const CATEGORY_ORDER: SkillCategory[] = [
