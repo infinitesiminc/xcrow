@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import crowLogo from "@/assets/crow-logo.png";
+import crowLogo from "@/assets/crowy-logo.png";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
@@ -145,8 +145,8 @@ export default function Navbar() {
             onClick={() => handleNav("/")}
             className="flex items-center gap-2 font-display text-lg font-bold tracking-tight text-foreground hover:opacity-80 transition-opacity"
           >
-            <img src={crowLogo} alt="crowy.ai" className="h-8 w-8 rounded-lg" />
-            <span className="hidden sm:inline neon-text font-extrabold">crowy.ai</span>
+            <img src={crowLogo} alt="crowy.ai" className="h-8 w-8 rounded-lg object-cover" />
+            <span className="hidden sm:inline font-extrabold text-transparent bg-clip-text animate-neon-shift bg-[length:200%_auto]" style={{ backgroundImage: "linear-gradient(90deg, hsl(180 90% 60%), hsl(270 80% 65%), hsl(330 90% 60%), hsl(180 90% 60%))" }}>crowy.ai</span>
           </button>
 
           {/* Desktop nav */}
