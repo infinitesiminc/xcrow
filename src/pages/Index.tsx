@@ -61,6 +61,9 @@ const Index = () => {
   const [lastSimResult, setLastSimResult] = useState<ViewContext["lastSimResult"]>(null);
   const [myRolesTab, setMyRolesTab] = useState<"saved" | "practiced">("saved");
   const batchCounter = useRef(0);
+  const [territoryOpen, setTerritoryOpen] = useState(false);
+  const [lastPracticedSkillId, setLastPracticedSkillId] = useState<string | null>(null);
+  const [hasOpenedTerritory, setHasOpenedTerritory] = useState(false);
 
   const [realSkills, setRealSkills] = useState<SkillXP[]>([]);
   const [targetSkillIds, setTargetSkillIds] = useState<Set<string>>(new Set());
