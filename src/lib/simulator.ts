@@ -108,3 +108,12 @@ export async function scoreSession(
 ): Promise<SimScoreResult> {
   return simFetch("score", { transcript, scenario, mode, learningObjectives, scaffoldingTiers });
 }
+
+export async function generateElevation(
+  jobTitle: string,
+  taskName: string,
+  company?: string,
+  tasks?: { name: string; aiExposure?: number }[],
+): Promise<ElevationNarrative> {
+  return simFetch("elevate", { jobTitle, company, taskName, tasks });
+}
