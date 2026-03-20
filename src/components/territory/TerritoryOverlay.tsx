@@ -1,16 +1,16 @@
 /**
- * TerritoryOverlay — full-screen RPG map with force-directed layout.
- * Skills float freely, connected by relationship lines.
- * No category grouping — clusters emerge organically.
+ * TerritoryOverlay — full-screen RPG map with isometric grid layout.
+ * Skills placed on a diamond grid, connected by relationship lines.
+ * Scrollable container larger than viewport for natural panning.
  */
 
-import { useMemo, useCallback, useState, useRef } from "react";
+import { useMemo, useCallback, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Sparkles } from "lucide-react";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { SKILL_TAXONOMY, type SkillXP } from "@/lib/skill-map";
 import { getCastleState } from "@/lib/castle-levels";
-import { computeForceLayout, LAYOUT_WIDTH, LAYOUT_HEIGHT } from "@/lib/force-layout";
+import { computeIsometricLayout, getCanvasSize } from "@/lib/isometric-layout";
 import { SKILL_EDGES } from "@/lib/skill-relationships";
 import CastleNode from "./CastleNode";
 
@@ -28,47 +28,30 @@ export default function TerritoryOverlay({
   lastPracticedSkillId,
 }: TerritoryOverlayProps) {
   const skillMap = useMemo(() => new Map(skills.map((s) => [s.id, s])), [skills]);
-  const positions = useMemo(() => computeForceLayout(), []);
+  const positions = useMemo(() => computeIsometricLayout(), []);
   const posMap = useMemo(() => new Map(positions.map(p => [p.id, p])), [positions]);
+  const canvasSize = useMemo(() => getCanvasSize(), []);
+
+  const scrollRef = useRef<HTMLDivElement>(null);
 
   const totalXP = useMemo(() => skills.reduce((sum, s) => sum + s.xp, 0), [skills]);
   const unlockedCount = useMemo(() => skills.filter((s) => s.xp >= 100).length, [skills]);
 
-  // Pan & zoom
-  const [transform, setTransform] = useState({ x: 0, y: 0, scale: 1 });
-  const dragRef = useRef<{ startX: number; startY: number; tx: number; ty: number } | null>(null);
-
-  const handleWheel = useCallback((e: React.WheelEvent) => {
-    e.preventDefault();
-    const delta = e.deltaY > 0 ? 0.92 : 1.08;
-    setTransform(t => ({
-      ...t,
-      scale: Math.max(0.4, Math.min(2.5, t.scale * delta)),
-    }));
-  }, []);
-
-  const handlePointerDown = useCallback((e: React.PointerEvent) => {
-    if (e.button !== 0) return;
-    (e.target as HTMLElement).setPointerCapture?.(e.pointerId);
-    dragRef.current = { startX: e.clientX, startY: e.clientY, tx: transform.x, ty: transform.y };
-  }, [transform]);
-
-  const handlePointerMove = useCallback((e: React.PointerEvent) => {
-    if (!dragRef.current) return;
-    const dx = e.clientX - dragRef.current.startX;
-    const dy = e.clientY - dragRef.current.startY;
-    setTransform(t => ({ ...t, x: dragRef.current!.tx + dx, y: dragRef.current!.ty + dy }));
-  }, []);
-
-  const handlePointerUp = useCallback(() => {
-    dragRef.current = null;
-  }, []);
+  // Center scroll on open
+  useEffect(() => {
+    if (open && scrollRef.current) {
+      const el = scrollRef.current;
+      const scrollX = (canvasSize.width - el.clientWidth) / 2;
+      const scrollY = (canvasSize.height - el.clientHeight) / 3;
+      el.scrollTo({ left: scrollX, top: scrollY, behavior: "instant" });
+    }
+  }, [open, canvasSize]);
 
   const handleNodeClick = useCallback((skillId: string) => {
     // Future: open skill detail / sim launcher
   }, []);
 
-  // Build edge visuals
+  // Build edge line data
   const edgeLines = useMemo(() => {
     return SKILL_EDGES.map((edge, i) => {
       const from = posMap.get(edge.from);
@@ -80,17 +63,15 @@ export default function TerritoryOverlay({
       const bothUnlocked = fromXP >= 100 && toXP >= 100;
       const anyUnlocked = fromXP >= 100 || toXP >= 100;
 
-      return {
-        key: i,
-        x1: from.x,
-        y1: from.y,
-        x2: to.x,
-        y2: to.y,
-        strength: edge.strength,
-        bothUnlocked,
-        anyUnlocked,
-      };
-    }).filter(Boolean);
+      return { key: i, from, to, strength: edge.strength, bothUnlocked, anyUnlocked };
+    }).filter(Boolean) as {
+      key: number;
+      from: { x: number; y: number };
+      to: { x: number; y: number };
+      strength: number;
+      bothUnlocked: boolean;
+      anyUnlocked: boolean;
+    }[];
   }, [posMap, skillMap]);
 
   return (
@@ -131,123 +112,99 @@ export default function TerritoryOverlay({
             </button>
           </motion.div>
 
-          {/* Map Canvas */}
+          {/* Scrollable Map */}
           <div
-            className="flex-1 relative overflow-hidden select-none"
-            onWheel={handleWheel}
-            onPointerDown={handlePointerDown}
-            onPointerMove={handlePointerMove}
-            onPointerUp={handlePointerUp}
-            style={{ cursor: dragRef.current ? "grabbing" : "grab", touchAction: "none" }}
+            ref={scrollRef}
+            className="flex-1 overflow-auto"
+            style={{ scrollBehavior: "auto" }}
           >
             <TooltipProvider delayDuration={200}>
               <div
-                className="absolute inset-0 flex items-center justify-center"
+                className="relative"
                 style={{
-                  transform: `translate(${transform.x}px, ${transform.y}px) scale(${transform.scale})`,
-                  transformOrigin: "center center",
-                  transition: dragRef.current ? "none" : "transform 0.1s ease-out",
+                  width: canvasSize.width,
+                  height: canvasSize.height,
+                  minWidth: canvasSize.width,
+                  minHeight: canvasSize.height,
                 }}
               >
-                {/* SVG for edges */}
+                {/* Subtle grid pattern background */}
                 <svg
-                  viewBox={`0 0 ${LAYOUT_WIDTH} ${LAYOUT_HEIGHT}`}
                   className="absolute inset-0 w-full h-full pointer-events-none"
-                  style={{ width: LAYOUT_WIDTH, height: LAYOUT_HEIGHT }}
+                  style={{ width: canvasSize.width, height: canvasSize.height }}
                 >
-                  {edgeLines.map((edge) => {
-                    if (!edge) return null;
-                    return (
-                      <motion.line
-                        key={edge.key}
-                        x1={edge.x1}
-                        y1={edge.y1}
-                        x2={edge.x2}
-                        y2={edge.y2}
-                        stroke={
-                          edge.bothUnlocked
-                            ? "hsl(var(--primary))"
-                            : edge.anyUnlocked
-                            ? "hsl(var(--muted-foreground))"
-                            : "hsl(var(--border))"
-                        }
-                        strokeWidth={edge.strength === 3 ? 1.5 : edge.strength === 2 ? 1 : 0.5}
-                        opacity={edge.bothUnlocked ? 0.5 : edge.anyUnlocked ? 0.2 : 0.08}
-                        strokeDasharray={edge.strength === 1 ? "4 4" : undefined}
-                        initial={{ pathLength: 0, opacity: 0 }}
-                        animate={{
-                          pathLength: 1,
-                          opacity: edge.bothUnlocked ? 0.5 : edge.anyUnlocked ? 0.2 : 0.08,
-                        }}
-                        transition={{ duration: 1, delay: 0.3, ease: "easeOut" }}
+                  <defs>
+                    <pattern id="iso-grid" width="180" height="110" patternUnits="userSpaceOnUse">
+                      <path
+                        d="M 90 0 L 180 55 L 90 110 L 0 55 Z"
+                        fill="none"
+                        stroke="hsl(var(--border))"
+                        strokeWidth="0.5"
+                        opacity="0.15"
                       />
-                    );
-                  })}
+                    </pattern>
+                  </defs>
+                  <rect width="100%" height="100%" fill="url(#iso-grid)" />
+
+                  {/* Relationship lines */}
+                  {edgeLines.map((edge) => (
+                    <line
+                      key={edge.key}
+                      x1={edge.from.x}
+                      y1={edge.from.y}
+                      x2={edge.to.x}
+                      y2={edge.to.y}
+                      stroke={
+                        edge.bothUnlocked
+                          ? "hsl(var(--primary))"
+                          : edge.anyUnlocked
+                          ? "hsl(var(--muted-foreground))"
+                          : "hsl(var(--border))"
+                      }
+                      strokeWidth={edge.strength === 3 ? 2 : edge.strength === 2 ? 1.5 : 1}
+                      opacity={edge.bothUnlocked ? 0.5 : edge.anyUnlocked ? 0.15 : 0.06}
+                      strokeDasharray={edge.strength === 1 ? "6 6" : undefined}
+                    />
+                  ))}
                 </svg>
 
-                {/* Castle nodes positioned absolutely */}
-                <div
-                  className="relative"
-                  style={{ width: LAYOUT_WIDTH, height: LAYOUT_HEIGHT }}
-                >
-                  {positions.map((pos, i) => {
-                    const skill = SKILL_TAXONOMY.find(s => s.id === pos.id);
-                    if (!skill) return null;
+                {/* Castle nodes */}
+                {positions.map((pos, i) => {
+                  const skill = SKILL_TAXONOMY.find(s => s.id === pos.id);
+                  if (!skill) return null;
 
-                    const sx = skillMap.get(pos.id);
-                    const xp = sx?.xp ?? 0;
-                    const castle = getCastleState(xp);
-                    const isActive = lastPracticedSkillId === pos.id;
+                  const sx = skillMap.get(pos.id);
+                  const xp = sx?.xp ?? 0;
+                  const castle = getCastleState(xp);
+                  const isActive = lastPracticedSkillId === pos.id;
 
-                    return (
-                      <div
-                        key={pos.id}
-                        className="absolute"
-                        style={{
-                          left: pos.x - 44,
-                          top: pos.y - 44,
-                          width: 88,
-                          height: 88,
-                        }}
-                      >
-                        <CastleNode
-                          skillId={pos.id}
-                          name={skill.name}
-                          category={skill.category}
-                          castle={castle}
-                          xp={xp}
-                          isActive={isActive}
-                          onClick={() => handleNodeClick(pos.id)}
-                          delay={i}
-                        />
-                      </div>
-                    );
-                  })}
-                </div>
+                  return (
+                    <div
+                      key={pos.id}
+                      className="absolute"
+                      style={{
+                        left: pos.x - 50,
+                        top: pos.y - 50,
+                        width: 100,
+                        height: 100,
+                        zIndex: Math.round(pos.y),
+                      }}
+                    >
+                      <CastleNode
+                        skillId={pos.id}
+                        name={skill.name}
+                        category={skill.category}
+                        castle={castle}
+                        xp={xp}
+                        isActive={isActive}
+                        onClick={() => handleNodeClick(pos.id)}
+                        delay={i}
+                      />
+                    </div>
+                  );
+                })}
               </div>
             </TooltipProvider>
-
-            {/* Zoom controls */}
-            <div className="absolute bottom-4 right-4 flex flex-col gap-1 z-10">
-              <button
-                onClick={() => setTransform(t => ({ ...t, scale: Math.min(2.5, t.scale * 1.2) }))}
-                className="w-8 h-8 rounded-lg bg-card/90 border border-border/50 text-muted-foreground hover:text-foreground flex items-center justify-center text-sm font-bold backdrop-blur-sm transition-colors active:scale-[0.95]"
-              >
-                +
-              </button>
-              <button
-                onClick={() => setTransform(t => ({ ...t, scale: Math.max(0.4, t.scale * 0.8) }))}
-                className="w-8 h-8 rounded-lg bg-card/90 border border-border/50 text-muted-foreground hover:text-foreground flex items-center justify-center text-sm font-bold backdrop-blur-sm transition-colors active:scale-[0.95]"
-              >
-                −
-              </button>
-              <button
-                onClick={() => setTransform({ x: 0, y: 0, scale: 1 })}
-                className="w-8 h-8 rounded-lg bg-card/90 border border-border/50 text-muted-foreground hover:text-foreground flex items-center justify-center text-[10px] font-bold backdrop-blur-sm transition-colors active:scale-[0.95]"
-              >
-                ⟲
-              </button>
-            </div>
           </div>
 
           {/* Legend */}
@@ -268,6 +225,7 @@ export default function TerritoryOverlay({
                 <span>{l.emoji}</span> {l.label}
               </span>
             ))}
+            <span className="opacity-50">• Scroll to explore</span>
           </motion.div>
         </motion.div>
       )}
