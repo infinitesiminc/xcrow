@@ -175,7 +175,11 @@ const BriefingScreen = ({
             transition={{ delay: 0.2, duration: 0.4, type: "spring" }}
             className="text-5xl mb-3"
           >
-            🤖
+            {(() => {
+              const simEmojis = ['🤖','🧠','⚡','🎯','🔬','🚀','💡','🧪','🎓','🏗️','📊','🔮','🛠️','🌐','🧩'];
+              const hash = (session.scenario.title || '').split('').reduce((a, c) => a + c.charCodeAt(0), 0);
+              return simEmojis[hash % simEmojis.length];
+            })()}
           </motion.div>
           <h3 className="text-xl sm:text-2xl font-display font-bold text-foreground drop-shadow-lg">{session.scenario.title}</h3>
           <p className="text-sm text-foreground/70 leading-relaxed max-w-md mx-auto mt-2">{session.scenario.description}</p>
