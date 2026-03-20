@@ -221,7 +221,7 @@ export default function Pricing() {
           <div className="border border-border/60 bg-card/80 backdrop-blur-sm rounded-2xl p-8 text-center">
             <Building2 className="h-8 w-8 text-primary mx-auto mb-3" />
             <h3 className="text-lg font-bold text-foreground mb-1">
-              Bring crowy.ai to your university
+              Bring Crowy.ai to your university
             </h3>
             <p className="text-sm text-muted-foreground max-w-md mx-auto mb-4">
               Give every student personalized AI-readiness training mapped to your curriculum. Free pilot available.
