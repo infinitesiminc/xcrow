@@ -165,13 +165,13 @@ export default function TerritoryOverlay({
                   style={{ width: canvasSize.width, height: canvasSize.height }}
                 >
                   <defs>
-                    <pattern id="iso-grid" width="180" height="110" patternUnits="userSpaceOnUse">
+                    <pattern id="iso-grid" width="260" height="160" patternUnits="userSpaceOnUse">
                       <path
-                        d="M 90 0 L 180 55 L 90 110 L 0 55 Z"
+                        d="M 130 0 L 260 80 L 130 160 L 0 80 Z"
                         fill="none"
                         stroke="hsl(var(--border))"
                         strokeWidth="0.5"
-                        opacity="0.15"
+                        opacity="0.12"
                       />
                     </pattern>
                   </defs>
