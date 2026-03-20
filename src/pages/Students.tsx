@@ -9,7 +9,7 @@
 import { useRef, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, useInView } from "framer-motion";
-import { ArrowRight, Blocks, Bot, Brain, Briefcase, GraduationCap, Play, Sparkles, Target, TrendingUp, Zap } from "lucide-react";
+import { ArrowRight, Blocks, Brain, GraduationCap, Sparkles, Target, TrendingUp, Zap } from "lucide-react";
 import CompanyMarquee from "@/components/CompanyMarquee";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
@@ -423,68 +423,8 @@ export default function Students() {
           </div>
         </Section>
 
-        {/* ═══ SIMULATION EXPERIENCE — Live Jobs ═══ */}
-        <Section className="py-20 sm:py-28 px-6">
-          <div className="max-w-5xl mx-auto">
-            <motion.div variants={fadeUp} custom={0} className="text-center mb-14">
-              <div className="inline-flex items-center gap-2 mb-4">
-                <Play className="h-5 w-5 text-primary" />
-                <span className="text-sm font-mono text-primary tracking-widest uppercase">Real Jobs, Real Practice</span>
-              </div>
-              <h2 className="text-3xl sm:text-4xl font-bold mb-4">Practice on real jobs, not textbook exercises</h2>
-              <p className="text-muted-foreground max-w-xl mx-auto">
-                Every simulation is built from a live job posting — the same roles companies are hiring for right now.
-              </p>
-            </motion.div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 max-w-4xl mx-auto">
-              {[
-                { role: "AI Research Engineer", company: "Anthropic", dept: "Research", exposure: 62, tasks: 12, task: "Design evaluation benchmarks for language model safety" },
-                { role: "Product Marketing Manager", company: "Stripe", dept: "Marketing", exposure: 71, tasks: 9, task: "Create go-to-market strategy for new API product" },
-                { role: "Data Scientist", company: "Meta", dept: "Analytics", exposure: 78, tasks: 11, task: "Build predictive model for user engagement patterns" },
-                { role: "Solutions Architect", company: "Databricks", dept: "Engineering", exposure: 55, tasks: 8, task: "Design data lakehouse architecture for enterprise client" },
-                { role: "Strategy Consultant", company: "McKinsey", dept: "Advisory", exposure: 45, tasks: 10, task: "Conduct market sizing analysis for new vertical" },
-                { role: "ML Platform Engineer", company: "OpenAI", dept: "Infrastructure", exposure: 68, tasks: 14, task: "Optimize model serving pipeline for production scale" },
-              ].map((job, i) => {
-                const spectrumGradient = SPECTRUM_GRADIENTS[i % SPECTRUM_GRADIENTS.length];
-                return (
-                  <motion.div
-                    key={job.role}
-                    variants={fadeUp}
-                    custom={i + 1}
-                    className="relative rounded-xl overflow-hidden group cursor-pointer"
-                    onClick={() => handleLaunchSim({ role: job.role, company: job.company, task: job.task })}
-                  >
-                    <div className={`absolute top-0 inset-x-0 h-[3px] bg-gradient-to-r ${spectrumGradient} opacity-70 group-hover:opacity-100 transition-opacity`} />
-                    <div className="border border-border/60 bg-card/80 backdrop-blur-sm rounded-xl p-5 h-full">
-                      <div className="flex items-center gap-2 mb-3">
-                        <Briefcase className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider">{job.company}</span>
-                      </div>
-                      <h3 className="text-sm font-bold mb-1 group-hover:text-primary transition-colors">{job.role}</h3>
-                      <p className="text-xs text-muted-foreground mb-3">{job.dept} · {job.tasks} practiceable tasks</p>
 
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-1.5">
-                          <Bot className="h-3.5 w-3.5 text-brand-ai" />
-                          <span className="text-xs font-mono text-brand-ai">{job.exposure}%</span>
-                        </div>
-                        <div className="flex items-center gap-1 text-[10px] font-medium text-primary bg-primary/10 px-2.5 py-1 rounded-full border border-primary/20 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <Play className="h-3 w-3" />
-                          Practice
-                        </div>
-                      </div>
-                    </div>
-                  </motion.div>
-                );
-              })}
-            </div>
-
-            <motion.p variants={fadeUp} custom={8} className="text-center text-sm text-muted-foreground mt-8">
-              21,000+ roles across 3,600+ companies — all mapped, scored, and ready to practice.
-            </motion.p>
-          </div>
-        </Section>
 
         {/* ═══ VIRAL CTA — Tell Your Professor ═══ */}
         <Section className="py-16 px-6">

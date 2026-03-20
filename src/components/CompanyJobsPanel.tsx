@@ -3,7 +3,14 @@ import { X, Briefcase, Bot, Play, Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { brandfetchFromName } from "@/lib/logo";
-import { Button } from "@/components/ui/button";
+
+const SPECTRUM_GRADIENTS = [
+  "from-spectrum-0 via-spectrum-1 to-spectrum-2",
+  "from-spectrum-6 via-spectrum-5 to-spectrum-4",
+  "from-spectrum-3 via-spectrum-4 to-spectrum-5",
+  "from-spectrum-1 via-spectrum-2 to-spectrum-3",
+  "from-spectrum-4 via-spectrum-3 to-spectrum-6",
+];
 
 interface CompanyJob {
   id: string;
@@ -32,7 +39,6 @@ export default function CompanyJobsPanel({ companyName, onClose, onJobSelect }: 
     setLogoFailed(false);
 
     (async () => {
-      // 1. Find company
       const { data: company } = await supabase
         .from("companies")
         .select("id")
@@ -40,12 +46,8 @@ export default function CompanyJobsPanel({ companyName, onClose, onJobSelect }: 
         .limit(1)
         .maybeSingle();
 
-      if (!company) {
-        setLoading(false);
-        return;
-      }
+      if (!company) { setLoading(false); return; }
 
-      // 2. Fetch jobs that have task clusters (sim-ready)
       const { data: taskJobs } = await supabase
         .from("job_task_clusters")
         .select("job_id, cluster_name, jobs!inner(id, title, department, augmented_percent)")
@@ -53,17 +55,13 @@ export default function CompanyJobsPanel({ companyName, onClose, onJobSelect }: 
         .order("sort_order", { ascending: true })
         .limit(50);
 
-      if (!taskJobs?.length) {
-        setLoading(false);
-        return;
-      }
+      if (!taskJobs?.length) { setLoading(false); return; }
 
-      // Group by job, pick top task per job, limit to 5 jobs
       const jobMap = new Map<string, CompanyJob>();
       for (const row of taskJobs) {
         const j = row.jobs as any;
         if (!j || jobMap.has(j.id)) continue;
-        if (jobMap.size >= 5) break;
+        if (jobMap.size >= 6) break;
         jobMap.set(j.id, {
           id: j.id,
           title: j.title,
@@ -82,14 +80,14 @@ export default function CompanyJobsPanel({ companyName, onClose, onJobSelect }: 
     <AnimatePresence>
       {companyName && (
         <motion.div
-          initial={{ opacity: 0, y: 12 }}
+          initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: 12 }}
-          transition={{ duration: 0.25 }}
-          className="relative mt-6 max-w-2xl mx-auto rounded-xl border border-border/60 bg-card/95 backdrop-blur-md shadow-lg overflow-hidden"
+          exit={{ opacity: 0, y: 16 }}
+          transition={{ duration: 0.3 }}
+          className="mt-8"
         >
           {/* Header */}
-          <div className="flex items-center justify-between px-5 py-4 border-b border-border/40">
+          <div className="flex items-center justify-between mb-5">
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 rounded-full overflow-hidden flex items-center justify-center bg-muted border border-border/40">
                 {logoUrl && !logoFailed ? (
@@ -100,7 +98,7 @@ export default function CompanyJobsPanel({ companyName, onClose, onJobSelect }: 
               </div>
               <div>
                 <h3 className="text-sm font-bold text-foreground">{companyName}</h3>
-                <p className="text-[10px] text-muted-foreground font-mono tracking-wide">OPEN ROLES</p>
+                <p className="text-[10px] text-muted-foreground font-mono tracking-wide">SIM-READY ROLES</p>
               </div>
             </div>
             <button onClick={onClose} className="p-1.5 rounded-md hover:bg-accent transition-colors text-muted-foreground hover:text-foreground">
@@ -109,54 +107,54 @@ export default function CompanyJobsPanel({ companyName, onClose, onJobSelect }: 
           </div>
 
           {/* Body */}
-          <div className="px-5 py-3">
-            {loading ? (
-              <div className="flex items-center justify-center py-8 gap-2 text-muted-foreground">
-                <Loader2 className="h-4 w-4 animate-spin" />
-                <span className="text-sm">Loading roles…</span>
-              </div>
-            ) : jobs.length === 0 ? (
-              <p className="text-sm text-muted-foreground text-center py-8">No roles found for this company yet.</p>
-            ) : (
-              <div className="divide-y divide-border/30">
-                {jobs.map((job) => (
-                  <div
+          {loading ? (
+            <div className="flex items-center justify-center py-12 gap-2 text-muted-foreground">
+              <Loader2 className="h-4 w-4 animate-spin" />
+              <span className="text-sm">Loading roles…</span>
+            </div>
+          ) : jobs.length === 0 ? (
+            <p className="text-sm text-muted-foreground text-center py-12">No sim-ready roles found for this company yet.</p>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {jobs.map((job, i) => {
+                const gradient = SPECTRUM_GRADIENTS[i % SPECTRUM_GRADIENTS.length];
+                return (
+                  <motion.div
                     key={job.id}
-                    className="flex items-center justify-between py-3 group"
+                    initial={{ opacity: 0, y: 12 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: i * 0.06, duration: 0.3 }}
+                    className="relative rounded-xl overflow-hidden group cursor-pointer"
+                    onClick={() => job.topTask && onJobSelect({ role: job.title, company: companyName, task: job.topTask })}
                   >
-                    <div className="flex-1 min-w-0 mr-3">
-                      <div className="flex items-center gap-2 mb-0.5">
-                        <Briefcase className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-                        <span className="text-sm font-medium text-foreground truncate">{job.title}</span>
+                    <div className={`absolute top-0 inset-x-0 h-[3px] bg-gradient-to-r ${gradient} opacity-70 group-hover:opacity-100 transition-opacity`} />
+                    <div className="border border-border/60 bg-card/80 backdrop-blur-sm rounded-xl p-5 h-full">
+                      <div className="flex items-center gap-2 mb-3">
+                        <Briefcase className="h-4 w-4 text-muted-foreground" />
+                        <span className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider">{companyName}</span>
                       </div>
-                      <div className="flex items-center gap-3 ml-5.5">
-                        {job.department && (
-                          <span className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider">{job.department}</span>
-                        )}
+                      <h3 className="text-sm font-bold mb-1 group-hover:text-primary transition-colors">{job.title}</h3>
+                      {job.department && (
+                        <p className="text-xs text-muted-foreground mb-3">{job.department}</p>
+                      )}
+                      <div className="flex items-center justify-between mt-auto">
                         {job.augmented_percent != null && (
-                          <span className="flex items-center gap-1 text-[10px] font-mono text-brand-ai">
-                            <Bot className="h-3 w-3" />
-                            {job.augmented_percent}% AI
-                          </span>
+                          <div className="flex items-center gap-1.5">
+                            <Bot className="h-3.5 w-3.5 text-brand-ai" />
+                            <span className="text-xs font-mono text-brand-ai">{job.augmented_percent}%</span>
+                          </div>
                         )}
+                        <div className="flex items-center gap-1 text-[10px] font-medium text-primary bg-primary/10 px-2.5 py-1 rounded-full border border-primary/20 opacity-0 group-hover:opacity-100 transition-opacity ml-auto">
+                          <Play className="h-3 w-3" />
+                          Practice
+                        </div>
                       </div>
                     </div>
-                    {job.topTask && (
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        className="gap-1 text-xs text-primary opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
-                        onClick={() => onJobSelect({ role: job.title, company: companyName, task: job.topTask! })}
-                      >
-                        <Play className="h-3 w-3" />
-                        Practice
-                      </Button>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
+                  </motion.div>
+                );
+              })}
+            </div>
+          )}
         </motion.div>
       )}
     </AnimatePresence>
