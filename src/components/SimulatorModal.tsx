@@ -1097,73 +1097,130 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                 </motion.div>
               )}
 
-              {phase === "done" && (
+              {phase === "done" && (() => {
+                const overallScore = scoreResult?.overall ?? 0;
+                const scoreTier: "low" | "mid" | "high" = overallScore < 60 ? "low" : overallScore <= 85 ? "mid" : "high";
+
+                // Find nearest unclaimed skill for territory nudge
+                const currentSkillIds = matchTaskToSkills(taskName, jobTitle);
+                const currentSkillName = currentSkillIds.length > 0
+                  ? SKILL_TAXONOMY.find(s => s.id === currentSkillIds[0])?.name ?? taskName
+                  : taskName;
+
+                // Find a nearby unclaimed skill (different category neighbor)
+                const currentCategories = new Set(currentSkillIds.map(id => SKILL_TAXONOMY.find(s => s.id === id)?.category));
+                const nearbyUnclaimed = SKILL_TAXONOMY.find(s =>
+                  !currentSkillIds.includes(s.id) &&
+                  !currentCategories.has(s.category) &&
+                  s.aiExposure > 40
+                );
+
+                const xpEarned = earnedSkills.reduce((sum, s) => sum + s.xp, 0);
+
+                return (
                 <motion.div
                   key="done"
                   initial={{ opacity: 0, y: 16 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5, ease: "easeOut" }}
-                  className="flex flex-col items-center py-10 gap-6 max-w-sm mx-auto text-center"
+                  className="flex flex-col items-center py-8 gap-5 max-w-sm mx-auto text-center"
                 >
-                  {/* Celebration icon */}
+                  {/* Score ring */}
                   <motion.div
                     initial={{ scale: 0.5, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
                     transition={{ delay: 0.15, type: "spring", stiffness: 200 }}
-                    className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-primary/10"
+                    className="relative"
                   >
-                    <Trophy className="h-10 w-10 text-primary" />
+                    <svg width="96" height="96" viewBox="0 0 96 96">
+                      <circle cx="48" cy="48" r="42" fill="none" stroke="hsl(var(--muted))" strokeWidth="4" />
+                      <motion.circle
+                        cx="48" cy="48" r="42" fill="none"
+                        stroke={scoreTier === "high" ? "hsl(142 71% 45%)" : scoreTier === "mid" ? "hsl(var(--primary))" : "hsl(38 92% 50%)"}
+                        strokeWidth="4.5"
+                        strokeLinecap="round"
+                        strokeDasharray={`${overallScore * 2.64} 264`}
+                        transform="rotate(-90 48 48)"
+                        initial={{ strokeDasharray: "0 264" }}
+                        animate={{ strokeDasharray: `${overallScore * 2.64} 264` }}
+                        transition={{ delay: 0.3, duration: 1, ease: "easeOut" }}
+                      />
+                    </svg>
+                    <div className="absolute inset-0 flex flex-col items-center justify-center">
+                      <motion.span
+                        className="text-2xl font-bold text-foreground"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ delay: 0.6 }}
+                      >
+                        {overallScore}%
+                      </motion.span>
+                      <span className="text-[10px] text-muted-foreground">score</span>
+                    </div>
                   </motion.div>
 
-                  {/* Encouragement */}
-                  <div className="space-y-2">
-                    <h3 className="text-xl font-display font-bold text-foreground">
-                      {earnedSkills.length > 0 ? "Skills earned! 🎉" : "Great practice! 💪"}
+                  {/* Dynamic encouragement */}
+                  <div className="space-y-1.5">
+                    <h3 className="text-lg font-display font-bold text-foreground">
+                      {scoreTier === "high" ? "Masterful! 🏆" : scoreTier === "mid" ? "Solid work! 💪" : "Good start! 🌱"}
                     </h3>
                     <p className="text-sm text-muted-foreground leading-relaxed">
-                      {roundCount} round{roundCount !== 1 ? "s" : ""} on "{taskName}"
+                      {scoreTier === "high"
+                        ? "You demonstrated strong command. Time to expand your territory."
+                        : scoreTier === "mid"
+                        ? "You're building real skill here. One more round could level you up."
+                        : "Every expert started exactly here. Retry with coaching to see your score climb."
+                      }
                     </p>
                   </div>
 
-                  {/* Skills Earned Cards */}
+                  {/* Skills earned */}
                   {earnedSkills.length > 0 && (
-                    <div className="w-full space-y-2">
+                    <div className="w-full space-y-1.5">
                       {earnedSkills.map((skill, i) => (
                         <motion.div
                           key={skill.skill_id}
                           initial={{ opacity: 0, x: -16 }}
                           animate={{ opacity: 1, x: 0 }}
                           transition={{ delay: 0.3 + i * 0.1, type: "spring", stiffness: 150 }}
-                          className="flex items-center gap-3 rounded-xl border border-primary/20 bg-primary/5 p-3"
+                          className="flex items-center gap-3 rounded-xl border border-primary/20 bg-primary/5 p-2.5"
                         >
-                          <motion.div
-                            initial={{ scale: 0, rotate: -45 }}
-                            animate={{ scale: 1, rotate: 0 }}
-                            transition={{ delay: 0.5 + i * 0.1, type: "spring" }}
-                            className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0"
-                          >
-                            <Star className="h-5 w-5 text-primary" />
-                          </motion.div>
+                          <div className="h-9 w-9 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                            <Star className="h-4 w-4 text-primary" />
+                          </div>
                           <div className="text-left flex-1 min-w-0">
                             <p className="text-sm font-semibold text-foreground truncate">{skill.name}</p>
                             <p className="text-xs text-primary font-medium">+{skill.xp} XP</p>
                           </div>
-                          <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            transition={{ delay: 0.7 + i * 0.1 }}
-                            className="text-xs text-muted-foreground shrink-0"
-                          >
-                            ⚡
-                          </motion.div>
                         </motion.div>
                       ))}
                     </div>
                   )}
 
-                  {/* Elevation Narrative — Bonus Unlock */}
+                  {/* Territory nudge */}
+                  {nearbyUnclaimed && scoreTier !== "low" && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.6 }}
+                      className="w-full rounded-xl border border-border/40 bg-accent/20 p-3 text-left"
+                    >
+                      <div className="flex items-start gap-2.5">
+                        <span className="text-base mt-0.5">🏰</span>
+                        <div className="min-w-0">
+                          <p className="text-xs font-medium text-foreground">
+                            Nearby unclaimed castle: <span className="text-primary">{nearbyUnclaimed.name}</span>
+                          </p>
+                          <p className="text-[11px] text-muted-foreground mt-0.5">
+                            One simulation away from claiming it
+                          </p>
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+
+                  {/* Elevation Narrative */}
                   {(() => {
-                    const overallScore = scoreResult?.overall ?? 0;
                     const unlocked = overallScore >= 60;
 
                     if (unlocked && elevation) {
@@ -1220,21 +1277,16 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                       );
                     }
 
-                    // Locked teaser
                     return (
                       <motion.div
                         initial={{ opacity: 0, y: 8 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.5 }}
-                        className="w-full rounded-2xl border border-border/40 bg-muted/30 p-5 text-center"
+                        className="w-full rounded-2xl border border-border/40 bg-muted/30 p-4 text-center"
                       >
-                        <Lock className="h-5 w-5 text-muted-foreground/40 mx-auto mb-2" />
+                        <Lock className="h-4 w-4 text-muted-foreground/40 mx-auto mb-1.5" />
                         <p className="text-xs font-medium text-muted-foreground">
-                          Score 60%+ to unlock{" "}
-                          <span className="text-foreground">how this role is evolving</span>
-                        </p>
-                        <p className="text-[10px] text-muted-foreground/60 mt-1">
-                          See the "before → after" shift and the skills that define your new edge
+                          Score 60%+ to unlock <span className="text-foreground">how this role is evolving</span>
                         </p>
                       </motion.div>
                     );
@@ -1246,41 +1298,104 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                     </p>
                   )}
 
-                  {/* CTAs */}
-                  <div className="flex flex-col gap-3 pt-2 w-full max-w-xs">
-                    {onNextTask ? (
-                      <Button onClick={() => { onClose(); onNextTask(); }} className="gap-2 rounded-xl w-full">
-                        <ArrowRight className="h-3.5 w-3.5" /> Next Task ⚡
+                  {/* ── Adaptive CTAs ── */}
+                  <motion.div
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.7 }}
+                    className="flex flex-col gap-2.5 pt-1 w-full max-w-xs"
+                  >
+                    {/* Primary CTA — adapts to score */}
+                    {scoreTier === "low" && (
+                      <Button
+                        onClick={startCompile}
+                        className="gap-2 rounded-xl w-full h-11"
+                      >
+                        <RotateCcw className="h-4 w-4" /> Retry with Coaching Tips
                       </Button>
-                    ) : (
-                      <Button onClick={onClose} className="rounded-xl w-full">Done</Button>
                     )}
-                    {user && (
+                    {scoreTier === "mid" && onNextTask && (
+                      <Button
+                        onClick={() => { onClose(); onNextTask(); }}
+                        className="gap-2 rounded-xl w-full h-11"
+                      >
+                        <TrendingUp className="h-4 w-4" /> Level Up — Harder Context
+                      </Button>
+                    )}
+                    {scoreTier === "mid" && !onNextTask && (
+                      <Button
+                        onClick={startCompile}
+                        className="gap-2 rounded-xl w-full h-11"
+                      >
+                        <TrendingUp className="h-4 w-4" /> Practice Again to Level Up
+                      </Button>
+                    )}
+                    {scoreTier === "high" && nearbyUnclaimed && (
+                      <Button
+                        onClick={() => { onClose(); onBackToFeed?.(); }}
+                        className="gap-2 rounded-xl w-full h-11"
+                      >
+                        <Sparkles className="h-4 w-4" /> New Frontier — Unlock {nearbyUnclaimed.name}
+                      </Button>
+                    )}
+                    {scoreTier === "high" && !nearbyUnclaimed && onNextTask && (
+                      <Button
+                        onClick={() => { onClose(); onNextTask(); }}
+                        className="gap-2 rounded-xl w-full h-11"
+                      >
+                        <ArrowRight className="h-4 w-4" /> Next Challenge
+                      </Button>
+                    )}
+                    {scoreTier === "high" && !nearbyUnclaimed && !onNextTask && (
+                      <Button
+                        onClick={onClose}
+                        className="gap-2 rounded-xl w-full h-11"
+                      >
+                        <ArrowRight className="h-4 w-4" /> Explore More
+                      </Button>
+                    )}
+
+                    {/* Secondary CTA — adapts to score */}
+                    {scoreTier === "low" && onNextTask && (
                       <Button
                         variant="secondary"
-                        onClick={() => { onClose(); navigate("/journey"); }}
+                        onClick={() => { onClose(); onNextTask(); }}
                         className="gap-2 rounded-xl w-full text-xs"
                       >
-                        <Map className="h-3.5 w-3.5" /> View Skill Map
+                        Try a Different Task
                       </Button>
                     )}
-                    <div className="flex gap-2">
-                      <Button variant="outline" onClick={startCompile} className="gap-2 rounded-xl flex-1 text-xs">
-                        <RotateCcw className="h-3 w-3" /> Practice Again
+                    {scoreTier === "mid" && (
+                      <Button
+                        variant="secondary"
+                        onClick={startCompile}
+                        className="gap-2 rounded-xl w-full text-xs"
+                      >
+                        <RotateCcw className="h-3 w-3" /> Same Sim — Improve Score
                       </Button>
-                      {onBackToFeed ? (
-                        <Button variant="ghost" onClick={() => { onClose(); onBackToFeed(); }} className="rounded-xl flex-1 text-xs text-muted-foreground">
-                          ← Back to Roles
-                        </Button>
-                      ) : (
-                        <Button variant="ghost" onClick={onClose} className="rounded-xl flex-1 text-xs text-muted-foreground">
-                          Close
-                        </Button>
-                      )}
-                    </div>
-                  </div>
+                    )}
+                    {scoreTier === "high" && (
+                      <Button
+                        variant="secondary"
+                        onClick={startCompile}
+                        className="gap-2 rounded-xl w-full text-xs"
+                      >
+                        Same Skill, Different Industry
+                      </Button>
+                    )}
+
+                    {/* Always: Back to Crowy */}
+                    <Button
+                      variant="ghost"
+                      onClick={onClose}
+                      className="gap-2 rounded-xl w-full text-xs text-muted-foreground"
+                    >
+                      🐦‍⬛ Back to Crowy
+                    </Button>
+                  </motion.div>
                 </motion.div>
-              )}
+                );
+              })()}
             </AnimatePresence>
           </div>
         </div>
