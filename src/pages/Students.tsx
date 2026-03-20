@@ -6,7 +6,7 @@
  * Visual vibe: gamified dark-mode with spectrum gradient borders, neon accents.
  * Messaging: Skill Builder angle, empowering & direct tone, real-time market transparency.
  */
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, useInView } from "framer-motion";
 import { ArrowRight, Blocks, Bot, Brain, Briefcase, GraduationCap, Play, Sparkles, Target, TrendingUp, Zap } from "lucide-react";
@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import SimulatorModal from "@/components/SimulatorModal";
 
 /* ─── Shared animation helpers ─── */
 const fadeUp = {
@@ -135,10 +136,19 @@ function Stat({ value, label, delay, color }: { value: string; label: string; de
 export default function Students() {
   const navigate = useNavigate();
   const { user, openAuthModal } = useAuth();
+  const [simJob, setSimJob] = useState<{ role: string; company: string; task: string } | null>(null);
 
   const handleGetStarted = () => {
     if (user) navigate("/");
     else openAuthModal?.();
+  };
+
+  const handleLaunchSim = (job: { role: string; company: string; task: string }) => {
+    if (!user) {
+      openAuthModal?.();
+      return;
+    }
+    setSimJob(job);
   };
 
   return (
@@ -404,12 +414,12 @@ export default function Students() {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 max-w-4xl mx-auto">
               {[
-                { role: "AI Research Engineer", company: "Anthropic", dept: "Research", exposure: 62, tasks: 12 },
-                { role: "Product Marketing Manager", company: "Stripe", dept: "Marketing", exposure: 71, tasks: 9 },
-                { role: "Data Scientist", company: "Meta", dept: "Analytics", exposure: 78, tasks: 11 },
-                { role: "Solutions Architect", company: "Databricks", dept: "Engineering", exposure: 55, tasks: 8 },
-                { role: "Strategy Consultant", company: "McKinsey", dept: "Advisory", exposure: 45, tasks: 10 },
-                { role: "ML Platform Engineer", company: "OpenAI", dept: "Infrastructure", exposure: 68, tasks: 14 },
+                { role: "AI Research Engineer", company: "Anthropic", dept: "Research", exposure: 62, tasks: 12, task: "Design evaluation benchmarks for language model safety" },
+                { role: "Product Marketing Manager", company: "Stripe", dept: "Marketing", exposure: 71, tasks: 9, task: "Create go-to-market strategy for new API product" },
+                { role: "Data Scientist", company: "Meta", dept: "Analytics", exposure: 78, tasks: 11, task: "Build predictive model for user engagement patterns" },
+                { role: "Solutions Architect", company: "Databricks", dept: "Engineering", exposure: 55, tasks: 8, task: "Design data lakehouse architecture for enterprise client" },
+                { role: "Strategy Consultant", company: "McKinsey", dept: "Advisory", exposure: 45, tasks: 10, task: "Conduct market sizing analysis for new vertical" },
+                { role: "ML Platform Engineer", company: "OpenAI", dept: "Infrastructure", exposure: 68, tasks: 14, task: "Optimize model serving pipeline for production scale" },
               ].map((job, i) => {
                 const spectrumGradient = SPECTRUM_GRADIENTS[i % SPECTRUM_GRADIENTS.length];
                 return (
@@ -418,7 +428,7 @@ export default function Students() {
                     variants={fadeUp}
                     custom={i + 1}
                     className="relative rounded-xl overflow-hidden group cursor-pointer"
-                    onClick={handleGetStarted}
+                    onClick={() => handleLaunchSim({ role: job.role, company: job.company, task: job.task })}
                   >
                     <div className={`absolute top-0 inset-x-0 h-[3px] bg-gradient-to-r ${spectrumGradient} opacity-70 group-hover:opacity-100 transition-opacity`} />
                     <div className="border border-border/60 bg-card/80 backdrop-blur-sm rounded-xl p-5 h-full">
@@ -496,6 +506,16 @@ export default function Students() {
         </Section>
 
       </div>
+
+      <SimulatorModal
+        open={!!simJob}
+        onClose={() => setSimJob(null)}
+        taskName={simJob?.task ?? ""}
+        jobTitle={simJob?.role ?? ""}
+        company={simJob?.company ?? ""}
+        mode="assess"
+      />
+
       <Footer />
     </>
   );
