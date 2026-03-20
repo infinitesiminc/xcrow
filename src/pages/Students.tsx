@@ -161,17 +161,23 @@ const SORTED_SKILLS: SkillItem[] = [
 function SkillStackSequence() {
   const ref = useRef<HTMLDivElement>(null);
   const inView = useInView(ref, { once: true, margin: "-100px" });
-  const [phase, setPhase] = useState<0 | 1 | 2>(0); // 0=hidden, 1=stack, 2=reshuffle
+  const [phase, setPhase] = useState<0 | 1 | 2>(0);
 
-  // Trigger phases sequentially when in view
-  useState(() => {});
-  // Using useEffect-like behavior via motion callbacks
-  if (inView && phase === 0) {
-    setTimeout(() => setPhase(1), 200);
-  }
+  // Auto-advance phases on scroll — no clicks needed
+  useEffect(() => {
+    if (!inView) return;
+    if (phase === 0) {
+      const t1 = setTimeout(() => setPhase(1), 200);
+      return () => clearTimeout(t1);
+    }
+    if (phase === 1) {
+      const t2 = setTimeout(() => setPhase(2), 2400);
+      return () => clearTimeout(t2);
+    }
+  }, [inView, phase]);
 
   const skills = phase < 2 ? UNSORTED_SKILLS : SORTED_SKILLS;
-  const dividerIndex = phase === 2 ? 4 : -1; // After the 4th skill (human/mid zone ends)
+  const dividerIndex = phase === 2 ? 4 : -1;
 
   return (
     <div ref={ref} className="relative">
@@ -331,28 +337,7 @@ function SkillStackSequence() {
         </motion.div>
       </div>
 
-      {/* CTA to trigger phase 2 */}
-      <AnimatePresence>
-        {phase === 1 && (
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ delay: 1.5 }}
-            className="text-center mt-8"
-          >
-            <button
-              onClick={() => setPhase(2)}
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-xl border border-brand-ai/30 bg-brand-ai/10 hover:bg-brand-ai/20 transition-colors text-sm font-semibold text-brand-ai"
-            >
-              <Zap className="h-4 w-4" />
-              Now add AI →
-            </button>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Takeaway — only after reshuffle */}
+      {/* Takeaway — appears after reshuffle */}
       <AnimatePresence>
         {phase === 2 && (
           <motion.div
