@@ -214,7 +214,7 @@ export default function CrossSchoolSkillsGap() {
     <div className="space-y-4">
       {/* KPI chips */}
       <div className="flex flex-wrap items-center gap-3 text-xs">
-        <Stat label="Institutions" value={String(schoolCount)} />
+        <Stat label="Skills" value={String(rows.length)} />
         <Stat label="Skills" value={String(rows.length)} />
         <Stat label="Avg coverage" value={`${avgCoverage}%`} accent={avgCoverage >= 50} />
         <Stat label="Zero coverage" value={String(universalGaps)} warn={universalGaps > 0} />
