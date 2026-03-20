@@ -328,9 +328,9 @@ const Index = () => {
 
   return (
     <div className="h-[calc(100vh-3.5rem)] flex flex-col">
-      {isSignedIn && realSkills.length > 0 && (
+      {displaySkills.length > 0 && (
         <CompactHUD
-          skills={realSkills}
+          skills={displaySkills}
           targetSkillIds={targetSkillIds}
           userName={userName}
         />
