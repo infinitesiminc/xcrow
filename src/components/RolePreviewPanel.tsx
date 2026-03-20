@@ -202,7 +202,7 @@ export default function RolePreviewPanel({ role, onClose, edgeContext }: RolePre
     const idx = tasks.findIndex(t => t.cluster_name === simTask.cluster_name);
     const next = tasks[idx + 1];
     if (next) setSimTask(next);
-    else { setView("breakdown"); setSimTask(null); }
+    else { setView("details"); setSimTask(null); }
   }, [tasks, simTask]);
 
   const closeSimulation = () => {
