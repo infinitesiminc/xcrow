@@ -3,7 +3,7 @@
  */
 
 import { useMemo } from "react";
-import { Shield, Target, Zap, Bookmark } from "lucide-react";
+import { Shield, Target, Zap } from "lucide-react";
 import { motion } from "framer-motion";
 import type { SkillXP } from "@/lib/skill-map";
 
