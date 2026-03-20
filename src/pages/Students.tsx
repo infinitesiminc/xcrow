@@ -192,6 +192,135 @@ export default function Students() {
           </div>
         </Section>
 
+        {/* ═══ GAMIFICATION HOOK — XP Preview ═══ */}
+        <Section className="py-16 px-6">
+          <div className="max-w-4xl mx-auto">
+            <motion.div variants={fadeUp} custom={0} className="text-center mb-10">
+              <div className="inline-flex items-center gap-2 mb-3">
+                <Trophy className="h-5 w-5 text-warning" />
+                <span className="text-sm font-mono text-warning tracking-widest uppercase">Level Up Your Career</span>
+              </div>
+              <h2 className="text-3xl sm:text-4xl font-bold mb-3">
+                Every simulation unlocks{" "}
+                <span className="bg-gradient-to-r from-warning to-spectrum-6 bg-clip-text text-transparent">real career intelligence</span>
+              </h2>
+              <p className="text-muted-foreground max-w-lg mx-auto">
+                Practice tasks. Earn XP. Unlock how your role is evolving — insights most people won't see for years.
+              </p>
+            </motion.div>
+
+            {/* Fake XP Dashboard */}
+            <motion.div variants={fadeUp} custom={1} className="relative rounded-2xl overflow-hidden max-w-3xl mx-auto">
+              <div className="absolute top-0 inset-x-0 h-[3px] bg-gradient-to-r from-warning via-spectrum-6 to-spectrum-4" />
+              <div className="border border-border/60 bg-card/80 backdrop-blur-sm rounded-2xl p-6 sm:p-8">
+
+                {/* Player header */}
+                <div className="flex items-center gap-4 mb-6">
+                  <div className="relative">
+                    <div className="w-14 h-14 rounded-full bg-gradient-to-br from-primary to-spectrum-6 flex items-center justify-center text-lg font-bold text-primary-foreground">
+                      YO
+                    </div>
+                    <motion.div
+                      className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-warning flex items-center justify-center text-[10px] font-bold text-warning-foreground"
+                      animate={{ scale: [1, 1.2, 1] }}
+                      transition={{ duration: 2, repeat: Infinity }}
+                    >
+                      5
+                    </motion.div>
+                  </div>
+                  <div className="flex-1">
+                    <div className="text-sm font-semibold">Your Profile</div>
+                    <div className="text-xs text-muted-foreground">Level 5 · 1,240 XP</div>
+                    <div className="mt-1.5 h-2 rounded-full bg-muted overflow-hidden">
+                      <motion.div
+                        className="h-full rounded-full bg-gradient-to-r from-primary to-spectrum-4"
+                        initial={{ width: "0%" }}
+                        whileInView={{ width: "68%" }}
+                        transition={{ duration: 1.5, delay: 0.5, ease: "easeOut" }}
+                        viewport={{ once: true }}
+                      />
+                    </div>
+                  </div>
+                  <div className="text-right hidden sm:block">
+                    <div className="text-2xl font-bold text-warning">1,240</div>
+                    <div className="text-[10px] font-mono text-muted-foreground">TOTAL XP</div>
+                  </div>
+                </div>
+
+                {/* Badge row */}
+                <div className="grid grid-cols-4 sm:grid-cols-5 gap-3 mb-6">
+                  {[
+                    { icon: Zap, label: "First Sim", earned: true, color: "text-spectrum-0" },
+                    { icon: Brain, label: "Deep Thinker", earned: true, color: "text-spectrum-3" },
+                    { icon: Star, label: "Top 10%", earned: true, color: "text-warning" },
+                    { icon: TrendingUp, label: "Role Evolved", earned: false, color: "text-spectrum-6" },
+                    { icon: Trophy, label: "5 Roles", earned: false, color: "text-spectrum-4" },
+                  ].map((badge, i) => (
+                    <motion.div
+                      key={badge.label}
+                      variants={fadeUp}
+                      custom={i + 2}
+                      className={`relative flex flex-col items-center gap-1.5 p-3 rounded-xl border ${
+                        badge.earned
+                          ? "border-border/60 bg-card/60"
+                          : "border-border/30 bg-card/30 opacity-50"
+                      } ${i === 4 ? "hidden sm:flex" : ""}`}
+                    >
+                      {badge.earned ? (
+                        <badge.icon className={`h-6 w-6 ${badge.color}`} />
+                      ) : (
+                        <Lock className="h-6 w-6 text-muted-foreground/40" />
+                      )}
+                      <span className="text-[10px] font-mono text-muted-foreground text-center leading-tight">
+                        {badge.label}
+                      </span>
+                      {badge.earned && (
+                        <motion.div
+                          className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-success flex items-center justify-center"
+                          initial={{ scale: 0 }}
+                          whileInView={{ scale: 1 }}
+                          transition={{ delay: 0.3 + i * 0.1, type: "spring" }}
+                          viewport={{ once: true }}
+                        >
+                          <span className="text-[8px] text-success-foreground">✓</span>
+                        </motion.div>
+                      )}
+                    </motion.div>
+                  ))}
+                </div>
+
+                {/* Elevation Teaser — locked card */}
+                <motion.div
+                  variants={fadeUp}
+                  custom={7}
+                  className="relative rounded-xl overflow-hidden"
+                >
+                  <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-spectrum-6 via-spectrum-5 to-spectrum-4 opacity-60" />
+                  <div className="border border-brand-human/20 bg-gradient-to-br from-brand-human/5 via-card/60 to-card/80 backdrop-blur-sm rounded-xl p-5 flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-xl bg-brand-human/10 border border-brand-human/20 flex items-center justify-center flex-shrink-0">
+                      <motion.div
+                        animate={{ rotateY: [0, 180, 360] }}
+                        transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+                      >
+                        <Sparkles className="h-5 w-5 text-brand-human" />
+                      </motion.div>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="text-sm font-semibold mb-0.5">🔒 Role Evolution Insight</div>
+                      <div className="text-xs text-muted-foreground">
+                        Score 60%+ in any simulation to unlock how that role is shifting up the value chain — your personal career intelligence brief.
+                      </div>
+                    </div>
+                    <Button size="sm" variant="outline" onClick={handleGetStarted} className="flex-shrink-0 border-brand-human/30 text-brand-human hover:bg-brand-human/10 hidden sm:flex gap-1.5">
+                      <Zap className="h-3.5 w-3.5" /> Unlock
+                    </Button>
+                  </div>
+                </motion.div>
+              </div>
+            </motion.div>
+          </div>
+        </Section>
+
         {/* ═══ PROOF BAR ═══ */}
         <Section className="py-10 border-y border-border/30">
           <div className="max-w-3xl mx-auto flex items-center justify-around gap-6 px-6">
