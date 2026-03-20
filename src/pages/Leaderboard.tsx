@@ -489,9 +489,22 @@ export default function Leaderboard() {
                 </p>
               </div>
             </div>
-            <Button size="sm" variant="outline" onClick={handleInvite} className="gap-1.5 shrink-0">
-              <Share2 className="h-3.5 w-3.5" /> Invite Friends
-            </Button>
+            <div className="flex items-center gap-2 shrink-0">
+              {totalUnread > 0 && (
+                <Button size="sm" variant="ghost" className="relative gap-1.5 text-muted-foreground" onClick={() => {
+                  const friendWithUnread = friendEntries.find(f => unreadCounts[f.id]);
+                  if (friendWithUnread) handleOpenChat(friendWithUnread);
+                }}>
+                  <Bell className="h-4 w-4" />
+                  <span className="absolute -top-0.5 -right-0.5 h-4 min-w-4 px-1 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold flex items-center justify-center animate-in zoom-in-50">
+                    {totalUnread}
+                  </span>
+                </Button>
+              )}
+              <Button size="sm" variant="outline" onClick={handleInvite} className="gap-1.5 shrink-0">
+                <Share2 className="h-3.5 w-3.5" /> Invite Friends
+              </Button>
+            </div>
           </div>
 
           {/* My rank banner */}
