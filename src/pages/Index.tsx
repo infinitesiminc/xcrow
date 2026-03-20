@@ -151,6 +151,14 @@ const Index = () => {
   const userName = profile?.displayName?.split(" ")[0];
   const isSignedIn = !!user;
 
+  // Build live view context for AI chat
+  const viewContext = useMemo<ViewContext>(() => ({
+    activePanel: selectedRole ? "role-preview" : rightTab === "roles" ? "roles" : "territory",
+    selectedRole: selectedRole ? { title: selectedRole.title, company: selectedRole.company, jobId: selectedRole.jobId } : null,
+    selectedTab: rightTab === "roles" ? myRolesTab : undefined,
+    lastSimResult,
+  }), [selectedRole, rightTab, myRolesTab, lastSimResult]);
+
   /* ── Mobile ───────────────────────────────────── */
 
   if (isMobile) {

@@ -164,6 +164,7 @@ export default function HomepageChat({
     try {
       const body: any = { messages: getApiMessages(allItems) };
       if (journeyContextRef.current) body.journeyContext = journeyContextRef.current;
+      if (viewContext) body.viewContext = viewContext;
 
       const resp = await fetch(CHAT_URL, {
         method: "POST",
