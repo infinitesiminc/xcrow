@@ -113,6 +113,37 @@ type RightTab = "territory" | "roles";
 const Index = () => {
   const { profile, user } = useAuth();
   const isMobile = useIsMobile();
+  const { skills: dbSkills } = useSkills();
+
+  // Convert DB skills to TaxonomySkill format for layout/aggregation
+  const taxonomy: TaxonomySkill[] = useMemo(() =>
+    dbSkills.map(s => ({
+      id: s.id,
+      name: s.name,
+      category: s.category,
+      keywords: s.keywords,
+      aiExposure: s.aiExposure,
+      humanEdge: s.humanEdge,
+    })),
+    [dbSkills]
+  );
+
+  // Build rarity map for special drop styling
+  const rarityMap = useMemo(() => {
+    const m = new globalThis.Map<string, SkillRarityInfo>();
+    for (const s of dbSkills) {
+      if (s.rarity !== "common" || s.dropExpiresAt) {
+        m.set(s.id, {
+          id: s.id,
+          rarity: s.rarity,
+          dropExpiresAt: s.dropExpiresAt,
+          iconEmoji: s.iconEmoji,
+          description: s.description,
+        });
+      }
+    }
+    return m;
+  }, [dbSkills]);
 
   const [hasInteracted, setHasInteracted] = useState(false);
   const [selectedRole, setSelectedRole] = useState<RoleResult | null>(null);
