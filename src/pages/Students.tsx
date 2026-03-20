@@ -7,6 +7,7 @@
  * Messaging: Skill Builder angle, empowering & direct tone, real-time market transparency.
  */
 import { useRef, useState, useCallback, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { motion, useInView } from "framer-motion";
 import { ArrowRight, Blocks, Brain, GraduationCap, Lock, Sparkles, Star, Target, Trophy, TrendingUp, Zap } from "lucide-react";
