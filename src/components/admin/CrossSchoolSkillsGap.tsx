@@ -311,6 +311,7 @@ export default function CrossSchoolSkillsGap() {
           </div>
         </>
       )}
+    </div>
   );
 }
 
