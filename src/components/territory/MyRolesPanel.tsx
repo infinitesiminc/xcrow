@@ -4,9 +4,10 @@
  */
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Bookmark, Play, X, Trophy } from "lucide-react";
+import { Bookmark, Play, X, Trophy, Search } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { Input } from "@/components/ui/input";
 import { RoleCard, type RoleResult } from "@/components/InlineRoleCarousel";
 
 interface MyRolesPanelProps {
@@ -18,6 +19,7 @@ interface MyRolesPanelProps {
 export default function MyRolesPanel({ open, onClose, onAskChat }: MyRolesPanelProps) {
   const { user } = useAuth();
   const [tab, setTab] = useState<"saved" | "practiced">("saved");
+  const [search, setSearch] = useState("");
   const [savedRoles, setSavedRoles] = useState<RoleResult[]>([]);
   const [practicedRoles, setPracticedRoles] = useState<RoleResult[]>([]);
   const [loading, setLoading] = useState(true);
@@ -86,7 +88,10 @@ export default function MyRolesPanel({ open, onClose, onAskChat }: MyRolesPanelP
     );
   };
 
-  const activeRoles = tab === "saved" ? savedRoles : practicedRoles;
+  const q = search.toLowerCase();
+  const filteredRoles = (tab === "saved" ? savedRoles : practicedRoles).filter(
+    (r) => !q || r.title.toLowerCase().includes(q) || (r.company || "").toLowerCase().includes(q)
+  );
 
   return (
     <AnimatePresence>
@@ -133,12 +138,23 @@ export default function MyRolesPanel({ open, onClose, onAskChat }: MyRolesPanelP
               </button>
             </div>
 
+            {/* Search */}
+            <div className="relative mb-3">
+              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+              <Input
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search roles…"
+                className="h-8 pl-8 text-xs bg-muted/30 border-border/40"
+              />
+            </div>
+
             {/* Content */}
             {loading ? (
               <div className="flex items-center justify-center py-8">
                 <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
               </div>
-            ) : activeRoles.length === 0 ? (
+            ) : filteredRoles.length === 0 ? (
               <div className="text-center py-6">
                 {tab === "saved" ? (
                   <Bookmark className="h-5 w-5 text-muted-foreground/40 mx-auto mb-2" />
@@ -153,7 +169,7 @@ export default function MyRolesPanel({ open, onClose, onAskChat }: MyRolesPanelP
               </div>
             ) : (
               <div className="flex gap-2.5 overflow-x-auto pb-1.5 scrollbar-thin [mask-image:linear-gradient(to_right,transparent,black_1%,black_97%,transparent)]">
-                {activeRoles.map((role, i) => (
+                {filteredRoles.map((role, i) => (
                   <RoleCard
                     key={role.jobId + i}
                     role={role}
