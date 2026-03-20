@@ -27,3 +27,26 @@ profiles.target_roles → job_task_clusters.skill_names →
 - **Frontier**: In target role or no targets set, dashed border, explorable
 - **Undiscovered**: Not in target roles, locked icon, muted
 - **Contested**: Frontier + in target roles, HOT badge, pulsing dot, flame icon
+
+---
+
+## Bidirectional Context Bridge (View-Aware Chat)
+
+**Status: Implemented**
+
+### What was built:
+
+1. **ViewContext interface** (`HomepageChat.tsx`): Exported type with `activePanel`, `selectedRole`, `selectedTab`, `lastSimResult`
+2. **Index.tsx**: Builds a `viewContext` memo from current right-panel state (`rightTab`, `selectedRole`, `myRolesTab`, `lastSimResult`) and passes to both mobile/desktop `HomepageChat` instances
+3. **HomepageChat**: Accepts `viewContext` prop, sends it in every chat request body alongside `journeyContext`
+4. **career-chat edge function**: Consumes `viewContext`, appends a `## CURRENT VIEW CONTEXT` block to system prompt:
+   - If role is open → "Student is viewing [role], assume questions refer to it"
+   - If browsing My Roles → "Help prioritize which to practice"
+   - If sim just completed → "Acknowledge progress, suggest next task"
+5. **MyRolesPanel**: Reports tab changes (`saved`/`practiced`) via new `onTabChange` callback
+
+### User Scenarios Enabled
+- Open a saved role → ask "should I practice this?" → AI knows which role
+- Finish a sim → next chat message gets congratulations + next steps
+- Browse practiced roles → AI proactively summarizes growth
+- Territory view → AI references skill gaps naturally
