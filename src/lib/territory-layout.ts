@@ -58,8 +58,8 @@ const ISLAND_CENTERS: Record<SkillCategory, { cx: number; cy: number }> = {
  * Position skill nodes around each island center.
  * Uses a radial layout with some randomness for organic feel.
  */
-function positionNodes(category: SkillCategory, cx: number, cy: number): NodePosition[] {
-  const skills = SKILL_TAXONOMY.filter(s => s.category === category);
+function positionNodes(category: SkillCategory, cx: number, cy: number, taxonomy: TaxonomySkill[]): NodePosition[] {
+  const skills = taxonomy.filter(s => s.category === category);
   const count = skills.length;
   const radius = count <= 4 ? 55 : count <= 6 ? 65 : 75;
 
