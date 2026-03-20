@@ -150,8 +150,8 @@ export default function IntelFeed({ skills, savedRoles }: IntelFeedProps) {
         {/* Role Unlocks */}
         <div className="p-3">
           <div className="flex items-center gap-1.5 mb-2">
-            <Unlock className="h-3 w-3" style={{ color: "hsl(180, 90%, 60%)" }} />
-            <span className="text-[9px] font-bold uppercase tracking-[0.15em]" style={{ color: "hsl(180, 90%, 60%)" }}>
+            <Unlock className="h-3 w-3" style={{ color: "hsl(180, 40%, 55%)" }} />
+            <span className="text-[9px] font-bold uppercase tracking-[0.15em]" style={{ color: "hsl(180, 40%, 55%)" }}>
               Role Unlocks
             </span>
           </div>
