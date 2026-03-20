@@ -494,6 +494,21 @@ serve(async (req) => {
       skills: analysis.skills,
     };
 
+    // Add compensation data if extracted
+    if (analysis.compensation && analysis.compensation.salaryMin) {
+      result.compensation = analysis.compensation;
+      // Store salary to DB if we had a matched job
+      if (matchedJob) {
+        await sb.from("jobs").update({
+          salary_min: analysis.compensation.salaryMin,
+          salary_max: analysis.compensation.salaryMax,
+          salary_currency: analysis.compensation.salaryCurrency || "USD",
+          salary_period: analysis.compensation.salaryPeriod || "annual",
+          ...(analysis.compensation.equityText ? { equity_text: analysis.compensation.equityText } : {}),
+        }).eq("id", matchedJob.id);
+      }
+    }
+
     // Add curated skills from DB
     if (curatedSkills.length > 0) {
       result.curatedSkills = curatedSkills.map(s => ({
