@@ -7,7 +7,7 @@ import {
   Trophy, Zap, Target, Play, ArrowUpDown, Crown, Medal, Award,
   UserPlus, Share2, Search, GraduationCap, Users, MessageCircle,
   Gamepad2, Clock, Flame, Eye, TrendingUp, Briefcase, Send, X,
-  UserCheck, CheckCircle2,
+  UserCheck, CheckCircle2, Bell,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
