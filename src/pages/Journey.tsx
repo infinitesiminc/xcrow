@@ -1,5 +1,4 @@
 import { useState, useEffect, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -83,16 +82,16 @@ export default function Journey() {
     return (
       <>
         <Navbar />
-        <div className="min-h-[calc(100vh-56px)] overflow-y-auto" style={{ background: "linear-gradient(180deg, hsl(240, 10%, 4%), hsl(240, 8%, 8%))" }}>
-          <div className="border-b border-white/5" style={{ background: "hsla(240, 10%, 6%, 0.9)" }}>
+        <div className="min-h-[calc(100vh-56px)] overflow-y-auto" style={{ background: "linear-gradient(180deg, hsl(240, 10%, 5%), hsl(240, 8%, 7%))" }}>
+          <div className="border-b border-white/5">
             <PlayerHUD skills={skills} uniqueTasks={uniqueTasks} isEmpty={isEmpty} />
           </div>
-          <div className="border-b border-white/5" style={{ background: "hsla(240, 10%, 6%, 0.9)" }}>
+          <div className="border-b border-white/5">
             <div className="min-h-[400px]">
               <CompactSkillGrid skills={skills} skillTasks={skillTasks} />
             </div>
           </div>
-          <div style={{ background: "hsla(240, 10%, 6%, 0.9)" }}>
+          <div>
             <IntelFeed skills={skills} savedRoles={savedRoles} />
           </div>
           <StickyTicker />
@@ -101,46 +100,37 @@ export default function Journey() {
     );
   }
 
-  // Desktop: fixed-height 3-column grid
+  // Desktop: fixed-height 3-column RPG layout
   return (
     <>
       <Navbar />
       <div
         className="h-[calc(100vh-56px)] overflow-hidden flex flex-col"
-        style={{ background: "linear-gradient(180deg, hsl(240, 10%, 4%), hsl(240, 8%, 8%))" }}
+        style={{ background: "linear-gradient(180deg, hsl(240, 10%, 5%), hsl(240, 8%, 7%))" }}
       >
-        {/* Ambient glow */}
-          <div className="pointer-events-none absolute inset-0 overflow-hidden">
-          <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] rounded-full opacity-[0.02]" style={{ background: "radial-gradient(circle, hsl(180, 40%, 50%), transparent 70%)" }} />
-          <div className="absolute bottom-1/3 right-1/4 w-[400px] h-[400px] rounded-full opacity-[0.02]" style={{ background: "radial-gradient(circle, hsl(270, 40%, 55%), transparent 70%)" }} />
-        </div>
-
         {/* 3-column grid */}
-        <div className="flex-1 grid grid-cols-[220px_1fr_250px] gap-0 min-h-0 overflow-hidden relative z-10">
-          {/* Left — Player HUD */}
+        <div className="flex-1 grid grid-cols-[240px_1fr_260px] gap-0 min-h-0 overflow-hidden relative z-10">
+          {/* Left — Player HUD / Character Sheet */}
           <div
-            className="border-r border-white/5 relative"
-            style={{ background: "hsl(240 10% 10%)", border: "1px solid hsl(240 10% 16%)" }}
+            className="border-r border-white/[0.04] relative overflow-hidden"
+            style={{ background: "hsl(240, 10%, 7%)" }}
           >
-            <div className="absolute top-0 left-0 right-0 h-[2px]" style={{ background: "linear-gradient(90deg, hsl(270 40% 55%), hsl(180 40% 50%))" }} />
             <PlayerHUD skills={skills} uniqueTasks={uniqueTasks} isEmpty={isEmpty} />
           </div>
 
-          {/* Center — Skill Map */}
+          {/* Center — Skill Tree */}
           <div
-            className="relative"
-            style={{ background: "hsl(240 10% 8%)" }}
+            className="relative overflow-hidden"
+            style={{ background: "hsl(240, 10%, 6%)" }}
           >
-            <div className="absolute top-0 left-0 right-0 h-[2px]" style={{ background: "linear-gradient(90deg, hsl(180 40% 50%), hsl(270 40% 55%), hsl(330 45% 50%))" }} />
             <CompactSkillGrid skills={skills} skillTasks={skillTasks} />
           </div>
 
-          {/* Right — Intel Feed */}
+          {/* Right — Quest Log */}
           <div
-            className="border-l border-white/5 relative"
-            style={{ background: "hsl(240 10% 10%)", border: "1px solid hsl(240 10% 16%)" }}
+            className="border-l border-white/[0.04] relative overflow-hidden"
+            style={{ background: "hsl(240, 10%, 7%)" }}
           >
-            <div className="absolute top-0 left-0 right-0 h-[2px]" style={{ background: "linear-gradient(90deg, hsl(330 45% 50%), hsl(270 40% 55%))" }} />
             <IntelFeed skills={skills} savedRoles={savedRoles} />
           </div>
         </div>
