@@ -210,9 +210,9 @@ export default function Students() {
                 <Blocks className="h-5 w-5 text-brand-mid" />
                 <span className="text-sm font-mono text-muted-foreground tracking-widest uppercase">The Skill Stack</span>
               </div>
-              <h2 className="text-3xl sm:text-4xl font-bold mb-4">Every job is a stack of skills. We show you which ones matter.</h2>
+              <h2 className="text-3xl sm:text-4xl font-bold mb-4">Every job is a stack of skills. AI reshuffles the deck — and adds new cards on top.</h2>
               <p className="text-muted-foreground max-w-xl mx-auto">
-                Different roles share the same underlying skills — learn one, and you unlock many.
+                Routine tasks shift to AI. Higher-purpose tasks emerge. The skills that define your value are moving up.
               </p>
             </motion.div>
 
