@@ -404,6 +404,19 @@ serve(async (req) => {
                       additionalProperties: false,
                     },
                   },
+                  compensation: {
+                    type: "object",
+                    description: "Salary/compensation data extracted from the JD. Only populate if explicitly mentioned.",
+                    properties: {
+                      salaryMin: { type: "number", description: "Minimum salary as integer" },
+                      salaryMax: { type: "number", description: "Maximum salary as integer" },
+                      salaryCurrency: { type: "string", description: "ISO currency code (e.g. USD, GBP, EUR)" },
+                      salaryPeriod: { type: "string", enum: ["annual", "hourly"], description: "Keep original period" },
+                      equityText: { type: "string", description: "Equity/stock/RSU text if mentioned" },
+                    },
+                    required: ["salaryMin", "salaryMax", "salaryCurrency", "salaryPeriod"],
+                    additionalProperties: false,
+                  },
                 },
                 required: ["extractedJobTitle", "summary", "tasks", "skills"],
                 additionalProperties: false,
@@ -480,6 +493,21 @@ serve(async (req) => {
       tasks: analysis.tasks,
       skills: analysis.skills,
     };
+
+    // Add compensation data if extracted
+    if (analysis.compensation && analysis.compensation.salaryMin) {
+      result.compensation = analysis.compensation;
+      // Store salary to DB if we had a matched job
+      if (matchedJob) {
+        await sb.from("jobs").update({
+          salary_min: analysis.compensation.salaryMin,
+          salary_max: analysis.compensation.salaryMax,
+          salary_currency: analysis.compensation.salaryCurrency || "USD",
+          salary_period: analysis.compensation.salaryPeriod || "annual",
+          ...(analysis.compensation.equityText ? { equity_text: analysis.compensation.equityText } : {}),
+        }).eq("id", matchedJob.id);
+      }
+    }
 
     // Add curated skills from DB
     if (curatedSkills.length > 0) {

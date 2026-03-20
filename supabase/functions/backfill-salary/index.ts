@@ -5,7 +5,7 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const BATCH_SIZE = 20;
+const BATCH_SIZE = 3;
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -18,16 +18,22 @@ Deno.serve(async (req) => {
     const lovableKey = Deno.env.get("LOVABLE_API_KEY")!;
     const sb = createClient(supabaseUrl, serviceKey);
 
-    const { offset = 0, dry_run = false } = await req.json().catch(() => ({}));
+    const { offset = 0, dry_run = false, company_id = null } = await req.json().catch(() => ({}));
 
-    // Fetch jobs that have descriptions and no salary yet
-    const { data: jobs, error } = await sb
+    console.log("Starting backfill, offset:", offset, "dry_run:", dry_run, "company_id:", company_id);
+    // Fetch jobs that have descriptions with likely salary data
+    let query = sb
       .from("jobs")
       .select("id, title, description")
       .not("description", "is", null)
       .is("salary_min", null)
-      .gt("description", "")
-      .range(offset, offset + BATCH_SIZE - 1);
+      .order("imported_at", { ascending: false });
+    
+    if (company_id) {
+      query = query.eq("company_id", company_id);
+    }
+    
+    const { data: jobs, error } = await query.range(offset, offset + BATCH_SIZE - 1);
 
     if (error) throw error;
     if (!jobs || jobs.length === 0) {
@@ -43,8 +49,8 @@ Deno.serve(async (req) => {
 
     // Process each job
     for (const job of jobs) {
-      // Truncate description to save tokens
-      const desc = (job.description || "").slice(0, 3000);
+      // Send full description (up to 8000 chars) to capture salary info anywhere
+      const desc = (job.description || "").slice(0, 8000);
 
       const prompt = `Extract salary/compensation information from this job posting. If no salary info is found, return null values.
 
