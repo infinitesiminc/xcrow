@@ -77,7 +77,8 @@ function positionNodes(category: SkillCategory, cx: number, cy: number, taxonomy
   });
 }
 
-export function buildMapLayout(): IslandLayout[] {
+export function buildMapLayout(taxonomy?: TaxonomySkill[]): IslandLayout[] {
+  const source = taxonomy || SKILL_TAXONOMY;
   const categories: SkillCategory[] = [
     "technical", "analytical", "communication",
     "leadership", "creative", "compliance",
@@ -89,7 +90,7 @@ export function buildMapLayout(): IslandLayout[] {
       category: cat,
       cx,
       cy,
-      nodes: positionNodes(cat, cx, cy),
+      nodes: positionNodes(cat, cx, cy, source),
       theme: ISLAND_THEMES[cat],
     };
   });
