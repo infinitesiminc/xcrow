@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Briefcase, Building2, Loader2, GraduationCap, BookOpen, ChevronRight } from "lucide-react";
+import { Briefcase, Building2, Loader2, GraduationCap, BookOpen, ChevronRight, Search, Target, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -24,7 +24,13 @@ interface SchoolProgram {
   degree_type: string | null;
 }
 
-type Step = "role" | "program";
+interface TargetRole {
+  job_id: string;
+  title: string;
+  company: string | null;
+}
+
+type Step = "role" | "targets" | "program";
 
 export default function OnboardingModal({ open, onComplete, userId }: OnboardingModalProps) {
   const [step, setStep] = useState<Step>("role");
@@ -32,6 +38,12 @@ export default function OnboardingModal({ open, onComplete, userId }: Onboarding
   const [company, setCompany] = useState("");
   const [saving, setSaving] = useState(false);
   const { toast } = useToast();
+
+  // Target roles state
+  const [targetRoles, setTargetRoles] = useState<TargetRole[]>([]);
+  const [roleSearch, setRoleSearch] = useState("");
+  const [roleResults, setRoleResults] = useState<TargetRole[]>([]);
+  const [searchingRoles, setSearchingRoles] = useState(false);
 
   // School-specific state
   const [schoolSeat, setSchoolSeat] = useState<{ school_id: string; school_name: string } | null>(null);
@@ -62,6 +74,35 @@ export default function OnboardingModal({ open, onComplete, userId }: Onboarding
     })();
   }, [open, userId]);
 
+  // Search roles for target picker
+  useEffect(() => {
+    if (roleSearch.length < 2) { setRoleResults([]); return; }
+    const timer = setTimeout(async () => {
+      setSearchingRoles(true);
+      const { data } = await supabase
+        .from("jobs")
+        .select("id, title, companies(name)")
+        .ilike("title", `%${roleSearch}%`)
+        .gt("augmented_percent", 0)
+        .limit(8);
+
+      if (data) {
+        const seen = new Set<string>();
+        const unique: TargetRole[] = [];
+        for (const j of data as any[]) {
+          const key = `${j.title}|${j.companies?.name || ""}`.toLowerCase();
+          if (!seen.has(key) && !targetRoles.some(t => t.job_id === j.id)) {
+            seen.add(key);
+            unique.push({ job_id: j.id, title: j.title, company: j.companies?.name || null });
+          }
+        }
+        setRoleResults(unique.slice(0, 5));
+      }
+      setSearchingRoles(false);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [roleSearch, targetRoles]);
+
   // Fetch programs when moving to program step
   useEffect(() => {
     if (step !== "program" || !schoolSeat) return;
@@ -73,15 +114,11 @@ export default function OnboardingModal({ open, onComplete, userId }: Onboarding
         .eq("school_id", schoolSeat.school_id)
         .order("program_name");
 
-      // Deduplicate by program_name + degree_type
       const seen = new Set<string>();
       const unique: SchoolProgram[] = [];
       for (const p of (data || []) as SchoolProgram[]) {
         const key = `${p.program_name}|${p.degree_type}`;
-        if (!seen.has(key)) {
-          seen.add(key);
-          unique.push(p);
-        }
+        if (!seen.has(key)) { seen.add(key); unique.push(p); }
       }
       setPrograms(unique);
       setLoadingPrograms(false);
@@ -91,20 +128,15 @@ export default function OnboardingModal({ open, onComplete, userId }: Onboarding
   const handleRoleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!jobTitle.trim()) return;
+    setStep("targets");
+  };
 
-    // If student has school seat, go to program picker
-    if (schoolSeat && programs.length === 0) {
-      // Pre-fetch programs
-      setStep("program");
-      return;
-    }
+  const handleTargetsNext = () => {
     if (schoolSeat) {
       setStep("program");
       return;
     }
-
-    // Non-school user: save directly
-    await saveProfile();
+    saveProfile();
   };
 
   const saveProfile = async (programName?: string) => {
@@ -115,12 +147,10 @@ export default function OnboardingModal({ open, onComplete, userId }: Onboarding
       job_title: jobTitle.trim(),
       company: normalizedCompany || null,
       onboarding_completed: true,
+      target_roles: targetRoles.length > 0 ? targetRoles : [],
     };
 
-    if (programName) {
-      updateData.program_name = programName;
-    }
-
+    if (programName) updateData.program_name = programName;
     if (schoolSeat) {
       updateData.school_name = schoolSeat.school_name;
       updateData.career_stage = "student";
@@ -144,11 +174,8 @@ export default function OnboardingModal({ open, onComplete, userId }: Onboarding
   };
 
   const handleSkip = async () => {
-    if (step === "program") {
-      // Skip program selection but still save role
-      await saveProfile();
-      return;
-    }
+    if (step === "targets") { handleTargetsNext(); return; }
+    if (step === "program") { await saveProfile(); return; }
     await supabase
       .from("profiles")
       .update({
@@ -157,6 +184,17 @@ export default function OnboardingModal({ open, onComplete, userId }: Onboarding
       } as any)
       .eq("id", userId);
     onComplete("", "");
+  };
+
+  const addTargetRole = (role: TargetRole) => {
+    if (targetRoles.length >= 3) return;
+    setTargetRoles(prev => [...prev, role]);
+    setRoleSearch("");
+    setRoleResults([]);
+  };
+
+  const removeTargetRole = (jobId: string) => {
+    setTargetRoles(prev => prev.filter(r => r.job_id !== jobId));
   };
 
   const filteredPrograms = programs.filter(
@@ -178,13 +216,7 @@ export default function OnboardingModal({ open, onComplete, userId }: Onboarding
       <DialogContent className="sm:max-w-md p-6" onPointerDownOutside={(e) => e.preventDefault()}>
         <AnimatePresence mode="wait">
           {step === "role" && (
-            <motion.div
-              key="role"
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              transition={{ duration: 0.2 }}
-            >
+            <motion.div key="role" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.2 }}>
               <DialogHeader>
                 <DialogTitle className="text-xl font-sans font-bold">
                   {schoolSeat ? `Welcome, ${schoolSeat.school_name} student!` : "Tell us about your role"}
@@ -247,23 +279,97 @@ export default function OnboardingModal({ open, onComplete, userId }: Onboarding
                     Skip for now
                   </Button>
                   <Button type="submit" className="flex-1" disabled={saving || !jobTitle.trim()}>
-                    {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-                    {schoolSeat ? "Next" : "Get started"}
-                    {schoolSeat && <ChevronRight className="h-3.5 w-3.5 ml-1" />}
+                    Next <ChevronRight className="h-3.5 w-3.5 ml-1" />
                   </Button>
                 </div>
               </form>
             </motion.div>
           )}
 
+          {step === "targets" && (
+            <motion.div key="targets" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} transition={{ duration: 0.2 }}>
+              <DialogHeader>
+                <DialogTitle className="text-xl font-sans font-bold flex items-center gap-2">
+                  <Target className="h-5 w-5 text-primary" />
+                  Set your goals
+                </DialogTitle>
+                <DialogDescription className="text-sm">
+                  Pick 1-3 roles you want to be ready for. We'll build your skill map around these targets.
+                </DialogDescription>
+              </DialogHeader>
+
+              <div className="mt-3 space-y-3">
+                {/* Selected targets */}
+                {targetRoles.length > 0 && (
+                  <div className="flex flex-wrap gap-2">
+                    {targetRoles.map(role => (
+                      <motion.div
+                        key={role.job_id}
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        className="flex items-center gap-1.5 rounded-full border border-primary/25 bg-primary/8 px-3 py-1.5"
+                      >
+                        <span className="text-xs font-medium text-foreground truncate max-w-[140px]">{role.title}</span>
+                        {role.company && <span className="text-[10px] text-muted-foreground">@ {role.company}</span>}
+                        <button onClick={() => removeTargetRole(role.job_id)} className="ml-0.5 hover:text-destructive transition-colors">
+                          <X className="h-3 w-3" />
+                        </button>
+                      </motion.div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Search */}
+                {targetRoles.length < 3 && (
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <input
+                      type="text"
+                      placeholder="Search roles… e.g. Product Manager, Data Analyst"
+                      value={roleSearch}
+                      onChange={(e) => setRoleSearch(e.target.value)}
+                      className="w-full rounded-xl border border-input bg-background pl-10 pr-3 py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-ring"
+                      autoFocus
+                    />
+                    {searchingRoles && <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-muted-foreground" />}
+                  </div>
+                )}
+
+                {/* Search results */}
+                {roleResults.length > 0 && (
+                  <div className="max-h-[200px] overflow-y-auto space-y-1 pr-1">
+                    {roleResults.map(role => (
+                      <button
+                        key={role.job_id}
+                        onClick={() => addTargetRole(role)}
+                        className="w-full text-left rounded-xl border border-border/40 bg-card hover:border-primary/30 px-3 py-2.5 transition-all"
+                      >
+                        <p className="text-sm font-medium text-foreground">{role.title}</p>
+                        {role.company && <p className="text-[11px] text-muted-foreground">{role.company}</p>}
+                      </button>
+                    ))}
+                  </div>
+                )}
+
+                {roleSearch.length >= 2 && roleResults.length === 0 && !searchingRoles && (
+                  <p className="text-sm text-muted-foreground text-center py-4">No roles found — try different keywords</p>
+                )}
+
+                <div className="flex gap-3 pt-1">
+                  <Button type="button" variant="ghost" className="flex-1" onClick={handleSkip}>
+                    {targetRoles.length === 0 ? "Skip" : ""}
+                  </Button>
+                  <Button type="button" className="flex-1" disabled={saving} onClick={handleTargetsNext}>
+                    {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                    {targetRoles.length > 0 ? `Continue (${targetRoles.length} role${targetRoles.length > 1 ? "s" : ""})` : "Continue without goals"}
+                  </Button>
+                </div>
+              </div>
+            </motion.div>
+          )}
+
           {step === "program" && (
-            <motion.div
-              key="program"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: 20 }}
-              transition={{ duration: 0.2 }}
-            >
+            <motion.div key="program" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} transition={{ duration: 0.2 }}>
               <DialogHeader>
                 <DialogTitle className="text-xl font-sans font-bold flex items-center gap-2">
                   <BookOpen className="h-5 w-5 text-primary" />
@@ -275,7 +381,6 @@ export default function OnboardingModal({ open, onComplete, userId }: Onboarding
               </DialogHeader>
 
               <div className="mt-3 space-y-3">
-                {/* Search */}
                 <input
                   type="text"
                   placeholder="Search programs…"
@@ -285,7 +390,6 @@ export default function OnboardingModal({ open, onComplete, userId }: Onboarding
                   autoFocus
                 />
 
-                {/* Program list */}
                 <div className="max-h-[280px] overflow-y-auto space-y-1.5 pr-1">
                   {loadingPrograms ? (
                     <div className="flex items-center justify-center py-8">
@@ -332,12 +436,7 @@ export default function OnboardingModal({ open, onComplete, userId }: Onboarding
                   <Button type="button" variant="ghost" className="flex-1" onClick={handleSkip}>
                     Skip
                   </Button>
-                  <Button
-                    type="button"
-                    className="flex-1"
-                    disabled={saving}
-                    onClick={handleProgramSelect}
-                  >
+                  <Button type="button" className="flex-1" disabled={saving} onClick={handleProgramSelect}>
                     {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
                     {selectedProgram ? "Start Learning" : "Continue without program"}
                   </Button>
