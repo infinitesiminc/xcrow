@@ -4,9 +4,10 @@
  */
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Bookmark, Play, X, Trophy } from "lucide-react";
+import { Bookmark, Play, X, Trophy, Search } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { Input } from "@/components/ui/input";
 import { RoleCard, type RoleResult } from "@/components/InlineRoleCarousel";
 
 interface MyRolesPanelProps {
