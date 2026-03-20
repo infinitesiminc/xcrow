@@ -82,7 +82,7 @@ export default function PlayerHUD({ skills, uniqueTasks, isEmpty }: PlayerHUDPro
         <div className="flex items-center gap-1.5 mb-2 mt-1">
           <ShieldCheck className="h-3 w-3" style={{ color: "hsl(270, 45%, 60%)" }} />
           <span className="text-[9px] font-bold uppercase tracking-[0.15em] text-white/50">Human Edges</span>
-          <span className="ml-auto text-[9px] font-mono text-white/20">
+          <span className="ml-auto text-[9px] font-mono text-white/30">
             {discoveredEdges.length}/{discoveredEdges.length + lockedEdges.length}
           </span>
         </div>
