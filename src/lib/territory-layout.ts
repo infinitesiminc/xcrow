@@ -5,7 +5,7 @@
  * Each island has skill nodes positioned around a central point.
  */
 
-import { type SkillCategory, SKILL_TAXONOMY } from "./skill-map";
+import { type SkillCategory, SKILL_TAXONOMY, type TaxonomySkill } from "./skill-map";
 
 export interface NodePosition {
   x: number;
@@ -58,8 +58,8 @@ const ISLAND_CENTERS: Record<SkillCategory, { cx: number; cy: number }> = {
  * Position skill nodes around each island center.
  * Uses a radial layout with some randomness for organic feel.
  */
-function positionNodes(category: SkillCategory, cx: number, cy: number): NodePosition[] {
-  const skills = SKILL_TAXONOMY.filter(s => s.category === category);
+function positionNodes(category: SkillCategory, cx: number, cy: number, taxonomy: TaxonomySkill[]): NodePosition[] {
+  const skills = taxonomy.filter(s => s.category === category);
   const count = skills.length;
   const radius = count <= 4 ? 55 : count <= 6 ? 65 : 75;
 
@@ -77,7 +77,8 @@ function positionNodes(category: SkillCategory, cx: number, cy: number): NodePos
   });
 }
 
-export function buildMapLayout(): IslandLayout[] {
+export function buildMapLayout(taxonomy?: TaxonomySkill[]): IslandLayout[] {
+  const source = taxonomy || SKILL_TAXONOMY;
   const categories: SkillCategory[] = [
     "technical", "analytical", "communication",
     "leadership", "creative", "compliance",
@@ -89,7 +90,7 @@ export function buildMapLayout(): IslandLayout[] {
       category: cat,
       cx,
       cy,
-      nodes: positionNodes(cat, cx, cy),
+      nodes: positionNodes(cat, cx, cy, source),
       theme: ISLAND_THEMES[cat],
     };
   });
@@ -99,7 +100,8 @@ export function buildMapLayout(): IslandLayout[] {
  * Build connections between skills within the same island
  * and a few cross-island bridges.
  */
-export function buildConnections(layout: IslandLayout[]): PathConnection[] {
+export function buildConnections(layout: IslandLayout[], taxonomy?: TaxonomySkill[]): PathConnection[] {
+  const source = taxonomy || SKILL_TAXONOMY;
   const connections: PathConnection[] = [];
 
   // Intra-island: connect adjacent nodes in radial order
@@ -130,8 +132,8 @@ export function buildConnections(layout: IslandLayout[]): PathConnection[] {
       (c.from === from && c.to === to) || (c.from === to && c.to === from)
     );
     if (!exists) {
-      const fromCat = SKILL_TAXONOMY.find(s => s.id === from)?.category;
-      const toCat = SKILL_TAXONOMY.find(s => s.id === to)?.category;
+      const fromCat = source.find(s => s.id === from)?.category;
+      const toCat = source.find(s => s.id === to)?.category;
       connections.push({ from, to, crossIsland: fromCat !== toCat });
     }
   }

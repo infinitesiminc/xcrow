@@ -1,6 +1,7 @@
 /**
  * TerritoryMap — RPG-style SVG skill map with island regions,
  * connecting paths, fog-of-war, and a Crow avatar.
+ * Now supports dynamic skills from DB with rarity glow effects.
  */
 
 import { useMemo, useState, useRef, useCallback } from "react";
@@ -13,6 +14,7 @@ import {
   SKILL_TAXONOMY,
   type SkillCategory,
   type SkillXP,
+  type TaxonomySkill,
 } from "@/lib/skill-map";
 import { calculateGrowth } from "@/lib/skill-growth";
 import {
@@ -27,12 +29,22 @@ import SkillNode from "./SkillNode";
 
 type TileState = "claimed" | "frontier" | "undiscovered" | "contested" | "demo-lit" | "demo-dim";
 
+export interface SkillRarityInfo {
+  id: string;
+  rarity: string;
+  dropExpiresAt: string | null;
+  iconEmoji: string | null;
+  description: string | null;
+}
+
 interface TerritoryMapProps {
   skills?: SkillXP[];
   targetSkillIds?: Set<string>;
   demoMode?: boolean;
   highlightedSkillIds?: Set<string>;
   onTileClick?: (skillId: string, skillName: string) => void;
+  taxonomy?: TaxonomySkill[];
+  rarityMap?: Map<string, SkillRarityInfo>;
 }
 
 export default function TerritoryMap({
@@ -41,9 +53,12 @@ export default function TerritoryMap({
   demoMode = false,
   highlightedSkillIds,
   onTileClick,
+  taxonomy,
+  rarityMap,
 }: TerritoryMapProps) {
-  const layout = useMemo(() => buildMapLayout(), []);
-  const connections = useMemo(() => buildConnections(layout), [layout]);
+  const source = taxonomy || SKILL_TAXONOMY;
+  const layout = useMemo(() => buildMapLayout(source), [source]);
+  const connections = useMemo(() => buildConnections(layout, source), [layout, source]);
 
   // Pan & zoom state
   const svgRef = useRef<SVGSVGElement>(null);
@@ -82,7 +97,7 @@ export default function TerritoryMap({
     const skillMap = new Map(skills?.map(s => [s.id, s]));
     const claimedIds = new Set(skills?.filter(s => s.xp > 0).map(s => s.id) || []);
 
-    for (const skill of SKILL_TAXONOMY) {
+    for (const skill of source) {
       const sx = skillMap.get(skill.id);
 
       let state: TileState;
@@ -114,7 +129,7 @@ export default function TerritoryMap({
     }
 
     return states;
-  }, [skills, targetSkillIds, demoMode, highlightedSkillIds]);
+  }, [skills, targetSkillIds, demoMode, highlightedSkillIds, source]);
 
   // Build node position lookup
   const nodePositions = useMemo(() => {
@@ -143,7 +158,7 @@ export default function TerritoryMap({
             </span>
           </div>
           <span className="text-xs font-mono text-muted-foreground">
-            {litCount}/{SKILL_TAXONOMY.length} discovered
+            {litCount}/{source.length} discovered
           </span>
         </div>
 
@@ -260,8 +275,11 @@ export default function TerritoryMap({
 
                 {/* Skill nodes */}
                 {island.nodes.map(node => {
-                  const skill = SKILL_TAXONOMY.find(s => s.id === node.skillId)!;
-                  const data = skillStates.get(node.skillId)!;
+                  const skill = source.find(s => s.id === node.skillId);
+                  if (!skill) return null;
+                  const data = skillStates.get(node.skillId);
+                  if (!data) return null;
+                  const rarityInfo = rarityMap?.get(node.skillId);
 
                   return (
                     <SkillNode
@@ -276,6 +294,9 @@ export default function TerritoryMap({
                       level={data.level}
                       humanEdge={skill.humanEdge}
                       baseHue={island.theme.baseHue}
+                      rarity={rarityInfo?.rarity}
+                      dropExpiresAt={rarityInfo?.dropExpiresAt}
+                      iconEmoji={rarityInfo?.iconEmoji}
                       onClick={() => onTileClick?.(node.skillId, skill.name)}
                     />
                   );

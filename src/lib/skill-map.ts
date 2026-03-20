@@ -140,7 +140,8 @@ export interface SimRecord {
   domain_judgment_score?: number | null;
 }
 
-export function aggregateSkillXP(sims: SimRecord[]): SkillXP[] {
+export function aggregateSkillXP(sims: SimRecord[], taxonomy?: TaxonomySkill[]): SkillXP[] {
+  const source = taxonomy || SKILL_TAXONOMY;
   const xpMap = new Map<string, { xp: number; taskCount: number; toolScores: number[]; adaptiveScores: number[]; humanScores: number[]; domainScores: number[] }>();
 
   const getEntry = (id: string) => {
@@ -159,7 +160,7 @@ export function aggregateSkillXP(sims: SimRecord[]): SkillXP[] {
         entry.taskCount++;
       }
     } else {
-      skillIds = matchTaskToSkills(sim.task_name, sim.job_title);
+      skillIds = matchTaskToSkills(sim.task_name, sim.job_title, source);
       if (skillIds.length === 0) continue;
       const xpEach = Math.round(XP_PER_SIM / skillIds.length);
       for (const id of skillIds) {
@@ -181,7 +182,7 @@ export function aggregateSkillXP(sims: SimRecord[]): SkillXP[] {
 
   const avg = (arr: number[]) => arr.length > 0 ? Math.round(arr.reduce((a, b) => a + b, 0) / arr.length) : undefined;
 
-  return SKILL_TAXONOMY.map(skill => {
+  return source.map(skill => {
     const entry = xpMap.get(skill.id) || { xp: 0, taskCount: 0, toolScores: [], adaptiveScores: [], humanScores: [], domainScores: [] };
     const lvl = getLevel(entry.xp);
     return {

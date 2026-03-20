@@ -11,12 +11,13 @@ import RolePreviewPanel from "@/components/RolePreviewPanel";
 import InlineRoleCarousel, { BatchedRoleCarousel, type RoleResult, type RoleBatch } from "@/components/InlineRoleCarousel";
 import SkillSuggestionCards from "@/components/SkillSuggestionCards";
 import HumanEdgesCard, { type EdgeContext } from "@/components/HumanEdgesCard";
-import TerritoryMap from "@/components/territory/TerritoryMap";
+import TerritoryMap, { type SkillRarityInfo } from "@/components/territory/TerritoryMap";
 import TerritoryOverlay from "@/components/territory/TerritoryOverlay";
 import CompactHUD from "@/components/territory/CompactHUD";
 import MyRolesPanel from "@/components/territory/MyRolesPanel";
 import CastleNode from "@/components/territory/CastleNode";
 import { getCastleState } from "@/lib/castle-levels";
+import { useSkills, type DbSkill } from "@/hooks/use-skills";
 import {
   SKILL_TAXONOMY,
   CATEGORY_META,
@@ -24,6 +25,7 @@ import {
   type SkillCategory,
   type SkillXP,
   type SimRecord,
+  type TaxonomySkill,
 } from "@/lib/skill-map";
 
 const CATEGORY_ORDER: SkillCategory[] = [
@@ -111,6 +113,37 @@ type RightTab = "territory" | "roles";
 const Index = () => {
   const { profile, user } = useAuth();
   const isMobile = useIsMobile();
+  const { skills: dbSkills } = useSkills();
+
+  // Convert DB skills to TaxonomySkill format for layout/aggregation
+  const taxonomy: TaxonomySkill[] = useMemo(() =>
+    dbSkills.map(s => ({
+      id: s.id,
+      name: s.name,
+      category: s.category,
+      keywords: s.keywords,
+      aiExposure: s.aiExposure,
+      humanEdge: s.humanEdge,
+    })),
+    [dbSkills]
+  );
+
+  // Build rarity map for special drop styling
+  const rarityMap = useMemo(() => {
+    const m = new globalThis.Map<string, SkillRarityInfo>();
+    for (const s of dbSkills) {
+      if (s.rarity !== "common" || s.dropExpiresAt) {
+        m.set(s.id, {
+          id: s.id,
+          rarity: s.rarity,
+          dropExpiresAt: s.dropExpiresAt,
+          iconEmoji: s.iconEmoji,
+          description: s.description,
+        });
+      }
+    }
+    return m;
+  }, [dbSkills]);
 
   const [hasInteracted, setHasInteracted] = useState(false);
   const [selectedRole, setSelectedRole] = useState<RoleResult | null>(null);
@@ -159,7 +192,7 @@ const Index = () => {
       ]);
 
       const sims = (simsRes.data || []) as SimRecord[];
-      setRealSkills(aggregateSkillXP(sims));
+      setRealSkills(aggregateSkillXP(sims, taxonomy));
 
       const targetRoles = ((profileRes.data as any)?.target_roles || []) as {
         job_id: string;
@@ -175,7 +208,7 @@ const Index = () => {
           for (const s of c.skill_names || []) names.add(s.toLowerCase());
         }
         const ids = new Set<string>();
-        for (const skill of SKILL_TAXONOMY) {
+        for (const skill of taxonomy) {
           if (names.has(skill.name.toLowerCase())) ids.add(skill.id);
           for (const kw of skill.keywords) {
             if (names.has(kw)) ids.add(skill.id);
@@ -184,7 +217,7 @@ const Index = () => {
         setTargetSkillIds(ids);
       }
     })();
-  }, [user]);
+  }, [user, taxonomy]);
 
   // Auto-open territory after first simulation completion (or demo seed)
   useEffect(() => {
@@ -490,7 +523,7 @@ const Index = () => {
 
                     <TooltipProvider delayDuration={200}>
                       <div className="flex flex-wrap gap-3 justify-center">
-                        {SKILL_TAXONOMY.map((skill, si) => {
+                        {taxonomy.map((skill, si) => {
                           const sx = skillMap.get(skill.id);
                           const xp = sx?.xp ?? 0;
                           const castle = getCastleState(xp);
