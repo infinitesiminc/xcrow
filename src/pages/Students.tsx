@@ -392,8 +392,19 @@ export default function Students() {
         {/* ═══ SOCIAL PROOF — Company Marquee ═══ */}
         <Section className="py-16 px-6">
           <div className="max-w-5xl mx-auto">
-            <motion.div variants={fadeUp} custom={0} className="text-center mb-8">
-              <span className="text-sm font-mono text-muted-foreground tracking-widest uppercase">Click a company to explore real roles</span>
+            <motion.div variants={fadeUp} custom={0} className="text-center mb-8 relative">
+              <motion.span
+                className="text-sm font-mono tracking-widest uppercase bg-clip-text text-transparent bg-gradient-to-r from-muted-foreground via-primary to-muted-foreground bg-[length:200%_100%]"
+                animate={{ backgroundPosition: ["100% 0%", "-100% 0%"] }}
+                transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
+              >
+                Click a company to explore real roles
+              </motion.span>
+              <motion.div
+                className="absolute -bottom-2 left-1/2 h-[1px] bg-gradient-to-r from-transparent via-primary/60 to-transparent"
+                animate={{ width: ["0%", "60%", "0%"], x: ["-50%", "-50%", "-50%"] }}
+                transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+              />
             </motion.div>
             <motion.div variants={fadeUp} custom={1}>
               <CompanyMarquee
