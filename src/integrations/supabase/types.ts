@@ -674,6 +674,7 @@ export type Database = {
           department: string | null
           description: string | null
           difficulty: number | null
+          equity_text: string | null
           external_id: string | null
           id: string
           imported_at: string
@@ -701,6 +702,7 @@ export type Database = {
           department?: string | null
           description?: string | null
           difficulty?: number | null
+          equity_text?: string | null
           external_id?: string | null
           id?: string
           imported_at?: string
@@ -728,6 +730,7 @@ export type Database = {
           department?: string | null
           description?: string | null
           difficulty?: number | null
+          equity_text?: string | null
           external_id?: string | null
           id?: string
           imported_at?: string
