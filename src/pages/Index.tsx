@@ -110,6 +110,7 @@ const Index = () => {
 
   // Accumulate role batches instead of replacing
   const handleRolesFound = useCallback((roles: RoleResult[]) => {
+    if (roles.length === 0) return; // Skip empty batches
     batchCounter.current += 1;
     const newBatch: RoleBatch = { id: batchCounter.current, roles };
     setRoleBatches((prev) => [...prev, newBatch]);
