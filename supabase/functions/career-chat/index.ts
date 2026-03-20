@@ -174,6 +174,27 @@ serve(async (req) => {
                 },
               },
             },
+            ...(journeyContext?.userId ? [{
+              type: "function" as const,
+              function: {
+                name: "check_readiness",
+                description: "Check how ready the student is for a specific job role. Returns skill match %, gap skills, practiced vs unpracticed tasks, and a prioritized practice plan. Use when the student asks 'how ready am I', 'what should I practice', 'am I prepared for X interview', or similar readiness questions.",
+                parameters: {
+                  type: "object",
+                  properties: {
+                    job_title: {
+                      type: "string",
+                      description: "The job title to check readiness for, e.g. 'Product Manager'",
+                    },
+                    company: {
+                      type: "string",
+                      description: "Optional company name to narrow down the specific role",
+                    },
+                  },
+                  required: ["job_title"],
+                },
+              },
+            }] : []),
           ],
         }),
       }
