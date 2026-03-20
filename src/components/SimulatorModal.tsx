@@ -1068,7 +1068,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                 </motion.div>
               )}
 
-
+              {phase === "done" && (
                 <motion.div
                   key="done"
                   initial={{ opacity: 0, y: 16 }}
