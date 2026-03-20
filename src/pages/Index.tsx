@@ -123,7 +123,7 @@ const Index = () => {
   const [myRolesTab, setMyRolesTab] = useState<"saved" | "practiced">("saved");
   const batchCounter = useRef(0);
   const [territoryOpen, setTerritoryOpen] = useState(false);
-  const [lastPracticedSkillId, setLastPracticedSkillId] = useState<string | null>(null);
+  const [lastPracticedSkillId, setLastPracticedSkillId] = useState<string | null>("code-dev");
   const [hasOpenedTerritory, setHasOpenedTerritory] = useState(false);
 
   const [realSkills, setRealSkills] = useState<SkillXP[]>([]);
