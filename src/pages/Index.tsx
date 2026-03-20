@@ -10,6 +10,7 @@ import SkillSuggestionCards from "@/components/SkillSuggestionCards";
 import HumanEdgesCard, { type EdgeContext } from "@/components/HumanEdgesCard";
 import TerritoryGrid from "@/components/territory/TerritoryGrid";
 import CompactHUD from "@/components/territory/CompactHUD";
+import MyRolesPanel from "@/components/territory/MyRolesPanel";
 import {
   SKILL_TAXONOMY,
   aggregateSkillXP,

@@ -3,7 +3,7 @@
  */
 
 import { useMemo } from "react";
-import { Shield, Target, Zap } from "lucide-react";
+import { Shield, Target, Zap, Bookmark } from "lucide-react";
 import { motion } from "framer-motion";
 import type { SkillXP } from "@/lib/skill-map";
 
@@ -25,9 +25,11 @@ interface CompactHUDProps {
   skills: SkillXP[];
   targetSkillIds: Set<string>;
   userName?: string;
+  onToggleRoles?: () => void;
+  rolesOpen?: boolean;
 }
 
-export default function CompactHUD({ skills, targetSkillIds, userName }: CompactHUDProps) {
+export default function CompactHUD({ skills, targetSkillIds, userName, onToggleRoles, rolesOpen }: CompactHUDProps) {
   const { totalXP, tier, claimed, total, coveragePct } = useMemo(() => {
     const totalXP = skills.reduce((sum, s) => sum + s.xp, 0);
     const tier = getTier(totalXP);
@@ -65,7 +67,7 @@ export default function CompactHUD({ skills, targetSkillIds, userName }: Compact
 
       {/* Coverage (only if they have target roles) */}
       {total > 0 && (
-        <div className="flex items-center gap-1.5 ml-auto">
+        <div className="flex items-center gap-1.5">
           <Target className="h-3 w-3 text-warning" />
           <div className="flex items-center gap-1.5">
             <div className="w-16 h-1.5 rounded-full bg-muted overflow-hidden">
@@ -84,7 +86,22 @@ export default function CompactHUD({ skills, targetSkillIds, userName }: Compact
         </div>
       )}
 
-      {userName && (
+      {/* My Roles toggle */}
+      {onToggleRoles && (
+        <button
+          onClick={onToggleRoles}
+          className={`ml-auto flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-medium transition-all active:scale-[0.97] ${
+            rolesOpen
+              ? "bg-primary/10 text-primary border border-primary/20"
+              : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+          }`}
+        >
+          <Bookmark className="h-3 w-3" />
+          My Roles
+        </button>
+      )}
+
+      {userName && !onToggleRoles && (
         <span className="text-[11px] text-muted-foreground ml-auto truncate max-w-[100px]">
           {userName}
         </span>
