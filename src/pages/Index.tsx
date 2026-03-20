@@ -274,6 +274,7 @@ const Index = () => {
                 inlineCards={false}
                 externalPrompt={externalPrompt}
                 onExternalPromptConsumed={() => setExternalPrompt(null)}
+                viewContext={viewContext}
               />
             </div>
           </div>
