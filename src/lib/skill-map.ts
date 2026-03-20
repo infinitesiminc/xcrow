@@ -53,7 +53,7 @@ export const SKILL_TAXONOMY: TaxonomySkill[] = [
   // ── Compliance ──
   { id: "regulatory", name: "Regulatory & Legal", category: "compliance", aiExposure: 45, keywords: ["regulatory", "compliance", "legal", "policy", "patent", "contract", "litigation", "governance", "privacy"], humanEdge: "Jurisdictional judgment" },
   { id: "audit-control", name: "Audit & Controls", category: "compliance", aiExposure: 70, keywords: ["audit", "reconciliation", "month-end", "internal control", "assurance", "financial statement"], humanEdge: "Materiality judgment" },
-  { id: "emotional-iq", name: "Emotional Intelligence", category: "compliance", aiExposure: 8, keywords: ["emotional intelligence", "empathy", "self-awareness", "conflict resolution", "interpersonal", "active listening"], humanEdge: "Human connection" },
+  { id: "emotional-iq", name: "Emotional Intelligence", category: "leadership", aiExposure: 8, keywords: ["emotional intelligence", "empathy", "self-awareness", "conflict resolution", "interpersonal", "active listening"], humanEdge: "Human connection" },
 ];
 
 export const CATEGORY_META: Record<SkillCategory, { label: string; emoji: string }> = {
