@@ -1,10 +1,10 @@
 /**
  * TerritoryOverlay — full-screen RPG map with isometric grid layout.
  * Skills placed on a diamond grid, connected by relationship lines.
- * Scrollable container larger than viewport for natural panning.
+ * Drag-to-pan + scroll + pinch zoom for natural exploration.
  */
 
-import { useMemo, useCallback, useRef, useEffect } from "react";
+import { useMemo, useCallback, useRef, useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Sparkles } from "lucide-react";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -32,20 +32,47 @@ export default function TerritoryOverlay({
   const posMap = useMemo(() => new Map(positions.map(p => [p.id, p])), [positions]);
   const canvasSize = useMemo(() => getCanvasSize(), []);
 
-  const scrollRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [pan, setPan] = useState({ x: 0, y: 0, scale: 1.2 });
+  const dragRef = useRef<{ sx: number; sy: number; px: number; py: number } | null>(null);
 
   const totalXP = useMemo(() => skills.reduce((sum, s) => sum + s.xp, 0), [skills]);
   const unlockedCount = useMemo(() => skills.filter((s) => s.xp >= 100).length, [skills]);
 
-  // Center scroll on open
+  // Center on open
   useEffect(() => {
-    if (open && scrollRef.current) {
-      const el = scrollRef.current;
-      const scrollX = (canvasSize.width - el.clientWidth) / 2;
-      const scrollY = (canvasSize.height - el.clientHeight) / 3;
-      el.scrollTo({ left: scrollX, top: scrollY, behavior: "instant" });
+    if (open && containerRef.current) {
+      const el = containerRef.current;
+      setPan({
+        x: -(canvasSize.width * 1.2 - el.clientWidth) / 2,
+        y: -(canvasSize.height * 1.2 - el.clientHeight) / 3,
+        scale: 1.2,
+      });
     }
   }, [open, canvasSize]);
+
+  const handleWheel = useCallback((e: React.WheelEvent) => {
+    e.preventDefault();
+    const factor = e.deltaY > 0 ? 0.93 : 1.07;
+    setPan(p => ({ ...p, scale: Math.max(0.5, Math.min(2.5, p.scale * factor)) }));
+  }, []);
+
+  const handlePointerDown = useCallback((e: React.PointerEvent) => {
+    if (e.button !== 0) return;
+    (e.target as HTMLElement).setPointerCapture?.(e.pointerId);
+    dragRef.current = { sx: e.clientX, sy: e.clientY, px: pan.x, py: pan.y };
+  }, [pan]);
+
+  const handlePointerMove = useCallback((e: React.PointerEvent) => {
+    if (!dragRef.current) return;
+    setPan(p => ({
+      ...p,
+      x: dragRef.current!.px + (e.clientX - dragRef.current!.sx),
+      y: dragRef.current!.py + (e.clientY - dragRef.current!.sy),
+    }));
+  }, []);
+
+  const handlePointerUp = useCallback(() => { dragRef.current = null; }, []);
 
   const handleNodeClick = useCallback((skillId: string) => {
     // Future: open skill detail / sim launcher
@@ -112,11 +139,15 @@ export default function TerritoryOverlay({
             </button>
           </motion.div>
 
-          {/* Scrollable Map */}
+          {/* Pannable Map */}
           <div
-            ref={scrollRef}
-            className="flex-1 overflow-auto"
-            style={{ scrollBehavior: "auto" }}
+            ref={containerRef}
+            className="flex-1 overflow-hidden select-none"
+            onWheel={handleWheel}
+            onPointerDown={handlePointerDown}
+            onPointerMove={handlePointerMove}
+            onPointerUp={handlePointerUp}
+            style={{ cursor: dragRef.current ? "grabbing" : "grab", touchAction: "none" }}
           >
             <TooltipProvider delayDuration={200}>
               <div
@@ -124,8 +155,8 @@ export default function TerritoryOverlay({
                 style={{
                   width: canvasSize.width,
                   height: canvasSize.height,
-                  minWidth: canvasSize.width,
-                  minHeight: canvasSize.height,
+                  transform: `translate(${pan.x}px, ${pan.y}px) scale(${pan.scale})`,
+                  transformOrigin: "0 0",
                 }}
               >
                 {/* Subtle grid pattern background */}
@@ -134,13 +165,13 @@ export default function TerritoryOverlay({
                   style={{ width: canvasSize.width, height: canvasSize.height }}
                 >
                   <defs>
-                    <pattern id="iso-grid" width="180" height="110" patternUnits="userSpaceOnUse">
+                    <pattern id="iso-grid" width="260" height="160" patternUnits="userSpaceOnUse">
                       <path
-                        d="M 90 0 L 180 55 L 90 110 L 0 55 Z"
+                        d="M 130 0 L 260 80 L 130 160 L 0 80 Z"
                         fill="none"
                         stroke="hsl(var(--border))"
                         strokeWidth="0.5"
-                        opacity="0.15"
+                        opacity="0.12"
                       />
                     </pattern>
                   </defs>
@@ -205,6 +236,30 @@ export default function TerritoryOverlay({
                 })}
               </div>
             </TooltipProvider>
+
+            {/* Zoom controls */}
+            <div className="absolute bottom-4 right-4 flex flex-col gap-1 z-10">
+              <button
+                onClick={() => setPan(p => ({ ...p, scale: Math.min(2.5, p.scale * 1.2) }))}
+                className="w-8 h-8 rounded-lg bg-card/90 border border-border/50 text-muted-foreground hover:text-foreground flex items-center justify-center text-sm font-bold backdrop-blur-sm transition-colors active:scale-[0.95]"
+              >+</button>
+              <button
+                onClick={() => setPan(p => ({ ...p, scale: Math.max(0.5, p.scale * 0.8) }))}
+                className="w-8 h-8 rounded-lg bg-card/90 border border-border/50 text-muted-foreground hover:text-foreground flex items-center justify-center text-sm font-bold backdrop-blur-sm transition-colors active:scale-[0.95]"
+              >−</button>
+              <button
+                onClick={() => {
+                  if (!containerRef.current) return;
+                  const el = containerRef.current;
+                  setPan({
+                    x: -(canvasSize.width * 1.2 - el.clientWidth) / 2,
+                    y: -(canvasSize.height * 1.2 - el.clientHeight) / 3,
+                    scale: 1.2,
+                  });
+                }}
+                className="w-8 h-8 rounded-lg bg-card/90 border border-border/50 text-muted-foreground hover:text-foreground flex items-center justify-center text-[10px] font-bold backdrop-blur-sm transition-colors active:scale-[0.95]"
+              >⟲</button>
+            </div>
           </div>
 
           {/* Legend */}
