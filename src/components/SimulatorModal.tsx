@@ -1350,7 +1350,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                     )}
                     {scoreTier === "mid" && !onNextTask && (
                       <Button
-                        onClick={startCompile}
+                        onClick={() => startCompile()}
                         className="gap-2 rounded-xl w-full h-11"
                       >
                         <TrendingUp className="h-4 w-4" /> Practice Again to Level Up
