@@ -194,10 +194,10 @@ export default function Students() {
         {/* ═══ PROOF BAR ═══ */}
         <Section className="py-10 border-y border-border/30">
           <div className="max-w-3xl mx-auto flex items-center justify-around gap-6 px-6">
-            <Stat value="5,000+" label="ROLES MAPPED" delay={0} color="text-spectrum-3" />
+          <Stat value="21,000+" label="ROLES MAPPED" delay={0} color="text-spectrum-3" />
             <Stat value="3,600+" label="COMPANIES" delay={1} color="text-spectrum-0" />
-            <Stat value="10,000+" label="SIMULATIONS" delay={2} color="text-spectrum-4" />
-            <Stat value="1M+" label="DATA POINTS" delay={3} color="text-spectrum-6" />
+            <Stat value="34,000+" label="TASKS ANALYZED" delay={2} color="text-spectrum-4" />
+            <Stat value="300+" label="INDUSTRIES" delay={3} color="text-spectrum-6" />
           </div>
         </Section>
 
