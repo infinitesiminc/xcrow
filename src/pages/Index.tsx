@@ -276,7 +276,7 @@ const Index = () => {
                 onChatStart={handleChatStart}
                 hasInteracted={hasInteracted}
                 selectedJobId={selectedRole?.jobId}
-                inlineCards={false}
+                inlineCards
                 externalPrompt={externalPrompt}
                 onExternalPromptConsumed={() => setExternalPrompt(null)}
                 viewContext={viewContext}
