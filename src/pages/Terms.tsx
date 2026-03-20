@@ -16,7 +16,7 @@ export default function Terms() {
 
         <h2>2. Description of Service</h2>
         <p>
-          crowy.ai provides AI-powered career readiness tools including role analysis, skill mapping, AI simulations, and workforce analytics. Features may vary by plan and are subject to change.
+          Crowy.ai provides AI-powered career readiness tools including role analysis, skill mapping, AI simulations, and workforce analytics. Features may vary by plan and are subject to change.
         </p>
 
         <h2>3. Account Registration</h2>
