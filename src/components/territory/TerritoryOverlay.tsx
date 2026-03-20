@@ -163,9 +163,9 @@ export default function TerritoryOverlay({
             </div>
             <button
               onClick={onClose}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all active:scale-[0.97] border border-border/40"
+              className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-semibold bg-primary text-primary-foreground hover:bg-primary/90 transition-all active:scale-[0.97] shadow-lg"
             >
-              <X className="h-3.5 w-3.5" />
+              <X className="h-4 w-4" />
               Close
             </button>
           </motion.div>
