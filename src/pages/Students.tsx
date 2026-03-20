@@ -180,13 +180,12 @@ function SharedSkillsVisual() {
                 className={`relative rounded-lg overflow-hidden h-9 ${SHARED.has(s.label) ? "ring-1 ring-primary/30" : ""}`}
               >
                 <div className={`absolute inset-0 bg-gradient-to-br ${
-                  s.color === "ai" ? "from-brand-ai/50 via-pink-500/30 to-brand-ai/15"
-                    : s.color === "human" ? "from-brand-human/50 via-indigo-400/30 to-brand-human/15"
+                  s.color === "human" ? "from-brand-human/50 via-indigo-400/30 to-brand-human/15"
                     : "from-brand-mid/50 via-violet-400/30 to-brand-mid/15"
                 } rounded-lg`} />
                 <div className="absolute inset-[1px] rounded-[7px] bg-card/90" />
                 <div className={`relative h-full flex items-center justify-center text-[11px] sm:text-xs font-semibold px-2 ${
-                  s.color === "ai" ? "text-brand-ai" : s.color === "human" ? "text-brand-human" : "text-brand-mid"
+                  s.color === "human" ? "text-brand-human" : "text-brand-mid"
                 }`}>
                   {s.label}
                 </div>
