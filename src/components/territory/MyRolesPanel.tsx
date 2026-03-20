@@ -143,7 +143,7 @@ export default function MyRolesPanel({ open, onClose, onAskChat }: MyRolesPanelP
               <div className="flex items-center justify-center py-8">
                 <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
               </div>
-            ) : activeRoles.length === 0 ? (
+            ) : filteredRoles.length === 0 ? (
               <div className="text-center py-6">
                 {tab === "saved" ? (
                   <Bookmark className="h-5 w-5 text-muted-foreground/40 mx-auto mb-2" />
@@ -158,7 +158,7 @@ export default function MyRolesPanel({ open, onClose, onAskChat }: MyRolesPanelP
               </div>
             ) : (
               <div className="flex gap-2.5 overflow-x-auto pb-1.5 scrollbar-thin [mask-image:linear-gradient(to_right,transparent,black_1%,black_97%,transparent)]">
-                {activeRoles.map((role, i) => (
+                {filteredRoles.map((role, i) => (
                   <RoleCard
                     key={role.jobId + i}
                     role={role}
