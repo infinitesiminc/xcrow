@@ -24,36 +24,7 @@ function taskChipStyle(aiScore: number) {
   return { badge: "bg-emerald-500/15 text-emerald-400", accent: "text-emerald-400" };
 }
 
-const TASK_ICON_KEYWORDS: [string[], LucideIcon][] = [
-  [["code", "software", "engineer", "develop", "build", "debug", "prototyp", "programming"], Code],
-  [["data", "pipeline", "database", "warehouse", "etl", "schema"], Database],
-  [["test", "qa", "quality", "troubleshoot", "debugging"], TestTube],
-  [["research", "experiment", "evaluat", "benchmark", "discovery"], Search],
-  [["document", "report", "writing", "content", "knowledge"], FileText],
-  [["design", "ux", "ui", "wireframe", "prototype", "creative"], Palette],
-  [["model", "ml", "ai", "training", "machine learning", "neural"], Brain],
-  [["team", "leadership", "mentor", "coach", "hiring", "management"], Users],
-  [["strategy", "planning", "roadmap", "vision", "growth"], Target],
-  [["client", "stakeholder", "relationship", "partner", "customer"], Handshake],
-  [["sales", "revenue", "prospect", "lead", "pipeline", "deal"], TrendingUp],
-  [["market", "brand", "campaign", "social", "seo"], Megaphone],
-  [["security", "threat", "compliance", "governance", "privacy"], Shield],
-  [["legal", "regulatory", "policy", "contract", "audit"], Scale],
-  [["process", "workflow", "automation", "optimization", "operations"], Settings],
-  [["budget", "financial", "forecast", "pricing", "valuation"], BarChart3],
-  [["present", "pitch", "communication", "feedback"], MessageSquare],
-  [["product", "feature", "scoping", "requirements", "specification"], ClipboardList],
-  [["deploy", "infrastructure", "cloud", "devops", "monitor"], Wrench],
-  [["innovat", "ideation", "brainstorm", "concept"], Lightbulb],
-];
 
-function getTaskIcon(taskName: string): LucideIcon {
-  const lower = taskName.toLowerCase();
-  for (const [keywords, icon] of TASK_ICON_KEYWORDS) {
-    if (keywords.some(kw => lower.includes(kw))) return icon;
-  }
-  return Briefcase;
-}
 
 interface RolePreviewPanelProps {
   role: RoleResult;
