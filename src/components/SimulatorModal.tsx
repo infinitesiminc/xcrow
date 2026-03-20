@@ -1022,7 +1022,53 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                 </motion.div>
               )}
 
-              {phase === "done" && (
+              {phase === "guest-limit" && (
+                <motion.div
+                  key="guest-limit"
+                  initial={{ opacity: 0, y: 16 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, ease: "easeOut" }}
+                  className="flex flex-col items-center py-10 gap-6 max-w-sm mx-auto text-center"
+                >
+                  <motion.div
+                    initial={{ scale: 0.5, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={{ delay: 0.15, type: "spring", stiffness: 200 }}
+                    className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-primary/10"
+                  >
+                    <Zap className="h-10 w-10 text-primary" />
+                  </motion.div>
+
+                  <div className="space-y-2">
+                    <h3 className="text-xl font-display font-bold text-foreground">
+                      Nice start! 🔥
+                    </h3>
+                    <p className="text-sm text-muted-foreground leading-relaxed">
+                      You just practiced <span className="text-foreground font-medium">"{taskName}"</span> for{" "}
+                      <span className="text-foreground font-medium">{jobTitle}</span>.
+                      Sign up free to unlock unlimited practice and track your skills.
+                    </p>
+                  </div>
+
+                  <div className="flex flex-col gap-3 pt-2 w-full max-w-xs">
+                    <Button
+                      onClick={() => { onClose(); navigate("/"); }}
+                      className="gap-2 rounded-xl w-full"
+                    >
+                      Explore More Roles <ArrowRight className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={() => { onClose(); navigate("/auth"); }}
+                      className="gap-2 rounded-xl w-full"
+                    >
+                      Sign Up Free
+                    </Button>
+                  </div>
+                </motion.div>
+              )}
+
+
                 <motion.div
                   key="done"
                   initial={{ opacity: 0, y: 16 }}
