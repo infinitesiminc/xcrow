@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import SimulatorModal from "@/components/SimulatorModal";
 
 /* ─── Shared animation helpers ─── */
 const fadeUp = {
