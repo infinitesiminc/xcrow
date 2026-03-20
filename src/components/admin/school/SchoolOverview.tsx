@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Pencil, Check, X, Trash2, Users, Calendar, Globe, Eye, Sparkles, GraduationCap } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -41,6 +41,17 @@ export default function SchoolOverview({ school, onUpdate }: { school: SchoolDat
     contact_email: school.contact_email || "",
     domain: school.domain || "",
   });
+
+  // Re-sync form when school prop updates (e.g. after save + refetch)
+  useEffect(() => {
+    setForm({
+      total_seats: school.total_seats,
+      plan_status: school.plan_status,
+      pipeline_stage: school.pipeline_stage || "prospect",
+      contact_email: school.contact_email || "",
+      domain: school.domain || "",
+    });
+  }, [school.id, school.total_seats, school.plan_status, school.pipeline_stage, school.contact_email, school.domain]);
 
   async function handleSave() {
     setSaving(true);
