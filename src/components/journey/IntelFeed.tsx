@@ -112,7 +112,7 @@ export default function IntelFeed({ skills, savedRoles }: IntelFeedProps) {
                     <p className="text-[10px] font-medium text-white/65 truncate">{hs.skill_name}</p>
                     <p className="text-[8px] text-white/30">{hs.demand_count} roles · {Math.round(hs.avg_exposure)}% AI</p>
                   </div>
-                  <AlertTriangle className="h-2.5 w-2.5 shrink-0" style={{ color: "hsl(330, 90%, 60%)", opacity: 0.5 }} />
+                  <AlertTriangle className="h-2.5 w-2.5 shrink-0" style={{ color: "hsl(330, 45%, 55%)", opacity: 0.4 }} />
                 </motion.div>
               ))}
             </div>
