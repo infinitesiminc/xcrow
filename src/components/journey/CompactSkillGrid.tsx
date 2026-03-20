@@ -109,7 +109,7 @@ export default function CompactSkillGrid({ skills, skillTasks }: CompactSkillGri
                               }}
                             />
                             {active && (
-                              <span className="text-[7px] font-mono font-bold" style={{ color: "hsl(270, 80%, 65%)" }}>
+                              <span className="text-[7px] font-mono font-bold" style={{ color: "hsl(270, 40%, 60%)" }}>
                                 {skill.level.slice(0, 3).toUpperCase()}
                               </span>
                             )}
