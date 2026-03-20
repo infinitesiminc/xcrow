@@ -1,6 +1,6 @@
 /**
  * /schools — B2B university landing page targeting deans & provosts.
- * Key hook: "Free Curriculum Audit" showing gap between catalog and market demand.
+ * Key hook: "Free Curriculum Audit" showing opportunity to add high-demand skills.
  * Visual vibe: gamified dark-mode with spectrum gradient borders, neon accents.
  */
 import { useRef } from "react";
@@ -44,16 +44,16 @@ function Section({ children, className = "" }: { children: React.ReactNode; clas
   );
 }
 
-/* ─── Mock gap data for the live preview ─── */
-const MOCK_GAPS = [
-  { skill: "Prompt Engineering", demand: 84200, coverage: false },
-  { skill: "AI / ML Pipelines", demand: 62400, coverage: false },
-  { skill: "Data Visualization (Tableau/PowerBI)", demand: 57800, coverage: true },
-  { skill: "Cloud Architecture (AWS/GCP)", demand: 51300, coverage: false },
-  { skill: "Statistical Modeling", demand: 48600, coverage: true },
-  { skill: "API Integration", demand: 43100, coverage: false },
-  { skill: "UX Research", demand: 38900, coverage: false },
-  { skill: "Agile / Scrum", demand: 35200, coverage: true },
+/* ─── Mock data for the live preview ─── */
+const MOCK_SKILLS = [
+  { skill: "Prompt Engineering", demand: 84200, covered: false },
+  { skill: "AI / ML Pipelines", demand: 62400, covered: false },
+  { skill: "Data Visualization (Tableau/PowerBI)", demand: 57800, covered: true },
+  { skill: "Cloud Architecture (AWS/GCP)", demand: 51300, covered: false },
+  { skill: "Statistical Modeling", demand: 48600, covered: true },
+  { skill: "API Integration", demand: 43100, covered: false },
+  { skill: "UX Research", demand: 38900, covered: false },
+  { skill: "Agile / Scrum", demand: 35200, covered: true },
 ];
 
 const SCHOOL_LOGOS = [
@@ -72,15 +72,15 @@ const STEPS = [
   },
   {
     icon: BarChart3,
-    title: "Map to market demand",
-    desc: "We cross-reference your curriculum against 1M+ real job task clusters to calculate coverage, gaps, and AI readiness scores.",
+    title: "Spotlight your strengths & opportunities",
+    desc: "We cross-reference your curriculum against 1M+ real job task clusters to spotlight your strongest coverage and highest-impact opportunities.",
     color: "text-spectrum-3",
     gradient: "from-spectrum-3 via-spectrum-4 to-spectrum-5",
   },
   {
     icon: Zap,
-    title: "Close the gaps with simulations",
-    desc: "For every gap we find, students get targeted AI simulations that build the exact skills employers are hiring for.",
+    title: "Unlock new skills with simulations",
+    desc: "For every opportunity we find, students get targeted AI simulations that build the exact skills employers are hiring for.",
     color: "text-spectrum-6",
     gradient: "from-spectrum-6 via-spectrum-5 to-spectrum-4",
   },
@@ -88,11 +88,11 @@ const STEPS = [
 
 /* ─── Feature Grid Items ─── */
 const FEATURES = [
-  { icon: BookOpen, title: "Curriculum Gap Analysis", desc: "Program-by-program breakdown of skill coverage vs. market demand.", gradient: "from-spectrum-0 to-spectrum-1" },
+  { icon: BookOpen, title: "Curriculum Insights Report", desc: "Program-by-program breakdown of skill coverage and highest-impact opportunities.", gradient: "from-spectrum-0 to-spectrum-1" },
   { icon: Brain, title: "AI Simulation Library", desc: "10,000+ simulations mapped to your courses and learning outcomes.", gradient: "from-spectrum-6 to-spectrum-5" },
   { icon: LayoutDashboard, title: "Admin Dashboard", desc: "Cohort analytics, engagement tracking, and accreditation-ready reports.", gradient: "from-spectrum-3 to-spectrum-4" },
   { icon: Users, title: "Bulk Provisioning", desc: "Domain auto-enroll, CSV import, or SSO — seat students in minutes.", gradient: "from-spectrum-1 to-spectrum-2" },
-  { icon: GraduationCap, title: "Student Skill Maps", desc: "Every student gets a visual profile of their AI-readiness across 4 pillars.", gradient: "from-spectrum-4 to-spectrum-5" },
+  { icon: GraduationCap, title: "Student Skill Maps", desc: "Every student gets a visual profile of their growth potential across 4 pillars.", gradient: "from-spectrum-4 to-spectrum-5" },
   { icon: BarChart3, title: "XP Leaderboard", desc: "Gamified engagement that drives practice and healthy competition.", gradient: "from-spectrum-5 to-spectrum-6" },
 ];
 
@@ -114,23 +114,23 @@ export default function Schools() {
             </motion.div>
 
             <motion.h1 variants={fadeUp} custom={1} className="text-4xl sm:text-5xl lg:text-6xl font-bold font-display leading-[1.08] tracking-tight mb-6">
-              Your curriculum was designed
+              Your curriculum built the foundation.
               <br />
-              before GPT.{" "}
+              Now let's{" "}
               <span className="bg-gradient-to-r from-brand-human to-brand-ai bg-clip-text text-transparent">
-                Your students weren't.
+                future-proof it.
               </span>
             </motion.h1>
 
             <motion.p variants={fadeUp} custom={2} className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto mb-4 leading-relaxed">
-              We scan your course catalog, map it against 1M+ real job tasks, and show you exactly
-              where your students are falling behind — and how to close the gap.
+              We scan your course catalog, map it against 1M+ real job tasks, and spotlight
+              the highest-impact skills you can add next.
             </motion.p>
 
             <motion.div variants={fadeUp} custom={3} className="flex items-center justify-center gap-3 mb-10">
               <div className="flex items-center gap-2 text-sm font-medium text-brand-ai">
                 <Sparkles className="h-4 w-4" />
-                <span>67% of skills in the average catalog are AI-exposed</span>
+                <span>67% of in-demand skills can be added through simulations — no curriculum overhaul needed</span>
               </div>
             </motion.div>
 
@@ -145,15 +145,15 @@ export default function Schools() {
           </div>
         </Section>
 
-        {/* ═══ THE PROBLEM ═══ */}
+        {/* ═══ THE OPPORTUNITY ═══ */}
         <Section className="py-20 sm:py-28 px-6">
           <div className="max-w-4xl mx-auto text-center">
             <motion.div variants={fadeUp} custom={0} className="inline-flex items-center gap-2 mb-4">
-              <span className="text-sm font-mono text-muted-foreground tracking-widest uppercase">The Problem</span>
+              <span className="text-sm font-mono text-muted-foreground tracking-widest uppercase">The Opportunity</span>
             </motion.div>
             <motion.h2 variants={fadeUp} custom={1} className="text-3xl sm:text-4xl font-bold mb-6">
-              The skills gap isn't coming.{" "}
-              <span className="text-brand-ai">It's already here.</span>
+              Three timelines.{" "}
+              <span className="text-brand-ai">One chance to connect them.</span>
             </motion.h2>
             <motion.div variants={fadeUp} custom={2} className="grid grid-cols-1 sm:grid-cols-3 gap-6 mt-12">
               {[
@@ -171,8 +171,8 @@ export default function Schools() {
               ))}
             </motion.div>
             <motion.p variants={fadeUp} custom={6} className="text-muted-foreground mt-8 max-w-lg mx-auto">
-              Your accreditation reports say you're compliant. The job market says your graduates aren't ready.
-              We show you the difference — with data.
+              Your accreditation shows rigor. Market data shows where to grow next.
+              We bring both together.
             </motion.p>
           </div>
         </Section>
@@ -206,12 +206,12 @@ export default function Schools() {
           </div>
         </Section>
 
-        {/* ═══ LIVE GAP PREVIEW ═══ */}
+        {/* ═══ LIVE PREVIEW ═══ */}
         <Section className="py-20 sm:py-28 px-6">
           <div className="max-w-5xl mx-auto">
             <motion.div variants={fadeUp} custom={0} className="text-center mb-12">
               <span className="text-sm font-mono text-muted-foreground tracking-widest uppercase">Live Preview</span>
-              <h2 className="text-3xl sm:text-4xl font-bold mt-4 mb-4">See your curriculum gaps in minutes</h2>
+              <h2 className="text-3xl sm:text-4xl font-bold mt-4 mb-4">See your curriculum insights in minutes</h2>
               <p className="text-muted-foreground max-w-lg mx-auto">
                 Here's what a real audit looks like. Every school gets this — free.
               </p>
@@ -228,37 +228,37 @@ export default function Schools() {
                   </div>
                   <div className="flex items-center gap-4">
                     <div className="text-center">
-                      <span className="text-2xl font-bold text-spectrum-6">38%</span>
+                      <span className="text-2xl font-bold text-spectrum-2">38%</span>
                       <p className="text-[10px] text-muted-foreground font-mono">COVERAGE</p>
                     </div>
                     <div className="text-center">
-                      <span className="text-2xl font-bold text-spectrum-4">72%</span>
-                      <p className="text-[10px] text-muted-foreground font-mono">AI READINESS</p>
+                      <span className="text-2xl font-bold text-spectrum-4">62%</span>
+                      <p className="text-[10px] text-muted-foreground font-mono">GROWTH POTENTIAL</p>
                     </div>
                   </div>
                 </div>
 
-                {/* Gap list */}
+                {/* Skill list */}
                 <div className="space-y-2">
-                  {MOCK_GAPS.map((gap, i) => (
+                  {MOCK_SKILLS.map((item, i) => (
                     <motion.div
-                      key={gap.skill}
+                      key={item.skill}
                       variants={fadeUp}
                       custom={i + 2}
                       className="flex items-center justify-between py-2.5 px-3 rounded-lg bg-secondary/50 border border-border/30"
                     >
                       <div className="flex items-center gap-3">
-                        {gap.coverage ? (
+                        {item.covered ? (
                           <CheckCircle2 className="h-4 w-4 text-spectrum-2 shrink-0" />
                         ) : (
-                          <div className="h-4 w-4 rounded-full border-2 border-spectrum-6/40 shrink-0" />
+                          <Sparkles className="h-4 w-4 text-spectrum-4 shrink-0" />
                         )}
-                        <span className="text-sm font-medium">{gap.skill}</span>
+                        <span className="text-sm font-medium">{item.skill}</span>
                       </div>
                       <div className="flex items-center gap-3">
-                        <span className="text-xs text-muted-foreground font-mono">{gap.demand.toLocaleString()} tasks</span>
-                        {!gap.coverage && (
-                          <span className="text-[10px] font-medium text-spectrum-6 bg-spectrum-6/10 px-2 py-0.5 rounded-full border border-spectrum-6/20">GAP</span>
+                        <span className="text-xs text-muted-foreground font-mono">{item.demand.toLocaleString()} tasks</span>
+                        {!item.covered && (
+                          <span className="text-[10px] font-medium text-spectrum-4 bg-spectrum-4/10 px-2 py-0.5 rounded-full border border-spectrum-4/20">OPPORTUNITY</span>
                         )}
                       </div>
                     </motion.div>
@@ -266,7 +266,7 @@ export default function Schools() {
                 </div>
 
                 <div className="mt-6 pt-4 border-t border-border/50 flex items-center justify-between">
-                  <p className="text-xs text-muted-foreground">5 of 8 high-demand skills missing from your catalog</p>
+                  <p className="text-xs text-muted-foreground">5 high-impact skills ready to add to your catalog</p>
                   <Button size="sm" variant="outline" onClick={() => navigate("/contact")} className="text-xs border-border/60">
                     Get your full report <ArrowRight className="h-3 w-3 ml-1" />
                   </Button>
@@ -282,7 +282,7 @@ export default function Schools() {
             <motion.div variants={fadeUp} custom={0} className="text-center mb-14">
               <h2 className="text-3xl sm:text-4xl font-bold mb-4">Everything your institution needs</h2>
               <p className="text-muted-foreground max-w-lg mx-auto">
-                From gap analysis to student engagement — one platform, no IT overhead.
+                From curriculum insights to student engagement — one platform, no IT overhead.
               </p>
             </motion.div>
 
@@ -318,9 +318,8 @@ export default function Schools() {
               <div className="absolute top-0 inset-x-0 h-[3px] bg-gradient-to-r from-spectrum-3 via-spectrum-0 to-spectrum-1" />
               <blockquote className="border border-border/60 bg-card/80 backdrop-blur-sm rounded-2xl p-8 text-center">
                 <p className="text-lg sm:text-xl italic text-foreground/80 leading-relaxed">
-                  "We discovered that 62% of the skills employers want from our CS graduates weren't
-                  being taught in any course. crowy.ai showed us exactly where — and gave students
-                  a way to practice immediately."
+                  "crowy.ai helped us identify 12 high-demand skills we could integrate into existing
+                  courses — our students started practicing them the same week."
                 </p>
                 <footer className="mt-4 text-sm text-muted-foreground">
                   — Department Chair, R1 University (pilot participant)
@@ -335,13 +334,13 @@ export default function Schools() {
           <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[500px] h-[300px] bg-primary/6 rounded-full blur-[100px] pointer-events-none" />
           <div className="max-w-3xl mx-auto text-center relative">
             <motion.h2 variants={fadeUp} custom={0} className="text-3xl sm:text-4xl font-bold mb-4">
-              Your students are already falling behind.
+              Give your students every advantage.
               <br />
-              <span className="text-primary">Now you can see why.</span>
+              <span className="text-primary">The future rewards prepared graduates.</span>
             </motion.h2>
             <motion.p variants={fadeUp} custom={1} className="text-muted-foreground mb-8 max-w-md mx-auto">
-              Get a free, no-obligation curriculum audit. We'll scan your catalog and deliver a
-              skills gap report within 48 hours.
+              Get a free curriculum insights report — we'll spotlight your highest-impact
+              opportunities within 48 hours.
             </motion.p>
             <motion.div variants={fadeUp} custom={2}>
               <Button size="lg" onClick={() => navigate("/contact")} className="gap-2 text-base px-10 h-12 glow-purple">
