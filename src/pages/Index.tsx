@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { supabase } from "@/integrations/supabase/client";
+import { Map, Bookmark, X } from "lucide-react";
 import HomepageChat from "@/components/HomepageChat";
 import RolePreviewPanel from "@/components/RolePreviewPanel";
 import InlineRoleCarousel, { BatchedRoleCarousel, type RoleResult, type RoleBatch } from "@/components/InlineRoleCarousel";
@@ -27,7 +28,6 @@ function getGreeting(): string {
   return "Good evening";
 }
 
-/** Map role results → skill IDs by matching task cluster skill_names to taxonomy keywords */
 function rolesToSkillIds(roles: RoleResult[]): Set<string> {
   const ids = new Set<string>();
   for (const role of roles) {
@@ -41,6 +41,9 @@ function rolesToSkillIds(roles: RoleResult[]): Set<string> {
   return ids;
 }
 
+/* ── Right panel tab type ────────────────────────── */
+type RightTab = "territory" | "roles";
+
 /* ── component ───────────────────────────────────── */
 
 const Index = () => {
@@ -49,22 +52,20 @@ const Index = () => {
 
   const [hasInteracted, setHasInteracted] = useState(false);
   const [selectedRole, setSelectedRole] = useState<RoleResult | null>(null);
+  const [fullScreenRole, setFullScreenRole] = useState<RoleResult | null>(null);
   const [roleBatches, setRoleBatches] = useState<RoleBatch[]>([]);
   const [externalPrompt, setExternalPrompt] = useState<string | null>(null);
   const [activeEdge, setActiveEdge] = useState<EdgeContext | null>(null);
-  const [rolesOpen, setRolesOpen] = useState(false);
+  const [rightTab, setRightTab] = useState<RightTab>("territory");
   const batchCounter = useRef(0);
 
-  // Real mode data (signed-in users)
   const [realSkills, setRealSkills] = useState<SkillXP[]>([]);
   const [targetSkillIds, setTargetSkillIds] = useState<Set<string>>(new Set());
 
-  // All roles flattened for territory highlighting
   const allRolesFlat = useMemo(() => roleBatches.flatMap((b) => b.roles), [roleBatches]);
   const demoHighlighted = useMemo(() => rolesToSkillIds(allRolesFlat), [allRolesFlat]);
   const latestBatchId = roleBatches.length > 0 ? roleBatches[roleBatches.length - 1].id : 0;
 
-  // Load real skill data for signed-in users
   useEffect(() => {
     if (!user) return;
     (async () => {
@@ -112,13 +113,12 @@ const Index = () => {
 
   const handleRolesAskChat = useCallback((prompt: string) => {
     setExternalPrompt(prompt);
-    setRolesOpen(false);
+    setRightTab("territory");
     setHasInteracted(true);
   }, []);
 
-  // Accumulate role batches instead of replacing
   const handleRolesFound = useCallback((roles: RoleResult[]) => {
-    if (roles.length === 0) return; // Skip empty batches
+    if (roles.length === 0) return;
     batchCounter.current += 1;
     const newBatch: RoleBatch = { id: batchCounter.current, roles };
     setRoleBatches((prev) => [...prev, newBatch]);
@@ -128,6 +128,7 @@ const Index = () => {
     (role: RoleResult) => setSelectedRole((prev) => (prev?.jobId === role.jobId ? null : role)),
     []
   );
+
   const handleEdgeClick = useCallback((prompt: string, edge: EdgeContext) => {
     setExternalPrompt(prompt);
     setActiveEdge(edge);
@@ -139,6 +140,10 @@ const Index = () => {
     },
     []
   );
+
+  const handleExpandRole = useCallback((role: RoleResult) => {
+    setFullScreenRole(role);
+  }, []);
 
   const greeting = getGreeting();
   const userName = profile?.displayName?.split(" ")[0];
@@ -188,7 +193,7 @@ const Index = () => {
         </div>
 
         <AnimatePresence>
-          {selectedRole && (
+          {(selectedRole || fullScreenRole) && (
             <motion.div
               key="mobile-preview"
               initial={{ y: "100%" }}
@@ -197,7 +202,11 @@ const Index = () => {
               transition={{ type: "spring", damping: 25, stiffness: 300 }}
               className="fixed inset-0 z-50 bg-background"
             >
-              <RolePreviewPanel role={selectedRole} onClose={() => setSelectedRole(null)} edgeContext={activeEdge} />
+              <RolePreviewPanel
+                role={fullScreenRole || selectedRole!}
+                onClose={() => { setSelectedRole(null); setFullScreenRole(null); }}
+                edgeContext={activeEdge}
+              />
             </motion.div>
           )}
         </AnimatePresence>
@@ -210,20 +219,11 @@ const Index = () => {
   return (
     <div className="h-[calc(100vh-3.5rem)] flex flex-col">
       {isSignedIn && realSkills.length > 0 && (
-        <>
-          <CompactHUD
-            skills={realSkills}
-            targetSkillIds={targetSkillIds}
-            userName={userName}
-            onToggleRoles={() => setRolesOpen((p) => !p)}
-            rolesOpen={rolesOpen}
-          />
-          <MyRolesPanel
-            open={rolesOpen}
-            onClose={() => setRolesOpen(false)}
-            onAskChat={handleRolesAskChat}
-          />
-        </>
+        <CompactHUD
+          skills={realSkills}
+          targetSkillIds={targetSkillIds}
+          userName={userName}
+        />
       )}
 
       <div className="flex-1 flex min-h-0">
@@ -253,7 +253,6 @@ const Index = () => {
               )}
             </AnimatePresence>
 
-            
             <div className={`w-full max-w-xl ${hasInteracted ? "flex-1 flex flex-col min-h-0" : ""}`}>
               <HomepageChat
                 onRolesFound={handleRolesFound}
@@ -269,41 +268,101 @@ const Index = () => {
           </div>
         </div>
 
-        {/* ── Right: Territory + Preview ─────────── */}
+        {/* ── Right: Adaptive panel ─────────────── */}
         <div className="w-1/2 flex flex-col bg-muted/5">
-          {/* Role carousel — batched with scroll history */}
-          {roleBatches.length > 0 && (
-            <motion.div
-              initial={{ opacity: 0, y: -8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3 }}
-              className="shrink-0 border-b border-border p-4"
-            >
-              <BatchedRoleCarousel
-                batches={roleBatches}
-                onSelectRole={handleRoleSelect}
-                selectedJobId={selectedRole?.jobId}
-                latestBatchId={latestBatchId}
-              />
-            </motion.div>
-          )}
+          {/* Tab bar + role carousel */}
+          <div className="shrink-0 border-b border-border">
+            {/* Tab switcher */}
+            {isSignedIn && (
+              <div className="flex items-center gap-1 px-4 pt-3 pb-0">
+                <button
+                  onClick={() => setRightTab("territory")}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-t-lg text-xs font-medium transition-colors border-b-2 ${
+                    rightTab === "territory"
+                      ? "border-primary text-foreground bg-background/50"
+                      : "border-transparent text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  <Map className="h-3 w-3" />
+                  Territory
+                </button>
+                <button
+                  onClick={() => setRightTab("roles")}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-t-lg text-xs font-medium transition-colors border-b-2 ${
+                    rightTab === "roles"
+                      ? "border-primary text-foreground bg-background/50"
+                      : "border-transparent text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  <Bookmark className="h-3 w-3" />
+                  My Roles
+                </button>
+              </div>
+            )}
 
-          {/* Main area: Preview or Territory */}
+            {/* Role carousel — only on territory tab */}
+            {roleBatches.length > 0 && rightTab === "territory" && (
+              <motion.div
+                initial={{ opacity: 0, y: -8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3 }}
+                className="p-4 pt-2"
+              >
+                <BatchedRoleCarousel
+                  batches={roleBatches}
+                  onSelectRole={handleRoleSelect}
+                  selectedJobId={selectedRole?.jobId}
+                  latestBatchId={latestBatchId}
+                />
+              </motion.div>
+            )}
+          </div>
+
+          {/* Main area */}
           <div className="flex-1 overflow-hidden">
             <AnimatePresence mode="wait">
-              {selectedRole ? (
+              {/* Selected role preview (inline) */}
+              {selectedRole && rightTab === "territory" ? (
                 <motion.div
                   key={selectedRole.jobId}
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
                   transition={{ duration: 0.2 }}
-                  className="h-full"
+                  className="h-full relative"
                 >
                   <RolePreviewPanel
                     role={selectedRole}
                     onClose={() => setSelectedRole(null)}
                     edgeContext={activeEdge}
+                  />
+                  {/* Expand to full screen button */}
+                  <button
+                    onClick={() => setFullScreenRole(selectedRole)}
+                    className="absolute top-3 right-12 p-1.5 rounded-md bg-background/80 border border-border/50 hover:bg-muted/80 text-muted-foreground hover:text-foreground transition-all active:scale-[0.95] z-10"
+                    title="Expand to full screen"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <polyline points="15 3 21 3 21 9" /><polyline points="9 21 3 21 3 15" />
+                      <line x1="21" y1="3" x2="14" y2="10" /><line x1="3" y1="21" x2="10" y2="14" />
+                    </svg>
+                  </button>
+                </motion.div>
+              ) : rightTab === "roles" && isSignedIn ? (
+                <motion.div
+                  key="my-roles"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.2 }}
+                  className="h-full"
+                >
+                  <MyRolesPanel
+                    onSelectRole={(role) => {
+                      setSelectedRole(role);
+                      setRightTab("territory");
+                    }}
+                    onAskChat={handleRolesAskChat}
                   />
                 </motion.div>
               ) : (
@@ -357,6 +416,52 @@ const Index = () => {
           </div>
         </div>
       </div>
+
+      {/* ── Full-screen role deep dive ────────── */}
+      <AnimatePresence>
+        {fullScreenRole && (
+          <motion.div
+            key="fullscreen-role"
+            initial={{ opacity: 0, scale: 0.97 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.97 }}
+            transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+            className="fixed inset-0 z-50 bg-background"
+          >
+            {/* Close bar */}
+            <div className="flex items-center justify-between px-5 py-3 border-b border-border bg-card/80 backdrop-blur-sm">
+              <div className="flex items-center gap-2">
+                <div
+                  className="w-7 h-7 rounded-md flex items-center justify-center text-[10px] font-bold text-white"
+                  style={{ background: `hsl(${(fullScreenRole.title.length * 47) % 360}, 55%, 45%)` }}
+                >
+                  {(fullScreenRole.company || fullScreenRole.title)[0]?.toUpperCase()}
+                </div>
+                <div>
+                  <h2 className="text-sm font-semibold text-foreground leading-tight">{fullScreenRole.title}</h2>
+                  {fullScreenRole.company && (
+                    <p className="text-[11px] text-muted-foreground">{fullScreenRole.company}</p>
+                  )}
+                </div>
+              </div>
+              <button
+                onClick={() => setFullScreenRole(null)}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all active:scale-[0.97]"
+              >
+                <X className="h-3.5 w-3.5" />
+                Close
+              </button>
+            </div>
+            <div className="h-[calc(100%-3.25rem)] overflow-hidden">
+              <RolePreviewPanel
+                role={fullScreenRole}
+                onClose={() => setFullScreenRole(null)}
+                edgeContext={activeEdge}
+              />
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
