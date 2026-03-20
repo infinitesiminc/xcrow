@@ -95,16 +95,16 @@ export default function PlayerHUD({ skills, uniqueTasks, isEmpty }: PlayerHUDPro
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: i * 0.04 }}
               className="flex items-center gap-2 rounded-lg px-2 py-1.5"
-              style={{ background: "hsla(270, 40%, 20%, 0.3)", border: "1px solid hsla(270, 80%, 65%, 0.15)" }}
+              style={{ background: "hsla(270, 20%, 18%, 0.3)", border: "1px solid hsla(270, 40%, 55%, 0.12)" }}
             >
-              <ShieldCheck className="h-3 w-3 shrink-0" style={{ color: "hsl(270, 80%, 65%)" }} />
+              <ShieldCheck className="h-3 w-3 shrink-0" style={{ color: "hsl(270, 45%, 60%)" }} />
               <div className="flex-1 min-w-0">
-                <p className="text-[10px] font-medium text-white/80 truncate">{edge.label}</p>
-                <p className="text-[8px] text-white/30 truncate">
+                <p className="text-[10px] font-medium text-white/70 truncate">{edge.label}</p>
+                <p className="text-[8px] text-white/35 truncate">
                   {CATEGORY_META[edge.category].emoji} {edge.skill}
                 </p>
               </div>
-              <span className="text-[8px] font-mono shrink-0" style={{ color: "hsl(180, 90%, 60%)" }}>
+              <span className="text-[8px] font-mono shrink-0" style={{ color: "hsl(180, 40%, 55%)" }}>
                 {levelLabels[edge.levelIndex]}
               </span>
             </motion.div>
