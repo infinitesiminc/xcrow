@@ -12,8 +12,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 
 const FREE_FEATURES = [
-  "3 simulations per month",
-  "3 role analyses per month",
+  "3 simulations per month (earn more by inviting friends!)",
+  "Unlimited role analyses",
   "Skill territory (view only)",
   "Leaderboard access",
   "Role exploration feed",
