@@ -291,7 +291,7 @@ export default function SkillBubbleMap({ rows }: { rows: SkillRow[] }) {
                   Demand: {b.demand} · AI: {b.exposure}%
                 </text>
                 {/* Category */}
-                <text x={tx + 10} y={ty + 68} fontSize={8} fill="hsla(220, 10%, 45%, 0.6)" fontFamily="monospace" textTransform="uppercase" letterSpacing="0.08em">
+                <text x={tx + 10} y={ty + 68} fontSize={8} fill="hsla(220, 10%, 45%, 0.6)" fontFamily="monospace" letterSpacing="0.08em" style={{ textTransform: "uppercase" }}>
                   {b.category}
                 </text>
               </g>
