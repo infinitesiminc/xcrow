@@ -111,43 +111,66 @@ export interface SkillXP {
   aiExposure: number;
   humanEdge?: string;
   taskCount: number;
+  // Aggregated simulation dimension scores
+  avgToolAwareness?: number;
+  avgAdaptiveThinking?: number;
+  avgHumanValueAdd?: number;
+  avgDomainJudgment?: number;
 }
 
 export interface SimRecord {
   task_name: string;
   job_title: string;
   skills_earned?: { skill_id: string; xp: number }[] | null;
+  tool_awareness_score?: number | null;
+  human_value_add_score?: number | null;
+  adaptive_thinking_score?: number | null;
+  domain_judgment_score?: number | null;
 }
 
 export function aggregateSkillXP(sims: SimRecord[]): SkillXP[] {
-  const xpMap = new Map<string, { xp: number; taskCount: number }>();
+  const xpMap = new Map<string, { xp: number; taskCount: number; toolScores: number[]; adaptiveScores: number[]; humanScores: number[]; domainScores: number[] }>();
+
+  const getEntry = (id: string) => {
+    if (!xpMap.has(id)) xpMap.set(id, { xp: 0, taskCount: 0, toolScores: [], adaptiveScores: [], humanScores: [], domainScores: [] });
+    return xpMap.get(id)!;
+  };
 
   for (const sim of sims) {
     // Prefer explicit skills_earned, fall back to keyword matching
     let skillIds: string[];
     if (sim.skills_earned && Array.isArray(sim.skills_earned) && sim.skills_earned.length > 0) {
+      skillIds = sim.skills_earned.map(se => se.skill_id);
       for (const se of sim.skills_earned) {
-        const entry = xpMap.get(se.skill_id) || { xp: 0, taskCount: 0 };
+        const entry = getEntry(se.skill_id);
         entry.xp += se.xp;
         entry.taskCount++;
-        xpMap.set(se.skill_id, entry);
       }
-      continue;
+    } else {
+      skillIds = matchTaskToSkills(sim.task_name, sim.job_title);
+      if (skillIds.length === 0) continue;
+      const xpEach = Math.round(XP_PER_SIM / skillIds.length);
+      for (const id of skillIds) {
+        const entry = getEntry(id);
+        entry.xp += xpEach;
+        entry.taskCount++;
+      }
     }
 
-    skillIds = matchTaskToSkills(sim.task_name, sim.job_title);
-    if (skillIds.length === 0) continue;
-    const xpEach = Math.round(XP_PER_SIM / skillIds.length);
+    // Accumulate dimension scores for all matched skills
     for (const id of skillIds) {
-      const entry = xpMap.get(id) || { xp: 0, taskCount: 0 };
-      entry.xp += xpEach;
-      entry.taskCount++;
-      xpMap.set(id, entry);
+      const entry = getEntry(id);
+      if (sim.tool_awareness_score != null) entry.toolScores.push(sim.tool_awareness_score);
+      if (sim.adaptive_thinking_score != null) entry.adaptiveScores.push(sim.adaptive_thinking_score);
+      if (sim.human_value_add_score != null) entry.humanScores.push(sim.human_value_add_score);
+      if (sim.domain_judgment_score != null) entry.domainScores.push(sim.domain_judgment_score);
     }
   }
 
+  const avg = (arr: number[]) => arr.length > 0 ? Math.round(arr.reduce((a, b) => a + b, 0) / arr.length) : undefined;
+
   return SKILL_TAXONOMY.map(skill => {
-    const entry = xpMap.get(skill.id) || { xp: 0, taskCount: 0 };
+    const entry = xpMap.get(skill.id) || { xp: 0, taskCount: 0, toolScores: [], adaptiveScores: [], humanScores: [], domainScores: [] };
     const lvl = getLevel(entry.xp);
     return {
       id: skill.id,
@@ -160,6 +183,10 @@ export function aggregateSkillXP(sims: SimRecord[]): SkillXP[] {
       aiExposure: skill.aiExposure,
       humanEdge: skill.humanEdge,
       taskCount: entry.taskCount,
+      avgToolAwareness: avg(entry.toolScores),
+      avgAdaptiveThinking: avg(entry.adaptiveScores),
+      avgHumanValueAdd: avg(entry.humanScores),
+      avgDomainJudgment: avg(entry.domainScores),
     };
   });
 }
