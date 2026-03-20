@@ -4,6 +4,9 @@ import { motion, AnimatePresence } from "framer-motion";
 import TypewriterMarkdown from "@/components/TypewriterMarkdown";
 import { useToast } from "@/hooks/use-toast";
 import InlineRoleCarousel, { type RoleResult } from "@/components/InlineRoleCarousel";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
+import { aggregateSkillXP, type SimRecord } from "@/lib/skill-map";
 
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/career-chat`;
 
