@@ -289,8 +289,8 @@ export default function Students() {
               />
               <BenefitCard
                 icon={MessageSquare}
-                title="AI Career Scout"
-                desc="Ask anything about any role. Your AI scout knows what you've practiced and guides you to the skills that matter most."
+                title="Crow — Your AI Career Scout"
+                desc="The smartest bird in the job market. Ask Crow anything about any role — it knows what you've practiced and scouts the skills that matter most."
                 gradient="from-spectrum-1 to-spectrum-2"
                 delay={4}
               />
