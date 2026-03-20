@@ -22,6 +22,7 @@ import {
   type LearningObjective,
   type SimConfig,
   type ElevationNarrative,
+  type CoachingContext,
 } from "@/lib/simulator";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -474,6 +475,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
   const navigate = useNavigate();
   const simGate = useUsageGate("simulation");
   const [showUpgrade, setShowUpgrade] = useState(false);
+  const [coachingContext, setCoachingContext] = useState<CoachingContext | null>(null);
 
   const taskMeta = { currentState: taskState, trend: taskTrend, impactLevel: taskImpactLevel };
 
@@ -548,7 +550,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
     }
   }, [session, objectiveStatus]);
 
-  const startCompile = useCallback(async () => {
+  const startCompile = useCallback(async (coaching?: CoachingContext | null) => {
     // Usage gate check for free users
     if (user && !isPro) {
       const allowed = await simGate.check();
@@ -566,8 +568,10 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
     setObjectiveStatus({});
     setScaffoldingTiers({});
     setShowInactivityNudge(false);
+    if (coaching) setCoachingContext(coaching);
+    else setCoachingContext(null);
     try {
-      const compiled = await compileSession(taskName, jobTitle, company, 3, mode, taskMeta);
+      const compiled = await compileSession(taskName, jobTitle, company, 3, mode, taskMeta, coaching ?? undefined);
       setSession(compiled);
       setPhase("briefing");
     } catch (err) {
@@ -576,6 +580,28 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
       setPhase("chat");
     }
   }, [taskName, jobTitle, company, mode, taskState, taskTrend, taskImpactLevel, user, isPro, simGate]);
+
+  const startRetryWithCoaching = useCallback(() => {
+    if (!scoreResult) return startCompile();
+    const categories = scoreResult.categories || [];
+    const weakest = categories.reduce((min, c) => c.score < min.score ? c : min, categories[0]);
+    if (!weakest) return startCompile();
+
+    const tips: Record<string, string> = {
+      "Tool Awareness": "Focus on identifying which AI tools fit each scenario — think about what AI handles best vs. what needs human judgment.",
+      "Adaptive Thinking": "Try to consider multiple approaches before committing. Think about edge cases and how your strategy might need to shift.",
+      "Domain Judgment": "Draw on domain-specific knowledge. Consider industry context, stakeholder impact, and real-world constraints.",
+      "Human Value Add": "Emphasize what makes your human perspective irreplaceable — relationships, ethics, nuance, and creative problem-solving.",
+    };
+
+    const coaching: CoachingContext = {
+      weakCategory: weakest.name,
+      weakScore: weakest.score,
+      tip: tips[weakest.name] || `Focus on improving your ${weakest.name} skills this round.`,
+      previousOverall: scoreResult.overall,
+    };
+    startCompile(coaching);
+  }, [scoreResult, startCompile]);
 
   useEffect(() => {
     if (open) startCompile();
@@ -858,6 +884,29 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
 
         <div className="flex-1 flex min-h-0">
           <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 sm:px-6 py-4 sm:py-6 scrollbar-thin">
+            {/* Coaching banner for retry sessions */}
+            {coachingContext && phase === "chat" && (
+              <motion.div
+                initial={{ opacity: 0, y: -8 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="max-w-2xl mx-auto mb-4 rounded-xl border border-primary/30 bg-primary/5 p-3"
+              >
+                <div className="flex items-start gap-2.5">
+                  <div className="h-7 w-7 rounded-lg bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
+                    <Target className="h-3.5 w-3.5 text-primary" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-xs font-semibold text-foreground">
+                      🎯 Coaching Focus: <span className="text-primary">{coachingContext.weakCategory}</span>
+                      <span className="text-muted-foreground font-normal ml-1.5">(previously {coachingContext.weakScore}%)</span>
+                    </p>
+                    <p className="text-[11px] text-muted-foreground mt-1 leading-relaxed">
+                      {coachingContext.tip}
+                    </p>
+                  </div>
+                </div>
+              </motion.div>
+            )}
             <AnimatePresence mode="popLayout">
               {phase === "loading" && (
                 <motion.div
@@ -1308,7 +1357,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                     {/* Primary CTA — adapts to score */}
                     {scoreTier === "low" && (
                       <Button
-                        onClick={startCompile}
+                        onClick={startRetryWithCoaching}
                         className="gap-2 rounded-xl w-full h-11"
                       >
                         <RotateCcw className="h-4 w-4" /> Retry with Coaching Tips
@@ -1324,7 +1373,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                     )}
                     {scoreTier === "mid" && !onNextTask && (
                       <Button
-                        onClick={startCompile}
+                        onClick={() => startCompile()}
                         className="gap-2 rounded-xl w-full h-11"
                       >
                         <TrendingUp className="h-4 w-4" /> Practice Again to Level Up
@@ -1368,7 +1417,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                     {scoreTier === "mid" && (
                       <Button
                         variant="secondary"
-                        onClick={startCompile}
+                        onClick={() => startCompile()}
                         className="gap-2 rounded-xl w-full text-xs"
                       >
                         <RotateCcw className="h-3 w-3" /> Same Sim — Improve Score
@@ -1377,7 +1426,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                     {scoreTier === "high" && (
                       <Button
                         variant="secondary"
-                        onClick={startCompile}
+                        onClick={() => startCompile()}
                         className="gap-2 rounded-xl w-full text-xs"
                       >
                         Same Skill, Different Industry

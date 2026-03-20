@@ -106,10 +106,20 @@ function aiStateDescription(taskMeta?: any): string {
 // ─── COMPILE ───
 
 async function handleCompile(payload: any, apiKey: string) {
-  const { taskName, jobTitle, company, difficulty = 3, mode = "assess", taskMeta } = payload;
+  const { taskName, jobTitle, company, difficulty = 3, mode = "assess", taskMeta, coaching } = payload;
   const aiContext = aiStateDescription(taskMeta);
   const dateCtx = currentDateContext();
   const isAssess = mode === "assess";
+
+  const coachingInstructions = coaching
+    ? `\n\nCOACHING MODE — RETRY SESSION:
+The learner previously scored ${coaching.previousOverall}% overall. Their weakest area was "${coaching.weakCategory}" at ${coaching.weakScore}%.
+IMPORTANT: Design scenarios that specifically target "${coaching.weakCategory}" improvement. Include extra opportunities for the learner to demonstrate this skill. In your systemPrompt, instruct the AI to:
+1. Proactively ask follow-up questions that test "${coaching.weakCategory}"
+2. Provide gentle guidance when the learner's response shows weakness in this area
+3. Celebrate when the learner shows improvement in "${coaching.weakCategory}"
+Coaching tip to weave in: "${coaching.tip}"`
+    : "";
 
   const prompt = `You are designing a LEARNING simulation about AI tools for a professional task.
 
@@ -120,6 +130,7 @@ Task: ${taskName}
 ${aiContext}
 Mode: ${isAssess ? "ASSESS — broad baseline check across the task" : "UPSKILL — deeper practice on specific sub-skills"}
 Format: Structured coaching conversation, ${MIN_ROUNDS}-${MAX_ROUNDS} rounds (objective-driven — ends when all goals met), ${isAssess ? "~10" : "~15"} minutes
+${coachingInstructions}
 
 You are a COACH helping someone learn to use AI tools effectively for their job.
 

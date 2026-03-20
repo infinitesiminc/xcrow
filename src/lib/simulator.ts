@@ -70,6 +70,13 @@ async function simFetch<T>(action: string, payload: Record<string, unknown>): Pr
   return data as T;
 }
 
+export interface CoachingContext {
+  weakCategory: string;
+  weakScore: number;
+  tip: string;
+  previousOverall: number;
+}
+
 export async function compileSession(
   taskName: string,
   jobTitle: string,
@@ -77,8 +84,9 @@ export async function compileSession(
   difficulty = 3,
   mode: SimMode = "assess",
   taskMeta?: { currentState?: string; trend?: string; impactLevel?: string },
+  coaching?: CoachingContext,
 ): Promise<SimSession> {
-  return simFetch("compile", { taskName, jobTitle, company, difficulty, mode, taskMeta });
+  return simFetch("compile", { taskName, jobTitle, company, difficulty, mode, taskMeta, coaching });
 }
 
 export async function chatTurn(
