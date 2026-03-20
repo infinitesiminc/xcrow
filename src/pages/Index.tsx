@@ -1,11 +1,11 @@
-import { useState, useCallback, useEffect, useMemo } from "react";
+import { useState, useCallback, useEffect, useMemo, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { supabase } from "@/integrations/supabase/client";
 import HomepageChat from "@/components/HomepageChat";
 import RolePreviewPanel from "@/components/RolePreviewPanel";
-import InlineRoleCarousel, { type RoleResult } from "@/components/InlineRoleCarousel";
+import InlineRoleCarousel, { BatchedRoleCarousel, type RoleResult, type RoleBatch } from "@/components/InlineRoleCarousel";
 import SkillSuggestionCards from "@/components/SkillSuggestionCards";
 import HumanEdgesCard, { type EdgeContext } from "@/components/HumanEdgesCard";
 import TerritoryGrid from "@/components/territory/TerritoryGrid";
@@ -28,7 +28,6 @@ function getGreeting(): string {
 
 /** Map role results → skill IDs by matching task cluster skill_names to taxonomy keywords */
 function rolesToSkillIds(roles: RoleResult[]): Set<string> {
-  // We match role titles to taxonomy keywords as a lightweight heuristic
   const ids = new Set<string>();
   for (const role of roles) {
     const text = `${role.title} ${role.company || ""}`.toLowerCase();
@@ -49,16 +48,19 @@ const Index = () => {
 
   const [hasInteracted, setHasInteracted] = useState(false);
   const [selectedRole, setSelectedRole] = useState<RoleResult | null>(null);
-  const [allRoles, setAllRoles] = useState<RoleResult[]>([]);
+  const [roleBatches, setRoleBatches] = useState<RoleBatch[]>([]);
   const [externalPrompt, setExternalPrompt] = useState<string | null>(null);
   const [activeEdge, setActiveEdge] = useState<EdgeContext | null>(null);
+  const batchCounter = useRef(0);
 
   // Real mode data (signed-in users)
   const [realSkills, setRealSkills] = useState<SkillXP[]>([]);
   const [targetSkillIds, setTargetSkillIds] = useState<Set<string>>(new Set());
 
-  // Demo mode: skill IDs highlighted from discovered roles
-  const demoHighlighted = useMemo(() => rolesToSkillIds(allRoles), [allRoles]);
+  // All roles flattened for territory highlighting
+  const allRolesFlat = useMemo(() => roleBatches.flatMap((b) => b.roles), [roleBatches]);
+  const demoHighlighted = useMemo(() => rolesToSkillIds(allRolesFlat), [allRolesFlat]);
+  const latestBatchId = roleBatches.length > 0 ? roleBatches[roleBatches.length - 1].id : 0;
 
   // Load real skill data for signed-in users
   useEffect(() => {
@@ -79,7 +81,6 @@ const Index = () => {
       const sims = (simsRes.data || []) as SimRecord[];
       setRealSkills(aggregateSkillXP(sims));
 
-      // Extract target role skill IDs
       const targetRoles = ((profileRes.data as any)?.target_roles || []) as {
         job_id: string;
       }[];
@@ -93,11 +94,9 @@ const Index = () => {
         for (const c of clusters || []) {
           for (const s of c.skill_names || []) names.add(s.toLowerCase());
         }
-        // Match names to taxonomy IDs
         const ids = new Set<string>();
         for (const skill of SKILL_TAXONOMY) {
           if (names.has(skill.name.toLowerCase())) ids.add(skill.id);
-          // Also check keywords
           for (const kw of skill.keywords) {
             if (names.has(kw)) ids.add(skill.id);
           }
@@ -108,7 +107,14 @@ const Index = () => {
   }, [user]);
 
   const handleChatStart = useCallback(() => setHasInteracted(true), []);
-  const handleRolesFound = useCallback((roles: RoleResult[]) => setAllRoles(roles), []);
+
+  // Accumulate role batches instead of replacing
+  const handleRolesFound = useCallback((roles: RoleResult[]) => {
+    batchCounter.current += 1;
+    const newBatch: RoleBatch = { id: batchCounter.current, roles };
+    setRoleBatches((prev) => [...prev, newBatch]);
+  }, []);
+
   const handleRoleSelect = useCallback(
     (role: RoleResult) => setSelectedRole((prev) => (prev?.jobId === role.jobId ? null : role)),
     []
@@ -172,7 +178,6 @@ const Index = () => {
           </div>
         </div>
 
-        {/* Mobile overlay for preview */}
         <AnimatePresence>
           {selectedRole && (
             <motion.div
@@ -195,7 +200,6 @@ const Index = () => {
 
   return (
     <div className="h-[calc(100vh-3.5rem)] flex flex-col">
-      {/* Compact HUD for signed-in users */}
       {isSignedIn && realSkills.length > 0 && (
         <CompactHUD
           skills={realSkills}
@@ -249,18 +253,21 @@ const Index = () => {
 
         {/* ── Right: Territory + Preview ─────────── */}
         <div className="w-1/2 flex flex-col bg-muted/5">
-          {/* Role carousel (only when roles discovered) */}
-          {allRoles.length > 0 && (
-            <div className="shrink-0 border-b border-border p-4">
-              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">
-                Matching roles
-              </p>
-              <InlineRoleCarousel
-                roles={allRoles}
+          {/* Role carousel — batched with scroll history */}
+          {roleBatches.length > 0 && (
+            <motion.div
+              initial={{ opacity: 0, y: -8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3 }}
+              className="shrink-0 border-b border-border p-4"
+            >
+              <BatchedRoleCarousel
+                batches={roleBatches}
                 onSelectRole={handleRoleSelect}
                 selectedJobId={selectedRole?.jobId}
+                latestBatchId={latestBatchId}
               />
-            </div>
+            </motion.div>
           )}
 
           {/* Main area: Preview or Territory */}
@@ -302,7 +309,6 @@ const Index = () => {
                         highlightedSkillIds={demoHighlighted}
                         onTileClick={handleTileClick}
                       />
-                      {/* Sign up CTA for guests */}
                       {demoHighlighted.size > 0 && (
                         <motion.div
                           initial={{ opacity: 0, y: 8 }}
@@ -320,8 +326,7 @@ const Index = () => {
                           </div>
                         </motion.div>
                       )}
-                      {/* Human edges when no roles yet */}
-                      {allRoles.length === 0 && !hasInteracted && (
+                      {roleBatches.length === 0 && !hasInteracted && (
                         <div className="px-4 pb-4">
                           <HumanEdgesCard onEdgeClick={handleEdgeClick} />
                         </div>
