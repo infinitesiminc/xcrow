@@ -57,6 +57,8 @@ const Index = () => {
   const [externalPrompt, setExternalPrompt] = useState<string | null>(null);
   const [activeEdge, setActiveEdge] = useState<EdgeContext | null>(null);
   const [rightTab, setRightTab] = useState<RightTab>("territory");
+  const [lastSimResult, setLastSimResult] = useState<ViewContext["lastSimResult"]>(null);
+  const [myRolesTab, setMyRolesTab] = useState<"saved" | "practiced">("saved");
   const batchCounter = useRef(0);
 
   const [realSkills, setRealSkills] = useState<SkillXP[]>([]);
