@@ -292,12 +292,49 @@ serve(async (req) => {
         ]).join(",");
         
         const poolSize = Math.max(limit * 5, 15);
-        const { data: jobs, error: dbError } = await sb
+
+        // Search by job fields first
+        const { data: jobsByFields, error: dbError } = await sb
           .from("jobs")
-          .select("id, title, department, location, country, work_mode, seniority, augmented_percent, automation_risk_percent, source_url, companies(name, logo_url, website)")
+          .select("id, title, department, location, country, work_mode, seniority, augmented_percent, automation_risk_percent, source_url, company_id, companies(name, logo_url, website)")
           .or(orConditions)
-          .gt("augmented_percent", 0)
           .limit(poolSize);
+        
+        if (dbError) console.error("DB search error:", dbError);
+
+        // Also search by company name
+        const companyQuery = args.query.toLowerCase().trim();
+        const { data: companiesByName } = await sb
+          .from("companies")
+          .select("id")
+          .ilike("name", `%${companyQuery}%`)
+          .limit(5);
+        
+        let jobsByCompany: any[] = [];
+        if (companiesByName && companiesByName.length > 0) {
+          const companyIds = companiesByName.map((c: any) => c.id);
+          const { data: cJobs } = await sb
+            .from("jobs")
+            .select("id, title, department, location, country, work_mode, seniority, augmented_percent, automation_risk_percent, source_url, company_id, companies(name, logo_url, website)")
+            .in("company_id", companyIds)
+            .limit(poolSize);
+          jobsByCompany = cJobs || [];
+        }
+
+        // Merge and deduplicate
+        const seenIds = new Set<string>();
+        const allJobs: any[] = [];
+        for (const j of [...(jobsByFields || []), ...jobsByCompany]) {
+          if (!seenIds.has(j.id)) {
+            seenIds.add(j.id);
+            allJobs.push(j);
+          }
+        }
+
+        // Prefer analyzed jobs, but include unanalyzed ones too
+        const analyzed = allJobs.filter((j: any) => (j.augmented_percent || 0) > 0);
+        const unanalyzed = allJobs.filter((j: any) => !(j.augmented_percent > 0));
+        const jobs = analyzed.length >= limit ? analyzed : [...analyzed, ...unanalyzed];
         
         if (dbError) console.error("DB search error:", dbError);
 
@@ -405,11 +442,14 @@ serve(async (req) => {
         const { topTasks, ...rest } = r;
         return rest;
       });
-      const roleEvent = `data: ${JSON.stringify({ type: "role_cards", roles: clientRoles })}\n\n`;
+      // Only emit role_cards event if we have results
+      const roleEvent = clientRoles.length > 0
+        ? `data: ${JSON.stringify({ type: "role_cards", roles: clientRoles })}\n\n`
+        : "";
       const encoder = new TextEncoder();
       const roleStream = new ReadableStream({
         start(controller) {
-          controller.enqueue(encoder.encode(roleEvent));
+          if (roleEvent) controller.enqueue(encoder.encode(roleEvent));
           const r = followUp.body!.getReader();
           function pump(): Promise<void> {
             return r.read().then(({ done, value }) => {
