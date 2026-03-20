@@ -549,7 +549,7 @@ export default function Leaderboard() {
             </div>
           ) : (
             <div className="rounded-xl border border-border overflow-hidden">
-              <div className="grid grid-cols-[2.5rem_1fr_4.5rem_3.5rem_3.5rem_2.5rem] sm:grid-cols-[3rem_1fr_6rem_5rem_5rem_3rem] gap-1 px-3 sm:px-4 py-2.5 bg-muted/30 border-b border-border text-[10px] sm:text-xs font-medium text-muted-foreground uppercase tracking-wider">
+              <div className="grid grid-cols-[2.5rem_1fr_4.5rem_3.5rem_3.5rem_3.5rem] sm:grid-cols-[3rem_1fr_6rem_5rem_5rem_4.5rem] gap-1 px-3 sm:px-4 py-2.5 bg-muted/30 border-b border-border text-[10px] sm:text-xs font-medium text-muted-foreground uppercase tracking-wider">
                 <span>#</span>
                 <span>Student</span>
                 <span className="text-right">XP</span>
@@ -563,13 +563,14 @@ export default function Leaderboard() {
                 const schoolColor = SCHOOL_COLORS[entry.school] || "bg-muted text-muted-foreground";
                 const act = entry.currentActivity;
                 const actStyle = act ? ACTIVITY_COLORS[act.type] : null;
+                const isPending = pendingRequests.has(entry.id);
                 return (
                   <motion.div
                     key={entry.id}
                     initial={{ opacity: 0, y: 4 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: Math.min(i * 0.015, 0.5) }}
-                    className={`grid grid-cols-[2.5rem_1fr_4.5rem_3.5rem_3.5rem_2.5rem] sm:grid-cols-[3rem_1fr_6rem_5rem_5rem_3rem] gap-1 px-3 sm:px-4 py-3 items-center border-b border-border/30 last:border-b-0 transition-colors ${
+                    className={`grid grid-cols-[2.5rem_1fr_4.5rem_3.5rem_3.5rem_3.5rem] sm:grid-cols-[3rem_1fr_6rem_5rem_5rem_4.5rem] gap-1 px-3 sm:px-4 py-3 items-center border-b border-border/30 last:border-b-0 transition-colors ${
                       entry.isMe ? "bg-primary/5" : "hover:bg-muted/20"
                     }`}
                   >
@@ -620,8 +621,18 @@ export default function Leaderboard() {
                       </span>
                     </div>
 
-                    <div className="flex justify-center">
-                      {!entry.isMe && !entry.isFriend && (
+                    {/* Actions */}
+                    <div className="flex items-center justify-end gap-0.5">
+                      {!entry.isMe && entry.isFriend && (
+                        <button
+                          onClick={() => handleOpenChat(entry)}
+                          className="p-1 rounded-md hover:bg-[hsl(var(--neon-cyan))]/10 text-muted-foreground hover:text-[hsl(var(--neon-cyan))] transition-colors"
+                          title="Chat"
+                        >
+                          <MessageCircle className="h-3.5 w-3.5" />
+                        </button>
+                      )}
+                      {!entry.isMe && !entry.isFriend && !isPending && (
                         <button
                           onClick={() => handleAddFriend(entry)}
                           className="p-1 rounded-md hover:bg-primary/10 text-muted-foreground hover:text-primary transition-colors"
@@ -629,6 +640,11 @@ export default function Leaderboard() {
                         >
                           <UserPlus className="h-3.5 w-3.5" />
                         </button>
+                      )}
+                      {!entry.isMe && !entry.isFriend && isPending && (
+                        <span className="p-1 text-muted-foreground/50" title="Request sent">
+                          <UserCheck className="h-3.5 w-3.5" />
+                        </span>
                       )}
                     </div>
                   </motion.div>
@@ -644,6 +660,75 @@ export default function Leaderboard() {
           </div>
         </div>
       </main>
+
+      {/* Chat Sheet */}
+      <Sheet open={chatOpen} onOpenChange={setChatOpen}>
+        <SheetContent className="w-full sm:w-96 flex flex-col p-0">
+          <SheetHeader className="px-4 pt-4 pb-3 border-b border-border">
+            <div className="flex items-center gap-3">
+              <div className="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center text-xs font-bold text-primary">
+                {chatTarget?.display_name.split(" ").map(n => n[0]).join("")}
+              </div>
+              <div className="flex-1 min-w-0">
+                <SheetTitle className="text-sm font-semibold text-foreground">{chatTarget?.display_name}</SheetTitle>
+                <p className="text-[10px] text-muted-foreground">
+                  {chatTarget?.school} · {chatTarget?.total_xp.toLocaleString()} XP
+                </p>
+              </div>
+              {chatTarget?.currentActivity && (
+                <Badge variant="outline" className="text-[9px] px-1.5 py-0 h-4 border-0 bg-emerald-500/10 text-emerald-400 shrink-0">
+                  <Gamepad2 className="h-2.5 w-2.5 mr-0.5" />
+                  {chatTarget.currentActivity.skill}
+                </Badge>
+              )}
+            </div>
+          </SheetHeader>
+
+          {/* Messages */}
+          <div className="flex-1 overflow-y-auto px-4 py-3 space-y-2.5">
+            {chatTarget && (chatMessages[chatTarget.id] || []).map((msg, idx) => (
+              <motion.div
+                key={idx}
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.2 }}
+                className={`flex ${msg.from === "me" ? "justify-end" : "justify-start"}`}
+              >
+                <div
+                  className={`max-w-[80%] px-3 py-2 rounded-2xl text-xs ${
+                    msg.from === "me"
+                      ? "bg-primary text-primary-foreground rounded-br-md"
+                      : "bg-muted text-foreground rounded-bl-md"
+                  }`}
+                >
+                  {msg.text}
+                </div>
+              </motion.div>
+            ))}
+            <div ref={chatEndRef} />
+          </div>
+
+          {/* Input */}
+          <div className="border-t border-border p-3">
+            <form
+              onSubmit={e => { e.preventDefault(); handleSendChat(); }}
+              className="flex items-center gap-2"
+            >
+              <Input
+                value={chatInput}
+                onChange={e => setChatInput(e.target.value)}
+                placeholder="Type a message…"
+                className="h-9 text-xs flex-1"
+                autoFocus
+              />
+              <Button type="submit" size="sm" className="h-9 w-9 p-0 shrink-0" disabled={!chatInput.trim()}>
+                <Send className="h-3.5 w-3.5" />
+              </Button>
+            </form>
+          </div>
+        </SheetContent>
+      </Sheet>
+
       <Footer />
     </>
   );
