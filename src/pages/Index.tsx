@@ -80,6 +80,7 @@ const Index = () => {
 
   const allRolesFlat = useMemo(() => roleBatches.flatMap((b) => b.roles), [roleBatches]);
   const demoHighlighted = useMemo(() => rolesToSkillIds(allRolesFlat), [allRolesFlat]);
+  const skillMap = useMemo(() => new Map(realSkills.map(s => [s.id, s])), [realSkills]);
   const latestBatchId = roleBatches.length > 0 ? roleBatches[roleBatches.length - 1].id : 0;
 
   useEffect(() => {
