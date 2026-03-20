@@ -14,12 +14,21 @@ import TerritoryMap from "@/components/territory/TerritoryMap";
 import TerritoryOverlay from "@/components/territory/TerritoryOverlay";
 import CompactHUD from "@/components/territory/CompactHUD";
 import MyRolesPanel from "@/components/territory/MyRolesPanel";
+import CastleNode from "@/components/territory/CastleNode";
+import { getCastleState } from "@/lib/castle-levels";
 import {
   SKILL_TAXONOMY,
+  CATEGORY_META,
   aggregateSkillXP,
+  type SkillCategory,
   type SkillXP,
   type SimRecord,
 } from "@/lib/skill-map";
+
+const CATEGORY_ORDER: SkillCategory[] = [
+  "technical", "analytical", "communication",
+  "leadership", "creative", "compliance",
+];
 
 /* ── helpers ─────────────────────────────────────── */
 
