@@ -46,8 +46,8 @@ export default function CompactSkillGrid({ skills, skillTasks }: CompactSkillGri
     <>
       <div className="h-full flex flex-col overflow-hidden">
         <div className="px-3 py-2.5 border-b border-white/5 flex items-center justify-between">
-          <h2 className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/40">Skill Map</h2>
-          <span className="text-[9px] font-mono text-white/20">
+          <h2 className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/50">Skill Map</h2>
+          <span className="text-[9px] font-mono text-white/30">
             {skills.filter(s => s.xp > 0).length}/{skills.length} active
           </span>
         </div>
