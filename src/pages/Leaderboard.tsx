@@ -314,7 +314,48 @@ export default function Leaderboard() {
   const [chatTarget, setChatTarget] = useState<LeaderboardEntry | null>(null);
   const [chatMessages, setChatMessages] = useState<Record<string, { from: "me" | "them"; text: string }[]>>({});
   const [chatInput, setChatInput] = useState("");
+  const [unreadCounts, setUnreadCounts] = useState<Record<string, number>>({});
   const chatEndRef = useRef<HTMLDivElement>(null);
+
+  // Simulate incoming messages from friends
+  useEffect(() => {
+    const friendsList = MOCK_DATA.filter(e => e.isFriend);
+    if (friendsList.length === 0) return;
+
+    const incomingMessages = [
+      "Just hit 5,000 XP! 🎉",
+      "Have you tried the new Product Manager sim?",
+      "Yo, I beat your score on Prompt Engineering 😏",
+      "Let's grind some sims tonight?",
+      "Check out Data Analyst — it's trending!",
+      "I got into the top 10 at my school 🔥",
+      "This AI Oversight simulation is wild",
+      "Can you help me with Stakeholder Communication?",
+    ];
+
+    const timers: NodeJS.Timeout[] = [];
+    // Send 2-3 simulated messages at staggered intervals
+    const count = 2 + Math.floor(Math.random() * 2);
+    for (let i = 0; i < count; i++) {
+      const delay = 3000 + i * 5000 + Math.random() * 4000;
+      timers.push(setTimeout(() => {
+        const friend = friendsList[Math.floor(Math.random() * friendsList.length)];
+        const msg = incomingMessages[Math.floor(Math.random() * incomingMessages.length)];
+        setChatMessages(prev => ({
+          ...prev,
+          [friend.id]: [...(prev[friend.id] || []), { from: "them", text: msg }],
+        }));
+        // Only add unread if chat isn't open for this friend
+        setChatTarget(current => {
+          if (!current || current.id !== friend.id || !chatOpen) {
+            setUnreadCounts(prev => ({ ...prev, [friend.id]: (prev[friend.id] || 0) + 1 }));
+          }
+          return current;
+        });
+      }, delay));
+    }
+    return () => timers.forEach(clearTimeout);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (chatOpen) chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
