@@ -27,7 +27,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useUsageGate } from "@/hooks/use-usage-gate";
 import UpgradeModal from "@/components/UpgradeModal";
 
-type Phase = "loading" | "briefing" | "chat" | "review" | "completing" | "done";
+type Phase = "loading" | "briefing" | "chat" | "review" | "completing" | "done" | "guest-limit";
 
 // Defaults — overridden by server config
 const DEFAULT_MIN_ROUNDS = 3;
@@ -50,6 +50,8 @@ interface SimulatorModalProps {
   onNextTask?: () => void;
   onBackToFeed?: () => void;
   inline?: boolean;
+  /** When set, unauthenticated users are capped at this many user turns before seeing a CTA */
+  guestMaxTurns?: number;
 }
 
 /* ── Objective Checklist (sidebar / inline) ── */
@@ -449,7 +451,7 @@ const UnmetObjectivesReview = ({
 };
 
 /* ── Main Modal ── */
-const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState, taskTrend, taskImpactLevel, mode = "assess", onCompleted, onNextTask, onBackToFeed, inline = false }: SimulatorModalProps) => {
+const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState, taskTrend, taskImpactLevel, mode = "assess", onCompleted, onNextTask, onBackToFeed, inline = false, guestMaxTurns }: SimulatorModalProps) => {
   const [phase, setPhase] = useState<Phase>("loading");
   const [session, setSession] = useState<SimSession | null>(null);
   const [messages, setMessages] = useState<SimMessage[]>([]);
@@ -586,6 +588,14 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
   const handleSend = async (overrideInput?: string) => {
     const messageText = overrideInput ?? input.trim();
     if (!messageText || sending) return;
+
+    // Guest turn limit check: count user messages so far (before this one)
+    const userTurnsSoFar = messages.filter(m => m.role === "user").length;
+    if (guestMaxTurns && !user && userTurnsSoFar >= guestMaxTurns) {
+      setPhase("guest-limit");
+      return;
+    }
+
     const userMsg: SimMessage = { role: "user", content: messageText };
     const newMessages = [...messages, userMsg];
     setMessages(newMessages);
@@ -622,6 +632,13 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
         }
       }
       scrollToBottom();
+
+      // After reply, check if next turn would hit guest limit — show limit after AI responds
+      const newUserTurns = newMessages.filter(m => m.role === "user").length;
+      if (guestMaxTurns && !user && newUserTurns >= guestMaxTurns) {
+        // Wait a beat so user reads the AI reply, then show limit
+        setTimeout(() => setPhase("guest-limit"), 2500);
+      }
     } catch (err) {
       console.error("Chat error:", err);
       setMessages((prev) => [...prev, { role: "assistant", content: "Sorry, I encountered an error. Please try again." }]);
@@ -1002,6 +1019,52 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                 >
                   <Loader2 className="h-6 w-6 text-muted-foreground/40 animate-spin" />
                   <p className="text-sm text-muted-foreground">Evaluating your progress…</p>
+                </motion.div>
+              )}
+
+              {phase === "guest-limit" && (
+                <motion.div
+                  key="guest-limit"
+                  initial={{ opacity: 0, y: 16 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, ease: "easeOut" }}
+                  className="flex flex-col items-center py-10 gap-6 max-w-sm mx-auto text-center"
+                >
+                  <motion.div
+                    initial={{ scale: 0.5, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={{ delay: 0.15, type: "spring", stiffness: 200 }}
+                    className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-primary/10"
+                  >
+                    <Zap className="h-10 w-10 text-primary" />
+                  </motion.div>
+
+                  <div className="space-y-2">
+                    <h3 className="text-xl font-display font-bold text-foreground">
+                      Nice start! 🔥
+                    </h3>
+                    <p className="text-sm text-muted-foreground leading-relaxed">
+                      You just practiced <span className="text-foreground font-medium">"{taskName}"</span> for{" "}
+                      <span className="text-foreground font-medium">{jobTitle}</span>.
+                      Sign up free to unlock unlimited practice and track your skills.
+                    </p>
+                  </div>
+
+                  <div className="flex flex-col gap-3 pt-2 w-full max-w-xs">
+                    <Button
+                      onClick={() => { onClose(); navigate("/"); }}
+                      className="gap-2 rounded-xl w-full"
+                    >
+                      Explore More Roles <ArrowRight className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={() => { onClose(); navigate("/auth"); }}
+                      className="gap-2 rounded-xl w-full"
+                    >
+                      Sign Up Free
+                    </Button>
+                  </div>
                 </motion.div>
               )}
 

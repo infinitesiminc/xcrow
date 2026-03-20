@@ -150,10 +150,6 @@ export default function Students() {
   };
 
   const handleLaunchSim = (job: { role: string; company: string; task: string }) => {
-    if (!user) {
-      openAuthModal?.();
-      return;
-    }
     setSimJob(job);
   };
 
@@ -479,6 +475,7 @@ export default function Students() {
         jobTitle={simJob?.role ?? ""}
         company={simJob?.company ?? ""}
         mode="assess"
+        guestMaxTurns={!user ? 3 : undefined}
       />
 
       <Footer />
