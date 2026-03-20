@@ -126,7 +126,7 @@ export default function CompactSkillGrid({ skills, skillTasks }: CompactSkillGri
                                   className="h-full rounded-full transition-all"
                                   style={{
                                     width: `${skill.progress}%`,
-                                    background: "linear-gradient(90deg, hsl(180, 90%, 60%), hsl(270, 80%, 65%))",
+                                    background: "linear-gradient(90deg, hsl(180, 40%, 50%), hsl(270, 40%, 55%))",
                                   }}
                                 />
                               </div>
