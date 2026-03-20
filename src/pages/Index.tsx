@@ -129,12 +129,18 @@ const Index = () => {
   const [realSkills, setRealSkills] = useState<SkillXP[]>([]);
   const [targetSkillIds, setTargetSkillIds] = useState<Set<string>>(new Set());
 
+  // Use demo seed when no real sim data exists
+  const displaySkills = useMemo(
+    () => (realSkills.length > 0 ? realSkills : buildDemoSkills()),
+    [realSkills]
+  );
+
   const allRolesFlat = useMemo(() => roleBatches.flatMap((b) => b.roles), [roleBatches]);
   const demoHighlighted = useMemo(() => rolesToSkillIds(allRolesFlat), [allRolesFlat]);
   const skillMap = useMemo(() => {
-    const m = new globalThis.Map(realSkills.map(s => [s.id, s]));
+    const m = new globalThis.Map(displaySkills.map(s => [s.id, s]));
     return m;
-  }, [realSkills]);
+  }, [displaySkills]);
   const latestBatchId = roleBatches.length > 0 ? roleBatches[roleBatches.length - 1].id : 0;
 
   useEffect(() => {
