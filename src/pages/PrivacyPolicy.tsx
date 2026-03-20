@@ -11,7 +11,7 @@ export default function PrivacyPolicy() {
 
         <h2>1. Information We Collect</h2>
         <p>
-          When you use crowy.ai, we may collect the following types of information:
+          When you use Crowy.ai, we may collect the following types of information:
         </p>
         <ul>
           <li><strong>Account Information:</strong> Name, email address, and profile details you provide during registration.</li>
