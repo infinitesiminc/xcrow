@@ -22,6 +22,7 @@ import {
   type LearningObjective,
   type SimConfig,
   type ElevationNarrative,
+  type CoachingContext,
 } from "@/lib/simulator";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
