@@ -138,9 +138,9 @@ export default function Journey() {
           {/* Right — Intel Feed */}
           <div
             className="border-l border-white/5 relative"
-            style={{ background: "hsla(240, 10%, 6%, 0.85)", backdropFilter: "blur(12px)" }}
+            style={{ background: "hsl(240 10% 10%)", border: "1px solid hsl(240 10% 16%)" }}
           >
-            <div className="absolute top-0 left-0 right-0 h-[2px]" style={{ background: "linear-gradient(90deg, hsl(330, 45%, 50%), hsl(270, 40%, 55%))" }} />
+            <div className="absolute top-0 left-0 right-0 h-[2px]" style={{ background: "linear-gradient(90deg, hsl(330 45% 50%), hsl(270 40% 55%))" }} />
             <IntelFeed skills={skills} savedRoles={savedRoles} />
           </div>
         </div>
