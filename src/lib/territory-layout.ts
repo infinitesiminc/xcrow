@@ -5,7 +5,7 @@
  * Each island has skill nodes positioned around a central point.
  */
 
-import { type SkillCategory, SKILL_TAXONOMY } from "./skill-map";
+import { type SkillCategory, SKILL_TAXONOMY, type TaxonomySkill } from "./skill-map";
 
 export interface NodePosition {
   x: number;
