@@ -8,7 +8,7 @@
  */
 import { useRef, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { motion, useInView } from "framer-motion";
+import { motion, useInView, AnimatePresence } from "framer-motion";
 import { ArrowRight, Blocks, Brain, GraduationCap, Lock, Sparkles, Star, Target, Trophy, TrendingUp, Zap } from "lucide-react";
 import CompanyMarquee from "@/components/CompanyMarquee";
 import { Button } from "@/components/ui/button";
