@@ -49,11 +49,8 @@ Deno.serve(async (req) => {
 
     // Process each job
     for (const job of jobs) {
-      // Send first 2000 + last 3000 chars to capture salary info (often in the middle-to-end)
-      const fullDesc = job.description || "";
-      const desc = fullDesc.length > 5000
-        ? fullDesc.slice(0, 2000) + "\n...\n" + fullDesc.slice(-3000)
-        : fullDesc;
+      // Send full description (up to 8000 chars) to capture salary info anywhere
+      const desc = (job.description || "").slice(0, 8000);
 
       const prompt = `Extract salary/compensation information from this job posting. If no salary info is found, return null values.
 
