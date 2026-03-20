@@ -112,8 +112,8 @@ export default function PlayerHUD({ skills, uniqueTasks, isEmpty }: PlayerHUDPro
           {lockedEdges.map((tax) => (
             <div
               key={tax.id}
-              className="flex items-center gap-2 rounded-lg px-2 py-1.5 opacity-40"
-              style={{ border: "1px dashed hsla(0,0%,100%,0.08)" }}
+              className="flex items-center gap-2 rounded-xl px-2 py-1.5"
+              style={{ border: "1px dashed hsl(240 10% 18%)" }}
             >
               <Lock className="h-2.5 w-2.5 shrink-0 text-white/20" />
               <p className="text-[10px] text-white/30 truncate flex-1">{tax.humanEdge}</p>
