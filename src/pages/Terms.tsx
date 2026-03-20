@@ -36,7 +36,7 @@ export default function Terms() {
 
         <h2>5. Intellectual Property</h2>
         <p>
-          All content, features, and functionality on the Platform — including text, graphics, logos, simulations, and AI-generated outputs — are owned by crowy.ai or its licensors and are protected by intellectual property laws.
+          All content, features, and functionality on the Platform — including text, graphics, logos, simulations, and AI-generated outputs — are owned by Crowy.ai or its licensors and are protected by intellectual property laws.
         </p>
 
         <h2>6. Subscriptions & Payments</h2>
