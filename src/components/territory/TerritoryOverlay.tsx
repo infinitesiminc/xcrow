@@ -32,20 +32,47 @@ export default function TerritoryOverlay({
   const posMap = useMemo(() => new Map(positions.map(p => [p.id, p])), [positions]);
   const canvasSize = useMemo(() => getCanvasSize(), []);
 
-  const scrollRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [pan, setPan] = useState({ x: 0, y: 0, scale: 1.2 });
+  const dragRef = useRef<{ sx: number; sy: number; px: number; py: number } | null>(null);
 
   const totalXP = useMemo(() => skills.reduce((sum, s) => sum + s.xp, 0), [skills]);
   const unlockedCount = useMemo(() => skills.filter((s) => s.xp >= 100).length, [skills]);
 
-  // Center scroll on open
+  // Center on open
   useEffect(() => {
-    if (open && scrollRef.current) {
-      const el = scrollRef.current;
-      const scrollX = (canvasSize.width - el.clientWidth) / 2;
-      const scrollY = (canvasSize.height - el.clientHeight) / 3;
-      el.scrollTo({ left: scrollX, top: scrollY, behavior: "instant" });
+    if (open && containerRef.current) {
+      const el = containerRef.current;
+      setPan({
+        x: -(canvasSize.width * 1.2 - el.clientWidth) / 2,
+        y: -(canvasSize.height * 1.2 - el.clientHeight) / 3,
+        scale: 1.2,
+      });
     }
   }, [open, canvasSize]);
+
+  const handleWheel = useCallback((e: React.WheelEvent) => {
+    e.preventDefault();
+    const factor = e.deltaY > 0 ? 0.93 : 1.07;
+    setPan(p => ({ ...p, scale: Math.max(0.5, Math.min(2.5, p.scale * factor)) }));
+  }, []);
+
+  const handlePointerDown = useCallback((e: React.PointerEvent) => {
+    if (e.button !== 0) return;
+    (e.target as HTMLElement).setPointerCapture?.(e.pointerId);
+    dragRef.current = { sx: e.clientX, sy: e.clientY, px: pan.x, py: pan.y };
+  }, [pan]);
+
+  const handlePointerMove = useCallback((e: React.PointerEvent) => {
+    if (!dragRef.current) return;
+    setPan(p => ({
+      ...p,
+      x: dragRef.current!.px + (e.clientX - dragRef.current!.sx),
+      y: dragRef.current!.py + (e.clientY - dragRef.current!.sy),
+    }));
+  }, []);
+
+  const handlePointerUp = useCallback(() => { dragRef.current = null; }, []);
 
   const handleNodeClick = useCallback((skillId: string) => {
     // Future: open skill detail / sim launcher
