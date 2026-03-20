@@ -129,10 +129,10 @@ export default function About() {
           <div className="max-w-3xl mx-auto text-center">
             <motion.h2 variants={fadeUp} custom={0} className="text-3xl sm:text-4xl font-bold mb-12">Team</motion.h2>
             <motion.div variants={fadeUp} custom={1} className="rounded-xl border border-border bg-card p-8 max-w-sm mx-auto">
-              <div className="w-20 h-20 rounded-full bg-primary/10 mx-auto mb-4 flex items-center justify-center">
-                <span className="text-2xl font-bold text-primary">JF</span>
+              <div className="w-24 h-24 rounded-full mx-auto mb-4 overflow-hidden bg-gradient-to-br from-primary to-[hsl(330,90%,60%)] p-[3px]">
+                <img src={founderImg} alt="Jackson Lam, Founder & CEO" className="w-full h-full rounded-full object-cover" />
               </div>
-              <h3 className="text-lg font-bold">Jackson Freeberg</h3>
+              <h3 className="text-lg font-bold">Jackson Lam</h3>
               <p className="text-sm text-muted-foreground">Founder & CEO</p>
               <p className="text-sm text-muted-foreground mt-3 leading-relaxed">
                 Building the tools that help the next generation navigate the AI economy.
