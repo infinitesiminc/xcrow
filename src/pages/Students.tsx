@@ -506,6 +506,16 @@ export default function Students() {
         </Section>
 
       </div>
+
+      <SimulatorModal
+        open={!!simJob}
+        onClose={() => setSimJob(null)}
+        taskName={simJob?.task ?? ""}
+        jobTitle={simJob?.role ?? ""}
+        company={simJob?.company ?? ""}
+        mode="assess"
+      />
+
       <Footer />
     </>
   );
