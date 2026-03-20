@@ -56,7 +56,7 @@ export default function Terms() {
 
         <h2>9. Limitation of Liability</h2>
         <p>
-          To the maximum extent permitted by law, crowy.ai shall not be liable for any indirect, incidental, special, or consequential damages arising from your use of the Platform.
+          To the maximum extent permitted by law, Crowy.ai shall not be liable for any indirect, incidental, special, or consequential damages arising from your use of the Platform.
         </p>
 
         <h2>10. Termination</h2>
