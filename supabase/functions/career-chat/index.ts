@@ -442,11 +442,14 @@ serve(async (req) => {
         const { topTasks, ...rest } = r;
         return rest;
       });
-      const roleEvent = `data: ${JSON.stringify({ type: "role_cards", roles: clientRoles })}\n\n`;
+      // Only emit role_cards event if we have results
+      const roleEvent = clientRoles.length > 0
+        ? `data: ${JSON.stringify({ type: "role_cards", roles: clientRoles })}\n\n`
+        : "";
       const encoder = new TextEncoder();
       const roleStream = new ReadableStream({
         start(controller) {
-          controller.enqueue(encoder.encode(roleEvent));
+          if (roleEvent) controller.enqueue(encoder.encode(roleEvent));
           const r = followUp.body!.getReader();
           function pump(): Promise<void> {
             return r.read().then(({ done, value }) => {
