@@ -270,11 +270,36 @@ function AutoSelectCompanyPanel({
 
   useEffect(() => {
     if (inView && !autoSelected && !selectedCompany) {
-      const timer = setTimeout(() => {
-        onSelect("Anthropic");
-        setAutoSelected(true);
-      }, 800);
-      return () => clearTimeout(timer);
+      // Find a company with at least 6 sim-ready roles
+      (async () => {
+        const { data } = await supabase
+          .from("job_task_clusters")
+          .select("jobs!inner(company_id, companies!inner(name))")
+          .limit(1000);
+
+        if (!data?.length) return;
+
+        const companyCounts = new Map<string, number>();
+        for (const row of data) {
+          const name = (row.jobs as any)?.companies?.name;
+          if (name) companyCounts.set(name, (companyCounts.get(name) || 0) + 1);
+        }
+
+        // Pick the company with the most roles, minimum 6
+        let best: string | null = null;
+        let bestCount = 0;
+        for (const [name, count] of companyCounts) {
+          if (count >= 6 && count > bestCount) {
+            best = name;
+            bestCount = count;
+          }
+        }
+
+        if (best) {
+          onSelect(best);
+          setAutoSelected(true);
+        }
+      })();
     }
   }, [inView, autoSelected, selectedCompany, onSelect]);
 
