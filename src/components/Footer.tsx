@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 
 const Footer = () => (
   <footer className="border-t border-border/30 bg-card/30 mt-auto">
-    <div className="max-w-5xl mx-auto px-4 py-8">
+    <div className="max-w-7xl mx-auto px-6 py-8">
       <div className="flex flex-col sm:flex-row items-start justify-between gap-6">
         <div>
           <Link to="/" className="font-display font-bold neon-text">crowy.ai</Link>
