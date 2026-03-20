@@ -117,7 +117,7 @@ export default function IntelFeed({ skills, savedRoles }: IntelFeedProps) {
               ))}
             </div>
           ) : (
-            <p className="text-[9px] text-white/20">Loading market data…</p>
+            <p className="text-[9px] text-white/25">Loading market data…</p>
           )}
         </div>
 
