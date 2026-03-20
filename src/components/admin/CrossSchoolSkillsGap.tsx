@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
-import { Loader2, ArrowUpDown, ChevronDown, ChevronRight } from "lucide-react";
+import { Loader2, ArrowUpDown, ChevronDown, ChevronRight, LayoutGrid, ScatterChart } from "lucide-react";
+import SkillBubbleMap from "./SkillBubbleMap";
 import { supabase } from "@/integrations/supabase/client";
 
 interface MarketSkill {
