@@ -1,4 +1,4 @@
-import { Building2, BarChart3, PieChart, List, GraduationCap, GitCompareArrows } from "lucide-react";
+import { Building2, BarChart3, Database, GraduationCap, GitCompareArrows } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import {
   Sidebar,
@@ -18,9 +18,9 @@ const mainItems = [
 ];
 
 const schoolItems = [
-  { title: "Analytics", url: "/admin/schools/analytics", icon: PieChart },
+  { title: "Data Ops", url: "/admin/schools/data-ops", icon: Database },
   { title: "Skills Gap", url: "/admin/schools/skills-gap", icon: GitCompareArrows },
-  { title: "All Schools", url: "/admin/schools", icon: List },
+  { title: "Accounts", url: "/admin/schools", icon: GraduationCap },
 ];
 
 export function HRSidebar() {

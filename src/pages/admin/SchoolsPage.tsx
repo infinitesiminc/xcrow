@@ -7,7 +7,7 @@ export default function SchoolsPage() {
 
   return (
     <div className="p-6 space-y-4">
-      <h1 className="text-2xl font-bold font-[Space_Grotesk] tracking-tight">All Schools</h1>
+      <h1 className="text-2xl font-bold font-[Space_Grotesk] tracking-tight">School Accounts</h1>
       <SchoolsDataTable initialPipelineFilter={pipelineFilter} />
     </div>
   );

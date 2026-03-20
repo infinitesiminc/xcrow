@@ -32,7 +32,7 @@ const HRLayout = lazy(() => import("./layouts/HRLayout.tsx"));
 const PipelinePage = lazy(() => import("./pages/admin/PipelinePage.tsx"));
 const TaskAnalyticsPage = lazy(() => import("./pages/admin/TaskAnalyticsPage.tsx"));
 const SchoolsPage = lazy(() => import("./pages/admin/SchoolsPage.tsx"));
-const SchoolAnalyticsAdminPage = lazy(() => import("./pages/admin/SchoolAnalyticsPage.tsx"));
+const SchoolDataOpsPage = lazy(() => import("./pages/admin/SchoolDataOpsPage.tsx"));
 const SchoolSkillsGapPage = lazy(() => import("./pages/admin/SchoolSkillsGapPage.tsx"));
 const SchoolDetailPage = lazy(() => import("./pages/admin/SchoolDetailPage.tsx"));
 
@@ -106,7 +106,7 @@ const App = () => (
                 <Route index element={<PipelinePage />} />
                 <Route path="analytics" element={<TaskAnalyticsPage />} />
                 <Route path="schools" element={<SchoolsPage />} />
-                <Route path="schools/analytics" element={<SchoolAnalyticsAdminPage />} />
+                <Route path="schools/data-ops" element={<SchoolDataOpsPage />} />
                 <Route path="schools/skills-gap" element={<SchoolSkillsGapPage />} />
                 <Route path="schools/:schoolId" element={<SchoolDetailPage />} />
               </Route>
