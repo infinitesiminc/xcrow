@@ -164,7 +164,7 @@ export default function IntelFeed({ skills, savedRoles }: IntelFeedProps) {
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: i * 0.05 }}
                   className="flex items-center gap-2 rounded-lg px-2 py-1.5"
-                  style={{ background: "hsla(180, 30%, 12%, 0.3)", border: "1px solid hsla(180, 90%, 60%, 0.12)" }}
+                  style={{ background: "hsla(180, 15%, 13%, 0.3)", border: "1px solid hsla(180, 40%, 50%, 0.1)" }}
                 >
                   <div className="flex-1 min-w-0">
                     <p className="text-[10px] font-medium text-white/70 truncate">{role.title}</p>
