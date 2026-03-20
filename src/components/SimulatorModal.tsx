@@ -588,6 +588,14 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
   const handleSend = async (overrideInput?: string) => {
     const messageText = overrideInput ?? input.trim();
     if (!messageText || sending) return;
+
+    // Guest turn limit check: count user messages so far (before this one)
+    const userTurnsSoFar = messages.filter(m => m.role === "user").length;
+    if (guestMaxTurns && !user && userTurnsSoFar >= guestMaxTurns) {
+      setPhase("guest-limit");
+      return;
+    }
+
     const userMsg: SimMessage = { role: "user", content: messageText };
     const newMessages = [...messages, userMsg];
     setMessages(newMessages);
@@ -624,6 +632,13 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
         }
       }
       scrollToBottom();
+
+      // After reply, check if next turn would hit guest limit — show limit after AI responds
+      const newUserTurns = newMessages.filter(m => m.role === "user").length;
+      if (guestMaxTurns && !user && newUserTurns >= guestMaxTurns) {
+        // Wait a beat so user reads the AI reply, then show limit
+        setTimeout(() => setPhase("guest-limit"), 2500);
+      }
     } catch (err) {
       console.error("Chat error:", err);
       setMessages((prev) => [...prev, { role: "assistant", content: "Sorry, I encountered an error. Please try again." }]);
