@@ -352,12 +352,12 @@ export default function Students() {
                 <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-spectrum-3 via-spectrum-4 to-spectrum-5" />
                 <div className="border border-border/50 bg-card/80 backdrop-blur-sm rounded-2xl p-6">
                   <div className="flex items-center gap-2 mb-4">
-                    <div className="h-7 w-7 rounded-lg bg-primary/10 flex items-center justify-center">
-                      <MessageSquare className="h-3.5 w-3.5 text-primary" />
+                    <div className="h-7 w-7 rounded-lg bg-primary/10 flex items-center justify-center text-sm">
+                      🐦‍⬛
                     </div>
                     <div>
-                      <h3 className="text-sm font-semibold">AI Career Scout</h3>
-                      <p className="text-[10px] text-muted-foreground">Context-aware guidance</p>
+                      <h3 className="text-sm font-semibold">Crow <span className="text-muted-foreground font-normal">· Career Scout</span></h3>
+                      <p className="text-[10px] text-muted-foreground">Knows your territory, scouts what's next</p>
                     </div>
                   </div>
                   <ChatPreview />
