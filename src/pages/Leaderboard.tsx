@@ -409,9 +409,23 @@ export default function Leaderboard() {
     }, 1200 + Math.random() * 1500);
   }
 
-  function handleInvite() {
-    navigator.clipboard.writeText(`${window.location.origin}/leaderboard`);
-    toast({ title: "Link copied!", description: "Share with friends to invite them" });
+  async function handleInvite() {
+    const shareUrl = `${window.location.origin}/leaderboard`;
+    const shareText = "I'm practicing AI-era skills on Crow 🦅 See where you rank against students from 15+ universities!";
+
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: "Join me on Crow — The AI Career Scout",
+          text: shareText,
+          url: shareUrl,
+        });
+        return;
+      } catch { /* user cancelled */ }
+    }
+
+    await navigator.clipboard.writeText(`${shareText}\n${shareUrl}`);
+    toast({ title: "Link copied!", description: "Paste it anywhere to share with friends" });
   }
 
   return (
