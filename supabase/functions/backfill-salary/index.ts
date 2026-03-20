@@ -20,13 +20,13 @@ Deno.serve(async (req) => {
 
     const { offset = 0, dry_run = false } = await req.json().catch(() => ({}));
 
-    // Fetch jobs that have descriptions and no salary yet
+    // Fetch jobs that have descriptions with likely salary data
     const { data: jobs, error } = await sb
       .from("jobs")
       .select("id, title, description")
       .not("description", "is", null)
       .is("salary_min", null)
-      .gt("description", "")
+      .like("description", "%$%")
       .range(offset, offset + BATCH_SIZE - 1);
 
     if (error) throw error;
