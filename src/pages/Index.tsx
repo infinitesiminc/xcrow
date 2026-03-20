@@ -3,7 +3,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { supabase } from "@/integrations/supabase/client";
-import { Map, Bookmark, X } from "lucide-react";
+import { Map, Bookmark, X, Sparkles } from "lucide-react";
+import { TooltipProvider } from "@/components/ui/tooltip";
 import HomepageChat, { type ViewContext } from "@/components/HomepageChat";
 import RolePreviewPanel from "@/components/RolePreviewPanel";
 import InlineRoleCarousel, { BatchedRoleCarousel, type RoleResult, type RoleBatch } from "@/components/InlineRoleCarousel";
@@ -13,12 +14,21 @@ import TerritoryMap from "@/components/territory/TerritoryMap";
 import TerritoryOverlay from "@/components/territory/TerritoryOverlay";
 import CompactHUD from "@/components/territory/CompactHUD";
 import MyRolesPanel from "@/components/territory/MyRolesPanel";
+import CastleNode from "@/components/territory/CastleNode";
+import { getCastleState } from "@/lib/castle-levels";
 import {
   SKILL_TAXONOMY,
+  CATEGORY_META,
   aggregateSkillXP,
+  type SkillCategory,
   type SkillXP,
   type SimRecord,
 } from "@/lib/skill-map";
+
+const CATEGORY_ORDER: SkillCategory[] = [
+  "technical", "analytical", "communication",
+  "leadership", "creative", "compliance",
+];
 
 /* ── helpers ─────────────────────────────────────── */
 
@@ -70,6 +80,10 @@ const Index = () => {
 
   const allRolesFlat = useMemo(() => roleBatches.flatMap((b) => b.roles), [roleBatches]);
   const demoHighlighted = useMemo(() => rolesToSkillIds(allRolesFlat), [allRolesFlat]);
+  const skillMap = useMemo(() => {
+    const m = new globalThis.Map(realSkills.map(s => [s.id, s]));
+    return m;
+  }, [realSkills]);
   const latestBatchId = roleBatches.length > 0 ? roleBatches[roleBatches.length - 1].id : 0;
 
   useEffect(() => {
@@ -397,45 +411,84 @@ const Index = () => {
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ duration: 0.4 }}
-                  className="h-full"
+                  className="h-full overflow-y-auto"
                 >
-                    {isSignedIn ? (
-                    <TerritoryMap
-                      skills={realSkills}
-                      targetSkillIds={targetSkillIds}
-                      onTileClick={handleTileClick}
-                    />
-                  ) : (
-                    <div className="h-full flex flex-col">
-                      <TerritoryMap
-                        demoMode
-                        highlightedSkillIds={demoHighlighted}
-                        onTileClick={handleTileClick}
-                      />
-                      {demoHighlighted.size > 0 && (
-                        <motion.div
-                          initial={{ opacity: 0, y: 8 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: 0.3, duration: 0.4 }}
-                          className="px-4 pb-4"
-                        >
-                          <div className="rounded-xl border border-primary/30 bg-primary/5 p-3 text-center">
-                            <p className="text-xs text-foreground font-medium">
-                              Sign up to keep your territory
-                            </p>
-                            <p className="text-[10px] text-muted-foreground mt-0.5">
-                              Progress resets without an account
-                            </p>
-                          </div>
-                        </motion.div>
-                      )}
-                      {roleBatches.length === 0 && !hasInteracted && (
-                        <div className="px-4 pb-4">
-                          <HumanEdgesCard onEdgeClick={handleEdgeClick} />
-                        </div>
-                      )}
+                  {/* Castle grid in panel */}
+                  <div className="p-4 space-y-5">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Sparkles className="h-4 w-4 text-primary" />
+                        <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                          Skill Territory
+                        </span>
+                      </div>
+                      <button
+                        onClick={() => setTerritoryOpen(true)}
+                        className="flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all active:scale-[0.97] border border-border/40"
+                      >
+                        <Map className="h-3 w-3" />
+                        Full Map
+                      </button>
                     </div>
-                  )}
+
+                    <TooltipProvider delayDuration={200}>
+                      {CATEGORY_ORDER.map((cat, gi) => {
+                        const meta = CATEGORY_META[cat];
+                        const catSkills = SKILL_TAXONOMY.filter(s => s.category === cat);
+                        return (
+                          <motion.div
+                            key={cat}
+                            initial={{ opacity: 0, y: 12, filter: "blur(4px)" }}
+                            animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                            transition={{ delay: 0.1 + gi * 0.06, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+                          >
+                            <div className="flex items-center gap-2 mb-2">
+                              <span className="text-xs">{meta.emoji}</span>
+                              <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">{meta.label}</span>
+                              <div className="flex-1 h-px bg-border/30" />
+                            </div>
+                            <div className="flex flex-wrap gap-3">
+                              {catSkills.map((skill, si) => {
+                                const sx = skillMap.get(skill.id);
+                                const xp = sx?.xp ?? 0;
+                                const castle = getCastleState(xp);
+                                return (
+                                  <CastleNode
+                                    key={skill.id}
+                                    skillId={skill.id}
+                                    name={skill.name}
+                                    category={skill.category}
+                                    castle={castle}
+                                    xp={xp}
+                                    isActive={lastPracticedSkillId === skill.id}
+                                    onClick={() => {}}
+                                    delay={gi * 4 + si}
+                                  />
+                                );
+                              })}
+                            </div>
+                          </motion.div>
+                        );
+                      })}
+                    </TooltipProvider>
+
+                    {!isSignedIn && demoHighlighted.size > 0 && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.3, duration: 0.4 }}
+                      >
+                        <div className="rounded-xl border border-primary/30 bg-primary/5 p-3 text-center">
+                          <p className="text-xs text-foreground font-medium">Sign up to keep your territory</p>
+                          <p className="text-[10px] text-muted-foreground mt-0.5">Progress resets without an account</p>
+                        </div>
+                      </motion.div>
+                    )}
+
+                    {!isSignedIn && roleBatches.length === 0 && !hasInteracted && (
+                      <HumanEdgesCard onEdgeClick={handleEdgeClick} />
+                    )}
+                  </div>
                 </motion.div>
               )}
             </AnimatePresence>
