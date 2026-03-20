@@ -136,17 +136,9 @@ const Index = () => {
     setActiveEdge(edge);
   }, []);
 
-  const handleTileClick = useCallback(
-    (skillId: string, skillName: string) => {
-      const skill = SKILL_TAXONOMY.find(s => s.id === skillId);
-      const humanEdge = skill?.humanEdge ? ` (human edge: ${skill.humanEdge})` : "";
-      // Send as a hidden system instruction — not displayed as user message
-      setExternalPrompt(
-        `__SKILL_CLICK__${skillName}__${humanEdge}`
-      );
-    },
-    []
-  );
+  const handleTileClick = useCallback(() => {
+    // No-op — skill nodes are visual only now
+  }, []);
 
   const handleExpandRole = useCallback((role: RoleResult) => {
     setFullScreenRole(role);
