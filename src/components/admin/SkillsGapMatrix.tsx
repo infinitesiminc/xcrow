@@ -1,5 +1,5 @@
-import { useState, useEffect, useMemo, useCallback } from "react";
-import { Loader2, TrendingUp, AlertTriangle, CheckCircle2, Zap, BookOpen, Cpu, ChevronDown, ChevronUp } from "lucide-react";
+import { useState, useEffect, useMemo } from "react";
+import { Loader2, TrendingUp, AlertTriangle, CheckCircle2, BookOpen, Cpu, ChevronDown, ChevronUp } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -28,6 +28,12 @@ interface MarketSkill {
   high_priority_count: number;
 }
 
+interface MatchedSkill {
+  skill: string;
+  demand: { count: number; avgExposure: number; avgImpact: number; highPriority: number };
+  covered: boolean;
+}
+
 function normalize(s: string): string {
   return s.toLowerCase().replace(/[^a-z0-9]/g, "");
 }
@@ -40,6 +46,42 @@ function fuzzyMatch(a: string, b: string): boolean {
   return false;
 }
 
+/* ─── Expandable list section ─── */
+function ExpandableList({
+  items,
+  maxDemand,
+  previewCount,
+  wrapClass,
+  renderItem,
+}: {
+  items: MatchedSkill[];
+  maxDemand: number;
+  previewCount: number;
+  wrapClass?: string;
+  renderItem: (item: MatchedSkill, maxDemand: number) => React.ReactNode;
+}) {
+  const [expanded, setExpanded] = useState(false);
+  const visible = expanded ? items : items.slice(0, previewCount);
+  const hasMore = items.length > previewCount;
+
+  return (
+    <>
+      <div className={wrapClass || "space-y-1.5"}>
+        {visible.map((item) => renderItem(item, maxDemand))}
+      </div>
+      {hasMore && (
+        <button
+          onClick={() => setExpanded(!expanded)}
+          className="flex items-center gap-1 mt-3 text-[10px] font-medium text-primary hover:text-primary/80 transition-colors"
+        >
+          {expanded ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
+          {expanded ? "Show less" : `Show all ${items.length} skills`}
+        </button>
+      )}
+    </>
+  );
+}
+
 export default function SkillsGapMatrix({ schoolId, schoolName }: Props) {
   const [courses, setCourses] = useState<CourseData[]>([]);
   const [marketSkills, setMarketSkills] = useState<MarketSkill[]>([]);
@@ -48,8 +90,6 @@ export default function SkillsGapMatrix({ schoolId, schoolName }: Props) {
   useEffect(() => {
     async function load() {
       setLoading(true);
-
-      // Fetch school courses AND aggregated market skills in parallel
       const [courseRes, marketRes] = await Promise.all([
         supabase
           .from("school_courses")
@@ -57,7 +97,6 @@ export default function SkillsGapMatrix({ schoolId, schoolName }: Props) {
           .eq("school_id", schoolId),
         supabase.rpc("get_market_skill_demand", { top_n: 100 }),
       ]);
-
       setCourses((courseRes.data as CourseData[]) || []);
       setMarketSkills((marketRes.data as MarketSkill[]) || []);
       setLoading(false);
@@ -68,7 +107,6 @@ export default function SkillsGapMatrix({ schoolId, schoolName }: Props) {
   const analysis = useMemo(() => {
     if (courses.length === 0 || marketSkills.length === 0) return null;
 
-    // Aggregate all school skills (normalized)
     const schoolSkillsSet = new Set<string>();
     const schoolToolsSet = new Set<string>();
     let aiProgramCount = 0;
@@ -79,9 +117,7 @@ export default function SkillsGapMatrix({ schoolId, schoolName }: Props) {
       if (c.ai_content_flag) aiProgramCount++;
     });
 
-    // Match each market skill against school skills
-    const matched: { skill: string; demand: { count: number; avgExposure: number; avgImpact: number; highPriority: number }; covered: boolean }[] = [];
-    
+    const matched: MatchedSkill[] = [];
     marketSkills.forEach((ms) => {
       const covered = [...schoolSkillsSet].some((ss) => fuzzyMatch(ss, normalize(ms.skill_name)));
       matched.push({
@@ -96,16 +132,13 @@ export default function SkillsGapMatrix({ schoolId, schoolName }: Props) {
       });
     });
 
-    // Gaps = high demand but not covered
     const gaps = matched.filter((m) => !m.covered).sort((a, b) => b.demand.count - a.demand.count);
     const strengths = matched.filter((m) => m.covered).sort((a, b) => b.demand.count - a.demand.count);
 
-    // Coverage score
-    const coveragePercent = matched.length > 0 
-      ? Math.round((strengths.length / matched.length) * 100) 
+    const coveragePercent = matched.length > 0
+      ? Math.round((strengths.length / matched.length) * 100)
       : 0;
 
-    // AI readiness
     const aiReadinessPercent = courses.length > 0
       ? Math.round((aiProgramCount / courses.length) * 100)
       : 0;
@@ -186,8 +219,11 @@ export default function SkillsGapMatrix({ schoolId, schoolName }: Props) {
           <p className="text-[10px] text-muted-foreground mb-3">
             These high-demand market skills aren't covered by any program.
           </p>
-          <div className="space-y-1.5 max-h-64 overflow-y-auto pr-1">
-            {analysis.gaps.slice(0, 30).map((g) => (
+          <ExpandableList
+            items={analysis.gaps}
+            maxDemand={analysis.gaps[0]?.demand.count || 1}
+            previewCount={15}
+            renderItem={(g, maxDemand) => (
               <div key={g.skill} className="flex items-center justify-between gap-2 py-1 px-2 rounded hover:bg-muted/30">
                 <div className="flex items-center gap-2 min-w-0">
                   <span className="text-xs text-foreground truncate">{g.skill}</span>
@@ -200,12 +236,12 @@ export default function SkillsGapMatrix({ schoolId, schoolName }: Props) {
                 <div className="flex items-center gap-2 shrink-0">
                   <span className="text-[10px] text-muted-foreground">{g.demand.count} tasks</span>
                   <div className="w-16">
-                    <Progress value={Math.min(100, (g.demand.count / Math.max(analysis.gaps[0]?.demand.count || 1, 1)) * 100)} className="h-1" />
+                    <Progress value={Math.min(100, (g.demand.count / Math.max(maxDemand, 1)) * 100)} className="h-1" />
                   </div>
                 </div>
               </div>
-            ))}
-          </div>
+            )}
+          />
         </CardContent>
       </Card>
 
@@ -218,8 +254,12 @@ export default function SkillsGapMatrix({ schoolId, schoolName }: Props) {
               Covered Skills — Market Aligned
             </span>
           </div>
-          <div className="flex flex-wrap gap-1.5 max-h-40 overflow-y-auto">
-            {analysis.strengths.slice(0, 40).map((s) => (
+          <ExpandableList
+            items={analysis.strengths}
+            maxDemand={0}
+            previewCount={20}
+            wrapClass="flex flex-wrap gap-1.5"
+            renderItem={(s) => (
               <Badge
                 key={s.skill}
                 variant="outline"
@@ -229,8 +269,8 @@ export default function SkillsGapMatrix({ schoolId, schoolName }: Props) {
                 {s.skill}
                 <span className="ml-1 text-muted-foreground">({s.demand.count})</span>
               </Badge>
-            ))}
-          </div>
+            )}
+          />
         </CardContent>
       </Card>
     </div>
