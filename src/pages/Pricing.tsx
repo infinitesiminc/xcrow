@@ -44,7 +44,7 @@ const faqs = [
   { q: "What does Pro unlock?", a: "Pro removes all simulation limits, unlocks full 3-ring growth tracking (Foundation, AI Mastery, Human Edge) on your skill territory, and gives you access to the AI career coach." },
   { q: "How does the School plan work?", a: "We work with universities to create custom packages based on student count, programs, and desired outcomes. Contact our team to discuss pricing and start a free pilot." },
   { q: "Can I cancel anytime?", a: "Absolutely. Cancel from your settings and you'll keep access until the end of your billing period." },
-  { q: "What if my school already has a license?", a: "If your university has a crowy.ai license, your school admin will invite you via email. You'll automatically get Pro access at no cost to you." },
+  { q: "What if my school already has a license?", a: "If your university has a Crowy.ai license, your school admin will invite you via email. You'll automatically get Pro access at no cost to you." },
   { q: "Do schools get a free pilot?", a: "Yes — we offer a no-cost pilot so schools can see the impact before committing. Talk to our team to get started." },
 ];
 
