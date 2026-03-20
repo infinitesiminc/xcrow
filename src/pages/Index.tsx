@@ -158,6 +158,7 @@ const Index = () => {
   const [territoryOpen, setTerritoryOpen] = useState(false);
   const [lastPracticedSkillId, setLastPracticedSkillId] = useState<string | null>("code-dev");
   const [hasOpenedTerritory, setHasOpenedTerritory] = useState(false);
+  const [territoryReady, setTerritoryReady] = useState(false);
 
   const [realSkills, setRealSkills] = useState<SkillXP[]>([]);
   const [targetSkillIds, setTargetSkillIds] = useState<Set<string>>(new Set());
