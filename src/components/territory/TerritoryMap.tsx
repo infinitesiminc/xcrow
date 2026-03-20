@@ -97,7 +97,7 @@ export default function TerritoryMap({
     const skillMap = new Map(skills?.map(s => [s.id, s]));
     const claimedIds = new Set(skills?.filter(s => s.xp > 0).map(s => s.id) || []);
 
-    for (const skill of SKILL_TAXONOMY) {
+    for (const skill of source) {
       const sx = skillMap.get(skill.id);
 
       let state: TileState;
@@ -129,7 +129,7 @@ export default function TerritoryMap({
     }
 
     return states;
-  }, [skills, targetSkillIds, demoMode, highlightedSkillIds]);
+  }, [skills, targetSkillIds, demoMode, highlightedSkillIds, source]);
 
   // Build node position lookup
   const nodePositions = useMemo(() => {
