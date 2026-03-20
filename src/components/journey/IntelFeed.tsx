@@ -176,7 +176,7 @@ export default function IntelFeed({ skills, savedRoles }: IntelFeedProps) {
                     <p className="text-[9px] font-mono font-bold" style={{ color: "hsl(180, 40%, 55%)" }}>
                       {role.coverage}%
                     </p>
-                    <p className="text-[7px] text-white/20">match</p>
+                    <p className="text-[7px] text-white/25">match</p>
                   </div>
                 </motion.div>
               ))}
