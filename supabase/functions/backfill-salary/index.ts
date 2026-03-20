@@ -20,13 +20,14 @@ Deno.serve(async (req) => {
 
     const { offset = 0, dry_run = false } = await req.json().catch(() => ({}));
 
+    console.log("Starting backfill, offset:", offset, "dry_run:", dry_run);
     // Fetch jobs that have descriptions with likely salary data
     const { data: jobs, error } = await sb
       .from("jobs")
       .select("id, title, description")
       .not("description", "is", null)
       .is("salary_min", null)
-      .like("description", "%$%")
+      .order("imported_at", { ascending: false })
       .range(offset, offset + BATCH_SIZE - 1);
 
     if (error) throw error;
