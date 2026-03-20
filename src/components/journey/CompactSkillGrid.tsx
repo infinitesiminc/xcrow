@@ -1,11 +1,11 @@
 /**
- * CompactSkillGrid — Center panel of Mission Control.
- * Tiny gaming-style tiles for all 26 skills, fitting in viewport.
+ * CompactSkillGrid — Skill Tree with branching paths (center panel).
+ * Category branches radiate from center, skills are connected nodes.
  */
 import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Lock, Zap, Star, Trophy } from "lucide-react";
+import { Lock, Zap, Star, Trophy, TrendingUp, ArrowRight } from "lucide-react";
 import {
   type SkillXP,
   type SkillCategory,
@@ -17,7 +17,6 @@ import { exposureStyle } from "@/lib/exposure-colors";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
-import { TrendingUp, ArrowRight } from "lucide-react";
 
 interface CompactSkillGridProps {
   skills: SkillXP[];
@@ -25,6 +24,16 @@ interface CompactSkillGridProps {
 }
 
 const LEVEL_ICONS = [Lock, Zap, Star, Trophy];
+
+/* Node colors per category */
+const CAT_COLORS: Record<SkillCategory, { active: string; glow: string }> = {
+  technical: { active: "hsl(180, 45%, 48%)", glow: "hsl(180, 45%, 48%)" },
+  analytical: { active: "hsl(210, 50%, 55%)", glow: "hsl(210, 50%, 55%)" },
+  communication: { active: "hsl(45, 60%, 55%)", glow: "hsl(45, 60%, 55%)" },
+  leadership: { active: "hsl(270, 45%, 58%)", glow: "hsl(270, 45%, 58%)" },
+  creative: { active: "hsl(330, 45%, 55%)", glow: "hsl(330, 45%, 55%)" },
+  compliance: { active: "hsl(150, 40%, 48%)", glow: "hsl(150, 40%, 48%)" },
+};
 
 export default function CompactSkillGrid({ skills, skillTasks }: CompactSkillGridProps) {
   const navigate = useNavigate();
@@ -45,101 +54,146 @@ export default function CompactSkillGrid({ skills, skillTasks }: CompactSkillGri
   return (
     <>
       <div className="h-full flex flex-col overflow-hidden min-h-0">
-        <div className="px-3 py-2.5 border-b border-white/5 flex items-center justify-between">
-          <h2 className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/50">Skill Map</h2>
-          <span className="text-[9px] font-mono text-white/30">
-            {skills.filter(s => s.xp > 0).length}/{skills.length} active
+        {/* Header */}
+        <div className="px-5 py-3 border-b border-white/5 flex items-center justify-between">
+          <div>
+            <h2 className="text-xs font-bold uppercase tracking-[0.15em] text-white/60">Skill Tree</h2>
+            <p className="text-[9px] text-white/30 mt-0.5">Click any node to inspect · Practice to unlock branches</p>
+          </div>
+          <span className="text-[10px] font-mono text-white/30">
+            {skills.filter(s => s.xp > 0).length}/{skills.length}
           </span>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-3 min-h-0">
-          <div className="space-y-3">
-            {categories.map(cat => {
+        {/* Skill Tree */}
+        <div className="flex-1 overflow-y-auto p-4 min-h-0">
+          <div className="space-y-5">
+            {categories.map((cat, catIdx) => {
               const catSkills = grouped.get(cat);
               if (!catSkills || catSkills.length === 0) return null;
               const meta = CATEGORY_META[cat];
+              const colors = CAT_COLORS[cat];
+              const activeCount = catSkills.filter(s => s.xp > 0).length;
 
               return (
-                <div key={cat}>
-                  <div className="flex items-center gap-1.5 mb-1.5">
-                    <span className="text-xs">{meta.emoji}</span>
-                    <span className="text-[9px] font-bold uppercase tracking-[0.15em] text-white/40">{meta.label}</span>
+                <motion.div
+                  key={cat}
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: catIdx * 0.06, duration: 0.4 }}
+                >
+                  {/* Branch header */}
+                  <div className="flex items-center gap-2 mb-3">
+                    <div
+                      className="h-6 w-6 rounded-lg flex items-center justify-center text-xs"
+                      style={{
+                        background: `${colors.active}18`,
+                        border: `1px solid ${colors.active}30`,
+                      }}
+                    >
+                      {meta.emoji}
+                    </div>
+                    <span className="text-[11px] font-semibold text-white/55 uppercase tracking-wide">
+                      {meta.label}
+                    </span>
+                    <div className="flex-1 h-px" style={{ background: `${colors.active}15` }} />
+                    <span className="text-[9px] font-mono text-white/25">{activeCount}/{catSkills.length}</span>
                   </div>
-                  <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-5 gap-1.5">
-                    {catSkills.map((skill, i) => {
-                      const active = skill.xp > 0;
-                      const LevelIcon = LEVEL_ICONS[skill.levelIndex];
 
-                      return (
-                        <motion.button
-                          key={skill.id}
-                          initial={{ opacity: 0, scale: 0.95 }}
-                          animate={{ opacity: 1, scale: 1 }}
-                          transition={{ delay: i * 0.02 }}
-                          onClick={() => setSelectedSkill(skill)}
-                          className="relative rounded-lg p-2 text-left transition-all group"
-                          style={{
-                            background: active
-                              ? "hsla(240, 10%, 12%, 0.8)"
-                              : "hsla(240, 10%, 9%, 0.5)",
-                            border: active
-                              ? "1px solid hsla(180, 40%, 50%, 0.15)"
-                              : "1px solid hsla(0, 0%, 100%, 0.05)",
-                            boxShadow: active
-                              ? "0 0 8px hsla(180, 40%, 50%, 0.06)"
-                              : "none",
-                          }}
-                        >
-                          {/* Neon top accent */}
-                          {active && (
+                  {/* Nodes with connecting line */}
+                  <div className="relative pl-5">
+                    {/* Vertical connecting line */}
+                    <div
+                      className="absolute left-[14px] top-2 bottom-2 w-px"
+                      style={{ background: `${colors.active}15` }}
+                    />
+
+                    <div className="space-y-2">
+                      {catSkills.map((skill, i) => {
+                        const active = skill.xp > 0;
+                        const LevelIcon = LEVEL_ICONS[skill.levelIndex];
+
+                        return (
+                          <motion.button
+                            key={skill.id}
+                            initial={{ opacity: 0, x: -8 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: catIdx * 0.06 + i * 0.03 }}
+                            onClick={() => setSelectedSkill(skill)}
+                            className="w-full flex items-center gap-3 rounded-xl p-2.5 text-left transition-all group relative active:scale-[0.98]"
+                            style={{
+                              background: active
+                                ? "hsla(240, 10%, 14%, 0.6)"
+                                : "hsla(240, 10%, 10%, 0.4)",
+                              border: active
+                                ? `1px solid ${colors.active}22`
+                                : "1px solid hsla(0, 0%, 100%, 0.04)",
+                            }}
+                          >
+                            {/* Node dot on the connecting line */}
+                            <div className="absolute -left-[6px] top-1/2 -translate-y-1/2">
+                              <div
+                                className="h-2.5 w-2.5 rounded-full"
+                                style={{
+                                  background: active ? colors.active : "hsla(0,0%,100%,0.1)",
+                                  boxShadow: active ? `0 0 6px ${colors.glow}40` : "none",
+                                }}
+                              />
+                            </div>
+
+                            {/* Skill icon */}
                             <div
-                              className="absolute top-0 left-2 right-2 h-[2px] rounded-full"
+                              className="h-8 w-8 rounded-lg flex items-center justify-center shrink-0"
                               style={{
-                                background: `linear-gradient(90deg, hsl(180, 40%, 50%), hsl(270, 40%, 55%))`,
-                                opacity: 0.4,
+                                background: active ? `${colors.active}15` : "hsla(0,0%,100%,0.03)",
+                                border: `1px solid ${active ? `${colors.active}25` : "hsla(0,0%,100%,0.05)"}`,
                               }}
-                            />
-                          )}
+                            >
+                              <LevelIcon
+                                className="h-3.5 w-3.5"
+                                style={{ color: active ? colors.active : "hsla(0,0%,100%,0.15)" }}
+                              />
+                            </div>
 
-                          <div className="flex items-center justify-between mb-1">
-                            <LevelIcon
-                              className="h-3 w-3"
-                              style={{
-                                color: active ? "hsl(180, 40%, 55%)" : "hsla(0, 0%, 100%, 0.18)",
-                              }}
-                            />
+                            {/* Skill info */}
+                            <div className="flex-1 min-w-0">
+                              <p className={`text-[11px] font-medium leading-tight ${active ? "text-white/75" : "text-white/30"}`}>
+                                {skill.name}
+                              </p>
+                              {active ? (
+                                <div className="flex items-center gap-2 mt-1">
+                                  <div className="flex-1 h-1 rounded-full overflow-hidden" style={{ background: "hsla(0,0%,100%,0.06)" }}>
+                                    <div
+                                      className="h-full rounded-full"
+                                      style={{
+                                        width: `${skill.progress}%`,
+                                        background: colors.active,
+                                        opacity: 0.7,
+                                      }}
+                                    />
+                                  </div>
+                                  <span className="text-[8px] font-mono text-white/35 shrink-0">{skill.xp} XP</span>
+                                </div>
+                              ) : (
+                                <p className="text-[9px] text-white/18 mt-0.5">Practice to unlock</p>
+                              )}
+                            </div>
+
+                            {/* Level badge */}
                             {active && (
-                              <span className="text-[7px] font-mono font-bold" style={{ color: "hsl(270, 40%, 60%)" }}>
+                              <span
+                                className="text-[8px] font-mono font-bold shrink-0 px-1.5 py-0.5 rounded"
+                                style={{ color: colors.active, background: `${colors.active}12` }}
+                              >
                                 {skill.level.slice(0, 3).toUpperCase()}
                               </span>
                             )}
-                          </div>
-
-                          <p className={`text-[9px] font-medium leading-tight truncate ${active ? "text-white/75" : "text-white/30"}`}>
-                            {skill.name}
-                          </p>
-
-                          {active ? (
-                            <div className="mt-1">
-                              <div className="h-1 rounded-full overflow-hidden" style={{ background: "hsla(0,0%,100%,0.06)" }}>
-                                <div
-                                  className="h-full rounded-full transition-all"
-                                  style={{
-                                    width: `${skill.progress}%`,
-                                    background: "linear-gradient(90deg, hsl(180, 40%, 50%), hsl(270, 40%, 55%))",
-                                  }}
-                                />
-                              </div>
-                              <p className="text-[7px] font-mono text-white/30 mt-0.5">{skill.xp} XP</p>
-                            </div>
-                          ) : (
-                            <p className="text-[7px] text-white/20 mt-1">locked</p>
-                          )}
-                        </motion.button>
-                      );
-                    })}
+                          </motion.button>
+                        );
+                      })}
+                    </div>
                   </div>
-                </div>
+                </motion.div>
               );
             })}
           </div>
