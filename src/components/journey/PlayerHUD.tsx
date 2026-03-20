@@ -130,7 +130,7 @@ export default function PlayerHUD({ skills, uniqueTasks, isEmpty }: PlayerHUDPro
             onClick={() => navigate("/")}
             className="w-full flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-[11px] font-medium transition-colors"
             style={{
-              background: "linear-gradient(135deg, hsl(180, 90%, 50%), hsl(270, 80%, 60%))",
+              background: "linear-gradient(135deg, hsl(180, 40%, 42%), hsl(270, 40%, 50%))",
               color: "white",
             }}
           >

@@ -182,7 +182,7 @@ export default function IntelFeed({ skills, savedRoles }: IntelFeedProps) {
               ))}
             </div>
           ) : (
-            <p className="text-[9px] text-white/20">Save roles to track unlocks</p>
+            <p className="text-[9px] text-white/25">Save roles to track unlocks</p>
           )}
         </div>
       </div>
