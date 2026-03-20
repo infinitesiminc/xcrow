@@ -391,15 +391,15 @@ const Index = () => {
                   transition={{ duration: 0.4 }}
                   className="h-full"
                 >
-                  {isSignedIn ? (
-                    <TerritoryGrid
+                    {isSignedIn ? (
+                    <TerritoryMap
                       skills={realSkills}
                       targetSkillIds={targetSkillIds}
                       onTileClick={handleTileClick}
                     />
                   ) : (
                     <div className="h-full flex flex-col">
-                      <TerritoryGrid
+                      <TerritoryMap
                         demoMode
                         highlightedSkillIds={demoHighlighted}
                         onTileClick={handleTileClick}
