@@ -351,16 +351,16 @@ export default function Students() {
             </motion.div>
 
             <motion.h1 variants={fadeUp} custom={1} className="text-4xl sm:text-5xl lg:text-6xl font-bold font-display leading-[1.08] tracking-tight mb-6">
-              AI doesn't replace you.{" "}
+              Your degree is the foundation.{" "}
               <br />
               <span className="bg-gradient-to-r from-brand-human to-brand-ai bg-clip-text text-transparent">
-                It promotes you.
+                This is your edge.
               </span>
             </motion.h1>
 
             <motion.p variants={fadeUp} custom={2} className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto mb-10 leading-relaxed">
-              Every role is shifting up the value chain. We show you the higher-purpose tasks
-              emerging in your field — and let you start practicing them today.
+              See exactly which skills employers need that your courses don't cover —
+              then practice them before you graduate.
             </motion.p>
 
             <motion.div variants={fadeUp} custom={3} className="flex flex-col sm:flex-row items-center justify-center gap-3">
