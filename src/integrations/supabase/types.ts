@@ -219,6 +219,7 @@ export type Database = {
           correct_answers: number
           department: string | null
           domain_judgment_score: number | null
+          elevation_narrative: Json | null
           experience_level: string | null
           human_value_add_score: number | null
           id: string
@@ -237,6 +238,7 @@ export type Database = {
           correct_answers?: number
           department?: string | null
           domain_judgment_score?: number | null
+          elevation_narrative?: Json | null
           experience_level?: string | null
           human_value_add_score?: number | null
           id?: string
@@ -255,6 +257,7 @@ export type Database = {
           correct_answers?: number
           department?: string | null
           domain_judgment_score?: number | null
+          elevation_narrative?: Json | null
           experience_level?: string | null
           human_value_add_score?: number | null
           id?: string
