@@ -4,7 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { supabase } from "@/integrations/supabase/client";
 import { Map, Bookmark, X } from "lucide-react";
-import HomepageChat from "@/components/HomepageChat";
+import HomepageChat, { type ViewContext } from "@/components/HomepageChat";
 import RolePreviewPanel from "@/components/RolePreviewPanel";
 import InlineRoleCarousel, { BatchedRoleCarousel, type RoleResult, type RoleBatch } from "@/components/InlineRoleCarousel";
 import SkillSuggestionCards from "@/components/SkillSuggestionCards";
