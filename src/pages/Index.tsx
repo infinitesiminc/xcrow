@@ -10,6 +10,7 @@ import InlineRoleCarousel, { BatchedRoleCarousel, type RoleResult, type RoleBatc
 import SkillSuggestionCards from "@/components/SkillSuggestionCards";
 import HumanEdgesCard, { type EdgeContext } from "@/components/HumanEdgesCard";
 import TerritoryMap from "@/components/territory/TerritoryMap";
+import TerritoryOverlay from "@/components/territory/TerritoryOverlay";
 import CompactHUD from "@/components/territory/CompactHUD";
 import MyRolesPanel from "@/components/territory/MyRolesPanel";
 import {
