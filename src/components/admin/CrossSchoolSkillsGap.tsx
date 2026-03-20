@@ -234,89 +234,83 @@ export default function CrossSchoolSkillsGap() {
         </div>
       </div>
 
-      {/* Legend */}
-      <div className="flex flex-wrap items-center gap-5 text-[10px] text-muted-foreground">
-        <span className="flex items-center gap-1">
-          <span className="w-2.5 h-2.5 rounded-sm" style={{ background: coverageColor(0) }} />0%
-          <span className="w-2.5 h-2.5 rounded-sm" style={{ background: coverageColor(50) }} />50%
-          <span className="w-2.5 h-2.5 rounded-sm" style={{ background: coverageColor(100) }} />100%
-          coverage
-        </span>
-        <span className="flex items-center gap-1">
-          <span className="w-2.5 h-2.5 rounded-sm" style={{ background: exposureColor(20) }} />low
-          <span className="w-2.5 h-2.5 rounded-sm" style={{ background: exposureColor(80) }} />high AI
-        </span>
-        <span className="flex items-center gap-1">
-          <span className="w-2.5 h-2.5 rounded-sm" style={{ background: demandColor(10, 100) }} />low
-          <span className="w-2.5 h-2.5 rounded-sm" style={{ background: demandColor(100, 100) }} />high demand
-        </span>
-      </div>
+      {view === "bubble" ? (
+        <SkillBubbleMap rows={rows} />
+      ) : (
+        <>
+          {/* Legend */}
+          <div className="flex flex-wrap items-center gap-5 text-[10px] text-muted-foreground">
+            <span className="flex items-center gap-1">
+              <span className="w-2.5 h-2.5 rounded-sm" style={{ background: coverageColor(0) }} />0%
+              <span className="w-2.5 h-2.5 rounded-sm" style={{ background: coverageColor(50) }} />50%
+              <span className="w-2.5 h-2.5 rounded-sm" style={{ background: coverageColor(100) }} />100%
+              coverage
+            </span>
+            <span className="flex items-center gap-1">
+              <span className="w-2.5 h-2.5 rounded-sm" style={{ background: exposureColor(20) }} />low
+              <span className="w-2.5 h-2.5 rounded-sm" style={{ background: exposureColor(80) }} />high AI
+            </span>
+            <span className="flex items-center gap-1">
+              <span className="w-2.5 h-2.5 rounded-sm" style={{ background: demandColor(10, 100) }} />low
+              <span className="w-2.5 h-2.5 rounded-sm" style={{ background: demandColor(100, 100) }} />high demand
+            </span>
+          </div>
 
-      {/* Heatmap */}
-      <div className="rounded-xl border border-border/60 bg-card/80 overflow-hidden">
-        {/* Header with sort buttons */}
-        <div className="grid grid-cols-[1fr_72px_72px_72px] bg-muted/40 px-2 py-1.5 border-b border-border/40 sticky top-0 z-10">
-          <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground pl-7">Skill</span>
-          <SortBtn label="Cov" active={sortKey === "coverage"} dir={sortDir} onClick={() => toggleSort("coverage")} />
-          <SortBtn label="AI" active={sortKey === "exposure"} dir={sortDir} onClick={() => toggleSort("exposure")} />
-          <SortBtn label="Demand" active={sortKey === "demand"} dir={sortDir} onClick={() => toggleSort("demand")} />
-        </div>
+          {/* Heatmap */}
+          <div className="rounded-xl border border-border/60 bg-card/80 overflow-hidden">
+            <div className="grid grid-cols-[1fr_72px_72px_72px] bg-muted/40 px-2 py-1.5 border-b border-border/40 sticky top-0 z-10">
+              <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground pl-7">Skill</span>
+              <SortBtn label="Cov" active={sortKey === "coverage"} dir={sortDir} onClick={() => toggleSort("coverage")} />
+              <SortBtn label="AI" active={sortKey === "exposure"} dir={sortDir} onClick={() => toggleSort("exposure")} />
+              <SortBtn label="Demand" active={sortKey === "demand"} dir={sortDir} onClick={() => toggleSort("demand")} />
+            </div>
 
-        <div className="max-h-[520px] overflow-y-auto">
-          {[...grouped.entries()].map(([cat, skills]) => {
-            const collapsed = collapsedCats.has(cat);
-            const catAvg = Math.round(skills.reduce((s, r) => s + r.coveragePct, 0) / skills.length);
-            return (
-              <div key={cat}>
-                {/* Category header */}
-                <button
-                  onClick={() => toggleCat(cat)}
-                  className="w-full grid grid-cols-[1fr_72px_72px_72px] items-center px-2 py-1.5 bg-muted/20 hover:bg-muted/40 transition-colors border-b border-border/20 text-left"
-                >
-                  <span className="flex items-center gap-1.5 text-[11px] font-semibold text-foreground">
-                    {collapsed ? <ChevronRight className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
-                    {cat}
-                    <span className="text-[10px] font-normal text-muted-foreground ml-1">({skills.length})</span>
-                  </span>
-                  <span className="text-center">
-                    <span
-                      className="inline-block w-10 h-5 rounded text-[9px] font-mono font-bold text-white leading-5 text-center"
-                      style={{ background: coverageColor(catAvg) }}
+            <div className="max-h-[520px] overflow-y-auto">
+              {[...grouped.entries()].map(([cat, skills]) => {
+                const collapsed = collapsedCats.has(cat);
+                const catAvg = Math.round(skills.reduce((s, r) => s + r.coveragePct, 0) / skills.length);
+                return (
+                  <div key={cat}>
+                    <button
+                      onClick={() => toggleCat(cat)}
+                      className="w-full grid grid-cols-[1fr_72px_72px_72px] items-center px-2 py-1.5 bg-muted/20 hover:bg-muted/40 transition-colors border-b border-border/20 text-left"
                     >
-                      {catAvg}%
-                    </span>
-                  </span>
-                  <span />
-                  <span />
-                </button>
+                      <span className="flex items-center gap-1.5 text-[11px] font-semibold text-foreground">
+                        {collapsed ? <ChevronRight className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
+                        {cat}
+                        <span className="text-[10px] font-normal text-muted-foreground ml-1">({skills.length})</span>
+                      </span>
+                      <span className="text-center">
+                        <span
+                          className="inline-block w-10 h-5 rounded text-[9px] font-mono font-bold text-white leading-5 text-center"
+                          style={{ background: coverageColor(catAvg) }}
+                        >
+                          {catAvg}%
+                        </span>
+                      </span>
+                      <span />
+                      <span />
+                    </button>
 
-                {/* Skill rows */}
-                {!collapsed &&
-                  skills.map((d) => (
-                    <div
-                      key={d.skill}
-                      className="grid grid-cols-[1fr_72px_72px_72px] items-center px-2 py-1 hover:bg-muted/10 transition-colors"
-                    >
-                      <span className="text-[11px] text-foreground truncate pl-5">{d.skill}</span>
-                      <Cell bg={coverageColor(d.coveragePct)} label={`${d.coveragePct}%`} light />
-                      <Cell
-                        bg={exposureColor(d.exposure)}
-                        label={`${d.exposure}%`}
-                        light={d.exposure > 50}
-                      />
-                      <Cell
-                        bg={demandColor(d.demand, d.maxDemand)}
-                        label={String(d.demand)}
-                        light={d.demand / d.maxDemand > 0.5}
-                      />
-                    </div>
-                  ))}
-              </div>
-            );
-          })}
-        </div>
-      </div>
-    </div>
+                    {!collapsed &&
+                      skills.map((d) => (
+                        <div
+                          key={d.skill}
+                          className="grid grid-cols-[1fr_72px_72px_72px] items-center px-2 py-1 hover:bg-muted/10 transition-colors"
+                        >
+                          <span className="text-[11px] text-foreground truncate pl-5">{d.skill}</span>
+                          <Cell bg={coverageColor(d.coveragePct)} label={`${d.coveragePct}%`} light />
+                          <Cell bg={exposureColor(d.exposure)} label={`${d.exposure}%`} light={d.exposure > 50} />
+                          <Cell bg={demandColor(d.demand, d.maxDemand)} label={String(d.demand)} light={d.demand / d.maxDemand > 0.5} />
+                        </div>
+                      ))}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </>
+      )}
   );
 }
 
