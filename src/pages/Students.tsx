@@ -136,10 +136,19 @@ function Stat({ value, label, delay, color }: { value: string; label: string; de
 export default function Students() {
   const navigate = useNavigate();
   const { user, openAuthModal } = useAuth();
+  const [simJob, setSimJob] = useState<{ role: string; company: string; task: string } | null>(null);
 
   const handleGetStarted = () => {
     if (user) navigate("/");
     else openAuthModal?.();
+  };
+
+  const handleLaunchSim = (job: { role: string; company: string; task: string }) => {
+    if (!user) {
+      openAuthModal?.();
+      return;
+    }
+    setSimJob(job);
   };
 
   return (
