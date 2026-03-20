@@ -44,7 +44,7 @@ export default function CompactSkillGrid({ skills, skillTasks }: CompactSkillGri
 
   return (
     <>
-      <div className="h-full flex flex-col overflow-hidden">
+      <div className="h-full flex flex-col overflow-hidden min-h-0">
         <div className="px-3 py-2.5 border-b border-white/5 flex items-center justify-between">
           <h2 className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/50">Skill Map</h2>
           <span className="text-[9px] font-mono text-white/30">
