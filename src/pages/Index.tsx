@@ -110,6 +110,12 @@ const Index = () => {
 
   const handleChatStart = useCallback(() => setHasInteracted(true), []);
 
+  const handleRolesAskChat = useCallback((prompt: string) => {
+    setExternalPrompt(prompt);
+    setRolesOpen(false);
+    setHasInteracted(true);
+  }, []);
+
   // Accumulate role batches instead of replacing
   const handleRolesFound = useCallback((roles: RoleResult[]) => {
     if (roles.length === 0) return; // Skip empty batches
