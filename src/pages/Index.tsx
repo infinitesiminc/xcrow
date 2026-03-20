@@ -192,7 +192,7 @@ const Index = () => {
       ]);
 
       const sims = (simsRes.data || []) as SimRecord[];
-      setRealSkills(aggregateSkillXP(sims));
+      setRealSkills(aggregateSkillXP(sims, taxonomy));
 
       const targetRoles = ((profileRes.data as any)?.target_roles || []) as {
         job_id: string;
@@ -208,7 +208,7 @@ const Index = () => {
           for (const s of c.skill_names || []) names.add(s.toLowerCase());
         }
         const ids = new Set<string>();
-        for (const skill of SKILL_TAXONOMY) {
+        for (const skill of taxonomy) {
           if (names.has(skill.name.toLowerCase())) ids.add(skill.id);
           for (const kw of skill.keywords) {
             if (names.has(kw)) ids.add(skill.id);
@@ -217,7 +217,7 @@ const Index = () => {
         setTargetSkillIds(ids);
       }
     })();
-  }, [user]);
+  }, [user, taxonomy]);
 
   // Auto-open territory after first simulation completion (or demo seed)
   useEffect(() => {
