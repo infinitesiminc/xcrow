@@ -107,8 +107,8 @@ function TerritoryPreview() {
 function ChatPreview() {
   const messages = [
     { role: "user", text: "What skills do I need for product management?" },
-    { role: "ai", text: "Great question! PMs need 3 key skill dimensions. Let me show you which ones AI is reshaping, what tools to master, and where your human edge matters most..." },
-    { role: "ai", text: "I found 14 live PM roles. Your territory shows strong Communication — try a Stakeholder Alignment sim to claim your next tile! 🎯" },
+    { role: "ai", text: "🐦‍⬛ Great question! Let me scout that out. PMs need 3 key skill dimensions — I'll show you which ones AI is reshaping, what tools to master, and where your human edge wins..." },
+    { role: "ai", text: "Found 14 live PM roles. Your territory shows strong Communication — try a Stakeholder Alignment sim to claim your next tile! 🎯" },
   ];
 
   return (
