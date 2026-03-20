@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
-import { X, MapPin, Loader2, Play, Maximize2, ChevronLeft, CheckCircle2, Bot, Trophy, Bookmark, BookmarkCheck, GraduationCap, MessageSquare, BarChart3, FileText, Users, Search, Settings, Globe, Shield, Lightbulb, PenTool, Code, TrendingUp, Megaphone, Target, Briefcase, Heart, Layers, Zap, ExternalLink, Star, Sparkles } from "lucide-react";
+import { X, MapPin, Loader2, Play, Maximize2, ChevronLeft, CheckCircle2, Bot, Bookmark, BookmarkCheck, GraduationCap, MessageSquare, BarChart3, FileText, Users, Search, Settings, Globe, Shield, Lightbulb, PenTool, Code, TrendingUp, Megaphone, Target, Briefcase, Heart, Layers, Zap, ExternalLink, Star, Sparkles, ChevronDown } from "lucide-react";
 import { matchTaskToSkills, SKILL_TAXONOMY } from "@/lib/skill-map";
 import { motion, AnimatePresence } from "framer-motion";
 import ReactMarkdown from "react-markdown";
@@ -23,8 +23,6 @@ function taskChipStyle(aiScore: number) {
   if (aiScore >= 40) return { badge: "bg-amber-500/15 text-amber-400", accent: "text-amber-400" };
   return { badge: "bg-emerald-500/15 text-emerald-400", accent: "text-emerald-400" };
 }
-
-
 
 interface RolePreviewPanelProps {
   role: RoleResult;
@@ -85,7 +83,6 @@ export default function RolePreviewPanel({ role, onClose, edgeContext }: RolePre
   const [completedTasks, setCompletedTasks] = useState<Set<string>>(new Set());
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [jobDescription, setJobDescription] = useState<string | null>(null);
-  
 
   const hue1 = hashToHue(role.title);
   const hue2 = (hue1 + 60) % 360;
@@ -111,6 +108,7 @@ export default function RolePreviewPanel({ role, onClose, edgeContext }: RolePre
   useEffect(() => {
     setView("details");
     setSimTask(null);
+    setExpandedTask(null);
     if (!role.jobId) { setLoading(false); return; }
     (async () => {
       setLoading(true);
@@ -126,7 +124,6 @@ export default function RolePreviewPanel({ role, onClose, edgeContext }: RolePre
       setJobDescription(jobRes.data?.description || null);
       setLoading(false);
 
-      // Auto-trigger analysis if no tasks exist
       if ((!taskRes.data || taskRes.data.length === 0) && role.jobId) {
         triggerAnalysis(role.jobId, role.title, role.company || undefined, jobRes.data?.description || undefined);
       }
@@ -140,16 +137,13 @@ export default function RolePreviewPanel({ role, onClose, edgeContext }: RolePre
         body: { jobId, jobTitle: title, company, description },
       });
       if (error) throw error;
-      if (data?.tasks) {
-        setTasks(data.tasks);
-      }
+      if (data?.tasks) setTasks(data.tasks);
     } catch (err) {
       console.error("Analysis failed:", err);
     }
     setAnalyzing(false);
   };
 
-  // Fetch completed simulations
   const fetchCompletions = useCallback(async () => {
     if (!user) return;
     const { data } = await supabase.from("completed_simulations").select("task_name").eq("user_id", user.id);
@@ -158,7 +152,6 @@ export default function RolePreviewPanel({ role, onClose, edgeContext }: RolePre
 
   useEffect(() => { fetchCompletions(); }, [fetchCompletions]);
 
-  // Bookmark state
   useEffect(() => {
     if (!user || !role.title) return;
     (async () => {
@@ -211,10 +204,13 @@ export default function RolePreviewPanel({ role, onClose, edgeContext }: RolePre
     fetchCompletions();
   };
 
-  // Simulation overlay — always full-screen with one-click kill
+  const toggleExpand = (taskName: string) => {
+    setExpandedTask(prev => prev === taskName ? null : taskName);
+  };
+
+  // Simulation overlay
   const simulationOverlay = view === "simulation" && simTask && (
     <div className="fixed inset-0 z-[100] bg-background flex flex-col">
-      {/* Simulation content — no extra header, SimulatorModal has its own */}
       <div className="flex-1 overflow-hidden">
         <SimulatorModal
           open={true}
@@ -234,11 +230,10 @@ export default function RolePreviewPanel({ role, onClose, edgeContext }: RolePre
     </div>
   );
 
-  // Enlarged overlay (full-screen portal)
+  // Enlarged overlay (full-screen)
   const completedCount = tasks.filter(t => completedTasks.has(t.cluster_name)).length;
   const enlargedOverlay = (
     <div className="fixed inset-0 z-[100] bg-background overflow-y-auto">
-      {/* Sticky header */}
       <div className="sticky top-0 z-20 bg-background/95 backdrop-blur-md border-b border-border px-4 py-3 flex items-center justify-between">
         <button onClick={onClose} className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
           <ChevronLeft className="h-4 w-4" /> Back to chat
@@ -250,7 +245,6 @@ export default function RolePreviewPanel({ role, onClose, edgeContext }: RolePre
       </div>
 
       <div className="max-w-2xl mx-auto px-4 py-5">
-        {/* Compact hero row */}
         <div className="flex items-center gap-4 mb-6">
           <ReadinessRing readiness={readiness} size={64} />
           <div className="min-w-0 flex-1">
@@ -259,7 +253,6 @@ export default function RolePreviewPanel({ role, onClose, edgeContext }: RolePre
           </div>
         </div>
 
-        {/* Progress */}
         {completedCount > 0 && (
           <div className="mb-4">
             <div className="flex justify-between text-[10px] text-muted-foreground mb-1">
@@ -272,7 +265,6 @@ export default function RolePreviewPanel({ role, onClose, edgeContext }: RolePre
           </div>
         )}
 
-        {/* Edge context banner in breakdown */}
         {edgeContext && edgeTaskSet.size > 0 && (
           <div className="flex items-center gap-2 mb-4 px-3 py-2 rounded-xl bg-primary/10 border border-primary/20">
             <Sparkles className="h-3.5 w-3.5 text-primary shrink-0" />
@@ -282,7 +274,6 @@ export default function RolePreviewPanel({ role, onClose, edgeContext }: RolePre
           </div>
         )}
 
-        {/* Task cards */}
         <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">Tasks & AI Impact</h3>
         <div className="space-y-3">
           {[...tasks]
@@ -306,7 +297,6 @@ export default function RolePreviewPanel({ role, onClose, edgeContext }: RolePre
                 transition={{ delay: i * 0.04 }}
                 className={`group rounded-xl border bg-card hover:border-primary/30 transition-all overflow-hidden ${isEdgeTask ? "border-primary/40 ring-1 ring-primary/20" : "border-border/50"}`}
               >
-                {/* Accent top strip */}
                 <div className="h-1" style={{ background: isEdgeTask ? `hsl(var(--primary))` : `linear-gradient(90deg, hsl(${taskHue} 60% 50%), hsl(${(taskHue + 40) % 360} 50% 45%))` }} />
                 <div className="p-4">
                   <div className="flex items-start gap-3">
@@ -320,28 +310,7 @@ export default function RolePreviewPanel({ role, onClose, edgeContext }: RolePre
                         <h4 className="text-sm font-semibold text-foreground leading-snug">{t.cluster_name}</h4>
                         {done && <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400 shrink-0" />}
                       </div>
-                      {isEdgeTask && (
-                        <p className="text-[10px] text-primary font-medium mb-1">Builds your {edgeContext!.label} edge</p>
-                      )}
                       {t.description && <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2">{t.description}</p>}
-                      {/* Skill pills */}
-                      {(() => {
-                        const skillIds = matchTaskToSkills(t.cluster_name);
-                        if (skillIds.length === 0) return null;
-                        return (
-                          <div className="flex flex-wrap gap-1 mt-1.5">
-                            {skillIds.slice(0, 3).map(id => {
-                              const tax = SKILL_TAXONOMY.find(s => s.id === id);
-                              if (!tax) return null;
-                              return (
-                                <span key={id} className="text-[9px] px-1.5 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/15 font-medium">
-                                  +{tax.name}
-                                </span>
-                              );
-                            })}
-                          </div>
-                        );
-                      })()}
                     </div>
                     <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full shrink-0 ${style.badge}`}>{score}%</span>
                   </div>
@@ -364,218 +333,11 @@ export default function RolePreviewPanel({ role, onClose, edgeContext }: RolePre
     </div>
   );
 
-  // Enlarged overlay (full-screen)
   if (view === "enlarged" || view === "simulation") {
     return <>{view === "enlarged" && enlargedOverlay}{simulationOverlay}</>;
   }
 
-  // Task detail card — focused single-task view
-  if (view === "task-detail" && focusedTask) {
-    const score = focusedTask.ai_exposure_score ?? 0;
-    const style = taskChipStyle(score);
-    const done = completedTasks.has(focusedTask.cluster_name);
-    const TaskIcon = getTaskIcon(focusedTask.cluster_name);
-    const taskHue = hashToHue(focusedTask.cluster_name);
-
-    return (
-      <>{simulationOverlay}
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="h-full flex flex-col bg-card overflow-hidden">
-          {/* Header */}
-          <div className="flex items-center justify-between px-3 py-2 border-b border-border shrink-0">
-            <button onClick={() => setView("details")} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors">
-              <ChevronLeft className="h-3.5 w-3.5" /> Back
-            </button>
-            <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-muted/30 transition-colors">
-              <X className="h-3.5 w-3.5 text-muted-foreground" />
-            </button>
-          </div>
-
-          {/* Task detail content */}
-          <div className="flex-1 overflow-y-auto p-5 flex justify-center">
-            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-sm space-y-5">
-              {/* Task icon + accent */}
-              <div className="flex flex-col items-center text-center gap-3">
-                <div className="h-14 w-14 rounded-2xl flex items-center justify-center" style={{ background: `hsl(${taskHue} 40% 15%)` }}>
-                  <TaskIcon className="h-7 w-7" style={{ color: `hsl(${taskHue} 60% 65%)` }} />
-                </div>
-                <div>
-                  <h3 className="text-base font-bold text-foreground leading-snug">{focusedTask.cluster_name}</h3>
-                  <p className="text-xs text-muted-foreground mt-0.5">{role.title}{role.company ? ` · ${role.company}` : ""}</p>
-                </div>
-                {done && (
-                  <span className="inline-flex items-center gap-1 text-xs text-emerald-400 font-medium">
-                    <CheckCircle2 className="h-3.5 w-3.5" /> Previously practiced
-                  </span>
-                )}
-              </div>
-
-              {/* AI exposure badge */}
-              <div className="flex justify-center">
-                <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl ${style.badge}`}>
-                  <Bot className="h-4 w-4" />
-                  <span className="text-sm font-semibold">{score}% AI Exposure</span>
-                </div>
-              </div>
-
-              {/* Description */}
-              {focusedTask.description && (
-                <div className="rounded-xl bg-muted/20 p-4">
-                  <p className="text-sm text-foreground/80 leading-relaxed">{focusedTask.description}</p>
-                </div>
-              )}
-
-              {/* Meta tags */}
-              <div className="flex items-center justify-center gap-2 flex-wrap">
-                {focusedTask.ai_state && (
-                  <span className="text-[10px] px-2.5 py-1 rounded-full bg-muted/40 text-muted-foreground">{focusedTask.ai_state}</span>
-                )}
-                {focusedTask.impact_level && (
-                  <span className="text-[10px] px-2.5 py-1 rounded-full bg-muted/40 text-muted-foreground">{focusedTask.impact_level} impact</span>
-                )}
-                {focusedTask.priority && (
-                  <span className="text-[10px] px-2.5 py-1 rounded-full bg-muted/40 text-muted-foreground">{focusedTask.priority} priority</span>
-                )}
-              </div>
-            </motion.div>
-          </div>
-
-          {/* Footer CTA */}
-          <div className="p-4 border-t border-border shrink-0 space-y-2">
-            <button
-              onClick={() => startSimulation(focusedTask)}
-              className="w-full flex items-center justify-center gap-2 rounded-xl bg-primary text-primary-foreground py-3 text-sm font-semibold hover:bg-primary/90 transition-colors"
-            >
-              <Play className="h-4 w-4" /> {done ? "Practice Again" : "Practice Now"}
-            </button>
-            <button
-              onClick={() => setView("breakdown")}
-              className="w-full flex items-center justify-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors py-1.5"
-            >
-              See all {tasks.length} tasks →
-            </button>
-          </div>
-        </motion.div>
-      </>
-    );
-  }
-
-  // Breakdown view (inline in panel)
-  if (view === "breakdown") {
-    return (
-      <>{simulationOverlay}
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="h-full flex flex-col bg-card overflow-hidden">
-          {/* Header bar */}
-          <div className="flex items-center justify-between px-3 py-2 border-b border-border shrink-0">
-            <button onClick={() => setView("details")} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors">
-              <ChevronLeft className="h-3.5 w-3.5" /> Overview
-            </button>
-            <div className="flex items-center gap-1">
-              <button onClick={() => setView("enlarged")} className="p-1.5 rounded-lg hover:bg-muted/30 transition-colors" title="Enlarge">
-                <Maximize2 className="h-3.5 w-3.5 text-muted-foreground" />
-              </button>
-              <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-muted/30 transition-colors">
-                <X className="h-3.5 w-3.5 text-muted-foreground" />
-              </button>
-            </div>
-          </div>
-
-          {/* Readiness hero (compact) */}
-          <div className="flex items-center gap-4 px-4 py-3 border-b border-border/50 shrink-0">
-            <ReadinessRing readiness={readiness} size={56} />
-            <div className="min-w-0 flex-1">
-              <h3 className="text-sm font-bold text-foreground truncate">{role.title}</h3>
-              {role.company && <p className="text-xs text-muted-foreground truncate">{role.company}</p>}
-              <div className="flex gap-3 mt-1">
-                <span className="text-[10px] text-muted-foreground"><strong className="text-foreground">{role.risk || 0}%</strong> Risk</span>
-                <span className="text-[10px] text-muted-foreground"><strong className="text-foreground">{role.augmented}%</strong> Augmented</span>
-                <span className="text-[10px] text-muted-foreground"><strong className="text-foreground">{tasks.length}</strong> Tasks</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Progress */}
-          {completedCount > 0 && (
-            <div className="px-4 py-2 border-b border-border/50 shrink-0">
-              <div className="flex justify-between text-[10px] text-muted-foreground mb-1">
-                <span>Progress</span>
-                <span>{completedCount}/{tasks.length} done</span>
-              </div>
-              <div className="h-1 rounded-full bg-secondary overflow-hidden">
-                <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${(completedCount / tasks.length) * 100}%` }} />
-              </div>
-            </div>
-          )}
-
-          {/* Task list */}
-          <div className="flex-1 overflow-y-auto px-3 py-3 scrollbar-thin">
-            {/* Edge context banner */}
-            {edgeContext && edgeTaskSet.size > 0 && (
-              <div className="flex items-center gap-2 mb-3 px-3 py-2 rounded-xl bg-primary/10 border border-primary/20">
-                <Sparkles className="h-3.5 w-3.5 text-primary shrink-0" />
-                <p className="text-[11px] text-primary font-medium">
-                  Exploring <span className="font-bold">{edgeContext.label}</span> — {edgeTaskSet.size} task{edgeTaskSet.size > 1 ? "s" : ""} build{edgeTaskSet.size === 1 ? "s" : ""} this edge
-                </p>
-              </div>
-            )}
-            <div className="space-y-2">
-              {[...tasks]
-                .sort((a, b) => {
-                  const aEdge = edgeTaskSet.has(a.cluster_name) ? 1 : 0;
-                  const bEdge = edgeTaskSet.has(b.cluster_name) ? 1 : 0;
-                  return bEdge - aEdge;
-                })
-                .map((t, i) => {
-                const score = t.ai_exposure_score ?? 0;
-                const style = taskChipStyle(score);
-                const done = completedTasks.has(t.cluster_name);
-                const isEdgeTask = edgeTaskSet.has(t.cluster_name);
-                return (
-                  <button
-                    key={t.cluster_name}
-                    onClick={() => { setFocusedTask(t); setView("task-detail"); }}
-                    className={`group w-full text-left rounded-lg border p-2.5 hover:border-primary/30 transition-colors ${isEdgeTask ? "border-primary/40 ring-1 ring-primary/20 bg-primary/5" : "border-border/50 bg-muted/20"}`}
-                  >
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="flex items-center gap-2 min-w-0">
-                        {isEdgeTask ? <Sparkles className="h-3.5 w-3.5 text-primary shrink-0" /> : done ? <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400 shrink-0" /> : (() => { const TaskIcon = getTaskIcon(t.cluster_name); return <TaskIcon className="h-3.5 w-3.5 text-muted-foreground shrink-0" />; })()}
-                        <span className="text-sm font-medium text-foreground leading-snug">{t.cluster_name}</span>
-                      </div>
-                      <div className="flex items-center gap-2 shrink-0">
-                        <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${style.badge}`}>{score}%</span>
-                      </div>
-                    </div>
-                    {isEdgeTask && (
-                      <p className="text-[10px] text-primary font-medium mt-0.5 ml-5.5">Builds your {edgeContext!.label} edge</p>
-                    )}
-                    {t.description && (
-                      <p className="text-xs text-muted-foreground mt-1 leading-relaxed line-clamp-2">{t.description}</p>
-                    )}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Footer */}
-          <div className="p-3 border-t border-border shrink-0 flex gap-2">
-            <button onClick={toggleBookmark} className="h-9 px-3 rounded-xl border border-border flex items-center gap-1.5 text-xs hover:bg-muted/30 transition-colors">
-              {isBookmarked ? <BookmarkCheck className="h-3.5 w-3.5 text-primary" /> : <Bookmark className="h-3.5 w-3.5 text-muted-foreground" />}
-              {isBookmarked ? "Saved" : "Save"}
-            </button>
-            <button
-              onClick={() => setView("enlarged")}
-              className="flex-1 flex items-center justify-center gap-2 rounded-xl bg-primary text-primary-foreground py-2 text-sm font-medium hover:bg-primary/90 transition-colors"
-            >
-              <Maximize2 className="h-3.5 w-3.5" /> Enlarge View
-            </button>
-          </div>
-        </motion.div>
-        {simulationOverlay}
-      </>
-    );
-  }
-
-  // Details view (task-first — compact header, tasks immediately visible)
+  // ── Details view — expandable task cards ──
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.2 }} className="h-full flex flex-col bg-card overflow-hidden">
       {/* Compact header */}
@@ -615,7 +377,7 @@ export default function RolePreviewPanel({ role, onClose, edgeContext }: RolePre
         )}
       </div>
 
-      {/* Content — Tasks first */}
+      {/* Content — Expandable task cards */}
       <div className="flex-1 overflow-y-auto p-4 scrollbar-thin">
         {loading ? (
           <div className="flex items-center justify-center py-8"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></div>
@@ -636,26 +398,25 @@ export default function RolePreviewPanel({ role, onClose, edgeContext }: RolePre
               </div>
             )}
 
-            {/* Task pills — primary content */}
+            {/* Edge context banner */}
+            {edgeContext && edgeTaskSet.size > 0 && (
+              <div className="flex items-center gap-2 mb-3 px-3 py-2 rounded-xl bg-primary/10 border border-primary/20">
+                <Sparkles className="h-3.5 w-3.5 text-primary shrink-0" />
+                <p className="text-[11px] text-primary font-medium">
+                  Exploring <span className="font-bold">{edgeContext.label}</span> — {edgeTaskSet.size} task{edgeTaskSet.size > 1 ? "s" : ""} build{edgeTaskSet.size === 1 ? "s" : ""} this edge
+                </p>
+              </div>
+            )}
+
+            {/* Expandable task cards */}
             {tasks.length > 0 && !analyzing && (
               <div>
-                {/* Edge context banner */}
-                {edgeContext && edgeTaskSet.size > 0 && (
-                  <div className="flex items-center gap-2 mb-3 px-3 py-2 rounded-xl bg-primary/10 border border-primary/20">
-                    <Sparkles className="h-3.5 w-3.5 text-primary shrink-0" />
-                    <p className="text-[11px] text-primary font-medium">
-                      Exploring <span className="font-bold">{edgeContext.label}</span> — {edgeTaskSet.size} task{edgeTaskSet.size > 1 ? "s" : ""} build{edgeTaskSet.size === 1 ? "s" : ""} this edge
-                    </p>
-                  </div>
-                )}
-
                 <div className="flex items-center gap-2 mb-3">
                   <Layers className="h-4 w-4 text-primary" />
                   <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{tasks.length} tasks analyzed</h4>
                 </div>
 
-                {/* Edge-relevant tasks first, then the rest */}
-                <div className="flex flex-wrap gap-2">
+                <div className="space-y-2">
                   {[...tasks]
                     .sort((a, b) => {
                       const aEdge = edgeTaskSet.has(a.cluster_name) ? 1 : 0;
@@ -667,23 +428,121 @@ export default function RolePreviewPanel({ role, onClose, edgeContext }: RolePre
                       const style = taskChipStyle(score);
                       const isEdgeTask = edgeTaskSet.has(t.cluster_name);
                       const TaskIcon = getTaskIcon(t.cluster_name);
+                      const done = completedTasks.has(t.cluster_name);
+                      const isExpanded = expandedTask === t.cluster_name;
+
                       return (
-                        <button
-                          key={i}
-                          onClick={() => { setFocusedTask(t); setView("task-detail"); }}
-                          className={`flex items-center gap-1.5 text-[12px] px-3 py-1.5 rounded-lg border transition-colors cursor-pointer hover:border-primary/40 ${isEdgeTask ? "ring-1 ring-primary/50 bg-primary/15 text-primary font-medium" : style.badge}`}
+                        <motion.div
+                          key={t.cluster_name}
+                          initial={{ opacity: 0, y: 6 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: i * 0.03 }}
+                          className={`rounded-xl border transition-all overflow-hidden ${
+                            isEdgeTask
+                              ? "border-primary/40 ring-1 ring-primary/20 bg-primary/5"
+                              : isExpanded
+                              ? "border-border bg-muted/20"
+                              : "border-border/50 bg-muted/10 hover:border-border"
+                          }`}
                         >
-                          {isEdgeTask ? <Sparkles className="h-3 w-3 shrink-0" /> : <TaskIcon className="h-3 w-3 shrink-0 opacity-70" />}
-                          {t.cluster_name}
-                          {score > 0 && <span className="ml-1 opacity-60">{score}%</span>}
-                        </button>
+                          {/* Clickable pill header */}
+                          <button
+                            onClick={() => toggleExpand(t.cluster_name)}
+                            className="w-full flex items-center gap-2 px-3 py-2.5 text-left transition-colors"
+                          >
+                            {isEdgeTask ? (
+                              <Sparkles className="h-3.5 w-3.5 text-primary shrink-0" />
+                            ) : done ? (
+                              <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400 shrink-0" />
+                            ) : (
+                              <TaskIcon className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                            )}
+                            <span className="text-sm font-medium text-foreground leading-snug flex-1 min-w-0 truncate">
+                              {t.cluster_name}
+                            </span>
+                            <span className={`text-xs font-semibold px-2 py-0.5 rounded-full shrink-0 ${style.badge}`}>
+                              {score}%
+                            </span>
+                            <ChevronDown
+                              className={`h-3.5 w-3.5 text-muted-foreground/50 shrink-0 transition-transform duration-200 ${
+                                isExpanded ? "rotate-180" : ""
+                              }`}
+                            />
+                          </button>
+
+                          {/* Expandable content */}
+                          <AnimatePresence>
+                            {isExpanded && (
+                              <motion.div
+                                initial={{ height: 0, opacity: 0 }}
+                                animate={{ height: "auto", opacity: 1 }}
+                                exit={{ height: 0, opacity: 0 }}
+                                transition={{ duration: 0.2, ease: "easeOut" }}
+                                className="overflow-hidden"
+                              >
+                                <div className="px-3 pb-3 pt-0.5 space-y-2.5">
+                                  {t.description && (
+                                    <p className="text-xs text-muted-foreground leading-relaxed">
+                                      {t.description}
+                                    </p>
+                                  )}
+
+                                  {/* Meta tags */}
+                                  <div className="flex items-center gap-1.5 flex-wrap">
+                                    {t.ai_state && (
+                                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-muted/50 text-muted-foreground">{t.ai_state}</span>
+                                    )}
+                                    {t.impact_level && (
+                                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-muted/50 text-muted-foreground">{t.impact_level}</span>
+                                    )}
+                                    {isEdgeTask && (
+                                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-primary/10 text-primary font-medium">
+                                        Builds {edgeContext!.label}
+                                      </span>
+                                    )}
+                                  </div>
+
+                                  {/* Skill pills */}
+                                  {(() => {
+                                    const skillIds = matchTaskToSkills(t.cluster_name);
+                                    if (skillIds.length === 0) return null;
+                                    return (
+                                      <div className="flex flex-wrap gap-1">
+                                        {skillIds.slice(0, 3).map(id => {
+                                          const tax = SKILL_TAXONOMY.find(s => s.id === id);
+                                          if (!tax) return null;
+                                          return (
+                                            <span key={id} className="text-[9px] px-1.5 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/15 font-medium">
+                                              +{tax.name}
+                                            </span>
+                                          );
+                                        })}
+                                      </div>
+                                    );
+                                  })()}
+
+                                  {/* Practice CTA */}
+                                  <Button
+                                    size="sm"
+                                    variant={done ? "secondary" : "default"}
+                                    className="w-full h-8 text-xs rounded-lg gap-1.5"
+                                    onClick={() => startSimulation(t)}
+                                  >
+                                    <Play className="h-3 w-3" />
+                                    {done ? "Practice Again" : "Practice Now"}
+                                  </Button>
+                                </div>
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
+                        </motion.div>
                       );
                     })}
                 </div>
               </div>
             )}
 
-            {/* No tasks — offer analysis */}
+            {/* No tasks */}
             {!analyzing && tasks.length === 0 && (
               <div className="text-center py-6 space-y-3">
                 <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-primary/10 mx-auto">
@@ -717,33 +576,23 @@ export default function RolePreviewPanel({ role, onClose, edgeContext }: RolePre
         )}
       </div>
 
-      {/* Footer — primary CTA goes to task breakdown */}
+      {/* Footer */}
       <div className="p-3 border-t border-border shrink-0 flex gap-2">
         <button onClick={toggleBookmark} className="h-9 px-3 rounded-xl border border-border flex items-center gap-1.5 text-xs hover:bg-muted/30 transition-colors">
           {isBookmarked ? <BookmarkCheck className="h-3.5 w-3.5 text-primary" /> : <Bookmark className="h-3.5 w-3.5 text-muted-foreground" />}
           {isBookmarked ? "Saved" : "Save"}
         </button>
-        {tasks.length > 0 ? (
-          <button
-            onClick={() => setView("breakdown")}
-            className="flex-1 flex items-center justify-center gap-2 rounded-xl bg-primary text-primary-foreground py-2 text-sm font-medium hover:bg-primary/90 transition-colors"
-          >
-            <GraduationCap className="h-4 w-4" /> See AI Breakdown
-          </button>
-        ) : (
-          <button
-            onClick={() => setView("enlarged")}
-            className="flex-1 flex items-center justify-center gap-2 rounded-xl bg-primary text-primary-foreground py-2 text-sm font-medium hover:bg-primary/90 transition-colors"
-          >
-            <Maximize2 className="h-4 w-4" /> Full View
-          </button>
-        )}
+        <button
+          onClick={() => setView("enlarged")}
+          className="flex-1 flex items-center justify-center gap-2 rounded-xl bg-primary text-primary-foreground py-2 text-sm font-medium hover:bg-primary/90 transition-colors"
+        >
+          <Maximize2 className="h-4 w-4" /> Full View
+        </button>
       </div>
     </motion.div>
   );
 }
 
-// Small reusable components
 function ReadinessRing({ readiness, size }: { readiness: number; size: number }) {
   const r = (size - 8) / 2;
   const circumference = 2 * Math.PI * r;
@@ -764,15 +613,6 @@ function ReadinessRing({ readiness, size }: { readiness: number; size: number })
         <span className="font-display font-bold text-foreground tabular-nums" style={{ fontSize: size * 0.22 }}>{readiness}%</span>
         <span className="text-muted-foreground uppercase tracking-wider" style={{ fontSize: Math.max(7, size * 0.08) }}>Ready</span>
       </div>
-    </div>
-  );
-}
-
-function StatItem({ value, label }: { value: string; label: string }) {
-  return (
-    <div className="text-center">
-      <div className="text-lg font-bold text-foreground tabular-nums">{value}</div>
-      <div className="text-[10px] text-muted-foreground uppercase tracking-wider">{label}</div>
     </div>
   );
 }
