@@ -201,14 +201,8 @@ const Analysis = () => {
         } catch (err) { console.error("Cache lookup failed:", err); }
       }
 
-      // 2. Usage gate for AI analysis (free tier)
-      if (user && !isPro) {
-        const allowed = await analysisGate.check();
-        if (!allowed) {
-          setShowUpgradeModal(true);
-          setLoading(false);
-          return;
-        }
+      // 2. AI analysis (no usage gate — analyses are unlimited)
+      try {
       }
 
       // 3. Fall back to AI analysis
