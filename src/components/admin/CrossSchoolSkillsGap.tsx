@@ -213,11 +213,25 @@ export default function CrossSchoolSkillsGap() {
   return (
     <div className="space-y-4">
       {/* KPI chips */}
-      <div className="flex flex-wrap gap-3 text-xs">
+      <div className="flex flex-wrap items-center gap-3 text-xs">
         <Stat label="Institutions" value={String(schoolCount)} />
         <Stat label="Skills" value={String(rows.length)} />
         <Stat label="Avg coverage" value={`${avgCoverage}%`} accent={avgCoverage >= 50} />
         <Stat label="Zero coverage" value={String(universalGaps)} warn={universalGaps > 0} />
+        <div className="ml-auto flex gap-1">
+          <button
+            onClick={() => setView("table")}
+            className={`inline-flex items-center gap-1 px-2.5 py-1.5 rounded-md text-[11px] font-medium transition-colors ${view === "table" ? "bg-primary text-primary-foreground" : "bg-muted/40 text-muted-foreground hover:text-foreground"}`}
+          >
+            <LayoutGrid className="h-3 w-3" /> Table
+          </button>
+          <button
+            onClick={() => setView("bubble")}
+            className={`inline-flex items-center gap-1 px-2.5 py-1.5 rounded-md text-[11px] font-medium transition-colors ${view === "bubble" ? "bg-primary text-primary-foreground" : "bg-muted/40 text-muted-foreground hover:text-foreground"}`}
+          >
+            <ScatterChart className="h-3 w-3" /> Bubble
+          </button>
+        </div>
       </div>
 
       {/* Legend */}
