@@ -17,32 +17,43 @@ export interface TaxonomySkill {
 }
 
 export const SKILL_TAXONOMY: TaxonomySkill[] = [
-  { id: "code-dev", name: "Software Development", category: "technical", aiExposure: 72, keywords: ["code", "development", "engineering", "component", "pipeline", "deploy", "api", "software", "build", "feature", "frontend", "backend", "module"], humanEdge: "System thinking" },
+  // ── Technical ──
+  { id: "code-dev", name: "Software Dev", category: "technical", aiExposure: 72, keywords: ["code", "development", "engineering", "component", "pipeline", "deploy", "api", "software", "build", "feature", "frontend", "backend", "module"], humanEdge: "System thinking" },
   { id: "system-design", name: "System Architecture", category: "technical", aiExposure: 35, keywords: ["architecture", "system design", "platform", "infrastructure", "migration", "scalab", "distributed", "microservice"], humanEdge: "Trade-off reasoning" },
   { id: "testing-qa", name: "Testing & QA", category: "technical", aiExposure: 78, keywords: ["test", "qa", "regression", "bug", "quality", "validation", "code review"], humanEdge: "Edge-case intuition" },
   { id: "security", name: "Cybersecurity", category: "technical", aiExposure: 55, keywords: ["security", "threat", "vulnerability", "cybersecurity", "encryption", "access control"], humanEdge: "Adversarial thinking" },
   { id: "data-engineering", name: "Data Engineering", category: "technical", aiExposure: 68, keywords: ["data pipeline", "warehouse", "etl", "data quality", "schema", "database", "data model"], humanEdge: "Data governance" },
-  { id: "ai-ml", name: "AI & Machine Learning", category: "technical", aiExposure: 60, keywords: ["model", "training", "ml", " ai ", "machine learning", "prediction", "deep learning", "nlp", "simulation"], humanEdge: "Problem framing" },
+  { id: "ai-ml", name: "AI & ML", category: "technical", aiExposure: 60, keywords: ["model", "training", "ml", " ai ", "machine learning", "prediction", "deep learning", "nlp", "simulation"], humanEdge: "Problem framing" },
   { id: "devops", name: "DevOps & Cloud", category: "technical", aiExposure: 65, keywords: ["devops", "container", "monitoring", "incident", "deployment", "kubernetes", "cloud", "terraform"], humanEdge: "Incident judgment" },
+  { id: "prompt-eng", name: "Prompt Engineering", category: "technical", aiExposure: 85, keywords: ["prompt", "llm", "generative ai", "chatgpt", "copilot", "prompt engineering"], humanEdge: "Intent clarity" },
+  // ── Analytical ──
   { id: "data-analysis", name: "Data Analysis", category: "analytical", aiExposure: 80, keywords: ["analysis", "analytics", "data", "metrics", "dashboard", "reporting", "insight", "kpi", "visualization"], humanEdge: "Asking the right questions" },
   { id: "financial-modeling", name: "Financial Modeling", category: "analytical", aiExposure: 70, keywords: ["financial model", "valuation", "forecast", "budget", "revenue", "pricing", "accounting", "tax", "invoice"], humanEdge: "Assumption judgment" },
   { id: "research", name: "Research & Discovery", category: "analytical", aiExposure: 75, keywords: ["research", "audit", "review", "hypothesis", "market research", "competitive", "survey", "user research"], humanEdge: "Novel hypotheses" },
   { id: "process-optimization", name: "Process Optimization", category: "analytical", aiExposure: 60, keywords: ["process", "optimization", "workflow", "automation", "efficiency", "funnel", "streamline", "logistics"], humanEdge: "Change management" },
   { id: "risk-assessment", name: "Risk Assessment", category: "analytical", aiExposure: 50, keywords: ["risk", "mitigation", "scenario analysis", "compliance", "safety", "crisis", "governance"], humanEdge: "Judgment under uncertainty" },
-  { id: "stakeholder-mgmt", name: "Stakeholder Management", category: "communication", aiExposure: 15, keywords: ["stakeholder", "client", "customer", "relationship", "cross-functional", "collaboration", "consulting"], humanEdge: "Trust building" },
-  { id: "writing-docs", name: "Writing & Documentation", category: "communication", aiExposure: 82, keywords: ["documentation", "writing", "copy", "content", "email", "knowledge base", "communication", "specification"], humanEdge: "Voice & persuasion" },
-  { id: "presentation", name: "Presentation & Reporting", category: "communication", aiExposure: 65, keywords: ["presentation", "reporting", "pitch", "deck", "storytelling", "proposal", "board"], humanEdge: "Executive presence" },
+  { id: "critical-thinking", name: "Critical Thinking", category: "analytical", aiExposure: 30, keywords: ["critical thinking", "problem solving", "reasoning", "logic", "evaluation", "decision making"], humanEdge: "Structured reasoning" },
+  // ── Communication ──
+  { id: "stakeholder-mgmt", name: "Stakeholder Mgmt", category: "communication", aiExposure: 15, keywords: ["stakeholder", "client", "customer", "relationship", "cross-functional", "collaboration", "consulting"], humanEdge: "Trust building" },
+  { id: "writing-docs", name: "Writing & Docs", category: "communication", aiExposure: 82, keywords: ["documentation", "writing", "copy", "content", "email", "knowledge base", "communication", "specification"], humanEdge: "Voice & persuasion" },
+  { id: "presentation", name: "Presentation", category: "communication", aiExposure: 65, keywords: ["presentation", "reporting", "pitch", "deck", "storytelling", "proposal", "board", "public speaking"], humanEdge: "Executive presence" },
   { id: "negotiation", name: "Negotiation", category: "communication", aiExposure: 10, keywords: ["negotiation", "deal", "closing", "persuasion", "contract negotiation"], humanEdge: "Empathy & leverage" },
-  { id: "sales", name: "Sales & Business Dev", category: "communication", aiExposure: 30, keywords: ["sales", "revenue", "prospect", "lead", "pipeline", "account", "demo", "customer acquisition"], humanEdge: "Relationship building" },
-  { id: "project-mgmt", name: "Project Management", category: "leadership", aiExposure: 40, keywords: ["project", "sprint", "planning", "coordination", "launch", "milestone", "agile", "roadmap", "program"], humanEdge: "Priority judgment" },
-  { id: "strategy", name: "Strategy & Planning", category: "leadership", aiExposure: 25, keywords: ["strategy", "roadmap", "positioning", "go-to-market", "planning", "vision", "growth", "expansion"], humanEdge: "Competitive intuition" },
-  { id: "team-mgmt", name: "Team Management", category: "leadership", aiExposure: 12, keywords: ["team", "coaching", "talent", "hiring", "people", "leadership", "management", "mentoring", "training"], humanEdge: "Empathy & culture" },
+  { id: "sales", name: "Sales & Biz Dev", category: "communication", aiExposure: 30, keywords: ["sales", "revenue", "prospect", "lead", "pipeline", "account", "demo", "customer acquisition", "consultative selling"], humanEdge: "Relationship building" },
+  // ── Leadership ──
+  { id: "project-mgmt", name: "Project Mgmt", category: "leadership", aiExposure: 40, keywords: ["project", "sprint", "planning", "coordination", "launch", "milestone", "agile", "roadmap", "program"], humanEdge: "Priority judgment" },
+  { id: "strategy", name: "Strategy & Planning", category: "leadership", aiExposure: 25, keywords: ["strategy", "roadmap", "positioning", "go-to-market", "planning", "vision", "growth", "expansion", "strategic thinking", "strategic planning"], humanEdge: "Competitive intuition" },
+  { id: "team-mgmt", name: "Team Leadership", category: "leadership", aiExposure: 12, keywords: ["team", "coaching", "talent", "hiring", "people", "leadership", "management", "mentoring", "training", "mentorship"], humanEdge: "Empathy & culture" },
   { id: "vendor-mgmt", name: "Vendor & Supply Chain", category: "leadership", aiExposure: 45, keywords: ["vendor", "supplier", "procurement", "supply chain", "inventory", "sourcing"], humanEdge: "Relationship leverage" },
+  { id: "change-mgmt", name: "Change Management", category: "leadership", aiExposure: 20, keywords: ["change management", "transformation", "adoption", "stakeholder alignment", "organizational change"], humanEdge: "Organizational empathy" },
+  // ── Creative ──
   { id: "design-ux", name: "Design & UX", category: "creative", aiExposure: 55, keywords: ["design", "ux", "wireframe", "prototype", "usability", "ui", "user experience", "figma"], humanEdge: "Empathy-driven design" },
   { id: "brand-creative", name: "Brand & Creative", category: "creative", aiExposure: 50, keywords: ["brand", "creative", "identity", "campaign", "concept", "influencer", "community"], humanEdge: "Cultural resonance" },
   { id: "content-seo", name: "Content & SEO", category: "creative", aiExposure: 78, keywords: ["seo", "content", "blog", "social media", "organic", "editorial", "content strategy"], humanEdge: "Audience intuition" },
+  { id: "product-sense", name: "Product Sense", category: "creative", aiExposure: 30, keywords: ["product strategy", "product sense", "product knowledge", "feature prioritization", "user needs", "product vision"], humanEdge: "User empathy" },
+  // ── Compliance ──
   { id: "regulatory", name: "Regulatory & Legal", category: "compliance", aiExposure: 45, keywords: ["regulatory", "compliance", "legal", "policy", "patent", "contract", "litigation", "governance", "privacy"], humanEdge: "Jurisdictional judgment" },
   { id: "audit-control", name: "Audit & Controls", category: "compliance", aiExposure: 70, keywords: ["audit", "reconciliation", "month-end", "internal control", "assurance", "financial statement"], humanEdge: "Materiality judgment" },
+  { id: "emotional-iq", name: "Emotional Intelligence", category: "compliance", aiExposure: 8, keywords: ["emotional intelligence", "empathy", "self-awareness", "conflict resolution", "interpersonal", "active listening"], humanEdge: "Human connection" },
 ];
 
 export const CATEGORY_META: Record<SkillCategory, { label: string; emoji: string }> = {

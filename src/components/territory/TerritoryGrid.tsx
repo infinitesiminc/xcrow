@@ -1,5 +1,5 @@
 /**
- * TerritoryGrid — visual hex-inspired skill map with 3-ring growth model.
+ * TerritoryGrid — visual skill map with 3-ring growth model.
  *
  * Every skill shows 3 growth dimensions:
  *   🎓 Foundation — core knowledge (coverage tier from curricula)
@@ -11,7 +11,7 @@
  *  - real: reads from SkillXP data with dimension scores
  */
 
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Lock, Flame, Sparkles } from "lucide-react";
 import {
@@ -30,7 +30,6 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 
-// Category colors using spectrum tokens
 const CATEGORY_COLORS: Record<SkillCategory, string> = {
   technical: "hsl(var(--spectrum-0))",
   analytical: "hsl(var(--spectrum-3))",
@@ -41,12 +40,12 @@ const CATEGORY_COLORS: Record<SkillCategory, string> = {
 };
 
 const CATEGORY_BG: Record<SkillCategory, string> = {
-  technical: "hsl(var(--spectrum-0) / 0.15)",
-  analytical: "hsl(var(--spectrum-3) / 0.15)",
-  communication: "hsl(var(--spectrum-2) / 0.15)",
-  leadership: "hsl(var(--spectrum-4) / 0.15)",
-  creative: "hsl(var(--spectrum-6) / 0.15)",
-  compliance: "hsl(var(--spectrum-1) / 0.15)",
+  technical: "hsl(var(--spectrum-0) / 0.08)",
+  analytical: "hsl(var(--spectrum-3) / 0.08)",
+  communication: "hsl(var(--spectrum-2) / 0.08)",
+  leadership: "hsl(var(--spectrum-4) / 0.08)",
+  creative: "hsl(var(--spectrum-6) / 0.08)",
+  compliance: "hsl(var(--spectrum-1) / 0.08)",
 };
 
 type TileState = "claimed" | "frontier" | "undiscovered" | "contested" | "demo-lit" | "demo-dim";
@@ -138,9 +137,9 @@ export default function TerritoryGrid({
 
   return (
     <TooltipProvider delayDuration={200}>
-      <div className="h-full flex flex-col p-4 overflow-y-auto scrollbar-thin">
+      <div className="h-full flex flex-col p-3 overflow-y-auto scrollbar-thin">
         {/* Territory stats */}
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
             <Sparkles className="h-4 w-4 text-primary" />
             <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
@@ -152,15 +151,15 @@ export default function TerritoryGrid({
           </span>
         </div>
 
-        {/* Category clusters */}
-        <div className="flex-1 grid grid-cols-2 gap-3">
+        {/* Category clusters — single column for more horizontal space */}
+        <div className="flex-1 space-y-2">
           {categoryOrder.map((cat) => (
             <div
               key={cat}
-              className="rounded-xl border border-border/50 p-3 space-y-2"
+              className="rounded-lg border border-border/40 px-3 py-2"
               style={{ background: CATEGORY_BG[cat] }}
             >
-              <div className="flex items-center gap-1.5">
+              <div className="flex items-center gap-1.5 mb-1.5">
                 <span className="text-xs">{CATEGORY_META[cat].emoji}</span>
                 <span
                   className="text-[10px] font-semibold uppercase tracking-wider"
@@ -168,8 +167,11 @@ export default function TerritoryGrid({
                 >
                   {CATEGORY_META[cat].label}
                 </span>
+                <span className="text-[9px] text-muted-foreground/50 ml-auto">
+                  {grouped[cat].filter(t => t.state === "claimed" || t.state === "demo-lit").length}/{grouped[cat].length}
+                </span>
               </div>
-              <div className="flex flex-wrap gap-1.5">
+              <div className="flex flex-wrap gap-1">
                 <AnimatePresence>
                   {grouped[cat].map((tile) => (
                     <SkillTile
@@ -187,32 +189,25 @@ export default function TerritoryGrid({
           ))}
         </div>
 
-        {/* Legend */}
-        <div className="mt-3 space-y-2">
-          {/* State legend */}
-          <div className="flex flex-wrap gap-3 justify-center">
-            {[
-              { label: "Claimed", dot: "bg-primary" },
-              { label: "Frontier", dot: "border border-muted-foreground/40 border-dashed" },
-              { label: "In Demand", dot: "bg-warning" },
-              { label: "Locked", dot: "bg-muted" },
-            ].map((l) => (
-              <div key={l.label} className="flex items-center gap-1.5">
-                <div className={`w-2 h-2 rounded-full ${l.dot}`} />
-                <span className="text-[10px] text-muted-foreground">{l.label}</span>
-              </div>
-            ))}
-          </div>
-          {/* Growth dimension legend */}
-          <div className="flex items-center justify-center gap-4 pt-1 border-t border-border/30">
-            <span className="text-[9px] text-muted-foreground/70 uppercase tracking-widest">Growth Layers</span>
-            {Object.entries(DIMENSION_INFO).map(([key, dim]) => (
-              <div key={key} className="flex items-center gap-1">
-                <span className="text-[10px]">{dim.emoji}</span>
-                <span className="text-[9px] text-muted-foreground">{dim.label}</span>
-              </div>
-            ))}
-          </div>
+        {/* Compact legend */}
+        <div className="mt-2 flex flex-wrap items-center justify-center gap-x-3 gap-y-1 pt-2 border-t border-border/30">
+          {[
+            { label: "Claimed", dot: "bg-primary" },
+            { label: "Frontier", dot: "border border-muted-foreground/40 border-dashed" },
+            { label: "In Demand", dot: "bg-warning" },
+          ].map((l) => (
+            <div key={l.label} className="flex items-center gap-1">
+              <div className={`w-1.5 h-1.5 rounded-full ${l.dot}`} />
+              <span className="text-[9px] text-muted-foreground">{l.label}</span>
+            </div>
+          ))}
+          <span className="text-[9px] text-muted-foreground/50">•</span>
+          {Object.entries(DIMENSION_INFO).map(([key, dim]) => (
+            <div key={key} className="flex items-center gap-0.5">
+              <span className="text-[9px]">{dim.emoji}</span>
+              <span className="text-[9px] text-muted-foreground">{dim.label}</span>
+            </div>
+          ))}
         </div>
       </div>
     </TooltipProvider>
@@ -236,7 +231,7 @@ function SkillTile({
   const isFrontier = state === "frontier";
 
   const tooltipContent = (
-    <div className="space-y-1.5 max-w-[180px]">
+    <div className="space-y-1.5 max-w-[200px]">
       <div className="font-semibold text-xs">{skill.name}</div>
       {level && <div className="text-[10px] text-muted-foreground">{level}{xp ? ` • ${xp} XP` : ""}</div>}
       <div className="space-y-1 pt-1 border-t border-border/50">
@@ -262,6 +257,7 @@ function SkillTile({
           Edge: {skill.humanEdge}
         </div>
       )}
+      <div className="text-[9px] text-primary pt-0.5">Click to explore →</div>
     </div>
   );
 
@@ -269,20 +265,20 @@ function SkillTile({
     <Tooltip>
       <TooltipTrigger asChild>
         <motion.button
-          initial={{ opacity: 0, scale: 0.8 }}
+          initial={{ opacity: 0, scale: 0.9 }}
           animate={{
-            opacity: isDim ? 0.35 : 1,
+            opacity: isDim ? 0.4 : 1,
             scale: 1,
           }}
           transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
           onClick={onClick}
           disabled={state === "undiscovered"}
           className={`
-            relative group flex items-center gap-1 px-2 py-1.5 rounded-lg text-[10px] font-medium
+            relative group flex items-center gap-1 px-2 py-1 rounded-md text-[11px] font-medium
             transition-all duration-200 cursor-pointer
-            ${isDim ? "cursor-not-allowed" : "hover:scale-105 active:scale-[0.97]"}
+            ${isDim ? "cursor-not-allowed" : "hover:scale-[1.03] active:scale-[0.97]"}
             ${isFrontier ? "border border-dashed border-muted-foreground/30" : ""}
-            ${isContested ? "border border-warning/60 shadow-[0_0_8px_hsl(var(--warning)/0.2)]" : ""}
+            ${isContested ? "border border-warning/60 shadow-[0_0_6px_hsl(var(--warning)/0.15)]" : ""}
           `}
           style={{
             background: isLit ? `${color}22` : undefined,
@@ -293,11 +289,11 @@ function SkillTile({
           }}
         >
           {/* Growth rings indicator */}
-          {!isDim && <GrowthRings growth={growth} size={14} />}
+          {!isDim && <GrowthRings growth={growth} size={12} />}
 
           {/* Contested flame */}
           {isContested && (
-            <Flame className="absolute -top-1.5 -right-1.5 h-3 w-3 text-warning animate-pulse" />
+            <Flame className="absolute -top-1 -right-1 h-2.5 w-2.5 text-warning animate-pulse" />
           )}
 
           {/* Locked icon */}
@@ -305,7 +301,7 @@ function SkillTile({
             <Lock className="inline-block h-2.5 w-2.5 mr-0.5 opacity-50" />
           )}
 
-          <span className="truncate max-w-[72px]">{skill.name}</span>
+          <span className="truncate max-w-[100px]">{skill.name}</span>
 
           {/* XP indicator for claimed tiles */}
           {isLit && xp && xp > 0 && (
