@@ -1266,6 +1266,57 @@ export type Database = {
         }
         Relationships: []
       }
+      skills: {
+        Row: {
+          ai_exposure: number
+          category: string
+          created_at: string
+          description: string | null
+          drop_expires_at: string | null
+          human_edge: string | null
+          icon_emoji: string | null
+          id: string
+          is_default: boolean
+          keywords: string[]
+          name: string
+          rarity: string
+          unlock_requirement: Json | null
+          unlock_type: string
+        }
+        Insert: {
+          ai_exposure?: number
+          category: string
+          created_at?: string
+          description?: string | null
+          drop_expires_at?: string | null
+          human_edge?: string | null
+          icon_emoji?: string | null
+          id: string
+          is_default?: boolean
+          keywords?: string[]
+          name: string
+          rarity?: string
+          unlock_requirement?: Json | null
+          unlock_type?: string
+        }
+        Update: {
+          ai_exposure?: number
+          category?: string
+          created_at?: string
+          description?: string | null
+          drop_expires_at?: string | null
+          human_edge?: string | null
+          icon_emoji?: string | null
+          id?: string
+          is_default?: boolean
+          keywords?: string[]
+          name?: string
+          rarity?: string
+          unlock_requirement?: Json | null
+          unlock_type?: string
+        }
+        Relationships: []
+      }
       suppressed_emails: {
         Row: {
           created_at: string
@@ -1310,6 +1361,38 @@ export type Database = {
           text?: string
         }
         Relationships: []
+      }
+      user_skill_unlocks: {
+        Row: {
+          id: string
+          skill_id: string
+          unlock_method: string
+          unlocked_at: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          skill_id: string
+          unlock_method?: string
+          unlocked_at?: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          skill_id?: string
+          unlock_method?: string
+          unlocked_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_skill_unlocks_skill_id_fkey"
+            columns: ["skill_id"]
+            isOneToOne: false
+            referencedRelation: "skills"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_usage: {
         Row: {

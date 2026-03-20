@@ -102,9 +102,10 @@ export function levelProgress(xp: number): number {
 
 // ── Keyword matcher ──
 
-export function matchTaskToSkills(taskName: string, jobTitle?: string): string[] {
+export function matchTaskToSkills(taskName: string, jobTitle?: string, taxonomy?: TaxonomySkill[]): string[] {
   const text = `${taskName} ${jobTitle || ""}`.toLowerCase();
-  return SKILL_TAXONOMY
+  const source = taxonomy || SKILL_TAXONOMY;
+  return source
     .filter(s => s.keywords.some(kw => text.includes(kw)))
     .map(s => s.id);
 }
