@@ -272,11 +272,9 @@ function SkillTile({
           }}
           transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
           onClick={onClick}
-          disabled={state === "undiscovered"}
           className={`
             relative group flex items-center gap-1 px-2 py-1 rounded-md text-[11px] font-medium
-            transition-all duration-200 cursor-pointer
-            ${isDim ? "cursor-not-allowed" : "hover:scale-[1.03] active:scale-[0.97]"}
+            transition-all duration-200 cursor-pointer hover:scale-[1.03] active:scale-[0.97]
             ${isFrontier ? "border border-dashed border-muted-foreground/30" : ""}
             ${isContested ? "border border-warning/60 shadow-[0_0_6px_hsl(var(--warning)/0.15)]" : ""}
           `}

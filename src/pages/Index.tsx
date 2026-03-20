@@ -140,8 +140,9 @@ const Index = () => {
     (skillId: string, skillName: string) => {
       const skill = SKILL_TAXONOMY.find(s => s.id === skillId);
       const humanEdge = skill?.humanEdge ? ` (human edge: ${skill.humanEdge})` : "";
+      // Send as a hidden system instruction — not displayed as user message
       setExternalPrompt(
-        `I clicked on "${skillName}" in my skill territory. Tell me about the 3 growth dimensions for this skill — how is AI reshaping it, what AI tools should I master, and what's the human edge${humanEdge}? Then suggest a role I can practice to grow this skill.`
+        `__SKILL_CLICK__${skillName}__${humanEdge}`
       );
     },
     []

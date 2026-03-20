@@ -81,10 +81,20 @@ export default function HomepageChat({
     resizeTextarea();
   }, [input, resizeTextarea]);
 
-  // Handle external prompt injection (e.g. from Human Edges card)
+  // Handle external prompt injection (e.g. from skill tile clicks, Human Edges card)
   useEffect(() => {
     if (externalPrompt) {
-      sendMessage(externalPrompt);
+      // Skill tile clicks use a hidden format — show a short user message but send full instruction to AI
+      const skillClickMatch = externalPrompt.match(/^__SKILL_CLICK__(.+?)__(.*)$/);
+      if (skillClickMatch) {
+        const skillName = skillClickMatch[1];
+        const humanEdge = skillClickMatch[2];
+        const displayText = `Tell me about ${skillName}`;
+        const aiInstruction = `The student clicked on "${skillName}" in their skill territory. Tell them about the 3 growth dimensions for this skill — how is AI reshaping it, what AI tools should they master, and what's the human edge${humanEdge}? Then suggest a role they can practice to grow this skill. Keep it concise and actionable.`;
+        sendMessageWithDisplay(displayText, aiInstruction);
+      } else {
+        sendMessage(externalPrompt);
+      }
       onExternalPromptConsumed?.();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -149,6 +159,22 @@ export default function HomepageChat({
     })();
   }, [user]);
 
+  // Send with a different display text vs AI instruction (for skill clicks)
+  const sendMessageWithDisplay = async (displayText: string, aiInstruction: string) => {
+    if (isStreaming) return;
+    if (!hasInteracted) onChatStart();
+
+    const userItem: ChatItem = { type: "user", content: displayText };
+    const allItems = [...items, userItem];
+    setItems(allItems);
+    setInput("");
+    setIsStreaming(true);
+
+    // For the API, replace the display message with the full instruction
+    const apiItems = [...items, { type: "user" as const, content: aiInstruction }];
+    await _streamChat(allItems, apiItems);
+  };
+
   const sendMessage = async (text: string) => {
     if (!text.trim() || isStreaming) return;
     if (!hasInteracted) onChatStart();
@@ -159,10 +185,15 @@ export default function HomepageChat({
     setInput("");
     setIsStreaming(true);
 
+    await _streamChat(allItems, allItems);
+  };
+
+  const _streamChat = async (displayItems: ChatItem[], apiSourceItems: ChatItem[]) => {
+
     let assistantSoFar = "";
 
     try {
-      const body: any = { messages: getApiMessages(allItems) };
+      const body: any = { messages: getApiMessages(apiSourceItems) };
       if (journeyContextRef.current) body.journeyContext = journeyContextRef.current;
       if (viewContext) body.viewContext = viewContext;
 
