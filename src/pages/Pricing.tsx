@@ -14,7 +14,7 @@ import { supabase } from "@/integrations/supabase/client";
 const FREE_FEATURES = [
   "3 simulations per month",
   "3 role analyses per month",
-  "Basic skill map",
+  "Skill territory (view only)",
   "Leaderboard access",
   "Role exploration feed",
 ];
@@ -22,9 +22,9 @@ const FREE_FEATURES = [
 const PRO_FEATURES = [
   "Unlimited simulations",
   "Unlimited role analyses",
-  "Full skill map & XP tracking",
+  "Full skill territory with 3-ring growth tracking",
   "AI career coach",
-  "Human edges breakdown",
+  "Human edge & AI mastery insights",
   "Exportable skill profile",
   "Priority on leaderboard",
 ];
@@ -35,13 +35,13 @@ const SCHOOL_FEATURES = [
   "AI simulation library mapped to your courses",
   "School admin dashboard & cohort analytics",
   "Bulk student provisioning & domain auto-enroll",
-  "Student skill map & XP leaderboard",
+  "Cross-school skill territory benchmarks",
   "Dedicated onboarding & support",
 ];
 
 const faqs = [
-  { q: "Is it really free?", a: "Yes! The Free plan gives you 3 simulations and 3 analyses per month — perfect for getting started. Upgrade to Pro for unlimited access." },
-  { q: "What does Pro unlock?", a: "Pro removes all limits on simulations and analyses, unlocks the full skill map with XP tracking, and gives you access to the AI career coach." },
+  { q: "Is it really free?", a: "Yes! The Free plan gives you 3 simulations and 3 analyses per month with a view-only skill territory — perfect for getting started." },
+  { q: "What does Pro unlock?", a: "Pro removes all limits on simulations and analyses, unlocks full 3-ring growth tracking (Foundation, AI Mastery, Human Edge) on your skill territory, and gives you access to the AI career coach." },
   { q: "How does the School plan work?", a: "We work with universities to create custom packages based on student count, programs, and desired outcomes. Contact our team to discuss pricing and start a free pilot." },
   { q: "Can I cancel anytime?", a: "Absolutely. Cancel from your settings and you'll keep access until the end of your billing period." },
   { q: "What if my school already has a license?", a: "If your university has a crowy.ai license, your school admin will invite you via email. You'll automatically get Pro access at no cost to you." },
