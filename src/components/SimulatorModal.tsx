@@ -550,7 +550,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
     }
   }, [session, objectiveStatus]);
 
-  const startCompile = useCallback(async () => {
+  const startCompile = useCallback(async (coaching?: CoachingContext | null) => {
     // Usage gate check for free users
     if (user && !isPro) {
       const allowed = await simGate.check();
@@ -568,8 +568,10 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
     setObjectiveStatus({});
     setScaffoldingTiers({});
     setShowInactivityNudge(false);
+    if (coaching) setCoachingContext(coaching);
+    else setCoachingContext(null);
     try {
-      const compiled = await compileSession(taskName, jobTitle, company, 3, mode, taskMeta);
+      const compiled = await compileSession(taskName, jobTitle, company, 3, mode, taskMeta, coaching ?? undefined);
       setSession(compiled);
       setPhase("briefing");
     } catch (err) {
@@ -578,6 +580,28 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
       setPhase("chat");
     }
   }, [taskName, jobTitle, company, mode, taskState, taskTrend, taskImpactLevel, user, isPro, simGate]);
+
+  const startRetryWithCoaching = useCallback(() => {
+    if (!scoreResult) return startCompile();
+    const categories = scoreResult.categories || [];
+    const weakest = categories.reduce((min, c) => c.score < min.score ? c : min, categories[0]);
+    if (!weakest) return startCompile();
+
+    const tips: Record<string, string> = {
+      "Tool Awareness": "Focus on identifying which AI tools fit each scenario — think about what AI handles best vs. what needs human judgment.",
+      "Adaptive Thinking": "Try to consider multiple approaches before committing. Think about edge cases and how your strategy might need to shift.",
+      "Domain Judgment": "Draw on domain-specific knowledge. Consider industry context, stakeholder impact, and real-world constraints.",
+      "Human Value Add": "Emphasize what makes your human perspective irreplaceable — relationships, ethics, nuance, and creative problem-solving.",
+    };
+
+    const coaching: CoachingContext = {
+      weakCategory: weakest.name,
+      weakScore: weakest.score,
+      tip: tips[weakest.name] || `Focus on improving your ${weakest.name} skills this round.`,
+      previousOverall: scoreResult.overall,
+    };
+    startCompile(coaching);
+  }, [scoreResult, startCompile]);
 
   useEffect(() => {
     if (open) startCompile();
