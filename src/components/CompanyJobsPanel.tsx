@@ -108,9 +108,33 @@ export default function CompanyJobsPanel({ companyName, onClose, onJobSelect }: 
 
           {/* Body */}
           {loading ? (
-            <div className="flex items-center justify-center py-12 gap-2 text-muted-foreground">
-              <Loader2 className="h-4 w-4 animate-spin" />
-              <span className="text-sm">Loading roles…</span>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <motion.div
+                  key={i}
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * 0.06, duration: 0.3 }}
+                  className="relative rounded-xl overflow-hidden"
+                >
+                  <div className={`absolute top-0 inset-x-0 h-[3px] bg-gradient-to-r ${SPECTRUM_GRADIENTS[i % SPECTRUM_GRADIENTS.length]} opacity-40`} />
+                  <div className="border border-border/60 bg-card/80 backdrop-blur-sm rounded-xl p-5 h-full">
+                    <div className="flex items-center gap-2 mb-3">
+                      <Briefcase className="h-4 w-4 text-muted-foreground/20" />
+                      <div className="h-2.5 w-16 rounded bg-muted-foreground/10 animate-pulse" />
+                    </div>
+                    <div className="h-4 w-32 rounded bg-muted-foreground/15 animate-pulse mb-1.5" />
+                    <div className="h-3 w-20 rounded bg-muted-foreground/10 animate-pulse mb-4" />
+                    <div className="flex items-center justify-between mt-auto">
+                      <div className="h-3 w-12 rounded bg-brand-ai/10 animate-pulse" />
+                      <div className="flex items-center gap-1 text-[10px] text-primary/30">
+                        <Play className="h-3 w-3" />
+                        Practice
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
             </div>
           ) : jobs.length === 0 ? (
             <p className="text-sm text-muted-foreground text-center py-12">No sim-ready roles found for this company yet.</p>
