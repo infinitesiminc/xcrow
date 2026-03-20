@@ -19,6 +19,7 @@ interface MyRolesPanelProps {
 export default function MyRolesPanel({ open, onClose, onAskChat }: MyRolesPanelProps) {
   const { user } = useAuth();
   const [tab, setTab] = useState<"saved" | "practiced">("saved");
+  const [search, setSearch] = useState("");
   const [savedRoles, setSavedRoles] = useState<RoleResult[]>([]);
   const [practicedRoles, setPracticedRoles] = useState<RoleResult[]>([]);
   const [loading, setLoading] = useState(true);
