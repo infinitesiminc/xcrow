@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
-import { Loader2, TrendingUp, AlertTriangle, CheckCircle2, Zap, BookOpen, Cpu } from "lucide-react";
+import { Loader2, TrendingUp, AlertTriangle, CheckCircle2, Zap, BookOpen, Cpu, ChevronDown, ChevronUp } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
