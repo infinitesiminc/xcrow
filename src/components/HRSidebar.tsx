@@ -1,4 +1,4 @@
-import { Building2, BarChart3, PieChart, List, GraduationCap } from "lucide-react";
+import { Building2, BarChart3, PieChart, List, GraduationCap, GitCompareArrows } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import {
   Sidebar,
