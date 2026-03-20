@@ -625,7 +625,7 @@ export default function Students() {
             <motion.div variants={fadeUp} custom={1}>
               <CompanyMarquee
                 rows={[
-                  ["Anthropic", "OpenAI", "Google DeepMind", "Stripe", "SpaceX", "Anduril", "xAI"],
+                  ["Anthropic", "OpenAI", "Google DeepMind", "Stripe", "Spotify", "SpaceX", "Anduril", "xAI"],
                   ["Databricks", "Cohere", "Notion", "Deel", "Rubrik", "Instacart", "Esri"],
                 ]}
                 onCompanyClick={handleCompanyClick}
