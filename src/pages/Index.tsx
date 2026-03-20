@@ -317,22 +317,7 @@ const Index = () => {
               </div>
             )}
 
-            {/* Role carousel — only on territory tab */}
-            {roleBatches.length > 0 && rightTab === "territory" && (
-              <motion.div
-                initial={{ opacity: 0, y: -8 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3 }}
-                className="p-4 pt-2"
-              >
-                <BatchedRoleCarousel
-                  batches={roleBatches}
-                  onSelectRole={handleRoleSelect}
-                  selectedJobId={selectedRole?.jobId}
-                  latestBatchId={latestBatchId}
-                />
-              </motion.div>
-            )}
+            {/* Role carousel removed — cards now inline in chat */}
           </div>
 
           {/* Main area */}
