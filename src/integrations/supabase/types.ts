@@ -775,6 +775,7 @@ export type Database = {
           linkedin_url: string | null
           onboarding_completed: boolean
           program_name: string | null
+          referral_code: string | null
           school_name: string | null
           target_roles: Json | null
         }
@@ -789,6 +790,7 @@ export type Database = {
           linkedin_url?: string | null
           onboarding_completed?: boolean
           program_name?: string | null
+          referral_code?: string | null
           school_name?: string | null
           target_roles?: Json | null
         }
@@ -803,8 +805,36 @@ export type Database = {
           linkedin_url?: string | null
           onboarding_completed?: boolean
           program_name?: string | null
+          referral_code?: string | null
           school_name?: string | null
           target_roles?: Json | null
+        }
+        Relationships: []
+      }
+      referrals: {
+        Row: {
+          created_at: string
+          credited: boolean
+          id: string
+          referral_code: string
+          referred_user_id: string
+          referrer_id: string
+        }
+        Insert: {
+          created_at?: string
+          credited?: boolean
+          id?: string
+          referral_code: string
+          referred_user_id: string
+          referrer_id: string
+        }
+        Update: {
+          created_at?: string
+          credited?: boolean
+          id?: string
+          referral_code?: string
+          referred_user_id?: string
+          referrer_id?: string
         }
         Relationships: []
       }
@@ -1491,6 +1521,10 @@ export type Database = {
           source_queue: string
         }
         Returns: number
+      }
+      process_referral: {
+        Args: { _referral_code: string; _referred_user_id: string }
+        Returns: Json
       }
       read_email_batch: {
         Args: { batch_size: number; queue_name: string; vt: number }
