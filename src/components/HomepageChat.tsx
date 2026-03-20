@@ -3,7 +3,8 @@ import { Send, Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import TypewriterMarkdown from "@/components/TypewriterMarkdown";
 import { useToast } from "@/hooks/use-toast";
-import InlineRoleCarousel, { type RoleResult } from "@/components/InlineRoleCarousel";
+import InlineChatRoleCards from "@/components/chat/InlineChatRoleCards";
+import { type RoleResult } from "@/components/InlineRoleCarousel";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { aggregateSkillXP, type SimRecord } from "@/lib/skill-map";
@@ -319,9 +320,10 @@ export default function HomepageChat({
               if (item.type === "roles") {
                 return (
                   <div key={`roles-${i}`} className="py-1">
-                    <InlineRoleCarousel
+                    <InlineChatRoleCards
                       roles={item.roles}
                       onSelectRole={onRoleSelect}
+                      onViewDetails={onRoleSelect}
                       selectedJobId={selectedJobId}
                     />
                   </div>

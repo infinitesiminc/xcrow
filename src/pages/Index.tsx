@@ -9,7 +9,7 @@ import RolePreviewPanel from "@/components/RolePreviewPanel";
 import InlineRoleCarousel, { BatchedRoleCarousel, type RoleResult, type RoleBatch } from "@/components/InlineRoleCarousel";
 import SkillSuggestionCards from "@/components/SkillSuggestionCards";
 import HumanEdgesCard, { type EdgeContext } from "@/components/HumanEdgesCard";
-import TerritoryGrid from "@/components/territory/TerritoryGrid";
+import TerritoryMap from "@/components/territory/TerritoryMap";
 import CompactHUD from "@/components/territory/CompactHUD";
 import MyRolesPanel from "@/components/territory/MyRolesPanel";
 import {
@@ -276,7 +276,7 @@ const Index = () => {
                 onChatStart={handleChatStart}
                 hasInteracted={hasInteracted}
                 selectedJobId={selectedRole?.jobId}
-                inlineCards={false}
+                inlineCards
                 externalPrompt={externalPrompt}
                 onExternalPromptConsumed={() => setExternalPrompt(null)}
                 viewContext={viewContext}
@@ -391,15 +391,15 @@ const Index = () => {
                   transition={{ duration: 0.4 }}
                   className="h-full"
                 >
-                  {isSignedIn ? (
-                    <TerritoryGrid
+                    {isSignedIn ? (
+                    <TerritoryMap
                       skills={realSkills}
                       targetSkillIds={targetSkillIds}
                       onTileClick={handleTileClick}
                     />
                   ) : (
                     <div className="h-full flex flex-col">
-                      <TerritoryGrid
+                      <TerritoryMap
                         demoMode
                         highlightedSkillIds={demoHighlighted}
                         onTileClick={handleTileClick}
