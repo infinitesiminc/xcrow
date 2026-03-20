@@ -88,7 +88,10 @@ export default function MyRolesPanel({ open, onClose, onAskChat }: MyRolesPanelP
     );
   };
 
-  const activeRoles = tab === "saved" ? savedRoles : practicedRoles;
+  const q = search.toLowerCase();
+  const filteredRoles = (tab === "saved" ? savedRoles : practicedRoles).filter(
+    (r) => !q || r.title.toLowerCase().includes(q) || (r.company || "").toLowerCase().includes(q)
+  );
 
   return (
     <AnimatePresence>
