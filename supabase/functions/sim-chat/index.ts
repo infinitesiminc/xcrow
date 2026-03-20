@@ -31,6 +31,7 @@ serve(async (req) => {
     if (action === "compile") return await handleCompile(payload, apiKey);
     if (action === "chat") return await handleChat(payload, apiKey);
     if (action === "score") return await handleScore(payload, apiKey);
+    if (action === "elevate") return await handleElevate(payload, apiKey);
 
     return new Response(JSON.stringify({ error: "Unknown action" }), {
       status: 400,
@@ -451,6 +452,52 @@ Respond with ONLY valid JSON:
     parsed = JSON.parse(jsonMatch[1].trim());
   } catch {
     throw new Error("Failed to parse scoring response");
+  }
+
+  return new Response(JSON.stringify(parsed), {
+    headers: { ...corsHeaders, "Content-Type": "application/json" },
+  });
+}
+
+/* ── Elevation Narrative: "Before → After" role evolution ── */
+async function handleElevate(payload: any, apiKey: string) {
+  const { jobTitle, company, taskName, tasks } = payload;
+
+  const taskList = tasks?.length
+    ? tasks.map((t: any) => `- ${t.name} (AI exposure: ${t.aiExposure ?? '?'}%)`).join("\n")
+    : `- ${taskName}`;
+
+  const prompt = `You are a career intelligence analyst. Given a role and its task breakdown, generate a concise "elevation narrative" showing how AI is promoting professionals in this role up the value chain.
+
+Role: ${jobTitle}${company ? ` at ${company}` : ""}
+${currentDateContext()}
+
+Tasks:
+${taskList}
+
+Respond in this exact JSON format:
+{
+  "before": "One sentence: what this role traditionally focused on (the routine/operational work)",
+  "after": "One sentence: what professionals in this role are shifting toward (higher-purpose, strategic work)",
+  "shift_summary": "One compelling sentence capturing the overall elevation (e.g., 'From reading scans to guiding treatment strategy')",
+  "emerging_skills": ["3-4 specific skills that define the 'after' state"],
+  "analogy": "A one-line analogy connecting this shift to a well-known transformation (like the radiologist example)"
+}
+
+Rules:
+- Be specific to THIS role and company, not generic
+- The "after" should feel aspirational and exciting
+- Use present tense ("is shifting", "are moving toward")
+- Keep each field under 30 words
+- emerging_skills should be concrete and practicable`;
+
+  const raw = await callAI(apiKey, [{ role: "user", content: prompt }], 0.7);
+  let parsed;
+  try {
+    const jsonMatch = raw.match(/\{[\s\S]*\}/);
+    parsed = JSON.parse(jsonMatch ? jsonMatch[0] : raw);
+  } catch {
+    parsed = { before: "", after: "", shift_summary: raw, emerging_skills: [], analogy: "" };
   }
 
   return new Response(JSON.stringify(parsed), {

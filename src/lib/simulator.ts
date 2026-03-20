@@ -47,6 +47,14 @@ export interface ObjectiveResult {
   assisted?: boolean;
 }
 
+export interface ElevationNarrative {
+  before: string;
+  after: string;
+  shift_summary: string;
+  emerging_skills: string[];
+  analogy: string;
+}
+
 export interface SimScoreResult {
   overall: number;
   categories: { name: string; score: number; feedback: string }[];
@@ -99,4 +107,13 @@ export async function scoreSession(
   scaffoldingTiers?: Record<string, number>,
 ): Promise<SimScoreResult> {
   return simFetch("score", { transcript, scenario, mode, learningObjectives, scaffoldingTiers });
+}
+
+export async function generateElevation(
+  jobTitle: string,
+  taskName: string,
+  company?: string,
+  tasks?: { name: string; aiExposure?: number }[],
+): Promise<ElevationNarrative> {
+  return simFetch("elevate", { jobTitle, company, taskName, tasks });
 }

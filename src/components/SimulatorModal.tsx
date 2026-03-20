@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Send, Loader2, RotateCcw, ChevronDown, ChevronUp, CheckCircle2, X, ArrowRight, Target, Circle, CircleCheck, AlertTriangle, TrendingUp, Trophy, Zap, Map, Star } from "lucide-react";
+import { Send, Loader2, RotateCcw, ChevronDown, ChevronUp, CheckCircle2, X, ArrowRight, Target, Circle, CircleCheck, AlertTriangle, TrendingUp, Trophy, Zap, Map, Star, Lock, Unlock, Sparkles } from "lucide-react";
 import { matchTaskToSkills, SKILL_TAXONOMY, XP_PER_SIM, getLevel, getNextLevel, type SkillXP } from "@/lib/skill-map";
 import ReactMarkdown from "react-markdown";
 import { Button } from "@/components/ui/button";
@@ -14,12 +14,14 @@ import {
   compileSession,
   chatTurn,
   scoreSession,
+  generateElevation,
   type SimMessage,
   type SimSession,
   type SimScoreResult,
   type SimMode,
   type LearningObjective,
   type SimConfig,
+  type ElevationNarrative,
 } from "@/lib/simulator";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -674,6 +676,8 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
 
   // Compute skills earned for this simulation
   const [earnedSkills, setEarnedSkills] = useState<{ skill_id: string; xp: number; name: string; levelBefore: string; levelAfter: string; leveledUp: boolean }[]>([]);
+  const [elevation, setElevation] = useState<ElevationNarrative | null>(null);
+  const [elevationLoading, setElevationLoading] = useState(false);
 
   const handleFinish = async () => {
     setPhase("completing");
@@ -709,6 +713,9 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
     });
     setEarnedSkills(earned);
     
+    // Check if elevation unlock is earned (60%+ overall)
+    const elevationUnlocked = scores && scores.overall >= 60;
+
     if (user) {
       try {
         await supabase.from("completed_simulations").insert({
@@ -735,6 +742,28 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
       }
     }
     setPhase("done");
+
+    // Fire elevation generation async (non-blocking) if unlocked
+    if (elevationUnlocked) {
+      setElevationLoading(true);
+      generateElevation(jobTitle, taskName, company)
+        .then(narrative => {
+          setElevation(narrative);
+          // Persist to DB if user is logged in
+          if (user) {
+            supabase.from("completed_simulations" as any)
+              .update({ elevation_narrative: narrative } as any)
+              .eq("user_id", user.id)
+              .eq("task_name", taskName)
+              .eq("job_title", jobTitle)
+              .order("completed_at", { ascending: false })
+              .limit(1)
+              .then(() => {});
+          }
+        })
+        .catch(err => console.error("Elevation generation failed:", err))
+        .finally(() => setElevationLoading(false));
+    }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -1131,6 +1160,85 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                       ))}
                     </div>
                   )}
+
+                  {/* Elevation Narrative — Bonus Unlock */}
+                  {(() => {
+                    const overallScore = scoreResult?.overall ?? 0;
+                    const unlocked = overallScore >= 60;
+
+                    if (unlocked && elevation) {
+                      return (
+                        <motion.div
+                          initial={{ opacity: 0, y: 12 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: 0.6, duration: 0.5 }}
+                          className="w-full rounded-2xl border border-primary/30 bg-gradient-to-b from-primary/5 to-transparent p-5 text-left"
+                        >
+                          <div className="flex items-center gap-2 mb-3">
+                            <Unlock className="h-4 w-4 text-primary" />
+                            <span className="text-xs font-medium uppercase tracking-widest text-primary">Role Evolution Unlocked</span>
+                          </div>
+                          <p className="text-base font-display font-bold text-foreground mb-3">
+                            {elevation.shift_summary}
+                          </p>
+                          <div className="grid grid-cols-2 gap-3 mb-3">
+                            <div className="rounded-xl bg-muted/50 p-3">
+                              <span className="text-[10px] font-mono uppercase text-muted-foreground block mb-1">Before</span>
+                              <p className="text-xs text-foreground/80">{elevation.before}</p>
+                            </div>
+                            <div className="rounded-xl bg-primary/5 border border-primary/20 p-3">
+                              <span className="text-[10px] font-mono uppercase text-primary block mb-1">After</span>
+                              <p className="text-xs text-foreground/80">{elevation.after}</p>
+                            </div>
+                          </div>
+                          {elevation.emerging_skills.length > 0 && (
+                            <div className="flex flex-wrap gap-1.5 mb-2">
+                              {elevation.emerging_skills.map((skill, i) => (
+                                <span key={i} className="text-[10px] px-2 py-0.5 rounded-full bg-primary/10 text-primary font-medium">
+                                  {skill}
+                                </span>
+                              ))}
+                            </div>
+                          )}
+                          {elevation.analogy && (
+                            <p className="text-[11px] text-muted-foreground italic mt-2">💡 {elevation.analogy}</p>
+                          )}
+                        </motion.div>
+                      );
+                    }
+
+                    if (unlocked && elevationLoading) {
+                      return (
+                        <motion.div
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          className="w-full rounded-2xl border border-primary/20 bg-primary/5 p-5 flex items-center justify-center gap-3"
+                        >
+                          <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                          <span className="text-xs text-primary font-medium">Generating your role evolution insight…</span>
+                        </motion.div>
+                      );
+                    }
+
+                    // Locked teaser
+                    return (
+                      <motion.div
+                        initial={{ opacity: 0, y: 8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.5 }}
+                        className="w-full rounded-2xl border border-border/40 bg-muted/30 p-5 text-center"
+                      >
+                        <Lock className="h-5 w-5 text-muted-foreground/40 mx-auto mb-2" />
+                        <p className="text-xs font-medium text-muted-foreground">
+                          Score 60%+ to unlock{" "}
+                          <span className="text-foreground">how this role is evolving</span>
+                        </p>
+                        <p className="text-[10px] text-muted-foreground/60 mt-1">
+                          See the "before → after" shift and the skills that define your new edge
+                        </p>
+                      </motion.div>
+                    );
+                  })()}
 
                   {!user && (
                     <p className="text-xs text-muted-foreground">
