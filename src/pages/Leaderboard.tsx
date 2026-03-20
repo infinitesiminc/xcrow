@@ -309,6 +309,16 @@ export default function Leaderboard() {
   const [sortBy, setSortBy] = useState<SortKey>("total_xp");
   const [tab, setTab] = useState<TabKey>("global");
   const [search, setSearch] = useState("");
+  const [pendingRequests, setPendingRequests] = useState<Set<string>>(new Set());
+  const [chatOpen, setChatOpen] = useState(false);
+  const [chatTarget, setChatTarget] = useState<LeaderboardEntry | null>(null);
+  const [chatMessages, setChatMessages] = useState<Record<string, { from: "me" | "them"; text: string }[]>>({});
+  const [chatInput, setChatInput] = useState("");
+  const chatEndRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (chatOpen) chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [chatOpen, chatMessages, chatTarget]);
 
   const filtered = useMemo(() => {
     let data = [...MOCK_DATA];
@@ -359,7 +369,44 @@ export default function Leaderboard() {
   }
 
   function handleAddFriend(entry: LeaderboardEntry) {
+    setPendingRequests(prev => new Set([...prev, entry.id]));
     toast({ title: "Friend request sent", description: `Invited ${entry.display_name} to connect` });
+  }
+
+  function handleOpenChat(entry: LeaderboardEntry) {
+    setChatTarget(entry);
+    setChatOpen(true);
+    // Seed a welcome message if no history
+    if (!chatMessages[entry.id]) {
+      setChatMessages(prev => ({
+        ...prev,
+        [entry.id]: [{ from: "them", text: `Hey! I'm working on ${entry.currentActivity?.skill || "some simulations"}. What are you practicing?` }],
+      }));
+    }
+  }
+
+  function handleSendChat() {
+    if (!chatInput.trim() || !chatTarget) return;
+    const id = chatTarget.id;
+    setChatMessages(prev => ({
+      ...prev,
+      [id]: [...(prev[id] || []), { from: "me", text: chatInput.trim() }],
+    }));
+    setChatInput("");
+    // Simulate reply
+    setTimeout(() => {
+      const replies = [
+        "Nice! I just finished a simulation on that 🔥",
+        "We should practice together sometime!",
+        "That's a tough one — I scored 72% last time",
+        "Have you tried the Adaptive Thinking challenges?",
+        "Cool! I'm grinding Prompt Engineering rn 💪",
+      ];
+      setChatMessages(prev => ({
+        ...prev,
+        [id]: [...(prev[id] || []), { from: "them", text: replies[Math.floor(Math.random() * replies.length)] }],
+      }));
+    }, 1200 + Math.random() * 1500);
   }
 
   function handleInvite() {
