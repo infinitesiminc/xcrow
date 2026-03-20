@@ -79,11 +79,11 @@ export default function CastleNode({
           {/* Crowy mascot */}
           {isActive && (
             <motion.div
-              className="absolute -top-6 z-10"
+              className="absolute -top-10 z-10"
               animate={{ y: [0, -5, 0] }}
               transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
             >
-              <img src={crowLogo} alt="Crowy" className="h-7 w-7 object-contain drop-shadow-[0_0_6px_hsl(270_80%_60%/0.6)]" draggable={false} />
+              <img src={crowLogo} alt="Crowy" className="h-14 w-14 object-contain drop-shadow-[0_0_8px_hsl(270_80%_60%/0.6)]" draggable={false} />
             </motion.div>
           )}
 
