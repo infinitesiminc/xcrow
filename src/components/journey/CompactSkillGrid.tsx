@@ -115,7 +115,7 @@ export default function CompactSkillGrid({ skills, skillTasks }: CompactSkillGri
                             )}
                           </div>
 
-                          <p className={`text-[9px] font-medium leading-tight truncate ${active ? "text-white/80" : "text-white/25"}`}>
+                          <p className={`text-[9px] font-medium leading-tight truncate ${active ? "text-white/75" : "text-white/30"}`}>
                             {skill.name}
                           </p>
 
