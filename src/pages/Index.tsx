@@ -489,44 +489,26 @@ const Index = () => {
                     </div>
 
                     <TooltipProvider delayDuration={200}>
-                      {CATEGORY_ORDER.map((cat, gi) => {
-                        const meta = CATEGORY_META[cat];
-                        const catSkills = SKILL_TAXONOMY.filter(s => s.category === cat);
-                        return (
-                          <motion.div
-                            key={cat}
-                            initial={{ opacity: 0, y: 12, filter: "blur(4px)" }}
-                            animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-                            transition={{ delay: 0.1 + gi * 0.06, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-                          >
-                            <div className="flex items-center gap-2 mb-2">
-                              <span className="text-xs">{meta.emoji}</span>
-                              <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">{meta.label}</span>
-                              <div className="flex-1 h-px bg-border/30" />
-                            </div>
-                            <div className="flex flex-wrap gap-3">
-                              {catSkills.map((skill, si) => {
-                                const sx = skillMap.get(skill.id);
-                                const xp = sx?.xp ?? 0;
-                                const castle = getCastleState(xp);
-                                return (
-                                  <CastleNode
-                                    key={skill.id}
-                                    skillId={skill.id}
-                                    name={skill.name}
-                                    category={skill.category}
-                                    castle={castle}
-                                    xp={xp}
-                                    isActive={lastPracticedSkillId === skill.id}
-                                    onClick={() => {}}
-                                    delay={gi * 4 + si}
-                                  />
-                                );
-                              })}
-                            </div>
-                          </motion.div>
-                        );
-                      })}
+                      <div className="flex flex-wrap gap-3 justify-center">
+                        {SKILL_TAXONOMY.map((skill, si) => {
+                          const sx = skillMap.get(skill.id);
+                          const xp = sx?.xp ?? 0;
+                          const castle = getCastleState(xp);
+                          return (
+                            <CastleNode
+                              key={skill.id}
+                              skillId={skill.id}
+                              name={skill.name}
+                              category={skill.category}
+                              castle={castle}
+                              xp={xp}
+                              isActive={lastPracticedSkillId === skill.id}
+                              onClick={() => {}}
+                              delay={si}
+                            />
+                          );
+                        })}
+                      </div>
                     </TooltipProvider>
 
                     {!isSignedIn && demoHighlighted.size > 0 && (
