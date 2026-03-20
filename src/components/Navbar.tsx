@@ -148,7 +148,7 @@ export default function Navbar() {
             <div className="relative h-11 w-11 flex items-center justify-center" style={{ WebkitMaskImage: `url(${crowLogo})`, WebkitMaskSize: 'contain', WebkitMaskRepeat: 'no-repeat', WebkitMaskPosition: 'center', maskImage: `url(${crowLogo})`, maskSize: 'contain', maskRepeat: 'no-repeat', maskPosition: 'center' }}>
               <div className="absolute inset-0 animate-neon-shift bg-[length:200%_auto]" style={{ backgroundImage: "linear-gradient(135deg, hsl(180 90% 50%), hsl(270 80% 55%), hsl(330 90% 55%), hsl(180 90% 50%))" }} />
             </div>
-            <span className="hidden sm:inline font-extrabold text-foreground">Crowy.ai</span>
+            <span className="hidden sm:inline text-lg font-extrabold text-foreground tracking-tight" style={{ fontFamily: "'Inter', 'SF Pro Display', -apple-system, sans-serif", letterSpacing: '-0.02em' }}>Crowy.ai</span>
           </button>
 
           {/* Desktop nav */}
