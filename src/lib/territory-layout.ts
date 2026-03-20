@@ -132,8 +132,8 @@ export function buildConnections(layout: IslandLayout[], taxonomy?: TaxonomySkil
       (c.from === from && c.to === to) || (c.from === to && c.to === from)
     );
     if (!exists) {
-      const fromCat = SKILL_TAXONOMY.find(s => s.id === from)?.category;
-      const toCat = SKILL_TAXONOMY.find(s => s.id === to)?.category;
+      const fromCat = source.find(s => s.id === from)?.category;
+      const toCat = source.find(s => s.id === to)?.category;
       connections.push({ from, to, crossIsland: fromCat !== toCat });
     }
   }
