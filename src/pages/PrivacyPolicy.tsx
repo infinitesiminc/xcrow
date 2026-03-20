@@ -36,7 +36,7 @@ export default function PrivacyPolicy() {
         </p>
         <ul>
           <li><strong>Service Providers:</strong> Third parties that help us operate our platform (hosting, analytics, email).</li>
-          <li><strong>Institutional Partners:</strong> If you access crowy.ai through a school or employer, aggregated (non-identifiable) performance data may be shared with your institution's administrators.</li>
+          <li><strong>Institutional Partners:</strong> If you access Crowy.ai through a school or employer, aggregated (non-identifiable) performance data may be shared with your institution's administrators.</li>
           <li><strong>Legal Requirements:</strong> When required by law or to protect our rights.</li>
         </ul>
 
