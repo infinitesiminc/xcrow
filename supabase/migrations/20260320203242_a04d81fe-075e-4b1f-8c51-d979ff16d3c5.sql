@@ -1,0 +1,2 @@
+ALTER TABLE public.jobs
+ADD COLUMN IF NOT EXISTS equity_text text DEFAULT NULL;

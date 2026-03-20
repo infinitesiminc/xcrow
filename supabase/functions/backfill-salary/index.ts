@@ -53,10 +53,11 @@ Job Description:
 ${desc}
 
 Extract:
-- salary_min: minimum salary as integer (no decimals, no currency symbols). Convert hourly to annual if needed (hourly * 2080).
+- salary_min: minimum salary as integer (no decimals, no currency symbols)
 - salary_max: maximum salary as integer
 - salary_currency: ISO currency code (default USD)
-- salary_period: "annual", "hourly", "monthly", or "daily"
+- salary_period: "annual" or "hourly" — keep the original period, do NOT convert
+- equity_text: if equity/stock options/RSUs are mentioned, extract the exact text (e.g. "0.5-1.0% equity", "$50k-$100k RSUs/year", "Stock options available"). null if not mentioned.
 
 If a single number is given (not a range), use it for both min and max.
 If salary is listed as "competitive" or similar vague terms, return nulls.`;
@@ -87,8 +88,9 @@ If salary is listed as "competitive" or similar vague terms, return nulls.`;
                       salary_max: { type: ["integer", "null"], description: "Maximum salary as integer" },
                       salary_currency: { type: ["string", "null"], description: "ISO currency code" },
                       salary_period: { type: ["string", "null"], enum: ["annual", "hourly", "monthly", "daily", null] },
+                      equity_text: { type: ["string", "null"], description: "Equity/stock compensation text if mentioned" },
                     },
-                    required: ["salary_min", "salary_max", "salary_currency", "salary_period"],
+                    required: ["salary_min", "salary_max", "salary_currency", "salary_period", "equity_text"],
                   },
                 },
               },
@@ -128,6 +130,7 @@ If salary is listed as "competitive" or similar vague terms, return nulls.`;
               salary_max: salary.salary_max,
               salary_currency: salary.salary_currency || "USD",
               salary_period: salary.salary_period || "annual",
+              ...(salary.equity_text ? { equity_text: salary.equity_text } : {}),
             })
             .eq("id", job.id);
 
