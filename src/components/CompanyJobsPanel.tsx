@@ -45,42 +45,35 @@ export default function CompanyJobsPanel({ companyName, onClose, onJobSelect }: 
         return;
       }
 
-      // 2. Fetch jobs
-      const { data: jobRows } = await supabase
-        .from("jobs")
-        .select("id, title, department, augmented_percent")
-        .eq("company_id", company.id)
-        .order("augmented_percent", { ascending: false, nullsFirst: false })
-        .limit(5);
+      // 2. Fetch jobs that have task clusters (sim-ready)
+      const { data: taskJobs } = await supabase
+        .from("job_task_clusters")
+        .select("job_id, cluster_name, jobs!inner(id, title, department, augmented_percent)")
+        .eq("jobs.company_id", company.id)
+        .order("sort_order", { ascending: true })
+        .limit(50);
 
-      if (!jobRows?.length) {
+      if (!taskJobs?.length) {
         setLoading(false);
         return;
       }
 
-      // 3. Fetch top task for each job
-      const jobIds = jobRows.map((j) => j.id);
-      const { data: tasks } = await supabase
-        .from("job_task_clusters")
-        .select("job_id, cluster_name")
-        .in("job_id", jobIds)
-        .order("sort_order", { ascending: true })
-        .limit(20);
-
-      const taskMap = new Map<string, string>();
-      tasks?.forEach((t) => {
-        if (!taskMap.has(t.job_id)) taskMap.set(t.job_id, t.cluster_name);
-      });
-
-      setJobs(
-        jobRows.map((j) => ({
+      // Group by job, pick top task per job, limit to 5 jobs
+      const jobMap = new Map<string, CompanyJob>();
+      for (const row of taskJobs) {
+        const j = row.jobs as any;
+        if (!j || jobMap.has(j.id)) continue;
+        if (jobMap.size >= 5) break;
+        jobMap.set(j.id, {
           id: j.id,
           title: j.title,
           department: j.department,
           augmented_percent: j.augmented_percent,
-          topTask: taskMap.get(j.id) ?? null,
-        }))
-      );
+          topTask: row.cluster_name,
+        });
+      }
+
+      setJobs(Array.from(jobMap.values()));
       setLoading(false);
     })();
   }, [companyName]);
