@@ -417,6 +417,8 @@ export default function Leaderboard() {
   function handleOpenChat(entry: LeaderboardEntry) {
     setChatTarget(entry);
     setChatOpen(true);
+    // Clear unread for this friend
+    setUnreadCounts(prev => { const n = { ...prev }; delete n[entry.id]; return n; });
     // Seed a welcome message if no history
     if (!chatMessages[entry.id]) {
       setChatMessages(prev => ({
