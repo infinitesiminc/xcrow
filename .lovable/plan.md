@@ -1,52 +1,101 @@
 
 
-## Unified Journey System: Goal-Locked Territory + Context-Driven Chat
+# Inline Job Cards in Chat + RPG Territory Map
 
-**Status: Implemented**
-
-### What was built:
-
-1. **DB**: Added `target_roles jsonb default '[]'` to `profiles`
-2. **Onboarding**: New "Set your goals" step — pick 1-3 target roles from jobs table search
-3. **Territory Map** (center panel): Skills show as Claimed/Frontier/Undiscovered tiles. "Contested zones" (HOT badge) for target-role gaps with market demand. Click frontier → "Explore roles for this skill" links to chat.
-4. **Player HUD** (left panel): Territory coverage % bar showing claimed/total for target roles. Goal roles listed. Human edges shown as collected trophies.
-5. **Quest Log** (right panel): Frontier Skills (target-role gaps) replace generic hot skills. Target Progress shows per-role coverage %. AI Dispatches unchanged.
-6. **Career-chat edge function**: Accepts `journeyContext` with target roles, active skills, frontier skills, weakest skill, coverage %. System prompt enhanced with territory-aware coaching instructions.
-7. **HomepageChat**: Fetches user profile + simulations on mount, builds journey context, passes to career-chat API.
-
-### Data Flow
-```
-profiles.target_roles → job_task_clusters.skill_names →
-  Territory Map (claimed/frontier/undiscovered) →
-  Player HUD (coverage %) + Quest Log (gap skills) →
-  Chat (journey context in system prompt)
-```
-
-### Territory States
-- **Claimed**: XP > 0, full category color
-- **Frontier**: In target role or no targets set, dashed border, explorable
-- **Undiscovered**: Not in target roles, locked icon, muted
-- **Contested**: Frontier + in target roles, HOT badge, pulsing dot, flame icon
+## Problem Statement
+1. **Eye-switching fatigue**: On desktop, role cards appear in the right panel while the chat is on the left — users must constantly shift focus between panels.
+2. **Territory map feels flat**: The current skill territory is a table of categorized pill buttons — functional but not immersive or game-like.
 
 ---
 
-## Bidirectional Context Bridge (View-Aware Chat)
+## Part 1: Inline Job Cards in Chat
 
-**Status: Implemented**
+**Current behavior**: On desktop, `inlineCards={false}` — role results only appear in the right panel's `BatchedRoleCarousel`. On mobile, `inlineCards={true}` already shows them inline.
 
-### What was built:
+**Proposed change**: Always render role cards inline in the chat stream (both mobile and desktop), with a richer inline card design.
 
-1. **ViewContext interface** (`HomepageChat.tsx`): Exported type with `activePanel`, `selectedRole`, `selectedTab`, `lastSimResult`
-2. **Index.tsx**: Builds a `viewContext` memo from current right-panel state (`rightTab`, `selectedRole`, `myRolesTab`, `lastSimResult`) and passes to both mobile/desktop `HomepageChat` instances
-3. **HomepageChat**: Accepts `viewContext` prop, sends it in every chat request body alongside `journeyContext`
-4. **career-chat edge function**: Consumes `viewContext`, appends a `## CURRENT VIEW CONTEXT` block to system prompt:
-   - If role is open → "Student is viewing [role], assume questions refer to it"
-   - If browsing My Roles → "Help prioritize which to practice"
-   - If sim just completed → "Acknowledge progress, suggest next task"
-5. **MyRolesPanel**: Reports tab changes (`saved`/`practiced`) via new `onTabChange` callback
+### Changes
+- **`Index.tsx`**: Set `inlineCards={true}` for desktop too. Keep the right panel carousel as a persistent "history" but make inline cards the primary interaction point.
+- **`InlineRoleCarousel` → `InlineChatRoleCards`**: Redesign the inline cards to be more contextual within chat:
+  - Wider cards (fill chat width, 2-column grid instead of horizontal scroll)
+  - Show salary range if available
+  - Show augmented score as a compact bar
+  - "Practice" and "View Details" quick actions directly on the card
+  - Clicking "View Details" opens the role in the right panel (or full-screen on mobile)
+  - Clicking "Practice" jumps straight to simulation
+- **`HomepageChat.tsx`**: Update the roles rendering block to use the new grid layout
 
-### User Scenarios Enabled
-- Open a saved role → ask "should I practice this?" → AI knows which role
-- Finish a sim → next chat message gets congratulations + next steps
-- Browse practiced roles → AI proactively summarizes growth
-- Territory view → AI references skill gaps naturally
+### Result
+Users see job cards right where the AI mentions them — no eye-switching needed. The right panel becomes a secondary "pinned role" view.
+
+---
+
+## Part 2: RPG Territory Map
+
+Replace the current table/pill layout with an isometric or top-down RPG-style map rendered in canvas/SVG.
+
+### Design Concept
+```text
+┌──────────────────────────────────────────┐
+│           SKILL TERRITORY MAP            │
+│                                          │
+│    ┌───┐        ┌───┐     ┌───┐         │
+│    │🏰│───path──│⚡│─────│🔬│         │
+│    │Tech│        │ AI │     │Res│         │
+│    └───┘        └───┘     └───┘         │
+│      │            │                      │
+│    path         path                     │
+│      │            │                      │
+│    ┌───┐        ┌───┐     ┌───┐         │
+│    │🗣│        │📊│─────│🎨│         │
+│    │Comm│        │Anly│     │Cre│         │
+│    └───┘        └───┘     └───┘         │
+│                   │                      │
+│                 ┌───┐                    │
+│                 │⚖│                    │
+│                 │Comp│                    │
+│                 └───┘                    │
+└──────────────────────────────────────────┘
+```
+
+### Approach: SVG-based Hex/Island Map (no heavy 3D library)
+
+Each skill category becomes an **island/region** on a hand-drawn style map. Individual skills are **nodes** within each region connected by paths.
+
+- **Regions**: 6 category islands arranged in a hex-like layout, each with a distinct terrain theme (tech = circuit city, creative = art studio, leadership = castle, etc.)
+- **Skill Nodes**: Circular nodes within each region. Visual states:
+  - **Claimed** (bright, glowing, animated pulse) — skills with XP
+  - **Frontier** (semi-visible, dashed border) — adjacent to claimed
+  - **Undiscovered** (fog/cloud overlay, locked icon)
+  - **Contested** (flame animation, pulsing border) — in-demand target skills
+- **Paths**: SVG lines connecting related skills, lit up as you progress
+- **Player Avatar**: A small crow icon sitting on the last-practiced skill
+- **Growth Rings**: Keep the 3-ring indicator (Foundation/AI/Human Edge) as a mini overlay on each node
+- **Interactions**: Click a node to zoom in and see details + practice CTA. Pan/zoom the whole map.
+
+### Technical Implementation
+- **`TerritoryMap.tsx`** (new): Main SVG-based map component using `framer-motion` for animations
+- **`territory/IslandRegion.tsx`** (new): Renders a category island with its skill nodes
+- **`territory/SkillNode.tsx`** (new): Individual skill node with state-based visuals
+- **`territory/MapPaths.tsx`** (new): SVG path connections between nodes
+- **`lib/territory-layout.ts`** (new): Pre-computed positions for each skill node in the map layout — hex-grid coordinates per category region
+- Pan/zoom via CSS transforms + wheel/drag handlers (no heavy library needed)
+- Fog-of-war effect using SVG masks/filters for undiscovered areas
+- Keep `TerritoryGrid` as fallback for accessibility/compact views
+
+### Why SVG over Canvas/Three.js
+- Works with existing framer-motion animations
+- Accessible (DOM nodes are clickable, tooltips work natively)
+- No heavy dependencies
+- Performant for 31 nodes
+- Responsive and sharp at any resolution
+
+---
+
+## Implementation Order
+1. Inline chat cards (smaller change, immediate UX win)
+2. Territory map layout engine (position calculations)
+3. Territory map rendering (SVG islands, nodes, paths)
+4. Fog-of-war + animations
+5. Integration with existing skill data and click handlers
+
