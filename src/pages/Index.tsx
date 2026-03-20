@@ -186,13 +186,13 @@ const Index = () => {
     })();
   }, [user]);
 
-  // Auto-open territory after first simulation completion
+  // Auto-open territory after first simulation completion (or demo seed)
   useEffect(() => {
-    if (realSkills.some(s => s.xp > 0) && !hasOpenedTerritory && user) {
+    if (displaySkills.some(s => s.xp > 0) && !hasOpenedTerritory) {
       setTerritoryOpen(true);
       setHasOpenedTerritory(true);
     }
-  }, [realSkills, hasOpenedTerritory, user]);
+  }, [displaySkills, hasOpenedTerritory]);
 
   const handleChatStart = useCallback(() => setHasInteracted(true), []);
 
