@@ -145,7 +145,7 @@ export default function Navbar() {
             onClick={() => handleNav("/")}
             className="flex items-center gap-2 font-display text-lg font-bold tracking-tight text-foreground hover:opacity-80 transition-opacity"
           >
-            <div className="h-10 w-10 rounded-xl flex items-center justify-center" style={{ backgroundImage: "linear-gradient(135deg, hsl(270 80% 55%), hsl(330 90% 55%), hsl(180 90% 50%))" }}>
+            <div className="h-10 w-10 rounded-xl flex items-center justify-center bg-foreground">
               <img src={crowLogo} alt="Crowy.ai" className="h-8 w-8 object-contain" />
             </div>
             <span className="hidden sm:inline font-extrabold text-transparent bg-clip-text animate-neon-shift bg-[length:200%_auto]" style={{ backgroundImage: "linear-gradient(90deg, hsl(180 90% 60%), hsl(270 80% 65%), hsl(330 90% 60%), hsl(180 90% 60%))" }}>Crowy.ai</span>
