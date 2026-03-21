@@ -210,13 +210,15 @@ const RoleDeepDive = () => {
     }
   }, [result, predictions, predictionsLoading, fetchAllPredictions]);
 
-  // Auto-select first task
+  // Auto-select first task (only on initial load)
+  const [hasAutoSelected, setHasAutoSelected] = useState(false);
   useEffect(() => {
-    if (result && !selectedTask) {
+    if (result && !hasAutoSelected) {
       const sorted = [...result.tasks].sort((a, b) => (b.aiExposureScore ?? 50) - (a.aiExposureScore ?? 50));
       if (sorted.length > 0) setSelectedTask(sorted[0]);
+      setHasAutoSelected(true);
     }
-  }, [result, selectedTask]);
+  }, [result, hasAutoSelected]);
 
   const pickNextTask = useCallback(() => {
     if (!result) return;
