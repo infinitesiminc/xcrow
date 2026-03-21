@@ -2,8 +2,9 @@ import { useEffect, useState, useCallback, useMemo } from "react";
 import { useSearchParams, useNavigate, useParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  ChevronLeft, Zap, AlertTriangle, Bookmark, BookmarkCheck, LogIn, Map, Cpu, Sparkles,
+  ChevronLeft, Zap, AlertTriangle, Bookmark, BookmarkCheck, LogIn, Map, Cpu, Sparkles, X,
 } from "lucide-react";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { JobAnalysisResult, TaskAnalysis } from "@/types/analysis";
