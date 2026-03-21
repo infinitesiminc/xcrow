@@ -528,14 +528,63 @@ serve(async (req) => {
 
     // Store in cache for future lookups (only title-based queries)
     if (!jobDescription && !jdUrl && cacheKey.title) {
-      await sb.from("cached_analyses").upsert({
-        job_title_lower: cacheKey.title,
-        company_lower: cacheKey.company,
-        result,
-      }, { onConflict: "job_title_lower,company_lower" }).then(({ error }) => {
-        if (error) console.error("Cache store error:", error);
-        else console.log("Cached result for:", cacheKey.title);
-      });
+      try {
+        const { error: cacheErr } = await sb.from("cached_analyses").upsert({
+          job_title_lower: cacheKey.title,
+          company_lower: cacheKey.company,
+          result,
+        }, { onConflict: "job_title_lower,company_lower" });
+        if (cacheErr) console.error("Cache store error:", JSON.stringify(cacheErr));
+        else console.log("Cached result for:", cacheKey.title, "at", cacheKey.company);
+      } catch (e) {
+        console.error("Cache store exception:", e);
+      }
+    }
+
+    // Also save to analysis_history if user is authenticated
+    if (authHeader) {
+      try {
+        const supabaseAnon = createClient(
+          Deno.env.get("SUPABASE_URL")!,
+          Deno.env.get("SUPABASE_ANON_KEY")!
+        );
+        const token = authHeader.replace("Bearer ", "");
+        const { data: userData } = await supabaseAnon.auth.getUser(token);
+        if (userData?.user) {
+          const userId = userData.user.id;
+          const jobTitleFinal = result.jobTitle as string || jobTitle || "";
+          const companyFinal = (result.company as string) || company || null;
+          
+          // Upsert into analysis_history
+          const { data: existing } = await sb.from("analysis_history")
+            .select("id")
+            .eq("user_id", userId)
+            .eq("job_title", jobTitleFinal)
+            .eq("company", companyFinal || "")
+            .maybeSingle();
+          
+          if (existing) {
+            await sb.from("analysis_history").update({
+              tasks_count: (analysis.tasks || []).length,
+              augmented_percent: analysis.summary?.augmentedPercent || 0,
+              automation_risk_percent: analysis.summary?.automationRiskPercent || 0,
+              analyzed_at: new Date().toISOString(),
+            }).eq("id", existing.id);
+          } else {
+            await sb.from("analysis_history").insert({
+              user_id: userId,
+              job_title: jobTitleFinal,
+              company: companyFinal,
+              tasks_count: (analysis.tasks || []).length,
+              augmented_percent: analysis.summary?.augmentedPercent || 0,
+              automation_risk_percent: analysis.summary?.automationRiskPercent || 0,
+            });
+          }
+          console.log("Saved analysis_history for user:", userId, jobTitleFinal);
+        }
+      } catch (e) {
+        console.error("Failed to save analysis_history:", e);
+      }
     }
 
     return new Response(JSON.stringify(result), {
