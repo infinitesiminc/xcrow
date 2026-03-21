@@ -520,22 +520,6 @@ const Index = () => {
         )}
       </AnimatePresence>
 
-      {/* ── Reopen panel button (when closed) ── */}
-      <AnimatePresence>
-        {!chatOpen && (
-          <motion.button
-            key="reopen"
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.9 }}
-            onClick={() => setChatOpen(true)}
-            className="fixed bottom-4 left-4 z-20 flex items-center gap-2 px-4 py-2.5 rounded-lg bg-card/90 backdrop-blur-md border border-border/50 text-sm font-medium text-foreground shadow-lg hover:shadow-xl transition-all active:scale-[0.97]"
-          >
-            <ScrollText className="h-4 w-4 text-primary" />
-            Open Panel
-          </motion.button>
-        )}
-      </AnimatePresence>
 
       {/* ── Quest board (floating bottom-left) ── */}
       {isSignedIn && !hasInteracted && (
