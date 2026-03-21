@@ -151,20 +151,10 @@ export default function FutureTerritoryMap({ skills }: FutureTerritoryMapProps) 
     };
   }, [transform, MINIMAP_H]);
 
-  const handleMinimapClick = useCallback((e: React.MouseEvent<SVGSVGElement>) => {
-    const svgEl = e.currentTarget;
-    const rect = svgEl.getBoundingClientRect();
-    const clickX = ((e.clientX - rect.left) / rect.width) * FUTURE_MAP_WIDTH;
-    const clickY = ((e.clientY - rect.top) / rect.height) * FUTURE_MAP_HEIGHT;
-    const container = containerRef.current;
-    if (!container) return;
-    const cRect = container.getBoundingClientRect();
-    const svgScale = cRect.width / FUTURE_MAP_WIDTH;
-    const targetX = cRect.width / 2 - clickX * svgScale * transform.scale;
-    const targetY = cRect.height / 2 - clickY * svgScale * transform.scale * (FUTURE_MAP_HEIGHT / FUTURE_MAP_WIDTH) * (cRect.width / cRect.height);
-    const c = clampTransform(targetX, targetY, transform.scale);
-    setTransform(t => ({ ...t, ...c }));
-  }, [transform.scale, clampTransform]);
+  const handleMinimapClick = useCallback(() => {
+    setTransform({ x: 0, y: 0, scale: 1 });
+    setFocusedIsland(null);
+  }, []);
 
   return (
     <TooltipProvider delayDuration={200}>
@@ -252,13 +242,6 @@ export default function FutureTerritoryMap({ skills }: FutureTerritoryMapProps) 
             className="w-8 h-8 rounded-md bg-card/80 border border-border/50 text-muted-foreground hover:text-foreground flex items-center justify-center text-xs font-bold backdrop-blur-md transition-colors active:scale-[0.95]">⟲</button>
         </div>
 
-        {/* Context-aware back button */}
-        {(focusedIsland || Math.abs(transform.x) > 80 || Math.abs(transform.y) > 80 || Math.abs(transform.scale - 1) > 0.3) && (
-          <button onClick={() => { setTransform({ x: 0, y: 0, scale: 1 }); setFocusedIsland(null); }}
-            className="absolute top-4 left-1/2 -translate-x-1/2 z-10 flex items-center gap-1.5 px-4 py-2 rounded-full bg-primary/90 backdrop-blur-md border border-primary/50 text-xs font-semibold text-primary-foreground shadow-lg transition-all hover:bg-primary active:scale-[0.97] animate-fade-in">
-            ⟲ Reset View
-          </button>
-        )}
       </div>
 
       <SkillDetailDrawer skill={selectedSkill} open={drawerOpen} onOpenChange={setDrawerOpen} />
