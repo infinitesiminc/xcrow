@@ -18,6 +18,7 @@ Your personality: encouraging, concise, slightly bold. You speak like a smart ca
 - Skills level up: Beginner → Developing → Proficient → Expert
 - The goal: build a verified skill map that proves job readiness to employers
 - Students have a Territory Map where practiced skills are "claimed" and target-role skills are "frontiers" to explore
+- Every analyzed role has **future skills** — skills that will be needed in 2-5 years as AI transforms tasks
 
 ## Your coaching approach:
 - Always connect roles back to SKILLS: "This PM role builds Strategy, Stakeholder Management, and Data Analysis"
@@ -25,6 +26,13 @@ Your personality: encouraging, concise, slightly bold. You speak like a smart ca
 - Frame everything as skill-building and territory expansion: "You're not just learning about PM — you're claiming Strategy territory"
 - For students unsure about careers, help them explore by skills: "You seem drawn to analytical thinking — let me show you roles that build those skills"
 - When you have task data for a role, mention specific tasks: "This role has 8 tasks — try 'Customer Feedback Synthesis' first, it builds your Communication and Data Analysis skills"
+- When future skills data is available, highlight what's COMING: "In 2-3 years, this role will need 'AI Output Curation' and 'Prompt Engineering' — get ahead now"
+
+## SKILL-FIRST DISCOVERY
+When a student asks about a specific SKILL (like "prompt engineering", "data analysis", "stakeholder management"):
+- Use the search_by_skill tool to find which roles need that skill
+- Show them roles that build that skill, with context on how many roles demand it
+- Frame it as territory strategy: "This skill appears across 15 roles — claiming it gives you a huge advantage"
 
 ## TERRITORY-AWARE COACHING
 When journey context is provided, personalize your responses:
@@ -51,17 +59,21 @@ Do NOT search immediately when the user says something broad like "marketing" or
 3. If the user mentions a company name:
    → Search immediately for roles at that company. Set limit to 3.
 
+4. If the user asks about a SKILL (e.g. "prompt engineering", "data visualization", "stakeholder management"):
+   → Use search_by_skill to find roles that need that skill.
+
 When presenting roles after searching:
 a) **What is the job** — role title, company
 b) **What skills you'd build** — mention 2-3 specific skills from the taxonomy
 c) **AI's role** — what % is AI augmented and what that means practically
-d) **Key tasks** — if task data is available, mention 1-2 top tasks they can practice
-e) **Next step** — "Tap a card to see tasks you can practice right now"
+d) **Future skills** — if available, mention 1-2 future skills this role will need
+e) **Key tasks** — if task data is available, mention 1-2 top tasks they can practice
+f) **Next step** — "Tap a card to see tasks you can practice right now"
 
 Rules:
 - Keep responses SHORT (3-5 sentences per role, max 2-3 roles described in text)
 - When you DO search, ALWAYS set limit to 3 so the cards feel curated
-- ALWAYS call search_roles when you have enough specificity
+- ALWAYS call search_roles or search_by_skill when you have enough specificity
 - Never say "I don't have access" — you DO have access to real job data via tools
 - Location is SECONDARY — the student is here to build skills, not apply for jobs
 - BANNED WORD: Never use "exposure" or "exposed." Use "augmented" or "AI augmented."
@@ -156,6 +168,78 @@ serve(async (req) => {
       systemPrompt += viewBlock;
     }
 
+    const tools: any[] = [
+      {
+        type: "function",
+        function: {
+          name: "search_roles",
+          description:
+            "Search the job database for roles matching keywords. Returns matching roles with AI metrics, top tasks, future skills, and salary data.",
+          parameters: {
+            type: "object",
+            properties: {
+              query: {
+                type: "string",
+                description:
+                  "Search keywords like 'software engineer', 'marketing', 'data science'",
+              },
+              limit: {
+                type: "number",
+                description: "Max results to return (default 3)",
+              },
+            },
+            required: ["query"],
+          },
+        },
+      },
+      {
+        type: "function",
+        function: {
+          name: "search_by_skill",
+          description:
+            "Find roles that require a specific future skill. Use when students ask about learning a particular skill. Returns roles where that skill is predicted as important in the next 2-5 years.",
+          parameters: {
+            type: "object",
+            properties: {
+              skill: {
+                type: "string",
+                description: "Skill name to search for, e.g. 'prompt engineering', 'data visualization', 'stakeholder management'",
+              },
+              limit: {
+                type: "number",
+                description: "Max roles to return (default 3)",
+              },
+            },
+            required: ["skill"],
+          },
+        },
+      },
+    ];
+
+    if (journeyContext?.userId) {
+      tools.push({
+        type: "function",
+        function: {
+          name: "check_readiness",
+          description: "Check how ready the student is for a specific job role. Returns skill match %, gap skills, practiced vs unpracticed tasks, and a prioritized practice plan. Use when the student asks 'how ready am I', 'what should I practice', 'am I prepared for X interview', or similar readiness questions.",
+          parameters: {
+            type: "object",
+            properties: {
+              job_title: {
+                type: "string",
+                description: "The job title to check readiness for, e.g. 'Product Manager'",
+              },
+              company: {
+                type: "string",
+                description: "Optional company name to narrow down the specific role",
+              },
+            },
+            required: ["job_title"],
+          },
+        },
+      });
+    }
+
     const response = await fetch(
       "https://ai.gateway.lovable.dev/v1/chat/completions",
       {
@@ -171,52 +255,7 @@ serve(async (req) => {
             ...messages,
           ],
           stream: true,
-          tools: [
-            {
-              type: "function",
-              function: {
-                name: "search_roles",
-                description:
-                  "Search the job database for roles matching keywords. Returns matching roles with AI metrics and top tasks.",
-                parameters: {
-                  type: "object",
-                  properties: {
-                    query: {
-                      type: "string",
-                      description:
-                        "Search keywords like 'software engineer', 'marketing', 'data science'",
-                    },
-                    limit: {
-                      type: "number",
-                      description: "Max results to return (default 3)",
-                    },
-                  },
-                  required: ["query"],
-                },
-              },
-            },
-            ...(journeyContext?.userId ? [{
-              type: "function" as const,
-              function: {
-                name: "check_readiness",
-                description: "Check how ready the student is for a specific job role. Returns skill match %, gap skills, practiced vs unpracticed tasks, and a prioritized practice plan. Use when the student asks 'how ready am I', 'what should I practice', 'am I prepared for X interview', or similar readiness questions.",
-                parameters: {
-                  type: "object",
-                  properties: {
-                    job_title: {
-                      type: "string",
-                      description: "The job title to check readiness for, e.g. 'Product Manager'",
-                    },
-                    company: {
-                      type: "string",
-                      description: "Optional company name to narrow down the specific role",
-                    },
-                  },
-                  required: ["job_title"],
-                },
-              },
-            }] : []),
-          ],
+          tools,
         }),
       }
     );
@@ -288,38 +327,32 @@ serve(async (req) => {
 
     // Fallback: detect tool calls emitted as plain text
     if (!hasToolCall && fullTextContent) {
-      const textToolMatch = fullTextContent.match(/search_roles\s*[\({]([^)}\n]+)[\)}]/);
-      if (textToolMatch) {
-        hasToolCall = true;
-        const rawArgs = textToolMatch[1];
-        const queryMatch = rawArgs.match(/query\s*:\s*(?:<ctrl46>|"|')?\s*([^"')}<,]+)\s*(?:<ctrl46>|"|')?/);
-        const limitMatch = rawArgs.match(/limit\s*:\s*(\d+)/);
-        const parsedArgs: any = {};
-        if (queryMatch) parsedArgs.query = queryMatch[1].trim();
-        if (limitMatch) parsedArgs.limit = parseInt(limitMatch[1]);
-        if (parsedArgs.query) {
-          toolCallAccumulator = {
-            name: "search_roles",
-            arguments: JSON.stringify(parsedArgs),
-          };
-        } else {
-          hasToolCall = false;
-        }
-      }
-      if (!hasToolCall) {
-        const readinessMatch = fullTextContent.match(/check_readiness\s*[\({]([^)}\n]+)[\)}]/);
-        if (readinessMatch) {
+      const toolPatterns = [
+        { name: "search_roles", pattern: /search_roles\s*[\({]([^)}\n]+)[\)}]/ },
+        { name: "search_by_skill", pattern: /search_by_skill\s*[\({]([^)}\n]+)[\)}]/ },
+        { name: "check_readiness", pattern: /check_readiness\s*[\({]([^)}\n]+)[\)}]/ },
+      ];
+      for (const { name, pattern } of toolPatterns) {
+        const match = fullTextContent.match(pattern);
+        if (match) {
           hasToolCall = true;
-          const rawArgs = readinessMatch[1];
-          const titleMatch = rawArgs.match(/job_title\s*:\s*(?:<ctrl46>|"|')?\s*([^"')}<,]+)/);
-          if (titleMatch) {
-            toolCallAccumulator = {
-              name: "check_readiness",
-              arguments: JSON.stringify({ job_title: titleMatch[1].trim() }),
-            };
-          } else {
-            hasToolCall = false;
+          const rawArgs = match[1];
+          try {
+            const parsed = JSON.parse(`{${rawArgs}}`);
+            toolCallAccumulator = { name, arguments: JSON.stringify(parsed) };
+          } catch {
+            // Try extracting key-value pairs
+            const argMap: Record<string, string> = {};
+            const kvPattern = /(\w+)\s*:\s*(?:"|')?\s*([^"'),}]+)\s*(?:"|')?/g;
+            let kvMatch;
+            while ((kvMatch = kvPattern.exec(rawArgs)) !== null) {
+              argMap[kvMatch[1]] = kvMatch[2].trim();
+            }
+            if (Object.keys(argMap).length > 0) {
+              toolCallAccumulator = { name, arguments: JSON.stringify(argMap) };
+            }
           }
+          if (toolCallAccumulator) break;
         }
       }
     }
@@ -368,6 +401,12 @@ serve(async (req) => {
             for (const s of (t.skill_names || [])) allSkillNames.add(s);
           }
 
+          // Also fetch future skills for this job
+          const { data: futureSkills } = await sb
+            .from("job_future_skills")
+            .select("skill_name, category")
+            .eq("job_id", job.id);
+
           const matchedSkills: string[] = [];
           const gapSkills: string[] = [];
           for (const skillName of allSkillNames) {
@@ -395,7 +434,6 @@ serve(async (req) => {
             }
           }
 
-          // Sort unpracticed by priority (high first) and gap skill count
           unpracticedTasks.sort((a, b) => {
             const pOrder: Record<string, number> = { high: 0, important: 1, medium: 2, low: 3 };
             const pa = pOrder[a.priority] ?? 2;
@@ -404,7 +442,6 @@ serve(async (req) => {
             return b.skills.length - a.skills.length;
           });
 
-          // Build a "1-week drill plan" from top 3 unpracticed
           const drillPlan = unpracticedTasks.slice(0, 3).map((t, i) => ({
             order: i + 1,
             task: t.name,
@@ -416,6 +453,7 @@ serve(async (req) => {
             skillMatch: `${matchPct}%`,
             matchedSkills,
             gapSkills,
+            futureSkills: (futureSkills || []).map((s: any) => s.skill_name),
             totalTasks: tasks.length,
             practicedTasks,
             unpracticedCount: unpracticedTasks.length,
@@ -427,8 +465,133 @@ serve(async (req) => {
         } else {
           toolResult = { error: "No matching role found in database", suggestion: "Try a more specific job title or company" };
         }
+      } else if (toolName === "search_by_skill") {
+        // ── SEARCH BY SKILL TOOL ──
+        let args: { skill: string; limit?: number };
+        try { args = JSON.parse(toolCallAccumulator.arguments); } catch { args = { skill: toolCallAccumulator.arguments }; }
+
+        const limit = args.limit || 3;
+        const skillPattern = `%${args.skill}%`;
+
+        // Query job_future_skills for matching skill names
+        const { data: skillMatches } = await sb
+          .from("job_future_skills")
+          .select("job_id, skill_name, category, description, cluster_name")
+          .ilike("skill_name", skillPattern)
+          .limit(50);
+
+        if (skillMatches && skillMatches.length > 0) {
+          // Get unique job IDs
+          const jobIds = [...new Set(skillMatches.map((s: any) => s.job_id).filter(Boolean))];
+          const totalRolesWithSkill = jobIds.length;
+
+          // Fetch job details
+          const { data: jobs } = await sb
+            .from("jobs")
+            .select("id, title, department, location, work_mode, augmented_percent, automation_risk_percent, salary_min, salary_max, salary_currency, salary_period, company_id, companies(name, logo_url, website)")
+            .in("id", jobIds.slice(0, limit * 3));
+
+          if (jobs && jobs.length > 0) {
+            // Diversify by company
+            const byCompany = new Map<string, any>();
+            const noCompany: any[] = [];
+            for (const j of jobs) {
+              const cn = (j as any).companies?.name?.toLowerCase() || "";
+              if (!cn) { noCompany.push(j); continue; }
+              if (!byCompany.has(cn)) byCompany.set(cn, j);
+            }
+            let pool = [...byCompany.values(), ...noCompany];
+            for (let i = pool.length - 1; i > 0; i--) {
+              const j = Math.floor(Math.random() * (i + 1));
+              [pool[i], pool[j]] = [pool[j], pool[i]];
+            }
+            const selected = pool.slice(0, limit);
+
+            // Get task counts and future skills for each
+            const selectedIds = selected.map((j: any) => j.id);
+            const { data: allFutureSkills } = await sb
+              .from("job_future_skills")
+              .select("job_id, skill_name, category")
+              .in("job_id", selectedIds);
+
+            const futureSkillsByJob: Record<string, string[]> = {};
+            for (const fs of (allFutureSkills || [])) {
+              if (!futureSkillsByJob[fs.job_id]) futureSkillsByJob[fs.job_id] = [];
+              futureSkillsByJob[fs.job_id].push(fs.skill_name);
+            }
+
+            const roleResults = selected.map((j: any) => ({
+              jobId: j.id,
+              title: j.title,
+              company: j.companies?.name || null,
+              logo: j.companies?.logo_url || (j.companies?.website ? `https://logo.clearbit.com/${j.companies.website.replace(/^https?:\/\//, '').replace(/\/.*$/, '')}` : null),
+              location: j.location,
+              workMode: j.work_mode,
+              augmented: j.augmented_percent || 0,
+              risk: j.automation_risk_percent || 0,
+              salaryMin: j.salary_min,
+              salaryMax: j.salary_max,
+              salaryCurrency: j.salary_currency,
+              salaryPeriod: j.salary_period,
+              futureSkillCount: (futureSkillsByJob[j.id] || []).length,
+              futureSkills: (futureSkillsByJob[j.id] || []).slice(0, 5),
+            }));
+
+            toolResult = {
+              searchedSkill: args.skill,
+              totalRolesWithSkill,
+              roles: roleResults,
+            };
+
+            const clientRoles = roleResults.map(({ futureSkills: _fs, ...rest }) => rest);
+            if (clientRoles.length > 0) {
+              clientEvent = `data: ${JSON.stringify({ type: "role_cards", roles: clientRoles })}\n\n`;
+            }
+          } else {
+            toolResult = { searchedSkill: args.skill, totalRolesWithSkill: 0, roles: [], message: "No roles found with this skill yet" };
+          }
+        } else {
+          // Fallback: search skill_names in job_task_clusters
+          const { data: taskMatches } = await sb
+            .from("job_task_clusters")
+            .select("job_id, skill_names")
+            .contains("skill_names", [args.skill])
+            .limit(20);
+
+          if (taskMatches && taskMatches.length > 0) {
+            const jobIds = [...new Set(taskMatches.map((t: any) => t.job_id))];
+            const { data: jobs } = await sb
+              .from("jobs")
+              .select("id, title, location, work_mode, augmented_percent, salary_min, salary_max, salary_currency, salary_period, company_id, companies(name, logo_url, website)")
+              .in("id", jobIds.slice(0, limit));
+
+            const roleResults = (jobs || []).map((j: any) => ({
+              jobId: j.id,
+              title: j.title,
+              company: j.companies?.name || null,
+              logo: j.companies?.logo_url || null,
+              location: j.location,
+              workMode: j.work_mode,
+              augmented: j.augmented_percent || 0,
+              salaryMin: j.salary_min,
+              salaryMax: j.salary_max,
+              salaryCurrency: j.salary_currency,
+              salaryPeriod: j.salary_period,
+              futureSkillCount: 0,
+              futureSkills: [],
+            }));
+
+            toolResult = { searchedSkill: args.skill, totalRolesWithSkill: jobIds.length, roles: roleResults };
+            const clientRoles = roleResults.map(({ futureSkills: _fs, ...rest }) => rest);
+            if (clientRoles.length > 0) {
+              clientEvent = `data: ${JSON.stringify({ type: "role_cards", roles: clientRoles })}\n\n`;
+            }
+          } else {
+            toolResult = { searchedSkill: args.skill, totalRolesWithSkill: 0, roles: [], message: "No roles found with this skill. Try a different skill name." };
+          }
+        }
       } else if (toolName === "search_roles") {
-        // ── SEARCH ROLES TOOL (existing logic) ──
+        // ── SEARCH ROLES TOOL ──
         let args: { query: string; limit?: number };
         try { args = JSON.parse(toolCallAccumulator.arguments); } catch { args = { query: toolCallAccumulator.arguments }; }
 
@@ -452,7 +615,7 @@ serve(async (req) => {
 
           const { data: jobsByFields, error: dbError } = await sb
             .from("jobs")
-            .select("id, title, department, location, country, work_mode, seniority, augmented_percent, automation_risk_percent, source_url, company_id, companies(name, logo_url, website)")
+            .select("id, title, department, location, country, work_mode, seniority, augmented_percent, automation_risk_percent, source_url, salary_min, salary_max, salary_currency, salary_period, company_id, companies(name, logo_url, website)")
             .or(orConditions)
             .limit(poolSize);
           
@@ -470,7 +633,7 @@ serve(async (req) => {
             const companyIds = companiesByName.map((c: any) => c.id);
             const { data: cJobs } = await sb
               .from("jobs")
-              .select("id, title, department, location, country, work_mode, seniority, augmented_percent, automation_risk_percent, source_url, company_id, companies(name, logo_url, website)")
+              .select("id, title, department, location, country, work_mode, seniority, augmented_percent, automation_risk_percent, source_url, salary_min, salary_max, salary_currency, salary_period, company_id, companies(name, logo_url, website)")
               .in("company_id", companyIds)
               .limit(poolSize);
             jobsByCompany = cJobs || [];
@@ -506,7 +669,10 @@ serve(async (req) => {
           const jobIds = selectedJobs.map((j: any) => j.id);
 
           let tasksByJob: Record<string, { name: string; aiScore: number }[]> = {};
+          let futureSkillsByJob: Record<string, string[]> = {};
+
           if (jobIds.length > 0) {
+            // Fetch tasks
             const { data: tasks } = await sb
               .from("job_task_clusters")
               .select("job_id, cluster_name, ai_exposure_score, sort_order")
@@ -519,6 +685,19 @@ serve(async (req) => {
                 if (tasksByJob[t.job_id].length < 3) {
                   tasksByJob[t.job_id].push({ name: t.cluster_name, aiScore: t.ai_exposure_score || 0 });
                 }
+              }
+            }
+
+            // Fetch future skills
+            const { data: futureSkills } = await sb
+              .from("job_future_skills")
+              .select("job_id, skill_name")
+              .in("job_id", jobIds);
+
+            if (futureSkills) {
+              for (const fs of futureSkills) {
+                if (!futureSkillsByJob[fs.job_id]) futureSkillsByJob[fs.job_id] = [];
+                futureSkillsByJob[fs.job_id].push(fs.skill_name);
               }
             }
           }
@@ -535,7 +714,13 @@ serve(async (req) => {
             augmented: j.augmented_percent || 0,
             risk: j.automation_risk_percent || 0,
             sourceUrl: j.source_url || null,
+            salaryMin: j.salary_min,
+            salaryMax: j.salary_max,
+            salaryCurrency: j.salary_currency,
+            salaryPeriod: j.salary_period,
             topTasks: tasksByJob[j.id] || [],
+            futureSkillCount: (futureSkillsByJob[j.id] || []).length,
+            futureSkills: (futureSkillsByJob[j.id] || []).slice(0, 5),
           }));
 
           searchCache.set(cacheKey, { roles: roleResults, ts: Date.now() });
@@ -543,8 +728,8 @@ serve(async (req) => {
 
         toolResult = roleResults;
 
-        const clientRoles = roleResults.map((r: any) => {
-          const { topTasks, ...rest } = r;
+        const clientRoles = (roleResults as any[]).map((r: any) => {
+          const { topTasks, futureSkills: _fs, ...rest } = r;
           return rest;
         });
         if (clientRoles.length > 0) {

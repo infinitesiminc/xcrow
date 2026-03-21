@@ -1,10 +1,10 @@
 /**
  * InlineChatRoleCards — rich role cards rendered inline in chat stream.
- * 2-column grid with salary, augmented score, and quick actions.
+ * 2-column grid with salary, augmented score, future skills badge, and quick actions.
  */
 
 import { motion } from "framer-motion";
-import { MapPin, ArrowRight, Zap, DollarSign, ExternalLink } from "lucide-react";
+import { MapPin, ArrowRight, Zap, DollarSign, ExternalLink, Sparkles } from "lucide-react";
 import type { RoleResult } from "@/components/InlineRoleCarousel";
 
 function hashToHue(str: string): number {
@@ -65,6 +65,7 @@ export default function InlineChatRoleCards({ roles, onSelectRole, onViewDetails
           (role as any).salaryCurrency,
           (role as any).salaryPeriod,
         );
+        const futureSkillCount = (role as any).futureSkillCount || 0;
 
         return (
           <motion.div
@@ -107,7 +108,7 @@ export default function InlineChatRoleCards({ roles, onSelectRole, onViewDetails
                 </div>
               </div>
 
-              {/* Meta row: location + salary */}
+              {/* Meta row: location + salary + future skills */}
               <div className="flex items-center gap-3 flex-wrap">
                 {role.location && (
                   <div className="flex items-center gap-1 text-muted-foreground">
@@ -121,6 +122,14 @@ export default function InlineChatRoleCards({ roles, onSelectRole, onViewDetails
                   <div className="flex items-center gap-1 text-muted-foreground">
                     <DollarSign className="h-3 w-3 shrink-0" />
                     <span className="text-[11px] font-medium text-foreground">{salary}</span>
+                  </div>
+                )}
+                {futureSkillCount > 0 && (
+                  <div className="flex items-center gap-1 text-accent-foreground">
+                    <Sparkles className="h-3 w-3 shrink-0 text-amber-500" />
+                    <span className="text-[11px] font-medium text-amber-600 dark:text-amber-400">
+                      {futureSkillCount} future skills
+                    </span>
                   </div>
                 )}
               </div>
