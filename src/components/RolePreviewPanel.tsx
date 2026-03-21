@@ -73,6 +73,7 @@ interface TaskCluster {
 type PanelView = "details" | "simulation" | "enlarged";
 
 export default function RolePreviewPanel({ role, onClose, edgeContext }: RolePreviewPanelProps) {
+  const navigate = useNavigate();
   const { user, openAuthModal } = useAuth();
   const [tasks, setTasks] = useState<TaskCluster[]>([]);
   const [summary, setSummary] = useState<string | null>(null);
