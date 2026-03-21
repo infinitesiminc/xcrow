@@ -109,7 +109,7 @@ function buildDemoSkills(): SkillXP[] {
 }
 
 /* ── Right panel tab type ────────────────────────── */
-type RightTab = "territory" | "roles";
+type RightTab = "territory" | "table" | "roles";
 
 /* ── component ───────────────────────────────────── */
 
