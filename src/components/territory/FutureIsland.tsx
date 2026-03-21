@@ -27,7 +27,7 @@ export default function FutureIsland({ island, skillLookup, isFocused, onIslandC
       <motion.circle
         cx={cx}
         cy={cy}
-        r={radius + 15}
+        r={(isFocused ? 200 : radius) + 15}
         fill={`hsl(${theme.baseHue} 25% ${isFocused ? 14 : 10}% / ${isFocused ? 0.7 : 0.5})`}
         stroke={`hsl(${theme.baseHue} ${isFocused ? 50 : 30}% ${isFocused ? 40 : 25}%)`}
         strokeWidth={isFocused ? 2.5 : 1.5}
