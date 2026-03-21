@@ -176,28 +176,30 @@ export default function FutureIsland({ island, skillLookup, isFocused, onIslandC
                   </text>
                 )}
 
-                {/* Name label */}
-                <text
-                  x={node.x}
-                  y={node.y + nodeRadius + 12}
-                  textAnchor="middle"
-                  style={{
-                    fontSize: isHovered ? "11px" : "10px",
-                    fontWeight: isHovered ? 700 : 600,
-                    fill: isHovered
-                      ? `hsl(${theme.baseHue} 40% 85%)`
-                      : `hsl(${theme.baseHue} 25% 65%)`,
-                    fontFamily: "'Inter', system-ui, sans-serif",
-                    pointerEvents: "none",
-                    transition: "fill 0.2s, font-size 0.2s",
-                  }}
-                >
-                  {isHovered
-                    ? skill.name
-                    : skill.name.length > 28
-                      ? skill.name.slice(0, 26) + "…"
-                      : skill.name}
-                </text>
+                {/* Name label — hidden in expanded mode unless hovered */}
+                {showLabel && (
+                  <text
+                    x={node.x}
+                    y={node.y + nodeRadius + 12}
+                    textAnchor="middle"
+                    style={{
+                      fontSize: isHovered ? "11px" : "10px",
+                      fontWeight: isHovered ? 700 : 600,
+                      fill: isHovered
+                        ? `hsl(${theme.baseHue} 40% 85%)`
+                        : `hsl(${theme.baseHue} 25% 65%)`,
+                      fontFamily: "'Inter', system-ui, sans-serif",
+                      pointerEvents: "none",
+                      transition: "fill 0.2s, font-size 0.2s",
+                    }}
+                  >
+                    {isHovered
+                      ? skill.name
+                      : skill.name.length > 28
+                        ? skill.name.slice(0, 26) + "…"
+                        : skill.name}
+                  </text>
+                )}
               </motion.g>
             </TooltipTrigger>
             <TooltipContent side="top" className="max-w-[240px]">
