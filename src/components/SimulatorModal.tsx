@@ -460,7 +460,7 @@ const UnmetObjectivesReview = ({
 };
 
 /* ── Main Modal ── */
-const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState, taskTrend, taskImpactLevel, mode = "assess", onCompleted, onNextTask, onBackToFeed, inline = false, guestMaxTurns }: SimulatorModalProps) => {
+const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState, taskTrend, taskImpactLevel, mode = "assess", onCompleted, onNextTask, onBackToFeed, onViewTerritory, inline = false, guestMaxTurns }: SimulatorModalProps) => {
   const [phase, setPhase] = useState<Phase>("loading");
   const [session, setSession] = useState<SimSession | null>(null);
   const [messages, setMessages] = useState<SimMessage[]>([]);
