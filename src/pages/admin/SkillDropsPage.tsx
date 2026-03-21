@@ -740,3 +740,120 @@ function EventCard({
     </Card>
   );
 }
+
+/* ── Suggestion Card ───────────── */
+
+const ACTION_CONFIG: Record<string, { icon: typeof Plus; label: string; cls: string }> = {
+  new: { icon: Plus, label: "New Skill", cls: "text-emerald-400 border-emerald-500/30 bg-emerald-500/10" },
+  merge: { icon: GitMerge, label: "Merge", cls: "text-amber-400 border-amber-500/30 bg-amber-500/10" },
+  alias: { icon: ArrowRight, label: "Alias", cls: "text-cyan-400 border-cyan-500/30 bg-cyan-500/10" },
+  ignore: { icon: XCircle, label: "Ignore", cls: "text-muted-foreground border-border bg-muted/30" },
+};
+
+const TREND_COLORS: Record<string, string> = {
+  rising: "text-emerald-400",
+  emerging: "text-primary",
+  stable: "text-muted-foreground",
+};
+
+const PRIORITY_COLORS: Record<string, string> = {
+  high: "bg-destructive/20 text-destructive border-destructive/30",
+  medium: "bg-amber-500/20 text-amber-400 border-amber-500/30",
+  low: "bg-muted text-muted-foreground border-border",
+};
+
+function SuggestionCard({
+  suggestion: s,
+  onReview,
+  onCreateEvent,
+}: {
+  suggestion: DiscoverySuggestion;
+  onReview: (id: string, status: "approved" | "rejected") => void;
+  onCreateEvent: (name: string, demand: number, exposure: number) => void;
+}) {
+  const isPending = s.status === "pending";
+  const actionCfg = ACTION_CONFIG[s.action] || ACTION_CONFIG.new;
+  const ActionIcon = actionCfg.icon;
+
+  return (
+    <div className={`p-3 rounded-lg border transition-colors ${isPending ? "border-border/50 hover:border-primary/30" : "border-border/30 opacity-60"}`}>
+      <div className="flex items-start gap-3">
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 flex-wrap">
+            <p className="text-sm font-semibold">{s.skill_name}</p>
+            <Badge variant="outline" className={`text-[9px] ${actionCfg.cls}`}>
+              <ActionIcon className="h-2.5 w-2.5 mr-0.5" />
+              {actionCfg.label}
+            </Badge>
+            <Badge variant="outline" className={`text-[9px] ${PRIORITY_COLORS[s.ai_analysis.priority] || ""}`}>
+              {s.ai_analysis.priority}
+            </Badge>
+            <span className={`text-[10px] font-medium ${TREND_COLORS[s.ai_analysis.trend_signal] || ""}`}>
+              ↗ {s.ai_analysis.trend_signal}
+            </span>
+            {s.status !== "pending" && (
+              <Badge variant="outline" className={`text-[9px] ${s.status === "approved" ? "text-emerald-400 border-emerald-500/30" : "text-destructive border-destructive/30"}`}>
+                {s.status}
+              </Badge>
+            )}
+          </div>
+
+          <p className="text-xs text-muted-foreground mt-1">{s.ai_analysis.reasoning}</p>
+
+          {s.ai_analysis.merge_target && (
+            <p className="text-[10px] text-amber-400 mt-1 flex items-center gap-1">
+              <GitMerge className="h-2.5 w-2.5" /> Merge into: <span className="font-medium">{s.ai_analysis.merge_target}</span>
+            </p>
+          )}
+
+          <div className="flex items-center gap-3 mt-1.5 text-[10px] text-muted-foreground">
+            <span className="flex items-center gap-1">
+              <Target className="h-2.5 w-2.5" /> {s.job_count} jobs
+            </span>
+            <span className="flex items-center gap-1">
+              <TrendingUp className="h-2.5 w-2.5" /> {s.demand_count} mentions
+            </span>
+            <span className="flex items-center gap-1">
+              <Zap className="h-2.5 w-2.5" /> AI {s.avg_exposure}%
+            </span>
+            <span className="flex items-center gap-1">
+              <BarChart3 className="h-2.5 w-2.5" /> Impact {s.avg_impact}%
+            </span>
+            <Badge variant="outline" className="text-[9px]">{s.category}</Badge>
+          </div>
+        </div>
+
+        {isPending && (
+          <div className="flex items-center gap-1 shrink-0">
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-7 text-xs text-emerald-400 border-emerald-500/30"
+              onClick={() => onReview(s.id, "approved")}
+            >
+              <CheckCircle2 className="h-3 w-3 mr-1" /> Approve
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-7 text-xs text-muted-foreground"
+              onClick={() => onReview(s.id, "rejected")}
+            >
+              <XCircle className="h-3 w-3 mr-1" /> Reject
+            </Button>
+            {s.action === "new" && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-7 text-xs"
+                onClick={() => onCreateEvent(s.skill_name, s.demand_count, s.avg_exposure)}
+              >
+                <Sparkles className="h-3 w-3 mr-1" /> Drop Event
+              </Button>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
