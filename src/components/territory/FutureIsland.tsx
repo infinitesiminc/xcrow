@@ -74,7 +74,7 @@ export default function FutureIsland({ island, skillLookup, isFocused, onIslandC
       </text>
 
       {/* Skill nodes */}
-      {nodes.map(node => {
+      {activeNodes.map(node => {
         const skill = skillLookup.get(node.skillId);
         if (!skill) return null;
 
