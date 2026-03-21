@@ -72,6 +72,7 @@ export default function Settings() {
   const setSection = (s: SectionKey) => setSearchParams({ section: s }, { replace: true });
 
   const [displayName, setDisplayName] = useState("");
+  const [username, setUsername] = useState("");
   const [jobTitle, setJobTitle] = useState("");
   const [company, setCompany] = useState("");
   const [linkedinUrl, setLinkedinUrl] = useState("");
@@ -112,7 +113,13 @@ export default function Settings() {
       const parts = profile.cvUrl.split("/");
       setCvFileName(decodeURIComponent(parts[parts.length - 1] || "CV"));
     }
-  }, [profile]);
+    // Fetch username separately since it's not in the profile context
+    if (user) {
+      supabase.from("profiles").select("username").eq("id", user.id).single().then(({ data }) => {
+        if (data && (data as any).username) setUsername((data as any).username);
+      });
+    }
+  }, [profile, user]);
 
   useEffect(() => {
     if (!user) return;
@@ -176,17 +183,19 @@ export default function Settings() {
   const handleSaveProfile = async () => {
     if (!user) return;
     setSaving(true);
+    const updateData: any = {
+      display_name: displayName,
+      job_title: jobTitle.trim() || null,
+      company: company.trim() || null,
+      linkedin_url: linkedinUrl.trim() || null,
+      school_name: schoolName.trim() || null,
+      career_stage: careerStage,
+      cv_url: cvUrl || null,
+    };
+    if (username.trim()) updateData.username = username.trim().toLowerCase().replace(/[^a-z0-9_-]/g, "");
     const { error } = await supabase
       .from("profiles")
-      .update({
-        display_name: displayName,
-        job_title: jobTitle.trim() || null,
-        company: company.trim() || null,
-        linkedin_url: linkedinUrl.trim() || null,
-        school_name: schoolName.trim() || null,
-        career_stage: careerStage,
-        cv_url: cvUrl || null,
-      } as any)
+      .update(updateData)
       .eq("id", user.id);
 
     if (error) {
@@ -330,6 +339,7 @@ export default function Settings() {
             {activeSection === "profile" && (
               <ProfileSection
                 displayName={displayName} setDisplayName={setDisplayName}
+                username={username} setUsername={setUsername}
                 jobTitle={jobTitle} setJobTitle={setJobTitle}
                 company={company} setCompany={setCompany}
                 linkedinUrl={linkedinUrl} setLinkedinUrl={setLinkedinUrl}
@@ -371,12 +381,13 @@ export default function Settings() {
    ══════════════════════════════════════════════════════ */
 
 function ProfileSection({
-  displayName, setDisplayName, jobTitle, setJobTitle, company, setCompany,
+  displayName, setDisplayName, username, setUsername, jobTitle, setJobTitle, company, setCompany,
   linkedinUrl, setLinkedinUrl, schoolName, setSchoolName,
   careerStage, setCareerStage, cvFileName, cvInputRef, uploadingCv, saving, email,
   handleCvUpload, handleRemoveCv, handleSaveProfile,
 }: {
   displayName: string; setDisplayName: (v: string) => void;
+  username: string; setUsername: (v: string) => void;
   jobTitle: string; setJobTitle: (v: string) => void;
   company: string; setCompany: (v: string) => void;
   linkedinUrl: string; setLinkedinUrl: (v: string) => void;
@@ -404,6 +415,29 @@ function ProfileSection({
             <Label htmlFor="displayName">Display name</Label>
             <Input id="displayName" value={displayName} onChange={(e) => setDisplayName(e.target.value)} placeholder="Your name" />
           </div>
+        </div>
+
+        {/* Username for public profile */}
+        <div className="space-y-2">
+          <Label htmlFor="username" className="flex items-center gap-1.5">
+            <User className="h-3.5 w-3.5 text-muted-foreground" />
+            Public profile username
+          </Label>
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-muted-foreground whitespace-nowrap">xcrow.ai/u/</span>
+            <Input
+              id="username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_-]/g, ""))}
+              placeholder="your-username"
+              className="flex-1"
+            />
+          </div>
+          {username && (
+            <p className="text-[10px] text-muted-foreground">
+              Your public profile will be at <span className="text-primary font-medium">xcrow.ai/u/{username}</span>
+            </p>
+          )}
         </div>
 
         <Separator />

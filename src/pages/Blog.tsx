@@ -38,7 +38,7 @@ const ARTICLES = [
   },
   {
     title: "From Knowledge to Readiness: The 4 Pillars of AI-Proof Skills",
-    excerpt: "Tool Awareness, Human Value-Add, Adaptive Thinking, and Domain Judgment — the framework behind every Crowy.ai simulation.",
+    excerpt: "Tool Awareness, Human Value-Add, Adaptive Thinking, and Domain Judgment — the framework behind every xcrow.ai simulation.",
     date: "Jan 2026",
     category: "Skills Research",
     color: "bg-brand-mid/10 text-brand-mid",

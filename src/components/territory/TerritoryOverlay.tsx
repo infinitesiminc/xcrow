@@ -516,7 +516,7 @@ export default function TerritoryOverlay({
               { emoji: "🏕️", label: "Outpost" },
               { emoji: "🏰", label: "Fortress" },
               { emoji: "⚔️", label: "Citadel" },
-              { emoji: "🐦‍⬛", label: "Crowy" },
+              { emoji: "🐦‍⬛", label: "xcrow" },
             ].map((l) => (
               <span key={l.label} className="flex items-center gap-1">
                 <span>{l.emoji}</span> {l.label}

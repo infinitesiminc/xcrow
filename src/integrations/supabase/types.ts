@@ -901,6 +901,7 @@ export type Database = {
           referral_code: string | null
           school_name: string | null
           target_roles: Json | null
+          username: string | null
         }
         Insert: {
           career_stage?: string | null
@@ -916,6 +917,7 @@ export type Database = {
           referral_code?: string | null
           school_name?: string | null
           target_roles?: Json | null
+          username?: string | null
         }
         Update: {
           career_stage?: string | null
@@ -931,6 +933,7 @@ export type Database = {
           referral_code?: string | null
           school_name?: string | null
           target_roles?: Json | null
+          username?: string | null
         }
         Relationships: []
       }
@@ -1679,6 +1682,7 @@ export type Database = {
           skill_name: string
         }[]
       }
+      get_public_profile: { Args: { _username: string }; Returns: Json }
       get_school_analytics: {
         Args: { _school_id: string }
         Returns: {

@@ -454,12 +454,12 @@ export default function Leaderboard() {
 
   async function handleInvite() {
     const shareUrl = `${window.location.origin}/leaderboard`;
-    const shareText = "I'm practicing AI-era skills on Crowy 🦅 See where you rank against students from 15+ universities!";
+    const shareText = "I'm practicing AI-era skills on xcrow 🦅 See where you rank against students from 15+ universities!";
 
     if (navigator.share) {
       try {
         await navigator.share({
-          title: "Join me on Crowy — The AI Career Scout",
+          title: "Join me on xcrow — The AI Career Scout",
           text: shareText,
           url: shareUrl,
         });

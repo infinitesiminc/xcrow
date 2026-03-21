@@ -70,7 +70,7 @@ export default function CookiePolicy() {
         <h2>6. Contact</h2>
         <p>
           If you have questions about our use of cookies, contact us at{" "}
-          <a href="mailto:privacy@crowy.ai" className="text-primary hover:underline">privacy@crowy.ai</a>.
+          <a href="mailto:privacy@xcrow.ai" className="text-primary hover:underline">privacy@xcrow.ai</a>.
         </p>
       </main>
       <Footer />

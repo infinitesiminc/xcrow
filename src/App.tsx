@@ -35,6 +35,7 @@ const CaseStudy = lazy(() => import("./pages/CaseStudy.tsx"));
 const SimulationDesign = lazy(() => import("./pages/SimulationDesign.tsx"));
 const JoinWorkspace = lazy(() => import("./pages/JoinWorkspace.tsx"));
 const ScoreDistributions = lazy(() => import("./pages/ScoreDistributions.tsx"));
+const PublicProfile = lazy(() => import("./pages/PublicProfile.tsx"));
 
 // Admin (lazy)
 const HRLayout = lazy(() => import("./layouts/HRLayout.tsx"));
@@ -115,7 +116,7 @@ const App = () => (
               <Route path="/simulation-design" element={<SimulationDesign />} />
               <Route path="/join" element={<JoinWorkspace />} />
               <Route path="/score-distributions" element={<><Navbar /><ScoreDistributions /><Footer /></>} />
-
+              <Route path="/u/:username" element={<PublicProfile />} />
               {/* Redirects — old routes all go to feed */}
               <Route path="/practice" element={<Navigate to="/" replace />} />
               <Route path="/simulations" element={<Navigate to="/" replace />} />

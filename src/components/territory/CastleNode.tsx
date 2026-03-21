@@ -76,14 +76,14 @@ export default function CastleNode({
           className="relative flex flex-col items-center cursor-pointer group"
           style={{ width: 88 }}
         >
-          {/* Crowy mascot */}
+          {/* xcrow mascot */}
           {isActive && (
             <motion.div
               className="absolute -top-10 z-10"
               animate={{ y: [0, -5, 0] }}
               transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
             >
-              <img src={crowLogo} alt="Crowy" className="h-14 w-14 object-contain drop-shadow-[0_0_8px_hsl(270_80%_60%/0.6)]" draggable={false} />
+              <img src={crowLogo} alt="xcrow" className="h-14 w-14 object-contain drop-shadow-[0_0_8px_hsl(270_80%_60%/0.6)]" draggable={false} />
             </motion.div>
           )}
 
