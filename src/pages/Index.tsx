@@ -328,7 +328,6 @@ const Index = () => {
           {!hasInteracted && !user && <SkillSuggestionCards />}
           {!hasInteracted && user && (
             <div className="w-full max-w-lg mb-4 space-y-4">
-              <SkillDropBanner />
               <QuestBoard />
               <AdaptiveQueue userId={user.id} />
             </div>
