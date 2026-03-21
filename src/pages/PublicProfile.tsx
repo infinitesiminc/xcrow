@@ -14,7 +14,7 @@ import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getCastleState, CASTLE_TIERS, type CastleTier } from "@/lib/castle-levels";
 import { getLevel, levelProgress } from "@/lib/skill-map";
-import xxcrowLogo from "@/assets/xcrow-logo.png";
+import xcrowLogo from "@/assets/xcrow-logo.png";
 
 import castleRuins from "@/assets/castle-ruins.png";
 import castleOutpost from "@/assets/castle-outpost.png";
