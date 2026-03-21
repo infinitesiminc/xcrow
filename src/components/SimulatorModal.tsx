@@ -996,7 +996,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                           >
                             <div className="flex-1 h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
                             <span className="text-[11px] font-medium text-primary/70 flex items-center gap-1.5 shrink-0">
-                              <Zap className="h-3 w-3" /> New Scenario
+                              <Zap className="h-3 w-3" /> ⚡ New Wave
                             </span>
                             <div className="flex-1 h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
                           </motion.div>
