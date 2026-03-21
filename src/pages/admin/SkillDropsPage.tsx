@@ -52,7 +52,9 @@ interface Participation {
 
 interface TrendingSkill {
   skill_name: string;
+  category: string;
   demand_count: number;
+  job_count: number;
   avg_exposure: number;
   avg_impact: number;
 }
