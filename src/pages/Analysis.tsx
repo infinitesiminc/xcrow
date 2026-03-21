@@ -370,7 +370,7 @@ const Analysis = () => {
                     <Play className="h-3.5 w-3.5" /> {done ? "Retry Quest" : "⚔️ Accept Quest"}
                   </Button>
                   <Button size="sm" variant="ghost" className="h-8 rounded-full text-xs" onClick={() => setShowAllTasks(true)}>
-                    See full task list <ArrowRight className="h-3 w-3" />
+                    Full quest log <ArrowRight className="h-3 w-3" />
                   </Button>
                 </div>
               </div>
