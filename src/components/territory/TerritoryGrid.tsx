@@ -245,7 +245,7 @@ function SkillTile({
             {growth.aiMastery.label}
           </span>
         </div>
-        <div className="flex items-center justify-between text-[10px]">
+        <div className="flex items-center justify-between text-xs">
           <span>{DIMENSION_INFO.humanEdge.emoji} Human Edge</span>
           <span className={growth.humanEdge.score >= 30 ? "text-foreground" : "text-muted-foreground"}>
             {growth.humanEdge.label}
