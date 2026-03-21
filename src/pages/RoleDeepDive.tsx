@@ -315,9 +315,8 @@ const RoleDeepDive = () => {
       <div className="flex-1 flex overflow-hidden">
         {/* LEFT — Quest Log */}
         <div className="w-80 shrink-0 border-r border-border flex flex-col overflow-hidden">
-          {/* Stats strip — Battle Readiness */}
-          <div className="shrink-0 p-3 border-b border-border/50 flex items-center gap-3">
-            <ReadinessRing readiness={readiness} size={56} />
+          <div className="shrink-0 px-3 py-2 border-b border-border/50 flex items-center gap-2.5">
+            <ReadinessRing readiness={readiness} size={40} />
             <div className="flex-1 space-y-1">
               <div className="flex items-center justify-between">
                 <span className="text-[8px] text-muted-foreground uppercase">Threat Level</span>
