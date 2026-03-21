@@ -139,11 +139,11 @@ export function TaskDetailPanel({
         <Button
           size="sm"
           variant={isCompleted ? "secondary" : "default"}
-          className="w-full h-8 text-xs rounded-full gap-1.5"
+          className="sim-glow-btn w-full h-8 text-xs rounded-full gap-1.5"
           onClick={() => onPractice(task)}
         >
           <Play className="h-3 w-3" />
-          {isCollapsing ? "⚔️ Run Future Battle" : isCompleted ? "🔄 Retry Quest" : "⚔️ Accept Quest"}
+          {isCollapsing ? "🔮 Scout Future Threats" : isCompleted ? "🔄 Retry Quest" : "⚔️ Accept Quest"}
         </Button>
       </div>
     </motion.div>
