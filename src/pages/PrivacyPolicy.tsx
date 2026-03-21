@@ -11,7 +11,7 @@ export default function PrivacyPolicy() {
 
         <h2>1. Information We Collect</h2>
         <p>
-          When you use Crowy.ai, we may collect the following types of information:
+          When you use xcrow.ai, we may collect the following types of information:
         </p>
         <ul>
           <li><strong>Account Information:</strong> Name, email address, and profile details you provide during registration.</li>
@@ -36,7 +36,7 @@ export default function PrivacyPolicy() {
         </p>
         <ul>
           <li><strong>Service Providers:</strong> Third parties that help us operate our platform (hosting, analytics, email).</li>
-          <li><strong>Institutional Partners:</strong> If you access Crowy.ai through a school or employer, aggregated (non-identifiable) performance data may be shared with your institution's administrators.</li>
+          <li><strong>Institutional Partners:</strong> If you access xcrow.ai through a school or employer, aggregated (non-identifiable) performance data may be shared with your institution's administrators.</li>
           <li><strong>Legal Requirements:</strong> When required by law or to protect our rights.</li>
         </ul>
 
@@ -61,7 +61,7 @@ export default function PrivacyPolicy() {
 
         <h2>7. Children's Privacy</h2>
         <p>
-          Crowy.ai is not intended for users under the age of 16. We do not knowingly collect personal information from children.
+          xcrow.ai is not intended for users under the age of 16. We do not knowingly collect personal information from children.
         </p>
 
         <h2>8. Changes to This Policy</h2>
@@ -72,7 +72,7 @@ export default function PrivacyPolicy() {
         <h2>9. Contact Us</h2>
         <p>
           If you have questions about this Privacy Policy, please contact us at{" "}
-          <a href="mailto:privacy@crowy.ai" className="text-primary hover:underline">privacy@crowy.ai</a>.
+          <a href="mailto:privacy@xcrow.ai" className="text-primary hover:underline">privacy@xcrow.ai</a>.
         </p>
       </main>
       <Footer />

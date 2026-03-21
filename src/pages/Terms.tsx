@@ -11,12 +11,12 @@ export default function Terms() {
 
         <h2>1. Acceptance of Terms</h2>
         <p>
-          By accessing or using Crowy.ai ("the Platform"), you agree to be bound by these Terms & Conditions. If you do not agree, do not use the Platform.
+          By accessing or using xcrow.ai ("the Platform"), you agree to be bound by these Terms & Conditions. If you do not agree, do not use the Platform.
         </p>
 
         <h2>2. Description of Service</h2>
         <p>
-          Crowy.ai provides AI-powered career readiness tools including role analysis, skill mapping, AI simulations, and workforce analytics. Features may vary by plan and are subject to change.
+          xcrow.ai provides AI-powered career readiness tools including role analysis, skill mapping, AI simulations, and workforce analytics. Features may vary by plan and are subject to change.
         </p>
 
         <h2>3. Account Registration</h2>
@@ -36,7 +36,7 @@ export default function Terms() {
 
         <h2>5. Intellectual Property</h2>
         <p>
-          All content, features, and functionality on the Platform — including text, graphics, logos, simulations, and AI-generated outputs — are owned by Crowy.ai or its licensors and are protected by intellectual property laws.
+          All content, features, and functionality on the Platform — including text, graphics, logos, simulations, and AI-generated outputs — are owned by xcrow.ai or its licensors and are protected by intellectual property laws.
         </p>
 
         <h2>6. Subscriptions & Payments</h2>
@@ -56,7 +56,7 @@ export default function Terms() {
 
         <h2>9. Limitation of Liability</h2>
         <p>
-          To the maximum extent permitted by law, Crowy.ai shall not be liable for any indirect, incidental, special, or consequential damages arising from your use of the Platform.
+          To the maximum extent permitted by law, xcrow.ai shall not be liable for any indirect, incidental, special, or consequential damages arising from your use of the Platform.
         </p>
 
         <h2>10. Termination</h2>
@@ -66,7 +66,7 @@ export default function Terms() {
 
         <h2>11. Governing Law</h2>
         <p>
-          These terms shall be governed by and construed in accordance with the laws of the jurisdiction in which Crowy.ai operates, without regard to conflict of law principles.
+          These terms shall be governed by and construed in accordance with the laws of the jurisdiction in which xcrow.ai operates, without regard to conflict of law principles.
         </p>
 
         <h2>12. Changes to Terms</h2>
