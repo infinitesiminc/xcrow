@@ -26,6 +26,14 @@ const Blog = lazy(() => import("./pages/Blog.tsx"));
 const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy.tsx"));
 const Terms = lazy(() => import("./pages/Terms.tsx"));
 const CookiePolicy = lazy(() => import("./pages/CookiePolicy.tsx"));
+const Contact = lazy(() => import("./pages/Contact.tsx"));
+const Enterprise = lazy(() => import("./pages/Enterprise.tsx"));
+const Investors = lazy(() => import("./pages/Investors.tsx"));
+const Roadmap = lazy(() => import("./pages/Roadmap.tsx"));
+const CaseStudy = lazy(() => import("./pages/CaseStudy.tsx"));
+const SimulationDesign = lazy(() => import("./pages/SimulationDesign.tsx"));
+const JoinWorkspace = lazy(() => import("./pages/JoinWorkspace.tsx"));
+const ScoreDistributions = lazy(() => import("./pages/ScoreDistributions.tsx"));
 
 // Admin (lazy)
 const HRLayout = lazy(() => import("./layouts/HRLayout.tsx"));
@@ -96,6 +104,14 @@ const App = () => (
               <Route path="/privacy" element={<PrivacyPolicy />} />
               <Route path="/terms" element={<Terms />} />
               <Route path="/cookies" element={<CookiePolicy />} />
+              <Route path="/contact" element={<><Navbar /><Contact /><Footer /></>} />
+              <Route path="/enterprise" element={<Enterprise />} />
+              <Route path="/investors" element={<Investors />} />
+              <Route path="/roadmap" element={<Roadmap />} />
+              <Route path="/case-study" element={<CaseStudy />} />
+              <Route path="/simulation-design" element={<SimulationDesign />} />
+              <Route path="/join" element={<JoinWorkspace />} />
+              <Route path="/score-distributions" element={<><Navbar /><ScoreDistributions /><Footer /></>} />
 
               {/* Redirects — old routes all go to feed */}
               <Route path="/practice" element={<Navigate to="/" replace />} />
