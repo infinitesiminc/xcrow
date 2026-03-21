@@ -406,7 +406,7 @@ const RoleDeepDive = () => {
               variant="outline"
               size="sm"
               className="w-full h-7 text-[10px] gap-1.5 rounded-full"
-              onClick={() => navigate("/")}
+              onClick={handleClose}
             >
               <Map className="h-3 w-3" /> 🏰 Back to Territory
             </Button>
