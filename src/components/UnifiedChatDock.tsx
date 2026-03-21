@@ -62,14 +62,13 @@ export default function UnifiedChatDock() {
             exit={{ y: 80, opacity: 0 }}
             transition={{ type: "spring", damping: 25, stiffness: 300 }}
             onClick={() => setIsOpen(true)}
-            className="fixed bottom-0 left-1/2 -translate-x-1/2 z-40 flex items-center gap-2 px-6 py-3 rounded-t-xl bg-card/95 backdrop-blur-xl border border-b-0 border-border/50 shadow-2xl hover:shadow-[0_-8px_30px_-10px_hsl(var(--primary)/0.3)] transition-all group"
+            className="fixed bottom-4 right-4 z-40 flex items-center gap-2 px-4 py-2.5 rounded-full bg-card/95 backdrop-blur-xl border border-border/50 shadow-2xl hover:shadow-[0_0_30px_-10px_hsl(var(--primary)/0.3)] transition-all group"
           >
             <div className="relative">
               <Sparkles className="h-4 w-4 text-primary" />
               <span className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-primary rounded-full animate-pulse" />
             </div>
-            <span className="text-sm font-medium text-foreground">AI Career Coach</span>
-            <ChevronDown className="h-3.5 w-3.5 text-muted-foreground rotate-180 group-hover:translate-y-[-1px] transition-transform" />
+            <span className="text-sm font-medium text-foreground">AI Coach</span>
           </motion.button>
         )}
       </AnimatePresence>
@@ -79,12 +78,12 @@ export default function UnifiedChatDock() {
         {isOpen && (
           <motion.div
             key="chat-panel"
-            initial={{ y: "100%", opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            exit={{ y: "100%", opacity: 0 }}
+            initial={{ y: "100%", opacity: 0, scale: 0.95 }}
+            animate={{ y: 0, opacity: 1, scale: 1 }}
+            exit={{ y: "100%", opacity: 0, scale: 0.95 }}
             transition={{ type: "spring", damping: 28, stiffness: 280 }}
-            className="fixed bottom-0 left-1/2 -translate-x-1/2 z-40 w-full max-w-lg flex flex-col bg-card/95 backdrop-blur-xl border border-b-0 border-border/50 rounded-t-2xl shadow-2xl"
-            style={{ maxHeight: "70vh" }}
+            className="fixed bottom-4 right-4 z-40 w-[380px] flex flex-col bg-card/95 backdrop-blur-xl border border-border/50 rounded-2xl shadow-2xl"
+            style={{ maxHeight: "min(70vh, 560px)" }}
           >
             {/* Header */}
             <div className="flex items-center justify-between px-4 py-3 border-b border-border/30 shrink-0">
