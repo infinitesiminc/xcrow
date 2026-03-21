@@ -133,7 +133,7 @@ export default function SkillNode({
       <TooltipTrigger asChild>
         <motion.g
           initial={{ opacity: 0, scale: 0 }}
-          animate={{ opacity: isDim ? 0.35 : 1, scale: 1 }}
+          animate={{ opacity: isDim ? 0.35 : isGhost ? 0.55 : 1, scale: 1 }}
           transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1], delay: Math.random() * 0.3 }}
           onClick={onClick}
           className="cursor-pointer"
