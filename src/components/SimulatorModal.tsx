@@ -1531,7 +1531,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                   onClick={handleFinishAttempt}
                   className="text-xs text-muted-foreground hover:text-foreground h-[40px] px-3 rounded-xl"
                 >
-                  Finish
+                   End Quest
                 </Button>
                 <Button
                   size="sm"
