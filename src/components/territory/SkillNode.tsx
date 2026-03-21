@@ -97,7 +97,7 @@ export default function SkillNode({
           {isExpired && <span className="ml-1 text-destructive">Expired</span>}
         </div>
       )}
-      {level && <div className="text-[10px] text-muted-foreground">{level}{xp ? ` • ${xp} XP` : ""}</div>}
+      {level && <div className="text-xs text-muted-foreground">{level}{xp ? ` • ${xp} XP` : ""}</div>}
       <div className="space-y-1 pt-1 border-t border-border/50">
         <div className="flex items-center justify-between text-[10px]">
           <span>{DIMENSION_INFO.foundation.emoji} Foundation</span>
