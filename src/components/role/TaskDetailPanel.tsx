@@ -108,7 +108,7 @@ export function TaskDetailPanel({
       {prediction?.future_skills && prediction.future_skills.length > 0 && (
         <div className="mb-4">
           <h4 className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">
-            Future Skills Needed
+            🗺️ Skills to Unlock
           </h4>
           <div className="flex gap-2.5 overflow-x-auto pb-2 -mx-1 px-1 scrollbar-thin">
             {prediction.future_skills.map(skill => (
