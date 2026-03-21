@@ -1,41 +1,44 @@
 /**
  * FutureIsland — renders a single island region on the Future Territory Map.
- * Designed for full-screen readability with large nodes and visible labels.
+ * Supports click-to-zoom interaction.
  */
 
 import { motion } from "framer-motion";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
-import { type FutureSkill } from "@/hooks/use-future-skills";
+import { type FutureSkill, type FutureSkillCategory } from "@/hooks/use-future-skills";
 import { type FutureIslandLayout } from "@/lib/future-territory-layout";
 
 interface FutureIslandProps {
   island: FutureIslandLayout;
   skillLookup: Map<string, FutureSkill>;
+  isFocused?: boolean;
+  onIslandClick?: (category: FutureSkillCategory, cx: number, cy: number) => void;
 }
 
-export default function FutureIsland({ island, skillLookup }: FutureIslandProps) {
+export default function FutureIsland({ island, skillLookup, isFocused, onIslandClick }: FutureIslandProps) {
   const { cx, cy, radius, theme, nodes, category, skillCount } = island;
   const visibleCount = nodes.length;
   const hiddenCount = skillCount - visibleCount;
 
   return (
     <g>
-      {/* Background territory fill */}
+      {/* Clickable background territory */}
       <motion.circle
         cx={cx}
         cy={cy}
         r={radius + 15}
-        fill={`hsl(${theme.baseHue} 25% 10% / 0.5)`}
-        stroke={`hsl(${theme.baseHue} 30% 25%)`}
-        strokeWidth={1.5}
-        strokeDasharray="6 4"
+        fill={`hsl(${theme.baseHue} 25% ${isFocused ? 14 : 10}% / ${isFocused ? 0.7 : 0.5})`}
+        stroke={`hsl(${theme.baseHue} ${isFocused ? 50 : 30}% ${isFocused ? 40 : 25}%)`}
+        strokeWidth={isFocused ? 2.5 : 1.5}
+        strokeDasharray={isFocused ? "none" : "6 4"}
         initial={{ scale: 0, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-        style={{ transformOrigin: `${cx}px ${cy}px` }}
+        style={{ transformOrigin: `${cx}px ${cy}px`, cursor: "pointer" }}
+        onClick={() => onIslandClick?.(category, cx, cy)}
       />
 
-      {/* Island label — large and readable */}
+      {/* Island label */}
       <text
         x={cx}
         y={cy - radius - 6}
@@ -47,6 +50,8 @@ export default function FutureIsland({ island, skillLookup }: FutureIslandProps)
           textTransform: "uppercase",
           letterSpacing: "0.1em",
           fontFamily: "'Space Grotesk', system-ui, sans-serif",
+          cursor: "pointer",
+          pointerEvents: "none",
         }}
       >
         {theme.emoji} {theme.terrain}
@@ -61,12 +66,13 @@ export default function FutureIsland({ island, skillLookup }: FutureIslandProps)
           fontSize: "11px",
           fontWeight: 600,
           fill: `hsl(${theme.baseHue} 25% 50%)`,
+          pointerEvents: "none",
         }}
       >
         {skillCount} skill{skillCount !== 1 ? "s" : ""}
       </text>
 
-      {/* Skill nodes — large enough to read */}
+      {/* Skill nodes */}
       {nodes.map(node => {
         const skill = skillLookup.get(node.skillId);
         if (!skill) return null;
@@ -122,7 +128,7 @@ export default function FutureIsland({ island, skillLookup }: FutureIslandProps)
                   </text>
                 )}
 
-                {/* Name label — always visible */}
+                {/* Name label */}
                 <text
                   x={node.x}
                   y={node.y + nodeRadius + 12}
@@ -163,6 +169,7 @@ export default function FutureIsland({ island, skillLookup }: FutureIslandProps)
             fontSize: "10px",
             fill: `hsl(${theme.baseHue} 25% 45%)`,
             fontStyle: "italic",
+            pointerEvents: "none",
           }}
         >
           +{hiddenCount} more in Skill Forge

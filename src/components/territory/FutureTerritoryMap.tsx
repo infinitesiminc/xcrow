@@ -1,12 +1,13 @@
 /**
  * FutureTerritoryMap — Full-screen RPG-style SVG map for the future skills catalogue.
  * 8 island regions, designed to be readable at default zoom on a full viewport.
+ * Supports click-to-zoom on islands.
  */
 
 import { useMemo, useState, useRef, useCallback } from "react";
 import { motion } from "framer-motion";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { type FutureSkill } from "@/hooks/use-future-skills";
+import { type FutureSkill, type FutureSkillCategory } from "@/hooks/use-future-skills";
 import {
   buildFutureMapLayout,
   buildFutureConnections,
@@ -24,8 +25,11 @@ export default function FutureTerritoryMap({ skills }: FutureTerritoryMapProps) 
   const connections = useMemo(() => buildFutureConnections(layout), [layout]);
 
   // Pan & zoom
+  const containerRef = useRef<HTMLDivElement>(null);
   const [transform, setTransform] = useState({ x: 0, y: 0, scale: 1 });
+  const [focusedIsland, setFocusedIsland] = useState<FutureSkillCategory | null>(null);
   const dragRef = useRef<{ startX: number; startY: number; tx: number; ty: number } | null>(null);
+  const isDragging = useRef(false);
 
   const handleWheel = useCallback((e: React.WheelEvent) => {
     e.preventDefault();
@@ -36,19 +40,57 @@ export default function FutureTerritoryMap({ skills }: FutureTerritoryMapProps) 
   const handlePointerDown = useCallback((e: React.PointerEvent) => {
     if (e.button !== 0) return;
     (e.target as HTMLElement).setPointerCapture(e.pointerId);
+    isDragging.current = false;
     dragRef.current = { startX: e.clientX, startY: e.clientY, tx: transform.x, ty: transform.y };
   }, [transform]);
 
   const handlePointerMove = useCallback((e: React.PointerEvent) => {
     if (!dragRef.current) return;
+    const dx = e.clientX - dragRef.current.startX;
+    const dy = e.clientY - dragRef.current.startY;
+    if (Math.abs(dx) > 3 || Math.abs(dy) > 3) isDragging.current = true;
     setTransform(t => ({
       ...t,
-      x: dragRef.current!.tx + (e.clientX - dragRef.current!.startX),
-      y: dragRef.current!.ty + (e.clientY - dragRef.current!.startY),
+      x: dragRef.current!.tx + dx,
+      y: dragRef.current!.ty + dy,
     }));
   }, []);
 
   const handlePointerUp = useCallback(() => { dragRef.current = null; }, []);
+
+  // Zoom to island center
+  const handleIslandClick = useCallback((category: FutureSkillCategory, cx: number, cy: number) => {
+    if (isDragging.current) return; // don't zoom on drag end
+    const container = containerRef.current;
+    if (!container) return;
+
+    const rect = container.getBoundingClientRect();
+    const viewW = rect.width;
+    const viewH = rect.height;
+
+    // If already focused on this island, zoom out
+    if (focusedIsland === category) {
+      setTransform({ x: 0, y: 0, scale: 1 });
+      setFocusedIsland(null);
+      return;
+    }
+
+    // Calculate transform to center island in viewport
+    // SVG viewBox maps FUTURE_MAP_WIDTH to container width
+    const svgScale = viewW / FUTURE_MAP_WIDTH;
+    const zoomLevel = 2.2;
+
+    // Island center in screen pixels (at scale=1, translate=0)
+    const islandScreenX = cx * svgScale;
+    const islandScreenY = cy * svgScale * (FUTURE_MAP_WIDTH / FUTURE_MAP_HEIGHT) * (viewH / viewW);
+
+    // We want the island center to be at viewport center after zoom
+    const targetX = viewW / 2 - islandScreenX * zoomLevel;
+    const targetY = viewH / 2 - islandScreenY * zoomLevel;
+
+    setTransform({ x: targetX, y: targetY, scale: zoomLevel });
+    setFocusedIsland(category);
+  }, [focusedIsland]);
 
   // Node position lookup
   const nodePositions = useMemo(() => {
@@ -66,6 +108,7 @@ export default function FutureTerritoryMap({ skills }: FutureTerritoryMapProps) 
   return (
     <TooltipProvider delayDuration={200}>
       <div
+        ref={containerRef}
         className="h-full w-full relative overflow-hidden select-none"
         onWheel={handleWheel}
         onPointerDown={handlePointerDown}
@@ -79,7 +122,8 @@ export default function FutureTerritoryMap({ skills }: FutureTerritoryMapProps) 
           preserveAspectRatio="xMidYMid meet"
           style={{
             transform: `translate(${transform.x}px, ${transform.y}px) scale(${transform.scale})`,
-            transformOrigin: "center center",
+            transformOrigin: "0 0",
+            transition: isDragging.current ? "none" : "transform 0.5s cubic-bezier(0.16, 1, 0.3, 1)",
           }}
         >
           <defs>
@@ -134,6 +178,8 @@ export default function FutureTerritoryMap({ skills }: FutureTerritoryMapProps) 
               key={island.category}
               island={island}
               skillLookup={skillLookup}
+              isFocused={focusedIsland === island.category}
+              onIslandClick={handleIslandClick}
             />
           ))}
         </svg>
@@ -149,10 +195,20 @@ export default function FutureTerritoryMap({ skills }: FutureTerritoryMapProps) 
             className="w-8 h-8 rounded-md bg-card/80 border border-border/50 text-muted-foreground hover:text-foreground flex items-center justify-center text-sm font-bold backdrop-blur-md transition-colors active:scale-[0.95]"
           >−</button>
           <button
-            onClick={() => setTransform({ x: 0, y: 0, scale: 1 })}
+            onClick={() => { setTransform({ x: 0, y: 0, scale: 1 }); setFocusedIsland(null); }}
             className="w-8 h-8 rounded-md bg-card/80 border border-border/50 text-muted-foreground hover:text-foreground flex items-center justify-center text-xs font-bold backdrop-blur-md transition-colors active:scale-[0.95]"
           >⟲</button>
         </div>
+
+        {/* Back to overview button when zoomed */}
+        {focusedIsland && (
+          <button
+            onClick={() => { setTransform({ x: 0, y: 0, scale: 1 }); setFocusedIsland(null); }}
+            className="absolute top-4 left-4 z-10 flex items-center gap-1.5 px-3 py-2 rounded-lg bg-card/90 backdrop-blur-md border border-border/50 text-xs font-medium text-muted-foreground hover:text-foreground shadow-lg transition-all active:scale-[0.97]"
+          >
+            ← All Islands
+          </button>
+        )}
       </div>
     </TooltipProvider>
   );
