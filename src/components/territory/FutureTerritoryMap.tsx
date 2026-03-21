@@ -242,13 +242,6 @@ export default function FutureTerritoryMap({ skills }: FutureTerritoryMapProps) 
             className="w-8 h-8 rounded-md bg-card/80 border border-border/50 text-muted-foreground hover:text-foreground flex items-center justify-center text-xs font-bold backdrop-blur-md transition-colors active:scale-[0.95]">⟲</button>
         </div>
 
-        {/* Context-aware back button */}
-        {(focusedIsland || Math.abs(transform.x) > 80 || Math.abs(transform.y) > 80 || Math.abs(transform.scale - 1) > 0.3) && (
-          <button onClick={() => { setTransform({ x: 0, y: 0, scale: 1 }); setFocusedIsland(null); }}
-            className="absolute top-4 left-1/2 -translate-x-1/2 z-10 flex items-center gap-1.5 px-4 py-2 rounded-full bg-primary/90 backdrop-blur-md border border-primary/50 text-xs font-semibold text-primary-foreground shadow-lg transition-all hover:bg-primary active:scale-[0.97] animate-fade-in">
-            ⟲ Reset View
-          </button>
-        )}
       </div>
 
       <SkillDetailDrawer skill={selectedSkill} open={drawerOpen} onOpenChange={setDrawerOpen} />
