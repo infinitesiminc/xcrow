@@ -291,6 +291,28 @@ export default function SkillNode({
             </g>
           )}
 
+          {/* Ghost Level 2 badge */}
+          {isGhost && (
+            <g>
+              <rect
+                x={x - 16}
+                y={y - nodeRadius - 10}
+                width={32}
+                height={10}
+                rx={5}
+                fill="hsl(270 50% 35%)"
+              />
+              <text
+                x={x}
+                y={y - nodeRadius - 3}
+                textAnchor="middle"
+                style={{ fontSize: "7px", fontWeight: 800, fill: "hsl(270 80% 85%)", textTransform: "uppercase", letterSpacing: "0.05em" }}
+              >
+                LEVEL 2
+              </text>
+            </g>
+          )}
+
           {/* Label */}
           <text
             x={x}
