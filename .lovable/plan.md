@@ -1,101 +1,89 @@
 
 
-# Inline Job Cards in Chat + RPG Territory Map
+## Full-Page Job Deep Dive with Level 1 + Level 2 on a Time Axis
 
-## Problem Statement
-1. **Eye-switching fatigue**: On desktop, role cards appear in the right panel while the chat is on the left — users must constantly shift focus between panels.
-2. **Territory map feels flat**: The current skill territory is a table of categorized pill buttons — functional but not immersive or game-like.
+### Problem
+Currently, Level 1 (task breakdown + AI exposure) and Level 2 (future predictions) live on the same flat `/analysis` page. Level 2 is hidden behind per-task "See Future" buttons. There's no unified timeline view showing how a role evolves from today → near-future → far-future. The page needs to become a proper deep-dive destination.
 
----
+### Architecture
 
-## Part 1: Inline Job Cards in Chat
-
-**Current behavior**: On desktop, `inlineCards={false}` — role results only appear in the right panel's `BatchedRoleCarousel`. On mobile, `inlineCards={true}` already shows them inline.
-
-**Proposed change**: Always render role cards inline in the chat stream (both mobile and desktop), with a richer inline card design.
-
-### Changes
-- **`Index.tsx`**: Set `inlineCards={true}` for desktop too. Keep the right panel carousel as a persistent "history" but make inline cards the primary interaction point.
-- **`InlineRoleCarousel` → `InlineChatRoleCards`**: Redesign the inline cards to be more contextual within chat:
-  - Wider cards (fill chat width, 2-column grid instead of horizontal scroll)
-  - Show salary range if available
-  - Show augmented score as a compact bar
-  - "Practice" and "View Details" quick actions directly on the card
-  - Clicking "View Details" opens the role in the right panel (or full-screen on mobile)
-  - Clicking "Practice" jumps straight to simulation
-- **`HomepageChat.tsx`**: Update the roles rendering block to use the new grid layout
-
-### Result
-Users see job cards right where the AI mentions them — no eye-switching needed. The right panel becomes a secondary "pinned role" view.
-
----
-
-## Part 2: RPG Territory Map
-
-Replace the current table/pill layout with an isometric or top-down RPG-style map rendered in canvas/SVG.
-
-### Design Concept
 ```text
-┌──────────────────────────────────────────┐
-│           SKILL TERRITORY MAP            │
-│                                          │
-│    ┌───┐        ┌───┐     ┌───┐         │
-│    │🏰│───path──│⚡│─────│🔬│         │
-│    │Tech│        │ AI │     │Res│         │
-│    └───┘        └───┘     └───┘         │
-│      │            │                      │
-│    path         path                     │
-│      │            │                      │
-│    ┌───┐        ┌───┐     ┌───┐         │
-│    │🗣│        │📊│─────│🎨│         │
-│    │Comm│        │Anly│     │Cre│         │
-│    └───┘        └───┘     └───┘         │
-│                   │                      │
-│                 ┌───┐                    │
-│                 │⚖│                    │
-│                 │Comp│                    │
-│                 └───┘                    │
-└──────────────────────────────────────────┘
+/role/:jobTitle                    ← New route (SEO-friendly, shareable)
+  ┌─────────────────────────────────────────────────┐
+  │  Sticky Header: Job Title, Company, Bookmark    │
+  ├─────────────────────────────────────────────────┤
+  │  Hero: Readiness Ring + Stats + Time Slider     │
+  │  ┌──────────────────────────────────────┐       │
+  │  │  ◄─── TODAY ──── 2-3Y ──── 5Y+ ───► │       │
+  │  └──────────────────────────────────────┘       │
+  ├─────────────────────────────────────────────────┤
+  │  Tabs: Overview │ Task X-Ray │ Future View      │
+  ├─────────────────────────────────────────────────┤
+  │                                                 │
+  │  [Tab content — see below]                      │
+  │                                                 │
+  └─────────────────────────────────────────────────┘
 ```
 
-### Approach: SVG-based Hex/Island Map (no heavy 3D library)
+### Plan
 
-Each skill category becomes an **island/region** on a hand-drawn style map. Individual skills are **nodes** within each region connected by paths.
+#### 1. Create new full-page `RoleDeepDive.tsx`
+A new page component at `/role/:jobTitle` that replaces the current `/analysis` as the primary deep-dive. The existing `/analysis` route redirects here.
 
-- **Regions**: 6 category islands arranged in a hex-like layout, each with a distinct terrain theme (tech = circuit city, creative = art studio, leadership = castle, etc.)
-- **Skill Nodes**: Circular nodes within each region. Visual states:
-  - **Claimed** (bright, glowing, animated pulse) — skills with XP
-  - **Frontier** (semi-visible, dashed border) — adjacent to claimed
-  - **Undiscovered** (fog/cloud overlay, locked icon)
-  - **Contested** (flame animation, pulsing border) — in-demand target skills
-- **Paths**: SVG lines connecting related skills, lit up as you progress
-- **Player Avatar**: A small crow icon sitting on the last-practiced skill
-- **Growth Rings**: Keep the 3-ring indicator (Foundation/AI/Human Edge) as a mini overlay on each node
-- **Interactions**: Click a node to zoom in and see details + practice CTA. Pan/zoom the whole map.
+**Three tabs:**
+- **Overview** — Hero stats, readiness ring, role summary, quick stats (risk %, augmented %, task count). Shows the "time slider" that morphs stats between today and predicted future.
+- **Task X-Ray (Level 1)** — Current task cards with AI exposure scores, practice buttons. Reuses existing task card UI.
+- **Future View (Level 2)** — All tasks shown on a timeline axis. Each task displayed as a row with columns: Today State → Predicted State → New Human Role. Batch-fetches predictions for all tasks at once instead of one-by-one.
 
-### Technical Implementation
-- **`TerritoryMap.tsx`** (new): Main SVG-based map component using `framer-motion` for animations
-- **`territory/IslandRegion.tsx`** (new): Renders a category island with its skill nodes
-- **`territory/SkillNode.tsx`** (new): Individual skill node with state-based visuals
-- **`territory/MapPaths.tsx`** (new): SVG path connections between nodes
-- **`lib/territory-layout.ts`** (new): Pre-computed positions for each skill node in the map layout — hex-grid coordinates per category region
-- Pan/zoom via CSS transforms + wheel/drag handlers (no heavy library needed)
-- Fog-of-war effect using SVG masks/filters for undiscovered areas
-- Keep `TerritoryGrid` as fallback for accessibility/compact views
+#### 2. Time Axis Slider Component
+A horizontal slider at the top that controls the "lens" across all tabs:
+- **Today** — Shows Level 1 data as-is (current AI exposure, current tasks)
+- **2-3 Years** — Blends Level 1 + Level 2 predictions, highlights tasks at collapse risk
+- **5+ Years** — Full Level 2 mode, shows predicted future state, new human roles, future skills
 
-### Why SVG over Canvas/Three.js
-- Works with existing framer-motion animations
-- Accessible (DOM nodes are clickable, tooltips work natively)
-- No heavy dependencies
-- Performant for 31 nodes
-- Responsive and sharp at any resolution
+When the slider moves, task cards animate their scores from current → predicted values.
 
----
+#### 3. Batch Future Prediction
+Create a new edge function `batch-predict-future` that accepts an array of task clusters and returns all predictions in one call (instead of N separate calls to `predict-task-future`). This makes the Future View tab load in one request.
 
-## Implementation Order
-1. Inline chat cards (smaller change, immediate UX win)
-2. Territory map layout engine (position calculations)
-3. Territory map rendering (SVG islands, nodes, paths)
-4. Fog-of-war + animations
-5. Integration with existing skill data and click handlers
+#### 4. Future View Tab Layout
+A timeline-oriented layout for all tasks:
+```text
+Task Name          │ Today (L1)      │ Future (L2)        │ Action
+───────────────────┼─────────────────┼────────────────────┼──────────
+Code Review        │ 🤖 72% AI      │ ⚡ 95% — Collapses │ L2 Sim
+Stakeholder Mgmt   │ 💪 25% AI      │ 🟢 35% — Evolves  │ Practice
+System Design      │ 🤖 60% AI      │ ⚡ 85% — Transforms│ L2 Sim
+```
+
+Each row expandable to show: collapse summary, new human role, disrupting tech, future skills (ghost drops).
+
+#### 5. Route + Navigation Updates
+- Add route `/role/:jobTitle` in `App.tsx`
+- Redirect `/analysis` → `/role/:jobTitle` with query params mapped
+- Homepage role cards link to `/role/[title]?company=X`
+- RolePreviewPanel "Full Analysis" button links here
+
+#### 6. Persist Level 2 Predictions
+Store predictions in a new `task_future_predictions` table so they don't need re-generation on every visit:
+- `job_id`, `cluster_name`, `prediction` (jsonb), `created_at`
+- Cache for 30 days, then refresh
+
+### Technical Details
+
+**New files:**
+- `src/pages/RoleDeepDive.tsx` — Main page component with 3 tabs
+- `src/components/role/TimeAxisSlider.tsx` — Horizontal time slider
+- `src/components/role/FutureViewTab.tsx` — Timeline table for Level 2
+- `src/components/role/OverviewTab.tsx` — Hero + summary stats
+- `src/components/role/TaskXRayTab.tsx` — Existing task cards refactored
+- `supabase/functions/batch-predict-future/index.ts` — Batch prediction endpoint
+
+**Database migration:**
+- Create `task_future_predictions` table with columns: `id`, `job_id` (uuid), `cluster_name` (text), `prediction` (jsonb), `created_at`, `expires_at`
+- RLS: public read, service_role write
+
+**Existing page handling:**
+- `/analysis` route becomes a redirect to `/role/:title`
+- `RolePreviewPanel` gains a "Deep Dive" button linking to the full page
 
