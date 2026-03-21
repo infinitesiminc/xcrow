@@ -436,9 +436,9 @@ const RoleDeepDive = () => {
                   const uniqueSkills = allSkills.filter((s, i, arr) => arr.findIndex(x => x.id === s.id) === i);
 
                   if (uniqueSkills.length === 0 && !predictionsLoading) {
-                    return (
+                     return (
                       <div className="flex-1 flex items-center justify-center text-sm text-muted-foreground">
-                        Select a task to explore
+                        Select a quest to explore ⚔️
                       </div>
                     );
                   }
