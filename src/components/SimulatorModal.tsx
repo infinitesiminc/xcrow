@@ -79,7 +79,7 @@ const ObjectiveChecklist = ({
       <div className="flex items-center gap-2 mb-1">
         <Target className="h-3.5 w-3.5 text-primary" />
         <span className="text-[11px] font-medium uppercase tracking-widest text-muted-foreground">
-          Learning Goals · {metCount}/{objectives.length}
+          Quest Objectives · {metCount}/{objectives.length}
         </span>
       </div>
       {objectives.map((obj) => {
