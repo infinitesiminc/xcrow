@@ -139,6 +139,21 @@ export default function SkillNode({
           className="cursor-pointer"
           style={{ transformOrigin: `${x}px ${y}px` }}
         >
+          {/* Ghost (Level 2) dashed pulse ring */}
+          {isGhost && (
+            <motion.circle
+              cx={x}
+              cy={y}
+              r={nodeRadius + 8}
+              fill="none"
+              stroke="hsl(270 60% 55% / 0.4)"
+              strokeWidth={1.5}
+              strokeDasharray="3 5"
+              animate={{ opacity: [0.2, 0.5, 0.2], strokeDashoffset: [0, 16] }}
+              transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
+            />
+          )}
+
           {/* Legendary outer pulse ring */}
           {rarity === "legendary" && !isDim && (
             <motion.circle
