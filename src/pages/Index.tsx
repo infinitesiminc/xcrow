@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Map, Bookmark, X, Sparkles, Swords, ScrollText } from "lucide-react";
 import OnboardingQuest from "@/components/OnboardingQuest";
 import AdaptiveQueue from "@/components/AdaptiveQueue";
+import SkillDropBanner from "@/components/SkillDropBanner";
 import { useFutureSkills } from "@/hooks/use-future-skills";
 import FutureTerritoryMap from "@/components/territory/FutureTerritoryMap";
 import FutureSkillsTable from "@/components/territory/FutureSkillsTable";
