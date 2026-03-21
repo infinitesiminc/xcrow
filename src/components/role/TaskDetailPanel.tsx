@@ -17,6 +17,7 @@ interface TaskDetailPanelProps {
   isCompleted: boolean;
   onPractice: (task: TaskAnalysis) => void;
   onClose: () => void;
+  index?: number;
 }
 
 export function TaskDetailPanel({
