@@ -40,6 +40,7 @@ export default function FutureTerritoryMap({ skills, focusSkillId }: FutureTerri
   const [transform, setTransform] = useState({ x: 0, y: 0, scale: 1 });
   const [focusedIsland, setFocusedIsland] = useState<FutureSkillCategory | null>(null);
   const [selectedSkill, setSelectedSkill] = useState<FutureSkill | null>(null);
+  const [highlightedSkillId, setHighlightedSkillId] = useState<string | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const dragRef = useRef<{ startX: number; startY: number; tx: number; ty: number } | null>(null);
   const isDragging = useRef(false);
@@ -115,6 +116,7 @@ export default function FutureTerritoryMap({ skills, focusSkillId }: FutureTerri
   const handleSkillClick = useCallback((skill: FutureSkill) => {
     if (isDragging.current) return;
     setSelectedSkill(skill);
+    setHighlightedSkillId(skill.id);
     setDrawerOpen(true);
   }, []);
 
@@ -157,6 +159,7 @@ export default function FutureTerritoryMap({ skills, focusSkillId }: FutureTerri
     }
 
     setSelectedSkill(skill);
+    setHighlightedSkillId(skill.id);
     setDrawerOpen(true);
   }, [focusSkillId, skillLookup, layout]);
 
@@ -239,8 +242,8 @@ export default function FutureTerritoryMap({ skills, focusSkillId }: FutureTerri
 
           {layout.map(island => (
             <FutureIsland key={island.category} island={island} skillLookup={skillLookup}
-              isFocused={focusedIsland === island.category} onIslandClick={handleIslandClick}
-              onSkillClick={handleSkillClick} />
+              isFocused={focusedIsland === island.category} highlightedSkillId={highlightedSkillId}
+              onIslandClick={handleIslandClick} onSkillClick={handleSkillClick} />
           ))}
         </svg>
 
