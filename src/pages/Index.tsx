@@ -465,7 +465,7 @@ const Index = () => {
             animate={{ x: 0, opacity: 1 }}
             exit={{ x: "100%", opacity: 0 }}
             transition={{ type: "spring", damping: 28, stiffness: 300 }}
-            className="absolute top-24 right-4 bottom-4 w-[420px] z-20 flex flex-col bg-card/90 backdrop-blur-xl border border-border/50 rounded-xl shadow-2xl overflow-hidden"
+            className="absolute top-24 left-4 bottom-20 w-[420px] z-20 flex flex-col bg-card/90 backdrop-blur-xl border border-border/50 rounded-xl shadow-2xl overflow-hidden"
           >
             {/* Close button */}
             <button
