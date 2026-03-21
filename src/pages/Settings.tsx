@@ -339,6 +339,7 @@ export default function Settings() {
             {activeSection === "profile" && (
               <ProfileSection
                 displayName={displayName} setDisplayName={setDisplayName}
+                username={username} setUsername={setUsername}
                 jobTitle={jobTitle} setJobTitle={setJobTitle}
                 company={company} setCompany={setCompany}
                 linkedinUrl={linkedinUrl} setLinkedinUrl={setLinkedinUrl}
