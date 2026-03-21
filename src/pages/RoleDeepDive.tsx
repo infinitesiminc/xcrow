@@ -507,13 +507,12 @@ const RoleDeepDive = () => {
         </div>
       </div>
 
-      {/* Chat FAB */}
-      <RoleChat
+      {/* View context for unified chat */}
+      <RoleDeepDiveViewContext
         jobTitle={result.jobTitle}
         company={result.company}
-        timeHorizon={0}
         completedCount={completedCount}
-        predictionsSummary={predsSummary}
+        predsSummary={predsSummary}
       />
 
       <SimulatorModal
