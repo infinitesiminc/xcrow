@@ -605,9 +605,18 @@ export default function RolePreviewPanel({ role, onClose, edgeContext }: RolePre
         </button>
         <button
           onClick={() => setView("enlarged")}
-          className="flex-1 flex items-center justify-center gap-2 rounded-xl bg-primary text-primary-foreground py-2 text-sm font-medium hover:bg-primary/90 transition-colors"
+          className="flex-1 flex items-center justify-center gap-2 rounded-xl border border-border text-foreground py-2 text-sm font-medium hover:bg-muted/30 transition-colors"
         >
           <Maximize2 className="h-4 w-4" /> Full View
+        </button>
+        <button
+          onClick={() => {
+            onClose();
+            navigate(`/role/${encodeURIComponent(role.title)}${role.company ? `?company=${encodeURIComponent(role.company)}` : ""}`);
+          }}
+          className="flex-1 flex items-center justify-center gap-2 rounded-xl bg-primary text-primary-foreground py-2 text-sm font-medium hover:bg-primary/90 transition-colors"
+        >
+          Deep Dive <ArrowRight className="h-4 w-4" />
         </button>
       </div>
     </motion.div>
