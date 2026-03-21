@@ -255,8 +255,8 @@ const Analysis = () => {
           <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-accent">
             <Zap className="h-6 w-6 text-primary animate-pulse" />
           </div>
-          <h1 className="text-xl font-sans font-bold text-foreground">Analyzing {jobTitle || "role"}...</h1>
-          <p className="mt-2 text-sm text-muted-foreground">Building your task map</p>
+          <h1 className="text-xl font-sans font-bold text-foreground">⚔️ Scouting {jobTitle || "kingdom"}...</h1>
+          <p className="mt-2 text-sm text-muted-foreground">Preparing your mission briefing</p>
           <div className="mt-8 space-y-3 w-full max-w-sm">
             {[1, 2, 3].map(i => <Skeleton key={i} className="h-16 w-full rounded-xl" />)}
           </div>
