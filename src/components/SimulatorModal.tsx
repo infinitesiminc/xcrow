@@ -1393,7 +1393,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                         onClick={() => { onClose(); onBackToFeed?.(); }}
                         className="gap-2 rounded-xl w-full h-11"
                       >
-                        <Sparkles className="h-4 w-4" /> New Frontier — Unlock {nearbyUnclaimed.name}
+                        <Sparkles className="h-4 w-4" /> 🏰 New Frontier — Conquer {nearbyUnclaimed.name}
                       </Button>
                     )}
                     {scoreTier === "high" && !nearbyUnclaimed && onNextTask && (
