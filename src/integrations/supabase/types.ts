@@ -567,6 +567,50 @@ export type Database = {
           },
         ]
       }
+      job_future_skills: {
+        Row: {
+          category: string
+          cluster_name: string
+          created_at: string
+          description: string | null
+          icon_emoji: string | null
+          id: string
+          job_id: string | null
+          skill_id: string
+          skill_name: string
+        }
+        Insert: {
+          category: string
+          cluster_name: string
+          created_at?: string
+          description?: string | null
+          icon_emoji?: string | null
+          id?: string
+          job_id?: string | null
+          skill_id: string
+          skill_name: string
+        }
+        Update: {
+          category?: string
+          cluster_name?: string
+          created_at?: string
+          description?: string | null
+          icon_emoji?: string | null
+          id?: string
+          job_id?: string | null
+          skill_id?: string
+          skill_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "job_future_skills_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       job_skills: {
         Row: {
           category: string | null

@@ -167,7 +167,7 @@ Be specific and grounded.`;
       }
     }
 
-    // Cache predictions
+    // Cache predictions and persist future skills
     if (jobId && Object.keys(predictions).length > 0) {
       const rows = Object.entries(predictions).map(([cluster_name, prediction]) => ({
         job_id: jobId,
@@ -178,6 +178,30 @@ Be specific and grounded.`;
       await sb.from("task_future_predictions").upsert(rows, { onConflict: "job_id,cluster_name" }).then(
         ({ error }) => { if (error) console.error("Cache write error:", error); }
       );
+
+      // Persist future skills to dedicated table
+      const skillRows: any[] = [];
+      for (const [cluster_name, pred] of Object.entries(predictions)) {
+        const p = pred as any;
+        if (p.future_skills?.length) {
+          for (const skill of p.future_skills) {
+            skillRows.push({
+              job_id: jobId,
+              cluster_name,
+              skill_id: skill.id,
+              skill_name: skill.name,
+              category: skill.category,
+              description: skill.description || null,
+              icon_emoji: skill.icon_emoji || null,
+            });
+          }
+        }
+      }
+      if (skillRows.length > 0) {
+        await sb.from("job_future_skills").upsert(skillRows, { onConflict: "job_id,cluster_name,skill_id" }).then(
+          ({ error }) => { if (error) console.error("Future skills write error:", error); }
+        );
+      }
     }
 
     return new Response(JSON.stringify({ predictions, cached: false }), {
