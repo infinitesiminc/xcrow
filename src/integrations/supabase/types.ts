@@ -1368,6 +1368,41 @@ export type Database = {
         }
         Relationships: []
       }
+      task_future_predictions: {
+        Row: {
+          cluster_name: string
+          created_at: string
+          expires_at: string
+          id: string
+          job_id: string | null
+          prediction: Json
+        }
+        Insert: {
+          cluster_name: string
+          created_at?: string
+          expires_at?: string
+          id?: string
+          job_id?: string | null
+          prediction: Json
+        }
+        Update: {
+          cluster_name?: string
+          created_at?: string
+          expires_at?: string
+          id?: string
+          job_id?: string | null
+          prediction?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "task_future_predictions_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ticker_headlines: {
         Row: {
           created_at: string
