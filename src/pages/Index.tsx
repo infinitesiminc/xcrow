@@ -397,6 +397,7 @@ const Index = () => {
               )}
             </AnimatePresence>
 
+            {!hasInteracted && user && <div className="w-full max-w-xl mb-4"><QuestBoard /></div>}
             <div className={`w-full max-w-xl ${hasInteracted ? "flex-1 flex flex-col min-h-0" : ""}`}>
               <HomepageChat
                 onRolesFound={handleRolesFound}
