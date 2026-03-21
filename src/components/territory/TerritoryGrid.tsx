@@ -201,11 +201,11 @@ export default function TerritoryGrid({
               <span className="text-[11px] text-muted-foreground">{l.label}</span>
             </div>
           ))}
-          <span className="text-[9px] text-muted-foreground/50">•</span>
+          <span className="text-[11px] text-muted-foreground/50">•</span>
           {Object.entries(DIMENSION_INFO).map(([key, dim]) => (
             <div key={key} className="flex items-center gap-0.5">
-              <span className="text-[9px]">{dim.emoji}</span>
-              <span className="text-[9px] text-muted-foreground">{dim.label}</span>
+              <span className="text-[11px]">{dim.emoji}</span>
+              <span className="text-[11px] text-muted-foreground">{dim.label}</span>
             </div>
           ))}
         </div>
