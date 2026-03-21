@@ -89,7 +89,7 @@ export default function SkillNode({
         {name}
       </div>
       {isSpecial && (
-        <div className="text-[10px] font-bold" style={{ color: rarityConf.glowColor }}>
+        <div className="text-xs font-bold" style={{ color: rarityConf.glowColor }}>
           {rarityConf.label}
           {dropExpiresAt && !isExpired && (
             <span className="ml-1 opacity-70">⏳ {getTimeLeft(dropExpiresAt)}</span>
