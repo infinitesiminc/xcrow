@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/tooltip";
 import { DIMENSION_INFO } from "@/lib/skill-growth";
 
-type TileState = "claimed" | "frontier" | "undiscovered" | "contested" | "demo-lit" | "demo-dim";
+type TileState = "claimed" | "frontier" | "undiscovered" | "contested" | "demo-lit" | "demo-dim" | "ghost";
 
 interface SkillNodeProps {
   x: number;
@@ -57,6 +57,7 @@ export default function SkillNode({
   const isLit = state === "claimed" || state === "demo-lit";
   const isContested = state === "contested";
   const isFrontier = state === "frontier";
+  const isGhost = state === "ghost";
   const isSpecial = rarity === "rare" || rarity === "legendary";
   const rarityConf = RARITY_CONFIG[rarity] || RARITY_CONFIG.common;
 
@@ -64,7 +65,9 @@ export default function SkillNode({
 
   const nodeRadius = 22;
 
-  const fillColor = isLit
+  const fillColor = isGhost
+    ? `hsl(270 30% 12% / 0.5)`
+    : isLit
     ? `hsl(${baseHue} 60% 25%)`
     : isContested
     ? `hsl(38 70% 20%)`
@@ -72,7 +75,9 @@ export default function SkillNode({
     ? `hsl(${baseHue} 20% 15%)`
     : `hsl(${baseHue} 10% 12%)`;
 
-  const strokeColor = isSpecial && !isDim
+  const strokeColor = isGhost
+    ? `hsl(270 50% 45% / 0.6)`
+    : isSpecial && !isDim
     ? rarityConf.glowColor
     : isLit
     ? `hsl(${baseHue} 70% 55%)`
@@ -128,12 +133,27 @@ export default function SkillNode({
       <TooltipTrigger asChild>
         <motion.g
           initial={{ opacity: 0, scale: 0 }}
-          animate={{ opacity: isDim ? 0.35 : 1, scale: 1 }}
+          animate={{ opacity: isDim ? 0.35 : isGhost ? 0.55 : 1, scale: 1 }}
           transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1], delay: Math.random() * 0.3 }}
           onClick={onClick}
           className="cursor-pointer"
           style={{ transformOrigin: `${x}px ${y}px` }}
         >
+          {/* Ghost (Level 2) dashed pulse ring */}
+          {isGhost && (
+            <motion.circle
+              cx={x}
+              cy={y}
+              r={nodeRadius + 8}
+              fill="none"
+              stroke="hsl(270 60% 55% / 0.4)"
+              strokeWidth={1.5}
+              strokeDasharray="3 5"
+              animate={{ opacity: [0.2, 0.5, 0.2], strokeDashoffset: [0, 16] }}
+              transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
+            />
+          )}
+
           {/* Legendary outer pulse ring */}
           {rarity === "legendary" && !isDim && (
             <motion.circle
@@ -267,6 +287,28 @@ export default function SkillNode({
                 style={{ fontSize: "7px", fontWeight: 800, fill: "white", textTransform: "uppercase" }}
               >
                 {rarity}
+              </text>
+            </g>
+          )}
+
+          {/* Ghost Level 2 badge */}
+          {isGhost && (
+            <g>
+              <rect
+                x={x - 16}
+                y={y - nodeRadius - 10}
+                width={32}
+                height={10}
+                rx={5}
+                fill="hsl(270 50% 35%)"
+              />
+              <text
+                x={x}
+                y={y - nodeRadius - 3}
+                textAnchor="middle"
+                style={{ fontSize: "7px", fontWeight: 800, fill: "hsl(270 80% 85%)", textTransform: "uppercase", letterSpacing: "0.05em" }}
+              >
+                LEVEL 2
               </text>
             </g>
           )}

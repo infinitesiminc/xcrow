@@ -6,12 +6,15 @@ import { Badge } from "@/components/ui/badge";
 import { TaskAnalysis } from "@/types/analysis";
 import type { JobAnalysisResult } from "@/types/analysis";
 import { exposureStyle } from "@/lib/exposure-colors";
+import { FutureTaskPreview } from "./FutureTaskPreview";
 
 interface TaskTableProps {
   tasks: TaskAnalysis[];
   skills: JobAnalysisResult["skills"];
   completedTasks: Set<string>;
   onPractice: (taskName: string) => void;
+  jobTitle?: string;
+  company?: string;
 }
 
 function exposureColor(score: number) {
@@ -38,7 +41,7 @@ function priorityBadge(p?: string) {
   return <Badge className="bg-muted/50 text-muted-foreground border-border/20 text-[9px]">Low</Badge>;
 }
 
-export function TaskTable({ tasks, skills, completedTasks, onPractice }: TaskTableProps) {
+export function TaskTable({ tasks, skills, completedTasks, onPractice, jobTitle, company }: TaskTableProps) {
   const sortedTasks = useMemo(() => {
     return tasks
       .map((t, i) => ({ task: t, originalIndex: i }))
@@ -116,18 +119,29 @@ export function TaskTable({ tasks, skills, completedTasks, onPractice }: TaskTab
                   </Badge>
                 )}
 
-                {/* Upskill button */}
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-6 text-[11px] gap-1 text-muted-foreground hover:text-foreground hover:bg-accent/30 w-fit mt-auto px-2"
-                  onClick={() => onPractice(task.name)}
-                >
-                  {isCompleted
-                    ? <><CheckCircle2 className="h-3 w-3 text-success" /> Learned</>
-                    : <><Play className="h-3 w-3" /> Learn This</>
-                  }
-                </Button>
+                {/* Action buttons */}
+                <div className="flex items-center gap-2 mt-auto flex-wrap">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-6 text-[11px] gap-1 text-muted-foreground hover:text-foreground hover:bg-accent/30 w-fit px-2"
+                    onClick={() => onPractice(task.name)}
+                  >
+                    {isCompleted
+                      ? <><CheckCircle2 className="h-3 w-3 text-success" /> Learned</>
+                      : <><Play className="h-3 w-3" /> Learn This</>
+                    }
+                  </Button>
+                  <FutureTaskPreview
+                    taskName={task.name}
+                    jobTitle={jobTitle || ""}
+                    company={company}
+                    aiExposureScore={aiScore}
+                    jobImpactScore={impactScore}
+                    description={task.description}
+                    onStartSim={(scenarioTitle, taskName) => onPractice(taskName)}
+                  />
+                </div>
               </motion.div>
             );
           })}

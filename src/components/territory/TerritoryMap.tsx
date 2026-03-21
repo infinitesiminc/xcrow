@@ -27,7 +27,7 @@ import {
 } from "@/lib/territory-layout";
 import SkillNode from "./SkillNode";
 
-type TileState = "claimed" | "frontier" | "undiscovered" | "contested" | "demo-lit" | "demo-dim";
+type TileState = "claimed" | "frontier" | "undiscovered" | "contested" | "demo-lit" | "demo-dim" | "ghost";
 
 export interface SkillRarityInfo {
   id: string;
