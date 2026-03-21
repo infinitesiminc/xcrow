@@ -16,7 +16,7 @@ interface FutureIslandProps {
   onSkillClick?: (skill: FutureSkill) => void;
 }
 
-export default function FutureIsland({ island, skillLookup, isFocused, onIslandClick }: FutureIslandProps) {
+export default function FutureIsland({ island, skillLookup, isFocused, onIslandClick, onSkillClick }: FutureIslandProps) {
   const { cx, cy, radius, theme, nodes, expandedNodes, category, skillCount } = island;
   const activeNodes = isFocused ? expandedNodes : nodes;
   const visibleCount = activeNodes.length;
