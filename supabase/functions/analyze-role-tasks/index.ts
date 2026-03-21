@@ -87,6 +87,7 @@ Respond ONLY with a valid JSON array, no markdown.`;
         model: "google/gemini-3-flash-preview",
         messages: [{ role: "user", content: prompt }],
         temperature: 0.7,
+        max_tokens: 4096,
       }),
     });
 
