@@ -4,7 +4,7 @@
  */
 
 import { motion } from "framer-motion";
-import xcrowLogo from "@/assets/xcrow-logo.png";
+import xcrowLogo from "@/assets/xcrow-character.png";
 import { Lock } from "lucide-react";
 import type { CastleState } from "@/lib/castle-levels";
 import type { SkillCategory } from "@/lib/skill-map";
