@@ -278,7 +278,7 @@ export default function SkillNode({
             textAnchor="middle"
             className="fill-current text-foreground"
             style={{
-              fontSize: "8px",
+              fontSize: "11px",
               fontWeight: 600,
               fill: isDim ? "hsl(var(--muted-foreground))" : isSpecial ? rarityConf.glowColor : isLit ? `hsl(${baseHue} 70% 70%)` : "hsl(var(--foreground))",
               opacity: isDim ? 0.5 : 0.9,
