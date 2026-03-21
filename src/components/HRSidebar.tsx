@@ -1,4 +1,4 @@
-import { Building2, BarChart3, Database, GraduationCap, GitCompareArrows, Sparkles, DollarSign, Brain } from "lucide-react";
+import { Building2, BarChart3, Database, GraduationCap, GitCompareArrows, DollarSign, Brain } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import {
   Sidebar,
@@ -15,7 +15,7 @@ import {
 const mainItems = [
   { title: "Companies", url: "/admin", icon: Building2 },
   { title: "Task Analytics", url: "/admin/analytics", icon: BarChart3 },
-  { title: "Skill Drops", url: "/admin/skill-drops", icon: Sparkles },
+  
   { title: "Skill Matrix", url: "/admin/skill-matrix", icon: Brain },
   { title: "Pricing & Usage", url: "/admin/pricing-usage", icon: DollarSign },
 ];
