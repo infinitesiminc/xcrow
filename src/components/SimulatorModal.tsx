@@ -1420,7 +1420,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                         onClick={() => { onClose(); onNextTask(); }}
                         className="gap-2 rounded-xl w-full text-xs"
                       >
-                        Try a Different Task
+                        Try a Different Quest
                       </Button>
                     )}
                     {scoreTier === "mid" && (
