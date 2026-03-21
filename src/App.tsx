@@ -135,7 +135,7 @@ const App = () => (
               <Route path="/admin" element={<AdminGate />}>
                 <Route index element={<PipelinePage />} />
                 <Route path="analytics" element={<TaskAnalyticsPage />} />
-                <Route path="skill-drops" element={<SkillDropsPage />} />
+                
                 <Route path="skill-matrix" element={<SkillMatrixPage />} />
                 <Route path="pricing-usage" element={<PricingUsagePage />} />
                 <Route path="schools" element={<SchoolsPage />} />
