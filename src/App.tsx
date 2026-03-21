@@ -132,6 +132,7 @@ const App = () => (
                 <Route index element={<PipelinePage />} />
                 <Route path="analytics" element={<TaskAnalyticsPage />} />
                 <Route path="skill-drops" element={<SkillDropsPage />} />
+                <Route path="pricing-usage" element={<PricingUsagePage />} />
                 <Route path="schools" element={<SchoolsPage />} />
                 <Route path="schools/data-ops" element={<SchoolDataOpsPage />} />
                 <Route path="schools/skills-gap" element={<SchoolSkillsGapPage />} />
