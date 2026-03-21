@@ -21,7 +21,7 @@ interface TaskDetailPanelProps {
 }
 
 export function TaskDetailPanel({
-  task, prediction, predictionsLoading, isCompleted, onPractice, onClose,
+  task, prediction, predictionsLoading, isCompleted, onPractice, onClose, index,
 }: TaskDetailPanelProps) {
   const currentScore = task.aiExposureScore ?? 50;
   const futureScore = prediction?.future_exposure ?? currentScore;
