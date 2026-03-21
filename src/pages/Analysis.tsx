@@ -311,7 +311,7 @@ const Analysis = () => {
           <ReadinessRing readiness={readiness} size={64} />
           <div className="min-w-0 flex-1">
             <h1 className="text-lg font-display font-bold text-foreground leading-snug">{result.jobTitle}</h1>
-            {company && !isWebsite(company) && <p className="text-sm text-muted-foreground">at {company}</p>}
+            {company && !isWebsite(company) && <p className="text-sm text-muted-foreground">Kingdom of {company}</p>}
           </div>
           <div className="flex gap-4 shrink-0">
             <StatItem value={`${riskPercent}%`} label="Risk" />
