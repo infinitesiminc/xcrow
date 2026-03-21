@@ -372,7 +372,7 @@ const RoleDeepDive = () => {
             </button>
           )}
 
-          {/* Task list */}
+          {/* Quest log */}
           <div className="flex-1 overflow-y-auto p-2 space-y-1">
             {sortedTasks.map((task, i) => (
               <TaskCard
