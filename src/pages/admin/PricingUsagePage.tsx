@@ -3,9 +3,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Table, TableHeader, TableHead, TableBody, TableRow, TableCell } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
-import { Loader2, DollarSign, Users, Gift, Zap, CreditCard, TrendingUp } from "lucide-react";
-import { STRIPE_PRICES, STRIPE_PRODUCTS, FREE_LIMITS } from "@/lib/stripe-config";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import { useToast } from "@/hooks/use-toast";
+import { Loader2, DollarSign, Users, Gift, Zap, CreditCard, TrendingUp, Save, Settings2 } from "lucide-react";
+import { STRIPE_PRICES, STRIPE_PRODUCTS } from "@/lib/stripe-config";
 
 interface UsageRow {
   user_id: string;
@@ -21,7 +25,15 @@ interface ReferralStat {
   referral_count: number;
 }
 
+interface ConfigRow {
+  key: string;
+  value: string;
+  label: string | null;
+  description: string | null;
+}
+
 export default function PricingUsagePage() {
+  const { toast } = useToast();
   const [loading, setLoading] = useState(true);
   const [usageData, setUsageData] = useState<UsageRow[]>([]);
   const [referralStats, setReferralStats] = useState<ReferralStat[]>([]);
@@ -29,6 +41,9 @@ export default function PricingUsagePage() {
   const [totalSims, setTotalSims] = useState(0);
   const [schoolSeats, setSchoolSeats] = useState({ total: 0, active: 0 });
   const [totalReferrals, setTotalReferrals] = useState(0);
+  const [configs, setConfigs] = useState<ConfigRow[]>([]);
+  const [editedConfigs, setEditedConfigs] = useState<Record<string, string>>({});
+  const [savingConfig, setSavingConfig] = useState(false);
 
   useEffect(() => {
     loadData();
@@ -40,8 +55,7 @@ export default function PricingUsagePage() {
     currentPeriod.setDate(1);
     currentPeriod.setHours(0, 0, 0, 0);
 
-    const [usageRes, profilesRes, simsRes, seatsRes, referralsRes] = await Promise.all([
-      // Current month usage with profile join
+    const [usageRes, profilesRes, simsRes, seatsRes, referralsRes, configRes] = await Promise.all([
       supabase
         .from("user_usage")
         .select("user_id, simulations_used, analyses_used, period_start")
@@ -52,6 +66,7 @@ export default function PricingUsagePage() {
       supabase.from("completed_simulations").select("id", { count: "exact", head: true }),
       supabase.from("school_seats" as any).select("id, status"),
       supabase.from("referrals").select("referrer_id, credited"),
+      supabase.from("platform_config" as any).select("key, value, label, description").order("key"),
     ]);
 
     // Get profile names for usage rows
@@ -80,7 +95,6 @@ export default function PricingUsagePage() {
       }
     });
 
-    // Get referrer names
     const referrerIds = Object.keys(referralMap);
     let referrerNames: Record<string, string> = {};
     if (referrerIds.length > 0) {
@@ -111,8 +125,43 @@ export default function PricingUsagePage() {
       active: seats.filter((s: any) => s.status === "active").length,
     });
     setTotalReferrals((referralsRes.data as any[])?.length || 0);
+    setConfigs((configRes.data as any as ConfigRow[]) || []);
+    setEditedConfigs({});
     setLoading(false);
   }
+
+  const handleConfigChange = (key: string, newValue: string) => {
+    setEditedConfigs(prev => ({ ...prev, [key]: newValue }));
+  };
+
+  const getConfigValue = (key: string) => {
+    if (key in editedConfigs) return editedConfigs[key];
+    return configs.find(c => c.key === key)?.value || "";
+  };
+
+  const hasChanges = Object.keys(editedConfigs).length > 0;
+
+  const saveConfigs = async () => {
+    setSavingConfig(true);
+    try {
+      for (const [key, value] of Object.entries(editedConfigs)) {
+        await (supabase.from("platform_config" as any) as any)
+          .update({ value, updated_at: new Date().toISOString() })
+          .eq("key", key);
+      }
+      toast({ title: "Saved", description: "Policy settings updated successfully." });
+      // Refresh
+      const { data } = await (supabase.from("platform_config" as any) as any)
+        .select("key, value, label, description")
+        .order("key");
+      setConfigs(data || []);
+      setEditedConfigs({});
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    } finally {
+      setSavingConfig(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -126,7 +175,7 @@ export default function PricingUsagePage() {
     {
       name: "Free",
       price: "$0",
-      limits: `${FREE_LIMITS.simulations_per_month} sims/mo • Unlimited analyses`,
+      limits: `${getConfigValue("free_sim_limit")} sims/mo • ${getConfigValue("analyses_unlimited") === "true" ? "Unlimited" : getConfigValue("free_analysis_limit")} analyses`,
       badge: "default" as const,
     },
     {
@@ -147,13 +196,57 @@ export default function PricingUsagePage() {
 
   const activeUsersThisMonth = usageData.filter(u => u.simulations_used > 0 || u.analyses_used > 0).length;
 
+  // Group configs by category
+  const usagePolicies = configs.filter(c =>
+    ["free_sim_limit", "free_analysis_limit", "analyses_unlimited"].includes(c.key)
+  );
+  const referralPolicies = configs.filter(c =>
+    ["referral_bonus_sims"].includes(c.key)
+  );
+  const adaptivePolicies = configs.filter(c =>
+    ["adaptive_sim_threshold", "adaptive_sim_max_attempts"].includes(c.key)
+  );
+
+  const isBoolean = (key: string) => ["analyses_unlimited"].includes(key);
+
+  const renderConfigInput = (config: ConfigRow) => {
+    const val = getConfigValue(config.key);
+    if (isBoolean(config.key)) {
+      return (
+        <div className="flex items-center gap-2">
+          <Switch
+            checked={val === "true"}
+            onCheckedChange={(checked) => handleConfigChange(config.key, checked ? "true" : "false")}
+          />
+          <span className="text-xs text-muted-foreground">{val === "true" ? "Enabled" : "Disabled"}</span>
+        </div>
+      );
+    }
+    return (
+      <Input
+        type="number"
+        value={val}
+        onChange={(e) => handleConfigChange(config.key, e.target.value)}
+        className="w-24 h-8 text-sm"
+      />
+    );
+  };
+
   return (
     <div className="p-6 space-y-6 max-w-5xl">
-      <div>
-        <h1 className="text-2xl font-bold">Pricing & Usage Controls</h1>
-        <p className="text-sm text-muted-foreground mt-1">
-          Overview of all pricing tiers, usage limits, referrals, and user activity.
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold">Pricing & Usage Controls</h1>
+          <p className="text-sm text-muted-foreground mt-1">
+            Manage pricing tiers, usage limits, referral credits, and policies.
+          </p>
+        </div>
+        {hasChanges && (
+          <Button onClick={saveConfigs} disabled={savingConfig} size="sm">
+            {savingConfig ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : <Save className="h-3 w-3 mr-1" />}
+            Save Changes
+          </Button>
+        )}
       </div>
 
       {/* KPI Cards */}
@@ -198,11 +291,78 @@ export default function PricingUsagePage() {
             </div>
             <div>
               <p className="text-xl font-bold">{schoolSeats.active}/{schoolSeats.total}</p>
-              <p className="text-xs text-muted-foreground">School Seats (active/total)</p>
+              <p className="text-xs text-muted-foreground">School Seats</p>
             </div>
           </CardContent>
         </Card>
       </div>
+
+      {/* Editable Policy Controls */}
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base flex items-center gap-2">
+            <Settings2 className="h-4 w-4" /> Usage & Credit Policies
+          </CardTitle>
+          <CardDescription>
+            Live settings — changes take effect immediately for all users
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          {/* Free Tier Limits */}
+          <div className="space-y-3">
+            <h3 className="text-sm font-semibold text-foreground">Free Tier Limits</h3>
+            <div className="space-y-3">
+              {usagePolicies.map(config => (
+                <div key={config.key} className="flex items-center justify-between gap-4 p-3 rounded-lg bg-muted/30">
+                  <div className="space-y-0.5 flex-1">
+                    <Label className="text-sm font-medium">{config.label}</Label>
+                    <p className="text-xs text-muted-foreground">{config.description}</p>
+                  </div>
+                  {renderConfigInput(config)}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Referral Credits */}
+          <div className="space-y-3">
+            <h3 className="text-sm font-semibold text-foreground">Referral Credit Policy</h3>
+            <div className="space-y-3">
+              {referralPolicies.map(config => (
+                <div key={config.key} className="flex items-center justify-between gap-4 p-3 rounded-lg bg-muted/30">
+                  <div className="space-y-0.5 flex-1">
+                    <Label className="text-sm font-medium">{config.label}</Label>
+                    <p className="text-xs text-muted-foreground">{config.description}</p>
+                  </div>
+                  {renderConfigInput(config)}
+                </div>
+              ))}
+              <div className="p-3 rounded-lg bg-muted/20 border border-dashed border-muted-foreground/20">
+                <p className="text-xs text-muted-foreground">
+                  <strong>How it works:</strong> Both referrer and referred user receive +{getConfigValue("referral_bonus_sims")} sim credits.
+                  Referrer earns +{getConfigValue("referral_bonus_sims")} per additional successful referral (uncapped).
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Adaptive Sim Settings */}
+          <div className="space-y-3">
+            <h3 className="text-sm font-semibold text-foreground">Adaptive Simulation Policy</h3>
+            <div className="space-y-3">
+              {adaptivePolicies.map(config => (
+                <div key={config.key} className="flex items-center justify-between gap-4 p-3 rounded-lg bg-muted/30">
+                  <div className="space-y-0.5 flex-1">
+                    <Label className="text-sm font-medium">{config.label}</Label>
+                    <p className="text-xs text-muted-foreground">{config.description}</p>
+                  </div>
+                  {renderConfigInput(config)}
+                </div>
+              ))}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Pricing Tiers */}
       <Card>
@@ -210,7 +370,7 @@ export default function PricingUsagePage() {
           <CardTitle className="text-base flex items-center gap-2">
             <DollarSign className="h-4 w-4" /> Pricing Tiers
           </CardTitle>
-          <CardDescription>Current product & price configuration</CardDescription>
+          <CardDescription>Stripe product & price configuration</CardDescription>
         </CardHeader>
         <CardContent>
           <Table>
@@ -244,30 +404,6 @@ export default function PricingUsagePage() {
         </CardContent>
       </Card>
 
-      {/* Usage Limits Config */}
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="text-base flex items-center gap-2">
-            <Zap className="h-4 w-4" /> Free Tier Limits
-          </CardTitle>
-          <CardDescription>Defined in code — edit stripe-config.ts to change</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="p-3 rounded-lg bg-muted/50">
-              <p className="text-xs text-muted-foreground">Simulations / month</p>
-              <p className="text-2xl font-bold">{FREE_LIMITS.simulations_per_month}</p>
-              <p className="text-xs text-muted-foreground mt-1">+ 2 per referral (uncapped)</p>
-            </div>
-            <div className="p-3 rounded-lg bg-muted/50">
-              <p className="text-xs text-muted-foreground">Analyses / month</p>
-              <p className="text-2xl font-bold">∞</p>
-              <p className="text-xs text-muted-foreground mt-1">Unlimited for all users</p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
       {/* Referral Leaderboard */}
       {referralStats.length > 0 && (
         <Card>
@@ -291,7 +427,9 @@ export default function PricingUsagePage() {
                   <TableRow key={r.referrer_id}>
                     <TableCell className="text-sm">{r.display_name}</TableCell>
                     <TableCell className="text-right font-medium">{r.referral_count}</TableCell>
-                    <TableCell className="text-right text-muted-foreground">+{r.referral_count * 2}</TableCell>
+                    <TableCell className="text-right text-muted-foreground">
+                      +{r.referral_count * parseInt(getConfigValue("referral_bonus_sims") || "2")}
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
