@@ -75,7 +75,9 @@ export default function SkillNode({
     ? `hsl(${baseHue} 20% 15%)`
     : `hsl(${baseHue} 10% 12%)`;
 
-  const strokeColor = isSpecial && !isDim
+  const strokeColor = isGhost
+    ? `hsl(270 50% 45% / 0.6)`
+    : isSpecial && !isDim
     ? rarityConf.glowColor
     : isLit
     ? `hsl(${baseHue} 70% 55%)`
