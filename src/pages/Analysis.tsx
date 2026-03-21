@@ -448,7 +448,7 @@ const Analysis = () => {
         {!user && (
           <div className="text-center py-6 border-t border-border/30">
             <Button onClick={() => navigate("/auth")} variant="ghost" className="gap-2 rounded-full text-primary">
-              <LogIn className="h-4 w-4" /> Sign in to save progress
+              <LogIn className="h-4 w-4" /> Sign in to save quest progress
             </Button>
           </div>
         )}
