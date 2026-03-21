@@ -1220,14 +1220,14 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                   {/* Dynamic encouragement */}
                   <div className="space-y-1.5">
                     <h3 className="text-lg font-display font-bold text-foreground">
-                      {scoreTier === "high" ? "Masterful! 🏆" : scoreTier === "mid" ? "Solid work! 💪" : "Good start! 🌱"}
+                      {scoreTier === "high" ? "Victory! 🏆" : scoreTier === "mid" ? "Valiant effort! 💪" : "First blood! 🌱"}
                     </h3>
                     <p className="text-sm text-muted-foreground leading-relaxed">
                       {scoreTier === "high"
-                        ? "You demonstrated strong command. Time to expand your territory."
+                        ? "You've conquered this quest. Time to expand your territory."
                         : scoreTier === "mid"
-                        ? "You're building real skill here. One more round could level you up."
-                        : "Every expert started exactly here. Retry with coaching to see your score climb."
+                        ? "Your power grows. One more wave could level you up."
+                        : "Every commander started here. Retry with a battle coach to raise your power."
                       }
                     </p>
                   </div>
