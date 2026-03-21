@@ -143,7 +143,7 @@ export function TaskDetailPanel({
           onClick={() => onPractice(task)}
         >
           <Play className="h-3 w-3" />
-          {isCollapsing ? "Run Future Simulation" : isCompleted ? "Retry Simulation" : "Practice This Task"}
+          {isCollapsing ? "⚔️ Run Future Battle" : isCompleted ? "🔄 Retry Quest" : "⚔️ Accept Quest"}
         </Button>
       </div>
     </motion.div>
