@@ -373,7 +373,7 @@ const Index = () => {
       <div className="flex-1 flex min-h-0">
         {/* ── Left: Chat ─────────────────────────── */}
         <div className="w-1/2 flex flex-col border-r border-border">
-          <div className="flex-1 flex flex-col items-center px-5 pt-8 pb-4 overflow-hidden">
+          <div className="flex-1 flex flex-col items-center px-5 pt-8 pb-4 overflow-y-auto">
             <AnimatePresence mode="wait">
               {!hasInteracted && (
                 <motion.div
