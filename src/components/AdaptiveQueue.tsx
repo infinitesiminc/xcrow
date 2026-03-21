@@ -81,7 +81,7 @@ export default function AdaptiveQueue({ userId, onLaunchSim }: {
       <Card className="border-warning/30 bg-gradient-to-r from-warning/5 via-background to-warning/5">
         <CardContent className="p-4 space-y-0.5">
           <p className="text-xs text-muted-foreground mb-3">
-            Based on your recent simulations, these areas need more practice to reach the <span className="font-semibold text-foreground">60% readiness threshold</span>.
+            Based on your recent quests, these areas need more training to reach the <span className="font-semibold text-foreground">60% power threshold</span>.
           </p>
 
           <div className="divide-y divide-border/40">
