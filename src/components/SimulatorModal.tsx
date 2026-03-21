@@ -204,7 +204,7 @@ const BriefingScreen = ({
         >
           <h4 className="text-xs font-medium uppercase tracking-widest text-primary mb-3 flex items-center gap-2">
             <Target className="h-3.5 w-3.5" />
-            What you'll learn
+            Quest Objectives
           </h4>
           <ul className="space-y-3">
             {session.learningObjectives.map((obj, i) => (
