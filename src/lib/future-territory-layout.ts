@@ -18,6 +18,7 @@ export interface FutureIslandLayout {
   cy: number;
   radius: number;
   nodes: FutureNodePosition[];
+  expandedNodes: FutureNodePosition[];
   theme: { emoji: string; terrain: string; baseHue: number };
   skillCount: number;
 }
