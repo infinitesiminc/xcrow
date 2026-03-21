@@ -1213,7 +1213,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                       >
                         {overallScore}%
                       </motion.span>
-                      <span className="text-[10px] text-muted-foreground">score</span>
+                      <span className="text-[10px] text-muted-foreground">power</span>
                     </div>
                   </motion.div>
 
