@@ -471,7 +471,7 @@ const Index = () => {
 
             {rightPanelTab === "table" ? (
               <div className="flex-1 overflow-hidden">
-                <FutureSkillsTable skills={futureSkills} />
+                <FutureSkillsTable skills={futureSkills} onSkillClick={(skill) => { setMapFocusSkillId(skill.id); setTimeout(() => setMapFocusSkillId(null), 100); }} />
               </div>
             ) : rightPanelTab === "roles" && isSignedIn ? (
               <div className="flex-1 overflow-hidden">
