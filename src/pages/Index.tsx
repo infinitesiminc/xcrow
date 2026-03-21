@@ -4,6 +4,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { supabase } from "@/integrations/supabase/client";
 import { Map, Bookmark, X, Sparkles } from "lucide-react";
+import { useFutureSkills } from "@/hooks/use-future-skills";
+import FutureTerritoryMap from "@/components/territory/FutureTerritoryMap";
 import { getLevel, levelProgress } from "@/lib/skill-map";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import HomepageChat, { type ViewContext } from "@/components/HomepageChat";
@@ -114,6 +116,8 @@ const Index = () => {
   const { profile, user } = useAuth();
   const isMobile = useIsMobile();
   const { skills: dbSkills } = useSkills();
+
+  const { futureSkills } = useFutureSkills();
 
   // Convert DB skills to TaxonomySkill format for layout/aggregation
   const taxonomy: TaxonomySkill[] = useMemo(() =>
@@ -495,66 +499,9 @@ const Index = () => {
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ duration: 0.4 }}
-                  className="h-full overflow-y-auto"
+                  className="h-full overflow-hidden"
                 >
-                  {/* Castle grid in panel */}
-                  <div className="p-4 space-y-5">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <Sparkles className="h-4 w-4 text-primary" />
-                        <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                          Skill Territory
-                        </span>
-                      </div>
-                      <button
-                        onClick={() => setTerritoryOpen(true)}
-                        className="flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all active:scale-[0.97] border border-border/40"
-                      >
-                        <Map className="h-3 w-3" />
-                        Full Map
-                      </button>
-                    </div>
-
-                    <TooltipProvider delayDuration={200}>
-                      <div className="flex flex-wrap gap-3 justify-center">
-                        {taxonomy.map((skill, si) => {
-                          const sx = skillMap.get(skill.id);
-                          const xp = sx?.xp ?? 0;
-                          const castle = getCastleState(xp);
-                          return (
-                            <CastleNode
-                              key={skill.id}
-                              skillId={skill.id}
-                              name={skill.name}
-                              category={skill.category}
-                              castle={castle}
-                              xp={xp}
-                              isActive={lastPracticedSkillId === skill.id}
-                              onClick={() => {}}
-                              delay={si}
-                            />
-                          );
-                        })}
-                      </div>
-                    </TooltipProvider>
-
-                    {!isSignedIn && demoHighlighted.size > 0 && (
-                      <motion.div
-                        initial={{ opacity: 0, y: 8 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.3, duration: 0.4 }}
-                      >
-                        <div className="rounded-xl border border-primary/30 bg-primary/5 p-3 text-center">
-                          <p className="text-xs text-foreground font-medium">Sign up to keep your territory</p>
-                          <p className="text-[10px] text-muted-foreground mt-0.5">Progress resets without an account</p>
-                        </div>
-                      </motion.div>
-                    )}
-
-                    {!isSignedIn && roleBatches.length === 0 && !hasInteracted && (
-                      <HumanEdgesCard onEdgeClick={handleEdgeClick} />
-                    )}
-                  </div>
+                  <FutureTerritoryMap skills={futureSkills} />
                 </motion.div>
               )}
             </AnimatePresence>
