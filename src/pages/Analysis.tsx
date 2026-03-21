@@ -314,9 +314,9 @@ const Analysis = () => {
             {company && !isWebsite(company) && <p className="text-sm text-muted-foreground">Kingdom of {company}</p>}
           </div>
           <div className="flex gap-4 shrink-0">
-            <StatItem value={`${riskPercent}%`} label="Risk" />
-            <StatItem value={`${augmentedPercent}%`} label="Augmented" />
-            <StatItem value={`${sortedTasks.length}`} label="Tasks" />
+            <StatItem value={`${riskPercent}%`} label="Threat" />
+            <StatItem value={`${augmentedPercent}%`} label="AI Power" />
+            <StatItem value={`${sortedTasks.length}`} label="Quests" />
           </div>
         </div>
 
