@@ -275,6 +275,17 @@ const Index = () => {
     lastSimResult,
   }), [selectedRole, rightTab, myRolesTab, lastSimResult]);
 
+  /* ── Onboarding Quest ── */
+  if (showOnboarding && !onboardingDismissed) {
+    return (
+      <OnboardingQuest
+        open
+        userId={user!.id}
+        onComplete={() => setOnboardingDismissed(true)}
+      />
+    );
+  }
+
   /* ── Mobile ───────────────────────────────────── */
 
   if (isMobile) {
