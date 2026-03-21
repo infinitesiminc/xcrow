@@ -404,7 +404,7 @@ const RoleDeepDive = () => {
                 className="w-full h-7 text-[10px] gap-1.5 rounded-full text-primary"
                 onClick={() => navigate("/auth")}
               >
-                <LogIn className="h-3 w-3" /> Sign in to save
+                <LogIn className="h-3 w-3" /> Sign in to save progress
               </Button>
             )}
           </div>
