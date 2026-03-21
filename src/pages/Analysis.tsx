@@ -362,7 +362,7 @@ const Analysis = () => {
                 <div className="flex items-center gap-2 text-[10px] text-muted-foreground mb-4 flex-wrap">
                   {focusedTask.currentState && <span className="px-2 py-0.5 rounded-full bg-muted/40">{focusedTask.currentState}</span>}
                   {focusedTask.impactLevel && <span className="px-2 py-0.5 rounded-full bg-muted/40">{focusedTask.impactLevel}</span>}
-                  {done && <span className="px-2 py-0.5 rounded-full bg-muted/40">Practiced</span>}
+                  {done && <span className="px-2 py-0.5 rounded-full bg-muted/40">✓ Conquered</span>}
                 </div>
 
                 <div className="flex items-center gap-2">
