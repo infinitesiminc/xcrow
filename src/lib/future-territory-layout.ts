@@ -138,14 +138,14 @@ export function buildFutureMapLayout(skills: FutureSkill[]): FutureIslandLayout[
     const center = ISLAND_CENTERS[cat];
     const catSkills = skills
       .filter(s => s.category === cat)
-      .sort((a, b) => b.demandCount - a.demandCount); // top demand first
-    const visibleCount = Math.min(catSkills.length, MAX_PER_ISLAND);
+      .sort((a, b) => b.demandCount - a.demandCount);
     return {
       category: cat,
       cx: center.cx,
       cy: center.cy,
       radius: 120,
-      nodes: positionNodes(center.cx, center.cy, catSkills),
+      nodes: positionNodes(center.cx, center.cy, catSkills, MAX_PER_ISLAND),
+      expandedNodes: positionNodes(center.cx, center.cy, catSkills, catSkills.length, 180),
       theme: FUTURE_CATEGORY_META[cat],
       skillCount: catSkills.length,
     };
