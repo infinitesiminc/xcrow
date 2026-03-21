@@ -338,25 +338,14 @@ const Index = () => {
               </motion.div>
             )}
           </AnimatePresence>
-          {!hasInteracted && !user && <SkillSuggestionCards />}
-          {!hasInteracted && user && (
+          {/* Chat is now in the unified dock bar */}
+          {!user && <SkillSuggestionCards />}
+          {user && (
             <div className="w-full max-w-lg mb-4 space-y-4">
               <QuestBoard />
               <AdaptiveQueue userId={user.id} />
             </div>
           )}
-          <div className={`w-full max-w-lg ${hasInteracted ? "flex-1 flex flex-col min-h-0" : ""}`}>
-            <HomepageChat
-              onRolesFound={handleRolesFound}
-              onRoleSelect={handleRoleSelect}
-              onChatStart={handleChatStart}
-              hasInteracted={hasInteracted}
-              selectedJobId={selectedRole?.jobId}
-              inlineCards
-              externalPrompt={externalPrompt}
-              onExternalPromptConsumed={() => setExternalPrompt(null)}
-              viewContext={viewContext}
-            />
           </div>
         </div>
 
