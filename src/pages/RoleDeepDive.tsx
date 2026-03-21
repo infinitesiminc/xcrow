@@ -17,7 +17,7 @@ import SimulatorModal from "@/components/SimulatorModal";
 import { TaskCard } from "@/components/role/TaskCard";
 import { TaskDetailPanel } from "@/components/role/TaskDetailPanel";
 import XcrowLoader from "@/components/XcrowLoader";
-import { RoleChat } from "@/components/role/RoleChat";
+import { useChatViewContext } from "@/contexts/ChatContext";
 import type { FuturePrediction } from "@/components/analysis/FutureTaskPreview";
 
 // ── Helpers ──────────────────────────────────────────────────────
