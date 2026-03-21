@@ -303,7 +303,7 @@ function SkillTile({
 
           {/* XP indicator for claimed tiles */}
           {isLit && xp && xp > 0 && (
-            <span className="ml-0.5 opacity-60 font-mono text-[8px]">
+            <span className="ml-0.5 opacity-60 font-mono text-[11px]">
               {xp}
             </span>
           )}

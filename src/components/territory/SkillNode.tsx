@@ -302,7 +302,7 @@ export default function SkillNode({
                 x={x + nodeRadius + 6}
                 y={y - nodeRadius + 7}
                 textAnchor="middle"
-                style={{ fontSize: "7px", fontWeight: 700, fill: "white" }}
+                style={{ fontSize: "9px", fontWeight: 700, fill: "white" }}
               >
                 {xp}
               </text>

@@ -338,7 +338,7 @@ export default function TerritoryMap({
           ].map(l => (
             <div key={l.label} className="flex items-center gap-1">
               <div className={`w-2 h-2 rounded-full ${l.cls}`} />
-              <span className="text-[9px] text-muted-foreground">{l.label}</span>
+              <span className="text-[11px] text-muted-foreground">{l.label}</span>
             </div>
           ))}
         </div>
