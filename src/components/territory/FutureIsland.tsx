@@ -16,9 +16,10 @@ interface FutureIslandProps {
 }
 
 export default function FutureIsland({ island, skillLookup, isFocused, onIslandClick }: FutureIslandProps) {
-  const { cx, cy, radius, theme, nodes, category, skillCount } = island;
-  const visibleCount = nodes.length;
-  const hiddenCount = skillCount - visibleCount;
+  const { cx, cy, radius, theme, nodes, expandedNodes, category, skillCount } = island;
+  const activeNodes = isFocused ? expandedNodes : nodes;
+  const visibleCount = activeNodes.length;
+  const hiddenCount = isFocused ? 0 : skillCount - visibleCount;
 
   return (
     <g>
