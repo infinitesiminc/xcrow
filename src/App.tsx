@@ -46,6 +46,7 @@ const SchoolDataOpsPage = lazy(() => import("./pages/admin/SchoolDataOpsPage.tsx
 const SchoolSkillsGapPage = lazy(() => import("./pages/admin/SchoolSkillsGapPage.tsx"));
 const SchoolDetailPage = lazy(() => import("./pages/admin/SchoolDetailPage.tsx"));
 const SkillDropsPage = lazy(() => import("./pages/admin/SkillDropsPage.tsx"));
+const SkillMatrixPage = lazy(() => import("./pages/admin/SkillMatrixPage.tsx"));
 const PricingUsagePage = lazy(() => import("./pages/admin/PricingUsagePage.tsx"));
 
 // School admin (lazy)
