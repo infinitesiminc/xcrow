@@ -417,10 +417,21 @@ const Analysis = () => {
                           {task.currentState && <span className="px-2 py-0.5 rounded-full bg-muted/40">{task.currentState}</span>}
                           {task.impactLevel && <span className="px-2 py-0.5 rounded-full bg-muted/40">{task.impactLevel}</span>}
                         </div>
-                        <Button size="sm" variant={done ? "secondary" : "default"} className="h-7 text-xs rounded-full gap-1"
-                          onClick={() => setSimTask(task)}>
-                          <Play className="h-3 w-3" />{done ? "Retry" : "Practice"}
-                        </Button>
+                        <div className="flex items-center gap-2">
+                          <FutureTaskPreview
+                            taskName={task.name}
+                            jobTitle={result.jobTitle}
+                            company={result.company}
+                            aiExposureScore={aiScore}
+                            jobImpactScore={task.jobImpactScore}
+                            description={task.description}
+                            onStartSim={(_, tn) => setSimTask(task)}
+                          />
+                          <Button size="sm" variant={done ? "secondary" : "default"} className="h-7 text-xs rounded-full gap-1"
+                            onClick={() => setSimTask(task)}>
+                            <Play className="h-3 w-3" />{done ? "Retry" : "Practice"}
+                          </Button>
+                        </div>
                       </div>
                     </div>
                   </motion.div>
