@@ -233,7 +233,7 @@ function SkillTile({
   const tooltipContent = (
     <div className="space-y-1.5 max-w-[200px]">
       <div className="font-semibold text-xs">{skill.name}</div>
-      {level && <div className="text-[10px] text-muted-foreground">{level}{xp ? ` • ${xp} XP` : ""}</div>}
+      {level && <div className="text-xs text-muted-foreground">{level}{xp ? ` • ${xp} XP` : ""}</div>}
       <div className="space-y-1 pt-1 border-t border-border/50">
         <div className="flex items-center justify-between text-[10px]">
           <span>{DIMENSION_INFO.foundation.emoji} Foundation</span>
