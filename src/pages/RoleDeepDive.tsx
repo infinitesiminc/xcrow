@@ -21,16 +21,16 @@ import { RoleChat } from "@/components/role/RoleChat";
 import type { FuturePrediction } from "@/components/analysis/FutureTaskPreview";
 
 // ── Helpers ──────────────────────────────────────────────────────
-function ReadinessRing({ readiness, size = 56 }: { readiness: number; size?: number }) {
-  const r = (size - 8) / 2;
+function ReadinessRing({ readiness, size = 44 }: { readiness: number; size?: number }) {
+  const r = (size - 6) / 2;
   const circ = 2 * Math.PI * r;
   return (
     <div className="relative shrink-0" style={{ width: size, height: size }}>
       <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="transform -rotate-90">
-        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="hsl(var(--secondary))" strokeWidth="5" />
+        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="hsl(var(--secondary))" strokeWidth="4" />
         <motion.circle
           cx={size / 2} cy={size / 2} r={r} fill="none"
-          stroke="hsl(var(--primary))" strokeWidth="5" strokeLinecap="round"
+          stroke="hsl(var(--primary))" strokeWidth="4" strokeLinecap="round"
           strokeDasharray={circ}
           initial={{ strokeDashoffset: circ }}
           animate={{ strokeDashoffset: circ * (1 - readiness / 100) }}
@@ -38,8 +38,7 @@ function ReadinessRing({ readiness, size = 56 }: { readiness: number; size?: num
         />
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className="text-lg font-bold text-foreground tabular-nums">{readiness}%</span>
-        <span className="text-[7px] text-muted-foreground uppercase tracking-wider">Battle Ready</span>
+        <span className="text-sm font-bold text-foreground tabular-nums">{readiness}%</span>
       </div>
     </div>
   );
@@ -316,9 +315,8 @@ const RoleDeepDive = () => {
       <div className="flex-1 flex overflow-hidden">
         {/* LEFT — Quest Log */}
         <div className="w-80 shrink-0 border-r border-border flex flex-col overflow-hidden">
-          {/* Stats strip — Battle Readiness */}
-          <div className="shrink-0 p-3 border-b border-border/50 flex items-center gap-3">
-            <ReadinessRing readiness={readiness} size={56} />
+          <div className="shrink-0 px-3 py-2 border-b border-border/50 flex items-center gap-2.5">
+            <ReadinessRing readiness={readiness} size={40} />
             <div className="flex-1 space-y-1">
               <div className="flex items-center justify-between">
                 <span className="text-[8px] text-muted-foreground uppercase">Threat Level</span>
