@@ -73,6 +73,7 @@ const RoleDeepDive = () => {
   const [predictions, setPredictions] = useState<Record<string, FuturePrediction>>({});
   const [predictionsLoading, setPredictionsLoading] = useState(false);
   const [selectedTask, setSelectedTask] = useState<TaskAnalysis | null>(null);
+  const [jobId, setJobId] = useState<string | null>(null);
   const { user, openAuthModal } = useAuth();
 
   const completedCount = result ? result.tasks.filter(t => completedTasks.has(t.name)).length : 0;
@@ -155,19 +156,35 @@ const RoleDeepDive = () => {
             .eq("job_title_lower", jobTitle.toLowerCase())
             .eq("company_lower", (company || "").toLowerCase()).maybeSingle();
           if (cached?.result) {
-            const r = cached.result as unknown as JobAnalysisResult;
-            setResult(r); saveHistory(r); setLoading(false); return;
+            const r = cached.result as unknown as JobAnalysisResult & { jobId?: string };
+            if (r.jobId) setJobId(r.jobId);
+            setResult(r); saveHistory(r); setLoading(false);
+            // If no jobId in cache, try to resolve from jobs table
+            if (!r.jobId) {
+              resolveJobId(r.jobTitle, company);
+            }
+            return;
           }
         } catch (err) { console.error(err); }
       }
       try {
-        const aiResult = await analyzeJobWithAI(jobTitle, company, jdText || undefined, jdUrlParam || undefined);
+        const aiResult = await analyzeJobWithAI(jobTitle, company, jdText || undefined, jdUrlParam || undefined) as JobAnalysisResult & { jobId?: string };
+        if (aiResult.jobId) setJobId(aiResult.jobId);
         setResult(aiResult); saveHistory(aiResult);
       } catch (err) { setError("Unable to analyze this role right now."); console.error(err); }
       setLoading(false);
     };
     analyze();
   }, [jobTitle, company, hasJd, navigate, initialResult]);
+
+  // Resolve jobId from jobs table for older cached results
+  const resolveJobId = useCallback(async (title: string, comp: string) => {
+    try {
+      let q = supabase.from("jobs").select("id").ilike("title", title);
+      const { data } = await q.limit(1).maybeSingle();
+      if (data) setJobId(data.id);
+    } catch {}
+  }, []);
 
   // Auto-fetch predictions as soon as result is available
   const fetchAllPredictions = useCallback(async () => {
@@ -179,13 +196,13 @@ const RoleDeepDive = () => {
         jobImpactScore: t.jobImpactScore, description: t.description,
       }));
       const { data, error } = await supabase.functions.invoke("batch-predict-future", {
-        body: { tasks: taskPayload, jobTitle: result.jobTitle, company: result.company || undefined },
+        body: { tasks: taskPayload, jobTitle: result.jobTitle, company: result.company || undefined, jobId: jobId || undefined },
       });
       if (error) throw error;
       if (data?.predictions) setPredictions(data.predictions);
     } catch (err) { console.error("Batch prediction error:", err); }
     setPredictionsLoading(false);
-  }, [result]);
+  }, [result, jobId]);
 
   useEffect(() => {
     if (result && Object.keys(predictions).length === 0 && !predictionsLoading) {

@@ -481,9 +481,91 @@ serve(async (req) => {
       });
     }
 
-    // Store results back to DB if we had a match
+    // Store results back to DB — either update existing or create new structured rows
+    let resolvedJobId: string | null = matchedJob?.id || null;
+
     if (matchedJob) {
       await storeAnalysisResults(sb, matchedJob.id, analysis.summary);
+    } else if (jobTitle) {
+      // No matching job in DB — create structured rows for future queries
+      try {
+        // Find or create company
+        let companyId: string | null = null;
+        if (company) {
+          const { data: existingCompany } = await sb
+            .from("companies")
+            .select("id")
+            .ilike("name", company)
+            .maybeSingle();
+          companyId = existingCompany?.id || null;
+        }
+
+        const finalTitle = jobTitle || analysis.extractedJobTitle || "Unknown Role";
+        const slug = finalTitle.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+
+        // Check if job already exists with same title + company
+        let existingJobQuery = sb.from("jobs").select("id").eq("title", finalTitle);
+        if (companyId) existingJobQuery = existingJobQuery.eq("company_id", companyId);
+        else existingJobQuery = existingJobQuery.is("company_id", null);
+        const { data: existingJob } = await existingJobQuery.maybeSingle();
+
+        if (existingJob) {
+          resolvedJobId = existingJob.id;
+          await storeAnalysisResults(sb, existingJob.id, analysis.summary);
+        } else {
+          const { data: newJob, error: jobErr } = await sb.from("jobs").insert({
+            title: finalTitle,
+            company_id: companyId,
+            slug,
+            automation_risk_percent: analysis.summary?.automationRiskPercent || 0,
+            augmented_percent: analysis.summary?.augmentedPercent || 0,
+            new_skills_percent: analysis.summary?.newSkillsPercent || 0,
+          }).select("id").single();
+
+          if (jobErr) {
+            console.error("Failed to create job row:", jobErr);
+          } else if (newJob) {
+            resolvedJobId = newJob.id;
+            console.log("Created job row:", newJob.id, finalTitle);
+
+            // Insert task clusters
+            if (analysis.tasks?.length) {
+              const taskRows = analysis.tasks.map((t: any, i: number) => ({
+                job_id: newJob.id,
+                cluster_name: t.name,
+                description: t.description || null,
+                skill_names: t.relatedSkills || null,
+                sort_order: i,
+                ai_exposure_score: Math.min(Math.max(t.aiExposureScore ?? 50, 0), 100),
+                job_impact_score: Math.min(Math.max(t.jobImpactScore ?? 50, 0), 100),
+                priority: t.priority || "medium",
+                ai_state: t.currentState || "human_ai",
+                ai_trend: t.trend || "increasing_ai",
+                impact_level: t.impactLevel || "medium",
+              }));
+              const { error: tcErr } = await sb.from("job_task_clusters").insert(taskRows);
+              if (tcErr) console.error("Failed to insert task clusters:", tcErr);
+              else console.log("Inserted", taskRows.length, "task clusters");
+            }
+
+            // Insert skills
+            if (analysis.skills?.length) {
+              const skillRows = analysis.skills.map((s: any) => ({
+                job_id: newJob.id,
+                name: s.name,
+                category: s.category || null,
+                priority: s.priority || null,
+                description: s.description || null,
+              }));
+              const { error: skErr } = await sb.from("job_skills").insert(skillRows);
+              if (skErr) console.error("Failed to insert job skills:", skErr);
+              else console.log("Inserted", skillRows.length, "job skills");
+            }
+          }
+        }
+      } catch (e) {
+        console.error("Failed to normalize L1 data:", e);
+      }
     }
 
     const result: Record<string, unknown> = {
@@ -492,20 +574,20 @@ serve(async (req) => {
       summary: analysis.summary,
       tasks: analysis.tasks,
       skills: analysis.skills,
+      jobId: resolvedJobId,
     };
 
     // Add compensation data if extracted
     if (analysis.compensation && analysis.compensation.salaryMin) {
       result.compensation = analysis.compensation;
-      // Store salary to DB if we had a matched job
-      if (matchedJob) {
+      if (resolvedJobId) {
         await sb.from("jobs").update({
           salary_min: analysis.compensation.salaryMin,
           salary_max: analysis.compensation.salaryMax,
           salary_currency: analysis.compensation.salaryCurrency || "USD",
           salary_period: analysis.compensation.salaryPeriod || "annual",
           ...(analysis.compensation.equityText ? { equity_text: analysis.compensation.equityText } : {}),
-        }).eq("id", matchedJob.id);
+        }).eq("id", resolvedJobId);
       }
     }
 
