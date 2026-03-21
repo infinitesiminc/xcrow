@@ -79,6 +79,44 @@ export function TaskDetailPanel({
         )}
       </div>
 
+      {/* Skeleton while predictions load */}
+      {!prediction && predictionsLoading && (
+        <div className="space-y-3 mb-4 pb-4 border-b border-border/30 animate-pulse">
+          <div className="flex items-center gap-1.5 flex-wrap">
+            <Skeleton className="h-4 w-16 rounded-full" />
+            <Skeleton className="h-4 w-20 rounded-full" />
+            <Skeleton className="h-4 w-14 rounded-full" />
+          </div>
+          <div className="flex items-start gap-2">
+            <Skeleton className="h-3.5 w-3.5 rounded shrink-0" />
+            <div className="flex-1 space-y-1.5">
+              <Skeleton className="h-2.5 w-full rounded" />
+              <Skeleton className="h-2.5 w-4/5 rounded" />
+            </div>
+          </div>
+          <div className="flex items-start gap-2">
+            <Skeleton className="h-3.5 w-3.5 rounded shrink-0" />
+            <div className="flex-1 space-y-1.5">
+              <Skeleton className="h-2.5 w-full rounded" />
+              <Skeleton className="h-2.5 w-3/5 rounded" />
+            </div>
+          </div>
+          <h4 className="text-[10px] font-semibold text-muted-foreground/40 uppercase tracking-wider pt-2">
+            🗺️ Skills to Unlock
+          </h4>
+          <div className="flex gap-2.5">
+            {[...Array(2)].map((_, i) => (
+              <div key={i} className="flex-none w-40 rounded-xl border border-border/30 p-3.5 space-y-2">
+                <Skeleton className="h-6 w-6 rounded-md" />
+                <Skeleton className="h-3 w-3/4 rounded" />
+                <Skeleton className="h-2 w-full rounded" />
+                <Skeleton className="h-2 w-2/3 rounded" />
+              </div>
+            ))}
+          </div>
+        </div>
+      )
+
       {/* Future prediction details */}
       {prediction && (
         <div className="space-y-3 mb-4 pb-4 border-b border-border/30">
