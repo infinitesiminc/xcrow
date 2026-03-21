@@ -1590,6 +1590,18 @@ export type Database = {
           user_id: string
         }[]
       }
+      get_skill_drop_matches: {
+        Args: { _limit?: number; _skill_id: string }
+        Returns: {
+          ai_exposure_score: number
+          cluster_name: string
+          company_name: string
+          job_id: string
+          job_title: string
+          matched_keywords: string[]
+          skill_names: string[]
+        }[]
+      }
       get_workspace_progress: {
         Args: { p_workspace_id: string }
         Returns: {
