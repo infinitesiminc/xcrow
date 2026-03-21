@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import SimulatorModal from "@/components/SimulatorModal";
 import { Button } from "@/components/ui/button";
+import { FutureTaskPreview } from "@/components/analysis/FutureTaskPreview";
 import type { RoleResult } from "@/components/InlineRoleCarousel";
 import type { EdgeContext } from "@/components/HumanEdgesCard";
 
