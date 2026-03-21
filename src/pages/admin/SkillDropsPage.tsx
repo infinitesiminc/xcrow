@@ -105,6 +105,9 @@ export default function SkillDropsPage() {
 
   const [suggestions, setSuggestions] = useState<DiscoverySuggestion[]>([]);
   const [discovering, setDiscovering] = useState(false);
+
+  // Create form
+  const [form, setForm] = useState({
     title: "",
     description: "",
     rarity: "rare",
