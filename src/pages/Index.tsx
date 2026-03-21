@@ -19,6 +19,7 @@ import TerritoryOverlay from "@/components/territory/TerritoryOverlay";
 import CompactHUD from "@/components/territory/CompactHUD";
 import MyRolesPanel from "@/components/territory/MyRolesPanel";
 import CastleNode from "@/components/territory/CastleNode";
+import QuestBoard from "@/components/territory/QuestBoard";
 import { getCastleState } from "@/lib/castle-levels";
 import { useSkills, type DbSkill } from "@/hooks/use-skills";
 import {
