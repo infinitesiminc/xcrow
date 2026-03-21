@@ -44,6 +44,20 @@ function ReadinessRing({ readiness, size = 44 }: { readiness: number; size?: num
   );
 }
 
+/** Injects role deep dive context into the unified chat */
+function RoleDeepDiveViewContext({ jobTitle, company, completedCount, predsSummary }: {
+  jobTitle: string; company?: string; completedCount: number; predsSummary: string;
+}) {
+  useChatViewContext({
+    page: "role-deep-dive",
+    jobTitle,
+    company: company || undefined,
+    completedCount,
+    predictionsSummary: predsSummary,
+  }, [jobTitle, company, completedCount, predsSummary]);
+  return null;
+}
+
 // ── Page ─────────────────────────────────────────────────────────
 const RoleDeepDive = () => {
   const { jobTitle: paramTitle } = useParams<{ jobTitle: string }>();
