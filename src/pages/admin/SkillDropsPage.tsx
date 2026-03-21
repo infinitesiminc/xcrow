@@ -564,10 +564,10 @@ export default function SkillDropsPage() {
             <CardHeader className="pb-3">
               <CardTitle className="text-base flex items-center gap-2">
                 <TrendingUp className="h-4 w-4 text-primary" />
-                Market Skill Demand — Raw Data
+                Future Skills Demand — Level 2
               </CardTitle>
               <p className="text-xs text-muted-foreground">
-                Top skills by demand across analyzed job clusters. Click to create an event from any skill.
+                Top uncatalogued future skills from AI predictions across analyzed roles. Click to create an event.
               </p>
             </CardHeader>
             <CardContent>
