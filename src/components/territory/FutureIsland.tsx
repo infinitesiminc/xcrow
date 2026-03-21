@@ -13,9 +13,10 @@ interface FutureIslandProps {
   skillLookup: Map<string, FutureSkill>;
   isFocused?: boolean;
   onIslandClick?: (category: FutureSkillCategory, cx: number, cy: number) => void;
+  onSkillClick?: (skill: FutureSkill) => void;
 }
 
-export default function FutureIsland({ island, skillLookup, isFocused, onIslandClick }: FutureIslandProps) {
+export default function FutureIsland({ island, skillLookup, isFocused, onIslandClick, onSkillClick }: FutureIslandProps) {
   const { cx, cy, radius, theme, nodes, expandedNodes, category, skillCount } = island;
   const activeNodes = isFocused ? expandedNodes : nodes;
   const visibleCount = activeNodes.length;
@@ -90,6 +91,10 @@ export default function FutureIsland({ island, skillLookup, isFocused, onIslandC
                 transition={{ duration: 0.4, delay: 0.1 }}
                 style={{ transformOrigin: `${node.x}px ${node.y}px` }}
                 className="cursor-pointer"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onSkillClick?.(skill);
+                }}
               >
                 {/* Glow ring for high-demand */}
                 {skill.demandCount >= 8 && (
