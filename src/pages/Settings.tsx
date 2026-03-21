@@ -72,6 +72,7 @@ export default function Settings() {
   const setSection = (s: SectionKey) => setSearchParams({ section: s }, { replace: true });
 
   const [displayName, setDisplayName] = useState("");
+  const [username, setUsername] = useState("");
   const [jobTitle, setJobTitle] = useState("");
   const [company, setCompany] = useState("");
   const [linkedinUrl, setLinkedinUrl] = useState("");
