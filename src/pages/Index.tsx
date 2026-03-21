@@ -161,6 +161,8 @@ const Index = () => {
   const [externalPrompt, setExternalPrompt] = useState<string | null>(null);
   const [activeEdge, setActiveEdge] = useState<EdgeContext | null>(null);
   const [rightTab, setRightTab] = useState<RightTab>("territory");
+  const [chatOpen, setChatOpen] = useState(true);
+  const [rightPanelTab, setRightPanelTab] = useState<"chat" | "table" | "roles">("chat");
   const [lastSimResult, setLastSimResult] = useState<ViewContext["lastSimResult"]>(null);
   const [myRolesTab, setMyRolesTab] = useState<"saved" | "practiced">("saved");
   const batchCounter = useRef(0);
@@ -397,214 +399,202 @@ const Index = () => {
   /* ── Desktop ──────────────────────────────────── */
 
   return (
-    <div className="h-[calc(100vh-3.5rem)] flex flex-col">
-      {displaySkills.length > 0 && (
-        <CompactHUD
-          skills={displaySkills}
-          targetSkillIds={targetSkillIds}
-          userName={userName}
-        />
-      )}
-
-      <div className="flex-1 flex min-h-0">
-        {/* ── Left: Chat ─────────────────────────── */}
-        <div className="w-1/2 flex flex-col border-r border-border">
-          <div className="flex-1 flex flex-col items-center px-5 pt-8 pb-4 overflow-y-auto">
-            <AnimatePresence mode="wait">
-              {!hasInteracted && (
-                <motion.div
-                  key="greeting"
-                  initial={{ opacity: 0, y: 12 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -20, transition: { duration: 0.3 } }}
-                  className="text-center mb-8 shrink-0"
-                >
-                  <h1 className="text-3xl md:text-4xl font-display font-bold text-foreground leading-[1.1]">
-                    {isSignedIn
-                      ? `${greeting}${userName ? `, ${userName}` : ""} ⚔️`
-                      : "Level up your career"}
-                  </h1>
-                  <p className="text-sm text-muted-foreground mt-2 max-w-sm mx-auto">
-                    {isSignedIn
-                      ? "Your AI career coach is ready. Explore kingdoms and claim new territory."
-                      : "Explore any career kingdom — watch your territory light up as you conquer quests."}
-                  </p>
-                </motion.div>
-              )}
-            </AnimatePresence>
-
-            {!hasInteracted && user && (
-              <div className="w-full max-w-xl mb-4 space-y-4">
-                
-                <QuestBoard />
-                <AdaptiveQueue userId={user.id} />
-              </div>
-            )}
-            <div className={`w-full max-w-xl ${hasInteracted ? "flex-1 flex flex-col min-h-0" : ""}`}>
-              <HomepageChat
-                onRolesFound={handleRolesFound}
-                onRoleSelect={handleRoleSelect}
-                onChatStart={handleChatStart}
-                hasInteracted={hasInteracted}
-                selectedJobId={selectedRole?.jobId}
-                inlineCards
-                externalPrompt={externalPrompt}
-                onExternalPromptConsumed={() => setExternalPrompt(null)}
-                viewContext={viewContext}
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* ── Right: Adaptive panel ─────────────── */}
-        <div className="w-1/2 flex flex-col bg-muted/5">
-          {/* Tab bar + role carousel */}
-          <div className="shrink-0 border-b border-border">
-            {/* Tab switcher */}
-            {isSignedIn && (
-              <div className="flex items-center gap-1 px-4 pt-3 pb-0">
-                <button
-                  onClick={() => setRightTab("territory")}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-t-lg text-xs font-medium transition-colors border-b-2 ${
-                    rightTab === "territory"
-                      ? "border-primary text-foreground bg-background/50"
-                      : "border-transparent text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  <Map className="h-3 w-3" />
-                  World Map
-                </button>
-                <button
-                  onClick={() => setRightTab("table")}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-t-lg text-xs font-medium transition-colors border-b-2 ${
-                    rightTab === "table"
-                      ? "border-primary text-foreground bg-background/50"
-                      : "border-transparent text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  <ScrollText className="h-3 w-3" />
-                  Skill Forge
-                </button>
-                <button
-                  onClick={() => setRightTab("roles")}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-t-lg text-xs font-medium transition-colors border-b-2 ${
-                    rightTab === "roles"
-                      ? "border-primary text-foreground bg-background/50"
-                      : "border-transparent text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  <Swords className="h-3 w-3" />
-                  Kingdoms
-                </button>
-              </div>
-            )}
-
-            {/* Role carousel removed — cards now inline in chat */}
-          </div>
-
-          {/* Main area */}
-          <div className="flex-1 overflow-hidden">
-            <AnimatePresence mode="wait">
-              {/* Selected role preview (inline) */}
-              {selectedRole && rightTab === "territory" ? (
-                <motion.div
-                  key={selectedRole.jobId}
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.2 }}
-                  className="h-full relative"
-                >
-                  <RolePreviewPanel
-                    role={selectedRole}
-                    onClose={() => setSelectedRole(null)}
-                    edgeContext={activeEdge}
-                  />
-                  {/* Expand to full screen button */}
-                  <button
-                    onClick={() => setFullScreenRole(selectedRole)}
-                    className="absolute top-3 right-12 p-1.5 rounded-md bg-background/80 border border-border/50 hover:bg-muted/80 text-muted-foreground hover:text-foreground transition-all active:scale-[0.95] z-10"
-                    title="Expand to full screen"
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <polyline points="15 3 21 3 21 9" /><polyline points="9 21 3 21 3 15" />
-                      <line x1="21" y1="3" x2="14" y2="10" /><line x1="3" y1="21" x2="10" y2="14" />
-                    </svg>
-                  </button>
-                </motion.div>
-              ) : rightTab === "roles" && isSignedIn ? (
-                <motion.div
-                  key="my-roles"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.2 }}
-                  className="h-full"
-                >
-                  <MyRolesPanel
-                    onSelectRole={(role) => {
-                      setSelectedRole(role);
-                      setRightTab("territory");
-                    }}
-                    onAskChat={handleRolesAskChat}
-                    onTabChange={setMyRolesTab}
-                  />
-                </motion.div>
-              ) : rightTab === "table" ? (
-                <motion.div
-                  key="table"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ duration: 0.3 }}
-                  className="h-full overflow-hidden"
-                >
-                  <FutureSkillsTable skills={futureSkills} />
-                </motion.div>
-              ) : (
-                <motion.div
-                  key="territory"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ duration: 0.4 }}
-                  className="h-full overflow-hidden"
-                >
-                  <FutureTerritoryMap skills={futureSkills} />
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-        </div>
+    <div className="h-[calc(100vh-3.5rem)] relative overflow-hidden">
+      {/* ── Full-screen Territory Map (background) ── */}
+      <div className="absolute inset-0 z-0">
+        <FutureTerritoryMap skills={futureSkills} />
       </div>
 
-      {/* ── Full-screen role deep dive ────────── */}
+      {/* ── HUD overlay (top) ── */}
+      {displaySkills.length > 0 && (
+        <div className="absolute top-0 left-0 right-0 z-10 pointer-events-none">
+          <div className="pointer-events-auto">
+            <CompactHUD
+              skills={displaySkills}
+              targetSkillIds={targetSkillIds}
+              userName={userName}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* ── Floating tab bar (top-right) ── */}
+      <div className="absolute top-14 right-4 z-20 flex items-center gap-1 bg-card/80 backdrop-blur-md border border-border/50 rounded-lg p-1 shadow-lg">
+        <button
+          onClick={() => { setRightPanelTab("chat"); setChatOpen(true); }}
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+            rightPanelTab === "chat" && chatOpen
+              ? "bg-primary/10 text-primary"
+              : "text-muted-foreground hover:text-foreground"
+          }`}
+        >
+          <Sparkles className="h-3 w-3" />
+          Coach
+        </button>
+        <button
+          onClick={() => { setRightPanelTab("table"); setChatOpen(true); }}
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+            rightPanelTab === "table" && chatOpen
+              ? "bg-primary/10 text-primary"
+              : "text-muted-foreground hover:text-foreground"
+          }`}
+        >
+          <ScrollText className="h-3 w-3" />
+          Skill Forge
+        </button>
+        {isSignedIn && (
+          <button
+            onClick={() => { setRightPanelTab("roles"); setChatOpen(true); }}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+              rightPanelTab === "roles" && chatOpen
+                ? "bg-primary/10 text-primary"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <Swords className="h-3 w-3" />
+            Kingdoms
+          </button>
+        )}
+      </div>
+
+      {/* ── Floating side panel (right) ── */}
       <AnimatePresence>
-        {fullScreenRole && (
+        {chatOpen && (
           <motion.div
-            key="fullscreen-role"
+            key="side-panel"
+            initial={{ x: "100%", opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            exit={{ x: "100%", opacity: 0 }}
+            transition={{ type: "spring", damping: 28, stiffness: 300 }}
+            className="absolute top-24 right-4 bottom-4 w-[420px] z-20 flex flex-col bg-card/90 backdrop-blur-xl border border-border/50 rounded-xl shadow-2xl overflow-hidden"
+          >
+            {/* Close button */}
+            <button
+              onClick={() => setChatOpen(false)}
+              className="absolute top-2 right-2 z-10 p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
+            >
+              <X className="h-4 w-4" />
+            </button>
+
+            {rightPanelTab === "chat" ? (
+              <div className="flex-1 flex flex-col min-h-0 p-4">
+                <AnimatePresence mode="wait">
+                  {!hasInteracted && (
+                    <motion.div
+                      key="greeting"
+                      initial={{ opacity: 0, y: 12 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -20, transition: { duration: 0.3 } }}
+                      className="text-center mb-4 shrink-0"
+                    >
+                      <h1 className="text-xl font-display font-bold text-foreground leading-tight">
+                        {isSignedIn
+                          ? `${greeting}${userName ? `, ${userName}` : ""} ⚔️`
+                          : "Level up your career"}
+                      </h1>
+                      <p className="text-xs text-muted-foreground mt-1.5">
+                        {isSignedIn
+                          ? "Your AI career coach is ready"
+                          : "Explore kingdoms, practice quests, claim territory"}
+                      </p>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+                {!hasInteracted && !user && <SkillSuggestionCards />}
+                {!hasInteracted && user && (
+                  <div className="space-y-3 mb-3">
+                    <QuestBoard />
+                    <AdaptiveQueue userId={user.id} />
+                  </div>
+                )}
+
+                <div className={`${hasInteracted ? "flex-1 flex flex-col min-h-0" : ""}`}>
+                  <HomepageChat
+                    onRolesFound={handleRolesFound}
+                    onRoleSelect={handleRoleSelect}
+                    onChatStart={handleChatStart}
+                    hasInteracted={hasInteracted}
+                    selectedJobId={selectedRole?.jobId}
+                    inlineCards
+                    externalPrompt={externalPrompt}
+                    onExternalPromptConsumed={() => setExternalPrompt(null)}
+                    viewContext={viewContext}
+                  />
+                </div>
+              </div>
+            ) : rightPanelTab === "table" ? (
+              <div className="flex-1 overflow-hidden">
+                <FutureSkillsTable skills={futureSkills} />
+              </div>
+            ) : rightPanelTab === "roles" && isSignedIn ? (
+              <div className="flex-1 overflow-hidden">
+                <MyRolesPanel
+                  onSelectRole={(role) => {
+                    setSelectedRole(role);
+                    setRightPanelTab("chat");
+                  }}
+                  onAskChat={handleRolesAskChat}
+                  onTabChange={setMyRolesTab}
+                />
+              </div>
+            ) : null}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ── Reopen panel button (when closed) ── */}
+      <AnimatePresence>
+        {!chatOpen && (
+          <motion.button
+            key="reopen"
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.9 }}
+            onClick={() => setChatOpen(true)}
+            className="fixed bottom-4 right-4 z-20 flex items-center gap-2 px-4 py-2.5 rounded-lg bg-card/90 backdrop-blur-md border border-border/50 text-sm font-medium text-foreground shadow-lg hover:shadow-xl transition-all active:scale-[0.97]"
+          >
+            <Sparkles className="h-4 w-4 text-primary" />
+            Open Coach
+          </motion.button>
+        )}
+      </AnimatePresence>
+
+      {/* ── Quest board (floating bottom-left) ── */}
+      {isSignedIn && !hasInteracted && (
+        <div className="absolute bottom-4 left-4 z-10 w-72">
+          {/* Quest summary could go here */}
+        </div>
+      )}
+
+      {/* ── Role preview overlay ── */}
+      <AnimatePresence>
+        {(selectedRole || fullScreenRole) && (
+          <motion.div
+            key="role-preview"
             initial={{ opacity: 0, scale: 0.97 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.97 }}
             transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
             className="fixed inset-0 z-50 bg-background"
           >
-            {/* Close bar */}
             <div className="flex items-center justify-between px-5 py-3 border-b border-border bg-card/80 backdrop-blur-sm">
               <div className="flex items-center gap-2">
                 <div
-                  className="w-7 h-7 rounded-md flex items-center justify-center text-[10px] font-bold text-white"
-                  style={{ background: `hsl(${(fullScreenRole.title.length * 47) % 360}, 55%, 45%)` }}
+                  className="w-7 h-7 rounded-md flex items-center justify-center text-[11px] font-bold text-white"
+                  style={{ background: `hsl(${((fullScreenRole || selectedRole)!.title.length * 47) % 360}, 55%, 45%)` }}
                 >
-                  {(fullScreenRole.company || fullScreenRole.title)[0]?.toUpperCase()}
+                  {((fullScreenRole || selectedRole)!.company || (fullScreenRole || selectedRole)!.title)[0]?.toUpperCase()}
                 </div>
                 <div>
-                  <h2 className="text-sm font-semibold text-foreground leading-tight">{fullScreenRole.title}</h2>
-                  {fullScreenRole.company && (
-                    <p className="text-[11px] text-muted-foreground">{fullScreenRole.company}</p>
+                  <h2 className="text-sm font-semibold text-foreground leading-tight">{(fullScreenRole || selectedRole)!.title}</h2>
+                  {(fullScreenRole || selectedRole)!.company && (
+                    <p className="text-xs text-muted-foreground">{(fullScreenRole || selectedRole)!.company}</p>
                   )}
                 </div>
               </div>
               <button
-                onClick={() => setFullScreenRole(null)}
+                onClick={() => { setSelectedRole(null); setFullScreenRole(null); }}
                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all active:scale-[0.97]"
               >
                 <X className="h-3.5 w-3.5" />
@@ -613,8 +603,8 @@ const Index = () => {
             </div>
             <div className="h-[calc(100%-3.25rem)] overflow-hidden">
               <RolePreviewPanel
-                role={fullScreenRole}
-                onClose={() => setFullScreenRole(null)}
+                role={(fullScreenRole || selectedRole)!}
+                onClose={() => { setSelectedRole(null); setFullScreenRole(null); }}
                 edgeContext={activeEdge}
               />
             </div>
@@ -622,7 +612,7 @@ const Index = () => {
         )}
       </AnimatePresence>
 
-      {/* Territory overlay */}
+      {/* Territory overlay (personal skills map) */}
       <TerritoryOverlay
         open={territoryOpen}
         onClose={() => {
@@ -636,14 +626,14 @@ const Index = () => {
         xpGain={territoryXpGain}
       />
 
-      {/* Territory button (floating) */}
+      {/* Personal territory button */}
       {isSignedIn && !territoryOpen && (
         <button
           onClick={() => setTerritoryOpen(true)}
-          className="fixed bottom-4 right-4 z-40 flex items-center gap-1.5 px-3 py-2 rounded-lg bg-card border border-border/50 text-xs font-medium text-muted-foreground hover:text-foreground shadow-lg hover:shadow-xl transition-all active:scale-[0.95]"
+          className="fixed bottom-4 left-4 z-20 flex items-center gap-1.5 px-3 py-2 rounded-lg bg-card/90 backdrop-blur-md border border-border/50 text-xs font-medium text-muted-foreground hover:text-foreground shadow-lg hover:shadow-xl transition-all active:scale-[0.95]"
         >
           <Map className="h-3.5 w-3.5" />
-          🏰 Territory
+          🏰 My Territory
         </button>
       )}
     </div>
