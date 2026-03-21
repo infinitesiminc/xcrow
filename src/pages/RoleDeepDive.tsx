@@ -507,12 +507,6 @@ const RoleDeepDive = () => {
                         </p>
                       </div>
 
-                      {predictionsLoading && uniqueSkills.length === 0 && (
-                        <div className="flex items-center gap-2 text-sm text-muted-foreground py-8">
-                          <Cpu className="h-4 w-4 animate-pulse text-primary" />
-                          🔮 Scanning for hidden skills…
-                        </div>
-                      )}
 
                        <div className="grid grid-cols-2 gap-3 overflow-y-auto pb-4">
                         {uniqueSkills.map((skill, i) => (
