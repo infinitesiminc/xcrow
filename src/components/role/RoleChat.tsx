@@ -45,18 +45,99 @@ export function RoleChat({ jobTitle, company, timeHorizon, completedCount, predi
   const [loading, setLoading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
+  const streamQueueRef = useRef("");
+  const streamTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const streamMessageIndexRef = useRef<number | null>(null);
+  const streamEndedRef = useRef(false);
+  const streamFullTextRef = useRef("");
+
   useEffect(() => {
     if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
   }, [messages, open]);
 
+  useEffect(() => {
+    return () => {
+      if (streamTimerRef.current) clearTimeout(streamTimerRef.current);
+    };
+  }, []);
+
+  const finalizeStream = useCallback(() => {
+    const idx = streamMessageIndexRef.current;
+    if (idx == null) return;
+
+    setMessages((prev) => {
+      if (!prev[idx]) return prev;
+      const next = [...prev];
+      next[idx] = {
+        ...next[idx],
+        content: next[idx].content || streamFullTextRef.current || "I couldn't generate a response.",
+        streaming: false,
+      };
+      return next;
+    });
+
+    streamMessageIndexRef.current = null;
+    streamQueueRef.current = "";
+    streamFullTextRef.current = "";
+    streamEndedRef.current = false;
+  }, []);
+
+  const startTypewriter = useCallback(() => {
+    if (streamTimerRef.current) return;
+
+    const tick = () => {
+      const idx = streamMessageIndexRef.current;
+      if (idx == null) {
+        streamTimerRef.current = null;
+        return;
+      }
+
+      if (streamQueueRef.current.length > 0) {
+        const charsPerTick = 3;
+        const slice = streamQueueRef.current.slice(0, charsPerTick);
+        streamQueueRef.current = streamQueueRef.current.slice(charsPerTick);
+
+        setMessages((prev) => {
+          if (!prev[idx]) return prev;
+          const next = [...prev];
+          next[idx] = {
+            ...next[idx],
+            content: (next[idx].content || "") + slice,
+          };
+          return next;
+        });
+      }
+
+      if (streamQueueRef.current.length === 0 && streamEndedRef.current) {
+        finalizeStream();
+        streamTimerRef.current = null;
+        return;
+      }
+
+      streamTimerRef.current = setTimeout(tick, 18);
+    };
+
+    streamTimerRef.current = setTimeout(tick, 18);
+  }, [finalizeStream]);
+
   const sendMessage = useCallback(async () => {
     const text = input.trim();
     if (!text || loading) return;
+
     const userMsg: Message = { role: "user", content: text };
     const newMessages = [...messages, userMsg];
     setMessages(newMessages);
     setInput("");
     setLoading(true);
+
+    if (streamTimerRef.current) {
+      clearTimeout(streamTimerRef.current);
+      streamTimerRef.current = null;
+    }
+    streamMessageIndexRef.current = null;
+    streamQueueRef.current = "";
+    streamFullTextRef.current = "";
+    streamEndedRef.current = false;
 
     try {
       const response = await fetch(
@@ -68,11 +149,14 @@ export function RoleChat({ jobTitle, company, timeHorizon, completedCount, predi
             Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
           },
           body: JSON.stringify({
-            messages: newMessages.map(m => ({ role: m.role, content: m.content })),
+            messages: newMessages.map((m) => ({ role: m.role, content: m.content })),
             viewContext: {
-              page: "role-deep-dive", jobTitle, company,
+              page: "role-deep-dive",
+              jobTitle,
+              company,
               timeHorizon: ["Today", "2-3 Years", "5+ Years"][timeHorizon],
-              completedCount, predictionsSummary,
+              completedCount,
+              predictionsSummary,
             },
           }),
         }
@@ -82,9 +166,11 @@ export function RoleChat({ jobTitle, company, timeHorizon, completedCount, predi
 
       const contentType = response.headers.get("content-type") || "";
       if (contentType.includes("text/event-stream") && response.body) {
-        let assistantText = "";
-        // Add empty streaming message
-        setMessages(prev => [...prev, { role: "assistant", content: "", streaming: true }]);
+        setMessages((prev) => {
+          const idx = prev.length;
+          streamMessageIndexRef.current = idx;
+          return [...prev, { role: "assistant", content: "", streaming: true }];
+        });
 
         const reader = response.body.getReader();
         const decoder = new TextDecoder();
@@ -93,52 +179,55 @@ export function RoleChat({ jobTitle, company, timeHorizon, completedCount, predi
         while (true) {
           const { done, value } = await reader.read();
           if (done) break;
-          buffer += decoder.decode(value, { stream: true });
 
-          let newlineIdx: number;
-          while ((newlineIdx = buffer.indexOf("\n")) !== -1) {
-            let line = buffer.slice(0, newlineIdx);
-            buffer = buffer.slice(newlineIdx + 1);
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split("\n");
+          buffer = lines.pop() || "";
+
+          for (let line of lines) {
             if (line.endsWith("\r")) line = line.slice(0, -1);
-            if (!line.startsWith("data: ")) continue;
-            const jsonStr = line.slice(6).trim();
-            if (jsonStr === "[DONE]") break;
+            if (!line.startsWith("data:")) continue;
+
+            const jsonStr = line.slice(5).trim();
+            if (!jsonStr || jsonStr === "[DONE]") continue;
+
             try {
               const parsed = JSON.parse(jsonStr);
               const content = parsed.choices?.[0]?.delta?.content;
-              if (content) {
-                assistantText += content;
-                const snapshot = assistantText;
-                setMessages(prev =>
-                  prev.map((m, i) =>
-                    i === prev.length - 1 ? { ...m, content: snapshot } : m
-                  )
-                );
-              }
-            } catch { /* partial JSON, skip */ }
+              if (!content) continue;
+
+              streamFullTextRef.current += content;
+              streamQueueRef.current += content;
+              startTypewriter();
+            } catch {
+              // Ignore malformed/partial SSE chunks
+            }
           }
         }
 
-        // Mark streaming complete
-        setMessages(prev =>
-          prev.map((m, i) =>
-            i === prev.length - 1
-              ? { ...m, content: assistantText || "I couldn't generate a response.", streaming: false }
-              : m
-          )
-        );
+        streamEndedRef.current = true;
+        startTypewriter();
       } else {
         const data = await response.json();
-        setMessages(prev => [
+        setMessages((prev) => [
           ...prev,
           { role: "assistant", content: data?.reply || data?.content || "I couldn't generate a response." },
         ]);
       }
     } catch {
-      setMessages(prev => [...prev, { role: "assistant", content: "Sorry, something went wrong." }]);
+      if (streamTimerRef.current) {
+        clearTimeout(streamTimerRef.current);
+        streamTimerRef.current = null;
+      }
+      streamMessageIndexRef.current = null;
+      streamQueueRef.current = "";
+      streamFullTextRef.current = "";
+      streamEndedRef.current = false;
+      setMessages((prev) => [...prev, { role: "assistant", content: "Sorry, something went wrong." }]);
     }
+
     setLoading(false);
-  }, [input, loading, messages, jobTitle, company, timeHorizon, completedCount, predictionsSummary]);
+  }, [input, loading, messages, jobTitle, company, timeHorizon, completedCount, predictionsSummary, startTypewriter]);
 
   return (
     <>
