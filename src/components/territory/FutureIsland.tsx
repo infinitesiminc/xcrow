@@ -91,6 +91,10 @@ export default function FutureIsland({ island, skillLookup, isFocused, onIslandC
                 transition={{ duration: 0.4, delay: 0.1 }}
                 style={{ transformOrigin: `${node.x}px ${node.y}px` }}
                 className="cursor-pointer"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onSkillClick?.(skill);
+                }}
               >
                 {/* Glow ring for high-demand */}
                 {skill.demandCount >= 8 && (
