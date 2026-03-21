@@ -195,8 +195,8 @@ export default function PublicProfile() {
           {/* Level bar */}
           <div className="w-full max-w-xs space-y-1">
             <div className="flex items-center justify-between text-xs">
-              <span className="text-muted-foreground">Tier {level.tier}</span>
-              <span className="font-medium text-primary">{level.label}</span>
+              <span className="text-muted-foreground">Level {levelInfo.index + 1}</span>
+              <span className="font-medium text-primary">{levelInfo.name}</span>
             </div>
             <Progress value={lvlProgress} className="h-2" />
           </div>
