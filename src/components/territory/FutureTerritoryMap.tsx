@@ -96,12 +96,13 @@ export default function FutureTerritoryMap({ skills }: FutureTerritoryMapProps) 
   const nodePositions = useMemo(() => {
     const m = new Map<string, { x: number; y: number }>();
     for (const island of layout) {
-      for (const node of island.nodes) {
+      const activeNodes = focusedIsland === island.category ? island.expandedNodes : island.nodes;
+      for (const node of activeNodes) {
         m.set(node.skillId, { x: node.x, y: node.y });
       }
     }
     return m;
-  }, [layout]);
+  }, [layout, focusedIsland]);
 
   const skillLookup = useMemo(() => new Map(skills.map(s => [s.id, s])), [skills]);
 

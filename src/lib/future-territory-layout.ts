@@ -18,6 +18,7 @@ export interface FutureIslandLayout {
   cy: number;
   radius: number;
   nodes: FutureNodePosition[];
+  expandedNodes: FutureNodePosition[];
   theme: { emoji: string; terrain: string; baseHue: number };
   skillCount: number;
 }
@@ -53,8 +54,10 @@ function positionNodes(
   cx: number,
   cy: number,
   skills: FutureSkill[],
+  maxCount: number,
+  baseRadius?: number,
 ): FutureNodePosition[] {
-  const catSkills = skills.slice(0, MAX_PER_ISLAND);
+  const catSkills = skills.slice(0, maxCount);
   const count = catSkills.length;
   if (count === 0) return [];
   if (count === 1) return [{ x: cx, y: cy, skillId: catSkills[0].id }];
@@ -62,8 +65,7 @@ function positionNodes(
   const positions: FutureNodePosition[] = [];
 
   if (count <= 4) {
-    // Single ring
-    const r = 70;
+    const r = baseRadius ?? 70;
     for (let i = 0; i < count; i++) {
       const angle = (2 * Math.PI * i) / count - Math.PI / 2;
       positions.push({
@@ -72,12 +74,11 @@ function positionNodes(
         skillId: catSkills[i].id,
       });
     }
-  } else {
-    // Inner ring (3-4) + outer ring (rest)
+  } else if (count <= 8) {
     const inner = Math.min(4, Math.ceil(count / 2));
     const outer = count - inner;
-    const r1 = 55;
-    const r2 = 100;
+    const r1 = baseRadius ? baseRadius * 0.55 : 55;
+    const r2 = baseRadius ?? 100;
     for (let i = 0; i < inner; i++) {
       const angle = (2 * Math.PI * i) / inner - Math.PI / 2;
       positions.push({
@@ -94,6 +95,39 @@ function positionNodes(
         skillId: catSkills[inner + i].id,
       });
     }
+  } else {
+    // 3-ring layout for expanded view
+    const ring1Count = Math.min(5, Math.ceil(count / 3));
+    const ring2Count = Math.min(8, Math.ceil((count - ring1Count) / 2));
+    const ring3Count = count - ring1Count - ring2Count;
+    const r1 = baseRadius ? baseRadius * 0.35 : 50;
+    const r2 = baseRadius ? baseRadius * 0.65 : 100;
+    const r3 = baseRadius ?? 150;
+
+    for (let i = 0; i < ring1Count; i++) {
+      const angle = (2 * Math.PI * i) / ring1Count - Math.PI / 2;
+      positions.push({
+        x: Math.round(cx + r1 * Math.cos(angle)),
+        y: Math.round(cy + r1 * Math.sin(angle)),
+        skillId: catSkills[i].id,
+      });
+    }
+    for (let i = 0; i < ring2Count; i++) {
+      const angle = (2 * Math.PI * i) / ring2Count - Math.PI / 2 + Math.PI / ring2Count;
+      positions.push({
+        x: Math.round(cx + r2 * Math.cos(angle)),
+        y: Math.round(cy + r2 * Math.sin(angle)),
+        skillId: catSkills[ring1Count + i].id,
+      });
+    }
+    for (let i = 0; i < ring3Count; i++) {
+      const angle = (2 * Math.PI * i) / ring3Count - Math.PI / 2;
+      positions.push({
+        x: Math.round(cx + r3 * Math.cos(angle)),
+        y: Math.round(cy + r3 * Math.sin(angle)),
+        skillId: catSkills[ring1Count + ring2Count + i].id,
+      });
+    }
   }
 
   return positions;
@@ -104,14 +138,14 @@ export function buildFutureMapLayout(skills: FutureSkill[]): FutureIslandLayout[
     const center = ISLAND_CENTERS[cat];
     const catSkills = skills
       .filter(s => s.category === cat)
-      .sort((a, b) => b.demandCount - a.demandCount); // top demand first
-    const visibleCount = Math.min(catSkills.length, MAX_PER_ISLAND);
+      .sort((a, b) => b.demandCount - a.demandCount);
     return {
       category: cat,
       cx: center.cx,
       cy: center.cy,
       radius: 120,
-      nodes: positionNodes(center.cx, center.cy, catSkills),
+      nodes: positionNodes(center.cx, center.cy, catSkills, MAX_PER_ISLAND),
+      expandedNodes: positionNodes(center.cx, center.cy, catSkills, catSkills.length, 180),
       theme: FUTURE_CATEGORY_META[cat],
       skillCount: catSkills.length,
     };
