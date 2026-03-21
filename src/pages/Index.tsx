@@ -264,6 +264,8 @@ const Index = () => {
   const greeting = getGreeting();
   const userName = profile?.displayName?.split(" ")[0];
   const isSignedIn = !!user;
+  const showOnboarding = isSignedIn && profile && !profile.onboardingCompleted;
+  const [onboardingDismissed, setOnboardingDismissed] = useState(false);
 
   // Build live view context for AI chat
   const viewContext = useMemo<ViewContext>(() => ({
