@@ -117,7 +117,7 @@ export default function SkillNode({
         </div>
       </div>
       {humanEdge && (
-        <div className="text-[9px] text-muted-foreground italic">Edge: {humanEdge}</div>
+        <div className="text-[11px] text-muted-foreground italic">Edge: {humanEdge}</div>
       )}
       <div className="text-[9px] text-primary">Click to explore →</div>
     </div>
