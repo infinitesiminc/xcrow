@@ -298,6 +298,34 @@ export default function TerritoryOverlay({
                       </div>
                     );
                   })}
+
+                  {/* XP Burst Animation */}
+                  <AnimatePresence>
+                    {showXpBurst && burstSkillId && (() => {
+                      const burstPos = posMap.get(burstSkillId);
+                      if (!burstPos) return null;
+                      return (
+                        <motion.div
+                          key="xp-burst"
+                          initial={{ opacity: 0, scale: 0.5, y: 0 }}
+                          animate={{ opacity: [0, 1, 1, 0], scale: [0.5, 1.2, 1, 0.8], y: [0, -30, -50, -80] }}
+                          transition={{ duration: 2, ease: "easeOut" }}
+                          onAnimationComplete={() => setShowXpBurst(false)}
+                          className="absolute pointer-events-none z-[10000] flex flex-col items-center"
+                          style={{
+                            left: burstPos.x - 40,
+                            top: burstPos.y - 70,
+                            width: 80,
+                          }}
+                        >
+                          <span className="text-2xl font-bold font-mono text-primary drop-shadow-lg">
+                            +{xpGain} XP
+                          </span>
+                          <span className="text-xs text-primary/80 font-medium">⚔️ Quest Complete!</span>
+                        </motion.div>
+                      );
+                    })()}
+                  </AnimatePresence>
                 </div>
               </TooltipProvider>
 
