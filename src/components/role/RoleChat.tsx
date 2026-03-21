@@ -37,19 +37,77 @@ export function RoleChat({ jobTitle, company, timeHorizon, completedCount, predi
     setMessages(newMessages);
     setInput("");
     setLoading(true);
+
     try {
-      const { data, error } = await supabase.functions.invoke("career-chat", {
-        body: {
-          messages: newMessages.map(m => ({ role: m.role, content: m.content })),
-          viewContext: {
-            page: "role-deep-dive", jobTitle, company,
-            timeHorizon: ["Today", "2-3 Years", "5+ Years"][timeHorizon],
-            completedCount, predictionsSummary,
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/career-chat`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
           },
-        },
-      });
-      if (error) throw error;
-      setMessages(prev => [...prev, { role: "assistant", content: data?.reply || data?.content || "I couldn't generate a response." }]);
+          body: JSON.stringify({
+            messages: newMessages.map(m => ({ role: m.role, content: m.content })),
+            viewContext: {
+              page: "role-deep-dive", jobTitle, company,
+              timeHorizon: ["Today", "2-3 Years", "5+ Years"][timeHorizon],
+              completedCount, predictionsSummary,
+            },
+          }),
+        }
+      );
+
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+      // Check if streaming SSE or JSON
+      const contentType = response.headers.get("content-type") || "";
+      if (contentType.includes("text/event-stream") && response.body) {
+        // Stream tokens
+        let assistantText = "";
+        setMessages(prev => [...prev, { role: "assistant", content: "" }]);
+
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = "";
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          buffer += decoder.decode(value, { stream: true });
+
+          let newlineIdx: number;
+          while ((newlineIdx = buffer.indexOf("\n")) !== -1) {
+            let line = buffer.slice(0, newlineIdx);
+            buffer = buffer.slice(newlineIdx + 1);
+            if (line.endsWith("\r")) line = line.slice(0, -1);
+            if (!line.startsWith("data: ")) continue;
+            const jsonStr = line.slice(6).trim();
+            if (jsonStr === "[DONE]") break;
+            try {
+              const parsed = JSON.parse(jsonStr);
+              const content = parsed.choices?.[0]?.delta?.content;
+              if (content) {
+                assistantText += content;
+                const snapshot = assistantText;
+                setMessages(prev =>
+                  prev.map((m, i) => i === prev.length - 1 ? { ...m, content: snapshot } : m)
+                );
+              }
+            } catch { /* partial JSON, skip */ }
+          }
+        }
+
+        if (!assistantText) {
+          setMessages(prev =>
+            prev.map((m, i) => i === prev.length - 1 ? { ...m, content: "I couldn't generate a response." } : m)
+          );
+        }
+      } else {
+        // JSON response
+        const data = await response.json();
+        setMessages(prev => [...prev, { role: "assistant", content: data?.reply || data?.content || "I couldn't generate a response." }]);
+      }
     } catch {
       setMessages(prev => [...prev, { role: "assistant", content: "Sorry, something went wrong." }]);
     }
