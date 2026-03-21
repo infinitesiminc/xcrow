@@ -428,6 +428,7 @@ const RoleDeepDive = () => {
                 isCompleted={completedTasks.has(selectedTask.name)}
                 onPractice={setSimTask}
                 onClose={() => setSelectedTask(null)}
+                index={sortedTasks.findIndex(t => t.name === selectedTask.name)}
               />
             ) : (
               <motion.div

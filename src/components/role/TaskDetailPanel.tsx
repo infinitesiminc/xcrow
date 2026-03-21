@@ -17,10 +17,11 @@ interface TaskDetailPanelProps {
   isCompleted: boolean;
   onPractice: (task: TaskAnalysis) => void;
   onClose: () => void;
+  index?: number;
 }
 
 export function TaskDetailPanel({
-  task, prediction, predictionsLoading, isCompleted, onPractice, onClose,
+  task, prediction, predictionsLoading, isCompleted, onPractice, onClose, index,
 }: TaskDetailPanelProps) {
   const currentScore = task.aiExposureScore ?? 50;
   const futureScore = prediction?.future_exposure ?? currentScore;
@@ -39,7 +40,10 @@ export function TaskDetailPanel({
       {/* Header */}
       <div className="flex items-start justify-between gap-2 mb-4">
         <div className="min-w-0">
-          <h3 className="text-sm font-bold text-foreground">⚔️ {task.name}</h3>
+          <h3 className="text-sm font-bold text-foreground flex items-center gap-1.5">
+            <span className="text-xs font-bold text-muted-foreground/60 tabular-nums">{index != null ? `${index + 1}.` : "⚔️"}</span>
+            {task.name}
+          </h3>
           {task.description && (
             <p className="text-xs text-muted-foreground mt-1 leading-relaxed">{task.description}</p>
           )}
