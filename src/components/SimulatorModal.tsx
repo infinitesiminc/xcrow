@@ -190,7 +190,7 @@ const BriefingScreen = ({
 
       <div className="text-center">
         <span className="inline-block text-[11px] px-2.5 py-1 rounded-full font-medium bg-primary/10 text-primary">
-          🎯 {config?.objectiveCount || 3} goals · Ends when you've got them all
+          ⚔️ {config?.objectiveCount || 3} objectives · Quest ends when all are conquered
         </span>
       </div>
 
