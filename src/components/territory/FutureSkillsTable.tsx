@@ -88,7 +88,7 @@ export default function FutureSkillsTable({ skills, onSkillClick }: { skills: Fu
           </thead>
           <tbody>
             {filtered.map(skill => (
-              <tr key={skill.id} className="border-b border-border/10 hover:bg-muted/20 transition-colors">
+              <tr key={skill.id} onClick={() => onSkillClick?.(skill)} className={`border-b border-border/10 hover:bg-muted/20 transition-colors ${onSkillClick ? "cursor-pointer" : ""}`}>
                 <td className="py-1.5 pr-2">
                   <div className="flex items-center gap-1.5">
                     {skill.iconEmoji && <span className="text-sm">{skill.iconEmoji}</span>}
