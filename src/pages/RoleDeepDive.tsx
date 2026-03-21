@@ -95,7 +95,7 @@ const RoleDeepDive = () => {
   const { user, openAuthModal } = useAuth();
 
   const completedCount = result ? result.tasks.filter(t => completedTasks.has(t.name)).length : 0;
-  const l2Locked = !!user && completedCount < 1;
+  const l2Locked = false; // ungated for now
 
   // ── Data fetching ──────────────────────────────────────────────
   const fetchCompletions = useCallback(async () => {
