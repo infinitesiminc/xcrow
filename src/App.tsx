@@ -26,6 +26,14 @@ const Blog = lazy(() => import("./pages/Blog.tsx"));
 const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy.tsx"));
 const Terms = lazy(() => import("./pages/Terms.tsx"));
 const CookiePolicy = lazy(() => import("./pages/CookiePolicy.tsx"));
+const Contact = lazy(() => import("./pages/Contact.tsx"));
+const Enterprise = lazy(() => import("./pages/Enterprise.tsx"));
+const Investors = lazy(() => import("./pages/Investors.tsx"));
+const Roadmap = lazy(() => import("./pages/Roadmap.tsx"));
+const CaseStudy = lazy(() => import("./pages/CaseStudy.tsx"));
+const SimulationDesign = lazy(() => import("./pages/SimulationDesign.tsx"));
+const JoinWorkspace = lazy(() => import("./pages/JoinWorkspace.tsx"));
+const ScoreDistributions = lazy(() => import("./pages/ScoreDistributions.tsx"));
 
 // Admin (lazy)
 const HRLayout = lazy(() => import("./layouts/HRLayout.tsx"));
