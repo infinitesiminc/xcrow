@@ -93,7 +93,7 @@ const App = () => (
             <Routes>
               {/* Public B2C routes */}
               <Route path="/" element={<><Navbar /><Index /></>} />
-              <Route path="/role/:jobTitle" element={<><Navbar /><Index /><RoleDeepDive /></>} />
+              <Route path="/role/:jobTitle" element={<><Navbar /><RoleDeepDive /></>} />
               <Route path="/analysis" element={<><Navbar /><Analysis /><Footer /></>} />
               <Route path="/auth" element={<><Navbar /><Auth /></>} />
               <Route path="/settings" element={<><Navbar /><Settings /><Footer /></>} />
