@@ -807,7 +807,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
     if (messages.length < 1) return false;
     const lastMsg = messages[messages.length - 1];
     if (lastMsg.role !== "assistant") return false;
-    const lower = lastMsg.content.toLowerCase();
+    const lower = safeStr(lastMsg.content).toLowerCase();
     return lower.includes("how would you approach") || lower.includes("how would you handle") || lower.includes("[scaffolding]") || lower.includes("[scaffold_tier:");
   })();
 
