@@ -183,17 +183,19 @@ export default function Settings() {
   const handleSaveProfile = async () => {
     if (!user) return;
     setSaving(true);
+    const updateData: any = {
+      display_name: displayName,
+      job_title: jobTitle.trim() || null,
+      company: company.trim() || null,
+      linkedin_url: linkedinUrl.trim() || null,
+      school_name: schoolName.trim() || null,
+      career_stage: careerStage,
+      cv_url: cvUrl || null,
+    };
+    if (username.trim()) updateData.username = username.trim().toLowerCase().replace(/[^a-z0-9_-]/g, "");
     const { error } = await supabase
       .from("profiles")
-      .update({
-        display_name: displayName,
-        job_title: jobTitle.trim() || null,
-        company: company.trim() || null,
-        linkedin_url: linkedinUrl.trim() || null,
-        school_name: schoolName.trim() || null,
-        career_stage: careerStage,
-        cv_url: cvUrl || null,
-      } as any)
+      .update(updateData)
       .eq("id", user.id);
 
     if (error) {
