@@ -1,6 +1,6 @@
 /**
  * FutureIsland — renders a single island region on the Future Territory Map.
- * Extracted from FutureTerritoryMap for clarity.
+ * Designed for full-screen readability with large nodes and visible labels.
  */
 
 import { motion } from "framer-motion";
@@ -20,54 +20,58 @@ export default function FutureIsland({ island, skillLookup }: FutureIslandProps)
 
   return (
     <g>
-      {/* Background glow — proportional to island size */}
+      {/* Background territory fill */}
       <motion.circle
         cx={cx}
         cy={cy}
-        r={radius + 20}
-        fill={`hsl(${theme.baseHue} 30% 12% / 0.35)`}
+        r={radius + 15}
+        fill={`hsl(${theme.baseHue} 25% 10% / 0.5)`}
+        stroke={`hsl(${theme.baseHue} 30% 25%)`}
+        strokeWidth={1.5}
+        strokeDasharray="6 4"
         initial={{ scale: 0, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
-        transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+        transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
         style={{ transformOrigin: `${cx}px ${cy}px` }}
       />
-      <circle cx={cx} cy={cy} r={radius + 20} fill="url(#future-island-glow)" />
 
-      {/* Island label */}
+      {/* Island label — large and readable */}
       <text
         x={cx}
-        y={cy - radius - 8}
+        y={cy - radius - 6}
         textAnchor="middle"
         style={{
-          fontSize: "11px",
-          fontWeight: 700,
-          fill: `hsl(${theme.baseHue} 50% 60%)`,
+          fontSize: "14px",
+          fontWeight: 800,
+          fill: `hsl(${theme.baseHue} 55% 65%)`,
           textTransform: "uppercase",
-          letterSpacing: "0.08em",
+          letterSpacing: "0.1em",
+          fontFamily: "'Space Grotesk', system-ui, sans-serif",
         }}
       >
         {theme.emoji} {theme.terrain}
       </text>
+
       {/* Count badge */}
       <text
         x={cx}
-        y={cy - radius + 5}
+        y={cy - radius + 10}
         textAnchor="middle"
         style={{
-          fontSize: "9px",
+          fontSize: "11px",
           fontWeight: 600,
-          fill: `hsl(${theme.baseHue} 30% 50%)`,
+          fill: `hsl(${theme.baseHue} 25% 50%)`,
         }}
       >
         {skillCount} skill{skillCount !== 1 ? "s" : ""}
       </text>
 
-      {/* Skill nodes */}
+      {/* Skill nodes — large enough to read */}
       {nodes.map(node => {
         const skill = skillLookup.get(node.skillId);
         if (!skill) return null;
 
-        const r = skill.demandCount >= 10 ? 13 : skill.demandCount >= 5 ? 10 : 7;
+        const nodeRadius = 18;
         const intensity = Math.min(1, skill.demandCount / 15);
 
         return (
@@ -76,32 +80,35 @@ export default function FutureIsland({ island, skillLookup }: FutureIslandProps)
               <motion.g
                 initial={{ scale: 0, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
-                transition={{ duration: 0.5, delay: 0.15 }}
+                transition={{ duration: 0.4, delay: 0.1 }}
                 style={{ transformOrigin: `${node.x}px ${node.y}px` }}
+                className="cursor-pointer"
               >
                 {/* Glow ring for high-demand */}
                 {skill.demandCount >= 8 && (
                   <circle
                     cx={node.x}
                     cy={node.y}
-                    r={r + 4}
+                    r={nodeRadius + 5}
                     fill="none"
                     stroke={`hsl(${theme.baseHue} 60% 55%)`}
-                    strokeWidth={1}
-                    opacity={0.4}
+                    strokeWidth={1.5}
+                    opacity={0.5}
                     filter="url(#future-glow)"
                   />
                 )}
+
                 {/* Main circle */}
                 <circle
                   cx={node.x}
                   cy={node.y}
-                  r={r}
-                  fill={`hsl(${theme.baseHue} ${40 + intensity * 20}% ${25 + intensity * 15}%)`}
-                  stroke={`hsl(${theme.baseHue} 50% ${45 + intensity * 15}%)`}
-                  strokeWidth={1.5}
-                  className="cursor-pointer hover:brightness-125 transition-all"
+                  r={nodeRadius}
+                  fill={`hsl(${theme.baseHue} ${35 + intensity * 25}% ${18 + intensity * 12}%)`}
+                  stroke={`hsl(${theme.baseHue} 50% ${40 + intensity * 20}%)`}
+                  strokeWidth={2}
+                  className="hover:brightness-125 transition-all"
                 />
+
                 {/* Emoji */}
                 {skill.iconEmoji && (
                   <text
@@ -109,34 +116,35 @@ export default function FutureIsland({ island, skillLookup }: FutureIslandProps)
                     y={node.y + 1}
                     textAnchor="middle"
                     dominantBaseline="central"
-                    style={{ fontSize: `${r * 0.85}px` }}
+                    style={{ fontSize: "14px", pointerEvents: "none" }}
                   >
                     {skill.iconEmoji}
                   </text>
                 )}
-                {/* Name label — only for larger nodes */}
-                {r >= 10 && (
-                  <text
-                    x={node.x}
-                    y={node.y + r + 9}
-                    textAnchor="middle"
-                    style={{
-                      fontSize: "7px",
-                      fontWeight: 600,
-                      fill: `hsl(${theme.baseHue} 30% 65%)`,
-                    }}
-                  >
-                    {skill.name.length > 16 ? skill.name.slice(0, 14) + "…" : skill.name}
-                  </text>
-                )}
+
+                {/* Name label — always visible */}
+                <text
+                  x={node.x}
+                  y={node.y + nodeRadius + 12}
+                  textAnchor="middle"
+                  style={{
+                    fontSize: "10px",
+                    fontWeight: 600,
+                    fill: `hsl(${theme.baseHue} 25% 65%)`,
+                    fontFamily: "'Inter', system-ui, sans-serif",
+                    pointerEvents: "none",
+                  }}
+                >
+                  {skill.name.length > 18 ? skill.name.slice(0, 16) + "…" : skill.name}
+                </text>
               </motion.g>
             </TooltipTrigger>
-            <TooltipContent side="top" className="max-w-[220px]">
+            <TooltipContent side="top" className="max-w-[240px]">
               <p className="font-semibold text-xs">{skill.name}</p>
               {skill.description && (
-                <p className="text-[10px] text-muted-foreground mt-0.5">{skill.description}</p>
+                <p className="text-xs text-muted-foreground mt-0.5">{skill.description}</p>
               )}
-              <div className="flex items-center gap-2 mt-1 text-[10px] text-muted-foreground">
+              <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground">
                 <span>📈 {skill.demandCount} demand</span>
                 <span>💼 {skill.jobCount} roles</span>
               </div>
@@ -145,19 +153,19 @@ export default function FutureIsland({ island, skillLookup }: FutureIslandProps)
         );
       })}
 
-      {/* "More" indicator for overflow */}
+      {/* "More" indicator */}
       {hiddenCount > 0 && (
         <text
           x={cx}
-          y={cy + radius + 16}
+          y={cy + radius + 14}
           textAnchor="middle"
           style={{
-            fontSize: "8px",
-            fill: `hsl(${theme.baseHue} 30% 50%)`,
+            fontSize: "10px",
+            fill: `hsl(${theme.baseHue} 25% 45%)`,
             fontStyle: "italic",
           }}
         >
-          +{hiddenCount} more in table view
+          +{hiddenCount} more in Skill Forge
         </text>
       )}
     </g>
