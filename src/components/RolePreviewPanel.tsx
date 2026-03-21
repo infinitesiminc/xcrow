@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
-import { X, MapPin, Loader2, Play, Maximize2, ChevronLeft, CheckCircle2, Bot, Bookmark, BookmarkCheck, GraduationCap, MessageSquare, BarChart3, FileText, Users, Search, Settings, Globe, Shield, Lightbulb, PenTool, Code, TrendingUp, Megaphone, Target, Briefcase, Heart, Layers, Zap, ExternalLink, Star, Sparkles, ChevronDown } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { X, MapPin, Loader2, Play, Maximize2, ChevronLeft, CheckCircle2, Bot, Bookmark, BookmarkCheck, GraduationCap, MessageSquare, BarChart3, FileText, Users, Search, Settings, Globe, Shield, Lightbulb, PenTool, Code, TrendingUp, Megaphone, Target, Briefcase, Heart, Layers, Zap, ExternalLink, Star, Sparkles, ChevronDown, ArrowRight } from "lucide-react";
 import { matchTaskToSkills, SKILL_TAXONOMY } from "@/lib/skill-map";
 import { motion, AnimatePresence } from "framer-motion";
 import ReactMarkdown from "react-markdown";
