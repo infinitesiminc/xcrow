@@ -284,12 +284,15 @@ const Analysis = () => {
 
   return (
     <div className="min-h-[100dvh] bg-background overflow-y-auto">
-      {/* Sticky header */}
+      {/* Sticky header — Mission Briefing */}
       <div className="sticky top-0 z-20 bg-background/95 backdrop-blur-md border-b border-border px-4 py-3 flex items-center justify-between">
         <button onClick={() => navigate(backPath)} className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
-          <ChevronLeft className="h-4 w-4" /> Back
+          <ChevronLeft className="h-4 w-4" /> HQ
         </button>
-        <span className="text-sm font-semibold text-foreground truncate max-w-[200px]">{result.jobTitle}</span>
+        <div className="text-center">
+          <span className="text-[8px] uppercase tracking-wider text-primary font-semibold block">⚔️ Mission</span>
+          <span className="text-sm font-semibold text-foreground truncate max-w-[200px] block">{result.jobTitle}</span>
+        </div>
         <button
           onClick={toggleBookmark}
           disabled={bookmarkLoading}
