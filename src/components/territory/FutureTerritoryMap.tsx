@@ -1,7 +1,6 @@
 /**
  * FutureTerritoryMap — Full-screen RPG-style SVG map for the future skills catalogue.
- * 8 island regions, designed to be readable at default zoom on a full viewport.
- * Supports click-to-zoom on islands.
+ * 8 island regions with minimap, pan clamping, and click-to-zoom.
  */
 
 import { useMemo, useState, useRef, useCallback } from "react";
@@ -20,22 +19,49 @@ interface FutureTerritoryMapProps {
   skills: FutureSkill[];
 }
 
+const ISLAND_COLORS: Record<string, string> = {
+  "AI & Machine Learning": "hsl(var(--neon-blue))",
+  "Data & Analytics": "hsl(var(--neon-cyan))",
+  "Cloud & Infrastructure": "hsl(var(--neon-purple))",
+  "Security & Privacy": "hsl(var(--neon-pink))",
+  "Development & Engineering": "hsl(var(--neon-green))",
+  "Business & Strategy": "hsl(var(--accent))",
+  "Design & Experience": "hsl(var(--neon-orange))",
+  "Communication & Collaboration": "hsl(var(--primary))",
+};
+
 export default function FutureTerritoryMap({ skills }: FutureTerritoryMapProps) {
   const layout = useMemo(() => buildFutureMapLayout(skills), [skills]);
   const connections = useMemo(() => buildFutureConnections(layout), [layout]);
 
-  // Pan & zoom
   const containerRef = useRef<HTMLDivElement>(null);
   const [transform, setTransform] = useState({ x: 0, y: 0, scale: 1 });
   const [focusedIsland, setFocusedIsland] = useState<FutureSkillCategory | null>(null);
   const dragRef = useRef<{ startX: number; startY: number; tx: number; ty: number } | null>(null);
   const isDragging = useRef(false);
 
+  const clampTransform = useCallback((x: number, y: number, scale: number) => {
+    const container = containerRef.current;
+    if (!container) return { x, y };
+    const rect = container.getBoundingClientRect();
+    const mapW = rect.width * scale;
+    const mapH = rect.height * scale;
+    const margin = 0.3;
+    return {
+      x: Math.max(-(mapW - rect.width * margin), Math.min(rect.width * (1 - margin), x)),
+      y: Math.max(-(mapH - rect.height * margin), Math.min(rect.height * (1 - margin), y)),
+    };
+  }, []);
+
   const handleWheel = useCallback((e: React.WheelEvent) => {
     e.preventDefault();
     const delta = e.deltaY > 0 ? 0.92 : 1.08;
-    setTransform(t => ({ ...t, scale: Math.max(0.5, Math.min(3, t.scale * delta)) }));
-  }, []);
+    setTransform(t => {
+      const newScale = Math.max(0.5, Math.min(3, t.scale * delta));
+      const c = clampTransform(t.x, t.y, newScale);
+      return { ...c, scale: newScale };
+    });
+  }, [clampTransform]);
 
   const handlePointerDown = useCallback((e: React.PointerEvent) => {
     if (e.button !== 0) return;
@@ -49,50 +75,39 @@ export default function FutureTerritoryMap({ skills }: FutureTerritoryMapProps) 
     const dx = e.clientX - dragRef.current.startX;
     const dy = e.clientY - dragRef.current.startY;
     if (Math.abs(dx) > 3 || Math.abs(dy) > 3) isDragging.current = true;
-    setTransform(t => ({
-      ...t,
-      x: dragRef.current!.tx + dx,
-      y: dragRef.current!.ty + dy,
-    }));
-  }, []);
+    const rawX = dragRef.current.tx + dx;
+    const rawY = dragRef.current.ty + dy;
+    setTransform(t => {
+      const c = clampTransform(rawX, rawY, t.scale);
+      return { ...t, ...c };
+    });
+  }, [clampTransform]);
 
   const handlePointerUp = useCallback(() => { dragRef.current = null; }, []);
 
-  // Zoom to island center
   const handleIslandClick = useCallback((category: FutureSkillCategory, cx: number, cy: number) => {
-    if (isDragging.current) return; // don't zoom on drag end
+    if (isDragging.current) return;
     const container = containerRef.current;
     if (!container) return;
-
     const rect = container.getBoundingClientRect();
-    const viewW = rect.width;
-    const viewH = rect.height;
 
-    // If already focused on this island, zoom out
     if (focusedIsland === category) {
       setTransform({ x: 0, y: 0, scale: 1 });
       setFocusedIsland(null);
       return;
     }
 
-    // Calculate transform to center island in viewport
-    // SVG viewBox maps FUTURE_MAP_WIDTH to container width
-    const svgScale = viewW / FUTURE_MAP_WIDTH;
+    const svgScale = rect.width / FUTURE_MAP_WIDTH;
     const zoomLevel = 2.2;
-
-    // Island center in screen pixels (at scale=1, translate=0)
     const islandScreenX = cx * svgScale;
-    const islandScreenY = cy * svgScale * (FUTURE_MAP_WIDTH / FUTURE_MAP_HEIGHT) * (viewH / viewW);
-
-    // We want the island center to be at viewport center after zoom
-    const targetX = viewW / 2 - islandScreenX * zoomLevel;
-    const targetY = viewH / 2 - islandScreenY * zoomLevel;
+    const islandScreenY = cy * svgScale * (FUTURE_MAP_WIDTH / FUTURE_MAP_HEIGHT) * (rect.height / rect.width);
+    const targetX = rect.width / 2 - islandScreenX * zoomLevel;
+    const targetY = rect.height / 2 - islandScreenY * zoomLevel;
 
     setTransform({ x: targetX, y: targetY, scale: zoomLevel });
     setFocusedIsland(category);
   }, [focusedIsland]);
 
-  // Node position lookup
   const nodePositions = useMemo(() => {
     const m = new Map<string, { x: number; y: number }>();
     for (const island of layout) {
@@ -105,6 +120,42 @@ export default function FutureTerritoryMap({ skills }: FutureTerritoryMapProps) 
   }, [layout, focusedIsland]);
 
   const skillLookup = useMemo(() => new Map(skills.map(s => [s.id, s])), [skills]);
+
+  // Minimap
+  const MINIMAP_W = 140;
+  const MINIMAP_H = MINIMAP_W * (FUTURE_MAP_HEIGHT / FUTURE_MAP_WIDTH);
+
+  const viewportRect = useMemo(() => {
+    const container = containerRef.current;
+    if (!container) return { x: 0, y: 0, w: MINIMAP_W, h: MINIMAP_H };
+    const rect = container.getBoundingClientRect();
+    const svgScale = rect.width / FUTURE_MAP_WIDTH;
+    const vx = -transform.x / (svgScale * transform.scale);
+    const vy = -transform.y / (svgScale * transform.scale) * (FUTURE_MAP_WIDTH / FUTURE_MAP_HEIGHT) * (rect.width / rect.height);
+    const vw = rect.width / (svgScale * transform.scale);
+    const vh = rect.height / (svgScale * transform.scale);
+    return {
+      x: Math.max(0, Math.min(MINIMAP_W - 4, (vx / FUTURE_MAP_WIDTH) * MINIMAP_W)),
+      y: Math.max(0, Math.min(MINIMAP_H - 4, (vy / FUTURE_MAP_HEIGHT) * MINIMAP_H)),
+      w: Math.min(MINIMAP_W, (vw / FUTURE_MAP_WIDTH) * MINIMAP_W),
+      h: Math.min(MINIMAP_H, (vh / FUTURE_MAP_HEIGHT) * MINIMAP_H),
+    };
+  }, [transform, MINIMAP_H]);
+
+  const handleMinimapClick = useCallback((e: React.MouseEvent<SVGSVGElement>) => {
+    const svgEl = e.currentTarget;
+    const rect = svgEl.getBoundingClientRect();
+    const clickX = ((e.clientX - rect.left) / rect.width) * FUTURE_MAP_WIDTH;
+    const clickY = ((e.clientY - rect.top) / rect.height) * FUTURE_MAP_HEIGHT;
+    const container = containerRef.current;
+    if (!container) return;
+    const cRect = container.getBoundingClientRect();
+    const svgScale = cRect.width / FUTURE_MAP_WIDTH;
+    const targetX = cRect.width / 2 - clickX * svgScale * transform.scale;
+    const targetY = cRect.height / 2 - clickY * svgScale * transform.scale * (FUTURE_MAP_HEIGHT / FUTURE_MAP_WIDTH) * (cRect.width / cRect.height);
+    const c = clampTransform(targetX, targetY, transform.scale);
+    setTransform(t => ({ ...t, ...c }));
+  }, [transform.scale, clampTransform]);
 
   return (
     <TooltipProvider delayDuration={200}>
@@ -137,76 +188,63 @@ export default function FutureTerritoryMap({ skills }: FutureTerritoryMapProps) 
             </filter>
           </defs>
 
-          {/* Grid lines for RPG map feel */}
           {Array.from({ length: 9 }, (_, i) => {
             const x = (FUTURE_MAP_WIDTH / 8) * i;
-            return (
-              <line key={`gv-${i}`} x1={x} y1={0} x2={x} y2={FUTURE_MAP_HEIGHT}
-                stroke="hsl(var(--border))" strokeWidth={0.3} opacity={0.15} />
-            );
+            return <line key={`gv-${i}`} x1={x} y1={0} x2={x} y2={FUTURE_MAP_HEIGHT} stroke="hsl(var(--border))" strokeWidth={0.3} opacity={0.15} />;
           })}
           {Array.from({ length: 6 }, (_, i) => {
             const y = (FUTURE_MAP_HEIGHT / 5) * i;
-            return (
-              <line key={`gh-${i}`} x1={0} y1={y} x2={FUTURE_MAP_WIDTH} y2={y}
-                stroke="hsl(var(--border))" strokeWidth={0.3} opacity={0.15} />
-            );
+            return <line key={`gh-${i}`} x1={0} y1={y} x2={FUTURE_MAP_WIDTH} y2={y} stroke="hsl(var(--border))" strokeWidth={0.3} opacity={0.15} />;
           })}
 
-          {/* Connections between nodes */}
           {connections.map((conn, i) => {
             const from = nodePositions.get(conn.from);
             const to = nodePositions.get(conn.to);
             if (!from || !to) return null;
             return (
-              <motion.path
-                key={`c-${i}`}
-                d={`M ${from.x} ${from.y} L ${to.x} ${to.y}`}
-                fill="none"
-                stroke="hsl(var(--border))"
-                strokeWidth={0.8}
-                opacity={0.25}
-                initial={{ pathLength: 0 }}
-                animate={{ pathLength: 1 }}
-                transition={{ duration: 1, delay: 0.2 }}
-              />
+              <motion.path key={`c-${i}`} d={`M ${from.x} ${from.y} L ${to.x} ${to.y}`}
+                fill="none" stroke="hsl(var(--border))" strokeWidth={0.8} opacity={0.25}
+                initial={{ pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ duration: 1, delay: 0.2 }} />
             );
           })}
 
-          {/* Islands */}
           {layout.map(island => (
-            <FutureIsland
-              key={island.category}
-              island={island}
-              skillLookup={skillLookup}
-              isFocused={focusedIsland === island.category}
-              onIslandClick={handleIslandClick}
-            />
+            <FutureIsland key={island.category} island={island} skillLookup={skillLookup}
+              isFocused={focusedIsland === island.category} onIslandClick={handleIslandClick} />
           ))}
         </svg>
 
-        {/* Zoom controls */}
-        <div className="absolute bottom-4 right-4 flex flex-col gap-1 z-10">
-          <button
-            onClick={() => setTransform(t => ({ ...t, scale: Math.min(3, t.scale * 1.25) }))}
-            className="w-8 h-8 rounded-md bg-card/80 border border-border/50 text-muted-foreground hover:text-foreground flex items-center justify-center text-sm font-bold backdrop-blur-md transition-colors active:scale-[0.95]"
-          >+</button>
-          <button
-            onClick={() => setTransform(t => ({ ...t, scale: Math.max(0.5, t.scale * 0.8) }))}
-            className="w-8 h-8 rounded-md bg-card/80 border border-border/50 text-muted-foreground hover:text-foreground flex items-center justify-center text-sm font-bold backdrop-blur-md transition-colors active:scale-[0.95]"
-          >−</button>
-          <button
-            onClick={() => { setTransform({ x: 0, y: 0, scale: 1 }); setFocusedIsland(null); }}
-            className="w-8 h-8 rounded-md bg-card/80 border border-border/50 text-muted-foreground hover:text-foreground flex items-center justify-center text-xs font-bold backdrop-blur-md transition-colors active:scale-[0.95]"
-          >⟲</button>
+        {/* Minimap */}
+        <div className="absolute bottom-4 left-4 z-10 rounded-lg border border-border/50 bg-card/90 backdrop-blur-md shadow-lg overflow-hidden"
+          style={{ width: MINIMAP_W, height: MINIMAP_H }}>
+          <svg viewBox={`0 0 ${FUTURE_MAP_WIDTH} ${FUTURE_MAP_HEIGHT}`} className="w-full h-full cursor-pointer"
+            preserveAspectRatio="xMidYMid meet" onClick={handleMinimapClick}>
+            {layout.map(island => (
+              <circle key={island.category} cx={island.cx} cy={island.cy} r={island.radius * 0.6}
+                fill={ISLAND_COLORS[island.category] || "hsl(var(--primary))"} opacity={focusedIsland === island.category ? 0.9 : 0.4} />
+            ))}
+            <rect
+              x={(viewportRect.x / MINIMAP_W) * FUTURE_MAP_WIDTH}
+              y={(viewportRect.y / MINIMAP_H) * FUTURE_MAP_HEIGHT}
+              width={(viewportRect.w / MINIMAP_W) * FUTURE_MAP_WIDTH}
+              height={(viewportRect.h / MINIMAP_H) * FUTURE_MAP_HEIGHT}
+              fill="none" stroke="hsl(var(--primary))" strokeWidth={8} opacity={0.8} rx={4} />
+          </svg>
         </div>
 
-        {/* Back to overview button when zoomed */}
+        {/* Zoom controls */}
+        <div className="absolute bottom-4 right-4 flex flex-col gap-1 z-10">
+          <button onClick={() => setTransform(t => { const s = Math.min(3, t.scale * 1.25); const c = clampTransform(t.x, t.y, s); return { ...c, scale: s }; })}
+            className="w-8 h-8 rounded-md bg-card/80 border border-border/50 text-muted-foreground hover:text-foreground flex items-center justify-center text-sm font-bold backdrop-blur-md transition-colors active:scale-[0.95]">+</button>
+          <button onClick={() => setTransform(t => { const s = Math.max(0.5, t.scale * 0.8); const c = clampTransform(t.x, t.y, s); return { ...c, scale: s }; })}
+            className="w-8 h-8 rounded-md bg-card/80 border border-border/50 text-muted-foreground hover:text-foreground flex items-center justify-center text-sm font-bold backdrop-blur-md transition-colors active:scale-[0.95]">−</button>
+          <button onClick={() => { setTransform({ x: 0, y: 0, scale: 1 }); setFocusedIsland(null); }}
+            className="w-8 h-8 rounded-md bg-card/80 border border-border/50 text-muted-foreground hover:text-foreground flex items-center justify-center text-xs font-bold backdrop-blur-md transition-colors active:scale-[0.95]">⟲</button>
+        </div>
+
         {focusedIsland && (
-          <button
-            onClick={() => { setTransform({ x: 0, y: 0, scale: 1 }); setFocusedIsland(null); }}
-            className="absolute top-4 left-4 z-10 flex items-center gap-1.5 px-3 py-2 rounded-lg bg-card/90 backdrop-blur-md border border-border/50 text-xs font-medium text-muted-foreground hover:text-foreground shadow-lg transition-all active:scale-[0.97]"
-          >
+          <button onClick={() => { setTransform({ x: 0, y: 0, scale: 1 }); setFocusedIsland(null); }}
+            className="absolute top-4 left-4 z-10 flex items-center gap-1.5 px-3 py-2 rounded-lg bg-card/90 backdrop-blur-md border border-border/50 text-xs font-medium text-muted-foreground hover:text-foreground shadow-lg transition-all active:scale-[0.97]">
             ← All Islands
           </button>
         )}
