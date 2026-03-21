@@ -219,13 +219,7 @@ const Index = () => {
     })();
   }, [user, taxonomy]);
 
-  // Auto-open territory after first simulation completion (desktop only)
-  useEffect(() => {
-    if (!isMobile && displaySkills.some(s => s.xp > 0) && !hasOpenedTerritory) {
-      setTerritoryOpen(true);
-      setHasOpenedTerritory(true);
-    }
-  }, [displaySkills, hasOpenedTerritory, isMobile]);
+  // Territory overlay is only opened manually via the "Full Map" button
 
   const handleChatStart = useCallback(() => setHasInteracted(true), []);
 
