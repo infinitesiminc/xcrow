@@ -96,37 +96,33 @@ function positionNodes(
       });
     }
   } else {
-    // 3-ring layout for expanded view
-    const ring1Count = Math.min(5, Math.ceil(count / 3));
-    const ring2Count = Math.min(8, Math.ceil((count - ring1Count) / 2));
-    const ring3Count = count - ring1Count - ring2Count;
-    const r1 = baseRadius ? baseRadius * 0.35 : 50;
-    const r2 = baseRadius ? baseRadius * 0.65 : 100;
-    const r3 = baseRadius ?? 150;
+    // Multi-ring layout for expanded view — scale rings to node count
+    const ringCapacity = 8; // max nodes per ring before adding another
+    const ringCount = Math.min(5, Math.ceil(count / ringCapacity));
+    const maxR = baseRadius ?? 150;
+    // Distribute nodes across rings as evenly as possible
+    const rings: number[] = [];
+    let remaining = count;
+    for (let r = 0; r < ringCount; r++) {
+      const perRing = Math.ceil(remaining / (ringCount - r));
+      rings.push(perRing);
+      remaining -= perRing;
+    }
 
-    for (let i = 0; i < ring1Count; i++) {
-      const angle = (2 * Math.PI * i) / ring1Count - Math.PI / 2;
-      positions.push({
-        x: Math.round(cx + r1 * Math.cos(angle)),
-        y: Math.round(cy + r1 * Math.sin(angle)),
-        skillId: catSkills[i].id,
-      });
-    }
-    for (let i = 0; i < ring2Count; i++) {
-      const angle = (2 * Math.PI * i) / ring2Count - Math.PI / 2 + Math.PI / ring2Count;
-      positions.push({
-        x: Math.round(cx + r2 * Math.cos(angle)),
-        y: Math.round(cy + r2 * Math.sin(angle)),
-        skillId: catSkills[ring1Count + i].id,
-      });
-    }
-    for (let i = 0; i < ring3Count; i++) {
-      const angle = (2 * Math.PI * i) / ring3Count - Math.PI / 2;
-      positions.push({
-        x: Math.round(cx + r3 * Math.cos(angle)),
-        y: Math.round(cy + r3 * Math.sin(angle)),
-        skillId: catSkills[ring1Count + ring2Count + i].id,
-      });
+    let idx = 0;
+    for (let r = 0; r < rings.length; r++) {
+      const ringR = maxR * ((r + 1) / rings.length);
+      const nodesInRing = rings[r];
+      const angleOffset = r % 2 === 0 ? -Math.PI / 2 : -Math.PI / 2 + Math.PI / nodesInRing;
+      for (let i = 0; i < nodesInRing; i++) {
+        const angle = (2 * Math.PI * i) / nodesInRing + angleOffset;
+        positions.push({
+          x: Math.round(cx + ringR * Math.cos(angle)),
+          y: Math.round(cy + ringR * Math.sin(angle)),
+          skillId: catSkills[idx].id,
+        });
+        idx++;
+      }
     }
   }
 
@@ -145,7 +141,7 @@ export function buildFutureMapLayout(skills: FutureSkill[]): FutureIslandLayout[
       cy: center.cy,
       radius: 120,
       nodes: positionNodes(center.cx, center.cy, catSkills, MAX_PER_ISLAND),
-      expandedNodes: positionNodes(center.cx, center.cy, catSkills, catSkills.length, 180),
+      expandedNodes: positionNodes(center.cx, center.cy, catSkills, catSkills.length, Math.max(200, catSkills.length * 7)),
       theme: FUTURE_CATEGORY_META[cat],
       skillCount: catSkills.length,
     };

@@ -55,7 +55,7 @@ export default function FutureIsland({ island, skillLookup, isFocused, onIslandC
       <motion.circle
         cx={cx}
         cy={cy}
-        r={(isFocused ? 200 : radius) + 15}
+        r={(isFocused ? Math.max(220, skillCount * 7) + 20 : radius) + 15}
         fill={`hsl(${theme.baseHue} 25% ${isFocused ? 14 : 10}% / ${isFocused ? 0.7 : 0.5})`}
         stroke={`hsl(${theme.baseHue} ${isFocused ? 50 : 30}% ${isFocused ? 40 : 25}%)`}
         strokeWidth={isFocused ? 2.5 : 1.5}
@@ -108,8 +108,9 @@ export default function FutureIsland({ island, skillLookup, isFocused, onIslandC
 
         const isHovered = hoveredId === node.skillId;
         const pos = getDisplacedPosition(node, hoveredNode, isHovered);
-        const nodeRadius = 18;
+        const nodeRadius = isFocused && !isHovered ? 14 : 18;
         const intensity = Math.min(1, skill.demandCount / 15);
+        const showLabel = !isFocused || isHovered;
 
         return (
           <Tooltip key={node.skillId}>
@@ -175,28 +176,30 @@ export default function FutureIsland({ island, skillLookup, isFocused, onIslandC
                   </text>
                 )}
 
-                {/* Name label */}
-                <text
-                  x={node.x}
-                  y={node.y + nodeRadius + 12}
-                  textAnchor="middle"
-                  style={{
-                    fontSize: isHovered ? "11px" : "10px",
-                    fontWeight: isHovered ? 700 : 600,
-                    fill: isHovered
-                      ? `hsl(${theme.baseHue} 40% 85%)`
-                      : `hsl(${theme.baseHue} 25% 65%)`,
-                    fontFamily: "'Inter', system-ui, sans-serif",
-                    pointerEvents: "none",
-                    transition: "fill 0.2s, font-size 0.2s",
-                  }}
-                >
-                  {isHovered
-                    ? skill.name
-                    : skill.name.length > 28
-                      ? skill.name.slice(0, 26) + "…"
-                      : skill.name}
-                </text>
+                {/* Name label — hidden in expanded mode unless hovered */}
+                {showLabel && (
+                  <text
+                    x={node.x}
+                    y={node.y + nodeRadius + 12}
+                    textAnchor="middle"
+                    style={{
+                      fontSize: isHovered ? "11px" : "10px",
+                      fontWeight: isHovered ? 700 : 600,
+                      fill: isHovered
+                        ? `hsl(${theme.baseHue} 40% 85%)`
+                        : `hsl(${theme.baseHue} 25% 65%)`,
+                      fontFamily: "'Inter', system-ui, sans-serif",
+                      pointerEvents: "none",
+                      transition: "fill 0.2s, font-size 0.2s",
+                    }}
+                  >
+                    {isHovered
+                      ? skill.name
+                      : skill.name.length > 28
+                        ? skill.name.slice(0, 26) + "…"
+                        : skill.name}
+                  </text>
+                )}
               </motion.g>
             </TooltipTrigger>
             <TooltipContent side="top" className="max-w-[240px]">
