@@ -41,7 +41,7 @@ function priorityBadge(p?: string) {
   return <Badge className="bg-muted/50 text-muted-foreground border-border/20 text-[9px]">Low</Badge>;
 }
 
-export function TaskTable({ tasks, skills, completedTasks, onPractice }: TaskTableProps) {
+export function TaskTable({ tasks, skills, completedTasks, onPractice, jobTitle, company }: TaskTableProps) {
   const sortedTasks = useMemo(() => {
     return tasks
       .map((t, i) => ({ task: t, originalIndex: i }))
