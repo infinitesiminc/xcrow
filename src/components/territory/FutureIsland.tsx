@@ -108,8 +108,9 @@ export default function FutureIsland({ island, skillLookup, isFocused, onIslandC
 
         const isHovered = hoveredId === node.skillId;
         const pos = getDisplacedPosition(node, hoveredNode, isHovered);
-        const nodeRadius = 18;
+        const nodeRadius = isFocused && !isHovered ? 14 : 18;
         const intensity = Math.min(1, skill.demandCount / 15);
+        const showLabel = !isFocused || isHovered;
 
         return (
           <Tooltip key={node.skillId}>
