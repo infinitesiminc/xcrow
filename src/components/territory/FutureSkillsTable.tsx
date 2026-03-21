@@ -19,7 +19,7 @@ const CATEGORY_COLORS: Record<FutureSkillCategory, string> = {
   "Human Edge":          "bg-fuchsia-500/15 text-fuchsia-400",
 };
 
-export default function FutureSkillsTable({ skills }: { skills: FutureSkill[] }) {
+export default function FutureSkillsTable({ skills, onSkillClick }: { skills: FutureSkill[]; onSkillClick?: (skill: FutureSkill) => void }) {
   const [search, setSearch] = useState("");
   const [sortKey, setSortKey] = useState<SortKey>("demandCount");
   const [sortAsc, setSortAsc] = useState(false);
@@ -88,7 +88,7 @@ export default function FutureSkillsTable({ skills }: { skills: FutureSkill[] })
           </thead>
           <tbody>
             {filtered.map(skill => (
-              <tr key={skill.id} className="border-b border-border/10 hover:bg-muted/20 transition-colors">
+              <tr key={skill.id} onClick={() => onSkillClick?.(skill)} className={`border-b border-border/10 hover:bg-muted/20 transition-colors ${onSkillClick ? "cursor-pointer" : ""}`}>
                 <td className="py-1.5 pr-2">
                   <div className="flex items-center gap-1.5">
                     {skill.iconEmoji && <span className="text-sm">{skill.iconEmoji}</span>}

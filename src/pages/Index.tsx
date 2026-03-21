@@ -166,6 +166,7 @@ const Index = () => {
   const [chatOpen, setChatOpen] = useState(true);
   const [rightPanelTab, setRightPanelTab] = useState<"table" | "roles">("table");
   const [lastSimResult, setLastSimResult] = useState<ViewContext["lastSimResult"]>(null);
+  const [mapFocusSkillId, setMapFocusSkillId] = useState<string | null>(null);
   const [myRolesTab, setMyRolesTab] = useState<"saved" | "practiced">("saved");
   const batchCounter = useRef(0);
   const [territoryOpen, setTerritoryOpen] = useState(false);
@@ -401,7 +402,7 @@ const Index = () => {
     <div className="h-[calc(100vh-3.5rem)] relative overflow-hidden">
       {/* ── Full-screen Territory Map (background) ── */}
       <div className="absolute inset-0 z-0">
-        <FutureTerritoryMap skills={futureSkills} />
+        <FutureTerritoryMap skills={futureSkills} focusSkillId={mapFocusSkillId} />
       </div>
 
       {/* Guided intro for first-time visitors */}
@@ -470,7 +471,7 @@ const Index = () => {
 
             {rightPanelTab === "table" ? (
               <div className="flex-1 overflow-hidden">
-                <FutureSkillsTable skills={futureSkills} />
+                <FutureSkillsTable skills={futureSkills} onSkillClick={(skill) => { setMapFocusSkillId(skill.id); setTimeout(() => setMapFocusSkillId(null), 100); }} />
               </div>
             ) : rightPanelTab === "roles" && isSignedIn ? (
               <div className="flex-1 overflow-hidden">
