@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { supabase } from "@/integrations/supabase/client";
-import { Map, Bookmark, X, Sparkles, Swords, ScrollText } from "lucide-react";
+import { Map, X, Swords, ScrollText } from "lucide-react";
 import OnboardingQuest from "@/components/OnboardingQuest";
 import AdaptiveQueue from "@/components/AdaptiveQueue";
 
@@ -13,7 +13,8 @@ import FutureSkillsTable from "@/components/territory/FutureSkillsTable";
 import MapIntroGuide from "@/components/territory/MapIntroGuide";
 import { getLevel, levelProgress } from "@/lib/skill-map";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import HomepageChat, { type ViewContext } from "@/components/HomepageChat";
+import { useChatContext, useChatViewContext } from "@/contexts/ChatContext";
+import type { ViewContext } from "@/contexts/ChatContext";
 import RolePreviewPanel from "@/components/RolePreviewPanel";
 import InlineRoleCarousel, { BatchedRoleCarousel, type RoleResult, type RoleBatch } from "@/components/InlineRoleCarousel";
 import SkillSuggestionCards from "@/components/SkillSuggestionCards";
@@ -163,7 +164,7 @@ const Index = () => {
   const [activeEdge, setActiveEdge] = useState<EdgeContext | null>(null);
   const [rightTab, setRightTab] = useState<RightTab>("territory");
   const [chatOpen, setChatOpen] = useState(true);
-  const [rightPanelTab, setRightPanelTab] = useState<"chat" | "table" | "roles">("chat");
+  const [rightPanelTab, setRightPanelTab] = useState<"table" | "roles">("table");
   const [lastSimResult, setLastSimResult] = useState<ViewContext["lastSimResult"]>(null);
   const [myRolesTab, setMyRolesTab] = useState<"saved" | "practiced">("saved");
   const batchCounter = useRef(0);
@@ -281,13 +282,22 @@ const Index = () => {
   const showOnboarding = isSignedIn && profile && !profile.onboardingCompleted;
   const [onboardingDismissed, setOnboardingDismissed] = useState(false);
 
-  // Build live view context for AI chat
-  const viewContext = useMemo<ViewContext>(() => ({
+  // Inject view context into the unified chat
+  const chatViewCtx = useMemo(() => ({
+    page: "home" as const,
     activePanel: selectedRole ? "role-preview" : rightTab === "roles" ? "roles" : "territory",
     selectedRole: selectedRole ? { title: selectedRole.title, company: selectedRole.company, jobId: selectedRole.jobId } : null,
     selectedTab: rightTab === "roles" ? myRolesTab : undefined,
     lastSimResult,
   }), [selectedRole, rightTab, myRolesTab, lastSimResult]);
+  useChatViewContext(chatViewCtx, [chatViewCtx]);
+
+  // Wire up role callbacks from the unified chat
+  const { onRolesFoundRef, onRoleSelectRef, sendMessage: chatSendMessage, setIsOpen: setChatDockOpen } = useChatContext();
+  useEffect(() => {
+    onRolesFoundRef.current = handleRolesFound;
+    onRoleSelectRef.current = handleRoleSelect;
+  }, [handleRolesFound, handleRoleSelect, onRolesFoundRef, onRoleSelectRef]);
 
   /* ── Onboarding Quest ── */
   if (showOnboarding && !onboardingDismissed) {
@@ -328,26 +338,14 @@ const Index = () => {
               </motion.div>
             )}
           </AnimatePresence>
-          {!hasInteracted && !user && <SkillSuggestionCards />}
-          {!hasInteracted && user && (
+          {/* Chat is now in the unified dock bar */}
+          {!user && <SkillSuggestionCards />}
+          {user && (
             <div className="w-full max-w-lg mb-4 space-y-4">
               <QuestBoard />
               <AdaptiveQueue userId={user.id} />
             </div>
           )}
-          <div className={`w-full max-w-lg ${hasInteracted ? "flex-1 flex flex-col min-h-0" : ""}`}>
-            <HomepageChat
-              onRolesFound={handleRolesFound}
-              onRoleSelect={handleRoleSelect}
-              onChatStart={handleChatStart}
-              hasInteracted={hasInteracted}
-              selectedJobId={selectedRole?.jobId}
-              inlineCards
-              externalPrompt={externalPrompt}
-              onExternalPromptConsumed={() => setExternalPrompt(null)}
-              viewContext={viewContext}
-            />
-          </div>
         </div>
 
         <AnimatePresence>
@@ -425,17 +423,6 @@ const Index = () => {
       {/* ── Floating tab bar (top-right) ── */}
       <div className="absolute top-14 right-4 z-20 flex items-center gap-1 bg-card/80 backdrop-blur-md border border-border/50 rounded-lg p-1 shadow-lg">
         <button
-          onClick={() => { setRightPanelTab("chat"); setChatOpen(true); }}
-          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
-            rightPanelTab === "chat" && chatOpen
-              ? "bg-primary/10 text-primary"
-              : "text-muted-foreground hover:text-foreground"
-          }`}
-        >
-          <Sparkles className="h-3 w-3" />
-          Coach
-        </button>
-        <button
           onClick={() => { setRightPanelTab("table"); setChatOpen(true); }}
           className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
             rightPanelTab === "table" && chatOpen
@@ -480,54 +467,7 @@ const Index = () => {
               <X className="h-4 w-4" />
             </button>
 
-            {rightPanelTab === "chat" ? (
-              <div className="flex-1 flex flex-col min-h-0 p-4">
-                <AnimatePresence mode="wait">
-                  {!hasInteracted && (
-                    <motion.div
-                      key="greeting"
-                      initial={{ opacity: 0, y: 12 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -20, transition: { duration: 0.3 } }}
-                      className="text-center mb-4 shrink-0"
-                    >
-                      <h1 className="text-xl font-display font-bold text-foreground leading-tight">
-                        {isSignedIn
-                          ? `${greeting}${userName ? `, ${userName}` : ""} ⚔️`
-                          : "Level up your career"}
-                      </h1>
-                      <p className="text-xs text-muted-foreground mt-1.5">
-                        {isSignedIn
-                          ? "Your AI career coach is ready"
-                          : "Explore kingdoms, practice quests, claim territory"}
-                      </p>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-
-                {!hasInteracted && !user && <SkillSuggestionCards />}
-                {!hasInteracted && user && (
-                  <div className="space-y-3 mb-3">
-                    <QuestBoard />
-                    <AdaptiveQueue userId={user.id} />
-                  </div>
-                )}
-
-                <div className={`${hasInteracted ? "flex-1 flex flex-col min-h-0" : ""}`}>
-                  <HomepageChat
-                    onRolesFound={handleRolesFound}
-                    onRoleSelect={handleRoleSelect}
-                    onChatStart={handleChatStart}
-                    hasInteracted={hasInteracted}
-                    selectedJobId={selectedRole?.jobId}
-                    inlineCards
-                    externalPrompt={externalPrompt}
-                    onExternalPromptConsumed={() => setExternalPrompt(null)}
-                    viewContext={viewContext}
-                  />
-                </div>
-              </div>
-            ) : rightPanelTab === "table" ? (
+            {rightPanelTab === "table" ? (
               <div className="flex-1 overflow-hidden">
                 <FutureSkillsTable skills={futureSkills} />
               </div>
@@ -536,13 +476,38 @@ const Index = () => {
                 <MyRolesPanel
                   onSelectRole={(role) => {
                     setSelectedRole(role);
-                    setRightPanelTab("chat");
+                    setRightPanelTab("table");
                   }}
-                  onAskChat={handleRolesAskChat}
+                  onAskChat={(prompt) => {
+                    setChatDockOpen(true);
+                    chatSendMessage(prompt);
+                  }}
                   onTabChange={setMyRolesTab}
                 />
               </div>
-            ) : null}
+            ) : (
+              <div className="flex-1 flex flex-col min-h-0 p-4">
+                <div className="text-center mb-4">
+                  <h1 className="text-xl font-display font-bold text-foreground leading-tight">
+                    {isSignedIn
+                      ? `${greeting}${userName ? `, ${userName}` : ""} ⚔️`
+                      : "Level up your career"}
+                  </h1>
+                  <p className="text-xs text-muted-foreground mt-1.5">
+                    {isSignedIn
+                      ? "Your AI career coach is ready"
+                      : "Explore kingdoms, practice quests, claim territory"}
+                  </p>
+                </div>
+                {!user && <SkillSuggestionCards />}
+                {user && (
+                  <div className="space-y-3 mb-3">
+                    <QuestBoard />
+                    <AdaptiveQueue userId={user.id} />
+                  </div>
+                )}
+              </div>
+            )}
           </motion.div>
         )}
       </AnimatePresence>
@@ -558,8 +523,8 @@ const Index = () => {
             onClick={() => setChatOpen(true)}
             className="fixed bottom-4 right-4 z-20 flex items-center gap-2 px-4 py-2.5 rounded-lg bg-card/90 backdrop-blur-md border border-border/50 text-sm font-medium text-foreground shadow-lg hover:shadow-xl transition-all active:scale-[0.97]"
           >
-            <Sparkles className="h-4 w-4 text-primary" />
-            Open Coach
+            <ScrollText className="h-4 w-4 text-primary" />
+            Open Panel
           </motion.button>
         )}
       </AnimatePresence>

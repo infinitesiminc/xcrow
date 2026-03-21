@@ -17,7 +17,7 @@ import SimulatorModal from "@/components/SimulatorModal";
 import { TaskCard } from "@/components/role/TaskCard";
 import { TaskDetailPanel } from "@/components/role/TaskDetailPanel";
 import XcrowLoader from "@/components/XcrowLoader";
-import { RoleChat } from "@/components/role/RoleChat";
+import { useChatViewContext } from "@/contexts/ChatContext";
 import type { FuturePrediction } from "@/components/analysis/FutureTaskPreview";
 
 // ── Helpers ──────────────────────────────────────────────────────
@@ -42,6 +42,20 @@ function ReadinessRing({ readiness, size = 44 }: { readiness: number; size?: num
       </div>
     </div>
   );
+}
+
+/** Injects role deep dive context into the unified chat */
+function RoleDeepDiveViewContext({ jobTitle, company, completedCount, predsSummary }: {
+  jobTitle: string; company?: string; completedCount: number; predsSummary: string;
+}) {
+  useChatViewContext({
+    page: "role-deep-dive",
+    jobTitle,
+    company: company || undefined,
+    completedCount,
+    predictionsSummary: predsSummary,
+  }, [jobTitle, company, completedCount, predsSummary]);
+  return null;
 }
 
 // ── Page ─────────────────────────────────────────────────────────
@@ -507,13 +521,12 @@ const RoleDeepDive = () => {
         </div>
       </div>
 
-      {/* Chat FAB */}
-      <RoleChat
+      {/* View context for unified chat */}
+      <RoleDeepDiveViewContext
         jobTitle={result.jobTitle}
         company={result.company}
-        timeHorizon={0}
         completedCount={completedCount}
-        predictionsSummary={predsSummary}
+        predsSummary={predsSummary}
       />
 
       <SimulatorModal
