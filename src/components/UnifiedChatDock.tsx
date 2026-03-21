@@ -62,7 +62,7 @@ export default function UnifiedChatDock() {
             exit={{ y: 80, opacity: 0 }}
             transition={{ type: "spring", damping: 25, stiffness: 300 }}
             onClick={() => setIsOpen(true)}
-            className="fixed bottom-4 right-4 z-40 flex items-center gap-2 px-4 py-2.5 rounded-full bg-card/95 backdrop-blur-xl border border-border/50 shadow-2xl hover:shadow-[0_0_30px_-10px_hsl(var(--primary)/0.3)] transition-all group"
+            className="fixed bottom-4 right-4 z-[60] flex items-center gap-2 px-4 py-2.5 rounded-full bg-card/95 backdrop-blur-xl border border-border/50 shadow-2xl hover:shadow-[0_0_30px_-10px_hsl(var(--primary)/0.3)] transition-all group"
           >
             <div className="relative">
               <Sparkles className="h-4 w-4 text-primary" />
@@ -82,7 +82,7 @@ export default function UnifiedChatDock() {
             animate={{ y: 0, opacity: 1, scale: 1 }}
             exit={{ y: "100%", opacity: 0, scale: 0.95 }}
             transition={{ type: "spring", damping: 28, stiffness: 280 }}
-            className="fixed bottom-4 right-4 z-40 w-[380px] flex flex-col bg-card/95 backdrop-blur-xl border border-border/50 rounded-2xl shadow-2xl"
+            className="fixed bottom-4 right-4 z-[60] w-[380px] flex flex-col bg-card/95 backdrop-blur-xl border border-border/50 rounded-2xl shadow-2xl"
             style={{ maxHeight: "min(70vh, 560px)" }}
           >
             {/* Header */}
