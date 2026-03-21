@@ -109,19 +109,24 @@ export function TaskDetailPanel({
           <h4 className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">
             Future Skills Needed
           </h4>
-          <div className="space-y-1.5">
+          <div className="flex gap-2.5 overflow-x-auto pb-2 -mx-1 px-1 scrollbar-thin">
             {prediction.future_skills.map(skill => (
               <button
                 key={skill.id}
                 onClick={() => onPractice(task)}
-                className="w-full flex items-center gap-2.5 rounded-lg border border-dashed border-primary/30 bg-primary/[0.03] px-3 py-2 text-left hover:bg-primary/[0.06] hover:border-primary/50 transition-colors group"
+                className="relative flex-none w-36 rounded-xl border border-primary/20 bg-gradient-to-br from-primary/[0.06] to-accent/[0.04] p-3 text-left hover:border-primary/40 hover:shadow-md hover:shadow-primary/5 transition-all group"
               >
-                <span className="text-base">{skill.icon_emoji}</span>
-                <div className="min-w-0 flex-1">
-                  <div className="text-xs font-medium text-foreground/80 group-hover:text-foreground">{skill.name}</div>
-                  <div className="text-[9px] text-muted-foreground truncate">{skill.description}</div>
+                <div className="text-2xl mb-2">{skill.icon_emoji}</div>
+                <div className="text-[11px] font-semibold text-foreground group-hover:text-primary transition-colors leading-tight mb-1">
+                  {skill.name}
                 </div>
-                <Play className="h-3 w-3 text-primary/40 group-hover:text-primary shrink-0" />
+                <div className="text-[9px] text-muted-foreground leading-snug line-clamp-2 mb-2.5">
+                  {skill.description}
+                </div>
+                <div className="flex items-center gap-1 text-[9px] font-medium text-primary/60 group-hover:text-primary transition-colors">
+                  <Play className="h-2.5 w-2.5" />
+                  Simulate
+                </div>
               </button>
             ))}
           </div>
