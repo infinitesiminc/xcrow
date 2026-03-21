@@ -117,6 +117,8 @@ const Index = () => {
   const isMobile = useIsMobile();
   const { skills: dbSkills } = useSkills();
 
+  const { futureSkills } = useFutureSkills();
+
   // Convert DB skills to TaxonomySkill format for layout/aggregation
   const taxonomy: TaxonomySkill[] = useMemo(() =>
     dbSkills.map(s => ({
