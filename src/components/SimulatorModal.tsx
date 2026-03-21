@@ -873,7 +873,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                   animate={{ opacity: 1, scale: 1 }}
                   className="text-xs px-3 py-1 rounded-full text-primary bg-primary/10"
                 >
-                  💬 {roundCount}/{maxRounds}
+                  ⚔️ Wave {roundCount}/{maxRounds}
                 </motion.span>
               )}
               <button
