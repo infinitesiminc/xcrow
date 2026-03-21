@@ -131,6 +131,35 @@ export default function FutureTerritoryMap({ skills, focusSkillId }: FutureTerri
 
   const skillLookup = useMemo(() => new Map(skills.map(s => [s.id, s])), [skills]);
 
+  // External focus: pan to skill and open drawer
+  useEffect(() => {
+    if (!focusSkillId) return;
+    const skill = skillLookup.get(focusSkillId);
+    if (!skill) return;
+
+    // Find which island contains this skill and its position
+    for (const island of layout) {
+      const allNodes = [...island.nodes, ...island.expandedNodes];
+      const node = allNodes.find(n => n.skillId === focusSkillId);
+      if (node) {
+        const container = containerRef.current;
+        if (container) {
+          const rect = container.getBoundingClientRect();
+          const svgScale = rect.width / FUTURE_MAP_WIDTH;
+          const zoomLevel = 2.5;
+          const targetX = rect.width / 2 - node.x * svgScale * zoomLevel;
+          const targetY = rect.height / 2 - node.y * svgScale * (FUTURE_MAP_WIDTH / FUTURE_MAP_HEIGHT) * (rect.height / rect.width) * zoomLevel;
+          setTransform({ x: targetX, y: targetY, scale: zoomLevel });
+          setFocusedIsland(island.category);
+        }
+        break;
+      }
+    }
+
+    setSelectedSkill(skill);
+    setDrawerOpen(true);
+  }, [focusSkillId, skillLookup, layout]);
+
   // Minimap
   const MINIMAP_W = 140;
   const MINIMAP_H = MINIMAP_W * (FUTURE_MAP_HEIGHT / FUTURE_MAP_WIDTH);
