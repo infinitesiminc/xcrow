@@ -247,7 +247,7 @@ const BriefingScreen = ({
           transition={{ delay: 0.3, duration: 0.4 }}
           className="rounded-2xl border border-border/30 p-6"
         >
-          <h4 className="text-xs font-medium uppercase tracking-widest text-muted-foreground mb-3">Tips</h4>
+          <h4 className="text-xs font-medium uppercase tracking-widest text-muted-foreground mb-3">Battle Tips</h4>
           <ul className="space-y-3">
             {session.tips.map((tip: any, i: number) => {
               const tipText = typeof tip === "string" ? tip : (tip.content || tip.title || JSON.stringify(tip));
