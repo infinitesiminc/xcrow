@@ -306,14 +306,14 @@ const RoleDeepDive = () => {
 
       {/* 2-column body */}
       <div className="flex-1 flex overflow-hidden">
-        {/* LEFT — Task list */}
+        {/* LEFT — Quest Log */}
         <div className="w-80 shrink-0 border-r border-border flex flex-col overflow-hidden">
-          {/* Stats strip */}
+          {/* Stats strip — Battle Readiness */}
           <div className="shrink-0 p-3 border-b border-border/50 flex items-center gap-3">
             <ReadinessRing readiness={readiness} size={56} />
             <div className="flex-1 space-y-1">
               <div className="flex items-center justify-between">
-                <span className="text-[8px] text-muted-foreground uppercase">AI Exposure</span>
+                <span className="text-[8px] text-muted-foreground uppercase">Threat Level</span>
                 <div className="flex items-center gap-1">
                   <span className="text-xs font-bold text-foreground tabular-nums">{currentRisk}%</span>
                   {futureStats && (
@@ -328,15 +328,15 @@ const RoleDeepDive = () => {
                 </div>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-[8px] text-muted-foreground uppercase">Tasks</span>
+                <span className="text-[8px] text-muted-foreground uppercase">Quests</span>
                 <span className="text-xs font-bold text-foreground tabular-nums">
                   {result.tasks.length}
-                  {completedCount > 0 && <span className="text-success ml-1 font-normal">({completedCount} done)</span>}
+                  {completedCount > 0 && <span className="text-success ml-1 font-normal">({completedCount} ✓)</span>}
                 </span>
               </div>
               {futureStats && futureStats.collapseCount > 0 && (
                 <div className="flex items-center justify-between">
-                  <span className="text-[8px] text-muted-foreground uppercase">At Risk</span>
+                  <span className="text-[8px] text-muted-foreground uppercase">⚠️ Endangered</span>
                   <span className="text-xs font-bold text-destructive tabular-nums">{futureStats.collapseCount}</span>
                 </div>
               )}
