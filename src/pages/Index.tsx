@@ -282,13 +282,22 @@ const Index = () => {
   const showOnboarding = isSignedIn && profile && !profile.onboardingCompleted;
   const [onboardingDismissed, setOnboardingDismissed] = useState(false);
 
-  // Build live view context for AI chat
-  const viewContext = useMemo<ViewContext>(() => ({
+  // Inject view context into the unified chat
+  const chatViewCtx = useMemo(() => ({
+    page: "home" as const,
     activePanel: selectedRole ? "role-preview" : rightTab === "roles" ? "roles" : "territory",
     selectedRole: selectedRole ? { title: selectedRole.title, company: selectedRole.company, jobId: selectedRole.jobId } : null,
     selectedTab: rightTab === "roles" ? myRolesTab : undefined,
     lastSimResult,
   }), [selectedRole, rightTab, myRolesTab, lastSimResult]);
+  useChatViewContext(chatViewCtx, [chatViewCtx]);
+
+  // Wire up role callbacks from the unified chat
+  const { onRolesFoundRef, onRoleSelectRef, sendMessage: chatSendMessage, setIsOpen: setChatDockOpen } = useChatContext();
+  useEffect(() => {
+    onRolesFoundRef.current = handleRolesFound;
+    onRoleSelectRef.current = handleRoleSelect;
+  }, [handleRolesFound, handleRoleSelect, onRolesFoundRef, onRoleSelectRef]);
 
   /* ── Onboarding Quest ── */
   if (showOnboarding && !onboardingDismissed) {
