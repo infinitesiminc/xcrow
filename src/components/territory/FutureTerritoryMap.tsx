@@ -151,20 +151,10 @@ export default function FutureTerritoryMap({ skills }: FutureTerritoryMapProps) 
     };
   }, [transform, MINIMAP_H]);
 
-  const handleMinimapClick = useCallback((e: React.MouseEvent<SVGSVGElement>) => {
-    const svgEl = e.currentTarget;
-    const rect = svgEl.getBoundingClientRect();
-    const clickX = ((e.clientX - rect.left) / rect.width) * FUTURE_MAP_WIDTH;
-    const clickY = ((e.clientY - rect.top) / rect.height) * FUTURE_MAP_HEIGHT;
-    const container = containerRef.current;
-    if (!container) return;
-    const cRect = container.getBoundingClientRect();
-    const svgScale = cRect.width / FUTURE_MAP_WIDTH;
-    const targetX = cRect.width / 2 - clickX * svgScale * transform.scale;
-    const targetY = cRect.height / 2 - clickY * svgScale * transform.scale * (FUTURE_MAP_HEIGHT / FUTURE_MAP_WIDTH) * (cRect.width / cRect.height);
-    const c = clampTransform(targetX, targetY, transform.scale);
-    setTransform(t => ({ ...t, ...c }));
-  }, [transform.scale, clampTransform]);
+  const handleMinimapClick = useCallback(() => {
+    setTransform({ x: 0, y: 0, scale: 1 });
+    setFocusedIsland(null);
+  }, []);
 
   return (
     <TooltipProvider delayDuration={200}>
