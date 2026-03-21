@@ -115,7 +115,8 @@ export function TaskDetailPanel({
             ))}
           </div>
         </div>
-      )
+      )}
+
 
       {/* Future prediction details */}
       {prediction && (
