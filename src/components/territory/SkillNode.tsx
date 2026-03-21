@@ -264,7 +264,7 @@ export default function SkillNode({
                 x={x}
                 y={y - nodeRadius - 3}
                 textAnchor="middle"
-                style={{ fontSize: "5.5px", fontWeight: 800, fill: "white", textTransform: "uppercase" }}
+                style={{ fontSize: "7px", fontWeight: 800, fill: "white", textTransform: "uppercase" }}
               >
                 {rarity}
               </text>
