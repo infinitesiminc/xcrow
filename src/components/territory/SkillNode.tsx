@@ -65,7 +65,9 @@ export default function SkillNode({
 
   const nodeRadius = 22;
 
-  const fillColor = isLit
+  const fillColor = isGhost
+    ? `hsl(270 30% 12% / 0.5)`
+    : isLit
     ? `hsl(${baseHue} 60% 25%)`
     : isContested
     ? `hsl(38 70% 20%)`
