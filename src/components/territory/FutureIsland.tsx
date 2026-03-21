@@ -139,6 +139,33 @@ export default function FutureIsland({ island, skillLookup, isFocused, highlight
                   onSkillClick?.(skill);
                 }}
               >
+                {/* Spotlight for highlighted skill */}
+                {highlightedSkillId === node.skillId && (
+                  <>
+                    <motion.circle
+                      cx={node.x}
+                      cy={node.y}
+                      r={nodeRadius + 14}
+                      fill="none"
+                      stroke="hsl(var(--primary))"
+                      strokeWidth={2.5}
+                      opacity={0.8}
+                      animate={{ r: [nodeRadius + 12, nodeRadius + 18, nodeRadius + 12], opacity: [0.8, 0.4, 0.8] }}
+                      transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                      filter="url(#future-glow)"
+                    />
+                    <motion.circle
+                      cx={node.x}
+                      cy={node.y}
+                      r={nodeRadius + 8}
+                      fill="hsl(var(--primary) / 0.08)"
+                      stroke="hsl(var(--primary))"
+                      strokeWidth={1.5}
+                      opacity={0.6}
+                    />
+                  </>
+                )}
+
                 {/* Glow ring for high-demand */}
                 {skill.demandCount >= 8 && (
                   <circle
