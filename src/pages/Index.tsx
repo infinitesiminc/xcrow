@@ -467,13 +467,6 @@ const Index = () => {
             transition={{ type: "spring", damping: 28, stiffness: 300 }}
             className="absolute top-24 left-4 bottom-20 w-[420px] z-20 flex flex-col bg-card/90 backdrop-blur-xl border border-border/50 rounded-xl shadow-2xl overflow-hidden"
           >
-            {/* Close button */}
-            <button
-              onClick={() => setChatOpen(false)}
-              className="absolute top-2 right-2 z-10 p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
-            >
-              <X className="h-4 w-4" />
-            </button>
 
             {rightPanelTab === "table" ? (
               <div className="flex-1 overflow-hidden">
