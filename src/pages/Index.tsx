@@ -346,7 +346,6 @@ const Index = () => {
               <AdaptiveQueue userId={user.id} />
             </div>
           )}
-          </div>
         </div>
 
         <AnimatePresence>
