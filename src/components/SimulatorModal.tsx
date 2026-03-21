@@ -52,6 +52,8 @@ interface SimulatorModalProps {
   onCompleted?: () => void;
   onNextTask?: () => void;
   onBackToFeed?: () => void;
+  /** Open territory overlay focused on the skill just practiced, with XP gain animation */
+  onViewTerritory?: (skillId: string, xpGain: number) => void;
   inline?: boolean;
   /** When set, unauthenticated users are capped at this many user turns before seeing a CTA */
   guestMaxTurns?: number;
