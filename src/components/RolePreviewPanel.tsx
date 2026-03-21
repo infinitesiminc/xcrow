@@ -320,10 +320,20 @@ export default function RolePreviewPanel({ role, onClose, edgeContext }: RolePre
                       {t.ai_state && <span className="px-2 py-0.5 rounded-full bg-muted/40">{t.ai_state}</span>}
                       {t.impact_level && <span className="px-2 py-0.5 rounded-full bg-muted/40">{t.impact_level}</span>}
                     </div>
-                    <Button size="sm" variant={done ? "secondary" : "default"} className="h-7 text-xs rounded-full gap-1"
-                      onClick={() => startSimulation(t)}>
-                      <Play className="h-3 w-3" />{done ? "Retry" : "Practice"}
-                    </Button>
+                    <div className="flex items-center gap-2">
+                      <FutureTaskPreview
+                        taskName={t.cluster_name}
+                        jobTitle={role.title}
+                        company={role.company || undefined}
+                        aiExposureScore={score}
+                        description={t.description || undefined}
+                        onStartSim={() => startSimulation(t)}
+                      />
+                      <Button size="sm" variant={done ? "secondary" : "default"} className="h-7 text-xs rounded-full gap-1"
+                        onClick={() => startSimulation(t)}>
+                        <Play className="h-3 w-3" />{done ? "Retry" : "Practice"}
+                      </Button>
+                    </div>
                   </div>
                 </div>
               </motion.div>
