@@ -1,3 +1,4 @@
+import { isStandardEmoji } from "@/lib/emoji-utils";
 import { motion } from "framer-motion";
 import {
   Play, AlertTriangle, Sparkles, Clock, X, ArrowRight,
