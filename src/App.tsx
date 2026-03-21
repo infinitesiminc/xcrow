@@ -11,6 +11,7 @@ import Footer from "@/components/Footer";
 // Lazy-load all page components
 const Index = lazy(() => import("./pages/Index.tsx"));
 const Analysis = lazy(() => import("./pages/Analysis.tsx"));
+const RoleDeepDive = lazy(() => import("./pages/RoleDeepDive.tsx"));
 const Auth = lazy(() => import("./pages/Auth.tsx"));
 const Settings = lazy(() => import("./pages/Settings.tsx"));
 const NotFound = lazy(() => import("./pages/NotFound.tsx"));
@@ -90,6 +91,7 @@ const App = () => (
             <Routes>
               {/* Public B2C routes */}
               <Route path="/" element={<><Navbar /><Index /></>} />
+              <Route path="/role/:jobTitle" element={<><Navbar /><RoleDeepDive /></>} />
               <Route path="/analysis" element={<><Navbar /><Analysis /><Footer /></>} />
               <Route path="/auth" element={<><Navbar /><Auth /></>} />
               <Route path="/settings" element={<><Navbar /><Settings /><Footer /></>} />
