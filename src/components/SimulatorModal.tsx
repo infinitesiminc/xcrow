@@ -1377,7 +1377,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                         onClick={() => { onClose(); onNextTask(); }}
                         className="gap-2 rounded-xl w-full h-11"
                       >
-                        <TrendingUp className="h-4 w-4" /> Level Up — Harder Context
+                        <TrendingUp className="h-4 w-4" /> ⚔️ Level Up — Harder Wave
                       </Button>
                     )}
                     {scoreTier === "mid" && !onNextTask && (
