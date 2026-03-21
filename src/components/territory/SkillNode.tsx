@@ -57,6 +57,7 @@ export default function SkillNode({
   const isLit = state === "claimed" || state === "demo-lit";
   const isContested = state === "contested";
   const isFrontier = state === "frontier";
+  const isGhost = state === "ghost";
   const isSpecial = rarity === "rare" || rarity === "legendary";
   const rarityConf = RARITY_CONFIG[rarity] || RARITY_CONFIG.common;
 
