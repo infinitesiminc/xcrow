@@ -931,7 +931,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                   >
                     <Loader2 className="h-8 w-8 text-muted-foreground/40" />
                   </motion.div>
-                  <p className="text-sm text-muted-foreground">Preparing your session…</p>
+                  <p className="text-sm text-muted-foreground">Forging your quest…</p>
                 </motion.div>
               )}
 
