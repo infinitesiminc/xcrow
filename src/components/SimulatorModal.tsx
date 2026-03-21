@@ -811,6 +811,9 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
     return lower.includes("how would you approach") || lower.includes("how would you handle") || lower.includes("[scaffolding]") || lower.includes("[scaffold_tier:");
   })();
 
+  // Safely coerce content to string (API may return object)
+  const safeStr = (v: unknown): string => (typeof v === "string" ? v : JSON.stringify(v ?? ""));
+
   // Strip tags from message text for display
   const cleanMessageForDisplay = (content: string): string => {
     return content
