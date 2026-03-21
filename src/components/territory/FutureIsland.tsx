@@ -147,7 +147,7 @@ export default function FutureIsland({ island, skillLookup, isFocused, onIslandC
                     pointerEvents: "none",
                   }}
                 >
-                  {skill.name.length > 18 ? skill.name.slice(0, 16) + "…" : skill.name}
+                  {skill.name.length > 28 ? skill.name.slice(0, 26) + "…" : skill.name}
                 </text>
               </motion.g>
             </TooltipTrigger>
