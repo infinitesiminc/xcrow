@@ -242,7 +242,7 @@ export default function SkillNode({
                 x={x}
                 y={y + nodeRadius + 9}
                 textAnchor="middle"
-                style={{ fontSize: "6px", fontWeight: 700, fill: "white" }}
+                style={{ fontSize: "8px", fontWeight: 700, fill: "white" }}
               >
                 ⏳ {getTimeLeft(dropExpiresAt)}
               </text>
