@@ -126,7 +126,7 @@ export function TaskDetailPanel({
                 </div>
                 <div className="flex items-center gap-1 text-[9px] font-medium text-primary/60 group-hover:text-primary transition-colors">
                   <Play className="h-2.5 w-2.5" />
-                  Simulate
+                  Practice Quest
                 </div>
               </button>
             ))}
