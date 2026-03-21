@@ -42,16 +42,16 @@ const ALL_CATEGORIES: FutureSkillCategory[] = [
   "Communication", "Ethics & Compliance", "Creative", "Leadership",
 ];
 
-/** Max skills shown per island — scales with category size */
+/** Max skills shown per island — show all skills now that catalogue is optimized to 183 */
 const MAX_PER_ISLAND: Record<FutureSkillCategory, number> = {
-  Strategic:              28,
-  Technical:              20,
-  Analytical:             18,
-  "Human Edge":           14,
-  Communication:          14,
-  "Ethics & Compliance":  10,
-  Creative:               10,
-  Leadership:             3,
+  Technical:              43,
+  Analytical:             41,
+  "Human Edge":           24,
+  Communication:          18,
+  Creative:               17,
+  Leadership:             17,
+  "Ethics & Compliance":  13,
+  Strategic:              10,
 };
 
 /**
