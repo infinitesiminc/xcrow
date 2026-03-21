@@ -52,6 +52,8 @@ interface SimulatorModalProps {
   onCompleted?: () => void;
   onNextTask?: () => void;
   onBackToFeed?: () => void;
+  /** Open territory overlay focused on the skill just practiced, with XP gain animation */
+  onViewTerritory?: (skillId: string, xpGain: number) => void;
   inline?: boolean;
   /** When set, unauthenticated users are capped at this many user turns before seeing a CTA */
   guestMaxTurns?: number;
@@ -458,7 +460,7 @@ const UnmetObjectivesReview = ({
 };
 
 /* ── Main Modal ── */
-const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState, taskTrend, taskImpactLevel, mode = "assess", onCompleted, onNextTask, onBackToFeed, inline = false, guestMaxTurns }: SimulatorModalProps) => {
+const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState, taskTrend, taskImpactLevel, mode = "assess", onCompleted, onNextTask, onBackToFeed, onViewTerritory, inline = false, guestMaxTurns }: SimulatorModalProps) => {
   const [phase, setPhase] = useState<Phase>("loading");
   const [session, setSession] = useState<SimSession | null>(null);
   const [messages, setMessages] = useState<SimMessage[]>([]);
@@ -1437,6 +1439,20 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                         className="gap-2 rounded-xl w-full text-xs"
                       >
                         Same Skill, Different Industry
+                      </Button>
+                    )}
+
+                    {/* View Territory — auto-pan to upgraded castle */}
+                    {onViewTerritory && currentSkillIds.length > 0 && (
+                      <Button
+                        variant="outline"
+                        onClick={() => {
+                          onClose();
+                          onViewTerritory(currentSkillIds[0], xpEarned);
+                        }}
+                        className="gap-2 rounded-xl w-full text-xs"
+                      >
+                        <Map className="h-3 w-3" /> 🏰 View Territory
                       </Button>
                     )}
 

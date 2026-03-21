@@ -165,6 +165,8 @@ const Index = () => {
   const [territoryOpen, setTerritoryOpen] = useState(false);
   const [lastPracticedSkillId, setLastPracticedSkillId] = useState<string | null>("code-dev");
   const [hasOpenedTerritory, setHasOpenedTerritory] = useState(false);
+  const [territoryFocusSkillId, setTerritoryFocusSkillId] = useState<string | null>(null);
+  const [territoryXpGain, setTerritoryXpGain] = useState(0);
 
   const [realSkills, setRealSkills] = useState<SkillXP[]>([]);
   const [targetSkillIds, setTargetSkillIds] = useState<Set<string>>(new Set());
@@ -261,6 +263,13 @@ const Index = () => {
     setFullScreenRole(role);
   }, []);
 
+  const handleViewTerritory = useCallback((skillId: string, xpGain: number) => {
+    setTerritoryFocusSkillId(skillId);
+    setTerritoryXpGain(xpGain);
+    setLastPracticedSkillId(skillId);
+    setTerritoryOpen(true);
+  }, []);
+
   const greeting = getGreeting();
   const userName = profile?.displayName?.split(" ")[0];
   const isSignedIn = !!user;
@@ -353,9 +362,15 @@ const Index = () => {
         {/* Territory overlay */}
         <TerritoryOverlay
           open={territoryOpen}
-          onClose={() => setTerritoryOpen(false)}
+          onClose={() => {
+            setTerritoryOpen(false);
+            setTerritoryFocusSkillId(null);
+            setTerritoryXpGain(0);
+          }}
           skills={displaySkills}
           lastPracticedSkillId={lastPracticedSkillId}
+          focusSkillId={territoryFocusSkillId}
+          xpGain={territoryXpGain}
         />
 
         {/* Territory button (floating) */}
@@ -597,9 +612,15 @@ const Index = () => {
       {/* Territory overlay */}
       <TerritoryOverlay
         open={territoryOpen}
-        onClose={() => setTerritoryOpen(false)}
+        onClose={() => {
+          setTerritoryOpen(false);
+          setTerritoryFocusSkillId(null);
+          setTerritoryXpGain(0);
+        }}
         skills={displaySkills}
         lastPracticedSkillId={lastPracticedSkillId}
+        focusSkillId={territoryFocusSkillId}
+        xpGain={territoryXpGain}
       />
 
       {/* Territory button (floating) */}
