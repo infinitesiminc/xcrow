@@ -119,11 +119,11 @@ export default function PublicProfile() {
   if (notFound || !profile) {
     return (
       <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-4">
-        <img src={crowLogo} alt="xcrow" className="h-16 w-16 opacity-50" />
+        <img src={crowLogo} alt="Xcrow" className="h-16 w-16 opacity-50" />
         <h1 className="text-xl font-bold text-foreground">Adventurer not found</h1>
         <p className="text-muted-foreground text-sm">This profile doesn't exist or hasn't been claimed yet.</p>
         <Link to="/" className="text-primary hover:underline text-sm flex items-center gap-1">
-          <ExternalLink className="h-3 w-3" /> Go to xcrow.ai
+          <ExternalLink className="h-3 w-3" /> Go to Xcrow.ai
         </Link>
       </div>
     );
@@ -138,8 +138,8 @@ export default function PublicProfile() {
       <div className="border-b border-border/50 bg-card/50 backdrop-blur-sm">
         <div className="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2">
-            <img src={crowLogo} alt="xcrow" className="h-7 w-7" />
-            <span className="text-sm font-bold text-foreground">xcrow.ai</span>
+            <img src={crowLogo} alt="Xcrow" className="h-7 w-7" />
+            <span className="text-sm font-bold text-foreground">Xcrow.ai</span>
           </Link>
           <Badge variant="outline" className="text-[10px]">Public Profile</Badge>
         </div>
@@ -324,7 +324,7 @@ export default function PublicProfile() {
             className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors"
           >
             <img src={crowLogo} alt="" className="h-4 w-4" />
-            Start your quest on xcrow.ai
+            Start your quest on Xcrow.ai
           </Link>
         </motion.div>
       </div>
