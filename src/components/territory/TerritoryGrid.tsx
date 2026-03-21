@@ -253,7 +253,7 @@ function SkillTile({
         </div>
       </div>
       {skill.humanEdge && (
-        <div className="text-[9px] text-muted-foreground italic pt-0.5">
+        <div className="text-[11px] text-muted-foreground italic pt-0.5">
           Edge: {skill.humanEdge}
         </div>
       )}
