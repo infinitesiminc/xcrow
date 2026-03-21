@@ -263,7 +263,7 @@ export default function TerritoryMap({
                   y={island.cy - 82}
                   textAnchor="middle"
                   style={{
-                    fontSize: "9px",
+                    fontSize: "12px",
                     fontWeight: 700,
                     fill: `hsl(${island.theme.baseHue} 50% 60%)`,
                     textTransform: "uppercase",
