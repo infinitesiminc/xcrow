@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Map, Bookmark, X, Sparkles } from "lucide-react";
 import { useFutureSkills } from "@/hooks/use-future-skills";
 import FutureTerritoryMap from "@/components/territory/FutureTerritoryMap";
+import FutureSkillsTable from "@/components/territory/FutureSkillsTable";
 import { getLevel, levelProgress } from "@/lib/skill-map";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import HomepageChat, { type ViewContext } from "@/components/HomepageChat";
@@ -108,7 +109,7 @@ function buildDemoSkills(): SkillXP[] {
 }
 
 /* ── Right panel tab type ────────────────────────── */
-type RightTab = "territory" | "roles";
+type RightTab = "territory" | "table" | "roles";
 
 /* ── component ───────────────────────────────────── */
 
@@ -429,6 +430,17 @@ const Index = () => {
                   Territory
                 </button>
                 <button
+                  onClick={() => setRightTab("table")}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-t-lg text-xs font-medium transition-colors border-b-2 ${
+                    rightTab === "table"
+                      ? "border-primary text-foreground bg-background/50"
+                      : "border-transparent text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M3 15h18"/><path d="M9 3v18"/></svg>
+                  Table
+                </button>
+                <button
                   onClick={() => setRightTab("roles")}
                   className={`flex items-center gap-1.5 px-3 py-1.5 rounded-t-lg text-xs font-medium transition-colors border-b-2 ${
                     rightTab === "roles"
@@ -492,6 +504,16 @@ const Index = () => {
                     onAskChat={handleRolesAskChat}
                     onTabChange={setMyRolesTab}
                   />
+                </motion.div>
+              ) : rightTab === "table" ? (
+                <motion.div
+                  key="table"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.3 }}
+                  className="h-full overflow-hidden"
+                >
+                  <FutureSkillsTable skills={futureSkills} />
                 </motion.div>
               ) : (
                 <motion.div
