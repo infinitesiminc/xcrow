@@ -102,16 +102,24 @@ export default function FutureIsland({ island, skillLookup, isFocused, highlight
         {skillCount} skill{skillCount !== 1 ? "s" : ""}
       </text>
 
-      {/* Skill nodes — render hovered node last so it's on top */}
-      {[...activeNodes].sort((a, b) => (a.skillId === hoveredId ? 1 : b.skillId === hoveredId ? -1 : 0)).map((node) => {
+      {/* Skill nodes — render highlighted/hovered node last so it's on top */}
+      {[...activeNodes].sort((a, b) => {
+        if (a.skillId === highlightedSkillId) return 1;
+        if (b.skillId === highlightedSkillId) return -1;
+        if (a.skillId === hoveredId) return 1;
+        if (b.skillId === hoveredId) return -1;
+        return 0;
+      }).map((node) => {
         const skill = skillLookup.get(node.skillId);
         if (!skill) return null;
 
         const isHovered = hoveredId === node.skillId;
+        const isHighlighted = highlightedSkillId === node.skillId;
+        const isDimmed = !!highlightedSkillId && !isHighlighted && !isHovered;
         const pos = getDisplacedPosition(node, hoveredNode, isHovered);
-        const nodeRadius = isFocused && !isHovered ? 14 : 18;
+        const nodeRadius = isFocused && !isHovered && !isHighlighted ? 14 : 18;
         const intensity = Math.min(1, skill.demandCount / 15);
-        const showLabel = !isFocused || isHovered;
+        const showLabel = !isFocused || isHovered || isHighlighted;
 
         return (
           <Tooltip key={node.skillId}>
@@ -119,8 +127,8 @@ export default function FutureIsland({ island, skillLookup, isFocused, highlight
               <motion.g
                 initial={{ scale: 0, opacity: 0 }}
                 animate={{
-                  scale: 1,
-                  opacity: 1,
+                  scale: isHighlighted ? 1.15 : 1,
+                  opacity: isDimmed ? 0.25 : 1,
                   x: pos.x - node.x,
                   y: pos.y - node.y,
                 }}
