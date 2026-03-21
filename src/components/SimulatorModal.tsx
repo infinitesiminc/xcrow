@@ -1105,7 +1105,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                   className="flex flex-col items-center justify-center py-20 gap-4"
                 >
                   <Loader2 className="h-6 w-6 text-muted-foreground/40 animate-spin" />
-                  <p className="text-sm text-muted-foreground">Evaluating your progress…</p>
+                  <p className="text-sm text-muted-foreground">Compiling battle report…</p>
                 </motion.div>
               )}
 
