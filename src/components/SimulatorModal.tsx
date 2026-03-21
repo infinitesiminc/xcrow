@@ -803,11 +803,14 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
     }
   };
 
+  // Safely coerce content to string (API may return object)
+  const safeStr = (v: unknown): string => (typeof v === "string" ? v : JSON.stringify(v ?? ""));
+
   const showHelpChip = phase === "chat" && !sending && (() => {
     if (messages.length < 1) return false;
     const lastMsg = messages[messages.length - 1];
     if (lastMsg.role !== "assistant") return false;
-    const lower = lastMsg.content.toLowerCase();
+    const lower = safeStr(lastMsg.content).toLowerCase();
     return lower.includes("how would you approach") || lower.includes("how would you handle") || lower.includes("[scaffolding]") || lower.includes("[scaffold_tier:");
   })();
 
@@ -961,16 +964,16 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                 <div className="max-w-2xl mx-auto space-y-4">
                   {messages.map((msg, i) => {
                     const isUser = msg.role === "user";
-                    const displayContent = isUser ? msg.content : cleanMessageForDisplay(msg.content);
+                    const displayContent = isUser ? safeStr(msg.content) : cleanMessageForDisplay(safeStr(msg.content));
 
                     // Detect scenario transition: assistant message containing a new scenario marker or following a topic-change user message
                     const prevMsg = i > 0 ? messages[i - 1] : null;
                     const topicChangeWords = ["yes", "y", "yeah", "sure", "next", "new topic", "move on", "continue", "let's go", "skip"];
-                    const prevIsTopicChange = prevMsg?.role === "user" && topicChangeWords.some(w => prevMsg.content.toLowerCase().trim().includes(w));
+                    const prevIsTopicChange = prevMsg?.role === "user" && topicChangeWords.some(w => safeStr(prevMsg.content).toLowerCase().trim().includes(w));
                     const hasScenarioMarker = !isUser && (displayContent.includes("📖 Scenario") || displayContent.includes("📖 **Scenario"));
                     const isNewScenario = !isUser && (prevIsTopicChange || hasScenarioMarker) && i > 1;
                     
-                    const objectiveMetInMsg = !isUser ? (msg.content.match(/\[OBJECTIVE_MET:([^\]]+)\]/g) || []).map(t => {
+                    const objectiveMetInMsg = !isUser ? (safeStr(msg.content).match(/\[OBJECTIVE_MET:([^\]]+)\]/g) || []).map(t => {
                       const m = t.match(/\[OBJECTIVE_MET:([^\]]+)\]/);
                       return m ? m[1] : null;
                     }).filter(Boolean) : [];
@@ -1026,9 +1029,9 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                   {phase === "chat" && !sending && (() => {
                     const lastAi = [...messages].reverse().find(m => m.role === "assistant");
                     if (!lastAi) return null;
-                    const lower = lastAi.content.toLowerCase();
+                    const lower = safeStr(lastAi.content).toLowerCase();
                     const askContinue = lower.includes("ready for the next") || lower.includes("(yes/no)") || lower.includes("click finish");
-                    const allMetSignal = lastAi.content.includes("[ALL_OBJECTIVES_MET]");
+                    const allMetSignal = safeStr(lastAi.content).includes("[ALL_OBJECTIVES_MET]");
                     if (!askContinue && !allMetSignal) return null;
                     
                     const isLastRound = roundCount >= maxRounds;
