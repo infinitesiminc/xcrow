@@ -257,7 +257,7 @@ function SkillTile({
           Edge: {skill.humanEdge}
         </div>
       )}
-      <div className="text-[9px] text-primary pt-0.5">Click to explore →</div>
+      <div className="text-[11px] text-primary pt-0.5">Click to explore →</div>
     </div>
   );
 
