@@ -505,6 +505,16 @@ const Index = () => {
                     onTabChange={setMyRolesTab}
                   />
                 </motion.div>
+              ) : rightTab === "table" ? (
+                <motion.div
+                  key="table"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.3 }}
+                  className="h-full overflow-hidden"
+                >
+                  <FutureSkillsTable skills={futureSkills} />
+                </motion.div>
               ) : (
                 <motion.div
                   key="territory"
