@@ -89,7 +89,7 @@ export default function SkillNode({
         {name}
       </div>
       {isSpecial && (
-        <div className="text-[10px] font-bold" style={{ color: rarityConf.glowColor }}>
+        <div className="text-xs font-bold" style={{ color: rarityConf.glowColor }}>
           {rarityConf.label}
           {dropExpiresAt && !isExpired && (
             <span className="ml-1 opacity-70">⏳ {getTimeLeft(dropExpiresAt)}</span>
@@ -97,19 +97,19 @@ export default function SkillNode({
           {isExpired && <span className="ml-1 text-destructive">Expired</span>}
         </div>
       )}
-      {level && <div className="text-[10px] text-muted-foreground">{level}{xp ? ` • ${xp} XP` : ""}</div>}
+      {level && <div className="text-xs text-muted-foreground">{level}{xp ? ` • ${xp} XP` : ""}</div>}
       <div className="space-y-1 pt-1 border-t border-border/50">
-        <div className="flex items-center justify-between text-[10px]">
+        <div className="flex items-center justify-between text-xs">
           <span>{DIMENSION_INFO.foundation.emoji} Foundation</span>
           <span className="text-muted-foreground">{growth.foundation.label}</span>
         </div>
-        <div className="flex items-center justify-between text-[10px]">
+        <div className="flex items-center justify-between text-xs">
           <span>{DIMENSION_INFO.aiMastery.emoji} AI Mastery</span>
           <span className={growth.aiMastery.score >= 30 ? "text-primary" : "text-muted-foreground"}>
             {growth.aiMastery.label}
           </span>
         </div>
-        <div className="flex items-center justify-between text-[10px]">
+        <div className="flex items-center justify-between text-xs">
           <span>{DIMENSION_INFO.humanEdge.emoji} Human Edge</span>
           <span className={growth.humanEdge.score >= 30 ? "text-foreground" : "text-muted-foreground"}>
             {growth.humanEdge.label}
@@ -117,9 +117,9 @@ export default function SkillNode({
         </div>
       </div>
       {humanEdge && (
-        <div className="text-[9px] text-muted-foreground italic">Edge: {humanEdge}</div>
+        <div className="text-[11px] text-muted-foreground italic">Edge: {humanEdge}</div>
       )}
-      <div className="text-[9px] text-primary">Click to explore →</div>
+      <div className="text-[11px] text-primary">Click to explore →</div>
     </div>
   );
 
@@ -207,7 +207,7 @@ export default function SkillNode({
               x={x}
               y={y + 4}
               textAnchor="middle"
-              style={{ fontSize: "10px" }}
+              style={{ fontSize: "13px" }}
             >
               {iconEmoji}
             </text>
@@ -242,7 +242,7 @@ export default function SkillNode({
                 x={x}
                 y={y + nodeRadius + 9}
                 textAnchor="middle"
-                style={{ fontSize: "6px", fontWeight: 700, fill: "white" }}
+                style={{ fontSize: "8px", fontWeight: 700, fill: "white" }}
               >
                 ⏳ {getTimeLeft(dropExpiresAt)}
               </text>
@@ -264,7 +264,7 @@ export default function SkillNode({
                 x={x}
                 y={y - nodeRadius - 3}
                 textAnchor="middle"
-                style={{ fontSize: "5.5px", fontWeight: 800, fill: "white", textTransform: "uppercase" }}
+                style={{ fontSize: "7px", fontWeight: 800, fill: "white", textTransform: "uppercase" }}
               >
                 {rarity}
               </text>
@@ -278,7 +278,7 @@ export default function SkillNode({
             textAnchor="middle"
             className="fill-current text-foreground"
             style={{
-              fontSize: "8px",
+              fontSize: "11px",
               fontWeight: 600,
               fill: isDim ? "hsl(var(--muted-foreground))" : isSpecial ? rarityConf.glowColor : isLit ? `hsl(${baseHue} 70% 70%)` : "hsl(var(--foreground))",
               opacity: isDim ? 0.5 : 0.9,
@@ -302,7 +302,7 @@ export default function SkillNode({
                 x={x + nodeRadius + 6}
                 y={y - nodeRadius + 7}
                 textAnchor="middle"
-                style={{ fontSize: "7px", fontWeight: 700, fill: "white" }}
+                style={{ fontSize: "9px", fontWeight: 700, fill: "white" }}
               >
                 {xp}
               </text>

@@ -162,12 +162,12 @@ export default function TerritoryGrid({
               <div className="flex items-center gap-1.5 mb-1.5">
                 <span className="text-xs">{CATEGORY_META[cat].emoji}</span>
                 <span
-                  className="text-[10px] font-semibold uppercase tracking-wider"
+                  className="text-xs font-semibold uppercase tracking-wider"
                   style={{ color: CATEGORY_COLORS[cat] }}
                 >
                   {CATEGORY_META[cat].label}
                 </span>
-                <span className="text-[9px] text-muted-foreground/50 ml-auto">
+                <span className="text-[11px] text-muted-foreground/50 ml-auto">
                   {grouped[cat].filter(t => t.state === "claimed" || t.state === "demo-lit").length}/{grouped[cat].length}
                 </span>
               </div>
@@ -198,14 +198,14 @@ export default function TerritoryGrid({
           ].map((l) => (
             <div key={l.label} className="flex items-center gap-1">
               <div className={`w-1.5 h-1.5 rounded-full ${l.dot}`} />
-              <span className="text-[9px] text-muted-foreground">{l.label}</span>
+              <span className="text-[11px] text-muted-foreground">{l.label}</span>
             </div>
           ))}
-          <span className="text-[9px] text-muted-foreground/50">•</span>
+          <span className="text-[11px] text-muted-foreground/50">•</span>
           {Object.entries(DIMENSION_INFO).map(([key, dim]) => (
             <div key={key} className="flex items-center gap-0.5">
-              <span className="text-[9px]">{dim.emoji}</span>
-              <span className="text-[9px] text-muted-foreground">{dim.label}</span>
+              <span className="text-[11px]">{dim.emoji}</span>
+              <span className="text-[11px] text-muted-foreground">{dim.label}</span>
             </div>
           ))}
         </div>
@@ -233,19 +233,19 @@ function SkillTile({
   const tooltipContent = (
     <div className="space-y-1.5 max-w-[200px]">
       <div className="font-semibold text-xs">{skill.name}</div>
-      {level && <div className="text-[10px] text-muted-foreground">{level}{xp ? ` • ${xp} XP` : ""}</div>}
+      {level && <div className="text-xs text-muted-foreground">{level}{xp ? ` • ${xp} XP` : ""}</div>}
       <div className="space-y-1 pt-1 border-t border-border/50">
-        <div className="flex items-center justify-between text-[10px]">
+        <div className="flex items-center justify-between text-xs">
           <span>{DIMENSION_INFO.foundation.emoji} Foundation</span>
           <span className="text-muted-foreground">{growth.foundation.label}</span>
         </div>
-        <div className="flex items-center justify-between text-[10px]">
+        <div className="flex items-center justify-between text-xs">
           <span>{DIMENSION_INFO.aiMastery.emoji} AI Mastery</span>
           <span className={growth.aiMastery.score >= 30 ? "text-primary" : "text-muted-foreground"}>
             {growth.aiMastery.label}
           </span>
         </div>
-        <div className="flex items-center justify-between text-[10px]">
+        <div className="flex items-center justify-between text-xs">
           <span>{DIMENSION_INFO.humanEdge.emoji} Human Edge</span>
           <span className={growth.humanEdge.score >= 30 ? "text-foreground" : "text-muted-foreground"}>
             {growth.humanEdge.label}
@@ -253,11 +253,11 @@ function SkillTile({
         </div>
       </div>
       {skill.humanEdge && (
-        <div className="text-[9px] text-muted-foreground italic pt-0.5">
+        <div className="text-[11px] text-muted-foreground italic pt-0.5">
           Edge: {skill.humanEdge}
         </div>
       )}
-      <div className="text-[9px] text-primary pt-0.5">Click to explore →</div>
+      <div className="text-[11px] text-primary pt-0.5">Click to explore →</div>
     </div>
   );
 
@@ -273,7 +273,7 @@ function SkillTile({
           transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
           onClick={onClick}
           className={`
-            relative group flex items-center gap-1 px-2 py-1 rounded-md text-[11px] font-medium
+            relative group flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-[13px] font-medium
             transition-all duration-200 cursor-pointer hover:scale-[1.03] active:scale-[0.97]
             ${isFrontier ? "border border-dashed border-muted-foreground/30" : ""}
             ${isContested ? "border border-warning/60 shadow-[0_0_6px_hsl(var(--warning)/0.15)]" : ""}
@@ -303,7 +303,7 @@ function SkillTile({
 
           {/* XP indicator for claimed tiles */}
           {isLit && xp && xp > 0 && (
-            <span className="ml-0.5 opacity-60 font-mono text-[8px]">
+            <span className="ml-0.5 opacity-60 font-mono text-[11px]">
               {xp}
             </span>
           )}
