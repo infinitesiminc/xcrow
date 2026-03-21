@@ -325,7 +325,7 @@ const Analysis = () => {
           <div className="mb-4">
             <div className="flex justify-between text-[10px] text-muted-foreground mb-1">
               <span>Progress</span>
-              <span>{completedCount}/{sortedTasks.length} practiced</span>
+              <span>{completedCount}/{sortedTasks.length} conquered</span>
             </div>
             <div className="h-1.5 rounded-full bg-secondary overflow-hidden">
               <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${(completedCount / sortedTasks.length) * 100}%` }} />
