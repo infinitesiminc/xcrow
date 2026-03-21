@@ -3,7 +3,7 @@
  * 8 island regions with minimap, pan clamping, and click-to-zoom.
  */
 
-import { useMemo, useState, useRef, useCallback } from "react";
+import { useMemo, useState, useRef, useCallback, useEffect } from "react";
 import { motion } from "framer-motion";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { type FutureSkill, type FutureSkillCategory } from "@/hooks/use-future-skills";
