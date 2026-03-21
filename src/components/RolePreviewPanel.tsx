@@ -522,7 +522,15 @@ export default function RolePreviewPanel({ role, onClose, edgeContext }: RolePre
                                     );
                                   })()}
 
-                                  {/* Practice CTA */}
+                                  {/* Future preview + Practice CTA */}
+                                  <FutureTaskPreview
+                                    taskName={t.cluster_name}
+                                    jobTitle={role.title}
+                                    company={role.company || undefined}
+                                    aiExposureScore={score}
+                                    description={t.description || undefined}
+                                    onStartSim={() => startSimulation(t)}
+                                  />
                                   <Button
                                     size="sm"
                                     variant={done ? "secondary" : "default"}
