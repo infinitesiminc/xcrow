@@ -347,6 +347,27 @@ const RoleDeepDive = () => {
             </div>
           )}
 
+          {/* All Future Skills button */}
+          {Object.keys(predictions).length > 0 && (
+            <button
+              onClick={() => setSelectedTask(null)}
+              className={`shrink-0 mx-2 mt-2 mb-1 flex items-center gap-1.5 px-3 py-2 rounded-lg text-[11px] font-medium transition-all border ${
+                !selectedTask
+                  ? "bg-primary/10 border-primary/30 text-primary"
+                  : "bg-muted/30 border-border/50 text-muted-foreground hover:bg-muted/50 hover:text-foreground"
+              }`}
+            >
+              <Sparkles className="h-3 w-3" />
+              All Future Skills
+              <span className="ml-auto text-[10px] tabular-nums opacity-70">
+                {(() => {
+                  const all = Object.values(predictions).flatMap(p => p.future_skills || []);
+                  return new Set(all.map(s => s.id)).size;
+                })()}
+              </span>
+            </button>
+          )}
+
           {/* Task list */}
           <div className="flex-1 overflow-y-auto p-2 space-y-1">
             {sortedTasks.map((task, i) => (
