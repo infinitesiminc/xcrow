@@ -202,8 +202,40 @@ For each candidate, determine:
         ? Math.round(clusterStats.reduce((s: number, c: any) => s + (c.job_impact_score || 50), 0) / clusterStats.length)
         : 50;
 
-      const { error } = await sb.from("skill_discovery_suggestions").upsert(
-        {
+      // Use insert with manual dedup instead of upsert (partial unique index not supported)
+      // First check if pending suggestion already exists
+      const { data: existing } = await sb
+        .from("skill_discovery_suggestions")
+        .select("id")
+        .eq("status", "pending")
+        .ilike("skill_name", candidate.name)
+        .limit(1);
+
+      if (existing && existing.length > 0) {
+        // Update existing
+        const { error } = await sb.from("skill_discovery_suggestions")
+          .update({
+            category: analysis.recommended_category || candidate.category,
+            demand_count: candidate.demand,
+            job_count: candidate.jobs,
+            avg_exposure: avgExposure,
+            avg_impact: avgImpact,
+            ai_analysis: {
+              action: analysis.action,
+              reasoning: analysis.reasoning,
+              merge_target: analysis.merge_target || null,
+              trend_signal: analysis.trend_signal,
+              priority: analysis.priority,
+            },
+            action: analysis.action,
+            merge_target_id: mergeTargetId,
+            discovered_at: new Date().toISOString(),
+          })
+          .eq("id", existing[0].id);
+        if (!error) inserted++;
+        else console.error(`Update ${candidate.name}: ${error.message}`);
+      } else {
+        const { error } = await sb.from("skill_discovery_suggestions").insert({
           skill_name: candidate.name,
           category: analysis.recommended_category || candidate.category,
           demand_count: candidate.demand,
@@ -221,9 +253,10 @@ For each candidate, determine:
           merge_target_id: mergeTargetId,
           status: "pending",
           discovered_at: new Date().toISOString(),
-        },
-        { onConflict: "idx_skill_discovery_name", ignoreDuplicates: false }
-      );
+        });
+        if (!error) inserted++;
+        else console.error(`Skip ${candidate.name}: ${error.message}`);
+      }
 
       if (!error) inserted++;
       else console.error(`Skip ${candidate.name}: ${error.message}`);

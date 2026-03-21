@@ -52,7 +52,9 @@ interface Participation {
 
 interface TrendingSkill {
   skill_name: string;
+  category: string;
   demand_count: number;
+  job_count: number;
   avg_exposure: number;
   avg_impact: number;
 }
@@ -123,7 +125,7 @@ export default function SkillDropsPage() {
     const [eventsRes, partRes, trendRes, suggestionsRes] = await Promise.all([
       supabase.from("skill_drop_events").select("*").order("created_at", { ascending: false }),
       supabase.from("skill_drop_participations").select("*"),
-      supabase.rpc("get_market_skill_demand", { top_n: 20 }),
+      supabase.rpc("get_future_skill_demand" as any, { top_n: 20 }),
       supabase.from("skill_discovery_suggestions" as any).select("*").order("discovered_at", { ascending: false }).limit(50),
     ]);
     setEvents((eventsRes.data as any) || []);
@@ -564,10 +566,10 @@ export default function SkillDropsPage() {
             <CardHeader className="pb-3">
               <CardTitle className="text-base flex items-center gap-2">
                 <TrendingUp className="h-4 w-4 text-primary" />
-                Market Skill Demand — Raw Data
+                Future Skills Demand — Level 2
               </CardTitle>
               <p className="text-xs text-muted-foreground">
-                Top skills by demand across analyzed job clusters. Click to create an event from any skill.
+                Top uncatalogued future skills from AI predictions across analyzed roles. Click to create an event.
               </p>
             </CardHeader>
             <CardContent>

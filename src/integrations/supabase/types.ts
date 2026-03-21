@@ -1404,6 +1404,7 @@ export type Database = {
           reviewed_at: string | null
           reviewed_by: string | null
           skill_name: string
+          skill_name_lower: string | null
           status: string
         }
         Insert: {
@@ -1420,6 +1421,7 @@ export type Database = {
           reviewed_at?: string | null
           reviewed_by?: string | null
           skill_name: string
+          skill_name_lower?: string | null
           status?: string
         }
         Update: {
@@ -1436,6 +1438,7 @@ export type Database = {
           reviewed_at?: string | null
           reviewed_by?: string | null
           skill_name?: string
+          skill_name_lower?: string | null
           status?: string
         }
         Relationships: []
@@ -1826,6 +1829,17 @@ export type Database = {
           company_id: string
           job_count: number
           task_cluster_count: number
+        }[]
+      }
+      get_future_skill_demand: {
+        Args: { top_n?: number }
+        Returns: {
+          avg_exposure: number
+          avg_impact: number
+          category: string
+          demand_count: number
+          job_count: number
+          skill_name: string
         }[]
       }
       get_leaderboard: {
