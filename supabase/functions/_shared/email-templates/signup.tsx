@@ -30,11 +30,11 @@ export const SignupEmail = ({
 }: SignupEmailProps) => (
   <Html lang="en" dir="ltr">
     <Head />
-    <Preview>Confirm your email for Crowy.ai</Preview>
+    <Preview>Confirm your email for Xcrow.ai</Preview>
     <Body style={main}>
       <Container style={container}>
-        <Img src="https://xtfubistkgodiksegtcx.supabase.co/storage/v1/object/public/email-assets/logo.png" alt="Crowy.ai" width="140" height="auto" style={{ marginBottom: '30px' }} />
-        <Heading style={h1}>Welcome to Crowy.ai</Heading>
+        <Img src="https://xtfubistkgodiksegtcx.supabase.co/storage/v1/object/public/email-assets/logo.png" alt="Xcrow.ai" width="140" height="auto" style={{ marginBottom: '30px' }} />
+        <Heading style={h1}>Welcome to Xcrow.ai</Heading>
         <Text style={text}>
           Thanks for signing up! Confirm your email address (
           <Link href={`mailto:${recipient}`} style={link}>

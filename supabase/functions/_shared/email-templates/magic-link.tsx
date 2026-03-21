@@ -25,13 +25,13 @@ export const MagicLinkEmail = ({
 }: MagicLinkEmailProps) => (
   <Html lang="en" dir="ltr">
     <Head />
-    <Preview>Your login link for Crowy.ai</Preview>
+    <Preview>Your login link for Xcrow.ai</Preview>
     <Body style={main}>
       <Container style={container}>
-        <Img src="https://xtfubistkgodiksegtcx.supabase.co/storage/v1/object/public/email-assets/logo.png" alt="Crowy.ai" width="140" height="auto" style={{ marginBottom: '30px' }} />
+        <Img src="https://xtfubistkgodiksegtcx.supabase.co/storage/v1/object/public/email-assets/logo.png" alt="Xcrow.ai" width="140" height="auto" style={{ marginBottom: '30px' }} />
         <Heading style={h1}>Your login link</Heading>
         <Text style={text}>
-          Click the button below to log in to Crowy.ai. This link will expire shortly.
+          Click the button below to log in to Xcrow.ai. This link will expire shortly.
         </Text>
         <Button style={button} href={confirmationUrl}>
           Log In
