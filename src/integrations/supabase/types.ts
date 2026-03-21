@@ -1389,6 +1389,121 @@ export type Database = {
         }
         Relationships: []
       }
+      skill_drop_events: {
+        Row: {
+          banner_emoji: string | null
+          created_at: string
+          created_by: string | null
+          description: string | null
+          ends_at: string | null
+          id: string
+          rarity: string
+          skill_id: string | null
+          starts_at: string | null
+          status: string
+          tier_1_label: string
+          tier_1_threshold: number
+          tier_2_label: string
+          tier_2_threshold: number
+          tier_3_label: string
+          tier_3_perfect_required: boolean
+          tier_3_threshold: number
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          banner_emoji?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          ends_at?: string | null
+          id?: string
+          rarity?: string
+          skill_id?: string | null
+          starts_at?: string | null
+          status?: string
+          tier_1_label?: string
+          tier_1_threshold?: number
+          tier_2_label?: string
+          tier_2_threshold?: number
+          tier_3_label?: string
+          tier_3_perfect_required?: boolean
+          tier_3_threshold?: number
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          banner_emoji?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          ends_at?: string | null
+          id?: string
+          rarity?: string
+          skill_id?: string | null
+          starts_at?: string | null
+          status?: string
+          tier_1_label?: string
+          tier_1_threshold?: number
+          tier_2_label?: string
+          tier_2_threshold?: number
+          tier_3_label?: string
+          tier_3_perfect_required?: boolean
+          tier_3_threshold?: number
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "skill_drop_events_skill_id_fkey"
+            columns: ["skill_id"]
+            isOneToOne: false
+            referencedRelation: "skills"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      skill_drop_participations: {
+        Row: {
+          best_score: number
+          event_id: string
+          id: string
+          joined_at: string
+          sims_completed: number
+          tier_earned: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          best_score?: number
+          event_id: string
+          id?: string
+          joined_at?: string
+          sims_completed?: number
+          tier_earned?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          best_score?: number
+          event_id?: string
+          id?: string
+          joined_at?: string
+          sims_completed?: number
+          tier_earned?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "skill_drop_participations_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "skill_drop_events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       skills: {
         Row: {
           ai_exposure: number

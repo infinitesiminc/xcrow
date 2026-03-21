@@ -5,100 +5,179 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
+import { Switch } from "@/components/ui/switch";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import {
   Loader2, Sparkles, Trash2, Clock, Zap, Crown, CircleDot,
-  RefreshCw, Plus, Link2, Briefcase, ChevronDown, ChevronUp,
+  RefreshCw, Plus, Eye, EyeOff, Play, Pause, Users,
+  TrendingUp, Target, BarChart3, Calendar, Award,
 } from "lucide-react";
-import { formatDistanceToNow, isPast } from "date-fns";
+import { format, formatDistanceToNow, isPast, isFuture, addDays, addHours } from "date-fns";
 
-interface SkillDrop {
+/* ── types ─────────────────────── */
+
+interface DropEvent {
   id: string;
-  name: string;
-  category: string;
-  rarity: string;
+  title: string;
   description: string | null;
-  icon_emoji: string | null;
-  ai_exposure: number;
-  human_edge: string | null;
-  unlock_type: string;
-  is_default: boolean;
-  drop_expires_at: string | null;
+  skill_id: string | null;
+  rarity: string;
+  status: string;
+  starts_at: string | null;
+  ends_at: string | null;
+  tier_1_label: string;
+  tier_1_threshold: number;
+  tier_2_label: string;
+  tier_2_threshold: number;
+  tier_3_label: string;
+  tier_3_threshold: number;
+  tier_3_perfect_required: boolean;
+  banner_emoji: string | null;
   created_at: string;
 }
 
-interface DropMatch {
-  cluster_name: string;
-  job_title: string;
-  company_name: string | null;
-  job_id: string;
-  ai_exposure_score: number | null;
-  skill_names: string[];
-  matched_keywords: string[];
+interface Participation {
+  event_id: string;
+  user_id: string;
+  sims_completed: number;
+  best_score: number;
+  tier_earned: string | null;
+  joined_at: string;
 }
 
-const RARITY_CONFIG: Record<string, { color: string; icon: typeof CircleDot; label: string }> = {
-  common: { color: "text-muted-foreground border-border", icon: CircleDot, label: "Common" },
-  rare: { color: "text-cyan-400 border-cyan-500/40", icon: Zap, label: "Rare" },
-  legendary: { color: "text-amber-400 border-amber-500/40", icon: Crown, label: "Legendary" },
+interface TrendingSkill {
+  skill_name: string;
+  demand_count: number;
+  avg_exposure: number;
+  avg_impact: number;
+}
+
+/* ── constants ─────────────────── */
+
+const STATUS_COLORS: Record<string, string> = {
+  draft: "bg-muted text-muted-foreground",
+  active: "bg-emerald-500/20 text-emerald-400 border-emerald-500/30",
+  ended: "bg-amber-500/20 text-amber-400 border-amber-500/30",
 };
+
+const RARITY_EMOJI: Record<string, string> = {
+  rare: "💎",
+  epic: "🔥",
+  legendary: "👑",
+};
+
+/* ── page ──────────────────────── */
 
 export default function SkillDropsPage() {
   const { toast } = useToast();
-  const [skills, setSkills] = useState<SkillDrop[]>([]);
+  const [events, setEvents] = useState<DropEvent[]>([]);
+  const [participations, setParticipations] = useState<Participation[]>([]);
+  const [trending, setTrending] = useState<TrendingSkill[]>([]);
   const [loading, setLoading] = useState(true);
-  const [generating, setGenerating] = useState(false);
-  const [deleting, setDeleting] = useState<string | null>(null);
-  const [theme, setTheme] = useState("");
-  const [rarity, setRarity] = useState("rare");
+  const [creating, setCreating] = useState(false);
+  const [showCreate, setShowCreate] = useState(false);
 
-  const fetchSkills = useCallback(async () => {
-    const { data } = await supabase
-      .from("skills")
-      .select("*")
-      .order("created_at", { ascending: false });
-    setSkills((data as any as SkillDrop[]) || []);
+  // Create form
+  const [form, setForm] = useState({
+    title: "",
+    description: "",
+    rarity: "rare",
+    banner_emoji: "⚔️",
+    duration_hours: 72,
+    tier_1_threshold: 1,
+    tier_2_threshold: 3,
+    tier_3_threshold: 5,
+    tier_3_perfect: true,
+  });
+
+  const fetchAll = useCallback(async () => {
+    const [eventsRes, partRes, trendRes] = await Promise.all([
+      supabase.from("skill_drop_events").select("*").order("created_at", { ascending: false }),
+      supabase.from("skill_drop_participations").select("*"),
+      supabase.rpc("get_market_skill_demand", { top_n: 20 }),
+    ]);
+    setEvents((eventsRes.data as any) || []);
+    setParticipations((partRes.data as any) || []);
+    setTrending((trendRes.data as any) || []);
     setLoading(false);
   }, []);
 
-  useEffect(() => { fetchSkills(); }, [fetchSkills]);
+  useEffect(() => { fetchAll(); }, [fetchAll]);
 
-  const generateDrop = async () => {
-    setGenerating(true);
+  const createEvent = async () => {
+    setCreating(true);
     try {
-      const { data, error } = await supabase.functions.invoke("skill-drops", {
-        body: { action: "generate_drop", payload: { theme: theme || undefined, rarity } },
-      });
+      const startsAt = new Date();
+      const endsAt = addHours(startsAt, form.duration_hours);
+      const { error } = await supabase.from("skill_drop_events").insert({
+        title: form.title,
+        description: form.description || null,
+        rarity: form.rarity,
+        banner_emoji: form.banner_emoji,
+        status: "draft",
+        starts_at: startsAt.toISOString(),
+        ends_at: endsAt.toISOString(),
+        tier_1_threshold: form.tier_1_threshold,
+        tier_2_threshold: form.tier_2_threshold,
+        tier_3_threshold: form.tier_3_threshold,
+        tier_3_perfect_required: form.tier_3_perfect,
+      } as any);
       if (error) throw error;
-      if (data?.error) throw new Error(data.error);
-      toast({ title: "Skill dropped! 🎉", description: `${data.skill.icon_emoji} ${data.skill.name} (${rarity})` });
-      setTheme("");
-      fetchSkills();
+      toast({ title: "Event created! 🎯", description: `"${form.title}" saved as draft` });
+      setForm({ title: "", description: "", rarity: "rare", banner_emoji: "⚔️", duration_hours: 72, tier_1_threshold: 1, tier_2_threshold: 3, tier_3_threshold: 5, tier_3_perfect: true });
+      setShowCreate(false);
+      fetchAll();
     } catch (err: any) {
-      toast({ title: "Generation failed", description: err.message, variant: "destructive" });
+      toast({ title: "Error", description: err.message, variant: "destructive" });
     } finally {
-      setGenerating(false);
+      setCreating(false);
     }
   };
 
-  const deleteDrop = async (id: string) => {
-    setDeleting(id);
-    const { error } = await (supabase.from("skills") as any).delete().eq("id", id);
+  const toggleStatus = async (event: DropEvent, newStatus: string) => {
+    const { error } = await supabase
+      .from("skill_drop_events")
+      .update({ status: newStatus } as any)
+      .eq("id", event.id);
     if (error) {
-      toast({ title: "Delete failed", description: error.message, variant: "destructive" });
+      toast({ title: "Error", description: error.message, variant: "destructive" });
     } else {
-      setSkills((prev) => prev.filter((s) => s.id !== id));
-      toast({ title: "Skill removed" });
+      toast({ title: `Event ${newStatus}` });
+      fetchAll();
     }
-    setDeleting(null);
   };
 
-  const drops = skills.filter((s) => !s.is_default);
-  const defaults = skills.filter((s) => s.is_default);
-  const activeDrops = drops.filter((s) => !s.drop_expires_at || !isPast(new Date(s.drop_expires_at)));
-  const expiredDrops = drops.filter((s) => s.drop_expires_at && isPast(new Date(s.drop_expires_at)));
+  const deleteEvent = async (id: string) => {
+    const { error } = await (supabase.from("skill_drop_events") as any).delete().eq("id", id);
+    if (error) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    } else {
+      setEvents(prev => prev.filter(e => e.id !== id));
+      toast({ title: "Event deleted" });
+    }
+  };
+
+  const getEventStats = (eventId: string) => {
+    const parts = participations.filter(p => p.event_id === eventId);
+    const total = parts.length;
+    const completed = parts.filter(p => p.sims_completed > 0).length;
+    const avgScore = total > 0 ? Math.round(parts.reduce((s, p) => s + p.best_score, 0) / total) : 0;
+    const tierCounts = { rare: 0, epic: 0, legendary: 0 };
+    parts.forEach(p => {
+      if (p.tier_earned && tierCounts[p.tier_earned as keyof typeof tierCounts] !== undefined) {
+        tierCounts[p.tier_earned as keyof typeof tierCounts]++;
+      }
+    });
+    return { total, completed, avgScore, tierCounts };
+  };
+
+  const activeEvents = events.filter(e => e.status === "active");
+  const draftEvents = events.filter(e => e.status === "draft");
+  const endedEvents = events.filter(e => e.status === "ended");
 
   if (loading) {
     return (
@@ -109,30 +188,36 @@ export default function SkillDropsPage() {
   }
 
   return (
-    <div className="p-6 space-y-6 max-w-5xl">
+    <div className="p-6 space-y-6 max-w-6xl">
+      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-2">
             <Sparkles className="h-6 w-6 text-primary" />
-            Skill Drops
+            Skill Drop Events
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Generate AI-powered skill drops that appear on the territory map with expiration timers
+            Create time-limited challenges with tiered badge rewards
           </p>
         </div>
-        <Button variant="outline" size="sm" onClick={fetchSkills}>
-          <RefreshCw className="h-3 w-3 mr-1" />
-          Refresh
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" size="sm" onClick={fetchAll}>
+            <RefreshCw className="h-3 w-3 mr-1" /> Refresh
+          </Button>
+          <Button size="sm" onClick={() => setShowCreate(!showCreate)}>
+            <Plus className="h-3 w-3 mr-1" /> New Event
+          </Button>
+        </div>
       </div>
 
-      <div className="grid gap-3 sm:grid-cols-4">
+      {/* Stats */}
+      <div className="grid gap-3 grid-cols-2 sm:grid-cols-4">
         {[
-          { label: "Default Skills", value: defaults.length, icon: CircleDot, cls: "text-muted-foreground" },
-          { label: "Active Drops", value: activeDrops.length, icon: Zap, cls: "text-cyan-400" },
-          { label: "Expired Drops", value: expiredDrops.length, icon: Clock, cls: "text-amber-400" },
-          { label: "Total Skills", value: skills.length, icon: Sparkles, cls: "text-primary" },
-        ].map((s) => (
+          { label: "Active Events", value: activeEvents.length, icon: Zap, cls: "text-emerald-400" },
+          { label: "Draft Events", value: draftEvents.length, icon: Eye, cls: "text-muted-foreground" },
+          { label: "Total Participants", value: participations.length, icon: Users, cls: "text-primary" },
+          { label: "Ended Events", value: endedEvents.length, icon: Clock, cls: "text-amber-400" },
+        ].map(s => (
           <Card key={s.label}>
             <CardContent className="p-4 flex items-center gap-3">
               <s.icon className={`h-5 w-5 ${s.cls}`} />
@@ -145,237 +230,343 @@ export default function SkillDropsPage() {
         ))}
       </div>
 
-      <Separator />
+      <Tabs defaultValue="events" className="space-y-4">
+        <TabsList>
+          <TabsTrigger value="events">Events</TabsTrigger>
+          <TabsTrigger value="discover">Auto-Discover</TabsTrigger>
+        </TabsList>
 
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="text-base flex items-center gap-2">
-            <Plus className="h-4 w-4" />
-            Generate New Drop
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid gap-4 sm:grid-cols-3">
-            <div className="space-y-1.5">
-              <Label htmlFor="theme">Theme / Industry (optional)</Label>
-              <Input id="theme" placeholder="e.g. healthcare, fintech, creative" value={theme} onChange={(e) => setTheme(e.target.value)} />
+        {/* Events Tab */}
+        <TabsContent value="events" className="space-y-4">
+          {/* Create Form */}
+          {showCreate && (
+            <Card className="border-primary/30">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base flex items-center gap-2">
+                  <Plus className="h-4 w-4" /> Create Skill Drop Event
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="space-y-1.5">
+                    <Label>Event Title</Label>
+                    <Input
+                      placeholder="e.g. Prompt Engineering Sprint"
+                      value={form.title}
+                      onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label>Banner Emoji</Label>
+                    <Input
+                      placeholder="⚔️"
+                      value={form.banner_emoji}
+                      onChange={e => setForm(f => ({ ...f, banner_emoji: e.target.value }))}
+                      className="w-20"
+                    />
+                  </div>
+                </div>
+                <div className="space-y-1.5">
+                  <Label>Description</Label>
+                  <Textarea
+                    placeholder="What's this event about?"
+                    value={form.description}
+                    onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
+                    rows={2}
+                  />
+                </div>
+                <div className="grid gap-4 sm:grid-cols-3">
+                  <div className="space-y-1.5">
+                    <Label>Rarity Tier</Label>
+                    <Select value={form.rarity} onValueChange={v => setForm(f => ({ ...f, rarity: v }))}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="rare">💎 Rare</SelectItem>
+                        <SelectItem value="epic">🔥 Epic</SelectItem>
+                        <SelectItem value="legendary">👑 Legendary</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label>Duration (hours)</Label>
+                    <Input
+                      type="number"
+                      value={form.duration_hours}
+                      onChange={e => setForm(f => ({ ...f, duration_hours: parseInt(e.target.value) || 72 }))}
+                    />
+                  </div>
+                  <div className="flex items-end gap-2">
+                    <div className="flex items-center gap-2">
+                      <Switch
+                        checked={form.tier_3_perfect}
+                        onCheckedChange={v => setForm(f => ({ ...f, tier_3_perfect: v }))}
+                      />
+                      <Label className="text-xs">Perfect score for Legendary</Label>
+                    </div>
+                  </div>
+                </div>
+
+                <Separator />
+
+                {/* Tier thresholds */}
+                <div>
+                  <Label className="text-xs text-muted-foreground uppercase tracking-wider mb-2 block">Tier Thresholds (simulations required)</Label>
+                  <div className="grid gap-4 sm:grid-cols-3">
+                    <div className="space-y-1.5">
+                      <Label className="text-xs flex items-center gap-1"><CircleDot className="h-3 w-3 text-cyan-400" /> Rare</Label>
+                      <Input type="number" value={form.tier_1_threshold} onChange={e => setForm(f => ({ ...f, tier_1_threshold: parseInt(e.target.value) || 1 }))} />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-xs flex items-center gap-1"><Zap className="h-3 w-3 text-purple-400" /> Epic</Label>
+                      <Input type="number" value={form.tier_2_threshold} onChange={e => setForm(f => ({ ...f, tier_2_threshold: parseInt(e.target.value) || 3 }))} />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-xs flex items-center gap-1"><Crown className="h-3 w-3 text-amber-400" /> Legendary</Label>
+                      <Input type="number" value={form.tier_3_threshold} onChange={e => setForm(f => ({ ...f, tier_3_threshold: parseInt(e.target.value) || 5 }))} />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex gap-2 justify-end">
+                  <Button variant="ghost" size="sm" onClick={() => setShowCreate(false)}>Cancel</Button>
+                  <Button size="sm" onClick={createEvent} disabled={creating || !form.title.trim()}>
+                    {creating ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : <Sparkles className="h-3 w-3 mr-1" />}
+                    Create Event
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Active Events */}
+          {activeEvents.length > 0 && (
+            <div className="space-y-3">
+              <h2 className="text-sm font-semibold uppercase tracking-wider text-emerald-400 flex items-center gap-2">
+                <Zap className="h-4 w-4" /> Live Events ({activeEvents.length})
+              </h2>
+              <div className="grid gap-3">
+                {activeEvents.map(e => (
+                  <EventCard key={e.id} event={e} stats={getEventStats(e.id)} onToggle={toggleStatus} onDelete={deleteEvent} />
+                ))}
+              </div>
             </div>
-            <div className="space-y-1.5">
-              <Label>Rarity</Label>
-              <Select value={rarity} onValueChange={setRarity}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="common">Common (14 day expiry)</SelectItem>
-                  <SelectItem value="rare">Rare (7 day expiry)</SelectItem>
-                  <SelectItem value="legendary">Legendary (3 day expiry)</SelectItem>
-                </SelectContent>
-              </Select>
+          )}
+
+          {/* Draft Events */}
+          {draftEvents.length > 0 && (
+            <div className="space-y-3">
+              <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                <Eye className="h-4 w-4" /> Drafts ({draftEvents.length})
+              </h2>
+              <div className="grid gap-3">
+                {draftEvents.map(e => (
+                  <EventCard key={e.id} event={e} stats={getEventStats(e.id)} onToggle={toggleStatus} onDelete={deleteEvent} />
+                ))}
+              </div>
             </div>
-            <div className="flex items-end">
-              <Button onClick={generateDrop} disabled={generating} className="w-full">
-                {generating ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Sparkles className="h-4 w-4 mr-2" />}
-                {generating ? "Generating..." : "Drop Skill"}
-              </Button>
+          )}
+
+          {/* Ended Events */}
+          {endedEvents.length > 0 && (
+            <div className="space-y-3">
+              <h2 className="text-sm font-semibold uppercase tracking-wider text-amber-400/60 flex items-center gap-2">
+                <Clock className="h-4 w-4" /> Ended ({endedEvents.length})
+              </h2>
+              <div className="grid gap-3">
+                {endedEvents.map(e => (
+                  <EventCard key={e.id} event={e} stats={getEventStats(e.id)} onToggle={toggleStatus} onDelete={deleteEvent} />
+                ))}
+              </div>
             </div>
-          </div>
-        </CardContent>
-      </Card>
+          )}
 
-      {activeDrops.length > 0 && (
-        <div className="space-y-3">
-          <h2 className="text-lg font-semibold flex items-center gap-2">
-            <Zap className="h-4 w-4 text-cyan-400" />
-            Active Drops ({activeDrops.length})
-          </h2>
-          <div className="grid gap-3 sm:grid-cols-2">
-            {activeDrops.map((skill) => (
-              <SkillDropCard key={skill.id} skill={skill} onDelete={deleteDrop} deleting={deleting} />
-            ))}
-          </div>
-        </div>
-      )}
+          {events.length === 0 && (
+            <div className="text-center py-12 text-muted-foreground">
+              <Sparkles className="h-8 w-8 mx-auto mb-3 opacity-30" />
+              <p className="text-sm">No events yet. Create your first Skill Drop!</p>
+            </div>
+          )}
+        </TabsContent>
 
-      {expiredDrops.length > 0 && (
-        <div className="space-y-3">
-          <h2 className="text-lg font-semibold flex items-center gap-2 text-muted-foreground">
-            <Clock className="h-4 w-4" />
-            Expired Drops ({expiredDrops.length})
-          </h2>
-          <div className="grid gap-3 sm:grid-cols-2">
-            {expiredDrops.map((skill) => (
-              <SkillDropCard key={skill.id} skill={skill} onDelete={deleteDrop} deleting={deleting} expired />
-            ))}
-          </div>
-        </div>
-      )}
-
-      <div className="space-y-3">
-        <h2 className="text-lg font-semibold flex items-center gap-2 text-muted-foreground">
-          <CircleDot className="h-4 w-4" />
-          Default Skills ({defaults.length})
-        </h2>
-        <div className="flex flex-wrap gap-2">
-          {defaults.map((s) => (
-            <Badge key={s.id} variant="outline" className="text-xs">
-              {s.icon_emoji || "●"} {s.name}
-            </Badge>
-          ))}
-        </div>
-      </div>
+        {/* Auto-Discover Tab */}
+        <TabsContent value="discover" className="space-y-4">
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base flex items-center gap-2">
+                <TrendingUp className="h-4 w-4 text-primary" />
+                Trending Skills — Auto-Discovery
+              </CardTitle>
+              <p className="text-xs text-muted-foreground">
+                Top skills by demand across analyzed job clusters. Click to create an event from any skill.
+              </p>
+            </CardHeader>
+            <CardContent>
+              {trending.length === 0 ? (
+                <p className="text-sm text-muted-foreground py-4 text-center">No skill demand data yet</p>
+              ) : (
+                <div className="space-y-2">
+                  {trending.map((skill, i) => (
+                    <div
+                      key={skill.skill_name}
+                      className="flex items-center gap-3 p-2.5 rounded-lg border border-border/50 hover:border-primary/30 hover:bg-muted/30 transition-colors group"
+                    >
+                      <span className="text-xs font-mono text-muted-foreground w-5 text-right shrink-0">
+                        {i + 1}
+                      </span>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium truncate">{skill.skill_name}</p>
+                        <div className="flex items-center gap-3 mt-0.5">
+                          <span className="text-[10px] text-muted-foreground flex items-center gap-1">
+                            <Target className="h-2.5 w-2.5" /> {skill.demand_count} roles
+                          </span>
+                          <span className="text-[10px] text-muted-foreground flex items-center gap-1">
+                            <Zap className="h-2.5 w-2.5" /> AI {skill.avg_exposure}%
+                          </span>
+                          <span className="text-[10px] text-muted-foreground flex items-center gap-1">
+                            <BarChart3 className="h-2.5 w-2.5" /> Impact {skill.avg_impact}%
+                          </span>
+                        </div>
+                      </div>
+                      {/* AI Exposure bar */}
+                      <div className="w-16 h-1.5 rounded-full bg-muted overflow-hidden shrink-0">
+                        <div
+                          className="h-full rounded-full bg-gradient-to-r from-primary to-primary/50"
+                          style={{ width: `${skill.avg_exposure}%` }}
+                        />
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 text-xs opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
+                        onClick={() => {
+                          setForm(f => ({
+                            ...f,
+                            title: `${skill.skill_name} Sprint`,
+                            description: `Master ${skill.skill_name} — demanded by ${skill.demand_count}+ roles with ${skill.avg_exposure}% AI exposure.`,
+                          }));
+                          setShowCreate(true);
+                        }}
+                      >
+                        <Plus className="h-3 w-3 mr-1" /> Create Event
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
 
-function SkillDropCard({
-  skill,
-  onDelete,
-  deleting,
-  expired = false,
-}: {
-  skill: SkillDrop;
-  onDelete: (id: string) => void;
-  deleting: string | null;
-  expired?: boolean;
-}) {
-  const cfg = RARITY_CONFIG[skill.rarity] || RARITY_CONFIG.common;
-  const Icon = cfg.icon;
-  const [matches, setMatches] = useState<DropMatch[]>([]);
-  const [loadingMatches, setLoadingMatches] = useState(false);
-  const [showMatches, setShowMatches] = useState(false);
+/* ── Event Card ────────────────── */
 
-  const fetchMatches = async () => {
-    if (matches.length > 0) {
-      setShowMatches(!showMatches);
-      return;
-    }
-    setLoadingMatches(true);
-    setShowMatches(true);
-    const { data } = await supabase.rpc("get_skill_drop_matches", {
-      _skill_id: skill.id,
-      _limit: 5,
-    });
-    setMatches((data as any as DropMatch[]) || []);
-    setLoadingMatches(false);
-  };
+function EventCard({
+  event,
+  stats,
+  onToggle,
+  onDelete,
+}: {
+  event: DropEvent;
+  stats: { total: number; completed: number; avgScore: number; tierCounts: Record<string, number> };
+  onToggle: (event: DropEvent, status: string) => void;
+  onDelete: (id: string) => void;
+}) {
+  const isLive = event.status === "active";
+  const isDraft = event.status === "draft";
+  const isEnded = event.status === "ended";
+  const hasExpired = event.ends_at && isPast(new Date(event.ends_at));
+  const startsInFuture = event.starts_at && isFuture(new Date(event.starts_at));
 
   return (
-    <Card className={`relative ${expired ? "opacity-60" : ""} border ${expired ? "border-border" : cfg.color.split(" ")[1]}`}>
-      <CardContent className="p-4 space-y-2">
-        <div className="flex items-start justify-between">
-          <div className="flex items-center gap-2">
-            <span className="text-2xl">{skill.icon_emoji || "🔮"}</span>
-            <div>
-              <p className="font-semibold text-sm">{skill.name}</p>
-              <div className="flex items-center gap-1.5 mt-0.5">
-                <Badge variant="outline" className={`text-[10px] ${cfg.color}`}>
-                  <Icon className="h-2.5 w-2.5 mr-0.5" />
-                  {cfg.label}
+    <Card className={`border ${isLive ? "border-emerald-500/30" : "border-border/50"} ${isEnded ? "opacity-60" : ""}`}>
+      <CardContent className="p-4">
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex items-start gap-3 min-w-0">
+            <span className="text-2xl shrink-0">{event.banner_emoji || "⚔️"}</span>
+            <div className="min-w-0">
+              <div className="flex items-center gap-2 flex-wrap">
+                <h3 className="font-semibold text-sm">{event.title}</h3>
+                <Badge variant="outline" className={`text-[10px] ${STATUS_COLORS[event.status] || ""}`}>
+                  {event.status}
                 </Badge>
                 <Badge variant="outline" className="text-[10px]">
-                  {skill.category}
+                  {RARITY_EMOJI[event.rarity] || "💎"} {event.rarity}
                 </Badge>
+              </div>
+              {event.description && (
+                <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{event.description}</p>
+              )}
+              <div className="flex items-center gap-3 mt-2 flex-wrap text-[10px] text-muted-foreground">
+                {event.starts_at && (
+                  <span className="flex items-center gap-1">
+                    <Calendar className="h-2.5 w-2.5" />
+                    {format(new Date(event.starts_at), "MMM d, h:mm a")}
+                  </span>
+                )}
+                {event.ends_at && (
+                  <span className="flex items-center gap-1">
+                    <Clock className="h-2.5 w-2.5" />
+                    {hasExpired
+                      ? `Ended ${formatDistanceToNow(new Date(event.ends_at), { addSuffix: true })}`
+                      : `Ends ${formatDistanceToNow(new Date(event.ends_at), { addSuffix: true })}`
+                    }
+                  </span>
+                )}
+                <span className="flex items-center gap-1">
+                  <Award className="h-2.5 w-2.5" />
+                  {event.tier_1_threshold}→{event.tier_2_threshold}→{event.tier_3_threshold} sims
+                </span>
               </div>
             </div>
           </div>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-7 w-7 text-muted-foreground hover:text-destructive"
-            onClick={() => onDelete(skill.id)}
-            disabled={deleting === skill.id}
-          >
-            {deleting === skill.id ? <Loader2 className="h-3 w-3 animate-spin" /> : <Trash2 className="h-3 w-3" />}
-          </Button>
-        </div>
 
-        {skill.description && (
-          <p className="text-xs text-muted-foreground">{skill.description}</p>
-        )}
-
-        <div className="flex items-center justify-between text-xs text-muted-foreground">
-          <span>AI Exposure: {skill.ai_exposure}%</span>
-          {skill.drop_expires_at && (
-            <span className="flex items-center gap-1">
-              <Clock className="h-3 w-3" />
-              {expired
-                ? `Expired ${formatDistanceToNow(new Date(skill.drop_expires_at), { addSuffix: true })}`
-                : `Expires ${formatDistanceToNow(new Date(skill.drop_expires_at), { addSuffix: true })}`}
-            </span>
-          )}
-        </div>
-
-        {skill.human_edge && (
-          <p className="text-[11px] text-primary/70 italic">🧠 {skill.human_edge}</p>
-        )}
-
-        {/* Matched Roles Section */}
-        <div className="pt-1">
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-7 text-xs w-full justify-between px-2 text-muted-foreground hover:text-foreground"
-            onClick={fetchMatches}
-          >
-            <span className="flex items-center gap-1.5">
-              <Link2 className="h-3 w-3" />
-              Matched Roles & Tasks
-            </span>
-            {loadingMatches ? (
-              <Loader2 className="h-3 w-3 animate-spin" />
-            ) : showMatches ? (
-              <ChevronUp className="h-3 w-3" />
-            ) : (
-              <ChevronDown className="h-3 w-3" />
+          <div className="flex items-center gap-1 shrink-0">
+            {isDraft && (
+              <Button variant="outline" size="sm" className="h-7 text-xs text-emerald-400 border-emerald-500/30" onClick={() => onToggle(event, "active")}>
+                <Play className="h-3 w-3 mr-1" /> Launch
+              </Button>
             )}
-          </Button>
-
-          {showMatches && (
-            <div className="mt-1.5 space-y-1.5">
-              {loadingMatches ? (
-                <div className="flex items-center justify-center py-3">
-                  <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-                </div>
-              ) : matches.length === 0 ? (
-                <p className="text-[11px] text-muted-foreground text-center py-2">
-                  No matching task clusters found
-                </p>
-              ) : (
-                matches.map((m, i) => (
-                  <div
-                    key={i}
-                    className="rounded-md border border-border/50 bg-muted/30 p-2 space-y-1"
-                  >
-                    <div className="flex items-start gap-1.5">
-                      <Briefcase className="h-3 w-3 mt-0.5 shrink-0 text-primary" />
-                      <div className="min-w-0">
-                        <p className="text-xs font-medium truncate">{m.cluster_name}</p>
-                        <p className="text-[11px] text-muted-foreground truncate">
-                          {m.job_title}{m.company_name ? ` · ${m.company_name}` : ""}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex flex-wrap gap-1">
-                      {m.matched_keywords.map((kw) => (
-                        <Badge
-                          key={kw}
-                          variant="outline"
-                          className="text-[9px] px-1.5 py-0 bg-primary/10 border-primary/20 text-primary"
-                        >
-                          {kw}
-                        </Badge>
-                      ))}
-                      {m.ai_exposure_score != null && (
-                        <Badge variant="outline" className="text-[9px] px-1.5 py-0">
-                          AI {m.ai_exposure_score}%
-                        </Badge>
-                      )}
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
-          )}
+            {isLive && (
+              <Button variant="outline" size="sm" className="h-7 text-xs text-amber-400 border-amber-500/30" onClick={() => onToggle(event, "ended")}>
+                <Pause className="h-3 w-3 mr-1" /> End
+              </Button>
+            )}
+            {isEnded && (
+              <Button variant="outline" size="sm" className="h-7 text-xs" onClick={() => onToggle(event, "active")}>
+                <Play className="h-3 w-3 mr-1" /> Relaunch
+              </Button>
+            )}
+            <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-destructive" onClick={() => onDelete(event.id)}>
+              <Trash2 className="h-3 w-3" />
+            </Button>
+          </div>
         </div>
+
+        {/* Live Analytics */}
+        {(isLive || isEnded) && stats.total > 0 && (
+          <div className="mt-3 pt-3 border-t border-border/30 grid grid-cols-4 gap-3">
+            <div>
+              <p className="text-lg font-bold">{stats.total}</p>
+              <p className="text-[10px] text-muted-foreground">Participants</p>
+            </div>
+            <div>
+              <p className="text-lg font-bold">{stats.completed}</p>
+              <p className="text-[10px] text-muted-foreground">Completed</p>
+            </div>
+            <div>
+              <p className="text-lg font-bold">{stats.avgScore}%</p>
+              <p className="text-[10px] text-muted-foreground">Avg Score</p>
+            </div>
+            <div className="flex items-center gap-1.5">
+              {stats.tierCounts.rare > 0 && <Badge variant="outline" className="text-[9px] text-cyan-400 border-cyan-500/30">💎 {stats.tierCounts.rare}</Badge>}
+              {stats.tierCounts.epic > 0 && <Badge variant="outline" className="text-[9px] text-purple-400 border-purple-500/30">🔥 {stats.tierCounts.epic}</Badge>}
+              {stats.tierCounts.legendary > 0 && <Badge variant="outline" className="text-[9px] text-amber-400 border-amber-500/30">👑 {stats.tierCounts.legendary}</Badge>}
+            </div>
+          </div>
+        )}
       </CardContent>
     </Card>
   );
