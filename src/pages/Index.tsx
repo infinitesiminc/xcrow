@@ -599,9 +599,15 @@ const Index = () => {
       {/* Territory overlay */}
       <TerritoryOverlay
         open={territoryOpen}
-        onClose={() => setTerritoryOpen(false)}
+        onClose={() => {
+          setTerritoryOpen(false);
+          setTerritoryFocusSkillId(null);
+          setTerritoryXpGain(0);
+        }}
         skills={displaySkills}
         lastPracticedSkillId={lastPracticedSkillId}
+        focusSkillId={territoryFocusSkillId}
+        xpGain={territoryXpGain}
       />
 
       {/* Territory button (floating) */}
