@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/tooltip";
 import { DIMENSION_INFO } from "@/lib/skill-growth";
 
-type TileState = "claimed" | "frontier" | "undiscovered" | "contested" | "demo-lit" | "demo-dim";
+type TileState = "claimed" | "frontier" | "undiscovered" | "contested" | "demo-lit" | "demo-dim" | "ghost";
 
 interface SkillNodeProps {
   x: number;
