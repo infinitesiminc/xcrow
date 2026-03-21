@@ -99,7 +99,7 @@ export default function SkillNode({
       )}
       {level && <div className="text-xs text-muted-foreground">{level}{xp ? ` • ${xp} XP` : ""}</div>}
       <div className="space-y-1 pt-1 border-t border-border/50">
-        <div className="flex items-center justify-between text-[10px]">
+        <div className="flex items-center justify-between text-xs">
           <span>{DIMENSION_INFO.foundation.emoji} Foundation</span>
           <span className="text-muted-foreground">{growth.foundation.label}</span>
         </div>
