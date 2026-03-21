@@ -1429,7 +1429,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                         onClick={() => startCompile()}
                         className="gap-2 rounded-xl w-full text-xs"
                       >
-                        <RotateCcw className="h-3 w-3" /> Same Sim — Improve Score
+                        <RotateCcw className="h-3 w-3" /> Same Quest — Raise Power
                       </Button>
                     )}
                     {scoreTier === "high" && (
