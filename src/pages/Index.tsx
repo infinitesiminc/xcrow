@@ -467,54 +467,7 @@ const Index = () => {
               <X className="h-4 w-4" />
             </button>
 
-            {rightPanelTab === "chat" ? (
-              <div className="flex-1 flex flex-col min-h-0 p-4">
-                <AnimatePresence mode="wait">
-                  {!hasInteracted && (
-                    <motion.div
-                      key="greeting"
-                      initial={{ opacity: 0, y: 12 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -20, transition: { duration: 0.3 } }}
-                      className="text-center mb-4 shrink-0"
-                    >
-                      <h1 className="text-xl font-display font-bold text-foreground leading-tight">
-                        {isSignedIn
-                          ? `${greeting}${userName ? `, ${userName}` : ""} ⚔️`
-                          : "Level up your career"}
-                      </h1>
-                      <p className="text-xs text-muted-foreground mt-1.5">
-                        {isSignedIn
-                          ? "Your AI career coach is ready"
-                          : "Explore kingdoms, practice quests, claim territory"}
-                      </p>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-
-                {!hasInteracted && !user && <SkillSuggestionCards />}
-                {!hasInteracted && user && (
-                  <div className="space-y-3 mb-3">
-                    <QuestBoard />
-                    <AdaptiveQueue userId={user.id} />
-                  </div>
-                )}
-
-                <div className={`${hasInteracted ? "flex-1 flex flex-col min-h-0" : ""}`}>
-                  <HomepageChat
-                    onRolesFound={handleRolesFound}
-                    onRoleSelect={handleRoleSelect}
-                    onChatStart={handleChatStart}
-                    hasInteracted={hasInteracted}
-                    selectedJobId={selectedRole?.jobId}
-                    inlineCards
-                    externalPrompt={externalPrompt}
-                    onExternalPromptConsumed={() => setExternalPrompt(null)}
-                    viewContext={viewContext}
-                  />
-                </div>
-              </div>
-            ) : rightPanelTab === "table" ? (
+            {rightPanelTab === "table" ? (
               <div className="flex-1 overflow-hidden">
                 <FutureSkillsTable skills={futureSkills} />
               </div>
@@ -523,13 +476,38 @@ const Index = () => {
                 <MyRolesPanel
                   onSelectRole={(role) => {
                     setSelectedRole(role);
-                    setRightPanelTab("chat");
+                    setRightPanelTab("table");
                   }}
-                  onAskChat={handleRolesAskChat}
+                  onAskChat={(prompt) => {
+                    setChatDockOpen(true);
+                    chatSendMessage(prompt);
+                  }}
                   onTabChange={setMyRolesTab}
                 />
               </div>
-            ) : null}
+            ) : (
+              <div className="flex-1 flex flex-col min-h-0 p-4">
+                <div className="text-center mb-4">
+                  <h1 className="text-xl font-display font-bold text-foreground leading-tight">
+                    {isSignedIn
+                      ? `${greeting}${userName ? `, ${userName}` : ""} ⚔️`
+                      : "Level up your career"}
+                  </h1>
+                  <p className="text-xs text-muted-foreground mt-1.5">
+                    {isSignedIn
+                      ? "Your AI career coach is ready"
+                      : "Explore kingdoms, practice quests, claim territory"}
+                  </p>
+                </div>
+                {!user && <SkillSuggestionCards />}
+                {user && (
+                  <div className="space-y-3 mb-3">
+                    <QuestBoard />
+                    <AdaptiveQueue userId={user.id} />
+                  </div>
+                )}
+              </div>
+            )}
           </motion.div>
         )}
       </AnimatePresence>
