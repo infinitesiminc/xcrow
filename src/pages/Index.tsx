@@ -420,8 +420,8 @@ const Index = () => {
         </div>
       )}
 
-      {/* ── Floating tab bar (top-right) ── */}
-      <div className="absolute top-14 right-4 z-20 flex items-center gap-1 bg-card/80 backdrop-blur-md border border-border/50 rounded-lg p-1 shadow-lg">
+      {/* ── Floating tab bar (top-left) ── */}
+      <div className="absolute top-14 left-4 z-20 flex items-center gap-1 bg-card/80 backdrop-blur-md border border-border/50 rounded-lg p-1 shadow-lg">
         <button
           onClick={() => { setRightPanelTab("table"); setChatOpen(true); }}
           className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
@@ -444,6 +444,14 @@ const Index = () => {
           >
             <Swords className="h-3 w-3" />
             Kingdoms
+          </button>
+        )}
+        {chatOpen && (
+          <button
+            onClick={() => setChatOpen(false)}
+            className="flex items-center gap-1.5 px-2 py-1.5 rounded-md text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <X className="h-3 w-3" />
           </button>
         )}
       </div>
