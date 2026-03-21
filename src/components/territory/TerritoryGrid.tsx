@@ -162,7 +162,7 @@ export default function TerritoryGrid({
               <div className="flex items-center gap-1.5 mb-1.5">
                 <span className="text-xs">{CATEGORY_META[cat].emoji}</span>
                 <span
-                  className="text-[10px] font-semibold uppercase tracking-wider"
+                  className="text-xs font-semibold uppercase tracking-wider"
                   style={{ color: CATEGORY_COLORS[cat] }}
                 >
                   {CATEGORY_META[cat].label}
