@@ -57,6 +57,27 @@ interface TrendingSkill {
   avg_impact: number;
 }
 
+interface DiscoverySuggestion {
+  id: string;
+  skill_name: string;
+  category: string;
+  demand_count: number;
+  job_count: number;
+  avg_exposure: number;
+  avg_impact: number;
+  ai_analysis: {
+    action: string;
+    reasoning: string;
+    merge_target: string | null;
+    trend_signal: string;
+    priority: string;
+  };
+  action: string;
+  merge_target_id: string | null;
+  status: string;
+  discovered_at: string;
+}
+
 /* ── constants ─────────────────── */
 
 const STATUS_COLORS: Record<string, string> = {
