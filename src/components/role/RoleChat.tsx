@@ -1,7 +1,6 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { MessageCircle, Send, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { supabase } from "@/integrations/supabase/client";
 import ReactMarkdown from "react-markdown";
 import { AnimatePresence, motion } from "framer-motion";
 
@@ -16,6 +15,27 @@ interface RoleChatProps {
 interface Message {
   role: "user" | "assistant";
   content: string;
+  streaming?: boolean; // true while tokens are arriving
+}
+
+/** Render streaming text as plain lines with a blinking cursor, full markdown when done */
+function AssistantBubble({ content, streaming }: { content: string; streaming?: boolean }) {
+  if (streaming) {
+    // During streaming: render plain text with line breaks + blinking cursor
+    return (
+      <span className="whitespace-pre-wrap">
+        {content}
+        <span className="inline-block w-[5px] h-[14px] bg-primary/70 ml-0.5 align-middle animate-pulse rounded-sm" />
+      </span>
+    );
+  }
+
+  // After streaming: full markdown
+  return (
+    <div className="prose prose-xs dark:prose-invert max-w-none [&_p]:mb-1 [&_p]:mt-0 [&_ul]:my-1 [&_li]:my-0">
+      <ReactMarkdown>{content}</ReactMarkdown>
+    </div>
+  );
 }
 
 export function RoleChat({ jobTitle, company, timeHorizon, completedCount, predictionsSummary }: RoleChatProps) {
@@ -29,7 +49,7 @@ export function RoleChat({ jobTitle, company, timeHorizon, completedCount, predi
     if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
   }, [messages, open]);
 
-  const sendMessage = async () => {
+  const sendMessage = useCallback(async () => {
     const text = input.trim();
     if (!text || loading) return;
     const userMsg: Message = { role: "user", content: text };
@@ -60,12 +80,11 @@ export function RoleChat({ jobTitle, company, timeHorizon, completedCount, predi
 
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
-      // Check if streaming SSE or JSON
       const contentType = response.headers.get("content-type") || "";
       if (contentType.includes("text/event-stream") && response.body) {
-        // Stream tokens
         let assistantText = "";
-        setMessages(prev => [...prev, { role: "assistant", content: "" }]);
+        // Add empty streaming message
+        setMessages(prev => [...prev, { role: "assistant", content: "", streaming: true }]);
 
         const reader = response.body.getReader();
         const decoder = new TextDecoder();
@@ -91,28 +110,35 @@ export function RoleChat({ jobTitle, company, timeHorizon, completedCount, predi
                 assistantText += content;
                 const snapshot = assistantText;
                 setMessages(prev =>
-                  prev.map((m, i) => i === prev.length - 1 ? { ...m, content: snapshot } : m)
+                  prev.map((m, i) =>
+                    i === prev.length - 1 ? { ...m, content: snapshot } : m
+                  )
                 );
               }
             } catch { /* partial JSON, skip */ }
           }
         }
 
-        if (!assistantText) {
-          setMessages(prev =>
-            prev.map((m, i) => i === prev.length - 1 ? { ...m, content: "I couldn't generate a response." } : m)
-          );
-        }
+        // Mark streaming complete
+        setMessages(prev =>
+          prev.map((m, i) =>
+            i === prev.length - 1
+              ? { ...m, content: assistantText || "I couldn't generate a response.", streaming: false }
+              : m
+          )
+        );
       } else {
-        // JSON response
         const data = await response.json();
-        setMessages(prev => [...prev, { role: "assistant", content: data?.reply || data?.content || "I couldn't generate a response." }]);
+        setMessages(prev => [
+          ...prev,
+          { role: "assistant", content: data?.reply || data?.content || "I couldn't generate a response." },
+        ]);
       }
     } catch {
       setMessages(prev => [...prev, { role: "assistant", content: "Sorry, something went wrong." }]);
     }
     setLoading(false);
-  };
+  }, [input, loading, messages, jobTitle, company, timeHorizon, completedCount, predictionsSummary]);
 
   return (
     <>
@@ -158,14 +184,12 @@ export function RoleChat({ jobTitle, company, timeHorizon, completedCount, predi
                     }`}
                   >
                     {msg.role === "assistant" ? (
-                      <div className="prose prose-xs dark:prose-invert max-w-none [&_p]:mb-1 [&_p]:mt-0 [&_ul]:my-1 [&_li]:my-0">
-                        <ReactMarkdown>{msg.content}</ReactMarkdown>
-                      </div>
+                      <AssistantBubble content={msg.content} streaming={msg.streaming} />
                     ) : msg.content}
                   </div>
                 </div>
               ))}
-              {loading && (
+              {loading && messages[messages.length - 1]?.role !== "assistant" && (
                 <div className="flex justify-start">
                   <div className="bg-muted rounded-lg px-2.5 py-1.5 text-xs text-muted-foreground">
                     <span className="animate-pulse">Thinking…</span>
