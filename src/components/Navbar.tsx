@@ -145,9 +145,7 @@ export default function Navbar() {
             onClick={() => handleNav("/")}
             className="flex items-center gap-2 font-display text-lg font-bold tracking-tight text-foreground hover:opacity-80 transition-opacity"
           >
-            <div className="relative h-11 w-11 flex items-center justify-center drop-shadow-[0_0_6px_hsl(270_80%_60%/0.5)]" style={{ WebkitMaskImage: `url(${xcrowLogo})`, WebkitMaskSize: 'contain', WebkitMaskRepeat: 'no-repeat', WebkitMaskPosition: 'center', maskImage: `url(${xcrowLogo})`, maskSize: 'contain', maskRepeat: 'no-repeat', maskPosition: 'center' }}>
-              <div className="absolute inset-0 animate-neon-shift bg-[length:200%_auto]" style={{ backgroundImage: "linear-gradient(135deg, hsl(180 90% 50%), hsl(270 80% 55%), hsl(330 90% 55%), hsl(180 90% 50%))" }} />
-            </div>
+            <img src={xcrowLogo} alt="Xcrow" className="h-11 w-11 object-contain" />
             <span className="hidden sm:inline text-lg font-extrabold text-foreground tracking-tight" style={{ fontFamily: "'Inter', 'SF Pro Display', -apple-system, sans-serif", letterSpacing: '-0.02em' }}>Xcrow.ai</span>
           </button>
 
