@@ -198,7 +198,7 @@ export default function TerritoryGrid({
           ].map((l) => (
             <div key={l.label} className="flex items-center gap-1">
               <div className={`w-1.5 h-1.5 rounded-full ${l.dot}`} />
-              <span className="text-[9px] text-muted-foreground">{l.label}</span>
+              <span className="text-[11px] text-muted-foreground">{l.label}</span>
             </div>
           ))}
           <span className="text-[9px] text-muted-foreground/50">•</span>
