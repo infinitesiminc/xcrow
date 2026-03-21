@@ -4,6 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { supabase } from "@/integrations/supabase/client";
 import { Map, Bookmark, X, Sparkles, Swords, ScrollText } from "lucide-react";
+import OnboardingQuest from "@/components/OnboardingQuest";
 import { useFutureSkills } from "@/hooks/use-future-skills";
 import FutureTerritoryMap from "@/components/territory/FutureTerritoryMap";
 import FutureSkillsTable from "@/components/territory/FutureSkillsTable";
@@ -263,6 +264,8 @@ const Index = () => {
   const greeting = getGreeting();
   const userName = profile?.displayName?.split(" ")[0];
   const isSignedIn = !!user;
+  const showOnboarding = isSignedIn && profile && !profile.onboardingCompleted;
+  const [onboardingDismissed, setOnboardingDismissed] = useState(false);
 
   // Build live view context for AI chat
   const viewContext = useMemo<ViewContext>(() => ({
@@ -271,6 +274,17 @@ const Index = () => {
     selectedTab: rightTab === "roles" ? myRolesTab : undefined,
     lastSimResult,
   }), [selectedRole, rightTab, myRolesTab, lastSimResult]);
+
+  /* ── Onboarding Quest ── */
+  if (showOnboarding && !onboardingDismissed) {
+    return (
+      <OnboardingQuest
+        open
+        userId={user!.id}
+        onComplete={() => setOnboardingDismissed(true)}
+      />
+    );
+  }
 
   /* ── Mobile ───────────────────────────────────── */
 
