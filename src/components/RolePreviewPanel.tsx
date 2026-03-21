@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
-import { X, MapPin, Loader2, Play, Maximize2, ChevronLeft, CheckCircle2, Bot, Bookmark, BookmarkCheck, GraduationCap, MessageSquare, BarChart3, FileText, Users, Search, Settings, Globe, Shield, Lightbulb, PenTool, Code, TrendingUp, Megaphone, Target, Briefcase, Heart, Layers, Zap, ExternalLink, Star, Sparkles, ChevronDown } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { X, MapPin, Loader2, Play, Maximize2, ChevronLeft, CheckCircle2, Bot, Bookmark, BookmarkCheck, GraduationCap, MessageSquare, BarChart3, FileText, Users, Search, Settings, Globe, Shield, Lightbulb, PenTool, Code, TrendingUp, Megaphone, Target, Briefcase, Heart, Layers, Zap, ExternalLink, Star, Sparkles, ChevronDown, ArrowRight } from "lucide-react";
 import { matchTaskToSkills, SKILL_TAXONOMY } from "@/lib/skill-map";
 import { motion, AnimatePresence } from "framer-motion";
 import ReactMarkdown from "react-markdown";
@@ -72,6 +73,7 @@ interface TaskCluster {
 type PanelView = "details" | "simulation" | "enlarged";
 
 export default function RolePreviewPanel({ role, onClose, edgeContext }: RolePreviewPanelProps) {
+  const navigate = useNavigate();
   const { user, openAuthModal } = useAuth();
   const [tasks, setTasks] = useState<TaskCluster[]>([]);
   const [summary, setSummary] = useState<string | null>(null);
@@ -603,9 +605,18 @@ export default function RolePreviewPanel({ role, onClose, edgeContext }: RolePre
         </button>
         <button
           onClick={() => setView("enlarged")}
-          className="flex-1 flex items-center justify-center gap-2 rounded-xl bg-primary text-primary-foreground py-2 text-sm font-medium hover:bg-primary/90 transition-colors"
+          className="flex-1 flex items-center justify-center gap-2 rounded-xl border border-border text-foreground py-2 text-sm font-medium hover:bg-muted/30 transition-colors"
         >
           <Maximize2 className="h-4 w-4" /> Full View
+        </button>
+        <button
+          onClick={() => {
+            onClose();
+            navigate(`/role/${encodeURIComponent(role.title)}${role.company ? `?company=${encodeURIComponent(role.company)}` : ""}`);
+          }}
+          className="flex-1 flex items-center justify-center gap-2 rounded-xl bg-primary text-primary-foreground py-2 text-sm font-medium hover:bg-primary/90 transition-colors"
+        >
+          Deep Dive <ArrowRight className="h-4 w-4" />
         </button>
       </div>
     </motion.div>
