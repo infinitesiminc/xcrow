@@ -207,7 +207,7 @@ export default function SkillNode({
               x={x}
               y={y + 4}
               textAnchor="middle"
-              style={{ fontSize: "10px" }}
+              style={{ fontSize: "13px" }}
             >
               {iconEmoji}
             </text>
