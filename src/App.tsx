@@ -104,6 +104,14 @@ const App = () => (
               <Route path="/privacy" element={<PrivacyPolicy />} />
               <Route path="/terms" element={<Terms />} />
               <Route path="/cookies" element={<CookiePolicy />} />
+              <Route path="/contact" element={<><Navbar /><Contact /><Footer /></>} />
+              <Route path="/enterprise" element={<Enterprise />} />
+              <Route path="/investors" element={<Investors />} />
+              <Route path="/roadmap" element={<Roadmap />} />
+              <Route path="/case-study" element={<CaseStudy />} />
+              <Route path="/simulation-design" element={<SimulationDesign />} />
+              <Route path="/join" element={<JoinWorkspace />} />
+              <Route path="/score-distributions" element={<><Navbar /><ScoreDistributions /><Footer /></>} />
 
               {/* Redirects — old routes all go to feed */}
               <Route path="/practice" element={<Navigate to="/" replace />} />
