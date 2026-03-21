@@ -14,7 +14,7 @@ import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getCastleState, CASTLE_TIERS, type CastleTier } from "@/lib/castle-levels";
 import { getLevel, levelProgress } from "@/lib/skill-map";
-import xcrowLogo from "@/assets/xcrow-logo.png";
+import xxcrowLogo from "@/assets/xcrow-logo.png";
 
 import castleRuins from "@/assets/castle-ruins.png";
 import castleOutpost from "@/assets/castle-outpost.png";
@@ -119,7 +119,7 @@ export default function PublicProfile() {
   if (notFound || !profile) {
     return (
       <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-4">
-        <img src={crowLogo} alt="Xcrow" className="h-16 w-16 opacity-50" />
+        <img src={xcrowLogo} alt="Xcrow" className="h-16 w-16 opacity-50" />
         <h1 className="text-xl font-bold text-foreground">Adventurer not found</h1>
         <p className="text-muted-foreground text-sm">This profile doesn't exist or hasn't been claimed yet.</p>
         <Link to="/" className="text-primary hover:underline text-sm flex items-center gap-1">
@@ -138,7 +138,7 @@ export default function PublicProfile() {
       <div className="border-b border-border/50 bg-card/50 backdrop-blur-sm">
         <div className="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2">
-            <img src={crowLogo} alt="Xcrow" className="h-7 w-7" />
+            <img src={xcrowLogo} alt="Xcrow" className="h-7 w-7" />
             <span className="text-sm font-bold text-foreground">Xcrow.ai</span>
           </Link>
           <Badge variant="outline" className="text-[10px]">Public Profile</Badge>
@@ -323,7 +323,7 @@ export default function PublicProfile() {
             to="/"
             className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors"
           >
-            <img src={crowLogo} alt="" className="h-4 w-4" />
+            <img src={xcrowLogo} alt="" className="h-4 w-4" />
             Start your quest on Xcrow.ai
           </Link>
         </motion.div>
