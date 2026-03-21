@@ -73,6 +73,7 @@ const RoleDeepDive = () => {
   const [predictions, setPredictions] = useState<Record<string, FuturePrediction>>({});
   const [predictionsLoading, setPredictionsLoading] = useState(false);
   const [selectedTask, setSelectedTask] = useState<TaskAnalysis | null>(null);
+  const [jobId, setJobId] = useState<string | null>(null);
   const { user, openAuthModal } = useAuth();
 
   const completedCount = result ? result.tasks.filter(t => completedTasks.has(t.name)).length : 0;
