@@ -1456,13 +1456,13 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                       </Button>
                     )}
 
-                    {/* Always: Back to Crowy */}
+                    {/* Always: Back to xcrow */}
                     <Button
                       variant="ghost"
                       onClick={onClose}
                       className="gap-2 rounded-xl w-full text-xs text-muted-foreground"
                     >
-                      🐦‍⬛ Back to Crowy
+                      🐦‍⬛ Back to xcrow
                     </Button>
                   </motion.div>
                 </motion.div>

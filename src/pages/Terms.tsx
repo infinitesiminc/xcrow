@@ -77,7 +77,7 @@ export default function Terms() {
         <h2>13. Contact</h2>
         <p>
           Questions about these terms? Contact us at{" "}
-          <a href="mailto:legal@crowy.ai" className="text-primary hover:underline">legal@crowy.ai</a>.
+          <a href="mailto:legal@xcrow.ai" className="text-primary hover:underline">legal@xcrow.ai</a>.
         </p>
       </main>
       <Footer />
