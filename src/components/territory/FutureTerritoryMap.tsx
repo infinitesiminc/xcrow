@@ -116,6 +116,7 @@ export default function FutureTerritoryMap({ skills, focusSkillId }: FutureTerri
   const handleSkillClick = useCallback((skill: FutureSkill) => {
     if (isDragging.current) return;
     setSelectedSkill(skill);
+    setHighlightedSkillId(skill.id);
     setDrawerOpen(true);
   }, []);
 
