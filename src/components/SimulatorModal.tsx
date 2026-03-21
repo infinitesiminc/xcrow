@@ -1065,7 +1065,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                               }).finally(() => setSending(false));
                             }}
                           >
-                            <ArrowRight className="h-4 w-4" /> Next Scenario
+                            <ArrowRight className="h-4 w-4" /> Next Wave
                           </Button>
                         )}
                         <Button
