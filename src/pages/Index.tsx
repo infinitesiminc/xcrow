@@ -164,7 +164,7 @@ const Index = () => {
   const [activeEdge, setActiveEdge] = useState<EdgeContext | null>(null);
   const [rightTab, setRightTab] = useState<RightTab>("territory");
   const [chatOpen, setChatOpen] = useState(true);
-  const [rightPanelTab, setRightPanelTab] = useState<"chat" | "table" | "roles">("chat");
+  const [rightPanelTab, setRightPanelTab] = useState<"table" | "roles">("table");
   const [lastSimResult, setLastSimResult] = useState<ViewContext["lastSimResult"]>(null);
   const [myRolesTab, setMyRolesTab] = useState<"saved" | "practiced">("saved");
   const batchCounter = useRef(0);
