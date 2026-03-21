@@ -100,7 +100,7 @@ export default function PublicProfile() {
   }, [skillXpMap]);
 
   const totalCastles = tierCounts.outpost + tierCounts.fortress + tierCounts.citadel;
-  const level = profile ? getLevel(profile.total_xp) : { label: "Apprentice", tier: 1 };
+  const levelInfo = profile ? getLevel(profile.total_xp) : { name: "Beginner" as const, index: 0 };
   const lvlProgress = profile ? levelProgress(profile.total_xp) : 0;
 
   if (loading) {
