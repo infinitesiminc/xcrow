@@ -78,12 +78,12 @@ export default function UnifiedChatDock() {
         {isOpen && (
           <motion.div
             key="chat-panel"
-            initial={{ y: "100%", opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            exit={{ y: "100%", opacity: 0 }}
+            initial={{ y: "100%", opacity: 0, scale: 0.95 }}
+            animate={{ y: 0, opacity: 1, scale: 1 }}
+            exit={{ y: "100%", opacity: 0, scale: 0.95 }}
             transition={{ type: "spring", damping: 28, stiffness: 280 }}
-            className="fixed bottom-0 left-1/2 -translate-x-1/2 z-40 w-full max-w-lg flex flex-col bg-card/95 backdrop-blur-xl border border-b-0 border-border/50 rounded-t-2xl shadow-2xl"
-            style={{ maxHeight: "70vh" }}
+            className="fixed bottom-4 right-4 z-40 w-[380px] flex flex-col bg-card/95 backdrop-blur-xl border border-border/50 rounded-2xl shadow-2xl"
+            style={{ maxHeight: "min(70vh, 560px)" }}
           >
             {/* Header */}
             <div className="flex items-center justify-between px-4 py-3 border-b border-border/30 shrink-0">
