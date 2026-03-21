@@ -113,7 +113,13 @@ export default function Settings() {
       const parts = profile.cvUrl.split("/");
       setCvFileName(decodeURIComponent(parts[parts.length - 1] || "CV"));
     }
-  }, [profile]);
+    // Fetch username separately since it's not in the profile context
+    if (user) {
+      supabase.from("profiles").select("username").eq("id", user.id).single().then(({ data }) => {
+        if (data && (data as any).username) setUsername((data as any).username);
+      });
+    }
+  }, [profile, user]);
 
   useEffect(() => {
     if (!user) return;
