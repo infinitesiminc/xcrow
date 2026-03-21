@@ -523,8 +523,8 @@ const Index = () => {
             onClick={() => setChatOpen(true)}
             className="fixed bottom-4 right-4 z-20 flex items-center gap-2 px-4 py-2.5 rounded-lg bg-card/90 backdrop-blur-md border border-border/50 text-sm font-medium text-foreground shadow-lg hover:shadow-xl transition-all active:scale-[0.97]"
           >
-            <Sparkles className="h-4 w-4 text-primary" />
-            Open Coach
+            <ScrollText className="h-4 w-4 text-primary" />
+            Open Panel
           </motion.button>
         )}
       </AnimatePresence>
