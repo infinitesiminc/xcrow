@@ -766,6 +766,33 @@ export type Database = {
           },
         ]
       }
+      platform_config: {
+        Row: {
+          description: string | null
+          key: string
+          label: string | null
+          updated_at: string
+          updated_by: string | null
+          value: string
+        }
+        Insert: {
+          description?: string | null
+          key: string
+          label?: string | null
+          updated_at?: string
+          updated_by?: string | null
+          value: string
+        }
+        Update: {
+          description?: string | null
+          key?: string
+          label?: string | null
+          updated_at?: string
+          updated_by?: string | null
+          value?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           career_stage: string | null
