@@ -381,12 +381,13 @@ export default function Settings() {
    ══════════════════════════════════════════════════════ */
 
 function ProfileSection({
-  displayName, setDisplayName, jobTitle, setJobTitle, company, setCompany,
+  displayName, setDisplayName, username, setUsername, jobTitle, setJobTitle, company, setCompany,
   linkedinUrl, setLinkedinUrl, schoolName, setSchoolName,
   careerStage, setCareerStage, cvFileName, cvInputRef, uploadingCv, saving, email,
   handleCvUpload, handleRemoveCv, handleSaveProfile,
 }: {
   displayName: string; setDisplayName: (v: string) => void;
+  username: string; setUsername: (v: string) => void;
   jobTitle: string; setJobTitle: (v: string) => void;
   company: string; setCompany: (v: string) => void;
   linkedinUrl: string; setLinkedinUrl: (v: string) => void;
