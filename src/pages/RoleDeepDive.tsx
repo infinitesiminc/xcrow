@@ -464,6 +464,40 @@ const RoleDeepDive = () => {
                     );
                   }
 
+                  if (predictionsLoading && uniqueSkills.length === 0) {
+                    return (
+                      <div className="flex-1 flex flex-col gap-6">
+                        <div className="flex items-center justify-center py-8">
+                          <XcrowLoader
+                            title="🔮 Scanning future threats…"
+                            subtitle="Analyzing AI impact on each quest"
+                            size="sm"
+                          />
+                        </div>
+                        <div className="space-y-3">
+                          {[...Array(4)].map((_, i) => (
+                            <motion.div
+                              key={i}
+                              initial={{ opacity: 0, y: 8 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              transition={{ delay: i * 0.1 }}
+                              className="rounded-xl border border-border/40 p-4 space-y-2.5"
+                            >
+                              <Skeleton className="h-6 w-6 rounded-md" />
+                              <Skeleton className="h-3.5 w-3/4 rounded" />
+                              <Skeleton className="h-2.5 w-full rounded" />
+                              <Skeleton className="h-2.5 w-2/3 rounded" />
+                              <div className="flex items-center justify-between pt-1">
+                                <Skeleton className="h-2 w-20 rounded" />
+                                <Skeleton className="h-2 w-14 rounded" />
+                              </div>
+                            </motion.div>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  }
+
                   return (
                     <>
                       <div className="mb-4">
