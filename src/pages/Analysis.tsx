@@ -493,7 +493,7 @@ function ReadinessRing({ readiness, size = 64 }: { readiness: number; size?: num
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
         <span className="text-base font-bold text-foreground tabular-nums">{readiness}%</span>
-        <span className="text-[8px] text-muted-foreground uppercase tracking-wider">Ready</span>
+        <span className="text-[8px] text-muted-foreground uppercase tracking-wider">Battle</span>
       </div>
     </div>
   );
