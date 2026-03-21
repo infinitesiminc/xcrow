@@ -15,6 +15,7 @@ import {
   Loader2, Sparkles, Trash2, Clock, Zap, Crown, CircleDot,
   RefreshCw, Plus, Eye, EyeOff, Play, Pause, Users,
   TrendingUp, Target, BarChart3, Calendar, Award,
+  CheckCircle2, XCircle, GitMerge, Brain, ArrowRight,
 } from "lucide-react";
 import { format, formatDistanceToNow, isPast, isFuture, addDays, addHours } from "date-fns";
 
@@ -56,6 +57,27 @@ interface TrendingSkill {
   avg_impact: number;
 }
 
+interface DiscoverySuggestion {
+  id: string;
+  skill_name: string;
+  category: string;
+  demand_count: number;
+  job_count: number;
+  avg_exposure: number;
+  avg_impact: number;
+  ai_analysis: {
+    action: string;
+    reasoning: string;
+    merge_target: string | null;
+    trend_signal: string;
+    priority: string;
+  };
+  action: string;
+  merge_target_id: string | null;
+  status: string;
+  discovered_at: string;
+}
+
 /* ── constants ─────────────────── */
 
 const STATUS_COLORS: Record<string, string> = {
@@ -81,6 +103,9 @@ export default function SkillDropsPage() {
   const [creating, setCreating] = useState(false);
   const [showCreate, setShowCreate] = useState(false);
 
+  const [suggestions, setSuggestions] = useState<DiscoverySuggestion[]>([]);
+  const [discovering, setDiscovering] = useState(false);
+
   // Create form
   const [form, setForm] = useState({
     title: "",
@@ -95,18 +120,76 @@ export default function SkillDropsPage() {
   });
 
   const fetchAll = useCallback(async () => {
-    const [eventsRes, partRes, trendRes] = await Promise.all([
+    const [eventsRes, partRes, trendRes, suggestionsRes] = await Promise.all([
       supabase.from("skill_drop_events").select("*").order("created_at", { ascending: false }),
       supabase.from("skill_drop_participations").select("*"),
       supabase.rpc("get_market_skill_demand", { top_n: 20 }),
+      supabase.from("skill_discovery_suggestions" as any).select("*").order("discovered_at", { ascending: false }).limit(50),
     ]);
     setEvents((eventsRes.data as any) || []);
     setParticipations((partRes.data as any) || []);
     setTrending((trendRes.data as any) || []);
+    setSuggestions((suggestionsRes.data as any) || []);
     setLoading(false);
   }, []);
 
   useEffect(() => { fetchAll(); }, [fetchAll]);
+
+  const runDiscovery = async () => {
+    setDiscovering(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("discover-trending-skills", { body: { source: "manual" } });
+      if (error) throw error;
+      toast({ title: "Discovery complete! 🔍", description: `Found ${data?.suggestions || 0} new skill suggestions` });
+      fetchAll();
+    } catch (err: any) {
+      toast({ title: "Discovery failed", description: err.message, variant: "destructive" });
+    } finally {
+      setDiscovering(false);
+    }
+  };
+
+  const reviewSuggestion = async (id: string, status: "approved" | "rejected") => {
+    const suggestion = suggestions.find(s => s.id === id);
+    if (!suggestion) return;
+
+    // If approved and action is "new", add to canonical catalogue
+    if (status === "approved" && suggestion.action === "new") {
+      const skillId = suggestion.skill_name.toLowerCase().trim()
+        .replace(/[^a-z0-9\s]/g, '').replace(/\s+/g, '-').slice(0, 80);
+      await supabase.from("canonical_future_skills").upsert({
+        id: skillId,
+        name: suggestion.skill_name,
+        category: suggestion.category,
+        demand_count: suggestion.demand_count,
+        job_count: suggestion.job_count,
+        avg_relevance: suggestion.avg_exposure,
+      } as any, { onConflict: "id" });
+    }
+
+    // If approved and action is "alias"/"merge", add alias to existing
+    if (status === "approved" && (suggestion.action === "merge" || suggestion.action === "alias") && suggestion.merge_target_id) {
+      const { data: target } = await supabase
+        .from("canonical_future_skills")
+        .select("aliases, demand_count")
+        .eq("id", suggestion.merge_target_id)
+        .single();
+      if (target) {
+        const aliases = [...((target as any).aliases || []), suggestion.skill_name].slice(0, 10);
+        await supabase.from("canonical_future_skills").update({
+          aliases,
+          demand_count: ((target as any).demand_count || 0) + suggestion.demand_count,
+        } as any).eq("id", suggestion.merge_target_id);
+      }
+    }
+
+    await (supabase.from("skill_discovery_suggestions" as any) as any)
+      .update({ status, reviewed_at: new Date().toISOString() })
+      .eq("id", id);
+
+    setSuggestions(prev => prev.map(s => s.id === id ? { ...s, status } : s));
+    toast({ title: status === "approved" ? "Skill approved ✅" : "Skill rejected" });
+  };
 
   const createEvent = async () => {
     setCreating(true);
@@ -390,11 +473,98 @@ export default function SkillDropsPage() {
 
         {/* Auto-Discover Tab */}
         <TabsContent value="discover" className="space-y-4">
+          {/* AI Discovery Feed */}
+          <Card className="border-primary/20">
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <Brain className="h-4 w-4 text-primary" />
+                    AI Skill Discovery Feed
+                  </CardTitle>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    AI-analyzed emerging skills from job market data. Runs daily at 6 AM UTC.
+                  </p>
+                </div>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={runDiscovery}
+                  disabled={discovering}
+                  className="shrink-0"
+                >
+                  {discovering ? (
+                    <Loader2 className="h-3 w-3 animate-spin mr-1" />
+                  ) : (
+                    <RefreshCw className="h-3 w-3 mr-1" />
+                  )}
+                  {discovering ? "Analyzing..." : "Run Discovery"}
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              {(() => {
+                const pending = suggestions.filter(s => s.status === "pending");
+                const reviewed = suggestions.filter(s => s.status !== "pending");
+
+                if (suggestions.length === 0 && !discovering) {
+                  return (
+                    <div className="text-center py-8 text-muted-foreground">
+                      <Brain className="h-8 w-8 mx-auto mb-3 opacity-30" />
+                      <p className="text-sm">No suggestions yet. Click "Run Discovery" to analyze trending skills.</p>
+                    </div>
+                  );
+                }
+
+                return (
+                  <div className="space-y-4">
+                    {/* Pending Suggestions */}
+                    {pending.length > 0 && (
+                      <div className="space-y-2">
+                        <h3 className="text-xs font-semibold uppercase tracking-wider text-primary flex items-center gap-1.5">
+                          <Sparkles className="h-3 w-3" /> Pending Review ({pending.length})
+                        </h3>
+                        {pending.map(s => (
+                          <SuggestionCard
+                            key={s.id}
+                            suggestion={s}
+                            onReview={reviewSuggestion}
+                            onCreateEvent={(name, demand, exposure) => {
+                              setForm(f => ({
+                                ...f,
+                                title: `${name} Sprint`,
+                                description: `Master ${name} — trending in ${demand}+ roles with ${exposure}% AI exposure.`,
+                              }));
+                              setShowCreate(true);
+                            }}
+                          />
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Reviewed */}
+                    {reviewed.length > 0 && (
+                      <div className="space-y-2">
+                        <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                          <CheckCircle2 className="h-3 w-3" /> Reviewed ({reviewed.length})
+                        </h3>
+                        {reviewed.slice(0, 5).map(s => (
+                          <SuggestionCard key={s.id} suggestion={s} onReview={reviewSuggestion} onCreateEvent={() => {}} />
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
+            </CardContent>
+          </Card>
+
+          {/* Existing trending market data */}
           <Card>
             <CardHeader className="pb-3">
               <CardTitle className="text-base flex items-center gap-2">
                 <TrendingUp className="h-4 w-4 text-primary" />
-                Trending Skills — Auto-Discovery
+                Market Skill Demand — Raw Data
               </CardTitle>
               <p className="text-xs text-muted-foreground">
                 Top skills by demand across analyzed job clusters. Click to create an event from any skill.
@@ -427,7 +597,6 @@ export default function SkillDropsPage() {
                           </span>
                         </div>
                       </div>
-                      {/* AI Exposure bar */}
                       <div className="w-16 h-1.5 rounded-full bg-muted overflow-hidden shrink-0">
                         <div
                           className="h-full rounded-full bg-gradient-to-r from-primary to-primary/50"
@@ -569,5 +738,122 @@ function EventCard({
         )}
       </CardContent>
     </Card>
+  );
+}
+
+/* ── Suggestion Card ───────────── */
+
+const ACTION_CONFIG: Record<string, { icon: typeof Plus; label: string; cls: string }> = {
+  new: { icon: Plus, label: "New Skill", cls: "text-emerald-400 border-emerald-500/30 bg-emerald-500/10" },
+  merge: { icon: GitMerge, label: "Merge", cls: "text-amber-400 border-amber-500/30 bg-amber-500/10" },
+  alias: { icon: ArrowRight, label: "Alias", cls: "text-cyan-400 border-cyan-500/30 bg-cyan-500/10" },
+  ignore: { icon: XCircle, label: "Ignore", cls: "text-muted-foreground border-border bg-muted/30" },
+};
+
+const TREND_COLORS: Record<string, string> = {
+  rising: "text-emerald-400",
+  emerging: "text-primary",
+  stable: "text-muted-foreground",
+};
+
+const PRIORITY_COLORS: Record<string, string> = {
+  high: "bg-destructive/20 text-destructive border-destructive/30",
+  medium: "bg-amber-500/20 text-amber-400 border-amber-500/30",
+  low: "bg-muted text-muted-foreground border-border",
+};
+
+function SuggestionCard({
+  suggestion: s,
+  onReview,
+  onCreateEvent,
+}: {
+  suggestion: DiscoverySuggestion;
+  onReview: (id: string, status: "approved" | "rejected") => void;
+  onCreateEvent: (name: string, demand: number, exposure: number) => void;
+}) {
+  const isPending = s.status === "pending";
+  const actionCfg = ACTION_CONFIG[s.action] || ACTION_CONFIG.new;
+  const ActionIcon = actionCfg.icon;
+
+  return (
+    <div className={`p-3 rounded-lg border transition-colors ${isPending ? "border-border/50 hover:border-primary/30" : "border-border/30 opacity-60"}`}>
+      <div className="flex items-start gap-3">
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 flex-wrap">
+            <p className="text-sm font-semibold">{s.skill_name}</p>
+            <Badge variant="outline" className={`text-[9px] ${actionCfg.cls}`}>
+              <ActionIcon className="h-2.5 w-2.5 mr-0.5" />
+              {actionCfg.label}
+            </Badge>
+            <Badge variant="outline" className={`text-[9px] ${PRIORITY_COLORS[s.ai_analysis.priority] || ""}`}>
+              {s.ai_analysis.priority}
+            </Badge>
+            <span className={`text-[10px] font-medium ${TREND_COLORS[s.ai_analysis.trend_signal] || ""}`}>
+              ↗ {s.ai_analysis.trend_signal}
+            </span>
+            {s.status !== "pending" && (
+              <Badge variant="outline" className={`text-[9px] ${s.status === "approved" ? "text-emerald-400 border-emerald-500/30" : "text-destructive border-destructive/30"}`}>
+                {s.status}
+              </Badge>
+            )}
+          </div>
+
+          <p className="text-xs text-muted-foreground mt-1">{s.ai_analysis.reasoning}</p>
+
+          {s.ai_analysis.merge_target && (
+            <p className="text-[10px] text-amber-400 mt-1 flex items-center gap-1">
+              <GitMerge className="h-2.5 w-2.5" /> Merge into: <span className="font-medium">{s.ai_analysis.merge_target}</span>
+            </p>
+          )}
+
+          <div className="flex items-center gap-3 mt-1.5 text-[10px] text-muted-foreground">
+            <span className="flex items-center gap-1">
+              <Target className="h-2.5 w-2.5" /> {s.job_count} jobs
+            </span>
+            <span className="flex items-center gap-1">
+              <TrendingUp className="h-2.5 w-2.5" /> {s.demand_count} mentions
+            </span>
+            <span className="flex items-center gap-1">
+              <Zap className="h-2.5 w-2.5" /> AI {s.avg_exposure}%
+            </span>
+            <span className="flex items-center gap-1">
+              <BarChart3 className="h-2.5 w-2.5" /> Impact {s.avg_impact}%
+            </span>
+            <Badge variant="outline" className="text-[9px]">{s.category}</Badge>
+          </div>
+        </div>
+
+        {isPending && (
+          <div className="flex items-center gap-1 shrink-0">
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-7 text-xs text-emerald-400 border-emerald-500/30"
+              onClick={() => onReview(s.id, "approved")}
+            >
+              <CheckCircle2 className="h-3 w-3 mr-1" /> Approve
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-7 text-xs text-muted-foreground"
+              onClick={() => onReview(s.id, "rejected")}
+            >
+              <XCircle className="h-3 w-3 mr-1" /> Reject
+            </Button>
+            {s.action === "new" && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-7 text-xs"
+                onClick={() => onCreateEvent(s.skill_name, s.demand_count, s.avg_exposure)}
+              >
+                <Sparkles className="h-3 w-3 mr-1" /> Drop Event
+              </Button>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
   );
 }

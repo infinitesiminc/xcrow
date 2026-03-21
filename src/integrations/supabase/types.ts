@@ -1389,6 +1389,57 @@ export type Database = {
         }
         Relationships: []
       }
+      skill_discovery_suggestions: {
+        Row: {
+          action: string
+          ai_analysis: Json
+          avg_exposure: number
+          avg_impact: number
+          category: string
+          demand_count: number
+          discovered_at: string
+          id: string
+          job_count: number
+          merge_target_id: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          skill_name: string
+          status: string
+        }
+        Insert: {
+          action?: string
+          ai_analysis?: Json
+          avg_exposure?: number
+          avg_impact?: number
+          category: string
+          demand_count?: number
+          discovered_at?: string
+          id?: string
+          job_count?: number
+          merge_target_id?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          skill_name: string
+          status?: string
+        }
+        Update: {
+          action?: string
+          ai_analysis?: Json
+          avg_exposure?: number
+          avg_impact?: number
+          category?: string
+          demand_count?: number
+          discovered_at?: string
+          id?: string
+          job_count?: number
+          merge_target_id?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          skill_name?: string
+          status?: string
+        }
+        Relationships: []
+      }
       skill_drop_events: {
         Row: {
           banner_emoji: string | null
