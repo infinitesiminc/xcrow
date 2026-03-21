@@ -446,9 +446,9 @@ const RoleDeepDive = () => {
                   return (
                     <>
                       <div className="mb-4">
-                        <h3 className="text-sm font-bold text-foreground mb-1">Future Skills for This Role</h3>
+                        <h3 className="text-sm font-bold text-foreground mb-1">🗺️ Skills to Unlock in This Kingdom</h3>
                         <p className="text-xs text-muted-foreground">
-                          {uniqueSkills.length} skills emerging across {Object.keys(predictions).length} tasks
+                          {uniqueSkills.length} skills emerging across {Object.keys(predictions).length} quests
                         </p>
                       </div>
 
