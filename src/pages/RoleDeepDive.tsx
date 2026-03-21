@@ -536,6 +536,8 @@ const RoleDeepDive = () => {
         onBackToFeed={() => navigate("/")}
       />
     </div>
+      </DialogContent>
+    </Dialog>
   );
 };
 
