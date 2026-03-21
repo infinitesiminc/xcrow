@@ -5,6 +5,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { supabase } from "@/integrations/supabase/client";
 import { Map, Bookmark, X, Sparkles, Swords, ScrollText } from "lucide-react";
 import OnboardingQuest from "@/components/OnboardingQuest";
+import AdaptiveQueue from "@/components/AdaptiveQueue";
 import { useFutureSkills } from "@/hooks/use-future-skills";
 import FutureTerritoryMap from "@/components/territory/FutureTerritoryMap";
 import FutureSkillsTable from "@/components/territory/FutureSkillsTable";
@@ -324,7 +325,12 @@ const Index = () => {
             )}
           </AnimatePresence>
           {!hasInteracted && !user && <SkillSuggestionCards />}
-          {!hasInteracted && user && <div className="w-full max-w-lg mb-4"><QuestBoard /></div>}
+          {!hasInteracted && user && (
+            <div className="w-full max-w-lg mb-4 space-y-4">
+              <QuestBoard />
+              <AdaptiveQueue userId={user.id} />
+            </div>
+          )}
           <div className={`w-full max-w-lg ${hasInteracted ? "flex-1 flex flex-col min-h-0" : ""}`}>
             <HomepageChat
               onRolesFound={handleRolesFound}
@@ -426,7 +432,12 @@ const Index = () => {
               )}
             </AnimatePresence>
 
-            {!hasInteracted && user && <div className="w-full max-w-xl mb-4"><QuestBoard /></div>}
+            {!hasInteracted && user && (
+              <div className="w-full max-w-xl mb-4 space-y-4">
+                <QuestBoard />
+                <AdaptiveQueue userId={user.id} />
+              </div>
+            )}
             <div className={`w-full max-w-xl ${hasInteracted ? "flex-1 flex flex-col min-h-0" : ""}`}>
               <HomepageChat
                 onRolesFound={handleRolesFound}
