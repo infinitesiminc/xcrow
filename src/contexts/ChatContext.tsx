@@ -162,11 +162,11 @@ export function ChatProvider({ children }: { children: ReactNode }) {
 
   const persistMessage = useCallback(async (role: "user" | "assistant", content: string) => {
     if (!user) return;
-    await supabase.from("chat_messages").insert({
+    await supabase.from("chat_messages" as any).insert({
       user_id: user.id,
       role,
       content,
-      view_context: viewCtx,
+      view_context: viewCtx as any,
     });
   }, [user, viewCtx]);
 
