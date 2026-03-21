@@ -35,6 +35,9 @@ export function TaskCard({
     >
       <div className="flex items-center justify-between gap-2">
         <div className="min-w-0 flex-1 flex items-center gap-2">
+          <span className="text-[10px] font-bold text-muted-foreground/50 tabular-nums w-4 text-right shrink-0">
+            {index + 1}
+          </span>
           {isCompleted && <CheckCircle2 className="h-3 w-3 text-success shrink-0" />}
           <span className="text-xs font-medium text-foreground truncate">{task.name}</span>
         </div>

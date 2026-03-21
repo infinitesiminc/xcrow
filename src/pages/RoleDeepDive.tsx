@@ -472,7 +472,7 @@ const RoleDeepDive = () => {
                         </div>
                       )}
 
-                       <div className="grid grid-cols-2 gap-4 overflow-y-auto pb-4">
+                       <div className="grid grid-cols-2 gap-3 overflow-y-auto pb-4">
                         {uniqueSkills.map((skill, i) => (
                           <motion.button
                             key={skill.id}
@@ -483,21 +483,21 @@ const RoleDeepDive = () => {
                               const task = result!.tasks.find(t => t.name === skill.taskName);
                               if (task) setSimTask(task);
                             }}
-                            className="relative rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/[0.08] to-accent/[0.06] p-5 text-left hover:border-primary/50 hover:shadow-lg hover:shadow-primary/10 hover:scale-[1.02] transition-all duration-200 group"
+                            className="sim-glow-border relative rounded-xl border border-primary/20 bg-gradient-to-br from-primary/[0.06] to-accent/[0.04] p-4 text-left hover:border-primary/40 hover:shadow-md hover:shadow-primary/5 transition-all group"
                           >
-                            <div className="text-3xl mb-3">{isStandardEmoji(skill.icon_emoji) ? skill.icon_emoji : "⚡"}</div>
-                            <div className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors leading-tight mb-1.5">
+                            <div className="text-2xl mb-2">{isStandardEmoji(skill.icon_emoji) ? skill.icon_emoji : "⚡"}</div>
+                            <div className="text-xs font-semibold text-foreground group-hover:text-primary transition-colors leading-tight mb-1">
                               {skill.name}
                             </div>
-                            <div className="text-xs text-muted-foreground leading-relaxed line-clamp-3 mb-3">
+                            <div className="text-[10px] text-muted-foreground leading-snug line-clamp-2 mb-2.5">
                               {skill.description}
                             </div>
-                            <div className="flex items-center justify-between pt-2 border-t border-border/20">
-                              <span className="text-[10px] text-muted-foreground/60 truncate max-w-[55%]">
+                            <div className="flex items-center justify-between">
+                              <span className="text-[9px] text-muted-foreground/60 truncate max-w-[55%]">
                                 {skill.taskName}
                               </span>
-                              <span className="flex items-center gap-1.5 text-[11px] font-semibold text-primary/70 group-hover:text-primary transition-colors">
-                                <Zap className="h-3 w-3" />
+                              <span className="flex items-center gap-1 text-[10px] font-semibold text-primary/70 group-hover:text-primary transition-colors">
+                                <Zap className="h-2.5 w-2.5" />
                                 Practice
                               </span>
                             </div>
