@@ -219,7 +219,8 @@ export default function FutureTerritoryMap({ skills }: FutureTerritoryMapProps) 
 
           {layout.map(island => (
             <FutureIsland key={island.category} island={island} skillLookup={skillLookup}
-              isFocused={focusedIsland === island.category} onIslandClick={handleIslandClick} />
+              isFocused={focusedIsland === island.category} onIslandClick={handleIslandClick}
+              onSkillClick={handleSkillClick} />
           ))}
         </svg>
 
