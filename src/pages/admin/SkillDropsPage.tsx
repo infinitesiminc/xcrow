@@ -120,18 +120,76 @@ export default function SkillDropsPage() {
   });
 
   const fetchAll = useCallback(async () => {
-    const [eventsRes, partRes, trendRes] = await Promise.all([
+    const [eventsRes, partRes, trendRes, suggestionsRes] = await Promise.all([
       supabase.from("skill_drop_events").select("*").order("created_at", { ascending: false }),
       supabase.from("skill_drop_participations").select("*"),
       supabase.rpc("get_market_skill_demand", { top_n: 20 }),
+      supabase.from("skill_discovery_suggestions" as any).select("*").order("discovered_at", { ascending: false }).limit(50),
     ]);
     setEvents((eventsRes.data as any) || []);
     setParticipations((partRes.data as any) || []);
     setTrending((trendRes.data as any) || []);
+    setSuggestions((suggestionsRes.data as any) || []);
     setLoading(false);
   }, []);
 
   useEffect(() => { fetchAll(); }, [fetchAll]);
+
+  const runDiscovery = async () => {
+    setDiscovering(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("discover-trending-skills", { body: { source: "manual" } });
+      if (error) throw error;
+      toast({ title: "Discovery complete! 🔍", description: `Found ${data?.suggestions || 0} new skill suggestions` });
+      fetchAll();
+    } catch (err: any) {
+      toast({ title: "Discovery failed", description: err.message, variant: "destructive" });
+    } finally {
+      setDiscovering(false);
+    }
+  };
+
+  const reviewSuggestion = async (id: string, status: "approved" | "rejected") => {
+    const suggestion = suggestions.find(s => s.id === id);
+    if (!suggestion) return;
+
+    // If approved and action is "new", add to canonical catalogue
+    if (status === "approved" && suggestion.action === "new") {
+      const skillId = suggestion.skill_name.toLowerCase().trim()
+        .replace(/[^a-z0-9\s]/g, '').replace(/\s+/g, '-').slice(0, 80);
+      await supabase.from("canonical_future_skills").upsert({
+        id: skillId,
+        name: suggestion.skill_name,
+        category: suggestion.category,
+        demand_count: suggestion.demand_count,
+        job_count: suggestion.job_count,
+        avg_relevance: suggestion.avg_exposure,
+      } as any, { onConflict: "id" });
+    }
+
+    // If approved and action is "alias"/"merge", add alias to existing
+    if (status === "approved" && (suggestion.action === "merge" || suggestion.action === "alias") && suggestion.merge_target_id) {
+      const { data: target } = await supabase
+        .from("canonical_future_skills")
+        .select("aliases, demand_count")
+        .eq("id", suggestion.merge_target_id)
+        .single();
+      if (target) {
+        const aliases = [...((target as any).aliases || []), suggestion.skill_name].slice(0, 10);
+        await supabase.from("canonical_future_skills").update({
+          aliases,
+          demand_count: ((target as any).demand_count || 0) + suggestion.demand_count,
+        } as any).eq("id", suggestion.merge_target_id);
+      }
+    }
+
+    await (supabase.from("skill_discovery_suggestions" as any) as any)
+      .update({ status, reviewed_at: new Date().toISOString() })
+      .eq("id", id);
+
+    setSuggestions(prev => prev.map(s => s.id === id ? { ...s, status } : s));
+    toast({ title: status === "approved" ? "Skill approved ✅" : "Skill rejected" });
+  };
 
   const createEvent = async () => {
     setCreating(true);
