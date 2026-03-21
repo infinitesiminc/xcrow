@@ -111,6 +111,12 @@ export default function FutureTerritoryMap({ skills }: FutureTerritoryMapProps) 
     setFocusedIsland(category);
   }, [focusedIsland]);
 
+  const handleSkillClick = useCallback((skill: FutureSkill) => {
+    if (isDragging.current) return;
+    setSelectedSkill(skill);
+    setDrawerOpen(true);
+  }, []);
+
   const nodePositions = useMemo(() => {
     const m = new Map<string, { x: number; y: number }>();
     for (const island of layout) {
