@@ -101,8 +101,8 @@ export default function FutureIsland({ island, skillLookup, isFocused, onIslandC
         {skillCount} skill{skillCount !== 1 ? "s" : ""}
       </text>
 
-      {/* Skill nodes */}
-      {activeNodes.map((node) => {
+      {/* Skill nodes — render hovered node last so it's on top */}
+      {[...activeNodes].sort((a, b) => (a.skillId === hoveredId ? 1 : b.skillId === hoveredId ? -1 : 0)).map((node) => {
         const skill = skillLookup.get(node.skillId);
         if (!skill) return null;
 
