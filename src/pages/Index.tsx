@@ -398,9 +398,6 @@ const Index = () => {
 
   /* ── Desktop ──────────────────────────────────── */
 
-  const [chatOpen, setChatOpen] = useState(true);
-  const [rightPanelTab, setRightPanelTab] = useState<"chat" | "table" | "roles">("chat");
-
   return (
     <div className="h-[calc(100vh-3.5rem)] relative overflow-hidden">
       {/* ── Full-screen Territory Map (background) ── */}
