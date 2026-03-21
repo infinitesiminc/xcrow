@@ -15,6 +15,7 @@ import {
   Loader2, Sparkles, Trash2, Clock, Zap, Crown, CircleDot,
   RefreshCw, Plus, Eye, EyeOff, Play, Pause, Users,
   TrendingUp, Target, BarChart3, Calendar, Award,
+  CheckCircle2, XCircle, GitMerge, Brain, ArrowRight,
 } from "lucide-react";
 import { format, formatDistanceToNow, isPast, isFuture, addDays, addHours } from "date-fns";
 
