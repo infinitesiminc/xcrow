@@ -39,7 +39,7 @@ export function TaskDetailPanel({
       {/* Header */}
       <div className="flex items-start justify-between gap-2 mb-4">
         <div className="min-w-0">
-          <h3 className="text-sm font-bold text-foreground">{task.name}</h3>
+          <h3 className="text-sm font-bold text-foreground">⚔️ {task.name}</h3>
           {task.description && (
             <p className="text-xs text-muted-foreground mt-1 leading-relaxed">{task.description}</p>
           )}
