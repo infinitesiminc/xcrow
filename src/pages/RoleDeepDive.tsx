@@ -385,9 +385,73 @@ const RoleDeepDive = () => {
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                className="h-full flex items-center justify-center text-sm text-muted-foreground"
+                className="h-full flex flex-col"
               >
-                Select a task to explore
+                {(() => {
+                  const allSkills = Object.entries(predictions).flatMap(([taskName, pred]) =>
+                    (pred.future_skills || []).map(s => ({ ...s, taskName }))
+                  );
+                  const uniqueSkills = allSkills.filter((s, i, arr) => arr.findIndex(x => x.id === s.id) === i);
+
+                  if (uniqueSkills.length === 0 && !predictionsLoading) {
+                    return (
+                      <div className="flex-1 flex items-center justify-center text-sm text-muted-foreground">
+                        Select a task to explore
+                      </div>
+                    );
+                  }
+
+                  return (
+                    <>
+                      <div className="mb-4">
+                        <h3 className="text-sm font-bold text-foreground mb-1">Future Skills for This Role</h3>
+                        <p className="text-xs text-muted-foreground">
+                          {uniqueSkills.length} skills emerging across {Object.keys(predictions).length} tasks
+                        </p>
+                      </div>
+
+                      {predictionsLoading && uniqueSkills.length === 0 && (
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground py-8">
+                          <Cpu className="h-4 w-4 animate-pulse text-primary" />
+                          Analyzing future skills…
+                        </div>
+                      )}
+
+                      <div className="grid grid-cols-2 gap-3 overflow-y-auto pb-4">
+                        {uniqueSkills.map((skill, i) => (
+                          <motion.button
+                            key={skill.id}
+                            initial={{ opacity: 0, y: 8 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: i * 0.04 }}
+                            onClick={() => {
+                              const task = result!.tasks.find(t => t.name === skill.taskName);
+                              if (task) setSimTask(task);
+                            }}
+                            className="relative rounded-xl border border-primary/20 bg-gradient-to-br from-primary/[0.06] to-accent/[0.04] p-3.5 text-left hover:border-primary/40 hover:shadow-md hover:shadow-primary/5 transition-all group"
+                          >
+                            <div className="text-2xl mb-2">{skill.icon_emoji}</div>
+                            <div className="text-[11px] font-semibold text-foreground group-hover:text-primary transition-colors leading-tight mb-1">
+                              {skill.name}
+                            </div>
+                            <div className="text-[9px] text-muted-foreground leading-snug line-clamp-2 mb-2">
+                              {skill.description}
+                            </div>
+                            <div className="flex items-center justify-between">
+                              <span className="text-[8px] text-muted-foreground/60 truncate max-w-[60%]">
+                                {skill.taskName}
+                              </span>
+                              <span className="flex items-center gap-1 text-[9px] font-medium text-primary/60 group-hover:text-primary transition-colors">
+                                <Zap className="h-2.5 w-2.5" />
+                                Simulate
+                              </span>
+                            </div>
+                          </motion.button>
+                        ))}
+                      </div>
+                    </>
+                  );
+                })()}
               </motion.div>
             )}
           </AnimatePresence>
