@@ -39,7 +39,7 @@ export function TaskDetailPanel({
       {/* Header */}
       <div className="flex items-start justify-between gap-2 mb-4">
         <div className="min-w-0">
-          <h3 className="text-sm font-bold text-foreground">{task.name}</h3>
+          <h3 className="text-sm font-bold text-foreground">⚔️ {task.name}</h3>
           {task.description && (
             <p className="text-xs text-muted-foreground mt-1 leading-relaxed">{task.description}</p>
           )}
@@ -52,7 +52,7 @@ export function TaskDetailPanel({
       {/* Score: Today → Future */}
       <div className="flex items-center gap-2 mb-4 flex-wrap">
         <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full ${currentStyle.badge}`}>
-          Today {currentScore}%
+          Now {currentScore}%
         </span>
         {prediction && (
           <>
@@ -92,13 +92,13 @@ export function TaskDetailPanel({
           <div className="flex items-start gap-2">
             <AlertTriangle className="h-3.5 w-3.5 text-destructive shrink-0 mt-0.5" />
             <p className="text-xs text-muted-foreground">
-              <span className="text-destructive font-medium">Impact: </span>{prediction.collapse_summary}
+              <span className="text-destructive font-medium">🔥 Threat: </span>{prediction.collapse_summary}
             </p>
           </div>
           <div className="flex items-start gap-2">
             <Sparkles className="h-3.5 w-3.5 text-primary shrink-0 mt-0.5" />
             <p className="text-xs text-muted-foreground">
-              <span className="text-primary font-medium">New Role: </span>{prediction.new_human_role}
+              <span className="text-primary font-medium">✦ Evolution: </span>{prediction.new_human_role}
             </p>
           </div>
         </div>
@@ -108,7 +108,7 @@ export function TaskDetailPanel({
       {prediction?.future_skills && prediction.future_skills.length > 0 && (
         <div className="mb-4">
           <h4 className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">
-            Future Skills Needed
+            🗺️ Skills to Unlock
           </h4>
           <div className="flex gap-2.5 overflow-x-auto pb-2 -mx-1 px-1 scrollbar-thin">
             {prediction.future_skills.map(skill => (
@@ -126,7 +126,7 @@ export function TaskDetailPanel({
                 </div>
                 <div className="flex items-center gap-1 text-[9px] font-medium text-primary/60 group-hover:text-primary transition-colors">
                   <Play className="h-2.5 w-2.5" />
-                  Simulate
+                  Practice Quest
                 </div>
               </button>
             ))}
@@ -143,7 +143,7 @@ export function TaskDetailPanel({
           onClick={() => onPractice(task)}
         >
           <Play className="h-3 w-3" />
-          {isCollapsing ? "Run Future Simulation" : isCompleted ? "Retry Simulation" : "Practice This Task"}
+          {isCollapsing ? "⚔️ Run Future Battle" : isCompleted ? "🔄 Retry Quest" : "⚔️ Accept Quest"}
         </Button>
       </div>
     </motion.div>

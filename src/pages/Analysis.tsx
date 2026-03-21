@@ -255,8 +255,8 @@ const Analysis = () => {
           <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-accent">
             <Zap className="h-6 w-6 text-primary animate-pulse" />
           </div>
-          <h1 className="text-xl font-sans font-bold text-foreground">Analyzing {jobTitle || "role"}...</h1>
-          <p className="mt-2 text-sm text-muted-foreground">Building your task map</p>
+          <h1 className="text-xl font-sans font-bold text-foreground">⚔️ Scouting {jobTitle || "kingdom"}...</h1>
+          <p className="mt-2 text-sm text-muted-foreground">Preparing your mission briefing</p>
           <div className="mt-8 space-y-3 w-full max-w-sm">
             {[1, 2, 3].map(i => <Skeleton key={i} className="h-16 w-full rounded-xl" />)}
           </div>
@@ -270,10 +270,10 @@ const Analysis = () => {
       <div className="h-[100dvh] bg-background flex items-center justify-center px-4">
         <div className="text-center max-w-sm">
           <AlertTriangle className="mx-auto h-8 w-8 text-warning mb-3" />
-          <h1 className="text-lg font-sans font-bold text-foreground mb-1">Analysis Failed</h1>
-          <p className="text-sm text-muted-foreground mb-4">{error || "Something went wrong."}</p>
+          <h1 className="text-lg font-sans font-bold text-foreground mb-1">Mission Failed</h1>
+          <p className="text-sm text-muted-foreground mb-4">{error || "Could not scout this kingdom."}</p>
           <Button onClick={() => navigate("/")} variant="outline" size="sm">
-            <ArrowLeft className="w-3 h-3 mr-1" /> Try Again
+            <ArrowLeft className="w-3 h-3 mr-1" /> Return to HQ
           </Button>
         </div>
       </div>
@@ -284,12 +284,15 @@ const Analysis = () => {
 
   return (
     <div className="min-h-[100dvh] bg-background overflow-y-auto">
-      {/* Sticky header */}
+      {/* Sticky header — Mission Briefing */}
       <div className="sticky top-0 z-20 bg-background/95 backdrop-blur-md border-b border-border px-4 py-3 flex items-center justify-between">
         <button onClick={() => navigate(backPath)} className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
-          <ChevronLeft className="h-4 w-4" /> Back
+          <ChevronLeft className="h-4 w-4" /> HQ
         </button>
-        <span className="text-sm font-semibold text-foreground truncate max-w-[200px]">{result.jobTitle}</span>
+        <div className="text-center">
+          <span className="text-[8px] uppercase tracking-wider text-primary font-semibold block">⚔️ Mission</span>
+          <span className="text-sm font-semibold text-foreground truncate max-w-[200px] block">{result.jobTitle}</span>
+        </div>
         <button
           onClick={toggleBookmark}
           disabled={bookmarkLoading}
@@ -308,12 +311,12 @@ const Analysis = () => {
           <ReadinessRing readiness={readiness} size={64} />
           <div className="min-w-0 flex-1">
             <h1 className="text-lg font-display font-bold text-foreground leading-snug">{result.jobTitle}</h1>
-            {company && !isWebsite(company) && <p className="text-sm text-muted-foreground">at {company}</p>}
+            {company && !isWebsite(company) && <p className="text-sm text-muted-foreground">Kingdom of {company}</p>}
           </div>
           <div className="flex gap-4 shrink-0">
-            <StatItem value={`${riskPercent}%`} label="Risk" />
-            <StatItem value={`${augmentedPercent}%`} label="Augmented" />
-            <StatItem value={`${sortedTasks.length}`} label="Tasks" />
+            <StatItem value={`${riskPercent}%`} label="Threat" />
+            <StatItem value={`${augmentedPercent}%`} label="AI Power" />
+            <StatItem value={`${sortedTasks.length}`} label="Quests" />
           </div>
         </div>
 
@@ -322,7 +325,7 @@ const Analysis = () => {
           <div className="mb-4">
             <div className="flex justify-between text-[10px] text-muted-foreground mb-1">
               <span>Progress</span>
-              <span>{completedCount}/{sortedTasks.length} practiced</span>
+              <span>{completedCount}/{sortedTasks.length} conquered</span>
             </div>
             <div className="h-1.5 rounded-full bg-secondary overflow-hidden">
               <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${(completedCount / sortedTasks.length) * 100}%` }} />
@@ -346,7 +349,7 @@ const Analysis = () => {
                     <TaskIcon className="h-5 w-5" style={{ color: `hsl(${taskHue} 60% 65%)` }} />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Focused task</p>
+                    <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">⚔️ Active quest</p>
                     <h3 className="text-base font-semibold text-foreground leading-snug">{focusedTask.name}</h3>
                   </div>
                   <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full shrink-0 ${style.badge}`}>{aiScore}%</span>
@@ -359,15 +362,15 @@ const Analysis = () => {
                 <div className="flex items-center gap-2 text-[10px] text-muted-foreground mb-4 flex-wrap">
                   {focusedTask.currentState && <span className="px-2 py-0.5 rounded-full bg-muted/40">{focusedTask.currentState}</span>}
                   {focusedTask.impactLevel && <span className="px-2 py-0.5 rounded-full bg-muted/40">{focusedTask.impactLevel}</span>}
-                  {done && <span className="px-2 py-0.5 rounded-full bg-muted/40">Practiced</span>}
+                  {done && <span className="px-2 py-0.5 rounded-full bg-muted/40">✓ Conquered</span>}
                 </div>
 
                 <div className="flex items-center gap-2">
                   <Button size="sm" variant={done ? "secondary" : "default"} className="h-8 rounded-full gap-1.5" onClick={() => setSimTask(focusedTask)}>
-                    <Play className="h-3.5 w-3.5" /> {done ? "Practice Again" : "Practice Now"}
+                    <Play className="h-3.5 w-3.5" /> {done ? "Retry Quest" : "⚔️ Accept Quest"}
                   </Button>
                   <Button size="sm" variant="ghost" className="h-8 rounded-full text-xs" onClick={() => setShowAllTasks(true)}>
-                    See full task list <ArrowRight className="h-3 w-3" />
+                    Full quest log <ArrowRight className="h-3 w-3" />
                   </Button>
                 </div>
               </div>
@@ -378,7 +381,7 @@ const Analysis = () => {
         {(!focusedTask || showAllTasks) && (
           <>
             {/* Task cards */}
-            <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">Tasks & AI Impact</h3>
+            <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">⚔️ Quest Log</h3>
             <div className="space-y-3 pb-8">
               {sortedTasks.map((task, i) => {
                 const aiScore = task.aiExposureScore ?? 50;
@@ -429,7 +432,7 @@ const Analysis = () => {
                           />
                           <Button size="sm" variant={done ? "secondary" : "default"} className="h-7 text-xs rounded-full gap-1"
                             onClick={() => setSimTask(task)}>
-                            <Play className="h-3 w-3" />{done ? "Retry" : "Practice"}
+                            <Play className="h-3 w-3" />{done ? "Retry" : "Quest"}
                           </Button>
                         </div>
                       </div>
@@ -445,7 +448,7 @@ const Analysis = () => {
         {!user && (
           <div className="text-center py-6 border-t border-border/30">
             <Button onClick={() => navigate("/auth")} variant="ghost" className="gap-2 rounded-full text-primary">
-              <LogIn className="h-4 w-4" /> Sign in to save progress
+              <LogIn className="h-4 w-4" /> Sign in to save quest progress
             </Button>
           </div>
         )}
@@ -490,7 +493,7 @@ function ReadinessRing({ readiness, size = 64 }: { readiness: number; size?: num
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
         <span className="text-base font-bold text-foreground tabular-nums">{readiness}%</span>
-        <span className="text-[8px] text-muted-foreground uppercase tracking-wider">Ready</span>
+        <span className="text-[8px] text-muted-foreground uppercase tracking-wider">Battle</span>
       </div>
     </div>
   );

@@ -37,7 +37,7 @@ function ReadinessRing({ readiness, size = 56 }: { readiness: number; size?: num
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
         <span className="text-lg font-bold text-foreground tabular-nums">{readiness}%</span>
-        <span className="text-[7px] text-muted-foreground uppercase tracking-wider">Ready</span>
+        <span className="text-[7px] text-muted-foreground uppercase tracking-wider">Battle Ready</span>
       </div>
     </div>
   );
@@ -262,8 +262,8 @@ const RoleDeepDive = () => {
           <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-accent">
             <Zap className="h-6 w-6 text-primary animate-pulse" />
           </div>
-          <h1 className="text-xl font-sans font-bold text-foreground">Analyzing {jobTitle || "role"}…</h1>
-          <p className="mt-2 text-sm text-muted-foreground">Building your task map</p>
+          <h1 className="text-xl font-sans font-bold text-foreground">⚔️ Scouting {jobTitle || "kingdom"}…</h1>
+          <p className="mt-2 text-sm text-muted-foreground">Preparing your mission briefing</p>
           <div className="mt-8 space-y-3 w-full max-w-sm">
             {[1, 2, 3].map(i => <Skeleton key={i} className="h-16 w-full rounded-xl" />)}
           </div>
@@ -277,10 +277,10 @@ const RoleDeepDive = () => {
       <div className="h-[100dvh] bg-background flex items-center justify-center px-4">
         <div className="text-center max-w-sm">
           <AlertTriangle className="mx-auto h-8 w-8 text-warning mb-3" />
-          <h1 className="text-lg font-sans font-bold text-foreground mb-1">Analysis Failed</h1>
-          <p className="text-sm text-muted-foreground mb-4">{error || "Something went wrong."}</p>
+          <h1 className="text-lg font-sans font-bold text-foreground mb-1">Mission Failed</h1>
+          <p className="text-sm text-muted-foreground mb-4">{error || "Could not scout this kingdom."}</p>
           <Button onClick={() => navigate("/")} variant="outline" size="sm">
-            <ChevronLeft className="w-3 h-3 mr-1" /> Try Again
+            <ChevronLeft className="w-3 h-3 mr-1" /> Return to HQ
           </Button>
         </div>
       </div>
@@ -289,14 +289,15 @@ const RoleDeepDive = () => {
 
   return (
     <div className="h-[100dvh] bg-background flex flex-col overflow-hidden">
-      {/* Header */}
+      {/* Header — Mission Briefing bar */}
       <div className="shrink-0 z-20 bg-background/95 backdrop-blur-md border-b border-border px-4 py-2.5 flex items-center justify-between gap-3">
         <button onClick={() => navigate("/")} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors shrink-0">
-          <ChevronLeft className="h-3.5 w-3.5" /> Back
+          <ChevronLeft className="h-3.5 w-3.5" /> HQ
         </button>
         <div className="text-center min-w-0 flex-1">
+          <span className="text-[9px] uppercase tracking-wider text-primary font-semibold">⚔️ Mission Briefing</span>
           <span className="text-sm font-semibold text-foreground truncate block">{result.jobTitle}</span>
-          {company && <span className="text-[10px] text-muted-foreground">at {company}</span>}
+          {company && <span className="text-[10px] text-muted-foreground">Kingdom of {company}</span>}
         </div>
         <button onClick={toggleBookmark} disabled={bookmarkLoading} className="p-1.5 rounded-lg hover:bg-muted/30 transition-colors shrink-0">
           {isBookmarked ? <BookmarkCheck className="h-4 w-4 text-primary" /> : <Bookmark className="h-4 w-4 text-muted-foreground" />}
@@ -305,14 +306,14 @@ const RoleDeepDive = () => {
 
       {/* 2-column body */}
       <div className="flex-1 flex overflow-hidden">
-        {/* LEFT — Task list */}
+        {/* LEFT — Quest Log */}
         <div className="w-80 shrink-0 border-r border-border flex flex-col overflow-hidden">
-          {/* Stats strip */}
+          {/* Stats strip — Battle Readiness */}
           <div className="shrink-0 p-3 border-b border-border/50 flex items-center gap-3">
             <ReadinessRing readiness={readiness} size={56} />
             <div className="flex-1 space-y-1">
               <div className="flex items-center justify-between">
-                <span className="text-[8px] text-muted-foreground uppercase">AI Exposure</span>
+                <span className="text-[8px] text-muted-foreground uppercase">Threat Level</span>
                 <div className="flex items-center gap-1">
                   <span className="text-xs font-bold text-foreground tabular-nums">{currentRisk}%</span>
                   {futureStats && (
@@ -327,15 +328,15 @@ const RoleDeepDive = () => {
                 </div>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-[8px] text-muted-foreground uppercase">Tasks</span>
+                <span className="text-[8px] text-muted-foreground uppercase">Quests</span>
                 <span className="text-xs font-bold text-foreground tabular-nums">
                   {result.tasks.length}
-                  {completedCount > 0 && <span className="text-success ml-1 font-normal">({completedCount} done)</span>}
+                  {completedCount > 0 && <span className="text-success ml-1 font-normal">({completedCount} ✓)</span>}
                 </span>
               </div>
               {futureStats && futureStats.collapseCount > 0 && (
                 <div className="flex items-center justify-between">
-                  <span className="text-[8px] text-muted-foreground uppercase">At Risk</span>
+                  <span className="text-[8px] text-muted-foreground uppercase">⚠️ Endangered</span>
                   <span className="text-xs font-bold text-destructive tabular-nums">{futureStats.collapseCount}</span>
                 </div>
               )}
@@ -346,7 +347,7 @@ const RoleDeepDive = () => {
           {predictionsLoading && (
             <div className="shrink-0 py-2 flex items-center justify-center gap-1.5 text-muted-foreground border-b border-border/30">
               <Cpu className="h-3 w-3 animate-pulse text-primary" />
-              <span className="text-[10px]">Loading future projections…</span>
+              <span className="text-[10px]">🔮 Scanning future threats…</span>
             </div>
           )}
 
@@ -361,7 +362,7 @@ const RoleDeepDive = () => {
               }`}
             >
               <Sparkles className="h-3 w-3" />
-              All Future Skills
+              🗺️ Future Skills Map
               <span className="ml-auto text-[10px] tabular-nums opacity-70">
                 {(() => {
                   const all = Object.values(predictions).flatMap(p => p.future_skills || []);
@@ -371,7 +372,7 @@ const RoleDeepDive = () => {
             </button>
           )}
 
-          {/* Task list */}
+          {/* Quest log */}
           <div className="flex-1 overflow-y-auto p-2 space-y-1">
             {sortedTasks.map((task, i) => (
               <TaskCard
@@ -392,9 +393,9 @@ const RoleDeepDive = () => {
               variant="outline"
               size="sm"
               className="w-full h-7 text-[10px] gap-1.5 rounded-full"
-              onClick={() => navigate("/journey")}
+              onClick={() => navigate("/")}
             >
-              <Map className="h-3 w-3" /> Skill Territory
+              <Map className="h-3 w-3" /> 🏰 Back to Territory
             </Button>
             {!user && (
               <Button
@@ -403,13 +404,13 @@ const RoleDeepDive = () => {
                 className="w-full h-7 text-[10px] gap-1.5 rounded-full text-primary"
                 onClick={() => navigate("/auth")}
               >
-                <LogIn className="h-3 w-3" /> Sign in to save
+                <LogIn className="h-3 w-3" /> Sign in to save progress
               </Button>
             )}
           </div>
         </div>
 
-        {/* RIGHT — Task detail */}
+        {/* RIGHT — Quest details */}
         <div className="flex-1 overflow-y-auto p-5">
           <AnimatePresence mode="wait">
             {selectedTask ? (
@@ -435,9 +436,9 @@ const RoleDeepDive = () => {
                   const uniqueSkills = allSkills.filter((s, i, arr) => arr.findIndex(x => x.id === s.id) === i);
 
                   if (uniqueSkills.length === 0 && !predictionsLoading) {
-                    return (
+                     return (
                       <div className="flex-1 flex items-center justify-center text-sm text-muted-foreground">
-                        Select a task to explore
+                        Select a quest to explore ⚔️
                       </div>
                     );
                   }
@@ -445,16 +446,16 @@ const RoleDeepDive = () => {
                   return (
                     <>
                       <div className="mb-4">
-                        <h3 className="text-sm font-bold text-foreground mb-1">Future Skills for This Role</h3>
+                        <h3 className="text-sm font-bold text-foreground mb-1">🗺️ Skills to Unlock in This Kingdom</h3>
                         <p className="text-xs text-muted-foreground">
-                          {uniqueSkills.length} skills emerging across {Object.keys(predictions).length} tasks
+                          {uniqueSkills.length} skills emerging across {Object.keys(predictions).length} quests
                         </p>
                       </div>
 
                       {predictionsLoading && uniqueSkills.length === 0 && (
                         <div className="flex items-center gap-2 text-sm text-muted-foreground py-8">
                           <Cpu className="h-4 w-4 animate-pulse text-primary" />
-                          Analyzing future skills…
+                          🔮 Scanning for hidden skills…
                         </div>
                       )}
 
@@ -484,7 +485,7 @@ const RoleDeepDive = () => {
                               </span>
                               <span className="flex items-center gap-1 text-[9px] font-medium text-primary/60 group-hover:text-primary transition-colors">
                                 <Zap className="h-2.5 w-2.5" />
-                                Simulate
+                                Practice Quest
                               </span>
                             </div>
                           </motion.button>
