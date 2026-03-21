@@ -10,6 +10,7 @@ import AdaptiveQueue from "@/components/AdaptiveQueue";
 import { useFutureSkills } from "@/hooks/use-future-skills";
 import FutureTerritoryMap from "@/components/territory/FutureTerritoryMap";
 import FutureSkillsTable from "@/components/territory/FutureSkillsTable";
+import MapIntroGuide from "@/components/territory/MapIntroGuide";
 import { getLevel, levelProgress } from "@/lib/skill-map";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import HomepageChat, { type ViewContext } from "@/components/HomepageChat";
