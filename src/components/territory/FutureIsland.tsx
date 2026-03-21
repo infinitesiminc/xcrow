@@ -1,12 +1,13 @@
 /**
  * FutureIsland — renders a single island region on the Future Territory Map.
- * Supports click-to-zoom interaction.
+ * Supports click-to-zoom and hover-to-repel neighbor interactions.
  */
 
+import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import { type FutureSkill, type FutureSkillCategory } from "@/hooks/use-future-skills";
-import { type FutureIslandLayout } from "@/lib/future-territory-layout";
+import { type FutureIslandLayout, type FutureNodePosition } from "@/lib/future-territory-layout";
 
 interface FutureIslandProps {
   island: FutureIslandLayout;
@@ -16,11 +17,37 @@ interface FutureIslandProps {
   onSkillClick?: (skill: FutureSkill) => void;
 }
 
+const REPEL_RADIUS = 70;
+const REPEL_STRENGTH = 18;
+
+function getDisplacedPosition(
+  node: FutureNodePosition,
+  hoveredNode: FutureNodePosition | null,
+  isHovered: boolean
+): { x: number; y: number } {
+  if (!hoveredNode || isHovered) return { x: node.x, y: node.y };
+  const dx = node.x - hoveredNode.x;
+  const dy = node.y - hoveredNode.y;
+  const dist = Math.sqrt(dx * dx + dy * dy);
+  if (dist > REPEL_RADIUS || dist < 1) return { x: node.x, y: node.y };
+  const force = ((REPEL_RADIUS - dist) / REPEL_RADIUS) * REPEL_STRENGTH;
+  const nx = dx / dist;
+  const ny = dy / dist;
+  return { x: node.x + nx * force, y: node.y + ny * force };
+}
+
 export default function FutureIsland({ island, skillLookup, isFocused, onIslandClick, onSkillClick }: FutureIslandProps) {
   const { cx, cy, radius, theme, nodes, expandedNodes, category, skillCount } = island;
   const activeNodes = isFocused ? expandedNodes : nodes;
   const visibleCount = activeNodes.length;
   const hiddenCount = isFocused ? 0 : skillCount - visibleCount;
+
+  const [hoveredId, setHoveredId] = useState<string | null>(null);
+
+  const hoveredNode = useMemo(
+    () => (hoveredId ? activeNodes.find((n) => n.skillId === hoveredId) ?? null : null),
+    [hoveredId, activeNodes]
+  );
 
   return (
     <g>
@@ -75,10 +102,12 @@ export default function FutureIsland({ island, skillLookup, isFocused, onIslandC
       </text>
 
       {/* Skill nodes */}
-      {activeNodes.map(node => {
+      {activeNodes.map((node) => {
         const skill = skillLookup.get(node.skillId);
         if (!skill) return null;
 
+        const isHovered = hoveredId === node.skillId;
+        const pos = getDisplacedPosition(node, hoveredNode, isHovered);
         const nodeRadius = 18;
         const intensity = Math.min(1, skill.demandCount / 15);
 
@@ -87,10 +116,22 @@ export default function FutureIsland({ island, skillLookup, isFocused, onIslandC
             <TooltipTrigger asChild>
               <motion.g
                 initial={{ scale: 0, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                transition={{ duration: 0.4, delay: 0.1 }}
+                animate={{
+                  scale: 1,
+                  opacity: 1,
+                  x: pos.x - node.x,
+                  y: pos.y - node.y,
+                }}
+                transition={{
+                  scale: { duration: 0.4, delay: 0.1 },
+                  opacity: { duration: 0.4, delay: 0.1 },
+                  x: { type: "spring", stiffness: 300, damping: 25 },
+                  y: { type: "spring", stiffness: 300, damping: 25 },
+                }}
                 style={{ transformOrigin: `${node.x}px ${node.y}px` }}
                 className="cursor-pointer"
+                onPointerEnter={() => setHoveredId(node.skillId)}
+                onPointerLeave={() => setHoveredId(null)}
                 onClick={(e) => {
                   e.stopPropagation();
                   onSkillClick?.(skill);
@@ -117,8 +158,8 @@ export default function FutureIsland({ island, skillLookup, isFocused, onIslandC
                   r={nodeRadius}
                   fill={`hsl(${theme.baseHue} ${35 + intensity * 25}% ${18 + intensity * 12}%)`}
                   stroke={`hsl(${theme.baseHue} 50% ${40 + intensity * 20}%)`}
-                  strokeWidth={2}
-                  className="hover:brightness-125 transition-all"
+                  strokeWidth={isHovered ? 3 : 2}
+                  className="transition-all"
                 />
 
                 {/* Emoji */}
@@ -140,14 +181,21 @@ export default function FutureIsland({ island, skillLookup, isFocused, onIslandC
                   y={node.y + nodeRadius + 12}
                   textAnchor="middle"
                   style={{
-                    fontSize: "10px",
-                    fontWeight: 600,
-                    fill: `hsl(${theme.baseHue} 25% 65%)`,
+                    fontSize: isHovered ? "11px" : "10px",
+                    fontWeight: isHovered ? 700 : 600,
+                    fill: isHovered
+                      ? `hsl(${theme.baseHue} 40% 85%)`
+                      : `hsl(${theme.baseHue} 25% 65%)`,
                     fontFamily: "'Inter', system-ui, sans-serif",
                     pointerEvents: "none",
+                    transition: "fill 0.2s, font-size 0.2s",
                   }}
                 >
-                  {skill.name.length > 28 ? skill.name.slice(0, 26) + "…" : skill.name}
+                  {isHovered
+                    ? skill.name
+                    : skill.name.length > 28
+                      ? skill.name.slice(0, 26) + "…"
+                      : skill.name}
                 </text>
               </motion.g>
             </TooltipTrigger>
