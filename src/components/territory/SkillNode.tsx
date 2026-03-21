@@ -103,7 +103,7 @@ export default function SkillNode({
           <span>{DIMENSION_INFO.foundation.emoji} Foundation</span>
           <span className="text-muted-foreground">{growth.foundation.label}</span>
         </div>
-        <div className="flex items-center justify-between text-[10px]">
+        <div className="flex items-center justify-between text-xs">
           <span>{DIMENSION_INFO.aiMastery.emoji} AI Mastery</span>
           <span className={growth.aiMastery.score >= 30 ? "text-primary" : "text-muted-foreground"}>
             {growth.aiMastery.label}
