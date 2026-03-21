@@ -31,6 +31,10 @@ interface TerritoryOverlayProps {
   onClose: () => void;
   skills: SkillXP[];
   lastPracticedSkillId?: string | null;
+  /** When set, auto-pan to this skill and show XP burst animation */
+  focusSkillId?: string | null;
+  /** XP gained to show in the burst animation */
+  xpGain?: number;
 }
 
 const FIXED_SCALE = 1.2;
@@ -40,6 +44,8 @@ export default function TerritoryOverlay({
   onClose,
   skills,
   lastPracticedSkillId,
+  focusSkillId,
+  xpGain = 0,
 }: TerritoryOverlayProps) {
   const skillMap = useMemo(() => new Map(skills.map((s) => [s.id, s])), [skills]);
   const positions = useMemo(() => computeIsometricLayout(), []);
@@ -50,23 +56,48 @@ export default function TerritoryOverlay({
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const dragRef = useRef<{ sx: number; sy: number; px: number; py: number } | null>(null);
   const [selectedSkillId, setSelectedSkillId] = useState<string | null>(null);
+  const [showXpBurst, setShowXpBurst] = useState(false);
+  const [burstSkillId, setBurstSkillId] = useState<string | null>(null);
 
   const totalXP = useMemo(() => skills.reduce((sum, s) => sum + s.xp, 0), [skills]);
   const unlockedCount = useMemo(() => skills.filter((s) => s.xp >= 100).length, [skills]);
 
-  // Center on open
+  // Center on open — or focus on specific skill
   useEffect(() => {
     if (open && containerRef.current) {
       const el = containerRef.current;
-      // Account for the detail panel width (320px) on the right
+
+      if (focusSkillId) {
+        const pos = posMap.get(focusSkillId);
+        if (pos) {
+          // Pan so the focused skill is centered
+          const availableWidth = el.clientWidth;
+          const targetX = -(pos.x * FIXED_SCALE - availableWidth / 2);
+          const targetY = -(pos.y * FIXED_SCALE - el.clientHeight / 2);
+          setPan({ x: targetX, y: targetY });
+          setSelectedSkillId(focusSkillId);
+
+          // Trigger XP burst after a delay
+          if (xpGain > 0) {
+            setBurstSkillId(focusSkillId);
+            const timer = setTimeout(() => setShowXpBurst(true), 600);
+            return () => clearTimeout(timer);
+          }
+          return;
+        }
+      }
+
+      // Default: center the map
       const availableWidth = el.clientWidth;
       setPan({
         x: -(canvasSize.width * FIXED_SCALE - availableWidth) / 2,
         y: -(canvasSize.height * FIXED_SCALE - el.clientHeight) / 3,
       });
       setSelectedSkillId(null);
+      setShowXpBurst(false);
+      setBurstSkillId(null);
     }
-  }, [open, canvasSize]);
+  }, [open, canvasSize, focusSkillId, xpGain, posMap]);
 
   const handlePointerDown = useCallback((e: React.PointerEvent) => {
     if (e.button !== 0) return;
