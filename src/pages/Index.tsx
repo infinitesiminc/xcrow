@@ -420,8 +420,8 @@ const Index = () => {
         </div>
       )}
 
-      {/* ── Floating tab bar (top-right) ── */}
-      <div className="absolute top-14 right-4 z-20 flex items-center gap-1 bg-card/80 backdrop-blur-md border border-border/50 rounded-lg p-1 shadow-lg">
+      {/* ── Floating tab bar (top-left) ── */}
+      <div className="absolute top-14 left-4 z-20 flex items-center gap-1 bg-card/80 backdrop-blur-md border border-border/50 rounded-lg p-1 shadow-lg">
         <button
           onClick={() => { setRightPanelTab("table"); setChatOpen(true); }}
           className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
@@ -446,6 +446,14 @@ const Index = () => {
             Kingdoms
           </button>
         )}
+        {chatOpen && (
+          <button
+            onClick={() => setChatOpen(false)}
+            className="flex items-center gap-1.5 px-2 py-1.5 rounded-md text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <X className="h-3 w-3" />
+          </button>
+        )}
       </div>
 
       {/* ── Floating side panel (right) ── */}
@@ -457,7 +465,7 @@ const Index = () => {
             animate={{ x: 0, opacity: 1 }}
             exit={{ x: "100%", opacity: 0 }}
             transition={{ type: "spring", damping: 28, stiffness: 300 }}
-            className="absolute top-24 right-4 bottom-4 w-[420px] z-20 flex flex-col bg-card/90 backdrop-blur-xl border border-border/50 rounded-xl shadow-2xl overflow-hidden"
+            className="absolute top-24 left-4 bottom-20 w-[420px] z-20 flex flex-col bg-card/90 backdrop-blur-xl border border-border/50 rounded-xl shadow-2xl overflow-hidden"
           >
             {/* Close button */}
             <button
@@ -512,22 +520,6 @@ const Index = () => {
         )}
       </AnimatePresence>
 
-      {/* ── Reopen panel button (when closed) ── */}
-      <AnimatePresence>
-        {!chatOpen && (
-          <motion.button
-            key="reopen"
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.9 }}
-            onClick={() => setChatOpen(true)}
-            className="fixed bottom-4 left-4 z-20 flex items-center gap-2 px-4 py-2.5 rounded-lg bg-card/90 backdrop-blur-md border border-border/50 text-sm font-medium text-foreground shadow-lg hover:shadow-xl transition-all active:scale-[0.97]"
-          >
-            <ScrollText className="h-4 w-4 text-primary" />
-            Open Panel
-          </motion.button>
-        )}
-      </AnimatePresence>
 
       {/* ── Quest board (floating bottom-left) ── */}
       {isSignedIn && !hasInteracted && (
