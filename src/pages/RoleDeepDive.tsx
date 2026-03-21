@@ -347,7 +347,7 @@ const RoleDeepDive = () => {
           {predictionsLoading && (
             <div className="shrink-0 py-2 flex items-center justify-center gap-1.5 text-muted-foreground border-b border-border/30">
               <Cpu className="h-3 w-3 animate-pulse text-primary" />
-              <span className="text-[10px]">Loading future projections…</span>
+              <span className="text-[10px]">🔮 Scanning future threats…</span>
             </div>
           )}
 
