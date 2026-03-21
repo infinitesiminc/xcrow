@@ -12,18 +12,13 @@ import { analyzeJobWithAI } from "@/lib/ai-analysis";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import SimulatorModal from "@/components/SimulatorModal";
-import { TimeAxisSlider } from "@/components/role/TimeAxisSlider";
 import { TaskCard } from "@/components/role/TaskCard";
 import { TaskDetailPanel } from "@/components/role/TaskDetailPanel";
 import { RoleChat } from "@/components/role/RoleChat";
 import type { FuturePrediction } from "@/components/analysis/FutureTaskPreview";
 
 // ── Helpers ──────────────────────────────────────────────────────
-function lerp(a: number, b: number, t: number) {
-  return Math.round(a + (b - a) * t);
-}
-
-function ReadinessRing({ readiness, size = 80 }: { readiness: number; size?: number }) {
+function ReadinessRing({ readiness, size = 56 }: { readiness: number; size?: number }) {
   const r = (size - 8) / 2;
   const circ = 2 * Math.PI * r;
   return (
@@ -75,7 +70,6 @@ const RoleDeepDive = () => {
   const [completedTasks, setCompletedTasks] = useState<Set<string>>(new Set());
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [bookmarkLoading, setBookmarkLoading] = useState(false);
-  const [timeHorizon, setTimeHorizon] = useState(0);
   const [predictions, setPredictions] = useState<Record<string, FuturePrediction>>({});
   const [predictionsLoading, setPredictionsLoading] = useState(false);
   const [selectedTask, setSelectedTask] = useState<TaskAnalysis | null>(null);
@@ -175,6 +169,7 @@ const RoleDeepDive = () => {
     analyze();
   }, [jobTitle, company, hasJd, navigate, initialResult]);
 
+  // Auto-fetch predictions as soon as result is available
   const fetchAllPredictions = useCallback(async () => {
     if (!result) return;
     setPredictionsLoading(true);
@@ -193,10 +188,10 @@ const RoleDeepDive = () => {
   }, [result]);
 
   useEffect(() => {
-    if (timeHorizon > 0 && Object.keys(predictions).length === 0 && !predictionsLoading && result) {
+    if (result && Object.keys(predictions).length === 0 && !predictionsLoading) {
       fetchAllPredictions();
     }
-  }, [timeHorizon, predictions, predictionsLoading, result, fetchAllPredictions]);
+  }, [result, predictions, predictionsLoading, fetchAllPredictions]);
 
   // Auto-select first task
   useEffect(() => {
@@ -216,18 +211,14 @@ const RoleDeepDive = () => {
   // ── Computed stats ─────────────────────────────────────────────
   const futureStats = useMemo(() => {
     const preds = Object.values(predictions);
-    if (preds.length === 0) return { avgExposure: result?.summary.automationRiskPercent ?? 0, collapseCount: 0 };
+    if (preds.length === 0) return null;
     const avgExposure = Math.round(preds.reduce((s, p) => s + p.future_exposure, 0) / preds.length);
     const collapseCount = preds.filter(p => p.future_exposure >= 80).length;
     return { avgExposure, collapseCount };
-  }, [predictions, result]);
+  }, [predictions]);
 
-  const t = timeHorizon;
   const currentRisk = result?.summary.automationRiskPercent ?? 0;
-  const currentAug = result?.summary.augmentedPercent ?? 0;
-  const displayRisk = lerp(currentRisk, futureStats.avgExposure, t);
-  const displayAug = lerp(currentAug, Math.min(100, currentAug + 15), t);
-  const readiness = Math.max(0, 100 - Math.round(displayRisk * 0.55 + (100 - displayAug) * 0.25 + 20));
+  const readiness = Math.max(0, 100 - Math.round(currentRisk * 0.55 + (100 - (result?.summary.augmentedPercent ?? 0)) * 0.25 + 20));
 
   const sortedTasks = useMemo(() => {
     if (!result) return [];
@@ -239,9 +230,9 @@ const RoleDeepDive = () => {
   }, [predictions]);
 
   const predsSummary = useMemo(() => {
-    if (Object.keys(predictions).length === 0) return undefined;
+    if (!futureStats) return undefined;
     return `${futureStats.collapseCount} tasks face collapse risk. Avg future exposure: ${futureStats.avgExposure}%. Key tech: ${allTechs.slice(0, 5).join(", ")}`;
-  }, [predictions, futureStats, allTechs]);
+  }, [futureStats, allTechs]);
 
   // ── Loading / Error states ─────────────────────────────────────
   if (loading) {
@@ -278,7 +269,7 @@ const RoleDeepDive = () => {
 
   return (
     <div className="h-[100dvh] bg-background flex flex-col overflow-hidden">
-      {/* Sticky header */}
+      {/* Header */}
       <div className="shrink-0 z-20 bg-background/95 backdrop-blur-md border-b border-border px-4 py-2.5 flex items-center justify-between gap-3">
         <button onClick={() => navigate("/")} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors shrink-0">
           <ChevronLeft className="h-3.5 w-3.5" /> Back
@@ -287,12 +278,9 @@ const RoleDeepDive = () => {
           <span className="text-sm font-semibold text-foreground truncate block">{result.jobTitle}</span>
           {company && <span className="text-[10px] text-muted-foreground">at {company}</span>}
         </div>
-        <div className="flex items-center gap-2 shrink-0">
-          <TimeAxisSlider value={timeHorizon} onChange={setTimeHorizon} />
-          <button onClick={toggleBookmark} disabled={bookmarkLoading} className="p-1.5 rounded-lg hover:bg-muted/30 transition-colors">
-            {isBookmarked ? <BookmarkCheck className="h-4 w-4 text-primary" /> : <Bookmark className="h-4 w-4 text-muted-foreground" />}
-          </button>
-        </div>
+        <button onClick={toggleBookmark} disabled={bookmarkLoading} className="p-1.5 rounded-lg hover:bg-muted/30 transition-colors shrink-0">
+          {isBookmarked ? <BookmarkCheck className="h-4 w-4 text-primary" /> : <Bookmark className="h-4 w-4 text-muted-foreground" />}
+        </button>
       </div>
 
       {/* 2-column body */}
@@ -302,31 +290,43 @@ const RoleDeepDive = () => {
           {/* Stats strip */}
           <div className="shrink-0 p-3 border-b border-border/50 flex items-center gap-3">
             <ReadinessRing readiness={readiness} size={56} />
-            <div className="flex-1 grid grid-cols-2 gap-2">
-              <div className="text-center">
-                <div className="text-sm font-bold text-foreground tabular-nums">{displayRisk}%</div>
-                <div className="text-[8px] text-muted-foreground uppercase">AI Exposure</div>
-                {timeHorizon > 0 && displayRisk - currentRisk !== 0 && (
-                  <div className={`text-[9px] font-medium ${displayRisk > currentRisk ? "text-destructive" : "text-success"}`}>
-                    {displayRisk > currentRisk ? "+" : ""}{displayRisk - currentRisk}
-                  </div>
-                )}
+            <div className="flex-1 space-y-1">
+              <div className="flex items-center justify-between">
+                <span className="text-[8px] text-muted-foreground uppercase">AI Exposure</span>
+                <div className="flex items-center gap-1">
+                  <span className="text-xs font-bold text-foreground tabular-nums">{currentRisk}%</span>
+                  {futureStats && (
+                    <>
+                      <span className="text-[9px] text-muted-foreground">→</span>
+                      <span className={`text-xs font-bold tabular-nums ${futureStats.avgExposure > currentRisk ? "text-destructive" : "text-success"}`}>
+                        {futureStats.avgExposure}%
+                      </span>
+                    </>
+                  )}
+                  {predictionsLoading && <Skeleton className="h-3 w-8 rounded" />}
+                </div>
               </div>
-              <div className="text-center">
-                <div className="text-sm font-bold text-foreground tabular-nums">{result.tasks.length}</div>
-                <div className="text-[8px] text-muted-foreground uppercase">Tasks</div>
-                {completedCount > 0 && (
-                  <div className="text-[9px] text-success font-medium">{completedCount} done</div>
-                )}
+              <div className="flex items-center justify-between">
+                <span className="text-[8px] text-muted-foreground uppercase">Tasks</span>
+                <span className="text-xs font-bold text-foreground tabular-nums">
+                  {result.tasks.length}
+                  {completedCount > 0 && <span className="text-success ml-1 font-normal">({completedCount} done)</span>}
+                </span>
               </div>
+              {futureStats && futureStats.collapseCount > 0 && (
+                <div className="flex items-center justify-between">
+                  <span className="text-[8px] text-muted-foreground uppercase">At Risk</span>
+                  <span className="text-xs font-bold text-destructive tabular-nums">{futureStats.collapseCount}</span>
+                </div>
+              )}
             </div>
           </div>
 
-          {/* Predictions loading */}
+          {/* Predictions loading indicator */}
           {predictionsLoading && (
             <div className="shrink-0 py-2 flex items-center justify-center gap-1.5 text-muted-foreground border-b border-border/30">
               <Cpu className="h-3 w-3 animate-pulse text-primary" />
-              <span className="text-[10px]">Analyzing future…</span>
+              <span className="text-[10px]">Loading future projections…</span>
             </div>
           )}
 
@@ -337,7 +337,6 @@ const RoleDeepDive = () => {
                 key={task.name}
                 task={task}
                 prediction={predictions[task.name]}
-                timeHorizon={timeHorizon}
                 isCompleted={completedTasks.has(task.name)}
                 isSelected={selectedTask?.name === task.name}
                 onSelect={setSelectedTask}
@@ -377,7 +376,7 @@ const RoleDeepDive = () => {
                 key={selectedTask.name}
                 task={selectedTask}
                 prediction={predictions[selectedTask.name]}
-                timeHorizon={timeHorizon}
+                predictionsLoading={predictionsLoading}
                 isCompleted={completedTasks.has(selectedTask.name)}
                 onPractice={setSimTask}
                 onClose={() => setSelectedTask(null)}
@@ -399,7 +398,7 @@ const RoleDeepDive = () => {
       <RoleChat
         jobTitle={result.jobTitle}
         company={result.company}
-        timeHorizon={timeHorizon}
+        timeHorizon={0}
         completedCount={completedCount}
         predictionsSummary={predsSummary}
       />
