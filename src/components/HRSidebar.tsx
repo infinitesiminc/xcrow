@@ -1,4 +1,4 @@
-import { Building2, BarChart3, Database, GraduationCap, GitCompareArrows, Sparkles, DollarSign, Brain } from "lucide-react";
+import { Building2, BarChart3, Database, GraduationCap, GitCompareArrows, DollarSign, Brain } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import {
   Sidebar,
