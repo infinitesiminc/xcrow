@@ -92,7 +92,7 @@ export function TaskDetailPanel({
           <div className="flex items-start gap-2">
             <AlertTriangle className="h-3.5 w-3.5 text-destructive shrink-0 mt-0.5" />
             <p className="text-xs text-muted-foreground">
-              <span className="text-destructive font-medium">Impact: </span>{prediction.collapse_summary}
+              <span className="text-destructive font-medium">🔥 Threat: </span>{prediction.collapse_summary}
             </p>
           </div>
           <div className="flex items-start gap-2">
