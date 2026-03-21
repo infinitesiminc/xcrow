@@ -595,7 +595,7 @@ const Index = () => {
           className="fixed bottom-4 right-4 z-40 flex items-center gap-1.5 px-3 py-2 rounded-lg bg-card border border-border/50 text-xs font-medium text-muted-foreground hover:text-foreground shadow-lg hover:shadow-xl transition-all active:scale-[0.95]"
         >
           <Map className="h-3.5 w-3.5" />
-          Territory
+          🏰 Territory
         </button>
       )}
     </div>
