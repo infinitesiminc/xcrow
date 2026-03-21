@@ -427,12 +427,12 @@ const UnmetObjectivesReview = ({
       </motion.div>
       <div className="space-y-2">
         <h3 className="text-lg font-serif font-bold text-foreground">
-          {tooEarly ? "Just getting started!" : "Almost there!"}
+          {tooEarly ? "The battle has just begun!" : "Almost victorious!"}
         </h3>
         <p className="text-sm text-muted-foreground leading-relaxed">
           {tooEarly
-            ? `You've only completed ${roundCount} of at least ${minRounds} rounds. Keep going to cover more learning goals.`
-            : `You haven't covered ${unmet.length === 1 ? "this learning goal" : `${unmet.length} learning goals`} yet. Want to do ${unmet.length === 1 ? "one more scenario" : "a few more scenarios"} to cover ${unmet.length === 1 ? "it" : "them"}?`
+            ? `You've only cleared ${roundCount} of at least ${minRounds} waves. Keep fighting to conquer more objectives.`
+            : `You haven't conquered ${unmet.length === 1 ? "this objective" : `${unmet.length} objectives`} yet. Ready for ${unmet.length === 1 ? "one more wave" : "a few more waves"} to claim ${unmet.length === 1 ? "it" : "them"}?`
           }
         </p>
       </div>
