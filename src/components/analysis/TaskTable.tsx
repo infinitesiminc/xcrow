@@ -6,12 +6,15 @@ import { Badge } from "@/components/ui/badge";
 import { TaskAnalysis } from "@/types/analysis";
 import type { JobAnalysisResult } from "@/types/analysis";
 import { exposureStyle } from "@/lib/exposure-colors";
+import { FutureTaskPreview } from "./FutureTaskPreview";
 
 interface TaskTableProps {
   tasks: TaskAnalysis[];
   skills: JobAnalysisResult["skills"];
   completedTasks: Set<string>;
   onPractice: (taskName: string) => void;
+  jobTitle?: string;
+  company?: string;
 }
 
 function exposureColor(score: number) {
