@@ -1369,7 +1369,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                         onClick={startRetryWithCoaching}
                         className="gap-2 rounded-xl w-full h-11"
                       >
-                        <RotateCcw className="h-4 w-4" /> Retry with Coaching Tips
+                        <RotateCcw className="h-4 w-4" /> ⚔️ Retry with Battle Coach
                       </Button>
                     )}
                     {scoreTier === "mid" && onNextTask && (
