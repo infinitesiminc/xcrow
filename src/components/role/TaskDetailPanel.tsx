@@ -110,22 +110,22 @@ export function TaskDetailPanel({
           <h4 className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">
             🗺️ Skills to Unlock
           </h4>
-          <div className="flex gap-3 overflow-x-auto pb-2 -mx-1 px-1 scrollbar-thin">
+          <div className="flex gap-2.5 overflow-x-auto pb-2 -mx-1 px-1 scrollbar-thin">
             {prediction.future_skills.map(skill => (
               <button
                 key={skill.id}
                 onClick={() => onPractice(task)}
-                className="relative flex-none w-44 rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/[0.08] to-accent/[0.06] p-4 text-left hover:border-primary/50 hover:shadow-lg hover:shadow-primary/10 hover:scale-[1.02] transition-all duration-200 group"
+                className="sim-glow-border relative flex-none w-40 rounded-xl border border-primary/20 bg-gradient-to-br from-primary/[0.06] to-accent/[0.04] p-3.5 text-left hover:border-primary/40 hover:shadow-md hover:shadow-primary/5 transition-all group"
               >
-                <div className="text-3xl mb-2.5">{isStandardEmoji(skill.icon_emoji) ? skill.icon_emoji : "⚡"}</div>
-                <div className="text-xs font-semibold text-foreground group-hover:text-primary transition-colors leading-tight mb-1.5">
+                <div className="text-2xl mb-2">{isStandardEmoji(skill.icon_emoji) ? skill.icon_emoji : "⚡"}</div>
+                <div className="text-[11px] font-semibold text-foreground group-hover:text-primary transition-colors leading-tight mb-1">
                   {skill.name}
                 </div>
-                <div className="text-[10px] text-muted-foreground leading-snug line-clamp-2 mb-3">
+                <div className="text-[9px] text-muted-foreground leading-snug line-clamp-2 mb-2.5">
                   {skill.description}
                 </div>
-                <div className="flex items-center gap-1.5 text-[10px] font-semibold text-primary/70 group-hover:text-primary transition-colors pt-2 border-t border-border/20">
-                  <Play className="h-3 w-3" />
+                <div className="flex items-center gap-1 text-[9px] font-medium text-primary/60 group-hover:text-primary transition-colors">
+                  <Play className="h-2.5 w-2.5" />
                   Practice Quest
                 </div>
               </button>
@@ -139,11 +139,11 @@ export function TaskDetailPanel({
         <Button
           size="sm"
           variant={isCompleted ? "secondary" : "default"}
-          className="w-full h-8 text-xs rounded-full gap-1.5"
+          className="sim-glow-btn w-full h-8 text-xs rounded-full gap-1.5"
           onClick={() => onPractice(task)}
         >
           <Play className="h-3 w-3" />
-          {isCollapsing ? "⚔️ Run Future Battle" : isCompleted ? "🔄 Retry Quest" : "⚔️ Accept Quest"}
+          {isCollapsing ? "🔮 Scout Future Threats" : isCompleted ? "🔄 Retry Quest" : "⚔️ Accept Quest"}
         </Button>
       </div>
     </motion.div>
