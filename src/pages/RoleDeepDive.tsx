@@ -289,14 +289,15 @@ const RoleDeepDive = () => {
 
   return (
     <div className="h-[100dvh] bg-background flex flex-col overflow-hidden">
-      {/* Header */}
+      {/* Header — Mission Briefing bar */}
       <div className="shrink-0 z-20 bg-background/95 backdrop-blur-md border-b border-border px-4 py-2.5 flex items-center justify-between gap-3">
         <button onClick={() => navigate("/")} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors shrink-0">
-          <ChevronLeft className="h-3.5 w-3.5" /> Back
+          <ChevronLeft className="h-3.5 w-3.5" /> HQ
         </button>
         <div className="text-center min-w-0 flex-1">
+          <span className="text-[9px] uppercase tracking-wider text-primary font-semibold">⚔️ Mission Briefing</span>
           <span className="text-sm font-semibold text-foreground truncate block">{result.jobTitle}</span>
-          {company && <span className="text-[10px] text-muted-foreground">at {company}</span>}
+          {company && <span className="text-[10px] text-muted-foreground">Kingdom of {company}</span>}
         </div>
         <button onClick={toggleBookmark} disabled={bookmarkLoading} className="p-1.5 rounded-lg hover:bg-muted/30 transition-colors shrink-0">
           {isBookmarked ? <BookmarkCheck className="h-4 w-4 text-primary" /> : <Bookmark className="h-4 w-4 text-muted-foreground" />}
