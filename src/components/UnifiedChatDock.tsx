@@ -82,7 +82,7 @@ export default function UnifiedChatDock() {
             animate={{ y: 0, opacity: 1, scale: 1 }}
             exit={{ y: "100%", opacity: 0, scale: 0.95 }}
             transition={{ type: "spring", damping: 28, stiffness: 280 }}
-            className="fixed bottom-4 right-4 z-40 w-[380px] flex flex-col bg-card/95 backdrop-blur-xl border border-border/50 rounded-2xl shadow-2xl"
+            className="fixed bottom-4 right-4 z-[60] w-[380px] flex flex-col bg-card/95 backdrop-blur-xl border border-border/50 rounded-2xl shadow-2xl"
             style={{ maxHeight: "min(70vh, 560px)" }}
           >
             {/* Header */}
