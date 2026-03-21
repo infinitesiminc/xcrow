@@ -234,7 +234,7 @@ const BriefingScreen = ({
         transition={{ delay: 0.2, duration: 0.4 }}
         className="rounded-2xl bg-accent/30 border border-border/40 p-6"
       >
-        <h4 className="text-xs font-medium uppercase tracking-widest text-muted-foreground mb-3">What you need to know</h4>
+        <h4 className="text-xs font-medium uppercase tracking-widest text-muted-foreground mb-3">Mission Intel</h4>
         <div className="text-[15px] text-foreground/90 leading-[1.7] prose prose-sm dark:prose-invert max-w-none [&>p]:mb-3">
           <ReactMarkdown>{session.briefing}</ReactMarkdown>
         </div>
