@@ -98,7 +98,7 @@ export function TaskDetailPanel({
           <div className="flex items-start gap-2">
             <Sparkles className="h-3.5 w-3.5 text-primary shrink-0 mt-0.5" />
             <p className="text-xs text-muted-foreground">
-              <span className="text-primary font-medium">New Role: </span>{prediction.new_human_role}
+              <span className="text-primary font-medium">✦ Evolution: </span>{prediction.new_human_role}
             </p>
           </div>
         </div>
