@@ -167,7 +167,7 @@ export default function TerritoryGrid({
                 >
                   {CATEGORY_META[cat].label}
                 </span>
-                <span className="text-[9px] text-muted-foreground/50 ml-auto">
+                <span className="text-[11px] text-muted-foreground/50 ml-auto">
                   {grouped[cat].filter(t => t.state === "claimed" || t.state === "demo-lit").length}/{grouped[cat].length}
                 </span>
               </div>
