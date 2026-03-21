@@ -159,6 +159,7 @@ export default function FutureTerritoryMap({ skills, focusSkillId }: FutureTerri
     }
 
     setSelectedSkill(skill);
+    setHighlightedSkillId(skill.id);
     setDrawerOpen(true);
   }, [focusSkillId, skillLookup, layout]);
 
