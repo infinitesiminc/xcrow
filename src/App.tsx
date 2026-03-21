@@ -35,6 +35,7 @@ const CaseStudy = lazy(() => import("./pages/CaseStudy.tsx"));
 const SimulationDesign = lazy(() => import("./pages/SimulationDesign.tsx"));
 const JoinWorkspace = lazy(() => import("./pages/JoinWorkspace.tsx"));
 const ScoreDistributions = lazy(() => import("./pages/ScoreDistributions.tsx"));
+const PublicProfile = lazy(() => import("./pages/PublicProfile.tsx"));
 
 // Admin (lazy)
 const HRLayout = lazy(() => import("./layouts/HRLayout.tsx"));
