@@ -1,89 +1,60 @@
 
 
-## Full-Page Job Deep Dive with Level 1 + Level 2 on a Time Axis
+## Consolidate Deep Dive into Unified Page + Skill Map + Chat Integration
 
-### Problem
-Currently, Level 1 (task breakdown + AI exposure) and Level 2 (future predictions) live on the same flat `/analysis` page. Level 2 is hidden behind per-task "See Future" buttons. There's no unified timeline view showing how a role evolves from today → near-future → far-future. The page needs to become a proper deep-dive destination.
+### What Changes
 
-### Architecture
+**1. Create `TaskCard.tsx` — unified L1+L2 card**
+Single card component that always shows L1 (exposure score, description, practice button) and conditionally reveals L2 (collapse summary, new human role, disrupting tech badges, ghost skill drops, L2 sim button) when `timeHorizon > 0` and prediction exists. Score badge lerps between current and future. L2 section can also be manually expanded via a "See Future" toggle even at `timeHorizon === 0`. Cards sorted by display score.
 
-```text
-/role/:jobTitle                    ← New route (SEO-friendly, shareable)
-  ┌─────────────────────────────────────────────────┐
-  │  Sticky Header: Job Title, Company, Bookmark    │
-  ├─────────────────────────────────────────────────┤
-  │  Hero: Readiness Ring + Stats + Time Slider     │
-  │  ┌──────────────────────────────────────┐       │
-  │  │  ◄─── TODAY ──── 2-3Y ──── 5Y+ ───► │       │
-  │  └──────────────────────────────────────┘       │
-  ├─────────────────────────────────────────────────┤
-  │  Tabs: Overview │ Task X-Ray │ Future View      │
-  ├─────────────────────────────────────────────────┤
-  │                                                 │
-  │  [Tab content — see below]                      │
-  │                                                 │
-  └─────────────────────────────────────────────────┘
-```
+**2. Refactor `RoleDeepDive.tsx` — remove tabs, single scroll**
+Replace the `<Tabs>` system with a vertical flow:
+- **Time Axis Slider** (stays sticky below header)
+- **Hero Stats** — ReadinessRing + 3 stat cards (inlined from OverviewTab), morphing with slider
+- **Role Summary** — contextual text (from OverviewTab)
+- **Task Cards** — unified list using new `TaskCard`
+- **Disrupting Tech Bar** — collapsible summary of all unique techs from predictions
+- **Skills Section** — merged current skills + ghost future skills from predictions
+- **Skill Map CTA** — "View Your Skill Territory" button linking to `/journey` with skill context
+- **Sign-in CTA** (if not authed)
 
-### Plan
+Move `ReadinessRing` and `StatCard` helpers into `RoleDeepDive.tsx` directly.
 
-#### 1. Create new full-page `RoleDeepDive.tsx`
-A new page component at `/role/:jobTitle` that replaces the current `/analysis` as the primary deep-dive. The existing `/analysis` route redirects here.
+**3. L2 gating behind L1 milestone**
+The time slider's future positions (2-3Y, 5+Y) are locked until the user has completed at least 1 simulation for this role. Visual lock icon on the slider stops with a tooltip: "Practice a task to unlock Future View." This ensures users understand L1 before accessing L2. The gate only applies to logged-in users who haven't practiced; anonymous users see predictions ungated (to hook them).
 
-**Three tabs:**
-- **Overview** — Hero stats, readiness ring, role summary, quick stats (risk %, augmented %, task count). Shows the "time slider" that morphs stats between today and predicted future.
-- **Task X-Ray (Level 1)** — Current task cards with AI exposure scores, practice buttons. Reuses existing task card UI.
-- **Future View (Level 2)** — All tasks shown on a timeline axis. Each task displayed as a row with columns: Today State → Predicted State → New Human Role. Batch-fetches predictions for all tasks at once instead of one-by-one.
+**4. Skill Map integration**
+After the task cards section, add a compact "Your Skills for This Role" strip:
+- Show skills from `result.skills` matched against the user's skill territory data
+- Each skill shows its castle tier/level if the user has XP, or a ghost state if not
+- Clicking a skill navigates to `/journey` with that skill focused
+- When `timeHorizon > 0`, ghost future skills from predictions appear alongside with dashed borders
 
-#### 2. Time Axis Slider Component
-A horizontal slider at the top that controls the "lens" across all tabs:
-- **Today** — Shows Level 1 data as-is (current AI exposure, current tasks)
-- **2-3 Years** — Blends Level 1 + Level 2 predictions, highlights tasks at collapse risk
-- **5+ Years** — Full Level 2 mode, shows predicted future state, new human roles, future skills
+**5. Chat connector**
+Add a floating "Ask about this role" button (bottom-right) that opens a slide-up chat panel using the existing `career-chat` edge function. The chat receives role context automatically:
+- `jobTitle`, `company`, `timeHorizon` position, `completedCount`, `predictions` summary
+- This lets the AI answer questions like "What should I practice first?" or "How will this role change?" with full context
+- Reuses the `HomepageChat` message rendering pattern (TypewriterMarkdown) but in a sheet/drawer
 
-When the slider moves, task cards animate their scores from current → predicted values.
+**6. Delete tab files**
+Remove `OverviewTab.tsx`, `TaskXRayTab.tsx`, `FutureViewTab.tsx` — absorbed into the unified page and `TaskCard`.
 
-#### 3. Batch Future Prediction
-Create a new edge function `batch-predict-future` that accepts an array of task clusters and returns all predictions in one call (instead of N separate calls to `predict-task-future`). This makes the Future View tab load in one request.
+### Files
 
-#### 4. Future View Tab Layout
-A timeline-oriented layout for all tasks:
-```text
-Task Name          │ Today (L1)      │ Future (L2)        │ Action
-───────────────────┼─────────────────┼────────────────────┼──────────
-Code Review        │ 🤖 72% AI      │ ⚡ 95% — Collapses │ L2 Sim
-Stakeholder Mgmt   │ 💪 25% AI      │ 🟢 35% — Evolves  │ Practice
-System Design      │ 🤖 60% AI      │ ⚡ 85% — Transforms│ L2 Sim
-```
+| Action | File |
+|--------|------|
+| Create | `src/components/role/TaskCard.tsx` |
+| Create | `src/components/role/RoleChat.tsx` (slide-up chat panel) |
+| Refactor | `src/pages/RoleDeepDive.tsx` |
+| Modify | `src/components/role/TimeAxisSlider.tsx` (add lock states) |
+| Delete | `src/components/role/OverviewTab.tsx` |
+| Delete | `src/components/role/TaskXRayTab.tsx` |
+| Delete | `src/components/role/FutureViewTab.tsx` |
 
-Each row expandable to show: collapse summary, new human role, disrupting tech, future skills (ghost drops).
+### Technical Notes
 
-#### 5. Route + Navigation Updates
-- Add route `/role/:jobTitle` in `App.tsx`
-- Redirect `/analysis` → `/role/:jobTitle` with query params mapped
-- Homepage role cards link to `/role/[title]?company=X`
-- RolePreviewPanel "Full Analysis" button links here
-
-#### 6. Persist Level 2 Predictions
-Store predictions in a new `task_future_predictions` table so they don't need re-generation on every visit:
-- `job_id`, `cluster_name`, `prediction` (jsonb), `created_at`
-- Cache for 30 days, then refresh
-
-### Technical Details
-
-**New files:**
-- `src/pages/RoleDeepDive.tsx` — Main page component with 3 tabs
-- `src/components/role/TimeAxisSlider.tsx` — Horizontal time slider
-- `src/components/role/FutureViewTab.tsx` — Timeline table for Level 2
-- `src/components/role/OverviewTab.tsx` — Hero + summary stats
-- `src/components/role/TaskXRayTab.tsx` — Existing task cards refactored
-- `supabase/functions/batch-predict-future/index.ts` — Batch prediction endpoint
-
-**Database migration:**
-- Create `task_future_predictions` table with columns: `id`, `job_id` (uuid), `cluster_name` (text), `prediction` (jsonb), `created_at`, `expires_at`
-- RLS: public read, service_role write
-
-**Existing page handling:**
-- `/analysis` route becomes a redirect to `/role/:title`
-- `RolePreviewPanel` gains a "Deep Dive" button linking to the full page
+- `TaskCard` props: `task`, `prediction`, `timeHorizon`, `isCompleted`, `onPractice`, `jobTitle`, `company`. Uses `lerp` + `exposureStyle` for score morphing. L2 section uses `AnimatePresence` for expand/collapse.
+- L2 gate: `const l2Unlocked = !user || completedCount >= 1`. TimeAxisSlider receives `locked` prop to disable clicks on stops 1 and 2.
+- RoleChat: Opens as a `Sheet` (from shadcn). Sends messages to `career-chat` with `viewContext` containing `{ page: "role-deep-dive", jobTitle, company, timeHorizon, completedCount, predictionsSummary }`.
+- Skill strip: Fetches user's `completed_simulations` to compute skill XP via `aggregateSkillXP`, then matches against `result.skills` by name/keyword.
 
