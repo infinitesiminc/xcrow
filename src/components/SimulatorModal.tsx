@@ -79,7 +79,7 @@ const ObjectiveChecklist = ({
       <div className="flex items-center gap-2 mb-1">
         <Target className="h-3.5 w-3.5 text-primary" />
         <span className="text-[11px] font-medium uppercase tracking-widest text-muted-foreground">
-          Learning Goals · {metCount}/{objectives.length}
+          Quest Objectives · {metCount}/{objectives.length}
         </span>
       </div>
       {objectives.map((obj) => {
@@ -190,7 +190,7 @@ const BriefingScreen = ({
 
       <div className="text-center">
         <span className="inline-block text-[11px] px-2.5 py-1 rounded-full font-medium bg-primary/10 text-primary">
-          🎯 {config?.objectiveCount || 3} goals · Ends when you've got them all
+          ⚔️ {config?.objectiveCount || 3} objectives · Quest ends when all are conquered
         </span>
       </div>
 
@@ -204,7 +204,7 @@ const BriefingScreen = ({
         >
           <h4 className="text-xs font-medium uppercase tracking-widest text-primary mb-3 flex items-center gap-2">
             <Target className="h-3.5 w-3.5" />
-            What you'll learn
+            Quest Objectives
           </h4>
           <ul className="space-y-3">
             {session.learningObjectives.map((obj, i) => (
@@ -234,7 +234,7 @@ const BriefingScreen = ({
         transition={{ delay: 0.2, duration: 0.4 }}
         className="rounded-2xl bg-accent/30 border border-border/40 p-6"
       >
-        <h4 className="text-xs font-medium uppercase tracking-widest text-muted-foreground mb-3">What you need to know</h4>
+        <h4 className="text-xs font-medium uppercase tracking-widest text-muted-foreground mb-3">Mission Intel</h4>
         <div className="text-[15px] text-foreground/90 leading-[1.7] prose prose-sm dark:prose-invert max-w-none [&>p]:mb-3">
           <ReactMarkdown>{session.briefing}</ReactMarkdown>
         </div>
@@ -247,7 +247,7 @@ const BriefingScreen = ({
           transition={{ delay: 0.3, duration: 0.4 }}
           className="rounded-2xl border border-border/30 p-6"
         >
-          <h4 className="text-xs font-medium uppercase tracking-widest text-muted-foreground mb-3">Tips</h4>
+          <h4 className="text-xs font-medium uppercase tracking-widest text-muted-foreground mb-3">Battle Tips</h4>
           <ul className="space-y-3">
             {session.tips.map((tip: any, i: number) => {
               const tipText = typeof tip === "string" ? tip : (tip.content || tip.title || JSON.stringify(tip));
@@ -275,7 +275,7 @@ const BriefingScreen = ({
         className="flex justify-center pt-2"
       >
         <Button onClick={onStart} size="lg" className="gap-2 rounded-xl px-8 text-base">
-          Start Learning
+          ⚔️ Begin Quest
         </Button>
       </motion.div>
     </motion.div>
@@ -309,7 +309,7 @@ const ObjectiveResultsDisplay = ({
         <div className="flex items-center gap-2 mb-3">
           <Target className="h-4 w-4 text-primary" />
           <span className="text-sm font-medium">
-            Learning Objectives: {metCount}/{results.length} achieved
+            Quest Objectives: {metCount}/{results.length} conquered
           </span>
         </div>
         <div className="space-y-2">
@@ -427,12 +427,12 @@ const UnmetObjectivesReview = ({
       </motion.div>
       <div className="space-y-2">
         <h3 className="text-lg font-serif font-bold text-foreground">
-          {tooEarly ? "Just getting started!" : "Almost there!"}
+          {tooEarly ? "The battle has just begun!" : "Almost victorious!"}
         </h3>
         <p className="text-sm text-muted-foreground leading-relaxed">
           {tooEarly
-            ? `You've only completed ${roundCount} of at least ${minRounds} rounds. Keep going to cover more learning goals.`
-            : `You haven't covered ${unmet.length === 1 ? "this learning goal" : `${unmet.length} learning goals`} yet. Want to do ${unmet.length === 1 ? "one more scenario" : "a few more scenarios"} to cover ${unmet.length === 1 ? "it" : "them"}?`
+            ? `You've only cleared ${roundCount} of at least ${minRounds} waves. Keep fighting to conquer more objectives.`
+            : `You haven't conquered ${unmet.length === 1 ? "this objective" : `${unmet.length} objectives`} yet. Ready for ${unmet.length === 1 ? "one more wave" : "a few more waves"} to claim ${unmet.length === 1 ? "it" : "them"}?`
           }
         </p>
       </div>
@@ -449,10 +449,10 @@ const UnmetObjectivesReview = ({
       </div>
       <div className="flex gap-3 pt-2">
         <Button variant="outline" onClick={onFinishAnyway} className="rounded-xl">
-          Finish Anyway
+          Retreat & Score
         </Button>
         <Button onClick={onContinue} className="gap-2 rounded-xl">
-          <ArrowRight className="h-4 w-4" /> Keep Going
+          <ArrowRight className="h-4 w-4" /> Fight On
         </Button>
       </div>
     </motion.div>
@@ -582,7 +582,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
       setPhase("briefing");
     } catch (err) {
       console.error("Failed to start simulation:", err);
-      setError("Couldn't start the simulation. Please try again.");
+      setError("Couldn't forge the quest. Please try again.");
       setPhase("chat");
     }
   }, [taskName, jobTitle, company, mode, taskState, taskTrend, taskImpactLevel, user, isPro, simGate]);
@@ -873,7 +873,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                   animate={{ opacity: 1, scale: 1 }}
                   className="text-xs px-3 py-1 rounded-full text-primary bg-primary/10"
                 >
-                  💬 {roundCount}/{maxRounds}
+                  ⚔️ Wave {roundCount}/{maxRounds}
                 </motion.span>
               )}
               <button
@@ -931,7 +931,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                   >
                     <Loader2 className="h-8 w-8 text-muted-foreground/40" />
                   </motion.div>
-                  <p className="text-sm text-muted-foreground">Preparing your session…</p>
+                  <p className="text-sm text-muted-foreground">Forging your quest…</p>
                 </motion.div>
               )}
 
@@ -996,7 +996,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                           >
                             <div className="flex-1 h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
                             <span className="text-[11px] font-medium text-primary/70 flex items-center gap-1.5 shrink-0">
-                              <Zap className="h-3 w-3" /> New Scenario
+                              <Zap className="h-3 w-3" /> ⚡ New Wave
                             </span>
                             <div className="flex-1 h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
                           </motion.div>
@@ -1065,14 +1065,14 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                               }).finally(() => setSending(false));
                             }}
                           >
-                            <ArrowRight className="h-4 w-4" /> Next Scenario
+                            <ArrowRight className="h-4 w-4" /> Next Wave
                           </Button>
                         )}
                         <Button
                           className="flex-1 rounded-xl h-10 text-sm gap-2"
                           onClick={handleFinishAttempt}
-                        >
-                          <CheckCircle2 className="h-4 w-4" /> {isLastRound || isSessionEnd ? "See Results" : "Finish Early"}
+                          >
+                           <CheckCircle2 className="h-4 w-4" /> {isLastRound || isSessionEnd ? "⚔️ Battle Report" : "End Quest"}
                         </Button>
                       </div>
                     );
@@ -1105,7 +1105,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                   className="flex flex-col items-center justify-center py-20 gap-4"
                 >
                   <Loader2 className="h-6 w-6 text-muted-foreground/40 animate-spin" />
-                  <p className="text-sm text-muted-foreground">Evaluating your progress…</p>
+                  <p className="text-sm text-muted-foreground">Compiling battle report…</p>
                 </motion.div>
               )}
 
@@ -1213,21 +1213,21 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                       >
                         {overallScore}%
                       </motion.span>
-                      <span className="text-[10px] text-muted-foreground">score</span>
+                      <span className="text-[10px] text-muted-foreground">power</span>
                     </div>
                   </motion.div>
 
                   {/* Dynamic encouragement */}
                   <div className="space-y-1.5">
                     <h3 className="text-lg font-display font-bold text-foreground">
-                      {scoreTier === "high" ? "Masterful! 🏆" : scoreTier === "mid" ? "Solid work! 💪" : "Good start! 🌱"}
+                      {scoreTier === "high" ? "Victory! 🏆" : scoreTier === "mid" ? "Valiant effort! 💪" : "First blood! 🌱"}
                     </h3>
                     <p className="text-sm text-muted-foreground leading-relaxed">
                       {scoreTier === "high"
-                        ? "You demonstrated strong command. Time to expand your territory."
+                        ? "You've conquered this quest. Time to expand your territory."
                         : scoreTier === "mid"
-                        ? "You're building real skill here. One more round could level you up."
-                        : "Every expert started exactly here. Retry with coaching to see your score climb."
+                        ? "Your power grows. One more wave could level you up."
+                        : "Every commander started here. Retry with a battle coach to raise your power."
                       }
                     </p>
                   </div>
@@ -1369,7 +1369,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                         onClick={startRetryWithCoaching}
                         className="gap-2 rounded-xl w-full h-11"
                       >
-                        <RotateCcw className="h-4 w-4" /> Retry with Coaching Tips
+                        <RotateCcw className="h-4 w-4" /> ⚔️ Retry with Battle Coach
                       </Button>
                     )}
                     {scoreTier === "mid" && onNextTask && (
@@ -1377,7 +1377,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                         onClick={() => { onClose(); onNextTask(); }}
                         className="gap-2 rounded-xl w-full h-11"
                       >
-                        <TrendingUp className="h-4 w-4" /> Level Up — Harder Context
+                        <TrendingUp className="h-4 w-4" /> ⚔️ Level Up — Harder Wave
                       </Button>
                     )}
                     {scoreTier === "mid" && !onNextTask && (
@@ -1385,7 +1385,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                         onClick={() => startCompile()}
                         className="gap-2 rounded-xl w-full h-11"
                       >
-                        <TrendingUp className="h-4 w-4" /> Practice Again to Level Up
+                        <TrendingUp className="h-4 w-4" /> ⚔️ Train Again to Level Up
                       </Button>
                     )}
                     {scoreTier === "high" && nearbyUnclaimed && (
@@ -1393,7 +1393,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                         onClick={() => { onClose(); onBackToFeed?.(); }}
                         className="gap-2 rounded-xl w-full h-11"
                       >
-                        <Sparkles className="h-4 w-4" /> New Frontier — Unlock {nearbyUnclaimed.name}
+                        <Sparkles className="h-4 w-4" /> 🏰 New Frontier — Conquer {nearbyUnclaimed.name}
                       </Button>
                     )}
                     {scoreTier === "high" && !nearbyUnclaimed && onNextTask && (
@@ -1401,7 +1401,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                         onClick={() => { onClose(); onNextTask(); }}
                         className="gap-2 rounded-xl w-full h-11"
                       >
-                        <ArrowRight className="h-4 w-4" /> Next Challenge
+                        <ArrowRight className="h-4 w-4" /> Next Quest
                       </Button>
                     )}
                     {scoreTier === "high" && !nearbyUnclaimed && !onNextTask && (
@@ -1409,7 +1409,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                         onClick={onClose}
                         className="gap-2 rounded-xl w-full h-11"
                       >
-                        <ArrowRight className="h-4 w-4" /> Explore More
+                        <ArrowRight className="h-4 w-4" /> Explore Territory
                       </Button>
                     )}
 
@@ -1420,7 +1420,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                         onClick={() => { onClose(); onNextTask(); }}
                         className="gap-2 rounded-xl w-full text-xs"
                       >
-                        Try a Different Task
+                        Try a Different Quest
                       </Button>
                     )}
                     {scoreTier === "mid" && (
@@ -1429,7 +1429,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                         onClick={() => startCompile()}
                         className="gap-2 rounded-xl w-full text-xs"
                       >
-                        <RotateCcw className="h-3 w-3" /> Same Sim — Improve Score
+                        <RotateCcw className="h-3 w-3" /> Same Quest — Raise Power
                       </Button>
                     )}
                     {scoreTier === "high" && (
@@ -1438,7 +1438,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                         onClick={() => startCompile()}
                         className="gap-2 rounded-xl w-full text-xs"
                       >
-                        Same Skill, Different Industry
+                        Same Skill, New Battleground
                       </Button>
                     )}
 
@@ -1520,7 +1520,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                   resetInactivityTimer();
                 }}
                 onKeyDown={handleKeyDown}
-                placeholder="Describe your approach…"
+                placeholder="Your move, commander…"
                 rows={2}
                 className="flex-1 resize-none rounded-xl border border-border/40 bg-accent/10 px-3 sm:px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-ring/30 focus:border-border min-h-[40px] max-h-[100px] transition-all duration-200"
               />
@@ -1531,7 +1531,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                   onClick={handleFinishAttempt}
                   className="text-xs text-muted-foreground hover:text-foreground h-[40px] px-3 rounded-xl"
                 >
-                  Finish
+                   End Quest
                 </Button>
                 <Button
                   size="sm"
