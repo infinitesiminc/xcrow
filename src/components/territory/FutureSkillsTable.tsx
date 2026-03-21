@@ -59,9 +59,9 @@ export default function FutureSkillsTable({ skills }: { skills: FutureSkill[] })
 
   return (
     <div className="h-full flex flex-col">
-      {/* Search */}
-      <div className="px-3 py-2.5 shrink-0">
-        <div className="relative">
+      {/* Search + Count */}
+      <div className="px-3 py-2.5 shrink-0 flex items-center gap-2">
+        <div className="relative flex-1">
           <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
           <Input
             value={search}
@@ -70,6 +70,9 @@ export default function FutureSkillsTable({ skills }: { skills: FutureSkill[] })
             className="h-8 pl-8 text-xs bg-muted/30 border-border/50"
           />
         </div>
+        <span className="text-[10px] font-mono text-muted-foreground whitespace-nowrap">
+          {filtered.length}{search ? ` / ${skills.length}` : ""} skills
+        </span>
       </div>
 
       {/* Table */}
