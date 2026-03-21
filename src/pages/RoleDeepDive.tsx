@@ -485,7 +485,7 @@ const RoleDeepDive = () => {
                               </span>
                               <span className="flex items-center gap-1 text-[9px] font-medium text-primary/60 group-hover:text-primary transition-colors">
                                 <Zap className="h-2.5 w-2.5" />
-                                Simulate
+                                Practice Quest
                               </span>
                             </div>
                           </motion.button>
