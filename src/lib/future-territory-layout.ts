@@ -22,19 +22,19 @@ export interface FutureIslandLayout {
   skillCount: number;
 }
 
-export const FUTURE_MAP_WIDTH = 1400;
-export const FUTURE_MAP_HEIGHT = 1000;
+export const FUTURE_MAP_WIDTH = 1800;
+export const FUTURE_MAP_HEIGHT = 1400;
 
-// 8 islands — larger categories get more space
+// 8 islands — positioned for new balanced distribution
 const ISLAND_CENTERS: Record<FutureSkillCategory, { cx: number; cy: number }> = {
-  Strategic:              { cx: 350, cy: 220 },   // largest — top center-left
-  Technical:              { cx: 900, cy: 200 },   // 2nd — top right
-  Analytical:             { cx: 1200, cy: 450 },  // 3rd — right middle
-  "Human Edge":           { cx: 200, cy: 500 },   // 4th — left middle
-  Communication:          { cx: 650, cy: 520 },   // center
-  "Ethics & Compliance":  { cx: 450, cy: 800 },   // bottom left
-  Creative:               { cx: 900, cy: 780 },   // bottom right
-  Leadership:             { cx: 1150, cy: 720 },  // bottom far right
+  Technical:              { cx: 300, cy: 280 },   // largest — top left
+  Analytical:             { cx: 900, cy: 250 },   // 2nd — top center
+  "Human Edge":           { cx: 1500, cy: 300 },  // 3rd — top right
+  Communication:          { cx: 250, cy: 700 },   // mid left
+  Creative:               { cx: 750, cy: 680 },   // mid center-left
+  Leadership:             { cx: 1250, cy: 700 },  // mid center-right
+  "Ethics & Compliance":  { cx: 500, cy: 1100 },  // bottom left
+  Strategic:              { cx: 1100, cy: 1100 },  // bottom right (smallest)
 };
 
 const ALL_CATEGORIES: FutureSkillCategory[] = [
