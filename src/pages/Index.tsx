@@ -436,6 +436,7 @@ const Index = () => {
 
             {!hasInteracted && user && (
               <div className="w-full max-w-xl mb-4 space-y-4">
+                <SkillDropBanner />
                 <QuestBoard />
                 <AdaptiveQueue userId={user.id} />
               </div>
