@@ -432,7 +432,7 @@ const Analysis = () => {
                           />
                           <Button size="sm" variant={done ? "secondary" : "default"} className="h-7 text-xs rounded-full gap-1"
                             onClick={() => setSimTask(task)}>
-                            <Play className="h-3 w-3" />{done ? "Retry" : "Practice"}
+                            <Play className="h-3 w-3" />{done ? "Retry" : "Quest"}
                           </Button>
                         </div>
                       </div>
