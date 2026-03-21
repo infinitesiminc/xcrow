@@ -582,7 +582,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
       setPhase("briefing");
     } catch (err) {
       console.error("Failed to start simulation:", err);
-      setError("Couldn't start the simulation. Please try again.");
+      setError("Couldn't forge the quest. Please try again.");
       setPhase("chat");
     }
   }, [taskName, jobTitle, company, mode, taskState, taskTrend, taskImpactLevel, user, isPro, simGate]);
