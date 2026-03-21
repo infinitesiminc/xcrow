@@ -4,7 +4,7 @@
  */
 
 import { motion } from "framer-motion";
-import crowLogo from "@/assets/crowy-logo.png";
+import xxcrowLogo from "@/assets/xcrow-logo.png";
 import { Lock } from "lucide-react";
 import type { CastleState } from "@/lib/castle-levels";
 import type { SkillCategory } from "@/lib/skill-map";
@@ -83,7 +83,7 @@ export default function CastleNode({
               animate={{ y: [0, -5, 0] }}
               transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
             >
-              <img src={crowLogo} alt="Xcrow" className="h-14 w-14 object-contain drop-shadow-[0_0_8px_hsl(270_80%_60%/0.6)]" draggable={false} />
+              <img src={xcrowLogo} alt="Xcrow" className="h-14 w-14 object-contain drop-shadow-[0_0_8px_hsl(270_80%_60%/0.6)]" draggable={false} />
             </motion.div>
           )}
 
