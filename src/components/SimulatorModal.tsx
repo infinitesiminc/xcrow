@@ -1409,7 +1409,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                         onClick={onClose}
                         className="gap-2 rounded-xl w-full h-11"
                       >
-                        <ArrowRight className="h-4 w-4" /> Explore More
+                        <ArrowRight className="h-4 w-4" /> Explore Territory
                       </Button>
                     )}
 
