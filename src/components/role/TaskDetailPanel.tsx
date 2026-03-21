@@ -52,7 +52,7 @@ export function TaskDetailPanel({
       {/* Score: Today → Future */}
       <div className="flex items-center gap-2 mb-4 flex-wrap">
         <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full ${currentStyle.badge}`}>
-          Today {currentScore}%
+          Now {currentScore}%
         </span>
         {prediction && (
           <>
