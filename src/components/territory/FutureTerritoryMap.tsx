@@ -259,6 +259,8 @@ export default function FutureTerritoryMap({ skills }: FutureTerritoryMapProps) 
           </button>
         )}
       </div>
+
+      <SkillDetailDrawer skill={selectedSkill} open={drawerOpen} onOpenChange={setDrawerOpen} />
     </TooltipProvider>
   );
 }
