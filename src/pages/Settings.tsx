@@ -424,7 +424,7 @@ function ProfileSection({
             Public profile username
           </Label>
           <div className="flex items-center gap-2">
-            <span className="text-sm text-muted-foreground whitespace-nowrap">xcrow.ai/u/</span>
+            <span className="text-sm text-muted-foreground whitespace-nowrap">Xcrow.ai/u/</span>
             <Input
               id="username"
               value={username}
@@ -435,7 +435,7 @@ function ProfileSection({
           </div>
           {username && (
             <p className="text-[10px] text-muted-foreground">
-              Your public profile will be at <span className="text-primary font-medium">xcrow.ai/u/{username}</span>
+              Your public profile will be at <span className="text-primary font-medium">Xcrow.ai/u/{username}</span>
             </p>
           )}
         </div>

@@ -5,7 +5,7 @@ const Footer = () => (
     <div className="max-w-7xl mx-auto px-6 py-8">
       <div className="flex flex-col sm:flex-row items-start justify-between gap-6">
         <div>
-          <Link to="/" className="font-display font-bold neon-text">xcrow.ai</Link>
+          <Link to="/" className="font-display font-bold neon-text">Xcrow.ai</Link>
           <p className="text-xs text-muted-foreground mt-1">AI career prep for everyone 🚀</p>
         </div>
         <div className="flex gap-10">
@@ -25,7 +25,7 @@ const Footer = () => (
         </div>
       </div>
       <div className="mt-6 pt-4 border-t border-border/20 flex flex-col sm:flex-row items-center justify-between gap-2">
-        <p className="text-xs text-muted-foreground">© {new Date().getFullYear()} xcrow.ai</p>
+        <p className="text-xs text-muted-foreground">© {new Date().getFullYear()} Xcrow.ai</p>
         <div className="flex items-center gap-4">
           <Link to="/privacy" className="text-xs text-muted-foreground hover:text-foreground transition-colors">Privacy</Link>
           <Link to="/terms" className="text-xs text-muted-foreground hover:text-foreground transition-colors">Terms</Link>
