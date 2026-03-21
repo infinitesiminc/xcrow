@@ -1,8 +1,8 @@
 import { useEffect, useState, useCallback, useMemo } from "react";
 import { useSearchParams, useNavigate, useParams } from "react-router-dom";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import {
-  ChevronLeft, Zap, AlertTriangle, Bookmark, BookmarkCheck, LogIn, Play, Map, Cpu,
+  ChevronLeft, Zap, AlertTriangle, Bookmark, BookmarkCheck, LogIn, Map, Cpu,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -14,6 +14,7 @@ import { supabase } from "@/integrations/supabase/client";
 import SimulatorModal from "@/components/SimulatorModal";
 import { TimeAxisSlider } from "@/components/role/TimeAxisSlider";
 import { TaskCard } from "@/components/role/TaskCard";
+import { TaskDetailPanel } from "@/components/role/TaskDetailPanel";
 import { RoleChat } from "@/components/role/RoleChat";
 import type { FuturePrediction } from "@/components/analysis/FutureTaskPreview";
 
@@ -22,16 +23,16 @@ function lerp(a: number, b: number, t: number) {
   return Math.round(a + (b - a) * t);
 }
 
-function ReadinessRing({ readiness, size = 96 }: { readiness: number; size?: number }) {
-  const r = (size - 10) / 2;
+function ReadinessRing({ readiness, size = 80 }: { readiness: number; size?: number }) {
+  const r = (size - 8) / 2;
   const circ = 2 * Math.PI * r;
   return (
     <div className="relative shrink-0" style={{ width: size, height: size }}>
       <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="transform -rotate-90">
-        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="hsl(var(--secondary))" strokeWidth="6" />
+        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="hsl(var(--secondary))" strokeWidth="5" />
         <motion.circle
           cx={size / 2} cy={size / 2} r={r} fill="none"
-          stroke="hsl(var(--primary))" strokeWidth="6" strokeLinecap="round"
+          stroke="hsl(var(--primary))" strokeWidth="5" strokeLinecap="round"
           strokeDasharray={circ}
           initial={{ strokeDashoffset: circ }}
           animate={{ strokeDashoffset: circ * (1 - readiness / 100) }}
@@ -39,24 +40,9 @@ function ReadinessRing({ readiness, size = 96 }: { readiness: number; size?: num
         />
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className="text-xl font-bold text-foreground tabular-nums">{readiness}%</span>
-        <span className="text-[8px] text-muted-foreground uppercase tracking-wider">Ready</span>
+        <span className="text-lg font-bold text-foreground tabular-nums">{readiness}%</span>
+        <span className="text-[7px] text-muted-foreground uppercase tracking-wider">Ready</span>
       </div>
-    </div>
-  );
-}
-
-function StatCard({ label, value, trend, sub }: { label: string; value: string; trend?: number; sub?: string }) {
-  return (
-    <div className="rounded-lg border border-border/50 bg-card p-3 text-center">
-      <div className="text-lg font-bold text-foreground tabular-nums">{value}</div>
-      <div className="text-[9px] text-muted-foreground uppercase tracking-wider">{label}</div>
-      {trend !== undefined && trend !== 0 && (
-        <div className={`text-[10px] font-medium mt-0.5 ${trend > 0 ? "text-destructive" : "text-success"}`}>
-          {trend > 0 ? "+" : ""}{trend}%
-        </div>
-      )}
-      {sub && <div className="text-[10px] text-muted-foreground mt-0.5">{sub}</div>}
     </div>
   );
 }
@@ -92,10 +78,10 @@ const RoleDeepDive = () => {
   const [timeHorizon, setTimeHorizon] = useState(0);
   const [predictions, setPredictions] = useState<Record<string, FuturePrediction>>({});
   const [predictionsLoading, setPredictionsLoading] = useState(false);
+  const [selectedTask, setSelectedTask] = useState<TaskAnalysis | null>(null);
   const { user, openAuthModal } = useAuth();
 
   const completedCount = result ? result.tasks.filter(t => completedTasks.has(t.name)).length : 0;
-  const l2Locked = false; // ungated for now
 
   // ── Data fetching ──────────────────────────────────────────────
   const fetchCompletions = useCallback(async () => {
@@ -212,6 +198,14 @@ const RoleDeepDive = () => {
     }
   }, [timeHorizon, predictions, predictionsLoading, result, fetchAllPredictions]);
 
+  // Auto-select first task
+  useEffect(() => {
+    if (result && !selectedTask) {
+      const sorted = [...result.tasks].sort((a, b) => (b.aiExposureScore ?? 50) - (a.aiExposureScore ?? 50));
+      if (sorted.length > 0) setSelectedTask(sorted[0]);
+    }
+  }, [result, selectedTask]);
+
   const pickNextTask = useCallback(() => {
     if (!result) return;
     const sorted = [...result.tasks].sort((a, b) => (b.aiExposureScore ?? 50) - (a.aiExposureScore ?? 50));
@@ -228,7 +222,7 @@ const RoleDeepDive = () => {
     return { avgExposure, collapseCount };
   }, [predictions, result]);
 
-  const t = timeHorizon / 2;
+  const t = timeHorizon;
   const currentRisk = result?.summary.automationRiskPercent ?? 0;
   const currentAug = result?.summary.augmentedPercent ?? 0;
   const displayRisk = lerp(currentRisk, futureStats.avgExposure, t);
@@ -283,116 +277,122 @@ const RoleDeepDive = () => {
   }
 
   return (
-    <div className="min-h-[100dvh] bg-background overflow-y-auto pb-20">
+    <div className="h-[100dvh] bg-background flex flex-col overflow-hidden">
       {/* Sticky header */}
-      <div className="sticky top-0 z-20 bg-background/95 backdrop-blur-md border-b border-border px-4 py-3 flex items-center justify-between">
-        <button onClick={() => navigate("/")} className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
-          <ChevronLeft className="h-4 w-4" /> Back
+      <div className="shrink-0 z-20 bg-background/95 backdrop-blur-md border-b border-border px-4 py-2.5 flex items-center justify-between gap-3">
+        <button onClick={() => navigate("/")} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors shrink-0">
+          <ChevronLeft className="h-3.5 w-3.5" /> Back
         </button>
-        <div className="text-center min-w-0">
-          <span className="text-sm font-semibold text-foreground truncate block max-w-[200px]">{result.jobTitle}</span>
+        <div className="text-center min-w-0 flex-1">
+          <span className="text-sm font-semibold text-foreground truncate block">{result.jobTitle}</span>
           {company && <span className="text-[10px] text-muted-foreground">at {company}</span>}
         </div>
-        <button onClick={toggleBookmark} disabled={bookmarkLoading} className="p-2 rounded-lg hover:bg-muted/30 transition-colors">
-          {isBookmarked ? <BookmarkCheck className="h-4 w-4 text-primary" /> : <Bookmark className="h-4 w-4 text-muted-foreground" />}
-        </button>
+        <div className="flex items-center gap-2 shrink-0">
+          <TimeAxisSlider value={timeHorizon} onChange={setTimeHorizon} />
+          <button onClick={toggleBookmark} disabled={bookmarkLoading} className="p-1.5 rounded-lg hover:bg-muted/30 transition-colors">
+            {isBookmarked ? <BookmarkCheck className="h-4 w-4 text-primary" /> : <Bookmark className="h-4 w-4 text-muted-foreground" />}
+          </button>
+        </div>
       </div>
 
-      <div className="max-w-3xl mx-auto px-4 py-5 space-y-6">
-        {/* Time Axis Slider */}
-        <TimeAxisSlider value={timeHorizon} onChange={setTimeHorizon} l2Locked={l2Locked} />
-
-        {/* Hero Stats */}
-        <div className="flex items-center gap-6">
-          <ReadinessRing readiness={readiness} size={96} />
-          <div className="flex-1 grid grid-cols-3 gap-4">
-            <StatCard label="AI Exposure" value={`${displayRisk}%`} trend={timeHorizon > 0 ? displayRisk - currentRisk : 0} />
-            <StatCard label="Augmented" value={`${displayAug}%`} trend={timeHorizon > 0 ? displayAug - currentAug : 0} />
-            <StatCard label="Tasks" value={`${result.tasks.length}`} sub={completedCount > 0 ? `${completedCount} practiced` : undefined} />
-          </div>
-        </div>
-
-        {/* Role Summary */}
-        <div className="rounded-xl border border-border/50 bg-card p-4">
-          <h3 className="text-sm font-semibold text-foreground mb-2">
-            {timeHorizon === 0 ? "Role Overview" : timeHorizon === 1 ? "Near-Future Outlook" : "Long-Term Forecast"}
-          </h3>
-          {timeHorizon === 0 ? (
-            <p className="text-xs text-muted-foreground leading-relaxed">
-              This role has {result.tasks.length} key task areas. {currentRisk}% of tasks have significant AI tool exposure,
-              while {currentAug}% benefit from human-AI collaboration.
-              {completedCount > 0 ? ` You've practiced ${completedCount} task areas so far.` : " Start practicing to build readiness."}
-            </p>
-          ) : (
-            <p className="text-xs text-muted-foreground leading-relaxed">
-              {futureStats.collapseCount > 0
-                ? `${futureStats.collapseCount} of ${result.tasks.length} tasks face significant collapse risk from emerging AI. `
-                : "Most tasks will evolve rather than collapse. "}
-              Average AI exposure is projected to reach {futureStats.avgExposure}%,
-              up from {currentRisk}% today.
-            </p>
-          )}
-        </div>
-
-        {/* Predictions loading */}
-        {predictionsLoading && (
-          <div className="py-6 flex flex-col items-center gap-2 text-muted-foreground">
-            <Cpu className="h-5 w-5 animate-pulse text-primary" />
-            <p className="text-xs">Analyzing emerging tech impact…</p>
-          </div>
-        )}
-
-        {/* Task Cards */}
-        <div className="space-y-3">
-          <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Task Breakdown</h3>
-          {sortedTasks.map((task, i) => (
-            <TaskCard
-              key={task.name}
-              task={task}
-              prediction={predictions[task.name]}
-              timeHorizon={timeHorizon}
-              isCompleted={completedTasks.has(task.name)}
-              onPractice={setSimTask}
-              index={i}
-            />
-          ))}
-        </div>
-
-        {/* Disrupting Tech Bar */}
-        {timeHorizon > 0 && allTechs.length > 0 && (
-          <div className="rounded-xl border border-primary/20 bg-primary/[0.03] p-4">
-            <h3 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
-              ⚡ Disrupting Technologies
-            </h3>
-            <div className="flex flex-wrap gap-2">
-              {allTechs.map(tech => (
-                <span key={tech} className="text-xs px-2.5 py-1 rounded-full bg-primary/10 text-primary border border-primary/20">
-                  {tech}
-                </span>
-              ))}
+      {/* 2-column body */}
+      <div className="flex-1 flex overflow-hidden">
+        {/* LEFT — Task list */}
+        <div className="w-80 shrink-0 border-r border-border flex flex-col overflow-hidden">
+          {/* Stats strip */}
+          <div className="shrink-0 p-3 border-b border-border/50 flex items-center gap-3">
+            <ReadinessRing readiness={readiness} size={56} />
+            <div className="flex-1 grid grid-cols-2 gap-2">
+              <div className="text-center">
+                <div className="text-sm font-bold text-foreground tabular-nums">{displayRisk}%</div>
+                <div className="text-[8px] text-muted-foreground uppercase">AI Exposure</div>
+                {timeHorizon > 0 && displayRisk - currentRisk !== 0 && (
+                  <div className={`text-[9px] font-medium ${displayRisk > currentRisk ? "text-destructive" : "text-success"}`}>
+                    {displayRisk > currentRisk ? "+" : ""}{displayRisk - currentRisk}
+                  </div>
+                )}
+              </div>
+              <div className="text-center">
+                <div className="text-sm font-bold text-foreground tabular-nums">{result.tasks.length}</div>
+                <div className="text-[8px] text-muted-foreground uppercase">Tasks</div>
+                {completedCount > 0 && (
+                  <div className="text-[9px] text-success font-medium">{completedCount} done</div>
+                )}
+              </div>
             </div>
           </div>
-        )}
 
-        {/* Skill Map CTA */}
-        <div className="flex justify-center">
-          <Button
-            variant="outline"
-            className="gap-2 rounded-full"
-            onClick={() => navigate("/journey")}
-          >
-            <Map className="h-4 w-4" /> View Your Skill Territory
-          </Button>
+          {/* Predictions loading */}
+          {predictionsLoading && (
+            <div className="shrink-0 py-2 flex items-center justify-center gap-1.5 text-muted-foreground border-b border-border/30">
+              <Cpu className="h-3 w-3 animate-pulse text-primary" />
+              <span className="text-[10px]">Analyzing future…</span>
+            </div>
+          )}
+
+          {/* Task list */}
+          <div className="flex-1 overflow-y-auto p-2 space-y-1">
+            {sortedTasks.map((task, i) => (
+              <TaskCard
+                key={task.name}
+                task={task}
+                prediction={predictions[task.name]}
+                timeHorizon={timeHorizon}
+                isCompleted={completedTasks.has(task.name)}
+                isSelected={selectedTask?.name === task.name}
+                onSelect={setSelectedTask}
+                index={i}
+              />
+            ))}
+          </div>
+
+          {/* Bottom actions */}
+          <div className="shrink-0 p-2 border-t border-border/50 space-y-1.5">
+            <Button
+              variant="outline"
+              size="sm"
+              className="w-full h-7 text-[10px] gap-1.5 rounded-full"
+              onClick={() => navigate("/journey")}
+            >
+              <Map className="h-3 w-3" /> Skill Territory
+            </Button>
+            {!user && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="w-full h-7 text-[10px] gap-1.5 rounded-full text-primary"
+                onClick={() => navigate("/auth")}
+              >
+                <LogIn className="h-3 w-3" /> Sign in to save
+              </Button>
+            )}
+          </div>
         </div>
 
-        {/* Sign-in CTA */}
-        {!user && (
-          <div className="text-center py-6 border-t border-border/30">
-            <Button onClick={() => navigate("/auth")} variant="ghost" className="gap-2 rounded-full text-primary">
-              <LogIn className="h-4 w-4" /> Sign in to save progress
-            </Button>
-          </div>
-        )}
+        {/* RIGHT — Task detail */}
+        <div className="flex-1 overflow-y-auto p-5">
+          <AnimatePresence mode="wait">
+            {selectedTask ? (
+              <TaskDetailPanel
+                key={selectedTask.name}
+                task={selectedTask}
+                prediction={predictions[selectedTask.name]}
+                timeHorizon={timeHorizon}
+                isCompleted={completedTasks.has(selectedTask.name)}
+                onPractice={setSimTask}
+                onClose={() => setSelectedTask(null)}
+              />
+            ) : (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="h-full flex items-center justify-center text-sm text-muted-foreground"
+              >
+                Select a task to explore
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
       </div>
 
       {/* Chat FAB */}
