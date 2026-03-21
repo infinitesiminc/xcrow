@@ -13,6 +13,7 @@ interface FutureIslandProps {
   island: FutureIslandLayout;
   skillLookup: Map<string, FutureSkill>;
   isFocused?: boolean;
+  highlightedSkillId?: string | null;
   onIslandClick?: (category: FutureSkillCategory, cx: number, cy: number) => void;
   onSkillClick?: (skill: FutureSkill) => void;
 }
