@@ -1442,6 +1442,20 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                       </Button>
                     )}
 
+                    {/* View Territory — auto-pan to upgraded castle */}
+                    {onViewTerritory && currentSkillIds.length > 0 && (
+                      <Button
+                        variant="outline"
+                        onClick={() => {
+                          onClose();
+                          onViewTerritory(currentSkillIds[0], xpEarned);
+                        }}
+                        className="gap-2 rounded-xl w-full text-xs"
+                      >
+                        <Map className="h-3 w-3" /> 🏰 View Territory
+                      </Button>
+                    )}
+
                     {/* Always: Back to Crowy */}
                     <Button
                       variant="ghost"
