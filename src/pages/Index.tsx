@@ -384,13 +384,13 @@ const Index = () => {
                 >
                   <h1 className="text-3xl md:text-4xl font-display font-bold text-foreground leading-[1.1]">
                     {isSignedIn
-                      ? `${greeting}${userName ? `, ${userName}` : ""}`
-                      : "The workforce is shifting"}
+                      ? `${greeting}${userName ? `, ${userName}` : ""} ⚔️`
+                      : "Level up your career"}
                   </h1>
                   <p className="text-sm text-muted-foreground mt-2 max-w-sm mx-auto">
                     {isSignedIn
-                      ? "Crow is ready to scout. Explore roles and expand your territory."
-                      : "Ask about any career — watch your territory light up as you explore."}
+                      ? "Your AI career coach is ready. Explore kingdoms and claim new territory."
+                      : "Explore any career kingdom — watch your territory light up as you conquer quests."}
                   </p>
                 </motion.div>
               )}
