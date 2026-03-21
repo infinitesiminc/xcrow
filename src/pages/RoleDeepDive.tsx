@@ -16,6 +16,7 @@ import { supabase } from "@/integrations/supabase/client";
 import SimulatorModal from "@/components/SimulatorModal";
 import { TaskCard } from "@/components/role/TaskCard";
 import { TaskDetailPanel } from "@/components/role/TaskDetailPanel";
+import XcrowLoader from "@/components/XcrowLoader";
 import { RoleChat } from "@/components/role/RoleChat";
 import type { FuturePrediction } from "@/components/analysis/FutureTaskPreview";
 
@@ -263,16 +264,10 @@ const RoleDeepDive = () => {
       <Dialog open onOpenChange={(open) => !open && handleClose()}>
         <DialogContent className="max-w-5xl w-[95vw] h-[85vh] p-0 gap-0 overflow-hidden rounded-2xl border-border/60 bg-background">
           <div className="h-full flex flex-col items-center justify-center px-4">
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center">
-              <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-accent">
-                <Zap className="h-6 w-6 text-primary animate-pulse" />
-              </div>
-              <h1 className="text-xl font-sans font-bold text-foreground">⚔️ Scouting {jobTitle || "kingdom"}…</h1>
-              <p className="mt-2 text-sm text-muted-foreground">Preparing your mission briefing</p>
-              <div className="mt-8 space-y-3 w-full max-w-sm">
-                {[1, 2, 3].map(i => <Skeleton key={i} className="h-16 w-full rounded-xl" />)}
-              </div>
-            </motion.div>
+            <XcrowLoader
+              title={`⚔️ Scouting ${jobTitle || "kingdom"}…`}
+              subtitle="Preparing your mission briefing"
+            />
           </div>
         </DialogContent>
       </Dialog>
