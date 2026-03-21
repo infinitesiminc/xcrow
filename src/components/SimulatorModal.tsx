@@ -964,7 +964,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                 <div className="max-w-2xl mx-auto space-y-4">
                   {messages.map((msg, i) => {
                     const isUser = msg.role === "user";
-                    const displayContent = isUser ? msg.content : cleanMessageForDisplay(msg.content);
+                    const displayContent = isUser ? safeStr(msg.content) : cleanMessageForDisplay(safeStr(msg.content));
 
                     // Detect scenario transition: assistant message containing a new scenario marker or following a topic-change user message
                     const prevMsg = i > 0 ? messages[i - 1] : null;
