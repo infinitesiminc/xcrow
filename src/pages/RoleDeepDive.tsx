@@ -410,7 +410,7 @@ const RoleDeepDive = () => {
           </div>
         </div>
 
-        {/* RIGHT — Task detail */}
+        {/* RIGHT — Quest details */}
         <div className="flex-1 overflow-y-auto p-5">
           <AnimatePresence mode="wait">
             {selectedTask ? (
