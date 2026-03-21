@@ -141,7 +141,7 @@ export function buildFutureMapLayout(skills: FutureSkill[]): FutureIslandLayout[
       cy: center.cy,
       radius: 120,
       nodes: positionNodes(center.cx, center.cy, catSkills, MAX_PER_ISLAND),
-      expandedNodes: positionNodes(center.cx, center.cy, catSkills, catSkills.length, 180),
+      expandedNodes: positionNodes(center.cx, center.cy, catSkills, catSkills.length, Math.max(200, catSkills.length * 7)),
       theme: FUTURE_CATEGORY_META[cat],
       skillCount: catSkills.length,
     };
