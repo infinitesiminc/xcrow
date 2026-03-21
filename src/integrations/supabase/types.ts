@@ -104,6 +104,45 @@ export type Database = {
         }
         Relationships: []
       }
+      canonical_future_skills: {
+        Row: {
+          aliases: string[] | null
+          avg_relevance: number | null
+          category: string
+          created_at: string
+          demand_count: number
+          description: string | null
+          icon_emoji: string | null
+          id: string
+          job_count: number
+          name: string
+        }
+        Insert: {
+          aliases?: string[] | null
+          avg_relevance?: number | null
+          category: string
+          created_at?: string
+          demand_count?: number
+          description?: string | null
+          icon_emoji?: string | null
+          id: string
+          job_count?: number
+          name: string
+        }
+        Update: {
+          aliases?: string[] | null
+          avg_relevance?: number | null
+          category?: string
+          created_at?: string
+          demand_count?: number
+          description?: string | null
+          icon_emoji?: string | null
+          id?: string
+          job_count?: number
+          name?: string
+        }
+        Relationships: []
+      }
       companies: {
         Row: {
           brand_color: string | null
@@ -569,6 +608,7 @@ export type Database = {
       }
       job_future_skills: {
         Row: {
+          canonical_skill_id: string | null
           category: string
           cluster_name: string
           created_at: string
@@ -580,6 +620,7 @@ export type Database = {
           skill_name: string
         }
         Insert: {
+          canonical_skill_id?: string | null
           category: string
           cluster_name: string
           created_at?: string
@@ -591,6 +632,7 @@ export type Database = {
           skill_name: string
         }
         Update: {
+          canonical_skill_id?: string | null
           category?: string
           cluster_name?: string
           created_at?: string
@@ -602,6 +644,13 @@ export type Database = {
           skill_name?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "job_future_skills_canonical_skill_id_fkey"
+            columns: ["canonical_skill_id"]
+            isOneToOne: false
+            referencedRelation: "canonical_future_skills"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "job_future_skills_job_id_fkey"
             columns: ["job_id"]
