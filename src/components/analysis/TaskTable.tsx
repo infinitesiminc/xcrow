@@ -119,18 +119,29 @@ export function TaskTable({ tasks, skills, completedTasks, onPractice, jobTitle,
                   </Badge>
                 )}
 
-                {/* Upskill button */}
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-6 text-[11px] gap-1 text-muted-foreground hover:text-foreground hover:bg-accent/30 w-fit mt-auto px-2"
-                  onClick={() => onPractice(task.name)}
-                >
-                  {isCompleted
-                    ? <><CheckCircle2 className="h-3 w-3 text-success" /> Learned</>
-                    : <><Play className="h-3 w-3" /> Learn This</>
-                  }
-                </Button>
+                {/* Action buttons */}
+                <div className="flex items-center gap-2 mt-auto flex-wrap">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-6 text-[11px] gap-1 text-muted-foreground hover:text-foreground hover:bg-accent/30 w-fit px-2"
+                    onClick={() => onPractice(task.name)}
+                  >
+                    {isCompleted
+                      ? <><CheckCircle2 className="h-3 w-3 text-success" /> Learned</>
+                      : <><Play className="h-3 w-3" /> Learn This</>
+                    }
+                  </Button>
+                  <FutureTaskPreview
+                    taskName={task.name}
+                    jobTitle={jobTitle || ""}
+                    company={company}
+                    aiExposureScore={aiScore}
+                    jobImpactScore={impactScore}
+                    description={task.description}
+                    onStartSim={(scenarioTitle, taskName) => onPractice(taskName)}
+                  />
+                </div>
               </motion.div>
             );
           })}
