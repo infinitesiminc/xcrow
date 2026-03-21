@@ -10,6 +10,7 @@ import AdaptiveQueue from "@/components/AdaptiveQueue";
 import { useFutureSkills } from "@/hooks/use-future-skills";
 import FutureTerritoryMap from "@/components/territory/FutureTerritoryMap";
 import FutureSkillsTable from "@/components/territory/FutureSkillsTable";
+import MapIntroGuide from "@/components/territory/MapIntroGuide";
 import { getLevel, levelProgress } from "@/lib/skill-map";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import HomepageChat, { type ViewContext } from "@/components/HomepageChat";
@@ -404,6 +405,9 @@ const Index = () => {
       <div className="absolute inset-0 z-0">
         <FutureTerritoryMap skills={futureSkills} />
       </div>
+
+      {/* Guided intro for first-time visitors */}
+      {!isSignedIn && <MapIntroGuide />}
 
       {/* ── HUD overlay (top) ── */}
       {displaySkills.length > 0 && (
