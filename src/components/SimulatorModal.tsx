@@ -1438,7 +1438,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                         onClick={() => startCompile()}
                         className="gap-2 rounded-xl w-full text-xs"
                       >
-                        Same Skill, Different Industry
+                        Same Skill, New Battleground
                       </Button>
                     )}
 
