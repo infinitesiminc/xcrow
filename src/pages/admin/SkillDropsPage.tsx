@@ -473,11 +473,98 @@ export default function SkillDropsPage() {
 
         {/* Auto-Discover Tab */}
         <TabsContent value="discover" className="space-y-4">
+          {/* AI Discovery Feed */}
+          <Card className="border-primary/20">
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <Brain className="h-4 w-4 text-primary" />
+                    AI Skill Discovery Feed
+                  </CardTitle>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    AI-analyzed emerging skills from job market data. Runs daily at 6 AM UTC.
+                  </p>
+                </div>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={runDiscovery}
+                  disabled={discovering}
+                  className="shrink-0"
+                >
+                  {discovering ? (
+                    <Loader2 className="h-3 w-3 animate-spin mr-1" />
+                  ) : (
+                    <RefreshCw className="h-3 w-3 mr-1" />
+                  )}
+                  {discovering ? "Analyzing..." : "Run Discovery"}
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              {(() => {
+                const pending = suggestions.filter(s => s.status === "pending");
+                const reviewed = suggestions.filter(s => s.status !== "pending");
+
+                if (suggestions.length === 0 && !discovering) {
+                  return (
+                    <div className="text-center py-8 text-muted-foreground">
+                      <Brain className="h-8 w-8 mx-auto mb-3 opacity-30" />
+                      <p className="text-sm">No suggestions yet. Click "Run Discovery" to analyze trending skills.</p>
+                    </div>
+                  );
+                }
+
+                return (
+                  <div className="space-y-4">
+                    {/* Pending Suggestions */}
+                    {pending.length > 0 && (
+                      <div className="space-y-2">
+                        <h3 className="text-xs font-semibold uppercase tracking-wider text-primary flex items-center gap-1.5">
+                          <Sparkles className="h-3 w-3" /> Pending Review ({pending.length})
+                        </h3>
+                        {pending.map(s => (
+                          <SuggestionCard
+                            key={s.id}
+                            suggestion={s}
+                            onReview={reviewSuggestion}
+                            onCreateEvent={(name, demand, exposure) => {
+                              setForm(f => ({
+                                ...f,
+                                title: `${name} Sprint`,
+                                description: `Master ${name} — trending in ${demand}+ roles with ${exposure}% AI exposure.`,
+                              }));
+                              setShowCreate(true);
+                            }}
+                          />
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Reviewed */}
+                    {reviewed.length > 0 && (
+                      <div className="space-y-2">
+                        <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                          <CheckCircle2 className="h-3 w-3" /> Reviewed ({reviewed.length})
+                        </h3>
+                        {reviewed.slice(0, 5).map(s => (
+                          <SuggestionCard key={s.id} suggestion={s} onReview={reviewSuggestion} onCreateEvent={() => {}} />
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
+            </CardContent>
+          </Card>
+
+          {/* Existing trending market data */}
           <Card>
             <CardHeader className="pb-3">
               <CardTitle className="text-base flex items-center gap-2">
                 <TrendingUp className="h-4 w-4 text-primary" />
-                Trending Skills — Auto-Discovery
+                Market Skill Demand — Raw Data
               </CardTitle>
               <p className="text-xs text-muted-foreground">
                 Top skills by demand across analyzed job clusters. Click to create an event from any skill.
@@ -510,7 +597,6 @@ export default function SkillDropsPage() {
                           </span>
                         </div>
                       </div>
-                      {/* AI Exposure bar */}
                       <div className="w-16 h-1.5 rounded-full bg-muted overflow-hidden shrink-0">
                         <div
                           className="h-full rounded-full bg-gradient-to-r from-primary to-primary/50"
