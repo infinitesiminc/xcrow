@@ -255,41 +255,53 @@ const RoleDeepDive = () => {
     return `${futureStats.collapseCount} tasks face collapse risk. Avg future exposure: ${futureStats.avgExposure}%. Key tech: ${allTechs.slice(0, 5).join(", ")}`;
   }, [futureStats, allTechs]);
 
+  const handleClose = useCallback(() => navigate("/"), [navigate]);
+
   // ── Loading / Error states ─────────────────────────────────────
   if (loading) {
     return (
-      <div className="h-[100dvh] bg-background flex flex-col items-center justify-center px-4">
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center">
-          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-accent">
-            <Zap className="h-6 w-6 text-primary animate-pulse" />
+      <Dialog open onOpenChange={(open) => !open && handleClose()}>
+        <DialogContent className="max-w-5xl w-[95vw] h-[85vh] p-0 gap-0 overflow-hidden rounded-2xl border-border/60 bg-background">
+          <div className="h-full flex flex-col items-center justify-center px-4">
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center">
+              <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-accent">
+                <Zap className="h-6 w-6 text-primary animate-pulse" />
+              </div>
+              <h1 className="text-xl font-sans font-bold text-foreground">⚔️ Scouting {jobTitle || "kingdom"}…</h1>
+              <p className="mt-2 text-sm text-muted-foreground">Preparing your mission briefing</p>
+              <div className="mt-8 space-y-3 w-full max-w-sm">
+                {[1, 2, 3].map(i => <Skeleton key={i} className="h-16 w-full rounded-xl" />)}
+              </div>
+            </motion.div>
           </div>
-          <h1 className="text-xl font-sans font-bold text-foreground">⚔️ Scouting {jobTitle || "kingdom"}…</h1>
-          <p className="mt-2 text-sm text-muted-foreground">Preparing your mission briefing</p>
-          <div className="mt-8 space-y-3 w-full max-w-sm">
-            {[1, 2, 3].map(i => <Skeleton key={i} className="h-16 w-full rounded-xl" />)}
-          </div>
-        </motion.div>
-      </div>
+        </DialogContent>
+      </Dialog>
     );
   }
 
   if (error || !result) {
     return (
-      <div className="h-[100dvh] bg-background flex items-center justify-center px-4">
-        <div className="text-center max-w-sm">
-          <AlertTriangle className="mx-auto h-8 w-8 text-warning mb-3" />
-          <h1 className="text-lg font-sans font-bold text-foreground mb-1">Mission Failed</h1>
-          <p className="text-sm text-muted-foreground mb-4">{error || "Could not scout this kingdom."}</p>
-          <Button onClick={() => navigate("/")} variant="outline" size="sm">
-            <ChevronLeft className="w-3 h-3 mr-1" /> Return to HQ
-          </Button>
-        </div>
-      </div>
+      <Dialog open onOpenChange={(open) => !open && handleClose()}>
+        <DialogContent className="max-w-5xl w-[95vw] h-[85vh] p-0 gap-0 overflow-hidden rounded-2xl border-border/60 bg-background">
+          <div className="h-full flex items-center justify-center px-4">
+            <div className="text-center max-w-sm">
+              <AlertTriangle className="mx-auto h-8 w-8 text-warning mb-3" />
+              <h1 className="text-lg font-sans font-bold text-foreground mb-1">Mission Failed</h1>
+              <p className="text-sm text-muted-foreground mb-4">{error || "Could not scout this kingdom."}</p>
+              <Button onClick={handleClose} variant="outline" size="sm">
+                <ChevronLeft className="w-3 h-3 mr-1" /> Return to HQ
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     );
   }
 
   return (
-    <div className="h-[100dvh] bg-background flex flex-col overflow-hidden">
+    <Dialog open onOpenChange={(open) => !open && handleClose()}>
+      <DialogContent className="max-w-5xl w-[95vw] h-[85vh] p-0 gap-0 overflow-hidden rounded-2xl border-border/60 bg-background">
+    <div className="h-full flex flex-col overflow-hidden">
       {/* Header — Mission Briefing bar */}
       <div className="shrink-0 z-20 bg-background/95 backdrop-blur-md border-b border-border px-4 py-2.5 flex items-center justify-between gap-3">
         <button onClick={() => navigate("/")} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors shrink-0">
