@@ -1029,9 +1029,9 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                   {phase === "chat" && !sending && (() => {
                     const lastAi = [...messages].reverse().find(m => m.role === "assistant");
                     if (!lastAi) return null;
-                    const lower = lastAi.content.toLowerCase();
+                    const lower = safeStr(lastAi.content).toLowerCase();
                     const askContinue = lower.includes("ready for the next") || lower.includes("(yes/no)") || lower.includes("click finish");
-                    const allMetSignal = lastAi.content.includes("[ALL_OBJECTIVES_MET]");
+                    const allMetSignal = safeStr(lastAi.content).includes("[ALL_OBJECTIVES_MET]");
                     if (!askContinue && !allMetSignal) return null;
                     
                     const isLastRound = roundCount >= maxRounds;
