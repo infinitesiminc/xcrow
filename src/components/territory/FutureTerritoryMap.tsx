@@ -1,6 +1,6 @@
 /**
  * FutureTerritoryMap — RPG-style SVG map for the canonical future skills catalogue.
- * 8 island regions representing the future skill taxonomy.
+ * 8 island regions representing the future skill taxonomy with proportional sizing.
  */
 
 import { useMemo, useState, useRef, useCallback } from "react";
@@ -14,6 +14,7 @@ import {
   FUTURE_MAP_WIDTH,
   FUTURE_MAP_HEIGHT,
 } from "@/lib/future-territory-layout";
+import FutureIsland from "./FutureIsland";
 
 interface FutureTerritoryMapProps {
   skills: FutureSkill[];
@@ -31,7 +32,7 @@ export default function FutureTerritoryMap({ skills }: FutureTerritoryMapProps) 
   const handleWheel = useCallback((e: React.WheelEvent) => {
     e.preventDefault();
     const delta = e.deltaY > 0 ? 0.9 : 1.1;
-    setTransform(t => ({ ...t, scale: Math.max(0.4, Math.min(2.5, t.scale * delta)) }));
+    setTransform(t => ({ ...t, scale: Math.max(0.3, Math.min(2.5, t.scale * delta)) }));
   }, []);
 
   const handlePointerDown = useCallback((e: React.PointerEvent) => {
@@ -62,9 +63,7 @@ export default function FutureTerritoryMap({ skills }: FutureTerritoryMapProps) 
     return m;
   }, [layout]);
 
-  // Skills lookup
   const skillLookup = useMemo(() => new Map(skills.map(s => [s.id, s])), [skills]);
-
   const totalNodes = layout.reduce((sum, island) => sum + island.nodes.length, 0);
 
   return (
@@ -75,11 +74,11 @@ export default function FutureTerritoryMap({ skills }: FutureTerritoryMapProps) 
           <div className="flex items-center gap-2">
             <Sparkles className="h-4 w-4 text-primary" />
             <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-              Future Skills
+              Future Skills Territory
             </span>
           </div>
           <span className="text-xs font-mono text-muted-foreground">
-            {totalNodes} skills across 8 domains
+            {totalNodes} skills · 8 domains
           </span>
         </div>
 
@@ -126,8 +125,8 @@ export default function FutureTerritoryMap({ skills }: FutureTerritoryMapProps) 
                   d={`M ${from.x} ${from.y} L ${to.x} ${to.y}`}
                   fill="none"
                   stroke="hsl(var(--border))"
-                  strokeWidth={0.8}
-                  opacity={0.25}
+                  strokeWidth={0.6}
+                  opacity={0.2}
                   initial={{ pathLength: 0 }}
                   animate={{ pathLength: 1 }}
                   transition={{ duration: 1.2, delay: 0.3 }}
@@ -137,118 +136,11 @@ export default function FutureTerritoryMap({ skills }: FutureTerritoryMapProps) 
 
             {/* Islands */}
             {layout.map(island => (
-              <g key={island.category}>
-                {/* Background glow */}
-                <motion.circle
-                  cx={island.cx}
-                  cy={island.cy}
-                  r={100}
-                  fill={`hsl(${island.theme.baseHue} 30% 12% / 0.4)`}
-                  initial={{ scale: 0, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-                  style={{ transformOrigin: `${island.cx}px ${island.cy}px` }}
-                />
-                <circle cx={island.cx} cy={island.cy} r={100} fill="url(#future-island-glow)" />
-
-                {/* Label */}
-                <text
-                  x={island.cx}
-                  y={island.cy - 90}
-                  textAnchor="middle"
-                  style={{
-                    fontSize: "11px",
-                    fontWeight: 700,
-                    fill: `hsl(${island.theme.baseHue} 50% 60%)`,
-                    textTransform: "uppercase",
-                    letterSpacing: "0.08em",
-                  }}
-                >
-                  {island.theme.emoji} {island.theme.terrain}
-                </text>
-
-                {/* Skill nodes */}
-                {island.nodes.map(node => {
-                  const skill = skillLookup.get(node.skillId);
-                  if (!skill) return null;
-
-                  // Size by demand
-                  const r = skill.demandCount >= 10 ? 14 : skill.demandCount >= 5 ? 11 : 8;
-                  const intensity = Math.min(1, skill.demandCount / 15);
-
-                  return (
-                    <Tooltip key={node.skillId}>
-                      <TooltipTrigger asChild>
-                        <motion.g
-                          initial={{ scale: 0, opacity: 0 }}
-                          animate={{ scale: 1, opacity: 1 }}
-                          transition={{ duration: 0.5, delay: 0.2 }}
-                          style={{ transformOrigin: `${node.x}px ${node.y}px` }}
-                        >
-                          {/* Glow ring for high-demand */}
-                          {skill.demandCount >= 8 && (
-                            <circle
-                              cx={node.x}
-                              cy={node.y}
-                              r={r + 4}
-                              fill="none"
-                              stroke={`hsl(${island.theme.baseHue} 60% 55%)`}
-                              strokeWidth={1}
-                              opacity={0.4}
-                              filter="url(#future-glow)"
-                            />
-                          )}
-                          {/* Main circle */}
-                          <circle
-                            cx={node.x}
-                            cy={node.y}
-                            r={r}
-                            fill={`hsl(${island.theme.baseHue} ${40 + intensity * 20}% ${25 + intensity * 15}%)`}
-                            stroke={`hsl(${island.theme.baseHue} 50% ${45 + intensity * 15}%)`}
-                            strokeWidth={1.5}
-                            className="cursor-pointer hover:brightness-125 transition-all"
-                          />
-                          {/* Emoji */}
-                          {skill.iconEmoji && (
-                            <text
-                              x={node.x}
-                              y={node.y + 1}
-                              textAnchor="middle"
-                              dominantBaseline="central"
-                              style={{ fontSize: `${r * 0.9}px` }}
-                            >
-                              {skill.iconEmoji}
-                            </text>
-                          )}
-                          {/* Name label */}
-                          <text
-                            x={node.x}
-                            y={node.y + r + 10}
-                            textAnchor="middle"
-                            style={{
-                              fontSize: "8px",
-                              fontWeight: 600,
-                              fill: `hsl(${island.theme.baseHue} 30% 65%)`,
-                            }}
-                          >
-                            {skill.name.length > 18 ? skill.name.slice(0, 16) + "…" : skill.name}
-                          </text>
-                        </motion.g>
-                      </TooltipTrigger>
-                      <TooltipContent side="top" className="max-w-[220px]">
-                        <p className="font-semibold text-xs">{skill.name}</p>
-                        {skill.description && (
-                          <p className="text-[10px] text-muted-foreground mt-0.5">{skill.description}</p>
-                        )}
-                        <div className="flex items-center gap-2 mt-1 text-[10px] text-muted-foreground">
-                          <span>📈 {skill.demandCount} demand</span>
-                          <span>💼 {skill.jobCount} roles</span>
-                        </div>
-                      </TooltipContent>
-                    </Tooltip>
-                  );
-                })}
-              </g>
+              <FutureIsland
+                key={island.category}
+                island={island}
+                skillLookup={skillLookup}
+              />
             ))}
           </svg>
 
@@ -259,7 +151,7 @@ export default function FutureTerritoryMap({ skills }: FutureTerritoryMapProps) 
               className="w-7 h-7 rounded-md bg-card/80 border border-border/50 text-muted-foreground hover:text-foreground flex items-center justify-center text-sm font-bold backdrop-blur-sm transition-colors active:scale-[0.95]"
             >+</button>
             <button
-              onClick={() => setTransform(t => ({ ...t, scale: Math.max(0.4, t.scale * 0.8) }))}
+              onClick={() => setTransform(t => ({ ...t, scale: Math.max(0.3, t.scale * 0.8) }))}
               className="w-7 h-7 rounded-md bg-card/80 border border-border/50 text-muted-foreground hover:text-foreground flex items-center justify-center text-sm font-bold backdrop-blur-sm transition-colors active:scale-[0.95]"
             >−</button>
             <button
