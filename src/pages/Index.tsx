@@ -263,6 +263,13 @@ const Index = () => {
     setFullScreenRole(role);
   }, []);
 
+  const handleViewTerritory = useCallback((skillId: string, xpGain: number) => {
+    setTerritoryFocusSkillId(skillId);
+    setTerritoryXpGain(xpGain);
+    setLastPracticedSkillId(skillId);
+    setTerritoryOpen(true);
+  }, []);
+
   const greeting = getGreeting();
   const userName = profile?.displayName?.split(" ")[0];
   const isSignedIn = !!user;
