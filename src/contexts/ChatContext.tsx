@@ -298,7 +298,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     setItems([]);
     setHasInteracted(false);
     if (user) {
-      await supabase.from("chat_messages").delete().eq("user_id", user.id);
+      await (supabase as any).from("chat_messages").delete().eq("user_id", user.id);
     }
   }, [user]);
 
