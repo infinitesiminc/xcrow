@@ -362,7 +362,7 @@ const RoleDeepDive = () => {
               }`}
             >
               <Sparkles className="h-3 w-3" />
-              All Future Skills
+              🗺️ Future Skills Map
               <span className="ml-auto text-[10px] tabular-nums opacity-70">
                 {(() => {
                   const all = Object.values(predictions).flatMap(p => p.future_skills || []);
