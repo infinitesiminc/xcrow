@@ -123,7 +123,7 @@ export default function SkillDropsPage() {
     const [eventsRes, partRes, trendRes, suggestionsRes] = await Promise.all([
       supabase.from("skill_drop_events").select("*").order("created_at", { ascending: false }),
       supabase.from("skill_drop_participations").select("*"),
-      supabase.rpc("get_market_skill_demand", { top_n: 20 }),
+      supabase.rpc("get_future_skill_demand" as any, { top_n: 20 }),
       supabase.from("skill_discovery_suggestions" as any).select("*").order("discovered_at", { ascending: false }).limit(50),
     ]);
     setEvents((eventsRes.data as any) || []);
