@@ -13,6 +13,7 @@ interface FutureIslandProps {
   skillLookup: Map<string, FutureSkill>;
   isFocused?: boolean;
   onIslandClick?: (category: FutureSkillCategory, cx: number, cy: number) => void;
+  onSkillClick?: (skill: FutureSkill) => void;
 }
 
 export default function FutureIsland({ island, skillLookup, isFocused, onIslandClick }: FutureIslandProps) {
