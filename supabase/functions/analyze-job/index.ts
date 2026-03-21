@@ -556,12 +556,16 @@ serve(async (req) => {
           const companyFinal = (result.company as string) || company || null;
           
           // Upsert into analysis_history
-          const { data: existing } = await sb.from("analysis_history")
+          let histQuery = sb.from("analysis_history")
             .select("id")
             .eq("user_id", userId)
-            .eq("job_title", jobTitleFinal)
-            .eq("company", companyFinal || "")
-            .maybeSingle();
+            .eq("job_title", jobTitleFinal);
+          if (companyFinal) {
+            histQuery = histQuery.eq("company", companyFinal);
+          } else {
+            histQuery = histQuery.is("company", null);
+          }
+          const { data: existing } = await histQuery.maybeSingle();
           
           if (existing) {
             await sb.from("analysis_history").update({
