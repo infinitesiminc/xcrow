@@ -417,6 +417,29 @@ function ProfileSection({
           </div>
         </div>
 
+        {/* Username for public profile */}
+        <div className="space-y-2">
+          <Label htmlFor="username" className="flex items-center gap-1.5">
+            <User className="h-3.5 w-3.5 text-muted-foreground" />
+            Public profile username
+          </Label>
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-muted-foreground whitespace-nowrap">xcrow.ai/u/</span>
+            <Input
+              id="username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_-]/g, ""))}
+              placeholder="your-username"
+              className="flex-1"
+            />
+          </div>
+          {username && (
+            <p className="text-[10px] text-muted-foreground">
+              Your public profile will be at <span className="text-primary font-medium">xcrow.ai/u/{username}</span>
+            </p>
+          )}
+        </div>
+
         <Separator />
 
         {/* Career stage toggle */}
