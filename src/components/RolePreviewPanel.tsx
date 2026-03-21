@@ -108,6 +108,9 @@ export default function RolePreviewPanel({ role, onClose, edgeContext }: RolePre
     return matches;
   }, [edgeContext, tasks]);
 
+  // Helper: check if string is a valid UUID
+  const isUUID = (s: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(s);
+
   useEffect(() => {
     setView("details");
     setSimTask(null);
@@ -115,20 +118,37 @@ export default function RolePreviewPanel({ role, onClose, edgeContext }: RolePre
     if (!role.jobId) { setLoading(false); return; }
     (async () => {
       setLoading(true);
-      const [taskRes, jobRes] = await Promise.all([
-        supabase.from("job_task_clusters")
-          .select("cluster_name, description, ai_exposure_score, priority, ai_state, ai_trend, impact_level")
-          .eq("job_id", role.jobId).order("sort_order"),
-        supabase.from("jobs").select("role_summary, source_url, description").eq("id", role.jobId).single(),
-      ]);
-      setTasks(taskRes.data || []);
-      setSummary(jobRes.data?.role_summary || null);
-      setSourceUrl(role.sourceUrl || jobRes.data?.source_url || null);
-      setJobDescription(jobRes.data?.description || null);
-      setLoading(false);
 
-      if ((!taskRes.data || taskRes.data.length === 0) && role.jobId) {
-        triggerAnalysis(role.jobId, role.title, role.company || undefined, jobRes.data?.description || undefined);
+      // Resolve real UUID if jobId is a synthetic key (e.g. "saved-Title-Company")
+      let resolvedId: string | null = role.jobId;
+      if (!isUUID(role.jobId)) {
+        try {
+          const { data } = await supabase.from("jobs").select("id")
+            .ilike("title", role.title).limit(1).maybeSingle();
+          resolvedId = data?.id || null;
+        } catch { resolvedId = null; }
+      }
+
+      if (resolvedId) {
+        const [taskRes, jobRes] = await Promise.all([
+          supabase.from("job_task_clusters")
+            .select("cluster_name, description, ai_exposure_score, priority, ai_state, ai_trend, impact_level")
+            .eq("job_id", resolvedId).order("sort_order"),
+          supabase.from("jobs").select("role_summary, source_url, description").eq("id", resolvedId).single(),
+        ]);
+        setTasks(taskRes.data || []);
+        setSummary(jobRes.data?.role_summary || null);
+        setSourceUrl(role.sourceUrl || jobRes.data?.source_url || null);
+        setJobDescription(jobRes.data?.description || null);
+        setLoading(false);
+
+        if ((!taskRes.data || taskRes.data.length === 0)) {
+          triggerAnalysis(resolvedId, role.title, role.company || undefined, jobRes.data?.description || undefined);
+        }
+      } else {
+        // No DB job found — go straight to AI analysis
+        setLoading(false);
+        triggerAnalysis(role.jobId, role.title, role.company || undefined, undefined);
       }
     })();
   }, [role.jobId]);
