@@ -1401,7 +1401,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                         onClick={() => { onClose(); onNextTask(); }}
                         className="gap-2 rounded-xl w-full h-11"
                       >
-                        <ArrowRight className="h-4 w-4" /> Next Challenge
+                        <ArrowRight className="h-4 w-4" /> Next Quest
                       </Button>
                     )}
                     {scoreTier === "high" && !nearbyUnclaimed && !onNextTask && (
