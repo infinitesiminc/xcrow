@@ -470,7 +470,7 @@ const RoleDeepDive = () => {
                             }}
                             className="relative rounded-xl border border-primary/20 bg-gradient-to-br from-primary/[0.06] to-accent/[0.04] p-3.5 text-left hover:border-primary/40 hover:shadow-md hover:shadow-primary/5 transition-all group"
                           >
-                            <div className="text-2xl mb-2">{skill.icon_emoji}</div>
+                            <div className="text-2xl mb-2">{isStandardEmoji(skill.icon_emoji) ? skill.icon_emoji : "⚡"}</div>
                             <div className="text-[11px] font-semibold text-foreground group-hover:text-primary transition-colors leading-tight mb-1">
                               {skill.name}
                             </div>
