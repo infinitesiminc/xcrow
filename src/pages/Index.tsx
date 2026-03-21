@@ -277,7 +277,7 @@ const Index = () => {
   if (isMobile) {
     return (
       <div className="h-[calc(100vh-3.5rem)] flex flex-col">
-        <div className="flex-1 flex flex-col items-center px-4 pt-6 pb-4 overflow-hidden">
+        <div className="flex-1 flex flex-col items-center px-4 pt-6 pb-4 overflow-y-auto">
           <AnimatePresence mode="wait">
             {!hasInteracted && (
               <motion.div
