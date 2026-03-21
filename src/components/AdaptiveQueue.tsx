@@ -107,7 +107,7 @@ export default function AdaptiveQueue({ userId, onLaunchSim }: {
                           className="h-7 text-xs gap-1 border-warning/30 text-warning hover:bg-warning/10"
                           onClick={() => onLaunchSim(item.task_name, item.job_title)}
                         >
-                          Retry <ChevronRight className="h-3 w-3" />
+                          Retry ⚔️ <ChevronRight className="h-3 w-3" />
                         </Button>
                       )}
                     </div>
