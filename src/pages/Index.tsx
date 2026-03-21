@@ -41,9 +41,9 @@ const CATEGORY_ORDER: SkillCategory[] = [
 
 function getGreeting(): string {
   const hour = new Date().getHours();
-  if (hour < 12) return "Good morning";
-  if (hour < 18) return "Good afternoon";
-  return "Good evening";
+  if (hour < 12) return "Morning quest awaits";
+  if (hour < 18) return "Your territory grows";
+  return "Night raid ready";
 }
 
 function rolesToSkillIds(roles: RoleResult[]): Set<string> {
