@@ -449,10 +449,10 @@ const UnmetObjectivesReview = ({
       </div>
       <div className="flex gap-3 pt-2">
         <Button variant="outline" onClick={onFinishAnyway} className="rounded-xl">
-          Finish Anyway
+          Retreat & Score
         </Button>
         <Button onClick={onContinue} className="gap-2 rounded-xl">
-          <ArrowRight className="h-4 w-4" /> Keep Going
+          <ArrowRight className="h-4 w-4" /> Fight On
         </Button>
       </div>
     </motion.div>
