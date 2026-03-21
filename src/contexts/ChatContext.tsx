@@ -94,7 +94,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!user || loaded) return;
     (async () => {
-      const { data } = await supabase
+      const { data } = await (supabase as any)
         .from("chat_messages")
         .select("role, content")
         .eq("user_id", user.id)
