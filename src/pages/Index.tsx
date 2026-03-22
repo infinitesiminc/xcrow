@@ -128,8 +128,8 @@ const Index = () => {
 
       const jobIds = roles.map(r => r.job_id);
 
-      // Load tasks, sims, and bookmarks in parallel
-      const [tasksRes, simsRes, queueRes] = await Promise.all([
+      // Load tasks, sims, job metadata, and queue in parallel
+      const [tasksRes, simsRes, queueRes, jobsRes] = await Promise.all([
         supabase
           .from("job_task_clusters")
           .select("id, cluster_name, job_id, ai_exposure_score, impact_level, ai_state, jobs(title, companies(name), augmented_percent)")
@@ -146,6 +146,10 @@ const Index = () => {
           .eq("status", "pending")
           .order("created_at", { ascending: false })
           .limit(3),
+        supabase
+          .from("jobs")
+          .select("id, title, augmented_percent, companies(name)")
+          .in("id", jobIds),
       ]);
 
       // Build completed task set
@@ -160,9 +164,37 @@ const Index = () => {
         simsByRole.set(key, prev);
       }
 
+      // Seed kingdoms from target roles (so they always appear)
+      const kingdomMap = new globalThis.Map<string, KingdomSummary>();
+      for (const job of (jobsRes.data || []) as any[]) {
+        const simData = simsByRole.get(job.title.toLowerCase()) || { completed: 0, xp: 0 };
+        kingdomMap.set(job.id, {
+          jobId: job.id,
+          title: job.title,
+          company: job.companies?.name || null,
+          questsCompleted: simData.completed,
+          totalQuests: 0,
+          xp: simData.xp,
+          augmented: job.augmented_percent || 0,
+        });
+      }
+      // Also ensure any target role without job data still shows
+      for (const role of roles) {
+        if (!kingdomMap.has(role.job_id)) {
+          kingdomMap.set(role.job_id, {
+            jobId: role.job_id,
+            title: role.title,
+            company: role.company,
+            questsCompleted: 0,
+            totalQuests: 0,
+            xp: 0,
+            augmented: 0,
+          });
+        }
+      }
+
       // Build quest pool from uncompleted tasks
       const allQuests: QuestTask[] = [];
-      const kingdomMap = new globalThis.Map<string, KingdomSummary>();
 
       for (const task of (tasksRes.data || []) as any[]) {
         const job = task.jobs;
@@ -171,22 +203,9 @@ const Index = () => {
         const company = job.companies?.name || null;
         const jobId = task.job_id;
 
-        // Track kingdom
-        if (!kingdomMap.has(jobId)) {
-          const key = jobTitle.toLowerCase();
-          const simData = simsByRole.get(key) || { completed: 0, xp: 0 };
-          kingdomMap.set(jobId, {
-            jobId,
-            title: jobTitle,
-            company,
-            questsCompleted: simData.completed,
-            totalQuests: 0,
-            xp: simData.xp,
-            augmented: job.augmented_percent || 0,
-          });
-        }
-        const kingdom = kingdomMap.get(jobId)!;
-        kingdom.totalQuests += 1;
+        // Update kingdom total quests
+        const kingdom = kingdomMap.get(jobId);
+        if (kingdom) kingdom.totalQuests += 1;
 
         const taskKey = `${task.cluster_name}|${jobTitle}`.toLowerCase();
         if (!completedTasks.has(taskKey)) {
