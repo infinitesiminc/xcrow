@@ -243,7 +243,7 @@ export function TaskDetailPanel({
               transition={{ delay: 0.15 }}
               className="flex items-center gap-1.5 flex-wrap"
             >
-              <Badge className="bg-muted text-muted-foreground border-border/30 text-[9px] gap-1">
+              <Badge className="bg-muted text-muted-foreground border-border/30 text-[10px] gap-1">
                 <Clock className="h-2.5 w-2.5" /> {prediction!.timeline}
               </Badge>
               {prediction!.disrupting_tech.slice(0, 4).map((tech, i) => (
@@ -253,7 +253,7 @@ export function TaskDetailPanel({
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ delay: 0.25 + i * 0.08 }}
                 >
-                  <Badge className="bg-accent text-foreground border-border/30 text-[9px]">
+                  <Badge className="bg-accent text-foreground border-border/30 text-[10px]">
                     ⚡ {tech}
                   </Badge>
                 </motion.div>
