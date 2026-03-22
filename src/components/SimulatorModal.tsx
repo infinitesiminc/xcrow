@@ -665,7 +665,8 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
         // Session can end — the AI message will prompt finish
       }
 
-      if (reply.includes("[SCAFFOLDING]") || reply.includes("[SCAFFOLD_TIER:")) {
+      if (reply.includes("[SCAFFOLDING]") || reply.includes("[SCAFFOLD_TIER:") || reply.includes("[NEEDS_DEPTH]")) {
+        // Don't advance turn — AI is asking user to elaborate
         setTurnCount(turnCount);
       } else {
         const lowerInput = messageText.toLowerCase();
@@ -821,7 +822,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
     const lastMsg = messages[messages.length - 1];
     if (lastMsg.role !== "assistant") return false;
     const lower = safeStr(lastMsg.content).toLowerCase();
-    return lower.includes("how would you approach") || lower.includes("how would you handle") || lower.includes("[scaffolding]") || lower.includes("[scaffold_tier:");
+    return lower.includes("how would you approach") || lower.includes("how would you handle") || lower.includes("[scaffolding]") || lower.includes("[scaffold_tier:") || lower.includes("[needs_depth]");
   })();
 
   // Strip tags from message text for display
@@ -833,6 +834,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
       .replace(/\[OBJECTIVE_MET:[^\]]+\]/g, "")
       .replace(/\[SCAFFOLD_TIER:\d\]/g, "")
       .replace(/\[ALL_OBJECTIVES_MET\]/g, "")
+      .replace(/\[NEEDS_DEPTH\]/g, "")
       .trim();
   };
 
