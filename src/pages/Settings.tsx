@@ -54,6 +54,8 @@ export default function Settings() {
   const [careerStage, setCareerStage] = useState<"student" | "professional">("professional");
   const [saving, setSaving] = useState(false);
   const [avatarId, setAvatarId] = useState<string | null>(null);
+  const [city, setCity] = useState("");
+  const [linkedinUrl, setLinkedinUrl] = useState("");
 
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
