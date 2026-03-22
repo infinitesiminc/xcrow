@@ -332,6 +332,7 @@ function TrackCard({
   unlockRequirement,
   simsCount,
   prominent,
+  onStart,
 }: {
   icon: React.ReactNode;
   label: string;
