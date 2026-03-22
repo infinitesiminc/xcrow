@@ -209,12 +209,12 @@ const BriefingScreen = ({
             📜
           </motion.span>
           <h3
-            className="text-lg sm:text-xl font-bold text-foreground drop-shadow-lg"
-            style={{ fontFamily: "'Cinzel', serif" }}
+            className="text-lg sm:text-xl font-bold drop-shadow-lg"
+            style={{ fontFamily: "'Cinzel', serif", color: "hsl(0 0% 95%)" }}
           >
             {session.scenario.title}
           </h3>
-          <p className="text-[11px] text-foreground/50 mt-1.5 max-w-md leading-relaxed">{session.scenario.description}</p>
+          <p className="text-[11px] mt-1.5 max-w-md leading-relaxed" style={{ color: "hsl(0 0% 75%)" }}>{session.scenario.description}</p>
           {/* Ornamental divider */}
           <div className="flex items-center gap-2 mt-3 opacity-30">
             <div className="h-px w-8" style={{ background: "linear-gradient(90deg, transparent, hsl(var(--filigree)))" }} />
