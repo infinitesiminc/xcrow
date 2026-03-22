@@ -834,6 +834,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
       .replace(/\[OBJECTIVE_MET:[^\]]+\]/g, "")
       .replace(/\[SCAFFOLD_TIER:\d\]/g, "")
       .replace(/\[ALL_OBJECTIVES_MET\]/g, "")
+      .replace(/\[NEEDS_DEPTH\]/g, "")
       .trim();
   };
 
