@@ -1140,13 +1140,6 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                   {messages.map((msg, i) => {
                     const isUser = msg.role === "user";
                     const displayContent = isUser ? safeStr(msg.content) : cleanMessageForDisplay(safeStr(msg.content));
-
-                    // Detect genuine quest transition — only when an objective was PASSED
-                    // and we're past the warm-up phase (at least 3 assistant messages in)
-                    const rawContent = safeStr(msg.content);
-                    const hasObjectivePass = !isUser && /\[OBJ_EVAL:[^:]+:PASS\]/.test(rawContent);
-                    const assistantMsgCount = messages.slice(0, i + 1).filter(m => m.role === "assistant").length;
-                    const isNewScenario = hasObjectivePass && assistantMsgCount > 2;
                     
                     const objectiveMetInMsg = !isUser ? [
                       ...(safeStr(msg.content).match(/\[OBJECTIVE_MET:([^\]]+)\]/g) || []).map(t => {
@@ -1162,32 +1155,6 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                     // Detect scaffolding tier in message
                     const scaffoldTierInMsg = !isUser ? safeStr(msg.content).match(/\[SCAFFOLD_TIER:(\d)\]/) : null;
                     const tierLabels = ["", "💭 Let's break this down...", "💡 Here's a direction...", "📚 Teaching moment"];
-
-                    return (
-                      <>
-                        {/* Scenario transition divider — RPG wave break */}
-                        {isNewScenario && (
-                          <motion.div
-                            initial={{ opacity: 0, scaleX: 0 }}
-                            animate={{ opacity: 1, scaleX: 1 }}
-                            transition={{ duration: 0.4 }}
-                            className="flex items-center gap-3 py-3"
-                          >
-                            <div className="flex-1 h-px" style={{ background: "linear-gradient(90deg, transparent, hsl(var(--filigree) / 0.4), transparent)" }} />
-                            <span
-                              className="text-[10px] font-bold flex items-center gap-1.5 shrink-0 px-3 py-1 rounded-full"
-                              style={{
-                                color: "hsl(var(--filigree-glow))",
-                                background: "hsl(var(--filigree) / 0.08)",
-                                border: "1px solid hsl(var(--filigree) / 0.2)",
-                                fontFamily: "'Cinzel', serif",
-                              }}
-                            >
-                              ⚡ New Quest
-                            </span>
-                            <div className="flex-1 h-px" style={{ background: "linear-gradient(90deg, transparent, hsl(var(--filigree) / 0.4), transparent)" }} />
-                          </motion.div>
-                        )}
                         <motion.div
                           key={i}
                           initial={{ opacity: 0, y: 8 }}
