@@ -4,7 +4,7 @@
  */
 import { useEffect, useState, useMemo } from "react";
 import { motion } from "framer-motion";
-import { Swords, Shield, Flame, Star, ChevronRight, Sparkles } from "lucide-react";
+import { Swords, Shield, Flame, Star, ChevronRight, Sparkles, Target } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
