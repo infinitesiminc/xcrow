@@ -1021,7 +1021,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                   >
                     <Loader2 className="h-8 w-8 text-muted-foreground/40" />
                   </motion.div>
-                  <p className="text-sm text-muted-foreground">Forging your quest…</p>
+                  <p className="text-sm text-muted-foreground" style={{ fontFamily: "'Cinzel', serif" }}>Forging your quest…</p>
                 </motion.div>
               )}
 
