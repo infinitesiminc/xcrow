@@ -19,6 +19,7 @@ import SkillDetailDrawer from "./SkillDetailDrawer";
 interface FutureTerritoryMapProps {
   skills: FutureSkill[];
   focusSkillId?: string | null;
+  level2SkillIds?: Set<string>;
 }
 
 const ISLAND_COLORS: Record<string, string> = {
