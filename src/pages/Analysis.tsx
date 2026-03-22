@@ -290,7 +290,7 @@ const Analysis = () => {
           <ChevronLeft className="h-4 w-4" /> HQ
         </button>
         <div className="text-center">
-          <span className="text-[8px] uppercase tracking-wider text-primary font-semibold block">⚔️ Mission</span>
+          <span className="text-[8px] uppercase tracking-wider text-primary font-semibold block">🗺️ Mission</span>
           <span className="text-sm font-semibold text-foreground truncate max-w-[200px] block">{result.jobTitle}</span>
         </div>
         <button
