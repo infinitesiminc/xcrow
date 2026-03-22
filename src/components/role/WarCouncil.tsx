@@ -153,13 +153,13 @@ export function WarCouncil({
         {/* Battle header */}
         <div>
           <h2
-            className="text-base font-bold text-foreground mb-1"
-            style={{ fontFamily: "'Cinzel', serif" }}
+            className="text-base font-bold mb-1"
+            style={{ fontFamily: "'Cinzel', serif", color: "hsl(var(--card-foreground))" }}
           >
             {task.name}
           </h2>
           {task.description && (
-            <p className="text-xs text-muted-foreground leading-relaxed">{task.description}</p>
+            <p className="text-xs leading-relaxed" style={{ color: "hsl(var(--muted-foreground))" }}>{task.description}</p>
           )}
         </div>
 

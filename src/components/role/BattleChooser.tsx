@@ -83,14 +83,14 @@ export function BattleChooser({ choices, conqueredNames, remainingCount, onChoos
               )}
 
               <h3
-                className="text-sm font-bold text-foreground mb-2 pr-6 group-hover:text-primary transition-colors"
-                style={{ fontFamily: "'Cinzel', serif" }}
+                className="text-sm font-bold mb-2 pr-6 group-hover:text-primary transition-colors"
+                style={{ fontFamily: "'Cinzel', serif", color: "hsl(var(--card-foreground))" }}
               >
                 {task.name}
               </h3>
 
               {task.description && (
-                <p className="text-[11px] text-muted-foreground leading-relaxed mb-3 line-clamp-2">
+                <p className="text-[11px] leading-relaxed mb-3 line-clamp-2" style={{ color: "hsl(var(--muted-foreground))" }}>
                   {task.description}
                 </p>
               )}
