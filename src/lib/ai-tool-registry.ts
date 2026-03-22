@@ -14,9 +14,9 @@ export interface AIToolInfo {
 export const AI_TOOL_REGISTRY: AIToolInfo[] = [
   // LLMs
   { name: "ChatGPT", pattern: /\bChatGPT\b/gi, description: "OpenAI's conversational AI assistant (GPT-5.4). Generates text, answers questions, writes code, and helps brainstorm ideas.", category: "llm", url: "https://chat.openai.com" },
-  { name: "GPT-5.4", pattern: /\bGPT-5\.4\b/gi, description: "OpenAI's latest flagship model. Best-in-class reasoning, multimodal capabilities, and long context.", category: "llm" },
-  { name: "GPT-5", pattern: /\bGPT-5\b/gi, description: "OpenAI's advanced reasoning model family. Excels at complex analysis, long documents, and nuanced tasks.", category: "llm" },
-  { name: "GPT-4o", pattern: /\bGPT-4o\b/gi, description: "OpenAI's previous-gen multimodal model. Superseded by GPT-5.4 but still widely referenced.", category: "llm" },
+  { name: "GPT-5.4", pattern: /\bGPT[-:\s]*5\.4\b/gi, description: "OpenAI's latest flagship model. Best-in-class reasoning, multimodal capabilities, and long context.", category: "llm" },
+  { name: "GPT-5", pattern: /\bGPT[-:\s]*5\b/gi, description: "OpenAI's advanced reasoning model family. Excels at complex analysis, long documents, and nuanced tasks.", category: "llm" },
+  { name: "GPT-4o", pattern: /\bGPT[-:\s]*4o\b/gi, description: "OpenAI's previous-gen multimodal model. Superseded by GPT-5.4 but still widely referenced.", category: "llm" },
   { name: "Claude 4.5", pattern: /\bClaude\s*4\.5\b/gi, description: "Anthropic's latest AI model. Known for careful reasoning, long context windows, and nuanced writing.", category: "llm", url: "https://claude.ai" },
   { name: "Claude 4", pattern: /\bClaude\s*4\b/gi, description: "Anthropic's previous flagship AI model. Excellent analysis, writing, and coding.", category: "llm", url: "https://claude.ai" },
   { name: "Claude", pattern: /\bClaude\b/gi, description: "Anthropic's AI assistant family. Excels at analysis, writing, coding, and careful reasoning with large documents.", category: "llm", url: "https://claude.ai" },
