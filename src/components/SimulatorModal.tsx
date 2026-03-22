@@ -543,6 +543,11 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
       if (result === "PASS" && !newStatus[objId]) {
         newStatus[objId] = true;
         changed = true;
+        // Reset fail count on pass
+        setObjectiveFailCounts(prev => ({ ...prev, [objId]: 0 }));
+      } else if (result === "FAIL") {
+        // Increment consecutive fail count for this objective
+        setObjectiveFailCounts(prev => ({ ...prev, [objId]: (prev[objId] || 0) + 1 }));
       }
     }
     // Also support legacy format for backwards compatibility
