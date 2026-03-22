@@ -1155,7 +1155,9 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                     // Detect scaffolding tier in message
                     const scaffoldTierInMsg = !isUser ? safeStr(msg.content).match(/\[SCAFFOLD_TIER:(\d)\]/) : null;
                     const tierLabels = ["", "💭 Let's break this down...", "💡 Here's a direction...", "📚 Teaching moment"];
-                        <motion.div
+
+                    return (
+                      <motion.div
                           key={i}
                           initial={{ opacity: 0, y: 8 }}
                           animate={{ opacity: 1, y: 0 }}
@@ -1190,7 +1192,6 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                               />
                               {(() => {
                                 const isLatestAi = !isUser && i === messages.length - 1 && msg.role === "assistant";
-                                // Also check if second-to-last and last is user (user just sent, AI hasn't replied yet — previous AI is "done")
                                 const isRecentAi = !isUser && i === messages.length - 2 && messages[messages.length - 1]?.role === "user";
                                 const shouldAnimate = isLatestAi && !isRecentAi;
                                 if (shouldAnimate) {
@@ -1205,7 +1206,6 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                         {/* Collapsible insight card */}
                         {!isUser && <InsightCard content={msg.content} />}
                       </motion.div>
-                      </>
                     );
                   })}
 
