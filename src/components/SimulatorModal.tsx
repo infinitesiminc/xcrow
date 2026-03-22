@@ -1695,7 +1695,8 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
               <div className="flex gap-2 max-w-2xl mx-auto">
                 <button
                   onClick={() => handleSend("I'm not sure where to start — can you help me break this down?")}
-                  className="text-xs px-3 py-1.5 rounded-full border border-border/40 bg-accent/20 text-muted-foreground hover:text-foreground hover:bg-accent/40 transition-colors"
+                  className="text-xs px-3 py-1.5 rounded-full text-muted-foreground hover:text-foreground transition-colors"
+                  style={{ border: "1px solid hsl(var(--filigree) / 0.2)", background: "hsl(var(--surface-stone))" }}
                 >
                   💭 Help me think through this
                 </button>
