@@ -98,7 +98,7 @@ const PromptArena = ({ round, roundNumber, onJudged, loading }: PromptArenaProps
   };
 
   return (
-    <div className="max-w-2xl mx-auto space-y-4">
+    <div className="max-w-4xl mx-auto space-y-5">
       {/* Round Header */}
       <motion.div
         initial={{ opacity: 0, y: -8 }}
