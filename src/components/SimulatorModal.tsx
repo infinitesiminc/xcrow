@@ -1232,7 +1232,16 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                                 className="absolute left-0 top-3 bottom-3 w-[2px] rounded-full"
                                 style={{ background: "hsl(var(--filigree) / 0.15)" }}
                               />
-                              <ReactMarkdown components={toolMentionComponents}>{displayContent}</ReactMarkdown>
+                              {(() => {
+                                const isLatestAi = !isUser && i === messages.length - 1 && msg.role === "assistant";
+                                // Also check if second-to-last and last is user (user just sent, AI hasn't replied yet — previous AI is "done")
+                                const isRecentAi = !isUser && i === messages.length - 2 && messages[messages.length - 1]?.role === "user";
+                                const shouldAnimate = isLatestAi && !isRecentAi;
+                                if (shouldAnimate) {
+                                  return <TypewriterMarkdown content={displayContent} speed={8} components={toolMentionComponents} />;
+                                }
+                                return <ReactMarkdown components={toolMentionComponents}>{displayContent}</ReactMarkdown>;
+                              })()}
                             </div>
                           )}
                         </div>
