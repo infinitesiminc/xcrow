@@ -103,6 +103,8 @@ export default function Settings() {
       avatar_id: avatarId || null,
       city: city.trim() || null,
       linkedin_url: linkedinUrl.trim() || null,
+      graduation_year: graduationYear ? parseInt(graduationYear) : null,
+      degree_type: degreeType || null,
     };
     if (username.trim()) updateData.username = username.trim().toLowerCase().replace(/[^a-z0-9_-]/g, "");
     const { error } = await supabase.from("profiles").update(updateData).eq("id", user.id);
