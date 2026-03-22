@@ -3,7 +3,7 @@ import type { IntelContext } from "@/lib/simulator";
 import { isStandardEmoji } from "@/lib/emoji-utils";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  Play, AlertTriangle, Sparkles, Clock, ArrowLeft, ArrowRight, Compass, Scroll, Swords,
+  Play, AlertTriangle, Sparkles, Clock, ArrowLeft, ArrowRight, Compass, Archive, Swords,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -317,7 +317,7 @@ export function WarCouncil({
                     border: "1px solid hsl(var(--primary) / 0.2)",
                   }}
                 >
-                  <Scroll className="h-6 w-6 text-primary" />
+                  <Archive className="h-6 w-6 text-primary" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="text-sm font-bold text-foreground mb-0.5 flex items-center gap-2" style={{ fontFamily: "'Cinzel', serif" }}>
