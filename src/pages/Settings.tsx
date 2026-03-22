@@ -196,6 +196,7 @@ export default function Settings() {
       school_name: schoolName.trim() || null,
       career_stage: careerStage,
       cv_url: cvUrl || null,
+      avatar_id: avatarId || null,
     };
     if (username.trim()) updateData.username = username.trim().toLowerCase().replace(/[^a-z0-9_-]/g, "");
     const { error } = await supabase
