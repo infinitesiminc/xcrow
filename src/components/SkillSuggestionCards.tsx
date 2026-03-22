@@ -97,7 +97,7 @@ export default function SkillSuggestionCards() {
         <Zap className="h-3.5 w-3.5 text-primary" />
         <span className="text-xs font-semibold text-foreground">Your Skills</span>
         <button
-          onClick={() => navigate("/journey")}
+          onClick={() => navigate("/map")}
           className="ml-auto text-[10px] text-primary hover:underline flex items-center gap-0.5"
         >
           View Skill Map <ArrowRight className="h-2.5 w-2.5" />
