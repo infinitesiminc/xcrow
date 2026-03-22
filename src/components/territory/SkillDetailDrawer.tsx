@@ -343,6 +343,7 @@ function TrackCard({
   unlockRequirement?: string;
   simsCount?: number;
   prominent?: boolean;
+  onStart?: () => void;
 }) {
   const pct = Math.min(100, Math.round((xp / maxXp) * 100));
 
