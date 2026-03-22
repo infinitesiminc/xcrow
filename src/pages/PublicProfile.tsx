@@ -33,6 +33,7 @@ const TIER_COLORS: Record<CastleTier, string> = {
   outpost: "text-emerald-400",
   fortress: "text-amber-400",
   citadel: "text-purple-400",
+  grandmaster: "text-violet-400",
 };
 
 interface ProfileData {
