@@ -3,11 +3,21 @@
  * Supports click-to-zoom, hover-to-repel, and diamond-shaped Level 2 nodes.
  */
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import { type FutureSkill, type FutureSkillCategory } from "@/hooks/use-future-skills";
 import { type FutureIslandLayout, type FutureNodePosition } from "@/lib/future-territory-layout";
+
+function useIsParchment() {
+  const [p, setP] = useState(() => document.documentElement.classList.contains("parchment"));
+  useEffect(() => {
+    const obs = new MutationObserver(() => setP(document.documentElement.classList.contains("parchment")));
+    obs.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
+    return () => obs.disconnect();
+  }, []);
+  return p;
+}
 
 interface FutureIslandProps {
   island: FutureIslandLayout;
