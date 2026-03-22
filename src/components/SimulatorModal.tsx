@@ -606,6 +606,20 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
     setTimeout(() => scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" }), 80);
   }, []);
 
+  // Scroll to the start of the latest AI response instead of the very bottom
+  const lastAiRef = useRef<HTMLDivElement | null>(null);
+  const scrollToLatestAi = useCallback(() => {
+    setTimeout(() => {
+      if (lastAiRef.current && scrollRef.current) {
+        const container = scrollRef.current;
+        const el = lastAiRef.current;
+        const offsetTop = el.offsetTop - container.offsetTop;
+        // Scroll so the AI response starts near the top with a small margin
+        container.scrollTo({ top: offsetTop - 16, behavior: "smooth" });
+      }
+    }, 120);
+  }, []);
+
   // ─── Inactivity nudge timer ───
   const resetInactivityTimer = useCallback(() => {
     if (inactivityTimer.current) clearTimeout(inactivityTimer.current);
@@ -804,7 +818,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
 
       // Learn→Apply: every user response advances the round (each response = 1 complete beat)
       setRoundCount((c) => c + 1);
-      scrollToBottom();
+      scrollToLatestAi();
 
       // After reply, check if next turn would hit guest limit — show limit after AI responds
       const newUserTurns = newMessages.filter(m => m.role === "user").length;
@@ -845,7 +859,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
       parseObjectiveTags(reply);
       parseScaffoldTags(reply);
       setMessages(prev => [...prev, { role: "assistant", content: reply }]);
-      scrollToBottom();
+      scrollToLatestAi();
     }).catch(() => {
       setMessages(prev => [...prev, { role: "assistant", content: "Sorry, something went wrong." }]);
     }).finally(() => setSending(false));
@@ -1233,8 +1247,12 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                     const isRecentAi = !isUser && i === messages.length - 2 && messages[messages.length - 1]?.role === "user";
                     const shouldAnimate = isLatestAi && !isRecentAi;
 
+                    // Find the last assistant message index for scroll targeting
+                    const lastAssistantIdx = (() => { for (let j = messages.length - 1; j >= 0; j--) { if (messages[j].role === "assistant") return j; } return -1; })();
+                    const isLastAssistant = !isUser && i === lastAssistantIdx;
+
                     return (
-                      <div key={i} className="space-y-2">
+                      <div key={i} className="space-y-2" ref={isLastAssistant ? lastAiRef : undefined}>
                         <motion.div
                           initial={{ opacity: 0, y: 8 }}
                           animate={{ opacity: 1, y: 0 }}
@@ -1335,7 +1353,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                                   parseObjectiveTags(reply);
                                   parseScaffoldTags(reply);
                                   setMessages(prev => [...prev, { role: "assistant", content: reply }]);
-                                  scrollToBottom();
+                                   scrollToLatestAi();
                                 }).catch(() => {
                                   setMessages(prev => [...prev, { role: "assistant", content: "Sorry, something went wrong." }]);
                                 }).finally(() => setSending(false));
