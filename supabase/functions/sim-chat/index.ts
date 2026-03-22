@@ -406,7 +406,7 @@ DO THIS IN ORDER:
    🤖 [Name ONE specific current AI tool and what it does for this task — 1 sentence]
    💡 [ONE thing only a human can do here — 1 sentence]
 
-${isLastRound ? `3. CLOSING: End with "🎉 Great battle, Commander! Click **Finish** to see your report."` : `3. NEXT SCENARIO (Learn → Apply beat):
+${isLastRound ? `3. CLOSING: End with "🎉 Great battle, Commander! Click **End Quest** to see your report."` : `3. NEXT SCENARIO (Learn → Apply beat):
    ${targetObj ? `Design this scenario to test: "${targetObj.label}" — ${targetObj.description}` : "Pick the most relevant remaining skill to test."}
    
    "**📖 Scenario:**" — 2 sentence NEW realistic work scenario (different aspect than before)
