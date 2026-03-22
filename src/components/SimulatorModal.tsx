@@ -756,10 +756,14 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
     let messageText = overrideInput ?? input.trim();
     if (!messageText || sending) return;
 
-    // Normalize single-letter A/B choices so the AI doesn't misinterpret
+    // Normalize single-letter choices so the AI doesn't misinterpret
     const normalized = messageText.trim().toLowerCase();
     if (normalized === "a" || normalized === "b") {
       messageText = `I choose ${messageText.trim().toUpperCase()}`;
+    } else if (/^[c-z]$/i.test(normalized)) {
+      // Invalid choice — silently ignore, don't send
+      setInput("");
+      return;
     }
 
     // Guest turn limit check: count user messages so far (before this one)
