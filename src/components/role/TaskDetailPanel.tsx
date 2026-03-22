@@ -100,8 +100,8 @@ export function TaskDetailPanel({
   const [scoutXP, setScoutXP] = useState<number | null>(null);
   const [decodeXP, setDecodeXP] = useState<number | null>(null);
 
-  const scoutFlavor = useMemo(() => pickRandom(SCOUT_FLAVORS), []);
-  const decodeFlavor = useMemo(() => pickRandom(DECODE_FLAVORS), []);
+  const scanFlavor = useMemo(() => pickRandom(SCAN_FLAVORS), []);
+  const arsenalFlavor = useMemo(() => pickRandom(ARSENAL_FLAVORS), []);
 
   const hasPrediction = !!prediction;
   const hasSkills = prediction?.future_skills && prediction.future_skills.length > 0;
