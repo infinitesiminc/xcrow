@@ -245,8 +245,12 @@ export default function FutureIsland({ island, skillLookup, level2SkillIds, isFo
                       cx={node.x}
                       cy={node.y}
                       r={nodeRadius}
-                      fill={`hsl(${theme.baseHue} ${35 + intensity * 25}% ${18 + intensity * 12}%)`}
-                      stroke={`hsl(${theme.baseHue} 50% ${40 + intensity * 20}%)`}
+                      fill={isParchment
+                        ? `hsl(${theme.baseHue} ${25 + intensity * 15}% ${72 + intensity * 8}%)`
+                        : `hsl(${theme.baseHue} ${35 + intensity * 25}% ${18 + intensity * 12}%)`}
+                      stroke={isParchment
+                        ? `hsl(${theme.baseHue} 40% ${40 + intensity * 15}%)`
+                        : `hsl(${theme.baseHue} 50% ${40 + intensity * 20}%)`}
                       strokeWidth={isHovered ? 3 : 2}
                       className="transition-all"
                     />
