@@ -140,7 +140,7 @@
     --brand-human: 217 91% 65%;
     --brand-mid: 262 83% 65%;
 
-    /* 7-stop spectrum — dark mode (slightly lifted lightness) */
+    /* 7-stop spectrum — dark mode */
     --spectrum-0: 217 91% 65%;
     --spectrum-1: 185 80% 52%;
     --spectrum-2: 152 60% 50%;
@@ -153,6 +153,24 @@
     --dot-teal: 185 95% 55%;
     --dot-purple: 262 83% 65%;
     --dot-amber: 38 80% 60%;
+
+    /* ── 8 Territory Colors (dark — lifted lightness) ── */
+    --territory-technical:   262 83% 65%;
+    --territory-analytical:  210 80% 62%;
+    --territory-strategic:   45  85% 55%;
+    --territory-communication: 152 60% 50%;
+    --territory-leadership:  30  90% 58%;
+    --territory-creative:    340 75% 60%;
+    --territory-ethics:      175 70% 48%;
+    --territory-humanedge:   285 70% 65%;
+
+    /* ── Fantasy surface tokens (dark) ── */
+    --surface-stone: 240 8% 12%;
+    --surface-parchment: 35 15% 14%;
+    --filigree: 38 55% 45%;
+    --filigree-glow: 38 65% 55%;
+    --emboss-light: 0 0% 100% / 0.05;
+    --emboss-shadow: 0 0% 0% / 0.4;
 
     --sidebar-background: 240 10% 9%;
     --sidebar-foreground: 220 8% 78%;
