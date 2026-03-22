@@ -7,8 +7,8 @@ import {
 } from "@/components/ui/hover-card";
 import {
   findToolMentions,
-  isToolSaved,
-  saveToolToList,
+  getSavedTools,
+  addToolToList,
   removeToolFromList,
   type AIToolInfo,
 } from "@/lib/ai-tool-registry";
