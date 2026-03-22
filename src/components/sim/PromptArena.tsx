@@ -322,11 +322,11 @@ const PromptArena = ({ round, roundNumber, onJudged, loading }: PromptArenaProps
               border: "1px solid hsl(var(--primary) / 0.2)",
             }}
           >
-            <div className="flex items-center gap-2 mb-1">
-              <Sparkles className="h-3.5 w-3.5 text-primary" />
-              <span className="text-[10px] font-bold uppercase tracking-wider text-primary">Key Insight</span>
+            <div className="flex items-center gap-2 mb-1.5">
+              <Sparkles className="h-4 w-4 text-primary" />
+              <span className="text-xs font-bold uppercase tracking-wider text-primary">Key Insight</span>
             </div>
-            <p className="text-xs text-foreground/80 leading-relaxed">{round.insight}</p>
+            <p className="text-sm text-foreground/80 leading-relaxed">{round.insight}</p>
           </div>
 
           {/* Continue */}
