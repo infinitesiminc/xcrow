@@ -15,8 +15,10 @@ export default {
     extend: {
       fontFamily: {
         sans: ["Inter", "system-ui", "sans-serif"],
-        display: ["Syne", "Space Grotesk", "system-ui", "sans-serif"],
-        heading: ["Space Grotesk", "Inter", "system-ui", "sans-serif"],
+        display: ["Cinzel", "Syne", "Space Grotesk", "serif"],
+        heading: ["Cinzel", "Space Grotesk", "serif"],
+        body: ["Inter", "system-ui", "sans-serif"],
+        fantasy: ["Cinzel", "serif"],
       },
       colors: {
         border: "hsl(var(--border))",

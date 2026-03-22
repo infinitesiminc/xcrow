@@ -488,3 +488,119 @@ html:not(.light) {
 .settings-page .text-\[13px\] {
   font-size: 14px !important;
 }
+
+/* ══════════════════════════════════════════════════
+   DARK FANTASY RPG — Surface & Card Utilities
+   ══════════════════════════════════════════════════ */
+
+/* Stone panel — primary card surface */
+.rpg-panel {
+  background: hsl(var(--surface-stone));
+  border: 1px solid hsl(var(--filigree) / 0.2);
+  box-shadow:
+    inset 0 1px 0 hsl(var(--emboss-light)),
+    inset 0 -1px 0 hsl(var(--emboss-shadow)),
+    0 4px 16px -4px hsl(0 0% 0% / 0.25);
+}
+
+/* Parchment inner glow — for content areas */
+.rpg-parchment {
+  background: linear-gradient(
+    135deg,
+    hsl(var(--surface-parchment)) 0%,
+    hsl(var(--surface-stone)) 100%
+  );
+  border: 1px solid hsl(var(--filigree) / 0.15);
+}
+
+/* Filigree top border — ornate accent */
+.rpg-filigree-top {
+  border-top: 2px solid hsl(var(--filigree) / 0.5);
+  position: relative;
+}
+.rpg-filigree-top::after {
+  content: '';
+  position: absolute;
+  top: -1px;
+  left: 10%;
+  right: 10%;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    hsl(var(--filigree-glow) / 0.6),
+    transparent
+  );
+}
+
+/* Beveled card — angled fantasy corners */
+.rpg-card {
+  clip-path: polygon(
+    12px 0, calc(100% - 12px) 0,
+    100% 12px, 100% calc(100% - 12px),
+    calc(100% - 12px) 100%, 12px 100%,
+    0 calc(100% - 12px), 0 12px
+  );
+  background: hsl(var(--surface-stone));
+  border: none;
+  box-shadow: 0 4px 20px -4px hsl(0 0% 0% / 0.3);
+  position: relative;
+}
+
+/* Territory-colored glow on hover */
+.rpg-card-glow {
+  transition: box-shadow 0.3s ease;
+}
+.rpg-card-glow:hover {
+  box-shadow:
+    0 0 20px -4px var(--territory-glow, hsl(var(--primary) / 0.3)),
+    0 8px 24px -8px hsl(0 0% 0% / 0.3);
+}
+
+/* Rarity border glow — set --rarity-hue via inline style */
+.rpg-rarity-common  { --rarity-glow: hsl(220 10% 50% / 0.3); }
+.rpg-rarity-uncommon { --rarity-glow: hsl(152 60% 50% / 0.3); }
+.rpg-rarity-rare     { --rarity-glow: hsl(210 80% 55% / 0.4); }
+.rpg-rarity-epic     { --rarity-glow: hsl(262 83% 60% / 0.5); }
+.rpg-rarity-legendary { --rarity-glow: hsl(45 85% 55% / 0.5); }
+
+.rpg-rarity-common,
+.rpg-rarity-uncommon,
+.rpg-rarity-rare,
+.rpg-rarity-epic,
+.rpg-rarity-legendary {
+  box-shadow: 0 0 12px -2px var(--rarity-glow);
+  transition: box-shadow 0.3s ease;
+}
+.rpg-rarity-legendary:hover {
+  box-shadow: 0 0 28px -2px var(--rarity-glow), 0 0 8px -1px hsl(45 85% 55% / 0.2);
+}
+
+/* Fantasy gradient text — gold filigree */
+.text-filigree {
+  background: linear-gradient(135deg, hsl(var(--filigree)), hsl(var(--filigree-glow)), hsl(var(--filigree)));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Territory accent border — set --t-color via inline style */
+.territory-accent {
+  border-left: 3px solid hsl(var(--t-color, var(--primary)));
+}
+
+/* Ember particle keyframes */
+@keyframes ember-float {
+  0% { transform: translateY(0) scale(1); opacity: 0.6; }
+  50% { opacity: 1; }
+  100% { transform: translateY(-40px) scale(0.3); opacity: 0; }
+}
+
+.animate-ember {
+  animation: ember-float 2.5s ease-out infinite;
+}
+
+/* Fantasy font class */
+.font-fantasy {
+  font-family: 'Cinzel', serif;
+}
