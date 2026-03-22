@@ -180,7 +180,10 @@ const MapPage = () => {
       {/* Floating tab bar */}
       <div className="absolute top-14 left-4 z-20 flex items-center gap-1 bg-card/80 backdrop-blur-md border border-border/50 rounded-lg p-1 shadow-lg">
         <button
-          onClick={() => { setRightPanelTab("table"); setChatOpen(true); }}
+          onClick={() => {
+            if (rightPanelTab === "table" && chatOpen) { setChatOpen(false); }
+            else { setRightPanelTab("table"); setChatOpen(true); }
+          }}
           className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
             rightPanelTab === "table" && chatOpen
               ? "bg-primary/10 text-primary"
@@ -192,7 +195,10 @@ const MapPage = () => {
         </button>
         {isSignedIn && (
           <button
-            onClick={() => { setRightPanelTab("roles"); setChatOpen(true); }}
+            onClick={() => {
+              if (rightPanelTab === "roles" && chatOpen) { setChatOpen(false); }
+              else { setRightPanelTab("roles"); setChatOpen(true); }
+            }}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
               rightPanelTab === "roles" && chatOpen
                 ? "bg-primary/10 text-primary"
@@ -201,14 +207,6 @@ const MapPage = () => {
           >
             <Swords className="h-3 w-3" />
             Kingdoms
-          </button>
-        )}
-        {chatOpen && (
-          <button
-            onClick={() => setChatOpen(false)}
-            className="flex items-center gap-1.5 px-2 py-1.5 rounded-md text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
-          >
-            <X className="h-3 w-3" />
           </button>
         )}
       </div>
