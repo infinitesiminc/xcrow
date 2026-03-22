@@ -301,11 +301,17 @@ export default function FutureIsland({ island, skillLookup, level2SkillIds, isFo
                     style={{
                       fontSize: isHovered ? "11px" : "10px",
                       fontWeight: isHovered ? 700 : 600,
-                      fill: isLevel2
-                        ? `hsl(45 ${isHovered ? 60 : 40}% ${isHovered ? 80 : 65}%)`
-                        : isHovered
-                          ? `hsl(${theme.baseHue} 40% 85%)`
-                          : `hsl(${theme.baseHue} 25% 65%)`,
+                      fill: isParchment
+                        ? (isLevel2
+                          ? `hsl(45 ${isHovered ? 60 : 50}% ${isHovered ? 25 : 30}%)`
+                          : isHovered
+                            ? `hsl(${theme.baseHue} 50% 25%)`
+                            : `hsl(${theme.baseHue} 35% 35%)`)
+                        : (isLevel2
+                          ? `hsl(45 ${isHovered ? 60 : 40}% ${isHovered ? 80 : 65}%)`
+                          : isHovered
+                            ? `hsl(${theme.baseHue} 40% 85%)`
+                            : `hsl(${theme.baseHue} 25% 65%)`),
                       fontFamily: "'Inter', system-ui, sans-serif",
                       pointerEvents: "none",
                       transition: "fill 0.2s, font-size 0.2s",
