@@ -1157,14 +1157,35 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                     const tierLabels = ["", "💭 Let's break this down...", "💡 Here's a direction...", "📚 Teaching moment"];
 
                     return (
-                      <motion.div
-                          key={i}
+                      <div key={i} className="space-y-2">
+                        {/* New Scenario divider — show when AI message starts a new quest (has 📖 Scenario) and isn't the first message */}
+                        {!isUser && i > 0 && safeStr(msg.content).includes("📖 Scenario") && (
+                          <motion.div
+                            initial={{ opacity: 0, scaleX: 0.6 }}
+                            animate={{ opacity: 1, scaleX: 1 }}
+                            transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+                            className="flex items-center gap-3 py-3 my-2"
+                          >
+                            <div className="flex-1 h-px" style={{ background: "linear-gradient(90deg, transparent, hsl(var(--filigree) / 0.4), transparent)" }} />
+                            <span
+                              className="text-[11px] font-semibold uppercase tracking-[0.15em] shrink-0 px-3 py-1 rounded-full"
+                              style={{
+                                color: "hsl(var(--filigree-glow))",
+                                background: "hsl(var(--filigree) / 0.08)",
+                                border: "1px solid hsl(var(--filigree) / 0.15)",
+                                fontFamily: "'Cinzel', serif",
+                                textShadow: "0 0 8px hsl(var(--filigree-glow) / 0.4)",
+                              }}
+                            >
+                              ⚔️ New Scenario
+                            </span>
+                            <div className="flex-1 h-px" style={{ background: "linear-gradient(90deg, transparent, hsl(var(--filigree) / 0.4), transparent)" }} />
+                          </motion.div>
+                        )}
+                        <motion.div
                           initial={{ opacity: 0, y: 8 }}
                           animate={{ opacity: 1, y: 0 }}
                           transition={{ duration: 0.25 }}
-                          className="space-y-2"
-                        >
-                        <div className={`flex ${isUser ? "justify-end" : "justify-start"}`}>
                           {isUser ? (
                             <div
                               className="max-w-[80%] rounded-2xl rounded-br-md px-4 py-2.5"
