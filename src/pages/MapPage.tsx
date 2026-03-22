@@ -299,30 +299,6 @@ const MapPage = () => {
         )}
       </AnimatePresence>
 
-      {/* Personal territory overlay */}
-      <TerritoryOverlay
-        open={territoryOpen}
-        onClose={() => {
-          setTerritoryOpen(false);
-          setTerritoryFocusSkillId(null);
-          setTerritoryXpGain(0);
-        }}
-        skills={displaySkills}
-        lastPracticedSkillId={lastPracticedSkillId}
-        focusSkillId={territoryFocusSkillId}
-        xpGain={territoryXpGain}
-      />
-
-      {/* My Territory button */}
-      {isSignedIn && !territoryOpen && (
-        <button
-          onClick={() => setTerritoryOpen(true)}
-          className="fixed bottom-4 left-4 z-20 flex items-center gap-1.5 px-3 py-2 rounded-lg bg-card/90 backdrop-blur-md border border-border/50 text-xs font-medium text-muted-foreground hover:text-foreground shadow-lg hover:shadow-xl transition-all active:scale-[0.95]"
-        >
-          <Map className="h-3.5 w-3.5" />
-          🏰 My Territory
-        </button>
-      )}
     </div>
   );
 };
