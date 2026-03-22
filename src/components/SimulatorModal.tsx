@@ -855,9 +855,11 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
       .replace(/💡\s*\*?\*?Human Edge:?\*?\*?\s*.+/g, "")
       .replace(/\[SCAFFOLDING\]/g, "")
       .replace(/\[OBJECTIVE_MET:[^\]]+\]/g, "")
+      .replace(/\[OBJ_EVAL:[^\]]+\]/g, "")
       .replace(/\[SCAFFOLD_TIER:\d\]/g, "")
       .replace(/\[ALL_OBJECTIVES_MET\]/g, "")
       .replace(/\[NEEDS_DEPTH\]/g, "")
+      .replace(/\[TARGET_OBJ:[^\]]+\]/g, "")
       .trim();
   };
 
