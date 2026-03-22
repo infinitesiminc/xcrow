@@ -249,10 +249,10 @@ function FriendRow({ name, username, avatarId, trailing, onClick }: {
       onClick={onClick}
     >
       <div
-        className="w-8 h-8 rounded-full flex items-center justify-center text-sm shrink-0"
+        className="w-8 h-8 rounded-full flex items-center justify-center text-sm shrink-0 overflow-hidden"
         style={{ background: "hsl(var(--filigree) / 0.1)" }}
       >
-        {avatar ? avatar.emoji : name[0]?.toUpperCase() || "?"}
+        {avatar ? <img src={avatar.src} alt={avatar.label} className="w-full h-full object-cover" /> : name[0]?.toUpperCase() || "?"}
       </div>
       <div className="flex-1 min-w-0">
         <p className="text-xs font-medium text-foreground truncate">{name}</p>
