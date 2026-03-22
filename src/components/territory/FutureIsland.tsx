@@ -69,8 +69,12 @@ export default function FutureIsland({ island, skillLookup, level2SkillIds, isFo
         cx={cx}
         cy={cy}
         r={(isFocused ? 165 : radius) + 15}
-        fill={`hsl(${theme.baseHue} 25% ${isFocused ? 14 : 10}% / ${isFocused ? 0.7 : 0.5})`}
-        stroke={`hsl(${theme.baseHue} ${isFocused ? 50 : 30}% ${isFocused ? 40 : 25}%)`}
+        fill={isParchment
+          ? `hsl(${theme.baseHue} 15% ${isFocused ? 82 : 78}% / ${isFocused ? 0.8 : 0.6})`
+          : `hsl(${theme.baseHue} 25% ${isFocused ? 14 : 10}% / ${isFocused ? 0.7 : 0.5})`}
+        stroke={isParchment
+          ? `hsl(${theme.baseHue} ${isFocused ? 40 : 25}% ${isFocused ? 55 : 45}%)`
+          : `hsl(${theme.baseHue} ${isFocused ? 50 : 30}% ${isFocused ? 40 : 25}%)`}
         strokeWidth={isFocused ? 2.5 : 1.5}
         strokeDasharray={isFocused ? "none" : "6 4"}
         initial={{ scale: 0, opacity: 0 }}
