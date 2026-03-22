@@ -283,10 +283,10 @@ function FriendCard({ friend, onAccept, onReject, onView, formatLastSeen }: {
       {/* Avatar with status dot */}
       <div className="relative shrink-0">
         <div
-          className="w-8 h-8 rounded-full flex items-center justify-center text-sm"
+          className="w-8 h-8 rounded-full flex items-center justify-center text-sm overflow-hidden"
           style={{ background: "hsl(var(--filigree) / 0.1)" }}
         >
-          {avatar ? avatar.emoji : friend.displayName[0]?.toUpperCase() || "?"}
+          {avatar ? <img src={avatar.src} alt={avatar.label} className="w-full h-full object-cover" /> : friend.displayName[0]?.toUpperCase() || "?"}
         </div>
         {friend.status === "accepted" && (
           <div

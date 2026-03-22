@@ -1,12 +1,12 @@
 /**
  * MapPage — Dedicated Skill Map page at /map.
- * Contains the full-screen Future Territory Map, Skill Forge, Kingdoms panel, HUD, and minimap.
+ * Contains the full-screen Future Territory Map, Skill Forge, Kingdoms panel, Allies panel, HUD.
  */
 import { useState, useCallback, useEffect, useMemo, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { X, Swords, ScrollText, Shield } from "lucide-react";
+import { X, Swords, ScrollText, Users } from "lucide-react";
 
 import { useFutureSkills } from "@/hooks/use-future-skills";
 import FutureTerritoryMap from "@/components/territory/FutureTerritoryMap";
@@ -21,9 +21,10 @@ import type { RoleResult } from "@/components/InlineRoleCarousel";
 import type { EdgeContext } from "@/components/HumanEdgesCard";
 
 import CompactHUD from "@/components/territory/CompactHUD";
-import HQPanel from "@/components/territory/HQPanel";
 import MyRolesPanel from "@/components/territory/MyRolesPanel";
+import AlliesPanel from "@/components/territory/AlliesPanel";
 import { useSkills } from "@/hooks/use-skills";
+import { useFriends } from "@/hooks/use-friends";
 import {
   SKILL_TAXONOMY,
   aggregateSkillXP,
