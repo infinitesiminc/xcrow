@@ -75,6 +75,8 @@ const RoleDeepDive = () => {
   const [chosenTask, setChosenTask] = useState<TaskAnalysis | null>(null);
   const [sessionXP, setSessionXP] = useState(0);
   const [currentIntel, setCurrentIntel] = useState<IntelContext | null>(null);
+  const [simLevel, setSimLevel] = useState<1 | 2>(1);
+  const [simFuturePrediction, setSimFuturePrediction] = useState<FuturePrediction | undefined>(undefined);
 
   const completedCount = result ? result.tasks.filter(t => completedTasks.has(t.name)).length : 0;
 
