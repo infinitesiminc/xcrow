@@ -396,11 +396,7 @@ const MapPage = () => {
               boxShadow: "0 8px 40px hsl(var(--emboss-shadow)), inset 0 1px 0 hsl(var(--emboss-light))",
             }}
           >
-            {rightPanelTab === "hq" && isSignedIn ? (
-              <div className="flex-1 overflow-hidden">
-                <HQPanel onSelectRole={(role) => setSelectedRole(role)} />
-              </div>
-            ) : rightPanelTab === "table" ? (
+            {rightPanelTab === "table" ? (
               <div className="flex-1 overflow-hidden">
                 <FutureSkillsTable
                   skills={futureSkills}
@@ -410,7 +406,7 @@ const MapPage = () => {
                   }}
                 />
               </div>
-            ) : isSignedIn ? (
+            ) : rightPanelTab === "roles" && isSignedIn ? (
               <div className="flex-1 overflow-hidden">
                 <MyRolesPanel
                   onSelectRole={(role) => {
@@ -423,6 +419,10 @@ const MapPage = () => {
                   }}
                   onTabChange={setMyRolesTab}
                 />
+              </div>
+            ) : rightPanelTab === "allies" && isSignedIn ? (
+              <div className="flex-1 overflow-hidden">
+                <AlliesPanel />
               </div>
             ) : null}
           </motion.div>
