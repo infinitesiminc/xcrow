@@ -1028,7 +1028,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                     className="text-xs font-bold"
                     style={{ color: "hsl(var(--filigree-glow))", fontFamily: "'Cinzel', serif" }}
                   >
-                    Wave {roundCount}/{maxRounds}
+                    Quest {roundCount}/{maxRounds}
                   </span>
                 </motion.div>
               )}
