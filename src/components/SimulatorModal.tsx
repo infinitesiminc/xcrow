@@ -606,6 +606,20 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
     setTimeout(() => scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" }), 80);
   }, []);
 
+  // Scroll to the start of the latest AI response instead of the very bottom
+  const lastAiRef = useRef<HTMLDivElement | null>(null);
+  const scrollToLatestAi = useCallback(() => {
+    setTimeout(() => {
+      if (lastAiRef.current && scrollRef.current) {
+        const container = scrollRef.current;
+        const el = lastAiRef.current;
+        const offsetTop = el.offsetTop - container.offsetTop;
+        // Scroll so the AI response starts near the top with a small margin
+        container.scrollTo({ top: offsetTop - 16, behavior: "smooth" });
+      }
+    }, 120);
+  }, []);
+
   // ─── Inactivity nudge timer ───
   const resetInactivityTimer = useCallback(() => {
     if (inactivityTimer.current) clearTimeout(inactivityTimer.current);
