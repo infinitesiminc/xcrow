@@ -3,7 +3,7 @@
  * Flying crow with wing-flap bob, pulsing glow, and rotating ring.
  */
 import { motion } from "framer-motion";
-import xcrowLogo from "@/assets/avatars/crow.png";
+import xcrowLogo from "@/assets/xcrow-logo.png";
 
 interface XcrowLoaderProps {
   title?: string;
