@@ -2,7 +2,7 @@ import { useState, useMemo, useEffect, useCallback } from "react";
 import { isStandardEmoji } from "@/lib/emoji-utils";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  Play, AlertTriangle, Sparkles, Clock, X, ArrowRight, Compass, Scroll,
+  Play, AlertTriangle, Sparkles, Clock, X, ArrowRight, Compass, Archive,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
