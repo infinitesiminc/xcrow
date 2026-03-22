@@ -25,6 +25,7 @@ export default function UnifiedChatDock() {
   const [input, setInput] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const navigate = useNavigate();
 
   // Auto-scroll
 
@@ -50,7 +51,13 @@ export default function UnifiedChatDock() {
   };
 
   const handleRoleSelect = (role: any) => {
-    onRoleSelectRef.current?.(role);
+    if (onRoleSelectRef.current) {
+      onRoleSelectRef.current(role);
+    } else {
+      // Navigate to role deep-dive as fallback
+      const slug = encodeURIComponent(role.title);
+      navigate(`/role/${slug}?company=${encodeURIComponent(role.company || "")}&jobId=${role.jobId || ""}`);
+    }
   };
 
   // Don't render anything when a simulation is active
