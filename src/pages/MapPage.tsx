@@ -242,7 +242,11 @@ const MapPage = () => {
             transition={{ type: "spring", damping: 28, stiffness: 300 }}
             className="absolute top-24 left-4 bottom-20 w-[420px] z-20 flex flex-col bg-card/90 backdrop-blur-xl border border-border/50 rounded-xl shadow-2xl overflow-hidden"
           >
-            {rightPanelTab === "table" ? (
+            {rightPanelTab === "hq" && isSignedIn ? (
+              <div className="flex-1 overflow-hidden">
+                <HQPanel onSelectRole={(role) => setSelectedRole(role)} />
+              </div>
+            ) : rightPanelTab === "table" ? (
               <div className="flex-1 overflow-hidden">
                 <FutureSkillsTable
                   skills={futureSkills}
