@@ -154,22 +154,22 @@ const PromptArena = ({ round, roundNumber, onJudged, loading }: PromptArenaProps
             <motion.div
               key={side}
               initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: side === "a" ? 0.1 : 0.2 }}
+              animate={{
+                opacity: showResult && !isBetter ? 0.7 : 1,
+                y: 0,
+                scale: showResult && isBetter ? 1.02 : 1,
+              }}
+              transition={{ delay: side === "a" ? 0.1 : 0.2, duration: 0.4 }}
               className="rounded-xl overflow-hidden flex flex-col"
               style={{
                 border: showResult
-                  ? isPicked
-                    ? correct
-                      ? "2px solid hsl(142 71% 45% / 0.6)"
-                      : "2px solid hsl(0 84% 60% / 0.5)"
-                    : isBetter
-                      ? "2px solid hsl(142 71% 45% / 0.4)"
-                      : "1px solid hsl(var(--filigree) / 0.15)"
+                  ? isBetter
+                    ? "2px solid hsl(var(--filigree-glow))"
+                    : "1px solid hsl(var(--filigree) / 0.08)"
                   : "1px solid hsl(var(--filigree) / 0.2)",
                 background: "hsl(var(--surface-stone))",
                 boxShadow: showResult && isBetter
-                  ? "0 0 20px hsl(142 71% 45% / 0.1)"
+                  ? "0 0 24px hsl(var(--filigree-glow) / 0.25), 0 0 8px hsl(var(--filigree) / 0.15)"
                   : "inset 0 1px 0 hsl(var(--emboss-light))",
               }}
             >
@@ -207,22 +207,56 @@ const PromptArena = ({ round, roundNumber, onJudged, loading }: PromptArenaProps
                 </div>
               )}
 
-              {/* Result badge */}
+              {/* Result badge — RPG Victory/Defeat banner */}
               {showResult && (
-                <div className={`px-4 py-2.5 flex items-center gap-2 text-sm font-medium ${
-                  isBetter ? "text-success bg-success/5" : "text-muted-foreground bg-muted/30"
-                }`}>
-                  {isBetter ? <CheckCircle2 className="h-4 w-4" /> : null}
-                  {isBetter ? "Better approach" : "Less effective"}
+                <motion.div
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.2, duration: 0.4 }}
+                  className="px-4 py-3 flex items-center gap-3"
+                  style={{
+                    background: isBetter
+                      ? "linear-gradient(90deg, hsl(var(--filigree) / 0.12), hsl(var(--filigree-glow) / 0.06))"
+                      : "hsl(var(--muted) / 0.3)",
+                    borderTop: isBetter
+                      ? "1px solid hsl(var(--filigree-glow) / 0.3)"
+                      : "1px solid hsl(var(--filigree) / 0.06)",
+                  }}
+                >
+                  <span className="text-lg">{isBetter ? "🏆" : "💀"}</span>
+                  <span
+                    className="font-semibold tracking-wide"
+                    style={{
+                      fontFamily: "'Cinzel', serif",
+                      fontSize: isBetter ? "15px" : "13px",
+                      color: isBetter ? "hsl(var(--filigree-glow))" : "hsl(var(--muted-foreground))",
+                    }}
+                  >
+                    {isBetter ? "Superior Strategy" : "Weaker Approach"}
+                  </span>
                   {isPicked && (
-                    <span className="ml-auto text-xs font-bold px-2 py-0.5 rounded" style={{
-                      background: correct ? "hsl(142 71% 45% / 0.15)" : "hsl(0 84% 60% / 0.15)",
-                      color: correct ? "hsl(142 71% 45%)" : "hsl(0 84% 60%)",
-                    }}>
-                      Your pick
-                    </span>
+                    <motion.span
+                      initial={{ scale: 0.8, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      transition={{ delay: 0.4 }}
+                      className="ml-auto text-xs font-bold px-3 py-1 rounded-full"
+                      style={{
+                        background: correct
+                          ? "hsl(142 71% 45% / 0.15)"
+                          : "hsl(0 84% 60% / 0.15)",
+                        color: correct
+                          ? "hsl(142 71% 45%)"
+                          : "hsl(0 84% 60%)",
+                        boxShadow: correct
+                          ? "0 0 12px hsl(142 71% 45% / 0.2)"
+                          : "0 0 12px hsl(0 84% 60% / 0.2)",
+                        fontFamily: "'Cinzel', serif",
+                      }}
+                    >
+                      ⚔️ Your Pick
+                    </motion.span>
                   )}
-                </div>
+                </motion.div>
               )}
             </motion.div>
           );
