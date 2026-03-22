@@ -391,6 +391,7 @@ function ProfileSection({
   displayName, setDisplayName, username, setUsername, jobTitle, setJobTitle, company, setCompany,
   linkedinUrl, setLinkedinUrl, schoolName, setSchoolName,
   careerStage, setCareerStage, cvFileName, cvInputRef, uploadingCv, saving, email,
+  avatarId, setAvatarId,
   handleCvUpload, handleRemoveCv, handleSaveProfile,
 }: {
   displayName: string; setDisplayName: (v: string) => void;
@@ -402,16 +403,46 @@ function ProfileSection({
   careerStage: "student" | "professional"; setCareerStage: (v: "student" | "professional") => void;
   cvFileName: string | null; cvInputRef: React.RefObject<HTMLInputElement>;
   uploadingCv: boolean; saving: boolean; email: string;
+  avatarId: string | null; setAvatarId: (v: string | null) => void;
   handleCvUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
   handleRemoveCv: () => void;
   handleSaveProfile: () => void;
 }) {
+  const selectedAvatar = getAvatarById(avatarId);
   return (
     <div>
       <h2 className="text-xl font-bold text-foreground mb-1">Profile</h2>
       <p className="text-sm text-muted-foreground mb-6">Your personal and professional details for a customized experience.</p>
 
       <div className="space-y-8">
+        {/* Avatar picker */}
+        <div className="space-y-3">
+          <Label className="text-xs uppercase tracking-wider text-muted-foreground">Choose your companion</Label>
+          <div className="grid grid-cols-5 sm:grid-cols-10 gap-2">
+            {AVATAR_OPTIONS.map((avatar) => (
+              <button
+                key={avatar.id}
+                type="button"
+                onClick={() => setAvatarId(avatar.id)}
+                className={`relative rounded-xl border-2 p-1.5 transition-all hover:scale-105 ${
+                  avatarId === avatar.id
+                    ? "border-primary bg-primary/10 shadow-lg shadow-primary/20"
+                    : "border-border/40 bg-muted/20 hover:border-border hover:bg-muted/40"
+                }`}
+              >
+                <img src={avatar.src} alt={avatar.label} className="w-full aspect-square object-contain" />
+                {avatarId === avatar.id && (
+                  <div className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-primary flex items-center justify-center">
+                    <Check className="h-2.5 w-2.5 text-primary-foreground" />
+                  </div>
+                )}
+                <p className="text-[9px] text-center text-muted-foreground mt-0.5 truncate">{avatar.label}</p>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <Separator />
         {/* Basic info */}
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-2">
