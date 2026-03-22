@@ -471,6 +471,40 @@ function ProfileSection({
             </Label>
             <SchoolAutocomplete value={schoolName} onChange={setSchoolName} />
           </div>
+
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="space-y-2">
+              <Label htmlFor="graduationYear">Graduation year</Label>
+              <select
+                id="graduationYear"
+                value={graduationYear}
+                onChange={(e) => setGraduationYear(e.target.value)}
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              >
+                <option value="">Select year</option>
+                {Array.from({ length: 10 }, (_, i) => new Date().getFullYear() + 5 - i).map(y => (
+                  <option key={y} value={String(y)}>{y}</option>
+                ))}
+              </select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="degreeType">Degree type</Label>
+              <select
+                id="degreeType"
+                value={degreeType}
+                onChange={(e) => setDegreeType(e.target.value)}
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              >
+                <option value="">Select degree</option>
+                <option value="associate">Associate's</option>
+                <option value="bachelor">Bachelor's</option>
+                <option value="master">Master's</option>
+                <option value="doctorate">Doctorate / PhD</option>
+                <option value="certificate">Certificate / Diploma</option>
+                <option value="bootcamp">Bootcamp</option>
+              </select>
+            </div>
+          </div>
         )}
 
         {/* City — optional */}
