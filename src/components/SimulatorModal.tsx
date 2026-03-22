@@ -143,6 +143,7 @@ const BriefingScreen = ({
   const hue1 = simHeroHue(session.scenario.title);
   const hue2 = (hue1 + 50) % 360;
   const hue3 = (hue1 + 160) % 360;
+  const objectiveCount = session.learningObjectives?.length || config?.objectiveCount || 3;
 
   return (
     <motion.div
@@ -151,141 +152,171 @@ const BriefingScreen = ({
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -8 }}
       transition={{ duration: 0.4, ease: "easeOut" }}
-      className="flex flex-col gap-8 py-6 px-2 max-w-2xl mx-auto"
+      className="flex flex-col gap-5 py-6 px-2 max-w-2xl mx-auto"
     >
-      {/* Hero image */}
+      {/* Compact hero */}
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.5, ease: "easeOut" }}
-        className="relative rounded-2xl overflow-hidden h-44 sm:h-52"
+        className="relative rounded-2xl overflow-hidden h-32 sm:h-36"
         style={{
           background: `linear-gradient(135deg, hsl(${hue1} 55% 18%) 0%, hsl(${hue2} 50% 12%) 50%, hsl(${hue3} 45% 8%) 100%)`,
         }}
       >
-        {/* Decorative circles */}
         <div
           className="absolute -top-10 -right-10 w-40 h-40 rounded-full opacity-20 blur-2xl"
           style={{ background: `hsl(${hue1} 70% 55%)` }}
         />
-        <div
-          className="absolute bottom-0 left-10 w-28 h-28 rounded-full opacity-15 blur-xl"
-          style={{ background: `hsl(${hue2} 60% 50%)` }}
-        />
-        {/* Grid pattern overlay */}
         <div className="absolute inset-0 opacity-[0.04]" style={{
           backgroundImage: `linear-gradient(hsl(${hue1} 50% 80%) 1px, transparent 1px), linear-gradient(90deg, hsl(${hue1} 50% 80%) 1px, transparent 1px)`,
           backgroundSize: '24px 24px',
         }} />
-        {/* Content */}
         <div className="relative z-10 h-full flex flex-col items-center justify-center text-center px-6">
-          <motion.div
-            initial={{ scale: 0.6, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ delay: 0.2, duration: 0.4, type: "spring" }}
-            className="text-5xl mb-3"
+          <h3
+            className="text-lg sm:text-xl font-bold text-foreground drop-shadow-lg"
+            style={{ fontFamily: "'Cinzel', serif" }}
           >
-            {(() => {
-              const simEmojis = ['🤖','🧠','⚡','🎯','🔬','🚀','💡','🧪','🎓','🏗️','📊','🔮','🛠️','🌐','🧩'];
-              const hash = (session.scenario.title || '').split('').reduce((a, c) => a + c.charCodeAt(0), 0);
-              return simEmojis[hash % simEmojis.length];
-            })()}
-          </motion.div>
-          <h3 className="text-xl sm:text-2xl font-display font-bold text-foreground drop-shadow-lg">{session.scenario.title}</h3>
-          <p className="text-sm text-foreground/70 leading-relaxed max-w-md mx-auto mt-2">{session.scenario.description}</p>
+            {session.scenario.title}
+          </h3>
+          <p className="text-xs text-foreground/60 mt-1 max-w-md">{session.scenario.description}</p>
         </div>
       </motion.div>
 
-      <div className="text-center">
-        <span className="inline-block text-[11px] px-2.5 py-1 rounded-full font-medium bg-primary/10 text-primary">
-          ⚔️ {config?.objectiveCount || 3} objectives · Quest ends when all are conquered
-        </span>
-      </div>
-
-      {/* Learning Objectives */}
+      {/* Quick-glance objectives — compact numbered pills, not full cards */}
       {session.learningObjectives && session.learningObjectives.length > 0 && (
         <motion.div
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.18, duration: 0.4 }}
-          className="rounded-2xl bg-primary/5 border border-primary/20 p-6"
+          transition={{ delay: 0.15 }}
+          className="rounded-xl p-4"
+          style={{
+            background: "hsl(var(--surface-stone))",
+            border: "1px solid hsl(var(--filigree) / 0.2)",
+            boxShadow: "inset 0 1px 0 hsl(var(--emboss-light)), 0 2px 6px hsl(var(--emboss-shadow))",
+          }}
         >
-          <h4 className="text-xs font-medium uppercase tracking-widest text-primary mb-3 flex items-center gap-2">
-            <Target className="h-3.5 w-3.5" />
-            Quest Objectives
-          </h4>
-          <ul className="space-y-3">
+          <div className="flex items-center gap-2 mb-3">
+            <Target className="h-3.5 w-3.5 text-primary" />
+            <span
+              className="text-[10px] font-semibold uppercase tracking-wider"
+              style={{ color: "hsl(var(--filigree))", fontFamily: "'Cinzel', serif" }}
+            >
+              {objectiveCount} Objectives to Conquer
+            </span>
+          </div>
+          <div className="space-y-2">
             {session.learningObjectives.map((obj, i) => (
-              <motion.li
+              <motion.div
                 key={obj.id}
-                initial={{ opacity: 0, x: -8 }}
+                initial={{ opacity: 0, x: -6 }}
                 animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.25 + i * 0.08 }}
-                className="flex items-start gap-3"
+                transition={{ delay: 0.2 + i * 0.06 }}
+                className="flex items-center gap-2.5"
               >
-                <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-primary/10 text-xs font-bold text-primary shrink-0 mt-0.5">
+                <span
+                  className="inline-flex items-center justify-center w-5 h-5 rounded-full text-[10px] font-bold shrink-0"
+                  style={{
+                    background: "hsl(var(--primary) / 0.15)",
+                    color: "hsl(var(--primary))",
+                    border: "1px solid hsl(var(--primary) / 0.25)",
+                  }}
+                >
                   {i + 1}
                 </span>
-                <div>
-                  <span className="text-[15px] font-medium text-foreground">{obj.label}</span>
-                  <p className="text-xs text-muted-foreground mt-0.5">{obj.description}</p>
-                </div>
-              </motion.li>
+                <span className="text-xs font-medium text-foreground">{obj.label}</span>
+              </motion.div>
             ))}
-          </ul>
+          </div>
         </motion.div>
       )}
 
+      {/* Mission Intel — collapsed by default, expandable */}
+      <MissionIntelCollapsible briefing={session.briefing} tips={session.tips} />
+
+      {/* CTA */}
       <motion.div
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.2, duration: 0.4 }}
-        className="rounded-2xl bg-accent/30 border border-border/40 p-6"
+        transition={{ delay: 0.3, duration: 0.3 }}
+        className="flex justify-center pt-1"
       >
-        <h4 className="text-xs font-medium uppercase tracking-widest text-muted-foreground mb-3">Mission Intel</h4>
-        <div className="text-[15px] text-foreground/90 leading-[1.7] prose prose-sm dark:prose-invert max-w-none [&>p]:mb-3">
-          <ReactMarkdown>{session.briefing}</ReactMarkdown>
-        </div>
-      </motion.div>
-
-      {session.tips && session.tips.length > 0 && (
-        <motion.div
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3, duration: 0.4 }}
-          className="rounded-2xl border border-border/30 p-6"
+        <Button
+          onClick={onStart}
+          size="lg"
+          className="gap-2 rounded-full px-8 text-sm font-bold"
+          style={{ fontFamily: "'Cinzel', serif" }}
         >
-          <h4 className="text-xs font-medium uppercase tracking-widest text-muted-foreground mb-3">Battle Tips</h4>
-          <ul className="space-y-3">
-            {session.tips.map((tip: any, i: number) => {
-              const tipText = typeof tip === "string" ? tip : (tip.content || tip.title || JSON.stringify(tip));
-              return (
-                <motion.li
-                  key={i}
-                  initial={{ opacity: 0, x: -8 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.35 + i * 0.08 }}
-                  className="flex items-start gap-3"
-                >
-                  <span className="text-primary text-sm mt-0.5">💡</span>
-                  <span className="text-sm text-foreground/80 leading-relaxed">{tipText}</span>
-                </motion.li>
-              );
-            })}
-          </ul>
-        </motion.div>
-      )}
-
-      <motion.div
-        initial={{ opacity: 0, y: 8 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.45, duration: 0.3 }}
-        className="flex justify-center pt-2"
-      >
-        <Button onClick={onStart} size="lg" className="gap-2 rounded-xl px-8 text-base">
-          ⚔️ Begin Quest
+          <Swords className="h-4 w-4" />
+          Begin Quest
         </Button>
       </motion.div>
+    </motion.div>
+  );
+};
+
+/* ── Collapsible Mission Intel ── */
+const MissionIntelCollapsible = ({ briefing, tips }: { briefing: string; tips?: any[] }) => {
+  const [open, setOpen] = useState(false);
+  const hasTips = tips && tips.length > 0;
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.25 }}
+      className="rounded-xl overflow-hidden"
+      style={{
+        background: "hsl(var(--surface-stone))",
+        border: "1px solid hsl(var(--filigree) / 0.15)",
+        boxShadow: "inset 0 1px 0 hsl(var(--emboss-light))",
+      }}
+    >
+      <button
+        onClick={() => setOpen(!open)}
+        className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-accent/10 transition-colors"
+      >
+        <div className="flex items-center gap-2">
+          <Compass className="h-3.5 w-3.5 text-muted-foreground" />
+          <span
+            className="text-[10px] font-semibold uppercase tracking-wider"
+            style={{ color: "hsl(var(--filigree))", fontFamily: "'Cinzel', serif" }}
+          >
+            Mission Intel {hasTips ? "& Tips" : ""}
+          </span>
+        </div>
+        <ChevronDown className={`h-3.5 w-3.5 text-muted-foreground transition-transform ${open ? "rotate-180" : ""}`} />
+      </button>
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.25 }}
+            className="overflow-hidden"
+          >
+            <div className="px-4 pb-4 space-y-3" style={{ borderTop: "1px solid hsl(var(--filigree) / 0.1)" }}>
+              <div className="text-xs text-foreground/80 leading-relaxed pt-3 prose prose-sm dark:prose-invert max-w-none [&>p]:mb-2">
+                <ReactMarkdown>{briefing}</ReactMarkdown>
+              </div>
+              {hasTips && (
+                <div className="space-y-1.5">
+                  {tips!.map((tip: any, i: number) => {
+                    const tipText = typeof tip === "string" ? tip : (tip.content || tip.title || JSON.stringify(tip));
+                    return (
+                      <div key={i} className="flex items-start gap-2">
+                        <span className="text-xs mt-0.5">💡</span>
+                        <span className="text-xs text-muted-foreground leading-relaxed">{tipText}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 };
