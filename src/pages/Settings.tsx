@@ -274,6 +274,8 @@ export default function Settings() {
                 avatarId={avatarId} setAvatarId={setAvatarId}
                 city={city} setCity={setCity}
                 linkedinUrl={linkedinUrl} setLinkedinUrl={setLinkedinUrl}
+                graduationYear={graduationYear} setGraduationYear={setGraduationYear}
+                degreeType={degreeType} setDegreeType={setDegreeType}
                 handleSaveProfile={handleSaveProfile}
               />
             )}
