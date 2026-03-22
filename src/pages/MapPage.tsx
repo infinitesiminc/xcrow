@@ -104,6 +104,13 @@ const MapPage = () => {
 
   const { onRolesFoundRef, onRoleSelectRef, sendMessage: chatSendMessage, setIsOpen: setChatDockOpen } = useChatContext();
 
+  // Wire up role select callback so chat card buttons work
+  useEffect(() => {
+    onRoleSelectRef.current = (role: RoleResult) => {
+      setSelectedRole(role);
+    };
+    return () => { onRoleSelectRef.current = null; };
+  }, [onRoleSelectRef]);
   // Load real skills + target roles
   useEffect(() => {
     if (!user) return;
