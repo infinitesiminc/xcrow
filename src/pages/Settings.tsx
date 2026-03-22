@@ -96,6 +96,8 @@ export default function Settings() {
       school_name: schoolNameField.trim() || null,
       career_stage: careerStage,
       avatar_id: avatarId || null,
+      city: city.trim() || null,
+      linkedin_url: linkedinUrl.trim() || null,
     };
     if (username.trim()) updateData.username = username.trim().toLowerCase().replace(/[^a-z0-9_-]/g, "");
     const { error } = await supabase.from("profiles").update(updateData).eq("id", user.id);
