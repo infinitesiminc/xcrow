@@ -272,19 +272,19 @@ const PromptArena = ({ round, roundNumber, onJudged, loading }: PromptArenaProps
             <p className="text-sm text-muted-foreground mt-1.5">Consider quality, relevance, and usefulness of the output</p>
           </div>
           <div className="flex gap-3 justify-center">
-            <Button
-              variant="outline"
-              onClick={() => handlePick("a")}
-              className="flex-1 max-w-[180px] rounded-xl h-11 text-sm gap-2 hover:border-primary/50 hover:bg-primary/5"
-            >
-              <span className="font-bold text-primary">A</span> {round.prompt_a.label}
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => handlePick("b")}
-              className="flex-1 max-w-[180px] rounded-xl h-11 text-sm gap-2 hover:border-primary/50 hover:bg-primary/5"
-            >
-              <span className="font-bold text-primary">B</span> {round.prompt_b.label}
+              <Button
+                variant="outline"
+                onClick={() => handlePick("a")}
+                className="flex-1 max-w-[220px] rounded-xl h-12 text-sm gap-2 hover:border-primary/50 hover:bg-primary/5"
+              >
+                <span className="font-bold text-primary">A</span> {round.prompt_a.label}
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => handlePick("b")}
+                className="flex-1 max-w-[220px] rounded-xl h-12 text-sm gap-2 hover:border-primary/50 hover:bg-primary/5"
+              >
+                <span className="font-bold text-primary">B</span> {round.prompt_b.label}
             </Button>
           </div>
         </motion.div>
