@@ -1079,43 +1079,56 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                     
                     const isLastRound = roundCount >= maxRounds;
                     const isSessionEnd = lower.includes("click finish") || allMetSignal;
+                    const allObjMet = session?.learningObjectives?.every(o => objectiveStatus[o.id]) ?? false;
                     
                     return (
-                      <div className="flex flex-col sm:flex-row gap-2 mt-3">
-                        {!isLastRound && !isSessionEnd && (
-                          <Button
-                            variant="outline"
-                            className="flex-1 rounded-xl h-10 text-sm gap-2"
-                            onClick={() => {
-                              const fakeMsg: SimMessage = { role: "user", content: "yes" };
-                              const newMsgs = [...messages, fakeMsg];
-                              setMessages(newMsgs);
-                              setSending(true);
-                              const nextRound = roundCount + 1;
-                              setRoundCount(nextRound);
-                              const nextTurn = turnCount + 1;
-                              setTurnCount(nextTurn);
-                              scrollToBottom();
-                              const nextTargetId = session?.learningObjectives?.find(o => !objectiveStatus[o.id])?.id;
-                              chatTurn(newMsgs, nextRound, nextTurn, jobTitle, mode, taskMeta, session?.learningObjectives, objectiveStatus, scaffoldingTiers, nextTargetId).then(reply => {
-                                parseObjectiveTags(reply);
-                                parseScaffoldTags(reply);
-                                setMessages(prev => [...prev, { role: "assistant", content: reply }]);
-                                scrollToBottom();
-                              }).catch(() => {
-                                setMessages(prev => [...prev, { role: "assistant", content: "Sorry, something went wrong." }]);
-                              }).finally(() => setSending(false));
-                            }}
+                      <div className="flex flex-col gap-2 mt-3">
+                        {allObjMet && (
+                          <motion.div
+                            initial={{ opacity: 0, scale: 0.95 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            className="flex items-center gap-2 rounded-xl bg-success/10 border border-success/30 px-3 py-2 text-sm text-success font-medium"
                           >
-                            <ArrowRight className="h-4 w-4" /> Next Wave
-                          </Button>
+                            <Trophy className="h-4 w-4" />
+                            All objectives conquered! 🎉
+                          </motion.div>
                         )}
-                        <Button
-                          className="flex-1 rounded-xl h-10 text-sm gap-2"
-                          onClick={handleFinishAttempt}
+                        <div className="flex flex-col sm:flex-row gap-2">
+                          {!isLastRound && !isSessionEnd && !allObjMet && (
+                            <Button
+                              variant="outline"
+                              className="flex-1 rounded-xl h-10 text-sm gap-2"
+                              onClick={() => {
+                                const fakeMsg: SimMessage = { role: "user", content: "yes" };
+                                const newMsgs = [...messages, fakeMsg];
+                                setMessages(newMsgs);
+                                setSending(true);
+                                const nextRound = roundCount + 1;
+                                setRoundCount(nextRound);
+                                const nextTurn = turnCount + 1;
+                                setTurnCount(nextTurn);
+                                scrollToBottom();
+                                const nextTargetId = session?.learningObjectives?.find(o => !objectiveStatus[o.id])?.id;
+                                chatTurn(newMsgs, nextRound, nextTurn, jobTitle, mode, taskMeta, session?.learningObjectives, objectiveStatus, scaffoldingTiers, nextTargetId).then(reply => {
+                                  parseObjectiveTags(reply);
+                                  parseScaffoldTags(reply);
+                                  setMessages(prev => [...prev, { role: "assistant", content: reply }]);
+                                  scrollToBottom();
+                                }).catch(() => {
+                                  setMessages(prev => [...prev, { role: "assistant", content: "Sorry, something went wrong." }]);
+                                }).finally(() => setSending(false));
+                              }}
+                            >
+                              <ArrowRight className="h-4 w-4" /> Next Wave
+                            </Button>
+                          )}
+                          <Button
+                            className="flex-1 rounded-xl h-10 text-sm gap-2"
+                            onClick={handleFinishAttempt}
                           >
-                           <CheckCircle2 className="h-4 w-4" /> {isLastRound || isSessionEnd ? "⚔️ Battle Report" : "End Quest"}
-                        </Button>
+                            <CheckCircle2 className="h-4 w-4" /> {isLastRound || isSessionEnd || allObjMet ? "⚔️ Battle Report" : "End Quest"}
+                          </Button>
+                        </div>
                       </div>
                     );
                   })()}
