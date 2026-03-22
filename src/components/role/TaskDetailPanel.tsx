@@ -1,8 +1,8 @@
-import { useState } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
 import { isStandardEmoji } from "@/lib/emoji-utils";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  Play, AlertTriangle, Sparkles, Clock, X, ArrowRight, Eye, Lock,
+  Play, AlertTriangle, Sparkles, Clock, X, ArrowRight, Compass, Scroll,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -10,6 +10,70 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { TaskAnalysis } from "@/types/analysis";
 import { exposureStyle } from "@/lib/exposure-colors";
 import type { FuturePrediction } from "@/components/analysis/FutureTaskPreview";
+
+const SCOUT_FLAVORS = [
+  "The Crow spotted movement beyond the ridge…",
+  "Dark clouds gather over this territory…",
+  "Your scouts report incoming threats…",
+  "A raven arrives bearing urgent intel…",
+];
+
+const DECODE_FLAVORS = [
+  "Ancient scrolls reveal hidden skills…",
+  "A merchant offers forbidden knowledge…",
+  "The War Council has new intelligence…",
+  "A cipher was found in the ruins…",
+];
+
+function pickRandom<T>(arr: T[]): T {
+  return arr[Math.floor(Math.random() * arr.length)];
+}
+
+function rollXP(): number {
+  return Math.floor(Math.random() * 11) + 5; // 5-15
+}
+
+function XPRollDisplay({ finalXP, label }: { finalXP: number; label: string }) {
+  const [display, setDisplay] = useState(0);
+  const [settled, setSettled] = useState(false);
+
+  useEffect(() => {
+    let frame = 0;
+    const totalFrames = 8;
+    const interval = setInterval(() => {
+      frame++;
+      if (frame >= totalFrames) {
+        setDisplay(finalXP);
+        setSettled(true);
+        clearInterval(interval);
+      } else {
+        setDisplay(Math.floor(Math.random() * 11) + 5);
+      }
+    }, 60);
+    return () => clearInterval(interval);
+  }, [finalXP]);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 12, scale: 0.8 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      className="flex items-center gap-1.5 mt-2"
+    >
+      <span className={`text-xs font-bold tabular-nums ${settled ? "text-primary" : "text-muted-foreground"}`}>
+        +{display} XP
+      </span>
+      {settled && (
+        <motion.span
+          initial={{ opacity: 0, x: -4 }}
+          animate={{ opacity: 1, x: 0 }}
+          className="text-[10px] text-muted-foreground"
+        >
+          — {label}
+        </motion.span>
+      )}
+    </motion.div>
+  );
+}
 
 interface TaskDetailPanelProps {
   task: TaskAnalysis;
@@ -31,12 +95,27 @@ export function TaskDetailPanel({
   const delta = futureScore - currentScore;
   const isCollapsing = futureScore >= 80;
 
-  // Progressive reveal state
   const [threatRevealed, setThreatRevealed] = useState(false);
   const [skillsUnlocked, setSkillsUnlocked] = useState(false);
+  const [scoutXP, setScoutXP] = useState<number | null>(null);
+  const [decodeXP, setDecodeXP] = useState<number | null>(null);
+
+  const scoutFlavor = useMemo(() => pickRandom(SCOUT_FLAVORS), []);
+  const decodeFlavor = useMemo(() => pickRandom(DECODE_FLAVORS), []);
 
   const hasPrediction = !!prediction;
   const hasSkills = prediction?.future_skills && prediction.future_skills.length > 0;
+  const intelComplete = threatRevealed && (skillsUnlocked || !hasSkills);
+
+  const handleScout = useCallback(() => {
+    setScoutXP(rollXP());
+    setThreatRevealed(true);
+  }, []);
+
+  const handleDecode = useCallback(() => {
+    setDecodeXP(rollXP());
+    setSkillsUnlocked(true);
+  }, []);
 
   return (
     <motion.div
@@ -61,7 +140,7 @@ export function TaskDetailPanel({
         </button>
       </div>
 
-      {/* Score: Today → Future (always visible) */}
+      {/* Score: Today → Future */}
       <div className="flex items-center gap-2 mb-4 flex-wrap">
         <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full ${currentStyle.badge}`}>
           Now {currentScore}%
@@ -116,29 +195,29 @@ export function TaskDetailPanel({
         </div>
       )}
 
-      {/* ─── STEP 1: Reveal Threat & Evolution ─── */}
+      {/* ─── INTEL QUEST 1: Scout the Threat ─── */}
       <AnimatePresence mode="wait">
         {hasPrediction && !threatRevealed && (
           <motion.button
-            key="reveal-threat"
+            key="scout-threat"
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8, scale: 0.95 }}
-            onClick={() => setThreatRevealed(true)}
+            onClick={handleScout}
             className="group relative mb-4 rounded-xl border border-destructive/30 bg-gradient-to-br from-destructive/[0.08] to-destructive/[0.02] p-4 text-left hover:border-destructive/50 hover:shadow-lg hover:shadow-destructive/10 transition-all overflow-hidden"
           >
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,hsl(var(--destructive)/0.08),transparent_60%)] opacity-0 group-hover:opacity-100 transition-opacity" />
             <div className="relative flex items-center gap-3">
               <div className="h-10 w-10 rounded-lg bg-destructive/10 border border-destructive/20 flex items-center justify-center shrink-0">
-                <Eye className="h-5 w-5 text-destructive" />
+                <Compass className="h-5 w-5 text-destructive" />
               </div>
               <div className="flex-1 min-w-0">
                 <div className="text-xs font-bold text-foreground mb-0.5 flex items-center gap-1.5">
-                  Step 1: Reveal Threat Intel
-                  <span className="text-destructive text-[10px]">⚠️</span>
+                  Scout the Threat
+                  <span className="text-[9px] font-medium text-destructive/70 px-1.5 py-0.5 rounded-full bg-destructive/10">+5-15 XP</span>
                 </div>
-                <p className="text-[10px] text-muted-foreground">
-                  See how AI will reshape this quest and what your human edge looks like
+                <p className="text-[10px] text-muted-foreground italic">
+                  {scoutFlavor}
                 </p>
               </div>
               <div className="shrink-0 text-destructive/60 group-hover:text-destructive group-hover:translate-x-0.5 transition-all">
@@ -156,6 +235,8 @@ export function TaskDetailPanel({
             transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
             className="space-y-3 mb-4 pb-4 border-b border-border/30 overflow-hidden"
           >
+            {scoutXP !== null && <XPRollDisplay finalXP={scoutXP} label="Intel Gathered" />}
+
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
@@ -205,30 +286,30 @@ export function TaskDetailPanel({
         )}
       </AnimatePresence>
 
-      {/* ─── STEP 2: Unlock Skills ─── */}
+      {/* ─── INTEL QUEST 2: Decode the Arsenal ─── */}
       <AnimatePresence mode="wait">
         {threatRevealed && hasSkills && !skillsUnlocked && (
           <motion.button
-            key="unlock-skills"
+            key="decode-arsenal"
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8, scale: 0.95 }}
             transition={{ delay: 0.3 }}
-            onClick={() => setSkillsUnlocked(true)}
+            onClick={handleDecode}
             className="group relative mb-4 rounded-xl border border-primary/30 bg-gradient-to-br from-primary/[0.08] to-primary/[0.02] p-4 text-left hover:border-primary/50 hover:shadow-lg hover:shadow-primary/10 transition-all overflow-hidden"
           >
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_50%,hsl(var(--primary)/0.08),transparent_60%)] opacity-0 group-hover:opacity-100 transition-opacity" />
             <div className="relative flex items-center gap-3">
               <div className="h-10 w-10 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0">
-                <Lock className="h-5 w-5 text-primary" />
+                <Scroll className="h-5 w-5 text-primary" />
               </div>
               <div className="flex-1 min-w-0">
                 <div className="text-xs font-bold text-foreground mb-0.5 flex items-center gap-1.5">
-                  Step 2: Unlock Future Skills
-                  <span className="text-primary text-[10px]">🗺️</span>
+                  Decode the Arsenal
+                  <span className="text-[9px] font-medium text-primary/70 px-1.5 py-0.5 rounded-full bg-primary/10">+5-15 XP</span>
                 </div>
-                <p className="text-[10px] text-muted-foreground">
-                  Discover {prediction!.future_skills!.length} skills you'll need to stay ahead
+                <p className="text-[10px] text-muted-foreground italic">
+                  {decodeFlavor}
                 </p>
               </div>
               <div className="shrink-0 text-primary/60 group-hover:text-primary group-hover:translate-x-0.5 transition-all">
@@ -246,7 +327,9 @@ export function TaskDetailPanel({
             transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
             className="mb-4 overflow-hidden"
           >
-            <h4 className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">
+            {decodeXP !== null && <XPRollDisplay finalXP={decodeXP} label="Arsenal Unlocked" />}
+
+            <h4 className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-2 mt-2">
               🗺️ Skills to Unlock
             </h4>
             <div className="flex gap-2.5 overflow-x-auto pb-2 -mx-1 px-1 scrollbar-thin">
@@ -286,7 +369,13 @@ export function TaskDetailPanel({
           onClick={() => onPractice(task)}
         >
           <Play className="h-3 w-3" />
-          {isCollapsing ? "🔮 Scout Future Threats" : isCompleted ? "🔄 Retry Quest" : "⚔️ Accept Quest"}
+          {intelComplete
+            ? "⚔️ Begin Battle — Intel Advantage Active"
+            : isCollapsing
+              ? "🔮 Scout Future Threats"
+              : isCompleted
+                ? "🔄 Retry Quest"
+                : "⚔️ Accept Quest"}
         </Button>
       </div>
     </motion.div>
