@@ -89,6 +89,24 @@ export default {
           5: "hsl(var(--spectrum-5))",
           6: "hsl(var(--spectrum-6))",
         },
+        territory: {
+          technical: "hsl(var(--territory-technical))",
+          analytical: "hsl(var(--territory-analytical))",
+          strategic: "hsl(var(--territory-strategic))",
+          communication: "hsl(var(--territory-communication))",
+          leadership: "hsl(var(--territory-leadership))",
+          creative: "hsl(var(--territory-creative))",
+          ethics: "hsl(var(--territory-ethics))",
+          humanedge: "hsl(var(--territory-humanedge))",
+        },
+        surface: {
+          stone: "hsl(var(--surface-stone))",
+          parchment: "hsl(var(--surface-parchment))",
+        },
+        filigree: {
+          DEFAULT: "hsl(var(--filigree))",
+          glow: "hsl(var(--filigree-glow))",
+        },
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
           foreground: "hsl(var(--sidebar-foreground))",
