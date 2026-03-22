@@ -38,7 +38,7 @@ interface FutureTaskPreviewProps {
   aiExposureScore?: number;
   jobImpactScore?: number;
   description?: string;
-  onStartSim?: (scenarioTitle: string, taskName: string) => void;
+  onStartSim?: (scenarioTitle: string, taskName: string, level?: 1 | 2, prediction?: FuturePrediction) => void;
 }
 
 export function FutureTaskPreview({
