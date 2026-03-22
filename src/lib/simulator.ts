@@ -99,9 +99,10 @@ export async function chatTurn(
   learningObjectives?: LearningObjective[],
   objectiveStatus?: Record<string, boolean>,
   scaffoldingTiers?: Record<string, number>,
+  targetObjectiveId?: string,
 ): Promise<string> {
   const { data, error } = await supabase.functions.invoke("sim-chat", {
-    body: { action: "chat", payload: { messages, round, turnCount, role, mode, taskMeta, learningObjectives, objectiveStatus, scaffoldingTiers } },
+    body: { action: "chat", payload: { messages, round, turnCount, role, mode, taskMeta, learningObjectives, objectiveStatus, scaffoldingTiers, targetObjectiveId } },
   });
   if (error) throw new Error(`Chat error: ${error.message}`);
   return typeof data === "string" ? data : JSON.stringify(data);
@@ -113,8 +114,9 @@ export async function scoreSession(
   mode: SimMode = "assess",
   learningObjectives?: LearningObjective[],
   scaffoldingTiers?: Record<string, number>,
+  liveObjectiveStatus?: Record<string, boolean>,
 ): Promise<SimScoreResult> {
-  return simFetch("score", { transcript, scenario, mode, learningObjectives, scaffoldingTiers });
+  return simFetch("score", { transcript, scenario, mode, learningObjectives, scaffoldingTiers, liveObjectiveStatus });
 }
 
 export async function generateElevation(

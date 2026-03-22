@@ -216,13 +216,13 @@ Respond ONLY with valid JSON, no markdown.`;
 // ─── CHAT ───
 
 async function handleChat(payload: any, apiKey: string) {
-  const { messages, role, round, turnCount, mode = "assess", taskMeta, learningObjectives, objectiveStatus, scaffoldingTiers } = payload;
+  const { messages, role, round, turnCount, mode = "assess", taskMeta, learningObjectives, objectiveStatus, scaffoldingTiers, targetObjectiveId } = payload;
   const aiContext = aiStateDescription(taskMeta);
   const dateCtx = currentDateContext();
 
   const systemMsg = {
     role: "system",
-    content: buildCoachingChatSystem(role, aiContext, dateCtx, round, turnCount, mode, learningObjectives, objectiveStatus, scaffoldingTiers),
+    content: buildCoachingChatSystem(role, aiContext, dateCtx, round, turnCount, mode, learningObjectives, objectiveStatus, scaffoldingTiers, targetObjectiveId),
   };
 
   const aiMessages = [systemMsg, ...messages];
@@ -238,6 +238,7 @@ function buildCoachingChatSystem(
   round: number, turnCount: number, mode: string,
   learningObjectives?: any[], objectiveStatus?: Record<string, boolean>,
   scaffoldingTiers?: Record<string, number>,
+  targetObjectiveId?: string,
 ): string {
   // turnCount includes the AI opening message (turn 1), so user's first response is turn 2.
   // The 3-turn cycle should start from the user's first response, not the AI opening.
@@ -251,18 +252,37 @@ function buildCoachingChatSystem(
     const tierMap = scaffoldingTiers || {};
     const met = learningObjectives.filter(o => statusMap[o.id]);
     const unmet = learningObjectives.filter(o => !statusMap[o.id]);
+    
+    // Determine the current target objective
+    const targetObj = targetObjectiveId 
+      ? learningObjectives.find(o => o.id === targetObjectiveId) 
+      : unmet[0];
+    const targetLabel = targetObj ? `"${targetObj.label}" (${targetObj.id})` : "none — all met";
+    
     objectivesContext = `\n\nLEARNING OBJECTIVES FOR THIS SESSION:
 ${learningObjectives.map(o => {
   const tier = tierMap[o.id] || 0;
   const tierLabel = tier === 0 ? "no help given" : tier === 1 ? "nudged" : tier === 2 ? "hinted" : "taught";
-  return `- [${statusMap[o.id] ? "✅ MET" : "⬜ NOT YET"}] ${o.label}: ${o.description} (scaffolding: ${tierLabel})`;
+  const isTarget = targetObj && o.id === targetObj.id ? " ← CURRENT TARGET" : "";
+  return `- [${statusMap[o.id] ? "✅ MET" : "⬜ NOT YET"}] ${o.label} (${o.id}): ${o.description} (scaffolding: ${tierLabel})${isTarget}`;
 }).join("\n")}
-${met.length > 0 ? `\nAlready covered: ${met.map(o => o.label).join(", ")}` : ""}
-${unmet.length > 0 ? `\nStill need to cover: ${unmet.map(o => o.label).join(", ")}` : ""}
+${met.length > 0 ? `\nAlready conquered: ${met.map(o => o.label).join(", ")}` : ""}
+${unmet.length > 0 ? `\nStill need to conquer: ${unmet.map(o => o.label).join(", ")}` : ""}
 
-IMPORTANT: Steer scenarios toward uncovered objectives. When giving feedback, note if the user demonstrated mastery of an objective. If they did, include the tag [OBJECTIVE_MET:objective_id] at the very end of your message (after all visible text). This tag will be parsed programmatically — only include it when the user has clearly demonstrated the skill, not just mentioned it.
+CURRENT TARGET OBJECTIVE: ${targetLabel}
 
-OBJECTIVE COMPLETION: If ALL objectives have been met, include [ALL_OBJECTIVES_MET] at the end of your message. The session can then end early.`;
+MANDATORY OBJECTIVE EVALUATION — YOU MUST DO THIS:
+After your feedback on every user response (posInRound === 0), you MUST evaluate whether the user demonstrated the CURRENT TARGET objective. End your message with EXACTLY ONE of these tags:
+- [OBJ_EVAL:${targetObj?.id || "unknown"}:PASS] — if the user clearly demonstrated the skill described in the objective
+- [OBJ_EVAL:${targetObj?.id || "unknown"}:FAIL] — if they did not yet demonstrate it
+
+Rules for PASS vs FAIL:
+- PASS requires the user to give a SPECIFIC, SUBSTANTIVE answer that directly demonstrates the skill. Mentioning a concept in passing is NOT enough.
+- FAIL is the default. Only mark PASS if there's clear evidence of mastery.
+- These tags are parsed programmatically. Include EXACTLY ONE per feedback turn. No exceptions.
+
+OBJECTIVE COMPLETION: If ALL objectives have been met (including the one you just PASS'd), also include [ALL_OBJECTIVES_MET] at the end.`;
+  }
   }
 
   // ─── 3-Tier Scaffolding Logic ───
@@ -352,11 +372,19 @@ IF they gave a substantive answer, do EXACTLY this:
 
 Total: under 70 words.`;
   } else {
+    const targetObj = targetObjectiveId 
+      ? learningObjectives?.find(o => o.id === targetObjectiveId) 
+      : learningObjectives?.find(o => !objectiveStatus?.[o.id]);
+    const targetDirective = targetObj 
+      ? `\nCRITICAL: Your next scenario MUST target this specific objective: "${targetObj.label}" (${targetObj.id}) — ${targetObj.description}. Design the scenario so the user must demonstrate THIS skill to answer well.`
+      : "";
+    
     turnInstruction = `The user wants the next scenario. Do EXACTLY this:
+${targetDirective}
 
 "**📖 Scenario:**" — Present a NEW realistic work scenario (2-3 sentences). It MUST:
 - Cover a DIFFERENT aspect of this task than previous rounds
-- Target an UNCOVERED learning objective if any remain
+- Be specifically designed so the user must demonstrate the target objective to answer well
 - Include specific details: who's involved, what constraints exist, what tools are available
 - Feel like something that actually happens on a workday
 
@@ -420,7 +448,7 @@ ${posInRound === 2 && "If user said no: 'Great conversation! Click Finish to see
 // ─── SCORE ───
 
 async function handleScore(payload: any, apiKey: string) {
-  const { transcript, scenario, mode = "assess", learningObjectives, scaffoldingTiers } = payload;
+  const { transcript, scenario, mode = "assess", learningObjectives, scaffoldingTiers, liveObjectiveStatus } = payload;
 
   const conversationText = transcript
     .map((m: any) => `${m.role === "user" ? "Candidate" : "Coach"}: ${m.content}`)
@@ -437,8 +465,13 @@ async function handleScore(payload: any, apiKey: string) {
       }).join("\n")}\n\nIMPORTANT: Apply the score multiplier to the relevant pillar score. An objective completed with heavy scaffolding (Tier 3) should score significantly lower than one demonstrated independently.`
     : "";
 
+  // Build live status context for scoring alignment
+  const liveStatusContext = liveObjectiveStatus && learningObjectives
+    ? `\n\nLIVE TRACKING (ground truth from session): ${learningObjectives.map((o: any) => `${o.label}: ${liveObjectiveStatus[o.id] ? "MET" : "NOT MET"}`).join(", ")}. Use this as the primary source. Only override if the transcript CLEARLY contradicts it.`
+    : "";
+
   const objectivesSection = learningObjectives && Array.isArray(learningObjectives)
-    ? `\n\nLearning Objectives for this session:\n${learningObjectives.map((o: any) => `- ${o.label}: ${o.description} (pillar: ${o.pillar})`).join("\n")}\n\nFor each objective, determine if it was MET or NOT MET based on the conversation evidence. An objective met with Tier 3 scaffolding should be marked as met but noted as "assisted".${scaffoldingContext}`
+    ? `\n\nLearning Objectives for this session:\n${learningObjectives.map((o: any) => `- ${o.label}: ${o.description} (pillar: ${o.pillar})`).join("\n")}\n\nFor each objective, determine if it was MET or NOT MET based on the conversation evidence. An objective met with Tier 3 scaffolding should be marked as met but noted as "assisted".${scaffoldingContext}${liveStatusContext}`
     : "";
 
   const prompt = `Evaluate this AI-readiness coaching conversation. Task: "${scenario?.title || "a work task"}"

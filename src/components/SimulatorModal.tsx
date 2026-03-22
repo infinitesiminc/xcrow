@@ -529,13 +529,24 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
     return clearInactivityTimer;
   }, [phase, sending, messages.length]);
 
-  // Parse objective tags from AI responses
+  // Parse OBJ_EVAL tags from AI responses (deterministic)
   const parseObjectiveTags = useCallback((reply: string) => {
-    const tagPattern = /\[OBJECTIVE_MET:([^\]]+)\]/g;
+    // New deterministic format: [OBJ_EVAL:id:PASS] or [OBJ_EVAL:id:FAIL]
+    const evalPattern = /\[OBJ_EVAL:([^:]+):(PASS|FAIL)\]/g;
     let match;
     const newStatus = { ...objectiveStatus };
     let changed = false;
-    while ((match = tagPattern.exec(reply)) !== null) {
+    while ((match = evalPattern.exec(reply)) !== null) {
+      const objId = match[1];
+      const result = match[2];
+      if (result === "PASS" && !newStatus[objId]) {
+        newStatus[objId] = true;
+        changed = true;
+      }
+    }
+    // Also support legacy format for backwards compatibility
+    const legacyPattern = /\[OBJECTIVE_MET:([^\]]+)\]/g;
+    while ((match = legacyPattern.exec(reply)) !== null) {
       const objId = match[1];
       if (!newStatus[objId]) {
         newStatus[objId] = true;
@@ -545,6 +556,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
     if (changed) {
       setObjectiveStatus(newStatus);
     }
+    return newStatus;
   }, [objectiveStatus]);
 
   // Parse scaffolding tier tags from AI responses
@@ -627,6 +639,9 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
     setPhase("chat");
   };
 
+  // Compute current target objective (first unmet)
+  const currentTargetObjectiveId = session?.learningObjectives?.find(o => !objectiveStatus[o.id])?.id;
+
   const handleSend = async (overrideInput?: string) => {
     const messageText = overrideInput ?? input.trim();
     if (!messageText || sending) return;
@@ -651,18 +666,20 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
     try {
       const reply = await chatTurn(
         newMessages, roundCount, nextTurn, jobTitle, mode, taskMeta,
-        session?.learningObjectives, objectiveStatus, scaffoldingTiers
+        session?.learningObjectives, objectiveStatus, scaffoldingTiers,
+        currentTargetObjectiveId
       );
       
       // Parse tags
-      parseObjectiveTags(reply);
+      const updatedStatus = parseObjectiveTags(reply);
       parseScaffoldTags(reply);
       
       setMessages((prev) => [...prev, { role: "assistant", content: reply }]);
 
-      // Check for all objectives met signal
-      if (reply.includes("[ALL_OBJECTIVES_MET]")) {
-        // Session can end — the AI message will prompt finish
+      // Check if all objectives met after this reply
+      const nowAllMet = session?.learningObjectives?.every(o => updatedStatus[o.id]) ?? false;
+      if (nowAllMet || reply.includes("[ALL_OBJECTIVES_MET]")) {
+        // Victory state — AI message will prompt finish
       }
 
       if (reply.includes("[SCAFFOLDING]") || reply.includes("[SCAFFOLD_TIER:") || reply.includes("[NEEDS_DEPTH]")) {
@@ -690,7 +707,12 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
   };
 
   const handleFinishAttempt = () => {
-    // Skip review screen — go straight to scoring
+    // Finish gate: if unmet objectives remain and rounds left, show review
+    const unmetCount = session?.learningObjectives?.filter(o => !objectiveStatus[o.id]).length ?? 0;
+    if (unmetCount > 0 && roundCount < maxRounds) {
+      setPhase("review");
+      return;
+    }
     handleFinish();
   };
 
@@ -705,7 +727,8 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
     const nextTurn = turnCount + 1;
     setTurnCount(nextTurn);
     scrollToBottom();
-    chatTurn(newMsgs, nextRound, nextTurn, jobTitle, mode, taskMeta, session?.learningObjectives, objectiveStatus, scaffoldingTiers).then(reply => {
+    const nextTargetId = session?.learningObjectives?.find(o => !objectiveStatus[o.id])?.id;
+    chatTurn(newMsgs, nextRound, nextTurn, jobTitle, mode, taskMeta, session?.learningObjectives, objectiveStatus, scaffoldingTiers, nextTargetId).then(reply => {
       parseObjectiveTags(reply);
       parseScaffoldTags(reply);
       setMessages(prev => [...prev, { role: "assistant", content: reply }]);
@@ -727,7 +750,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
     let scores: SimScoreResult | null = null;
     if (messages.length > 2) {
       try {
-        scores = await scoreSession(messages, session?.scenario || null, mode, session?.learningObjectives, scaffoldingTiers);
+        scores = await scoreSession(messages, session?.scenario || null, mode, session?.learningObjectives, scaffoldingTiers, objectiveStatus);
         setScoreResult(scores);
       } catch (err) {
         console.error("Failed to get scores:", err);
@@ -822,7 +845,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
     const lastMsg = messages[messages.length - 1];
     if (lastMsg.role !== "assistant") return false;
     const lower = safeStr(lastMsg.content).toLowerCase();
-    return lower.includes("how would you approach") || lower.includes("how would you handle") || lower.includes("[scaffolding]") || lower.includes("[scaffold_tier:") || lower.includes("[needs_depth]");
+    return lower.includes("how would you approach") || lower.includes("how would you handle") || lower.includes("[scaffolding]") || lower.includes("[scaffold_tier:") || lower.includes("[needs_depth]") || lower.includes("[obj_eval:");
   })();
 
   // Strip tags from message text for display
@@ -832,9 +855,11 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
       .replace(/💡\s*\*?\*?Human Edge:?\*?\*?\s*.+/g, "")
       .replace(/\[SCAFFOLDING\]/g, "")
       .replace(/\[OBJECTIVE_MET:[^\]]+\]/g, "")
+      .replace(/\[OBJ_EVAL:[^\]]+\]/g, "")
       .replace(/\[SCAFFOLD_TIER:\d\]/g, "")
       .replace(/\[ALL_OBJECTIVES_MET\]/g, "")
       .replace(/\[NEEDS_DEPTH\]/g, "")
+      .replace(/\[TARGET_OBJ:[^\]]+\]/g, "")
       .trim();
   };
 
@@ -985,10 +1010,16 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                     const hasScenarioMarker = !isUser && (displayContent.includes("📖 Scenario") || displayContent.includes("📖 **Scenario"));
                     const isNewScenario = !isUser && (prevIsTopicChange || hasScenarioMarker) && i > 1;
                     
-                    const objectiveMetInMsg = !isUser ? (safeStr(msg.content).match(/\[OBJECTIVE_MET:([^\]]+)\]/g) || []).map(t => {
-                      const m = t.match(/\[OBJECTIVE_MET:([^\]]+)\]/);
-                      return m ? m[1] : null;
-                    }).filter(Boolean) : [];
+                    const objectiveMetInMsg = !isUser ? [
+                      ...(safeStr(msg.content).match(/\[OBJECTIVE_MET:([^\]]+)\]/g) || []).map(t => {
+                        const m = t.match(/\[OBJECTIVE_MET:([^\]]+)\]/);
+                        return m ? m[1] : null;
+                      }),
+                      ...(safeStr(msg.content).match(/\[OBJ_EVAL:([^:]+):PASS\]/g) || []).map(t => {
+                        const m = t.match(/\[OBJ_EVAL:([^:]+):PASS\]/);
+                        return m ? m[1] : null;
+                      }),
+                    ].filter(Boolean) : [];
 
                     // Detect scaffolding tier in message
                     const scaffoldTierInMsg = !isUser ? msg.content.match(/\[SCAFFOLD_TIER:(\d)\]/) : null;
@@ -1048,42 +1079,56 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                     
                     const isLastRound = roundCount >= maxRounds;
                     const isSessionEnd = lower.includes("click finish") || allMetSignal;
+                    const allObjMet = session?.learningObjectives?.every(o => objectiveStatus[o.id]) ?? false;
                     
                     return (
-                      <div className="flex flex-col sm:flex-row gap-2 mt-3">
-                        {!isLastRound && !isSessionEnd && (
-                          <Button
-                            variant="outline"
-                            className="flex-1 rounded-xl h-10 text-sm gap-2"
-                            onClick={() => {
-                              const fakeMsg: SimMessage = { role: "user", content: "yes" };
-                              const newMsgs = [...messages, fakeMsg];
-                              setMessages(newMsgs);
-                              setSending(true);
-                              const nextRound = roundCount + 1;
-                              setRoundCount(nextRound);
-                              const nextTurn = turnCount + 1;
-                              setTurnCount(nextTurn);
-                              scrollToBottom();
-                              chatTurn(newMsgs, nextRound, nextTurn, jobTitle, mode, taskMeta, session?.learningObjectives, objectiveStatus, scaffoldingTiers).then(reply => {
-                                parseObjectiveTags(reply);
-                                parseScaffoldTags(reply);
-                                setMessages(prev => [...prev, { role: "assistant", content: reply }]);
-                                scrollToBottom();
-                              }).catch(() => {
-                                setMessages(prev => [...prev, { role: "assistant", content: "Sorry, something went wrong." }]);
-                              }).finally(() => setSending(false));
-                            }}
+                      <div className="flex flex-col gap-2 mt-3">
+                        {allObjMet && (
+                          <motion.div
+                            initial={{ opacity: 0, scale: 0.95 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            className="flex items-center gap-2 rounded-xl bg-success/10 border border-success/30 px-3 py-2 text-sm text-success font-medium"
                           >
-                            <ArrowRight className="h-4 w-4" /> Next Wave
-                          </Button>
+                            <Trophy className="h-4 w-4" />
+                            All objectives conquered! 🎉
+                          </motion.div>
                         )}
-                        <Button
-                          className="flex-1 rounded-xl h-10 text-sm gap-2"
-                          onClick={handleFinishAttempt}
+                        <div className="flex flex-col sm:flex-row gap-2">
+                          {!isLastRound && !isSessionEnd && !allObjMet && (
+                            <Button
+                              variant="outline"
+                              className="flex-1 rounded-xl h-10 text-sm gap-2"
+                              onClick={() => {
+                                const fakeMsg: SimMessage = { role: "user", content: "yes" };
+                                const newMsgs = [...messages, fakeMsg];
+                                setMessages(newMsgs);
+                                setSending(true);
+                                const nextRound = roundCount + 1;
+                                setRoundCount(nextRound);
+                                const nextTurn = turnCount + 1;
+                                setTurnCount(nextTurn);
+                                scrollToBottom();
+                                const nextTargetId = session?.learningObjectives?.find(o => !objectiveStatus[o.id])?.id;
+                                chatTurn(newMsgs, nextRound, nextTurn, jobTitle, mode, taskMeta, session?.learningObjectives, objectiveStatus, scaffoldingTiers, nextTargetId).then(reply => {
+                                  parseObjectiveTags(reply);
+                                  parseScaffoldTags(reply);
+                                  setMessages(prev => [...prev, { role: "assistant", content: reply }]);
+                                  scrollToBottom();
+                                }).catch(() => {
+                                  setMessages(prev => [...prev, { role: "assistant", content: "Sorry, something went wrong." }]);
+                                }).finally(() => setSending(false));
+                              }}
+                            >
+                              <ArrowRight className="h-4 w-4" /> Next Wave
+                            </Button>
+                          )}
+                          <Button
+                            className="flex-1 rounded-xl h-10 text-sm gap-2"
+                            onClick={handleFinishAttempt}
                           >
-                           <CheckCircle2 className="h-4 w-4" /> {isLastRound || isSessionEnd ? "⚔️ Battle Report" : "End Quest"}
-                        </Button>
+                            <CheckCircle2 className="h-4 w-4" /> {isLastRound || isSessionEnd || allObjMet ? "⚔️ Battle Report" : "End Quest"}
+                          </Button>
+                        </div>
                       </div>
                     );
                   })()}
