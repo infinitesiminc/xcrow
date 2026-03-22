@@ -367,7 +367,7 @@ const Analysis = () => {
 
                 <div className="flex items-center gap-2">
                   <Button size="sm" variant={done ? "secondary" : "default"} className="h-8 rounded-full gap-1.5" onClick={() => setSimTask(focusedTask)}>
-                    <Play className="h-3.5 w-3.5" /> {done ? "Retry Quest" : "⚔️ Accept Quest"}
+                    <Play className="h-3.5 w-3.5" /> {done ? "Retry Quest" : "📜 Accept Quest"}
                   </Button>
                   <Button size="sm" variant="ghost" className="h-8 rounded-full text-xs" onClick={() => setShowAllTasks(true)}>
                     Full quest log <ArrowRight className="h-3 w-3" />
