@@ -32,6 +32,7 @@ export interface SimSession {
   learningObjectives: LearningObjective[];
   scenario: SimScenario;
   config?: SimConfig;
+  level?: 1 | 2;
 }
 
 export interface SimMessage {
