@@ -448,7 +448,7 @@ ${posInRound === 2 && "If user said no: 'Great conversation! Click Finish to see
 // ─── SCORE ───
 
 async function handleScore(payload: any, apiKey: string) {
-  const { transcript, scenario, mode = "assess", learningObjectives, scaffoldingTiers } = payload;
+  const { transcript, scenario, mode = "assess", learningObjectives, scaffoldingTiers, liveObjectiveStatus } = payload;
 
   const conversationText = transcript
     .map((m: any) => `${m.role === "user" ? "Candidate" : "Coach"}: ${m.content}`)
