@@ -18,7 +18,7 @@ export default function XcrowLoader({
   size = "md",
 }: XcrowLoaderProps) {
   const imgSize = size === "sm" ? 48 : size === "lg" ? 80 : 64;
-  const xSize = size === "sm" ? 64 : size === "lg" ? 100 : 82;
+  const xSize = size === "sm" ? 77 : size === "lg" ? 120 : 98;
   const containerSize = xSize + 20;
 
   return (
