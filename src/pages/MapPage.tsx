@@ -181,19 +181,29 @@ const MapPage = () => {
         </div>
       )}
 
-      {/* Floating tab bar */}
-      <div className="absolute top-14 left-4 z-20 flex items-center gap-1 bg-card/80 backdrop-blur-md border border-border/50 rounded-lg p-1 shadow-lg">
+      {/* Floating tab bar — Dark Fantasy stone style */}
+      <div
+        className="absolute top-14 left-4 z-20 flex items-center gap-1 backdrop-blur-md rounded-lg p-1"
+        style={{
+          background: "hsl(var(--surface-stone) / 0.92)",
+          border: "1px solid hsl(var(--filigree) / 0.25)",
+          boxShadow: "0 4px 20px hsl(var(--emboss-shadow)), inset 0 1px 0 hsl(var(--emboss-light))",
+        }}
+      >
         {isSignedIn && (
           <button
             onClick={() => {
               if (rightPanelTab === "hq" && chatOpen) { setChatOpen(false); }
               else { setRightPanelTab("hq"); setChatOpen(true); }
             }}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
-              rightPanelTab === "hq" && chatOpen
-                ? "bg-primary/10 text-primary"
-                : "text-muted-foreground hover:text-foreground"
-            }`}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all"
+            style={{
+              fontFamily: "'Cinzel', serif",
+              letterSpacing: "0.05em",
+              ...(rightPanelTab === "hq" && chatOpen
+                ? { color: "hsl(var(--filigree-glow))", background: "hsl(var(--filigree) / 0.12)", textShadow: "0 0 8px hsl(var(--filigree-glow) / 0.5)" }
+                : { color: "hsl(var(--muted-foreground))" }),
+            }}
           >
             <Shield className="h-3 w-3" />
             HQ
@@ -204,11 +214,14 @@ const MapPage = () => {
             if (rightPanelTab === "table" && chatOpen) { setChatOpen(false); }
             else { setRightPanelTab("table"); setChatOpen(true); }
           }}
-          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
-            rightPanelTab === "table" && chatOpen
-              ? "bg-primary/10 text-primary"
-              : "text-muted-foreground hover:text-foreground"
-          }`}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all"
+          style={{
+            fontFamily: "'Cinzel', serif",
+            letterSpacing: "0.05em",
+            ...(rightPanelTab === "table" && chatOpen
+              ? { color: "hsl(var(--filigree-glow))", background: "hsl(var(--filigree) / 0.12)", textShadow: "0 0 8px hsl(var(--filigree-glow) / 0.5)" }
+              : { color: "hsl(var(--muted-foreground))" }),
+          }}
         >
           <ScrollText className="h-3 w-3" />
           Skill Forge
@@ -219,11 +232,14 @@ const MapPage = () => {
               if (rightPanelTab === "roles" && chatOpen) { setChatOpen(false); }
               else { setRightPanelTab("roles"); setChatOpen(true); }
             }}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
-              rightPanelTab === "roles" && chatOpen
-                ? "bg-primary/10 text-primary"
-                : "text-muted-foreground hover:text-foreground"
-            }`}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all"
+            style={{
+              fontFamily: "'Cinzel', serif",
+              letterSpacing: "0.05em",
+              ...(rightPanelTab === "roles" && chatOpen
+                ? { color: "hsl(var(--filigree-glow))", background: "hsl(var(--filigree) / 0.12)", textShadow: "0 0 8px hsl(var(--filigree-glow) / 0.5)" }
+                : { color: "hsl(var(--muted-foreground))" }),
+            }}
           >
             <Swords className="h-3 w-3" />
             Kingdoms
@@ -240,7 +256,12 @@ const MapPage = () => {
             animate={{ x: 0, opacity: 1 }}
             exit={{ x: "-100%", opacity: 0 }}
             transition={{ type: "spring", damping: 28, stiffness: 300 }}
-            className="absolute top-24 left-4 bottom-20 w-[420px] z-20 flex flex-col bg-card/90 backdrop-blur-xl border border-border/50 rounded-xl shadow-2xl overflow-hidden"
+            className="absolute top-24 left-4 bottom-20 w-[420px] z-20 flex flex-col backdrop-blur-xl rounded-xl overflow-hidden"
+            style={{
+              background: "hsl(var(--surface-stone) / 0.92)",
+              border: "1px solid hsl(var(--filigree) / 0.2)",
+              boxShadow: "0 8px 40px hsl(var(--emboss-shadow)), inset 0 1px 0 hsl(var(--emboss-light))",
+            }}
           >
             {rightPanelTab === "hq" && isSignedIn ? (
               <div className="flex-1 overflow-hidden">
