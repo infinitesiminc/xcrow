@@ -782,7 +782,13 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
         // Victory state — AI message will prompt finish
       }
 
-      if (reply.includes("[SCAFFOLDING]") || reply.includes("[SCAFFOLD_TIER:") || reply.includes("[NEEDS_DEPTH]")) {
+      const needsElaboration =
+        reply.includes("[SCAFFOLDING]") ||
+        reply.includes("[SCAFFOLD_TIER:1]") ||
+        reply.includes("[SCAFFOLD_TIER:2]") ||
+        reply.includes("[NEEDS_DEPTH]");
+
+      if (needsElaboration) {
         // Don't advance turn — AI is asking user to elaborate
         setTurnCount(turnCount);
       } else {
