@@ -10,7 +10,7 @@ import {
   Swords, Shield, Map, ChevronRight, Sparkles, Flame,
   BookOpen, Crown, Star, Loader2, X, Zap
 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Navigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import OnboardingQuest from "@/components/OnboardingQuest";
