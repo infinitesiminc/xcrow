@@ -332,8 +332,12 @@ CURRENT TARGET: ${targetLabel}
 
 MANDATORY OBJECTIVE EVALUATION:
 After evaluating the user's choice, include EXACTLY ONE of these tags:
-- [OBJ_EVAL:${targetObj?.id || "unknown"}:PASS] — user's choice + any brief reasoning shows understanding
+- [OBJ_EVAL:${targetObj?.id || "unknown"}:PASS] — user's choice shows understanding
 - [OBJ_EVAL:${targetObj?.id || "unknown"}:FAIL] — user chose the misconception option
+
+CRITICAL PACING RULE: Do NOT mark PASS on the very first round (round 1). The first round is always a warm-up.
+Each objective should take at least 2 rounds of correct responses before being marked PASS.
+If it's round 1, always use FAIL or simply present the next scenario without an OBJ_EVAL tag.
 
 OBJECTIVE COMPLETION: If ALL objectives have been met, also include [ALL_OBJECTIVES_MET].`;
   }
