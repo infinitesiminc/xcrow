@@ -418,7 +418,7 @@ const RoleDeepDive = () => {
 
         <SimulatorModal
           open={!!simTask}
-          onClose={() => { setSimTask(null); fetchCompletions(); setPhase("choose"); setChosenTask(null); }}
+          onClose={() => { setSimTask(null); setCurrentIntel(null); fetchCompletions(); setPhase("choose"); setChosenTask(null); }}
           taskName={simTask?.name || ""}
           jobTitle={result.jobTitle}
           company={result.company}
@@ -428,6 +428,9 @@ const RoleDeepDive = () => {
           onCompleted={fetchCompletions}
           onNextTask={pickNextTask}
           onBackToFeed={() => navigate("/")}
+          intelContext={currentIntel ?? undefined}
+          onNextBattle={() => { setSimTask(null); setCurrentIntel(null); setPhase("choose"); setChosenTask(null); fetchCompletions(); }}
+          campaignStats={{ conquered: completedCount, total: result.tasks.length, sessionXP }}
         />
       </DialogContent>
     </Dialog>
