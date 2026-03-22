@@ -97,6 +97,7 @@ const App = () => (
             <Routes>
               {/* Public B2C routes */}
               <Route path="/" element={<><Navbar /><Index /></>} />
+              <Route path="/map" element={<><Navbar /><MapPage /></>} />
               <Route path="/role/:jobTitle" element={<><Navbar /><RoleDeepDive /></>} />
               <Route path="/analysis" element={<><Navbar /><Analysis /><Footer /></>} />
               <Route path="/auth" element={<><Navbar /><Auth /></>} />
