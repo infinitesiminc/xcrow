@@ -120,7 +120,7 @@ type RightTab = "territory" | "table" | "roles";
 /* ── component ───────────────────────────────────── */
 
 const Index = () => {
-  const { profile, user } = useAuth();
+  const { profile, user, refreshProfile } = useAuth();
   const isMobile = useIsMobile();
   const { skills: dbSkills } = useSkills();
 
