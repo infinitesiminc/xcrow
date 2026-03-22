@@ -62,16 +62,15 @@ const TIER_BORDER: Record<CastleTier, string> = {
 function KingdomCard({
   kingdom,
   isScouted,
-  onSelect,
   onContinue,
   index,
 }: {
   kingdom: KingdomRole;
   isScouted: boolean;
-  onSelect: () => void;
   onContinue: () => void;
   index: number;
 }) {
+  const navigate = useNavigate();
   const castle = getCastleState(kingdom.xp);
   const questProgress = kingdom.totalQuests > 0
     ? Math.round((kingdom.questsCompleted / kingdom.totalQuests) * 100)
