@@ -83,7 +83,7 @@ const MapPage = () => {
   const [selectedRole, setSelectedRole] = useState<RoleResult | null>(null);
   const [activeEdge, setActiveEdge] = useState<EdgeContext | null>(null);
   const [rightPanelTab, setRightPanelTab] = useState<"table" | "roles">("table");
-  const [chatOpen, setChatOpen] = useState(true);
+  const [chatOpen, setChatOpen] = useState(false);
   const [mapFocusSkillId, setMapFocusSkillId] = useState<string | null>(null);
   const [myRolesTab, setMyRolesTab] = useState<"saved" | "practiced">("saved");
   const [territoryOpen, setTerritoryOpen] = useState(false);
