@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect, useCallback } from "react";
+import type { IntelContext } from "@/lib/simulator";
 import { isStandardEmoji } from "@/lib/emoji-utils";
 import { motion, AnimatePresence } from "framer-motion";
 import {
