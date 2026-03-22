@@ -485,10 +485,10 @@ export default function Enterprise() {
 
       {/* ── Hero ── */}
       <section className="relative overflow-hidden px-4 pt-12 pb-20">
-
         <div className="mx-auto max-w-4xl text-center">
           <motion.div {...fadeUp}>
-            <span className="inline-flex items-center gap-2 rounded-full border border-border bg-muted/60 px-4 py-1.5 text-xs font-medium tracking-wide text-muted-foreground mb-6">
+            <span className="inline-flex items-center gap-2 rounded-full border border-[hsl(var(--filigree)/0.2)] px-4 py-1.5 text-xs font-medium tracking-wide text-muted-foreground mb-6"
+              style={{ background: "hsl(var(--surface-parchment))" }}>
               <Activity className="h-3.5 w-3.5" />
               Workforce Adaptation at AI Speed
             </span>
@@ -497,7 +497,7 @@ export default function Enterprise() {
           <motion.h1
             {...fadeUp}
             transition={{ duration: 0.5, delay: 0.05 }}
-            className="font-display text-4xl sm:text-5xl md:text-6xl font-semibold tracking-tight text-foreground leading-[1.1] mt-4"
+            className="font-fantasy text-4xl sm:text-5xl md:text-6xl font-semibold tracking-tight text-foreground leading-[1.1] mt-4"
           >
             Frontier models ship monthly.{" "}
             <span className="italic">Your workforce adapts annually.</span>
@@ -509,7 +509,7 @@ export default function Enterprise() {
             className="mt-6 text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed"
           >
             Eight frontier models in 90 days — each one shifts which tasks AI can handle.
-            We keep your workforce in lockstep, continuously and autonomously.
+            We keep your workforce in lockstep through immersive quest-based simulations, continuously and autonomously.
           </motion.p>
 
           <motion.div
@@ -517,11 +517,12 @@ export default function Enterprise() {
             transition={{ duration: 0.5, delay: 0.15 }}
             className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3"
           >
-            <Button size="lg" className="gap-2 text-base px-8" onClick={() => navigate("/contact")}>
+            <Button size="lg" className="gap-2 text-base px-8" onClick={() => navigate("/contact")}
+              style={{ boxShadow: "0 0 16px hsl(var(--filigree-glow) / 0.2)" }}>
               Book a Demo <ArrowRight className="h-4 w-4" />
             </Button>
-            <Button variant="outline" size="lg" className="gap-2 text-base px-8" onClick={() => navigate("/case-study/anthropic")}>
-              See Anthropic Case Study
+            <Button variant="outline" size="lg" className="gap-2 text-base px-8 border-[hsl(var(--filigree)/0.2)]" onClick={() => navigate("/case-study/anthropic")}>
+              See the Campaign
             </Button>
           </motion.div>
         </div>
@@ -538,11 +539,11 @@ export default function Enterprise() {
       </section>
 
       {/* ── Stats bar ── */}
-      <section className="border-y border-border bg-muted/30">
-        <div className="mx-auto max-w-5xl grid grid-cols-2 md:grid-cols-4 divide-x divide-border">
+      <section className="border-y border-[hsl(var(--filigree)/0.1)]" style={{ background: "hsl(var(--surface-stone))" }}>
+        <div className="mx-auto max-w-5xl grid grid-cols-2 md:grid-cols-4 divide-x divide-[hsl(var(--filigree)/0.1)]">
           {stats.map((s) => (
             <motion.div key={s.label} {...fadeUp} className="px-6 py-8 text-center">
-              <p className="font-display text-3xl font-semibold text-foreground">{s.value}</p>
+              <p className="font-fantasy text-3xl font-semibold text-foreground">{s.value}</p>
               <p className="mt-1 text-sm text-muted-foreground">{s.label}</p>
             </motion.div>
           ))}
@@ -553,7 +554,7 @@ export default function Enterprise() {
       <section className="px-4 py-20">
         <div className="mx-auto max-w-5xl">
           <motion.div {...fadeUp} className="text-center mb-14">
-            <h2 className="font-display text-3xl sm:text-4xl font-semibold text-foreground">
+            <h2 className="font-fantasy text-3xl sm:text-4xl font-semibold text-foreground">
               Close the acceleration gap
             </h2>
             <p className="mt-3 text-muted-foreground max-w-2xl mx-auto">
@@ -584,14 +585,14 @@ export default function Enterprise() {
       </section>
 
       {/* ── Always Adapting Engine (Loop) ── */}
-      <section className="px-4 py-20 bg-muted/20 border-y border-border">
+      <section className="px-4 py-20 border-y border-[hsl(var(--filigree)/0.1)]" style={{ background: "hsl(var(--surface-stone))" }}>
         <div className="mx-auto max-w-5xl">
           <motion.div {...fadeUp} className="text-center mb-4">
-            <h2 className="font-display text-3xl sm:text-4xl font-semibold text-foreground">
+            <h2 className="font-fantasy text-3xl sm:text-4xl font-semibold text-foreground">
               Always adapting to AI
             </h2>
             <p className="mt-3 text-muted-foreground max-w-xl mx-auto">
-              Not a project. Not a quarterly review. A living system that adapts your
+              Not a project. Not a quarterly review. A living engine — powered by quest-based skill building — that adapts your
               workforce as fast as frontier models evolve.
             </p>
           </motion.div>
@@ -623,7 +624,7 @@ export default function Enterprise() {
       <section className="px-4 py-20">
         <div className="mx-auto max-w-5xl">
           <motion.div {...fadeUp} className="text-center mb-14">
-            <h2 className="font-display text-3xl sm:text-4xl font-semibold text-foreground">
+            <h2 className="font-fantasy text-3xl sm:text-4xl font-semibold text-foreground">
               Model-aware adaptation
             </h2>
             <p className="mt-3 text-muted-foreground max-w-2xl mx-auto">
@@ -682,10 +683,10 @@ export default function Enterprise() {
       </section>
 
       {/* ── Strategic Proof Points ── */}
-      <section className="px-4 py-20 bg-muted/30 border-y border-border">
+      <section className="px-4 py-20 border-y border-[hsl(var(--filigree)/0.1)]" style={{ background: "hsl(var(--surface-parchment))" }}>
         <div className="mx-auto max-w-4xl">
           <motion.div {...fadeUp} className="text-center mb-14">
-            <h2 className="font-display text-3xl sm:text-4xl font-semibold text-foreground">
+            <h2 className="font-fantasy text-3xl sm:text-4xl font-semibold text-foreground">
               Velocity, measured
             </h2>
             <p className="mt-3 text-muted-foreground">
@@ -701,7 +702,7 @@ export default function Enterprise() {
                 transition={{ duration: 0.5, delay: i * 0.06 }}
                 className="text-center"
               >
-                <p className="font-display text-4xl font-semibold text-foreground">{p.metric}</p>
+                <p className="font-fantasy text-4xl font-semibold text-foreground">{p.metric}</p>
                 <p className="mt-2 text-sm text-muted-foreground leading-relaxed">{p.description}</p>
               </motion.div>
             ))}
@@ -714,17 +715,19 @@ export default function Enterprise() {
         <div className="mx-auto max-w-3xl">
           <motion.div
             {...fadeUp}
-            className="rounded-2xl border border-border bg-card p-8 sm:p-10 text-center space-y-4"
+            className="rounded-2xl border border-[hsl(var(--filigree)/0.2)] p-8 sm:p-10 text-center space-y-4"
+            style={{ background: "hsl(var(--surface-stone))", boxShadow: "inset 0 1px 0 hsl(var(--emboss-light)), 0 4px 12px hsl(var(--emboss-shadow))" }}
           >
-            <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground">Case Study</p>
-            <h3 className="font-display text-2xl sm:text-3xl font-semibold text-foreground">
-              See how Anthropic keeps 400+ roles ready for frontier AI
+            <p className="text-xs font-medium uppercase tracking-widest text-[hsl(var(--filigree))]" style={{ fontFamily: "'Cinzel', serif" }}>The Campaign</p>
+            <h3 className="font-fantasy text-2xl sm:text-3xl font-semibold text-foreground">
+              See how Anthropic keeps 400+ kingdoms ready for frontier AI
             </h3>
             <p className="text-sm text-muted-foreground max-w-lg mx-auto leading-relaxed">
-              Walk through the full platform — from ATS import to continuous adaptation dashboards — in a 6-step guided tour. No sign-up required.
+              Walk through the full platform — from ATS import to continuous adaptation dashboards — in a 7-step guided campaign. No sign-up required.
             </p>
-            <Button size="lg" onClick={() => navigate("/case-study/anthropic")} className="gap-2 mt-2">
-              Start the Tour <ArrowRight className="h-4 w-4" />
+            <Button size="lg" onClick={() => navigate("/case-study/anthropic")} className="gap-2 mt-2"
+              style={{ boxShadow: "0 0 16px hsl(var(--filigree-glow) / 0.2)" }}>
+              Begin Campaign <ArrowRight className="h-4 w-4" />
             </Button>
           </motion.div>
         </div>
@@ -734,7 +737,7 @@ export default function Enterprise() {
       <section className="px-4 py-20">
         <div className="mx-auto max-w-5xl">
           <motion.div {...fadeUp} className="text-center mb-14">
-            <h2 className="font-display text-3xl sm:text-4xl font-semibold text-foreground">
+            <h2 className="font-fantasy text-3xl sm:text-4xl font-semibold text-foreground">
               Enterprise-grade from day one
             </h2>
             <p className="mt-3 text-muted-foreground max-w-lg mx-auto">
@@ -761,10 +764,10 @@ export default function Enterprise() {
       </section>
 
       {/* ── Final CTA ── */}
-      <section className="px-4 py-24 border-t border-border">
+      <section className="px-4 py-24 border-t border-[hsl(var(--filigree)/0.1)]">
         <div className="mx-auto max-w-3xl text-center">
           <motion.div {...fadeUp}>
-            <h2 className="font-display text-3xl sm:text-4xl font-semibold text-foreground">
+            <h2 className="font-fantasy text-3xl sm:text-4xl font-semibold text-foreground">
               Make every model release your advantage.
             </h2>
             <p className="mt-4 text-muted-foreground text-lg max-w-xl mx-auto">
@@ -772,11 +775,12 @@ export default function Enterprise() {
               Turn acceleration into opportunity.
             </p>
             <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3">
-              <Button size="lg" className="gap-2 text-base px-8" onClick={() => navigate("/contact")}>
+              <Button size="lg" className="gap-2 text-base px-8" onClick={() => navigate("/contact")}
+                style={{ boxShadow: "0 0 16px hsl(var(--filigree-glow) / 0.2)" }}>
                 Book a Demo <ArrowRight className="h-4 w-4" />
               </Button>
-              <Button variant="outline" size="lg" className="gap-2 text-base px-8" onClick={() => navigate("/case-study/anthropic")}>
-                See It in Action
+              <Button variant="outline" size="lg" className="gap-2 text-base px-8 border-[hsl(var(--filigree)/0.2)]" onClick={() => navigate("/case-study/anthropic")}>
+                See the Campaign
               </Button>
             </div>
           </motion.div>

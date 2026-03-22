@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
-  Check, Zap, GraduationCap, Building2, ArrowRight, Loader2, Crown, HelpCircle,
+  Check, ArrowRight, Loader2, HelpCircle, Shield, Crown, Castle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -10,48 +10,43 @@ import {
 } from "@/components/ui/accordion";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import xcrowLogo from "@/assets/xcrow-logo.png";
 
 const FREE_FEATURES = [
-  "3 simulations per month (earn more by inviting friends!)",
-  "Unlimited role analyses",
-  "Skill territory (view only)",
-  "Leaderboard access",
-  "Role exploration feed",
+  "3 quests per moon (earn more by recruiting allies!)",
+  "Unlimited kingdom scouting",
+  "Territory map (view only)",
+  "Hall of Champions access",
+  "Kingdom exploration feed",
 ];
 
 const PRO_FEATURES = [
-  "Unlimited simulations",
-  "Unlimited role analyses",
-  "Full skill territory with 3-ring growth tracking",
-  "AI career coach",
-  "Human edge & AI mastery insights",
+  "Unlimited quests & campaigns",
+  "Unlimited kingdom scouting",
+  "Full territory with 3-ring growth tracking",
+  "Summon the Crow — AI Career Scout",
+  "Human Edge & AI Mastery insights",
   "Exportable skill profile",
-  "Priority on leaderboard",
+  "Priority ranking in the Hall of Champions",
 ];
 
 const SCHOOL_FEATURES = [
-  "Everything in Pro for every student",
+  "Everything in Champion for every student",
   "Program-specific curriculum gap analysis",
-  "AI simulation library mapped to your courses",
-  "School admin dashboard & cohort analytics",
+  "Quest library mapped to your courses",
+  "Guild admin dashboard & cohort analytics",
   "Bulk student provisioning & domain auto-enroll",
-  "Cross-school skill territory benchmarks",
+  "Cross-guild territory benchmarks",
   "Dedicated onboarding & support",
 ];
 
 const faqs = [
-  { q: "Is it really free?", a: "Yes! The Free plan gives you 3 simulations per month with unlimited role analyses and a view-only skill territory. Invite friends to earn +2 bonus simulations each — no cap!" },
-  { q: "What does Pro unlock?", a: "Pro removes all simulation limits, unlocks full 3-ring growth tracking (Foundation, AI Mastery, Human Edge) on your skill territory, and gives you access to the AI career coach." },
-  { q: "How does the School plan work?", a: "We work with universities to create custom packages based on student count, programs, and desired outcomes. Contact our team to discuss pricing and start a free pilot." },
+  { q: "Is it really free?", a: "Yes! The Recruit plan gives you 3 quests per moon with unlimited kingdom scouting and a view-only territory map. Recruit allies to earn +2 bonus quests each — no cap!" },
+  { q: "What does Champion unlock?", a: "Champion removes all quest limits, unlocks full 3-ring growth tracking (Foundation, AI Mastery, Human Edge) on your territory, and lets you summon the Crow — your AI Career Scout." },
+  { q: "How does the Guild Hall work?", a: "We work with universities to create custom packages based on student count, programs, and desired outcomes. Contact our team to discuss pricing and start a free pilot." },
   { q: "Can I cancel anytime?", a: "Absolutely. Cancel from your settings and you'll keep access until the end of your billing period." },
-  { q: "What if my school already has a license?", a: "If your university has a Xcrow.ai license, your school admin will invite you via email. You'll automatically get Pro access at no cost to you." },
-  { q: "Do schools get a free pilot?", a: "Yes — we offer a no-cost pilot so schools can see the impact before committing. Talk to our team to get started." },
-];
-
-const TIER_GRADIENTS = [
-  "from-spectrum-0 via-spectrum-1 to-spectrum-2",
-  "from-spectrum-3 via-spectrum-6 to-spectrum-5",
-  "from-spectrum-4 via-spectrum-3 to-spectrum-0",
+  { q: "What if my school already has a license?", a: "If your university has an Xcrow.ai Guild license, your guild admin will invite you via email. You'll automatically get Champion access at no cost to you." },
+  { q: "Do guilds get a free pilot?", a: "Yes — we offer a no-cost pilot so guilds can see the impact before committing. Talk to our team to get started." },
 ];
 
 export default function Pricing() {
@@ -80,43 +75,43 @@ export default function Pricing() {
 
   const tiers = [
     {
-      name: "Free",
+      name: "Recruit",
       price: "$0",
       period: "forever",
-      description: "Start exploring your career path",
+      description: "Begin your journey. Scout kingdoms, claim your first tiles.",
       features: FREE_FEATURES,
-      icon: Zap,
+      icon: Shield,
       cta: plan === "free" ? "Current Plan" : "Downgrade",
       ctaDisabled: plan === "free",
       onCta: () => navigate("/"),
       highlight: false,
-      checkColor: "text-spectrum-0",
+      territoryColor: "territory-analytical",
     },
     {
-      name: "Pro",
+      name: "Champion",
       price: "$9.99",
       period: "/month",
-      description: "Unlimited access to build your skill map",
+      description: "Unlimited quests. Full territory. Summon the Crow.",
       features: PRO_FEATURES,
       icon: Crown,
-      cta: plan === "pro" ? "Current Plan" : plan === "school" ? "Included via School" : "Upgrade to Pro",
+      cta: plan === "pro" ? "Current Plan" : plan === "school" ? "Included via Guild" : "Ascend to Champion",
       ctaDisabled: plan === "pro" || plan === "school",
       onCta: handleUpgrade,
       highlight: true,
-      checkColor: "text-primary",
+      territoryColor: "territory-strategic",
     },
     {
-      name: "School",
+      name: "Guild Hall",
       price: "Custom",
       period: "",
-      description: "AI readiness for your entire university",
+      description: "AI readiness for your entire university guild.",
       features: SCHOOL_FEATURES,
-      icon: Building2,
-      cta: plan === "school" ? "Active License" : "Talk to Sales",
+      icon: Castle,
+      cta: plan === "school" ? "Active License" : "Summon Sales",
       ctaDisabled: plan === "school",
       onCta: () => navigate("/contact"),
       highlight: false,
-      checkColor: "text-spectrum-4",
+      territoryColor: "territory-leadership",
     },
   ];
 
@@ -124,18 +119,19 @@ export default function Pricing() {
     <div className="min-h-screen bg-background">
       {/* Hero */}
       <section className="relative overflow-hidden px-4 pt-16 sm:pt-20 pb-8 sm:pb-12">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[400px] bg-primary/8 rounded-full blur-[120px] pointer-events-none" />
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[400px] rounded-full blur-[120px] pointer-events-none"
+          style={{ background: "radial-gradient(circle, hsl(var(--filigree-glow) / 0.08), transparent 70%)" }} />
         <div className="relative mx-auto max-w-4xl text-center">
           <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45 }}>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/30 text-primary text-xs font-medium mb-4 glow-purple">
-              <GraduationCap className="h-3.5 w-3.5" />
-              Built for students
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-[hsl(var(--filigree)/0.3)] bg-[hsl(var(--surface-parchment))] text-xs font-medium mb-4">
+              <img src={xcrowLogo} alt="" className="h-4 w-4" />
+              <span className="text-foreground/70 font-fantasy">The Armory</span>
             </div>
-            <h1 className="font-display text-3xl sm:text-5xl font-bold text-foreground tracking-tight">
-              Simple pricing, powerful skills
+            <h1 className="font-fantasy text-3xl sm:text-5xl font-bold text-foreground tracking-tight">
+              Choose Your Path
             </h1>
             <p className="mx-auto mt-3 sm:mt-4 max-w-xl text-base sm:text-lg text-muted-foreground leading-relaxed">
-              Start free. Upgrade when you're ready to go all-in on your career readiness.
+              Every legend starts as a Recruit. Ascend when you're ready to conquer.
             </p>
           </motion.div>
         </div>
@@ -152,16 +148,19 @@ export default function Pricing() {
               transition={{ delay: i * 0.1 }}
               className="relative rounded-2xl"
             >
-              {/* Spectrum gradient top border */}
-              <div className={`absolute top-0 inset-x-0 h-[3px] bg-gradient-to-r ${TIER_GRADIENTS[i]}`} />
+              {/* Territory-colored top border */}
+              <div className={`absolute top-0 inset-x-0 h-[3px] bg-${tier.territoryColor}`} />
 
-              <div className={`border rounded-2xl p-6 flex flex-col h-full ${
+              <div className={`border rounded-2xl p-6 flex flex-col h-full transition-all ${
                 tier.highlight
-                  ? "border-primary/40 bg-card/90 backdrop-blur-sm shadow-lg shadow-primary/10"
-                  : "border-border/60 bg-card/80 backdrop-blur-sm"
-              }`}>
+                  ? "border-[hsl(var(--filigree)/0.4)] bg-[hsl(var(--surface-stone))] shadow-lg shadow-[hsl(var(--filigree-glow)/0.1)]"
+                  : "border-border/60 bg-[hsl(var(--surface-stone))]"
+              }`}
+                style={{ boxShadow: tier.highlight ? `inset 0 1px 0 hsl(var(--emboss-light)), 0 4px 20px hsl(var(--emboss-shadow))` : `inset 0 1px 0 hsl(var(--emboss-light))` }}
+              >
                 {tier.highlight && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 rounded-full bg-primary text-primary-foreground text-[10px] font-semibold uppercase tracking-wider shadow-lg shadow-primary/30">
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 rounded-full bg-[hsl(var(--territory-strategic))] text-background text-[10px] font-semibold uppercase tracking-wider shadow-lg"
+                    style={{ fontFamily: "'Cinzel', serif" }}>
                     Most Popular
                   </div>
                 )}
@@ -169,11 +168,11 @@ export default function Pricing() {
                 <div className="mb-5">
                   <div className="flex items-center gap-2 mb-3">
                     <div className={`h-9 w-9 rounded-xl flex items-center justify-center border ${
-                      tier.highlight ? "bg-primary/15 border-primary/30" : "bg-card border-border/60"
+                      tier.highlight ? "bg-[hsl(var(--territory-strategic)/0.15)] border-[hsl(var(--territory-strategic)/0.3)]" : "bg-[hsl(var(--surface-stone))] border-border/60"
                     }`}>
-                      <tier.icon className={`h-5 w-5 ${tier.highlight ? "text-primary" : "text-muted-foreground"}`} />
+                      <tier.icon className={`h-5 w-5 ${tier.highlight ? "text-[hsl(var(--territory-strategic))]" : "text-muted-foreground"}`} />
                     </div>
-                    <h3 className="text-lg font-bold text-foreground">{tier.name}</h3>
+                    <h3 className="text-lg font-bold text-foreground font-fantasy">{tier.name}</h3>
                   </div>
                   <div className="flex items-baseline gap-1">
                     <span className="text-3xl font-bold text-foreground">{tier.price}</span>
@@ -185,23 +184,24 @@ export default function Pricing() {
                 <ul className="space-y-2.5 flex-1 mb-6">
                   {tier.features.map(f => (
                     <li key={f} className="flex items-start gap-2 text-sm">
-                      <Check className={`h-4 w-4 shrink-0 mt-0.5 ${tier.checkColor}`} />
+                      <Check className={`h-4 w-4 shrink-0 mt-0.5 text-${tier.territoryColor}`} />
                       <span className="text-foreground/80">{f}</span>
                     </li>
                   ))}
                 </ul>
 
                 <Button
-                  className={`w-full ${tier.highlight ? "glow-purple" : ""}`}
+                  className={`w-full ${tier.highlight ? "" : ""}`}
                   variant={tier.highlight ? "default" : "outline"}
-                  disabled={tier.ctaDisabled || (loadingCheckout && tier.name === "Pro")}
+                  disabled={tier.ctaDisabled || (loadingCheckout && tier.name === "Champion")}
                   onClick={tier.onCta}
+                  style={tier.highlight ? { boxShadow: "0 0 20px hsl(var(--territory-strategic) / 0.25)" } : undefined}
                 >
-                  {loadingCheckout && tier.name === "Pro" ? (
+                  {loadingCheckout && tier.name === "Champion" ? (
                     <Loader2 className="h-4 w-4 animate-spin mr-1.5" />
                   ) : null}
                   {tier.cta}
-                  {!tier.ctaDisabled && tier.name !== "Free" && <ArrowRight className="h-3.5 w-3.5 ml-1.5" />}
+                  {!tier.ctaDisabled && tier.name !== "Recruit" && <ArrowRight className="h-3.5 w-3.5 ml-1.5" />}
                 </Button>
               </div>
             </motion.div>
@@ -209,7 +209,7 @@ export default function Pricing() {
         </div>
       </section>
 
-      {/* School CTA */}
+      {/* Guild CTA */}
       <section className="px-4 pb-16 sm:pb-20">
         <motion.div
           initial={{ opacity: 0 }}
@@ -217,17 +217,18 @@ export default function Pricing() {
           viewport={{ once: true }}
           className="relative mx-auto max-w-2xl rounded-2xl overflow-hidden"
         >
-          <div className="absolute top-0 inset-x-0 h-[3px] bg-gradient-to-r from-spectrum-3 via-spectrum-0 to-spectrum-1" />
-          <div className="border border-border/60 bg-card/80 backdrop-blur-sm rounded-2xl p-8 text-center">
-            <Building2 className="h-8 w-8 text-primary mx-auto mb-3" />
-            <h3 className="text-lg font-bold text-foreground mb-1">
-              Bring Xcrow.ai to your university
+          <div className="absolute top-0 inset-x-0 h-[3px] bg-[hsl(var(--filigree))]" />
+          <div className="border border-[hsl(var(--filigree)/0.2)] rounded-2xl p-8 text-center"
+            style={{ background: "hsl(var(--surface-parchment))", boxShadow: "inset 0 1px 0 hsl(var(--emboss-light))" }}>
+            <Castle className="h-8 w-8 text-[hsl(var(--filigree-glow))] mx-auto mb-3" />
+            <h3 className="text-lg font-bold text-foreground mb-1 font-fantasy">
+              Bring the Guild to Your University
             </h3>
             <p className="text-sm text-muted-foreground max-w-md mx-auto mb-4">
-              Give every student personalized AI-readiness training mapped to your curriculum. Free pilot available.
+              Give every student quest-based AI-readiness training mapped to your curriculum. Free pilot available.
             </p>
-            <Button variant="outline" onClick={() => navigate("/contact")} className="border-border/60">
-              Talk to Sales <ArrowRight className="h-3.5 w-3.5 ml-1.5" />
+            <Button variant="outline" onClick={() => navigate("/contact")} className="border-[hsl(var(--filigree)/0.3)]">
+              Summon Sales <ArrowRight className="h-3.5 w-3.5 ml-1.5" />
             </Button>
           </div>
         </motion.div>
@@ -237,14 +238,15 @@ export default function Pricing() {
       <section className="px-4 pb-20 sm:pb-24">
         <div className="mx-auto max-w-2xl">
           <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} className="text-center mb-8">
-            <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 border border-primary/30">
-              <HelpCircle className="h-5 w-5 text-primary" />
+            <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-xl border border-[hsl(var(--filigree)/0.2)]"
+              style={{ background: "hsl(var(--surface-stone))" }}>
+              <HelpCircle className="h-5 w-5 text-[hsl(var(--filigree-glow))]" />
             </div>
-            <h2 className="font-display text-2xl font-bold text-foreground">Frequently asked questions</h2>
+            <h2 className="font-fantasy text-2xl font-bold text-foreground">Frequently Asked Questions</h2>
           </motion.div>
           <Accordion type="single" collapsible className="w-full">
             {faqs.map((faq, i) => (
-              <AccordionItem key={i} value={`faq-${i}`}>
+              <AccordionItem key={i} value={`faq-${i}`} className="border-[hsl(var(--filigree)/0.1)]">
                 <AccordionTrigger className="text-sm text-foreground text-left">{faq.q}</AccordionTrigger>
                 <AccordionContent className="text-sm text-muted-foreground">{faq.a}</AccordionContent>
               </AccordionItem>
