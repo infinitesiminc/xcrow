@@ -19,6 +19,7 @@ interface UserProfile {
   careerStage: string | null;
   cvUrl: string | null;
   programName: string | null;
+  avatarId: string | null;
 }
 
 interface AuthContextType {
