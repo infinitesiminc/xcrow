@@ -101,6 +101,7 @@ const MapPage = () => {
   const [realSkills, setRealSkills] = useState<SkillXP[]>([]);
   const [targetSkillIds, setTargetSkillIds] = useState<Set<string>>(new Set());
   const [level2SkillIds, setLevel2SkillIds] = useState<Set<string>>(new Set());
+  const [skillGrowthMap, setSkillGrowthMap] = useState<Map<string, CanonicalSkillGrowth>>(new Map());
 
   const displaySkills = useMemo(
     () => (realSkills.length > 0 ? realSkills : buildEmptySkills(taxonomy)),
