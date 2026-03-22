@@ -286,7 +286,7 @@ const RoleDeepDive = () => {
         <DialogContent className="max-w-5xl w-[95vw] h-[85vh] p-0 gap-0 overflow-hidden rounded-2xl border-border/60 bg-background">
           <div className="h-full flex flex-col items-center justify-center px-4">
             <XcrowLoader
-              title={`⚔️ Scouting ${jobTitle || "kingdom"}…`}
+              title={`🧭 Scouting ${jobTitle || "kingdom"}…`}
               subtitle="Preparing your mission briefing"
             />
           </div>
