@@ -976,7 +976,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
             </div>
           </div>
           {phase === "chat" && (
-            <div className="px-4 sm:px-6 py-1.5 bg-accent/10">
+            <div className="px-4 sm:px-6 py-1.5" style={{ background: "hsl(var(--filigree) / 0.06)" }}>
               <Progress value={progressPercent} className="h-1.5" />
             </div>
           )}
