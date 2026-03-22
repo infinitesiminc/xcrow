@@ -332,35 +332,77 @@ const PromptArena = ({ round, roundNumber, onJudged, loading }: PromptArenaProps
           className="space-y-3"
         >
           {/* Correct/Incorrect banner */}
-          <div className={`rounded-xl px-4 py-3 flex items-start gap-3 ${
-            correct ? "bg-success/5 border border-success/30" : "bg-destructive/5 border border-destructive/30"
-          }`}>
+          <motion.div
+            initial={correct ? { opacity: 0, scale: 0.95 } : { opacity: 0, x: -6 }}
+            animate={correct ? { opacity: 1, scale: 1 } : { opacity: 1, x: [0, -4, 4, -3, 3, 0] }}
+            transition={{ duration: correct ? 0.4 : 0.5 }}
+            className="rounded-xl px-5 py-4 flex items-start gap-3 relative overflow-hidden"
+            style={{
+              background: correct
+                ? "linear-gradient(135deg, hsl(var(--surface-stone)), hsl(142 71% 45% / 0.08))"
+                : "linear-gradient(135deg, hsl(var(--surface-stone)), hsl(0 84% 60% / 0.06))",
+              border: correct
+                ? "2px solid hsl(142 71% 45% / 0.35)"
+                : "2px solid hsl(0 84% 60% / 0.3)",
+              boxShadow: correct
+                ? "0 0 20px hsl(142 71% 45% / 0.1)"
+                : "none",
+            }}
+          >
             {correct ? (
-              <CheckCircle2 className="h-5 w-5 text-success shrink-0 mt-0.5" />
+              <CheckCircle2 className="h-6 w-6 text-success shrink-0 mt-0.5" />
             ) : (
-              <XCircle className="h-5 w-5 text-destructive shrink-0 mt-0.5" />
+              <XCircle className="h-6 w-6 text-destructive shrink-0 mt-0.5" />
             )}
             <div>
-              <p className={`text-base font-semibold ${correct ? "text-success" : "text-destructive"}`}>
-                {correct ? "Excellent judgment! ✨" : "Not quite — here's why:"}
+              <p
+                className="text-lg font-bold"
+                style={{
+                  fontFamily: "'Cinzel', serif",
+                  color: correct ? "hsl(142 71% 45%)" : "hsl(0 84% 60%)",
+                }}
+              >
+                {correct ? "✨ Excellent Judgment!" : "Not quite — here's why:"}
               </p>
-              <p className="text-sm text-foreground/80 mt-1.5 leading-relaxed">{round.explanation}</p>
+              <p className="text-[14px] text-foreground/80 mt-2 leading-relaxed">{round.explanation}</p>
             </div>
-          </div>
+            {/* Sparkle particles for correct */}
+            {correct && (
+              <>
+                {[0, 1, 2].map((i) => (
+                  <motion.span
+                    key={i}
+                    initial={{ opacity: 0.8, y: 0, x: 20 + i * 30 }}
+                    animate={{ opacity: 0, y: -30 }}
+                    transition={{ delay: 0.3 + i * 0.15, duration: 0.8 }}
+                    className="absolute top-2 text-sm pointer-events-none"
+                  >
+                    ✨
+                  </motion.span>
+                ))}
+              </>
+            )}
+          </motion.div>
 
           {/* Key Insight */}
           <div
-            className="rounded-xl px-4 py-3"
+            className="rounded-xl px-5 py-4"
             style={{
-              background: "hsl(var(--primary) / 0.05)",
-              border: "1px solid hsl(var(--primary) / 0.2)",
+              background: "hsl(var(--surface-stone))",
+              border: "1px solid hsl(var(--filigree) / 0.2)",
+              boxShadow: "inset 0 1px 0 hsl(var(--emboss-light))",
             }}
           >
-            <div className="flex items-center gap-2 mb-1.5">
-              <Sparkles className="h-4 w-4 text-primary" />
-              <span className="text-xs font-bold uppercase tracking-wider text-primary">Key Insight</span>
+            <div className="flex items-center gap-2 mb-2">
+              <span className="text-base">📜</span>
+              <span
+                className="text-xs font-bold uppercase tracking-[0.12em]"
+                style={{ fontFamily: "'Cinzel', serif", color: "hsl(var(--filigree-glow))" }}
+              >
+                Key Insight
+              </span>
             </div>
-            <p className="text-sm text-foreground/80 leading-relaxed">{round.insight}</p>
+            <p className="text-[14px] text-foreground/80 leading-relaxed">{round.insight}</p>
           </div>
 
           {/* Continue */}
