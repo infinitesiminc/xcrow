@@ -174,15 +174,15 @@ const PromptArena = ({ round, roundNumber, onJudged, loading }: PromptArenaProps
               }}
             >
               {/* Prompt Header */}
-              <div className="px-3 py-2.5" style={{ borderBottom: "1px solid hsl(var(--filigree) / 0.1)" }}>
-                <div className="flex items-center justify-between mb-1">
-                  <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: "hsl(var(--primary))" }}>
+              <div className="px-4 py-3" style={{ borderBottom: "1px solid hsl(var(--filigree) / 0.1)" }}>
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className="text-xs font-bold uppercase tracking-wider" style={{ color: "hsl(var(--primary))" }}>
                     {side === "a" ? "Prompt A" : "Prompt B"}
                   </span>
-                  <span className="text-[10px] text-muted-foreground px-1.5 py-0.5 rounded bg-muted/50">{prompt.tool}</span>
+                  <span className="text-xs text-muted-foreground px-2 py-0.5 rounded bg-muted/50">{prompt.tool}</span>
                 </div>
-                <p className="text-[11px] font-medium text-foreground/80">{prompt.label}</p>
-                <p className="text-[10px] text-muted-foreground mt-0.5">Technique: {prompt.technique}</p>
+                <p className="text-sm font-medium text-foreground/80">{prompt.label}</p>
+                <p className="text-xs text-muted-foreground mt-1">Technique: {prompt.technique}</p>
               </div>
 
               {/* The Actual Prompt */}
