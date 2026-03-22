@@ -39,7 +39,7 @@ export default function XcrowLoader({
             cy={ringSize / 2}
             r={r}
             fill="none"
-            stroke="hsl(var(--primary) / 0.12)"
+            stroke="hsl(var(--muted-foreground) / 0.12)"
             strokeWidth="3"
           />
           <circle
@@ -47,11 +47,11 @@ export default function XcrowLoader({
             cy={ringSize / 2}
             r={r}
             fill="none"
-            stroke="hsl(var(--primary))"
+            stroke="hsl(var(--muted-foreground) / 0.5)"
             strokeWidth="3"
             strokeLinecap="round"
             strokeDasharray={`${circ * 0.3} ${circ * 0.7}`}
-            className="drop-shadow-[0_0_6px_hsl(var(--primary)/0.5)]"
+            className="drop-shadow-[0_0_4px_hsl(var(--muted-foreground)/0.3)]"
           />
         </motion.svg>
 
@@ -62,7 +62,7 @@ export default function XcrowLoader({
           transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
         >
           <div
-            className="rounded-full bg-primary/20 blur-xl"
+            className="rounded-full bg-muted-foreground/10 blur-xl"
             style={{ width: imgSize * 0.8, height: imgSize * 0.8 }}
           />
         </motion.div>
@@ -76,7 +76,7 @@ export default function XcrowLoader({
           <img
             src={xcrowLogo}
             alt="Xcrow"
-            className="object-contain drop-shadow-[0_0_12px_hsl(var(--primary)/0.4)]"
+            className="object-contain grayscale opacity-80"
             style={{ width: imgSize, height: imgSize }}
             draggable={false}
           />

@@ -19,6 +19,7 @@ import { useChatContext, useChatViewContext } from "@/contexts/ChatContext";
 import RolePreviewPanel from "@/components/RolePreviewPanel";
 import type { RoleResult } from "@/components/InlineRoleCarousel";
 import SkillSuggestionCards from "@/components/SkillSuggestionCards";
+import XcrowLoader from "@/components/XcrowLoader";
 
 /* ── Types ── */
 
@@ -290,7 +291,7 @@ const Index = () => {
   if (loading) {
     return (
       <div className="h-[calc(100vh-3.5rem)] flex items-center justify-center">
-        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+        <XcrowLoader title="Loading your kingdoms…" size="sm" />
       </div>
     );
   }
