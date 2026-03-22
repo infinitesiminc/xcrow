@@ -34,7 +34,7 @@ const CATEGORY_LABELS: Record<string, string> = {
 };
 
 function ToolChip({ tool, matchedText }: { tool: AIToolInfo; matchedText: string }) {
-  const [saved, setSaved] = useState(() => isToolSaved(tool.name));
+  const [saved, setSaved] = useState(() => getSavedTools().includes(tool.name));
   const color = CATEGORY_COLORS[tool.category] || "hsl(var(--primary))";
 
   const toggleSave = (e: React.MouseEvent) => {
