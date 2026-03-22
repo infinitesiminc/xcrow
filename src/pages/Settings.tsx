@@ -24,8 +24,9 @@ import { useToast } from "@/hooks/use-toast";
 import {
   Loader2, Save, Trash2, KeyRound, Bookmark,
   Linkedin, Upload, FileText, GraduationCap, Briefcase, X, School,
-  Shield, User, Lock, AlertOctagon, ArrowLeft, LogOut,
+  Shield, User, Lock, AlertOctagon, ArrowLeft, LogOut, Check,
 } from "lucide-react";
+import { AVATAR_OPTIONS, getAvatarById } from "@/lib/avatars";
 
 
 /* ── helpers ─────────────────────────────────────────── */
@@ -82,6 +83,7 @@ export default function Settings() {
   const [cvFileName, setCvFileName] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [uploadingCv, setUploadingCv] = useState(false);
+  const [avatarId, setAvatarId] = useState<string | null>(null);
   const cvInputRef = useRef<HTMLInputElement>(null);
 
   const [newPassword, setNewPassword] = useState("");
@@ -113,10 +115,13 @@ export default function Settings() {
       const parts = profile.cvUrl.split("/");
       setCvFileName(decodeURIComponent(parts[parts.length - 1] || "CV"));
     }
-    // Fetch username separately since it's not in the profile context
+    // Fetch username and avatar_id separately since they're not in the profile context
     if (user) {
-      supabase.from("profiles").select("username").eq("id", user.id).single().then(({ data }) => {
-        if (data && (data as any).username) setUsername((data as any).username);
+      supabase.from("profiles").select("username, avatar_id").eq("id", user.id).single().then(({ data }) => {
+        if (data) {
+          if ((data as any).username) setUsername((data as any).username);
+          if ((data as any).avatar_id) setAvatarId((data as any).avatar_id);
+        }
       });
     }
   }, [profile, user]);
@@ -191,6 +196,7 @@ export default function Settings() {
       school_name: schoolName.trim() || null,
       career_stage: careerStage,
       cv_url: cvUrl || null,
+      avatar_id: avatarId || null,
     };
     if (username.trim()) updateData.username = username.trim().toLowerCase().replace(/[^a-z0-9_-]/g, "");
     const { error } = await supabase
@@ -254,6 +260,7 @@ export default function Settings() {
   const initials = profile?.displayName
     ? profile.displayName.slice(0, 2).toUpperCase()
     : (user?.email ?? "").slice(0, 2).toUpperCase();
+  const sidebarAvatar = getAvatarById(avatarId);
 
   return (
     <div className="settings-page min-h-[100dvh] bg-background flex">
@@ -265,9 +272,13 @@ export default function Settings() {
             Back
           </button>
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-sm font-bold shrink-0">
-              {initials}
-            </div>
+            {sidebarAvatar ? (
+              <img src={sidebarAvatar.src} alt={sidebarAvatar.label} className="w-10 h-10 rounded-full object-contain bg-muted/30 shrink-0" />
+            ) : (
+              <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-sm font-bold shrink-0">
+                {initials}
+              </div>
+            )}
             <div className="min-w-0">
               <p className="text-sm font-semibold text-foreground truncate">{profile?.displayName || user?.email}</p>
               <p className="text-[11px] text-muted-foreground truncate">{user?.email}</p>
@@ -348,6 +359,7 @@ export default function Settings() {
                 cvFileName={cvFileName} cvInputRef={cvInputRef}
                 uploadingCv={uploadingCv} saving={saving}
                 email={user?.email ?? ""}
+                avatarId={avatarId} setAvatarId={setAvatarId}
                 handleCvUpload={handleCvUpload}
                 handleRemoveCv={handleRemoveCv}
                 handleSaveProfile={handleSaveProfile}
@@ -384,6 +396,7 @@ function ProfileSection({
   displayName, setDisplayName, username, setUsername, jobTitle, setJobTitle, company, setCompany,
   linkedinUrl, setLinkedinUrl, schoolName, setSchoolName,
   careerStage, setCareerStage, cvFileName, cvInputRef, uploadingCv, saving, email,
+  avatarId, setAvatarId,
   handleCvUpload, handleRemoveCv, handleSaveProfile,
 }: {
   displayName: string; setDisplayName: (v: string) => void;
@@ -395,16 +408,46 @@ function ProfileSection({
   careerStage: "student" | "professional"; setCareerStage: (v: "student" | "professional") => void;
   cvFileName: string | null; cvInputRef: React.RefObject<HTMLInputElement>;
   uploadingCv: boolean; saving: boolean; email: string;
+  avatarId: string | null; setAvatarId: (v: string | null) => void;
   handleCvUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
   handleRemoveCv: () => void;
   handleSaveProfile: () => void;
 }) {
+  const selectedAvatar = getAvatarById(avatarId);
   return (
     <div>
       <h2 className="text-xl font-bold text-foreground mb-1">Profile</h2>
       <p className="text-sm text-muted-foreground mb-6">Your personal and professional details for a customized experience.</p>
 
       <div className="space-y-8">
+        {/* Avatar picker */}
+        <div className="space-y-3">
+          <Label className="text-xs uppercase tracking-wider text-muted-foreground">Choose your companion</Label>
+          <div className="grid grid-cols-5 sm:grid-cols-10 gap-2">
+            {AVATAR_OPTIONS.map((avatar) => (
+              <button
+                key={avatar.id}
+                type="button"
+                onClick={() => setAvatarId(avatar.id)}
+                className={`relative rounded-xl border-2 p-1.5 transition-all hover:scale-105 ${
+                  avatarId === avatar.id
+                    ? "border-primary bg-primary/10 shadow-lg shadow-primary/20"
+                    : "border-border/40 bg-muted/20 hover:border-border hover:bg-muted/40"
+                }`}
+              >
+                <img src={avatar.src} alt={avatar.label} className="w-full aspect-square object-contain" />
+                {avatarId === avatar.id && (
+                  <div className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-primary flex items-center justify-center">
+                    <Check className="h-2.5 w-2.5 text-primary-foreground" />
+                  </div>
+                )}
+                <p className="text-[9px] text-center text-muted-foreground mt-0.5 truncate">{avatar.label}</p>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <Separator />
         {/* Basic info */}
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-2">

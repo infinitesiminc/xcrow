@@ -3,7 +3,8 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import xcrowLogo from "@/assets/xcrow-character.png";
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { getAvatarById } from "@/lib/avatars";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -24,7 +25,7 @@ interface RecentActivity {
 }
 
 export default function Navbar() {
-  const { user, signOut, openAuthModal, isSuperAdmin, isSchoolAdmin } = useAuth();
+  const { user, signOut, openAuthModal, isSuperAdmin, isSchoolAdmin, profile } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -241,6 +242,10 @@ export default function Navbar() {
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" size="icon" className="rounded-full">
                     <Avatar className="h-8 w-8">
+                      {(() => {
+                        const av = getAvatarById(profile?.avatarId);
+                        return av ? <AvatarImage src={av.src} alt={av.label} className="object-contain bg-muted/30" /> : null;
+                      })()}
                       <AvatarFallback className="bg-primary text-primary-foreground text-xs font-semibold">
                         {initials}
                       </AvatarFallback>
