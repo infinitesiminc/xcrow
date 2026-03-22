@@ -524,8 +524,8 @@ const UnmetObjectivesReview = ({
         </h3>
         <p className="text-sm text-muted-foreground leading-relaxed">
           {tooEarly
-            ? `You've only cleared ${roundCount} of at least ${minRounds} waves. Keep fighting to conquer more objectives.`
-            : `You haven't conquered ${unmet.length === 1 ? "this objective" : `${unmet.length} objectives`} yet. Ready for ${unmet.length === 1 ? "one more wave" : "a few more waves"} to claim ${unmet.length === 1 ? "it" : "them"}?`
+            ? `You've only cleared ${roundCount} of at least ${minRounds} quests. Keep fighting to conquer more objectives.`
+            : `You haven't conquered ${unmet.length === 1 ? "this objective" : `${unmet.length} objectives`} yet. Ready for ${unmet.length === 1 ? "one more quest" : "a few more quests"} to claim ${unmet.length === 1 ? "it" : "them"}?`
           }
         </p>
       </div>
