@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import ReactMarkdown, { type Components } from "react-markdown";
 
 interface TypewriterMarkdownProps {
@@ -10,41 +10,45 @@ interface TypewriterMarkdownProps {
 
 export default function TypewriterMarkdown({
   content,
-  speed = 12,
+  speed = 8,
   isStreaming = false,
   components,
 }: TypewriterMarkdownProps) {
   const [visibleLen, setVisibleLen] = useState(0);
-  const contentRef = useRef(content);
+  const prevContentRef = useRef(content);
   const rafRef = useRef<number | null>(null);
-  const lastTickRef = useRef(0);
+  const startTimeRef = useRef<number | null>(null);
 
-  // Reset when content identity changes (new message)
+  // Reset on new message (content identity change)
   useEffect(() => {
-    if (content !== contentRef.current) {
-      // Content changed entirely (new message) — if previous was fully shown, reset
-      if (visibleLen >= contentRef.current.length) {
+    if (content !== prevContentRef.current) {
+      if (visibleLen >= prevContentRef.current.length) {
         setVisibleLen(0);
+        startTimeRef.current = null;
       }
-      contentRef.current = content;
+      prevContentRef.current = content;
     }
   }, [content]);
 
-  // Animate characters
+  // Single smooth rAF loop — derive visibleLen from elapsed time
   useEffect(() => {
-    if (visibleLen >= content.length) return;
+    if (visibleLen >= content.length) {
+      startTimeRef.current = null;
+      return;
+    }
 
     const animate = (now: number) => {
-      if (!lastTickRef.current) lastTickRef.current = now;
-      const elapsed = now - lastTickRef.current;
-      const charsToAdd = Math.max(1, Math.floor(elapsed / speed));
+      if (!startTimeRef.current) startTimeRef.current = now - visibleLen * speed;
+      const elapsed = now - startTimeRef.current;
+      const target = Math.min(Math.floor(elapsed / speed), content.length);
 
-      if (elapsed >= speed) {
-        lastTickRef.current = now;
-        setVisibleLen((prev) => Math.min(prev + charsToAdd, content.length));
+      if (target !== visibleLen) {
+        setVisibleLen(target);
       }
 
-      rafRef.current = requestAnimationFrame(animate);
+      if (target < content.length) {
+        rafRef.current = requestAnimationFrame(animate);
+      }
     };
 
     rafRef.current = requestAnimationFrame(animate);
@@ -53,27 +57,26 @@ export default function TypewriterMarkdown({
     };
   }, [content, speed, visibleLen]);
 
-  // If streaming is done and we're behind, catch up faster
-  useEffect(() => {
-    if (!isStreaming && visibleLen < content.length && visibleLen > content.length * 0.8) {
-      const catchUp = setInterval(() => {
-        setVisibleLen((prev) => {
-          const next = Math.min(prev + 5, content.length);
-          if (next >= content.length) clearInterval(catchUp);
-          return next;
-        });
-      }, 4);
-      return () => clearInterval(catchUp);
-    }
-  }, [isStreaming, content.length, visibleLen]);
+  const done = visibleLen >= content.length;
 
-  const displayed = content.slice(0, visibleLen);
+  // While typing: render full markdown but clip via CSS.
+  // We render the FULL content always so markdown parses correctly,
+  // then use an overlay gradient to hide the untyped portion.
+  // This avoids partial-markdown re-parse flicker entirely.
+  const displayed = useMemo(() => content.slice(0, visibleLen), [content, visibleLen]);
 
   return (
     <div className="chat-prose max-w-[92%]">
-      <ReactMarkdown components={components}>{displayed}</ReactMarkdown>
-      {visibleLen < content.length && (
-        <span className="inline-block w-1.5 h-4 bg-primary/60 animate-pulse ml-0.5 align-text-bottom rounded-sm" />
+      {done ? (
+        <ReactMarkdown components={components}>{content}</ReactMarkdown>
+      ) : (
+        <>
+          {/* Render as whitespace-preserving text during animation to avoid markdown re-parse flicker */}
+          <div className="whitespace-pre-wrap break-words text-sm leading-relaxed">
+            {displayed}
+            <span className="inline-block w-1.5 h-4 bg-primary/60 animate-pulse ml-0.5 align-text-bottom rounded-sm" />
+          </div>
+        </>
       )}
     </div>
   );
