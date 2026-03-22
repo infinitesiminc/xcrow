@@ -611,7 +611,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
     if (coaching) setCoachingContext(coaching);
     else setCoachingContext(null);
     try {
-      const compiled = await compileSession(taskName, jobTitle, company, 3, mode, taskMeta, coaching ?? undefined);
+      const compiled = await compileSession(taskName, jobTitle, company, 3, mode, taskMeta, coaching ?? undefined, intelContext ?? undefined);
       setSession(compiled);
       setPhase("briefing");
     } catch (err) {
