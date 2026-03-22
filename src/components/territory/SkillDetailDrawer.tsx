@@ -129,14 +129,7 @@ export default function SkillDetailDrawer({
   const demandTier =
     skill.demandCount >= 12 ? "🔥 High Demand" : skill.demandCount >= 5 ? "📈 Growing" : "🌱 Emerging";
 
-  // Timeline step calculation
-  const timelineStep = level2Unlocked
-    ? level2Xp > 0
-      ? 3 // practicing future
-      : 2 // unlocked, not started
-    : level1Xp > 0
-      ? 1 // practicing current
-      : 0; // not started
+  // (timeline removed)
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
