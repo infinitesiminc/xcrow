@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import { Zap, MapPin, Building2, BarChart3 } from "lucide-react";
+import XcrowLoader from "@/components/XcrowLoader";
 
 /* ── Sample data ─────────────────────────────────────── */
 const SAMPLE_JOBS = [
@@ -323,6 +324,19 @@ export default function CardStyleMockup() {
           <p className="text-sm text-muted-foreground">Company logo + thin brand-colored accent strip. Compact, info-dense.</p>
         </div>
         <StyleD jobs={SAMPLE_JOBS} />
+      </section>
+
+      {/* Loader Demo */}
+      <section>
+        <div className="mb-4">
+          <h2 className="text-xl font-display font-bold text-foreground">Loading Animation</h2>
+          <p className="text-sm text-muted-foreground">Stationary mascot with flickering X-glow and rotating ring.</p>
+        </div>
+        <div className="flex items-center justify-around gap-8 py-12 rounded-xl border border-border bg-card">
+          <XcrowLoader size="sm" title="Loading…" />
+          <XcrowLoader size="md" title="Scanning kingdoms…" subtitle="Preparing your territory" />
+          <XcrowLoader size="lg" title="Building map…" subtitle="This may take a moment" />
+        </div>
       </section>
     </div>
   );
