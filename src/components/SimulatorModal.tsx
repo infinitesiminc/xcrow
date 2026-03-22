@@ -6,6 +6,7 @@ import { Send, Loader2, RotateCcw, ChevronDown, ChevronUp, CheckCircle2, X, Arro
 import { matchTaskToSkills, SKILL_TAXONOMY, getLevel, getNextLevel, type SkillXP } from "@/lib/skill-map";
 import { calculateSkillXP } from "@/lib/castle-levels";
 import ReactMarkdown from "react-markdown";
+import { useToolMentionComponents } from "@/components/sim/AIToolChip";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import {
@@ -517,6 +518,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
   const inactivityTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const { user, isPro } = useAuth();
+  const toolMentionComponents = useToolMentionComponents();
   const { toast } = useToast();
   const { setSimActive } = useChatContext();
 
@@ -1118,7 +1120,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                             </div>
                           ) : (
                             <div className="chat-prose max-w-[92%]">
-                              <ReactMarkdown>{displayContent}</ReactMarkdown>
+                              <ReactMarkdown components={toolMentionComponents}>{displayContent}</ReactMarkdown>
                             </div>
                           )}
                         </div>
