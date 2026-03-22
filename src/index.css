@@ -2,7 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=Syne:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=Syne:wght@400;500;600;700;800&display=swap');
 
 @layer base {
   :root {
@@ -54,19 +54,37 @@
     --brand-human: 217 91% 60%;
     --brand-mid: 262 83% 58%;
 
-    /* 7-stop AI-exposure spectrum: blue → teal → green → purple → amber → orange → pink */
-    --spectrum-0: 217 91% 60%;   /* Blue   — Human-Led     (0–14%)  */
-    --spectrum-1: 185 80% 48%;   /* Teal   — Low Exposure   (15–24%) */
-    --spectrum-2: 152 60% 45%;   /* Green  — Emerging       (25–34%) */
-    --spectrum-3: 262 83% 58%;   /* Purple — Moderate       (35–49%) */
-    --spectrum-4: 38 92% 50%;    /* Amber  — Notable        (50–59%) */
-    --spectrum-5: 20 90% 55%;    /* Orange — High           (60–69%) */
-    --spectrum-6: 330 90% 60%;   /* Pink   — Critical       (70%+)   */
+    /* 7-stop AI-exposure spectrum */
+    --spectrum-0: 217 91% 60%;
+    --spectrum-1: 185 80% 48%;
+    --spectrum-2: 152 60% 45%;
+    --spectrum-3: 262 83% 58%;
+    --spectrum-4: 38 92% 50%;
+    --spectrum-5: 20 90% 55%;
+    --spectrum-6: 330 90% 60%;
 
     --dot-blue: 217 91% 60%;
     --dot-teal: 185 95% 50%;
     --dot-purple: 262 83% 58%;
     --dot-amber: 38 80% 55%;
+
+    /* ── 8 Territory Colors ── */
+    --territory-technical:   262 83% 58%;   /* Amethyst — Circuit Peaks     */
+    --territory-analytical:  210 80% 55%;   /* Sapphire — Data Highlands    */
+    --territory-strategic:   45  85% 50%;   /* Gold     — Command Summit    */
+    --territory-communication: 152 60% 45%; /* Emerald  — Bridge Isles      */
+    --territory-leadership:  30  90% 55%;   /* Amber    — Crown Heights     */
+    --territory-creative:    340 75% 55%;   /* Ruby     — Prism Coast       */
+    --territory-ethics:      175 70% 42%;   /* Jade     — Sentinel Watch    */
+    --territory-humanedge:   285 70% 60%;   /* Orchid   — Soul Springs      */
+
+    /* ── Fantasy surface tokens ── */
+    --surface-stone: 240 6% 92%;
+    --surface-parchment: 38 30% 94%;
+    --filigree: 38 50% 65%;
+    --filigree-glow: 38 60% 50%;
+    --emboss-light: 0 0% 100% / 0.08;
+    --emboss-shadow: 0 0% 0% / 0.15;
 
     --sidebar-background: 240 5% 95%;
     --sidebar-foreground: 240 10% 20%;
@@ -122,7 +140,7 @@
     --brand-human: 217 91% 65%;
     --brand-mid: 262 83% 65%;
 
-    /* 7-stop spectrum — dark mode (slightly lifted lightness) */
+    /* 7-stop spectrum — dark mode */
     --spectrum-0: 217 91% 65%;
     --spectrum-1: 185 80% 52%;
     --spectrum-2: 152 60% 50%;
@@ -135,6 +153,24 @@
     --dot-teal: 185 95% 55%;
     --dot-purple: 262 83% 65%;
     --dot-amber: 38 80% 60%;
+
+    /* ── 8 Territory Colors (dark — lifted lightness) ── */
+    --territory-technical:   262 83% 65%;
+    --territory-analytical:  210 80% 62%;
+    --territory-strategic:   45  85% 55%;
+    --territory-communication: 152 60% 50%;
+    --territory-leadership:  30  90% 58%;
+    --territory-creative:    340 75% 60%;
+    --territory-ethics:      175 70% 48%;
+    --territory-humanedge:   285 70% 65%;
+
+    /* ── Fantasy surface tokens (dark) ── */
+    --surface-stone: 240 8% 12%;
+    --surface-parchment: 35 15% 14%;
+    --filigree: 38 55% 45%;
+    --filigree-glow: 38 65% 55%;
+    --emboss-light: 0 0% 100% / 0.05;
+    --emboss-shadow: 0 0% 0% / 0.4;
 
     --sidebar-background: 240 10% 9%;
     --sidebar-foreground: 220 8% 78%;
@@ -157,19 +193,20 @@
     font-family: 'Inter', system-ui, sans-serif;
   }
 
-  /* Bold display headings */
+  /* Fantasy display headings — Cinzel for RPG gravitas */
   h1 {
-    font-family: 'Syne', 'Space Grotesk', system-ui, sans-serif;
+    font-family: 'Cinzel', 'Syne', 'Space Grotesk', serif;
     font-weight: 700;
   }
 
   h2, h3 {
-    font-family: 'Space Grotesk', 'Inter', system-ui, sans-serif;
+    font-family: 'Cinzel', 'Space Grotesk', serif;
     font-weight: 600;
   }
 
   h4, h5, h6 {
-    font-family: 'Inter', system-ui, sans-serif;
+    font-family: 'Space Grotesk', 'Inter', system-ui, sans-serif;
+    font-weight: 600;
   }
 }
 
@@ -450,4 +487,120 @@ html:not(.light) {
 }
 .settings-page .text-\[13px\] {
   font-size: 14px !important;
+}
+
+/* ══════════════════════════════════════════════════
+   DARK FANTASY RPG — Surface & Card Utilities
+   ══════════════════════════════════════════════════ */
+
+/* Stone panel — primary card surface */
+.rpg-panel {
+  background: hsl(var(--surface-stone));
+  border: 1px solid hsl(var(--filigree) / 0.2);
+  box-shadow:
+    inset 0 1px 0 hsl(var(--emboss-light)),
+    inset 0 -1px 0 hsl(var(--emboss-shadow)),
+    0 4px 16px -4px hsl(0 0% 0% / 0.25);
+}
+
+/* Parchment inner glow — for content areas */
+.rpg-parchment {
+  background: linear-gradient(
+    135deg,
+    hsl(var(--surface-parchment)) 0%,
+    hsl(var(--surface-stone)) 100%
+  );
+  border: 1px solid hsl(var(--filigree) / 0.15);
+}
+
+/* Filigree top border — ornate accent */
+.rpg-filigree-top {
+  border-top: 2px solid hsl(var(--filigree) / 0.5);
+  position: relative;
+}
+.rpg-filigree-top::after {
+  content: '';
+  position: absolute;
+  top: -1px;
+  left: 10%;
+  right: 10%;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    hsl(var(--filigree-glow) / 0.6),
+    transparent
+  );
+}
+
+/* Beveled card — angled fantasy corners */
+.rpg-card {
+  clip-path: polygon(
+    12px 0, calc(100% - 12px) 0,
+    100% 12px, 100% calc(100% - 12px),
+    calc(100% - 12px) 100%, 12px 100%,
+    0 calc(100% - 12px), 0 12px
+  );
+  background: hsl(var(--surface-stone));
+  border: none;
+  box-shadow: 0 4px 20px -4px hsl(0 0% 0% / 0.3);
+  position: relative;
+}
+
+/* Territory-colored glow on hover */
+.rpg-card-glow {
+  transition: box-shadow 0.3s ease;
+}
+.rpg-card-glow:hover {
+  box-shadow:
+    0 0 20px -4px var(--territory-glow, hsl(var(--primary) / 0.3)),
+    0 8px 24px -8px hsl(0 0% 0% / 0.3);
+}
+
+/* Rarity border glow — set --rarity-hue via inline style */
+.rpg-rarity-common  { --rarity-glow: hsl(220 10% 50% / 0.3); }
+.rpg-rarity-uncommon { --rarity-glow: hsl(152 60% 50% / 0.3); }
+.rpg-rarity-rare     { --rarity-glow: hsl(210 80% 55% / 0.4); }
+.rpg-rarity-epic     { --rarity-glow: hsl(262 83% 60% / 0.5); }
+.rpg-rarity-legendary { --rarity-glow: hsl(45 85% 55% / 0.5); }
+
+.rpg-rarity-common,
+.rpg-rarity-uncommon,
+.rpg-rarity-rare,
+.rpg-rarity-epic,
+.rpg-rarity-legendary {
+  box-shadow: 0 0 12px -2px var(--rarity-glow);
+  transition: box-shadow 0.3s ease;
+}
+.rpg-rarity-legendary:hover {
+  box-shadow: 0 0 28px -2px var(--rarity-glow), 0 0 8px -1px hsl(45 85% 55% / 0.2);
+}
+
+/* Fantasy gradient text — gold filigree */
+.text-filigree {
+  background: linear-gradient(135deg, hsl(var(--filigree)), hsl(var(--filigree-glow)), hsl(var(--filigree)));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Territory accent border — set --t-color via inline style */
+.territory-accent {
+  border-left: 3px solid hsl(var(--t-color, var(--primary)));
+}
+
+/* Ember particle keyframes */
+@keyframes ember-float {
+  0% { transform: translateY(0) scale(1); opacity: 0.6; }
+  50% { opacity: 1; }
+  100% { transform: translateY(-40px) scale(0.3); opacity: 0; }
+}
+
+.animate-ember {
+  animation: ember-float 2.5s ease-out infinite;
+}
+
+/* Fantasy font class */
+.font-fantasy {
+  font-family: 'Cinzel', serif;
 }

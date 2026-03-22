@@ -15,8 +15,10 @@ export default {
     extend: {
       fontFamily: {
         sans: ["Inter", "system-ui", "sans-serif"],
-        display: ["Syne", "Space Grotesk", "system-ui", "sans-serif"],
-        heading: ["Space Grotesk", "Inter", "system-ui", "sans-serif"],
+        display: ["Cinzel", "Syne", "Space Grotesk", "serif"],
+        heading: ["Cinzel", "Space Grotesk", "serif"],
+        body: ["Inter", "system-ui", "sans-serif"],
+        fantasy: ["Cinzel", "serif"],
       },
       colors: {
         border: "hsl(var(--border))",
@@ -86,6 +88,24 @@ export default {
           4: "hsl(var(--spectrum-4))",
           5: "hsl(var(--spectrum-5))",
           6: "hsl(var(--spectrum-6))",
+        },
+        territory: {
+          technical: "hsl(var(--territory-technical))",
+          analytical: "hsl(var(--territory-analytical))",
+          strategic: "hsl(var(--territory-strategic))",
+          communication: "hsl(var(--territory-communication))",
+          leadership: "hsl(var(--territory-leadership))",
+          creative: "hsl(var(--territory-creative))",
+          ethics: "hsl(var(--territory-ethics))",
+          humanedge: "hsl(var(--territory-humanedge))",
+        },
+        surface: {
+          stone: "hsl(var(--surface-stone))",
+          parchment: "hsl(var(--surface-parchment))",
+        },
+        filigree: {
+          DEFAULT: "hsl(var(--filigree))",
+          glow: "hsl(var(--filigree-glow))",
         },
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
