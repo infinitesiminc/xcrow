@@ -97,6 +97,27 @@ export default function FutureSkillsTable({ skills, onSkillClick, skillGrowthMap
   const bookmarkedCount = useMemo(() => skills.filter(s => bookmarks.has(s.id)).length, [skills, bookmarks]);
   const practicedCount = useMemo(() => skills.filter(s => getSkillXp(s.id) > 0).length, [skills, getSkillXp]);
 
+  // Domain XP aggregation for radar chart
+  const domainData = useMemo(() => {
+    const domainXp = new Map<string, number>();
+    for (const skill of skills) {
+      const xp = getSkillXp(skill.id);
+      domainXp.set(skill.category, (domainXp.get(skill.category) || 0) + xp);
+    }
+    const maxXp = Math.max(...Array.from(domainXp.values()), 1);
+    return TERRITORY_ORDER.map(cat => {
+      const t = getTerritory(cat);
+      return {
+        domain: t.emoji + " " + (cat === "Ethics & Compliance" ? "Ethics" : cat === "Human Edge" ? "Human" : cat),
+        xp: domainXp.get(cat) || 0,
+        fullMark: maxXp,
+      };
+    });
+  }, [skills, getSkillXp]);
+
+  const totalXp = useMemo(() => domainData.reduce((s, d) => s + d.xp, 0), [domainData]);
+  const [showChart, setShowChart] = useState(true);
+
   const colBtn = (key: SortKey, label: string) => (
     <button
       onClick={() => toggleSort(key)}
