@@ -128,8 +128,11 @@ export default function Journey() {
     return (
       <>
         <Navbar />
-        <div className="flex items-center justify-center h-[calc(100vh-56px)]" style={{ background: "hsl(240, 10%, 4%)" }}>
-          <div className="h-5 w-5 animate-spin rounded-full border-2 border-t-transparent" style={{ borderColor: "hsl(180, 90%, 60%)", borderTopColor: "transparent" }} />
+        <div
+          className="flex items-center justify-center h-[calc(100vh-56px)]"
+          style={{ background: "hsl(var(--background))" }}
+        >
+          <XcrowLoader title="Loading Journey…" size="sm" />
         </div>
       </>
     );

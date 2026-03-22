@@ -307,7 +307,13 @@ const MapPage = () => {
             transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
             className="fixed inset-0 z-50 bg-background"
           >
-            <div className="flex items-center justify-between px-5 py-3 border-b border-border bg-card/80 backdrop-blur-sm">
+            <div
+              className="flex items-center justify-between px-5 py-3 backdrop-blur-sm"
+              style={{
+                background: "hsl(var(--surface-stone) / 0.9)",
+                borderBottom: "1px solid hsl(var(--filigree) / 0.2)",
+              }}
+            >
               <div className="flex items-center gap-2">
                 <div
                   className="w-7 h-7 rounded-md flex items-center justify-center text-[11px] font-bold text-white"
@@ -316,7 +322,12 @@ const MapPage = () => {
                   {(selectedRole.company || selectedRole.title)[0]?.toUpperCase()}
                 </div>
                 <div>
-                  <h2 className="text-sm font-semibold text-foreground leading-tight">{selectedRole.title}</h2>
+                  <h2
+                    className="text-sm font-semibold text-foreground leading-tight"
+                    style={{ fontFamily: "'Cinzel', serif" }}
+                  >
+                    {selectedRole.title}
+                  </h2>
                   {selectedRole.company && (
                     <p className="text-xs text-muted-foreground">{selectedRole.company}</p>
                   )}
@@ -324,7 +335,8 @@ const MapPage = () => {
               </div>
               <button
                 onClick={() => setSelectedRole(null)}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all active:scale-[0.97]"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium text-muted-foreground hover:text-foreground transition-all active:scale-[0.97]"
+                style={{ fontFamily: "'Cinzel', serif" }}
               >
                 <X className="h-3.5 w-3.5" />
                 Close
