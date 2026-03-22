@@ -55,18 +55,32 @@ export default function XcrowLoader({
           />
         </motion.svg>
 
-        {/* Pulsing X-glow behind mascot — brightness flicker */}
+        {/* Dramatic X-glow flicker — bright → dim → bright */}
         <motion.div
           className="absolute inset-0 flex items-center justify-center"
           animate={{
-            opacity: [0.3, 0.9, 0.3],
-            scale: [0.95, 1.1, 0.95],
+            opacity: [1, 0.08, 1],
           }}
-          transition={{ duration: 1.6, repeat: Infinity, ease: "easeInOut" }}
+          transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
         >
           <div
-            className="rounded-full bg-white/20 blur-lg"
-            style={{ width: imgSize * 0.6, height: imgSize * 0.6 }}
+            className="rounded-full bg-white blur-md"
+            style={{ width: imgSize * 0.45, height: imgSize * 0.45 }}
+          />
+        </motion.div>
+
+        {/* Outer halo that pulses opposite */}
+        <motion.div
+          className="absolute inset-0 flex items-center justify-center"
+          animate={{
+            opacity: [0.6, 0, 0.6],
+            scale: [1, 1.4, 1],
+          }}
+          transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+        >
+          <div
+            className="rounded-full bg-white/10 blur-xl"
+            style={{ width: imgSize * 0.7, height: imgSize * 0.7 }}
           />
         </motion.div>
 
