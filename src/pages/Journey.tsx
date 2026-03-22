@@ -27,6 +27,7 @@ export interface PracticedRoleData {
   domain_judgment_score: number | null;
 }
 import Navbar from "@/components/Navbar";
+import XcrowLoader from "@/components/XcrowLoader";
 import PlayerHUD from "@/components/journey/PlayerHUD";
 import CompactSkillGrid from "@/components/journey/CompactSkillGrid";
 import IntelFeed from "@/components/journey/IntelFeed";
