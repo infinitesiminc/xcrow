@@ -921,7 +921,9 @@ export type Database = {
           company: string | null
           created_at: string
           cv_url: string | null
+          degree_type: string | null
           display_name: string | null
+          graduation_year: number | null
           id: string
           job_title: string | null
           linkedin_url: string | null
@@ -939,7 +941,9 @@ export type Database = {
           company?: string | null
           created_at?: string
           cv_url?: string | null
+          degree_type?: string | null
           display_name?: string | null
+          graduation_year?: number | null
           id: string
           job_title?: string | null
           linkedin_url?: string | null
@@ -957,7 +961,9 @@ export type Database = {
           company?: string | null
           created_at?: string
           cv_url?: string | null
+          degree_type?: string | null
           display_name?: string | null
+          graduation_year?: number | null
           id?: string
           job_title?: string | null
           linkedin_url?: string | null
