@@ -665,7 +665,8 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
         // Session can end — the AI message will prompt finish
       }
 
-      if (reply.includes("[SCAFFOLDING]") || reply.includes("[SCAFFOLD_TIER:")) {
+      if (reply.includes("[SCAFFOLDING]") || reply.includes("[SCAFFOLD_TIER:") || reply.includes("[NEEDS_DEPTH]")) {
+        // Don't advance turn — AI is asking user to elaborate
         setTurnCount(turnCount);
       } else {
         const lowerInput = messageText.toLowerCase();
