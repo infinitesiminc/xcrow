@@ -142,6 +142,50 @@ function aiStateDescription(taskMeta?: any): string {
   return parts.length > 0 ? `AI STATUS: This task is ${parts.join("; ")}.` : "";
 }
 
+const UNCERTAINTY_PATTERNS = [
+  /\bi\s*(?:am|['’]m)\s*not\s*sure\b/i,
+  /\bi\s*don['’]?t\s*know\b/i,
+  /\bnot\s*sure\b/i,
+  /\bunsure\b/i,
+  /\bno\s*idea\b/i,
+  /\bstuck\b/i,
+  /\bhelp\s*me\b/i,
+  /\bbreak\s*it\s*down\b/i,
+  /\bwhere\s*to\s*start\b/i,
+  /^\s*idk\s*$/i,
+];
+
+function isUncertaintyResponse(text: string): boolean {
+  const normalized = (text || "").trim();
+  if (!normalized) return false;
+  return UNCERTAINTY_PATTERNS.some((pattern) => pattern.test(normalized));
+}
+
+function countConsecutiveUserUncertainty(messages: any[] = []): number {
+  let streak = 0;
+  for (let i = messages.length - 1; i >= 0; i--) {
+    const msg = messages[i];
+    if (msg?.role !== "user") continue;
+    const uncertain = isUncertaintyResponse(String(msg?.content || ""));
+    if (!uncertain) break;
+    streak += 1;
+  }
+  return streak;
+}
+
+function countConsecutiveAssistantQuestions(messages: any[] = []): number {
+  let streak = 0;
+  for (let i = messages.length - 1; i >= 0; i--) {
+    const msg = messages[i];
+    if (msg?.role !== "assistant") continue;
+    const content = String(msg?.content || "").trim();
+    if (!content) continue;
+    if (!content.endsWith("?")) break;
+    streak += 1;
+  }
+  return streak;
+}
+
 // ─── COMPILE ───
 
 async function handleCompile(payload: any, apiKey: string) {
@@ -279,10 +323,30 @@ async function handleChat(payload: any, apiKey: string) {
   const aiContext = aiStateDescription(taskMeta);
   const toolVersions = await fetchToolVersions();
   const dateCtx = currentDateContext(toolVersions);
+  const uncertaintyStreak = countConsecutiveUserUncertainty(messages);
+  const assistantQuestionStreak = countConsecutiveAssistantQuestions(messages);
+  const recoveryMode = uncertaintyStreak >= 2 || assistantQuestionStreak >= 2;
 
   const systemMsg = {
     role: "system",
-    content: buildCoachingChatSystem(role, aiContext, dateCtx, round, turnCount, mode, learningObjectives, objectiveStatus, scaffoldingTiers, targetObjectiveId, objectiveFailCounts),
+    content: buildCoachingChatSystem(
+      role,
+      aiContext,
+      dateCtx,
+      round,
+      turnCount,
+      mode,
+      learningObjectives,
+      objectiveStatus,
+      scaffoldingTiers,
+      targetObjectiveId,
+      objectiveFailCounts,
+      {
+        uncertaintyStreak,
+        assistantQuestionStreak,
+        recoveryMode,
+      },
+    ),
   };
 
   const aiMessages = [systemMsg, ...messages];
@@ -300,6 +364,11 @@ function buildCoachingChatSystem(
   scaffoldingTiers?: Record<string, number>,
   targetObjectiveId?: string,
   objectiveFailCounts?: Record<string, number>,
+  conversationSignals?: {
+    uncertaintyStreak: number;
+    assistantQuestionStreak: number;
+    recoveryMode: boolean;
+  },
 ): string {
   // turnCount includes the AI opening message (turn 1), so user's first response is turn 2.
   // The 3-turn cycle should start from the user's first response, not the AI opening.
@@ -397,6 +466,8 @@ RULES:
   const currentTargetFails = targetObjectiveId ? (failCounts[targetObjectiveId] || 0) : 0;
   const forceTeachMode = currentTargetFails >= 2;
   const targetObjForTeach = targetObjectiveId ? learningObjectives?.find(o => o.id === targetObjectiveId) : null;
+  const recoveryMode = conversationSignals?.recoveryMode ?? false;
+  const recoveryObjectiveId = targetObjForTeach?.id || targetObjectiveId || learningObjectives?.[0]?.id || "unknown";
 
   let turnInstruction: string;
 
@@ -411,7 +482,23 @@ OVERRIDE ALL SCAFFOLDING TIERS. You MUST use TIER 3 (TEACH) immediately:
 4. After teaching, evaluate: if the user's original attempt showed ANY relevant thinking, mark [OBJ_EVAL:${targetObjForTeach.id}:PASS]. Otherwise mark [OBJ_EVAL:${targetObjForTeach.id}:FAIL] but note the teaching will help them.
 ` : "";
 
+    const recoveryModeOverride = recoveryMode ? `
+STUCK LEARNER RECOVERY MODE (MANDATORY):
+- Trigger: learner uncertainty streak = ${conversationSignals?.uncertaintyStreak ?? 0}, coach question streak = ${conversationSignals?.assistantQuestionStreak ?? 0}.
+- IGNORE all probing behavior for this turn. Do NOT ask more open-ended questions.
+- Respond in this exact flow:
+  1) One reassurance sentence.
+  2) A concrete 3-step mini-playbook tailored to THIS scenario.
+  3) If user chose A/B/C, evaluate their pick directly in 1 sentence; otherwise provide one recommended option and why.
+  4) End with: "Type **ready** and I'll launch the next scenario."
+- Include [SCAFFOLD_TIER:3] and [OBJ_EVAL:${recoveryObjectiveId}:FAIL] at the end unless the user already demonstrated clear mastery.
+- Do NOT include [NEEDS_DEPTH].
+- Keep total response under 85 words.
+` : "";
+
     turnInstruction = `The user just shared their approach to your scenario. 
+
+${recoveryModeOverride}
 
 FIRST — CHECK FOR UNCERTAINTY/HELP REQUESTS:
 - If the user says "I'm not sure", "I don't know", "help me", "can you break it down", or similar uncertainty phrases:
