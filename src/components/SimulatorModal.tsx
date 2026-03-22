@@ -1137,11 +1137,12 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                     const isUser = msg.role === "user";
                     const displayContent = isUser ? safeStr(msg.content) : cleanMessageForDisplay(safeStr(msg.content));
 
-                    // Detect genuine wave transition — only when an objective was PASSED in this message
-                    // (meaning the AI is now moving to a new objective/wave, not just the next round)
+                    // Detect genuine quest transition — only when an objective was PASSED
+                    // and we're past the warm-up phase (at least 3 assistant messages in)
                     const rawContent = safeStr(msg.content);
                     const hasObjectivePass = !isUser && /\[OBJ_EVAL:[^:]+:PASS\]/.test(rawContent);
-                    const isNewScenario = hasObjectivePass && i > 1;
+                    const assistantMsgCount = messages.slice(0, i + 1).filter(m => m.role === "assistant").length;
+                    const isNewScenario = hasObjectivePass && assistantMsgCount > 2;
                     
                     const objectiveMetInMsg = !isUser ? [
                       ...(safeStr(msg.content).match(/\[OBJECTIVE_MET:([^\]]+)\]/g) || []).map(t => {
