@@ -415,7 +415,7 @@ const Index = () => {
                 <button
                   key={q.id}
                   onClick={() => {
-                    const slug = q.jobTitle.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+                    const slug = q.jobTitle.trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
                     navigate(`/role/${slug}?task=${encodeURIComponent(q.taskName)}`);
                   }}
                   className="w-full flex items-center gap-3 rounded-xl border border-orange-500/20 bg-orange-500/5 hover:border-orange-500/40 p-3 transition-all text-left"
