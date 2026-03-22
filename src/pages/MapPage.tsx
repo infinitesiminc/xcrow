@@ -6,7 +6,7 @@ import { useState, useCallback, useEffect, useMemo, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { Map, X, Swords, ScrollText } from "lucide-react";
+import { X, Swords, ScrollText } from "lucide-react";
 
 import { useFutureSkills } from "@/hooks/use-future-skills";
 import FutureTerritoryMap from "@/components/territory/FutureTerritoryMap";
@@ -20,7 +20,6 @@ import RolePreviewPanel from "@/components/RolePreviewPanel";
 import type { RoleResult } from "@/components/InlineRoleCarousel";
 import type { EdgeContext } from "@/components/HumanEdgesCard";
 
-import TerritoryOverlay from "@/components/territory/TerritoryOverlay";
 import CompactHUD from "@/components/territory/CompactHUD";
 import MyRolesPanel from "@/components/territory/MyRolesPanel";
 import { useSkills } from "@/hooks/use-skills";
@@ -86,10 +85,7 @@ const MapPage = () => {
   const [chatOpen, setChatOpen] = useState(false);
   const [mapFocusSkillId, setMapFocusSkillId] = useState<string | null>(null);
   const [myRolesTab, setMyRolesTab] = useState<"saved" | "practiced">("saved");
-  const [territoryOpen, setTerritoryOpen] = useState(false);
-  const [lastPracticedSkillId, setLastPracticedSkillId] = useState<string | null>(null);
-  const [territoryFocusSkillId, setTerritoryFocusSkillId] = useState<string | null>(null);
-  const [territoryXpGain, setTerritoryXpGain] = useState(0);
+
 
   const [realSkills, setRealSkills] = useState<SkillXP[]>([]);
   const [targetSkillIds, setTargetSkillIds] = useState<Set<string>>(new Set());
@@ -303,30 +299,6 @@ const MapPage = () => {
         )}
       </AnimatePresence>
 
-      {/* Personal territory overlay */}
-      <TerritoryOverlay
-        open={territoryOpen}
-        onClose={() => {
-          setTerritoryOpen(false);
-          setTerritoryFocusSkillId(null);
-          setTerritoryXpGain(0);
-        }}
-        skills={displaySkills}
-        lastPracticedSkillId={lastPracticedSkillId}
-        focusSkillId={territoryFocusSkillId}
-        xpGain={territoryXpGain}
-      />
-
-      {/* My Territory button */}
-      {isSignedIn && !territoryOpen && (
-        <button
-          onClick={() => setTerritoryOpen(true)}
-          className="fixed bottom-4 left-4 z-20 flex items-center gap-1.5 px-3 py-2 rounded-lg bg-card/90 backdrop-blur-md border border-border/50 text-xs font-medium text-muted-foreground hover:text-foreground shadow-lg hover:shadow-xl transition-all active:scale-[0.95]"
-        >
-          <Map className="h-3.5 w-3.5" />
-          🏰 My Territory
-        </button>
-      )}
     </div>
   );
 };
