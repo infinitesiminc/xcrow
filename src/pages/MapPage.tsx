@@ -32,6 +32,16 @@ import {
   type SimRecord,
   type TaxonomySkill,
 } from "@/lib/skill-map";
+import { calculateGrowth, type GrowthDimensions } from "@/lib/skill-growth";
+
+/** Aggregated growth data per canonical future skill */
+export interface CanonicalSkillGrowth {
+  level1Xp: number;
+  level2Xp: number;
+  level1Sims: number;
+  level2Sims: number;
+  growth: GrowthDimensions;
+}
 
 /* ── helpers ── */
 
