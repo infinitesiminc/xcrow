@@ -1733,7 +1733,14 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
   return (
     <>
       <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
-        <DialogContent className="max-w-3xl w-[95vw] h-[90vh] sm:h-[90vh] h-[100dvh] sm:rounded-2xl rounded-none p-0 flex flex-col overflow-hidden gap-0 border-border/50 [&>button]:hidden">
+        <DialogContent
+          className="max-w-3xl w-[95vw] h-[90vh] sm:h-[90vh] h-[100dvh] sm:rounded-2xl rounded-none p-0 flex flex-col overflow-hidden gap-0 [&>button]:hidden"
+          style={{
+            background: "hsl(var(--surface-stone))",
+            border: "1px solid hsl(var(--filigree) / 0.25)",
+            boxShadow: "0 0 60px hsl(var(--emboss-shadow)), inset 0 1px 0 hsl(var(--emboss-light))",
+          }}
+        >
           {content}
         </DialogContent>
       </Dialog>
