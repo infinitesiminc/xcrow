@@ -315,25 +315,6 @@ const MapPage = () => {
           boxShadow: "0 4px 20px hsl(var(--emboss-shadow)), inset 0 1px 0 hsl(var(--emboss-light))",
         }}
       >
-        {isSignedIn && (
-          <button
-            onClick={() => {
-              if (rightPanelTab === "hq" && chatOpen) { setChatOpen(false); }
-              else { setRightPanelTab("hq"); setChatOpen(true); }
-            }}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all"
-            style={{
-              fontFamily: "'Cinzel', serif",
-              letterSpacing: "0.05em",
-              ...(rightPanelTab === "hq" && chatOpen
-                ? { color: "hsl(var(--filigree-glow))", background: "hsl(var(--filigree) / 0.12)", textShadow: "0 0 8px hsl(var(--filigree-glow) / 0.5)" }
-                : { color: "hsl(var(--muted-foreground))" }),
-            }}
-          >
-            <Shield className="h-3 w-3" />
-            HQ
-          </button>
-        )}
         <button
           onClick={() => {
             if (rightPanelTab === "table" && chatOpen) { setChatOpen(false); }
@@ -368,6 +349,33 @@ const MapPage = () => {
           >
             <Swords className="h-3 w-3" />
             Kingdoms
+          </button>
+        )}
+        {isSignedIn && (
+          <button
+            onClick={() => {
+              if (rightPanelTab === "allies" && chatOpen) { setChatOpen(false); }
+              else { setRightPanelTab("allies"); setChatOpen(true); }
+            }}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all relative"
+            style={{
+              fontFamily: "'Cinzel', serif",
+              letterSpacing: "0.05em",
+              ...(rightPanelTab === "allies" && chatOpen
+                ? { color: "hsl(var(--filigree-glow))", background: "hsl(var(--filigree) / 0.12)", textShadow: "0 0 8px hsl(var(--filigree-glow) / 0.5)" }
+                : { color: "hsl(var(--muted-foreground))" }),
+            }}
+          >
+            <Users className="h-3 w-3" />
+            Allies
+            {pendingCount > 0 && (
+              <span
+                className="absolute -top-1 -right-1 w-4 h-4 rounded-full text-[8px] flex items-center justify-center font-bold animate-pulse"
+                style={{ background: "hsl(var(--filigree-glow))", color: "hsl(var(--background))" }}
+              >
+                {pendingCount}
+              </span>
+            )}
           </button>
         )}
       </div>
