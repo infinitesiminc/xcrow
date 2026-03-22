@@ -961,7 +961,8 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                 <motion.span
                   initial={{ opacity: 0, scale: 0.9 }}
                   animate={{ opacity: 1, scale: 1 }}
-                  className="text-xs px-3 py-1 rounded-full text-primary bg-primary/10"
+                  className="text-xs px-3 py-1 rounded-full"
+                  style={{ color: "hsl(var(--filigree-glow))", background: "hsl(var(--filigree) / 0.12)", fontFamily: "'Cinzel', serif" }}
                 >
                   ⚔️ Wave {roundCount}/{maxRounds}
                 </motion.span>
