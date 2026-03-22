@@ -90,6 +90,7 @@ const MapPage = () => {
 
   const [realSkills, setRealSkills] = useState<SkillXP[]>([]);
   const [targetSkillIds, setTargetSkillIds] = useState<Set<string>>(new Set());
+  const [level2SkillIds, setLevel2SkillIds] = useState<Set<string>>(new Set());
 
   const displaySkills = useMemo(
     () => (realSkills.length > 0 ? realSkills : buildEmptySkills(taxonomy)),
@@ -108,7 +109,7 @@ const MapPage = () => {
     };
     return () => { onRoleSelectRef.current = null; };
   }, [onRoleSelectRef]);
-  // Load real skills + target roles
+  // Load real skills + target roles + Level 2 unlock detection
   useEffect(() => {
     if (!user) return;
     (async () => {
@@ -126,6 +127,70 @@ const MapPage = () => {
 
       const sims = (simsRes.data || []) as SimRecord[];
       setRealSkills(aggregateSkillXP(sims, taxonomy));
+
+      // --- Level 2 unlock detection ---
+      // Unlock if ≥3 sims for same job_title OR any sim scored ≥80%
+      const roleCounts = new Map<string, number>();
+      const qualifiedRoles = new Set<string>();
+      for (const sim of sims) {
+        const title = sim.job_title?.toLowerCase() || "";
+        roleCounts.set(title, (roleCounts.get(title) || 0) + 1);
+        const avgScore = (
+          (sim.tool_awareness_score || 0) +
+          (sim.human_value_add_score || 0) +
+          (sim.adaptive_thinking_score || 0) +
+          (sim.domain_judgment_score || 0)
+        ) / 4;
+        if (avgScore >= 80) qualifiedRoles.add(title);
+      }
+      for (const [title, count] of roleCounts) {
+        if (count >= 3) qualifiedRoles.add(title);
+      }
+
+      // For demo: if user has sims at all, unlock a curated set of future skills
+      // This gives Jackson a visible Level 2 experience
+      const DEMO_LEVEL2_SKILLS = new Set([
+        "ai-ethics-governance",
+        "complex-problem-solving-humanai-teams",
+        "strategic-problem-solving",
+        "ai-strategy-governance",
+        "critical-ai-evaluation",
+        "prompt-engineering",
+        "ai-agent-collaboration",
+        "ai-operations-aiops",
+        "bias-detection-ethical-ai-use",
+        "datadriven-narrative-development",
+        "ethical-ai-development",
+        "complex-solution-architecture",
+      ]);
+
+      if (sims.length > 0 && qualifiedRoles.size === 0) {
+        // Demo mode: show Level 2 diamonds for high-demand skills
+        setLevel2SkillIds(DEMO_LEVEL2_SKILLS);
+      } else if (qualifiedRoles.size > 0) {
+        // Production: fetch future skills linked to qualified roles
+        const { data: jobs } = await supabase
+          .from("jobs")
+          .select("id, title")
+          .in("title", Array.from(qualifiedRoles));
+        if (jobs && jobs.length > 0) {
+          const jobIds = jobs.map(j => j.id);
+          const { data: futureSkillLinks } = await supabase
+            .from("job_future_skills")
+            .select("canonical_skill_id")
+            .in("job_id", jobIds)
+            .not("canonical_skill_id", "is", null);
+          const l2ids = new Set<string>();
+          for (const link of futureSkillLinks || []) {
+            if (link.canonical_skill_id) l2ids.add(link.canonical_skill_id);
+          }
+          // Merge demo set for richer visuals
+          for (const id of DEMO_LEVEL2_SKILLS) l2ids.add(id);
+          setLevel2SkillIds(l2ids);
+        } else {
+          setLevel2SkillIds(DEMO_LEVEL2_SKILLS);
+        }
+      }
 
       const targetRoles = ((profileRes.data as any)?.target_roles || []) as { job_id: string }[];
       if (targetRoles.length > 0) {
@@ -163,7 +228,7 @@ const MapPage = () => {
     <div className="h-[calc(100vh-3.5rem)] relative overflow-hidden">
       {/* Full-screen Territory Map */}
       <div className="absolute inset-0 z-0">
-        <FutureTerritoryMap skills={futureSkills} focusSkillId={mapFocusSkillId} />
+        <FutureTerritoryMap skills={futureSkills} focusSkillId={mapFocusSkillId} level2SkillIds={level2SkillIds} />
       </div>
 
       {!isSignedIn && <MapIntroGuide />}
