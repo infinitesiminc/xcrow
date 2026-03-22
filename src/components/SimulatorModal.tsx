@@ -1302,11 +1302,21 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                   animate={{ opacity: 1, y: 0 }}
                   className="flex justify-start max-w-2xl mx-auto"
                 >
-                  <div className="bg-accent/40 rounded-2xl rounded-bl-lg px-5 py-3.5">
-                    <div className="flex gap-1.5">
-                      <span className="w-2 h-2 bg-muted-foreground/30 rounded-full animate-bounce [animation-delay:0ms]" />
-                      <span className="w-2 h-2 bg-muted-foreground/30 rounded-full animate-bounce [animation-delay:150ms]" />
-                      <span className="w-2 h-2 bg-muted-foreground/30 rounded-full animate-bounce [animation-delay:300ms]" />
+                  <div
+                    className="rounded-2xl rounded-bl-md px-5 py-3.5"
+                    style={{
+                      background: "hsl(var(--surface-stone))",
+                      border: "1px solid hsl(var(--filigree) / 0.12)",
+                      boxShadow: "inset 0 1px 0 hsl(var(--emboss-light))",
+                    }}
+                  >
+                    <div className="flex items-center gap-2">
+                      <div className="flex gap-1.5">
+                        <span className="w-2 h-2 rounded-full animate-bounce [animation-delay:0ms]" style={{ background: "hsl(var(--filigree) / 0.4)" }} />
+                        <span className="w-2 h-2 rounded-full animate-bounce [animation-delay:150ms]" style={{ background: "hsl(var(--filigree) / 0.4)" }} />
+                        <span className="w-2 h-2 rounded-full animate-bounce [animation-delay:300ms]" style={{ background: "hsl(var(--filigree) / 0.4)" }} />
+                      </div>
+                      <span className="text-[10px] text-muted-foreground/50 ml-1" style={{ fontFamily: "'Cinzel', serif" }}>strategizing…</span>
                     </div>
                   </div>
                 </motion.div>
