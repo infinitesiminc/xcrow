@@ -539,11 +539,11 @@ export default function Enterprise() {
       </section>
 
       {/* ── Stats bar ── */}
-      <section className="border-y border-border bg-muted/30">
-        <div className="mx-auto max-w-5xl grid grid-cols-2 md:grid-cols-4 divide-x divide-border">
+      <section className="border-y border-[hsl(var(--filigree)/0.1)]" style={{ background: "hsl(var(--surface-stone))" }}>
+        <div className="mx-auto max-w-5xl grid grid-cols-2 md:grid-cols-4 divide-x divide-[hsl(var(--filigree)/0.1)]">
           {stats.map((s) => (
             <motion.div key={s.label} {...fadeUp} className="px-6 py-8 text-center">
-              <p className="font-display text-3xl font-semibold text-foreground">{s.value}</p>
+              <p className="font-fantasy text-3xl font-semibold text-foreground">{s.value}</p>
               <p className="mt-1 text-sm text-muted-foreground">{s.label}</p>
             </motion.div>
           ))}
