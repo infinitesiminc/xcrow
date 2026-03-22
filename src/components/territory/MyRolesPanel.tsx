@@ -376,7 +376,6 @@ export default function MyRolesPanel({ onSelectRole, onAskChat, onTabChange }: M
                 kingdom={kingdom}
                 isScouted={tab === "saved"}
                 index={i}
-                onSelect={() => onSelectRole(toRoleResult(kingdom))}
                 onContinue={() => handleContinue(kingdom)}
               />
             ))}
