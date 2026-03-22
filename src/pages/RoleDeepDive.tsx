@@ -377,7 +377,7 @@ const RoleDeepDive = () => {
                   prediction={predictions[chosenTask.name]}
                   predictionsLoading={predictionsLoading}
                   isCompleted={completedTasks.has(chosenTask.name)}
-                  onMarchToBattle={setSimTask}
+                  onMarchToBattle={(task, intel) => { setCurrentIntel(intel); setSimTask(task); }}
                   onSwitchTarget={handleSwitchTarget}
                   onXPEarned={handleXPEarned}
                 />
