@@ -116,7 +116,7 @@ export default function FutureIsland({ island, skillLookup, level2SkillIds, isFo
       {/* Count badge */}
       <text
         x={cx}
-        y={cy - radius + 10}
+        y={cy - radius + 18}
         textAnchor="middle"
         style={{
           fontSize: "11px",
