@@ -216,13 +216,13 @@ Respond ONLY with valid JSON, no markdown.`;
 // ─── CHAT ───
 
 async function handleChat(payload: any, apiKey: string) {
-  const { messages, role, round, turnCount, mode = "assess", taskMeta, learningObjectives, objectiveStatus, scaffoldingTiers, targetObjectiveId } = payload;
+  const { messages, role, round, turnCount, mode = "assess", taskMeta, learningObjectives, objectiveStatus, scaffoldingTiers, targetObjectiveId, objectiveFailCounts } = payload;
   const aiContext = aiStateDescription(taskMeta);
   const dateCtx = currentDateContext();
 
   const systemMsg = {
     role: "system",
-    content: buildCoachingChatSystem(role, aiContext, dateCtx, round, turnCount, mode, learningObjectives, objectiveStatus, scaffoldingTiers, targetObjectiveId),
+    content: buildCoachingChatSystem(role, aiContext, dateCtx, round, turnCount, mode, learningObjectives, objectiveStatus, scaffoldingTiers, targetObjectiveId, objectiveFailCounts),
   };
 
   const aiMessages = [systemMsg, ...messages];
