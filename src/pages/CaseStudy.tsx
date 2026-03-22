@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowRight, ArrowLeft, Play, Database, BarChart3,
   Layers, MessageSquare, Users, AlertTriangle, Sparkles,
-  LucideIcon,
+  LucideIcon, Scroll,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -27,57 +27,43 @@ interface Step {
 
 const STEPS: Step[] = [
   {
-    id: "ats",
-    phase: "Diagnose",
-    icon: Database,
+    id: "ats", phase: "Reconnaissance", icon: Database,
     title: "Import from ATS",
-    subtitle: "Connected to Greenhouse in 2 clicks. Every role ingested automatically.",
+    subtitle: "Connected to Greenhouse in 2 clicks. Every kingdom ingested automatically.",
     Component: StepATSImport,
   },
   {
-    id: "exposure",
-    phase: "Diagnose",
-    icon: BarChart3,
-    title: "AI Augmented Map",
-    subtitle: "Every role scored at the task level. See where AI disruption hits hardest.",
+    id: "exposure", phase: "Reconnaissance", icon: BarChart3,
+    title: "AI Threat Map",
+    subtitle: "Every kingdom scored at the quest level. See where AI disruption hits hardest.",
     Component: StepAugmentedMap,
   },
   {
-    id: "tasks",
-    phase: "Diagnose",
-    icon: Layers,
-    title: "Task-Level Drill-down",
-    subtitle: "Zoom into any role to see exactly which tasks AI is transforming.",
+    id: "tasks", phase: "Reconnaissance", icon: Layers,
+    title: "Quest-Level Drill-down",
+    subtitle: "Zoom into any kingdom to see exactly which quests AI is transforming.",
     Component: StepTaskDrilldown,
   },
   {
-    id: "simulation",
-    phase: "Upskill",
-    icon: MessageSquare,
-    title: "AI Readiness Simulation",
+    id: "simulation", phase: "Mobilization", icon: MessageSquare,
+    title: "AI Readiness Quest",
     subtitle: "Employees practice real scenarios — scored across 4 readiness pillars.",
     Component: StepSimPreview,
   },
   {
-    id: "progress",
-    phase: "Plan",
-    icon: Users,
-    title: "Team Progress Dashboard",
+    id: "progress", phase: "Conquest", icon: Users,
+    title: "Guild Progress Dashboard",
     subtitle: "Real-time visibility into readiness scores across departments.",
     Component: StepTeamProgress,
   },
   {
-    id: "action",
-    phase: "Plan",
-    icon: AlertTriangle,
-    title: "Action Center",
+    id: "action", phase: "Conquest", icon: AlertTriangle,
+    title: "War Room",
     subtitle: "Automated interventions. Bottleneck detection. Coaching at scale.",
     Component: StepActionCenter,
   },
   {
-    id: "adaptation",
-    phase: "Plan",
-    icon: Sparkles,
+    id: "adaptation", phase: "Conquest", icon: Sparkles,
     title: "Real-Time Model Adaptation",
     subtitle: "A new frontier model drops. The engine adapts in under 24 hours — automatically.",
     Component: StepModelAdaptation,
@@ -85,9 +71,9 @@ const STEPS: Step[] = [
 ];
 
 const PHASE_COLORS: Record<string, string> = {
-  Diagnose: "bg-brand-ai/10 text-brand-ai",
-  Upskill: "bg-brand-mid/10 text-brand-mid",
-  Plan: "bg-brand-human/10 text-brand-human",
+  Reconnaissance: "bg-[hsl(var(--territory-analytical)/0.15)] text-[hsl(var(--territory-analytical))]",
+  Mobilization: "bg-[hsl(var(--territory-strategic)/0.15)] text-[hsl(var(--territory-strategic))]",
+  Conquest: "bg-[hsl(var(--territory-creative)/0.15)] text-[hsl(var(--territory-creative))]",
 };
 
 export default function CaseStudy() {
@@ -105,20 +91,22 @@ export default function CaseStudy() {
           animate={{ opacity: 1, y: 0 }}
           className="max-w-2xl text-center space-y-6"
         >
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-border bg-card text-xs font-medium text-muted-foreground">
-            <Sparkles className="h-3 w-3" /> Case Study
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-[hsl(var(--filigree)/0.2)] text-xs font-medium text-muted-foreground"
+            style={{ background: "hsl(var(--surface-parchment))" }}>
+            <Scroll className="h-3 w-3 text-[hsl(var(--filigree-glow))]" /> The Campaign
           </div>
 
-          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight leading-tight font-display">
-            See how Anthropic maps AI readiness across 400+ roles
+          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight leading-tight font-fantasy">
+            See how Anthropic maps AI readiness across 400+ kingdoms
           </h1>
 
-
           <div className="flex items-center justify-center gap-3 pt-2">
-            <Button size="lg" onClick={() => setStarted(true)} className="gap-2">
-              <Play className="h-4 w-4" /> Start the Tour
+            <Button size="lg" onClick={() => setStarted(true)} className="gap-2"
+              style={{ boxShadow: "0 0 16px hsl(var(--filigree-glow) / 0.2)" }}>
+              <Play className="h-4 w-4" /> Begin Campaign
             </Button>
-            <Button size="lg" variant="outline" onClick={() => navigate("/contact")}>
+            <Button size="lg" variant="outline" onClick={() => navigate("/contact")}
+              className="border-[hsl(var(--filigree)/0.2)]">
               Book a Demo
             </Button>
           </div>
@@ -128,7 +116,8 @@ export default function CaseStudy() {
             {STEPS.map((s, i) => (
               <span
                 key={s.id}
-                className="inline-flex items-center gap-1.5 text-[11px] text-muted-foreground bg-muted rounded-full px-2.5 py-1"
+                className="inline-flex items-center gap-1.5 text-[11px] text-muted-foreground rounded-full px-2.5 py-1 border border-[hsl(var(--filigree)/0.1)]"
+                style={{ background: "hsl(var(--surface-stone))" }}
               >
                 <span className="font-mono text-[10px] opacity-50">{i + 1}</span>
                 {s.title}
@@ -143,11 +132,13 @@ export default function CaseStudy() {
   return (
     <div className="min-h-screen bg-background">
       {/* Progress bar */}
-      <div className="sticky top-0 z-40 bg-background/80 backdrop-blur-md border-b border-border">
+      <div className="sticky top-0 z-40 backdrop-blur-md border-b border-[hsl(var(--filigree)/0.1)]"
+        style={{ background: "hsl(var(--surface-stone) / 0.9)" }}>
         <div className="max-w-3xl mx-auto px-4 py-3">
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2">
-              <span className={`text-[10px] font-medium uppercase tracking-widest px-2 py-0.5 rounded-full ${PHASE_COLORS[current.phase]}`}>
+              <span className={`text-[10px] font-medium uppercase tracking-widest px-2 py-0.5 rounded-full ${PHASE_COLORS[current.phase]}`}
+                style={{ fontFamily: "'Cinzel', serif" }}>
                 {current.phase}
               </span>
               <span className="text-sm font-medium">{current.title}</span>
@@ -164,7 +155,7 @@ export default function CaseStudy() {
                 key={i}
                 onClick={() => setStep(i)}
                 className={`h-1 flex-1 rounded-full transition-all ${
-                  i <= step ? "bg-primary" : "bg-border"
+                  i <= step ? "bg-[hsl(var(--filigree-glow))]" : "bg-border"
                 }`}
               />
             ))}
@@ -174,7 +165,8 @@ export default function CaseStudy() {
 
       {/* Step content */}
       <div className="max-w-3xl mx-auto px-4 py-8">
-        <div className="glow-border rounded-xl border border-border/30 bg-card p-6">
+        <div className="rounded-xl border border-[hsl(var(--filigree)/0.15)] p-6"
+          style={{ background: "hsl(var(--surface-stone))", boxShadow: "inset 0 1px 0 hsl(var(--emboss-light)), 0 4px 12px hsl(var(--emboss-shadow))" }}>
           <AnimatePresence mode="wait">
             <motion.div
               key={step}
@@ -185,16 +177,16 @@ export default function CaseStudy() {
             >
               {/* Step header */}
               <div className="flex items-center gap-3 mb-4">
-                <div className="h-10 w-10 rounded-xl bg-muted flex items-center justify-center">
+                <div className="h-10 w-10 rounded-xl flex items-center justify-center border border-[hsl(var(--filigree)/0.2)]"
+                  style={{ background: "hsl(var(--surface-parchment))" }}>
                   <current.icon className="h-5 w-5 text-foreground" />
                 </div>
                 <div>
-                  <h2 className="text-lg font-semibold">{current.title}</h2>
+                  <h2 className="text-lg font-semibold font-fantasy">{current.title}</h2>
                   <p className="text-sm text-muted-foreground">{current.subtitle}</p>
                 </div>
               </div>
 
-              {/* Step body — lazy loaded */}
               <Suspense fallback={<div className="h-48 flex items-center justify-center text-muted-foreground text-sm">Loading…</div>}>
                 <current.Component />
               </Suspense>
@@ -203,7 +195,7 @@ export default function CaseStudy() {
         </div>
 
         {/* Navigation */}
-        <div className="flex items-center justify-between mt-8 pt-6 border-t border-border">
+        <div className="flex items-center justify-between mt-8 pt-6 border-t border-[hsl(var(--filigree)/0.1)]">
           <Button
             variant="ghost"
             size="sm"
@@ -224,7 +216,7 @@ export default function CaseStudy() {
                 Book a Demo <ArrowRight className="h-3.5 w-3.5" />
               </Button>
               <Button size="sm" variant="outline" onClick={() => navigate("/")}>
-                Try Free
+                Enter the Gate
               </Button>
             </div>
           )}
