@@ -1710,7 +1710,11 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                 onKeyDown={handleKeyDown}
                 placeholder="Your move, commander…"
                 rows={2}
-                className="flex-1 resize-none rounded-xl border border-border/40 bg-accent/10 px-3 sm:px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-ring/30 focus:border-border min-h-[40px] max-h-[100px] transition-all duration-200"
+                className="flex-1 resize-none rounded-xl px-3 sm:px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-ring/30 min-h-[40px] max-h-[100px] transition-all duration-200"
+                style={{
+                  background: "hsl(var(--surface-stone))",
+                  border: "1px solid hsl(var(--filigree) / 0.2)",
+                }}
               />
               <div className="flex gap-2 shrink-0">
                 <Button
