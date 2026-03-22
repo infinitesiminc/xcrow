@@ -110,7 +110,7 @@ export default function SkillSuggestionCards() {
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 + i * 0.06 }}
-            onClick={() => navigate("/journey")}
+            onClick={() => navigate("/map")}
             className="flex flex-col items-center min-w-[80px] rounded-xl border border-primary/20 bg-primary/5 hover:bg-primary/10 p-2.5 transition-all hover:shadow-md hover:shadow-primary/10 group"
           >
             <MiniProgressRing progress={skill.progress} />
