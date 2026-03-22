@@ -473,6 +473,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
   const [scoreResult, setScoreResult] = useState<SimScoreResult | null>(null);
   const [objectiveStatus, setObjectiveStatus] = useState<Record<string, boolean>>({});
   const [showObjectives, setShowObjectives] = useState(false);
+  const [scaffoldingTiers, setScaffoldingTiers] = useState<Record<string, number>>({});
   const [objectiveFailCounts, setObjectiveFailCounts] = useState<Record<string, number>>({});
   const [showInactivityNudge, setShowInactivityNudge] = useState(false);
   const inactivityTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
