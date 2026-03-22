@@ -39,24 +39,21 @@ export default function Navbar() {
     ? user.user_metadata.display_name.slice(0, 2).toUpperCase()
     : user?.email?.slice(0, 2).toUpperCase() ?? "?";
 
-  const navItems = [
-    { label: "Explore", path: "/", icon: Compass },
-    ...(!user ? [
-      { label: "For Students", path: "/students", icon: GraduationCap },
-      { label: "For Schools", path: "/schools", icon: GraduationCap },
-    ] : []),
-    { label: "Pricing", path: "/pricing", icon: null },
-    { label: "Leaderboard", path: "/leaderboard", icon: Trophy },
-    ...(user ? [
-      { label: "Skill Map", path: "/map", icon: Map },
-    ] : []),
-    ...(isSchoolAdmin ? [
-      { label: "School", path: "/school", icon: GraduationCap },
-    ] : []),
-    ...(isSuperAdmin ? [
-      { label: "Admin", path: "/admin", icon: Shield },
-    ] : []),
-  ];
+  const navItems = user
+    ? [
+        { label: "Home", path: "/", icon: Compass },
+        { label: "Skill Map", path: "/map", icon: Map },
+        { label: "Leaderboard", path: "/leaderboard", icon: Trophy },
+        { label: "Settings", path: "/settings", icon: Settings },
+        ...(isSchoolAdmin ? [{ label: "School", path: "/school", icon: GraduationCap }] : []),
+        ...(isSuperAdmin ? [{ label: "Admin", path: "/admin", icon: Shield }] : []),
+      ]
+    : [
+        { label: "Explore", path: "/", icon: Compass },
+        { label: "For Students", path: "/students", icon: GraduationCap },
+        { label: "For Schools", path: "/schools", icon: GraduationCap },
+        { label: "Pricing", path: "/pricing", icon: null },
+      ];
 
   const handleNav = (path: string) => {
     navigate(path);
