@@ -599,6 +599,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
     setScoreResult(null);
     setObjectiveStatus({});
     setScaffoldingTiers({});
+    setObjectiveFailCounts({});
     setShowInactivityNudge(false);
     if (coaching) setCoachingContext(coaching);
     else setCoachingContext(null);
