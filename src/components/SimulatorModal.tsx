@@ -1008,7 +1008,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
           >
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2">
-                <span className="text-base">⚔️</span>
+                <span className="text-base">🗡️</span>
                 <h2
                   className="text-sm sm:text-base font-semibold text-foreground truncate"
                   style={{ fontFamily: "'Cinzel', serif" }}
