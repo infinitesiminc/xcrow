@@ -529,7 +529,7 @@ const RoleDeepDive = () => {
                               {skill.description}
                             </div>
                             <div className="flex items-center justify-between">
-                              <span className="text-[9px] text-muted-foreground/60 truncate max-w-[55%]">
+                              <span className="text-[10px] text-muted-foreground/60 truncate max-w-[55%]">
                                 {skill.taskName}
                               </span>
                               <span className="flex items-center gap-1 text-[10px] font-semibold text-primary/70 group-hover:text-primary transition-colors">

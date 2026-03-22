@@ -346,10 +346,10 @@ export function TaskDetailPanel({
                   <div className="text-[11px] font-semibold text-foreground group-hover:text-primary transition-colors leading-tight mb-1">
                     {skill.name}
                   </div>
-                  <div className="text-[9px] text-muted-foreground leading-snug line-clamp-2 mb-2.5">
+                  <div className="text-[10px] text-muted-foreground leading-snug line-clamp-2 mb-2.5">
                     {skill.description}
                   </div>
-                  <div className="flex items-center gap-1 text-[9px] font-medium text-primary/60 group-hover:text-primary transition-colors">
+                  <div className="flex items-center gap-1 text-[10px] font-medium text-primary/60 group-hover:text-primary transition-colors">
                     <Play className="h-2.5 w-2.5" />
                     Practice Quest
                   </div>
