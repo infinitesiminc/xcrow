@@ -11,7 +11,7 @@ import { TaskAnalysis } from "@/types/analysis";
 import { exposureStyle } from "@/lib/exposure-colors";
 import type { FuturePrediction } from "@/components/analysis/FutureTaskPreview";
 
-const SCOUT_FLAVORS = [
+const SCAN_FLAVORS = [
   "The Crow spotted movement beyond the ridge…",
   "Dark clouds gather over this territory…",
   "Your scouts report incoming threats…",
