@@ -3,11 +3,21 @@
  * Supports click-to-zoom, hover-to-repel, and diamond-shaped Level 2 nodes.
  */
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import { type FutureSkill, type FutureSkillCategory } from "@/hooks/use-future-skills";
 import { type FutureIslandLayout, type FutureNodePosition } from "@/lib/future-territory-layout";
+
+function useIsParchment() {
+  const [p, setP] = useState(() => document.documentElement.classList.contains("parchment"));
+  useEffect(() => {
+    const obs = new MutationObserver(() => setP(document.documentElement.classList.contains("parchment")));
+    obs.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
+    return () => obs.disconnect();
+  }, []);
+  return p;
+}
 
 interface FutureIslandProps {
   island: FutureIslandLayout;
@@ -44,6 +54,7 @@ export default function FutureIsland({ island, skillLookup, level2SkillIds, isFo
   const visibleCount = activeNodes.length;
   const hiddenCount = isFocused ? 0 : skillCount - visibleCount;
 
+  const isParchment = useIsParchment();
   const [hoveredId, setHoveredId] = useState<string | null>(null);
 
   const hoveredNode = useMemo(
@@ -58,8 +69,12 @@ export default function FutureIsland({ island, skillLookup, level2SkillIds, isFo
         cx={cx}
         cy={cy}
         r={(isFocused ? 165 : radius) + 15}
-        fill={`hsl(${theme.baseHue} 25% ${isFocused ? 14 : 10}% / ${isFocused ? 0.7 : 0.5})`}
-        stroke={`hsl(${theme.baseHue} ${isFocused ? 50 : 30}% ${isFocused ? 40 : 25}%)`}
+        fill={isParchment
+          ? `hsl(${theme.baseHue} 15% ${isFocused ? 82 : 78}% / ${isFocused ? 0.8 : 0.6})`
+          : `hsl(${theme.baseHue} 25% ${isFocused ? 14 : 10}% / ${isFocused ? 0.7 : 0.5})`}
+        stroke={isParchment
+          ? `hsl(${theme.baseHue} ${isFocused ? 40 : 25}% ${isFocused ? 55 : 45}%)`
+          : `hsl(${theme.baseHue} ${isFocused ? 50 : 30}% ${isFocused ? 40 : 25}%)`}
         strokeWidth={isFocused ? 2.5 : 1.5}
         strokeDasharray={isFocused ? "none" : "6 4"}
         initial={{ scale: 0, opacity: 0 }}
@@ -77,7 +92,7 @@ export default function FutureIsland({ island, skillLookup, level2SkillIds, isFo
         style={{
           fontSize: "14px",
           fontWeight: 800,
-          fill: `hsl(${theme.baseHue} 55% 65%)`,
+          fill: isParchment ? `hsl(${theme.baseHue} 55% 30%)` : `hsl(${theme.baseHue} 55% 65%)`,
           textTransform: "uppercase",
           letterSpacing: "0.1em",
           fontFamily: "'Space Grotesk', system-ui, sans-serif",
@@ -96,7 +111,7 @@ export default function FutureIsland({ island, skillLookup, level2SkillIds, isFo
         style={{
           fontSize: "11px",
           fontWeight: 600,
-          fill: `hsl(${theme.baseHue} 25% 50%)`,
+          fill: isParchment ? `hsl(${theme.baseHue} 30% 35%)` : `hsl(${theme.baseHue} 25% 50%)`,
           pointerEvents: "none",
         }}
       >
@@ -199,8 +214,12 @@ export default function FutureIsland({ island, skillLookup, level2SkillIds, isFo
                       width={diamondSide}
                       height={diamondSide}
                       rx={2}
-                      fill={`hsl(45 ${30 + intensity * 20}% ${16 + intensity * 8}%)`}
-                      stroke={`hsl(45 55% ${45 + intensity * 15}%)`}
+                      fill={isParchment
+                        ? `hsl(45 ${20 + intensity * 15}% ${75 + intensity * 8}%)`
+                        : `hsl(45 ${30 + intensity * 20}% ${16 + intensity * 8}%)`}
+                      stroke={isParchment
+                        ? `hsl(45 55% ${40 + intensity * 10}%)`
+                        : `hsl(45 55% ${45 + intensity * 15}%)`}
                       strokeWidth={isHovered ? 3 : 2}
                       transform={`rotate(45 ${node.x} ${node.y})`}
                       className="transition-all"
@@ -226,8 +245,12 @@ export default function FutureIsland({ island, skillLookup, level2SkillIds, isFo
                       cx={node.x}
                       cy={node.y}
                       r={nodeRadius}
-                      fill={`hsl(${theme.baseHue} ${35 + intensity * 25}% ${18 + intensity * 12}%)`}
-                      stroke={`hsl(${theme.baseHue} 50% ${40 + intensity * 20}%)`}
+                      fill={isParchment
+                        ? `hsl(${theme.baseHue} ${25 + intensity * 15}% ${72 + intensity * 8}%)`
+                        : `hsl(${theme.baseHue} ${35 + intensity * 25}% ${18 + intensity * 12}%)`}
+                      stroke={isParchment
+                        ? `hsl(${theme.baseHue} 40% ${40 + intensity * 15}%)`
+                        : `hsl(${theme.baseHue} 50% ${40 + intensity * 20}%)`}
                       strokeWidth={isHovered ? 3 : 2}
                       className="transition-all"
                     />
@@ -278,11 +301,17 @@ export default function FutureIsland({ island, skillLookup, level2SkillIds, isFo
                     style={{
                       fontSize: isHovered ? "11px" : "10px",
                       fontWeight: isHovered ? 700 : 600,
-                      fill: isLevel2
-                        ? `hsl(45 ${isHovered ? 60 : 40}% ${isHovered ? 80 : 65}%)`
-                        : isHovered
-                          ? `hsl(${theme.baseHue} 40% 85%)`
-                          : `hsl(${theme.baseHue} 25% 65%)`,
+                      fill: isParchment
+                        ? (isLevel2
+                          ? `hsl(45 ${isHovered ? 60 : 50}% ${isHovered ? 25 : 30}%)`
+                          : isHovered
+                            ? `hsl(${theme.baseHue} 50% 25%)`
+                            : `hsl(${theme.baseHue} 35% 35%)`)
+                        : (isLevel2
+                          ? `hsl(45 ${isHovered ? 60 : 40}% ${isHovered ? 80 : 65}%)`
+                          : isHovered
+                            ? `hsl(${theme.baseHue} 40% 85%)`
+                            : `hsl(${theme.baseHue} 25% 65%)`),
                       fontFamily: "'Inter', system-ui, sans-serif",
                       pointerEvents: "none",
                       transition: "fill 0.2s, font-size 0.2s",
@@ -323,7 +352,7 @@ export default function FutureIsland({ island, skillLookup, level2SkillIds, isFo
           textAnchor="middle"
           style={{
             fontSize: "10px",
-            fill: `hsl(${theme.baseHue} 25% 45%)`,
+            fill: isParchment ? `hsl(${theme.baseHue} 30% 35%)` : `hsl(${theme.baseHue} 25% 45%)`,
             fontStyle: "italic",
             pointerEvents: "none",
           }}
