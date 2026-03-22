@@ -1349,7 +1349,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                                   parseObjectiveTags(reply);
                                   parseScaffoldTags(reply);
                                   setMessages(prev => [...prev, { role: "assistant", content: reply }]);
-                                  scrollToBottom();
+                                   scrollToLatestAi();
                                 }).catch(() => {
                                   setMessages(prev => [...prev, { role: "assistant", content: "Sorry, something went wrong." }]);
                                 }).finally(() => setSending(false));
