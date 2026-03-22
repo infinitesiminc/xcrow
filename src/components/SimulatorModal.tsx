@@ -674,7 +674,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
       const reply = await chatTurn(
         newMessages, roundCount, nextTurn, jobTitle, mode, taskMeta,
         session?.learningObjectives, objectiveStatus, scaffoldingTiers,
-        currentTargetObjectiveId
+        currentTargetObjectiveId, objectiveFailCounts
       );
       
       // Parse tags
