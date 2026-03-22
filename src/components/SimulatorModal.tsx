@@ -1022,7 +1022,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                     ].filter(Boolean) : [];
 
                     // Detect scaffolding tier in message
-                    const scaffoldTierInMsg = !isUser ? msg.content.match(/\[SCAFFOLD_TIER:(\d)\]/) : null;
+                    const scaffoldTierInMsg = !isUser ? safeStr(msg.content).match(/\[SCAFFOLD_TIER:(\d)\]/) : null;
                     const tierLabels = ["", "💭 Let's break this down...", "💡 Here's a direction...", "📚 Teaching moment"];
 
                     return (
