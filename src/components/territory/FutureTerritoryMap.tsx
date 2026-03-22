@@ -242,6 +242,7 @@ export default function FutureTerritoryMap({ skills, focusSkillId }: FutureTerri
 
           {layout.map(island => (
             <FutureIsland key={island.category} island={island} skillLookup={skillLookup}
+              level2SkillIds={level2SkillIds}
               isFocused={focusedIsland === island.category} highlightedSkillId={highlightedSkillId}
               onIslandClick={handleIslandClick} onSkillClick={handleSkillClick} />
           ))}
