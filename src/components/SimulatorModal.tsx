@@ -7,6 +7,7 @@ import { matchTaskToSkills, SKILL_TAXONOMY, getLevel, getNextLevel, type SkillXP
 import { calculateSkillXP } from "@/lib/castle-levels";
 import ReactMarkdown from "react-markdown";
 import TypewriterMarkdown from "@/components/TypewriterMarkdown";
+import XcrowLoader from "@/components/XcrowLoader";
 import { useToolMentionComponents } from "@/components/sim/AIToolChip";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
