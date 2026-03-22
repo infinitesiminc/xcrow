@@ -320,6 +320,8 @@ export function ChatProvider({ children }: { children: ReactNode }) {
         onRolesFoundRef,
         onRoleSelectRef,
         hasInteracted,
+        simActive,
+        setSimActive,
       }}
     >
       {children}
