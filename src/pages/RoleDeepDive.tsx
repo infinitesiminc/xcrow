@@ -356,7 +356,7 @@ const RoleDeepDive = () => {
               </div>
               {futureStats && futureStats.collapseCount > 0 && (
                 <div className="flex items-center justify-between">
-                  <span className="text-[8px] text-muted-foreground uppercase">⚠️ Endangered</span>
+                  <span className="text-[10px] text-muted-foreground uppercase">⚠️ Endangered</span>
                   <span className="text-xs font-bold text-destructive tabular-nums">{futureStats.collapseCount}</span>
                 </div>
               )}
