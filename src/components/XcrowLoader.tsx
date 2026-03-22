@@ -47,11 +47,11 @@ export default function XcrowLoader({
             cy={ringSize / 2}
             r={r}
             fill="none"
-            stroke="hsl(var(--primary))"
+            stroke="hsl(var(--muted-foreground) / 0.5)"
             strokeWidth="3"
             strokeLinecap="round"
             strokeDasharray={`${circ * 0.3} ${circ * 0.7}`}
-            className="drop-shadow-[0_0_6px_hsl(var(--primary)/0.5)]"
+            className="drop-shadow-[0_0_4px_hsl(var(--muted-foreground)/0.3)]"
           />
         </motion.svg>
 
