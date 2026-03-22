@@ -78,11 +78,14 @@ export default function Settings() {
     setLinkedinUrl(profile.linkedinUrl || "");
     setCareerStage((profile.careerStage as "student" | "professional") || "professional");
     if (user) {
-      supabase.from("profiles").select("username, avatar_id, city").eq("id", user.id).single().then(({ data }) => {
+      supabase.from("profiles").select("username, avatar_id, city, graduation_year, degree_type").eq("id", user.id).single().then(({ data }) => {
         if (data) {
-          if ((data as any).username) setUsername((data as any).username);
-          if ((data as any).avatar_id) setAvatarId((data as any).avatar_id);
-          if ((data as any).city) setCity((data as any).city);
+          const d = data as any;
+          if (d.username) setUsername(d.username);
+          if (d.avatar_id) setAvatarId(d.avatar_id);
+          if (d.city) setCity(d.city);
+          if (d.graduation_year) setGraduationYear(String(d.graduation_year));
+          if (d.degree_type) setDegreeType(d.degree_type);
         }
       });
     }
