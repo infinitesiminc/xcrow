@@ -38,6 +38,7 @@ const SimulationDesign = lazy(() => import("./pages/SimulationDesign.tsx"));
 const JoinWorkspace = lazy(() => import("./pages/JoinWorkspace.tsx"));
 const ScoreDistributions = lazy(() => import("./pages/ScoreDistributions.tsx"));
 const PublicProfile = lazy(() => import("./pages/PublicProfile.tsx"));
+const MapPage = lazy(() => import("./pages/MapPage.tsx"));
 
 // Admin (lazy)
 const HRLayout = lazy(() => import("./layouts/HRLayout.tsx"));
@@ -96,6 +97,7 @@ const App = () => (
             <Routes>
               {/* Public B2C routes */}
               <Route path="/" element={<><Navbar /><Index /></>} />
+              <Route path="/map" element={<><Navbar /><MapPage /></>} />
               <Route path="/role/:jobTitle" element={<><Navbar /><RoleDeepDive /></>} />
               <Route path="/analysis" element={<><Navbar /><Analysis /><Footer /></>} />
               <Route path="/auth" element={<><Navbar /><Auth /></>} />
