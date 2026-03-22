@@ -1,6 +1,6 @@
 /**
  * HQPanel — Territory HQ dashboard inside the map side panel.
- * Shows next quest, available quests, retry quests, and kingdom progress.
+ * Dark Fantasy RPG styled with stone surfaces, Cinzel headings, filigree accents.
  */
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { motion } from "framer-motion";
@@ -64,17 +64,19 @@ const TIER_EMOJI: Record<CastleTier, string> = {
   grandmaster: "✨",
 };
 
-const TIER_COLORS: Record<CastleTier, string> = {
-  ruins: "border-border/30",
-  outpost: "border-emerald-500/30",
-  fortress: "border-blue-500/30",
-  citadel: "border-amber-500/30",
-  grandmaster: "border-purple-500/30",
-};
-
 interface HQPanelProps {
   onSelectRole?: (role: RoleResult) => void;
 }
+
+/* ── Shared fantasy card style ── */
+const fantasyCard = {
+  background: "hsl(var(--surface-stone))",
+  border: "1px solid hsl(var(--filigree) / 0.2)",
+  boxShadow: "inset 0 1px 0 hsl(var(--emboss-light)), 0 2px 6px hsl(var(--emboss-shadow))",
+};
+
+const fantasySectionHeader = "text-[10px] uppercase tracking-[0.12em] text-muted-foreground";
+const fantasySectionHeaderStyle = { fontFamily: "'Cinzel', serif" };
 
 export default function HQPanel({ onSelectRole }: HQPanelProps) {
   const { profile, user } = useAuth();
@@ -230,7 +232,13 @@ export default function HQPanel({ onSelectRole }: HQPanelProps) {
     <div className="h-full overflow-y-auto scrollbar-thin px-4 py-4 space-y-4">
       {/* Greeting */}
       <div className="text-center">
-        <h2 className="text-lg font-display font-bold text-foreground">
+        <h2
+          className="text-lg font-bold text-foreground"
+          style={{
+            fontFamily: "'Cinzel', serif",
+            textShadow: "0 0 16px hsl(var(--filigree-glow) / 0.3)",
+          }}
+        >
           {greeting}{userName ? `, ${userName}` : ""} ⚔️
         </h2>
         <p className="text-[11px] text-muted-foreground mt-0.5">
@@ -242,29 +250,49 @@ export default function HQPanel({ onSelectRole }: HQPanelProps) {
         </p>
       </div>
 
-      {/* Next Quest */}
+      {/* Next Quest — hero card */}
       {nextQuest && (
-        <div className="rounded-xl border border-primary/20 bg-gradient-to-br from-primary/8 via-card to-card p-4">
+        <div
+          className="rounded-xl p-4"
+          style={{
+            ...fantasyCard,
+            borderColor: "hsl(var(--primary) / 0.3)",
+            background: "linear-gradient(135deg, hsl(var(--surface-stone)), hsl(var(--primary) / 0.06))",
+          }}
+        >
           <div className="flex items-center gap-2 mb-2">
-            <div className="h-7 w-7 rounded-lg bg-primary/15 flex items-center justify-center">
+            <div
+              className="h-7 w-7 rounded-lg flex items-center justify-center"
+              style={{ background: "hsl(var(--primary) / 0.15)" }}
+            >
               <Swords className="h-3.5 w-3.5 text-primary" />
             </div>
             <div>
-              <span className="text-[10px] font-medium text-primary uppercase tracking-wider">Next Quest</span>
+              <span
+                className="text-[10px] font-medium uppercase tracking-[0.12em]"
+                style={{ color: "hsl(var(--filigree-glow))", fontFamily: "'Cinzel', serif" }}
+              >
+                Next Quest
+              </span>
               <span className="text-[10px] text-muted-foreground ml-2">+125 XP</span>
             </div>
           </div>
-          <h3 className="text-sm font-semibold text-foreground mb-0.5">{nextQuest.clusterName}</h3>
+          <h3
+            className="text-sm font-semibold text-foreground mb-0.5"
+            style={{ fontFamily: "'Cinzel', serif" }}
+          >
+            {nextQuest.clusterName}
+          </h3>
           <p className="text-[11px] text-muted-foreground mb-3">
             {nextQuest.company ? `${nextQuest.company} · ` : ""}{nextQuest.jobTitle}
           </p>
           <div className="flex items-center gap-3 mb-3">
             <div className="flex items-center gap-1">
-              <Flame className="h-3 w-3 text-orange-400" />
+              <Flame className="h-3 w-3" style={{ color: "hsl(var(--territory-leadership))" }} />
               <span className="text-[10px] text-muted-foreground">{nextQuest.aiExposure}% Threat</span>
             </div>
             <div className="flex items-center gap-1">
-              <Zap className="h-3 w-3 text-amber-400" />
+              <Zap className="h-3 w-3" style={{ color: "hsl(var(--filigree-glow))" }} />
               <span className="text-[10px] text-muted-foreground capitalize">{nextQuest.impact}</span>
             </div>
           </div>
@@ -278,17 +306,23 @@ export default function HQPanel({ onSelectRole }: HQPanelProps) {
       {/* More Quests */}
       {questPool.length > 1 && (
         <div>
-          <h4 className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mb-2">
+          <h4 className={fantasySectionHeader} style={fantasySectionHeaderStyle}>
             Available Quests ({questPool.length})
           </h4>
-          <div className="space-y-1.5">
+          <div className="space-y-1.5 mt-2">
             {questPool.slice(1, 4).map((quest) => (
               <button
                 key={quest.id}
                 onClick={() => handleStartQuest(quest)}
-                className="w-full flex items-center gap-2.5 rounded-lg border border-border/50 bg-card hover:border-primary/30 p-2.5 transition-all text-left group"
+                className="w-full flex items-center gap-2.5 rounded-lg p-2.5 transition-all text-left group"
+                style={{
+                  ...fantasyCard,
+                }}
               >
-                <div className="h-7 w-7 rounded-md bg-muted/50 flex items-center justify-center shrink-0 group-hover:bg-primary/10 transition-colors">
+                <div
+                  className="h-7 w-7 rounded-md flex items-center justify-center shrink-0 transition-colors"
+                  style={{ background: "hsl(var(--muted) / 0.5)" }}
+                >
                   <Shield className="h-3.5 w-3.5 text-muted-foreground group-hover:text-primary transition-colors" />
                 </div>
                 <div className="flex-1 min-w-0">
@@ -307,7 +341,10 @@ export default function HQPanel({ onSelectRole }: HQPanelProps) {
       {/* Retry Quests */}
       {retryQuests.length > 0 && (
         <div>
-          <h4 className="text-[10px] font-medium text-orange-400 uppercase tracking-wider mb-2">
+          <h4
+            className="text-[10px] uppercase tracking-[0.12em] mb-2"
+            style={{ color: "hsl(var(--territory-leadership))", fontFamily: "'Cinzel', serif" }}
+          >
             ⚡ Train Up — Weak Spots
           </h4>
           <div className="space-y-1.5">
@@ -318,16 +355,24 @@ export default function HQPanel({ onSelectRole }: HQPanelProps) {
                   const slug = q.jobTitle.trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
                   navigate(`/role/${slug}?task=${encodeURIComponent(q.taskName)}`);
                 }}
-                className="w-full flex items-center gap-2.5 rounded-lg border border-orange-500/20 bg-orange-500/5 hover:border-orange-500/40 p-2.5 transition-all text-left"
+                className="w-full flex items-center gap-2.5 rounded-lg p-2.5 transition-all text-left"
+                style={{
+                  background: "hsl(var(--territory-leadership) / 0.06)",
+                  border: "1px solid hsl(var(--territory-leadership) / 0.2)",
+                  boxShadow: "inset 0 1px 0 hsl(var(--emboss-light))",
+                }}
               >
-                <div className="h-7 w-7 rounded-md bg-orange-500/15 flex items-center justify-center shrink-0">
-                  <Flame className="h-3.5 w-3.5 text-orange-400" />
+                <div
+                  className="h-7 w-7 rounded-md flex items-center justify-center shrink-0"
+                  style={{ background: "hsl(var(--territory-leadership) / 0.15)" }}
+                >
+                  <Flame className="h-3.5 w-3.5" style={{ color: "hsl(var(--territory-leadership))" }} />
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-xs font-medium text-foreground truncate">{q.taskName}</p>
                   <p className="text-[10px] text-muted-foreground">{q.jobTitle}</p>
                 </div>
-                <span className="text-[10px] text-orange-400 font-medium shrink-0">{q.weakScore}%</span>
+                <span className="text-[10px] font-medium shrink-0" style={{ color: "hsl(var(--territory-leadership))" }}>{q.weakScore}%</span>
               </button>
             ))}
           </div>
@@ -337,10 +382,10 @@ export default function HQPanel({ onSelectRole }: HQPanelProps) {
       {/* Kingdoms */}
       {kingdoms.length > 0 && (
         <div>
-          <h4 className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mb-2">
+          <h4 className={fantasySectionHeader} style={fantasySectionHeaderStyle}>
             Your Kingdoms
           </h4>
-          <div className="space-y-1.5">
+          <div className="space-y-1.5 mt-2">
             {kingdoms.map((k) => {
               const castle = getCastleState(k.xp);
               const progress = k.totalQuests > 0 ? (k.questsCompleted / k.totalQuests) * 100 : 0;
@@ -348,13 +393,19 @@ export default function HQPanel({ onSelectRole }: HQPanelProps) {
                 <button
                   key={k.jobId}
                   onClick={() => handleOpenKingdom(k)}
-                  className={`w-full flex items-center gap-2.5 rounded-lg border ${TIER_COLORS[castle.tier]} bg-card hover:bg-card/80 p-2.5 transition-all text-left`}
+                  className="w-full flex items-center gap-2.5 rounded-lg p-2.5 transition-all text-left"
+                  style={fantasyCard}
                 >
                   <span className="text-lg shrink-0">{TIER_EMOJI[castle.tier]}</span>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-1.5">
                       <p className="text-xs font-medium text-foreground truncate">{k.title}</p>
-                      <span className="text-[9px] text-muted-foreground capitalize shrink-0">{castle.tier}</span>
+                      <span
+                        className="text-[9px] capitalize shrink-0"
+                        style={{ color: "hsl(var(--filigree))" }}
+                      >
+                        {castle.tier}
+                      </span>
                     </div>
                     {k.company && <p className="text-[10px] text-muted-foreground">{k.company}</p>}
                     <div className="flex items-center gap-2 mt-1">
@@ -365,7 +416,12 @@ export default function HQPanel({ onSelectRole }: HQPanelProps) {
                     </div>
                   </div>
                   <div className="text-right shrink-0">
-                    <p className="text-[11px] font-semibold text-primary">{k.xp} XP</p>
+                    <p
+                      className="text-[11px] font-semibold"
+                      style={{ color: "hsl(var(--filigree-glow))" }}
+                    >
+                      {k.xp} XP
+                    </p>
                   </div>
                 </button>
               );
@@ -376,9 +432,17 @@ export default function HQPanel({ onSelectRole }: HQPanelProps) {
 
       {/* Empty State */}
       {kingdoms.length === 0 && !loading && (
-        <div className="rounded-xl border border-border/50 bg-card p-5 text-center">
+        <div
+          className="rounded-xl p-5 text-center"
+          style={fantasyCard}
+        >
           <span className="text-3xl block mb-2">🏰</span>
-          <h3 className="text-sm font-semibold text-foreground mb-1.5">No Kingdoms Yet</h3>
+          <h3
+            className="text-sm font-semibold text-foreground mb-1.5"
+            style={{ fontFamily: "'Cinzel', serif" }}
+          >
+            No Kingdoms Yet
+          </h3>
           <p className="text-[11px] text-muted-foreground mb-3">
             Ask the AI Coach to discover roles and claim your first kingdom
           </p>

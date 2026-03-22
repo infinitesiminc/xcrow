@@ -1,23 +1,14 @@
 /**
- * FutureSkillsTable — sortable table view of the canonical future skills catalogue.
+ * FutureSkillsTable — Skill Forge catalog with Dark Fantasy RPG styling.
+ * Stone surfaces, Cinzel headers, territory-colored domain badges.
  */
 import { useState, useMemo } from "react";
 import { type FutureSkill, type FutureSkillCategory } from "@/hooks/use-future-skills";
 import { Input } from "@/components/ui/input";
 import { ArrowUpDown, Search } from "lucide-react";
+import { getTerritory } from "@/lib/territory-colors";
 
 type SortKey = "name" | "category" | "demandCount" | "jobCount";
-
-const CATEGORY_COLORS: Record<FutureSkillCategory, string> = {
-  Technical:             "bg-violet-500/15 text-violet-400",
-  Analytical:            "bg-sky-500/15 text-sky-400",
-  Strategic:             "bg-rose-500/15 text-rose-400",
-  Communication:         "bg-emerald-500/15 text-emerald-400",
-  Leadership:            "bg-amber-500/15 text-amber-400",
-  Creative:              "bg-orange-500/15 text-orange-400",
-  "Ethics & Compliance": "bg-teal-500/15 text-teal-400",
-  "Human Edge":          "bg-fuchsia-500/15 text-fuchsia-400",
-};
 
 export default function FutureSkillsTable({ skills, onSkillClick }: { skills: FutureSkill[]; onSkillClick?: (skill: FutureSkill) => void }) {
   const [search, setSearch] = useState("");
@@ -48,9 +39,10 @@ export default function FutureSkillsTable({ skills, onSkillClick }: { skills: Fu
   const colBtn = (key: SortKey, label: string) => (
     <button
       onClick={() => toggleSort(key)}
-      className={`flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider transition-colors ${
+      className={`flex items-center gap-1 text-[10px] uppercase tracking-[0.1em] transition-colors ${
         sortKey === key ? "text-foreground" : "text-muted-foreground hover:text-foreground"
       }`}
+      style={{ fontFamily: "'Cinzel', serif", fontWeight: 600 }}
     >
       {label}
       <ArrowUpDown className="h-2.5 w-2.5" />
@@ -67,10 +59,14 @@ export default function FutureSkillsTable({ skills, onSkillClick }: { skills: Fu
             value={search}
             onChange={e => setSearch(e.target.value)}
             placeholder="Search future skills…"
-            className="h-8 pl-8 text-xs bg-muted/30 border-border/50"
+            className="h-8 pl-8 text-xs border-border/50"
+            style={{ background: "hsl(var(--surface-stone))" }}
           />
         </div>
-        <span className="text-[10px] font-mono text-muted-foreground whitespace-nowrap">
+        <span
+          className="text-[10px] font-mono whitespace-nowrap"
+          style={{ color: "hsl(var(--filigree))" }}
+        >
           {filtered.length}{search ? ` / ${skills.length}` : ""} skills
         </span>
       </div>
@@ -78,8 +74,11 @@ export default function FutureSkillsTable({ skills, onSkillClick }: { skills: Fu
       {/* Table */}
       <div className="flex-1 overflow-y-auto px-3 pb-3">
         <table className="w-full text-xs">
-          <thead className="sticky top-0 bg-background/95 backdrop-blur-sm z-10">
-            <tr className="border-b border-border/30">
+          <thead
+            className="sticky top-0 z-10 backdrop-blur-sm"
+            style={{ background: "hsl(var(--surface-stone) / 0.95)" }}
+          >
+            <tr style={{ borderBottom: "1px solid hsl(var(--filigree) / 0.15)" }}>
               <th className="text-left py-2 pr-2">{colBtn("name", "Skill")}</th>
               <th className="text-left py-2 pr-2">{colBtn("category", "Domain")}</th>
               <th className="text-right py-2 pr-2">{colBtn("demandCount", "Demand")}</th>
@@ -87,23 +86,38 @@ export default function FutureSkillsTable({ skills, onSkillClick }: { skills: Fu
             </tr>
           </thead>
           <tbody>
-            {filtered.map(skill => (
-              <tr key={skill.id} onClick={() => onSkillClick?.(skill)} className={`border-b border-border/10 hover:bg-muted/20 transition-colors ${onSkillClick ? "cursor-pointer" : ""}`}>
-                <td className="py-1.5 pr-2">
-                  <div className="flex items-center gap-1.5">
-                    {skill.iconEmoji && <span className="text-sm">{skill.iconEmoji}</span>}
-                    <span className="font-medium text-foreground truncate max-w-[160px]">{skill.name}</span>
-                  </div>
-                </td>
-                <td className="py-1.5 pr-2">
-                  <span className={`inline-block px-1.5 py-0.5 rounded-md text-[10px] font-medium ${CATEGORY_COLORS[skill.category] || "bg-muted text-muted-foreground"}`}>
-                    {skill.category}
-                  </span>
-                </td>
-                <td className="py-1.5 pr-2 text-right font-mono text-muted-foreground">{skill.demandCount}</td>
-                <td className="py-1.5 text-right font-mono text-muted-foreground">{skill.jobCount}</td>
-              </tr>
-            ))}
+            {filtered.map(skill => {
+              const territory = getTerritory(skill.category as FutureSkillCategory);
+              return (
+                <tr
+                  key={skill.id}
+                  onClick={() => onSkillClick?.(skill)}
+                  className={`transition-colors hover:bg-muted/20 ${onSkillClick ? "cursor-pointer" : ""}`}
+                  style={{ borderBottom: "1px solid hsl(var(--border) / 0.3)" }}
+                >
+                  <td className="py-1.5 pr-2">
+                    <div className="flex items-center gap-1.5">
+                      {skill.iconEmoji && <span className="text-sm">{skill.iconEmoji}</span>}
+                      <span className="font-medium text-foreground truncate max-w-[160px]">{skill.name}</span>
+                    </div>
+                  </td>
+                  <td className="py-1.5 pr-2">
+                    <span
+                      className="inline-block px-1.5 py-0.5 rounded-md text-[10px] font-medium"
+                      style={{
+                        background: `${territory.hsl}15`,
+                        color: territory.hsl,
+                        border: `1px solid ${territory.hsl}25`,
+                      }}
+                    >
+                      {skill.category}
+                    </span>
+                  </td>
+                  <td className="py-1.5 pr-2 text-right font-mono text-muted-foreground">{skill.demandCount}</td>
+                  <td className="py-1.5 text-right font-mono text-muted-foreground">{skill.jobCount}</td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
         {filtered.length === 0 && (
