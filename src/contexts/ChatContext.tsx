@@ -37,6 +37,9 @@ interface ChatContextValue {
   onRolesFoundRef: React.MutableRefObject<((roles: RoleResult[]) => void) | null>;
   onRoleSelectRef: React.MutableRefObject<((role: RoleResult) => void) | null>;
   hasInteracted: boolean;
+  /** When true, the AI Coach button is hidden (e.g. during simulations) */
+  simActive: boolean;
+  setSimActive: (active: boolean) => void;
 }
 
 const ChatContext = createContext<ChatContextValue | null>(null);
