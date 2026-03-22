@@ -306,7 +306,10 @@ const Index = () => {
       <OnboardingQuest
         open
         userId={user!.id}
-        onComplete={() => setOnboardingDismissed(true)}
+        onComplete={async () => {
+          await refreshProfile();
+          setOnboardingDismissed(true);
+        }}
       />
     );
   }
