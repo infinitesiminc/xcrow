@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
-import { Swords, CheckCircle2, Crown } from "lucide-react";
+import { CheckCircle2, Crown } from "lucide-react";
+import { rpgIcon } from "@/lib/rpg-icons";
 import { TaskAnalysis } from "@/types/analysis";
 import { ThreatBar } from "./ThreatBar";
 
