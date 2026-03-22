@@ -209,13 +209,13 @@ const PromptArena = ({ round, roundNumber, onJudged, loading }: PromptArenaProps
 
               {/* Result badge */}
               {showResult && (
-                <div className={`px-3 py-2 flex items-center gap-2 text-xs font-medium ${
+                <div className={`px-4 py-2.5 flex items-center gap-2 text-sm font-medium ${
                   isBetter ? "text-success bg-success/5" : "text-muted-foreground bg-muted/30"
                 }`}>
-                  {isBetter ? <CheckCircle2 className="h-3.5 w-3.5" /> : null}
+                  {isBetter ? <CheckCircle2 className="h-4 w-4" /> : null}
                   {isBetter ? "Better approach" : "Less effective"}
                   {isPicked && (
-                    <span className="ml-auto text-[10px] font-bold px-1.5 py-0.5 rounded" style={{
+                    <span className="ml-auto text-xs font-bold px-2 py-0.5 rounded" style={{
                       background: correct ? "hsl(142 71% 45% / 0.15)" : "hsl(0 84% 60% / 0.15)",
                       color: correct ? "hsl(142 71% 45%)" : "hsl(0 84% 60%)",
                     }}>
