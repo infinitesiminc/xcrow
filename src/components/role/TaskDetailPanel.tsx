@@ -209,7 +209,7 @@ export function TaskDetailPanel({
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,hsl(var(--destructive)/0.08),transparent_60%)] opacity-0 group-hover:opacity-100 transition-opacity" />
             <div className="relative flex items-center gap-3">
               <div className="h-10 w-10 rounded-lg bg-destructive/10 border border-destructive/20 flex items-center justify-center shrink-0">
-                <Compass className="h-5 w-5 text-destructive" />
+                <span className="text-xl leading-none">🧭</span>
               </div>
               <div className="flex-1 min-w-0">
                 <div className="text-xs font-bold text-foreground mb-0.5 flex items-center gap-1.5">
@@ -301,7 +301,7 @@ export function TaskDetailPanel({
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_50%,hsl(var(--primary)/0.08),transparent_60%)] opacity-0 group-hover:opacity-100 transition-opacity" />
             <div className="relative flex items-center gap-3">
               <div className="h-10 w-10 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0">
-                <Archive className="h-5 w-5 text-primary" />
+                <span className="text-xl leading-none">🗝️</span>
               </div>
               <div className="flex-1 min-w-0">
                 <div className="text-xs font-bold text-foreground mb-0.5 flex items-center gap-1.5">
