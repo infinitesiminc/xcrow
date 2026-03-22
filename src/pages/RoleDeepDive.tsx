@@ -333,7 +333,7 @@ const RoleDeepDive = () => {
             <ReadinessRing readiness={readiness} size={40} />
             <div className="flex-1 space-y-1">
               <div className="flex items-center justify-between">
-                <span className="text-[8px] text-muted-foreground uppercase">Threat Level</span>
+                <span className="text-[10px] text-muted-foreground uppercase">Threat Level</span>
                 <div className="flex items-center gap-1">
                   <span className="text-xs font-bold text-foreground tabular-nums">{currentRisk}%</span>
                   {futureStats && (
