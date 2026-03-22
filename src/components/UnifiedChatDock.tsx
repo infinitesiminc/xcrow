@@ -25,8 +25,7 @@ export default function UnifiedChatDock() {
   const scrollRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  // Don't render anything when a simulation is active
-  if (simActive) return null;
+  // Auto-scroll
 
   // Auto-scroll
   useEffect(() => {
