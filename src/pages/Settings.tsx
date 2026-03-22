@@ -272,9 +272,13 @@ export default function Settings() {
             Back
           </button>
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-sm font-bold shrink-0">
-              {initials}
-            </div>
+            {sidebarAvatar ? (
+              <img src={sidebarAvatar.src} alt={sidebarAvatar.label} className="w-10 h-10 rounded-full object-contain bg-muted/30 shrink-0" />
+            ) : (
+              <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-sm font-bold shrink-0">
+                {initials}
+              </div>
+            )}
             <div className="min-w-0">
               <p className="text-sm font-semibold text-foreground truncate">{profile?.displayName || user?.email}</p>
               <p className="text-[11px] text-muted-foreground truncate">{user?.email}</p>
