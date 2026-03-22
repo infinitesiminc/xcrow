@@ -85,10 +85,7 @@ const MapPage = () => {
   const [chatOpen, setChatOpen] = useState(false);
   const [mapFocusSkillId, setMapFocusSkillId] = useState<string | null>(null);
   const [myRolesTab, setMyRolesTab] = useState<"saved" | "practiced">("saved");
-  const [territoryOpen, setTerritoryOpen] = useState(false);
-  const [lastPracticedSkillId, setLastPracticedSkillId] = useState<string | null>(null);
-  const [territoryFocusSkillId, setTerritoryFocusSkillId] = useState<string | null>(null);
-  const [territoryXpGain, setTerritoryXpGain] = useState(0);
+
 
   const [realSkills, setRealSkills] = useState<SkillXP[]>([]);
   const [targetSkillIds, setTargetSkillIds] = useState<Set<string>>(new Set());
