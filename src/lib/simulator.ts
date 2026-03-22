@@ -63,6 +63,18 @@ export interface SimScoreResult {
   objectiveResults?: ObjectiveResult[];
 }
 
+export interface ArenaRoundData {
+  scenario_context: string;
+  prompt_a: { label: string; technique: string; full_prompt: string; tool: string };
+  prompt_b: { label: string; technique: string; full_prompt: string; tool: string };
+  output_a: string;
+  output_b: string;
+  better: "a" | "b";
+  explanation: string;
+  insight: string;
+  target_objective_id: string | null;
+}
+
 async function simFetch<T>(action: string, payload: Record<string, unknown>): Promise<T> {
   const { data, error } = await supabase.functions.invoke("sim-chat", {
     body: { action, payload },
