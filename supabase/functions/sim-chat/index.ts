@@ -118,7 +118,8 @@ IMPORTANT: Design scenarios that specifically target "${coaching.weakCategory}" 
 1. Proactively ask follow-up questions that test "${coaching.weakCategory}"
 2. Provide gentle guidance when the learner's response shows weakness in this area
 3. Celebrate when the learner shows improvement in "${coaching.weakCategory}"
-Coaching tip to weave in: "${coaching.tip}"`
+Coaching tip to weave in: "${coaching.tip}"
+IMPORTANT: Do NOT mention the coaching focus area ("${coaching.weakCategory}") in the "openingMessage". The coaching context is already shown to the user in a separate UI banner. The openingMessage should just present the scenario naturally.`
     : "";
 
   const prompt = `You are designing a LEARNING simulation about AI tools for a professional task.
