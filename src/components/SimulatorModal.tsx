@@ -1104,15 +1104,9 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
-                  className="flex flex-col items-center justify-center h-full gap-4"
+                  className="flex flex-col items-center justify-center h-full"
                 >
-                  <motion.div
-                    animate={{ rotate: 360 }}
-                    transition={{ duration: 1.2, repeat: Infinity, ease: "linear" }}
-                  >
-                    <Loader2 className="h-8 w-8 text-muted-foreground/40" />
-                  </motion.div>
-                  <p className="text-sm text-muted-foreground" style={{ fontFamily: "'Cinzel', serif" }}>Forging your quest…</p>
+                  <XcrowLoader size="sm" title="Forging your quest…" />
                 </motion.div>
               )}
 
