@@ -1137,16 +1137,11 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                     const isUser = msg.role === "user";
                     const displayContent = isUser ? safeStr(msg.content) : cleanMessageForDisplay(safeStr(msg.content));
 
-                    // Detect scenario transition: assistant message containing a new scenario marker or following a topic-change user message
-                    const prevMsg = i > 0 ? messages[i - 1] : null;
-                    const topicChangeWords = ["yes", "yeah", "next", "new topic", "move on", "continue", "let's go", "skip"];
-                    const userText = safeStr(prevMsg?.content || "").toLowerCase().trim();
-                    const prevIsTopicChange = prevMsg?.role === "user" && topicChangeWords.some(w => {
-                      // Exact match or starts with the word (e.g. "yes!" or "yeah let's go")
-                      return userText === w || userText.startsWith(w + " ") || userText.startsWith(w + "!") || userText.startsWith(w + ",") || userText.startsWith(w + ".");
-                    });
-                    const hasScenarioMarker = !isUser && (displayContent.includes("📖 Scenario") || displayContent.includes("📖 **Scenario"));
-                    const isNewScenario = !isUser && (prevIsTopicChange || hasScenarioMarker) && i > 1;
+                    // Detect genuine wave transition — only when an objective was PASSED in this message
+                    // (meaning the AI is now moving to a new objective/wave, not just the next round)
+                    const rawContent = safeStr(msg.content);
+                    const hasObjectivePass = !isUser && /\[OBJ_EVAL:[^:]+:PASS\]/.test(rawContent);
+                    const isNewScenario = hasObjectivePass && i > 1;
                     
                     const objectiveMetInMsg = !isUser ? [
                       ...(safeStr(msg.content).match(/\[OBJECTIVE_MET:([^\]]+)\]/g) || []).map(t => {
