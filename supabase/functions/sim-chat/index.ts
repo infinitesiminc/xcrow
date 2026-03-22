@@ -373,7 +373,7 @@ OBJECTIVE COMPLETION: If ALL objectives have been met, also include [ALL_OBJECTI
   const allMet = learningObjectives?.every(o => objectiveStatus?.[o.id]) ?? false;
   let endNote = "";
   if (allMet) {
-    endNote = `\n\nALL OBJECTIVES MET! Replace the next scenario with: "🎉 You've conquered all objectives! Click **Finish** to see your battle report." Include [ALL_OBJECTIVES_MET].`;
+    endNote = `\n\nALL OBJECTIVES MET! Replace the next scenario with: "🎉 You've conquered all objectives! Click **End Quest** to see your battle report." Include [ALL_OBJECTIVES_MET].`;
   }
 
   const isLastRound = round >= FIXED_ROUNDS;
