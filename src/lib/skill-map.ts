@@ -1,8 +1,11 @@
 /**
  * Skill Map — shared taxonomy, XP calculation, and level logic.
  *
- * Every simulation maps to 1-3 skills via keyword matching.
- * XP accumulates per skill; levels unlock at thresholds.
+ * The canonical skill catalogue lives in the `canonical_future_skills` DB table (183 skills).
+ * This file provides XP level calculations, keyword matching, and aggregation helpers.
+ *
+ * Legacy SKILL_TAXONOMY (30 skills) is kept as a compatibility shim for components
+ * that haven't migrated to the canonical system yet.
  */
 
 export type SkillCategory = "technical" | "analytical" | "communication" | "leadership" | "creative" | "compliance";
@@ -16,6 +19,7 @@ export interface TaxonomySkill {
   humanEdge?: string;
 }
 
+/** @deprecated Use canonical_future_skills from DB via useFutureSkills() */
 export const SKILL_TAXONOMY: TaxonomySkill[] = [
   // ── Technical ──
   { id: "code-dev", name: "Software Dev", category: "technical", aiExposure: 72, keywords: ["code", "development", "engineering", "component", "pipeline", "deploy", "api", "software", "build", "feature", "frontend", "backend", "module"], humanEdge: "System thinking" },
@@ -56,6 +60,7 @@ export const SKILL_TAXONOMY: TaxonomySkill[] = [
   { id: "emotional-iq", name: "Emotional Intelligence", category: "leadership", aiExposure: 8, keywords: ["emotional intelligence", "empathy", "self-awareness", "conflict resolution", "interpersonal", "active listening"], humanEdge: "Human connection" },
 ];
 
+/** @deprecated Use FUTURE_CATEGORY_META from use-future-skills.ts */
 export const CATEGORY_META: Record<SkillCategory, { label: string; emoji: string }> = {
   technical: { label: "Technical", emoji: "⚙️" },
   analytical: { label: "Analytical", emoji: "📊" },
@@ -65,15 +70,14 @@ export const CATEGORY_META: Record<SkillCategory, { label: string; emoji: string
   compliance: { label: "Compliance", emoji: "📋" },
 };
 
-// ── XP & Level System ──
-
-export const XP_PER_SIM = 100;
+// ── XP & Level System (unified with castle-levels.ts thresholds) ──
 
 export const LEVELS = [
-  { name: "Beginner", threshold: 0 },
-  { name: "Developing", threshold: 100 },
-  { name: "Proficient", threshold: 300 },
-  { name: "Expert", threshold: 600 },
+  { name: "Novice", threshold: 0 },
+  { name: "Apprentice", threshold: 150 },
+  { name: "Adept", threshold: 500 },
+  { name: "Master", threshold: 1200 },
+  { name: "Grandmaster", threshold: 2500 },
 ] as const;
 
 export type LevelName = (typeof LEVELS)[number]["name"];
@@ -82,7 +86,7 @@ export function getLevel(xp: number): { name: LevelName; index: number } {
   for (let i = LEVELS.length - 1; i >= 0; i--) {
     if (xp >= LEVELS[i].threshold) return { name: LEVELS[i].name, index: i };
   }
-  return { name: "Beginner", index: 0 };
+  return { name: "Novice", index: 0 };
 }
 
 export function getNextLevel(xp: number): { name: LevelName; threshold: number; xpNeeded: number } | null {
@@ -162,7 +166,8 @@ export function aggregateSkillXP(sims: SimRecord[], taxonomy?: TaxonomySkill[]):
     } else {
       skillIds = matchTaskToSkills(sim.task_name, sim.job_title, source);
       if (skillIds.length === 0) continue;
-      const xpEach = Math.round(XP_PER_SIM / skillIds.length);
+      // Legacy fallback: flat 40 XP per matched skill
+      const xpEach = 40;
       for (const id of skillIds) {
         const entry = getEntry(id);
         entry.xp += xpEach;
