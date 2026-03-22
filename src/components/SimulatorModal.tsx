@@ -1762,7 +1762,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                         onClick={() => { onClose(); onNextBattle(); }}
                         className="gap-2 rounded-xl w-full text-xs"
                       >
-                        <Swords className="h-3 w-3" /> ⚔️ Next Battle ({campaignStats.total - campaignStats.conquered - 1} remain)
+                        <Shield className="h-3 w-3" /> 🏰 Next Battle ({campaignStats.total - campaignStats.conquered - 1} remain)
                       </Button>
                     )}
 
