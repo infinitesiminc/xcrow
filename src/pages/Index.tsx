@@ -261,42 +261,38 @@ const Index = () => {
     );
   }
 
-  /* ── Signed-out landing ── */
-  if (!isSignedIn) {
-    return (
-      <div className="h-[calc(100vh-3.5rem)] flex flex-col items-center justify-center px-4">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-center max-w-lg"
-        >
-          <span className="text-5xl mb-4 block">⚔️</span>
-          <h1 className="text-3xl md:text-4xl font-display font-bold text-foreground mb-3">
-            Level up your career
-          </h1>
-          <p className="text-sm text-muted-foreground mb-8 max-w-sm mx-auto">
-            Explore kingdoms, practice quests, and build your skill territory in the age of AI
-          </p>
-          <SkillSuggestionCards />
-          <div className="flex gap-3 justify-center mt-6">
-            <Button size="lg" onClick={() => navigate("/map")}>
-              <Map className="h-4 w-4 mr-2" />
-              Explore Skill Map
-            </Button>
-          </div>
-        </motion.div>
-      </div>
-    );
+  /* ── Signed-in → redirect to /map ── */
+  if (isSignedIn) {
+    // This should not normally render since App.tsx redirects,
+    // but acts as a safety net
+    return <Navigate to="/map" replace />;
   }
 
-  /* ── Loading ── */
-  if (loading) {
-    return (
-      <div className="h-[calc(100vh-3.5rem)] flex items-center justify-center">
-        <XcrowLoader title="Loading your kingdoms…" size="sm" />
-      </div>
-    );
-  }
+  /* ── Signed-out landing ── */
+  return (
+    <div className="h-[calc(100vh-3.5rem)] flex flex-col items-center justify-center px-4">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="text-center max-w-lg"
+      >
+        <span className="text-5xl mb-4 block">⚔️</span>
+        <h1 className="text-3xl md:text-4xl font-display font-bold text-foreground mb-3">
+          Level up your career
+        </h1>
+        <p className="text-sm text-muted-foreground mb-8 max-w-sm mx-auto">
+          Explore kingdoms, practice quests, and build your skill territory in the age of AI
+        </p>
+        <SkillSuggestionCards />
+        <div className="flex gap-3 justify-center mt-6">
+          <Button size="lg" onClick={() => navigate("/map")}>
+            <Map className="h-4 w-4 mr-2" />
+            Explore Skill Map
+          </Button>
+        </div>
+      </motion.div>
+    </div>
+  );
 
   /* ── Signed-in Dashboard ── */
   return (
