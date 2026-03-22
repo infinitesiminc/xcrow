@@ -120,7 +120,7 @@ type RightTab = "territory" | "table" | "roles";
 /* ── component ───────────────────────────────────── */
 
 const Index = () => {
-  const { profile, user } = useAuth();
+  const { profile, user, refreshProfile } = useAuth();
   const isMobile = useIsMobile();
   const { skills: dbSkills } = useSkills();
 
@@ -306,7 +306,10 @@ const Index = () => {
       <OnboardingQuest
         open
         userId={user!.id}
-        onComplete={() => setOnboardingDismissed(true)}
+        onComplete={async () => {
+          await refreshProfile();
+          setOnboardingDismissed(true);
+        }}
       />
     );
   }
