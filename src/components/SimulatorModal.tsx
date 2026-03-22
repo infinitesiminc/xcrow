@@ -38,7 +38,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useUsageGate } from "@/hooks/use-usage-gate";
 import UpgradeModal from "@/components/UpgradeModal";
 
-type Phase = "loading" | "briefing" | "chat" | "arena" | "review" | "completing" | "done" | "guest-limit";
+type Phase = "loading" | "briefing" | "chat" | "review" | "completing" | "done" | "guest-limit";
 
 // Defaults — overridden by server config
 const DEFAULT_MIN_ROUNDS = 3;
