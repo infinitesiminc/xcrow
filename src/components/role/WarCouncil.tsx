@@ -15,6 +15,7 @@ import type { FuturePrediction } from "@/components/analysis/FutureTaskPreview";
 // ── Shared fantasy style ──────────────────────────────────────
 const fantasyCard = {
   background: "hsl(var(--surface-stone))",
+  color: "hsl(var(--card-foreground))",
   border: "1px solid hsl(var(--filigree) / 0.2)",
   boxShadow: "inset 0 1px 0 hsl(var(--emboss-light)), 0 2px 6px hsl(var(--emboss-shadow))",
 };
@@ -153,13 +154,13 @@ export function WarCouncil({
         {/* Battle header */}
         <div>
           <h2
-            className="text-base font-bold text-foreground mb-1"
-            style={{ fontFamily: "'Cinzel', serif" }}
+            className="text-base font-bold mb-1"
+            style={{ fontFamily: "'Cinzel', serif", color: "hsl(var(--card-foreground))" }}
           >
             {task.name}
           </h2>
           {task.description && (
-            <p className="text-xs text-muted-foreground leading-relaxed">{task.description}</p>
+            <p className="text-xs leading-relaxed" style={{ color: "hsl(var(--muted-foreground))" }}>{task.description}</p>
           )}
         </div>
 
