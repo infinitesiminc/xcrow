@@ -1239,12 +1239,12 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                     const lastAi = [...messages].reverse().find(m => m.role === "assistant");
                     if (!lastAi) return null;
                     const lower = safeStr(lastAi.content).toLowerCase();
-                    const askContinue = lower.includes("ready for the next") || lower.includes("(yes/no)") || lower.includes("click finish");
-                    const allMetSignal = safeStr(lastAi.content).includes("[ALL_OBJECTIVES_MET]");
-                    if (!askContinue && !allMetSignal) return null;
-                    
-                    const isLastRound = roundCount >= maxRounds;
-                    const isSessionEnd = lower.includes("click finish") || allMetSignal;
+                     const askContinue = lower.includes("ready for the next") || lower.includes("(yes/no)") || lower.includes("click finish") || lower.includes("end quest");
+                     const allMetSignal = safeStr(lastAi.content).includes("[ALL_OBJECTIVES_MET]");
+                     if (!askContinue && !allMetSignal) return null;
+                     
+                     const isLastRound = roundCount >= maxRounds;
+                     const isSessionEnd = lower.includes("click finish") || lower.includes("end quest") || allMetSignal;
                     const allObjMet = session?.learningObjectives?.every(o => objectiveStatus[o.id]) ?? false;
                     
                     return (
