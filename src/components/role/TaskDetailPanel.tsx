@@ -1,7 +1,8 @@
+import { useState } from "react";
 import { isStandardEmoji } from "@/lib/emoji-utils";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import {
-  Play, AlertTriangle, Sparkles, Clock, X, ArrowRight,
+  Play, AlertTriangle, Sparkles, Clock, X, ArrowRight, Eye, Lock,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -30,6 +31,13 @@ export function TaskDetailPanel({
   const delta = futureScore - currentScore;
   const isCollapsing = futureScore >= 80;
 
+  // Progressive reveal state
+  const [threatRevealed, setThreatRevealed] = useState(false);
+  const [skillsUnlocked, setSkillsUnlocked] = useState(false);
+
+  const hasPrediction = !!prediction;
+  const hasSkills = prediction?.future_skills && prediction.future_skills.length > 0;
+
   return (
     <motion.div
       initial={{ opacity: 0, x: 12 }}
@@ -53,13 +61,17 @@ export function TaskDetailPanel({
         </button>
       </div>
 
-      {/* Score: Today → Future */}
+      {/* Score: Today → Future (always visible) */}
       <div className="flex items-center gap-2 mb-4 flex-wrap">
         <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full ${currentStyle.badge}`}>
           Now {currentScore}%
         </span>
-        {prediction && (
-          <>
+        {prediction && threatRevealed && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="flex items-center gap-2"
+          >
             <ArrowRight className="h-3 w-3 text-muted-foreground" />
             <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full ${futureStyle.badge}`}>
               Future {futureScore}%
@@ -69,7 +81,7 @@ export function TaskDetailPanel({
                 ({delta > 0 ? "+" : ""}{delta})
               </span>
             )}
-          </>
+          </motion.div>
         )}
         {!prediction && predictionsLoading && (
           <>
@@ -101,81 +113,169 @@ export function TaskDetailPanel({
               <Skeleton className="h-2.5 w-3/5 rounded" />
             </div>
           </div>
-          <h4 className="text-[10px] font-semibold text-muted-foreground/40 uppercase tracking-wider pt-2">
-            🗺️ Skills to Unlock
-          </h4>
-          <div className="flex gap-2.5">
-            {[...Array(2)].map((_, i) => (
-              <div key={i} className="flex-none w-40 rounded-xl border border-border/30 p-3.5 space-y-2">
-                <Skeleton className="h-6 w-6 rounded-md" />
-                <Skeleton className="h-3 w-3/4 rounded" />
-                <Skeleton className="h-2 w-full rounded" />
-                <Skeleton className="h-2 w-2/3 rounded" />
+        </div>
+      )}
+
+      {/* ─── STEP 1: Reveal Threat & Evolution ─── */}
+      <AnimatePresence mode="wait">
+        {hasPrediction && !threatRevealed && (
+          <motion.button
+            key="reveal-threat"
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8, scale: 0.95 }}
+            onClick={() => setThreatRevealed(true)}
+            className="group relative mb-4 rounded-xl border border-destructive/30 bg-gradient-to-br from-destructive/[0.08] to-destructive/[0.02] p-4 text-left hover:border-destructive/50 hover:shadow-lg hover:shadow-destructive/10 transition-all overflow-hidden"
+          >
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,hsl(var(--destructive)/0.08),transparent_60%)] opacity-0 group-hover:opacity-100 transition-opacity" />
+            <div className="relative flex items-center gap-3">
+              <div className="h-10 w-10 rounded-lg bg-destructive/10 border border-destructive/20 flex items-center justify-center shrink-0">
+                <Eye className="h-5 w-5 text-destructive" />
               </div>
-            ))}
-          </div>
-        </div>
-      )}
+              <div className="flex-1 min-w-0">
+                <div className="text-xs font-bold text-foreground mb-0.5 flex items-center gap-1.5">
+                  Step 1: Reveal Threat Intel
+                  <span className="text-destructive text-[10px]">⚠️</span>
+                </div>
+                <p className="text-[10px] text-muted-foreground">
+                  See how AI will reshape this quest and what your human edge looks like
+                </p>
+              </div>
+              <div className="shrink-0 text-destructive/60 group-hover:text-destructive group-hover:translate-x-0.5 transition-all">
+                <ArrowRight className="h-4 w-4" />
+              </div>
+            </div>
+          </motion.button>
+        )}
 
-
-      {/* Future prediction details */}
-      {prediction && (
-        <div className="space-y-3 mb-4 pb-4 border-b border-border/30">
-          <div className="flex items-center gap-1.5 flex-wrap">
-            <Badge className="bg-muted text-muted-foreground border-border/30 text-[9px] gap-1">
-              <Clock className="h-2.5 w-2.5" /> {prediction.timeline}
-            </Badge>
-            {prediction.disrupting_tech.slice(0, 4).map(tech => (
-              <Badge key={tech} className="bg-accent text-foreground border-border/30 text-[9px]">
-                ⚡ {tech}
+        {hasPrediction && threatRevealed && (
+          <motion.div
+            key="threat-revealed"
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+            className="space-y-3 mb-4 pb-4 border-b border-border/30 overflow-hidden"
+          >
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.15 }}
+              className="flex items-center gap-1.5 flex-wrap"
+            >
+              <Badge className="bg-muted text-muted-foreground border-border/30 text-[9px] gap-1">
+                <Clock className="h-2.5 w-2.5" /> {prediction!.timeline}
               </Badge>
-            ))}
-          </div>
+              {prediction!.disrupting_tech.slice(0, 4).map((tech, i) => (
+                <motion.div
+                  key={tech}
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 0.25 + i * 0.08 }}
+                >
+                  <Badge className="bg-accent text-foreground border-border/30 text-[9px]">
+                    ⚡ {tech}
+                  </Badge>
+                </motion.div>
+              ))}
+            </motion.div>
 
-          <div className="flex items-start gap-2">
-            <AlertTriangle className="h-3.5 w-3.5 text-destructive shrink-0 mt-0.5" />
-            <p className="text-xs text-muted-foreground">
-              <span className="text-destructive font-medium">🔥 Threat: </span>{prediction.collapse_summary}
-            </p>
-          </div>
-          <div className="flex items-start gap-2">
-            <Sparkles className="h-3.5 w-3.5 text-primary shrink-0 mt-0.5" />
-            <p className="text-xs text-muted-foreground">
-              <span className="text-primary font-medium">✦ Evolution: </span>{prediction.new_human_role}
-            </p>
-          </div>
-        </div>
-      )}
+            <motion.div
+              initial={{ opacity: 0, x: -8 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.35 }}
+              className="flex items-start gap-2"
+            >
+              <AlertTriangle className="h-3.5 w-3.5 text-destructive shrink-0 mt-0.5" />
+              <p className="text-xs text-muted-foreground">
+                <span className="text-destructive font-medium">🔥 Threat: </span>{prediction!.collapse_summary}
+              </p>
+            </motion.div>
+            <motion.div
+              initial={{ opacity: 0, x: -8 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.5 }}
+              className="flex items-start gap-2"
+            >
+              <Sparkles className="h-3.5 w-3.5 text-primary shrink-0 mt-0.5" />
+              <p className="text-xs text-muted-foreground">
+                <span className="text-primary font-medium">✦ Evolution: </span>{prediction!.new_human_role}
+              </p>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-      {/* Skills as sim-launchable cards */}
-      {prediction?.future_skills && prediction.future_skills.length > 0 && (
-        <div className="mb-4">
-          <h4 className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">
-            🗺️ Skills to Unlock
-          </h4>
-          <div className="flex gap-2.5 overflow-x-auto pb-2 -mx-1 px-1 scrollbar-thin">
-            {prediction.future_skills.map(skill => (
-              <button
-                key={skill.id}
-                onClick={() => onPractice(task)}
-                className="sim-glow-border relative flex-none w-40 rounded-xl border border-primary/20 bg-gradient-to-br from-primary/[0.06] to-accent/[0.04] p-3.5 text-left hover:border-primary/40 hover:shadow-md hover:shadow-primary/5 transition-all group"
-              >
-                <div className="text-2xl mb-2">{isStandardEmoji(skill.icon_emoji) ? skill.icon_emoji : "⚡"}</div>
-                <div className="text-[11px] font-semibold text-foreground group-hover:text-primary transition-colors leading-tight mb-1">
-                  {skill.name}
+      {/* ─── STEP 2: Unlock Skills ─── */}
+      <AnimatePresence mode="wait">
+        {threatRevealed && hasSkills && !skillsUnlocked && (
+          <motion.button
+            key="unlock-skills"
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8, scale: 0.95 }}
+            transition={{ delay: 0.3 }}
+            onClick={() => setSkillsUnlocked(true)}
+            className="group relative mb-4 rounded-xl border border-primary/30 bg-gradient-to-br from-primary/[0.08] to-primary/[0.02] p-4 text-left hover:border-primary/50 hover:shadow-lg hover:shadow-primary/10 transition-all overflow-hidden"
+          >
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_50%,hsl(var(--primary)/0.08),transparent_60%)] opacity-0 group-hover:opacity-100 transition-opacity" />
+            <div className="relative flex items-center gap-3">
+              <div className="h-10 w-10 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0">
+                <Lock className="h-5 w-5 text-primary" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="text-xs font-bold text-foreground mb-0.5 flex items-center gap-1.5">
+                  Step 2: Unlock Future Skills
+                  <span className="text-primary text-[10px]">🗺️</span>
                 </div>
-                <div className="text-[9px] text-muted-foreground leading-snug line-clamp-2 mb-2.5">
-                  {skill.description}
-                </div>
-                <div className="flex items-center gap-1 text-[9px] font-medium text-primary/60 group-hover:text-primary transition-colors">
-                  <Play className="h-2.5 w-2.5" />
-                  Practice Quest
-                </div>
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
+                <p className="text-[10px] text-muted-foreground">
+                  Discover {prediction!.future_skills!.length} skills you'll need to stay ahead
+                </p>
+              </div>
+              <div className="shrink-0 text-primary/60 group-hover:text-primary group-hover:translate-x-0.5 transition-all">
+                <ArrowRight className="h-4 w-4" />
+              </div>
+            </div>
+          </motion.button>
+        )}
+
+        {skillsUnlocked && hasSkills && (
+          <motion.div
+            key="skills-unlocked"
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+            className="mb-4 overflow-hidden"
+          >
+            <h4 className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">
+              🗺️ Skills to Unlock
+            </h4>
+            <div className="flex gap-2.5 overflow-x-auto pb-2 -mx-1 px-1 scrollbar-thin">
+              {prediction!.future_skills!.map((skill, i) => (
+                <motion.button
+                  key={skill.id}
+                  initial={{ opacity: 0, y: 12, scale: 0.9 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  transition={{ delay: 0.1 + i * 0.08, type: "spring", damping: 20 }}
+                  onClick={() => onPractice(task)}
+                  className="sim-glow-border relative flex-none w-40 rounded-xl border border-primary/20 bg-gradient-to-br from-primary/[0.06] to-accent/[0.04] p-3.5 text-left hover:border-primary/40 hover:shadow-md hover:shadow-primary/5 transition-all group"
+                >
+                  <div className="text-2xl mb-2">{isStandardEmoji(skill.icon_emoji) ? skill.icon_emoji : "⚡"}</div>
+                  <div className="text-[11px] font-semibold text-foreground group-hover:text-primary transition-colors leading-tight mb-1">
+                    {skill.name}
+                  </div>
+                  <div className="text-[9px] text-muted-foreground leading-snug line-clamp-2 mb-2.5">
+                    {skill.description}
+                  </div>
+                  <div className="flex items-center gap-1 text-[9px] font-medium text-primary/60 group-hover:text-primary transition-colors">
+                    <Play className="h-2.5 w-2.5" />
+                    Practice Quest
+                  </div>
+                </motion.button>
+              ))}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Practice CTA */}
       <div className="mt-auto pt-3 border-t border-border/30">
