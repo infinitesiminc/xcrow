@@ -529,13 +529,24 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
     return clearInactivityTimer;
   }, [phase, sending, messages.length]);
 
-  // Parse objective tags from AI responses
+  // Parse OBJ_EVAL tags from AI responses (deterministic)
   const parseObjectiveTags = useCallback((reply: string) => {
-    const tagPattern = /\[OBJECTIVE_MET:([^\]]+)\]/g;
+    // New deterministic format: [OBJ_EVAL:id:PASS] or [OBJ_EVAL:id:FAIL]
+    const evalPattern = /\[OBJ_EVAL:([^:]+):(PASS|FAIL)\]/g;
     let match;
     const newStatus = { ...objectiveStatus };
     let changed = false;
-    while ((match = tagPattern.exec(reply)) !== null) {
+    while ((match = evalPattern.exec(reply)) !== null) {
+      const objId = match[1];
+      const result = match[2];
+      if (result === "PASS" && !newStatus[objId]) {
+        newStatus[objId] = true;
+        changed = true;
+      }
+    }
+    // Also support legacy format for backwards compatibility
+    const legacyPattern = /\[OBJECTIVE_MET:([^\]]+)\]/g;
+    while ((match = legacyPattern.exec(reply)) !== null) {
       const objId = match[1];
       if (!newStatus[objId]) {
         newStatus[objId] = true;
@@ -545,6 +556,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
     if (changed) {
       setObjectiveStatus(newStatus);
     }
+    return newStatus;
   }, [objectiveStatus]);
 
   // Parse scaffolding tier tags from AI responses
