@@ -745,8 +745,62 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
 
   const beginChat = () => {
     if (!session) return;
-    setMessages([{ role: "assistant", content: session.openingMessage }]);
-    setPhase("chat");
+    if (level === 1) {
+      // Level 1 uses Prompt Arena
+      setPhase("arena");
+      setArenaRoundNum(1);
+      loadArenaRound(1);
+    } else {
+      setMessages([{ role: "assistant", content: session.openingMessage }]);
+      setPhase("chat");
+    }
+  };
+
+  const loadArenaRound = async (roundNum: number) => {
+    setArenaLoading(true);
+    try {
+      const targetObjId = session?.learningObjectives?.find(o => !objectiveStatus[o.id])?.id;
+      const data = await fetchArenaRound(
+        taskName, jobTitle, company, roundNum,
+        session?.learningObjectives, targetObjId, objectiveStatus
+      );
+      setArenaRound(data);
+    } catch (err) {
+      console.error("Arena round failed:", err);
+      setError("Failed to generate arena round. Please try again.");
+      setPhase("chat");
+    } finally {
+      setArenaLoading(false);
+    }
+  };
+
+  const handleArenaJudged = (correct: boolean, objectiveId: string | null) => {
+    // Update objective status
+    if (correct && objectiveId) {
+      setObjectiveStatus(prev => ({ ...prev, [objectiveId]: true }));
+    }
+
+    // Track as a message for scoring later
+    const arenaMsg: SimMessage = {
+      role: "assistant",
+      content: `[Arena Round ${arenaRoundNum}] Scenario: ${arenaRound?.scenario_context}. User picked ${correct ? "correctly" : "incorrectly"}. Better approach: ${arenaRound?.better === "a" ? arenaRound?.prompt_a.technique : arenaRound?.prompt_b.technique}. ${arenaRound?.explanation}`
+    };
+    setMessages(prev => [
+      ...prev,
+      { role: "user", content: correct ? "Identified the better prompt technique" : "Chose the less effective technique" },
+      arenaMsg,
+    ]);
+
+    const nextRound = arenaRoundNum + 1;
+    setRoundCount(nextRound);
+
+    if (nextRound > maxRounds) {
+      // All arena rounds done
+      handleFinish();
+    } else {
+      setArenaRoundNum(nextRound);
+      loadArenaRound(nextRound);
+    }
   };
 
   // Compute current target objective (first unmet)
