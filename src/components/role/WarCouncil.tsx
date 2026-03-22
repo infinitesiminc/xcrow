@@ -226,7 +226,7 @@ export function WarCouncil({
                     border: "1px solid hsl(var(--destructive) / 0.2)",
                   }}
                 >
-                  <Compass className="h-6 w-6 text-destructive" />
+                  <span className="text-2xl leading-none">🧭</span>
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="text-sm font-bold text-foreground mb-0.5 flex items-center gap-2" style={{ fontFamily: "'Cinzel', serif" }}>
