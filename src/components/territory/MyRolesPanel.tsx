@@ -196,11 +196,13 @@ function KingdomCard({
 
 export default function MyRolesPanel({ onSelectRole, onAskChat, onTabChange }: MyRolesPanelProps) {
   const { user } = useAuth();
-  const [tab, setTab] = useState<"saved" | "practiced">("practiced");
+  const [tab, setTab] = useState<"saved" | "practiced" | "arsenal">("practiced");
   const [search, setSearch] = useState("");
   const [scoutedKingdoms, setScoutedKingdoms] = useState<KingdomRole[]>([]);
   const [activeKingdoms, setActiveKingdoms] = useState<KingdomRole[]>([]);
   const [loading, setLoading] = useState(true);
+  const [savedToolNames, setSavedToolNames] = useState<string[]>(getSavedTools());
+  const [arsenalFilter, setArsenalFilter] = useState<string>("all");
 
   useEffect(() => {
     if (!user) return;
