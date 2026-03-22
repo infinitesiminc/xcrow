@@ -141,7 +141,7 @@ const PromptArena = ({ round, roundNumber, onJudged, loading }: PromptArenaProps
       </motion.div>
 
       {/* Two Prompt Cards — always visible */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {(["a", "b"] as const).map((side) => {
           const prompt = side === "a" ? round.prompt_a : round.prompt_b;
           const output = side === "a" ? revealedA : revealedB;
