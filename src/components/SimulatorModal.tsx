@@ -1104,7 +1104,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
               </button>
             </div>
           </div>
-          {phase === "chat" && (
+          {(phase === "chat" || phase === "arena") && (
             <div className="px-4 sm:px-6 py-1.5 relative" style={{ background: "hsl(var(--filigree) / 0.04)" }}>
               <div className="relative h-2 rounded-full overflow-hidden" style={{
                 background: "hsl(var(--surface-stone))",
