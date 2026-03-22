@@ -12,7 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { getCastleState, type CastleTier } from "@/lib/castle-levels";
 import { motion } from "framer-motion";
-import { AI_TOOL_REGISTRY, getSavedTools, removeToolFromList, type AIToolInfo } from "@/lib/ai-tool-registry";
+import { AI_TOOL_REGISTRY, getSavedTools, removeToolFromList, groupToolsByCompany, type AIToolInfo } from "@/lib/ai-tool-registry";
 import type { RoleResult } from "@/components/InlineRoleCarousel";
 
 /* ── Types ── */
