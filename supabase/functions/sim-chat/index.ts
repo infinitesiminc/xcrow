@@ -456,6 +456,95 @@ YOUR TASK RIGHT NOW:
 ${turnInstruction}`;
 }
 
+// ─── ARENA — Run 2 prompts in parallel, show both outputs ───
+
+async function handleArena(payload: any, apiKey: string) {
+  const { taskName, jobTitle, company, round, learningObjectives, targetObjectiveId, objectiveStatus } = payload;
+  const toolVersions = await fetchToolVersions();
+  const dateCtx = currentDateContext(toolVersions);
+
+  const targetObj = targetObjectiveId
+    ? learningObjectives?.find((o: any) => o.id === targetObjectiveId)
+    : learningObjectives?.find((o: any) => !objectiveStatus?.[o.id]);
+
+  const scenarioPrompt = `You are an AI education expert designing a "Prompt Arena" challenge for a ${jobTitle}${company ? ` at ${company}` : ""}.
+${dateCtx}
+
+Task: ${taskName}
+Round: ${round} of ${FIXED_ROUNDS}
+${targetObj ? `Learning objective to test: "${targetObj.label}" — ${targetObj.description}` : ""}
+
+Design ONE realistic work scenario where a professional needs AI, then provide TWO different prompting approaches (both use AI, but with different techniques).
+
+CRITICAL: BOTH options must use AI. This is NOT "use AI vs don't use AI". It's "which AI TECHNIQUE is better?"
+Examples of technique differences:
+- Zero-shot prompt vs. chain-of-thought with examples
+- Generic tool vs. domain-specific tool
+- Single prompt vs. iterative refinement loop
+- Raw AI output vs. AI output + human validation step
+- Broad prompt vs. precisely scoped prompt with constraints
+
+Respond with ONLY valid JSON:
+{
+  "scenario_context": "2-3 sentence realistic work scenario the professional faces right now",
+  "prompt_a": {
+    "label": "Short label (3-5 words)",
+    "technique": "Name of the AI technique/approach",
+    "full_prompt": "The actual prompt the professional would type/use (30-60 words, realistic)",
+    "tool": "Which AI tool this would be used with (e.g., ChatGPT, Copilot, Claude)"
+  },
+  "prompt_b": {
+    "label": "Short label (3-5 words)",
+    "technique": "Name of the AI technique/approach",
+    "full_prompt": "The actual prompt the professional would type/use (30-60 words, realistic)",
+    "tool": "Which AI tool this would be used with"
+  },
+  "better": "a" or "b",
+  "explanation": "2-3 sentences explaining WHY the better approach produces superior results. Reference specific quality differences.",
+  "insight": "1 sentence takeaway principle the user should remember"
+}
+
+Make the prompts realistic and detailed. The difference in quality should be meaningful but NOT obvious to a beginner.`;
+
+  const result = await callAI(apiKey, [{ role: "user", content: scenarioPrompt }], 0.9);
+
+  let parsed;
+  try {
+    const jsonMatch = result.match(/```(?:json)?\s*([\s\S]*?)```/) || [null, result];
+    parsed = JSON.parse(jsonMatch[1].trim());
+  } catch {
+    const rawMatch = result.match(/\{[\s\S]*\}/);
+    if (rawMatch) {
+      parsed = JSON.parse(rawMatch[0]);
+    } else {
+      throw new Error("Failed to parse arena scenario");
+    }
+  }
+
+  // Run both prompts in parallel against the AI
+  const taskContext = `You are an AI assistant helping a ${jobTitle}${company ? ` at ${company}` : ""}. Respond to their request naturally and helpfully. Keep response under 150 words.`;
+
+  const [outputA, outputB] = await Promise.all([
+    callAI(apiKey, [
+      { role: "system", content: taskContext },
+      { role: "user", content: parsed.prompt_a.full_prompt },
+    ], 0.7),
+    callAI(apiKey, [
+      { role: "system", content: taskContext },
+      { role: "user", content: parsed.prompt_b.full_prompt },
+    ], 0.7),
+  ]);
+
+  return new Response(JSON.stringify({
+    ...parsed,
+    output_a: outputA,
+    output_b: outputB,
+    target_objective_id: targetObj?.id || null,
+  }), {
+    headers: { ...corsHeaders, "Content-Type": "application/json" },
+  });
+}
+
 // ─── SCORE ───
 
 async function handleScore(payload: any, apiKey: string) {
