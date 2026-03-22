@@ -372,11 +372,19 @@ IF they gave a substantive answer, do EXACTLY this:
 
 Total: under 70 words.`;
   } else {
+    const targetObj = targetObjectiveId 
+      ? learningObjectives?.find(o => o.id === targetObjectiveId) 
+      : learningObjectives?.find(o => !objectiveStatus?.[o.id]);
+    const targetDirective = targetObj 
+      ? `\nCRITICAL: Your next scenario MUST target this specific objective: "${targetObj.label}" (${targetObj.id}) — ${targetObj.description}. Design the scenario so the user must demonstrate THIS skill to answer well.`
+      : "";
+    
     turnInstruction = `The user wants the next scenario. Do EXACTLY this:
+${targetDirective}
 
 "**📖 Scenario:**" — Present a NEW realistic work scenario (2-3 sentences). It MUST:
 - Cover a DIFFERENT aspect of this task than previous rounds
-- Target an UNCOVERED learning objective if any remain
+- Be specifically designed so the user must demonstrate the target objective to answer well
 - Include specific details: who's involved, what constraints exist, what tools are available
 - Feel like something that actually happens on a workday
 
