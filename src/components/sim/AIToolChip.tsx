@@ -7,8 +7,8 @@ import {
 } from "@/components/ui/hover-card";
 import {
   findToolMentions,
-  isToolSaved,
-  saveToolToList,
+  getSavedTools,
+  addToolToList,
   removeToolFromList,
   type AIToolInfo,
 } from "@/lib/ai-tool-registry";
@@ -34,7 +34,7 @@ const CATEGORY_LABELS: Record<string, string> = {
 };
 
 function ToolChip({ tool, matchedText }: { tool: AIToolInfo; matchedText: string }) {
-  const [saved, setSaved] = useState(() => isToolSaved(tool.name));
+  const [saved, setSaved] = useState(() => getSavedTools().includes(tool.name));
   const color = CATEGORY_COLORS[tool.category] || "hsl(var(--primary))";
 
   const toggleSave = (e: React.MouseEvent) => {
@@ -43,7 +43,7 @@ function ToolChip({ tool, matchedText }: { tool: AIToolInfo; matchedText: string
       removeToolFromList(tool.name);
       setSaved(false);
     } else {
-      saveToolToList(tool.name);
+      addToolToList(tool.name);
       setSaved(true);
     }
   };

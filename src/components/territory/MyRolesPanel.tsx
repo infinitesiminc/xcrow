@@ -12,7 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { getCastleState, type CastleTier } from "@/lib/castle-levels";
 import { motion } from "framer-motion";
-import { AI_TOOL_REGISTRY, getSavedTools, removeToolFromList, type AIToolInfo } from "@/lib/ai-tool-registry";
+import { AI_TOOL_REGISTRY, getSavedTools, removeToolFromList, groupToolsByCompany, type AIToolInfo } from "@/lib/ai-tool-registry";
 import type { RoleResult } from "@/components/InlineRoleCarousel";
 
 /* ── Types ── */
@@ -298,15 +298,15 @@ export default function MyRolesPanel({ onSelectRole, onAskChat, onTabChange }: M
     (k) => !q || k.title.toLowerCase().includes(q) || (k.company || "").toLowerCase().includes(q)
   );
 
-  // Arsenal: all registry tools + saved state, searchable
+  // Arsenal: all registry tools + saved state, searchable, grouped by company
   const CATEGORY_LABELS: Record<string, string> = {
-    llm: "Language Models", coding: "Coding", productivity: "Productivity",
-    design: "Design", data: "Data & Analytics", writing: "Writing", search: "Search",
+    llm: "LLMs", coding: "Coding", productivity: "Productivity",
+    design: "Design", data: "Data", writing: "Writing", search: "Search",
   };
   const allToolsFiltered = AI_TOOL_REGISTRY.filter(t => {
     if (arsenalFilter === "saved" && !savedToolNames.includes(t.name)) return false;
     if (arsenalFilter !== "all" && arsenalFilter !== "saved" && t.category !== arsenalFilter) return false;
-    if (q && !t.name.toLowerCase().includes(q) && !t.description.toLowerCase().includes(q)) return false;
+    if (q && !t.name.toLowerCase().includes(q) && !t.description.toLowerCase().includes(q) && !t.company.toLowerCase().includes(q)) return false;
     return true;
   });
   // Deduplicate by name (keep first match which is the most specific version)
@@ -316,6 +316,7 @@ export default function MyRolesPanel({ onSelectRole, onAskChat, onTabChange }: M
     seen.add(t.name);
     return true;
   });
+  const companyGroups = groupToolsByCompany(uniqueTools);
 
   const handleRemoveTool = (name: string) => {
     const updated = removeToolFromList(name);
@@ -424,8 +425,8 @@ export default function MyRolesPanel({ onSelectRole, onAskChat, onTabChange }: M
       {/* Content */}
       <div className="flex-1 overflow-y-auto scrollbar-thin">
         {tab === "arsenal" ? (
-          /* Arsenal: AI Tool Catalogue */
-          uniqueTools.length === 0 ? (
+          /* Arsenal: AI Tools grouped by company as pills */
+          companyGroups.length === 0 ? (
             <div className="text-center py-12">
               <span className="text-3xl mb-3 block">🔧</span>
               <p className="text-sm text-muted-foreground" style={{ fontFamily: "'Cinzel', serif" }}>
@@ -438,81 +439,88 @@ export default function MyRolesPanel({ onSelectRole, onAskChat, onTabChange }: M
               </p>
             </div>
           ) : (
-            <div className="space-y-2">
-              {uniqueTools.map((tool, i) => {
-                const isSaved = savedToolNames.includes(tool.name);
-                return (
-                  <motion.div
-                    key={tool.name}
-                    initial={{ opacity: 0, y: 8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: i * 0.03, duration: 0.2 }}
-                    className="rounded-lg p-3 group"
-                    style={{
-                      background: "hsl(var(--surface-stone))",
-                      border: isSaved
-                        ? "1px solid hsl(var(--filigree-glow) / 0.3)"
-                        : "1px solid hsl(var(--filigree) / 0.12)",
-                      boxShadow: "inset 0 1px 0 hsl(var(--emboss-light)), 0 1px 4px hsl(var(--emboss-shadow))",
-                    }}
-                  >
-                    <div className="flex items-start gap-2">
-                      <span className="text-base mt-0.5">
-                        {tool.category === "llm" ? "🧠" :
-                         tool.category === "coding" ? "💻" :
-                         tool.category === "productivity" ? "📋" :
-                         tool.category === "design" ? "🎨" :
-                         tool.category === "data" ? "📊" :
-                         tool.category === "writing" ? "✍️" : "🔍"}
-                      </span>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-1.5">
-                          <h4 className="text-xs font-semibold text-foreground truncate">{tool.name}</h4>
-                          <span
-                            className="text-[9px] px-1.5 py-0.5 rounded-md capitalize shrink-0"
+            <div className="space-y-3">
+              {companyGroups.map(({ company, tools: companyTools }) => (
+                <div key={company}>
+                  {/* Company header */}
+                  <div className="flex items-center gap-2 mb-1.5">
+                    <span
+                      className="text-[10px] font-bold uppercase tracking-[0.1em]"
+                      style={{ color: "hsl(var(--muted-foreground))", fontFamily: "'Cinzel', serif" }}
+                    >
+                      {company}
+                    </span>
+                    <div className="flex-1 h-px" style={{ background: "hsl(var(--filigree) / 0.15)" }} />
+                  </div>
+                  {/* Tool pills */}
+                  <div className="flex flex-wrap gap-1.5">
+                    {companyTools.map((tool) => {
+                      const isSaved = savedToolNames.includes(tool.name);
+                      const catEmoji = tool.category === "llm" ? "🧠" :
+                        tool.category === "coding" ? "💻" :
+                        tool.category === "productivity" ? "📋" :
+                        tool.category === "design" ? "🎨" :
+                        tool.category === "data" ? "📊" :
+                        tool.category === "writing" ? "✍️" : "🔍";
+                      return (
+                        <div
+                          key={tool.name}
+                          className="group relative inline-flex items-center gap-1 px-2 py-1 rounded-md text-[11px] font-medium cursor-default transition-all hover:scale-105"
+                          style={{
+                            background: isSaved
+                              ? "hsl(var(--filigree) / 0.12)"
+                              : "hsl(var(--surface-stone))",
+                            border: isSaved
+                              ? "1px solid hsl(var(--filigree-glow) / 0.3)"
+                              : "1px solid hsl(var(--filigree) / 0.12)",
+                            color: isSaved
+                              ? "hsl(var(--filigree-glow))"
+                              : "hsl(var(--foreground))",
+                          }}
+                          title={tool.description}
+                        >
+                          <span className="text-xs">{catEmoji}</span>
+                          <span>{tool.name}</span>
+                          {isSaved && (
+                            <Sparkles className="h-2.5 w-2.5 shrink-0" style={{ color: "hsl(var(--filigree-glow))" }} />
+                          )}
+                          {/* Hover actions */}
+                          <div
+                            className="absolute -top-8 left-1/2 -translate-x-1/2 hidden group-hover:flex items-center gap-1 px-2 py-1 rounded-md text-[9px] whitespace-nowrap z-10"
                             style={{
-                              background: "hsl(var(--muted) / 0.4)",
-                              color: "hsl(var(--muted-foreground))",
+                              background: "hsl(var(--popover))",
+                              border: "1px solid hsl(var(--border))",
+                              boxShadow: "0 4px 12px hsl(var(--emboss-shadow))",
                             }}
                           >
-                            {CATEGORY_LABELS[tool.category] || tool.category}
-                          </span>
-                          {isSaved && (
-                            <Sparkles className="h-3 w-3 shrink-0" style={{ color: "hsl(var(--filigree-glow))" }} />
-                          )}
+                            {tool.url && (
+                              <a
+                                href={tool.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="hover:opacity-70 transition-opacity"
+                                style={{ color: "hsl(var(--primary))" }}
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                <ExternalLink className="h-2.5 w-2.5" />
+                              </a>
+                            )}
+                            {isSaved && (
+                              <button
+                                onClick={() => handleRemoveTool(tool.name)}
+                                className="hover:text-destructive transition-colors"
+                                style={{ color: "hsl(var(--muted-foreground))" }}
+                              >
+                                <X className="h-2.5 w-2.5" />
+                              </button>
+                            )}
+                          </div>
                         </div>
-                        <p className="text-[11px] text-muted-foreground mt-0.5 leading-relaxed">
-                          {tool.description}
-                        </p>
-                        <div className="flex items-center gap-2 mt-1.5">
-                          {tool.url && (
-                            <a
-                              href={tool.url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="flex items-center gap-1 text-[10px] font-medium transition-colors hover:opacity-80"
-                              style={{ color: "hsl(var(--primary))" }}
-                              onClick={(e) => e.stopPropagation()}
-                            >
-                              <ExternalLink className="h-2.5 w-2.5" />
-                              Visit
-                            </a>
-                          )}
-                          {isSaved && (
-                            <button
-                              onClick={() => handleRemoveTool(tool.name)}
-                              className="flex items-center gap-1 text-[10px] text-muted-foreground/60 hover:text-destructive transition-colors"
-                            >
-                              <X className="h-2.5 w-2.5" />
-                              Remove
-                            </button>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  </motion.div>
-                );
-              })}
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
             </div>
           )
         ) : loading ? (
