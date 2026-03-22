@@ -1032,7 +1032,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                     className="text-xs font-bold"
                     style={{ color: "hsl(var(--filigree-glow))", fontFamily: "'Cinzel', serif" }}
                   >
-                    Quest {roundCount}/{maxRounds}
+                    Quest {roundCount}/{maxRounds}{level === 2 ? " · Level 2" : ""}
                   </span>
                 </motion.div>
               )}
