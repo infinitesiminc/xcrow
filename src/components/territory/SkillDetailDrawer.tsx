@@ -339,6 +339,7 @@ function TrackCard({
   simsCount,
   prominent,
   onStart,
+  startLabel,
 }: {
   icon: React.ReactNode;
   label: string;
@@ -351,6 +352,7 @@ function TrackCard({
   simsCount?: number;
   prominent?: boolean;
   onStart?: () => void;
+  startLabel?: string;
 }) {
   const pct = Math.min(100, Math.round((xp / maxXp) * 100));
 
