@@ -1460,7 +1460,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                       {scoreTier === "high"
                         ? "You've conquered this quest. Time to expand your territory."
                         : scoreTier === "mid"
-                        ? "Your power grows. One more wave could level you up."
+                        ? "Your power grows. One more quest could level you up."
                         : "Every commander started here. Retry with a battle coach to raise your power."
                       }
                     </p>
