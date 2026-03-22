@@ -3,6 +3,7 @@
  * Stone-textured cards, Cinzel headings, filigree borders, territory colors.
  */
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Bookmark, Swords, Search, ChevronRight, Shield, Flame } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
