@@ -322,7 +322,7 @@ function ProfileSection({
         {/* Avatar picker */}
         <div className="space-y-3">
           <Label className="text-xs uppercase tracking-wider text-muted-foreground">Choose your companion</Label>
-          <div className="grid grid-cols-5 sm:grid-cols-10 gap-2">
+          <div className="grid grid-cols-3 sm:grid-cols-5 gap-3">
             {AVATAR_OPTIONS.map((avatar) => (
               <button
                 key={avatar.id}
