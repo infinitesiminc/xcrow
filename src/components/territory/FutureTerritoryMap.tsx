@@ -15,11 +15,13 @@ import {
 } from "@/lib/future-territory-layout";
 import FutureIsland from "./FutureIsland";
 import SkillDetailDrawer from "./SkillDetailDrawer";
+import type { CanonicalSkillGrowth } from "@/pages/MapPage";
 
 interface FutureTerritoryMapProps {
   skills: FutureSkill[];
   focusSkillId?: string | null;
   level2SkillIds?: Set<string>;
+  skillGrowthMap?: Map<string, CanonicalSkillGrowth>;
 }
 
 const ISLAND_COLORS: Record<string, string> = {
