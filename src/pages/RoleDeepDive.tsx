@@ -365,7 +365,7 @@ const RoleDeepDive = () => {
           {/* ── Campaign Progress Tracker ── */}
           <CampaignTracker
             totalBattles={result.tasks.length}
-            conqueredNames={completedTasks}
+            conqueredNames={new Set(result.tasks.filter(t => completedTasks.has(t.name)).map(t => t.name))}
             totalXP={sessionXP}
           />
 
