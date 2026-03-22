@@ -33,13 +33,13 @@ export function ThreatBar({ score, size = "sm", showLabel = true, animate = true
             key={i}
             className={`${h} flex-1 rounded-full`}
             style={{
+              transformOrigin: "left",
               background: i < tier.segments ? tier.color : "hsl(var(--filigree) / 0.12)",
               boxShadow: i < tier.segments ? `0 0 6px ${tier.color}` : undefined,
             }}
             initial={animate ? { scaleX: 0 } : false}
             animate={{ scaleX: 1 }}
             transition={{ delay: i * 0.08, duration: 0.3 }}
-            {...({ style: { ...({ transformOrigin: "left" } as any), background: i < tier.segments ? tier.color : "hsl(var(--filigree) / 0.12)", boxShadow: i < tier.segments ? `0 0 6px ${tier.color}` : undefined } })}
           />
         ))}
       </div>
