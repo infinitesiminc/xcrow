@@ -1,6 +1,6 @@
 /**
  * FutureIsland — renders a single island region on the Future Territory Map.
- * Supports click-to-zoom and hover-to-repel neighbor interactions.
+ * Supports click-to-zoom, hover-to-repel, and diamond-shaped Level 2 nodes.
  */
 
 import { useState, useMemo } from "react";
@@ -12,6 +12,7 @@ import { type FutureIslandLayout, type FutureNodePosition } from "@/lib/future-t
 interface FutureIslandProps {
   island: FutureIslandLayout;
   skillLookup: Map<string, FutureSkill>;
+  level2SkillIds?: Set<string>;
   isFocused?: boolean;
   highlightedSkillId?: string | null;
   onIslandClick?: (category: FutureSkillCategory, cx: number, cy: number) => void;
@@ -37,7 +38,7 @@ function getDisplacedPosition(
   return { x: node.x + nx * force, y: node.y + ny * force };
 }
 
-export default function FutureIsland({ island, skillLookup, isFocused, highlightedSkillId, onIslandClick, onSkillClick }: FutureIslandProps) {
+export default function FutureIsland({ island, skillLookup, level2SkillIds, isFocused, highlightedSkillId, onIslandClick, onSkillClick }: FutureIslandProps) {
   const { cx, cy, radius, theme, nodes, expandedNodes, category, skillCount } = island;
   const activeNodes = isFocused ? expandedNodes : nodes;
   const visibleCount = activeNodes.length;
@@ -120,6 +121,8 @@ export default function FutureIsland({ island, skillLookup, isFocused, highlight
         const nodeRadius = isFocused && !isHovered && !isHighlighted ? 14 : 18;
         const intensity = Math.min(1, skill.demandCount / 15);
         const showLabel = !isFocused || isHovered || isHighlighted;
+        const isLevel2 = level2SkillIds?.has(node.skillId) ?? false;
+        const diamondSide = nodeRadius * 1.35;
 
         return (
           <Tooltip key={node.skillId}>
@@ -148,7 +151,7 @@ export default function FutureIsland({ island, skillLookup, isFocused, highlight
                 }}
               >
                 {/* Spotlight for highlighted skill */}
-                {highlightedSkillId === node.skillId && (
+                {isHighlighted && (
                   <>
                     <motion.circle
                       cx={node.x}
@@ -174,30 +177,62 @@ export default function FutureIsland({ island, skillLookup, isFocused, highlight
                   </>
                 )}
 
-                {/* Glow ring for high-demand */}
-                {skill.demandCount >= 8 && (
-                  <circle
-                    cx={node.x}
-                    cy={node.y}
-                    r={nodeRadius + 5}
-                    fill="none"
-                    stroke={`hsl(${theme.baseHue} 60% 55%)`}
-                    strokeWidth={1.5}
-                    opacity={0.5}
-                    filter="url(#future-glow)"
-                  />
+                {isLevel2 ? (
+                  <>
+                    {/* Level 2: Gold diamond glow */}
+                    <rect
+                      x={node.x - diamondSide / 2 - 3}
+                      y={node.y - diamondSide / 2 - 3}
+                      width={diamondSide + 6}
+                      height={diamondSide + 6}
+                      rx={3}
+                      fill="none"
+                      stroke="hsl(45 93% 58% / 0.4)"
+                      strokeWidth={2}
+                      transform={`rotate(45 ${node.x} ${node.y})`}
+                      filter="url(#future-glow)"
+                    />
+                    {/* Level 2: Diamond body */}
+                    <rect
+                      x={node.x - diamondSide / 2}
+                      y={node.y - diamondSide / 2}
+                      width={diamondSide}
+                      height={diamondSide}
+                      rx={2}
+                      fill={`hsl(45 ${30 + intensity * 20}% ${16 + intensity * 8}%)`}
+                      stroke={`hsl(45 55% ${45 + intensity * 15}%)`}
+                      strokeWidth={isHovered ? 3 : 2}
+                      transform={`rotate(45 ${node.x} ${node.y})`}
+                      className="transition-all"
+                    />
+                  </>
+                ) : (
+                  <>
+                    {/* Level 1: Glow ring for high-demand */}
+                    {skill.demandCount >= 8 && (
+                      <circle
+                        cx={node.x}
+                        cy={node.y}
+                        r={nodeRadius + 5}
+                        fill="none"
+                        stroke={`hsl(${theme.baseHue} 60% 55%)`}
+                        strokeWidth={1.5}
+                        opacity={0.5}
+                        filter="url(#future-glow)"
+                      />
+                    )}
+                    {/* Level 1: Circle body */}
+                    <circle
+                      cx={node.x}
+                      cy={node.y}
+                      r={nodeRadius}
+                      fill={`hsl(${theme.baseHue} ${35 + intensity * 25}% ${18 + intensity * 12}%)`}
+                      stroke={`hsl(${theme.baseHue} 50% ${40 + intensity * 20}%)`}
+                      strokeWidth={isHovered ? 3 : 2}
+                      className="transition-all"
+                    />
+                  </>
                 )}
-
-                {/* Main circle */}
-                <circle
-                  cx={node.x}
-                  cy={node.y}
-                  r={nodeRadius}
-                  fill={`hsl(${theme.baseHue} ${35 + intensity * 25}% ${18 + intensity * 12}%)`}
-                  stroke={`hsl(${theme.baseHue} 50% ${40 + intensity * 20}%)`}
-                  strokeWidth={isHovered ? 3 : 2}
-                  className="transition-all"
-                />
 
                 {/* Emoji */}
                 {skill.iconEmoji && (
@@ -212,7 +247,29 @@ export default function FutureIsland({ island, skillLookup, isFocused, highlight
                   </text>
                 )}
 
-                {/* Name label — hidden in expanded mode unless hovered */}
+                {/* Level 2 tiny badge */}
+                {isLevel2 && (
+                  <g>
+                    <rect
+                      x={node.x + nodeRadius * 0.4}
+                      y={node.y - nodeRadius - 6}
+                      width={16}
+                      height={10}
+                      rx={3}
+                      fill="hsl(45 80% 50%)"
+                    />
+                    <text
+                      x={node.x + nodeRadius * 0.4 + 8}
+                      y={node.y - nodeRadius - 1}
+                      textAnchor="middle"
+                      style={{ fontSize: "6px", fontWeight: 800, fill: "hsl(45 20% 10%)", pointerEvents: "none" }}
+                    >
+                      L2
+                    </text>
+                  </g>
+                )}
+
+                {/* Name label */}
                 {showLabel && (
                   <text
                     x={node.x}
@@ -221,9 +278,11 @@ export default function FutureIsland({ island, skillLookup, isFocused, highlight
                     style={{
                       fontSize: isHovered ? "11px" : "10px",
                       fontWeight: isHovered ? 700 : 600,
-                      fill: isHovered
-                        ? `hsl(${theme.baseHue} 40% 85%)`
-                        : `hsl(${theme.baseHue} 25% 65%)`,
+                      fill: isLevel2
+                        ? `hsl(45 ${isHovered ? 60 : 40}% ${isHovered ? 80 : 65}%)`
+                        : isHovered
+                          ? `hsl(${theme.baseHue} 40% 85%)`
+                          : `hsl(${theme.baseHue} 25% 65%)`,
                       fontFamily: "'Inter', system-ui, sans-serif",
                       pointerEvents: "none",
                       transition: "fill 0.2s, font-size 0.2s",
@@ -239,13 +298,17 @@ export default function FutureIsland({ island, skillLookup, isFocused, highlight
               </motion.g>
             </TooltipTrigger>
             <TooltipContent side="top" className="max-w-[240px]">
-              <p className="font-semibold text-xs">{skill.name}</p>
+              <p className="font-semibold text-xs">
+                {isLevel2 && <span className="text-amber-400 mr-1">◆</span>}
+                {skill.name}
+              </p>
               {skill.description && (
                 <p className="text-xs text-muted-foreground mt-0.5">{skill.description}</p>
               )}
               <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground">
                 <span>📈 {skill.demandCount} demand</span>
                 <span>💼 {skill.jobCount} roles</span>
+                {isLevel2 && <span className="text-amber-400">◆ Level 2</span>}
               </div>
             </TooltipContent>
           </Tooltip>
