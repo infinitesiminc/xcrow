@@ -402,27 +402,43 @@ function TrackCard({
       </div>
 
       {unlocked ? (
-        <div className="flex items-center gap-3">
-          <div
-            className="flex-1 h-2 rounded-full overflow-hidden"
-            style={{ background: "hsl(var(--muted) / 0.4)" }}
-          >
+        <div className="space-y-2.5">
+          <div className="flex items-center gap-3">
             <div
-              className="h-full rounded-full transition-all duration-700"
-              style={{
-                width: `${pct}%`,
-                background: `linear-gradient(90deg, ${color}, ${color}cc)`,
-                boxShadow: `0 0 8px ${color}60`,
-              }}
-            />
-          </div>
-          <span className="text-[10px] font-semibold text-muted-foreground shrink-0 tabular-nums">
-            {pct}%
-          </span>
-          {simsCount !== undefined && (
-            <span className="text-[10px] text-muted-foreground shrink-0">
-              {simsCount} quests
+              className="flex-1 h-2 rounded-full overflow-hidden"
+              style={{ background: "hsl(var(--muted) / 0.4)" }}
+            >
+              <div
+                className="h-full rounded-full transition-all duration-700"
+                style={{
+                  width: `${pct}%`,
+                  background: `linear-gradient(90deg, ${color}, ${color}cc)`,
+                  boxShadow: `0 0 8px ${color}60`,
+                }}
+              />
+            </div>
+            <span className="text-[10px] font-semibold text-muted-foreground shrink-0 tabular-nums">
+              {pct}%
             </span>
+            {simsCount !== undefined && (
+              <span className="text-[10px] text-muted-foreground shrink-0">
+                {simsCount} quests
+              </span>
+            )}
+          </div>
+          {onStart && (
+            <button
+              onClick={onStart}
+              className="w-full py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all hover:brightness-110"
+              style={{
+                background: `linear-gradient(135deg, ${color}, ${color}cc)`,
+                color: "hsl(var(--card))",
+                boxShadow: `0 2px 10px ${color}40`,
+                fontFamily: "'Cinzel', serif",
+              }}
+            >
+              ⚔️ Start Quest
+            </button>
           )}
         </div>
       ) : (
