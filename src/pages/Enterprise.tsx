@@ -702,7 +702,7 @@ export default function Enterprise() {
                 transition={{ duration: 0.5, delay: i * 0.06 }}
                 className="text-center"
               >
-                <p className="font-display text-4xl font-semibold text-foreground">{p.metric}</p>
+                <p className="font-fantasy text-4xl font-semibold text-foreground">{p.metric}</p>
                 <p className="mt-2 text-sm text-muted-foreground leading-relaxed">{p.description}</p>
               </motion.div>
             ))}
