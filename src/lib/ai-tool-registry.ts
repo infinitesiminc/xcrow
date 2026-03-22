@@ -13,19 +13,23 @@ export interface AIToolInfo {
 
 export const AI_TOOL_REGISTRY: AIToolInfo[] = [
   // LLMs
-  { name: "ChatGPT", pattern: /\bChatGPT\b/gi, description: "OpenAI's conversational AI assistant. Generates text, answers questions, writes code, and helps brainstorm ideas.", category: "llm", url: "https://chat.openai.com" },
-  { name: "GPT-4o", pattern: /\bGPT-4o\b/gi, description: "OpenAI's multimodal model — processes text, images, and audio. Fast and capable for most tasks.", category: "llm" },
-  { name: "GPT-5", pattern: /\bGPT-5\b/gi, description: "OpenAI's most advanced reasoning model. Excels at complex analysis, long documents, and nuanced tasks.", category: "llm" },
-  { name: "Claude 4", pattern: /\bClaude\s*4\b/gi, description: "Anthropic's latest AI model. Known for careful reasoning, long context windows, and nuanced writing.", category: "llm", url: "https://claude.ai" },
-  { name: "Claude", pattern: /\bClaude\b/gi, description: "Anthropic's AI assistant. Excels at analysis, writing, coding, and careful reasoning with large documents.", category: "llm", url: "https://claude.ai" },
-  { name: "Gemini 2.5", pattern: /\bGemini\s*2\.5\b/gi, description: "Google's advanced multimodal AI. Handles text, images, code, and reasoning with large context windows.", category: "llm" },
+  { name: "ChatGPT", pattern: /\bChatGPT\b/gi, description: "OpenAI's conversational AI assistant (GPT-5.4). Generates text, answers questions, writes code, and helps brainstorm ideas.", category: "llm", url: "https://chat.openai.com" },
+  { name: "GPT-5.4", pattern: /\bGPT-5\.4\b/gi, description: "OpenAI's latest flagship model. Best-in-class reasoning, multimodal capabilities, and long context.", category: "llm" },
+  { name: "GPT-5", pattern: /\bGPT-5\b/gi, description: "OpenAI's advanced reasoning model family. Excels at complex analysis, long documents, and nuanced tasks.", category: "llm" },
+  { name: "GPT-4o", pattern: /\bGPT-4o\b/gi, description: "OpenAI's previous-gen multimodal model. Superseded by GPT-5.4 but still widely referenced.", category: "llm" },
+  { name: "Claude 4.5", pattern: /\bClaude\s*4\.5\b/gi, description: "Anthropic's latest AI model. Known for careful reasoning, long context windows, and nuanced writing.", category: "llm", url: "https://claude.ai" },
+  { name: "Claude 4", pattern: /\bClaude\s*4\b/gi, description: "Anthropic's previous flagship AI model. Excellent analysis, writing, and coding.", category: "llm", url: "https://claude.ai" },
+  { name: "Claude", pattern: /\bClaude\b/gi, description: "Anthropic's AI assistant family. Excels at analysis, writing, coding, and careful reasoning with large documents.", category: "llm", url: "https://claude.ai" },
+  { name: "Gemini 3.1", pattern: /\bGemini\s*3\.1\b/gi, description: "Google's latest multimodal AI. Handles text, images, code, and reasoning with massive context windows.", category: "llm" },
+  { name: "Gemini 2.5", pattern: /\bGemini\s*2\.5\b/gi, description: "Google's previous-gen AI model. Strong multimodal capabilities for text, images, and code.", category: "llm" },
   { name: "Gemini", pattern: /\bGemini\b/gi, description: "Google's AI model family. Multimodal capabilities for text, images, and code generation.", category: "llm" },
-  { name: "Llama", pattern: /\bLlama\s*\d?\b/gi, description: "Meta's open-source language model. Free to use and customize for various AI applications.", category: "llm" },
-  { name: "Perplexity", pattern: /\bPerplexity\b/gi, description: "AI-powered search engine that provides cited, sourced answers to complex questions.", category: "search", url: "https://perplexity.ai" },
+  { name: "Llama 4", pattern: /\bLlama\s*4\b/gi, description: "Meta's latest open-source language model. Free to use and customize for various AI applications.", category: "llm" },
+  { name: "Llama", pattern: /\bLlama\s*\d?\b/gi, description: "Meta's open-source language model family. Free to use and customize.", category: "llm" },
+  { name: "Perplexity", pattern: /\bPerplexity\b/gi, description: "AI-powered search engine (Pro 3) that provides cited, sourced answers to complex questions.", category: "search", url: "https://perplexity.ai" },
 
   // Coding
-  { name: "GitHub Copilot", pattern: /\bGitHub\s*Copilot\b/gi, description: "AI pair programmer that suggests code completions, writes functions, and explains code inside your editor.", category: "coding", url: "https://github.com/features/copilot" },
-  { name: "Cursor", pattern: /\bCursor\b/gi, description: "AI-first code editor. Chat with your codebase, generate code, and refactor with natural language.", category: "coding", url: "https://cursor.com" },
+  { name: "GitHub Copilot", pattern: /\bGitHub\s*Copilot\b/gi, description: "AI pair programmer (Copilot X) that suggests code completions, writes functions, and explains code inside your editor.", category: "coding", url: "https://github.com/features/copilot" },
+  { name: "Cursor", pattern: /\bCursor\b/gi, description: "AI-first code editor (2.0). Chat with your codebase, generate code, and refactor with natural language.", category: "coding", url: "https://cursor.com" },
   { name: "v0", pattern: /\bv0\b/gi, description: "Vercel's AI tool that generates React UI components from text prompts and screenshots.", category: "coding", url: "https://v0.dev" },
   { name: "Replit AI", pattern: /\bReplit\s*AI\b/gi, description: "AI coding assistant built into Replit. Generates, explains, and debugs code in the browser.", category: "coding" },
 
@@ -35,8 +39,8 @@ export const AI_TOOL_REGISTRY: AIToolInfo[] = [
   { name: "Google Workspace AI", pattern: /\bGoogle\s*Workspace\s*AI\b/gi, description: "AI features across Google Docs, Sheets, and Slides for writing, analyzing data, and creating content.", category: "productivity" },
 
   // Design
-  { name: "Midjourney", pattern: /\bMidjourney\b/gi, description: "AI image generator known for stunning, artistic visuals. Creates images from text descriptions.", category: "design", url: "https://midjourney.com" },
-  { name: "DALL-E", pattern: /\bDALL[·\-]?E\s*\d?\b/gi, description: "OpenAI's image generation model. Creates and edits images from natural language descriptions.", category: "design" },
+  { name: "Midjourney", pattern: /\bMidjourney\b/gi, description: "AI image generator (v7) known for stunning, artistic visuals. Creates images from text descriptions.", category: "design", url: "https://midjourney.com" },
+  { name: "DALL-E", pattern: /\bDALL[·\-]?E\s*\d?\b/gi, description: "OpenAI's image generation model (DALL-E 4). Creates and edits images from natural language descriptions.", category: "design" },
   { name: "Figma AI", pattern: /\bFigma\s*AI\b/gi, description: "AI-powered design features in Figma. Auto-generates layouts, suggests designs, and creates prototypes.", category: "design" },
   { name: "Canva AI", pattern: /\bCanva\s*AI\b/gi, description: "AI tools inside Canva for generating images, writing copy, and auto-designing presentations.", category: "design" },
 

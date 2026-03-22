@@ -1,16 +1,18 @@
 /**
  * MyRolesPanel — RPG Kingdoms view with Dark Fantasy styling.
  * Stone-textured cards, Cinzel headings, filigree borders, territory colors.
+ * Includes an "Arsenal" tab for browsing/searching saved AI tools.
  */
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Bookmark, Swords, Search, ChevronRight, Shield, Flame } from "lucide-react";
+import { Bookmark, Swords, Search, ChevronRight, Shield, Flame, Wrench, ExternalLink, X, Sparkles } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { getCastleState, type CastleTier } from "@/lib/castle-levels";
 import { motion } from "framer-motion";
+import { AI_TOOL_REGISTRY, getSavedTools, removeToolFromList, type AIToolInfo } from "@/lib/ai-tool-registry";
 import type { RoleResult } from "@/components/InlineRoleCarousel";
 
 /* ── Types ── */
