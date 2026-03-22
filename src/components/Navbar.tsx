@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import xcrowLogo from "@/assets/xcrow-logo.png";
@@ -12,13 +12,33 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { User, Menu, X, Compass, Shield, Map, Settings, LogOut, Trophy, GraduationCap } from "lucide-react";
+import { User, Menu, X, Compass, Shield, Map, Settings, LogOut, Trophy, GraduationCap, Sun, Moon } from "lucide-react";
 
 export default function Navbar() {
   const { user, signOut, openAuthModal, isSuperAdmin, isSchoolAdmin, profile } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
+
+  // Parchment mode toggle
+  const [parchment, setParchment] = useState(() => {
+    return localStorage.getItem("xcrow-theme") === "parchment";
+  });
+
+  useEffect(() => {
+    const root = document.documentElement;
+    if (parchment) {
+      root.classList.add("parchment");
+      root.classList.remove("dark");
+      root.style.colorScheme = "light";
+      localStorage.setItem("xcrow-theme", "parchment");
+    } else {
+      root.classList.remove("parchment");
+      root.classList.add("dark");
+      root.style.colorScheme = "dark";
+      localStorage.setItem("xcrow-theme", "dark");
+    }
+  }, [parchment]);
 
   const isActive = (path: string) => location.pathname === path;
 
@@ -129,6 +149,10 @@ export default function Navbar() {
                   )}
                 </div>
                 <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => setParchment(!parchment)}>
+                  {parchment ? <Moon className="mr-2 h-4 w-4" /> : <Sun className="mr-2 h-4 w-4" />}
+                  {parchment ? "Dark Mode" : "Parchment Mode"}
+                </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => navigate("/settings")}>
                   <Settings className="mr-2 h-4 w-4" />
                   Settings

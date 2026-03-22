@@ -24,6 +24,9 @@
   </head>
 
   <body>
+    <script>
+      (function(){var t=localStorage.getItem('xcrow-theme');if(t==='parchment'){document.documentElement.classList.add('parchment');document.documentElement.style.colorScheme='light'}else{document.documentElement.classList.add('dark');document.documentElement.style.colorScheme='dark'}})();
+    </script>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
