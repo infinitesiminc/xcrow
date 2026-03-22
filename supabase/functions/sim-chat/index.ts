@@ -224,6 +224,20 @@ This means the user is NEVER left without guidance. You always teach before test
 
 This simulation has EXACTLY ${FIXED_ROUNDS} rounds, one per objective. No more, no less.
 
+${isLevel2 ? '' : `CRITICAL LEVEL 1 CHOICE DESIGN:
+Both A and B must be PLAUSIBLE AI-powered approaches. NEVER make one option "don't use AI" or an obviously wrong answer.
+The difference should be TECHNIQUE QUALITY:
+- One option uses a MORE EFFECTIVE AI technique (better prompting, better tool choice, better workflow)
+- The other uses a LESS OPTIMAL but still reasonable AI technique
+Examples of good contrasts:
+  • Generic one-shot prompt vs. chain-of-thought with context and constraints
+  • Using a general chatbot vs. a domain-specific AI tool
+  • Single AI pass vs. iterative refinement with human checkpoints
+  • Broad prompt vs. precisely scoped prompt with examples
+  • Raw AI output vs. AI output validated against source data
+The user should need to THINK about which technique produces better results. Both should sound plausible.
+Mark internally which is the STRONGER technique (for scoring), but NEVER label one as "misconception" or make the weaker one obviously wrong.`}
+
 Generate a JSON response:
 
 1. "learningObjectives": Array of EXACTLY 3 objects, each with:
@@ -246,12 +260,15 @@ Generate a JSON response:
 6. "openingMessage": The FIRST Learn→Apply beat. Structure EXACTLY:
    - "**📖 Scenario:**" — 2 sentence realistic work scenario ${isLevel2 ? "(set in the near future where AI has automated routine parts)" : ""}
    - "**💡 Key Insight:**" — 1-2 sentences teaching the relevant ${isLevel2 ? "oversight technique or validation approach" : "AI tool/technique"} for THIS scenario. ${isLevel2 ? "Reference the disrupting technology and explain the human's new role." : "Name a SPECIFIC current tool and what it does."}
-   - "**🤔 Apply it:**"
-   - "**A)** [Strong approach — 10-15 words, verb-led]"
-   - "**B)** [Common misconception — 10-15 words, verb-led]"
+   - "**🤔 Which approach wins?**"
+   - "**A)** [${isLevel2 ? 'Strong approach' : 'AI technique #1'} — 10-15 words, verb-led, describes the specific technique]"
+   - "**B)** [${isLevel2 ? 'Common misconception' : 'AI technique #2'} — 10-15 words, verb-led, describes the specific technique]"
+   ${isLevel2 ? '' : '- Both options MUST use AI. One technique is more effective. The weaker option should still sound plausible.'}
    - Under 80 words total.
 
 7. "scenario": { "title": short title, "description": 1-sentence }
+
+${isLevel2 ? '' : '8. "strongerOption": "A" or "B" — which option uses the more effective technique (for internal scoring only, not shown to user)'}
 
 Respond ONLY with valid JSON, no markdown.`;
 
