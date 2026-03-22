@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
@@ -6,9 +6,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -22,49 +21,23 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
 import {
-  Loader2, Save, Trash2, KeyRound, Bookmark,
-  Linkedin, Upload, FileText, GraduationCap, Briefcase, X, School,
-  Shield, User, Lock, AlertOctagon, ArrowLeft, LogOut, Check,
+  Loader2, Save, Trash2, KeyRound, GraduationCap, Briefcase, School,
+  User, Lock, AlertOctagon, ArrowLeft, LogOut, Check, CreditCard, Crown,
+  ExternalLink,
 } from "lucide-react";
 import { AVATAR_OPTIONS, getAvatarById } from "@/lib/avatars";
 
-
-/* ── helpers ─────────────────────────────────────────── */
-
-interface SavedRole {
-  job_title: string;
-  company: string | null;
-  augmented_percent: number | null;
-  automation_risk_percent: number | null;
-  new_skills_percent: number | null;
-}
-
-interface PracticedRole {
-  job_title: string;
-  task_name: string;
-  company: string | null;
-  completed_at: string;
-  correct_answers: number;
-  total_questions: number;
-  tool_awareness_score: number | null;
-  human_value_add_score: number | null;
-  adaptive_thinking_score: number | null;
-  domain_judgment_score: number | null;
-}
-
-
 const NAV_ITEMS = [
   { key: "profile", label: "Profile", icon: User },
+  { key: "subscription", label: "Subscription", icon: CreditCard },
   { key: "security", label: "Security", icon: Lock },
   { key: "danger", label: "Danger Zone", icon: AlertOctagon },
 ] as const;
 
 type SectionKey = typeof NAV_ITEMS[number]["key"];
 
-/* ── page ────────────────────────────────────────────── */
-
 export default function Settings() {
-  const { user, loading: authLoading, signOut, profile, refreshProfile } = useAuth();
+  const { user, loading: authLoading, signOut, profile, refreshProfile, plan, subscriptionEnd, schoolName, isPro } = useAuth();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const { toast } = useToast();
@@ -76,27 +49,16 @@ export default function Settings() {
   const [username, setUsername] = useState("");
   const [jobTitle, setJobTitle] = useState("");
   const [company, setCompany] = useState("");
-  const [linkedinUrl, setLinkedinUrl] = useState("");
-  const [schoolName, setSchoolName] = useState("");
+  const [schoolNameField, setSchoolNameField] = useState("");
   const [careerStage, setCareerStage] = useState<"student" | "professional">("professional");
-  const [cvUrl, setCvUrl] = useState<string | null>(null);
-  const [cvFileName, setCvFileName] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
-  const [uploadingCv, setUploadingCv] = useState(false);
   const [avatarId, setAvatarId] = useState<string | null>(null);
-  const cvInputRef = useRef<HTMLInputElement>(null);
 
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [changingPassword, setChangingPassword] = useState(false);
-
   const [deleting, setDeleting] = useState(false);
-
-  // Saved & practiced roles
-  const [savedRoles, setSavedRoles] = useState<SavedRole[]>([]);
-  const [practicedRoles, setPracticedRoles] = useState<PracticedRole[]>([]);
-  const [savedLoading, setSavedLoading] = useState(true);
-  const [practicedLoading, setPracticedLoading] = useState(true);
+  const [portalLoading, setPortalLoading] = useState(false);
 
   useEffect(() => {
     if (!authLoading && !user) navigate("/auth");
@@ -107,15 +69,8 @@ export default function Settings() {
     setDisplayName(profile.displayName || "");
     setJobTitle(profile.jobTitle || "");
     setCompany(profile.company || "");
-    setLinkedinUrl(profile.linkedinUrl || "");
-    setSchoolName(profile.schoolName || "");
+    setSchoolNameField(profile.schoolName || "");
     setCareerStage((profile.careerStage as "student" | "professional") || "professional");
-    setCvUrl(profile.cvUrl || null);
-    if (profile.cvUrl) {
-      const parts = profile.cvUrl.split("/");
-      setCvFileName(decodeURIComponent(parts[parts.length - 1] || "CV"));
-    }
-    // Fetch username and avatar_id separately since they're not in the profile context
     if (user) {
       supabase.from("profiles").select("username, avatar_id").eq("id", user.id).single().then(({ data }) => {
         if (data) {
@@ -126,65 +81,6 @@ export default function Settings() {
     }
   }, [profile, user]);
 
-  useEffect(() => {
-    if (!user) return;
-    setSavedLoading(true);
-    setPracticedLoading(true);
-    supabase
-      .from("bookmarked_roles")
-      .select("job_title, company, augmented_percent, automation_risk_percent, new_skills_percent")
-      .eq("user_id", user.id)
-      .order("bookmarked_at", { ascending: false })
-      .then(({ data }) => {
-        setSavedRoles((data as SavedRole[]) || []);
-        setSavedLoading(false);
-      });
-    supabase
-      .from("completed_simulations")
-      .select("job_title, task_name, company, completed_at, correct_answers, total_questions, tool_awareness_score, human_value_add_score, adaptive_thinking_score, domain_judgment_score")
-      .eq("user_id", user.id)
-      .order("completed_at", { ascending: false })
-      .then(({ data }) => {
-        setPracticedRoles((data as PracticedRole[]) || []);
-        setPracticedLoading(false);
-      });
-  }, [user]);
-
-  const handleCvUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file || !user) return;
-    const allowedTypes = ["application/pdf", "application/vnd.openxmlformats-officedocument.wordprocessingml.document", "text/plain"];
-    if (!allowedTypes.includes(file.type)) {
-      toast({ title: "Invalid file type", description: "Please upload a PDF, DOCX, or TXT file.", variant: "destructive" });
-      return;
-    }
-    if (file.size > 5 * 1024 * 1024) {
-      toast({ title: "File too large", description: "Max file size is 5MB.", variant: "destructive" });
-      return;
-    }
-    setUploadingCv(true);
-    const ext = file.name.split(".").pop();
-    const path = `${user.id}/cv.${ext}`;
-    const { error } = await supabase.storage.from("cv-uploads").upload(path, file, { upsert: true });
-    if (error) {
-      toast({ title: "Upload failed", description: error.message, variant: "destructive" });
-    } else {
-      setCvUrl(path);
-      setCvFileName(file.name);
-      toast({ title: "CV uploaded", description: file.name });
-    }
-    setUploadingCv(false);
-    if (cvInputRef.current) cvInputRef.current.value = "";
-  };
-
-  const handleRemoveCv = async () => {
-    if (!user || !cvUrl) return;
-    await supabase.storage.from("cv-uploads").remove([cvUrl]);
-    setCvUrl(null);
-    setCvFileName(null);
-    toast({ title: "CV removed" });
-  };
-
   const handleSaveProfile = async () => {
     if (!user) return;
     setSaving(true);
@@ -192,18 +88,12 @@ export default function Settings() {
       display_name: displayName,
       job_title: jobTitle.trim() || null,
       company: company.trim() || null,
-      linkedin_url: linkedinUrl.trim() || null,
-      school_name: schoolName.trim() || null,
+      school_name: schoolNameField.trim() || null,
       career_stage: careerStage,
-      cv_url: cvUrl || null,
       avatar_id: avatarId || null,
     };
     if (username.trim()) updateData.username = username.trim().toLowerCase().replace(/[^a-z0-9_-]/g, "");
-    const { error } = await supabase
-      .from("profiles")
-      .update(updateData)
-      .eq("id", user.id);
-
+    const { error } = await supabase.from("profiles").update(updateData).eq("id", user.id);
     if (error) {
       toast({ title: "Error", description: "Failed to update profile.", variant: "destructive" });
     } else {
@@ -228,7 +118,7 @@ export default function Settings() {
     if (error) {
       toast({ title: "Error", description: error.message, variant: "destructive" });
     } else {
-      toast({ title: "Password updated", description: "Your password has been changed." });
+      toast({ title: "Password updated" });
       setNewPassword("");
       setConfirmPassword("");
     }
@@ -254,6 +144,17 @@ export default function Settings() {
     setDeleting(false);
   };
 
+  const handleManageSubscription = async () => {
+    setPortalLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("customer-portal");
+      if (error) throw error;
+      if (data?.url) window.open(data.url, "_blank");
+    } catch {
+      toast({ title: "Error", description: "Could not open subscription portal.", variant: "destructive" });
+    }
+    setPortalLoading(false);
+  };
 
   if (authLoading) return null;
 
@@ -353,16 +254,23 @@ export default function Settings() {
                 username={username} setUsername={setUsername}
                 jobTitle={jobTitle} setJobTitle={setJobTitle}
                 company={company} setCompany={setCompany}
-                linkedinUrl={linkedinUrl} setLinkedinUrl={setLinkedinUrl}
-                schoolName={schoolName} setSchoolName={setSchoolName}
+                schoolName={schoolNameField} setSchoolName={setSchoolNameField}
                 careerStage={careerStage} setCareerStage={setCareerStage}
-                cvFileName={cvFileName} cvInputRef={cvInputRef}
-                uploadingCv={uploadingCv} saving={saving}
-                email={user?.email ?? ""}
+                saving={saving} email={user?.email ?? ""}
                 avatarId={avatarId} setAvatarId={setAvatarId}
-                handleCvUpload={handleCvUpload}
-                handleRemoveCv={handleRemoveCv}
                 handleSaveProfile={handleSaveProfile}
+              />
+            )}
+
+            {activeSection === "subscription" && (
+              <SubscriptionSection
+                plan={plan}
+                isPro={isPro}
+                subscriptionEnd={subscriptionEnd}
+                schoolName={schoolName}
+                portalLoading={portalLoading}
+                onManage={handleManageSubscription}
+                onUpgrade={() => navigate("/pricing")}
               />
             )}
 
@@ -376,10 +284,7 @@ export default function Settings() {
             )}
 
             {activeSection === "danger" && (
-              <DangerSection
-                deleting={deleting}
-                handleDeleteAccount={handleDeleteAccount}
-              />
+              <DangerSection deleting={deleting} handleDeleteAccount={handleDeleteAccount} />
             )}
           </motion.div>
         </div>
@@ -393,31 +298,25 @@ export default function Settings() {
    ══════════════════════════════════════════════════════ */
 
 function ProfileSection({
-  displayName, setDisplayName, username, setUsername, jobTitle, setJobTitle, company, setCompany,
-  linkedinUrl, setLinkedinUrl, schoolName, setSchoolName,
-  careerStage, setCareerStage, cvFileName, cvInputRef, uploadingCv, saving, email,
-  avatarId, setAvatarId,
-  handleCvUpload, handleRemoveCv, handleSaveProfile,
+  displayName, setDisplayName, username, setUsername, jobTitle, setJobTitle,
+  company, setCompany, schoolName, setSchoolName,
+  careerStage, setCareerStage, saving, email,
+  avatarId, setAvatarId, handleSaveProfile,
 }: {
   displayName: string; setDisplayName: (v: string) => void;
   username: string; setUsername: (v: string) => void;
   jobTitle: string; setJobTitle: (v: string) => void;
   company: string; setCompany: (v: string) => void;
-  linkedinUrl: string; setLinkedinUrl: (v: string) => void;
   schoolName: string; setSchoolName: (v: string) => void;
   careerStage: "student" | "professional"; setCareerStage: (v: "student" | "professional") => void;
-  cvFileName: string | null; cvInputRef: React.RefObject<HTMLInputElement>;
-  uploadingCv: boolean; saving: boolean; email: string;
+  saving: boolean; email: string;
   avatarId: string | null; setAvatarId: (v: string | null) => void;
-  handleCvUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  handleRemoveCv: () => void;
   handleSaveProfile: () => void;
 }) {
-  const selectedAvatar = getAvatarById(avatarId);
   return (
     <div>
       <h2 className="text-xl font-bold text-foreground mb-1">Profile</h2>
-      <p className="text-sm text-muted-foreground mb-6">Your personal and professional details for a customized experience.</p>
+      <p className="text-sm text-muted-foreground mb-6">Your identity on the platform.</p>
 
       <div className="space-y-8">
         {/* Avatar picker */}
@@ -448,6 +347,7 @@ function ProfileSection({
         </div>
 
         <Separator />
+
         {/* Basic info */}
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-2">
@@ -460,7 +360,7 @@ function ProfileSection({
           </div>
         </div>
 
-        {/* Username for public profile */}
+        {/* Username */}
         <div className="space-y-2">
           <Label htmlFor="username" className="flex items-center gap-1.5">
             <User className="h-3.5 w-3.5 text-muted-foreground" />
@@ -524,84 +424,85 @@ function ProfileSection({
 
         <Separator />
 
-        {/* Role & org */}
+        {/* Role & company */}
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-2">
             <Label htmlFor="jobTitle">{careerStage === "student" ? "Target role" : "Job title"}</Label>
             <Input id="jobTitle" value={jobTitle} onChange={(e) => setJobTitle(e.target.value)} placeholder={careerStage === "student" ? "e.g. Data Scientist" : "e.g. Product Manager"} />
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="company">{careerStage === "student" ? "Target company" : "Company"}</Label>
-            <Input id="company" value={company} onChange={(e) => setCompany(e.target.value)} placeholder="e.g. Acme Corp or acme.com" />
-          </div>
+          {careerStage === "professional" && (
+            <div className="space-y-2">
+              <Label htmlFor="company">Company</Label>
+              <Input id="company" value={company} onChange={(e) => setCompany(e.target.value)} placeholder="e.g. Acme Corp" />
+            </div>
+          )}
         </div>
 
         {/* School */}
-        <div className="space-y-2">
-          <Label htmlFor="schoolName" className="flex items-center gap-1.5">
-            <School className="h-3.5 w-3.5 text-muted-foreground" />
-            {careerStage === "student" ? "School / University" : "School / University (optional)"}
-          </Label>
-          <Input id="schoolName" value={schoolName} onChange={(e) => setSchoolName(e.target.value)} placeholder="e.g. MIT, Stanford, University of London" />
-        </div>
-
-        <Separator />
-
-        {/* LinkedIn */}
-        <div className="space-y-2">
-          <Label htmlFor="linkedinUrl" className="flex items-center gap-1.5">
-            <Linkedin className="h-3.5 w-3.5 text-muted-foreground" />
-            LinkedIn profile
-          </Label>
-          <Input id="linkedinUrl" value={linkedinUrl} onChange={(e) => setLinkedinUrl(e.target.value)} placeholder="https://linkedin.com/in/yourname" />
-        </div>
-
-        {/* CV upload */}
-        <div className="space-y-2">
-          <Label className="flex items-center gap-1.5">
-            <FileText className="h-3.5 w-3.5 text-muted-foreground" />
-            CV / Resume
-          </Label>
-          {cvFileName ? (
-            <div className="flex items-center gap-2 rounded-lg border border-border bg-muted/20 px-3 py-2.5">
-              <FileText className="h-4 w-4 text-primary shrink-0" />
-              <span className="text-sm text-foreground truncate flex-1">{cvFileName}</span>
-              <Badge variant="secondary" className="text-[10px] shrink-0">Uploaded</Badge>
-              <button onClick={handleRemoveCv} className="ml-1 rounded-full p-1 hover:bg-destructive/10 transition-colors" title="Remove CV">
-                <X className="h-3.5 w-3.5 text-destructive" />
-              </button>
-            </div>
-          ) : (
-            <button
-              type="button"
-              onClick={() => cvInputRef.current?.click()}
-              disabled={uploadingCv}
-              className="w-full rounded-xl border-2 border-dashed border-border/60 bg-muted/10 hover:border-primary/40 hover:bg-primary/5 transition-all px-4 py-6 flex flex-col items-center gap-2 text-center group"
-            >
-              {uploadingCv ? (
-                <Loader2 className="h-6 w-6 animate-spin text-primary" />
-              ) : (
-                <Upload className="h-6 w-6 text-muted-foreground group-hover:text-primary transition-colors" />
-              )}
-              <div>
-                <p className="text-sm font-medium text-foreground">{uploadingCv ? "Uploading…" : "Upload your CV"}</p>
-                <p className="text-[11px] text-muted-foreground mt-0.5">PDF, DOCX, or TXT · Max 5MB</p>
-              </div>
-            </button>
-          )}
-          <input
-            ref={cvInputRef}
-            type="file"
-            accept=".pdf,.docx,.txt,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain"
-            onChange={handleCvUpload}
-            className="hidden"
-          />
-        </div>
+        {careerStage === "student" && (
+          <div className="space-y-2">
+            <Label htmlFor="schoolName" className="flex items-center gap-1.5">
+              <School className="h-3.5 w-3.5 text-muted-foreground" />
+              School / University
+            </Label>
+            <Input id="schoolName" value={schoolName} onChange={(e) => setSchoolName(e.target.value)} placeholder="e.g. MIT, Stanford, University of London" />
+          </div>
+        )}
 
         <Button onClick={handleSaveProfile} disabled={saving} size="sm">
           {saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
           Save profile
         </Button>
+      </div>
+    </div>
+  );
+}
+
+function SubscriptionSection({
+  plan, isPro, subscriptionEnd, schoolName, portalLoading, onManage, onUpgrade,
+}: {
+  plan: string; isPro: boolean; subscriptionEnd: string | null; schoolName: string | null;
+  portalLoading: boolean; onManage: () => void; onUpgrade: () => void;
+}) {
+  const planLabel = plan === "school" ? `School · ${schoolName || "Institution"}` : plan === "pro" ? "Pro" : "Free";
+  const planColor = isPro ? "bg-primary/15 text-primary border-primary/30" : "bg-muted/30 text-muted-foreground border-border/50";
+
+  return (
+    <div>
+      <h2 className="text-xl font-bold text-foreground mb-1">Subscription</h2>
+      <p className="text-sm text-muted-foreground mb-6">Manage your plan and billing.</p>
+
+      <div className="rounded-xl border border-border/50 bg-card p-6 space-y-4 max-w-md">
+        <div className="flex items-center gap-3">
+          <div className={`rounded-full p-2.5 ${isPro ? "bg-primary/10" : "bg-muted/30"}`}>
+            <Crown className={`h-5 w-5 ${isPro ? "text-primary" : "text-muted-foreground"}`} />
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <p className="text-sm font-semibold text-foreground">{planLabel}</p>
+              <Badge variant="outline" className={`text-[10px] ${planColor}`}>
+                {isPro ? "Active" : "Current"}
+              </Badge>
+            </div>
+            {subscriptionEnd && (
+              <p className="text-[11px] text-muted-foreground mt-0.5">
+                Renews {new Date(subscriptionEnd).toLocaleDateString()}
+              </p>
+            )}
+          </div>
+        </div>
+
+        {isPro ? (
+          <Button variant="outline" size="sm" onClick={onManage} disabled={portalLoading}>
+            {portalLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <ExternalLink className="mr-2 h-4 w-4" />}
+            Manage subscription
+          </Button>
+        ) : (
+          <Button size="sm" onClick={onUpgrade}>
+            <Crown className="mr-2 h-4 w-4" />
+            Upgrade to Pro
+          </Button>
+        )}
       </div>
     </div>
   );
@@ -613,14 +514,12 @@ function SecuritySection({
 }: {
   newPassword: string; setNewPassword: (v: string) => void;
   confirmPassword: string; setConfirmPassword: (v: string) => void;
-  changingPassword: boolean;
-  handleChangePassword: () => void;
+  changingPassword: boolean; handleChangePassword: () => void;
 }) {
   return (
     <div>
       <h2 className="text-xl font-bold text-foreground mb-1">Security</h2>
       <p className="text-sm text-muted-foreground mb-6">Update your account password.</p>
-
       <div className="space-y-4 max-w-md">
         <div className="space-y-2">
           <Label htmlFor="newPassword">New password</Label>
@@ -639,17 +538,11 @@ function SecuritySection({
   );
 }
 
-function DangerSection({
-  deleting, handleDeleteAccount,
-}: {
-  deleting: boolean;
-  handleDeleteAccount: () => void;
-}) {
+function DangerSection({ deleting, handleDeleteAccount }: { deleting: boolean; handleDeleteAccount: () => void }) {
   return (
     <div>
       <h2 className="text-xl font-bold text-destructive mb-1">Danger Zone</h2>
       <p className="text-sm text-muted-foreground mb-6">Permanently delete your account and all associated data.</p>
-
       <AlertDialog>
         <AlertDialogTrigger asChild>
           <Button variant="destructive" size="sm">
