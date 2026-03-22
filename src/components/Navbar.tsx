@@ -46,7 +46,7 @@ export default function Navbar() {
     { label: "Pricing", path: "/pricing", icon: null },
     { label: "Leaderboard", path: "/leaderboard", icon: Trophy },
     ...(user ? [
-      { label: "Skill Map", path: "/journey", icon: Map },
+      { label: "Skill Map", path: "/map", icon: Map },
     ] : []),
     ...(isSchoolAdmin ? [
       { label: "School", path: "/school", icon: GraduationCap },
