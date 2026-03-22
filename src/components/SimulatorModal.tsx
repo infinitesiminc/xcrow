@@ -1307,7 +1307,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                             className="flex-1 rounded-xl h-10 text-sm gap-2"
                             onClick={handleFinishAttempt}
                           >
-                            <CheckCircle2 className="h-4 w-4" /> {isLastRound || isSessionEnd || allObjMet ? "⚔️ Battle Report" : "End Quest"}
+                            <CheckCircle2 className="h-4 w-4" /> {isLastRound || isSessionEnd || allObjMet ? "📊 Battle Report" : "End Quest"}
                           </Button>
                         </div>
                       </div>
