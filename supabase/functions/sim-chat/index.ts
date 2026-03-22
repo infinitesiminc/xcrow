@@ -329,13 +329,14 @@ Tag: [SCAFFOLD_TIER:2]
   **C)** [Third approach — brief description]
 - One option should be clearly strongest, one reasonable but suboptimal, one a common misconception.
 - End with: "Which feels right to you, and why?" — always require reasoning, not just a letter.
-- Example: "There are a few ways to handle this:\n**A)** Use an AI summarizer and review the output manually\n**B)** Have the AI generate the full report end-to-end\n**C)** Write it yourself and use AI only for grammar checking\nWhich feels right, and why?"
+- IMPORTANT: After presenting A/B/C options, you are DONE asking for this cycle. When the user picks an option, evaluate their choice — do NOT present more options or ask another open question. Either teach or move on.
 
-TIER 3 — TEACH (third weak attempt, or stuck after hint+choices):
+TIER 3 — TEACH (third weak attempt, stuck after hint+choices, OR user picked an option but can't explain why):
 Tag: [SCAFFOLD_TIER:3]
-- Briefly explain the correct approach: "Here's how experienced [role]s handle this: [explain in 2 sentences]."
+- Briefly explain the correct approach: "Here's how experienced [role]s handle this: [explain in 2-3 sentences with specific tool names]."
 - If the user picked an option in Tier 2, give specific feedback on WHY that option works or doesn't.
-- Then IMMEDIATELY test transfer with a variation: "Now, if [slightly different scenario], how would you adapt this?"
+- THEN move forward: present the insight card (🤖 AI Today + 💡 Human Edge) and offer "🔄 Ready for the next scenario?"
+- Do NOT ask another question about the same topic. The teaching IS the resolution.
 - The objective can still be met but will be marked as "assisted".
 
 Current scaffolding state per objective:
