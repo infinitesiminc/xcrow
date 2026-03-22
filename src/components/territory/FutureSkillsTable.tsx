@@ -174,6 +174,61 @@ export default function FutureSkillsTable({ skills, onSkillClick, skillGrowthMap
         </div>
       </div>
 
+      {/* Domain Radar Chart */}
+      {showChart && totalXp > 0 && (
+        <div
+          className="mx-3 mb-2 rounded-lg shrink-0 relative"
+          style={{
+            background: "hsl(var(--surface-stone) / 0.5)",
+            border: "1px solid hsl(var(--filigree) / 0.1)",
+          }}
+        >
+          <div className="flex items-center justify-between px-3 pt-2">
+            <span
+              className="text-[10px] font-bold uppercase tracking-widest"
+              style={{ fontFamily: "'Cinzel', serif", color: "hsl(var(--filigree-glow))" }}
+            >
+              Territory Power
+            </span>
+            <button
+              onClick={() => setShowChart(false)}
+              className="text-[9px] text-muted-foreground hover:text-foreground transition-colors"
+            >
+              Hide
+            </button>
+          </div>
+          <ResponsiveContainer width="100%" height={160}>
+            <RadarChart cx="50%" cy="50%" outerRadius="70%" data={domainData}>
+              <PolarGrid stroke="hsl(var(--filigree) / 0.15)" />
+              <PolarAngleAxis
+                dataKey="domain"
+                tick={{ fontSize: 8, fill: "hsl(var(--muted-foreground))" }}
+              />
+              <Radar
+                name="XP"
+                dataKey="xp"
+                stroke="hsl(var(--filigree-glow))"
+                fill="hsl(var(--filigree-glow))"
+                fillOpacity={0.15}
+                strokeWidth={1.5}
+              />
+            </RadarChart>
+          </ResponsiveContainer>
+        </div>
+      )}
+
+      {!showChart && totalXp > 0 && (
+        <div className="px-3 mb-1 shrink-0">
+          <button
+            onClick={() => setShowChart(true)}
+            className="text-[9px] text-muted-foreground hover:text-foreground transition-colors"
+            style={{ fontFamily: "'Cinzel', serif" }}
+          >
+            Show Territory Power ▾
+          </button>
+        </div>
+      )}
+
       {/* Table */}
       <div className="flex-1 overflow-y-auto px-3 pb-3">
         <table className="w-full text-xs">
