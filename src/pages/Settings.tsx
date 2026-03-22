@@ -73,12 +73,14 @@ export default function Settings() {
     setJobTitle(profile.jobTitle || "");
     setCompany(profile.company || "");
     setSchoolNameField(profile.schoolName || "");
+    setLinkedinUrl(profile.linkedinUrl || "");
     setCareerStage((profile.careerStage as "student" | "professional") || "professional");
     if (user) {
-      supabase.from("profiles").select("username, avatar_id").eq("id", user.id).single().then(({ data }) => {
+      supabase.from("profiles").select("username, avatar_id, city").eq("id", user.id).single().then(({ data }) => {
         if (data) {
           if ((data as any).username) setUsername((data as any).username);
           if ((data as any).avatar_id) setAvatarId((data as any).avatar_id);
+          if ((data as any).city) setCity((data as any).city);
         }
       });
     }
