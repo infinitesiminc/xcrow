@@ -1550,7 +1550,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                       className="w-full rounded-xl border border-border/40 bg-muted/30 p-3.5 text-left"
                     >
                       <div className="flex items-center gap-2 mb-2">
-                        <Swords className="h-3.5 w-3.5 text-foreground" />
+                        <Flag className="h-3.5 w-3.5 text-foreground" />
                         <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Campaign Status</span>
                       </div>
                       <div className="flex items-center gap-1 mb-1.5">
