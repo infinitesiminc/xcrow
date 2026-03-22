@@ -331,7 +331,7 @@ export default function MyRolesPanel({ onSelectRole, onAskChat, onTabChange }: M
       >
         <button
           onClick={() => { setTab("practiced"); onTabChange?.("practiced"); }}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all flex-1 justify-center"
+          className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-[11px] font-medium transition-all flex-1 justify-center"
           style={{
             fontFamily: "'Cinzel', serif",
             letterSpacing: "0.04em",
@@ -341,11 +341,11 @@ export default function MyRolesPanel({ onSelectRole, onAskChat, onTabChange }: M
           }}
         >
           <Swords className="h-3 w-3" />
-          Campaigns ({activeKingdoms.length})
+          Campaigns
         </button>
         <button
           onClick={() => { setTab("saved"); onTabChange?.("saved"); }}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all flex-1 justify-center"
+          className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-[11px] font-medium transition-all flex-1 justify-center"
           style={{
             fontFamily: "'Cinzel', serif",
             letterSpacing: "0.04em",
@@ -355,7 +355,21 @@ export default function MyRolesPanel({ onSelectRole, onAskChat, onTabChange }: M
           }}
         >
           <Bookmark className="h-3 w-3" />
-          Scouted ({scoutedKingdoms.length})
+          Scouted
+        </button>
+        <button
+          onClick={() => { setTab("arsenal"); setArsenalFilter("all"); }}
+          className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-[11px] font-medium transition-all flex-1 justify-center"
+          style={{
+            fontFamily: "'Cinzel', serif",
+            letterSpacing: "0.04em",
+            ...(tab === "arsenal"
+              ? { background: "hsl(var(--background))", color: "hsl(var(--foreground))", boxShadow: "0 1px 3px hsl(var(--emboss-shadow))" }
+              : { color: "hsl(var(--muted-foreground))" }),
+          }}
+        >
+          <Wrench className="h-3 w-3" />
+          Arsenal
         </button>
       </div>
 
