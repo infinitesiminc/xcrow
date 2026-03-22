@@ -98,7 +98,7 @@ const PromptArena = ({ round, roundNumber, onJudged, loading }: PromptArenaProps
   };
 
   return (
-    <div className="max-w-2xl mx-auto space-y-4">
+    <div className="max-w-4xl mx-auto space-y-5">
       {/* Round Header */}
       <motion.div
         initial={{ opacity: 0, y: -8 }}
@@ -107,7 +107,7 @@ const PromptArena = ({ round, roundNumber, onJudged, loading }: PromptArenaProps
       >
         <div className="flex-1 h-px" style={{ background: "linear-gradient(90deg, transparent, hsl(var(--filigree) / 0.4), transparent)" }} />
         <span
-          className="text-[11px] font-semibold uppercase tracking-[0.15em] px-3 py-1 rounded-full"
+          className="text-sm font-semibold uppercase tracking-[0.15em] px-4 py-1.5 rounded-full"
           style={{
             color: "hsl(var(--filigree-glow))",
             background: "hsl(var(--filigree) / 0.08)",
@@ -131,17 +131,17 @@ const PromptArena = ({ round, roundNumber, onJudged, loading }: PromptArenaProps
           boxShadow: "inset 0 1px 0 hsl(var(--emboss-light))",
         }}
       >
-        <div className="flex items-start gap-2.5">
-          <span className="text-base mt-0.5">📖</span>
+        <div className="flex items-start gap-3">
+          <span className="text-lg mt-0.5">📖</span>
           <div>
-            <p className="text-xs font-semibold text-foreground/90 mb-1" style={{ fontFamily: "'Cinzel', serif" }}>Scenario</p>
-            <p className="text-sm text-foreground/80 leading-relaxed">{round.scenario_context}</p>
+            <p className="text-sm font-semibold text-foreground/90 mb-1.5" style={{ fontFamily: "'Cinzel', serif" }}>Scenario</p>
+            <p className="text-[15px] text-foreground/80 leading-relaxed">{round.scenario_context}</p>
           </div>
         </div>
       </motion.div>
 
       {/* Two Prompt Cards — always visible */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {(["a", "b"] as const).map((side) => {
           const prompt = side === "a" ? round.prompt_a : round.prompt_b;
           const output = side === "a" ? revealedA : revealedB;
@@ -174,30 +174,30 @@ const PromptArena = ({ round, roundNumber, onJudged, loading }: PromptArenaProps
               }}
             >
               {/* Prompt Header */}
-              <div className="px-3 py-2.5" style={{ borderBottom: "1px solid hsl(var(--filigree) / 0.1)" }}>
-                <div className="flex items-center justify-between mb-1">
-                  <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: "hsl(var(--primary))" }}>
+              <div className="px-4 py-3" style={{ borderBottom: "1px solid hsl(var(--filigree) / 0.1)" }}>
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className="text-xs font-bold uppercase tracking-wider" style={{ color: "hsl(var(--primary))" }}>
                     {side === "a" ? "Prompt A" : "Prompt B"}
                   </span>
-                  <span className="text-[10px] text-muted-foreground px-1.5 py-0.5 rounded bg-muted/50">{prompt.tool}</span>
+                  <span className="text-xs text-muted-foreground px-2 py-0.5 rounded bg-muted/50">{prompt.tool}</span>
                 </div>
-                <p className="text-[11px] font-medium text-foreground/80">{prompt.label}</p>
-                <p className="text-[10px] text-muted-foreground mt-0.5">Technique: {prompt.technique}</p>
+                <p className="text-sm font-medium text-foreground/80">{prompt.label}</p>
+                <p className="text-xs text-muted-foreground mt-1">Technique: {prompt.technique}</p>
               </div>
 
               {/* The Actual Prompt */}
-              <div className="px-3 py-2" style={{ background: "hsl(var(--primary) / 0.04)", borderBottom: "1px solid hsl(var(--filigree) / 0.08)" }}>
-                <p className="text-[11px] text-foreground/70 italic leading-relaxed">"{prompt.full_prompt}"</p>
+              <div className="px-4 py-3" style={{ background: "hsl(var(--primary) / 0.04)", borderBottom: "1px solid hsl(var(--filigree) / 0.08)" }}>
+                <p className="text-[13px] text-foreground/70 italic leading-relaxed">"{prompt.full_prompt}"</p>
               </div>
 
               {/* AI Output — streamed or full */}
               {(phase === "streaming" || phase === "judge" || phase === "result") && (
-                <div className="px-3 py-2.5 flex-1 min-h-[100px] max-h-[200px] overflow-y-auto">
-                  <div className="flex items-center gap-1.5 mb-1.5">
-                    <Sparkles className="h-3 w-3" style={{ color: "hsl(var(--filigree-glow))" }} />
-                    <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">AI Output</span>
+                <div className="px-4 py-3 flex-1 min-h-[120px] max-h-[260px] overflow-y-auto">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Sparkles className="h-3.5 w-3.5" style={{ color: "hsl(var(--filigree-glow))" }} />
+                    <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">AI Output</span>
                   </div>
-                  <div className="text-xs text-foreground/80 leading-relaxed prose prose-sm dark:prose-invert max-w-none [&>p]:mb-1.5">
+                  <div className="text-[13px] text-foreground/80 leading-relaxed prose prose-sm dark:prose-invert max-w-none [&>p]:mb-2">
                     {phase === "streaming" ? (
                       <ReactMarkdown>{output || "..."}</ReactMarkdown>
                     ) : (
@@ -209,13 +209,13 @@ const PromptArena = ({ round, roundNumber, onJudged, loading }: PromptArenaProps
 
               {/* Result badge */}
               {showResult && (
-                <div className={`px-3 py-2 flex items-center gap-2 text-xs font-medium ${
+                <div className={`px-4 py-2.5 flex items-center gap-2 text-sm font-medium ${
                   isBetter ? "text-success bg-success/5" : "text-muted-foreground bg-muted/30"
                 }`}>
-                  {isBetter ? <CheckCircle2 className="h-3.5 w-3.5" /> : null}
+                  {isBetter ? <CheckCircle2 className="h-4 w-4" /> : null}
                   {isBetter ? "Better approach" : "Less effective"}
                   {isPicked && (
-                    <span className="ml-auto text-[10px] font-bold px-1.5 py-0.5 rounded" style={{
+                    <span className="ml-auto text-xs font-bold px-2 py-0.5 rounded" style={{
                       background: correct ? "hsl(142 71% 45% / 0.15)" : "hsl(0 84% 60% / 0.15)",
                       color: correct ? "hsl(142 71% 45%)" : "hsl(0 84% 60%)",
                     }}>
@@ -266,25 +266,25 @@ const PromptArena = ({ round, roundNumber, onJudged, loading }: PromptArenaProps
           className="space-y-3"
         >
           <div className="text-center">
-            <p className="text-sm font-semibold text-foreground" style={{ fontFamily: "'Cinzel', serif" }}>
+            <p className="text-base font-semibold text-foreground" style={{ fontFamily: "'Cinzel', serif" }}>
               🤔 Which prompt produced the better result?
             </p>
-            <p className="text-xs text-muted-foreground mt-1">Consider quality, relevance, and usefulness of the output</p>
+            <p className="text-sm text-muted-foreground mt-1.5">Consider quality, relevance, and usefulness of the output</p>
           </div>
           <div className="flex gap-3 justify-center">
-            <Button
-              variant="outline"
-              onClick={() => handlePick("a")}
-              className="flex-1 max-w-[180px] rounded-xl h-11 text-sm gap-2 hover:border-primary/50 hover:bg-primary/5"
-            >
-              <span className="font-bold text-primary">A</span> {round.prompt_a.label}
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => handlePick("b")}
-              className="flex-1 max-w-[180px] rounded-xl h-11 text-sm gap-2 hover:border-primary/50 hover:bg-primary/5"
-            >
-              <span className="font-bold text-primary">B</span> {round.prompt_b.label}
+              <Button
+                variant="outline"
+                onClick={() => handlePick("a")}
+                className="flex-1 max-w-[220px] rounded-xl h-12 text-sm gap-2 hover:border-primary/50 hover:bg-primary/5"
+              >
+                <span className="font-bold text-primary">A</span> {round.prompt_a.label}
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => handlePick("b")}
+                className="flex-1 max-w-[220px] rounded-xl h-12 text-sm gap-2 hover:border-primary/50 hover:bg-primary/5"
+              >
+                <span className="font-bold text-primary">B</span> {round.prompt_b.label}
             </Button>
           </div>
         </motion.div>
@@ -307,10 +307,10 @@ const PromptArena = ({ round, roundNumber, onJudged, loading }: PromptArenaProps
               <XCircle className="h-5 w-5 text-destructive shrink-0 mt-0.5" />
             )}
             <div>
-              <p className={`text-sm font-semibold ${correct ? "text-success" : "text-destructive"}`}>
+              <p className={`text-base font-semibold ${correct ? "text-success" : "text-destructive"}`}>
                 {correct ? "Excellent judgment! ✨" : "Not quite — here's why:"}
               </p>
-              <p className="text-xs text-foreground/80 mt-1 leading-relaxed">{round.explanation}</p>
+              <p className="text-sm text-foreground/80 mt-1.5 leading-relaxed">{round.explanation}</p>
             </div>
           </div>
 
@@ -322,11 +322,11 @@ const PromptArena = ({ round, roundNumber, onJudged, loading }: PromptArenaProps
               border: "1px solid hsl(var(--primary) / 0.2)",
             }}
           >
-            <div className="flex items-center gap-2 mb-1">
-              <Sparkles className="h-3.5 w-3.5 text-primary" />
-              <span className="text-[10px] font-bold uppercase tracking-wider text-primary">Key Insight</span>
+            <div className="flex items-center gap-2 mb-1.5">
+              <Sparkles className="h-4 w-4 text-primary" />
+              <span className="text-xs font-bold uppercase tracking-wider text-primary">Key Insight</span>
             </div>
-            <p className="text-xs text-foreground/80 leading-relaxed">{round.insight}</p>
+            <p className="text-sm text-foreground/80 leading-relaxed">{round.insight}</p>
           </div>
 
           {/* Continue */}
