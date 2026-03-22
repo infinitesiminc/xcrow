@@ -52,6 +52,9 @@ export default function UnifiedChatDock() {
     onRoleSelectRef.current?.(role);
   };
 
+  // Don't render anything when a simulation is active
+  if (simActive) return null;
+
   return (
     <>
       {/* ── Bottom dock bar ── */}
