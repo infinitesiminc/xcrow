@@ -91,7 +91,7 @@ interface WarCouncilProps {
   prediction?: FuturePrediction;
   predictionsLoading: boolean;
   isCompleted: boolean;
-  onMarchToBattle: (task: TaskAnalysis, intel: IntelContext) => void;
+  onMarchToBattle: (task: TaskAnalysis, intel: IntelContext, level?: 1 | 2, futurePrediction?: FuturePrediction) => void;
   onSwitchTarget: () => void;
   onXPEarned: (xp: number) => void;
 }
