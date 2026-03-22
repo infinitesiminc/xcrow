@@ -51,13 +51,11 @@ export default function UnifiedChatDock() {
   };
 
   const handleRoleSelect = (role: any) => {
-    if (onRoleSelectRef.current) {
-      onRoleSelectRef.current(role);
-    } else {
-      // Navigate to role deep-dive as fallback
-      const slug = encodeURIComponent(role.title);
-      navigate(`/role/${slug}?company=${encodeURIComponent(role.company || "")}&jobId=${role.jobId || ""}`);
-    }
+    const slug = encodeURIComponent(role.title);
+    const params = new URLSearchParams();
+    if (role.company) params.set("company", role.company);
+    if (role.jobId) params.set("jobId", role.jobId);
+    navigate(`/role/${slug}?${params.toString()}`);
   };
 
   // Don't render anything when a simulation is active
