@@ -709,7 +709,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
       setError("Couldn't forge the quest. Please try again.");
       setPhase("chat");
     }
-  }, [taskName, jobTitle, company, mode, taskState, taskTrend, taskImpactLevel, user, isPro, simGate]);
+  }, [taskName, jobTitle, company, mode, taskState, taskTrend, taskImpactLevel, user, isPro, simGate, level, futurePrediction]);
 
   const startRetryWithCoaching = useCallback(() => {
     if (!scoreResult) return startCompile();
