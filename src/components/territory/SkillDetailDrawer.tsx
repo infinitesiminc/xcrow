@@ -310,7 +310,7 @@ export default function SkillDetailDrawer({
   );
 }
 
-/* ── Track Card ── */
+/* ── Track Card — prominent stacked variant ── */
 function TrackCard({
   icon,
   label,
@@ -321,6 +321,7 @@ function TrackCard({
   unlocked,
   unlockRequirement,
   simsCount,
+  prominent,
 }: {
   icon: React.ReactNode;
   label: string;
@@ -331,46 +332,82 @@ function TrackCard({
   unlocked: boolean;
   unlockRequirement?: string;
   simsCount?: number;
+  prominent?: boolean;
 }) {
   const pct = Math.min(100, Math.round((xp / maxXp) * 100));
 
   return (
     <div
-      className="rounded-lg p-3 relative overflow-hidden"
+      className="rounded-xl p-4 relative overflow-hidden"
       style={{
-        background: unlocked ? "hsl(var(--muted) / 0.25)" : "hsl(var(--muted) / 0.1)",
-        border: `1px solid ${unlocked ? color + "33" : "hsl(var(--filigree) / 0.1)"}`,
-        opacity: unlocked ? 1 : 0.65,
+        background: unlocked
+          ? `linear-gradient(135deg, hsl(var(--muted) / 0.35), hsl(var(--muted) / 0.15))`
+          : "hsl(var(--muted) / 0.08)",
+        border: unlocked
+          ? `1.5px solid ${color}44`
+          : "1.5px solid hsl(var(--filigree) / 0.08)",
+        opacity: unlocked ? 1 : 0.7,
+        boxShadow: unlocked
+          ? `0 0 20px ${color}15, inset 0 1px 0 hsl(var(--emboss-light))`
+          : "none",
       }}
     >
-      <div className="flex items-center justify-between mb-2">
-        <div className="flex items-center gap-2">
-          <span style={{ color: unlocked ? color : "hsl(var(--muted-foreground))" }}>
-            {unlocked ? icon : <Lock className="h-3.5 w-3.5" />}
-          </span>
+      {/* Accent stripe */}
+      {unlocked && (
+        <div
+          className="absolute left-0 top-0 bottom-0 w-1 rounded-l-xl"
+          style={{ background: color }}
+        />
+      )}
+
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center gap-2.5">
+          <div
+            className="w-8 h-8 rounded-lg flex items-center justify-center"
+            style={{
+              background: unlocked ? `${color}20` : "hsl(var(--muted) / 0.3)",
+              border: `1px solid ${unlocked ? color + "40" : "hsl(var(--filigree) / 0.1)"}`,
+            }}
+          >
+            <span style={{ color: unlocked ? color : "hsl(var(--muted-foreground))" }}>
+              {unlocked ? icon : <Lock className="h-4 w-4" />}
+            </span>
+          </div>
           <div>
-            <p className="text-xs font-semibold text-foreground">{label}</p>
-            <p className="text-[10px] text-muted-foreground">{sublabel}</p>
+            <p className="text-sm font-bold text-foreground" style={{ fontFamily: "'Cinzel', serif" }}>
+              {label}
+            </p>
+            <p className="text-[11px] text-muted-foreground">{sublabel}</p>
           </div>
         </div>
         {unlocked && (
-          <span className="text-xs font-bold" style={{ color, fontFamily: "'Cinzel', serif" }}>
-            {xp} XP
+          <span
+            className="text-base font-black tabular-nums"
+            style={{ color, fontFamily: "'Cinzel', serif", textShadow: `0 0 12px ${color}40` }}
+          >
+            {xp}
           </span>
         )}
       </div>
 
       {unlocked ? (
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
           <div
-            className="flex-1 h-1.5 rounded-full overflow-hidden"
+            className="flex-1 h-2 rounded-full overflow-hidden"
             style={{ background: "hsl(var(--muted) / 0.4)" }}
           >
             <div
-              className="h-full rounded-full transition-all duration-500"
-              style={{ width: `${pct}%`, background: color }}
+              className="h-full rounded-full transition-all duration-700"
+              style={{
+                width: `${pct}%`,
+                background: `linear-gradient(90deg, ${color}, ${color}cc)`,
+                boxShadow: `0 0 8px ${color}60`,
+              }}
             />
           </div>
+          <span className="text-[10px] font-semibold text-muted-foreground shrink-0 tabular-nums">
+            {pct}%
+          </span>
           {simsCount !== undefined && (
             <span className="text-[10px] text-muted-foreground shrink-0">
               {simsCount} quests
@@ -379,10 +416,15 @@ function TrackCard({
         </div>
       ) : (
         unlockRequirement && (
-          <p className="text-[10px] text-muted-foreground flex items-center gap-1">
-            <Lock className="h-2.5 w-2.5" />
-            {unlockRequirement}
-          </p>
+          <div
+            className="flex items-center gap-1.5 px-2 py-1.5 rounded-md mt-1"
+            style={{ background: "hsl(var(--muted) / 0.2)" }}
+          >
+            <Lock className="h-3 w-3 text-muted-foreground" />
+            <p className="text-[11px] text-muted-foreground font-medium">
+              {unlockRequirement}
+            </p>
+          </div>
         )
       )}
     </div>
