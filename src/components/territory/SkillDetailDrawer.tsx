@@ -245,12 +245,18 @@ export default function SkillDetailDrawer({
               unlocked={level2Unlocked}
               unlockRequirement={!level2Unlocked ? `${Math.max(0, 3 - level1SimsCompleted)} more quests to unlock` : undefined}
               prominent
-              onStart={level2Unlocked && roles.length > 0 ? () => {
+              startLabel={level2Unlocked ? "⚔️ Start Level 2" : "⚡ Try Level 2 Preview"}
+              onStart={roles.length > 0 ? () => {
                 onOpenChange(false);
                 const r = roles[0];
                 navigate(`/role/${encodeURIComponent(r.title)}${r.company ? `?company=${encodeURIComponent(r.company)}&level=2` : "?level=2"}`);
               } : undefined}
             />
+
+          </div>
+
+          {/* ── Stats row ── */}
+          <div className="grid grid-cols-3 gap-2">
           </div>
 
           {/* ── Stats row ── */}
