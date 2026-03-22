@@ -624,7 +624,7 @@ export default function Enterprise() {
       <section className="px-4 py-20">
         <div className="mx-auto max-w-5xl">
           <motion.div {...fadeUp} className="text-center mb-14">
-            <h2 className="font-display text-3xl sm:text-4xl font-semibold text-foreground">
+            <h2 className="font-fantasy text-3xl sm:text-4xl font-semibold text-foreground">
               Model-aware adaptation
             </h2>
             <p className="mt-3 text-muted-foreground max-w-2xl mx-auto">
