@@ -69,9 +69,48 @@ async function callAI(apiKey: string, messages: { role: string; content: string 
   return data.choices[0].message.content;
 }
 
-function currentDateContext(): string {
+// Cached tool versions (refreshed per cold start)
+let _cachedToolVersions: Record<string, string> | null = null;
+let _cachedToolVersionsAt = 0;
+const TOOL_CACHE_TTL = 5 * 60 * 1000; // 5 min
+
+async function fetchToolVersions(): Promise<Record<string, string>> {
+  const now = Date.now();
+  if (_cachedToolVersions && now - _cachedToolVersionsAt < TOOL_CACHE_TTL) {
+    return _cachedToolVersions;
+  }
+  try {
+    const url = Deno.env.get("SUPABASE_URL");
+    const key = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+    if (!url || !key) return {};
+    const res = await fetch(`${url}/rest/v1/platform_config?key=eq.ai_tool_versions&select=value`, {
+      headers: { apikey: key, Authorization: `Bearer ${key}` },
+    });
+    if (res.ok) {
+      const rows = await res.json();
+      if (rows.length > 0) {
+        _cachedToolVersions = JSON.parse(rows[0].value);
+        _cachedToolVersionsAt = now;
+        return _cachedToolVersions!;
+      }
+    }
+  } catch (e) {
+    console.error("Failed to fetch tool versions:", e);
+  }
+  return {};
+}
+
+function currentDateContext(toolVersions: Record<string, string>): string {
   const now = new Date();
-  return `CURRENT DATE: ${now.toLocaleDateString("en-US", { month: "long", year: "numeric" })}. Always reference the LATEST available versions of AI tools and models as of this date. For example, use "GPT-4o" not "GPT-3", "Claude 4" not "Claude 2", "Gemini 2.5" not "Bard". When naming specific tools (e.g. Notion AI, GitHub Copilot, Cursor, v0), cite their current capabilities, not outdated ones. Never reference deprecated or discontinued tools.`;
+  const versionList = Object.entries(toolVersions)
+    .map(([tool, ver]) => `${tool}: ${ver}`)
+    .join(", ");
+  return `CURRENT DATE: ${now.toLocaleDateString("en-US", { month: "long", year: "numeric" })}.
+
+CURRENT AI TOOL VERSIONS (authoritative — always use these exact version names):
+${versionList || "GPT-5.4, Claude 4.5, Gemini 3.1"}
+
+CRITICAL: Use ONLY the version names listed above. Never invent versions or use outdated names like "GPT-4o", "GPT-3", "Claude 2", or "Bard". When mentioning a tool, use its current version from this list. If a tool is not listed, refer to it by product name only without a version number.`;
 }
 
 function aiStateDescription(taskMeta?: any): string {
