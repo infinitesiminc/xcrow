@@ -639,7 +639,7 @@ async function handleElevate(payload: any, apiKey: string) {
   const prompt = `You are a career intelligence analyst. Given a role and its task breakdown, generate a concise "elevation narrative" showing how AI is promoting professionals in this role up the value chain.
 
 Role: ${jobTitle}${company ? ` at ${company}` : ""}
-${currentDateContext()}
+${currentDateContext(await fetchToolVersions())}
 
 Tasks:
 ${taskList}
