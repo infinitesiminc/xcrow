@@ -1,21 +1,22 @@
 
 
+## Robust Learning Objective Enforcement for Simulations ✅
 
-## Consolidate Deep Dive into Unified Page + Skill Map + Chat Integration
+### Changes Implemented
 
-### What Changes
+**1. Edge Function: Deterministic Objective Evaluation (`sim-chat/index.ts`)** ✅
+- Replaced optional `[OBJECTIVE_MET:id]` tags with mandatory `[OBJ_EVAL:id:PASS]` / `[OBJ_EVAL:id:FAIL]` tags
+- AI must evaluate the CURRENT TARGET objective on every feedback turn — no more guessing
+- New scenario generation explicitly names the target objective: `"Your next scenario MUST target objective: [id]"`
+- Scoring function receives `liveObjectiveStatus` as ground truth from client
 
-**1. Create `TaskCard.tsx` — unified L1+L2 card** ✅
-Single card component that always shows L1 (exposure score, description, practice button) and conditionally reveals L2 (collapse summary, new human role, disrupting tech badges, ghost skill drops, L2 sim button) when `timeHorizon > 0` and prediction exists. Score badge lerps between current and future. L2 section can also be manually expanded via a "See Future" toggle even at `timeHorizon === 0`.
+**2. Client: Deterministic Tracking + Finish Gate (`SimulatorModal.tsx`)** ✅
+- Parses `[OBJ_EVAL:id:PASS/FAIL]` deterministically (with legacy `[OBJECTIVE_MET]` fallback)
+- Computes `currentTargetObjectiveId` (first unmet objective) and passes to edge function
+- Finish gate restored: clicking "End Quest" with unmet objectives + rounds remaining shows `UnmetObjectivesReview`
+- Victory flow: when all objectives met, shows inline "All objectives conquered! 🎉" banner with Trophy icon
+- "Next Wave" button hidden after all objectives met — only "⚔️ Battle Report" remains
 
-**2. Refactor `RoleDeepDive.tsx` — remove tabs, single scroll** ✅
-Replaced `<Tabs>` with vertical flow: Time Slider → Hero Stats → Role Summary → Task Cards → Disrupting Tech Bar → Skill Map CTA → Sign-in CTA.
-
-**3. L2 gating behind L1 milestone** ✅
-TimeAxisSlider locks future positions for logged-in users with 0 completed sims. Lock icon + tooltip.
-
-**4. Chat connector** ✅
-Floating "Ask about this role" FAB → Sheet with career-chat integration and full role context.
-
-**5. Delete tab files** ✅
-Removed OverviewTab.tsx, TaskXRayTab.tsx, FutureViewTab.tsx.
+**3. `simulator.ts` Updated** ✅
+- `chatTurn` accepts `targetObjectiveId` parameter
+- `scoreSession` accepts `liveObjectiveStatus` parameter for scoring alignment
