@@ -3,7 +3,7 @@ import type { IntelContext } from "@/lib/simulator";
 import { isStandardEmoji } from "@/lib/emoji-utils";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  Play, AlertTriangle, Sparkles, Clock, ArrowLeft, ArrowRight, Compass, Scroll, Swords,
+  Play, AlertTriangle, Sparkles, Clock, ArrowLeft, ArrowRight, Compass, Archive, Swords,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
