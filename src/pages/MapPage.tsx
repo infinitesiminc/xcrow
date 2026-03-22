@@ -122,6 +122,14 @@ const MapPage = () => {
     };
     return () => { onRoleSelectRef.current = null; };
   }, [onRoleSelectRef]);
+
+  // Presence tracking
+  useEffect(() => {
+    if (!user) return;
+    updatePresence("Exploring the Map");
+    const interval = setInterval(() => updatePresence("Exploring the Map"), 60_000);
+    return () => { clearInterval(interval); goOffline(); };
+  }, [user, updatePresence, goOffline]);
   // Load real skills + target roles + Level 2 unlock detection
   useEffect(() => {
     if (!user) return;
