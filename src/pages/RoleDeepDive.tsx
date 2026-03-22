@@ -75,6 +75,8 @@ const RoleDeepDive = () => {
   const [chosenTask, setChosenTask] = useState<TaskAnalysis | null>(null);
   const [sessionXP, setSessionXP] = useState(0);
   const [currentIntel, setCurrentIntel] = useState<IntelContext | null>(null);
+  const [simLevel, setSimLevel] = useState<1 | 2>(1);
+  const [simFuturePrediction, setSimFuturePrediction] = useState<FuturePrediction | undefined>(undefined);
 
   const completedCount = result ? result.tasks.filter(t => completedTasks.has(t.name)).length : 0;
 
@@ -387,7 +389,7 @@ const RoleDeepDive = () => {
                   prediction={predictions[chosenTask.name]}
                   predictionsLoading={predictionsLoading}
                   isCompleted={completedTasks.has(chosenTask.name)}
-                  onMarchToBattle={(task, intel) => { setCurrentIntel(intel); setSimTask(task); }}
+                  onMarchToBattle={(task, intel, level, futurePred) => { setCurrentIntel(intel); setSimLevel(level || 1); setSimFuturePrediction(futurePred); setSimTask(task); }}
                   onSwitchTarget={handleSwitchTarget}
                   onXPEarned={handleXPEarned}
                 />
@@ -428,7 +430,7 @@ const RoleDeepDive = () => {
 
         <SimulatorModal
           open={!!simTask}
-          onClose={() => { setSimTask(null); setCurrentIntel(null); fetchCompletions(); setPhase("choose"); setChosenTask(null); }}
+          onClose={() => { setSimTask(null); setCurrentIntel(null); setSimLevel(1); setSimFuturePrediction(undefined); fetchCompletions(); setPhase("choose"); setChosenTask(null); }}
           taskName={simTask?.name || ""}
           jobTitle={result.jobTitle}
           company={result.company}
@@ -439,8 +441,10 @@ const RoleDeepDive = () => {
           onNextTask={pickNextTask}
           onBackToFeed={() => navigate("/")}
           intelContext={currentIntel ?? undefined}
-          onNextBattle={() => { setSimTask(null); setCurrentIntel(null); setPhase("choose"); setChosenTask(null); fetchCompletions(); }}
+          onNextBattle={() => { setSimTask(null); setCurrentIntel(null); setSimLevel(1); setSimFuturePrediction(undefined); setPhase("choose"); setChosenTask(null); fetchCompletions(); }}
           campaignStats={{ conquered: completedCount, total: result.tasks.length, sessionXP }}
+          level={simLevel}
+          futurePrediction={simFuturePrediction}
         />
       </DialogContent>
     </Dialog>
