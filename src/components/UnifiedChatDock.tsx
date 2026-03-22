@@ -51,6 +51,7 @@ export default function UnifiedChatDock() {
   };
 
   const handleRoleSelect = (role: any) => {
+    setIsOpen(false);
     const slug = encodeURIComponent(role.title);
     const params = new URLSearchParams();
     if (role.company) params.set("company", role.company);
