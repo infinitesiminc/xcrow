@@ -524,8 +524,8 @@ const UnmetObjectivesReview = ({
         </h3>
         <p className="text-sm text-muted-foreground leading-relaxed">
           {tooEarly
-            ? `You've only cleared ${roundCount} of at least ${minRounds} waves. Keep fighting to conquer more objectives.`
-            : `You haven't conquered ${unmet.length === 1 ? "this objective" : `${unmet.length} objectives`} yet. Ready for ${unmet.length === 1 ? "one more wave" : "a few more waves"} to claim ${unmet.length === 1 ? "it" : "them"}?`
+            ? `You've only cleared ${roundCount} of at least ${minRounds} quests. Keep fighting to conquer more objectives.`
+            : `You haven't conquered ${unmet.length === 1 ? "this objective" : `${unmet.length} objectives`} yet. Ready for ${unmet.length === 1 ? "one more quest" : "a few more quests"} to claim ${unmet.length === 1 ? "it" : "them"}?`
           }
         </p>
       </div>
@@ -1028,7 +1028,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                     className="text-xs font-bold"
                     style={{ color: "hsl(var(--filigree-glow))", fontFamily: "'Cinzel', serif" }}
                   >
-                    Wave {roundCount}/{maxRounds}
+                    Quest {roundCount}/{maxRounds}
                   </span>
                 </motion.div>
               )}
@@ -1178,7 +1178,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                                 fontFamily: "'Cinzel', serif",
                               }}
                             >
-                              ⚡ New Wave
+                              ⚡ New Quest
                             </span>
                             <div className="flex-1 h-px" style={{ background: "linear-gradient(90deg, transparent, hsl(var(--filigree) / 0.4), transparent)" }} />
                           </motion.div>
@@ -1288,7 +1288,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                                 }).finally(() => setSending(false));
                               }}
                             >
-                              <ArrowRight className="h-4 w-4" /> Next Wave
+                              <ArrowRight className="h-4 w-4" /> Next Quest
                             </Button>
                           )}
                           <Button
@@ -1460,7 +1460,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                       {scoreTier === "high"
                         ? "You've conquered this quest. Time to expand your territory."
                         : scoreTier === "mid"
-                        ? "Your power grows. One more wave could level you up."
+                        ? "Your power grows. One more quest could level you up."
                         : "Every commander started here. Retry with a battle coach to raise your power."
                       }
                     </p>
@@ -1678,7 +1678,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                         onClick={() => { onClose(); onNextTask(); }}
                         className="gap-2 rounded-xl w-full h-11"
                       >
-                        <TrendingUp className="h-4 w-4" /> 🔥 Level Up — Harder Wave
+                        <TrendingUp className="h-4 w-4" /> 🔥 Level Up — Harder Quest
                       </Button>
                     )}
                     {scoreTier === "mid" && !onNextTask && (
