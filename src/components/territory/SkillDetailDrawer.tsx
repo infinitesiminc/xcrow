@@ -129,14 +129,7 @@ export default function SkillDetailDrawer({
   const demandTier =
     skill.demandCount >= 12 ? "🔥 High Demand" : skill.demandCount >= 5 ? "📈 Growing" : "🌱 Emerging";
 
-  // Timeline step calculation
-  const timelineStep = level2Unlocked
-    ? level2Xp > 0
-      ? 3 // practicing future
-      : 2 // unlocked, not started
-    : level1Xp > 0
-      ? 1 // practicing current
-      : 0; // not started
+  // (timeline removed)
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -217,17 +210,15 @@ export default function SkillDetailDrawer({
         </div>
 
         <div className="px-5 py-4 space-y-5">
-          {/* ── CONCEPT 1: Dual-Track Progress ── */}
+          {/* ── Dual-Track Progress — Stacked Cards ── */}
           <div className="space-y-3">
-            <h3
-              className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground"
-            >
+            <h3 className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
               Mastery Tracks
             </h3>
 
             {/* Level 1 — AI Mastery Track */}
             <TrackCard
-              icon={<Zap className="h-3.5 w-3.5" />}
+              icon={<Zap className="h-4 w-4" />}
               label="Level 1 · Current Tools"
               sublabel="Learn how AI augments this skill today"
               xp={level1Xp}
@@ -235,11 +226,12 @@ export default function SkillDetailDrawer({
               color="hsl(var(--primary))"
               unlocked
               simsCount={level1SimsCompleted}
+              prominent
             />
 
             {/* Level 2 — Future Vision Track */}
             <TrackCard
-              icon={<Diamond className="h-3.5 w-3.5" />}
+              icon={<Diamond className="h-4 w-4" />}
               label="Level 2 · Future Role"
               sublabel="Practice the evolved human-in-the-loop role"
               xp={level2Xp}
@@ -247,81 +239,8 @@ export default function SkillDetailDrawer({
               color="hsl(45 93% 58%)"
               unlocked={level2Unlocked}
               unlockRequirement={!level2Unlocked ? `${Math.max(0, 3 - level1SimsCompleted)} more quests to unlock` : undefined}
+              prominent
             />
-          </div>
-
-          {/* ── CONCEPT 2: Timeline Progression ── */}
-          <div
-            className="rounded-lg p-3"
-            style={{
-              background: "hsl(var(--muted) / 0.3)",
-              border: "1px solid hsl(var(--filigree) / 0.1)",
-            }}
-          >
-            <h3
-              className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground mb-3"
-            >
-              Journey
-            </h3>
-            <div className="flex items-center gap-0">
-              {[
-                { label: "Discover", icon: "🧭" },
-                { label: "Practice", icon: "⚡" },
-                { label: "Unlock L2", icon: "◆" },
-                { label: "Master", icon: "👑" },
-              ].map((step, i) => (
-                <div key={i} className="flex items-center">
-                  <div className="flex flex-col items-center gap-1">
-                    <div
-                      className="w-8 h-8 rounded-full flex items-center justify-center text-sm transition-all"
-                      style={{
-                        background: i <= timelineStep
-                          ? i >= 2
-                            ? "hsl(45 40% 20%)"
-                            : "hsl(var(--primary) / 0.2)"
-                          : "hsl(var(--muted) / 0.5)",
-                        border: i <= timelineStep
-                          ? i >= 2
-                            ? "2px solid hsl(45 60% 50%)"
-                            : "2px solid hsl(var(--primary))"
-                          : "2px solid hsl(var(--filigree) / 0.15)",
-                        boxShadow: i === timelineStep
-                          ? i >= 2
-                            ? "0 0 12px hsl(45 80% 50% / 0.3)"
-                            : "0 0 12px hsl(var(--primary) / 0.3)"
-                          : "none",
-                      }}
-                    >
-                      {step.icon}
-                    </div>
-                    <span
-                      className="text-[9px] font-medium whitespace-nowrap"
-                      style={{
-                        color: i <= timelineStep
-                          ? i >= 2
-                            ? "hsl(45 60% 70%)"
-                            : "hsl(var(--primary))"
-                          : "hsl(var(--muted-foreground) / 0.5)",
-                      }}
-                    >
-                      {step.label}
-                    </span>
-                  </div>
-                  {i < 3 && (
-                    <div
-                      className="w-6 h-0.5 mt-[-14px]"
-                      style={{
-                        background: i < timelineStep
-                          ? i >= 1
-                            ? "hsl(45 60% 50%)"
-                            : "hsl(var(--primary))"
-                          : "hsl(var(--filigree) / 0.15)",
-                      }}
-                    />
-                  )}
-                </div>
-              ))}
-            </div>
           </div>
 
           {/* ── Stats row ── */}
@@ -391,7 +310,7 @@ export default function SkillDetailDrawer({
   );
 }
 
-/* ── Track Card ── */
+/* ── Track Card — prominent stacked variant ── */
 function TrackCard({
   icon,
   label,
@@ -402,6 +321,7 @@ function TrackCard({
   unlocked,
   unlockRequirement,
   simsCount,
+  prominent,
 }: {
   icon: React.ReactNode;
   label: string;
@@ -412,46 +332,82 @@ function TrackCard({
   unlocked: boolean;
   unlockRequirement?: string;
   simsCount?: number;
+  prominent?: boolean;
 }) {
   const pct = Math.min(100, Math.round((xp / maxXp) * 100));
 
   return (
     <div
-      className="rounded-lg p-3 relative overflow-hidden"
+      className="rounded-xl p-4 relative overflow-hidden"
       style={{
-        background: unlocked ? "hsl(var(--muted) / 0.25)" : "hsl(var(--muted) / 0.1)",
-        border: `1px solid ${unlocked ? color + "33" : "hsl(var(--filigree) / 0.1)"}`,
-        opacity: unlocked ? 1 : 0.65,
+        background: unlocked
+          ? `linear-gradient(135deg, hsl(var(--muted) / 0.35), hsl(var(--muted) / 0.15))`
+          : "hsl(var(--muted) / 0.08)",
+        border: unlocked
+          ? `1.5px solid ${color}44`
+          : "1.5px solid hsl(var(--filigree) / 0.08)",
+        opacity: unlocked ? 1 : 0.7,
+        boxShadow: unlocked
+          ? `0 0 20px ${color}15, inset 0 1px 0 hsl(var(--emboss-light))`
+          : "none",
       }}
     >
-      <div className="flex items-center justify-between mb-2">
-        <div className="flex items-center gap-2">
-          <span style={{ color: unlocked ? color : "hsl(var(--muted-foreground))" }}>
-            {unlocked ? icon : <Lock className="h-3.5 w-3.5" />}
-          </span>
+      {/* Accent stripe */}
+      {unlocked && (
+        <div
+          className="absolute left-0 top-0 bottom-0 w-1 rounded-l-xl"
+          style={{ background: color }}
+        />
+      )}
+
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center gap-2.5">
+          <div
+            className="w-8 h-8 rounded-lg flex items-center justify-center"
+            style={{
+              background: unlocked ? `${color}20` : "hsl(var(--muted) / 0.3)",
+              border: `1px solid ${unlocked ? color + "40" : "hsl(var(--filigree) / 0.1)"}`,
+            }}
+          >
+            <span style={{ color: unlocked ? color : "hsl(var(--muted-foreground))" }}>
+              {unlocked ? icon : <Lock className="h-4 w-4" />}
+            </span>
+          </div>
           <div>
-            <p className="text-xs font-semibold text-foreground">{label}</p>
-            <p className="text-[10px] text-muted-foreground">{sublabel}</p>
+            <p className="text-sm font-bold text-foreground" style={{ fontFamily: "'Cinzel', serif" }}>
+              {label}
+            </p>
+            <p className="text-[11px] text-muted-foreground">{sublabel}</p>
           </div>
         </div>
         {unlocked && (
-          <span className="text-xs font-bold" style={{ color, fontFamily: "'Cinzel', serif" }}>
-            {xp} XP
+          <span
+            className="text-base font-black tabular-nums"
+            style={{ color, fontFamily: "'Cinzel', serif", textShadow: `0 0 12px ${color}40` }}
+          >
+            {xp}
           </span>
         )}
       </div>
 
       {unlocked ? (
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
           <div
-            className="flex-1 h-1.5 rounded-full overflow-hidden"
+            className="flex-1 h-2 rounded-full overflow-hidden"
             style={{ background: "hsl(var(--muted) / 0.4)" }}
           >
             <div
-              className="h-full rounded-full transition-all duration-500"
-              style={{ width: `${pct}%`, background: color }}
+              className="h-full rounded-full transition-all duration-700"
+              style={{
+                width: `${pct}%`,
+                background: `linear-gradient(90deg, ${color}, ${color}cc)`,
+                boxShadow: `0 0 8px ${color}60`,
+              }}
             />
           </div>
+          <span className="text-[10px] font-semibold text-muted-foreground shrink-0 tabular-nums">
+            {pct}%
+          </span>
           {simsCount !== undefined && (
             <span className="text-[10px] text-muted-foreground shrink-0">
               {simsCount} quests
@@ -460,10 +416,15 @@ function TrackCard({
         </div>
       ) : (
         unlockRequirement && (
-          <p className="text-[10px] text-muted-foreground flex items-center gap-1">
-            <Lock className="h-2.5 w-2.5" />
-            {unlockRequirement}
-          </p>
+          <div
+            className="flex items-center gap-1.5 px-2 py-1.5 rounded-md mt-1"
+            style={{ background: "hsl(var(--muted) / 0.2)" }}
+          >
+            <Lock className="h-3 w-3 text-muted-foreground" />
+            <p className="text-[11px] text-muted-foreground font-medium">
+              {unlockRequirement}
+            </p>
+          </div>
         )
       )}
     </div>
