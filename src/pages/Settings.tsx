@@ -340,13 +340,14 @@ function ProfileSection({
   return (
     <div>
       <h2 className="text-xl font-bold text-foreground mb-1">Profile</h2>
-      <p className="text-sm text-muted-foreground mb-6">Your identity on the platform.</p>
+      <p className="text-sm text-muted-foreground mb-1">Your identity on the platform.</p>
+      <p className="text-xs text-muted-foreground/70 mb-6">Your info helps us personalize quests, skill recommendations, and career insights to your goals.</p>
 
       <div className="space-y-8">
         {/* Avatar picker */}
         <div className="space-y-3">
           <Label className="text-xs uppercase tracking-wider text-muted-foreground">Choose your companion</Label>
-          <div className="grid grid-cols-3 sm:grid-cols-5 gap-3">
+          <div className="grid grid-cols-5 sm:grid-cols-10 gap-2">
             {AVATAR_OPTIONS.map((avatar) => (
               <button
                 key={avatar.id}
