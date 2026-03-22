@@ -1,69 +1,96 @@
 
 
-## RPG Mini-Quest Reveal — Pre-Simulation Intel Gathering
+## Simulation Pedagogy Overhaul: Learn → Apply Loop
 
-### The Problem
-The current progressive reveal uses clinical "Step 1 / Step 2" labels. It needs RPG flavor, XP rewards, and randomness to create a hook before the player enters the actual simulation.
+### Problem
+The current simulation uses a Socratic "quiz first, teach if stuck" model with a 3-turn cycle (probe → deeper probe → insight). This causes:
+- Repeated "help me" clicks (disengagement)
+- AI interrogation loops despite anti-interrogation patches
+- Cognitive overload from 3 long multiple-choice options
+- Even experienced AI users struggle → students would quit immediately
 
-### Design: Two Mini-Quests with XP & Randomness
+### New Framework: Teach-Then-Test
 
-Instead of "steps", the player completes two **Intel Quests** before the main battle. Each awards a small XP bounty and includes a random element.
+Each round becomes a tight **2-beat loop**:
 
 ```text
-┌─────────────────────────────────────┐
-│  🗺️ INTEL QUEST: Scout the Threat  │
-│  "The Crow has spotted movement..."  │
-│  Reward: +5-15 XP (random)          │
-│  [Scout Now →]                       │
-└─────────────────────────────────────┘
-         ↓ (after clicking)
-   Threat data animates in with
-   a "loot reveal" shimmer effect
-   XP toast: "+12 XP — Intel Gathered"
-         ↓
-┌─────────────────────────────────────┐
-│  🔓 INTEL QUEST: Decode the Arsenal │
-│  "Ancient scrolls reveal skills..." │
-│  Reward: +5-15 XP (random)          │
-│  [Decode Now →]                      │
-└─────────────────────────────────────┘
-         ↓ (after clicking)
-   Skills animate in with staggered
-   card flip / loot-drop effect
-   XP toast: "+8 XP — Arsenal Unlocked"
-         ↓
-┌─────────────────────────────────────┐
-│  ⚔️ Accept Quest (main CTA)         │
-│  Now boosted with intel context      │
-└─────────────────────────────────────┘
+┌─────────────────────────────────────────┐
+│  BEAT 1: LEARN (AI teaches)             │
+│  📖 Scenario (2 sentences)              │
+│  💡 Mini-lesson: "Here's the key        │
+│     insight: [tool + technique]"         │
+│  🤖 Pro tip: 1 sentence                 │
+├─────────────────────────────────────────┤
+│  BEAT 2: APPLY (User picks)             │
+│  Two options only:                      │
+│  A) Strong approach (correct)           │
+│  B) Common misconception               │
+│  → User picks → AI confirms/corrects   │
+│  → Insight card → Next round            │
+└─────────────────────────────────────────┘
 ```
 
-### Randomness Hooks
+**Why this works:**
+- Teaching BEFORE quizzing removes the "I don't know" problem entirely
+- 2 options instead of 3 = binary decision, dramatically less friction
+- No open-ended questions at baseline difficulty = no interrogation loops
+- Each round completes in 2 messages instead of 3-6
 
-1. **Random XP bounty**: Each intel quest awards 5-15 XP (rolled on click). Displayed with a brief "dice roll" animation (number cycling for ~0.5s before landing). This creates variable reward — the core dopamine hook in games.
+### Difficulty Progression (Future)
+- **Level 1** (default): Teach → 2 choices (current plan)
+- **Level 2** (after data): Teach → 3 choices with reasoning required
+- **Level 3** (advanced): Scenario → open-ended → feedback
 
-2. **Random flavor text**: Each quest card picks from a pool of 3-4 RPG phrases so repeat visits feel fresh:
-   - Scout: "The Crow spotted movement..." / "Dark clouds gather over this territory..." / "Your scouts report incoming threats..."
-   - Decode: "Ancient scrolls reveal hidden skills..." / "A merchant offers forbidden knowledge..." / "The War Council has new intelligence..."
+For now, all users start at Level 1.
 
 ### Technical Changes
 
-**File: `src/components/role/TaskDetailPanel.tsx`**
-- Replace "Step 1/Step 2" labels with quest names: "Scout the Threat" / "Decode the Arsenal"
-- Add random XP roll on click (5-15 range, `Math.floor(Math.random() * 11) + 5`)
-- Add XP earned display with brief number-cycling animation
-- Pick random flavor text from arrays using `useMemo` (stable per mount)
-- Swap `Eye`/`Lock` icons for `Compass`/`Scroll` (more RPG-appropriate)
-- After both quests complete, the bottom CTA text changes from "Accept Quest" to "⚔️ Begin Battle — Intel Advantage Active" to reward completion
+#### 1. Refactor `sim-chat/index.ts` — Chat system prompt
 
-**File: `src/lib/castle-levels.ts`** (no changes needed — XP here is for post-simulation skill progression, separate from intel XP)
+**Replace the 3-position turn cycle** (`posInRound = turnCount % 3`) with a **2-position cycle**:
 
-### What Stays the Same
-- The actual data revealed (threat intel, future skills) is identical
-- Framer Motion animations for content reveal
-- The main "Accept Quest" / "Begin Battle" CTA at bottom
-- Skeleton loading states while predictions load
+- **Position 0 (LEARN + QUIZ)**: AI presents scenario, teaches the concept, then offers exactly 2 options. This is the AI's turn — no user input needed before teaching.
+- **Position 1 (EVALUATE + ADVANCE)**: User picked A or B. AI confirms/corrects in 2 sentences, shows insight card (🤖 + 💡), then immediately presents the NEXT round's scenario + lesson + 2 options.
 
-### Implementation: Single file edit
-All changes are contained in `TaskDetailPanel.tsx`. No new files, no database changes.
+This means each user message triggers one response that both closes the current round AND opens the next — keeping pace fast.
+
+**Remove/simplify:**
+- The `NEEDS_DEPTH` tag and depth gate (no more probing loops)
+- The anti-interrogation rule (no longer needed — AI never asks open-ended questions at Level 1)
+- The 3-tier scaffolding system (replaced by teach-first design)
+- The quality gate for short responses (2-option selection is always valid)
+- Recovery mode (teach-first prevents the stuck state)
+
+**Keep:**
+- Objective evaluation tags (`OBJ_EVAL`)
+- Dynamic round management (min/max rounds)
+- Tool version context
+- Intel advantage integration
+
+#### 2. Refactor `sim-chat/index.ts` — Compile prompt
+
+Update the `openingMessage` instruction to follow the new format:
+- Scenario + mini-lesson + 2 options (not just scenario + "how would you approach this?")
+
+#### 3. Update `SimulatorModal.tsx` — Turn counting
+
+- Change turn cycle from `% 3` to `% 2`
+- Remove `NEEDS_DEPTH` handling (turns always advance)
+- Simplify scaffolding tier tracking (no longer drives behavior)
+
+#### 4. Update compile prompt objectives
+
+Keep 3 objectives but instruct the AI that each objective's round must follow Learn→Apply format with binary choices.
+
+### What stays the same
+- RPG theming and UI
+- XP system and battle reports
+- Objective tracking and `OBJ_EVAL` tags
+- Intel advantage loop
+- Celebration-first scoring
+- Wave counter UI
+
+### Summary of files changed
+1. `supabase/functions/sim-chat/index.ts` — Major prompt rewrite for Learn→Apply loop
+2. `src/components/SimulatorModal.tsx` — Simplify turn cycle logic
 
