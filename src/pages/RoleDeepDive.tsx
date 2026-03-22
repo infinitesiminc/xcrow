@@ -2,49 +2,25 @@ import { useEffect, useState, useCallback, useMemo } from "react";
 import { useSearchParams, useNavigate, useParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  ChevronLeft, Zap, AlertTriangle, Bookmark, BookmarkCheck, LogIn, Map, Cpu, Sparkles, X,
+  ChevronLeft, AlertTriangle, Bookmark, BookmarkCheck, LogIn, Map, Cpu,
 } from "lucide-react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
 import { JobAnalysisResult, TaskAnalysis } from "@/types/analysis";
 import { findPrebuiltRole } from "@/data/prebuilt-roles";
 import { analyzeJobWithAI } from "@/lib/ai-analysis";
-import { isStandardEmoji } from "@/lib/emoji-utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import SimulatorModal from "@/components/SimulatorModal";
-import { TaskCard } from "@/components/role/TaskCard";
-import { TaskDetailPanel } from "@/components/role/TaskDetailPanel";
+import { BattleChooser } from "@/components/role/BattleChooser";
+import { WarCouncil } from "@/components/role/WarCouncil";
+import { CampaignTracker } from "@/components/role/CampaignTracker";
+import { ThreatBar } from "@/components/role/ThreatBar";
 import XcrowLoader from "@/components/XcrowLoader";
 import { useChatViewContext } from "@/contexts/ChatContext";
 import type { FuturePrediction } from "@/components/analysis/FutureTaskPreview";
 
-// ── Helpers ──────────────────────────────────────────────────────
-function ReadinessRing({ readiness, size = 44 }: { readiness: number; size?: number }) {
-  const r = (size - 6) / 2;
-  const circ = 2 * Math.PI * r;
-  return (
-    <div className="relative shrink-0" style={{ width: size, height: size }}>
-      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="transform -rotate-90">
-        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="hsl(var(--secondary))" strokeWidth="4" />
-        <motion.circle
-          cx={size / 2} cy={size / 2} r={r} fill="none"
-          stroke="hsl(var(--primary))" strokeWidth="4" strokeLinecap="round"
-          strokeDasharray={circ}
-          initial={{ strokeDashoffset: circ }}
-          animate={{ strokeDashoffset: circ * (1 - readiness / 100) }}
-          transition={{ duration: 1, ease: "easeOut" }}
-        />
-      </svg>
-      <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className="text-sm font-bold text-foreground tabular-nums">{readiness}%</span>
-      </div>
-    </div>
-  );
-}
-
-/** Injects role deep dive context into the unified chat */
+// ── View context for unified chat ────────────────────────────────
 function RoleDeepDiveViewContext({ jobTitle, company, completedCount, predsSummary }: {
   jobTitle: string; company?: string; completedCount: number; predsSummary: string;
 }) {
@@ -57,6 +33,8 @@ function RoleDeepDiveViewContext({ jobTitle, company, completedCount, predsSumma
   }, [jobTitle, company, completedCount, predsSummary]);
   return null;
 }
+
+type Phase = "choose" | "prep";
 
 // ── Page ─────────────────────────────────────────────────────────
 const RoleDeepDive = () => {
@@ -88,9 +66,14 @@ const RoleDeepDive = () => {
   const [bookmarkLoading, setBookmarkLoading] = useState(false);
   const [predictions, setPredictions] = useState<Record<string, FuturePrediction>>({});
   const [predictionsLoading, setPredictionsLoading] = useState(false);
-  const [selectedTask, setSelectedTask] = useState<TaskAnalysis | null>(null);
   const [jobId, setJobId] = useState<string | null>(null);
   const { user, openAuthModal } = useAuth();
+
+  // ── State machine ──────────────────────────────────────────────
+  const [phase, setPhase] = useState<Phase>("choose");
+  const [chosenTask, setChosenTask] = useState<TaskAnalysis | null>(null);
+  const [sessionXP, setSessionXP] = useState(0);
+  const [revealedBattleIndices, setRevealedBattleIndices] = useState(0); // how many pairs shown
 
   const completedCount = result ? result.tasks.filter(t => completedTasks.has(t.name)).length : 0;
 
@@ -175,10 +158,7 @@ const RoleDeepDive = () => {
             const r = cached.result as unknown as JobAnalysisResult & { jobId?: string };
             if (r.jobId) setJobId(r.jobId);
             setResult(r); saveHistory(r); setLoading(false);
-            // If no jobId in cache, try to resolve from jobs table
-            if (!r.jobId) {
-              resolveJobId(r.jobTitle, company);
-            }
+            if (!r.jobId) resolveJobId(r.jobTitle, company);
             return;
           }
         } catch (err) { console.error(err); }
@@ -193,16 +173,14 @@ const RoleDeepDive = () => {
     analyze();
   }, [jobTitle, company, hasJd, navigate, initialResult]);
 
-  // Resolve jobId from jobs table for older cached results
-  const resolveJobId = useCallback(async (title: string, comp: string) => {
+  const resolveJobId = useCallback(async (title: string, _comp: string) => {
     try {
-      let q = supabase.from("jobs").select("id").ilike("title", title);
-      const { data } = await q.limit(1).maybeSingle();
+      const { data } = await supabase.from("jobs").select("id").ilike("title", title).limit(1).maybeSingle();
       if (data) setJobId(data.id);
     } catch {}
   }, []);
 
-  // Auto-fetch predictions as soon as result is available
+  // Auto-fetch predictions
   const fetchAllPredictions = useCallback(async () => {
     if (!result) return;
     setPredictionsLoading(true);
@@ -226,42 +204,61 @@ const RoleDeepDive = () => {
     }
   }, [result, predictions, predictionsLoading, fetchAllPredictions]);
 
-  // Auto-select first task (only on initial load)
-  const [hasAutoSelected, setHasAutoSelected] = useState(false);
-  useEffect(() => {
-    if (result && !hasAutoSelected) {
-      const sorted = [...result.tasks].sort((a, b) => (b.aiExposureScore ?? 50) - (a.aiExposureScore ?? 50));
-      if (sorted.length > 0) setSelectedTask(sorted[0]);
-      setHasAutoSelected(true);
-    }
-  }, [result, hasAutoSelected]);
+  // ── Battle chooser logic ───────────────────────────────────────
+  const sortedTasks = useMemo(() => {
+    if (!result) return [];
+    return [...result.tasks].sort((a, b) => (b.aiExposureScore ?? 50) - (a.aiExposureScore ?? 50));
+  }, [result]);
+
+  // Get the next pair of battles to present
+  const battleChoices = useMemo(() => {
+    // Show unconquered tasks first, then conquered ones
+    const unconquered = sortedTasks.filter(t => !completedTasks.has(t.name));
+    const conquered = sortedTasks.filter(t => completedTasks.has(t.name));
+    const ordered = [...unconquered, ...conquered];
+
+    if (ordered.length === 0) return [];
+    if (ordered.length === 1) return [ordered[0]];
+    // Return first 2 unconquered, or if all conquered, first 2 overall
+    return ordered.slice(0, 2);
+  }, [sortedTasks, completedTasks]);
+
+  const remainingCount = sortedTasks.filter(t => !completedTasks.has(t.name)).length;
+  const isFinalBattle = remainingCount === 1 || (remainingCount === 0 && sortedTasks.length === 1);
+
+  const handleChooseBattle = useCallback((task: TaskAnalysis) => {
+    setChosenTask(task);
+    setPhase("prep");
+  }, []);
+
+  const handleSwitchTarget = useCallback(() => {
+    setChosenTask(null);
+    setPhase("choose");
+  }, []);
+
+  const handleXPEarned = useCallback((xp: number) => {
+    setSessionXP(prev => prev + xp);
+  }, []);
 
   const pickNextTask = useCallback(() => {
     if (!result) return;
-    const sorted = [...result.tasks].sort((a, b) => (b.aiExposureScore ?? 50) - (a.aiExposureScore ?? 50));
-    const uncompleted = sorted.filter(t => !completedTasks.has(t.name));
-    setSimTask(uncompleted.length > 0 ? uncompleted[0] : sorted[Math.floor(Math.random() * sorted.length)]);
-  }, [result, completedTasks]);
+    const uncompleted = sortedTasks.filter(t => !completedTasks.has(t.name));
+    setSimTask(uncompleted.length > 0 ? uncompleted[0] : sortedTasks[Math.floor(Math.random() * sortedTasks.length)]);
+  }, [result, completedTasks, sortedTasks]);
 
   // ── Computed stats ─────────────────────────────────────────────
+  const currentRisk = result?.summary.automationRiskPercent ?? 0;
+
+  const allTechs = useMemo(() => {
+    return Array.from(new Set(Object.values(predictions).flatMap(p => p.disrupting_tech)));
+  }, [predictions]);
+
   const futureStats = useMemo(() => {
     const preds = Object.values(predictions);
     if (preds.length === 0) return null;
     const avgExposure = Math.round(preds.reduce((s, p) => s + p.future_exposure, 0) / preds.length);
     const collapseCount = preds.filter(p => p.future_exposure >= 80).length;
     return { avgExposure, collapseCount };
-  }, [predictions]);
-
-  const currentRisk = result?.summary.automationRiskPercent ?? 0;
-  const readiness = Math.max(0, 100 - Math.round(currentRisk * 0.55 + (100 - (result?.summary.augmentedPercent ?? 0)) * 0.25 + 20));
-
-  const sortedTasks = useMemo(() => {
-    if (!result) return [];
-    return [...result.tasks].sort((a, b) => (b.aiExposureScore ?? 50) - (a.aiExposureScore ?? 50));
-  }, [result]);
-
-  const allTechs = useMemo(() => {
-    return Array.from(new Set(Object.values(predictions).flatMap(p => p.disrupting_tech)));
   }, [predictions]);
 
   const predsSummary = useMemo(() => {
@@ -309,110 +306,90 @@ const RoleDeepDive = () => {
   return (
     <Dialog open onOpenChange={(open) => !open && handleClose()}>
       <DialogContent className="max-w-5xl w-[95vw] h-[85vh] p-0 gap-0 overflow-hidden rounded-2xl border-border/60 bg-background">
-    <div className="h-full flex flex-col overflow-hidden">
-      {/* Header — Mission Briefing bar */}
-      <div className="shrink-0 z-20 bg-background/95 backdrop-blur-md border-b border-border px-4 py-2.5 flex items-center justify-between gap-3">
-        <button onClick={handleClose} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors shrink-0">
-          <ChevronLeft className="h-3.5 w-3.5" /> Back
-        </button>
-        <div className="text-center min-w-0 flex-1">
-          <span className="text-[10px] uppercase tracking-wider text-primary font-semibold">⚔️ Mission Briefing</span>
-          <span className="text-sm font-semibold text-foreground truncate block">{result.jobTitle.trim()}</span>
-          {company && <span className="text-[10px] text-muted-foreground">Kingdom of {company}</span>}
-        </div>
-        <button onClick={toggleBookmark} disabled={bookmarkLoading} className="p-1.5 rounded-lg hover:bg-muted/30 transition-colors shrink-0">
-          {isBookmarked ? <BookmarkCheck className="h-4 w-4 text-primary" /> : <Bookmark className="h-4 w-4 text-muted-foreground" />}
-        </button>
-      </div>
+        <div className="h-full flex flex-col overflow-hidden">
+          {/* ── Kingdom Header ── */}
+          <div className="shrink-0 z-20 bg-background/95 backdrop-blur-md border-b border-border px-4 py-2.5 flex items-center justify-between gap-3">
+            <button onClick={handleClose} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors shrink-0">
+              <ChevronLeft className="h-3.5 w-3.5" /> Back
+            </button>
+            <div className="text-center min-w-0 flex-1">
+              <span className="text-[10px] uppercase tracking-wider text-primary font-semibold">⚔️ Mission Briefing</span>
+              <span className="text-sm font-semibold text-foreground truncate block">{result.jobTitle.trim()}</span>
+              {company && <span className="text-[10px] text-muted-foreground">Kingdom of {company}</span>}
+            </div>
+            <div className="flex items-center gap-2 shrink-0">
+              <button onClick={toggleBookmark} disabled={bookmarkLoading} className="p-1.5 rounded-lg hover:bg-muted/30 transition-colors">
+                {isBookmarked ? <BookmarkCheck className="h-4 w-4 text-primary" /> : <Bookmark className="h-4 w-4 text-muted-foreground" />}
+              </button>
+            </div>
+          </div>
 
-      {/* 2-column body */}
-      <div className="flex-1 flex overflow-hidden">
-        {/* LEFT — Quest Log */}
-        <div className="w-80 shrink-0 border-r border-border flex flex-col overflow-hidden">
-          <div className="shrink-0 px-3 py-2 border-b border-border/50 flex items-center gap-2.5">
-            <ReadinessRing readiness={readiness} size={40} />
-            <div className="flex-1 space-y-1">
-              <div className="flex items-center justify-between">
-                <span className="text-[10px] text-muted-foreground uppercase">Threat Level</span>
-                <div className="flex items-center gap-1">
-                  <span className="text-xs font-bold text-foreground tabular-nums">{currentRisk}%</span>
-                  {futureStats && (
-                    <>
-                      <span className="text-[9px] text-muted-foreground">→</span>
-                      <span className={`text-xs font-bold tabular-nums ${futureStats.avgExposure > currentRisk ? "text-destructive" : "text-success"}`}>
-                        {futureStats.avgExposure}%
-                      </span>
-                    </>
-                  )}
-                  {predictionsLoading && <Skeleton className="h-3 w-8 rounded" />}
-                </div>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-[10px] text-muted-foreground uppercase">Quests</span>
-                <span className="text-xs font-bold text-foreground tabular-nums">
-                  {result.tasks.length}
-                  {completedCount > 0 && <span className="text-success ml-1 font-normal">({completedCount} ✓)</span>}
-                </span>
-              </div>
+          {/* ── Kingdom Threat Overview ── */}
+          <div className="shrink-0 px-4 py-2 border-b border-border/50 flex items-center gap-4">
+            <div className="flex-1 max-w-xs">
+              <span className="text-[10px] text-muted-foreground uppercase tracking-wide mb-1 block">Kingdom Threat</span>
+              <ThreatBar score={currentRisk} size="md" />
+            </div>
+            <div className="flex items-center gap-4 text-[10px] tabular-nums shrink-0">
+              <span className="text-muted-foreground">
+                <span className="font-bold text-foreground">{result.tasks.length}</span> battles
+              </span>
+              {completedCount > 0 && (
+                <span className="text-success font-bold">{completedCount} conquered</span>
+              )}
               {futureStats && futureStats.collapseCount > 0 && (
-                <div className="flex items-center justify-between">
-                  <span className="text-[10px] text-muted-foreground uppercase">⚠️ Endangered</span>
-                  <span className="text-xs font-bold text-destructive tabular-nums">{futureStats.collapseCount}</span>
-                </div>
+                <span className="text-destructive font-bold">⚠ {futureStats.collapseCount} endangered</span>
               )}
             </div>
+            {predictionsLoading && (
+              <div className="flex items-center gap-1.5 text-muted-foreground shrink-0">
+                <Cpu className="h-3 w-3 animate-pulse text-primary" />
+                <span className="text-[10px]">Scanning threats…</span>
+              </div>
+            )}
           </div>
 
-          {/* Predictions loading indicator */}
-          {predictionsLoading && (
-            <div className="shrink-0 py-2 flex items-center justify-center gap-1.5 text-muted-foreground border-b border-border/30">
-              <Cpu className="h-3 w-3 animate-pulse text-primary" />
-              <span className="text-[10px]">🔮 Scanning future threats…</span>
-            </div>
-          )}
+          {/* ── Campaign Progress Tracker ── */}
+          <CampaignTracker
+            totalBattles={result.tasks.length}
+            conqueredNames={completedTasks}
+            totalXP={sessionXP}
+          />
 
-          {/* All Future Skills button */}
-          {Object.keys(predictions).length > 0 && (
-            <button
-              onClick={() => setSelectedTask(null)}
-              className={`shrink-0 mx-2 mt-2 mb-1 flex items-center gap-1.5 px-3 py-2 rounded-lg text-[11px] font-medium transition-all border ${
-                !selectedTask
-                  ? "bg-primary/10 border-primary/30 text-primary"
-                  : "bg-muted/30 border-border/50 text-muted-foreground hover:bg-muted/50 hover:text-foreground"
-              }`}
-            >
-              <Sparkles className="h-3 w-3" />
-              🗺️ Future Skills Map
-              <span className="ml-auto text-[10px] tabular-nums opacity-70">
-                {(() => {
-                  const all = Object.values(predictions).flatMap(p => p.future_skills || []);
-                  return new Set(all.map(s => s.id)).size;
-                })()}
-              </span>
-            </button>
-          )}
-
-          {/* Quest log */}
-          <div className="flex-1 overflow-y-auto p-2 space-y-1">
-            {sortedTasks.map((task, i) => (
-              <TaskCard
-                key={task.name}
-                task={task}
-                prediction={predictions[task.name]}
-                isCompleted={completedTasks.has(task.name)}
-                isSelected={selectedTask?.name === task.name}
-                onSelect={setSelectedTask}
-                index={i}
-              />
-            ))}
+          {/* ── Main Content: Choose or Prep ── */}
+          <div className="flex-1 overflow-hidden flex flex-col">
+            <AnimatePresence mode="wait">
+              {phase === "choose" && (
+                <BattleChooser
+                  key="chooser"
+                  choices={battleChoices}
+                  conqueredNames={completedTasks}
+                  remainingCount={remainingCount || sortedTasks.length}
+                  onChoose={handleChooseBattle}
+                  isFinalBattle={isFinalBattle}
+                />
+              )}
+              {phase === "prep" && chosenTask && (
+                <WarCouncil
+                  key={`prep-${chosenTask.name}`}
+                  task={chosenTask}
+                  prediction={predictions[chosenTask.name]}
+                  predictionsLoading={predictionsLoading}
+                  isCompleted={completedTasks.has(chosenTask.name)}
+                  onMarchToBattle={setSimTask}
+                  onSwitchTarget={handleSwitchTarget}
+                  onXPEarned={handleXPEarned}
+                />
+              )}
+            </AnimatePresence>
           </div>
 
-          {/* Bottom actions */}
-          <div className="shrink-0 p-2 border-t border-border/50 space-y-1.5">
+          {/* ── Bottom bar ── */}
+          <div className="shrink-0 px-4 py-2 border-t border-border/50 flex items-center justify-between">
             <Button
-              variant="outline"
+              variant="ghost"
               size="sm"
-              className="w-full h-7 text-[10px] gap-1.5 rounded-full"
+              className="h-7 text-[10px] gap-1.5 rounded-full"
               onClick={handleClose}
             >
               <Map className="h-3 w-3" /> 🏰 Back to Territory
@@ -421,7 +398,7 @@ const RoleDeepDive = () => {
               <Button
                 variant="ghost"
                 size="sm"
-                className="w-full h-7 text-[10px] gap-1.5 rounded-full text-primary"
+                className="h-7 text-[10px] gap-1.5 rounded-full text-primary"
                 onClick={() => navigate("/auth")}
               >
                 <LogIn className="h-3 w-3" /> Sign in to save progress
@@ -430,147 +407,27 @@ const RoleDeepDive = () => {
           </div>
         </div>
 
-        {/* RIGHT — Quest details */}
-        <div className="flex-1 overflow-y-auto p-5">
-          <AnimatePresence mode="wait">
-            {selectedTask ? (
-              <TaskDetailPanel
-                key={selectedTask.name}
-                task={selectedTask}
-                prediction={predictions[selectedTask.name]}
-                predictionsLoading={predictionsLoading}
-                isCompleted={completedTasks.has(selectedTask.name)}
-                onPractice={setSimTask}
-                onClose={() => setSelectedTask(null)}
-                index={sortedTasks.findIndex(t => t.name === selectedTask.name)}
-              />
-            ) : (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="h-full flex flex-col"
-              >
-                {(() => {
-                  const allSkills = Object.entries(predictions).flatMap(([taskName, pred]) =>
-                    (pred.future_skills || []).map(s => ({ ...s, taskName }))
-                  );
-                  const uniqueSkills = allSkills.filter((s, i, arr) => arr.findIndex(x => x.id === s.id) === i);
+        {/* View context for unified chat */}
+        <RoleDeepDiveViewContext
+          jobTitle={result.jobTitle}
+          company={result.company}
+          completedCount={completedCount}
+          predsSummary={predsSummary}
+        />
 
-                  if (uniqueSkills.length === 0 && !predictionsLoading) {
-                     return (
-                      <div className="flex-1 flex items-center justify-center text-sm text-muted-foreground">
-                        Select a quest to explore ⚔️
-                      </div>
-                    );
-                  }
-
-                  if (predictionsLoading && uniqueSkills.length === 0) {
-                    return (
-                      <div className="flex-1 flex flex-col gap-6">
-                        <div className="flex items-center justify-center py-8">
-                          <XcrowLoader
-                            title="🔮 Scanning future threats…"
-                            subtitle="Analyzing AI impact on each quest"
-                            size="sm"
-                          />
-                        </div>
-                        <div className="space-y-3">
-                          {[...Array(4)].map((_, i) => (
-                            <motion.div
-                              key={i}
-                              initial={{ opacity: 0, y: 8 }}
-                              animate={{ opacity: 1, y: 0 }}
-                              transition={{ delay: i * 0.1 }}
-                              className="rounded-xl border border-border/40 p-4 space-y-2.5"
-                            >
-                              <Skeleton className="h-6 w-6 rounded-md" />
-                              <Skeleton className="h-3.5 w-3/4 rounded" />
-                              <Skeleton className="h-2.5 w-full rounded" />
-                              <Skeleton className="h-2.5 w-2/3 rounded" />
-                              <div className="flex items-center justify-between pt-1">
-                                <Skeleton className="h-2 w-20 rounded" />
-                                <Skeleton className="h-2 w-14 rounded" />
-                              </div>
-                            </motion.div>
-                          ))}
-                        </div>
-                      </div>
-                    );
-                  }
-
-                  return (
-                    <>
-                      <div className="mb-4">
-                        <h3 className="text-sm font-bold text-foreground mb-1">🗺️ Skills to Unlock in This Kingdom</h3>
-                        <p className="text-xs text-muted-foreground">
-                          {uniqueSkills.length} skills emerging across {Object.keys(predictions).length} quests
-                        </p>
-                      </div>
-
-
-                       <div className="grid grid-cols-2 gap-3 overflow-y-auto pb-4">
-                        {uniqueSkills.map((skill, i) => (
-                          <motion.button
-                            key={skill.id}
-                            initial={{ opacity: 0, y: 8 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: i * 0.04 }}
-                            onClick={() => {
-                              const task = result!.tasks.find(t => t.name === skill.taskName);
-                              if (task) setSimTask(task);
-                            }}
-                            className="sim-glow-border relative rounded-xl border border-primary/20 bg-gradient-to-br from-primary/[0.06] to-accent/[0.04] p-4 text-left hover:border-primary/40 hover:shadow-md hover:shadow-primary/5 transition-all group"
-                          >
-                            <div className="text-2xl mb-2">{isStandardEmoji(skill.icon_emoji) ? skill.icon_emoji : "⚡"}</div>
-                            <div className="text-xs font-semibold text-foreground group-hover:text-primary transition-colors leading-tight mb-1">
-                              {skill.name}
-                            </div>
-                            <div className="text-[10px] text-muted-foreground leading-snug line-clamp-2 mb-2.5">
-                              {skill.description}
-                            </div>
-                            <div className="flex items-center justify-between">
-                              <span className="text-[10px] text-muted-foreground/60 truncate max-w-[55%]">
-                                {skill.taskName}
-                              </span>
-                              <span className="flex items-center gap-1 text-[10px] font-semibold text-primary/70 group-hover:text-primary transition-colors">
-                                <Zap className="h-2.5 w-2.5" />
-                                Practice
-                              </span>
-                            </div>
-                          </motion.button>
-                        ))}
-                      </div>
-                    </>
-                  );
-                })()}
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
-      </div>
-
-      {/* View context for unified chat */}
-      <RoleDeepDiveViewContext
-        jobTitle={result.jobTitle}
-        company={result.company}
-        completedCount={completedCount}
-        predsSummary={predsSummary}
-      />
-
-      <SimulatorModal
-        open={!!simTask}
-        onClose={() => { setSimTask(null); fetchCompletions(); }}
-        taskName={simTask?.name || ""}
-        jobTitle={result.jobTitle}
-        company={result.company}
-        taskState={simTask?.currentState}
-        taskTrend={simTask?.trend}
-        taskImpactLevel={simTask?.impactLevel}
-        onCompleted={fetchCompletions}
-        onNextTask={pickNextTask}
-        onBackToFeed={() => navigate("/")}
-      />
-    </div>
+        <SimulatorModal
+          open={!!simTask}
+          onClose={() => { setSimTask(null); fetchCompletions(); setPhase("choose"); setChosenTask(null); }}
+          taskName={simTask?.name || ""}
+          jobTitle={result.jobTitle}
+          company={result.company}
+          taskState={simTask?.currentState}
+          taskTrend={simTask?.trend}
+          taskImpactLevel={simTask?.impactLevel}
+          onCompleted={fetchCompletions}
+          onNextTask={pickNextTask}
+          onBackToFeed={() => navigate("/")}
+        />
       </DialogContent>
     </Dialog>
   );
