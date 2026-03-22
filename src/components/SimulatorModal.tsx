@@ -639,6 +639,9 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
     setPhase("chat");
   };
 
+  // Compute current target objective (first unmet)
+  const currentTargetObjectiveId = session?.learningObjectives?.find(o => !objectiveStatus[o.id])?.id;
+
   const handleSend = async (overrideInput?: string) => {
     const messageText = overrideInput ?? input.trim();
     if (!messageText || sending) return;
@@ -663,18 +666,20 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
     try {
       const reply = await chatTurn(
         newMessages, roundCount, nextTurn, jobTitle, mode, taskMeta,
-        session?.learningObjectives, objectiveStatus, scaffoldingTiers
+        session?.learningObjectives, objectiveStatus, scaffoldingTiers,
+        currentTargetObjectiveId
       );
       
       // Parse tags
-      parseObjectiveTags(reply);
+      const updatedStatus = parseObjectiveTags(reply);
       parseScaffoldTags(reply);
       
       setMessages((prev) => [...prev, { role: "assistant", content: reply }]);
 
-      // Check for all objectives met signal
-      if (reply.includes("[ALL_OBJECTIVES_MET]")) {
-        // Session can end — the AI message will prompt finish
+      // Check if all objectives met after this reply
+      const nowAllMet = session?.learningObjectives?.every(o => updatedStatus[o.id]) ?? false;
+      if (nowAllMet || reply.includes("[ALL_OBJECTIVES_MET]")) {
+        // Victory state — AI message will prompt finish
       }
 
       if (reply.includes("[SCAFFOLDING]") || reply.includes("[SCAFFOLD_TIER:") || reply.includes("[NEEDS_DEPTH]")) {
@@ -702,7 +707,12 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
   };
 
   const handleFinishAttempt = () => {
-    // Skip review screen — go straight to scoring
+    // Finish gate: if unmet objectives remain and rounds left, show review
+    const unmetCount = session?.learningObjectives?.filter(o => !objectiveStatus[o.id]).length ?? 0;
+    if (unmetCount > 0 && roundCount < maxRounds) {
+      setPhase("review");
+      return;
+    }
     handleFinish();
   };
 
