@@ -1,30 +1,55 @@
 import { Link } from "react-router-dom";
 
 const Footer = () => (
-  <footer className="border-t border-border/30 bg-card/30 mt-auto">
+  <footer
+    className="mt-auto"
+    style={{
+      background: "hsl(var(--surface-stone))",
+      borderTop: "1px solid hsl(var(--filigree) / 0.2)",
+    }}
+  >
     <div className="max-w-7xl mx-auto px-6 py-8">
       <div className="flex flex-col sm:flex-row items-start justify-between gap-6">
         <div>
-          <Link to="/" className="font-display font-bold neon-text">Xcrow.ai</Link>
+          <Link
+            to="/"
+            className="font-bold text-foreground hover:opacity-80 transition-opacity"
+            style={{ fontFamily: "'Cinzel', serif", fontSize: "1.1rem", letterSpacing: "0.04em" }}
+          >
+            Xcrow.ai
+          </Link>
           <p className="text-xs text-muted-foreground mt-1">AI career prep for everyone 🚀</p>
         </div>
         <div className="flex gap-10">
           <div className="flex flex-col gap-2">
-            <span className="text-xs font-semibold text-foreground uppercase tracking-wider">Product</span>
+            <span
+              className="text-xs font-semibold uppercase tracking-[0.12em]"
+              style={{ color: "hsl(var(--filigree))", fontFamily: "'Cinzel', serif" }}
+            >
+              Product
+            </span>
             <Link to="/" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Explore Roles</Link>
             <Link to="/students" className="text-sm text-muted-foreground hover:text-foreground transition-colors">For Students</Link>
             <Link to="/schools" className="text-sm text-muted-foreground hover:text-foreground transition-colors">For Schools</Link>
             <Link to="/pricing" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Pricing</Link>
           </div>
           <div className="flex flex-col gap-2">
-            <span className="text-xs font-semibold text-foreground uppercase tracking-wider">Company</span>
+            <span
+              className="text-xs font-semibold uppercase tracking-[0.12em]"
+              style={{ color: "hsl(var(--filigree))", fontFamily: "'Cinzel', serif" }}
+            >
+              Company
+            </span>
             <Link to="/about" className="text-sm text-muted-foreground hover:text-foreground transition-colors">About</Link>
             <Link to="/blog" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Blog</Link>
             <Link to="/contact" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Contact</Link>
           </div>
         </div>
       </div>
-      <div className="mt-6 pt-4 border-t border-border/20 flex flex-col sm:flex-row items-center justify-between gap-2">
+      <div
+        className="mt-6 pt-4 flex flex-col sm:flex-row items-center justify-between gap-2"
+        style={{ borderTop: "1px solid hsl(var(--filigree) / 0.1)" }}
+      >
         <p className="text-xs text-muted-foreground">© {new Date().getFullYear()} Xcrow.ai</p>
         <div className="flex items-center gap-4">
           <Link to="/privacy" className="text-xs text-muted-foreground hover:text-foreground transition-colors">Privacy</Link>

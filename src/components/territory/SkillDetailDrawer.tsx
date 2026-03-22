@@ -1,7 +1,6 @@
 /**
- * SkillDetailDrawer — Context bridge between Territory Map and Role Deep Dive.
- * Shows skill info + demand stats + roles that need this skill.
- * No sim button — funnels through Role Deep Dive.
+ * SkillDetailDrawer — Dark Fantasy styled context bridge.
+ * Stone surfaces, Cinzel headings, territory-colored badges.
  */
 
 import { useEffect, useState } from "react";
@@ -13,12 +12,12 @@ import {
   SheetTitle,
   SheetDescription,
 } from "@/components/ui/sheet";
-import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
-import { type FutureSkill } from "@/hooks/use-future-skills";
+import { type FutureSkill, type FutureSkillCategory } from "@/hooks/use-future-skills";
 import { ArrowRight, Briefcase, TrendingUp, Sparkles } from "lucide-react";
+import { getTerritory } from "@/lib/territory-colors";
 
 interface RoleLink {
   jobId: string;
@@ -42,14 +41,12 @@ export default function SkillDetailDrawer({ skill, open, onOpenChange }: SkillDe
   useEffect(() => {
     if (!skill || !open) return;
 
-    // Emit focus_skill event for AI coach
     window.dispatchEvent(
       new CustomEvent("focus_skill", {
         detail: { skillId: skill.id, skillName: skill.name, category: skill.category },
       })
     );
 
-    // Fetch roles that need this skill
     setLoading(true);
     (async () => {
       const { data } = await supabase
@@ -111,28 +108,54 @@ export default function SkillDetailDrawer({ skill, open, onOpenChange }: SkillDe
 
   if (!skill) return null;
 
+  const territory = getTerritory(skill.category as FutureSkillCategory);
   const demandTier =
     skill.demandCount >= 12 ? "🔥 High Demand" : skill.demandCount >= 5 ? "📈 Growing" : "🌱 Emerging";
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="right" className="w-[380px] sm:w-[420px] overflow-y-auto bg-card border-border">
+      <SheetContent
+        side="right"
+        className="w-[380px] sm:w-[420px] overflow-y-auto"
+        style={{
+          background: "hsl(var(--surface-stone))",
+          borderLeft: "1px solid hsl(var(--filigree) / 0.2)",
+        }}
+      >
         <SheetHeader className="pb-2">
           <div className="flex items-center gap-2">
             {skill.iconEmoji && <span className="text-2xl">{skill.iconEmoji}</span>}
-            <SheetTitle className="text-lg">{skill.name}</SheetTitle>
+            <SheetTitle
+              className="text-lg"
+              style={{ fontFamily: "'Cinzel', serif" }}
+            >
+              {skill.name}
+            </SheetTitle>
           </div>
           <SheetDescription className="sr-only">Details for {skill.name}</SheetDescription>
         </SheetHeader>
 
-        {/* Category badge */}
+        {/* Category + demand badges */}
         <div className="flex items-center gap-2 mt-1">
-          <Badge variant="outline" className="text-xs font-medium">
+          <span
+            className="inline-block px-2 py-0.5 rounded-md text-xs font-medium"
+            style={{
+              background: `${territory.hsl}15`,
+              color: territory.hsl,
+              border: `1px solid ${territory.hsl}25`,
+            }}
+          >
             {skill.category}
-          </Badge>
-          <Badge variant="secondary" className="text-xs">
+          </span>
+          <span
+            className="inline-block px-2 py-0.5 rounded-md text-xs font-medium"
+            style={{
+              background: "hsl(var(--muted))",
+              color: "hsl(var(--muted-foreground))",
+            }}
+          >
             {demandTier}
-          </Badge>
+          </span>
         </div>
 
         {/* Description */}
@@ -151,12 +174,15 @@ export default function SkillDetailDrawer({ skill, open, onOpenChange }: SkillDe
           />
         </div>
 
-        <Separator className="my-5" />
+        <Separator className="my-5" style={{ background: "hsl(var(--filigree) / 0.15)" }} />
 
-        {/* Roles that need this skill */}
-        <h3 className="text-sm font-semibold text-foreground flex items-center gap-1.5 mb-3">
-          <Briefcase className="h-4 w-4 text-primary" />
-          Roles that need this skill
+        {/* Roles */}
+        <h3
+          className="text-sm font-semibold text-foreground flex items-center gap-1.5 mb-3"
+          style={{ fontFamily: "'Cinzel', serif" }}
+        >
+          <Briefcase className="h-4 w-4" style={{ color: territory.hsl }} />
+          Kingdoms that need this skill
         </h3>
 
         {loading ? (
@@ -167,7 +193,7 @@ export default function SkillDetailDrawer({ skill, open, onOpenChange }: SkillDe
           </div>
         ) : roles.length === 0 ? (
           <p className="text-xs text-muted-foreground italic py-4 text-center">
-            No linked roles yet — explore the Kingdoms tab to discover matches.
+            No linked kingdoms yet — explore the map to discover matches.
           </p>
         ) : (
           <div className="space-y-1.5">
@@ -178,7 +204,12 @@ export default function SkillDetailDrawer({ skill, open, onOpenChange }: SkillDe
                   onOpenChange(false);
                   navigate(`/role/${encodeURIComponent(role.title)}${role.company ? `?company=${encodeURIComponent(role.company)}` : ""}`);
                 }}
-                className="w-full flex items-center justify-between gap-2 px-3 py-2.5 rounded-lg border border-border/50 bg-background/50 hover:bg-accent/30 hover:border-primary/30 transition-all text-left group"
+                className="w-full flex items-center justify-between gap-2 px-3 py-2.5 rounded-lg transition-all text-left group"
+                style={{
+                  background: "hsl(var(--surface-stone))",
+                  border: "1px solid hsl(var(--filigree) / 0.15)",
+                  boxShadow: "inset 0 1px 0 hsl(var(--emboss-light))",
+                }}
               >
                 <div className="min-w-0">
                   <p className="text-sm font-medium text-foreground truncate">{role.title}</p>
@@ -186,7 +217,7 @@ export default function SkillDetailDrawer({ skill, open, onOpenChange }: SkillDe
                     {role.company && <span className="truncate">{role.company}</span>}
                     {role.department && (
                       <>
-                        <span className="text-border">•</span>
+                        <span style={{ color: "hsl(var(--filigree) / 0.3)" }}>•</span>
                         <span>{role.department}</span>
                       </>
                     )}
@@ -204,10 +235,27 @@ export default function SkillDetailDrawer({ skill, open, onOpenChange }: SkillDe
 
 function StatCard({ icon, label, value }: { icon: React.ReactNode; label: string; value: string | number }) {
   return (
-    <div className="rounded-lg border border-border/50 bg-background/50 p-2.5 text-center">
+    <div
+      className="rounded-lg p-2.5 text-center"
+      style={{
+        background: "hsl(var(--surface-stone))",
+        border: "1px solid hsl(var(--filigree) / 0.15)",
+        boxShadow: "inset 0 1px 0 hsl(var(--emboss-light))",
+      }}
+    >
       <div className="flex items-center justify-center gap-1 text-muted-foreground mb-1">{icon}</div>
-      <p className="text-base font-bold text-foreground">{String(value)}</p>
-      <p className="text-[10px] text-muted-foreground uppercase tracking-wider">{label}</p>
+      <p
+        className="text-base font-bold text-foreground"
+        style={{ fontFamily: "'Cinzel', serif" }}
+      >
+        {String(value)}
+      </p>
+      <p
+        className="text-[10px] uppercase tracking-[0.1em]"
+        style={{ color: "hsl(var(--filigree))" }}
+      >
+        {label}
+      </p>
     </div>
   );
 }

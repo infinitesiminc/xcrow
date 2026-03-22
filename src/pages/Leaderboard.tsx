@@ -24,9 +24,9 @@ interface LeaderboardEntry {
 }
 
 const RANK_ICONS = [
-  <Crown key="1" className="h-5 w-5 text-yellow-400" />,
-  <Medal key="2" className="h-5 w-5 text-gray-300" />,
-  <Award key="3" className="h-5 w-5 text-amber-600" />,
+  <Crown key="1" className="h-5 w-5" style={{ color: "hsl(var(--filigree-glow))" }} />,
+  <Medal key="2" className="h-5 w-5" style={{ color: "hsl(var(--territory-analytical))" }} />,
+  <Award key="3" className="h-5 w-5" style={{ color: "hsl(var(--territory-leadership))" }} />,
 ];
 
 export default function Leaderboard() {
@@ -70,12 +70,12 @@ export default function Leaderboard() {
   const columns: { key: SortKey; label: string; icon: typeof Zap }[] = [
     { key: "total_xp", label: "XP", icon: Zap },
     { key: "skills_unlocked", label: "Skills", icon: Target },
-    { key: "tasks_completed", label: "Tasks", icon: Play },
+    { key: "tasks_completed", label: "Quests", icon: Play },
   ];
 
   async function handleInvite() {
     const shareUrl = `${window.location.origin}/leaderboard`;
-    const shareText = "I'm practicing AI-era skills on Xcrow 🦅 See where you rank!";
+    const shareText = "I'm conquering AI-era skills on Xcrow 🦅 See where you rank!";
     if (navigator.share) {
       try { await navigator.share({ title: "Join me on Xcrow", text: shareText, url: shareUrl }); return; } catch { /* cancelled */ }
     }
@@ -87,12 +87,20 @@ export default function Leaderboard() {
     return (
       <>
         <Navbar />
-        <main className="min-h-screen bg-background flex items-center justify-center">
+        <main
+          className="min-h-screen flex items-center justify-center"
+          style={{ background: "hsl(var(--background))" }}
+        >
           <div className="text-center px-4">
-            <Trophy className="h-12 w-12 text-muted-foreground/20 mx-auto mb-4" />
-            <h2 className="text-xl font-bold text-foreground mb-2">Sign in to view the Leaderboard</h2>
-            <p className="text-sm text-muted-foreground mb-4">Compete with learners and track your progress</p>
-            <Button onClick={openAuthModal}>Sign In</Button>
+            <Trophy className="h-12 w-12 mx-auto mb-4" style={{ color: "hsl(var(--filigree) / 0.3)" }} />
+            <h2
+              className="text-xl font-bold text-foreground mb-2"
+              style={{ fontFamily: "'Cinzel', serif" }}
+            >
+              Sign in to view the Hall of Champions
+            </h2>
+            <p className="text-sm text-muted-foreground mb-4">Compete with warriors and track your conquest</p>
+            <Button onClick={openAuthModal} style={{ fontFamily: "'Cinzel', serif" }}>Enter Realm</Button>
           </div>
         </main>
         <Footer />
@@ -103,23 +111,42 @@ export default function Leaderboard() {
   return (
     <>
       <Navbar />
-      <main className="min-h-screen bg-background">
+      <main className="min-h-screen" style={{ background: "hsl(var(--background))" }}>
         <div className="mx-auto max-w-3xl px-4 sm:px-6 py-8 sm:py-12">
           {/* Header */}
           <div className="flex items-start justify-between mb-6">
             <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center">
-                <Trophy className="h-5 w-5 text-primary" />
+              <div
+                className="h-10 w-10 rounded-xl flex items-center justify-center"
+                style={{ background: "hsl(var(--filigree-glow) / 0.15)" }}
+              >
+                <Trophy className="h-5 w-5" style={{ color: "hsl(var(--filigree-glow))" }} />
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-foreground font-[Space_Grotesk]">Leaderboard</h1>
+                <h1
+                  className="text-2xl font-bold text-foreground"
+                  style={{ fontFamily: "'Cinzel', serif", textShadow: "0 0 16px hsl(var(--filigree-glow) / 0.2)" }}
+                >
+                  Hall of Champions
+                </h1>
                 <p className="text-xs text-muted-foreground">
-                  {entries.length} players ranked by XP
+                  {entries.length} warriors ranked by XP
                 </p>
               </div>
             </div>
-            <Button size="sm" variant="outline" onClick={handleInvite} className="gap-1.5 shrink-0">
-              <Share2 className="h-3.5 w-3.5" /> Invite Friends
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={handleInvite}
+              className="gap-1.5 shrink-0"
+              style={{
+                background: "hsl(var(--surface-stone))",
+                border: "1px solid hsl(var(--filigree) / 0.2)",
+                fontFamily: "'Cinzel', serif",
+                letterSpacing: "0.04em",
+              }}
+            >
+              <Share2 className="h-3.5 w-3.5" /> Invite
             </Button>
           </div>
 
@@ -128,27 +155,39 @@ export default function Leaderboard() {
             <motion.div
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="mb-5 rounded-xl border border-primary/30 bg-primary/5 p-4 flex items-center justify-between"
+              className="mb-5 rounded-xl p-4 flex items-center justify-between"
+              style={{
+                background: "linear-gradient(135deg, hsl(var(--surface-stone)), hsl(var(--filigree-glow) / 0.08))",
+                border: "1px solid hsl(var(--filigree) / 0.3)",
+                boxShadow: "inset 0 1px 0 hsl(var(--emboss-light)), 0 4px 16px hsl(var(--emboss-shadow))",
+              }}
             >
               <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-sm font-bold text-primary">
+                <div
+                  className="h-10 w-10 rounded-full flex items-center justify-center text-sm font-bold"
+                  style={{
+                    background: "hsl(var(--filigree-glow) / 0.15)",
+                    color: "hsl(var(--filigree-glow))",
+                    fontFamily: "'Cinzel', serif",
+                  }}
+                >
                   #{myRank}
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-foreground">Your rank</p>
+                  <p className="text-sm font-medium text-foreground" style={{ fontFamily: "'Cinzel', serif" }}>Your Rank</p>
                   <p className="text-xs text-muted-foreground">
-                    {myEntry.total_xp.toLocaleString()} XP · {myEntry.tasks_completed} tasks completed
+                    {myEntry.total_xp.toLocaleString()} XP · {myEntry.tasks_completed} quests completed
                   </p>
                 </div>
               </div>
               <div className="flex items-center gap-3 text-xs text-muted-foreground">
                 <div className="text-center">
-                  <p className="font-bold text-foreground text-base">{myEntry.skills_unlocked}</p>
+                  <p className="font-bold text-foreground text-base" style={{ fontFamily: "'Cinzel', serif" }}>{myEntry.skills_unlocked}</p>
                   <p>Skills</p>
                 </div>
                 <div className="text-center">
-                  <p className="font-bold text-foreground text-base">{myEntry.tasks_completed}</p>
-                  <p>Tasks</p>
+                  <p className="font-bold text-foreground text-base" style={{ fontFamily: "'Cinzel', serif" }}>{myEntry.tasks_completed}</p>
+                  <p>Quests</p>
                 </div>
               </div>
             </motion.div>
@@ -160,49 +199,69 @@ export default function Leaderboard() {
               <ArrowUpDown className="h-3.5 w-3.5 text-muted-foreground" />
               <span className="text-xs text-muted-foreground">Sort:</span>
               {columns.map(col => (
-                <Button
+                <button
                   key={col.key}
-                  variant={sortBy === col.key ? "secondary" : "ghost"}
-                  size="sm"
                   onClick={() => setSortBy(col.key)}
-                  className="text-xs gap-1 h-7"
+                  className="flex items-center gap-1 text-xs h-7 px-2.5 py-1 rounded-md transition-all"
+                  style={{
+                    fontFamily: "'Cinzel', serif",
+                    letterSpacing: "0.04em",
+                    ...(sortBy === col.key
+                      ? { color: "hsl(var(--filigree-glow))", background: "hsl(var(--filigree) / 0.1)", textShadow: "0 0 6px hsl(var(--filigree-glow) / 0.3)" }
+                      : { color: "hsl(var(--muted-foreground))" }),
+                  }}
                 >
                   <col.icon className="h-3 w-3" />
                   {col.label}
-                </Button>
+                </button>
               ))}
             </div>
             <div className="relative w-full sm:w-48">
               <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
               <Input
-                placeholder="Search by name…"
+                placeholder="Search warriors…"
                 value={search}
                 onChange={e => setSearch(e.target.value)}
                 className="h-9 pl-8 text-xs"
+                style={{ background: "hsl(var(--surface-stone))", border: "1px solid hsl(var(--filigree) / 0.15)" }}
               />
             </div>
           </div>
 
-          {/* Loading */}
+          {/* Table */}
           {isLoading ? (
             <div className="flex items-center justify-center py-16">
               <div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
             </div>
           ) : filtered.length === 0 ? (
             <div className="text-center py-16">
-              <Trophy className="h-8 w-8 text-muted-foreground/20 mx-auto mb-3" />
-              <p className="text-sm text-muted-foreground">
-                {entries.length === 0 ? "No one on the board yet — complete a simulation to be first!" : "No results found"}
+              <Trophy className="h-8 w-8 mx-auto mb-3" style={{ color: "hsl(var(--filigree) / 0.2)" }} />
+              <p className="text-sm text-muted-foreground" style={{ fontFamily: "'Cinzel', serif" }}>
+                {entries.length === 0 ? "The hall is empty — complete a quest to claim your place!" : "No warriors found"}
               </p>
             </div>
           ) : (
-            <div className="rounded-xl border border-border overflow-hidden">
-              <div className="grid grid-cols-[2.5rem_1fr_5rem_4rem_4rem] sm:grid-cols-[3rem_1fr_6rem_5rem_5rem] gap-1 px-3 sm:px-4 py-2.5 bg-muted/30 border-b border-border text-[10px] sm:text-xs font-medium text-muted-foreground uppercase tracking-wider">
+            <div
+              className="rounded-xl overflow-hidden"
+              style={{
+                border: "1px solid hsl(var(--filigree) / 0.2)",
+                boxShadow: "0 4px 20px hsl(var(--emboss-shadow))",
+              }}
+            >
+              <div
+                className="grid grid-cols-[2.5rem_1fr_5rem_4rem_4rem] sm:grid-cols-[3rem_1fr_6rem_5rem_5rem] gap-1 px-3 sm:px-4 py-2.5 text-[10px] sm:text-xs font-medium uppercase tracking-[0.1em]"
+                style={{
+                  background: "hsl(var(--surface-stone))",
+                  borderBottom: "1px solid hsl(var(--filigree) / 0.15)",
+                  color: "hsl(var(--filigree))",
+                  fontFamily: "'Cinzel', serif",
+                }}
+              >
                 <span>#</span>
-                <span>Player</span>
+                <span>Warrior</span>
                 <span className="text-right">XP</span>
                 <span className="text-right">Skills</span>
-                <span className="text-right">Tasks</span>
+                <span className="text-right">Quests</span>
               </div>
 
               {filtered.map((entry, i) => {
@@ -214,9 +273,11 @@ export default function Leaderboard() {
                     initial={{ opacity: 0, y: 4 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: Math.min(i * 0.015, 0.5) }}
-                    className={`grid grid-cols-[2.5rem_1fr_5rem_4rem_4rem] sm:grid-cols-[3rem_1fr_6rem_5rem_5rem] gap-1 px-3 sm:px-4 py-3 items-center border-b border-border/30 last:border-b-0 transition-colors ${
-                      isMe ? "bg-primary/5" : "hover:bg-muted/20"
-                    }`}
+                    className="grid grid-cols-[2.5rem_1fr_5rem_4rem_4rem] sm:grid-cols-[3rem_1fr_6rem_5rem_5rem] gap-1 px-3 sm:px-4 py-3 items-center transition-colors"
+                    style={{
+                      borderBottom: "1px solid hsl(var(--border) / 0.2)",
+                      background: isMe ? "hsl(var(--filigree-glow) / 0.05)" : "transparent",
+                    }}
                   >
                     <div className="flex items-center justify-center">
                       {rank <= 3 ? RANK_ICONS[rank - 1] : (
@@ -225,24 +286,35 @@ export default function Leaderboard() {
                     </div>
 
                     <div className="min-w-0">
-                      <p className={`text-sm font-medium truncate ${isMe ? "text-primary" : "text-foreground"}`}>
+                      <p className={`text-sm font-medium truncate ${isMe ? "" : "text-foreground"}`}
+                        style={isMe ? { color: "hsl(var(--filigree-glow))" } : undefined}
+                      >
                         {entry.display_name}
-                        {isMe && <span className="ml-1 text-[10px] text-primary/70">(you)</span>}
+                        {isMe && <span className="ml-1 text-[10px]" style={{ color: "hsl(var(--filigree) / 0.6)" }}>(you)</span>}
                       </p>
                     </div>
 
                     <div className="text-right">
-                      <span className={`text-sm font-semibold tabular-nums ${sortBy === "total_xp" ? "text-primary" : "text-foreground"}`}>
+                      <span
+                        className="text-sm font-semibold tabular-nums"
+                        style={{ color: sortBy === "total_xp" ? "hsl(var(--filigree-glow))" : "hsl(var(--foreground))" }}
+                      >
                         {entry.total_xp.toLocaleString()}
                       </span>
                     </div>
                     <div className="text-right">
-                      <span className={`text-sm font-semibold tabular-nums ${sortBy === "skills_unlocked" ? "text-primary" : "text-foreground"}`}>
+                      <span
+                        className="text-sm font-semibold tabular-nums"
+                        style={{ color: sortBy === "skills_unlocked" ? "hsl(var(--filigree-glow))" : "hsl(var(--foreground))" }}
+                      >
                         {entry.skills_unlocked}
                       </span>
                     </div>
                     <div className="text-right">
-                      <span className={`text-sm font-semibold tabular-nums ${sortBy === "tasks_completed" ? "text-primary" : "text-foreground"}`}>
+                      <span
+                        className="text-sm font-semibold tabular-nums"
+                        style={{ color: sortBy === "tasks_completed" ? "hsl(var(--filigree-glow))" : "hsl(var(--foreground))" }}
+                      >
                         {entry.tasks_completed}
                       </span>
                     </div>
@@ -253,8 +325,11 @@ export default function Leaderboard() {
           )}
 
           <div className="flex items-center justify-center gap-4 mt-6 text-xs text-muted-foreground">
-            <span className="flex items-center gap-1"><Users className="h-3 w-3" /> {entries.length} players</span>
-            <span className="flex items-center gap-1"><Zap className="h-3 w-3" /> {entries.reduce((a, b) => a + b.total_xp, 0).toLocaleString()} total XP</span>
+            <span className="flex items-center gap-1"><Users className="h-3 w-3" /> {entries.length} warriors</span>
+            <span className="flex items-center gap-1">
+              <Zap className="h-3 w-3" style={{ color: "hsl(var(--filigree-glow))" }} />
+              {entries.reduce((a, b) => a + b.total_xp, 0).toLocaleString()} total XP
+            </span>
           </div>
         </div>
       </main>

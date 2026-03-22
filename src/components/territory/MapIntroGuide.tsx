@@ -1,7 +1,5 @@
 /**
- * MapIntroGuide — Auto-play coach bubbles that greet and guide first-time visitors.
- * Uses localStorage to track whether the intro has been seen.
- * 4 steps that auto-advance, each pointing at a map feature.
+ * MapIntroGuide — Dark Fantasy styled auto-play coach bubbles.
  */
 
 import { useState, useEffect, useCallback } from "react";
@@ -19,27 +17,27 @@ interface GuideStep {
 
 const STEPS: GuideStep[] = [
   {
-    icon: <Sparkles className="h-5 w-5 text-primary" />,
-    title: "Welcome to your Territory Map",
-    body: "This is your AI-era skill landscape — 8 domains, 180+ skills. Explore what the future demands.",
+    icon: <Sparkles className="h-5 w-5" style={{ color: "hsl(var(--filigree-glow))" }} />,
+    title: "Welcome to the World Map",
+    body: "This is your AI-era skill landscape — 8 territories, 180+ skills. Explore what the future demands.",
     position: "center",
   },
   {
-    icon: <MapPin className="h-5 w-5 text-primary" />,
-    title: "Each island is a domain",
-    body: "From AI & Data to Leadership & Ethics — hover over any island to see its skills.",
+    icon: <MapPin className="h-5 w-5" style={{ color: "hsl(var(--territory-analytical))" }} />,
+    title: "Each island is a territory",
+    body: "From Circuit Peaks to Soul Springs — hover over any island to reveal its skills.",
     position: "bottom-left",
   },
   {
-    icon: <MousePointerClick className="h-5 w-5 text-primary" />,
+    icon: <MousePointerClick className="h-5 w-5" style={{ color: "hsl(var(--territory-technical))" }} />,
     title: "Click any skill node",
-    body: "See demand stats, which roles need it, and where it fits in your career path.",
+    body: "See demand stats, which kingdoms need it, and where it fits in your conquest.",
     position: "top-right",
   },
   {
-    icon: <UserPlus className="h-5 w-5 text-primary" />,
+    icon: <UserPlus className="h-5 w-5" style={{ color: "hsl(var(--territory-communication))" }} />,
     title: "Ready to claim your territory?",
-    body: "Create a free account to track your progress, run simulations, and build your skill map.",
+    body: "Create a free account to track your progress, run quests, and build your skill empire.",
     position: "bottom-center",
   },
 ];
@@ -62,7 +60,6 @@ export default function MapIntroGuide() {
     if (!seen) setVisible(true);
   }, []);
 
-  // Auto-advance timer
   useEffect(() => {
     if (!visible) return;
     const timer = setTimeout(() => {
@@ -103,14 +100,23 @@ export default function MapIntroGuide() {
         className={`absolute z-50 ${POSITION_CLASSES[current.position]}`}
       >
         <div
-          className="max-w-xs rounded-xl border border-border/60 bg-card/95 backdrop-blur-xl shadow-2xl p-4 cursor-pointer"
+          className="max-w-xs rounded-xl backdrop-blur-xl p-4 cursor-pointer"
           onClick={advance}
+          style={{
+            background: "hsl(var(--surface-stone) / 0.92)",
+            border: "1px solid hsl(var(--filigree) / 0.3)",
+            boxShadow: "0 8px 32px hsl(var(--emboss-shadow)), inset 0 1px 0 hsl(var(--emboss-light))",
+          }}
         >
-          {/* Step indicator */}
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2">
               {current.icon}
-              <span className="text-sm font-bold text-foreground">{current.title}</span>
+              <span
+                className="text-sm font-bold text-foreground"
+                style={{ fontFamily: "'Cinzel', serif" }}
+              >
+                {current.title}
+              </span>
             </div>
             <button
               onClick={(e) => {
@@ -118,6 +124,7 @@ export default function MapIntroGuide() {
                 dismiss();
               }}
               className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+              style={{ fontFamily: "'Cinzel', serif" }}
             >
               Skip
             </button>
@@ -125,20 +132,25 @@ export default function MapIntroGuide() {
 
           <p className="text-xs text-muted-foreground leading-relaxed">{current.body}</p>
 
-          {/* Progress dots */}
           <div className="flex items-center justify-between mt-3">
             <div className="flex gap-1">
               {STEPS.map((_, i) => (
                 <div
                   key={i}
-                  className={`h-1 rounded-full transition-all duration-300 ${
-                    i === step ? "w-4 bg-primary" : i < step ? "w-1.5 bg-primary/50" : "w-1.5 bg-border"
-                  }`}
+                  className="h-1 rounded-full transition-all duration-300"
+                  style={{
+                    width: i === step ? 16 : 6,
+                    background: i === step
+                      ? "hsl(var(--filigree-glow))"
+                      : i < step
+                        ? "hsl(var(--filigree) / 0.5)"
+                        : "hsl(var(--border))",
+                  }}
                 />
               ))}
             </div>
             <span className="text-[10px] text-muted-foreground">
-              {step < STEPS.length - 1 ? "Click to continue" : "Click to start"}
+              {step < STEPS.length - 1 ? "Click to continue" : "Click to begin"}
             </span>
           </div>
         </div>

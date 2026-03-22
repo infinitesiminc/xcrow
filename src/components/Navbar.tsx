@@ -46,32 +46,51 @@ export default function Navbar() {
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-border/50 bg-background/80 backdrop-blur-xl">
+    <header
+      className="sticky top-0 z-50 w-full backdrop-blur-xl"
+      style={{
+        background: "hsl(var(--surface-stone) / 0.85)",
+        borderBottom: "1px solid hsl(var(--filigree) / 0.2)",
+        boxShadow: "0 2px 12px hsl(var(--emboss-shadow))",
+      }}
+    >
       <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 sm:px-6">
         {/* Logo */}
         <button
           onClick={() => handleNav("/")}
-          className="flex items-center gap-2 font-display text-lg font-bold tracking-tight text-foreground hover:opacity-80 transition-opacity"
+          className="flex items-center gap-2 hover:opacity-80 transition-opacity"
         >
           <img src={xcrowLogo} alt="Xcrow" className="h-11 w-11 object-contain" />
-          <span className="hidden sm:inline text-lg font-extrabold text-foreground tracking-tight" style={{ fontFamily: "'Inter', 'SF Pro Display', -apple-system, sans-serif", letterSpacing: '-0.02em' }}>Xcrow.ai</span>
+          <span
+            className="hidden sm:inline text-lg font-extrabold text-foreground tracking-tight"
+            style={{ fontFamily: "'Cinzel', serif", letterSpacing: "0.02em" }}
+          >
+            Xcrow.ai
+          </span>
         </button>
 
         {/* Desktop nav */}
         <nav className="hidden md:flex items-center gap-1">
           {navItems.map((item) => {
             const Icon = item.icon;
+            const active = isActive(item.path);
             return (
-              <Button
+              <button
                 key={item.path}
-                variant={isActive(item.path) ? "secondary" : "ghost"}
-                size="sm"
                 onClick={() => navigate(item.path)}
-                className={`text-sm gap-1.5 ${isActive(item.path) ? "text-primary" : ""}`}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-all"
+                style={{
+                  fontFamily: "'Cinzel', serif",
+                  letterSpacing: "0.04em",
+                  fontSize: "0.8rem",
+                  ...(active
+                    ? { color: "hsl(var(--filigree-glow))", background: "hsl(var(--filigree) / 0.1)", textShadow: "0 0 8px hsl(var(--filigree-glow) / 0.4)" }
+                    : { color: "hsl(var(--muted-foreground))" }),
+                }}
               >
                 {Icon && <Icon className="h-4 w-4" />}
                 {item.label}
-              </Button>
+              </button>
             );
           })}
         </nav>
@@ -93,7 +112,14 @@ export default function Navbar() {
                   </Avatar>
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48">
+              <DropdownMenuContent
+                align="end"
+                className="w-48"
+                style={{
+                  background: "hsl(var(--surface-stone))",
+                  border: "1px solid hsl(var(--filigree) / 0.2)",
+                }}
+              >
                 <div className="px-3 py-2">
                   <p className="text-sm font-medium text-foreground truncate">
                     {user.user_metadata?.display_name || user.email}
@@ -115,7 +141,15 @@ export default function Navbar() {
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (
-            <Button size="sm" onClick={openAuthModal} className="bg-primary hover:bg-primary/90 glow-purple">
+            <Button
+              size="sm"
+              onClick={openAuthModal}
+              style={{
+                background: "hsl(var(--primary))",
+                fontFamily: "'Cinzel', serif",
+                letterSpacing: "0.04em",
+              }}
+            >
               <User className="mr-1.5 h-4 w-4" />
               Sign in
             </Button>
@@ -137,19 +171,28 @@ export default function Navbar() {
       {mobileOpen && (
         <>
           <div className="fixed inset-0 top-14 z-40 bg-background/60 backdrop-blur-sm md:hidden" onClick={() => setMobileOpen(false)} />
-          <div className="fixed left-0 right-0 top-14 z-50 md:hidden border-t border-border bg-background shadow-lg">
+          <div
+            className="fixed left-0 right-0 top-14 z-50 md:hidden shadow-lg"
+            style={{
+              background: "hsl(var(--surface-stone))",
+              borderTop: "1px solid hsl(var(--filigree) / 0.2)",
+            }}
+          >
             <nav className="flex flex-col px-4 py-3 gap-1">
               {navItems.map((item) => {
                 const Icon = item.icon;
+                const active = isActive(item.path);
                 return (
                   <button
                     key={item.path}
                     onClick={() => handleNav(item.path)}
-                    className={`flex items-center gap-2 text-left px-3 py-2.5 text-sm font-medium rounded-lg transition-colors ${
-                      isActive(item.path)
-                        ? "bg-accent text-primary"
-                        : "text-muted-foreground hover:text-foreground hover:bg-accent"
-                    }`}
+                    className="flex items-center gap-2 text-left px-3 py-2.5 text-sm font-medium rounded-lg transition-colors"
+                    style={{
+                      fontFamily: "'Cinzel', serif",
+                      ...(active
+                        ? { color: "hsl(var(--filigree-glow))", background: "hsl(var(--filigree) / 0.1)" }
+                        : { color: "hsl(var(--muted-foreground))" }),
+                    }}
                   >
                     {Icon && <Icon className="h-4 w-4" />}
                     {item.label}
