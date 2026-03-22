@@ -64,6 +64,7 @@ const TIER_EMOJI: Record<CastleTier, string> = {
   outpost: "🏕️",
   fortress: "🏰",
   citadel: "👑",
+  grandmaster: "✨",
 };
 
 const TIER_COLORS: Record<CastleTier, string> = {
@@ -71,6 +72,7 @@ const TIER_COLORS: Record<CastleTier, string> = {
   outpost: "border-emerald-500/30",
   fortress: "border-blue-500/30",
   citadel: "border-amber-500/30",
+  grandmaster: "border-purple-500/30",
 };
 
 /* ── Component ── */

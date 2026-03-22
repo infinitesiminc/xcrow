@@ -36,10 +36,11 @@ interface MyRolesPanelProps {
 /* ── Castle tier visuals ── */
 
 const TIER_COLORS: Record<CastleTier, { bg: string; border: string; glow: string }> = {
-  ruins:    { bg: "from-muted/30 to-muted/10", border: "border-border/30", glow: "" },
-  outpost:  { bg: "from-emerald-500/10 to-emerald-900/5", border: "border-emerald-500/20", glow: "shadow-emerald-500/5" },
-  fortress: { bg: "from-blue-500/10 to-indigo-900/5", border: "border-blue-500/25", glow: "shadow-blue-500/10" },
-  citadel:  { bg: "from-amber-500/15 to-orange-900/5", border: "border-amber-500/30", glow: "shadow-amber-500/10" },
+  ruins:       { bg: "from-muted/30 to-muted/10", border: "border-border/30", glow: "" },
+  outpost:     { bg: "from-emerald-500/10 to-emerald-900/5", border: "border-emerald-500/20", glow: "shadow-emerald-500/5" },
+  fortress:    { bg: "from-blue-500/10 to-indigo-900/5", border: "border-blue-500/25", glow: "shadow-blue-500/10" },
+  citadel:     { bg: "from-amber-500/15 to-orange-900/5", border: "border-amber-500/30", glow: "shadow-amber-500/10" },
+  grandmaster: { bg: "from-purple-500/15 to-violet-900/5", border: "border-purple-500/30", glow: "shadow-purple-500/15" },
 };
 
 function KingdomCard({
