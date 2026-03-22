@@ -1,14 +1,15 @@
 /**
  * FutureSkillsTable — Skill Forge catalog with progress tracking + bookmarks.
- * Replaces demand/roles columns with XP progress bars and bookmark quick-launch.
+ * Includes a domain radar chart, XP progress bars, and bookmark quick-launch.
  */
-import { useState, useMemo, useCallback, useEffect } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { type FutureSkill, type FutureSkillCategory } from "@/hooks/use-future-skills";
 import { Input } from "@/components/ui/input";
-import { ArrowUpDown, Search, Bookmark, BookmarkCheck, Zap, Play } from "lucide-react";
-import { getTerritory } from "@/lib/territory-colors";
+import { ArrowUpDown, Search, Bookmark, BookmarkCheck } from "lucide-react";
+import { getTerritory, TERRITORY_ORDER } from "@/lib/territory-colors";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
+import { RadarChart, PolarGrid, PolarAngleAxis, Radar, ResponsiveContainer } from "recharts";
 import type { CanonicalSkillGrowth } from "@/pages/MapPage";
 
 type SortKey = "name" | "category" | "xp";
@@ -96,6 +97,27 @@ export default function FutureSkillsTable({ skills, onSkillClick, skillGrowthMap
   const bookmarkedCount = useMemo(() => skills.filter(s => bookmarks.has(s.id)).length, [skills, bookmarks]);
   const practicedCount = useMemo(() => skills.filter(s => getSkillXp(s.id) > 0).length, [skills, getSkillXp]);
 
+  // Domain XP aggregation for radar chart
+  const domainData = useMemo(() => {
+    const domainXp = new Map<string, number>();
+    for (const skill of skills) {
+      const xp = getSkillXp(skill.id);
+      domainXp.set(skill.category, (domainXp.get(skill.category) || 0) + xp);
+    }
+    const maxXp = Math.max(...Array.from(domainXp.values()), 1);
+    return TERRITORY_ORDER.map(cat => {
+      const t = getTerritory(cat);
+      return {
+        domain: t.emoji + " " + (cat === "Ethics & Compliance" ? "Ethics" : cat === "Human Edge" ? "Human" : cat),
+        xp: domainXp.get(cat) || 0,
+        fullMark: maxXp,
+      };
+    });
+  }, [skills, getSkillXp]);
+
+  const totalXp = useMemo(() => domainData.reduce((s, d) => s + d.xp, 0), [domainData]);
+  const [showChart, setShowChart] = useState(true);
+
   const colBtn = (key: SortKey, label: string) => (
     <button
       onClick={() => toggleSort(key)}
@@ -151,6 +173,61 @@ export default function FutureSkillsTable({ skills, onSkillClick, skillGrowthMap
           ))}
         </div>
       </div>
+
+      {/* Domain Radar Chart */}
+      {showChart && totalXp > 0 && (
+        <div
+          className="mx-3 mb-2 rounded-lg shrink-0 relative"
+          style={{
+            background: "hsl(var(--surface-stone) / 0.5)",
+            border: "1px solid hsl(var(--filigree) / 0.1)",
+          }}
+        >
+          <div className="flex items-center justify-between px-3 pt-2">
+            <span
+              className="text-[10px] font-bold uppercase tracking-widest"
+              style={{ fontFamily: "'Cinzel', serif", color: "hsl(var(--filigree-glow))" }}
+            >
+              Territory Power
+            </span>
+            <button
+              onClick={() => setShowChart(false)}
+              className="text-[9px] text-muted-foreground hover:text-foreground transition-colors"
+            >
+              Hide
+            </button>
+          </div>
+          <ResponsiveContainer width="100%" height={160}>
+            <RadarChart cx="50%" cy="50%" outerRadius="70%" data={domainData}>
+              <PolarGrid stroke="hsl(var(--filigree) / 0.15)" />
+              <PolarAngleAxis
+                dataKey="domain"
+                tick={{ fontSize: 8, fill: "hsl(var(--muted-foreground))" }}
+              />
+              <Radar
+                name="XP"
+                dataKey="xp"
+                stroke="hsl(var(--filigree-glow))"
+                fill="hsl(var(--filigree-glow))"
+                fillOpacity={0.15}
+                strokeWidth={1.5}
+              />
+            </RadarChart>
+          </ResponsiveContainer>
+        </div>
+      )}
+
+      {!showChart && totalXp > 0 && (
+        <div className="px-3 mb-1 shrink-0">
+          <button
+            onClick={() => setShowChart(true)}
+            className="text-[9px] text-muted-foreground hover:text-foreground transition-colors"
+            style={{ fontFamily: "'Cinzel', serif" }}
+          >
+            Show Territory Power ▾
+          </button>
+        </div>
+      )}
 
       {/* Table */}
       <div className="flex-1 overflow-y-auto px-3 pb-3">
