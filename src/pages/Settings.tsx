@@ -450,14 +450,28 @@ function ProfileSection({
           )}
         </div>
 
-        {/* School */}
+        {/* School — autocomplete from DB */}
         {careerStage === "student" && (
           <div className="space-y-2">
-            <Label htmlFor="schoolName" className="flex items-center gap-1.5">
+            <Label className="flex items-center gap-1.5">
               <School className="h-3.5 w-3.5 text-muted-foreground" />
               School / University
             </Label>
-            <Input id="schoolName" value={schoolName} onChange={(e) => setSchoolName(e.target.value)} placeholder="e.g. MIT, Stanford, University of London" />
+            <SchoolAutocomplete value={schoolName} onChange={setSchoolName} />
+          </div>
+        )}
+
+        {/* City — optional */}
+        <div className="space-y-2">
+          <Label htmlFor="city">City / Location <span className="text-muted-foreground font-normal">(optional)</span></Label>
+          <Input id="city" value={city} onChange={(e) => setCity(e.target.value)} placeholder="e.g. San Francisco, London" />
+        </div>
+
+        {/* LinkedIn — optional for professionals */}
+        {careerStage === "professional" && (
+          <div className="space-y-2">
+            <Label htmlFor="linkedinUrl">LinkedIn URL <span className="text-muted-foreground font-normal">(optional)</span></Label>
+            <Input id="linkedinUrl" value={linkedinUrl} onChange={(e) => setLinkedinUrl(e.target.value)} placeholder="https://linkedin.com/in/yourprofile" />
           </div>
         )}
 
