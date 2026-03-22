@@ -28,7 +28,10 @@ import {
   type SimConfig,
   type ElevationNarrative,
   type CoachingContext,
+  type ArenaRoundData,
+  fetchArenaRound,
 } from "@/lib/simulator";
+import PromptArena from "@/components/sim/PromptArena";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
