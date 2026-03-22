@@ -1,6 +1,6 @@
 /**
  * XcrowLoader — Brand loading animation using the Xcrow mascot.
- * Floating crow with pulsing glow, wing flap, and rotating ring.
+ * Flying crow with wing-flap bob, pulsing glow, and rotating ring.
  */
 import { motion } from "framer-motion";
 import xcrowLogo from "@/assets/avatars/crow.png";
@@ -47,36 +47,44 @@ export default function XcrowLoader({
             cy={ringSize / 2}
             r={r}
             fill="none"
-            stroke="hsl(var(--muted-foreground) / 0.5)"
+            stroke="hsl(var(--primary) / 0.5)"
             strokeWidth="3"
             strokeLinecap="round"
             strokeDasharray={`${circ * 0.3} ${circ * 0.7}`}
-            className="drop-shadow-[0_0_4px_hsl(var(--muted-foreground)/0.3)]"
+            className="drop-shadow-[0_0_4px_hsl(var(--primary)/0.3)]"
           />
         </motion.svg>
 
         {/* Pulsing glow behind mascot */}
         <motion.div
           className="absolute inset-0 flex items-center justify-center"
-          animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.6, 0.3] }}
-          transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+          animate={{ scale: [1, 1.25, 1], opacity: [0.2, 0.5, 0.2] }}
+          transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
         >
           <div
-            className="rounded-full bg-muted-foreground/10 blur-xl"
-            style={{ width: imgSize * 0.8, height: imgSize * 0.8 }}
+            className="rounded-full bg-primary/15 blur-xl"
+            style={{ width: imgSize * 0.9, height: imgSize * 0.9 }}
           />
         </motion.div>
 
-        {/* Floating mascot */}
+        {/* Flying mascot — bob up/down + slight tilt for wing-flap feel */}
         <motion.div
           className="absolute inset-0 flex items-center justify-center"
-          animate={{ y: [-3, 3, -3] }}
-          transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+          animate={{
+            y: [-6, 4, -6],
+            rotate: [-2, 2, -2],
+            scaleY: [1, 0.96, 1],
+          }}
+          transition={{
+            duration: 1.2,
+            repeat: Infinity,
+            ease: "easeInOut",
+          }}
         >
           <img
             src={xcrowLogo}
             alt="Xcrow"
-            className="object-contain grayscale opacity-80"
+            className="object-contain drop-shadow-[0_4px_12px_hsl(var(--primary)/0.25)]"
             style={{ width: imgSize, height: imgSize }}
             draggable={false}
           />
