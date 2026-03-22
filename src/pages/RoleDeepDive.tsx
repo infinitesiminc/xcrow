@@ -74,7 +74,7 @@ const RoleDeepDive = () => {
   const [phase, setPhase] = useState<Phase>("choose");
   const [chosenTask, setChosenTask] = useState<TaskAnalysis | null>(null);
   const [sessionXP, setSessionXP] = useState(0);
-  const [revealedBattleIndices, setRevealedBattleIndices] = useState(0); // how many pairs shown
+  const [currentIntel, setCurrentIntel] = useState<IntelContext | null>(null);
 
   const completedCount = result ? result.tasks.filter(t => completedTasks.has(t.name)).length : 0;
 
