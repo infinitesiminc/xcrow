@@ -142,19 +142,9 @@ export default function InlineChatRoleCards({ roles, onSelectRole, onViewDetails
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
-                    onSelectRole(role);
-                  }}
-                  className="flex-1 flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary/10 text-primary text-xs font-medium hover:bg-primary/20 transition-colors active:scale-[0.97]"
-                >
-                  <Zap className="h-3 w-3" />
-                  Practice
-                </button>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
                     (onViewDetails || onSelectRole)(role);
                   }}
-                  className="flex items-center gap-1 px-3 py-1.5 rounded-lg border border-border text-xs font-medium text-muted-foreground hover:text-foreground hover:border-primary/40 transition-colors active:scale-[0.97]"
+                  className="flex-1 flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg border border-border text-xs font-medium text-muted-foreground hover:text-foreground hover:border-primary/40 transition-colors active:scale-[0.97]"
                 >
                   <ExternalLink className="h-3 w-3" />
                   Details
