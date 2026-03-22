@@ -100,9 +100,10 @@ export async function chatTurn(
   objectiveStatus?: Record<string, boolean>,
   scaffoldingTiers?: Record<string, number>,
   targetObjectiveId?: string,
+  objectiveFailCounts?: Record<string, number>,
 ): Promise<string> {
   const { data, error } = await supabase.functions.invoke("sim-chat", {
-    body: { action: "chat", payload: { messages, round, turnCount, role, mode, taskMeta, learningObjectives, objectiveStatus, scaffoldingTiers, targetObjectiveId } },
+    body: { action: "chat", payload: { messages, round, turnCount, role, mode, taskMeta, learningObjectives, objectiveStatus, scaffoldingTiers, targetObjectiveId, objectiveFailCounts } },
   });
   if (error) throw new Error(`Chat error: ${error.message}`);
   return typeof data === "string" ? data : JSON.stringify(data);

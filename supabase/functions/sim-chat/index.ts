@@ -216,13 +216,13 @@ Respond ONLY with valid JSON, no markdown.`;
 // ─── CHAT ───
 
 async function handleChat(payload: any, apiKey: string) {
-  const { messages, role, round, turnCount, mode = "assess", taskMeta, learningObjectives, objectiveStatus, scaffoldingTiers, targetObjectiveId } = payload;
+  const { messages, role, round, turnCount, mode = "assess", taskMeta, learningObjectives, objectiveStatus, scaffoldingTiers, targetObjectiveId, objectiveFailCounts } = payload;
   const aiContext = aiStateDescription(taskMeta);
   const dateCtx = currentDateContext();
 
   const systemMsg = {
     role: "system",
-    content: buildCoachingChatSystem(role, aiContext, dateCtx, round, turnCount, mode, learningObjectives, objectiveStatus, scaffoldingTiers, targetObjectiveId),
+    content: buildCoachingChatSystem(role, aiContext, dateCtx, round, turnCount, mode, learningObjectives, objectiveStatus, scaffoldingTiers, targetObjectiveId, objectiveFailCounts),
   };
 
   const aiMessages = [systemMsg, ...messages];
@@ -239,6 +239,7 @@ function buildCoachingChatSystem(
   learningObjectives?: any[], objectiveStatus?: Record<string, boolean>,
   scaffoldingTiers?: Record<string, number>,
   targetObjectiveId?: string,
+  objectiveFailCounts?: Record<string, number>,
 ): string {
   // turnCount includes the AI opening message (turn 1), so user's first response is turn 2.
   // The 3-turn cycle should start from the user's first response, not the AI opening.
@@ -330,12 +331,37 @@ RULES:
 - If NO scaffolding is needed (strong response), proceed normally without any scaffold tag.`;
   }
 
+  // Retry cap: check if current target has failed 2+ times → force teach mode
+  const failCounts = objectiveFailCounts || {};
+  const currentTargetFails = targetObjectiveId ? (failCounts[targetObjectiveId] || 0) : 0;
+  const forceTeachMode = currentTargetFails >= 2;
+  const targetObjForTeach = targetObjectiveId ? learningObjectives?.find(o => o.id === targetObjectiveId) : null;
+
   let turnInstruction: string;
 
   if (posInRound === 0) {
+    // Force teach mode override when retry cap hit
+    const teachModeOverride = forceTeachMode && targetObjForTeach ? `
+RETRY CAP REACHED for objective "${targetObjForTeach.label}" — the user has struggled with this ${currentTargetFails} times.
+OVERRIDE ALL SCAFFOLDING TIERS. You MUST use TIER 3 (TEACH) immediately:
+1. Tag: [SCAFFOLD_TIER:3]
+2. Briefly validate what the user said, then EXPLAIN the correct approach clearly: "Here's how experienced ${role}s handle this: [2-sentence explanation with specific tool/method names]."
+3. Then test transfer: "Now, if [slightly different scenario], how would you adapt this approach?"
+4. After teaching, evaluate: if the user's original attempt showed ANY relevant thinking, mark [OBJ_EVAL:${targetObjForTeach.id}:PASS]. Otherwise mark [OBJ_EVAL:${targetObjForTeach.id}:FAIL] but note the teaching will help them.
+` : "";
+
     turnInstruction = `The user just shared their approach to your scenario. 
 
-FIRST — EVALUATE RESPONSE QUALITY and apply scaffolding if needed (see rules above).
+FIRST — CHECK FOR UNCERTAINTY/HELP REQUESTS:
+- If the user says "I'm not sure", "I don't know", "help me", "can you break it down", or similar uncertainty phrases:
+  → Do NOT restart the scenario or present a new one. 
+  → Instead, treat this as a Tier 2 scaffold opportunity: give a directional clue and offer A/B/C options.
+  → Tag with [SCAFFOLD_TIER:2] and [NEEDS_DEPTH].
+  → NEVER respond to uncertainty with a fresh scenario — that wastes the learning opportunity.
+
+${teachModeOverride}
+
+THEN — EVALUATE RESPONSE QUALITY and apply scaffolding if needed (see rules above).
 
 CRITICAL QUALITY GATE:
 - If the user's answer is UNDER 15 words, a single word/phrase (e.g. "webhook", "AI", "automate it"), or does not engage with the SPECIFIC scenario details, you MUST:

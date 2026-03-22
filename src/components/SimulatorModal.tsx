@@ -474,6 +474,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
   const [objectiveStatus, setObjectiveStatus] = useState<Record<string, boolean>>({});
   const [showObjectives, setShowObjectives] = useState(false);
   const [scaffoldingTiers, setScaffoldingTiers] = useState<Record<string, number>>({});
+  const [objectiveFailCounts, setObjectiveFailCounts] = useState<Record<string, number>>({});
   const [showInactivityNudge, setShowInactivityNudge] = useState(false);
   const inactivityTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -542,6 +543,11 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
       if (result === "PASS" && !newStatus[objId]) {
         newStatus[objId] = true;
         changed = true;
+        // Reset fail count on pass
+        setObjectiveFailCounts(prev => ({ ...prev, [objId]: 0 }));
+      } else if (result === "FAIL") {
+        // Increment consecutive fail count for this objective
+        setObjectiveFailCounts(prev => ({ ...prev, [objId]: (prev[objId] || 0) + 1 }));
       }
     }
     // Also support legacy format for backwards compatibility
@@ -593,6 +599,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
     setScoreResult(null);
     setObjectiveStatus({});
     setScaffoldingTiers({});
+    setObjectiveFailCounts({});
     setShowInactivityNudge(false);
     if (coaching) setCoachingContext(coaching);
     else setCoachingContext(null);
@@ -667,7 +674,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
       const reply = await chatTurn(
         newMessages, roundCount, nextTurn, jobTitle, mode, taskMeta,
         session?.learningObjectives, objectiveStatus, scaffoldingTiers,
-        currentTargetObjectiveId
+        currentTargetObjectiveId, objectiveFailCounts
       );
       
       // Parse tags
@@ -728,7 +735,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
     setTurnCount(nextTurn);
     scrollToBottom();
     const nextTargetId = session?.learningObjectives?.find(o => !objectiveStatus[o.id])?.id;
-    chatTurn(newMsgs, nextRound, nextTurn, jobTitle, mode, taskMeta, session?.learningObjectives, objectiveStatus, scaffoldingTiers, nextTargetId).then(reply => {
+    chatTurn(newMsgs, nextRound, nextTurn, jobTitle, mode, taskMeta, session?.learningObjectives, objectiveStatus, scaffoldingTiers, nextTargetId, objectiveFailCounts).then(reply => {
       parseObjectiveTags(reply);
       parseScaffoldTags(reply);
       setMessages(prev => [...prev, { role: "assistant", content: reply }]);
