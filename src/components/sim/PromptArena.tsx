@@ -107,7 +107,7 @@ const PromptArena = ({ round, roundNumber, onJudged, loading }: PromptArenaProps
       >
         <div className="flex-1 h-px" style={{ background: "linear-gradient(90deg, transparent, hsl(var(--filigree) / 0.4), transparent)" }} />
         <span
-          className="text-[11px] font-semibold uppercase tracking-[0.15em] px-3 py-1 rounded-full"
+          className="text-sm font-semibold uppercase tracking-[0.15em] px-4 py-1.5 rounded-full"
           style={{
             color: "hsl(var(--filigree-glow))",
             background: "hsl(var(--filigree) / 0.08)",
