@@ -2,14 +2,14 @@
  * Castle Levels — progression tiers for the territory map.
  *
  * Each skill is a castle that evolves visually:
- *   Ruins (locked, < 100 XP) → Outpost (100 XP) → Fortress (300 XP) → Citadel (600 XP)
+ *   Ruins (locked, < 150 XP) → Outpost (150 XP) → Fortress (500 XP) → Citadel (1200 XP) → Citadel+Glow (2500 XP)
  *
  * The game is never-ending: new job contexts always yield XP,
  * and diminishing returns from repeating the same context
  * encourages breadth.
  */
 
-export type CastleTier = "ruins" | "outpost" | "fortress" | "citadel";
+export type CastleTier = "ruins" | "outpost" | "fortress" | "citadel" | "grandmaster";
 
 export interface CastleState {
   tier: CastleTier;
@@ -23,12 +23,13 @@ export interface CastleState {
 
 export const CASTLE_TIERS = [
   { tier: "ruins" as const, threshold: 0, label: "Ruins", emoji: "🏚️" },
-  { tier: "outpost" as const, threshold: 100, label: "Outpost", emoji: "🏕️" },
-  { tier: "fortress" as const, threshold: 300, label: "Fortress", emoji: "🏰" },
-  { tier: "citadel" as const, threshold: 600, label: "Citadel", emoji: "⚔️" },
+  { tier: "outpost" as const, threshold: 150, label: "Outpost", emoji: "🏕️" },
+  { tier: "fortress" as const, threshold: 500, label: "Fortress", emoji: "🏰" },
+  { tier: "citadel" as const, threshold: 1200, label: "Citadel", emoji: "⚔️" },
+  { tier: "grandmaster" as const, threshold: 2500, label: "Grandmaster", emoji: "✨" },
 ] as const;
 
-export const UNLOCK_THRESHOLD = 100; // XP needed to unlock (claim) a castle
+export const UNLOCK_THRESHOLD = 150; // XP needed to unlock (claim) a castle
 
 export function getCastleState(xp: number): CastleState {
   let currentIdx = 0;
@@ -57,13 +58,26 @@ export function getCastleState(xp: number): CastleState {
 }
 
 /**
+ * Calculate XP earned for a skill in a simulation.
+ * Base XP = 40. Score multiplier = overallScore / 50 (0x–2x).
+ * Context bonus = +20 XP for first time in a new job context.
+ * Max ~100 XP per skill per sim.
+ */
+export function calculateSkillXP(overallScore: number, isNewContext: boolean): number {
+  const base = 40;
+  const multiplier = Math.max(0, overallScore / 50);
+  const scoreXP = Math.round(base * multiplier);
+  const contextBonus = isNewContext ? 20 : 0;
+  return Math.min(100, scoreXP + contextBonus);
+}
+
+/**
  * Calculate XP bonus for practicing in a new job context.
- * Base XP = 100. New context = +25 bonus. Repeated context = -25 penalty (min 50).
+ * @deprecated Use calculateSkillXP instead
  */
 export function contextXPBonus(contextCount: number): { base: number; bonus: number; total: number } {
-  const base = 100;
-  if (contextCount <= 1) return { base, bonus: 25, total: 125 };
-  // Repeated — diminishing but never zero
-  const penalty = Math.min(50, (contextCount - 1) * 10);
+  const base = 40;
+  if (contextCount <= 1) return { base, bonus: 20, total: 60 };
+  const penalty = Math.min(30, (contextCount - 1) * 8);
   return { base, bonus: -penalty, total: base - penalty };
 }

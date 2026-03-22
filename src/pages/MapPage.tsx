@@ -54,7 +54,7 @@ function buildEmptySkills(taxonomy: TaxonomySkill[]): SkillXP[] {
     name: t.name,
     category: t.category,
     xp: 0,
-    level: "Beginner" as const,
+    level: "Novice" as const,
     levelIndex: 0,
     progress: 0,
     aiExposure: t.aiExposure,

@@ -3,15 +3,16 @@
  */
 
 import { useMemo } from "react";
-import { Shield, Target, Zap, Crown } from "lucide-react";
+import { Shield, Target, Zap, Crown, Star } from "lucide-react";
 import { motion } from "framer-motion";
 import type { SkillXP } from "@/lib/skill-map";
 
 const TIERS = [
   { name: "Recruit", minXP: 0, color: "hsl(var(--muted-foreground))", icon: Shield },
-  { name: "Explorer", minXP: 200, color: "hsl(var(--spectrum-0))", icon: Shield },
-  { name: "Strategist", minXP: 800, color: "hsl(var(--spectrum-3))", icon: Crown },
-  { name: "Commander", minXP: 2000, color: "hsl(var(--spectrum-6))", icon: Crown },
+  { name: "Explorer", minXP: 500, color: "hsl(var(--spectrum-0))", icon: Shield },
+  { name: "Strategist", minXP: 3000, color: "hsl(var(--spectrum-3))", icon: Crown },
+  { name: "Commander", minXP: 10000, color: "hsl(var(--spectrum-6))", icon: Crown },
+  { name: "Legend", minXP: 30000, color: "hsl(var(--primary))", icon: Star },
 ] as const;
 
 function getTier(xp: number) {
@@ -36,7 +37,7 @@ export default function CompactHUD({ skills, targetSkillIds, userName }: Compact
     ).length;
     const total = targetSkillIds.size;
     const coveragePct = total > 0 ? Math.round((claimed / total) * 100) : 0;
-    const castlesClaimed = skills.filter(s => s.xp > 0).length;
+    const castlesClaimed = skills.filter(s => s.xp >= 150).length;
     return { totalXP, tier, claimed, total, coveragePct, castlesClaimed };
   }, [skills, targetSkillIds]);
 

@@ -17,9 +17,10 @@ import type { TargetRole } from "@/pages/Journey";
 
 const TIERS = [
   { name: "Recruit", threshold: 0, icon: Swords, color: "hsl(215, 20%, 55%)" },
-  { name: "Specialist", threshold: 500, icon: Medal, color: "hsl(180, 45%, 50%)" },
-  { name: "Expert", threshold: 1500, icon: Star, color: "hsl(45, 70%, 55%)" },
-  { name: "Leader", threshold: 4000, icon: Crown, color: "hsl(270, 50%, 60%)" },
+  { name: "Explorer", threshold: 500, icon: Medal, color: "hsl(180, 45%, 50%)" },
+  { name: "Strategist", threshold: 3000, icon: Star, color: "hsl(45, 70%, 55%)" },
+  { name: "Commander", threshold: 10000, icon: Crown, color: "hsl(270, 50%, 60%)" },
+  { name: "Legend", threshold: 30000, icon: Crown, color: "hsl(340, 60%, 55%)" },
 ] as const;
 
 function getTier(xp: number) {

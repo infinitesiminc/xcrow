@@ -3,7 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { useChatContext } from "@/contexts/ChatContext";
 import { motion, AnimatePresence } from "framer-motion";
 import { Send, Loader2, RotateCcw, ChevronDown, ChevronUp, CheckCircle2, X, ArrowRight, Target, Circle, CircleCheck, AlertTriangle, TrendingUp, Trophy, Zap, Map, Star, Lock, Unlock, Sparkles } from "lucide-react";
-import { matchTaskToSkills, SKILL_TAXONOMY, XP_PER_SIM, getLevel, getNextLevel, type SkillXP } from "@/lib/skill-map";
+import { matchTaskToSkills, SKILL_TAXONOMY, getLevel, getNextLevel, type SkillXP } from "@/lib/skill-map";
+import { calculateSkillXP } from "@/lib/castle-levels";
 import ReactMarkdown from "react-markdown";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -764,21 +765,21 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
       }
     }
 
-    // Compute skill XP earned
+    // Compute skill XP earned using score-based formula
     const skillIds = matchTaskToSkills(taskName, jobTitle);
-    const xpEach = skillIds.length > 0 ? Math.round(XP_PER_SIM / skillIds.length) : 0;
-    const skillsEarnedData = skillIds.map(id => ({ skill_id: id, xp: xpEach }));
+    const overallScore = scores?.overall ?? 50;
+    const xpPerSkill = calculateSkillXP(overallScore, true); // treat every sim as new context for now
+    const skillsEarnedData = skillIds.map(id => ({ skill_id: id, xp: xpPerSkill }));
 
     // For display: compute level changes
-    // We'd need existing XP to show level-ups accurately, but we can show what was earned
     const earned = skillIds.map(id => {
       const tax = SKILL_TAXONOMY.find(s => s.id === id);
       return {
         skill_id: id,
-        xp: xpEach,
+        xp: xpPerSkill,
         name: tax?.name || id,
-        levelBefore: "Beginner",
-        levelAfter: "Beginner",
+        levelBefore: "Novice",
+        levelAfter: "Novice",
         leveledUp: false,
       };
     });
@@ -807,7 +808,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
         onCompleted?.();
         // Increment usage counter for free tier
         await simGate.increment();
-        toast({ title: "Skills updated! 🎯", description: `+${xpEach} XP in ${earned.map(e => e.name).join(", ")}`, action: <Button variant="link" className="text-xs p-0 h-auto" onClick={() => navigate("/map")}>Skill Map</Button> });
+        toast({ title: "Skills updated! 🎯", description: `+${xpPerSkill} XP in ${earned.map(e => e.name).join(", ")}`, action: <Button variant="link" className="text-xs p-0 h-auto" onClick={() => navigate("/map")}>Skill Map</Button> });
       } catch (err) {
         console.error("Failed to save completion:", err);
       }

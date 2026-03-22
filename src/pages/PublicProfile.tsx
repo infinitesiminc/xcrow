@@ -33,6 +33,7 @@ const TIER_COLORS: Record<CastleTier, string> = {
   outpost: "text-emerald-400",
   fortress: "text-amber-400",
   citadel: "text-purple-400",
+  grandmaster: "text-violet-400",
 };
 
 interface ProfileData {
@@ -91,7 +92,7 @@ export default function PublicProfile() {
 
   // Castle tier distribution
   const tierCounts = useMemo(() => {
-    const counts: Record<CastleTier, number> = { ruins: 0, outpost: 0, fortress: 0, citadel: 0 };
+    const counts: Record<CastleTier, number> = { ruins: 0, outpost: 0, fortress: 0, citadel: 0, grandmaster: 0 };
     skillXpMap.forEach(({ xp }) => {
       const castle = getCastleState(xp);
       if (castle.unlocked) counts[castle.tier]++;
