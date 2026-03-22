@@ -585,14 +585,14 @@ export default function Enterprise() {
       </section>
 
       {/* ── Always Adapting Engine (Loop) ── */}
-      <section className="px-4 py-20 bg-muted/20 border-y border-border">
+      <section className="px-4 py-20 border-y border-[hsl(var(--filigree)/0.1)]" style={{ background: "hsl(var(--surface-stone))" }}>
         <div className="mx-auto max-w-5xl">
           <motion.div {...fadeUp} className="text-center mb-4">
-            <h2 className="font-display text-3xl sm:text-4xl font-semibold text-foreground">
+            <h2 className="font-fantasy text-3xl sm:text-4xl font-semibold text-foreground">
               Always adapting to AI
             </h2>
             <p className="mt-3 text-muted-foreground max-w-xl mx-auto">
-              Not a project. Not a quarterly review. A living system that adapts your
+              Not a project. Not a quarterly review. A living engine — powered by quest-based skill building — that adapts your
               workforce as fast as frontier models evolve.
             </p>
           </motion.div>
