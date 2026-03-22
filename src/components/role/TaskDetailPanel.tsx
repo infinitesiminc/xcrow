@@ -195,11 +195,11 @@ export function TaskDetailPanel({
         </div>
       )}
 
-      {/* ─── INTEL QUEST 1: Scout the Threat ─── */}
+      {/* ─── INTEL QUEST 1: Scan the Horizon ─── */}
       <AnimatePresence mode="wait">
         {hasPrediction && !threatRevealed && (
           <motion.button
-            key="scout-threat"
+            key="scan-horizon"
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8, scale: 0.95 }}
@@ -213,11 +213,11 @@ export function TaskDetailPanel({
               </div>
               <div className="flex-1 min-w-0">
                 <div className="text-xs font-bold text-foreground mb-0.5 flex items-center gap-1.5">
-                  Scout the Threat
+                  Scan the Horizon
                   <span className="text-[9px] font-medium text-destructive/70 px-1.5 py-0.5 rounded-full bg-destructive/10">+5-15 XP</span>
                 </div>
                 <p className="text-[10px] text-muted-foreground italic">
-                  {scoutFlavor}
+                  {scanFlavor}
                 </p>
               </div>
               <div className="shrink-0 text-destructive/60 group-hover:text-destructive group-hover:translate-x-0.5 transition-all">
