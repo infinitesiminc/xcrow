@@ -1172,40 +1172,73 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                     const scaffoldTierInMsg = !isUser ? safeStr(msg.content).match(/\[SCAFFOLD_TIER:(\d)\]/) : null;
                     const tierLabels = ["", "💭 Let's break this down...", "💡 Here's a direction...", "📚 Teaching moment"];
 
+                    // Split AI messages that contain both evaluation AND a new scenario
+                    const hasNewScenario = !isUser && i > 0 && displayContent.includes("📖");
+                    const scenarioSplitIndex = hasNewScenario ? displayContent.indexOf("📖") : -1;
+                    const evaluationPart = hasNewScenario ? displayContent.slice(0, scenarioSplitIndex).trim() : null;
+                    const scenarioPart = hasNewScenario ? displayContent.slice(scenarioSplitIndex).trim() : null;
+
+                    const renderBubble = (content: string, key: string, shouldAnimate: boolean) => (
+                      <div className="flex justify-start" key={key}>
+                        <div
+                          className="chat-prose max-w-[92%] rounded-2xl rounded-bl-md px-4 py-3 relative"
+                          style={{
+                            background: "hsl(var(--surface-stone))",
+                            color: "hsl(var(--card-foreground))",
+                            border: "1px solid hsl(var(--filigree) / 0.12)",
+                            boxShadow: "inset 0 1px 0 hsl(var(--emboss-light)), 0 2px 6px hsl(var(--emboss-shadow))",
+                          }}
+                        >
+                          <div
+                            className="absolute left-0 top-3 bottom-3 w-[2px] rounded-full"
+                            style={{ background: "hsl(var(--filigree) / 0.15)" }}
+                          />
+                          {shouldAnimate
+                            ? <TypewriterMarkdown content={content} speed={8} components={toolMentionComponents} />
+                            : <ReactMarkdown components={toolMentionComponents}>{content}</ReactMarkdown>
+                          }
+                        </div>
+                      </div>
+                    );
+
+                    const scenarioDivider = (
+                      <motion.div
+                        initial={{ opacity: 0, scaleX: 0.6 }}
+                        animate={{ opacity: 1, scaleX: 1 }}
+                        transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+                        className="flex items-center gap-3 py-3 my-2"
+                      >
+                        <div className="flex-1 h-px" style={{ background: "linear-gradient(90deg, transparent, hsl(var(--filigree) / 0.4), transparent)" }} />
+                        <span
+                          className="text-[11px] font-semibold uppercase tracking-[0.15em] shrink-0 px-3 py-1 rounded-full"
+                          style={{
+                            color: "hsl(var(--filigree-glow))",
+                            background: "hsl(var(--filigree) / 0.08)",
+                            border: "1px solid hsl(var(--filigree) / 0.15)",
+                            fontFamily: "'Cinzel', serif",
+                            textShadow: "0 0 8px hsl(var(--filigree-glow) / 0.4)",
+                          }}
+                        >
+                          ⚔️ New Scenario
+                        </span>
+                        <div className="flex-1 h-px" style={{ background: "linear-gradient(90deg, transparent, hsl(var(--filigree) / 0.4), transparent)" }} />
+                      </motion.div>
+                    );
+
+                    const isLatestAi = !isUser && i === messages.length - 1 && msg.role === "assistant";
+                    const isRecentAi = !isUser && i === messages.length - 2 && messages[messages.length - 1]?.role === "user";
+                    const shouldAnimate = isLatestAi && !isRecentAi;
+
                     return (
                       <div key={i} className="space-y-2">
-                        {/* New Scenario divider — show when AI message starts a new quest (has 📖 Scenario) and isn't the first message */}
-                        {!isUser && i > 0 && safeStr(msg.content).includes("📖 Scenario") && (
-                          <motion.div
-                            initial={{ opacity: 0, scaleX: 0.6 }}
-                            animate={{ opacity: 1, scaleX: 1 }}
-                            transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-                            className="flex items-center gap-3 py-3 my-2"
-                          >
-                            <div className="flex-1 h-px" style={{ background: "linear-gradient(90deg, transparent, hsl(var(--filigree) / 0.4), transparent)" }} />
-                            <span
-                              className="text-[11px] font-semibold uppercase tracking-[0.15em] shrink-0 px-3 py-1 rounded-full"
-                              style={{
-                                color: "hsl(var(--filigree-glow))",
-                                background: "hsl(var(--filigree) / 0.08)",
-                                border: "1px solid hsl(var(--filigree) / 0.15)",
-                                fontFamily: "'Cinzel', serif",
-                                textShadow: "0 0 8px hsl(var(--filigree-glow) / 0.4)",
-                              }}
-                            >
-                              ⚔️ New Scenario
-                            </span>
-                            <div className="flex-1 h-px" style={{ background: "linear-gradient(90deg, transparent, hsl(var(--filigree) / 0.4), transparent)" }} />
-                          </motion.div>
-                        )}
                         <motion.div
                           initial={{ opacity: 0, y: 8 }}
                           animate={{ opacity: 1, y: 0 }}
                           transition={{ duration: 0.25 }}
                           className="space-y-2"
                         >
-                        <div className={`flex ${isUser ? "justify-end" : "justify-start"}`}>
-                          {isUser ? (
+                        {isUser ? (
+                          <div className="flex justify-end">
                             <div
                               className="max-w-[80%] rounded-2xl rounded-br-md px-4 py-2.5"
                               style={{
@@ -1216,32 +1249,35 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                             >
                               <p className="text-sm text-foreground">{displayContent}</p>
                             </div>
-                          ) : (
+                          </div>
+                        ) : hasNewScenario && evaluationPart ? (
+                          <>
+                            {renderBubble(evaluationPart, `${i}-eval`, false)}
+                            {scenarioDivider}
+                            {renderBubble(scenarioPart!, `${i}-scenario`, shouldAnimate)}
+                          </>
+                        ) : (
+                          <div className="flex justify-start">
                             <div
                               className="chat-prose max-w-[92%] rounded-2xl rounded-bl-md px-4 py-3 relative"
                               style={{
                                 background: "hsl(var(--surface-stone))",
+                                color: "hsl(var(--card-foreground))",
                                 border: "1px solid hsl(var(--filigree) / 0.12)",
                                 boxShadow: "inset 0 1px 0 hsl(var(--emboss-light)), 0 2px 6px hsl(var(--emboss-shadow))",
                               }}
                             >
-                              {/* Subtle parchment accent line */}
                               <div
                                 className="absolute left-0 top-3 bottom-3 w-[2px] rounded-full"
                                 style={{ background: "hsl(var(--filigree) / 0.15)" }}
                               />
-                              {(() => {
-                                const isLatestAi = !isUser && i === messages.length - 1 && msg.role === "assistant";
-                                const isRecentAi = !isUser && i === messages.length - 2 && messages[messages.length - 1]?.role === "user";
-                                const shouldAnimate = isLatestAi && !isRecentAi;
-                                if (shouldAnimate) {
-                                  return <TypewriterMarkdown content={displayContent} speed={8} components={toolMentionComponents} />;
-                                }
-                                return <ReactMarkdown components={toolMentionComponents}>{displayContent}</ReactMarkdown>;
-                              })()}
+                              {shouldAnimate
+                                ? <TypewriterMarkdown content={displayContent} speed={8} components={toolMentionComponents} />
+                                : <ReactMarkdown components={toolMentionComponents}>{displayContent}</ReactMarkdown>
+                              }
                             </div>
-                          )}
-                        </div>
+                          </div>
+                        )}
 
                         {/* Collapsible insight card */}
                         {!isUser && <InsightCard content={msg.content} />}
