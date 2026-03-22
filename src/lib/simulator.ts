@@ -114,8 +114,9 @@ export async function scoreSession(
   mode: SimMode = "assess",
   learningObjectives?: LearningObjective[],
   scaffoldingTiers?: Record<string, number>,
+  liveObjectiveStatus?: Record<string, boolean>,
 ): Promise<SimScoreResult> {
-  return simFetch("score", { transcript, scenario, mode, learningObjectives, scaffoldingTiers });
+  return simFetch("score", { transcript, scenario, mode, learningObjectives, scaffoldingTiers, liveObjectiveStatus });
 }
 
 export async function generateElevation(
