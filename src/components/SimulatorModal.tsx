@@ -39,7 +39,7 @@ type Phase = "loading" | "briefing" | "chat" | "review" | "completing" | "done" 
 
 // Defaults — overridden by server config
 const DEFAULT_MIN_ROUNDS = 3;
-const DEFAULT_MAX_ROUNDS = 6;
+const DEFAULT_MAX_ROUNDS = 3;
 
 // Inactivity nudge timer (ms)
 const INACTIVITY_NUDGE_MS = 30_000;
