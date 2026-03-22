@@ -25,7 +25,7 @@ interface RecentActivity {
 }
 
 export default function Navbar() {
-  const { user, signOut, openAuthModal, isSuperAdmin, isSchoolAdmin } = useAuth();
+  const { user, signOut, openAuthModal, isSuperAdmin, isSchoolAdmin, profile } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
