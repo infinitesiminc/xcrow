@@ -400,6 +400,7 @@ const MapPage = () => {
               <div className="flex-1 overflow-hidden">
                 <FutureSkillsTable
                   skills={futureSkills}
+                  skillGrowthMap={skillGrowthMap}
                   onSkillClick={(skill) => {
                     setMapFocusSkillId(skill.id);
                     setTimeout(() => setMapFocusSkillId(null), 100);
