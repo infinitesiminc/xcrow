@@ -108,7 +108,7 @@ export function BattleChooser({ choices, conqueredNames, remainingCount, onChoos
 
               {/* CTA hint */}
               <div className="flex items-center gap-1.5 text-[10px] font-medium text-primary/70 group-hover:text-primary transition-colors">
-                <Swords className="h-3 w-3" />
+                {(() => { const { Icon, emoji } = rpgIcon(isConquered ? "battle" : "engage"); return <Icon className="h-3 w-3" />; })()}
                 {isConquered ? "Reconquer" : "Engage"}
               </div>
             </motion.button>

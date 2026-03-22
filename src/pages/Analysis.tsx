@@ -381,7 +381,7 @@ const Analysis = () => {
         {(!focusedTask || showAllTasks) && (
           <>
             {/* Task cards */}
-            <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">⚔️ Quest Log</h3>
+            <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">📜 Quest Log</h3>
             <div className="space-y-3 pb-8">
               {sortedTasks.map((task, i) => {
                 const aiScore = task.aiExposureScore ?? 50;

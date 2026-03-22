@@ -324,7 +324,7 @@ const RoleDeepDive = () => {
               <ChevronLeft className="h-3.5 w-3.5" /> Back
             </button>
             <div className="text-center min-w-0 flex-1">
-              <span className="text-[10px] uppercase tracking-wider text-primary font-semibold">⚔️ Mission Briefing</span>
+              <span className="text-[10px] uppercase tracking-wider text-primary font-semibold">🗺️ Mission Briefing</span>
               <span className="text-sm font-semibold text-foreground truncate block">{result.jobTitle.trim()}</span>
               {company && <span className="text-[10px] text-muted-foreground">Kingdom of {company}</span>}
             </div>

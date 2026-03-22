@@ -370,10 +370,10 @@ export function TaskDetailPanel({
         >
           <Play className="h-3 w-3" />
           {intelComplete
-            ? "⚔️ Begin Battle — Intel Advantage Active"
+            ? "🗡️ Begin Battle — Intel Advantage Active"
             : isCompleted
               ? "🔄 Retry Quest"
-              : "⚔️ Accept Quest"}
+              : "📜 Accept Quest"}
         </Button>
       </div>
     </motion.div>
