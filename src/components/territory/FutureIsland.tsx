@@ -54,7 +54,7 @@ export default function FutureIsland({ island, skillLookup, level2SkillIds, isFo
   const visibleCount = activeNodes.length;
   const hiddenCount = isFocused ? 0 : skillCount - visibleCount;
 
-  const [hoveredId, setHoveredId] = useState<string | null>(null);
+  const isParchment = useIsParchment();
 
   const hoveredNode = useMemo(
     () => (hoveredId ? activeNodes.find((n) => n.skillId === hoveredId) ?? null : null),
