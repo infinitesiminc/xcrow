@@ -6,7 +6,7 @@ import { useState, useCallback, useEffect, useMemo, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { X, Swords, ScrollText } from "lucide-react";
+import { X, Swords, ScrollText, Shield } from "lucide-react";
 
 import { useFutureSkills } from "@/hooks/use-future-skills";
 import FutureTerritoryMap from "@/components/territory/FutureTerritoryMap";
@@ -21,6 +21,7 @@ import type { RoleResult } from "@/components/InlineRoleCarousel";
 import type { EdgeContext } from "@/components/HumanEdgesCard";
 
 import CompactHUD from "@/components/territory/CompactHUD";
+import HQPanel from "@/components/territory/HQPanel";
 import MyRolesPanel from "@/components/territory/MyRolesPanel";
 import { useSkills } from "@/hooks/use-skills";
 import {
@@ -81,8 +82,8 @@ const MapPage = () => {
 
   const [selectedRole, setSelectedRole] = useState<RoleResult | null>(null);
   const [activeEdge, setActiveEdge] = useState<EdgeContext | null>(null);
-  const [rightPanelTab, setRightPanelTab] = useState<"table" | "roles">("table");
-  const [chatOpen, setChatOpen] = useState(false);
+  const [rightPanelTab, setRightPanelTab] = useState<"hq" | "table" | "roles">("hq");
+  const [chatOpen, setChatOpen] = useState(!!user);
   const [mapFocusSkillId, setMapFocusSkillId] = useState<string | null>(null);
   const [myRolesTab, setMyRolesTab] = useState<"saved" | "practiced">("saved");
 
@@ -182,6 +183,22 @@ const MapPage = () => {
 
       {/* Floating tab bar */}
       <div className="absolute top-14 left-4 z-20 flex items-center gap-1 bg-card/80 backdrop-blur-md border border-border/50 rounded-lg p-1 shadow-lg">
+        {isSignedIn && (
+          <button
+            onClick={() => {
+              if (rightPanelTab === "hq" && chatOpen) { setChatOpen(false); }
+              else { setRightPanelTab("hq"); setChatOpen(true); }
+            }}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+              rightPanelTab === "hq" && chatOpen
+                ? "bg-primary/10 text-primary"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <Shield className="h-3 w-3" />
+            HQ
+          </button>
+        )}
         <button
           onClick={() => {
             if (rightPanelTab === "table" && chatOpen) { setChatOpen(false); }
@@ -225,7 +242,11 @@ const MapPage = () => {
             transition={{ type: "spring", damping: 28, stiffness: 300 }}
             className="absolute top-24 left-4 bottom-20 w-[420px] z-20 flex flex-col bg-card/90 backdrop-blur-xl border border-border/50 rounded-xl shadow-2xl overflow-hidden"
           >
-            {rightPanelTab === "table" ? (
+            {rightPanelTab === "hq" && isSignedIn ? (
+              <div className="flex-1 overflow-hidden">
+                <HQPanel onSelectRole={(role) => setSelectedRole(role)} />
+              </div>
+            ) : rightPanelTab === "table" ? (
               <div className="flex-1 overflow-hidden">
                 <FutureSkillsTable
                   skills={futureSkills}
