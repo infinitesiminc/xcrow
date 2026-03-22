@@ -18,7 +18,7 @@ const SCAN_FLAVORS = [
   "A raven arrives bearing urgent intel…",
 ];
 
-const DECODE_FLAVORS = [
+const ARSENAL_FLAVORS = [
   "Ancient scrolls reveal hidden skills…",
   "A merchant offers forbidden knowledge…",
   "The War Council has new intelligence…",
