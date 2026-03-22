@@ -381,7 +381,7 @@ OBJECTIVE COMPLETION: If ALL objectives have been met, also include [ALL_OBJECTI
   if (isLastRound && !allMet) {
     const unmetIds = learningObjectives?.filter(o => !objectiveStatus?.[o.id]) || [];
     if (unmetIds.length > 0) {
-      urgencyNote = `\n\nFINAL ROUND! After evaluating, end with: "🎉 Great battle, Commander! Click **Finish** to see your report." Include [ALL_OBJECTIVES_MET] if all are met.`;
+      urgencyNote = `\n\nFINAL ROUND! After evaluating, end with: "🎉 Great battle, Commander! Click **End Quest** to see your report." Include [ALL_OBJECTIVES_MET] if all are met.`;
     }
   }
 
