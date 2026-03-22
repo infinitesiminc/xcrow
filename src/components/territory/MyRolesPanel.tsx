@@ -294,9 +294,33 @@ export default function MyRolesPanel({ onSelectRole, onAskChat, onTabChange }: M
 
   const q = search.toLowerCase();
   const kingdoms = tab === "saved" ? scoutedKingdoms : activeKingdoms;
-  const filtered = kingdoms.filter(
+  const filtered = tab === "arsenal" ? [] : kingdoms.filter(
     (k) => !q || k.title.toLowerCase().includes(q) || (k.company || "").toLowerCase().includes(q)
   );
+
+  // Arsenal: all registry tools + saved state, searchable
+  const CATEGORY_LABELS: Record<string, string> = {
+    llm: "Language Models", coding: "Coding", productivity: "Productivity",
+    design: "Design", data: "Data & Analytics", writing: "Writing", search: "Search",
+  };
+  const allToolsFiltered = AI_TOOL_REGISTRY.filter(t => {
+    if (arsenalFilter === "saved" && !savedToolNames.includes(t.name)) return false;
+    if (arsenalFilter !== "all" && arsenalFilter !== "saved" && t.category !== arsenalFilter) return false;
+    if (q && !t.name.toLowerCase().includes(q) && !t.description.toLowerCase().includes(q)) return false;
+    return true;
+  });
+  // Deduplicate by name (keep first match which is the most specific version)
+  const seen = new Set<string>();
+  const uniqueTools = allToolsFiltered.filter(t => {
+    if (seen.has(t.name)) return false;
+    seen.add(t.name);
+    return true;
+  });
+
+  const handleRemoveTool = (name: string) => {
+    const updated = removeToolFromList(name);
+    setSavedToolNames(updated);
+  };
 
   return (
     <div className="h-full flex flex-col p-4 overflow-hidden">
