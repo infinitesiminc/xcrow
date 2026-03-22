@@ -1,48 +1,55 @@
-import { useState, useCallback, useEffect, useMemo, useRef } from "react";
+/**
+ * Index — Quest-focused homepage.
+ * Single Quest Focus: one dominant "Next Quest" card + kingdom progress strip.
+ */
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
-import { useIsMobile } from "@/hooks/use-mobile";
 import { supabase } from "@/integrations/supabase/client";
-import { Map, X, Swords, ScrollText } from "lucide-react";
-import OnboardingQuest from "@/components/OnboardingQuest";
-import AdaptiveQueue from "@/components/AdaptiveQueue";
-
-import { useFutureSkills } from "@/hooks/use-future-skills";
-import FutureTerritoryMap from "@/components/territory/FutureTerritoryMap";
-import FutureSkillsTable from "@/components/territory/FutureSkillsTable";
-import MapIntroGuide from "@/components/territory/MapIntroGuide";
-import { getLevel, levelProgress } from "@/lib/skill-map";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { useChatContext, useChatViewContext } from "@/contexts/ChatContext";
-import type { ViewContext } from "@/contexts/ChatContext";
-import RolePreviewPanel from "@/components/RolePreviewPanel";
-import InlineRoleCarousel, { BatchedRoleCarousel, type RoleResult, type RoleBatch } from "@/components/InlineRoleCarousel";
-import SkillSuggestionCards from "@/components/SkillSuggestionCards";
-import HumanEdgesCard, { type EdgeContext } from "@/components/HumanEdgesCard";
-import TerritoryMap, { type SkillRarityInfo } from "@/components/territory/TerritoryMap";
-import TerritoryOverlay from "@/components/territory/TerritoryOverlay";
-import CompactHUD from "@/components/territory/CompactHUD";
-import MyRolesPanel from "@/components/territory/MyRolesPanel";
-import CastleNode from "@/components/territory/CastleNode";
-import QuestBoard from "@/components/territory/QuestBoard";
-import { getCastleState } from "@/lib/castle-levels";
-import { useSkills, type DbSkill } from "@/hooks/use-skills";
 import {
-  SKILL_TAXONOMY,
-  CATEGORY_META,
-  aggregateSkillXP,
-  type SkillCategory,
-  type SkillXP,
-  type SimRecord,
-  type TaxonomySkill,
-} from "@/lib/skill-map";
+  Swords, Shield, Map, ChevronRight, Sparkles, Flame,
+  BookOpen, Crown, Star, Loader2, X, Zap
+} from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
+import OnboardingQuest from "@/components/OnboardingQuest";
+import { getCastleState, type CastleTier } from "@/lib/castle-levels";
+import { useChatContext, useChatViewContext } from "@/contexts/ChatContext";
+import RolePreviewPanel from "@/components/RolePreviewPanel";
+import type { RoleResult } from "@/components/InlineRoleCarousel";
+import SkillSuggestionCards from "@/components/SkillSuggestionCards";
 
-const CATEGORY_ORDER: SkillCategory[] = [
-  "technical", "analytical", "communication",
-  "leadership", "creative", "compliance",
-];
+/* ── Types ── */
 
-/* ── helpers ─────────────────────────────────────── */
+interface TargetRole {
+  job_id: string;
+  title: string;
+  company: string | null;
+}
+
+interface QuestTask {
+  id: string;
+  clusterName: string;
+  jobTitle: string;
+  company: string | null;
+  jobId: string;
+  aiExposure: number;
+  impact: string;
+  aiState: string;
+}
+
+interface KingdomSummary {
+  jobId: string;
+  title: string;
+  company: string | null;
+  questsCompleted: number;
+  totalQuests: number;
+  xp: number;
+  augmented: number;
+}
+
+/* ── Helpers ── */
 
 function getGreeting(): string {
   const hour = new Date().getHours();
@@ -51,256 +58,174 @@ function getGreeting(): string {
   return "Night raid ready";
 }
 
-function rolesToSkillIds(roles: RoleResult[]): Set<string> {
-  const ids = new Set<string>();
-  for (const role of roles) {
-    const text = `${role.title} ${role.company || ""}`.toLowerCase();
-    for (const skill of SKILL_TAXONOMY) {
-      if (skill.keywords.some((kw) => text.includes(kw))) {
-        ids.add(skill.id);
-      }
-    }
-  }
-  return ids;
-}
+const TIER_EMOJI: Record<CastleTier, string> = {
+  ruins: "🏚️",
+  outpost: "🏕️",
+  fortress: "🏰",
+  citadel: "👑",
+};
 
-/* ── Demo seed data for mid-game visualization ── */
-const DEMO_SEED_SKILLS: SkillXP[] = [
-  // Citadel tier (600+ XP) - mastered skills
-  { id: "data-analysis", name: "Data Analysis", category: "analytical", xp: 720, ...skillMeta("data-analysis", 720) },
-  { id: "writing-docs", name: "Writing & Docs", category: "communication", xp: 650, ...skillMeta("writing-docs", 650) },
-  // Fortress tier (300-599 XP)
-  { id: "code-dev", name: "Software Dev", category: "technical", xp: 475, ...skillMeta("code-dev", 475) },
-  { id: "project-mgmt", name: "Project Mgmt", category: "leadership", xp: 380, ...skillMeta("project-mgmt", 380) },
-  { id: "research", name: "Research & Discovery", category: "analytical", xp: 340, ...skillMeta("research", 340) },
-  { id: "prompt-eng", name: "Prompt Engineering", category: "technical", xp: 310, ...skillMeta("prompt-eng", 310) },
-  // Outpost tier (100-299 XP)
-  { id: "design-ux", name: "Design & UX", category: "creative", xp: 250, ...skillMeta("design-ux", 250) },
-  { id: "stakeholder-mgmt", name: "Stakeholder Mgmt", category: "communication", xp: 200, ...skillMeta("stakeholder-mgmt", 200) },
-  { id: "risk-assessment", name: "Risk Assessment", category: "analytical", xp: 175, ...skillMeta("risk-assessment", 175) },
-  { id: "ai-ml", name: "AI & ML", category: "technical", xp: 150, ...skillMeta("ai-ml", 150) },
-  { id: "strategy", name: "Strategy & Planning", category: "leadership", xp: 130, ...skillMeta("strategy", 130) },
-  { id: "financial-modeling", name: "Financial Modeling", category: "analytical", xp: 100, ...skillMeta("financial-modeling", 100) },
-  // Ruins (locked) — rest of taxonomy fills automatically
-];
+const TIER_COLORS: Record<CastleTier, string> = {
+  ruins: "border-border/30",
+  outpost: "border-emerald-500/30",
+  fortress: "border-blue-500/30",
+  citadel: "border-amber-500/30",
+};
 
-function skillMeta(id: string, xp: number) {
-  const tax = SKILL_TAXONOMY.find(s => s.id === id);
-  const lvl = getLevel(xp);
-  return {
-    level: lvl.name,
-    levelIndex: lvl.index,
-    progress: levelProgress(xp),
-    aiExposure: tax?.aiExposure ?? 50,
-    humanEdge: tax?.humanEdge,
-    taskCount: Math.ceil(xp / 100),
-  };
-}
-
-/** Merge seed into full taxonomy so locked skills also appear */
-function buildDemoSkills(): SkillXP[] {
-  const seeded = new globalThis.Map(DEMO_SEED_SKILLS.map(s => [s.id, s]));
-  return SKILL_TAXONOMY.map(t => seeded.get(t.id) ?? {
-    id: t.id,
-    name: t.name,
-    category: t.category,
-    xp: 0,
-    level: "Beginner" as const,
-    levelIndex: 0,
-    progress: 0,
-    aiExposure: t.aiExposure,
-    humanEdge: t.humanEdge,
-    taskCount: 0,
-  });
-}
-
-/* ── Right panel tab type ────────────────────────── */
-type RightTab = "territory" | "table" | "roles";
-
-/* ── component ───────────────────────────────────── */
+/* ── Component ── */
 
 const Index = () => {
   const { profile, user, refreshProfile } = useAuth();
-  const isMobile = useIsMobile();
-  const { skills: dbSkills } = useSkills();
+  const navigate = useNavigate();
+  const { setIsOpen: setChatDockOpen, sendMessage: chatSendMessage } = useChatContext();
 
-  const { futureSkills } = useFutureSkills();
-
-  // Convert DB skills to TaxonomySkill format for layout/aggregation
-  const taxonomy: TaxonomySkill[] = useMemo(() =>
-    dbSkills.map(s => ({
-      id: s.id,
-      name: s.name,
-      category: s.category,
-      keywords: s.keywords,
-      aiExposure: s.aiExposure,
-      humanEdge: s.humanEdge,
-    })),
-    [dbSkills]
-  );
-
-  // Build rarity map for special drop styling
-  const rarityMap = useMemo(() => {
-    const m = new globalThis.Map<string, SkillRarityInfo>();
-    for (const s of dbSkills) {
-      if (s.rarity !== "common" || s.dropExpiresAt) {
-        m.set(s.id, {
-          id: s.id,
-          rarity: s.rarity,
-          dropExpiresAt: s.dropExpiresAt,
-          iconEmoji: s.iconEmoji,
-          description: s.description,
-        });
-      }
-    }
-    return m;
-  }, [dbSkills]);
-
-  const [hasInteracted, setHasInteracted] = useState(false);
-  const [selectedRole, setSelectedRole] = useState<RoleResult | null>(null);
-  const [fullScreenRole, setFullScreenRole] = useState<RoleResult | null>(null);
-  const [roleBatches, setRoleBatches] = useState<RoleBatch[]>([]);
-  const [externalPrompt, setExternalPrompt] = useState<string | null>(null);
-  const [activeEdge, setActiveEdge] = useState<EdgeContext | null>(null);
-  const [rightTab, setRightTab] = useState<RightTab>("territory");
-  const [chatOpen, setChatOpen] = useState(true);
-  const [rightPanelTab, setRightPanelTab] = useState<"table" | "roles">("table");
-  const [lastSimResult, setLastSimResult] = useState<ViewContext["lastSimResult"]>(null);
-  const [mapFocusSkillId, setMapFocusSkillId] = useState<string | null>(null);
-  const [myRolesTab, setMyRolesTab] = useState<"saved" | "practiced">("saved");
-  const batchCounter = useRef(0);
-  const [territoryOpen, setTerritoryOpen] = useState(false);
-  const [lastPracticedSkillId, setLastPracticedSkillId] = useState<string | null>("code-dev");
-  const [hasOpenedTerritory, setHasOpenedTerritory] = useState(false);
-  const [territoryFocusSkillId, setTerritoryFocusSkillId] = useState<string | null>(null);
-  const [territoryXpGain, setTerritoryXpGain] = useState(0);
-
-  const [realSkills, setRealSkills] = useState<SkillXP[]>([]);
-  const [targetSkillIds, setTargetSkillIds] = useState<Set<string>>(new Set());
-
-  // Use demo seed when no real sim data exists
-  const displaySkills = useMemo(
-    () => (realSkills.length > 0 ? realSkills : buildDemoSkills()),
-    [realSkills]
-  );
-
-  const allRolesFlat = useMemo(() => roleBatches.flatMap((b) => b.roles), [roleBatches]);
-  const demoHighlighted = useMemo(() => rolesToSkillIds(allRolesFlat), [allRolesFlat]);
-  const skillMap = useMemo(() => {
-    const m = new globalThis.Map(displaySkills.map(s => [s.id, s]));
-    return m;
-  }, [displaySkills]);
-  const latestBatchId = roleBatches.length > 0 ? roleBatches[roleBatches.length - 1].id : 0;
-
-  useEffect(() => {
-    if (!user) return;
-    (async () => {
-      const [simsRes, profileRes] = await Promise.all([
-        supabase
-          .from("completed_simulations")
-          .select("task_name, job_title, skills_earned, tool_awareness_score, human_value_add_score, adaptive_thinking_score, domain_judgment_score")
-          .eq("user_id", user.id),
-        supabase
-          .from("profiles")
-          .select("target_roles")
-          .eq("id", user.id)
-          .single(),
-      ]);
-
-      const sims = (simsRes.data || []) as SimRecord[];
-      setRealSkills(aggregateSkillXP(sims, taxonomy));
-
-      const targetRoles = ((profileRes.data as any)?.target_roles || []) as {
-        job_id: string;
-      }[];
-      if (targetRoles.length > 0) {
-        const jobIds = targetRoles.map((r) => r.job_id);
-        const { data: clusters } = await supabase
-          .from("job_task_clusters")
-          .select("skill_names")
-          .in("job_id", jobIds);
-        const names = new Set<string>();
-        for (const c of clusters || []) {
-          for (const s of c.skill_names || []) names.add(s.toLowerCase());
-        }
-        const ids = new Set<string>();
-        for (const skill of taxonomy) {
-          if (names.has(skill.name.toLowerCase())) ids.add(skill.id);
-          for (const kw of skill.keywords) {
-            if (names.has(kw)) ids.add(skill.id);
-          }
-        }
-        setTargetSkillIds(ids);
-      }
-    })();
-  }, [user, taxonomy]);
-
-  // Territory overlay is only opened manually via the "Full Map" button
-
-  const handleChatStart = useCallback(() => setHasInteracted(true), []);
-
-  const handleRolesAskChat = useCallback((prompt: string) => {
-    setExternalPrompt(prompt);
-    setRightTab("territory");
-    setHasInteracted(true);
-  }, []);
-
-  const handleRolesFound = useCallback((roles: RoleResult[]) => {
-    if (roles.length === 0) return;
-    batchCounter.current += 1;
-    const newBatch: RoleBatch = { id: batchCounter.current, roles };
-    setRoleBatches((prev) => [...prev, newBatch]);
-  }, []);
-
-  const handleRoleSelect = useCallback(
-    (role: RoleResult) => setSelectedRole((prev) => (prev?.jobId === role.jobId ? null : role)),
-    []
-  );
-
-  const handleEdgeClick = useCallback((prompt: string, edge: EdgeContext) => {
-    setExternalPrompt(prompt);
-    setActiveEdge(edge);
-  }, []);
-
-  const handleTileClick = useCallback(() => {
-    // No-op — skill nodes are visual only now
-  }, []);
-
-  const handleExpandRole = useCallback((role: RoleResult) => {
-    setFullScreenRole(role);
-  }, []);
-
-  const handleViewTerritory = useCallback((skillId: string, xpGain: number) => {
-    setTerritoryFocusSkillId(skillId);
-    setTerritoryXpGain(xpGain);
-    setLastPracticedSkillId(skillId);
-    setTerritoryOpen(true);
-  }, []);
-
-  const greeting = getGreeting();
-  const userName = profile?.displayName?.split(" ")[0];
   const isSignedIn = !!user;
+  const userName = profile?.displayName?.split(" ")[0];
+  const greeting = getGreeting();
+
+  // Onboarding state
   const showOnboarding = isSignedIn && profile && !profile.onboardingCompleted;
   const [onboardingDismissed, setOnboardingDismissed] = useState(false);
 
-  // Inject view context into the unified chat
+  // Data
+  const [targetRoles, setTargetRoles] = useState<TargetRole[]>([]);
+  const [kingdoms, setKingdoms] = useState<KingdomSummary[]>([]);
+  const [nextQuest, setNextQuest] = useState<QuestTask | null>(null);
+  const [questPool, setQuestPool] = useState<QuestTask[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedRole, setSelectedRole] = useState<RoleResult | null>(null);
+
+  // Adaptive queue items
+  const [retryQuests, setRetryQuests] = useState<{ id: string; taskName: string; jobTitle: string; weakCategory: string; weakScore: number }[]>([]);
+
+  // View context
   const chatViewCtx = useMemo(() => ({
     page: "home" as const,
-    activePanel: selectedRole ? "role-preview" : rightTab === "roles" ? "roles" : "territory",
-    selectedRole: selectedRole ? { title: selectedRole.title, company: selectedRole.company, jobId: selectedRole.jobId } : null,
-    selectedTab: rightTab === "roles" ? myRolesTab : undefined,
-    lastSimResult,
-  }), [selectedRole, rightTab, myRolesTab, lastSimResult]);
-  useChatViewContext(chatViewCtx, [chatViewCtx]);
+    activePanel: "quest-dashboard",
+  }), []);
+  useChatViewContext(chatViewCtx as any, [chatViewCtx]);
 
-  // Wire up role callbacks from the unified chat
-  const { onRolesFoundRef, onRoleSelectRef, sendMessage: chatSendMessage, setIsOpen: setChatDockOpen } = useChatContext();
+  // Load data
   useEffect(() => {
-    onRolesFoundRef.current = handleRolesFound;
-    onRoleSelectRef.current = handleRoleSelect;
-  }, [handleRolesFound, handleRoleSelect, onRolesFoundRef, onRoleSelectRef]);
+    if (!user) { setLoading(false); return; }
+    (async () => {
+      setLoading(true);
 
-  /* ── Onboarding Quest ── */
+      // Get profile target roles
+      const { data: profileData } = await supabase
+        .from("profiles")
+        .select("target_roles")
+        .eq("id", user.id)
+        .single();
+
+      const roles = ((profileData as any)?.target_roles || []) as TargetRole[];
+      setTargetRoles(roles);
+
+      if (roles.length === 0) {
+        setLoading(false);
+        return;
+      }
+
+      const jobIds = roles.map(r => r.job_id);
+
+      // Load tasks, sims, and bookmarks in parallel
+      const [tasksRes, simsRes, queueRes] = await Promise.all([
+        supabase
+          .from("job_task_clusters")
+          .select("id, cluster_name, job_id, ai_exposure_score, impact_level, ai_state, jobs(title, companies(name), augmented_percent)")
+          .in("job_id", jobIds)
+          .order("sort_order"),
+        supabase
+          .from("completed_simulations")
+          .select("task_name, job_title, correct_answers, total_questions")
+          .eq("user_id", user.id),
+        supabase
+          .from("simulation_queue")
+          .select("id, task_name, job_title, weak_category, weak_score")
+          .eq("user_id", user.id)
+          .eq("status", "pending")
+          .order("created_at", { ascending: false })
+          .limit(3),
+      ]);
+
+      // Build completed task set
+      const completedTasks = new Set<string>();
+      const simsByRole = new globalThis.Map<string, { completed: number; xp: number }>();
+      for (const sim of (simsRes.data || []) as any[]) {
+        completedTasks.add(`${sim.task_name}|${sim.job_title}`.toLowerCase());
+        const key = sim.job_title.toLowerCase();
+        const prev = simsByRole.get(key) || { completed: 0, xp: 0 };
+        prev.completed += 1;
+        prev.xp += (sim.correct_answers || 0) * 25;
+        simsByRole.set(key, prev);
+      }
+
+      // Build quest pool from uncompleted tasks
+      const allQuests: QuestTask[] = [];
+      const kingdomMap = new globalThis.Map<string, KingdomSummary>();
+
+      for (const task of (tasksRes.data || []) as any[]) {
+        const job = task.jobs;
+        if (!job) continue;
+        const jobTitle = job.title;
+        const company = job.companies?.name || null;
+        const jobId = task.job_id;
+
+        // Track kingdom
+        if (!kingdomMap.has(jobId)) {
+          const key = jobTitle.toLowerCase();
+          const simData = simsByRole.get(key) || { completed: 0, xp: 0 };
+          kingdomMap.set(jobId, {
+            jobId,
+            title: jobTitle,
+            company,
+            questsCompleted: simData.completed,
+            totalQuests: 0,
+            xp: simData.xp,
+            augmented: job.augmented_percent || 0,
+          });
+        }
+        const kingdom = kingdomMap.get(jobId)!;
+        kingdom.totalQuests += 1;
+
+        const taskKey = `${task.cluster_name}|${jobTitle}`.toLowerCase();
+        if (!completedTasks.has(taskKey)) {
+          allQuests.push({
+            id: task.id,
+            clusterName: task.cluster_name,
+            jobTitle,
+            company,
+            jobId,
+            aiExposure: task.ai_exposure_score || 50,
+            impact: task.impact_level || "medium",
+            aiState: task.ai_state || "human_ai",
+          });
+        }
+      }
+
+      setKingdoms(Array.from(kingdomMap.values()));
+      setQuestPool(allQuests);
+      setNextQuest(allQuests[0] || null);
+      setRetryQuests((queueRes.data || []) as any);
+      setLoading(false);
+    })();
+  }, [user]);
+
+  const handleStartQuest = useCallback((quest: QuestTask) => {
+    const slug = quest.jobTitle.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+    navigate(`/role/${slug}?job=${quest.jobId}&task=${encodeURIComponent(quest.clusterName)}`);
+  }, [navigate]);
+
+  const handleOpenKingdom = useCallback((kingdom: KingdomSummary) => {
+    setSelectedRole({
+      jobId: kingdom.jobId,
+      title: kingdom.title,
+      company: kingdom.company,
+      augmented: kingdom.augmented,
+    } as RoleResult);
+  }, []);
+
+  /* ── Onboarding ── */
   if (showOnboarding && !onboardingDismissed) {
     return (
       <OnboardingQuest
@@ -314,220 +239,295 @@ const Index = () => {
     );
   }
 
-  /* ── Mobile ───────────────────────────────────── */
-
-  if (isMobile) {
+  /* ── Signed-out landing ── */
+  if (!isSignedIn) {
     return (
-      <div className="h-[calc(100vh-3.5rem)] flex flex-col">
-        <div className="flex-1 flex flex-col items-center px-4 pt-6 pb-4 overflow-y-auto">
-          <AnimatePresence mode="wait">
-            {!hasInteracted && (
-              <motion.div
-                key="greeting"
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20, transition: { duration: 0.3 } }}
-                className="text-center mb-6 shrink-0"
-              >
-                <h1 className="text-2xl font-display font-bold text-foreground leading-tight">
-                  {isSignedIn
-                    ? `${greeting}${userName ? `, ${userName}` : ""} ⚔️`
-                    : "Level up your career"}
-                </h1>
-                <p className="text-sm text-muted-foreground mt-1.5">
-                  {isSignedIn
-                    ? "Choose your next quest and conquer new territory"
-                    : "Explore kingdoms, practice quests, claim your territory"}
-                </p>
-              </motion.div>
-            )}
-          </AnimatePresence>
-          {/* Chat is now in the unified dock bar */}
-          {!user && <SkillSuggestionCards />}
-          {user && (
-            <div className="w-full max-w-lg mb-4 space-y-4">
-              <QuestBoard />
-              <AdaptiveQueue userId={user.id} />
-            </div>
-          )}
-        </div>
-
-        <AnimatePresence>
-          {(selectedRole || fullScreenRole) && (
-            <motion.div
-              key="mobile-preview"
-              initial={{ y: "100%" }}
-              animate={{ y: 0 }}
-              exit={{ y: "100%" }}
-              transition={{ type: "spring", damping: 25, stiffness: 300 }}
-              className="fixed inset-0 z-50 bg-background"
-            >
-              <RolePreviewPanel
-                role={fullScreenRole || selectedRole!}
-                onClose={() => { setSelectedRole(null); setFullScreenRole(null); }}
-                edgeContext={activeEdge}
-              />
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* Territory overlay */}
-        <TerritoryOverlay
-          open={territoryOpen}
-          onClose={() => {
-            setTerritoryOpen(false);
-            setTerritoryFocusSkillId(null);
-            setTerritoryXpGain(0);
-          }}
-          skills={displaySkills}
-          lastPracticedSkillId={lastPracticedSkillId}
-          focusSkillId={territoryFocusSkillId}
-          xpGain={territoryXpGain}
-        />
-
-        {/* Territory button (floating) */}
-        {isSignedIn && !territoryOpen && (
-          <button
-            onClick={() => setTerritoryOpen(true)}
-            className="fixed bottom-4 right-4 z-40 flex items-center gap-1.5 px-3 py-2 rounded-lg bg-card border border-border/50 text-xs font-medium text-muted-foreground hover:text-foreground shadow-lg hover:shadow-xl transition-all active:scale-[0.95]"
-          >
-            <Map className="h-3.5 w-3.5" />
-            🏰 Territory
-          </button>
-        )}
+      <div className="h-[calc(100vh-3.5rem)] flex flex-col items-center justify-center px-4">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-center max-w-lg"
+        >
+          <span className="text-5xl mb-4 block">⚔️</span>
+          <h1 className="text-3xl md:text-4xl font-display font-bold text-foreground mb-3">
+            Level up your career
+          </h1>
+          <p className="text-sm text-muted-foreground mb-8 max-w-sm mx-auto">
+            Explore kingdoms, practice quests, and build your skill territory in the age of AI
+          </p>
+          <SkillSuggestionCards />
+          <div className="flex gap-3 justify-center mt-6">
+            <Button size="lg" onClick={() => navigate("/map")}>
+              <Map className="h-4 w-4 mr-2" />
+              Explore Skill Map
+            </Button>
+          </div>
+        </motion.div>
       </div>
     );
   }
 
-  /* ── Desktop ──────────────────────────────────── */
+  /* ── Loading ── */
+  if (loading) {
+    return (
+      <div className="h-[calc(100vh-3.5rem)] flex items-center justify-center">
+        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
 
+  /* ── Signed-in Dashboard ── */
   return (
-    <div className="h-[calc(100vh-3.5rem)] relative overflow-hidden">
-      {/* ── Full-screen Territory Map (background) ── */}
-      <div className="absolute inset-0 z-0">
-        <FutureTerritoryMap skills={futureSkills} focusSkillId={mapFocusSkillId} />
-      </div>
-
-      {/* Guided intro for first-time visitors */}
-      {!isSignedIn && <MapIntroGuide />}
-
-      {/* ── HUD overlay (top) ── */}
-      {displaySkills.length > 0 && (
-        <div className="absolute top-0 left-0 right-0 z-10 pointer-events-none">
-          <div className="pointer-events-auto">
-            <CompactHUD
-              skills={displaySkills}
-              targetSkillIds={targetSkillIds}
-              userName={userName}
-            />
-          </div>
-        </div>
-      )}
-
-      {/* ── Floating tab bar (top-left) ── */}
-      <div className="absolute top-14 left-4 z-20 flex items-center gap-1 bg-card/80 backdrop-blur-md border border-border/50 rounded-lg p-1 shadow-lg">
-        <button
-          onClick={() => { setRightPanelTab("table"); setChatOpen(true); }}
-          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
-            rightPanelTab === "table" && chatOpen
-              ? "bg-primary/10 text-primary"
-              : "text-muted-foreground hover:text-foreground"
-          }`}
+    <div className="h-[calc(100vh-3.5rem)] overflow-y-auto">
+      <div className="max-w-2xl mx-auto px-4 py-8 space-y-6">
+        {/* Greeting */}
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-center"
         >
-          <ScrollText className="h-3 w-3" />
-          Skill Forge
-        </button>
-        {isSignedIn && (
-          <button
-            onClick={() => { setRightPanelTab("roles"); setChatOpen(true); }}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
-              rightPanelTab === "roles" && chatOpen
-                ? "bg-primary/10 text-primary"
-                : "text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            <Swords className="h-3 w-3" />
-            Kingdoms
-          </button>
-        )}
-        {chatOpen && (
-          <button
-            onClick={() => setChatOpen(false)}
-            className="flex items-center gap-1.5 px-2 py-1.5 rounded-md text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
-          >
-            <X className="h-3 w-3" />
-          </button>
-        )}
-      </div>
+          <h1 className="text-2xl md:text-3xl font-display font-bold text-foreground">
+            {greeting}{userName ? `, ${userName}` : ""} ⚔️
+          </h1>
+          <p className="text-sm text-muted-foreground mt-1">
+            {nextQuest
+              ? "Your next quest is ready"
+              : kingdoms.length > 0
+                ? "All quests conquered! Explore new kingdoms"
+                : "Claim your first kingdom to start questing"}
+          </p>
+        </motion.div>
 
-      {/* ── Floating side panel (right) ── */}
-      <AnimatePresence>
-        {chatOpen && (
+        {/* ── Next Quest Hero Card ── */}
+        {nextQuest && (
           <motion.div
-            key="side-panel"
-            initial={{ x: "100%", opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            exit={{ x: "100%", opacity: 0 }}
-            transition={{ type: "spring", damping: 28, stiffness: 300 }}
-            className="absolute top-24 left-4 bottom-20 w-[420px] z-20 flex flex-col bg-card/90 backdrop-blur-xl border border-border/50 rounded-xl shadow-2xl overflow-hidden"
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/8 via-card to-card p-5 shadow-lg"
           >
-
-            {rightPanelTab === "table" ? (
-              <div className="flex-1 overflow-hidden">
-                <FutureSkillsTable skills={futureSkills} onSkillClick={(skill) => { setMapFocusSkillId(skill.id); setTimeout(() => setMapFocusSkillId(null), 100); }} />
+            <div className="flex items-center gap-2 mb-3">
+              <div className="h-8 w-8 rounded-lg bg-primary/15 flex items-center justify-center">
+                <Swords className="h-4 w-4 text-primary" />
               </div>
-            ) : rightPanelTab === "roles" && isSignedIn ? (
-              <div className="flex-1 overflow-hidden">
-                <MyRolesPanel
-                  onSelectRole={(role) => {
-                    setSelectedRole(role);
-                    setRightPanelTab("table");
-                  }}
-                  onAskChat={(prompt) => {
-                    setChatDockOpen(true);
-                    chatSendMessage(prompt);
-                  }}
-                  onTabChange={setMyRolesTab}
-                />
+              <div>
+                <span className="text-[10px] font-medium text-primary uppercase tracking-wider">Next Quest</span>
+                <span className="text-[10px] text-muted-foreground ml-2">+125 XP</span>
               </div>
-            ) : (
-              <div className="flex-1 flex flex-col min-h-0 p-4">
-                <div className="text-center mb-4">
-                  <h1 className="text-xl font-display font-bold text-foreground leading-tight">
-                    {isSignedIn
-                      ? `${greeting}${userName ? `, ${userName}` : ""} ⚔️`
-                      : "Level up your career"}
-                  </h1>
-                  <p className="text-xs text-muted-foreground mt-1.5">
-                    {isSignedIn
-                      ? "Your AI career coach is ready"
-                      : "Explore kingdoms, practice quests, claim territory"}
-                  </p>
-                </div>
-                {!user && <SkillSuggestionCards />}
-                {user && (
-                  <div className="space-y-3 mb-3">
-                    <QuestBoard />
-                    <AdaptiveQueue userId={user.id} />
-                  </div>
-                )}
+            </div>
+            <h2 className="text-lg font-semibold text-foreground mb-1">{nextQuest.clusterName}</h2>
+            <p className="text-xs text-muted-foreground mb-4">
+              {nextQuest.company ? `${nextQuest.company} · ` : ""}{nextQuest.jobTitle}
+            </p>
+            <div className="flex items-center gap-3 mb-4">
+              <div className="flex items-center gap-1.5">
+                <Flame className="h-3 w-3 text-orange-400" />
+                <span className="text-[11px] text-muted-foreground">{nextQuest.aiExposure}% AI Threat</span>
               </div>
-            )}
+              <div className="flex items-center gap-1.5">
+                <Zap className="h-3 w-3 text-amber-400" />
+                <span className="text-[11px] text-muted-foreground capitalize">{nextQuest.impact} impact</span>
+              </div>
+            </div>
+            <Button
+              className="w-full"
+              size="lg"
+              onClick={() => handleStartQuest(nextQuest)}
+            >
+              <Swords className="h-4 w-4 mr-2" />
+              Start Quest
+            </Button>
           </motion.div>
         )}
-      </AnimatePresence>
 
+        {/* ── More Quests ── */}
+        {questPool.length > 1 && (
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+          >
+            <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-3">
+              Available Quests ({questPool.length})
+            </h3>
+            <div className="space-y-2">
+              {questPool.slice(1, 4).map((quest, i) => (
+                <button
+                  key={quest.id}
+                  onClick={() => handleStartQuest(quest)}
+                  className="w-full flex items-center gap-3 rounded-xl border border-border/50 bg-card hover:border-primary/30 p-3 transition-all text-left group"
+                >
+                  <div className="h-8 w-8 rounded-lg bg-muted/50 flex items-center justify-center shrink-0 group-hover:bg-primary/10 transition-colors">
+                    <Shield className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-foreground truncate">{quest.clusterName}</p>
+                    <p className="text-[11px] text-muted-foreground">
+                      {quest.company ? `${quest.company} · ` : ""}{quest.jobTitle}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    <span className="text-[10px] text-muted-foreground">{quest.aiExposure}%</span>
+                    <ChevronRight className="h-3.5 w-3.5 text-muted-foreground group-hover:text-primary transition-colors" />
+                  </div>
+                </button>
+              ))}
+              {questPool.length > 4 && (
+                <p className="text-[11px] text-muted-foreground text-center pt-1">
+                  +{questPool.length - 4} more quests available
+                </p>
+              )}
+            </div>
+          </motion.div>
+        )}
 
-      {/* ── Quest board (floating bottom-left) ── */}
-      {isSignedIn && !hasInteracted && (
-        <div className="absolute bottom-4 left-4 z-10 w-72">
-          {/* Quest summary could go here */}
-        </div>
-      )}
+        {/* ── Retry Quests (Adaptive Queue) ── */}
+        {retryQuests.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.25 }}
+          >
+            <h3 className="text-xs font-medium text-orange-400 uppercase tracking-wider mb-3">
+              ⚡ Train Up — Weak Spots
+            </h3>
+            <div className="space-y-2">
+              {retryQuests.map(q => (
+                <button
+                  key={q.id}
+                  onClick={() => {
+                    const slug = q.jobTitle.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+                    navigate(`/role/${slug}?task=${encodeURIComponent(q.taskName)}`);
+                  }}
+                  className="w-full flex items-center gap-3 rounded-xl border border-orange-500/20 bg-orange-500/5 hover:border-orange-500/40 p-3 transition-all text-left"
+                >
+                  <div className="h-8 w-8 rounded-lg bg-orange-500/15 flex items-center justify-center shrink-0">
+                    <Flame className="h-4 w-4 text-orange-400" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-foreground truncate">{q.taskName}</p>
+                    <p className="text-[11px] text-muted-foreground">{q.jobTitle}</p>
+                  </div>
+                  <span className="text-[10px] text-orange-400 font-medium shrink-0">{q.weakScore}%</span>
+                </button>
+              ))}
+            </div>
+          </motion.div>
+        )}
 
-      {/* ── Role preview overlay ── */}
+        {/* ── Kingdom Progress Strip ── */}
+        {kingdoms.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+          >
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                Your Kingdoms
+              </h3>
+              <button
+                onClick={() => navigate("/map")}
+                className="text-[11px] text-primary hover:underline flex items-center gap-1"
+              >
+                <Map className="h-3 w-3" />
+                Skill Map
+              </button>
+            </div>
+            <div className="grid gap-3">
+              {kingdoms.map((k, i) => {
+                const castle = getCastleState(k.xp);
+                const progress = k.totalQuests > 0 ? (k.questsCompleted / k.totalQuests) * 100 : 0;
+                return (
+                  <motion.button
+                    key={k.jobId}
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.35 + i * 0.05 }}
+                    onClick={() => handleOpenKingdom(k)}
+                    className={`flex items-center gap-3 rounded-xl border ${TIER_COLORS[castle.tier]} bg-card hover:bg-card/80 p-3 transition-all text-left`}
+                  >
+                    <span className="text-xl shrink-0">{TIER_EMOJI[castle.tier]}</span>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <p className="text-sm font-medium text-foreground truncate">{k.title}</p>
+                        <span className="text-[9px] text-muted-foreground capitalize shrink-0">{castle.tier}</span>
+                      </div>
+                      {k.company && <p className="text-[11px] text-muted-foreground">{k.company}</p>}
+                      <div className="flex items-center gap-2 mt-1.5">
+                        <Progress value={progress} className="h-1 flex-1 bg-muted/30" />
+                        <span className="text-[10px] text-muted-foreground shrink-0">
+                          {k.questsCompleted}/{k.totalQuests}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="text-right shrink-0">
+                      <p className="text-xs font-semibold text-primary">{k.xp} XP</p>
+                      <div className="flex items-center gap-0.5 justify-end mt-0.5">
+                        <Flame className="h-2.5 w-2.5 text-orange-400" />
+                        <span className="text-[9px] text-muted-foreground">{k.augmented}%</span>
+                      </div>
+                    </div>
+                  </motion.button>
+                );
+              })}
+            </div>
+          </motion.div>
+        )}
+
+        {/* ── Empty State: No Kingdoms ── */}
+        {kingdoms.length === 0 && !loading && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.15 }}
+            className="rounded-2xl border border-border/50 bg-card p-6 text-center"
+          >
+            <span className="text-4xl block mb-3">🏰</span>
+            <h2 className="text-lg font-semibold text-foreground mb-2">No Kingdoms Yet</h2>
+            <p className="text-sm text-muted-foreground mb-4 max-w-sm mx-auto">
+              Explore the Skill Map to discover roles and claim your first kingdom
+            </p>
+            <div className="flex gap-3 justify-center">
+              <Button variant="outline" onClick={() => navigate("/map")}>
+                <Map className="h-4 w-4 mr-2" />
+                Skill Map
+              </Button>
+              <Button onClick={() => { setChatDockOpen(true); chatSendMessage("Help me find my first kingdom"); }}>
+                <Sparkles className="h-4 w-4 mr-2" />
+                Ask AI Coach
+              </Button>
+            </div>
+          </motion.div>
+        )}
+
+        {/* ── Quick Actions ── */}
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4 }}
+          className="flex gap-3 justify-center pb-8"
+        >
+          <button
+            onClick={() => navigate("/map")}
+            className="flex items-center gap-1.5 px-4 py-2 rounded-lg border border-border/50 bg-card hover:bg-card/80 text-xs font-medium text-muted-foreground hover:text-foreground transition-all"
+          >
+            <Map className="h-3.5 w-3.5" />
+            Skill Map
+          </button>
+          <button
+            onClick={() => navigate("/leaderboard")}
+            className="flex items-center gap-1.5 px-4 py-2 rounded-lg border border-border/50 bg-card hover:bg-card/80 text-xs font-medium text-muted-foreground hover:text-foreground transition-all"
+          >
+            <Crown className="h-3.5 w-3.5" />
+            Leaderboard
+          </button>
+        </motion.div>
+      </div>
+
+      {/* ── Role Preview Overlay ── */}
       <AnimatePresence>
-        {(selectedRole || fullScreenRole) && (
+        {selectedRole && (
           <motion.div
             key="role-preview"
             initial={{ opacity: 0, scale: 0.97 }}
@@ -540,19 +540,19 @@ const Index = () => {
               <div className="flex items-center gap-2">
                 <div
                   className="w-7 h-7 rounded-md flex items-center justify-center text-[11px] font-bold text-white"
-                  style={{ background: `hsl(${((fullScreenRole || selectedRole)!.title.length * 47) % 360}, 55%, 45%)` }}
+                  style={{ background: `hsl(${(selectedRole.title.length * 47) % 360}, 55%, 45%)` }}
                 >
-                  {((fullScreenRole || selectedRole)!.company || (fullScreenRole || selectedRole)!.title)[0]?.toUpperCase()}
+                  {(selectedRole.company || selectedRole.title)[0]?.toUpperCase()}
                 </div>
                 <div>
-                  <h2 className="text-sm font-semibold text-foreground leading-tight">{(fullScreenRole || selectedRole)!.title}</h2>
-                  {(fullScreenRole || selectedRole)!.company && (
-                    <p className="text-xs text-muted-foreground">{(fullScreenRole || selectedRole)!.company}</p>
+                  <h2 className="text-sm font-semibold text-foreground leading-tight">{selectedRole.title}</h2>
+                  {selectedRole.company && (
+                    <p className="text-xs text-muted-foreground">{selectedRole.company}</p>
                   )}
                 </div>
               </div>
               <button
-                onClick={() => { setSelectedRole(null); setFullScreenRole(null); }}
+                onClick={() => setSelectedRole(null)}
                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all active:scale-[0.97]"
               >
                 <X className="h-3.5 w-3.5" />
@@ -561,39 +561,13 @@ const Index = () => {
             </div>
             <div className="h-[calc(100%-3.25rem)] overflow-hidden">
               <RolePreviewPanel
-                role={(fullScreenRole || selectedRole)!}
-                onClose={() => { setSelectedRole(null); setFullScreenRole(null); }}
-                edgeContext={activeEdge}
+                role={selectedRole}
+                onClose={() => setSelectedRole(null)}
               />
             </div>
           </motion.div>
         )}
       </AnimatePresence>
-
-      {/* Territory overlay (personal skills map) */}
-      <TerritoryOverlay
-        open={territoryOpen}
-        onClose={() => {
-          setTerritoryOpen(false);
-          setTerritoryFocusSkillId(null);
-          setTerritoryXpGain(0);
-        }}
-        skills={displaySkills}
-        lastPracticedSkillId={lastPracticedSkillId}
-        focusSkillId={territoryFocusSkillId}
-        xpGain={territoryXpGain}
-      />
-
-      {/* Personal territory button */}
-      {isSignedIn && !territoryOpen && (
-        <button
-          onClick={() => setTerritoryOpen(true)}
-          className="fixed bottom-4 left-4 z-20 flex items-center gap-1.5 px-3 py-2 rounded-lg bg-card/90 backdrop-blur-md border border-border/50 text-xs font-medium text-muted-foreground hover:text-foreground shadow-lg hover:shadow-xl transition-all active:scale-[0.95]"
-        >
-          <Map className="h-3.5 w-3.5" />
-          🏰 My Territory
-        </button>
-      )}
     </div>
   );
 };
