@@ -1303,27 +1303,94 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                     </p>
                   </div>
 
-                  {/* Skills earned */}
+                  {/* Intel Payoff */}
+                  {intelContext && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.25 }}
+                      className="w-full rounded-xl border border-primary/20 bg-primary/5 p-3.5 text-left"
+                    >
+                      <div className="flex items-center gap-2 mb-2">
+                        <Compass className="h-3.5 w-3.5 text-primary" />
+                        <span className="text-[10px] font-semibold uppercase tracking-wider text-primary">Intel Payoff</span>
+                      </div>
+                      {intelContext.hasFullIntel ? (
+                        <div className="space-y-1.5">
+                          {intelContext.threats?.length > 0 && (
+                            <p className="text-xs text-muted-foreground">
+                              Your recon predicted <span className="text-foreground font-medium">{intelContext.threats.slice(0, 2).join(" & ")}</span> — you faced them and adapted.
+                            </p>
+                          )}
+                          {intelContext.equippedSkills?.length > 0 && (
+                            <p className="text-xs text-muted-foreground">
+                              Arsenal skills <span className="text-primary font-medium">{intelContext.equippedSkills.map(s => s.name).join(", ")}</span> were tested in battle.
+                            </p>
+                          )}
+                          <p className="text-xs text-primary font-bold">Intel Advantage: +{Math.round(overallScore * 0.15)} bonus XP</p>
+                        </div>
+                      ) : (
+                        <p className="text-xs text-muted-foreground italic">
+                          You fought blind. Next time, scan the horizon to gain tactical advantage.
+                        </p>
+                      )}
+                    </motion.div>
+                  )}
+
+                  {/* Weapons Forged (skills earned) */}
                   {earnedSkills.length > 0 && (
-                    <div className="w-full space-y-1.5">
-                      {earnedSkills.map((skill, i) => (
-                        <motion.div
-                          key={skill.skill_id}
-                          initial={{ opacity: 0, x: -16 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ delay: 0.3 + i * 0.1, type: "spring", stiffness: 150 }}
-                          className="flex items-center gap-3 rounded-xl border border-primary/20 bg-primary/5 p-2.5"
-                        >
-                          <div className="h-9 w-9 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-                            <Star className="h-4 w-4 text-primary" />
-                          </div>
-                          <div className="text-left flex-1 min-w-0">
-                            <p className="text-sm font-semibold text-foreground truncate">{skill.name}</p>
-                            <p className="text-xs text-primary font-medium">+{skill.xp} XP</p>
-                          </div>
-                        </motion.div>
-                      ))}
+                    <div className="w-full">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Star className="h-3.5 w-3.5 text-primary" />
+                        <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Weapons Forged</span>
+                      </div>
+                      <div className="space-y-1.5">
+                        {earnedSkills.map((skill, i) => (
+                          <motion.div
+                            key={skill.skill_id}
+                            initial={{ opacity: 0, x: -16 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: 0.3 + i * 0.1, type: "spring", stiffness: 150 }}
+                            className="flex items-center gap-3 rounded-xl border border-primary/20 bg-primary/5 p-2.5"
+                          >
+                            <div className="h-9 w-9 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                              <Star className="h-4 w-4 text-primary" />
+                            </div>
+                            <div className="text-left flex-1 min-w-0">
+                              <p className="text-sm font-semibold text-foreground truncate">{skill.name}</p>
+                              <p className="text-xs text-primary font-medium">+{skill.xp} XP</p>
+                            </div>
+                          </motion.div>
+                        ))}
+                      </div>
                     </div>
+                  )}
+
+                  {/* Campaign Status */}
+                  {campaignStats && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.5 }}
+                      className="w-full rounded-xl border border-border/40 bg-muted/30 p-3.5 text-left"
+                    >
+                      <div className="flex items-center gap-2 mb-2">
+                        <Swords className="h-3.5 w-3.5 text-foreground" />
+                        <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Campaign Status</span>
+                      </div>
+                      <div className="flex items-center gap-1 mb-1.5">
+                        {Array.from({ length: campaignStats.total }).map((_, i) => (
+                          <div
+                            key={i}
+                            className={`h-2 flex-1 rounded-full ${i < campaignStats.conquered + 1 ? "bg-success" : "bg-muted/50"}`}
+                          />
+                        ))}
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        <span className="text-foreground font-bold">{campaignStats.conquered + 1}</span>/{campaignStats.total} battles conquered
+                        {campaignStats.conquered + 1 < campaignStats.total && " — next target awaits"}
+                      </p>
+                    </motion.div>
                   )}
 
                   {/* Territory nudge */}
