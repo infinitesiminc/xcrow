@@ -397,10 +397,10 @@ export function WarCouncil({
           >
             <Swords className="h-4 w-4" />
             {intelComplete
-              ? `⚔️ March to Battle — ${intelLabel}`
+              ? `March to Battle — ${intelLabel}`
               : isCompleted
-                ? "🔄 Reconquer — Reclaim This Ground"
-                : `⚔️ March to Battle — ${intelLabel}`}
+                ? "Reconquer — Reclaim This Ground"
+                : `March to Battle — ${intelLabel}`}
           </Button>
           {!intelComplete && !predictionsLoading && hasPrediction && (
             <p className="text-center text-[10px] text-muted-foreground/60 mt-1.5">
