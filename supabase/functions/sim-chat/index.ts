@@ -284,7 +284,6 @@ Rules for PASS vs FAIL:
 
 OBJECTIVE COMPLETION: If ALL objectives have been met (including the one you just PASS'd), also include [ALL_OBJECTIVES_MET] at the end.`;
   }
-  }
 
   // ─── 3-Tier Scaffolding Logic ───
   let scaffoldingInstruction = "";
