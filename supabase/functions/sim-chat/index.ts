@@ -335,7 +335,12 @@ IF THE USER GAVE A SUBSTANTIVE ANSWER (15+ words engaging with the scenario spec
 
 Total: under 70 words. Tone: curious colleague, not examiner. Do NOT include 🤖 or 💡 or "Ready for next".`;
   } else if (posInRound === 1) {
-    turnInstruction = `The user just answered your follow-up probe. Do EXACTLY this:
+    turnInstruction = `The user just answered your follow-up probe.
+
+QUALITY GATE — Check their response first:
+- If the answer is UNDER 10 words or doesn't meaningfully engage with your probe, ask ONE more focused question to draw out their thinking. Include [NEEDS_DEPTH] at the end. Do NOT show the insight card or "Ready for next" yet. Stay under 40 words.
+
+IF they gave a substantive answer, do EXACTLY this:
 
 1. Brief acknowledgment of their answer (1 sentence, reference what they said).
 
