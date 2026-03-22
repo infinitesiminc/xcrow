@@ -753,8 +753,14 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
   const currentTargetObjectiveId = session?.learningObjectives?.find(o => !objectiveStatus[o.id])?.id;
 
   const handleSend = async (overrideInput?: string) => {
-    const messageText = overrideInput ?? input.trim();
+    let messageText = overrideInput ?? input.trim();
     if (!messageText || sending) return;
+
+    // Normalize single-letter A/B choices so the AI doesn't misinterpret
+    const normalized = messageText.trim().toLowerCase();
+    if (normalized === "a" || normalized === "b") {
+      messageText = `I choose ${messageText.trim().toUpperCase()}`;
+    }
 
     // Guest turn limit check: count user messages so far (before this one)
     const userTurnsSoFar = messages.filter(m => m.role === "user").length;
