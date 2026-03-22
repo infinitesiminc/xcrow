@@ -441,8 +441,10 @@ const RoleDeepDive = () => {
           onNextTask={pickNextTask}
           onBackToFeed={() => navigate("/")}
           intelContext={currentIntel ?? undefined}
-          onNextBattle={() => { setSimTask(null); setCurrentIntel(null); setPhase("choose"); setChosenTask(null); fetchCompletions(); }}
+          onNextBattle={() => { setSimTask(null); setCurrentIntel(null); setSimLevel(1); setSimFuturePrediction(undefined); setPhase("choose"); setChosenTask(null); fetchCompletions(); }}
           campaignStats={{ conquered: completedCount, total: result.tasks.length, sessionXP }}
+          level={simLevel}
+          futurePrediction={simFuturePrediction}
         />
       </DialogContent>
     </Dialog>
