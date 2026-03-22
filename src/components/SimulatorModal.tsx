@@ -1160,19 +1160,27 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
 
                     return (
                       <>
-                        {/* Scenario transition divider */}
+                        {/* Scenario transition divider — RPG wave break */}
                         {isNewScenario && (
                           <motion.div
                             initial={{ opacity: 0, scaleX: 0 }}
                             animate={{ opacity: 1, scaleX: 1 }}
                             transition={{ duration: 0.4 }}
-                            className="flex items-center gap-3 py-2"
+                            className="flex items-center gap-3 py-3"
                           >
-                            <div className="flex-1 h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
-                            <span className="text-[11px] font-medium text-primary/70 flex items-center gap-1.5 shrink-0">
-                              <Zap className="h-3 w-3" /> ⚡ New Wave
+                            <div className="flex-1 h-px" style={{ background: "linear-gradient(90deg, transparent, hsl(var(--filigree) / 0.4), transparent)" }} />
+                            <span
+                              className="text-[10px] font-bold flex items-center gap-1.5 shrink-0 px-3 py-1 rounded-full"
+                              style={{
+                                color: "hsl(var(--filigree-glow))",
+                                background: "hsl(var(--filigree) / 0.08)",
+                                border: "1px solid hsl(var(--filigree) / 0.2)",
+                                fontFamily: "'Cinzel', serif",
+                              }}
+                            >
+                              ⚡ New Wave
                             </span>
-                            <div className="flex-1 h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
+                            <div className="flex-1 h-px" style={{ background: "linear-gradient(90deg, transparent, hsl(var(--filigree) / 0.4), transparent)" }} />
                           </motion.div>
                         )}
                         <motion.div
@@ -1185,16 +1193,29 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                         <div className={`flex ${isUser ? "justify-end" : "justify-start"}`}>
                           {isUser ? (
                             <div
-                              className="max-w-[80%] rounded-2xl rounded-br-md px-4 py-2"
+                              className="max-w-[80%] rounded-2xl rounded-br-md px-4 py-2.5"
                               style={{
-                                background: "hsl(var(--primary) / 0.1)",
-                                border: "1px solid hsl(var(--primary) / 0.2)",
+                                background: "hsl(var(--primary) / 0.12)",
+                                border: "1px solid hsl(var(--primary) / 0.25)",
+                                boxShadow: "0 2px 8px hsl(var(--primary) / 0.08)",
                               }}
                             >
                               <p className="text-sm text-foreground">{displayContent}</p>
                             </div>
                           ) : (
-                            <div className="chat-prose max-w-[92%]">
+                            <div
+                              className="chat-prose max-w-[92%] rounded-2xl rounded-bl-md px-4 py-3 relative"
+                              style={{
+                                background: "hsl(var(--surface-stone))",
+                                border: "1px solid hsl(var(--filigree) / 0.12)",
+                                boxShadow: "inset 0 1px 0 hsl(var(--emboss-light)), 0 2px 6px hsl(var(--emboss-shadow))",
+                              }}
+                            >
+                              {/* Subtle parchment accent line */}
+                              <div
+                                className="absolute left-0 top-3 bottom-3 w-[2px] rounded-full"
+                                style={{ background: "hsl(var(--filigree) / 0.15)" }}
+                              />
                               <ReactMarkdown components={toolMentionComponents}>{displayContent}</ReactMarkdown>
                             </div>
                           )}
