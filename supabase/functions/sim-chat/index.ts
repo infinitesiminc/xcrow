@@ -465,8 +465,13 @@ async function handleScore(payload: any, apiKey: string) {
       }).join("\n")}\n\nIMPORTANT: Apply the score multiplier to the relevant pillar score. An objective completed with heavy scaffolding (Tier 3) should score significantly lower than one demonstrated independently.`
     : "";
 
+  // Build live status context for scoring alignment
+  const liveStatusContext = liveObjectiveStatus && learningObjectives
+    ? `\n\nLIVE TRACKING (ground truth from session): ${learningObjectives.map((o: any) => `${o.label}: ${liveObjectiveStatus[o.id] ? "MET" : "NOT MET"}`).join(", ")}. Use this as the primary source. Only override if the transcript CLEARLY contradicts it.`
+    : "";
+
   const objectivesSection = learningObjectives && Array.isArray(learningObjectives)
-    ? `\n\nLearning Objectives for this session:\n${learningObjectives.map((o: any) => `- ${o.label}: ${o.description} (pillar: ${o.pillar})`).join("\n")}\n\nFor each objective, determine if it was MET or NOT MET based on the conversation evidence. An objective met with Tier 3 scaffolding should be marked as met but noted as "assisted".${scaffoldingContext}`
+    ? `\n\nLearning Objectives for this session:\n${learningObjectives.map((o: any) => `- ${o.label}: ${o.description} (pillar: ${o.pillar})`).join("\n")}\n\nFor each objective, determine if it was MET or NOT MET based on the conversation evidence. An objective met with Tier 3 scaffolding should be marked as met but noted as "assisted".${scaffoldingContext}${liveStatusContext}`
     : "";
 
   const prompt = `Evaluate this AI-readiness coaching conversation. Task: "${scenario?.title || "a work task"}"
