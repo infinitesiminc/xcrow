@@ -149,6 +149,10 @@ export default function Navbar() {
                   )}
                 </div>
                 <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => setParchment(!parchment)}>
+                  {parchment ? <Moon className="mr-2 h-4 w-4" /> : <Sun className="mr-2 h-4 w-4" />}
+                  {parchment ? "Dark Mode" : "Parchment Mode"}
+                </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => navigate("/settings")}>
                   <Settings className="mr-2 h-4 w-4" />
                   Settings
