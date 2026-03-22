@@ -56,6 +56,8 @@ export default function Settings() {
   const [avatarId, setAvatarId] = useState<string | null>(null);
   const [city, setCity] = useState("");
   const [linkedinUrl, setLinkedinUrl] = useState("");
+  const [graduationYear, setGraduationYear] = useState("");
+  const [degreeType, setDegreeType] = useState("");
 
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
