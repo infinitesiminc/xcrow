@@ -39,7 +39,7 @@ export default function XcrowLoader({
             cy={ringSize / 2}
             r={r}
             fill="none"
-            stroke="hsl(var(--primary) / 0.12)"
+            stroke="hsl(var(--muted-foreground) / 0.12)"
             strokeWidth="3"
           />
           <circle
