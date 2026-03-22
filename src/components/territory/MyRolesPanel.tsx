@@ -1,6 +1,6 @@
 /**
- * MyRolesPanel — RPG Kingdoms view showing role campaigns with castle progression.
- * "Scouted" = bookmarked roles, "Active Campaigns" = practiced roles with quest progress.
+ * MyRolesPanel — RPG Kingdoms view with Dark Fantasy styling.
+ * Stone-textured cards, Cinzel headings, filigree borders, territory colors.
  */
 import { useState, useEffect } from "react";
 import { Bookmark, Swords, Search, ChevronRight, Shield, Flame } from "lucide-react";
@@ -33,14 +33,29 @@ interface MyRolesPanelProps {
   onTabChange?: (tab: "saved" | "practiced") => void;
 }
 
+/* ── Fantasy card style ── */
+const fantasyCard = {
+  background: "hsl(var(--surface-stone))",
+  border: "1px solid hsl(var(--filigree) / 0.2)",
+  boxShadow: "inset 0 1px 0 hsl(var(--emboss-light)), 0 2px 6px hsl(var(--emboss-shadow))",
+};
+
 /* ── Castle tier visuals ── */
 
-const TIER_COLORS: Record<CastleTier, { bg: string; border: string; glow: string }> = {
-  ruins:       { bg: "from-muted/30 to-muted/10", border: "border-border/30", glow: "" },
-  outpost:     { bg: "from-emerald-500/10 to-emerald-900/5", border: "border-emerald-500/20", glow: "shadow-emerald-500/5" },
-  fortress:    { bg: "from-blue-500/10 to-indigo-900/5", border: "border-blue-500/25", glow: "shadow-blue-500/10" },
-  citadel:     { bg: "from-amber-500/15 to-orange-900/5", border: "border-amber-500/30", glow: "shadow-amber-500/10" },
-  grandmaster: { bg: "from-purple-500/15 to-violet-900/5", border: "border-purple-500/30", glow: "shadow-purple-500/15" },
+const TIER_GLOW: Record<CastleTier, string> = {
+  ruins:       "transparent",
+  outpost:     "hsl(var(--territory-communication) / 0.15)",
+  fortress:    "hsl(var(--territory-analytical) / 0.15)",
+  citadel:     "hsl(var(--filigree-glow) / 0.15)",
+  grandmaster: "hsl(var(--territory-technical) / 0.2)",
+};
+
+const TIER_BORDER: Record<CastleTier, string> = {
+  ruins:       "hsl(var(--border) / 0.3)",
+  outpost:     "hsl(var(--territory-communication) / 0.25)",
+  fortress:    "hsl(var(--territory-analytical) / 0.3)",
+  citadel:     "hsl(var(--filigree-glow) / 0.35)",
+  grandmaster: "hsl(var(--territory-technical) / 0.4)",
 };
 
 function KingdomCard({
@@ -57,7 +72,6 @@ function KingdomCard({
   index: number;
 }) {
   const castle = getCastleState(kingdom.xp);
-  const colors = TIER_COLORS[castle.tier];
   const questProgress = kingdom.totalQuests > 0
     ? Math.round((kingdom.questsCompleted / kingdom.totalQuests) * 100)
     : 0;
@@ -67,7 +81,12 @@ function KingdomCard({
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.05, duration: 0.25 }}
-      className={`group relative rounded-xl border bg-gradient-to-br p-3 cursor-pointer transition-all hover:scale-[1.02] active:scale-[0.98] ${colors.bg} ${colors.border} ${colors.glow} shadow-sm`}
+      className="group relative rounded-xl p-3 cursor-pointer transition-all hover:scale-[1.02] active:scale-[0.98]"
+      style={{
+        background: `linear-gradient(135deg, hsl(var(--surface-stone)), ${TIER_GLOW[castle.tier]})`,
+        border: `1px solid ${TIER_BORDER[castle.tier]}`,
+        boxShadow: "inset 0 1px 0 hsl(var(--emboss-light)), 0 2px 6px hsl(var(--emboss-shadow))",
+      }}
       onClick={onSelect}
     >
       {/* Header: Castle emoji + title */}
@@ -81,44 +100,67 @@ function KingdomCard({
             <p className="text-[11px] text-muted-foreground truncate">{kingdom.company}</p>
           )}
         </div>
-        <span className="text-[10px] font-medium text-muted-foreground bg-muted/50 px-1.5 py-0.5 rounded-md shrink-0">
+        <span
+          className="text-[9px] font-medium capitalize shrink-0 px-1.5 py-0.5 rounded-md"
+          style={{
+            background: "hsl(var(--muted) / 0.5)",
+            color: "hsl(var(--filigree))",
+            fontFamily: "'Cinzel', serif",
+          }}
+        >
           {castle.label}
         </span>
       </div>
 
       {/* Threat level */}
       <div className="flex items-center gap-1.5 mb-2">
-        <Flame className="h-3 w-3 text-orange-400" />
+        <Flame className="h-3 w-3" style={{ color: "hsl(var(--territory-leadership))" }} />
         <span className="text-[11px] text-muted-foreground">AI Threat</span>
         <span className="text-[11px] font-semibold text-foreground ml-auto">{kingdom.augmented}%</span>
       </div>
 
       {isScouted ? (
-        /* Scouted kingdom — show scout CTA */
         <button
           onClick={(e) => { e.stopPropagation(); onContinue(); }}
-          className="w-full mt-1 flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-lg bg-primary/10 hover:bg-primary/20 text-primary text-xs font-medium transition-colors"
+          className="w-full mt-1 flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-lg text-xs font-medium transition-colors"
+          style={{
+            background: "hsl(var(--primary) / 0.1)",
+            color: "hsl(var(--primary))",
+            fontFamily: "'Cinzel', serif",
+            letterSpacing: "0.04em",
+          }}
         >
           <Shield className="h-3 w-3" />
           Scout Kingdom
           <ChevronRight className="h-3 w-3" />
         </button>
       ) : (
-        /* Active campaign — show quest progress */
         <>
           <div className="flex items-center justify-between mb-1">
             <span className="text-[10px] text-muted-foreground">
               {kingdom.questsCompleted}/{kingdom.totalQuests || "?"} quests
             </span>
-            <span className="text-[10px] font-medium text-foreground">{kingdom.xp} XP</span>
+            <span
+              className="text-[10px] font-medium"
+              style={{ color: "hsl(var(--filigree-glow))" }}
+            >
+              {kingdom.xp} XP
+            </span>
           </div>
           <Progress value={questProgress} className="h-1.5 bg-muted/30" />
 
-          {/* Skills earned */}
           {kingdom.skillsEarned.length > 0 && (
             <div className="flex flex-wrap gap-1 mt-2">
               {kingdom.skillsEarned.slice(0, 3).map((skill) => (
-                <span key={skill} className="text-[9px] bg-muted/40 text-muted-foreground px-1.5 py-0.5 rounded-md truncate max-w-[80px]">
+                <span
+                  key={skill}
+                  className="text-[9px] px-1.5 py-0.5 rounded-md truncate max-w-[80px]"
+                  style={{
+                    background: "hsl(var(--muted) / 0.4)",
+                    color: "hsl(var(--muted-foreground))",
+                    border: "1px solid hsl(var(--border) / 0.3)",
+                  }}
+                >
                   {skill}
                 </span>
               ))}
@@ -130,7 +172,13 @@ function KingdomCard({
 
           <button
             onClick={(e) => { e.stopPropagation(); onContinue(); }}
-            className="w-full mt-2 flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-lg bg-primary/10 hover:bg-primary/20 text-primary text-xs font-medium transition-colors"
+            className="w-full mt-2 flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-lg text-xs font-medium transition-colors"
+            style={{
+              background: "hsl(var(--primary) / 0.1)",
+              color: "hsl(var(--primary))",
+              fontFamily: "'Cinzel', serif",
+              letterSpacing: "0.04em",
+            }}
           >
             <Swords className="h-3 w-3" />
             Continue Campaign
@@ -170,7 +218,6 @@ export default function MyRolesPanel({ onSelectRole, onAskChat, onTabChange }: M
         .order("completed_at", { ascending: false })
         .limit(200),
     ]).then(([savedRes, simsRes]) => {
-      // Build scouted kingdoms from bookmarks
       const scouted: KingdomRole[] = (savedRes.data || []).map((r: any) => ({
         jobId: `scouted-${r.job_title}-${r.company || ""}`,
         title: r.job_title,
@@ -185,7 +232,6 @@ export default function MyRolesPanel({ onSelectRole, onAskChat, onTabChange }: M
       }));
       setScoutedKingdoms(scouted);
 
-      // Build active campaigns from completed sims — group by role
       const roleMap = new Map<string, KingdomRole>();
       for (const sim of simsRes.data || []) {
         const s = sim as any;
@@ -198,7 +244,7 @@ export default function MyRolesPanel({ onSelectRole, onAskChat, onTabChange }: M
             augmented: 0,
             risk: 0,
             questsCompleted: 0,
-            totalQuests: 8, // default estimate
+            totalQuests: 8,
             xp: 0,
             skillsEarned: [],
             lastActivity: s.completed_at,
@@ -206,10 +252,8 @@ export default function MyRolesPanel({ onSelectRole, onAskChat, onTabChange }: M
         }
         const kingdom = roleMap.get(key)!;
         kingdom.questsCompleted += 1;
-        // XP: base 100 per sim, bonus for correct answers
         const accuracy = s.total_questions > 0 ? s.correct_answers / s.total_questions : 0.5;
         kingdom.xp += Math.round(100 * (0.5 + accuracy * 0.5));
-        // Collect unique skills
         const earned = s.skills_earned as any[];
         if (Array.isArray(earned)) {
           for (const sk of earned) {
@@ -252,26 +296,35 @@ export default function MyRolesPanel({ onSelectRole, onAskChat, onTabChange }: M
 
   return (
     <div className="h-full flex flex-col p-4 overflow-hidden">
-      {/* Tabs */}
-      <div className="flex items-center gap-1 bg-muted/50 rounded-lg p-0.5 mb-3 shrink-0">
+      {/* Tabs — stone style */}
+      <div
+        className="flex items-center gap-1 rounded-lg p-0.5 mb-3 shrink-0"
+        style={{ background: "hsl(var(--surface-stone))" }}
+      >
         <button
           onClick={() => { setTab("practiced"); onTabChange?.("practiced"); }}
-          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors flex-1 justify-center ${
-            tab === "practiced"
-              ? "bg-background text-foreground shadow-sm"
-              : "text-muted-foreground hover:text-foreground"
-          }`}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all flex-1 justify-center"
+          style={{
+            fontFamily: "'Cinzel', serif",
+            letterSpacing: "0.04em",
+            ...(tab === "practiced"
+              ? { background: "hsl(var(--background))", color: "hsl(var(--foreground))", boxShadow: "0 1px 3px hsl(var(--emboss-shadow))" }
+              : { color: "hsl(var(--muted-foreground))" }),
+          }}
         >
           <Swords className="h-3 w-3" />
           Campaigns ({activeKingdoms.length})
         </button>
         <button
           onClick={() => { setTab("saved"); onTabChange?.("saved"); }}
-          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors flex-1 justify-center ${
-            tab === "saved"
-              ? "bg-background text-foreground shadow-sm"
-              : "text-muted-foreground hover:text-foreground"
-          }`}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all flex-1 justify-center"
+          style={{
+            fontFamily: "'Cinzel', serif",
+            letterSpacing: "0.04em",
+            ...(tab === "saved"
+              ? { background: "hsl(var(--background))", color: "hsl(var(--foreground))", boxShadow: "0 1px 3px hsl(var(--emboss-shadow))" }
+              : { color: "hsl(var(--muted-foreground))" }),
+          }}
         >
           <Bookmark className="h-3 w-3" />
           Scouted ({scoutedKingdoms.length})
@@ -285,7 +338,8 @@ export default function MyRolesPanel({ onSelectRole, onAskChat, onTabChange }: M
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Search kingdoms…"
-          className="h-8 pl-8 text-xs bg-muted/30 border-border/40"
+          className="h-8 pl-8 text-xs border-border/40"
+          style={{ background: "hsl(var(--surface-stone))" }}
         />
       </div>
 
@@ -300,7 +354,10 @@ export default function MyRolesPanel({ onSelectRole, onAskChat, onTabChange }: M
             <span className="text-3xl mb-3 block">
               {tab === "practiced" ? "⚔️" : "🔭"}
             </span>
-            <p className="text-sm text-muted-foreground">
+            <p
+              className="text-sm text-muted-foreground"
+              style={{ fontFamily: "'Cinzel', serif" }}
+            >
               {tab === "practiced"
                 ? "No active campaigns yet"
                 : "No scouted kingdoms yet"}
