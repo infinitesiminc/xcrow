@@ -30,7 +30,7 @@ const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy.tsx"));
 const Terms = lazy(() => import("./pages/Terms.tsx"));
 const CookiePolicy = lazy(() => import("./pages/CookiePolicy.tsx"));
 const Contact = lazy(() => import("./pages/Contact.tsx"));
-const Enterprise = lazy(() => import("./pages/Enterprise.tsx"));
+
 const Investors = lazy(() => import("./pages/Investors.tsx"));
 const Roadmap = lazy(() => import("./pages/Roadmap.tsx"));
 const CaseStudy = lazy(() => import("./pages/CaseStudy.tsx"));
