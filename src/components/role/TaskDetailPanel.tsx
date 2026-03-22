@@ -11,14 +11,14 @@ import { TaskAnalysis } from "@/types/analysis";
 import { exposureStyle } from "@/lib/exposure-colors";
 import type { FuturePrediction } from "@/components/analysis/FutureTaskPreview";
 
-const SCOUT_FLAVORS = [
+const SCAN_FLAVORS = [
   "The Crow spotted movement beyond the ridge…",
   "Dark clouds gather over this territory…",
   "Your scouts report incoming threats…",
   "A raven arrives bearing urgent intel…",
 ];
 
-const DECODE_FLAVORS = [
+const ARSENAL_FLAVORS = [
   "Ancient scrolls reveal hidden skills…",
   "A merchant offers forbidden knowledge…",
   "The War Council has new intelligence…",
@@ -100,8 +100,8 @@ export function TaskDetailPanel({
   const [scoutXP, setScoutXP] = useState<number | null>(null);
   const [decodeXP, setDecodeXP] = useState<number | null>(null);
 
-  const scoutFlavor = useMemo(() => pickRandom(SCOUT_FLAVORS), []);
-  const decodeFlavor = useMemo(() => pickRandom(DECODE_FLAVORS), []);
+  const scanFlavor = useMemo(() => pickRandom(SCAN_FLAVORS), []);
+  const arsenalFlavor = useMemo(() => pickRandom(ARSENAL_FLAVORS), []);
 
   const hasPrediction = !!prediction;
   const hasSkills = prediction?.future_skills && prediction.future_skills.length > 0;
@@ -195,11 +195,11 @@ export function TaskDetailPanel({
         </div>
       )}
 
-      {/* ─── INTEL QUEST 1: Scout the Threat ─── */}
+      {/* ─── INTEL QUEST 1: Scan the Horizon ─── */}
       <AnimatePresence mode="wait">
         {hasPrediction && !threatRevealed && (
           <motion.button
-            key="scout-threat"
+            key="scan-horizon"
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8, scale: 0.95 }}
@@ -213,11 +213,11 @@ export function TaskDetailPanel({
               </div>
               <div className="flex-1 min-w-0">
                 <div className="text-xs font-bold text-foreground mb-0.5 flex items-center gap-1.5">
-                  Scout the Threat
+                  Scan the Horizon
                   <span className="text-[9px] font-medium text-destructive/70 px-1.5 py-0.5 rounded-full bg-destructive/10">+5-15 XP</span>
                 </div>
                 <p className="text-[10px] text-muted-foreground italic">
-                  {scoutFlavor}
+                  {scanFlavor}
                 </p>
               </div>
               <div className="shrink-0 text-destructive/60 group-hover:text-destructive group-hover:translate-x-0.5 transition-all">
@@ -286,11 +286,11 @@ export function TaskDetailPanel({
         )}
       </AnimatePresence>
 
-      {/* ─── INTEL QUEST 2: Decode the Arsenal ─── */}
+      {/* ─── INTEL QUEST 2: Unlock the Arsenal ─── */}
       <AnimatePresence mode="wait">
         {threatRevealed && hasSkills && !skillsUnlocked && (
           <motion.button
-            key="decode-arsenal"
+            key="unlock-arsenal"
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8, scale: 0.95 }}
@@ -305,11 +305,11 @@ export function TaskDetailPanel({
               </div>
               <div className="flex-1 min-w-0">
                 <div className="text-xs font-bold text-foreground mb-0.5 flex items-center gap-1.5">
-                  Decode the Arsenal
+                  Unlock the Arsenal
                   <span className="text-[9px] font-medium text-primary/70 px-1.5 py-0.5 rounded-full bg-primary/10">+5-15 XP</span>
                 </div>
                 <p className="text-[10px] text-muted-foreground italic">
-                  {decodeFlavor}
+                  {arsenalFlavor}
                 </p>
               </div>
               <div className="shrink-0 text-primary/60 group-hover:text-primary group-hover:translate-x-0.5 transition-all">
@@ -371,11 +371,9 @@ export function TaskDetailPanel({
           <Play className="h-3 w-3" />
           {intelComplete
             ? "⚔️ Begin Battle — Intel Advantage Active"
-            : isCollapsing
-              ? "🔮 Scout Future Threats"
-              : isCompleted
-                ? "🔄 Retry Quest"
-                : "⚔️ Accept Quest"}
+            : isCompleted
+              ? "🔄 Retry Quest"
+              : "⚔️ Accept Quest"}
         </Button>
       </div>
     </motion.div>
