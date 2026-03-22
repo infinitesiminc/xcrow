@@ -745,15 +745,8 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
 
   const beginChat = () => {
     if (!session) return;
-    if (level === 1) {
-      // Level 1 uses Prompt Arena
-      setPhase("arena");
-      setArenaRoundNum(1);
-      loadArenaRound(1);
-    } else {
-      setMessages([{ role: "assistant", content: session.openingMessage }]);
-      setPhase("chat");
-    }
+    setMessages([{ role: "assistant", content: session.openingMessage }]);
+    setPhase("chat");
   };
 
   const loadArenaRound = async (roundNum: number) => {
