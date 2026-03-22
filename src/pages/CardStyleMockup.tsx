@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import { Zap, MapPin, Building2, BarChart3 } from "lucide-react";
+import XcrowLoader from "@/components/XcrowLoader";
 
 /* ── Sample data ─────────────────────────────────────── */
 const SAMPLE_JOBS = [
