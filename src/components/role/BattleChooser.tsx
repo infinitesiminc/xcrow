@@ -40,7 +40,7 @@ export function BattleChooser({ choices, conqueredNames, remainingCount, onChoos
           </>
         ) : (
           <>
-            <Swords className="h-8 w-8 text-primary mx-auto mb-3" />
+            {(() => { const { Icon } = rpgIcon("engage"); return <Icon className="h-8 w-8 text-primary mx-auto mb-3" />; })()}
             <h2
               className="text-lg font-bold text-foreground mb-1"
               style={{ fontFamily: "'Cinzel', serif" }}
