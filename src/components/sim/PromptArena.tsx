@@ -307,10 +307,10 @@ const PromptArena = ({ round, roundNumber, onJudged, loading }: PromptArenaProps
               <XCircle className="h-5 w-5 text-destructive shrink-0 mt-0.5" />
             )}
             <div>
-              <p className={`text-sm font-semibold ${correct ? "text-success" : "text-destructive"}`}>
+              <p className={`text-base font-semibold ${correct ? "text-success" : "text-destructive"}`}>
                 {correct ? "Excellent judgment! ✨" : "Not quite — here's why:"}
               </p>
-              <p className="text-xs text-foreground/80 mt-1 leading-relaxed">{round.explanation}</p>
+              <p className="text-sm text-foreground/80 mt-1.5 leading-relaxed">{round.explanation}</p>
             </div>
           </div>
 
