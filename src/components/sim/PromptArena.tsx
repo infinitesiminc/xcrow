@@ -186,8 +186,8 @@ const PromptArena = ({ round, roundNumber, onJudged, loading }: PromptArenaProps
               </div>
 
               {/* The Actual Prompt */}
-              <div className="px-3 py-2" style={{ background: "hsl(var(--primary) / 0.04)", borderBottom: "1px solid hsl(var(--filigree) / 0.08)" }}>
-                <p className="text-[11px] text-foreground/70 italic leading-relaxed">"{prompt.full_prompt}"</p>
+              <div className="px-4 py-3" style={{ background: "hsl(var(--primary) / 0.04)", borderBottom: "1px solid hsl(var(--filigree) / 0.08)" }}>
+                <p className="text-[13px] text-foreground/70 italic leading-relaxed">"{prompt.full_prompt}"</p>
               </div>
 
               {/* AI Output — streamed or full */}
