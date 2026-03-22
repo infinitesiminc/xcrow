@@ -1193,8 +1193,8 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                     // Split AI messages that contain both evaluation AND a new scenario
                     const hasNewScenario = !isUser && i > 0 && displayContent.includes("📖");
                     const scenarioSplitIndex = hasNewScenario ? displayContent.indexOf("📖") : -1;
-                    const evaluationPart = hasNewScenario ? displayContent.slice(0, scenarioSplitIndex).trim() : null;
-                    const scenarioPart = hasNewScenario ? displayContent.slice(scenarioSplitIndex).trim() : null;
+                    const evaluationPart = hasNewScenario ? displayContent.slice(0, scenarioSplitIndex).replace(/[\*_~`#]+\s*$/, '').trim() : null;
+                    const scenarioPart = hasNewScenario ? displayContent.slice(scenarioSplitIndex).replace(/^[\*_~`#]+\s*/, '').trim() : null;
 
                     // Detect pass/fail from raw content tags
                     const rawContent = safeStr(msg.content);
