@@ -982,31 +982,48 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
 
   const content = (
     <div className={inline ? "h-full flex flex-col overflow-hidden" : "max-w-3xl w-[95vw] h-[90vh] sm:h-[90vh] h-[100dvh] sm:rounded-2xl rounded-none p-0 flex flex-col overflow-hidden gap-0 border-border/50"}>
-        {/* Header */}
-        <div className="shrink-0">
+        {/* Header — war room banner */}
+        <div className="shrink-0 relative">
+          {/* Subtle atmospheric gradient behind header */}
+          <div className="absolute inset-0 opacity-40" style={{
+            background: "linear-gradient(180deg, hsl(var(--primary) / 0.08) 0%, transparent 100%)",
+          }} />
           <div
-            className="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4"
-            style={{ borderBottom: "1px solid hsl(var(--filigree) / 0.2)" }}
+            className="relative flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4"
+            style={{ borderBottom: "1px solid hsl(var(--filigree) / 0.25)" }}
           >
             <div className="min-w-0 flex-1">
-              <h2
-                className="text-sm sm:text-base font-semibold text-foreground truncate"
-                style={{ fontFamily: "'Cinzel', serif" }}
-              >
-                {taskName}
-              </h2>
-              <p className="text-[11px] sm:text-xs text-muted-foreground mt-0.5 truncate">{jobTitle}{company ? ` · ${company}` : ""}</p>
+              <div className="flex items-center gap-2">
+                <span className="text-base">⚔️</span>
+                <h2
+                  className="text-sm sm:text-base font-semibold text-foreground truncate"
+                  style={{ fontFamily: "'Cinzel', serif" }}
+                >
+                  {taskName}
+                </h2>
+              </div>
+              <p className="text-[11px] sm:text-xs text-muted-foreground mt-0.5 truncate pl-7">{jobTitle}{company ? ` · ${company}` : ""}</p>
             </div>
             <div className="flex items-center gap-2 shrink-0">
               {phase === "chat" && (
-                <motion.span
+                <motion.div
                   initial={{ opacity: 0, scale: 0.9 }}
                   animate={{ opacity: 1, scale: 1 }}
-                  className="text-xs px-3 py-1 rounded-full"
-                  style={{ color: "hsl(var(--filigree-glow))", background: "hsl(var(--filigree) / 0.12)", fontFamily: "'Cinzel', serif" }}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg"
+                  style={{
+                    background: "hsl(var(--surface-stone))",
+                    border: "1px solid hsl(var(--filigree) / 0.25)",
+                    boxShadow: "inset 0 1px 0 hsl(var(--emboss-light))",
+                  }}
                 >
-                  ⚔️ Wave {roundCount}/{maxRounds}
-                </motion.span>
+                  <Swords className="h-3 w-3" style={{ color: "hsl(var(--filigree-glow))" }} />
+                  <span
+                    className="text-xs font-bold"
+                    style={{ color: "hsl(var(--filigree-glow))", fontFamily: "'Cinzel', serif" }}
+                  >
+                    Wave {roundCount}/{maxRounds}
+                  </span>
+                </motion.div>
               )}
               <button
                 onClick={onClose}
@@ -1017,8 +1034,27 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
             </div>
           </div>
           {phase === "chat" && (
-            <div className="px-4 sm:px-6 py-1.5" style={{ background: "hsl(var(--filigree) / 0.06)" }}>
-              <Progress value={progressPercent} className="h-1.5" />
+            <div className="px-4 sm:px-6 py-1.5 relative" style={{ background: "hsl(var(--filigree) / 0.04)" }}>
+              <div className="relative h-2 rounded-full overflow-hidden" style={{
+                background: "hsl(var(--surface-stone))",
+                border: "1px solid hsl(var(--filigree) / 0.15)",
+              }}>
+                <motion.div
+                  className="absolute inset-y-0 left-0 rounded-full"
+                  style={{
+                    background: "linear-gradient(90deg, hsl(var(--primary)), hsl(var(--primary) / 0.7))",
+                    boxShadow: "0 0 8px hsl(var(--primary) / 0.4)",
+                  }}
+                  initial={{ width: "0%" }}
+                  animate={{ width: `${progressPercent}%` }}
+                  transition={{ duration: 0.5, ease: "easeOut" }}
+                />
+              </div>
+              {/* Ornamental corners on progress */}
+              <div className="flex items-center justify-between mt-1 px-0.5">
+                <span className="text-[8px] opacity-25" style={{ color: "hsl(var(--filigree))" }}>◆</span>
+                <span className="text-[8px] opacity-25" style={{ color: "hsl(var(--filigree))" }}>◆</span>
+              </div>
             </div>
           )}
         </div>
