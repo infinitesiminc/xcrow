@@ -211,17 +211,27 @@ const RoleDeepDive = () => {
     return [...result.tasks].sort((a, b) => (b.aiExposureScore ?? 50) - (a.aiExposureScore ?? 50));
   }, [result]);
 
-  // Get the next pair of battles to present
+  // Pick two battles with contrasting threat levels for a meaningful choice
   const battleChoices = useMemo(() => {
-    // Show unconquered tasks first, then conquered ones
     const unconquered = sortedTasks.filter(t => !completedTasks.has(t.name));
-    const conquered = sortedTasks.filter(t => completedTasks.has(t.name));
-    const ordered = [...unconquered, ...conquered];
+    const pool = unconquered.length > 0
+      ? unconquered
+      : sortedTasks.filter(t => completedTasks.has(t.name));
 
-    if (ordered.length === 0) return [];
-    if (ordered.length === 1) return [ordered[0]];
-    // Return first 2 unconquered, or if all conquered, first 2 overall
-    return ordered.slice(0, 2);
+    if (pool.length <= 1) return pool.slice(0, 1);
+
+    // Sort by threat score ascending and pick from opposite ends
+    const sorted = [...pool].sort(
+      (a, b) => (a.aiExposureScore ?? 50) - (b.aiExposureScore ?? 50)
+    );
+    const low = sorted[0];
+    const high = sorted[sorted.length - 1];
+
+    // If they're the same score, just take first two for variety
+    if ((low.aiExposureScore ?? 50) === (high.aiExposureScore ?? 50)) {
+      return sorted.slice(0, 2);
+    }
+    return [low, high];
   }, [sortedTasks, completedTasks]);
 
   const remainingCount = sortedTasks.filter(t => !completedTasks.has(t.name)).length;
