@@ -750,7 +750,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
     let scores: SimScoreResult | null = null;
     if (messages.length > 2) {
       try {
-        scores = await scoreSession(messages, session?.scenario || null, mode, session?.learningObjectives, scaffoldingTiers);
+        scores = await scoreSession(messages, session?.scenario || null, mode, session?.learningObjectives, scaffoldingTiers, objectiveStatus);
         setScoreResult(scores);
       } catch (err) {
         console.error("Failed to get scores:", err);
