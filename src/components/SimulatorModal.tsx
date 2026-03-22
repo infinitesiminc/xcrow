@@ -943,9 +943,17 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
     <div className={inline ? "h-full flex flex-col overflow-hidden" : "max-w-3xl w-[95vw] h-[90vh] sm:h-[90vh] h-[100dvh] sm:rounded-2xl rounded-none p-0 flex flex-col overflow-hidden gap-0 border-border/50"}>
         {/* Header */}
         <div className="shrink-0">
-          <div className="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 border-b border-border/40">
+          <div
+            className="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4"
+            style={{ borderBottom: "1px solid hsl(var(--filigree) / 0.2)" }}
+          >
             <div className="min-w-0 flex-1">
-              <h2 className="text-sm sm:text-base font-sans font-semibold text-foreground truncate">{taskName}</h2>
+              <h2
+                className="text-sm sm:text-base font-semibold text-foreground truncate"
+                style={{ fontFamily: "'Cinzel', serif" }}
+              >
+                {taskName}
+              </h2>
               <p className="text-[11px] sm:text-xs text-muted-foreground mt-0.5 truncate">{jobTitle}{company ? ` · ${company}` : ""}</p>
             </div>
             <div className="flex items-center gap-2 shrink-0">
@@ -953,7 +961,8 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                 <motion.span
                   initial={{ opacity: 0, scale: 0.9 }}
                   animate={{ opacity: 1, scale: 1 }}
-                  className="text-xs px-3 py-1 rounded-full text-primary bg-primary/10"
+                  className="text-xs px-3 py-1 rounded-full"
+                  style={{ color: "hsl(var(--filigree-glow))", background: "hsl(var(--filigree) / 0.12)", fontFamily: "'Cinzel', serif" }}
                 >
                   ⚔️ Wave {roundCount}/{maxRounds}
                 </motion.span>
@@ -967,7 +976,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
             </div>
           </div>
           {phase === "chat" && (
-            <div className="px-4 sm:px-6 py-1.5 bg-accent/10">
+            <div className="px-4 sm:px-6 py-1.5" style={{ background: "hsl(var(--filigree) / 0.06)" }}>
               <Progress value={progressPercent} className="h-1.5" />
             </div>
           )}
@@ -1013,7 +1022,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                   >
                     <Loader2 className="h-8 w-8 text-muted-foreground/40" />
                   </motion.div>
-                  <p className="text-sm text-muted-foreground">Forging your quest…</p>
+                  <p className="text-sm text-muted-foreground" style={{ fontFamily: "'Cinzel', serif" }}>Forging your quest…</p>
                 </motion.div>
               )}
 
@@ -1098,7 +1107,13 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                         >
                         <div className={`flex ${isUser ? "justify-end" : "justify-start"}`}>
                           {isUser ? (
-                            <div className="max-w-[80%] bg-primary/10 border border-primary/20 rounded-2xl rounded-br-md px-4 py-2">
+                            <div
+                              className="max-w-[80%] rounded-2xl rounded-br-md px-4 py-2"
+                              style={{
+                                background: "hsl(var(--primary) / 0.1)",
+                                border: "1px solid hsl(var(--primary) / 0.2)",
+                              }}
+                            >
                               <p className="text-sm text-foreground">{displayContent}</p>
                             </div>
                           ) : (
@@ -1686,7 +1701,8 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
               <div className="flex gap-2 max-w-2xl mx-auto">
                 <button
                   onClick={() => handleSend("I'm not sure where to start — can you help me break this down?")}
-                  className="text-xs px-3 py-1.5 rounded-full border border-border/40 bg-accent/20 text-muted-foreground hover:text-foreground hover:bg-accent/40 transition-colors"
+                  className="text-xs px-3 py-1.5 rounded-full text-muted-foreground hover:text-foreground transition-colors"
+                  style={{ border: "1px solid hsl(var(--filigree) / 0.2)", background: "hsl(var(--surface-stone))" }}
                 >
                   💭 Help me think through this
                 </button>
@@ -1702,7 +1718,11 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                 onKeyDown={handleKeyDown}
                 placeholder="Your move, commander…"
                 rows={2}
-                className="flex-1 resize-none rounded-xl border border-border/40 bg-accent/10 px-3 sm:px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-ring/30 focus:border-border min-h-[40px] max-h-[100px] transition-all duration-200"
+                className="flex-1 resize-none rounded-xl px-3 sm:px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-ring/30 min-h-[40px] max-h-[100px] transition-all duration-200"
+                style={{
+                  background: "hsl(var(--surface-stone))",
+                  border: "1px solid hsl(var(--filigree) / 0.2)",
+                }}
               />
               <div className="flex gap-2 shrink-0">
                 <Button
@@ -1733,7 +1753,14 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
   return (
     <>
       <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
-        <DialogContent className="max-w-3xl w-[95vw] h-[90vh] sm:h-[90vh] h-[100dvh] sm:rounded-2xl rounded-none p-0 flex flex-col overflow-hidden gap-0 border-border/50 [&>button]:hidden">
+        <DialogContent
+          className="max-w-3xl w-[95vw] h-[90vh] sm:h-[90vh] h-[100dvh] sm:rounded-2xl rounded-none p-0 flex flex-col overflow-hidden gap-0 [&>button]:hidden"
+          style={{
+            background: "hsl(var(--surface-stone))",
+            border: "1px solid hsl(var(--filigree) / 0.25)",
+            boxShadow: "0 0 60px hsl(var(--emboss-shadow)), inset 0 1px 0 hsl(var(--emboss-light))",
+          }}
+        >
           {content}
         </DialogContent>
       </Dialog>
