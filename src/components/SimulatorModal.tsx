@@ -1010,10 +1010,16 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                     const hasScenarioMarker = !isUser && (displayContent.includes("📖 Scenario") || displayContent.includes("📖 **Scenario"));
                     const isNewScenario = !isUser && (prevIsTopicChange || hasScenarioMarker) && i > 1;
                     
-                    const objectiveMetInMsg = !isUser ? (safeStr(msg.content).match(/\[OBJECTIVE_MET:([^\]]+)\]/g) || []).map(t => {
-                      const m = t.match(/\[OBJECTIVE_MET:([^\]]+)\]/);
-                      return m ? m[1] : null;
-                    }).filter(Boolean) : [];
+                    const objectiveMetInMsg = !isUser ? [
+                      ...(safeStr(msg.content).match(/\[OBJECTIVE_MET:([^\]]+)\]/g) || []).map(t => {
+                        const m = t.match(/\[OBJECTIVE_MET:([^\]]+)\]/);
+                        return m ? m[1] : null;
+                      }),
+                      ...(safeStr(msg.content).match(/\[OBJ_EVAL:([^:]+):PASS\]/g) || []).map(t => {
+                        const m = t.match(/\[OBJ_EVAL:([^:]+):PASS\]/);
+                        return m ? m[1] : null;
+                      }),
+                    ].filter(Boolean) : [];
 
                     // Detect scaffolding tier in message
                     const scaffoldTierInMsg = !isUser ? msg.content.match(/\[SCAFFOLD_TIER:(\d)\]/) : null;
