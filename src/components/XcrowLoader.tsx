@@ -1,9 +1,10 @@
 /**
  * XcrowLoader — Brand loading animation.
- * Stationary crow mascot with a bold "X" letter behind it that breathes/flickers.
+ * Stationary crow mascot with the brand "X" image behind it that breathes/flickers.
  */
 import { motion } from "framer-motion";
 import xcrowMascot from "@/assets/xcrow-mascot.png";
+import xcrowXLetter from "@/assets/xcrow-x-letter.png";
 
 interface XcrowLoaderProps {
   title?: string;
@@ -17,46 +18,14 @@ export default function XcrowLoader({
   size = "md",
 }: XcrowLoaderProps) {
   const imgSize = size === "sm" ? 48 : size === "lg" ? 80 : 64;
-  const ringSize = imgSize + 28;
-  const r = (ringSize - 6) / 2;
-  const circ = 2 * Math.PI * r;
-  const xFontSize = size === "sm" ? 52 : size === "lg" ? 88 : 70;
+  const xSize = size === "sm" ? 64 : size === "lg" ? 100 : 82;
+  const containerSize = xSize + 20;
 
   return (
     <div className="flex flex-col items-center gap-4">
-      {/* Mascot + ring + X container */}
-      <div className="relative" style={{ width: ringSize, height: ringSize }}>
-        {/* Rotating arc ring */}
-        <motion.svg
-          width={ringSize}
-          height={ringSize}
-          viewBox={`0 0 ${ringSize} ${ringSize}`}
-          className="absolute inset-0"
-          animate={{ rotate: 360 }}
-          transition={{ duration: 2.5, repeat: Infinity, ease: "linear" }}
-        >
-          <circle
-            cx={ringSize / 2}
-            cy={ringSize / 2}
-            r={r}
-            fill="none"
-            stroke="hsl(var(--muted-foreground) / 0.12)"
-            strokeWidth="3"
-          />
-          <circle
-            cx={ringSize / 2}
-            cy={ringSize / 2}
-            r={r}
-            fill="none"
-            stroke="hsl(var(--primary) / 0.5)"
-            strokeWidth="3"
-            strokeLinecap="round"
-            strokeDasharray={`${circ * 0.3} ${circ * 0.7}`}
-            className="drop-shadow-[0_0_4px_hsl(var(--primary)/0.3)]"
-          />
-        </motion.svg>
-
-        {/* Bold "X" letter behind mascot — breathing glow */}
+      {/* Mascot + X container */}
+      <div className="relative" style={{ width: containerSize, height: containerSize }}>
+        {/* Brand "X" image behind mascot — breathing glow */}
         <motion.div
           className="absolute inset-0 flex items-center justify-center select-none pointer-events-none"
           animate={{
@@ -69,17 +38,13 @@ export default function XcrowLoader({
             ease: "easeInOut",
           }}
         >
-          <span
-            className="font-black text-white drop-shadow-[0_0_20px_rgba(255,255,255,0.6)]"
-            style={{
-              fontSize: xFontSize,
-              lineHeight: 1,
-              fontFamily: "'Cinzel', 'Inter', serif",
-              letterSpacing: "-0.04em",
-            }}
-          >
-            X
-          </span>
+          <img
+            src={xcrowXLetter}
+            alt=""
+            className="drop-shadow-[0_0_20px_rgba(255,255,255,0.6)]"
+            style={{ width: xSize, height: xSize }}
+            draggable={false}
+          />
         </motion.div>
 
         {/* X glow halo — secondary pulse offset */}
@@ -95,16 +60,13 @@ export default function XcrowLoader({
             ease: "easeInOut",
           }}
         >
-          <span
-            className="font-black text-white/20 blur-md"
-            style={{
-              fontSize: xFontSize * 1.1,
-              lineHeight: 1,
-              fontFamily: "'Cinzel', 'Inter', serif",
-            }}
-          >
-            X
-          </span>
+          <img
+            src={xcrowXLetter}
+            alt=""
+            className="blur-md opacity-20"
+            style={{ width: xSize * 1.1, height: xSize * 1.1 }}
+            draggable={false}
+          />
         </motion.div>
 
         {/* Stationary crow mascot on top */}
