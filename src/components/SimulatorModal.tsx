@@ -201,7 +201,7 @@ const BriefingScreen = ({
             transition={{ delay: 0.2, type: "spring", damping: 12 }}
             className="text-3xl mb-3"
           >
-            ⚔️
+            📜
           </motion.span>
           <h3
             className="text-lg sm:text-xl font-bold text-foreground drop-shadow-lg"
