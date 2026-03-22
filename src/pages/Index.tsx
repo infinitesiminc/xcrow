@@ -293,17 +293,9 @@ const Index = () => {
       </motion.div>
     </div>
   );
+};
 
-  /* ── Signed-in Dashboard ── */
-  return (
-    <div className="h-[calc(100vh-3.5rem)] overflow-y-auto">
-      <div className="max-w-2xl mx-auto px-4 py-8 space-y-6">
-        {/* Greeting */}
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-center"
-        >
+export default Index;
           <h1 className="text-2xl md:text-3xl font-display font-bold text-foreground">
             {greeting}{userName ? `, ${userName}` : ""} ⚔️
           </h1>
