@@ -154,22 +154,22 @@ const PromptArena = ({ round, roundNumber, onJudged, loading }: PromptArenaProps
             <motion.div
               key={side}
               initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: side === "a" ? 0.1 : 0.2 }}
+              animate={{
+                opacity: showResult && !isBetter ? 0.7 : 1,
+                y: 0,
+                scale: showResult && isBetter ? 1.02 : 1,
+              }}
+              transition={{ delay: side === "a" ? 0.1 : 0.2, duration: 0.4 }}
               className="rounded-xl overflow-hidden flex flex-col"
               style={{
                 border: showResult
-                  ? isPicked
-                    ? correct
-                      ? "2px solid hsl(142 71% 45% / 0.6)"
-                      : "2px solid hsl(0 84% 60% / 0.5)"
-                    : isBetter
-                      ? "2px solid hsl(142 71% 45% / 0.4)"
-                      : "1px solid hsl(var(--filigree) / 0.15)"
+                  ? isBetter
+                    ? "2px solid hsl(var(--filigree-glow))"
+                    : "1px solid hsl(var(--filigree) / 0.08)"
                   : "1px solid hsl(var(--filigree) / 0.2)",
                 background: "hsl(var(--surface-stone))",
                 boxShadow: showResult && isBetter
-                  ? "0 0 20px hsl(142 71% 45% / 0.1)"
+                  ? "0 0 24px hsl(var(--filigree-glow) / 0.25), 0 0 8px hsl(var(--filigree) / 0.15)"
                   : "inset 0 1px 0 hsl(var(--emboss-light))",
               }}
             >
@@ -207,22 +207,56 @@ const PromptArena = ({ round, roundNumber, onJudged, loading }: PromptArenaProps
                 </div>
               )}
 
-              {/* Result badge */}
+              {/* Result badge — RPG Victory/Defeat banner */}
               {showResult && (
-                <div className={`px-4 py-2.5 flex items-center gap-2 text-sm font-medium ${
-                  isBetter ? "text-success bg-success/5" : "text-muted-foreground bg-muted/30"
-                }`}>
-                  {isBetter ? <CheckCircle2 className="h-4 w-4" /> : null}
-                  {isBetter ? "Better approach" : "Less effective"}
+                <motion.div
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.2, duration: 0.4 }}
+                  className="px-4 py-3 flex items-center gap-3"
+                  style={{
+                    background: isBetter
+                      ? "linear-gradient(90deg, hsl(var(--filigree) / 0.12), hsl(var(--filigree-glow) / 0.06))"
+                      : "hsl(var(--muted) / 0.3)",
+                    borderTop: isBetter
+                      ? "1px solid hsl(var(--filigree-glow) / 0.3)"
+                      : "1px solid hsl(var(--filigree) / 0.06)",
+                  }}
+                >
+                  <span className="text-lg">{isBetter ? "🏆" : "💀"}</span>
+                  <span
+                    className="font-semibold tracking-wide"
+                    style={{
+                      fontFamily: "'Cinzel', serif",
+                      fontSize: isBetter ? "15px" : "13px",
+                      color: isBetter ? "hsl(var(--filigree-glow))" : "hsl(var(--muted-foreground))",
+                    }}
+                  >
+                    {isBetter ? "Superior Strategy" : "Weaker Approach"}
+                  </span>
                   {isPicked && (
-                    <span className="ml-auto text-xs font-bold px-2 py-0.5 rounded" style={{
-                      background: correct ? "hsl(142 71% 45% / 0.15)" : "hsl(0 84% 60% / 0.15)",
-                      color: correct ? "hsl(142 71% 45%)" : "hsl(0 84% 60%)",
-                    }}>
-                      Your pick
-                    </span>
+                    <motion.span
+                      initial={{ scale: 0.8, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      transition={{ delay: 0.4 }}
+                      className="ml-auto text-xs font-bold px-3 py-1 rounded-full"
+                      style={{
+                        background: correct
+                          ? "hsl(142 71% 45% / 0.15)"
+                          : "hsl(0 84% 60% / 0.15)",
+                        color: correct
+                          ? "hsl(142 71% 45%)"
+                          : "hsl(0 84% 60%)",
+                        boxShadow: correct
+                          ? "0 0 12px hsl(142 71% 45% / 0.2)"
+                          : "0 0 12px hsl(0 84% 60% / 0.2)",
+                        fontFamily: "'Cinzel', serif",
+                      }}
+                    >
+                      ⚔️ Your Pick
+                    </motion.span>
                   )}
-                </div>
+                </motion.div>
               )}
             </motion.div>
           );
@@ -298,35 +332,77 @@ const PromptArena = ({ round, roundNumber, onJudged, loading }: PromptArenaProps
           className="space-y-3"
         >
           {/* Correct/Incorrect banner */}
-          <div className={`rounded-xl px-4 py-3 flex items-start gap-3 ${
-            correct ? "bg-success/5 border border-success/30" : "bg-destructive/5 border border-destructive/30"
-          }`}>
+          <motion.div
+            initial={correct ? { opacity: 0, scale: 0.95 } : { opacity: 0, x: -6 }}
+            animate={correct ? { opacity: 1, scale: 1 } : { opacity: 1, x: [0, -4, 4, -3, 3, 0] }}
+            transition={{ duration: correct ? 0.4 : 0.5 }}
+            className="rounded-xl px-5 py-4 flex items-start gap-3 relative overflow-hidden"
+            style={{
+              background: correct
+                ? "linear-gradient(135deg, hsl(var(--surface-stone)), hsl(142 71% 45% / 0.08))"
+                : "linear-gradient(135deg, hsl(var(--surface-stone)), hsl(0 84% 60% / 0.06))",
+              border: correct
+                ? "2px solid hsl(142 71% 45% / 0.35)"
+                : "2px solid hsl(0 84% 60% / 0.3)",
+              boxShadow: correct
+                ? "0 0 20px hsl(142 71% 45% / 0.1)"
+                : "none",
+            }}
+          >
             {correct ? (
-              <CheckCircle2 className="h-5 w-5 text-success shrink-0 mt-0.5" />
+              <CheckCircle2 className="h-6 w-6 text-success shrink-0 mt-0.5" />
             ) : (
-              <XCircle className="h-5 w-5 text-destructive shrink-0 mt-0.5" />
+              <XCircle className="h-6 w-6 text-destructive shrink-0 mt-0.5" />
             )}
             <div>
-              <p className={`text-base font-semibold ${correct ? "text-success" : "text-destructive"}`}>
-                {correct ? "Excellent judgment! ✨" : "Not quite — here's why:"}
+              <p
+                className="text-lg font-bold"
+                style={{
+                  fontFamily: "'Cinzel', serif",
+                  color: correct ? "hsl(142 71% 45%)" : "hsl(0 84% 60%)",
+                }}
+              >
+                {correct ? "✨ Excellent Judgment!" : "Not quite — here's why:"}
               </p>
-              <p className="text-sm text-foreground/80 mt-1.5 leading-relaxed">{round.explanation}</p>
+              <p className="text-[14px] text-foreground/80 mt-2 leading-relaxed">{round.explanation}</p>
             </div>
-          </div>
+            {/* Sparkle particles for correct */}
+            {correct && (
+              <>
+                {[0, 1, 2].map((i) => (
+                  <motion.span
+                    key={i}
+                    initial={{ opacity: 0.8, y: 0, x: 20 + i * 30 }}
+                    animate={{ opacity: 0, y: -30 }}
+                    transition={{ delay: 0.3 + i * 0.15, duration: 0.8 }}
+                    className="absolute top-2 text-sm pointer-events-none"
+                  >
+                    ✨
+                  </motion.span>
+                ))}
+              </>
+            )}
+          </motion.div>
 
           {/* Key Insight */}
           <div
-            className="rounded-xl px-4 py-3"
+            className="rounded-xl px-5 py-4"
             style={{
-              background: "hsl(var(--primary) / 0.05)",
-              border: "1px solid hsl(var(--primary) / 0.2)",
+              background: "hsl(var(--surface-stone))",
+              border: "1px solid hsl(var(--filigree) / 0.2)",
+              boxShadow: "inset 0 1px 0 hsl(var(--emboss-light))",
             }}
           >
-            <div className="flex items-center gap-2 mb-1.5">
-              <Sparkles className="h-4 w-4 text-primary" />
-              <span className="text-xs font-bold uppercase tracking-wider text-primary">Key Insight</span>
+            <div className="flex items-center gap-2 mb-2">
+              <span className="text-base">📜</span>
+              <span
+                className="text-xs font-bold uppercase tracking-[0.12em]"
+                style={{ fontFamily: "'Cinzel', serif", color: "hsl(var(--filigree-glow))" }}
+              >
+                Key Insight
+              </span>
             </div>
-            <p className="text-sm text-foreground/80 leading-relaxed">{round.insight}</p>
+            <p className="text-[14px] text-foreground/80 leading-relaxed">{round.insight}</p>
           </div>
 
           {/* Continue */}
