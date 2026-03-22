@@ -317,7 +317,7 @@ const MissionIntelCollapsible = ({ briefing, tips }: { briefing: string; tips?: 
         className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-accent/10 transition-colors"
       >
         <div className="flex items-center gap-2">
-          <Compass className="h-3.5 w-3.5 text-muted-foreground" />
+          <span className="text-sm">📜</span>
           <span
             className="text-[10px] font-semibold uppercase tracking-wider"
             style={{ color: "hsl(var(--filigree))", fontFamily: "'Cinzel', serif" }}
