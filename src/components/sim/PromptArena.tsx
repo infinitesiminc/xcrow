@@ -266,10 +266,10 @@ const PromptArena = ({ round, roundNumber, onJudged, loading }: PromptArenaProps
           className="space-y-3"
         >
           <div className="text-center">
-            <p className="text-sm font-semibold text-foreground" style={{ fontFamily: "'Cinzel', serif" }}>
+            <p className="text-base font-semibold text-foreground" style={{ fontFamily: "'Cinzel', serif" }}>
               🤔 Which prompt produced the better result?
             </p>
-            <p className="text-xs text-muted-foreground mt-1">Consider quality, relevance, and usefulness of the output</p>
+            <p className="text-sm text-muted-foreground mt-1.5">Consider quality, relevance, and usefulness of the output</p>
           </div>
           <div className="flex gap-3 justify-center">
             <Button
