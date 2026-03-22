@@ -1,6 +1,6 @@
 /**
- * XcrowLoader — Brand loading animation using the Xcrow mascot.
- * Flying crow with wing-flap bob, pulsing glow, and rotating ring.
+ * XcrowLoader — Brand loading animation.
+ * Stationary mascot with pulsing X-glow behind it and rotating ring.
  */
 import { motion } from "framer-motion";
 import xcrowLogo from "@/assets/xcrow-logo.png";
@@ -55,32 +55,23 @@ export default function XcrowLoader({
           />
         </motion.svg>
 
-        {/* Pulsing glow behind mascot */}
-        <motion.div
-          className="absolute inset-0 flex items-center justify-center"
-          animate={{ scale: [1, 1.25, 1], opacity: [0.2, 0.5, 0.2] }}
-          transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
-        >
-          <div
-            className="rounded-full bg-primary/15 blur-xl"
-            style={{ width: imgSize * 0.9, height: imgSize * 0.9 }}
-          />
-        </motion.div>
-
-        {/* Flying mascot — bob up/down + slight tilt for wing-flap feel */}
+        {/* Pulsing X-glow behind mascot — brightness flicker */}
         <motion.div
           className="absolute inset-0 flex items-center justify-center"
           animate={{
-            y: [-6, 4, -6],
-            rotate: [-2, 2, -2],
-            scaleY: [1, 0.96, 1],
+            opacity: [0.3, 0.9, 0.3],
+            scale: [0.95, 1.1, 0.95],
           }}
-          transition={{
-            duration: 1.2,
-            repeat: Infinity,
-            ease: "easeInOut",
-          }}
+          transition={{ duration: 1.6, repeat: Infinity, ease: "easeInOut" }}
         >
+          <div
+            className="rounded-full bg-white/20 blur-lg"
+            style={{ width: imgSize * 0.6, height: imgSize * 0.6 }}
+          />
+        </motion.div>
+
+        {/* Stationary mascot */}
+        <div className="absolute inset-0 flex items-center justify-center">
           <img
             src={xcrowLogo}
             alt="Xcrow"
@@ -88,7 +79,7 @@ export default function XcrowLoader({
             style={{ width: imgSize, height: imgSize }}
             draggable={false}
           />
-        </motion.div>
+        </div>
       </div>
 
       {/* Text */}
