@@ -242,6 +242,10 @@ export default function Navbar() {
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" size="icon" className="rounded-full">
                     <Avatar className="h-8 w-8">
+                      {(() => {
+                        const av = getAvatarById(profile?.avatarId);
+                        return av ? <AvatarImage src={av.src} alt={av.label} className="object-contain bg-muted/30" /> : null;
+                      })()}
                       <AvatarFallback className="bg-primary text-primary-foreground text-xs font-semibold">
                         {initials}
                       </AvatarFallback>
