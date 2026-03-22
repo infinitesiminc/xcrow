@@ -281,7 +281,20 @@ export default function FutureTerritoryMap({ skills, focusSkillId, level2SkillId
 
       </div>
 
-      <SkillDetailDrawer skill={selectedSkill} open={drawerOpen} onOpenChange={setDrawerOpen} />
+      {(() => {
+        const sg = selectedSkill && skillGrowthMap?.get(selectedSkill.id);
+        return (
+          <SkillDetailDrawer
+            skill={selectedSkill}
+            open={drawerOpen}
+            onOpenChange={setDrawerOpen}
+            level2Unlocked={selectedSkill ? (level2SkillIds?.has(selectedSkill.id) ?? false) : false}
+            level1Xp={sg?.level1Xp ?? 0}
+            level2Xp={sg?.level2Xp ?? 0}
+            level1SimsCompleted={sg?.level1Sims ?? 0}
+          />
+        );
+      })()}
     </TooltipProvider>
   );
 }
