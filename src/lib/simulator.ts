@@ -96,8 +96,10 @@ export async function compileSession(
   taskMeta?: { currentState?: string; trend?: string; impactLevel?: string },
   coaching?: CoachingContext,
   intel?: IntelContext,
+  level: 1 | 2 = 1,
+  futurePrediction?: any,
 ): Promise<SimSession> {
-  return simFetch("compile", { taskName, jobTitle, company, difficulty, mode, taskMeta, coaching, intel });
+  return simFetch("compile", { taskName, jobTitle, company, difficulty, mode, taskMeta, coaching, intel, level, futurePrediction });
 }
 
 export async function chatTurn(

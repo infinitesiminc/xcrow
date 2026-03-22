@@ -6,10 +6,8 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-// Dynamic: min rounds = objective count, max = 2× objectives
-const DEFAULT_OBJECTIVES_COUNT = 3;
-const MIN_ROUNDS = DEFAULT_OBJECTIVES_COUNT;      // 3
-const MAX_ROUNDS = DEFAULT_OBJECTIVES_COUNT * 2;   // 6
+// Fixed: exactly 3 rounds, one per objective
+const FIXED_ROUNDS = 3;
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -145,11 +143,12 @@ function aiStateDescription(taskMeta?: any): string {
 // ─── COMPILE ───
 
 async function handleCompile(payload: any, apiKey: string) {
-  const { taskName, jobTitle, company, difficulty = 3, mode = "assess", taskMeta, coaching, intel } = payload;
+  const { taskName, jobTitle, company, difficulty = 3, mode = "assess", taskMeta, coaching, intel, level = 1, futurePrediction } = payload;
   const aiContext = aiStateDescription(taskMeta);
   const toolVersions = await fetchToolVersions();
   const dateCtx = currentDateContext(toolVersions);
   const isAssess = mode === "assess";
+  const isLevel2 = level === 2;
 
   const coachingInstructions = coaching
     ? `\n\nCOACHING MODE — RETRY SESSION:
@@ -177,7 +176,31 @@ IMPORTANT INSTRUCTIONS FOR INTEL INTEGRATION:
 5. If no intel was gathered, do NOT reference any recon data.`
     : "\n\nNO INTEL: The player marched to battle without recon. Open with: \"You enter unfamiliar territory. No scouts. No intel. Trust your instincts, commander.\" Do not reference any specific threats or skills.";
 
-  const prompt = `You are designing a LEARNING simulation about AI tools for a professional task.
+  // Level 2 future context
+  const level2Context = isLevel2 && futurePrediction
+    ? `\n\nLEVEL 2 — FUTURE SCENARIO MODE:
+This is a LEVEL 2 simulation. The task "${taskName}" has been largely AUTOMATED by emerging technology.
+COLLAPSE SUMMARY: ${futurePrediction.collapse_summary}
+NEW HUMAN ROLE: ${futurePrediction.new_human_role}
+DISRUPTING TECHNOLOGIES: ${(futurePrediction.disrupting_tech || []).join(", ")}
+FUTURE AI EXPOSURE: ${futurePrediction.future_exposure}%
+TIMELINE: ${futurePrediction.timeline}
+
+CRITICAL LEVEL 2 INSTRUCTIONS:
+- Do NOT teach current AI tools. Instead, teach the NEW human role that emerges AFTER automation.
+- Scenarios should be set in the NEAR FUTURE where ${(futurePrediction.disrupting_tech || []).slice(0, 2).join(" and ")} have automated the routine parts.
+- The user's job is now: oversight, validation, strategic direction, catching edge cases AI misses.
+- Objectives should focus on: validating AI output quality, strategic oversight decisions, identifying AI blind spots.
+- Still use Learn→Apply format with 2 binary choices per round.
+- Reference the specific disrupting technologies by name.`
+    : "";
+
+  const levelLabel = isLevel2 ? "LEVEL 2 — FUTURE SCENARIO" : "LEVEL 1 — CURRENT TOOLS";
+  const levelDescription = isLevel2
+    ? "Future-focused: the task is automated, teach the NEW human oversight role"
+    : "Current: teach how to use today's AI tools for this task";
+
+  const prompt = `You are designing a LEARNING simulation about ${isLevel2 ? "the future human role after AI automation" : "AI tools"} for a professional task.
 
 ${dateCtx}
 
@@ -185,9 +208,11 @@ Role: ${jobTitle}${company ? ` at ${company}` : ""}
 Task: ${taskName}
 ${aiContext}
 Mode: ${isAssess ? "ASSESS — broad baseline check across the task" : "UPSKILL — deeper practice on specific sub-skills"}
-Format: Structured Learn→Apply coaching conversation, ${MIN_ROUNDS}-${MAX_ROUNDS} rounds, ${isAssess ? "~8" : "~12"} minutes
+Level: ${levelLabel} — ${levelDescription}
+Format: Structured Learn→Apply coaching conversation, exactly ${FIXED_ROUNDS} rounds, ${isAssess ? "~8" : "~12"} minutes
 ${coachingInstructions}
 ${intelInstructions}
+${level2Context}
 
 PEDAGOGY: TEACH-THEN-TEST (Learn → Apply)
 Every round follows this exact 2-beat loop:
@@ -195,6 +220,8 @@ Every round follows this exact 2-beat loop:
 - BEAT 2 (APPLY): User picks A or B. You confirm/correct briefly, show insight card, then immediately present the NEXT scenario with its lesson and 2 options.
 
 This means the user is NEVER left without guidance. You always teach before testing.
+
+This simulation has EXACTLY ${FIXED_ROUNDS} rounds, one per objective. No more, no less.
 
 Generate a JSON response:
 
@@ -205,8 +232,9 @@ Generate a JSON response:
    - "pillar": one of: "tool_awareness", "human_value_add", "adaptive_thinking", "domain_judgment"
    
    CRITICAL: The 3 objectives must be SPECIFIC to "${taskName}" for a ${jobTitle}. Each should map to a different pillar.
+   ${isLevel2 ? 'For Level 2, objectives should focus on: oversight/validation of AI output, strategic decision-making, and identifying AI blind spots.' : ''}
 
-2. "briefing": 2-3 sentences. What this task involves and what AI tools are changing about it.
+2. "briefing": 2-3 sentences. ${isLevel2 ? "What this task looks like AFTER automation and what the new human role involves." : "What this task involves and what AI tools are changing about it."}
 
 3. "tips": Array of 2 practical tips.
 
@@ -215,8 +243,8 @@ Generate a JSON response:
 5. "systemPrompt": System prompt for the coaching persona.
 
 6. "openingMessage": The FIRST Learn→Apply beat. Structure EXACTLY:
-   - "**📖 Scenario:**" — 2 sentence realistic work scenario
-   - "**💡 Key Insight:**" — 1-2 sentences teaching the relevant AI tool/technique for THIS scenario. Name a SPECIFIC current tool and what it does.
+   - "**📖 Scenario:**" — 2 sentence realistic work scenario ${isLevel2 ? "(set in the near future where AI has automated routine parts)" : ""}
+   - "**💡 Key Insight:**" — 1-2 sentences teaching the relevant ${isLevel2 ? "oversight technique or validation approach" : "AI tool/technique"} for THIS scenario. ${isLevel2 ? "Reference the disrupting technology and explain the human's new role." : "Name a SPECIFIC current tool and what it does."}
    - "**🤔 Apply it:**"
    - "**A)** [Strong approach — 10-15 words, verb-led]"
    - "**B)** [Common misconception — 10-15 words, verb-led]"
@@ -238,11 +266,17 @@ Respond ONLY with valid JSON, no markdown.`;
 
   let objectives = parsed.learningObjectives;
   if (!Array.isArray(objectives) || objectives.length < 2) {
-    objectives = [
-      { id: "tool_selection", label: "Choose the right AI tool", description: `Know which AI tool best handles aspects of ${taskName}`, pillar: "tool_awareness" },
-      { id: "human_judgment", label: "Apply human judgment", description: `Identify where human expertise is essential in ${taskName}`, pillar: "human_value_add" },
-      { id: "validate_output", label: "Validate AI outputs", description: `Verify and improve AI-generated results for ${taskName}`, pillar: "adaptive_thinking" },
-    ];
+    objectives = isLevel2
+      ? [
+          { id: "validate_ai_output", label: "Validate AI-generated results", description: `Verify automated output quality for ${taskName}`, pillar: "adaptive_thinking" },
+          { id: "strategic_oversight", label: "Provide strategic oversight", description: `Make high-level decisions AI cannot handle in ${taskName}`, pillar: "domain_judgment" },
+          { id: "catch_ai_blindspots", label: "Identify AI blind spots", description: `Spot edge cases and biases in automated ${taskName}`, pillar: "human_value_add" },
+        ]
+      : [
+          { id: "tool_selection", label: "Choose the right AI tool", description: `Know which AI tool best handles aspects of ${taskName}`, pillar: "tool_awareness" },
+          { id: "human_judgment", label: "Apply human judgment", description: `Identify where human expertise is essential in ${taskName}`, pillar: "human_value_add" },
+          { id: "validate_output", label: "Validate AI outputs", description: `Verify and improve AI-generated results for ${taskName}`, pillar: "adaptive_thinking" },
+        ];
   }
 
   let briefing = parsed.briefing || `This task involves ${taskName} as part of the ${jobTitle} role.`;
@@ -265,9 +299,10 @@ Respond ONLY with valid JSON, no markdown.`;
       slug: "dynamic",
       difficulty,
     },
+    level,
     config: {
-      minRounds: MIN_ROUNDS,
-      maxRounds: MAX_ROUNDS,
+      minRounds: FIXED_ROUNDS,
+      maxRounds: FIXED_ROUNDS,
       objectiveCount: objectives.length,
     },
   }), {
@@ -305,10 +340,6 @@ function buildLearnApplySystem(
   learningObjectives?: any[], objectiveStatus?: Record<string, boolean>,
   targetObjectiveId?: string,
 ): string {
-  // 2-beat cycle: even turns = user just picked A/B (evaluate + next scenario), odd = shouldn't happen (opening was beat 1)
-  // After the opening message (turn 1), user's first response is turn 2.
-  // Turn 2+ are always user responses to A/B choices → evaluate + teach next
-
   // Build objectives context
   let objectivesContext = "";
   if (learningObjectives && Array.isArray(learningObjectives)) {
@@ -335,26 +366,22 @@ After evaluating the user's choice, include EXACTLY ONE of these tags:
 - [OBJ_EVAL:${targetObj?.id || "unknown"}:PASS] — user's choice shows understanding
 - [OBJ_EVAL:${targetObj?.id || "unknown"}:FAIL] — user chose the misconception option
 
-CRITICAL PACING RULE: Do NOT mark PASS on the very first round (round 1). The first round is always a warm-up.
-Each objective should take at least 2 rounds of correct responses before being marked PASS.
-If it's round 1, always use FAIL or simply present the next scenario without an OBJ_EVAL tag.
-
 OBJECTIVE COMPLETION: If ALL objectives have been met, also include [ALL_OBJECTIVES_MET].`;
   }
 
-  // Dynamic round management
+  // Fixed 3-round structure — check completion
   const allMet = learningObjectives?.every(o => objectiveStatus?.[o.id]) ?? false;
-  let dynamicEndNote = "";
-  if (allMet && round >= MIN_ROUNDS) {
-    dynamicEndNote = `\n\nALL OBJECTIVES MET! Replace the next scenario with: "🎉 You've conquered all objectives! Click **Finish** to see your battle report." Include [ALL_OBJECTIVES_MET].`;
+  let endNote = "";
+  if (allMet) {
+    endNote = `\n\nALL OBJECTIVES MET! Replace the next scenario with: "🎉 You've conquered all objectives! Click **Finish** to see your battle report." Include [ALL_OBJECTIVES_MET].`;
   }
 
-  const nearEnd = round >= MAX_ROUNDS - 1;
+  const isLastRound = round >= FIXED_ROUNDS;
   let urgencyNote = "";
-  if (nearEnd && !allMet) {
+  if (isLastRound && !allMet) {
     const unmetIds = learningObjectives?.filter(o => !objectiveStatus?.[o.id]) || [];
     if (unmetIds.length > 0) {
-      urgencyNote = `\n\nURGENT: Only ${MAX_ROUNDS - round} round(s) left. Focus next scenario on: ${unmetIds.map(o => o.label).join(", ")}.`;
+      urgencyNote = `\n\nFINAL ROUND! After evaluating, end with: "🎉 Great battle, Commander! Click **Finish** to see your report." Include [ALL_OBJECTIVES_MET] if all are met.`;
     }
   }
 
@@ -379,18 +406,18 @@ DO THIS IN ORDER:
    🤖 [Name ONE specific current AI tool and what it does for this task — 1 sentence]
    💡 [ONE thing only a human can do here — 1 sentence]
 
-3. NEXT SCENARIO (Learn → Apply beat):
+${isLastRound ? `3. CLOSING: End with "🎉 Great battle, Commander! Click **Finish** to see your report."` : `3. NEXT SCENARIO (Learn → Apply beat):
    ${targetObj ? `Design this scenario to test: "${targetObj.label}" — ${targetObj.description}` : "Pick the most relevant remaining skill to test."}
    
    "**📖 Scenario:**" — 2 sentence NEW realistic work scenario (different aspect than before)
    "**💡 Key Insight:**" — 1-2 sentences teaching the relevant AI tool/technique. Name a SPECIFIC current tool.
    "**🤔 Apply it:**"
    "**A)** [Strong approach — 10-15 words, verb-led]"
-   "**B)** [Common misconception — 10-15 words, verb-led]"
+   "**B)** [Common misconception — 10-15 words, verb-led]"`}
 
-TOTAL RESPONSE: under 120 words. The evaluate + insight part should be ~40 words, the new scenario ~80 words.
+TOTAL RESPONSE: under 120 words. The evaluate + insight part should be ~40 words${isLastRound ? "." : ", the new scenario ~80 words."}
 
-Include the [OBJ_EVAL] tag after the evaluate section (before the next scenario).`;
+Include the [OBJ_EVAL] tag after the evaluate section.`;
 
   return `You are a supportive AI coach for ${role}. You teach by example and test with simple binary choices.
 
@@ -398,10 +425,10 @@ ${dateCtx}
 ${aiContext}
 ${modeContext}
 ${objectivesContext}
-${dynamicEndNote}
+${endNote}
 ${urgencyNote}
 
-Round ${round || 1} of ${MAX_ROUNDS} (ends early if all objectives met after round ${MIN_ROUNDS}).
+Round ${round || 1} of ${FIXED_ROUNDS} (exactly 3 rounds, one per objective).
 
 PEDAGOGY: LEARN → APPLY (Teach-Then-Test)
 - You ALWAYS teach before testing. Never quiz without teaching first.
@@ -425,9 +452,7 @@ ABSOLUTE RULES:
 - Reference specific, current AI tools by name (use versions from the date context)
 
 YOUR TASK RIGHT NOW:
-${turnInstruction}
-
-${round >= MAX_ROUNDS ? "This is the FINAL round. After evaluating, replace the next scenario with: 'Great battle, Commander! 🎉 Click **Finish** to see your report.' Include [ALL_OBJECTIVES_MET] if all met." : ""}`;
+${turnInstruction}`;
 }
 
 // ─── SCORE ───
