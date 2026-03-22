@@ -278,7 +278,7 @@ const MapPage = () => {
   // View context for chat
   const chatViewCtx = useMemo(() => ({
     page: "map" as const,
-    activePanel: rightPanelTab === "roles" ? "roles" : "territory",
+    activePanel: rightPanelTab === "roles" ? "roles" : rightPanelTab === "allies" ? "allies" : "territory",
     selectedRole: selectedRole ? { title: selectedRole.title, company: selectedRole.company, jobId: selectedRole.jobId } : null,
     selectedTab: rightPanelTab === "roles" ? myRolesTab : undefined,
   }), [selectedRole, rightPanelTab, myRolesTab]);
