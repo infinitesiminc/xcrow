@@ -165,7 +165,7 @@ export default function AdaptiveQueue({ userId, onLaunchSim }: {
 /* ── Individual queue row ── */
 function QueueRow({ item, onLaunch }: { item: QueueItem; onLaunch: (item: QueueItem) => void }) {
   const [showTip, setShowTip] = useState(false);
-  const meta = CATEGORY_META[item.weak_category] || { label: item.weak_category, emoji: "📊", Icon: Swords };
+  const meta = CATEGORY_META[item.weak_category] || { label: item.weak_category, emoji: "📊", Icon: Star };
   const gap = item.threshold - item.weak_score;
   const Icon = meta.Icon;
 
