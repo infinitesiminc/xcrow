@@ -84,23 +84,33 @@ export default function FutureIsland({ island, skillLookup, level2SkillIds, isFo
         onClick={() => onIslandClick?.(category, cx, cy)}
       />
 
+      {/* Island icon */}
+      <text
+        x={cx}
+        y={cy - radius - 18}
+        textAnchor="middle"
+        style={{ fontSize: "28px", pointerEvents: "none" }}
+      >
+        {theme.emoji}
+      </text>
+
       {/* Island label */}
       <text
         x={cx}
-        y={cy - radius - 6}
+        y={cy - radius + 2}
         textAnchor="middle"
         style={{
-          fontSize: "14px",
+          fontSize: "18px",
           fontWeight: 800,
           fill: isParchment ? `hsl(${theme.baseHue} 55% 30%)` : `hsl(${theme.baseHue} 55% 65%)`,
           textTransform: "uppercase",
-          letterSpacing: "0.1em",
-          fontFamily: "'Space Grotesk', system-ui, sans-serif",
+          letterSpacing: "0.12em",
+          fontFamily: "'Cinzel', 'Space Grotesk', serif",
           cursor: "pointer",
           pointerEvents: "none",
         }}
       >
-        {theme.emoji} {theme.terrain}
+        {theme.terrain}
       </text>
 
       {/* Count badge */}
