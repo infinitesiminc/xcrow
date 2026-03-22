@@ -1661,40 +1661,16 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                     transition={{ delay: 0.7 }}
                     className="flex flex-col gap-2.5 pt-1 w-full max-w-xs"
                   >
-                    {/* Primary CTA — adapts to score */}
-                    {scoreTier === "low" && (
+                    {/* Primary: Continue Campaign — next task in role */}
+                    {onNextBattle && campaignStats && campaignStats.conquered + 1 < campaignStats.total && (
                       <Button
-                        onClick={startRetryWithCoaching}
+                        onClick={() => { onClose(); onNextBattle(); }}
                         className="gap-2 rounded-xl w-full h-11"
                       >
-                        <RotateCcw className="h-4 w-4" /> 🔄 Retry with Battle Coach
+                        <Swords className="h-4 w-4" /> Continue Campaign ({campaignStats.total - campaignStats.conquered - 1} battles remain)
                       </Button>
                     )}
-                    {scoreTier === "mid" && onNextTask && (
-                      <Button
-                        onClick={() => { onClose(); onNextTask(); }}
-                        className="gap-2 rounded-xl w-full h-11"
-                      >
-                        <TrendingUp className="h-4 w-4" /> 🔥 Level Up — Harder Quest
-                      </Button>
-                    )}
-                    {scoreTier === "mid" && !onNextTask && (
-                      <Button
-                        onClick={() => startCompile()}
-                        className="gap-2 rounded-xl w-full h-11"
-                      >
-                        <TrendingUp className="h-4 w-4" /> 💪 Train Again to Level Up
-                      </Button>
-                    )}
-                    {scoreTier === "high" && nearbyUnclaimed && (
-                      <Button
-                        onClick={() => { onClose(); onBackToFeed?.(); }}
-                        className="gap-2 rounded-xl w-full h-11"
-                      >
-                        <Sparkles className="h-4 w-4" /> 🏰 New Frontier — Conquer {nearbyUnclaimed.name}
-                      </Button>
-                    )}
-                    {scoreTier === "high" && !nearbyUnclaimed && onNextTask && (
+                    {!onNextBattle && onNextTask && (
                       <Button
                         onClick={() => { onClose(); onNextTask(); }}
                         className="gap-2 rounded-xl w-full h-11"
@@ -1702,54 +1678,15 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                         <ArrowRight className="h-4 w-4" /> Next Quest
                       </Button>
                     )}
-                    {scoreTier === "high" && !nearbyUnclaimed && !onNextTask && (
-                      <Button
-                        onClick={onClose}
-                        className="gap-2 rounded-xl w-full h-11"
-                      >
-                        <ArrowRight className="h-4 w-4" /> Explore Territory
-                      </Button>
-                    )}
 
-                    {/* Secondary CTA — adapts to score */}
-                    {scoreTier === "low" && onNextTask && (
-                      <Button
-                        variant="secondary"
-                        onClick={() => { onClose(); onNextTask(); }}
-                        className="gap-2 rounded-xl w-full text-xs"
-                      >
-                        Try a Different Quest
-                      </Button>
-                    )}
-                    {scoreTier === "mid" && (
-                      <Button
-                        variant="secondary"
-                        onClick={() => startCompile()}
-                        className="gap-2 rounded-xl w-full text-xs"
-                      >
-                        <RotateCcw className="h-3 w-3" /> Same Quest — Raise Power
-                      </Button>
-                    )}
-                    {scoreTier === "high" && (
-                      <Button
-                        variant="secondary"
-                        onClick={() => startCompile()}
-                        className="gap-2 rounded-xl w-full text-xs"
-                      >
-                        Same Skill, New Battleground
-                      </Button>
-                    )}
-
-                    {/* Next Battle — return to kingdom chooser */}
-                    {onNextBattle && campaignStats && campaignStats.conquered + 1 < campaignStats.total && (
-                      <Button
-                        variant="outline"
-                        onClick={() => { onClose(); onNextBattle(); }}
-                        className="gap-2 rounded-xl w-full text-xs"
-                      >
-                        <Shield className="h-3 w-3" /> 🏰 Next Battle ({campaignStats.total - campaignStats.conquered - 1} remain)
-                      </Button>
-                    )}
+                    {/* Secondary: Retry Quest */}
+                    <Button
+                      variant="secondary"
+                      onClick={() => startCompile()}
+                      className="gap-2 rounded-xl w-full text-xs"
+                    >
+                      <RotateCcw className="h-3 w-3" /> Retry Quest
+                    </Button>
 
                     {/* View Territory — auto-pan to upgraded castle */}
                     {onViewTerritory && currentSkillIds.length > 0 && (
@@ -1761,17 +1698,17 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                         }}
                         className="gap-2 rounded-xl w-full text-xs"
                       >
-                        <Map className="h-3 w-3" /> 🏰 View Territory
+                        <Map className="h-3 w-3" /> View Territory
                       </Button>
                     )}
 
-                    {/* Always: Back to Xcrow */}
+                    {/* Dismiss */}
                     <Button
                       variant="ghost"
                       onClick={onClose}
                       className="gap-2 rounded-xl w-full text-xs text-muted-foreground"
                     >
-                      🐦‍⬛ Back to Xcrow
+                      Dismiss
                     </Button>
                   </motion.div>
                 </motion.div>
