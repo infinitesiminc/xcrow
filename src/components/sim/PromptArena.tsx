@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Zap, CheckCircle2, XCircle, Sparkles, ArrowRight } from "lucide-react";
+import { Zap, CheckCircle2, XCircle, Sparkles, ArrowRight, Trophy, ShieldX } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import ReactMarkdown from "react-markdown";
 import TypewriterMarkdown from "@/components/TypewriterMarkdown";
