@@ -373,7 +373,7 @@ OBJECTIVE COMPLETION: If ALL objectives have been met, also include [ALL_OBJECTI
   const allMet = learningObjectives?.every(o => objectiveStatus?.[o.id]) ?? false;
   let endNote = "";
   if (allMet) {
-    endNote = `\n\nALL OBJECTIVES MET! Replace the next scenario with: "🎉 You've conquered all objectives! Click **Finish** to see your battle report." Include [ALL_OBJECTIVES_MET].`;
+    endNote = `\n\nALL OBJECTIVES MET! Replace the next scenario with: "🎉 You've conquered all objectives! Click **End Quest** to see your battle report." Include [ALL_OBJECTIVES_MET].`;
   }
 
   const isLastRound = round >= FIXED_ROUNDS;
@@ -381,7 +381,7 @@ OBJECTIVE COMPLETION: If ALL objectives have been met, also include [ALL_OBJECTI
   if (isLastRound && !allMet) {
     const unmetIds = learningObjectives?.filter(o => !objectiveStatus?.[o.id]) || [];
     if (unmetIds.length > 0) {
-      urgencyNote = `\n\nFINAL ROUND! After evaluating, end with: "🎉 Great battle, Commander! Click **Finish** to see your report." Include [ALL_OBJECTIVES_MET] if all are met.`;
+      urgencyNote = `\n\nFINAL ROUND! After evaluating, end with: "🎉 Great battle, Commander! Click **End Quest** to see your report." Include [ALL_OBJECTIVES_MET] if all are met.`;
     }
   }
 
@@ -406,7 +406,7 @@ DO THIS IN ORDER:
    🤖 [Name ONE specific current AI tool and what it does for this task — 1 sentence]
    💡 [ONE thing only a human can do here — 1 sentence]
 
-${isLastRound ? `3. CLOSING: End with "🎉 Great battle, Commander! Click **Finish** to see your report."` : `3. NEXT SCENARIO (Learn → Apply beat):
+${isLastRound ? `3. CLOSING: End with "🎉 Great battle, Commander! Click **End Quest** to see your report."` : `3. NEXT SCENARIO (Learn → Apply beat):
    ${targetObj ? `Design this scenario to test: "${targetObj.label}" — ${targetObj.description}` : "Pick the most relevant remaining skill to test."}
    
    "**📖 Scenario:**" — 2 sentence NEW realistic work scenario (different aspect than before)
