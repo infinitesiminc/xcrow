@@ -83,6 +83,7 @@ export default function Settings() {
   const [cvFileName, setCvFileName] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [uploadingCv, setUploadingCv] = useState(false);
+  const [avatarId, setAvatarId] = useState<string | null>(null);
   const cvInputRef = useRef<HTMLInputElement>(null);
 
   const [newPassword, setNewPassword] = useState("");
