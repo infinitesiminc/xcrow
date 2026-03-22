@@ -715,17 +715,19 @@ export default function Enterprise() {
         <div className="mx-auto max-w-3xl">
           <motion.div
             {...fadeUp}
-            className="rounded-2xl border border-border bg-card p-8 sm:p-10 text-center space-y-4"
+            className="rounded-2xl border border-[hsl(var(--filigree)/0.2)] p-8 sm:p-10 text-center space-y-4"
+            style={{ background: "hsl(var(--surface-stone))", boxShadow: "inset 0 1px 0 hsl(var(--emboss-light)), 0 4px 12px hsl(var(--emboss-shadow))" }}
           >
-            <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground">Case Study</p>
-            <h3 className="font-display text-2xl sm:text-3xl font-semibold text-foreground">
-              See how Anthropic keeps 400+ roles ready for frontier AI
+            <p className="text-xs font-medium uppercase tracking-widest text-[hsl(var(--filigree))]" style={{ fontFamily: "'Cinzel', serif" }}>The Campaign</p>
+            <h3 className="font-fantasy text-2xl sm:text-3xl font-semibold text-foreground">
+              See how Anthropic keeps 400+ kingdoms ready for frontier AI
             </h3>
             <p className="text-sm text-muted-foreground max-w-lg mx-auto leading-relaxed">
-              Walk through the full platform — from ATS import to continuous adaptation dashboards — in a 6-step guided tour. No sign-up required.
+              Walk through the full platform — from ATS import to continuous adaptation dashboards — in a 7-step guided campaign. No sign-up required.
             </p>
-            <Button size="lg" onClick={() => navigate("/case-study/anthropic")} className="gap-2 mt-2">
-              Start the Tour <ArrowRight className="h-4 w-4" />
+            <Button size="lg" onClick={() => navigate("/case-study/anthropic")} className="gap-2 mt-2"
+              style={{ boxShadow: "0 0 16px hsl(var(--filigree-glow) / 0.2)" }}>
+              Begin Campaign <ArrowRight className="h-4 w-4" />
             </Button>
           </motion.div>
         </div>
