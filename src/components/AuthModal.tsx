@@ -60,15 +60,30 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
     setLoading(false);
   };
 
+  const inputStyle = {
+    background: "hsl(var(--surface-stone))",
+    border: "1px solid hsl(var(--filigree) / 0.2)",
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-sm p-6">
+      <DialogContent
+        className="sm:max-w-sm p-6"
+        style={{
+          background: "hsl(var(--surface-stone))",
+          border: "1px solid hsl(var(--filigree) / 0.25)",
+          boxShadow: "0 8px 40px hsl(var(--emboss-shadow)), inset 0 1px 0 hsl(var(--emboss-light))",
+        }}
+      >
         <DialogHeader>
-          <DialogTitle className="text-xl font-sans font-bold">
-            {isSignUp ? "Create account" : "Welcome back"}
+          <DialogTitle
+            className="text-xl font-bold"
+            style={{ fontFamily: "'Cinzel', serif", textShadow: "0 0 12px hsl(var(--filigree-glow) / 0.2)" }}
+          >
+            {isSignUp ? "Join the Realm" : "Welcome back"}
           </DialogTitle>
           <DialogDescription className="text-sm">
-            {isSignUp ? "Track your upskill progress" : "Sign in to save your progress"}
+            {isSignUp ? "Begin your quest — track your skill journey" : "Sign in to continue your conquest"}
           </DialogDescription>
         </DialogHeader>
 
@@ -76,6 +91,7 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
           type="button"
           variant="outline"
           className="w-full gap-2"
+          style={{ ...inputStyle }}
           onClick={async () => {
             const { error } = await lovable.auth.signInWithOAuth("google", {
               redirect_uri: window.location.origin,
@@ -88,8 +104,12 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
         </Button>
 
         <div className="relative">
-          <div className="absolute inset-0 flex items-center"><span className="w-full border-t border-border" /></div>
-          <div className="relative flex justify-center text-xs"><span className="bg-background px-2 text-muted-foreground">or</span></div>
+          <div className="absolute inset-0 flex items-center">
+            <span className="w-full" style={{ borderTop: "1px solid hsl(var(--filigree) / 0.15)" }} />
+          </div>
+          <div className="relative flex justify-center text-xs">
+            <span className="px-2 text-muted-foreground" style={{ background: "hsl(var(--surface-stone))" }}>or</span>
+          </div>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-3">
@@ -101,7 +121,8 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
                 placeholder="Display name"
                 value={displayName}
                 onChange={(e) => setDisplayName(e.target.value)}
-                className="w-full rounded-xl border border-input bg-background pl-10 pr-3 py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-ring"
+                className="w-full rounded-xl pl-10 pr-3 py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-ring"
+                style={inputStyle}
               />
             </div>
           )}
@@ -113,7 +134,8 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="w-full rounded-xl border border-input bg-background pl-10 pr-3 py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-ring"
+              className="w-full rounded-xl pl-10 pr-3 py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-ring"
+              style={inputStyle}
             />
           </div>
           <div className="relative">
@@ -125,18 +147,24 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
               onChange={(e) => setPassword(e.target.value)}
               required
               minLength={6}
-              className="w-full rounded-xl border border-input bg-background pl-10 pr-3 py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-ring"
+              className="w-full rounded-xl pl-10 pr-3 py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-ring"
+              style={inputStyle}
             />
           </div>
-          <Button type="submit" className="w-full" disabled={loading}>
-            {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : isSignUp ? "Sign up" : "Sign in"}
+          <Button
+            type="submit"
+            className="w-full"
+            disabled={loading}
+            style={{ fontFamily: "'Cinzel', serif", letterSpacing: "0.04em" }}
+          >
+            {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : isSignUp ? "Begin Quest" : "Enter Realm"}
           </Button>
         </form>
 
         <p className="text-xs text-muted-foreground text-center">
-          {isSignUp ? "Already have an account?" : "Don't have an account?"}{" "}
+          {isSignUp ? "Already a warrior?" : "New to the realm?"}{" "}
           <button onClick={() => setIsSignUp(!isSignUp)} className="text-primary hover:underline font-medium">
-            {isSignUp ? "Sign in" : "Sign up"}
+            {isSignUp ? "Sign in" : "Create account"}
           </button>
         </p>
       </DialogContent>
