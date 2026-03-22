@@ -764,10 +764,10 @@ export default function Enterprise() {
       </section>
 
       {/* ── Final CTA ── */}
-      <section className="px-4 py-24 border-t border-border">
+      <section className="px-4 py-24 border-t border-[hsl(var(--filigree)/0.1)]">
         <div className="mx-auto max-w-3xl text-center">
           <motion.div {...fadeUp}>
-            <h2 className="font-display text-3xl sm:text-4xl font-semibold text-foreground">
+            <h2 className="font-fantasy text-3xl sm:text-4xl font-semibold text-foreground">
               Make every model release your advantage.
             </h2>
             <p className="mt-4 text-muted-foreground text-lg max-w-xl mx-auto">
@@ -775,11 +775,12 @@ export default function Enterprise() {
               Turn acceleration into opportunity.
             </p>
             <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3">
-              <Button size="lg" className="gap-2 text-base px-8" onClick={() => navigate("/contact")}>
+              <Button size="lg" className="gap-2 text-base px-8" onClick={() => navigate("/contact")}
+                style={{ boxShadow: "0 0 16px hsl(var(--filigree-glow) / 0.2)" }}>
                 Book a Demo <ArrowRight className="h-4 w-4" />
               </Button>
-              <Button variant="outline" size="lg" className="gap-2 text-base px-8" onClick={() => navigate("/case-study/anthropic")}>
-                See It in Action
+              <Button variant="outline" size="lg" className="gap-2 text-base px-8 border-[hsl(var(--filigree)/0.2)]" onClick={() => navigate("/case-study/anthropic")}>
+                See the Campaign
               </Button>
             </div>
           </motion.div>
