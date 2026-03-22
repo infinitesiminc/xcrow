@@ -310,7 +310,8 @@ function ProfileSection({
   displayName, setDisplayName, username, setUsername, jobTitle, setJobTitle,
   company, setCompany, schoolName, setSchoolName,
   careerStage, setCareerStage, saving, email,
-  avatarId, setAvatarId, handleSaveProfile,
+  avatarId, setAvatarId, city, setCity, linkedinUrl, setLinkedinUrl,
+  handleSaveProfile,
 }: {
   displayName: string; setDisplayName: (v: string) => void;
   username: string; setUsername: (v: string) => void;
@@ -320,6 +321,8 @@ function ProfileSection({
   careerStage: "student" | "professional"; setCareerStage: (v: "student" | "professional") => void;
   saving: boolean; email: string;
   avatarId: string | null; setAvatarId: (v: string | null) => void;
+  city: string; setCity: (v: string) => void;
+  linkedinUrl: string; setLinkedinUrl: (v: string) => void;
   handleSaveProfile: () => void;
 }) {
   return (
