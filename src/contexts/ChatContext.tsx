@@ -71,6 +71,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   const [isStreaming, setIsStreaming] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [hasInteracted, setHasInteracted] = useState(false);
+  const [simActive, setSimActive] = useState(false);
   const [viewCtx, setViewCtx] = useState<ViewContext>({ page: "home" });
   const [loaded, setLoaded] = useState(false);
 
