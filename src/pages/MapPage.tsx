@@ -19,7 +19,7 @@ import type { ViewContext } from "@/contexts/ChatContext";
 import RolePreviewPanel from "@/components/RolePreviewPanel";
 import type { RoleResult } from "@/components/InlineRoleCarousel";
 import type { EdgeContext } from "@/components/HumanEdgesCard";
-import TerritoryMap, { type SkillRarityInfo } from "@/components/territory/TerritoryMap";
+
 import TerritoryOverlay from "@/components/territory/TerritoryOverlay";
 import CompactHUD from "@/components/territory/CompactHUD";
 import MyRolesPanel from "@/components/territory/MyRolesPanel";
