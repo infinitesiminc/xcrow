@@ -772,7 +772,24 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
 
     // Normalize single-letter choices so the AI doesn't misinterpret
     const normalized = messageText.trim().toLowerCase();
-    if (/^[a-e]$/i.test(normalized)) {
+    if (/^[a-b]$/i.test(normalized)) {
+      messageText = `I choose ${messageText.trim().toUpperCase()}`;
+    } else if (/^[c-z]$/i.test(normalized)) {
+      // Invalid single-letter choice — intercept client-side with retry limit
+      const retryKey = `invalidRetry_${roundCount}`;
+      const prevRetries = parseInt(sessionStorage.getItem(retryKey) || "0");
+      if (prevRetries < 2) {
+        sessionStorage.setItem(retryKey, String(prevRetries + 1));
+        // Show inline warning without hitting the AI
+        setMessages(prev => [
+          ...prev,
+          { role: "user", content: messageText },
+          { role: "assistant", content: "⚠️ Only **A** or **B** are valid choices for this scenario — give it another shot, commander!" },
+        ]);
+        setInput("");
+        return;
+      }
+      // After 2 retries, let it through to AI (which will handle gracefully)
       messageText = `I choose ${messageText.trim().toUpperCase()}`;
     }
 
