@@ -26,6 +26,7 @@ import {
   ExternalLink,
 } from "lucide-react";
 import { AVATAR_OPTIONS, getAvatarById } from "@/lib/avatars";
+import { SchoolAutocomplete } from "@/components/SchoolAutocomplete";
 
 const NAV_ITEMS = [
   { key: "profile", label: "Profile", icon: User },
@@ -53,6 +54,8 @@ export default function Settings() {
   const [careerStage, setCareerStage] = useState<"student" | "professional">("professional");
   const [saving, setSaving] = useState(false);
   const [avatarId, setAvatarId] = useState<string | null>(null);
+  const [city, setCity] = useState("");
+  const [linkedinUrl, setLinkedinUrl] = useState("");
 
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -70,12 +73,14 @@ export default function Settings() {
     setJobTitle(profile.jobTitle || "");
     setCompany(profile.company || "");
     setSchoolNameField(profile.schoolName || "");
+    setLinkedinUrl(profile.linkedinUrl || "");
     setCareerStage((profile.careerStage as "student" | "professional") || "professional");
     if (user) {
-      supabase.from("profiles").select("username, avatar_id").eq("id", user.id).single().then(({ data }) => {
+      supabase.from("profiles").select("username, avatar_id, city").eq("id", user.id).single().then(({ data }) => {
         if (data) {
           if ((data as any).username) setUsername((data as any).username);
           if ((data as any).avatar_id) setAvatarId((data as any).avatar_id);
+          if ((data as any).city) setCity((data as any).city);
         }
       });
     }
@@ -91,6 +96,8 @@ export default function Settings() {
       school_name: schoolNameField.trim() || null,
       career_stage: careerStage,
       avatar_id: avatarId || null,
+      city: city.trim() || null,
+      linkedin_url: linkedinUrl.trim() || null,
     };
     if (username.trim()) updateData.username = username.trim().toLowerCase().replace(/[^a-z0-9_-]/g, "");
     const { error } = await supabase.from("profiles").update(updateData).eq("id", user.id);
@@ -258,6 +265,8 @@ export default function Settings() {
                 careerStage={careerStage} setCareerStage={setCareerStage}
                 saving={saving} email={user?.email ?? ""}
                 avatarId={avatarId} setAvatarId={setAvatarId}
+                city={city} setCity={setCity}
+                linkedinUrl={linkedinUrl} setLinkedinUrl={setLinkedinUrl}
                 handleSaveProfile={handleSaveProfile}
               />
             )}
@@ -301,7 +310,8 @@ function ProfileSection({
   displayName, setDisplayName, username, setUsername, jobTitle, setJobTitle,
   company, setCompany, schoolName, setSchoolName,
   careerStage, setCareerStage, saving, email,
-  avatarId, setAvatarId, handleSaveProfile,
+  avatarId, setAvatarId, city, setCity, linkedinUrl, setLinkedinUrl,
+  handleSaveProfile,
 }: {
   displayName: string; setDisplayName: (v: string) => void;
   username: string; setUsername: (v: string) => void;
@@ -311,6 +321,8 @@ function ProfileSection({
   careerStage: "student" | "professional"; setCareerStage: (v: "student" | "professional") => void;
   saving: boolean; email: string;
   avatarId: string | null; setAvatarId: (v: string | null) => void;
+  city: string; setCity: (v: string) => void;
+  linkedinUrl: string; setLinkedinUrl: (v: string) => void;
   handleSaveProfile: () => void;
 }) {
   return (
@@ -438,14 +450,28 @@ function ProfileSection({
           )}
         </div>
 
-        {/* School */}
+        {/* School — autocomplete from DB */}
         {careerStage === "student" && (
           <div className="space-y-2">
-            <Label htmlFor="schoolName" className="flex items-center gap-1.5">
+            <Label className="flex items-center gap-1.5">
               <School className="h-3.5 w-3.5 text-muted-foreground" />
               School / University
             </Label>
-            <Input id="schoolName" value={schoolName} onChange={(e) => setSchoolName(e.target.value)} placeholder="e.g. MIT, Stanford, University of London" />
+            <SchoolAutocomplete value={schoolName} onChange={setSchoolName} />
+          </div>
+        )}
+
+        {/* City — optional */}
+        <div className="space-y-2">
+          <Label htmlFor="city">City / Location <span className="text-muted-foreground font-normal">(optional)</span></Label>
+          <Input id="city" value={city} onChange={(e) => setCity(e.target.value)} placeholder="e.g. San Francisco, London" />
+        </div>
+
+        {/* LinkedIn — optional for professionals */}
+        {careerStage === "professional" && (
+          <div className="space-y-2">
+            <Label htmlFor="linkedinUrl">LinkedIn URL <span className="text-muted-foreground font-normal">(optional)</span></Label>
+            <Input id="linkedinUrl" value={linkedinUrl} onChange={(e) => setLinkedinUrl(e.target.value)} placeholder="https://linkedin.com/in/yourprofile" />
           </div>
         )}
 
