@@ -378,7 +378,7 @@ export function WarCouncil({
         </AnimatePresence>
 
         {/* ─── MARCH TO BATTLE ─── */}
-        <div className="pt-2">
+        <div className="pt-2 space-y-2">
           <Button
             size="lg"
             variant={isCompleted ? "secondary" : "default"}
@@ -393,7 +393,7 @@ export function WarCouncil({
                 evolutionSummary: prediction?.new_human_role,
                 equippedSkills: skillsUnlocked && prediction?.future_skills ? prediction.future_skills.map(s => ({ name: s.name, description: s.description })) : undefined,
               };
-              onMarchToBattle(task, intel);
+              onMarchToBattle(task, intel, 1);
             }}
           >
             <Swords className="h-4 w-4" />
@@ -403,6 +403,35 @@ export function WarCouncil({
                 ? "Reconquer — Reclaim This Ground"
                 : `March to Battle — ${intelLabel}`}
           </Button>
+
+          {/* Level 2 — Future Scenario */}
+          {hasPrediction && (
+            <Button
+              size="lg"
+              variant="outline"
+              className="w-full h-11 text-sm rounded-full gap-2 font-bold"
+              style={{
+                fontFamily: "'Cinzel', serif",
+                borderColor: "hsl(45 93% 58% / 0.4)",
+                color: "hsl(var(--filigree-glow))",
+              }}
+              onClick={() => {
+                const intel: IntelContext = {
+                  hasFullIntel: true,
+                  threats: prediction?.disrupting_tech,
+                  timeline: prediction?.timeline,
+                  collapseSummary: prediction?.collapse_summary,
+                  evolutionSummary: prediction?.new_human_role,
+                  equippedSkills: prediction?.future_skills ? prediction.future_skills.map(s => ({ name: s.name, description: s.description })) : undefined,
+                };
+                onMarchToBattle(task, intel, 2, prediction);
+              }}
+            >
+              <Compass className="h-4 w-4" />
+              ⚡ Level 2 — Future Scenario
+            </Button>
+          )}
+
           {!intelComplete && !predictionsLoading && hasPrediction && (
             <p className="text-center text-[10px] text-muted-foreground/60 mt-1.5">
               Complete recon above to gain intel advantage
