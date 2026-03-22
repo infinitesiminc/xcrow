@@ -132,8 +132,8 @@ serve(async (req) => {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
-    // Trim conversation history
-    const messages = trimMessages(rawMessages);
+    // Trim and merge consecutive same-role messages
+    const messages = mergeConsecutiveMessages(trimMessages(rawMessages));
 
     // Build territory-aware system prompt
     let systemPrompt = SYSTEM_PROMPT;
