@@ -257,10 +257,6 @@ export default function SkillDetailDrawer({
 
           {/* ── Stats row ── */}
           <div className="grid grid-cols-3 gap-2">
-          </div>
-
-          {/* ── Stats row ── */}
-          <div className="grid grid-cols-3 gap-2">
             <StatCard label="Demand" value={skill.demandCount} />
             <StatCard label="Roles" value={skill.jobCount} />
             <StatCard label="Relevance" value={`${skill.avgRelevance}%`} />
