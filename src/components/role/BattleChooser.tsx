@@ -6,6 +6,7 @@ import { ThreatBar } from "./ThreatBar";
 
 const fantasyCard = {
   background: "hsl(var(--surface-stone))",
+  color: "hsl(var(--card-foreground))",
   border: "1px solid hsl(var(--filigree) / 0.2)",
   boxShadow: "inset 0 1px 0 hsl(var(--emboss-light)), 0 2px 6px hsl(var(--emboss-shadow))",
 };
