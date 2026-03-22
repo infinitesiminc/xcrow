@@ -765,21 +765,21 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
       }
     }
 
-    // Compute skill XP earned
+    // Compute skill XP earned using score-based formula
     const skillIds = matchTaskToSkills(taskName, jobTitle);
-    const xpEach = skillIds.length > 0 ? Math.round(XP_PER_SIM / skillIds.length) : 0;
-    const skillsEarnedData = skillIds.map(id => ({ skill_id: id, xp: xpEach }));
+    const overallScore = scores?.overall ?? 50;
+    const xpPerSkill = calculateSkillXP(overallScore, true); // treat every sim as new context for now
+    const skillsEarnedData = skillIds.map(id => ({ skill_id: id, xp: xpPerSkill }));
 
     // For display: compute level changes
-    // We'd need existing XP to show level-ups accurately, but we can show what was earned
     const earned = skillIds.map(id => {
       const tax = SKILL_TAXONOMY.find(s => s.id === id);
       return {
         skill_id: id,
-        xp: xpEach,
+        xp: xpPerSkill,
         name: tax?.name || id,
-        levelBefore: "Beginner",
-        levelAfter: "Beginner",
+        levelBefore: "Novice",
+        levelAfter: "Novice",
         leveledUp: false,
       };
     });
