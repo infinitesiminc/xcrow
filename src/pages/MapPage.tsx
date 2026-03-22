@@ -278,7 +278,7 @@ const MapPage = () => {
     <div className="h-[calc(100vh-3.5rem)] relative overflow-hidden">
       {/* Full-screen Territory Map */}
       <div className="absolute inset-0 z-0">
-        <FutureTerritoryMap skills={futureSkills} focusSkillId={mapFocusSkillId} level2SkillIds={level2SkillIds} />
+        <FutureTerritoryMap skills={futureSkills} focusSkillId={mapFocusSkillId} level2SkillIds={level2SkillIds} skillGrowthMap={skillGrowthMap} />
       </div>
 
       {!isSignedIn && <MapIntroGuide />}

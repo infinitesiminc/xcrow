@@ -35,7 +35,7 @@ const ISLAND_COLORS: Record<string, string> = {
   "Communication & Collaboration": "hsl(var(--primary))",
 };
 
-export default function FutureTerritoryMap({ skills, focusSkillId, level2SkillIds }: FutureTerritoryMapProps) {
+export default function FutureTerritoryMap({ skills, focusSkillId, level2SkillIds, skillGrowthMap }: FutureTerritoryMapProps) {
   const layout = useMemo(() => buildFutureMapLayout(skills), [skills]);
   const connections = useMemo(() => buildFutureConnections(layout), [layout]);
 
