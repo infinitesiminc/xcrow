@@ -115,10 +115,13 @@ export default function Settings() {
       const parts = profile.cvUrl.split("/");
       setCvFileName(decodeURIComponent(parts[parts.length - 1] || "CV"));
     }
-    // Fetch username separately since it's not in the profile context
+    // Fetch username and avatar_id separately since they're not in the profile context
     if (user) {
-      supabase.from("profiles").select("username").eq("id", user.id).single().then(({ data }) => {
-        if (data && (data as any).username) setUsername((data as any).username);
+      supabase.from("profiles").select("username, avatar_id").eq("id", user.id).single().then(({ data }) => {
+        if (data) {
+          if ((data as any).username) setUsername((data as any).username);
+          if ((data as any).avatar_id) setAvatarId((data as any).avatar_id);
+        }
       });
     }
   }, [profile, user]);
