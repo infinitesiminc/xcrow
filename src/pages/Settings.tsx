@@ -56,6 +56,8 @@ export default function Settings() {
   const [avatarId, setAvatarId] = useState<string | null>(null);
   const [city, setCity] = useState("");
   const [linkedinUrl, setLinkedinUrl] = useState("");
+  const [graduationYear, setGraduationYear] = useState("");
+  const [degreeType, setDegreeType] = useState("");
 
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -76,11 +78,14 @@ export default function Settings() {
     setLinkedinUrl(profile.linkedinUrl || "");
     setCareerStage((profile.careerStage as "student" | "professional") || "professional");
     if (user) {
-      supabase.from("profiles").select("username, avatar_id, city").eq("id", user.id).single().then(({ data }) => {
+      supabase.from("profiles").select("username, avatar_id, city, graduation_year, degree_type").eq("id", user.id).single().then(({ data }) => {
         if (data) {
-          if ((data as any).username) setUsername((data as any).username);
-          if ((data as any).avatar_id) setAvatarId((data as any).avatar_id);
-          if ((data as any).city) setCity((data as any).city);
+          const d = data as any;
+          if (d.username) setUsername(d.username);
+          if (d.avatar_id) setAvatarId(d.avatar_id);
+          if (d.city) setCity(d.city);
+          if (d.graduation_year) setGraduationYear(String(d.graduation_year));
+          if (d.degree_type) setDegreeType(d.degree_type);
         }
       });
     }
@@ -98,6 +103,8 @@ export default function Settings() {
       avatar_id: avatarId || null,
       city: city.trim() || null,
       linkedin_url: linkedinUrl.trim() || null,
+      graduation_year: graduationYear ? parseInt(graduationYear) : null,
+      degree_type: degreeType || null,
     };
     if (username.trim()) updateData.username = username.trim().toLowerCase().replace(/[^a-z0-9_-]/g, "");
     const { error } = await supabase.from("profiles").update(updateData).eq("id", user.id);
@@ -267,6 +274,8 @@ export default function Settings() {
                 avatarId={avatarId} setAvatarId={setAvatarId}
                 city={city} setCity={setCity}
                 linkedinUrl={linkedinUrl} setLinkedinUrl={setLinkedinUrl}
+                graduationYear={graduationYear} setGraduationYear={setGraduationYear}
+                degreeType={degreeType} setDegreeType={setDegreeType}
                 handleSaveProfile={handleSaveProfile}
               />
             )}
@@ -311,6 +320,7 @@ function ProfileSection({
   company, setCompany, schoolName, setSchoolName,
   careerStage, setCareerStage, saving, email,
   avatarId, setAvatarId, city, setCity, linkedinUrl, setLinkedinUrl,
+  graduationYear, setGraduationYear, degreeType, setDegreeType,
   handleSaveProfile,
 }: {
   displayName: string; setDisplayName: (v: string) => void;
@@ -323,6 +333,8 @@ function ProfileSection({
   avatarId: string | null; setAvatarId: (v: string | null) => void;
   city: string; setCity: (v: string) => void;
   linkedinUrl: string; setLinkedinUrl: (v: string) => void;
+  graduationYear: string; setGraduationYear: (v: string) => void;
+  degreeType: string; setDegreeType: (v: string) => void;
   handleSaveProfile: () => void;
 }) {
   return (
@@ -452,13 +464,49 @@ function ProfileSection({
 
         {/* School — autocomplete from DB */}
         {careerStage === "student" && (
-          <div className="space-y-2">
-            <Label className="flex items-center gap-1.5">
-              <School className="h-3.5 w-3.5 text-muted-foreground" />
-              School / University
-            </Label>
-            <SchoolAutocomplete value={schoolName} onChange={setSchoolName} />
-          </div>
+          <>
+            <div className="space-y-2">
+              <Label className="flex items-center gap-1.5">
+                <School className="h-3.5 w-3.5 text-muted-foreground" />
+                School / University
+              </Label>
+              <SchoolAutocomplete value={schoolName} onChange={setSchoolName} />
+            </div>
+
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="graduationYear">Graduation year</Label>
+                <select
+                  id="graduationYear"
+                  value={graduationYear}
+                  onChange={(e) => setGraduationYear(e.target.value)}
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                >
+                  <option value="">Select year</option>
+                  {Array.from({ length: 10 }, (_, i) => new Date().getFullYear() + 5 - i).map(y => (
+                    <option key={y} value={String(y)}>{y}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="degreeType">Degree type</Label>
+                <select
+                  id="degreeType"
+                  value={degreeType}
+                  onChange={(e) => setDegreeType(e.target.value)}
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                >
+                  <option value="">Select degree</option>
+                  <option value="associate">Associate's</option>
+                  <option value="bachelor">Bachelor's</option>
+                  <option value="master">Master's</option>
+                  <option value="doctorate">Doctorate / PhD</option>
+                  <option value="certificate">Certificate / Diploma</option>
+                  <option value="bootcamp">Bootcamp</option>
+                </select>
+              </div>
+            </div>
+          </>
         )}
 
         {/* City — optional */}
