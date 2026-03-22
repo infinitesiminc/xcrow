@@ -278,7 +278,7 @@ Respond ONLY with valid JSON, no markdown.`;
 // ─── CHAT ───
 
 async function handleChat(payload: any, apiKey: string) {
-  const { messages, role, round, turnCount, mode = "assess", taskMeta, learningObjectives, objectiveStatus, targetObjectiveId } = payload;
+  const { messages, role, round, turnCount, mode = "assess", taskMeta, learningObjectives, objectiveStatus, targetObjectiveId, objectiveFailCounts } = payload;
   const aiContext = aiStateDescription(taskMeta);
   const toolVersions = await fetchToolVersions();
   const dateCtx = currentDateContext(toolVersions);
