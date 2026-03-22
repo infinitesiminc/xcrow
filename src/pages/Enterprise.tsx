@@ -485,10 +485,10 @@ export default function Enterprise() {
 
       {/* ── Hero ── */}
       <section className="relative overflow-hidden px-4 pt-12 pb-20">
-
         <div className="mx-auto max-w-4xl text-center">
           <motion.div {...fadeUp}>
-            <span className="inline-flex items-center gap-2 rounded-full border border-border bg-muted/60 px-4 py-1.5 text-xs font-medium tracking-wide text-muted-foreground mb-6">
+            <span className="inline-flex items-center gap-2 rounded-full border border-[hsl(var(--filigree)/0.2)] px-4 py-1.5 text-xs font-medium tracking-wide text-muted-foreground mb-6"
+              style={{ background: "hsl(var(--surface-parchment))" }}>
               <Activity className="h-3.5 w-3.5" />
               Workforce Adaptation at AI Speed
             </span>
@@ -497,7 +497,7 @@ export default function Enterprise() {
           <motion.h1
             {...fadeUp}
             transition={{ duration: 0.5, delay: 0.05 }}
-            className="font-display text-4xl sm:text-5xl md:text-6xl font-semibold tracking-tight text-foreground leading-[1.1] mt-4"
+            className="font-fantasy text-4xl sm:text-5xl md:text-6xl font-semibold tracking-tight text-foreground leading-[1.1] mt-4"
           >
             Frontier models ship monthly.{" "}
             <span className="italic">Your workforce adapts annually.</span>
@@ -509,7 +509,7 @@ export default function Enterprise() {
             className="mt-6 text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed"
           >
             Eight frontier models in 90 days — each one shifts which tasks AI can handle.
-            We keep your workforce in lockstep, continuously and autonomously.
+            We keep your workforce in lockstep through immersive quest-based simulations, continuously and autonomously.
           </motion.p>
 
           <motion.div
@@ -517,11 +517,12 @@ export default function Enterprise() {
             transition={{ duration: 0.5, delay: 0.15 }}
             className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3"
           >
-            <Button size="lg" className="gap-2 text-base px-8" onClick={() => navigate("/contact")}>
+            <Button size="lg" className="gap-2 text-base px-8" onClick={() => navigate("/contact")}
+              style={{ boxShadow: "0 0 16px hsl(var(--filigree-glow) / 0.2)" }}>
               Book a Demo <ArrowRight className="h-4 w-4" />
             </Button>
-            <Button variant="outline" size="lg" className="gap-2 text-base px-8" onClick={() => navigate("/case-study/anthropic")}>
-              See Anthropic Case Study
+            <Button variant="outline" size="lg" className="gap-2 text-base px-8 border-[hsl(var(--filigree)/0.2)]" onClick={() => navigate("/case-study/anthropic")}>
+              See the Campaign
             </Button>
           </motion.div>
         </div>
