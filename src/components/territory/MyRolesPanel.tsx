@@ -3,6 +3,7 @@
  * Stone-textured cards, Cinzel headings, filigree borders, territory colors.
  */
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Bookmark, Swords, Search, ChevronRight, Shield, Flame } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -61,16 +62,15 @@ const TIER_BORDER: Record<CastleTier, string> = {
 function KingdomCard({
   kingdom,
   isScouted,
-  onSelect,
   onContinue,
   index,
 }: {
   kingdom: KingdomRole;
   isScouted: boolean;
-  onSelect: () => void;
   onContinue: () => void;
   index: number;
 }) {
+  const navigate = useNavigate();
   const castle = getCastleState(kingdom.xp);
   const questProgress = kingdom.totalQuests > 0
     ? Math.round((kingdom.questsCompleted / kingdom.totalQuests) * 100)
@@ -87,7 +87,7 @@ function KingdomCard({
         border: `1px solid ${TIER_BORDER[castle.tier]}`,
         boxShadow: "inset 0 1px 0 hsl(var(--emboss-light)), 0 2px 6px hsl(var(--emboss-shadow))",
       }}
-      onClick={onSelect}
+      onClick={() => navigate(`/role/${encodeURIComponent(kingdom.title)}${kingdom.company ? `?company=${encodeURIComponent(kingdom.company)}` : ""}`)}
     >
       {/* Header: Castle emoji + title */}
       <div className="flex items-start gap-2.5 mb-2">
@@ -376,7 +376,6 @@ export default function MyRolesPanel({ onSelectRole, onAskChat, onTabChange }: M
                 kingdom={kingdom}
                 isScouted={tab === "saved"}
                 index={i}
-                onSelect={() => onSelectRole(toRoleResult(kingdom))}
                 onContinue={() => handleContinue(kingdom)}
               />
             ))}
