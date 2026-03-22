@@ -683,10 +683,10 @@ export default function Enterprise() {
       </section>
 
       {/* ── Strategic Proof Points ── */}
-      <section className="px-4 py-20 bg-muted/30 border-y border-border">
+      <section className="px-4 py-20 border-y border-[hsl(var(--filigree)/0.1)]" style={{ background: "hsl(var(--surface-parchment))" }}>
         <div className="mx-auto max-w-4xl">
           <motion.div {...fadeUp} className="text-center mb-14">
-            <h2 className="font-display text-3xl sm:text-4xl font-semibold text-foreground">
+            <h2 className="font-fantasy text-3xl sm:text-4xl font-semibold text-foreground">
               Velocity, measured
             </h2>
             <p className="mt-3 text-muted-foreground">
