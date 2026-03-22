@@ -1030,7 +1030,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                     boxShadow: "inset 0 1px 0 hsl(var(--emboss-light))",
                   }}
                 >
-                  <Swords className="h-3 w-3" style={{ color: "hsl(var(--filigree-glow))" }} />
+                  <Flame className="h-3 w-3" style={{ color: "hsl(var(--filigree-glow))" }} />
                   <span
                     className="text-xs font-bold"
                     style={{ color: "hsl(var(--filigree-glow))", fontFamily: "'Cinzel', serif" }}
