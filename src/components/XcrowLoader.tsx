@@ -3,7 +3,7 @@
  * Floating crow with pulsing glow, wing flap, and rotating ring.
  */
 import { motion } from "framer-motion";
-import xcrowLogo from "@/assets/xcrow-character.png";
+import xcrowLogo from "@/assets/avatars/crow.png";
 
 interface XcrowLoaderProps {
   title?: string;
