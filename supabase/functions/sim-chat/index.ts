@@ -239,6 +239,7 @@ function buildCoachingChatSystem(
   learningObjectives?: any[], objectiveStatus?: Record<string, boolean>,
   scaffoldingTiers?: Record<string, number>,
   targetObjectiveId?: string,
+  objectiveFailCounts?: Record<string, number>,
 ): string {
   // turnCount includes the AI opening message (turn 1), so user's first response is turn 2.
   // The 3-turn cycle should start from the user's first response, not the AI opening.
