@@ -1,46 +1,69 @@
-## XP System Redesign — IMPLEMENTED
 
-### What Changed
 
-#### Skill Level Thresholds (per-skill XP → castle tier)
-| Level | XP | Castle Visual |
-|-------|-----|--------------|
-| Novice | 0 | 🏚️ Ruins |
-| Apprentice | 150 | 🏕️ Outpost (claimed!) |
-| Adept | 500 | 🏰 Fortress |
-| Master | 1200 | ⚔️ Citadel |
-| Grandmaster | 2500 | ✨ Citadel+Glow |
+## RPG Mini-Quest Reveal — Pre-Simulation Intel Gathering
 
-#### Player Tiers (aggregate total XP)
-| Tier | Total XP |
-|------|----------|
-| Recruit | 0 |
-| Explorer | 500 |
-| Strategist | 3,000 |
-| Commander | 10,000 |
-| Legend | 30,000 |
+### The Problem
+The current progressive reveal uses clinical "Step 1 / Step 2" labels. It needs RPG flavor, XP rewards, and randomness to create a hook before the player enters the actual simulation.
 
-#### XP Formula (per skill per simulation)
+### Design: Two Mini-Quests with XP & Randomness
+
+Instead of "steps", the player completes two **Intel Quests** before the main battle. Each awards a small XP bounty and includes a random element.
+
+```text
+┌─────────────────────────────────────┐
+│  🗺️ INTEL QUEST: Scout the Threat  │
+│  "The Crow has spotted movement..."  │
+│  Reward: +5-15 XP (random)          │
+│  [Scout Now →]                       │
+└─────────────────────────────────────┘
+         ↓ (after clicking)
+   Threat data animates in with
+   a "loot reveal" shimmer effect
+   XP toast: "+12 XP — Intel Gathered"
+         ↓
+┌─────────────────────────────────────┐
+│  🔓 INTEL QUEST: Decode the Arsenal │
+│  "Ancient scrolls reveal skills..." │
+│  Reward: +5-15 XP (random)          │
+│  [Decode Now →]                      │
+└─────────────────────────────────────┘
+         ↓ (after clicking)
+   Skills animate in with staggered
+   card flip / loot-drop effect
+   XP toast: "+8 XP — Arsenal Unlocked"
+         ↓
+┌─────────────────────────────────────┐
+│  ⚔️ Accept Quest (main CTA)         │
+│  Now boosted with intel context      │
+└─────────────────────────────────────┘
 ```
-Base: 40 XP
-Score multiplier: × (overallScore / 50) → 0x to 2x
-Context bonus: +20 XP (new job context)
-Max: 100 XP per skill per sim
-```
 
-### Files Modified
-- `src/lib/castle-levels.ts` — New thresholds (150/500/1200/2500), added Grandmaster tier, added `calculateSkillXP()`
-- `src/lib/skill-map.ts` — Updated LEVELS to 5 tiers (Novice→Grandmaster), legacy fallback uses 40 XP base
-- `src/components/territory/CompactHUD.tsx` — Player tiers: Recruit/Explorer/Strategist/Commander/Legend
-- `src/components/journey/PlayerHUD.tsx` — Same player tier update
-- `src/components/SimulatorModal.tsx` — Score-based XP formula replaces flat 100
-- `src/pages/Index.tsx` — Added grandmaster to tier maps
-- `src/pages/PublicProfile.tsx` — Added grandmaster to tier maps
-- `src/pages/MapPage.tsx` — Updated "Beginner" → "Novice"
-- `src/components/territory/MyRolesPanel.tsx` — Added grandmaster to tier colors
+### Randomness Hooks
 
-### Still TODO (future iterations)
-- Wire canonical_future_skills (183 skills) as primary skill source instead of legacy 30-skill SKILL_TAXONOMY
-- Match simulation XP to canonical skill IDs via job_future_skills linkage
-- Show per-skill XP on Territory Map nodes
-- Retire `src/hooks/use-skills.ts` and old `SKILL_TAXONOMY`
+1. **Random XP bounty**: Each intel quest awards 5-15 XP (rolled on click). Displayed with a brief "dice roll" animation (number cycling for ~0.5s before landing). This creates variable reward — the core dopamine hook in games.
+
+2. **Random flavor text**: Each quest card picks from a pool of 3-4 RPG phrases so repeat visits feel fresh:
+   - Scout: "The Crow spotted movement..." / "Dark clouds gather over this territory..." / "Your scouts report incoming threats..."
+   - Decode: "Ancient scrolls reveal hidden skills..." / "A merchant offers forbidden knowledge..." / "The War Council has new intelligence..."
+
+### Technical Changes
+
+**File: `src/components/role/TaskDetailPanel.tsx`**
+- Replace "Step 1/Step 2" labels with quest names: "Scout the Threat" / "Decode the Arsenal"
+- Add random XP roll on click (5-15 range, `Math.floor(Math.random() * 11) + 5`)
+- Add XP earned display with brief number-cycling animation
+- Pick random flavor text from arrays using `useMemo` (stable per mount)
+- Swap `Eye`/`Lock` icons for `Compass`/`Scroll` (more RPG-appropriate)
+- After both quests complete, the bottom CTA text changes from "Accept Quest" to "⚔️ Begin Battle — Intel Advantage Active" to reward completion
+
+**File: `src/lib/castle-levels.ts`** (no changes needed — XP here is for post-simulation skill progression, separate from intel XP)
+
+### What Stays the Same
+- The actual data revealed (threat intel, future skills) is identical
+- Framer Motion animations for content reveal
+- The main "Accept Quest" / "Begin Battle" CTA at bottom
+- Skeleton loading states while predictions load
+
+### Implementation: Single file edit
+All changes are contained in `TaskDetailPanel.tsx`. No new files, no database changes.
+
