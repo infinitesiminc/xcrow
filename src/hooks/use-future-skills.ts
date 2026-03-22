@@ -81,12 +81,12 @@ export function useFutureSkills() {
 
 /** Category metadata for territory layout */
 export const FUTURE_CATEGORY_META: Record<FutureSkillCategory, { emoji: string; terrain: string; baseHue: number }> = {
-  Technical:            { emoji: "⚙️", terrain: "Circuit Peaks",     baseHue: 262 },
-  Analytical:           { emoji: "📊", terrain: "Data Highlands",    baseHue: 200 },
-  Strategic:            { emoji: "🎯", terrain: "Command Summit",    baseHue: 340 },
-  Communication:        { emoji: "💬", terrain: "Bridge Isles",      baseHue: 150 },
+  Technical:            { emoji: "🔮", terrain: "Arcane Forge",       baseHue: 262 },
+  Analytical:           { emoji: "🏔️", terrain: "Data Highlands",    baseHue: 200 },
+  Strategic:            { emoji: "⚔️", terrain: "Command Summit",    baseHue: 340 },
+  Communication:        { emoji: "🌉", terrain: "Bridge Isles",      baseHue: 150 },
   Leadership:           { emoji: "👑", terrain: "Crown Heights",     baseHue: 45 },
-  Creative:             { emoji: "🎨", terrain: "Prism Coast",       baseHue: 30 },
+  Creative:             { emoji: "🌈", terrain: "Prism Coast",       baseHue: 30 },
   "Ethics & Compliance": { emoji: "🛡️", terrain: "Sentinel Watch",   baseHue: 170 },
-  "Human Edge":         { emoji: "✦", terrain: "Soul Springs",      baseHue: 300 },
+  "Human Edge":         { emoji: "🔥", terrain: "Soul Springs",      baseHue: 300 },
 };
