@@ -12,6 +12,13 @@ import { TaskAnalysis } from "@/types/analysis";
 import { ThreatBar } from "./ThreatBar";
 import type { FuturePrediction } from "@/components/analysis/FutureTaskPreview";
 
+// ── Shared fantasy style ──────────────────────────────────────
+const fantasyCard = {
+  background: "hsl(var(--surface-stone))",
+  border: "1px solid hsl(var(--filigree) / 0.2)",
+  boxShadow: "inset 0 1px 0 hsl(var(--emboss-light)), 0 2px 6px hsl(var(--emboss-shadow))",
+};
+
 // ── Flavor text pools ──────────────────────────────────────────
 const SCAN_FLAVORS = [
   "The Crow spotted movement beyond the ridge…",
@@ -62,7 +69,10 @@ function XPRollDisplay({ finalXP, label }: { finalXP: number; label: string }) {
       animate={{ opacity: 1, y: 0, scale: 1 }}
       className="flex items-center gap-1.5 mt-2"
     >
-      <span className={`text-xs font-bold tabular-nums ${settled ? "text-primary" : "text-muted-foreground"}`}>
+      <span
+        className={`text-xs font-bold tabular-nums ${settled ? "" : "text-muted-foreground"}`}
+        style={settled ? { color: "hsl(var(--filigree-glow))" } : undefined}
+      >
         +{display} XP
       </span>
       {settled && (
@@ -80,7 +90,7 @@ interface WarCouncilProps {
   prediction?: FuturePrediction;
   predictionsLoading: boolean;
   isCompleted: boolean;
-  onMarchToBattle: (task: TaskAnalysis, intel: import("@/lib/simulator").IntelContext) => void;
+  onMarchToBattle: (task: TaskAnalysis, intel: IntelContext) => void;
   onSwitchTarget: () => void;
   onXPEarned: (xp: number) => void;
 }
@@ -142,7 +152,10 @@ export function WarCouncil({
 
         {/* Battle header */}
         <div>
-          <h2 className="text-base font-display font-bold text-foreground mb-1">
+          <h2
+            className="text-base font-bold text-foreground mb-1"
+            style={{ fontFamily: "'Cinzel', serif" }}
+          >
             {task.name}
           </h2>
           {task.description && (
@@ -151,8 +164,11 @@ export function WarCouncil({
         </div>
 
         {/* Threat bar */}
-        <div className="rounded-lg border border-border/50 bg-card p-3">
-          <span className="text-[10px] text-muted-foreground uppercase tracking-wide mb-1.5 block">
+        <div className="rounded-xl p-3" style={fantasyCard}>
+          <span
+            className="text-[10px] uppercase tracking-wider mb-1.5 block"
+            style={{ color: "hsl(var(--filigree))", fontFamily: "'Cinzel', serif" }}
+          >
             Enemy Strength
           </span>
           <ThreatBar score={currentScore} size="md" />
@@ -160,9 +176,13 @@ export function WarCouncil({
             <motion.div
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: "auto" }}
-              className="mt-2 pt-2 border-t border-border/30"
+              className="mt-2 pt-2"
+              style={{ borderTop: "1px solid hsl(var(--filigree) / 0.15)" }}
             >
-              <span className="text-[10px] text-muted-foreground uppercase tracking-wide mb-1.5 block">
+              <span
+                className="text-[10px] uppercase tracking-wider mb-1.5 block"
+                style={{ color: "hsl(var(--filigree))", fontFamily: "'Cinzel', serif" }}
+              >
                 Projected Strength
               </span>
               <ThreatBar score={futureScore} size="md" animate />
@@ -173,7 +193,7 @@ export function WarCouncil({
         {/* Skeleton while predictions load */}
         {!prediction && predictionsLoading && (
           <div className="space-y-3 animate-pulse">
-            <div className="rounded-xl border border-border/40 p-4 space-y-3">
+            <div className="rounded-xl p-4 space-y-3" style={fantasyCard}>
               <Skeleton className="h-5 w-40 rounded" />
               <Skeleton className="h-3 w-full rounded" />
               <Skeleton className="h-3 w-4/5 rounded" />
@@ -190,17 +210,33 @@ export function WarCouncil({
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -8, scale: 0.95 }}
               onClick={handleScout}
-              className="group relative w-full rounded-xl border border-destructive/30 bg-gradient-to-br from-destructive/[0.08] to-destructive/[0.02] p-5 text-left hover:border-destructive/50 hover:shadow-lg hover:shadow-destructive/10 transition-all overflow-hidden"
+              className="group relative w-full rounded-xl p-5 text-left hover:scale-[1.01] active:scale-[0.99] transition-all overflow-hidden"
+              style={{
+                background: "linear-gradient(135deg, hsl(var(--surface-stone)), hsl(var(--destructive) / 0.06))",
+                border: "1px solid hsl(var(--destructive) / 0.25)",
+                boxShadow: "inset 0 1px 0 hsl(var(--emboss-light)), 0 2px 8px hsl(var(--emboss-shadow))",
+              }}
             >
               <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,hsl(var(--destructive)/0.08),transparent_60%)] opacity-0 group-hover:opacity-100 transition-opacity" />
               <div className="relative flex items-center gap-4">
-                <div className="h-12 w-12 rounded-lg bg-destructive/10 border border-destructive/20 flex items-center justify-center shrink-0">
+                <div
+                  className="h-12 w-12 rounded-lg flex items-center justify-center shrink-0"
+                  style={{
+                    background: "hsl(var(--destructive) / 0.1)",
+                    border: "1px solid hsl(var(--destructive) / 0.2)",
+                  }}
+                >
                   <Compass className="h-6 w-6 text-destructive" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="text-sm font-bold text-foreground mb-0.5 flex items-center gap-2">
+                  <div className="text-sm font-bold text-foreground mb-0.5 flex items-center gap-2" style={{ fontFamily: "'Cinzel', serif" }}>
                     Scan the Horizon
-                    <span className="text-[10px] font-medium text-destructive/70 px-2 py-0.5 rounded-full bg-destructive/10">+5-15 XP</span>
+                    <span
+                      className="text-[10px] font-medium px-2 py-0.5 rounded-full"
+                      style={{ color: "hsl(var(--filigree-glow))", background: "hsl(var(--filigree) / 0.12)" }}
+                    >
+                      +5-15 XP
+                    </span>
                   </div>
                   <p className="text-xs text-muted-foreground italic">{scanFlavor}</p>
                 </div>
@@ -215,17 +251,26 @@ export function WarCouncil({
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: "auto" }}
               transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-              className="space-y-3 rounded-xl border border-border/40 bg-card p-4 overflow-hidden"
+              className="space-y-3 rounded-xl p-4 overflow-hidden"
+              style={fantasyCard}
             >
               {scoutXP !== null && <XPRollDisplay finalXP={scoutXP} label="Intel Gathered" />}
 
               <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} className="flex items-center gap-1.5 flex-wrap">
-                <Badge className="bg-muted text-muted-foreground border-border/30 text-[10px] gap-1">
+                <Badge
+                  className="text-[10px] gap-1"
+                  style={{ background: "hsl(var(--surface-stone))", color: "hsl(var(--filigree))", border: "1px solid hsl(var(--filigree) / 0.2)" }}
+                >
                   <Clock className="h-2.5 w-2.5" /> {prediction!.timeline}
                 </Badge>
                 {prediction!.disrupting_tech.slice(0, 4).map((tech, i) => (
                   <motion.div key={tech} initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.25 + i * 0.08 }}>
-                    <Badge className="bg-accent text-foreground border-border/30 text-[10px]">⚡ {tech}</Badge>
+                    <Badge
+                      className="text-[10px]"
+                      style={{ background: "hsl(var(--accent))", color: "hsl(var(--foreground))", border: "1px solid hsl(var(--filigree) / 0.15)" }}
+                    >
+                      ⚡ {tech}
+                    </Badge>
                   </motion.div>
                 ))}
               </motion.div>
@@ -256,17 +301,33 @@ export function WarCouncil({
               exit={{ opacity: 0, y: -8, scale: 0.95 }}
               transition={{ delay: 0.3 }}
               onClick={handleDecode}
-              className="group relative w-full rounded-xl border border-primary/30 bg-gradient-to-br from-primary/[0.08] to-primary/[0.02] p-5 text-left hover:border-primary/50 hover:shadow-lg hover:shadow-primary/10 transition-all overflow-hidden"
+              className="group relative w-full rounded-xl p-5 text-left hover:scale-[1.01] active:scale-[0.99] transition-all overflow-hidden"
+              style={{
+                background: "linear-gradient(135deg, hsl(var(--surface-stone)), hsl(var(--primary) / 0.06))",
+                border: "1px solid hsl(var(--primary) / 0.25)",
+                boxShadow: "inset 0 1px 0 hsl(var(--emboss-light)), 0 2px 8px hsl(var(--emboss-shadow))",
+              }}
             >
               <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_50%,hsl(var(--primary)/0.08),transparent_60%)] opacity-0 group-hover:opacity-100 transition-opacity" />
               <div className="relative flex items-center gap-4">
-                <div className="h-12 w-12 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0">
+                <div
+                  className="h-12 w-12 rounded-lg flex items-center justify-center shrink-0"
+                  style={{
+                    background: "hsl(var(--primary) / 0.1)",
+                    border: "1px solid hsl(var(--primary) / 0.2)",
+                  }}
+                >
                   <Scroll className="h-6 w-6 text-primary" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="text-sm font-bold text-foreground mb-0.5 flex items-center gap-2">
+                  <div className="text-sm font-bold text-foreground mb-0.5 flex items-center gap-2" style={{ fontFamily: "'Cinzel', serif" }}>
                     Unlock the Arsenal
-                    <span className="text-[10px] font-medium text-primary/70 px-2 py-0.5 rounded-full bg-primary/10">+5-15 XP</span>
+                    <span
+                      className="text-[10px] font-medium px-2 py-0.5 rounded-full"
+                      style={{ color: "hsl(var(--filigree-glow))", background: "hsl(var(--filigree) / 0.12)" }}
+                    >
+                      +5-15 XP
+                    </span>
                   </div>
                   <p className="text-xs text-muted-foreground italic">{arsenalFlavor}</p>
                 </div>
@@ -285,7 +346,10 @@ export function WarCouncil({
             >
               {decodeXP !== null && <XPRollDisplay finalXP={decodeXP} label="Arsenal Unlocked" />}
 
-              <h4 className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-2 mt-2">
+              <h4
+                className="text-[10px] font-semibold uppercase tracking-wider mb-2 mt-2"
+                style={{ color: "hsl(var(--filigree))", fontFamily: "'Cinzel', serif" }}
+              >
                 🛡️ Weapons for This Battle
               </h4>
               <div className="grid grid-cols-2 gap-2.5">
@@ -295,7 +359,12 @@ export function WarCouncil({
                     initial={{ opacity: 0, y: 12, scale: 0.9 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     transition={{ delay: 0.1 + i * 0.08, type: "spring", damping: 20 }}
-                    className="rounded-xl border border-primary/20 bg-gradient-to-br from-primary/[0.06] to-accent/[0.04] p-3.5"
+                    className="rounded-xl p-3.5"
+                    style={{
+                      background: "linear-gradient(135deg, hsl(var(--surface-stone)), hsl(var(--primary) / 0.04))",
+                      border: "1px solid hsl(var(--primary) / 0.15)",
+                      boxShadow: "inset 0 1px 0 hsl(var(--emboss-light))",
+                    }}
                   >
                     <div className="text-xl mb-1.5">{isStandardEmoji(skill.icon_emoji) ? skill.icon_emoji : "⚡"}</div>
                     <div className="text-[11px] font-semibold text-foreground leading-tight mb-1">{skill.name}</div>
@@ -313,6 +382,7 @@ export function WarCouncil({
             size="lg"
             variant={isCompleted ? "secondary" : "default"}
             className="w-full h-11 text-sm rounded-full gap-2 font-bold"
+            style={{ fontFamily: "'Cinzel', serif" }}
             onClick={() => {
               const intel: IntelContext = {
                 hasFullIntel: intelComplete,
