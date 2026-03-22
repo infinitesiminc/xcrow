@@ -79,7 +79,7 @@ interface WarCouncilProps {
   prediction?: FuturePrediction;
   predictionsLoading: boolean;
   isCompleted: boolean;
-  onMarchToBattle: (task: TaskAnalysis) => void;
+  onMarchToBattle: (task: TaskAnalysis, intel: import("@/lib/simulator").IntelContext) => void;
   onSwitchTarget: () => void;
   onXPEarned: (xp: number) => void;
 }
