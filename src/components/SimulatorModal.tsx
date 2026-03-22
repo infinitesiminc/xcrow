@@ -1775,14 +1775,25 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
           </div>
         </div>
 
-        {/* Input bar */}
+        {/* Input bar — war room command panel */}
         {phase === "chat" && !error && (
           <motion.div
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3 }}
-            className="shrink-0 border-t border-border/40 bg-background px-4 sm:px-6 py-3 space-y-3 pb-[env(safe-area-inset-bottom,12px)]"
+            className="shrink-0 px-4 sm:px-6 py-3 space-y-3 pb-[env(safe-area-inset-bottom,12px)] relative"
+            style={{
+              borderTop: "1px solid hsl(var(--filigree) / 0.2)",
+              background: "linear-gradient(180deg, hsl(var(--surface-stone)) 0%, hsl(var(--background)) 100%)",
+            }}
           >
+            {/* Ornamental top accent */}
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center gap-1.5 opacity-30">
+              <div className="h-px w-6" style={{ background: "linear-gradient(90deg, transparent, hsl(var(--filigree)))" }} />
+              <span className="text-[7px]" style={{ color: "hsl(var(--filigree))" }}>✦</span>
+              <div className="h-px w-6" style={{ background: "linear-gradient(90deg, hsl(var(--filigree)), transparent)" }} />
+            </div>
+
             {/* Inactivity nudge */}
             <AnimatePresence>
               {showInactivityNudge && !sending && (
@@ -1797,7 +1808,12 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                       handleSend("I'm thinking about this — can you help me break it down?");
                       setShowInactivityNudge(false);
                     }}
-                    className="text-xs px-3 py-1.5 rounded-full border border-primary/30 bg-primary/5 text-primary hover:bg-primary/10 transition-colors animate-pulse"
+                    className="text-xs px-3 py-1.5 rounded-full animate-pulse transition-colors"
+                    style={{
+                      border: "1px solid hsl(var(--primary) / 0.3)",
+                      background: "hsl(var(--primary) / 0.08)",
+                      color: "hsl(var(--primary))",
+                    }}
                   >
                     🤔 Stuck? Tap here for a nudge
                   </button>
@@ -1826,10 +1842,11 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                 onKeyDown={handleKeyDown}
                 placeholder="Your move, commander…"
                 rows={2}
-                className="flex-1 resize-none rounded-xl px-3 sm:px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-ring/30 min-h-[40px] max-h-[100px] transition-all duration-200"
+                className="flex-1 resize-none rounded-xl px-3 sm:px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary/30 min-h-[40px] max-h-[100px] transition-all duration-200"
                 style={{
                   background: "hsl(var(--surface-stone))",
                   border: "1px solid hsl(var(--filigree) / 0.2)",
+                  boxShadow: "inset 0 1px 3px hsl(var(--emboss-shadow))",
                 }}
               />
               <div className="flex gap-2 shrink-0">
@@ -1838,6 +1855,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                   size="sm"
                   onClick={handleFinishAttempt}
                   className="text-xs text-muted-foreground hover:text-foreground h-[40px] px-3 rounded-xl"
+                  style={{ fontFamily: "'Cinzel', serif" }}
                 >
                    End Quest
                 </Button>
@@ -1845,8 +1863,10 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                   size="sm"
                   onClick={() => handleSend()}
                   disabled={!input.trim() || sending}
-                  className="h-[40px] w-[40px] p-0 rounded-xl"
+                  className="h-[40px] w-[40px] p-0 rounded-xl relative overflow-hidden group"
+                  style={{ boxShadow: "0 0 10px hsl(var(--primary) / 0.2)" }}
                 >
+                  <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-500" />
                   <Send className="h-4 w-4" />
                 </Button>
               </div>
