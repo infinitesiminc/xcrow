@@ -183,6 +183,22 @@ const MapPage = () => {
 
       {/* Floating tab bar */}
       <div className="absolute top-14 left-4 z-20 flex items-center gap-1 bg-card/80 backdrop-blur-md border border-border/50 rounded-lg p-1 shadow-lg">
+        {isSignedIn && (
+          <button
+            onClick={() => {
+              if (rightPanelTab === "hq" && chatOpen) { setChatOpen(false); }
+              else { setRightPanelTab("hq"); setChatOpen(true); }
+            }}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+              rightPanelTab === "hq" && chatOpen
+                ? "bg-primary/10 text-primary"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <Shield className="h-3 w-3" />
+            HQ
+          </button>
+        )}
         <button
           onClick={() => {
             if (rightPanelTab === "table" && chatOpen) { setChatOpen(false); }
