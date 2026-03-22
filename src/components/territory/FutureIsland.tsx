@@ -1,6 +1,6 @@
 /**
  * FutureIsland — renders a single island region on the Future Territory Map.
- * Supports click-to-zoom, hover-to-repel, and diamond-shaped Level 2 nodes.
+ * Supports click-to-zoom, hover-to-repel, diamond-shaped Level 2 nodes, and GrowthRings.
  */
 
 import { useState, useMemo, useEffect } from "react";
@@ -8,6 +8,7 @@ import { motion } from "framer-motion";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import { type FutureSkill, type FutureSkillCategory } from "@/hooks/use-future-skills";
 import { type FutureIslandLayout, type FutureNodePosition } from "@/lib/future-territory-layout";
+import type { CanonicalSkillGrowth } from "@/pages/MapPage";
 
 function useIsParchment() {
   const [p, setP] = useState(() => document.documentElement.classList.contains("parchment"));
@@ -23,6 +24,7 @@ interface FutureIslandProps {
   island: FutureIslandLayout;
   skillLookup: Map<string, FutureSkill>;
   level2SkillIds?: Set<string>;
+  skillGrowthMap?: Map<string, CanonicalSkillGrowth>;
   isFocused?: boolean;
   highlightedSkillId?: string | null;
   onIslandClick?: (category: FutureSkillCategory, cx: number, cy: number) => void;
@@ -48,7 +50,7 @@ function getDisplacedPosition(
   return { x: node.x + nx * force, y: node.y + ny * force };
 }
 
-export default function FutureIsland({ island, skillLookup, level2SkillIds, isFocused, highlightedSkillId, onIslandClick, onSkillClick }: FutureIslandProps) {
+export default function FutureIsland({ island, skillLookup, level2SkillIds, skillGrowthMap, isFocused, highlightedSkillId, onIslandClick, onSkillClick }: FutureIslandProps) {
   const { cx, cy, radius, theme, nodes, expandedNodes, category, skillCount } = island;
   const activeNodes = isFocused ? expandedNodes : nodes;
   const visibleCount = activeNodes.length;
@@ -280,7 +282,42 @@ export default function FutureIsland({ island, skillLookup, level2SkillIds, isFo
                   </text>
                 )}
 
-                {/* Level 2 tiny badge */}
+                {/* Growth Rings — 3 arcs around the node */}
+                {(() => {
+                  const sg = skillGrowthMap?.get(node.skillId);
+                  if (!sg || (sg.level1Xp === 0 && sg.level2Xp === 0)) return null;
+                  const g = sg.growth;
+                  const ringR = nodeRadius + 4;
+                  const ringStroke = 2.5;
+                  const foundScore = g.foundation.tier === "widely_taught" ? 80 : g.foundation.tier === "growing" ? 50 : 20;
+                  const arcs = [
+                    { start: 150, end: 270, score: foundScore, color: "hsl(var(--muted-foreground))" },
+                    { start: 270, end: 390, score: g.aiMastery.score, color: "hsl(var(--primary))" },
+                    { start: 30, end: 150, score: g.humanEdge.score, color: "hsl(45 93% 58%)" },
+                  ];
+                  const toRad = (d: number) => (d * Math.PI) / 180;
+                  return arcs.map((arc, ai) => {
+                    const filled = arc.score >= 30;
+                    const x1 = node.x + ringR * Math.cos(toRad(arc.start));
+                    const y1 = node.y + ringR * Math.sin(toRad(arc.start));
+                    const x2 = node.x + ringR * Math.cos(toRad(arc.end));
+                    const y2 = node.y + ringR * Math.sin(toRad(arc.end));
+                    const large = arc.end - arc.start > 180 ? 1 : 0;
+                    return (
+                      <path
+                        key={`gr-${ai}`}
+                        d={`M ${x1} ${y1} A ${ringR} ${ringR} 0 ${large} 1 ${x2} ${y2}`}
+                        fill="none"
+                        stroke={filled ? arc.color : "hsl(var(--muted-foreground) / 0.15)"}
+                        strokeWidth={ringStroke}
+                        strokeLinecap="round"
+                        opacity={filled ? 0.9 : 0.3}
+                        style={{ pointerEvents: "none" }}
+                      />
+                    );
+                  });
+                })()}
+
                 {isLevel2 && (
                   <g>
                     <rect

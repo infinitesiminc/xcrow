@@ -15,11 +15,13 @@ import {
 } from "@/lib/future-territory-layout";
 import FutureIsland from "./FutureIsland";
 import SkillDetailDrawer from "./SkillDetailDrawer";
+import type { CanonicalSkillGrowth } from "@/pages/MapPage";
 
 interface FutureTerritoryMapProps {
   skills: FutureSkill[];
   focusSkillId?: string | null;
   level2SkillIds?: Set<string>;
+  skillGrowthMap?: Map<string, CanonicalSkillGrowth>;
 }
 
 const ISLAND_COLORS: Record<string, string> = {
@@ -33,7 +35,7 @@ const ISLAND_COLORS: Record<string, string> = {
   "Communication & Collaboration": "hsl(var(--primary))",
 };
 
-export default function FutureTerritoryMap({ skills, focusSkillId, level2SkillIds }: FutureTerritoryMapProps) {
+export default function FutureTerritoryMap({ skills, focusSkillId, level2SkillIds, skillGrowthMap }: FutureTerritoryMapProps) {
   const layout = useMemo(() => buildFutureMapLayout(skills), [skills]);
   const connections = useMemo(() => buildFutureConnections(layout), [layout]);
 
@@ -243,7 +245,7 @@ export default function FutureTerritoryMap({ skills, focusSkillId, level2SkillId
 
           {layout.map(island => (
             <FutureIsland key={island.category} island={island} skillLookup={skillLookup}
-              level2SkillIds={level2SkillIds}
+              level2SkillIds={level2SkillIds} skillGrowthMap={skillGrowthMap}
               isFocused={focusedIsland === island.category} highlightedSkillId={highlightedSkillId}
               onIslandClick={handleIslandClick} onSkillClick={handleSkillClick} />
           ))}
@@ -279,7 +281,20 @@ export default function FutureTerritoryMap({ skills, focusSkillId, level2SkillId
 
       </div>
 
-      <SkillDetailDrawer skill={selectedSkill} open={drawerOpen} onOpenChange={setDrawerOpen} />
+      {(() => {
+        const sg = selectedSkill && skillGrowthMap?.get(selectedSkill.id);
+        return (
+          <SkillDetailDrawer
+            skill={selectedSkill}
+            open={drawerOpen}
+            onOpenChange={setDrawerOpen}
+            level2Unlocked={selectedSkill ? (level2SkillIds?.has(selectedSkill.id) ?? false) : false}
+            level1Xp={sg?.level1Xp ?? 0}
+            level2Xp={sg?.level2Xp ?? 0}
+            level1SimsCompleted={sg?.level1Sims ?? 0}
+          />
+        );
+      })()}
     </TooltipProvider>
   );
 }

@@ -32,6 +32,16 @@ import {
   type SimRecord,
   type TaxonomySkill,
 } from "@/lib/skill-map";
+import { calculateGrowth, type GrowthDimensions } from "@/lib/skill-growth";
+
+/** Aggregated growth data per canonical future skill */
+export interface CanonicalSkillGrowth {
+  level1Xp: number;
+  level2Xp: number;
+  level1Sims: number;
+  level2Sims: number;
+  growth: GrowthDimensions;
+}
 
 /* ── helpers ── */
 
@@ -91,6 +101,7 @@ const MapPage = () => {
   const [realSkills, setRealSkills] = useState<SkillXP[]>([]);
   const [targetSkillIds, setTargetSkillIds] = useState<Set<string>>(new Set());
   const [level2SkillIds, setLevel2SkillIds] = useState<Set<string>>(new Set());
+  const [skillGrowthMap, setSkillGrowthMap] = useState<Map<string, CanonicalSkillGrowth>>(new Map());
 
   const displaySkills = useMemo(
     () => (realSkills.length > 0 ? realSkills : buildEmptySkills(taxonomy)),
@@ -116,7 +127,7 @@ const MapPage = () => {
       const [simsRes, profileRes] = await Promise.all([
         supabase
           .from("completed_simulations")
-          .select("task_name, job_title, skills_earned, tool_awareness_score, human_value_add_score, adaptive_thinking_score, domain_judgment_score")
+          .select("task_name, job_title, skills_earned, tool_awareness_score, human_value_add_score, adaptive_thinking_score, domain_judgment_score, sim_level")
           .eq("user_id", user.id),
         supabase
           .from("profiles")
@@ -125,8 +136,47 @@ const MapPage = () => {
           .single(),
       ]);
 
-      const sims = (simsRes.data || []) as SimRecord[];
+      const sims = (simsRes.data || []) as (SimRecord & { sim_level?: number })[];
       setRealSkills(aggregateSkillXP(sims, taxonomy));
+
+      // ── Aggregate XP per canonical future skill, split by level ──
+      const growthAcc = new Map<string, { l1Xp: number; l2Xp: number; l1Sims: number; l2Sims: number; toolScores: number[]; adaptiveScores: number[]; humanScores: number[]; domainScores: number[] }>();
+      for (const sim of sims) {
+        const earned = sim.skills_earned as { skill_id: string; xp: number }[] | null;
+        if (!Array.isArray(earned)) continue;
+        const lvl = (sim as any).sim_level ?? 1;
+        for (const se of earned) {
+          let entry = growthAcc.get(se.skill_id);
+          if (!entry) {
+            entry = { l1Xp: 0, l2Xp: 0, l1Sims: 0, l2Sims: 0, toolScores: [], adaptiveScores: [], humanScores: [], domainScores: [] };
+            growthAcc.set(se.skill_id, entry);
+          }
+          if (lvl === 2) { entry.l2Xp += se.xp; entry.l2Sims++; }
+          else { entry.l1Xp += se.xp; entry.l1Sims++; }
+          if (sim.tool_awareness_score != null) entry.toolScores.push(sim.tool_awareness_score);
+          if (sim.adaptive_thinking_score != null) entry.adaptiveScores.push(sim.adaptive_thinking_score);
+          if (sim.human_value_add_score != null) entry.humanScores.push(sim.human_value_add_score);
+          if (sim.domain_judgment_score != null) entry.domainScores.push(sim.domain_judgment_score);
+        }
+      }
+      const avg = (arr: number[]) => arr.length > 0 ? Math.round(arr.reduce((a, b) => a + b, 0) / arr.length) : 0;
+      const growthMap = new Map<string, CanonicalSkillGrowth>();
+      for (const [skillId, acc] of growthAcc) {
+        const growth = calculateGrowth(50, acc.l1Xp + acc.l2Xp, {
+          avgToolAwareness: avg(acc.toolScores),
+          avgAdaptiveThinking: avg(acc.adaptiveScores),
+          avgHumanValueAdd: avg(acc.humanScores),
+          avgDomainJudgment: avg(acc.domainScores),
+        });
+        growthMap.set(skillId, {
+          level1Xp: acc.l1Xp,
+          level2Xp: acc.l2Xp,
+          level1Sims: acc.l1Sims,
+          level2Sims: acc.l2Sims,
+          growth,
+        });
+      }
+      setSkillGrowthMap(growthMap);
 
       // --- Level 2 unlock detection ---
       // Unlock if ≥3 sims for same job_title OR any sim scored ≥80%
@@ -228,7 +278,7 @@ const MapPage = () => {
     <div className="h-[calc(100vh-3.5rem)] relative overflow-hidden">
       {/* Full-screen Territory Map */}
       <div className="absolute inset-0 z-0">
-        <FutureTerritoryMap skills={futureSkills} focusSkillId={mapFocusSkillId} level2SkillIds={level2SkillIds} />
+        <FutureTerritoryMap skills={futureSkills} focusSkillId={mapFocusSkillId} level2SkillIds={level2SkillIds} skillGrowthMap={skillGrowthMap} />
       </div>
 
       {!isSignedIn && <MapIntroGuide />}
