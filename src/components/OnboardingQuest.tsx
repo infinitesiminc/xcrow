@@ -328,6 +328,21 @@ export default function OnboardingQuest({ open, userId, onComplete }: Onboarding
                 </div>
               )}
 
+              {/* Suggested pills */}
+              {targetRoles.length < 3 && roleSearch.length < 2 && (
+                <div className="flex flex-wrap gap-2 justify-center mb-4">
+                  {["Product Manager", "Data Analyst", "Software Engineer", "UX Designer", "Marketing Manager", "Financial Analyst"].map(suggestion => (
+                    <button
+                      key={suggestion}
+                      onClick={() => setRoleSearch(suggestion)}
+                      className="rounded-full border border-border/50 bg-card hover:border-primary/40 hover:bg-primary/8 px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground transition-all"
+                    >
+                      {suggestion}
+                    </button>
+                  ))}
+                </div>
+              )}
+
               {/* Search */}
               {targetRoles.length < 3 && (
                 <div className="relative mb-3">
