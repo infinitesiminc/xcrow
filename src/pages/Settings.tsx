@@ -24,8 +24,9 @@ import { useToast } from "@/hooks/use-toast";
 import {
   Loader2, Save, Trash2, KeyRound, Bookmark,
   Linkedin, Upload, FileText, GraduationCap, Briefcase, X, School,
-  Shield, User, Lock, AlertOctagon, ArrowLeft, LogOut,
+  Shield, User, Lock, AlertOctagon, ArrowLeft, LogOut, Check,
 } from "lucide-react";
+import { AVATAR_OPTIONS, getAvatarById } from "@/lib/avatars";
 
 
 /* ── helpers ─────────────────────────────────────────── */
