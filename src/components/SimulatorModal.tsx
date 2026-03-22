@@ -1196,6 +1196,78 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                     const evaluationPart = hasNewScenario ? displayContent.slice(0, scenarioSplitIndex).trim() : null;
                     const scenarioPart = hasNewScenario ? displayContent.slice(scenarioSplitIndex).trim() : null;
 
+                    // Detect pass/fail from raw content tags
+                    const rawContent = safeStr(msg.content);
+                    const hasPass = /\[OBJ_EVAL:[^:]+:PASS\]/.test(rawContent) || /\[OBJECTIVE_MET:/.test(rawContent);
+                    const hasFail = /\[OBJ_EVAL:[^:]+:FAIL\]/.test(rawContent);
+                    const isEvaluation = !isUser && i > 0 && (hasPass || hasFail);
+                    const evalPassed = hasPass && !hasFail;
+
+                    const renderEvaluationCard = (content: string, key: string, passed: boolean) => (
+                      <motion.div
+                        key={key}
+                        initial={passed ? { opacity: 0, scale: 0.95 } : { opacity: 0, x: -4 }}
+                        animate={passed ? { opacity: 1, scale: 1 } : { opacity: 1, x: [0, -3, 3, -2, 2, 0] }}
+                        transition={{ duration: passed ? 0.4 : 0.5 }}
+                        className="max-w-[92%] rounded-xl overflow-hidden"
+                        style={{
+                          background: passed
+                            ? "linear-gradient(135deg, hsl(var(--surface-stone)), hsl(142 71% 45% / 0.06))"
+                            : "linear-gradient(135deg, hsl(var(--surface-stone)), hsl(0 84% 60% / 0.04))",
+                          border: passed
+                            ? "2px solid hsl(var(--filigree-glow) / 0.4)"
+                            : "1px solid hsl(0 84% 60% / 0.25)",
+                          boxShadow: passed
+                            ? "0 0 16px hsl(var(--filigree-glow) / 0.12)"
+                            : "none",
+                        }}
+                      >
+                        {/* Result badge banner */}
+                        <div
+                          className="px-4 py-2.5 flex items-center gap-2.5"
+                          style={{
+                            background: passed
+                              ? "linear-gradient(90deg, hsl(var(--filigree) / 0.1), hsl(var(--filigree-glow) / 0.05))"
+                              : "hsl(0 84% 60% / 0.06)",
+                            borderBottom: passed
+                              ? "1px solid hsl(var(--filigree-glow) / 0.2)"
+                              : "1px solid hsl(0 84% 60% / 0.12)",
+                          }}
+                        >
+                          <span className="text-base">{passed ? "🏆" : "💀"}</span>
+                          <span
+                            className="font-semibold tracking-wide"
+                            style={{
+                              fontFamily: "'Cinzel', serif",
+                              fontSize: passed ? "14px" : "13px",
+                              color: passed ? "hsl(var(--filigree-glow))" : "hsl(0 84% 60%)",
+                            }}
+                          >
+                            {passed ? "Superior Strategy" : "Needs Refinement"}
+                          </span>
+                          {passed && (
+                            <motion.span
+                              initial={{ opacity: 0, scale: 0 }}
+                              animate={{ opacity: 1, scale: 1 }}
+                              transition={{ delay: 0.3 }}
+                              className="ml-auto text-xs font-bold px-2.5 py-0.5 rounded-full"
+                              style={{
+                                background: "hsl(142 71% 45% / 0.12)",
+                                color: "hsl(142 71% 45%)",
+                                fontFamily: "'Cinzel', serif",
+                              }}
+                            >
+                              ✨ Quest Cleared
+                            </motion.span>
+                          )}
+                        </div>
+                        {/* Evaluation content */}
+                        <div className="px-4 py-3 chat-prose">
+                          <ReactMarkdown components={toolMentionComponents}>{content}</ReactMarkdown>
+                        </div>
+                      </motion.div>
+                    );
+
                     const renderBubble = (content: string, key: string, shouldAnimate: boolean) => (
                       <div className="flex justify-start" key={key}>
                         <div
@@ -1274,10 +1346,15 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                           </div>
                         ) : hasNewScenario && evaluationPart ? (
                           <>
-                            {renderBubble(evaluationPart, `${i}-eval`, false)}
+                            {isEvaluation
+                              ? renderEvaluationCard(evaluationPart, `${i}-eval`, evalPassed)
+                              : renderBubble(evaluationPart, `${i}-eval`, false)
+                            }
                             {scenarioDivider}
                             {renderBubble(scenarioPart!, `${i}-scenario`, shouldAnimate)}
                           </>
+                        ) : isEvaluation && !hasNewScenario ? (
+                          renderEvaluationCard(displayContent, `${i}-eval-standalone`, evalPassed)
                         ) : (
                           <div className="flex justify-start">
                             <div
@@ -1523,9 +1600,12 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                   </motion.div>
 
                   {/* Dynamic encouragement */}
-                  <div className="space-y-1.5">
-                    <h3 className="text-lg font-display font-bold text-foreground">
-                      {scoreTier === "high" ? "Victory! 🏆" : scoreTier === "mid" ? "Valiant effort! 💪" : "First blood! 🌱"}
+                  <div className="space-y-2">
+                    <h3
+                      className="text-xl font-bold text-foreground"
+                      style={{ fontFamily: "'Cinzel', serif" }}
+                    >
+                      {scoreTier === "high" ? "🏆 Victory!" : scoreTier === "mid" ? "⚔️ Valiant Effort" : "🌱 First Blood"}
                     </h3>
                     <p className="text-sm text-muted-foreground leading-relaxed">
                       {scoreTier === "high"
