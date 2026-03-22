@@ -109,7 +109,7 @@ export default function QuestBoard() {
           </div>
           <div className="space-y-2">
             {queue.slice(0, 3).map((q, i) => {
-              const Icon = CATEGORY_ICONS[q.weakCategory] || Swords;
+              const Icon = CATEGORY_ICONS[q.weakCategory] || Star;
               const diffColor = DIFFICULTY_COLORS[Math.min(q.attemptNumber - 1, 2)];
               return (
                 <motion.button

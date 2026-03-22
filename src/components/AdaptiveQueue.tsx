@@ -29,7 +29,7 @@ interface QueueItem {
 }
 
 const CATEGORY_META: Record<string, { label: string; emoji: string; Icon: typeof Swords }> = {
-  tool_awareness: { label: "Tool Mastery", emoji: "⚔️", Icon: Swords },
+  tool_awareness: { label: "Tool Mastery", emoji: "🎯", Icon: Target },
   human_value_add: { label: "Human Edge", emoji: "🛡️", Icon: Shield },
   adaptive_thinking: { label: "Adaptation", emoji: "🔥", Icon: Flame },
   domain_judgment: { label: "Domain Lore", emoji: "⭐", Icon: Star },

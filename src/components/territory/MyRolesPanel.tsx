@@ -522,7 +522,7 @@ export default function MyRolesPanel({ onSelectRole, onAskChat, onTabChange }: M
         ) : filtered.length === 0 ? (
           <div className="text-center py-12">
             <span className="text-3xl mb-3 block">
-              {tab === "practiced" ? "⚔️" : "🔭"}
+              {tab === "practiced" ? "🏰" : "🔭"}
             </span>
             <p
               className="text-sm text-muted-foreground"
