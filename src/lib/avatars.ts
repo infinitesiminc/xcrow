@@ -1,3 +1,4 @@
+import crowAvatar from "@/assets/avatars/crow.png";
 import wolfAvatar from "@/assets/avatars/wolf.png";
 import foxAvatar from "@/assets/avatars/fox.png";
 import owlAvatar from "@/assets/avatars/owl.png";
@@ -16,6 +17,7 @@ export interface AvatarOption {
 }
 
 export const AVATAR_OPTIONS: AvatarOption[] = [
+  { id: "crow", label: "Crow", src: crowAvatar },
   { id: "wolf", label: "Wolf", src: wolfAvatar },
   { id: "fox", label: "Fox", src: foxAvatar },
   { id: "owl", label: "Owl", src: owlAvatar },
