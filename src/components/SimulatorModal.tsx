@@ -1420,7 +1420,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                   initial={{ opacity: 0, y: 16 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5, ease: "easeOut" }}
-                  className="flex flex-col items-center py-8 gap-5 max-w-sm mx-auto text-center"
+                  className="flex flex-col items-center py-8 gap-5 w-full max-w-lg mx-auto text-center"
                 >
                   {/* Score ring */}
                   <motion.div
