@@ -1120,7 +1120,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                             </div>
                           ) : (
                             <div className="chat-prose max-w-[92%]">
-                              <ReactMarkdown>{displayContent}</ReactMarkdown>
+                              <ReactMarkdown components={toolMentionComponents}>{displayContent}</ReactMarkdown>
                             </div>
                           )}
                         </div>
