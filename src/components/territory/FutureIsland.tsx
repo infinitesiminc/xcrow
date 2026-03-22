@@ -1,6 +1,6 @@
 /**
  * FutureIsland — renders a single island region on the Future Territory Map.
- * Supports click-to-zoom, hover-to-repel, and diamond-shaped Level 2 nodes.
+ * Supports click-to-zoom, hover-to-repel, diamond-shaped Level 2 nodes, and GrowthRings.
  */
 
 import { useState, useMemo, useEffect } from "react";
@@ -8,6 +8,7 @@ import { motion } from "framer-motion";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import { type FutureSkill, type FutureSkillCategory } from "@/hooks/use-future-skills";
 import { type FutureIslandLayout, type FutureNodePosition } from "@/lib/future-territory-layout";
+import type { CanonicalSkillGrowth } from "@/pages/MapPage";
 
 function useIsParchment() {
   const [p, setP] = useState(() => document.documentElement.classList.contains("parchment"));
