@@ -43,7 +43,7 @@ function ToolChip({ tool, matchedText }: { tool: AIToolInfo; matchedText: string
       removeToolFromList(tool.name);
       setSaved(false);
     } else {
-      saveToolToList(tool.name);
+      addToolToList(tool.name);
       setSaved(true);
     }
   };
