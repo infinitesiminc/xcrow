@@ -505,6 +505,60 @@ export type Database = {
         }
         Relationships: []
       }
+      friend_messages: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          read_at: string | null
+          recipient_id: string
+          sender_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          read_at?: string | null
+          recipient_id: string
+          sender_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          read_at?: string | null
+          recipient_id?: string
+          sender_id?: string
+        }
+        Relationships: []
+      }
+      friendships: {
+        Row: {
+          created_at: string
+          id: string
+          recipient_id: string
+          requester_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          recipient_id: string
+          requester_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          recipient_id?: string
+          requester_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       import_flags: {
         Row: {
           company_id: string | null
@@ -1728,6 +1782,27 @@ export type Database = {
           date?: string
           id?: string
           text?: string
+        }
+        Relationships: []
+      }
+      user_presence: {
+        Row: {
+          current_activity: string | null
+          is_online: boolean
+          last_seen_at: string
+          user_id: string
+        }
+        Insert: {
+          current_activity?: string | null
+          is_online?: boolean
+          last_seen_at?: string
+          user_id: string
+        }
+        Update: {
+          current_activity?: string | null
+          is_online?: boolean
+          last_seen_at?: string
+          user_id?: string
         }
         Relationships: []
       }
