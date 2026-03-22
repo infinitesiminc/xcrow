@@ -153,3 +153,15 @@ export async function generateElevation(
 ): Promise<ElevationNarrative> {
   return simFetch("elevate", { jobTitle, company, taskName, tasks });
 }
+
+export async function fetchArenaRound(
+  taskName: string,
+  jobTitle: string,
+  company?: string,
+  round = 1,
+  learningObjectives?: LearningObjective[],
+  targetObjectiveId?: string,
+  objectiveStatus?: Record<string, boolean>,
+): Promise<ArenaRoundData> {
+  return simFetch("arena", { taskName, jobTitle, company, round, learningObjectives, targetObjectiveId, objectiveStatus });
+}
