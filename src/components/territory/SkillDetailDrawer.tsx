@@ -441,27 +441,43 @@ function TrackCard({
               className="w-full py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all hover:brightness-110"
               style={{
                 background: `linear-gradient(135deg, ${color}, ${color}cc)`,
-                color: "hsl(var(--card))",
+                color: "hsl(var(--foreground))",
                 boxShadow: `0 2px 10px ${color}40`,
                 fontFamily: "'Cinzel', serif",
               }}
             >
-              ⚔️ Start Quest
+              {startLabel || "⚔️ Start Quest"}
             </button>
           )}
         </div>
       ) : (
-        unlockRequirement && (
-          <div
-            className="flex items-center gap-1.5 px-2 py-1.5 rounded-md mt-1"
-            style={{ background: "hsl(var(--muted) / 0.2)" }}
-          >
-            <Lock className="h-3 w-3 text-muted-foreground" />
-            <p className="text-[11px] text-muted-foreground font-medium">
-              {unlockRequirement}
-            </p>
-          </div>
-        )
+        <div className="space-y-2">
+          {unlockRequirement && (
+            <div
+              className="flex items-center gap-1.5 px-2 py-1.5 rounded-md mt-1"
+              style={{ background: "hsl(var(--muted) / 0.2)" }}
+            >
+              <Lock className="h-3 w-3 text-muted-foreground" />
+              <p className="text-[11px] text-muted-foreground font-medium">
+                {unlockRequirement}
+              </p>
+            </div>
+          )}
+          {onStart && (
+            <button
+              onClick={onStart}
+              className="w-full py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all hover:brightness-110"
+              style={{
+                background: `linear-gradient(135deg, ${color}, ${color}cc)`,
+                color: "hsl(var(--foreground))",
+                boxShadow: `0 2px 10px ${color}40`,
+                fontFamily: "'Cinzel', serif",
+              }}
+            >
+              {startLabel || "⚡ Try Preview"}
+            </button>
+          )}
+        </div>
       )}
     </div>
   );
