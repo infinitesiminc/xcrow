@@ -2,7 +2,7 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useChatContext } from "@/contexts/ChatContext";
 import { motion, AnimatePresence } from "framer-motion";
-import { Send, Loader2, RotateCcw, ChevronDown, ChevronUp, CheckCircle2, X, ArrowRight, Target, Circle, CircleCheck, AlertTriangle, TrendingUp, Trophy, Zap, Map, Star, Lock, Unlock, Sparkles, Compass, Swords } from "lucide-react";
+import { Send, Loader2, RotateCcw, ChevronDown, ChevronUp, CheckCircle2, X, ArrowRight, Target, Circle, CircleCheck, AlertTriangle, TrendingUp, Trophy, Zap, Map, Star, Lock, Unlock, Sparkles, Compass, Swords, Scroll, Flag, Shield, Flame } from "lucide-react";
 import { matchTaskToSkills, SKILL_TAXONOMY, getLevel, getNextLevel, type SkillXP } from "@/lib/skill-map";
 import { calculateSkillXP } from "@/lib/castle-levels";
 import ReactMarkdown from "react-markdown";
@@ -201,7 +201,7 @@ const BriefingScreen = ({
             transition={{ delay: 0.2, type: "spring", damping: 12 }}
             className="text-3xl mb-3"
           >
-            ⚔️
+            📜
           </motion.span>
           <h3
             className="text-lg sm:text-xl font-bold text-foreground drop-shadow-lg"
@@ -294,7 +294,7 @@ const BriefingScreen = ({
           }}
         >
           <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
-          <Swords className="h-4 w-4" />
+          <Scroll className="h-4 w-4" />
           Begin Quest
         </Button>
       </motion.div>
@@ -1008,7 +1008,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
           >
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2">
-                <span className="text-base">⚔️</span>
+                <span className="text-base">🗡️</span>
                 <h2
                   className="text-sm sm:text-base font-semibold text-foreground truncate"
                   style={{ fontFamily: "'Cinzel', serif" }}
@@ -1030,7 +1030,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                     boxShadow: "inset 0 1px 0 hsl(var(--emboss-light))",
                   }}
                 >
-                  <Swords className="h-3 w-3" style={{ color: "hsl(var(--filigree-glow))" }} />
+                  <Flame className="h-3 w-3" style={{ color: "hsl(var(--filigree-glow))" }} />
                   <span
                     className="text-xs font-bold"
                     style={{ color: "hsl(var(--filigree-glow))", fontFamily: "'Cinzel', serif" }}
@@ -1307,7 +1307,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                             className="flex-1 rounded-xl h-10 text-sm gap-2"
                             onClick={handleFinishAttempt}
                           >
-                            <CheckCircle2 className="h-4 w-4" /> {isLastRound || isSessionEnd || allObjMet ? "⚔️ Battle Report" : "End Quest"}
+                            <CheckCircle2 className="h-4 w-4" /> {isLastRound || isSessionEnd || allObjMet ? "📊 Battle Report" : "End Quest"}
                           </Button>
                         </div>
                       </div>
@@ -1550,7 +1550,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                       className="w-full rounded-xl border border-border/40 bg-muted/30 p-3.5 text-left"
                     >
                       <div className="flex items-center gap-2 mb-2">
-                        <Swords className="h-3.5 w-3.5 text-foreground" />
+                        <Flag className="h-3.5 w-3.5 text-foreground" />
                         <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Campaign Status</span>
                       </div>
                       <div className="flex items-center gap-1 mb-1.5">
@@ -1682,7 +1682,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                         onClick={startRetryWithCoaching}
                         className="gap-2 rounded-xl w-full h-11"
                       >
-                        <RotateCcw className="h-4 w-4" /> ⚔️ Retry with Battle Coach
+                        <RotateCcw className="h-4 w-4" /> 🔄 Retry with Battle Coach
                       </Button>
                     )}
                     {scoreTier === "mid" && onNextTask && (
@@ -1690,7 +1690,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                         onClick={() => { onClose(); onNextTask(); }}
                         className="gap-2 rounded-xl w-full h-11"
                       >
-                        <TrendingUp className="h-4 w-4" /> ⚔️ Level Up — Harder Wave
+                        <TrendingUp className="h-4 w-4" /> 🔥 Level Up — Harder Wave
                       </Button>
                     )}
                     {scoreTier === "mid" && !onNextTask && (
@@ -1698,7 +1698,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                         onClick={() => startCompile()}
                         className="gap-2 rounded-xl w-full h-11"
                       >
-                        <TrendingUp className="h-4 w-4" /> ⚔️ Train Again to Level Up
+                        <TrendingUp className="h-4 w-4" /> 💪 Train Again to Level Up
                       </Button>
                     )}
                     {scoreTier === "high" && nearbyUnclaimed && (
@@ -1762,7 +1762,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                         onClick={() => { onClose(); onNextBattle(); }}
                         className="gap-2 rounded-xl w-full text-xs"
                       >
-                        <Swords className="h-3 w-3" /> ⚔️ Next Battle ({campaignStats.total - campaignStats.conquered - 1} remain)
+                        <Shield className="h-3 w-3" /> 🏰 Next Battle ({campaignStats.total - campaignStats.conquered - 1} remain)
                       </Button>
                     )}
 
