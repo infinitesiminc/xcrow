@@ -38,7 +38,7 @@ interface FutureTaskPreviewProps {
   aiExposureScore?: number;
   jobImpactScore?: number;
   description?: string;
-  onStartSim?: (scenarioTitle: string, taskName: string) => void;
+  onStartSim?: (scenarioTitle: string, taskName: string, level?: 1 | 2, prediction?: FuturePrediction) => void;
 }
 
 export function FutureTaskPreview({
@@ -177,7 +177,7 @@ export function FutureTaskPreview({
                   <Button
                     size="sm"
                     className="h-7 text-[11px] gap-1 shrink-0 ml-2"
-                    onClick={() => onStartSim?.(prediction.simulation_scenario.title, taskName)}
+                    onClick={() => onStartSim?.(prediction.simulation_scenario.title, taskName, 2, prediction)}
                   >
                     Try Level 2 <ArrowRight className="h-3 w-3" />
                   </Button>

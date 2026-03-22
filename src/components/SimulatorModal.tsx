@@ -39,7 +39,7 @@ type Phase = "loading" | "briefing" | "chat" | "review" | "completing" | "done" 
 
 // Defaults — overridden by server config
 const DEFAULT_MIN_ROUNDS = 3;
-const DEFAULT_MAX_ROUNDS = 6;
+const DEFAULT_MAX_ROUNDS = 3;
 
 // Inactivity nudge timer (ms)
 const INACTIVITY_NUDGE_MS = 30_000;
@@ -68,6 +68,10 @@ interface SimulatorModalProps {
   onNextBattle?: () => void;
   /** Campaign stats for post-sim debrief */
   campaignStats?: { conquered: number; total: number; sessionXP: number };
+  /** Level 1 (current tools) or Level 2 (future scenarios) */
+  level?: 1 | 2;
+  /** Future prediction data for Level 2 sims */
+  futurePrediction?: import("@/components/analysis/FutureTaskPreview").FuturePrediction;
 }
 
 /* ── Objective Checklist (sidebar / inline) ── */
@@ -553,7 +557,7 @@ const UnmetObjectivesReview = ({
 };
 
 /* ── Main Modal ── */
-const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState, taskTrend, taskImpactLevel, mode = "assess", onCompleted, onNextTask, onBackToFeed, onViewTerritory, inline = false, guestMaxTurns, intelContext, onNextBattle, campaignStats }: SimulatorModalProps) => {
+const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState, taskTrend, taskImpactLevel, mode = "assess", onCompleted, onNextTask, onBackToFeed, onViewTerritory, inline = false, guestMaxTurns, intelContext, onNextBattle, campaignStats, level = 1, futurePrediction }: SimulatorModalProps) => {
   const [phase, setPhase] = useState<Phase>("loading");
   const [session, setSession] = useState<SimSession | null>(null);
   const [messages, setMessages] = useState<SimMessage[]>([]);
@@ -697,7 +701,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
     if (coaching) setCoachingContext(coaching);
     else setCoachingContext(null);
     try {
-      const compiled = await compileSession(taskName, jobTitle, company, 3, mode, taskMeta, coaching ?? undefined, intelContext ?? undefined);
+      const compiled = await compileSession(taskName, jobTitle, company, 3, mode, taskMeta, coaching ?? undefined, intelContext ?? undefined, level, futurePrediction ?? undefined);
       setSession(compiled);
       setPhase("briefing");
     } catch (err) {
@@ -705,7 +709,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
       setError("Couldn't forge the quest. Please try again.");
       setPhase("chat");
     }
-  }, [taskName, jobTitle, company, mode, taskState, taskTrend, taskImpactLevel, user, isPro, simGate]);
+  }, [taskName, jobTitle, company, mode, taskState, taskTrend, taskImpactLevel, user, isPro, simGate, level, futurePrediction]);
 
   const startRetryWithCoaching = useCallback(() => {
     if (!scoreResult) return startCompile();
@@ -1028,7 +1032,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                     className="text-xs font-bold"
                     style={{ color: "hsl(var(--filigree-glow))", fontFamily: "'Cinzel', serif" }}
                   >
-                    Quest {roundCount}/{maxRounds}
+                    Quest {roundCount}/{maxRounds}{level === 2 ? " · Level 2" : ""}
                   </span>
                 </motion.div>
               )}
@@ -1136,13 +1140,6 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                   {messages.map((msg, i) => {
                     const isUser = msg.role === "user";
                     const displayContent = isUser ? safeStr(msg.content) : cleanMessageForDisplay(safeStr(msg.content));
-
-                    // Detect genuine quest transition — only when an objective was PASSED
-                    // and we're past the warm-up phase (at least 3 assistant messages in)
-                    const rawContent = safeStr(msg.content);
-                    const hasObjectivePass = !isUser && /\[OBJ_EVAL:[^:]+:PASS\]/.test(rawContent);
-                    const assistantMsgCount = messages.slice(0, i + 1).filter(m => m.role === "assistant").length;
-                    const isNewScenario = hasObjectivePass && assistantMsgCount > 2;
                     
                     const objectiveMetInMsg = !isUser ? [
                       ...(safeStr(msg.content).match(/\[OBJECTIVE_MET:([^\]]+)\]/g) || []).map(t => {
@@ -1160,31 +1157,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                     const tierLabels = ["", "💭 Let's break this down...", "💡 Here's a direction...", "📚 Teaching moment"];
 
                     return (
-                      <>
-                        {/* Scenario transition divider — RPG wave break */}
-                        {isNewScenario && (
-                          <motion.div
-                            initial={{ opacity: 0, scaleX: 0 }}
-                            animate={{ opacity: 1, scaleX: 1 }}
-                            transition={{ duration: 0.4 }}
-                            className="flex items-center gap-3 py-3"
-                          >
-                            <div className="flex-1 h-px" style={{ background: "linear-gradient(90deg, transparent, hsl(var(--filigree) / 0.4), transparent)" }} />
-                            <span
-                              className="text-[10px] font-bold flex items-center gap-1.5 shrink-0 px-3 py-1 rounded-full"
-                              style={{
-                                color: "hsl(var(--filigree-glow))",
-                                background: "hsl(var(--filigree) / 0.08)",
-                                border: "1px solid hsl(var(--filigree) / 0.2)",
-                                fontFamily: "'Cinzel', serif",
-                              }}
-                            >
-                              ⚡ New Quest
-                            </span>
-                            <div className="flex-1 h-px" style={{ background: "linear-gradient(90deg, transparent, hsl(var(--filigree) / 0.4), transparent)" }} />
-                          </motion.div>
-                        )}
-                        <motion.div
+                      <motion.div
                           key={i}
                           initial={{ opacity: 0, y: 8 }}
                           animate={{ opacity: 1, y: 0 }}
@@ -1219,7 +1192,6 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                               />
                               {(() => {
                                 const isLatestAi = !isUser && i === messages.length - 1 && msg.role === "assistant";
-                                // Also check if second-to-last and last is user (user just sent, AI hasn't replied yet — previous AI is "done")
                                 const isRecentAi = !isUser && i === messages.length - 2 && messages[messages.length - 1]?.role === "user";
                                 const shouldAnimate = isLatestAi && !isRecentAi;
                                 if (shouldAnimate) {
@@ -1234,7 +1206,6 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                         {/* Collapsible insight card */}
                         {!isUser && <InsightCard content={msg.content} />}
                       </motion.div>
-                      </>
                     );
                   })}
 
