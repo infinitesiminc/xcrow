@@ -28,6 +28,7 @@ serve(async (req) => {
 
     if (action === "compile") return await handleCompile(payload, apiKey);
     if (action === "chat") return await handleChat(payload, apiKey);
+    if (action === "arena") return await handleArena(payload, apiKey);
     if (action === "score") return await handleScore(payload, apiKey);
     if (action === "elevate") return await handleElevate(payload, apiKey);
 
