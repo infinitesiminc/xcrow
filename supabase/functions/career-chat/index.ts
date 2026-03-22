@@ -99,6 +99,21 @@ function getCachedSearch(key: string) {
   return entry.roles;
 }
 
+// Merge consecutive messages with the same role (Gemini requires alternating roles)
+function mergeConsecutiveMessages(messages: any[]): any[] {
+  if (messages.length === 0) return messages;
+  const merged: any[] = [messages[0]];
+  for (let i = 1; i < messages.length; i++) {
+    const prev = merged[merged.length - 1];
+    if (messages[i].role === prev.role) {
+      prev.content = prev.content + "\n\n" + messages[i].content;
+    } else {
+      merged.push({ ...messages[i] });
+    }
+  }
+  return merged;
+}
+
 // Trim conversation to last N turns to reduce token usage
 function trimMessages(messages: any[], maxTurns: number = 10): any[] {
   if (messages.length <= maxTurns * 2) return messages;
