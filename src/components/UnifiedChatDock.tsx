@@ -19,11 +19,14 @@ const SIGNED_IN_SUGGESTIONS = [
 ];
 
 export default function UnifiedChatDock() {
-  const { items, isStreaming, isOpen, setIsOpen, sendMessage, clearChat, hasInteracted, onRoleSelectRef } = useChatContext();
+  const { items, isStreaming, isOpen, setIsOpen, sendMessage, clearChat, hasInteracted, onRoleSelectRef, simActive } = useChatContext();
   const { user } = useAuth();
   const [input, setInput] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // Don't render anything when a simulation is active
+  if (simActive) return null;
 
   // Auto-scroll
   useEffect(() => {

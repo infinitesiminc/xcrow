@@ -479,6 +479,13 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
   const scrollRef = useRef<HTMLDivElement>(null);
   const { user, isPro } = useAuth();
   const { toast } = useToast();
+  const { setSimActive } = useChatContext();
+
+  // Hide AI Coach when simulation is active
+  useEffect(() => {
+    if (open) setSimActive(true);
+    return () => setSimActive(false);
+  }, [open, setSimActive]);
   const navigate = useNavigate();
   const simGate = useUsageGate("simulation");
   const [showUpgrade, setShowUpgrade] = useState(false);
