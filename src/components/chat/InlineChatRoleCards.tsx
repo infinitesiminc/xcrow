@@ -4,7 +4,7 @@
  */
 
 import { motion } from "framer-motion";
-import { MapPin, ArrowRight, Zap, DollarSign, ExternalLink, Sparkles } from "lucide-react";
+import { MapPin, ArrowRight, DollarSign, ExternalLink, Sparkles } from "lucide-react";
 import type { RoleResult } from "@/components/InlineRoleCarousel";
 
 function hashToHue(str: string): number {
