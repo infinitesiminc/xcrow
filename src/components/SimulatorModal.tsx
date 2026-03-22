@@ -155,79 +155,114 @@ const BriefingScreen = ({
       transition={{ duration: 0.4, ease: "easeOut" }}
       className="flex flex-col gap-5 py-6 px-2 max-w-2xl mx-auto"
     >
-      {/* Compact hero */}
+      {/* Hero banner with ornamental frame */}
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.5, ease: "easeOut" }}
-        className="relative rounded-2xl overflow-hidden h-32 sm:h-36"
+        className="relative rounded-2xl overflow-hidden"
         style={{
-          background: `linear-gradient(135deg, hsl(${hue1} 55% 18%) 0%, hsl(${hue2} 50% 12%) 50%, hsl(${hue3} 45% 8%) 100%)`,
+          background: `linear-gradient(135deg, hsl(${hue1} 55% 14%) 0%, hsl(${hue2} 50% 9%) 50%, hsl(${hue3} 45% 6%) 100%)`,
+          border: "1px solid hsl(var(--filigree) / 0.3)",
+          boxShadow: "0 0 40px hsl(var(--primary) / 0.08), inset 0 1px 0 hsl(var(--filigree) / 0.15)",
         }}
       >
+        {/* Atmospheric glow */}
         <div
-          className="absolute -top-10 -right-10 w-40 h-40 rounded-full opacity-20 blur-2xl"
-          style={{ background: `hsl(${hue1} 70% 55%)` }}
+          className="absolute -top-16 -right-16 w-48 h-48 rounded-full opacity-15 blur-3xl"
+          style={{ background: `hsl(${hue1} 70% 50%)` }}
         />
-        <div className="absolute inset-0 opacity-[0.04]" style={{
+        <div
+          className="absolute -bottom-12 -left-12 w-36 h-36 rounded-full opacity-10 blur-3xl"
+          style={{ background: `hsl(${hue3} 60% 40%)` }}
+        />
+        {/* Grid overlay */}
+        <div className="absolute inset-0 opacity-[0.03]" style={{
           backgroundImage: `linear-gradient(hsl(${hue1} 50% 80%) 1px, transparent 1px), linear-gradient(90deg, hsl(${hue1} 50% 80%) 1px, transparent 1px)`,
-          backgroundSize: '24px 24px',
+          backgroundSize: '20px 20px',
         }} />
-        <div className="relative z-10 h-full flex flex-col items-center justify-center text-center px-6">
+        {/* Corner ornaments */}
+        <div className="absolute top-2 left-3 text-[10px] opacity-20" style={{ color: "hsl(var(--filigree))" }}>⟐</div>
+        <div className="absolute top-2 right-3 text-[10px] opacity-20" style={{ color: "hsl(var(--filigree))" }}>⟐</div>
+        <div className="absolute bottom-2 left-3 text-[10px] opacity-20 rotate-180" style={{ color: "hsl(var(--filigree))" }}>⟐</div>
+        <div className="absolute bottom-2 right-3 text-[10px] opacity-20 rotate-180" style={{ color: "hsl(var(--filigree))" }}>⟐</div>
+
+        <div className="relative z-10 flex flex-col items-center justify-center text-center px-6 py-8 sm:py-10">
+          <motion.span
+            initial={{ scale: 0, rotate: -20 }}
+            animate={{ scale: 1, rotate: 0 }}
+            transition={{ delay: 0.2, type: "spring", damping: 12 }}
+            className="text-3xl mb-3"
+          >
+            ⚔️
+          </motion.span>
           <h3
             className="text-lg sm:text-xl font-bold text-foreground drop-shadow-lg"
             style={{ fontFamily: "'Cinzel', serif" }}
           >
             {session.scenario.title}
           </h3>
-          <p className="text-xs text-foreground/60 mt-1 max-w-md">{session.scenario.description}</p>
+          <p className="text-[11px] text-foreground/50 mt-1.5 max-w-md leading-relaxed">{session.scenario.description}</p>
+          {/* Ornamental divider */}
+          <div className="flex items-center gap-2 mt-3 opacity-30">
+            <div className="h-px w-8" style={{ background: "linear-gradient(90deg, transparent, hsl(var(--filigree)))" }} />
+            <span className="text-[8px]" style={{ color: "hsl(var(--filigree))" }}>✦</span>
+            <div className="h-px w-8" style={{ background: "linear-gradient(90deg, hsl(var(--filigree)), transparent)" }} />
+          </div>
         </div>
       </motion.div>
 
-      {/* Quick-glance objectives — compact numbered pills, not full cards */}
+      {/* Objectives — war scroll style */}
       {session.learningObjectives && session.learningObjectives.length > 0 && (
         <motion.div
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.15 }}
-          className="rounded-xl p-4"
+          className="rounded-xl p-4 relative overflow-hidden"
           style={{
             background: "hsl(var(--surface-stone))",
             border: "1px solid hsl(var(--filigree) / 0.2)",
-            boxShadow: "inset 0 1px 0 hsl(var(--emboss-light)), 0 2px 6px hsl(var(--emboss-shadow))",
+            boxShadow: "inset 0 1px 0 hsl(var(--emboss-light)), 0 2px 8px hsl(var(--emboss-shadow))",
           }}
         >
-          <div className="flex items-center gap-2 mb-3">
-            <Target className="h-3.5 w-3.5 text-primary" />
-            <span
-              className="text-[10px] font-semibold uppercase tracking-wider"
-              style={{ color: "hsl(var(--filigree))", fontFamily: "'Cinzel', serif" }}
-            >
-              {objectiveCount} Objectives to Conquer
-            </span>
-          </div>
-          <div className="space-y-2">
-            {session.learningObjectives.map((obj, i) => (
-              <motion.div
-                key={obj.id}
-                initial={{ opacity: 0, x: -6 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.2 + i * 0.06 }}
-                className="flex items-center gap-2.5"
+          {/* Subtle parchment texture */}
+          <div className="absolute inset-0 opacity-[0.02]" style={{
+            backgroundImage: "radial-gradient(circle at 50% 50%, hsl(var(--filigree)), transparent 70%)",
+          }} />
+          <div className="relative">
+            <div className="flex items-center gap-2 mb-3">
+              <span className="text-sm">🎯</span>
+              <span
+                className="text-[10px] font-semibold uppercase tracking-wider"
+                style={{ color: "hsl(var(--filigree))", fontFamily: "'Cinzel', serif" }}
               >
-                <span
-                  className="inline-flex items-center justify-center w-5 h-5 rounded-full text-[10px] font-bold shrink-0"
-                  style={{
-                    background: "hsl(var(--primary) / 0.15)",
-                    color: "hsl(var(--primary))",
-                    border: "1px solid hsl(var(--primary) / 0.25)",
-                  }}
+                {objectiveCount} Objectives to Conquer
+              </span>
+            </div>
+            <div className="space-y-2.5">
+              {session.learningObjectives.map((obj, i) => (
+                <motion.div
+                  key={obj.id}
+                  initial={{ opacity: 0, x: -8 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.2 + i * 0.08 }}
+                  className="flex items-center gap-3 group"
                 >
-                  {i + 1}
-                </span>
-                <span className="text-xs font-medium text-foreground">{obj.label}</span>
-              </motion.div>
-            ))}
+                  <span
+                    className="inline-flex items-center justify-center w-6 h-6 rounded-md text-[10px] font-bold shrink-0"
+                    style={{
+                      background: "hsl(var(--primary) / 0.12)",
+                      color: "hsl(var(--primary))",
+                      border: "1px solid hsl(var(--primary) / 0.2)",
+                      fontFamily: "'Cinzel', serif",
+                    }}
+                  >
+                    {i + 1}
+                  </span>
+                  <span className="text-xs font-medium text-foreground/90">{obj.label}</span>
+                </motion.div>
+              ))}
+            </div>
           </div>
         </motion.div>
       )}
@@ -235,19 +270,23 @@ const BriefingScreen = ({
       {/* Mission Intel — collapsed by default, expandable */}
       <MissionIntelCollapsible briefing={session.briefing} tips={session.tips} />
 
-      {/* CTA */}
+      {/* CTA — dramatic battle button */}
       <motion.div
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3, duration: 0.3 }}
-        className="flex justify-center pt-1"
+        className="flex justify-center pt-2"
       >
         <Button
           onClick={onStart}
           size="lg"
-          className="gap-2 rounded-full px-8 text-sm font-bold"
-          style={{ fontFamily: "'Cinzel', serif" }}
+          className="relative gap-2.5 rounded-full px-10 py-3 text-sm font-bold overflow-hidden group"
+          style={{
+            fontFamily: "'Cinzel', serif",
+            boxShadow: "0 0 20px hsl(var(--primary) / 0.25), 0 4px 12px hsl(var(--primary) / 0.15)",
+          }}
         >
+          <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
           <Swords className="h-4 w-4" />
           Begin Quest
         </Button>
@@ -278,7 +317,7 @@ const MissionIntelCollapsible = ({ briefing, tips }: { briefing: string; tips?: 
         className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-accent/10 transition-colors"
       >
         <div className="flex items-center gap-2">
-          <Compass className="h-3.5 w-3.5 text-muted-foreground" />
+          <span className="text-sm">📜</span>
           <span
             className="text-[10px] font-semibold uppercase tracking-wider"
             style={{ color: "hsl(var(--filigree))", fontFamily: "'Cinzel', serif" }}
