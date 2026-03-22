@@ -316,7 +316,7 @@ const RoleDeepDive = () => {
           <ChevronLeft className="h-3.5 w-3.5" /> Back
         </button>
         <div className="text-center min-w-0 flex-1">
-          <span className="text-[9px] uppercase tracking-wider text-primary font-semibold">⚔️ Mission Briefing</span>
+          <span className="text-[10px] uppercase tracking-wider text-primary font-semibold">⚔️ Mission Briefing</span>
           <span className="text-sm font-semibold text-foreground truncate block">{result.jobTitle.trim()}</span>
           {company && <span className="text-[10px] text-muted-foreground">Kingdom of {company}</span>}
         </div>
@@ -333,7 +333,7 @@ const RoleDeepDive = () => {
             <ReadinessRing readiness={readiness} size={40} />
             <div className="flex-1 space-y-1">
               <div className="flex items-center justify-between">
-                <span className="text-[8px] text-muted-foreground uppercase">Threat Level</span>
+                <span className="text-[10px] text-muted-foreground uppercase">Threat Level</span>
                 <div className="flex items-center gap-1">
                   <span className="text-xs font-bold text-foreground tabular-nums">{currentRisk}%</span>
                   {futureStats && (
@@ -348,7 +348,7 @@ const RoleDeepDive = () => {
                 </div>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-[8px] text-muted-foreground uppercase">Quests</span>
+                <span className="text-[10px] text-muted-foreground uppercase">Quests</span>
                 <span className="text-xs font-bold text-foreground tabular-nums">
                   {result.tasks.length}
                   {completedCount > 0 && <span className="text-success ml-1 font-normal">({completedCount} ✓)</span>}
@@ -356,7 +356,7 @@ const RoleDeepDive = () => {
               </div>
               {futureStats && futureStats.collapseCount > 0 && (
                 <div className="flex items-center justify-between">
-                  <span className="text-[8px] text-muted-foreground uppercase">⚠️ Endangered</span>
+                  <span className="text-[10px] text-muted-foreground uppercase">⚠️ Endangered</span>
                   <span className="text-xs font-bold text-destructive tabular-nums">{futureStats.collapseCount}</span>
                 </div>
               )}
@@ -529,7 +529,7 @@ const RoleDeepDive = () => {
                               {skill.description}
                             </div>
                             <div className="flex items-center justify-between">
-                              <span className="text-[9px] text-muted-foreground/60 truncate max-w-[55%]">
+                              <span className="text-[10px] text-muted-foreground/60 truncate max-w-[55%]">
                                 {skill.taskName}
                               </span>
                               <span className="flex items-center gap-1 text-[10px] font-semibold text-primary/70 group-hover:text-primary transition-colors">
