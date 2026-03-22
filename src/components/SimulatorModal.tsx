@@ -68,6 +68,10 @@ interface SimulatorModalProps {
   onNextBattle?: () => void;
   /** Campaign stats for post-sim debrief */
   campaignStats?: { conquered: number; total: number; sessionXP: number };
+  /** Level 1 (current tools) or Level 2 (future scenarios) */
+  level?: 1 | 2;
+  /** Future prediction data for Level 2 sims */
+  futurePrediction?: import("@/components/analysis/FutureTaskPreview").FuturePrediction;
 }
 
 /* ── Objective Checklist (sidebar / inline) ── */
