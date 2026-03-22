@@ -193,19 +193,20 @@
     font-family: 'Inter', system-ui, sans-serif;
   }
 
-  /* Bold display headings */
+  /* Fantasy display headings — Cinzel for RPG gravitas */
   h1 {
-    font-family: 'Syne', 'Space Grotesk', system-ui, sans-serif;
+    font-family: 'Cinzel', 'Syne', 'Space Grotesk', serif;
     font-weight: 700;
   }
 
   h2, h3 {
-    font-family: 'Space Grotesk', 'Inter', system-ui, sans-serif;
+    font-family: 'Cinzel', 'Space Grotesk', serif;
     font-weight: 600;
   }
 
   h4, h5, h6 {
-    font-family: 'Inter', system-ui, sans-serif;
+    font-family: 'Space Grotesk', 'Inter', system-ui, sans-serif;
+    font-weight: 600;
   }
 }
 
