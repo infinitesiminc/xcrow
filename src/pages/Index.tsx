@@ -19,6 +19,7 @@ import { useChatContext, useChatViewContext } from "@/contexts/ChatContext";
 import RolePreviewPanel from "@/components/RolePreviewPanel";
 import type { RoleResult } from "@/components/InlineRoleCarousel";
 import SkillSuggestionCards from "@/components/SkillSuggestionCards";
+import XcrowLoader from "@/components/XcrowLoader";
 
 /* ── Types ── */
 
