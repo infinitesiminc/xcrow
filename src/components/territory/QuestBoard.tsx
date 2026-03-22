@@ -102,7 +102,7 @@ export default function QuestBoard() {
       {queue.length > 0 && (
         <div>
           <div className="flex items-center gap-2 mb-2.5">
-            <Swords className="h-3.5 w-3.5 text-warning" />
+            <Target className="h-3.5 w-3.5 text-warning" />
             <h3 className="text-xs font-bold uppercase tracking-wider text-warning">
               Active Quests
             </h3>
