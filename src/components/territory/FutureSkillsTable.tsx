@@ -1,14 +1,15 @@
 /**
  * FutureSkillsTable — Skill Forge catalog with progress tracking + bookmarks.
- * Replaces demand/roles columns with XP progress bars and bookmark quick-launch.
+ * Includes a domain radar chart, XP progress bars, and bookmark quick-launch.
  */
-import { useState, useMemo, useCallback, useEffect } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { type FutureSkill, type FutureSkillCategory } from "@/hooks/use-future-skills";
 import { Input } from "@/components/ui/input";
-import { ArrowUpDown, Search, Bookmark, BookmarkCheck, Zap, Play } from "lucide-react";
-import { getTerritory } from "@/lib/territory-colors";
+import { ArrowUpDown, Search, Bookmark, BookmarkCheck } from "lucide-react";
+import { getTerritory, TERRITORY_ORDER } from "@/lib/territory-colors";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
+import { RadarChart, PolarGrid, PolarAngleAxis, Radar, ResponsiveContainer } from "recharts";
 import type { CanonicalSkillGrowth } from "@/pages/MapPage";
 
 type SortKey = "name" | "category" | "xp";
