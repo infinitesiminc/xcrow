@@ -10,6 +10,7 @@ import { JobAnalysisResult, TaskAnalysis } from "@/types/analysis";
 import { findPrebuiltRole } from "@/data/prebuilt-roles";
 import { analyzeJobWithAI } from "@/lib/ai-analysis";
 import { useAuth } from "@/contexts/AuthContext";
+import type { IntelContext } from "@/lib/simulator";
 import { supabase } from "@/integrations/supabase/client";
 import SimulatorModal from "@/components/SimulatorModal";
 import { BattleChooser } from "@/components/role/BattleChooser";
