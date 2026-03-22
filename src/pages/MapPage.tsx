@@ -1,12 +1,12 @@
 /**
  * MapPage — Dedicated Skill Map page at /map.
- * Contains the full-screen Future Territory Map, Skill Forge, Kingdoms panel, HUD, and minimap.
+ * Contains the full-screen Future Territory Map, Skill Forge, Kingdoms panel, Allies panel, HUD.
  */
 import { useState, useCallback, useEffect, useMemo, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { X, Swords, ScrollText, Shield } from "lucide-react";
+import { X, Swords, ScrollText, Users } from "lucide-react";
 
 import { useFutureSkills } from "@/hooks/use-future-skills";
 import FutureTerritoryMap from "@/components/territory/FutureTerritoryMap";
@@ -21,9 +21,10 @@ import type { RoleResult } from "@/components/InlineRoleCarousel";
 import type { EdgeContext } from "@/components/HumanEdgesCard";
 
 import CompactHUD from "@/components/territory/CompactHUD";
-import HQPanel from "@/components/territory/HQPanel";
 import MyRolesPanel from "@/components/territory/MyRolesPanel";
+import AlliesPanel from "@/components/territory/AlliesPanel";
 import { useSkills } from "@/hooks/use-skills";
+import { useFriends } from "@/hooks/use-friends";
 import {
   SKILL_TAXONOMY,
   aggregateSkillXP,
@@ -92,7 +93,7 @@ const MapPage = () => {
 
   const [selectedRole, setSelectedRole] = useState<RoleResult | null>(null);
   const [activeEdge, setActiveEdge] = useState<EdgeContext | null>(null);
-  const [rightPanelTab, setRightPanelTab] = useState<"hq" | "table" | "roles">("hq");
+  const [rightPanelTab, setRightPanelTab] = useState<"table" | "roles" | "allies">("table");
   const [chatOpen, setChatOpen] = useState(!!user);
   const [mapFocusSkillId, setMapFocusSkillId] = useState<string | null>(null);
   const [myRolesTab, setMyRolesTab] = useState<"saved" | "practiced">("saved");
@@ -112,6 +113,7 @@ const MapPage = () => {
   const userName = profile?.displayName?.split(" ")[0];
 
   const { onRolesFoundRef, onRoleSelectRef, sendMessage: chatSendMessage, setIsOpen: setChatDockOpen } = useChatContext();
+  const { updatePresence, goOffline, pendingCount } = useFriends();
 
   // Wire up role select callback so chat card buttons work
   useEffect(() => {
@@ -120,6 +122,14 @@ const MapPage = () => {
     };
     return () => { onRoleSelectRef.current = null; };
   }, [onRoleSelectRef]);
+
+  // Presence tracking
+  useEffect(() => {
+    if (!user) return;
+    updatePresence("Exploring the Map");
+    const interval = setInterval(() => updatePresence("Exploring the Map"), 60_000);
+    return () => { clearInterval(interval); goOffline(); };
+  }, [user, updatePresence, goOffline]);
   // Load real skills + target roles + Level 2 unlock detection
   useEffect(() => {
     if (!user) return;
@@ -268,7 +278,7 @@ const MapPage = () => {
   // View context for chat
   const chatViewCtx = useMemo(() => ({
     page: "map" as const,
-    activePanel: rightPanelTab === "roles" ? "roles" : "territory",
+    activePanel: rightPanelTab === "roles" ? "roles" : rightPanelTab === "allies" ? "allies" : "territory",
     selectedRole: selectedRole ? { title: selectedRole.title, company: selectedRole.company, jobId: selectedRole.jobId } : null,
     selectedTab: rightPanelTab === "roles" ? myRolesTab : undefined,
   }), [selectedRole, rightPanelTab, myRolesTab]);
@@ -305,25 +315,6 @@ const MapPage = () => {
           boxShadow: "0 4px 20px hsl(var(--emboss-shadow)), inset 0 1px 0 hsl(var(--emboss-light))",
         }}
       >
-        {isSignedIn && (
-          <button
-            onClick={() => {
-              if (rightPanelTab === "hq" && chatOpen) { setChatOpen(false); }
-              else { setRightPanelTab("hq"); setChatOpen(true); }
-            }}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all"
-            style={{
-              fontFamily: "'Cinzel', serif",
-              letterSpacing: "0.05em",
-              ...(rightPanelTab === "hq" && chatOpen
-                ? { color: "hsl(var(--filigree-glow))", background: "hsl(var(--filigree) / 0.12)", textShadow: "0 0 8px hsl(var(--filigree-glow) / 0.5)" }
-                : { color: "hsl(var(--muted-foreground))" }),
-            }}
-          >
-            <Shield className="h-3 w-3" />
-            HQ
-          </button>
-        )}
         <button
           onClick={() => {
             if (rightPanelTab === "table" && chatOpen) { setChatOpen(false); }
@@ -360,6 +351,33 @@ const MapPage = () => {
             Kingdoms
           </button>
         )}
+        {isSignedIn && (
+          <button
+            onClick={() => {
+              if (rightPanelTab === "allies" && chatOpen) { setChatOpen(false); }
+              else { setRightPanelTab("allies"); setChatOpen(true); }
+            }}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all relative"
+            style={{
+              fontFamily: "'Cinzel', serif",
+              letterSpacing: "0.05em",
+              ...(rightPanelTab === "allies" && chatOpen
+                ? { color: "hsl(var(--filigree-glow))", background: "hsl(var(--filigree) / 0.12)", textShadow: "0 0 8px hsl(var(--filigree-glow) / 0.5)" }
+                : { color: "hsl(var(--muted-foreground))" }),
+            }}
+          >
+            <Users className="h-3 w-3" />
+            Allies
+            {pendingCount > 0 && (
+              <span
+                className="absolute -top-1 -right-1 w-4 h-4 rounded-full text-[8px] flex items-center justify-center font-bold animate-pulse"
+                style={{ background: "hsl(var(--filigree-glow))", color: "hsl(var(--background))" }}
+              >
+                {pendingCount}
+              </span>
+            )}
+          </button>
+        )}
       </div>
 
       {/* Side panel */}
@@ -378,11 +396,7 @@ const MapPage = () => {
               boxShadow: "0 8px 40px hsl(var(--emboss-shadow)), inset 0 1px 0 hsl(var(--emboss-light))",
             }}
           >
-            {rightPanelTab === "hq" && isSignedIn ? (
-              <div className="flex-1 overflow-hidden">
-                <HQPanel onSelectRole={(role) => setSelectedRole(role)} />
-              </div>
-            ) : rightPanelTab === "table" ? (
+            {rightPanelTab === "table" ? (
               <div className="flex-1 overflow-hidden">
                 <FutureSkillsTable
                   skills={futureSkills}
@@ -392,7 +406,7 @@ const MapPage = () => {
                   }}
                 />
               </div>
-            ) : isSignedIn ? (
+            ) : rightPanelTab === "roles" && isSignedIn ? (
               <div className="flex-1 overflow-hidden">
                 <MyRolesPanel
                   onSelectRole={(role) => {
@@ -405,6 +419,10 @@ const MapPage = () => {
                   }}
                   onTabChange={setMyRolesTab}
                 />
+              </div>
+            ) : rightPanelTab === "allies" && isSignedIn ? (
+              <div className="flex-1 overflow-hidden">
+                <AlliesPanel />
               </div>
             ) : null}
           </motion.div>
