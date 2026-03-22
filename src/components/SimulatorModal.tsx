@@ -860,6 +860,8 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
       .replace(/\[ALL_OBJECTIVES_MET\]/g, "")
       .replace(/\[NEEDS_DEPTH\]/g, "")
       .replace(/\[TARGET_OBJ:[^\]]+\]/g, "")
+      // Put A) B) C) D) choices on separate lines for readability
+      .replace(/\s*\*?\*?\b([A-D])\)\*?\*?\s/g, "\n\n**$1)** ")
       .trim();
   };
 
