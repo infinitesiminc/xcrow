@@ -28,14 +28,17 @@ import {
   type SimConfig,
   type ElevationNarrative,
   type CoachingContext,
+  type ArenaRoundData,
+  fetchArenaRound,
 } from "@/lib/simulator";
+import PromptArena from "@/components/sim/PromptArena";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useUsageGate } from "@/hooks/use-usage-gate";
 import UpgradeModal from "@/components/UpgradeModal";
 
-type Phase = "loading" | "briefing" | "chat" | "review" | "completing" | "done" | "guest-limit";
+type Phase = "loading" | "briefing" | "chat" | "arena" | "review" | "completing" | "done" | "guest-limit";
 
 // Defaults — overridden by server config
 const DEFAULT_MIN_ROUNDS = 3;
@@ -572,6 +575,9 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
   const [scaffoldingTiers, setScaffoldingTiers] = useState<Record<string, number>>({});
   const [objectiveFailCounts, setObjectiveFailCounts] = useState<Record<string, number>>({});
   const [showInactivityNudge, setShowInactivityNudge] = useState(false);
+  const [arenaRound, setArenaRound] = useState<ArenaRoundData | null>(null);
+  const [arenaLoading, setArenaLoading] = useState(false);
+  const [arenaRoundNum, setArenaRoundNum] = useState(1);
   const inactivityTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const { user, isPro } = useAuth();
@@ -739,8 +745,62 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
 
   const beginChat = () => {
     if (!session) return;
-    setMessages([{ role: "assistant", content: session.openingMessage }]);
-    setPhase("chat");
+    if (level === 1) {
+      // Level 1 uses Prompt Arena
+      setPhase("arena");
+      setArenaRoundNum(1);
+      loadArenaRound(1);
+    } else {
+      setMessages([{ role: "assistant", content: session.openingMessage }]);
+      setPhase("chat");
+    }
+  };
+
+  const loadArenaRound = async (roundNum: number) => {
+    setArenaLoading(true);
+    try {
+      const targetObjId = session?.learningObjectives?.find(o => !objectiveStatus[o.id])?.id;
+      const data = await fetchArenaRound(
+        taskName, jobTitle, company, roundNum,
+        session?.learningObjectives, targetObjId, objectiveStatus
+      );
+      setArenaRound(data);
+    } catch (err) {
+      console.error("Arena round failed:", err);
+      setError("Failed to generate arena round. Please try again.");
+      setPhase("chat");
+    } finally {
+      setArenaLoading(false);
+    }
+  };
+
+  const handleArenaJudged = (correct: boolean, objectiveId: string | null) => {
+    // Update objective status
+    if (correct && objectiveId) {
+      setObjectiveStatus(prev => ({ ...prev, [objectiveId]: true }));
+    }
+
+    // Track as a message for scoring later
+    const arenaMsg: SimMessage = {
+      role: "assistant",
+      content: `[Arena Round ${arenaRoundNum}] Scenario: ${arenaRound?.scenario_context}. User picked ${correct ? "correctly" : "incorrectly"}. Better approach: ${arenaRound?.better === "a" ? arenaRound?.prompt_a.technique : arenaRound?.prompt_b.technique}. ${arenaRound?.explanation}`
+    };
+    setMessages(prev => [
+      ...prev,
+      { role: "user", content: correct ? "Identified the better prompt technique" : "Chose the less effective technique" },
+      arenaMsg,
+    ]);
+
+    const nextRound = arenaRoundNum + 1;
+    setRoundCount(nextRound);
+
+    if (nextRound > maxRounds) {
+      // All arena rounds done
+      handleFinish();
+    } else {
+      setArenaRoundNum(nextRound);
+      loadArenaRound(nextRound);
+    }
   };
 
   // Compute current target objective (first unmet)
@@ -1016,7 +1076,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
               <p className="text-[11px] sm:text-xs text-muted-foreground mt-0.5 truncate pl-7">{jobTitle}{company ? ` · ${company}` : ""}</p>
             </div>
             <div className="flex items-center gap-2 shrink-0">
-              {phase === "chat" && (
+              {(phase === "chat" || phase === "arena") && (
                 <motion.div
                   initial={{ opacity: 0, scale: 0.9 }}
                   animate={{ opacity: 1, scale: 1 }}
@@ -1044,7 +1104,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
               </button>
             </div>
           </div>
-          {phase === "chat" && (
+          {(phase === "chat" || phase === "arena") && (
             <div className="px-4 sm:px-6 py-1.5 relative" style={{ background: "hsl(var(--filigree) / 0.04)" }}>
               <div className="relative h-2 rounded-full overflow-hidden" style={{
                 background: "hsl(var(--surface-stone))",
@@ -1133,6 +1193,27 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                   <p className="text-sm text-muted-foreground leading-relaxed">{error}</p>
                   <Button variant="outline" size="sm" onClick={onClose} className="rounded-xl">Close</Button>
                 </motion.div>
+              )}
+
+              {phase === "arena" && (
+                <div className="py-4">
+                  {arenaLoading && !arenaRound ? (
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      className="flex flex-col items-center justify-center py-16"
+                    >
+                      <XcrowLoader size="sm" title="Preparing Prompt Arena…" />
+                    </motion.div>
+                  ) : arenaRound ? (
+                    <PromptArena
+                      round={arenaRound}
+                      roundNumber={arenaRoundNum}
+                      onJudged={handleArenaJudged}
+                      loading={arenaLoading}
+                    />
+                  ) : null}
+                </div>
               )}
 
               {phase === "chat" && !error && (
