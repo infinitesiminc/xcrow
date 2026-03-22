@@ -77,6 +77,15 @@ export interface CoachingContext {
   previousOverall: number;
 }
 
+export interface IntelContext {
+  hasFullIntel: boolean;
+  threats?: string[];
+  timeline?: string;
+  collapseSummary?: string;
+  evolutionSummary?: string;
+  equippedSkills?: { name: string; description?: string }[];
+}
+
 export async function compileSession(
   taskName: string,
   jobTitle: string,
@@ -85,8 +94,9 @@ export async function compileSession(
   mode: SimMode = "assess",
   taskMeta?: { currentState?: string; trend?: string; impactLevel?: string },
   coaching?: CoachingContext,
+  intel?: IntelContext,
 ): Promise<SimSession> {
-  return simFetch("compile", { taskName, jobTitle, company, difficulty, mode, taskMeta, coaching });
+  return simFetch("compile", { taskName, jobTitle, company, difficulty, mode, taskMeta, coaching, intel });
 }
 
 export async function chatTurn(

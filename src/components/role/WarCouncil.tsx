@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect, useCallback } from "react";
+import type { IntelContext } from "@/lib/simulator";
 import { isStandardEmoji } from "@/lib/emoji-utils";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -79,7 +80,7 @@ interface WarCouncilProps {
   prediction?: FuturePrediction;
   predictionsLoading: boolean;
   isCompleted: boolean;
-  onMarchToBattle: (task: TaskAnalysis) => void;
+  onMarchToBattle: (task: TaskAnalysis, intel: import("@/lib/simulator").IntelContext) => void;
   onSwitchTarget: () => void;
   onXPEarned: (xp: number) => void;
 }
@@ -312,7 +313,17 @@ export function WarCouncil({
             size="lg"
             variant={isCompleted ? "secondary" : "default"}
             className="w-full h-11 text-sm rounded-full gap-2 font-bold"
-            onClick={() => onMarchToBattle(task)}
+            onClick={() => {
+              const intel: IntelContext = {
+                hasFullIntel: intelComplete,
+                threats: prediction?.disrupting_tech,
+                timeline: prediction?.timeline,
+                collapseSummary: prediction?.collapse_summary,
+                evolutionSummary: prediction?.new_human_role,
+                equippedSkills: skillsUnlocked && prediction?.future_skills ? prediction.future_skills.map(s => ({ name: s.name, description: s.description })) : undefined,
+              };
+              onMarchToBattle(task, intel);
+            }}
           >
             <Swords className="h-4 w-4" />
             {intelComplete

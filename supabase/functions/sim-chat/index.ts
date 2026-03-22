@@ -106,7 +106,7 @@ function aiStateDescription(taskMeta?: any): string {
 // ─── COMPILE ───
 
 async function handleCompile(payload: any, apiKey: string) {
-  const { taskName, jobTitle, company, difficulty = 3, mode = "assess", taskMeta, coaching } = payload;
+  const { taskName, jobTitle, company, difficulty = 3, mode = "assess", taskMeta, coaching, intel } = payload;
   const aiContext = aiStateDescription(taskMeta);
   const dateCtx = currentDateContext();
   const isAssess = mode === "assess";
@@ -122,6 +122,24 @@ Coaching tip to weave in: "${coaching.tip}"
 IMPORTANT: Do NOT mention the coaching focus area ("${coaching.weakCategory}") in the "openingMessage". The coaching context is already shown to the user in a separate UI banner. The openingMessage should just present the scenario naturally.`
     : "";
 
+  // Intel context from War Council prep
+  const intelInstructions = intel
+    ? `\n\nINTEL CONTEXT — The commander completed recon before this battle:
+${intel.hasFullIntel ? "STATUS: Full Intel Advantage — the player scanned threats AND equipped weapons." : "STATUS: Partial Intel — the player has some recon data."}
+${intel.threats?.length ? `DISRUPTING TECHNOLOGIES: ${intel.threats.join(", ")}` : ""}
+${intel.timeline ? `THREAT TIMELINE: ${intel.timeline}` : ""}
+${intel.collapseSummary ? `THREAT SUMMARY: ${intel.collapseSummary}` : ""}
+${intel.evolutionSummary ? `ROLE EVOLUTION: ${intel.evolutionSummary}` : ""}
+${intel.equippedSkills?.length ? `EQUIPPED WEAPONS (skills): ${intel.equippedSkills.map(s => s.name).join(", ")}` : ""}
+
+IMPORTANT INSTRUCTIONS FOR INTEL INTEGRATION:
+1. In the "openingMessage", acknowledge the player's recon: "Commander, your recon revealed [reference 1-2 threats]. Your arsenal includes [1-2 equipped skills]. Deploy them wisely."
+2. Design scenarios that specifically test or reference the equipped skills. When a scenario calls for one of their weapons, note it naturally: "This situation calls for your [skill name]..."
+3. Reference the disrupting technologies in at least 1 scenario — make the player face the exact threat they scouted.
+4. If intel.hasFullIntel is true, the openingMessage should feel rewarding: the player prepared well.
+5. If no intel was gathered, do NOT reference any recon data.`
+    : "\n\nNO INTEL: The player marched to battle without recon. Open with: \"You enter unfamiliar territory. No scouts. No intel. Trust your instincts, commander.\" Do not reference any specific threats or skills.";
+
   const prompt = `You are designing a LEARNING simulation about AI tools for a professional task.
 
 ${dateCtx}
@@ -132,6 +150,7 @@ ${aiContext}
 Mode: ${isAssess ? "ASSESS — broad baseline check across the task" : "UPSKILL — deeper practice on specific sub-skills"}
 Format: Structured coaching conversation, ${MIN_ROUNDS}-${MAX_ROUNDS} rounds (objective-driven — ends when all goals met), ${isAssess ? "~10" : "~15"} minutes
 ${coachingInstructions}
+${intelInstructions}
 
 You are a COACH helping someone learn to use AI tools effectively for their job.
 

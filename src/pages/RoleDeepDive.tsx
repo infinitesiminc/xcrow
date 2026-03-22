@@ -10,6 +10,7 @@ import { JobAnalysisResult, TaskAnalysis } from "@/types/analysis";
 import { findPrebuiltRole } from "@/data/prebuilt-roles";
 import { analyzeJobWithAI } from "@/lib/ai-analysis";
 import { useAuth } from "@/contexts/AuthContext";
+import type { IntelContext } from "@/lib/simulator";
 import { supabase } from "@/integrations/supabase/client";
 import SimulatorModal from "@/components/SimulatorModal";
 import { BattleChooser } from "@/components/role/BattleChooser";
@@ -73,7 +74,7 @@ const RoleDeepDive = () => {
   const [phase, setPhase] = useState<Phase>("choose");
   const [chosenTask, setChosenTask] = useState<TaskAnalysis | null>(null);
   const [sessionXP, setSessionXP] = useState(0);
-  const [revealedBattleIndices, setRevealedBattleIndices] = useState(0); // how many pairs shown
+  const [currentIntel, setCurrentIntel] = useState<IntelContext | null>(null);
 
   const completedCount = result ? result.tasks.filter(t => completedTasks.has(t.name)).length : 0;
 
@@ -376,7 +377,7 @@ const RoleDeepDive = () => {
                   prediction={predictions[chosenTask.name]}
                   predictionsLoading={predictionsLoading}
                   isCompleted={completedTasks.has(chosenTask.name)}
-                  onMarchToBattle={setSimTask}
+                  onMarchToBattle={(task, intel) => { setCurrentIntel(intel); setSimTask(task); }}
                   onSwitchTarget={handleSwitchTarget}
                   onXPEarned={handleXPEarned}
                 />
@@ -417,7 +418,7 @@ const RoleDeepDive = () => {
 
         <SimulatorModal
           open={!!simTask}
-          onClose={() => { setSimTask(null); fetchCompletions(); setPhase("choose"); setChosenTask(null); }}
+          onClose={() => { setSimTask(null); setCurrentIntel(null); fetchCompletions(); setPhase("choose"); setChosenTask(null); }}
           taskName={simTask?.name || ""}
           jobTitle={result.jobTitle}
           company={result.company}
@@ -427,6 +428,9 @@ const RoleDeepDive = () => {
           onCompleted={fetchCompletions}
           onNextTask={pickNextTask}
           onBackToFeed={() => navigate("/")}
+          intelContext={currentIntel ?? undefined}
+          onNextBattle={() => { setSimTask(null); setCurrentIntel(null); setPhase("choose"); setChosenTask(null); fetchCompletions(); }}
+          campaignStats={{ conquered: completedCount, total: result.tasks.length, sessionXP }}
         />
       </DialogContent>
     </Dialog>
