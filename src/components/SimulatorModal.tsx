@@ -1600,9 +1600,12 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                   </motion.div>
 
                   {/* Dynamic encouragement */}
-                  <div className="space-y-1.5">
-                    <h3 className="text-lg font-display font-bold text-foreground">
-                      {scoreTier === "high" ? "Victory! 🏆" : scoreTier === "mid" ? "Valiant effort! 💪" : "First blood! 🌱"}
+                  <div className="space-y-2">
+                    <h3
+                      className="text-xl font-bold text-foreground"
+                      style={{ fontFamily: "'Cinzel', serif" }}
+                    >
+                      {scoreTier === "high" ? "🏆 Victory!" : scoreTier === "mid" ? "⚔️ Valiant Effort" : "🌱 First Blood"}
                     </h3>
                     <p className="text-sm text-muted-foreground leading-relaxed">
                       {scoreTier === "high"
