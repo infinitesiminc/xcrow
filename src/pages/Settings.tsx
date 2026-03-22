@@ -320,6 +320,7 @@ function ProfileSection({
   company, setCompany, schoolName, setSchoolName,
   careerStage, setCareerStage, saving, email,
   avatarId, setAvatarId, city, setCity, linkedinUrl, setLinkedinUrl,
+  graduationYear, setGraduationYear, degreeType, setDegreeType,
   handleSaveProfile,
 }: {
   displayName: string; setDisplayName: (v: string) => void;
@@ -332,6 +333,8 @@ function ProfileSection({
   avatarId: string | null; setAvatarId: (v: string | null) => void;
   city: string; setCity: (v: string) => void;
   linkedinUrl: string; setLinkedinUrl: (v: string) => void;
+  graduationYear: string; setGraduationYear: (v: string) => void;
+  degreeType: string; setDegreeType: (v: string) => void;
   handleSaveProfile: () => void;
 }) {
   return (
