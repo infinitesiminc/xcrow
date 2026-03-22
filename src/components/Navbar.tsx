@@ -262,7 +262,7 @@ export default function Navbar() {
                     <Settings className="mr-2 h-4 w-4" />
                     Settings
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => navigate("/journey")}>
+                  <DropdownMenuItem onClick={() => navigate("/map")}>
                     <Map className="mr-2 h-4 w-4" />
                     Skill Map
                   </DropdownMenuItem>
