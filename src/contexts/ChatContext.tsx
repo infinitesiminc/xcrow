@@ -85,7 +85,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     let page = "home";
     if (path.startsWith("/role/")) page = "role-deep-dive";
     else if (path.startsWith("/analysis")) page = "analysis";
-    else if (path.startsWith("/journey")) page = "journey";
+    else if (path.startsWith("/map") || path.startsWith("/journey")) page = "journey";
     else if (path.startsWith("/company/")) page = "company";
     setViewCtx(prev => ({ ...prev, page }));
   }, [location.pathname]);
