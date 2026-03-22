@@ -210,12 +210,104 @@
   }
 }
 
-/* Default to dark mode */
+/* Default to dark mode — toggle via .parchment class */
 html {
   color-scheme: dark;
 }
-html:not(.light) {
+html:not(.light):not(.parchment) {
   @apply dark;
+}
+
+/* ═══════════════════════════════════════════
+   PARCHMENT MODE — Sunlight-readable RPG
+   ═══════════════════════════════════════════ */
+.parchment {
+  color-scheme: light;
+
+  --background: 35 25% 92%;
+  --foreground: 30 15% 15%;
+
+  --card: 36 28% 95%;
+  --card-foreground: 30 15% 15%;
+
+  --popover: 36 28% 95%;
+  --popover-foreground: 30 15% 15%;
+
+  --primary: 262 70% 48%;
+  --primary-foreground: 0 0% 100%;
+
+  --secondary: 35 18% 87%;
+  --secondary-foreground: 30 15% 20%;
+
+  --muted: 35 15% 85%;
+  --muted-foreground: 30 10% 40%;
+
+  --accent: 262 30% 88%;
+  --accent-foreground: 262 70% 38%;
+
+  --destructive: 0 72% 50%;
+  --destructive-foreground: 0 0% 100%;
+
+  --border: 35 15% 78%;
+  --input: 35 15% 80%;
+  --ring: 262 70% 48%;
+
+  --success: 152 50% 35%;
+  --success-foreground: 0 0% 100%;
+  --warning: 38 80% 42%;
+  --warning-foreground: 0 0% 100%;
+
+  /* Neon → muted jewel tones for light */
+  --neon-purple: 262 60% 45%;
+  --neon-pink: 330 65% 48%;
+  --neon-blue: 217 70% 45%;
+  --neon-cyan: 185 70% 35%;
+  --neon-lime: 82 60% 38%;
+
+  --brand-ai: 330 65% 48%;
+  --brand-human: 217 70% 45%;
+  --brand-mid: 262 60% 45%;
+
+  /* 7-stop spectrum — parchment */
+  --spectrum-0: 217 70% 45%;
+  --spectrum-1: 185 60% 35%;
+  --spectrum-2: 152 50% 35%;
+  --spectrum-3: 262 60% 45%;
+  --spectrum-4: 38 75% 42%;
+  --spectrum-5: 20 70% 45%;
+  --spectrum-6: 330 65% 48%;
+
+  --dot-blue: 217 70% 45%;
+  --dot-teal: 185 70% 35%;
+  --dot-purple: 262 60% 45%;
+  --dot-amber: 38 65% 42%;
+
+  /* Territory colors — deeper for light bg */
+  --territory-technical:   262 60% 45%;
+  --territory-analytical:  210 65% 42%;
+  --territory-strategic:   45  70% 40%;
+  --territory-communication: 152 50% 35%;
+  --territory-leadership:  30  70% 42%;
+  --territory-creative:    340 60% 42%;
+  --territory-ethics:      175 55% 32%;
+  --territory-humanedge:   285 55% 45%;
+
+  /* Fantasy surface tokens — warm parchment */
+  --surface-stone: 35 22% 88%;
+  --surface-parchment: 38 30% 91%;
+  --filigree: 30 45% 35%;
+  --filigree-glow: 35 55% 42%;
+  --emboss-light: 0 0% 100% / 0.5;
+  --emboss-shadow: 30 20% 30% / 0.12;
+
+  --sidebar-background: 35 20% 90%;
+  --sidebar-foreground: 30 15% 20%;
+  --sidebar-primary: 262 70% 48%;
+  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-accent: 262 30% 88%;
+  --sidebar-accent-foreground: 262 70% 38%;
+  --sidebar-border: 35 15% 78%;
+  --sidebar-ring: 262 70% 48%;
 }
 
 /* Task carousel scrollbar */

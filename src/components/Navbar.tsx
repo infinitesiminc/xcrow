@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import xcrowLogo from "@/assets/xcrow-logo.png";
@@ -12,7 +12,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { User, Menu, X, Compass, Shield, Map, Settings, LogOut, Trophy, GraduationCap } from "lucide-react";
+import { User, Menu, X, Compass, Shield, Map, Settings, LogOut, Trophy, GraduationCap, Sun, Moon } from "lucide-react";
 
 export default function Navbar() {
   const { user, signOut, openAuthModal, isSuperAdmin, isSchoolAdmin, profile } = useAuth();
