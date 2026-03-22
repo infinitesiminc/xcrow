@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Search, ArrowUpDown, Download, Brain, Loader2 } from "lucide-react";
+import { Search, ArrowUpDown, Download, Brain, Loader2, Zap } from "lucide-react";
 
 interface CanonicalSkill {
   id: string;
