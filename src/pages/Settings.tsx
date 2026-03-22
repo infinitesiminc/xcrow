@@ -354,6 +354,7 @@ export default function Settings() {
                 cvFileName={cvFileName} cvInputRef={cvInputRef}
                 uploadingCv={uploadingCv} saving={saving}
                 email={user?.email ?? ""}
+                avatarId={avatarId} setAvatarId={setAvatarId}
                 handleCvUpload={handleCvUpload}
                 handleRemoveCv={handleRemoveCv}
                 handleSaveProfile={handleSaveProfile}
