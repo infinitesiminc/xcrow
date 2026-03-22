@@ -818,7 +818,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
 
       // Learn→Apply: every user response advances the round (each response = 1 complete beat)
       setRoundCount((c) => c + 1);
-      scrollToBottom();
+      scrollToLatestAi();
 
       // After reply, check if next turn would hit guest limit — show limit after AI responds
       const newUserTurns = newMessages.filter(m => m.role === "user").length;
