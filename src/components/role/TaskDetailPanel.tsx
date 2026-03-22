@@ -286,11 +286,11 @@ export function TaskDetailPanel({
         )}
       </AnimatePresence>
 
-      {/* ─── INTEL QUEST 2: Decode the Arsenal ─── */}
+      {/* ─── INTEL QUEST 2: Unlock the Arsenal ─── */}
       <AnimatePresence mode="wait">
         {threatRevealed && hasSkills && !skillsUnlocked && (
           <motion.button
-            key="decode-arsenal"
+            key="unlock-arsenal"
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8, scale: 0.95 }}
@@ -305,11 +305,11 @@ export function TaskDetailPanel({
               </div>
               <div className="flex-1 min-w-0">
                 <div className="text-xs font-bold text-foreground mb-0.5 flex items-center gap-1.5">
-                  Decode the Arsenal
+                  Unlock the Arsenal
                   <span className="text-[9px] font-medium text-primary/70 px-1.5 py-0.5 rounded-full bg-primary/10">+5-15 XP</span>
                 </div>
                 <p className="text-[10px] text-muted-foreground italic">
-                  {decodeFlavor}
+                  {arsenalFlavor}
                 </p>
               </div>
               <div className="shrink-0 text-primary/60 group-hover:text-primary group-hover:translate-x-0.5 transition-all">
