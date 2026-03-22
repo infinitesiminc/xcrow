@@ -917,6 +917,7 @@ export type Database = {
         Row: {
           avatar_id: string | null
           career_stage: string | null
+          city: string | null
           company: string | null
           created_at: string
           cv_url: string | null
@@ -934,6 +935,7 @@ export type Database = {
         Insert: {
           avatar_id?: string | null
           career_stage?: string | null
+          city?: string | null
           company?: string | null
           created_at?: string
           cv_url?: string | null
@@ -951,6 +953,7 @@ export type Database = {
         Update: {
           avatar_id?: string | null
           career_stage?: string | null
+          city?: string | null
           company?: string | null
           created_at?: string
           cv_url?: string | null
