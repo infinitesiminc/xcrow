@@ -131,11 +131,11 @@ const PromptArena = ({ round, roundNumber, onJudged, loading }: PromptArenaProps
           boxShadow: "inset 0 1px 0 hsl(var(--emboss-light))",
         }}
       >
-        <div className="flex items-start gap-2.5">
-          <span className="text-base mt-0.5">📖</span>
+        <div className="flex items-start gap-3">
+          <span className="text-lg mt-0.5">📖</span>
           <div>
-            <p className="text-xs font-semibold text-foreground/90 mb-1" style={{ fontFamily: "'Cinzel', serif" }}>Scenario</p>
-            <p className="text-sm text-foreground/80 leading-relaxed">{round.scenario_context}</p>
+            <p className="text-sm font-semibold text-foreground/90 mb-1.5" style={{ fontFamily: "'Cinzel', serif" }}>Scenario</p>
+            <p className="text-[15px] text-foreground/80 leading-relaxed">{round.scenario_context}</p>
           </div>
         </div>
       </motion.div>
