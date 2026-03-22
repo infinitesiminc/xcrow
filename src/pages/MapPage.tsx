@@ -6,7 +6,7 @@ import { useState, useCallback, useEffect, useMemo, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { Map, X, Swords, ScrollText } from "lucide-react";
+import { X, Swords, ScrollText } from "lucide-react";
 
 import { useFutureSkills } from "@/hooks/use-future-skills";
 import FutureTerritoryMap from "@/components/territory/FutureTerritoryMap";
@@ -20,7 +20,6 @@ import RolePreviewPanel from "@/components/RolePreviewPanel";
 import type { RoleResult } from "@/components/InlineRoleCarousel";
 import type { EdgeContext } from "@/components/HumanEdgesCard";
 
-import TerritoryOverlay from "@/components/territory/TerritoryOverlay";
 import CompactHUD from "@/components/territory/CompactHUD";
 import MyRolesPanel from "@/components/territory/MyRolesPanel";
 import { useSkills } from "@/hooks/use-skills";
