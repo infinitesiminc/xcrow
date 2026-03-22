@@ -822,7 +822,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
     const lastMsg = messages[messages.length - 1];
     if (lastMsg.role !== "assistant") return false;
     const lower = safeStr(lastMsg.content).toLowerCase();
-    return lower.includes("how would you approach") || lower.includes("how would you handle") || lower.includes("[scaffolding]") || lower.includes("[scaffold_tier:");
+    return lower.includes("how would you approach") || lower.includes("how would you handle") || lower.includes("[scaffolding]") || lower.includes("[scaffold_tier:") || lower.includes("[needs_depth]");
   })();
 
   // Strip tags from message text for display
