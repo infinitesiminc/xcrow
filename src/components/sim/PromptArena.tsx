@@ -192,12 +192,12 @@ const PromptArena = ({ round, roundNumber, onJudged, loading }: PromptArenaProps
 
               {/* AI Output — streamed or full */}
               {(phase === "streaming" || phase === "judge" || phase === "result") && (
-                <div className="px-3 py-2.5 flex-1 min-h-[100px] max-h-[200px] overflow-y-auto">
-                  <div className="flex items-center gap-1.5 mb-1.5">
-                    <Sparkles className="h-3 w-3" style={{ color: "hsl(var(--filigree-glow))" }} />
-                    <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">AI Output</span>
+                <div className="px-4 py-3 flex-1 min-h-[120px] max-h-[260px] overflow-y-auto">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Sparkles className="h-3.5 w-3.5" style={{ color: "hsl(var(--filigree-glow))" }} />
+                    <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">AI Output</span>
                   </div>
-                  <div className="text-xs text-foreground/80 leading-relaxed prose prose-sm dark:prose-invert max-w-none [&>p]:mb-1.5">
+                  <div className="text-[13px] text-foreground/80 leading-relaxed prose prose-sm dark:prose-invert max-w-none [&>p]:mb-2">
                     {phase === "streaming" ? (
                       <ReactMarkdown>{output || "..."}</ReactMarkdown>
                     ) : (
