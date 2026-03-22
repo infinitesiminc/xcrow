@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Search, ArrowUpDown, Download, Brain, Loader2 } from "lucide-react";
+import { Search, ArrowUpDown, Download, Brain, Loader2, Zap } from "lucide-react";
 
 interface CanonicalSkill {
   id: string;
@@ -145,6 +145,63 @@ export default function SkillMatrixPage() {
           Export CSV
         </Button>
       </div>
+
+      {/* XP System Reference */}
+      <Card className="border-primary/20 bg-primary/5">
+        <CardContent className="p-4">
+          <h3 className="text-xs font-bold uppercase tracking-wider text-primary mb-3 flex items-center gap-1.5">
+            <Zap className="h-3.5 w-3.5" />
+            XP &amp; Progression System
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Per-Skill Levels */}
+            <div>
+              <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mb-1.5">Skill Levels (per skill)</p>
+              <div className="space-y-1">
+                {[
+                  { emoji: "🏚️", name: "Novice", xp: "0 XP", visual: "Ruins" },
+                  { emoji: "🏕️", name: "Apprentice", xp: "150 XP", visual: "Outpost — castle claimed" },
+                  { emoji: "🏰", name: "Adept", xp: "500 XP", visual: "Fortress" },
+                  { emoji: "⚔️", name: "Master", xp: "1,200 XP", visual: "Citadel" },
+                  { emoji: "✨", name: "Grandmaster", xp: "2,500 XP", visual: "Citadel + Glow" },
+                ].map(t => (
+                  <div key={t.name} className="flex items-center gap-2 text-xs">
+                    <span className="w-5 text-center">{t.emoji}</span>
+                    <span className="font-medium text-foreground w-24">{t.name}</span>
+                    <span className="font-mono text-muted-foreground w-16">{t.xp}</span>
+                    <span className="text-muted-foreground/70">{t.visual}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+            {/* Player Tiers + XP Formula */}
+            <div className="space-y-3">
+              <div>
+                <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mb-1.5">Player Tiers (aggregate XP)</p>
+                <div className="space-y-1">
+                  {[
+                    { name: "Recruit", xp: "0" },
+                    { name: "Explorer", xp: "500" },
+                    { name: "Strategist", xp: "3,000" },
+                    { name: "Commander", xp: "10,000" },
+                    { name: "Legend", xp: "30,000" },
+                  ].map(t => (
+                    <div key={t.name} className="flex items-center gap-2 text-xs">
+                      <span className="font-medium text-foreground w-24">{t.name}</span>
+                      <span className="font-mono text-muted-foreground">{t.xp} XP</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div className="rounded-lg bg-muted/30 px-3 py-2">
+                <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mb-1">XP Formula (per skill per sim)</p>
+                <p className="text-xs text-foreground font-mono">Base(40) × score/50 + context(20)</p>
+                <p className="text-[10px] text-muted-foreground mt-0.5">Range: 24–100 XP · Max 100 per skill per sim</p>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Category pills */}
       <div className="flex flex-wrap gap-1.5">
