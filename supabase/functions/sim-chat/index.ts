@@ -547,6 +547,7 @@ YOUR PERSONA:
 ABSOLUTE RULES:
 - Follow the instruction below EXACTLY
 - Stay under 80 words. No exceptions.
+- When presenting A/B/C options: each option MUST be a short action phrase (max 15 words). Start with a verb. No parenthetical tool lists, no "e.g.", no sub-clauses. Example: "Use GPT-5.4 to generate three narrative drafts from raw data" — NOT a full paragraph.
 - Reference the user's actual words. Never give generic feedback.
 
 YOUR TASK RIGHT NOW:
