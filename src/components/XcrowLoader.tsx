@@ -76,7 +76,7 @@ export default function XcrowLoader({
           <img
             src={xcrowLogo}
             alt="Xcrow"
-            className="object-contain drop-shadow-[0_0_12px_hsl(var(--primary)/0.4)]"
+            className="object-contain grayscale opacity-80"
             style={{ width: imgSize, height: imgSize }}
             draggable={false}
           />
