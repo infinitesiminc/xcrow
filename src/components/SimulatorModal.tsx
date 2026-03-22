@@ -808,7 +808,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
         onCompleted?.();
         // Increment usage counter for free tier
         await simGate.increment();
-        toast({ title: "Skills updated! 🎯", description: `+${xpEach} XP in ${earned.map(e => e.name).join(", ")}`, action: <Button variant="link" className="text-xs p-0 h-auto" onClick={() => navigate("/map")}>Skill Map</Button> });
+        toast({ title: "Skills updated! 🎯", description: `+${xpPerSkill} XP in ${earned.map(e => e.name).join(", ")}`, action: <Button variant="link" className="text-xs p-0 h-auto" onClick={() => navigate("/map")}>Skill Map</Button> });
       } catch (err) {
         console.error("Failed to save completion:", err);
       }
