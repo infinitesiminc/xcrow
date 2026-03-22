@@ -317,7 +317,7 @@ export function WarCouncil({
                     border: "1px solid hsl(var(--primary) / 0.2)",
                   }}
                 >
-                  <Archive className="h-6 w-6 text-primary" />
+                  <span className="text-2xl leading-none">🗝️</span>
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="text-sm font-bold text-foreground mb-0.5 flex items-center gap-2" style={{ fontFamily: "'Cinzel', serif" }}>
