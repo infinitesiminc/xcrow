@@ -86,8 +86,11 @@ const ObjectiveChecklist = ({
   return (
     <div className={compact ? "space-y-1.5" : "space-y-2"}>
       <div className="flex items-center gap-2 mb-1">
-        <Target className="h-3.5 w-3.5 text-primary" />
-        <span className="text-[11px] font-medium uppercase tracking-widest text-muted-foreground">
+        <span className="text-xs">🎯</span>
+        <span
+          className="text-[10px] font-semibold uppercase tracking-wider"
+          style={{ color: "hsl(var(--filigree))", fontFamily: "'Cinzel', serif" }}
+        >
           Quest Objectives · {metCount}/{objectives.length}
         </span>
       </div>
@@ -98,14 +101,16 @@ const ObjectiveChecklist = ({
           <motion.div
             key={obj.id}
             layout
-            className={`flex items-start gap-2 rounded-lg px-2.5 py-1.5 transition-colors ${
-              met ? "bg-success/10" : "bg-accent/20"
-            }`}
+            className="flex items-start gap-2 rounded-lg px-2.5 py-1.5 transition-colors"
+            style={{
+              background: met ? "hsl(142 71% 45% / 0.08)" : "hsl(var(--filigree) / 0.06)",
+              border: `1px solid ${met ? "hsl(142 71% 45% / 0.2)" : "hsl(var(--filigree) / 0.1)"}`,
+            }}
           >
             {met ? (
               <CircleCheck className="h-4 w-4 text-success shrink-0 mt-0.5" />
             ) : (
-              <Circle className="h-4 w-4 text-muted-foreground/40 shrink-0 mt-0.5" />
+              <Circle className="h-4 w-4 shrink-0 mt-0.5" style={{ color: "hsl(var(--filigree) / 0.3)" }} />
             )}
             <div>
               <span className={`text-xs font-medium ${met ? "text-success" : "text-foreground/80"}`}>
