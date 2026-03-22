@@ -265,6 +265,8 @@ export default function Settings() {
                 careerStage={careerStage} setCareerStage={setCareerStage}
                 saving={saving} email={user?.email ?? ""}
                 avatarId={avatarId} setAvatarId={setAvatarId}
+                city={city} setCity={setCity}
+                linkedinUrl={linkedinUrl} setLinkedinUrl={setLinkedinUrl}
                 handleSaveProfile={handleSaveProfile}
               />
             )}
