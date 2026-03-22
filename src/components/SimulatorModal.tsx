@@ -1247,8 +1247,12 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                     const isRecentAi = !isUser && i === messages.length - 2 && messages[messages.length - 1]?.role === "user";
                     const shouldAnimate = isLatestAi && !isRecentAi;
 
+                    // Find the last assistant message index for scroll targeting
+                    const lastAssistantIdx = (() => { for (let j = messages.length - 1; j >= 0; j--) { if (messages[j].role === "assistant") return j; } return -1; })();
+                    const isLastAssistant = !isUser && i === lastAssistantIdx;
+
                     return (
-                      <div key={i} className="space-y-2">
+                      <div key={i} className="space-y-2" ref={isLastAssistant ? lastAiRef : undefined}>
                         <motion.div
                           initial={{ opacity: 0, y: 8 }}
                           animate={{ opacity: 1, y: 0 }}
