@@ -231,7 +231,7 @@ const Index = () => {
   }, [user]);
 
   const handleStartQuest = useCallback((quest: QuestTask) => {
-    const slug = quest.jobTitle.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+    const slug = quest.jobTitle.trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
     navigate(`/role/${slug}?job=${quest.jobId}&task=${encodeURIComponent(quest.clusterName)}`);
   }, [navigate]);
 
