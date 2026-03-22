@@ -256,7 +256,12 @@ const MapPage = () => {
             animate={{ x: 0, opacity: 1 }}
             exit={{ x: "-100%", opacity: 0 }}
             transition={{ type: "spring", damping: 28, stiffness: 300 }}
-            className="absolute top-24 left-4 bottom-20 w-[420px] z-20 flex flex-col bg-card/90 backdrop-blur-xl border border-border/50 rounded-xl shadow-2xl overflow-hidden"
+            className="absolute top-24 left-4 bottom-20 w-[420px] z-20 flex flex-col backdrop-blur-xl rounded-xl overflow-hidden"
+            style={{
+              background: "hsl(var(--surface-stone) / 0.92)",
+              border: "1px solid hsl(var(--filigree) / 0.2)",
+              boxShadow: "0 8px 40px hsl(var(--emboss-shadow)), inset 0 1px 0 hsl(var(--emboss-light))",
+            }}
           >
             {rightPanelTab === "hq" && isSignedIn ? (
               <div className="flex-1 overflow-hidden">
