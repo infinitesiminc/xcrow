@@ -238,6 +238,7 @@ function buildCoachingChatSystem(
   round: number, turnCount: number, mode: string,
   learningObjectives?: any[], objectiveStatus?: Record<string, boolean>,
   scaffoldingTiers?: Record<string, number>,
+  targetObjectiveId?: string,
 ): string {
   // turnCount includes the AI opening message (turn 1), so user's first response is turn 2.
   // The 3-turn cycle should start from the user's first response, not the AI opening.
@@ -251,18 +252,37 @@ function buildCoachingChatSystem(
     const tierMap = scaffoldingTiers || {};
     const met = learningObjectives.filter(o => statusMap[o.id]);
     const unmet = learningObjectives.filter(o => !statusMap[o.id]);
+    
+    // Determine the current target objective
+    const targetObj = targetObjectiveId 
+      ? learningObjectives.find(o => o.id === targetObjectiveId) 
+      : unmet[0];
+    const targetLabel = targetObj ? `"${targetObj.label}" (${targetObj.id})` : "none — all met";
+    
     objectivesContext = `\n\nLEARNING OBJECTIVES FOR THIS SESSION:
 ${learningObjectives.map(o => {
   const tier = tierMap[o.id] || 0;
   const tierLabel = tier === 0 ? "no help given" : tier === 1 ? "nudged" : tier === 2 ? "hinted" : "taught";
-  return `- [${statusMap[o.id] ? "✅ MET" : "⬜ NOT YET"}] ${o.label}: ${o.description} (scaffolding: ${tierLabel})`;
+  const isTarget = targetObj && o.id === targetObj.id ? " ← CURRENT TARGET" : "";
+  return `- [${statusMap[o.id] ? "✅ MET" : "⬜ NOT YET"}] ${o.label} (${o.id}): ${o.description} (scaffolding: ${tierLabel})${isTarget}`;
 }).join("\n")}
-${met.length > 0 ? `\nAlready covered: ${met.map(o => o.label).join(", ")}` : ""}
-${unmet.length > 0 ? `\nStill need to cover: ${unmet.map(o => o.label).join(", ")}` : ""}
+${met.length > 0 ? `\nAlready conquered: ${met.map(o => o.label).join(", ")}` : ""}
+${unmet.length > 0 ? `\nStill need to conquer: ${unmet.map(o => o.label).join(", ")}` : ""}
 
-IMPORTANT: Steer scenarios toward uncovered objectives. When giving feedback, note if the user demonstrated mastery of an objective. If they did, include the tag [OBJECTIVE_MET:objective_id] at the very end of your message (after all visible text). This tag will be parsed programmatically — only include it when the user has clearly demonstrated the skill, not just mentioned it.
+CURRENT TARGET OBJECTIVE: ${targetLabel}
 
-OBJECTIVE COMPLETION: If ALL objectives have been met, include [ALL_OBJECTIVES_MET] at the end of your message. The session can then end early.`;
+MANDATORY OBJECTIVE EVALUATION — YOU MUST DO THIS:
+After your feedback on every user response (posInRound === 0), you MUST evaluate whether the user demonstrated the CURRENT TARGET objective. End your message with EXACTLY ONE of these tags:
+- [OBJ_EVAL:${targetObj?.id || "unknown"}:PASS] — if the user clearly demonstrated the skill described in the objective
+- [OBJ_EVAL:${targetObj?.id || "unknown"}:FAIL] — if they did not yet demonstrate it
+
+Rules for PASS vs FAIL:
+- PASS requires the user to give a SPECIFIC, SUBSTANTIVE answer that directly demonstrates the skill. Mentioning a concept in passing is NOT enough.
+- FAIL is the default. Only mark PASS if there's clear evidence of mastery.
+- These tags are parsed programmatically. Include EXACTLY ONE per feedback turn. No exceptions.
+
+OBJECTIVE COMPLETION: If ALL objectives have been met (including the one you just PASS'd), also include [ALL_OBJECTIVES_MET] at the end.`;
+  }
   }
 
   // ─── 3-Tier Scaffolding Logic ───
