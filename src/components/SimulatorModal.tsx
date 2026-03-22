@@ -453,7 +453,14 @@ const InsightCard = ({ content }: { content: string }) => {
             transition={{ duration: 0.2 }}
             className="overflow-hidden"
           >
-            <div className="rounded-xl bg-accent/20 border border-border/30 px-3 py-2.5 space-y-1.5 text-xs">
+            <div
+              className="rounded-xl px-3 py-2.5 space-y-1.5 text-xs"
+              style={{
+                background: "hsl(var(--surface-stone))",
+                border: "1px solid hsl(var(--filigree) / 0.15)",
+                boxShadow: "inset 0 1px 0 hsl(var(--emboss-light))",
+              }}
+            >
               {aiMatch && (
                 <div className="flex items-start gap-2">
                   <span className="shrink-0">🤖</span>
