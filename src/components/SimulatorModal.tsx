@@ -735,7 +735,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
     setTurnCount(nextTurn);
     scrollToBottom();
     const nextTargetId = session?.learningObjectives?.find(o => !objectiveStatus[o.id])?.id;
-    chatTurn(newMsgs, nextRound, nextTurn, jobTitle, mode, taskMeta, session?.learningObjectives, objectiveStatus, scaffoldingTiers, nextTargetId).then(reply => {
+    chatTurn(newMsgs, nextRound, nextTurn, jobTitle, mode, taskMeta, session?.learningObjectives, objectiveStatus, scaffoldingTiers, nextTargetId, objectiveFailCounts).then(reply => {
       parseObjectiveTags(reply);
       parseScaffoldTags(reply);
       setMessages(prev => [...prev, { role: "assistant", content: reply }]);
