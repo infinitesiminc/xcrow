@@ -298,15 +298,15 @@ export default function MyRolesPanel({ onSelectRole, onAskChat, onTabChange }: M
     (k) => !q || k.title.toLowerCase().includes(q) || (k.company || "").toLowerCase().includes(q)
   );
 
-  // Arsenal: all registry tools + saved state, searchable
+  // Arsenal: all registry tools + saved state, searchable, grouped by company
   const CATEGORY_LABELS: Record<string, string> = {
-    llm: "Language Models", coding: "Coding", productivity: "Productivity",
-    design: "Design", data: "Data & Analytics", writing: "Writing", search: "Search",
+    llm: "LLMs", coding: "Coding", productivity: "Productivity",
+    design: "Design", data: "Data", writing: "Writing", search: "Search",
   };
   const allToolsFiltered = AI_TOOL_REGISTRY.filter(t => {
     if (arsenalFilter === "saved" && !savedToolNames.includes(t.name)) return false;
     if (arsenalFilter !== "all" && arsenalFilter !== "saved" && t.category !== arsenalFilter) return false;
-    if (q && !t.name.toLowerCase().includes(q) && !t.description.toLowerCase().includes(q)) return false;
+    if (q && !t.name.toLowerCase().includes(q) && !t.description.toLowerCase().includes(q) && !t.company.toLowerCase().includes(q)) return false;
     return true;
   });
   // Deduplicate by name (keep first match which is the most specific version)
@@ -316,6 +316,7 @@ export default function MyRolesPanel({ onSelectRole, onAskChat, onTabChange }: M
     seen.add(t.name);
     return true;
   });
+  const companyGroups = groupToolsByCompany(uniqueTools);
 
   const handleRemoveTool = (name: string) => {
     const updated = removeToolFromList(name);
