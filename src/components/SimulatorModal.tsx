@@ -1188,26 +1188,8 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                 </motion.div>
               )}
 
-              {phase === "arena" && (
-                <div className="py-4">
-                  {arenaLoading && !arenaRound ? (
-                    <motion.div
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      className="flex flex-col items-center justify-center py-16"
-                    >
-                      <XcrowLoader size="sm" title="Preparing Prompt Arena…" />
-                    </motion.div>
-                  ) : arenaRound ? (
-                    <PromptArena
-                      round={arenaRound}
-                      roundNumber={arenaRoundNum}
-                      onJudged={handleArenaJudged}
-                      loading={arenaLoading}
-                    />
-                  ) : null}
-                </div>
-              )}
+
+
 
               {phase === "chat" && !error && (
                 <div className="max-w-2xl mx-auto space-y-4">
