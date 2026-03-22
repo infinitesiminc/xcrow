@@ -65,18 +65,29 @@ export default function TypewriterMarkdown({
   // This avoids partial-markdown re-parse flicker entirely.
   const displayed = useMemo(() => content.slice(0, visibleLen), [content, visibleLen]);
 
+  // Snap displayed to nearest markdown boundary to avoid partial `**bol` rendering
+  const snapped = useMemo(() => {
+    if (done) return content;
+    let d = displayed;
+    // If we're mid-way through a bold/italic marker, extend to close it
+    const lastDouble = d.lastIndexOf("**");
+    if (lastDouble !== -1) {
+      // Count how many ** pairs exist — if odd, we're inside unclosed bold
+      const before = d.slice(0, lastDouble);
+      const count = (before.match(/\*\*/g) || []).length;
+      if (count % 2 === 1) {
+        // We're inside a bold span — close it so markdown renders
+        d = d + "**";
+      }
+    }
+    return d;
+  }, [displayed, done, content]);
+
   return (
     <div className="chat-prose max-w-[92%]">
-      {done ? (
-        <ReactMarkdown components={components}>{content}</ReactMarkdown>
-      ) : (
-        <>
-          {/* Render as whitespace-preserving text during animation to avoid markdown re-parse flicker */}
-          <div className="whitespace-pre-wrap break-words text-sm leading-relaxed">
-            {displayed}
-            <span className="inline-block w-1.5 h-4 bg-primary/60 animate-pulse ml-0.5 align-text-bottom rounded-sm" />
-          </div>
-        </>
+      <ReactMarkdown components={components}>{snapped}</ReactMarkdown>
+      {!done && (
+        <span className="inline-block w-1.5 h-4 bg-primary/60 animate-pulse ml-0.5 align-text-bottom rounded-sm" />
       )}
     </div>
   );
