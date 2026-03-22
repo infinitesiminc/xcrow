@@ -62,7 +62,7 @@ export default function XcrowLoader({
           transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
         >
           <div
-            className="rounded-full bg-primary/20 blur-xl"
+            className="rounded-full bg-muted-foreground/10 blur-xl"
             style={{ width: imgSize * 0.8, height: imgSize * 0.8 }}
           />
         </motion.div>
