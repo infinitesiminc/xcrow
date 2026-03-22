@@ -899,6 +899,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
           adaptive_thinking_score: scores?.categories.find(c => c.name === "Adaptive Thinking")?.score ?? null,
           domain_judgment_score: scores?.categories.find(c => c.name === "Domain Judgment")?.score ?? null,
           skills_earned: skillsEarnedData,
+          sim_level: level ?? 1,
         } as any);
         onCompleted?.();
         // Increment usage counter for free tier
