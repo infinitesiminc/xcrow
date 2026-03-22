@@ -1186,6 +1186,9 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                           initial={{ opacity: 0, y: 8 }}
                           animate={{ opacity: 1, y: 0 }}
                           transition={{ duration: 0.25 }}
+                          className="space-y-2"
+                        >
+                        <div className={`flex ${isUser ? "justify-end" : "justify-start"}`}>
                           {isUser ? (
                             <div
                               className="max-w-[80%] rounded-2xl rounded-br-md px-4 py-2.5"
@@ -1227,6 +1230,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                         {/* Collapsible insight card */}
                         {!isUser && <InsightCard content={msg.content} />}
                       </motion.div>
+                    </div>
                     );
                   })}
 
