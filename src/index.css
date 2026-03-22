@@ -54,19 +54,37 @@
     --brand-human: 217 91% 60%;
     --brand-mid: 262 83% 58%;
 
-    /* 7-stop AI-exposure spectrum: blue → teal → green → purple → amber → orange → pink */
-    --spectrum-0: 217 91% 60%;   /* Blue   — Human-Led     (0–14%)  */
-    --spectrum-1: 185 80% 48%;   /* Teal   — Low Exposure   (15–24%) */
-    --spectrum-2: 152 60% 45%;   /* Green  — Emerging       (25–34%) */
-    --spectrum-3: 262 83% 58%;   /* Purple — Moderate       (35–49%) */
-    --spectrum-4: 38 92% 50%;    /* Amber  — Notable        (50–59%) */
-    --spectrum-5: 20 90% 55%;    /* Orange — High           (60–69%) */
-    --spectrum-6: 330 90% 60%;   /* Pink   — Critical       (70%+)   */
+    /* 7-stop AI-exposure spectrum */
+    --spectrum-0: 217 91% 60%;
+    --spectrum-1: 185 80% 48%;
+    --spectrum-2: 152 60% 45%;
+    --spectrum-3: 262 83% 58%;
+    --spectrum-4: 38 92% 50%;
+    --spectrum-5: 20 90% 55%;
+    --spectrum-6: 330 90% 60%;
 
     --dot-blue: 217 91% 60%;
     --dot-teal: 185 95% 50%;
     --dot-purple: 262 83% 58%;
     --dot-amber: 38 80% 55%;
+
+    /* ── 8 Territory Colors ── */
+    --territory-technical:   262 83% 58%;   /* Amethyst — Circuit Peaks     */
+    --territory-analytical:  210 80% 55%;   /* Sapphire — Data Highlands    */
+    --territory-strategic:   45  85% 50%;   /* Gold     — Command Summit    */
+    --territory-communication: 152 60% 45%; /* Emerald  — Bridge Isles      */
+    --territory-leadership:  30  90% 55%;   /* Amber    — Crown Heights     */
+    --territory-creative:    340 75% 55%;   /* Ruby     — Prism Coast       */
+    --territory-ethics:      175 70% 42%;   /* Jade     — Sentinel Watch    */
+    --territory-humanedge:   285 70% 60%;   /* Orchid   — Soul Springs      */
+
+    /* ── Fantasy surface tokens ── */
+    --surface-stone: 240 6% 92%;
+    --surface-parchment: 38 30% 94%;
+    --filigree: 38 50% 65%;
+    --filigree-glow: 38 60% 50%;
+    --emboss-light: 0 0% 100% / 0.08;
+    --emboss-shadow: 0 0% 0% / 0.15;
 
     --sidebar-background: 240 5% 95%;
     --sidebar-foreground: 240 10% 20%;
