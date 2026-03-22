@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Zap, CheckCircle2, XCircle, Sparkles, ArrowRight } from "lucide-react";
+import { Zap, CheckCircle2, XCircle, Sparkles, ArrowRight, Trophy, ShieldX } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import ReactMarkdown from "react-markdown";
 import TypewriterMarkdown from "@/components/TypewriterMarkdown";
@@ -207,22 +207,63 @@ const PromptArena = ({ round, roundNumber, onJudged, loading }: PromptArenaProps
                 </div>
               )}
 
-              {/* Result badge */}
+              {/* Result badge — ceremonial */}
               {showResult && (
-                <div className={`px-4 py-2.5 flex items-center gap-2 text-sm font-medium ${
-                  isBetter ? "text-success bg-success/5" : "text-muted-foreground bg-muted/30"
-                }`}>
-                  {isBetter ? <CheckCircle2 className="h-4 w-4" /> : null}
-                  {isBetter ? "Better approach" : "Less effective"}
-                  {isPicked && (
-                    <span className="ml-auto text-xs font-bold px-2 py-0.5 rounded" style={{
-                      background: correct ? "hsl(142 71% 45% / 0.15)" : "hsl(0 84% 60% / 0.15)",
-                      color: correct ? "hsl(142 71% 45%)" : "hsl(0 84% 60%)",
-                    }}>
-                      Your pick
-                    </span>
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.8, y: 8 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  transition={{ type: "spring", stiffness: 300, damping: 20, delay: 0.15 }}
+                  className="px-4 py-3 flex items-center gap-3"
+                  style={{
+                    background: isBetter
+                      ? "linear-gradient(135deg, hsl(142 71% 45% / 0.12), hsl(142 71% 45% / 0.04))"
+                      : "hsl(var(--muted) / 0.4)",
+                    borderTop: isBetter
+                      ? "2px solid hsl(142 71% 45% / 0.5)"
+                      : "1px solid hsl(var(--filigree) / 0.1)",
+                  }}
+                >
+                  {isBetter ? (
+                    <motion.div
+                      initial={{ rotate: -20, scale: 0 }}
+                      animate={{ rotate: 0, scale: 1 }}
+                      transition={{ type: "spring", stiffness: 400, damping: 15, delay: 0.3 }}
+                    >
+                      <Trophy className="h-6 w-6" style={{ color: "hsl(45 93% 47%)", filter: "drop-shadow(0 0 6px hsl(45 93% 47% / 0.5))" }} />
+                    </motion.div>
+                  ) : (
+                    <ShieldX className="h-5 w-5 text-muted-foreground/60" />
                   )}
-                </div>
+                  <div className="flex-1">
+                    <p className={`text-[15px] font-bold tracking-wide ${isBetter ? "" : "text-muted-foreground"}`}
+                      style={{
+                        fontFamily: "'Cinzel', serif",
+                        color: isBetter ? "hsl(142 71% 45%)" : undefined,
+                      }}
+                    >
+                      {isBetter ? "🏆 Superior Approach" : "Less Effective"}
+                    </p>
+                    {isBetter && (
+                      <p className="text-xs text-foreground/60 mt-0.5">This prompt technique won the round</p>
+                    )}
+                  </div>
+                  {isPicked && (
+                    <motion.span
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      transition={{ type: "spring", stiffness: 500, damping: 20, delay: 0.4 }}
+                      className="text-sm font-bold px-3 py-1.5 rounded-full"
+                      style={{
+                        background: correct ? "hsl(142 71% 45% / 0.2)" : "hsl(0 84% 60% / 0.2)",
+                        color: correct ? "hsl(142 71% 45%)" : "hsl(0 84% 60%)",
+                        border: `1px solid ${correct ? "hsl(142 71% 45% / 0.4)" : "hsl(0 84% 60% / 0.4)"}`,
+                        fontFamily: "'Cinzel', serif",
+                      }}
+                    >
+                      {correct ? "✓ Your Pick" : "✗ Your Pick"}
+                    </motion.span>
+                  )}
+                </motion.div>
               )}
             </motion.div>
           );
