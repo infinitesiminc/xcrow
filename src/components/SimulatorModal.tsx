@@ -1178,7 +1178,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                                 fontFamily: "'Cinzel', serif",
                               }}
                             >
-                              ⚡ New Wave
+                              ⚡ New Quest
                             </span>
                             <div className="flex-1 h-px" style={{ background: "linear-gradient(90deg, transparent, hsl(var(--filigree) / 0.4), transparent)" }} />
                           </motion.div>
