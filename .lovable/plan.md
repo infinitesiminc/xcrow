@@ -1,64 +1,46 @@
-## Profile & Settings Page — Scope Alignment
+## XP System Redesign — IMPLEMENTED
 
-### Current State
+### What Changed
 
-The Settings page (`/settings`) has three sections: **Profile**, **Security**, and **Danger Zone**. The Profile section includes avatar picker, display name, username/public profile URL, career stage toggle, job title, company, school, LinkedIn, and CV upload. There's also a separate `ProfileSheet` slide-over panel (used from Navbar) that shows journey stats, milestones, and saved roles.
+#### Skill Level Thresholds (per-skill XP → castle tier)
+| Level | XP | Castle Visual |
+|-------|-----|--------------|
+| Novice | 0 | 🏚️ Ruins |
+| Apprentice | 150 | 🏕️ Outpost (claimed!) |
+| Adept | 500 | 🏰 Fortress |
+| Master | 1200 | ⚔️ Citadel |
+| Grandmaster | 2500 | ✨ Citadel+Glow |
 
-### What to Change
+#### Player Tiers (aggregate total XP)
+| Tier | Total XP |
+|------|----------|
+| Recruit | 0 |
+| Explorer | 500 |
+| Strategist | 3,000 |
+| Commander | 10,000 |
+| Legend | 30,000 |
 
-For an RPG skill-quest platform, the Settings page has too many traditional "job board" fields that don't match the game-first identity. Here's the recommended simplification:
-
-#### 1. Remove fields that don't serve current scope
-
-- **LinkedIn URL** — not relevant to gameplay
-- **CV / Resume upload** — this is a job-board feature, not an RPG platform feature
-- **Company** — only useful if user is "professional"; keep but make less prominent
-- **Public profile username** — keep, this is good for sharing territory
-
-#### 2. Keep and enhance
-
-- **Avatar picker** — core RPG feature, already implemented
-- **Display name** — essential
-- **Career stage toggle** (student/professional) — drives content personalization
-- **Job title / Target role** — needed for quest recommendations
-- **School** — needed for student flow, autocomplete from our school database or can add custom
-
-#### 3. Add a "Subscription" section
-
-- Show current plan (Free / Pro / School) with badge
-- Link to manage subscription (Stripe portal) or upgrade CTA
-
-#### 4. Deprecate ProfileSheet
-
-- The `ProfileSheet` slide-over duplicates journey stats that belong on the dashboard (`/` Index page), not in a profile drawer
-- Replace the Navbar avatar click with a simple dropdown: **Settings**, **Sign out**
-- Journey stats (roles explored, tasks practiced, milestones) already live on the dashboard
-
-### Summary of Settings sections after cleanup
-
-```text
-Settings
-├── Profile
-│   ├── Avatar picker (10 mascots)
-│   ├── Display name
-│   ├── Username (public profile URL)
-│   ├── Career stage (student / professional)
-│   ├── Job title or Target role
-│   ├── School (if student)
-│   └── Save button
-├── Subscription
-│   ├── Current plan badge
-│   └── Manage / Upgrade button
-├── Security
-│   └── Change password
-└── Danger Zone
-    └── Delete account
+#### XP Formula (per skill per simulation)
+```
+Base: 40 XP
+Score multiplier: × (overallScore / 50) → 0x to 2x
+Context bonus: +20 XP (new job context)
+Max: 100 XP per skill per sim
 ```
 
-### Files to modify
+### Files Modified
+- `src/lib/castle-levels.ts` — New thresholds (150/500/1200/2500), added Grandmaster tier, added `calculateSkillXP()`
+- `src/lib/skill-map.ts` — Updated LEVELS to 5 tiers (Novice→Grandmaster), legacy fallback uses 40 XP base
+- `src/components/territory/CompactHUD.tsx` — Player tiers: Recruit/Explorer/Strategist/Commander/Legend
+- `src/components/journey/PlayerHUD.tsx` — Same player tier update
+- `src/components/SimulatorModal.tsx` — Score-based XP formula replaces flat 100
+- `src/pages/Index.tsx` — Added grandmaster to tier maps
+- `src/pages/PublicProfile.tsx` — Added grandmaster to tier maps
+- `src/pages/MapPage.tsx` — Updated "Beginner" → "Novice"
+- `src/components/territory/MyRolesPanel.tsx` — Added grandmaster to tier colors
 
-- `**src/pages/Settings.tsx**` — Remove LinkedIn, CV upload fields; add Subscription section
-- `**src/components/ProfileSheet.tsx**` — Can be deprecated (remove file) or kept minimal
-- `**src/components/Navbar.tsx**` — Simplify avatar click behavior (dropdown instead of ProfileSheet)
-
-### No database changes needed
+### Still TODO (future iterations)
+- Wire canonical_future_skills (183 skills) as primary skill source instead of legacy 30-skill SKILL_TAXONOMY
+- Match simulation XP to canonical skill IDs via job_future_skills linkage
+- Show per-skill XP on Territory Map nodes
+- Retire `src/hooks/use-skills.ts` and old `SKILL_TAXONOMY`
