@@ -518,6 +518,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
   const inactivityTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const { user, isPro } = useAuth();
+  const toolMentionComponents = useToolMentionComponents();
   const { toast } = useToast();
   const { setSimActive } = useChatContext();
 
