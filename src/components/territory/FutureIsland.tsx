@@ -111,7 +111,7 @@ export default function FutureIsland({ island, skillLookup, level2SkillIds, isFo
         style={{
           fontSize: "11px",
           fontWeight: 600,
-          fill: `hsl(${theme.baseHue} 25% 50%)`,
+          fill: isParchment ? `hsl(${theme.baseHue} 30% 35%)` : `hsl(${theme.baseHue} 25% 50%)`,
           pointerEvents: "none",
         }}
       >
