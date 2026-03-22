@@ -21,6 +21,7 @@ import type { RoleResult } from "@/components/InlineRoleCarousel";
 import type { EdgeContext } from "@/components/HumanEdgesCard";
 
 import CompactHUD from "@/components/territory/CompactHUD";
+import HQPanel from "@/components/territory/HQPanel";
 import MyRolesPanel from "@/components/territory/MyRolesPanel";
 import { useSkills } from "@/hooks/use-skills";
 import {
