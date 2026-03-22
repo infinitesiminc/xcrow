@@ -19,6 +19,7 @@ import SkillDetailDrawer from "./SkillDetailDrawer";
 interface FutureTerritoryMapProps {
   skills: FutureSkill[];
   focusSkillId?: string | null;
+  level2SkillIds?: Set<string>;
 }
 
 const ISLAND_COLORS: Record<string, string> = {
@@ -32,7 +33,7 @@ const ISLAND_COLORS: Record<string, string> = {
   "Communication & Collaboration": "hsl(var(--primary))",
 };
 
-export default function FutureTerritoryMap({ skills, focusSkillId }: FutureTerritoryMapProps) {
+export default function FutureTerritoryMap({ skills, focusSkillId, level2SkillIds }: FutureTerritoryMapProps) {
   const layout = useMemo(() => buildFutureMapLayout(skills), [skills]);
   const connections = useMemo(() => buildFutureConnections(layout), [layout]);
 
@@ -242,6 +243,7 @@ export default function FutureTerritoryMap({ skills, focusSkillId }: FutureTerri
 
           {layout.map(island => (
             <FutureIsland key={island.category} island={island} skillLookup={skillLookup}
+              level2SkillIds={level2SkillIds}
               isFocused={focusedIsland === island.category} highlightedSkillId={highlightedSkillId}
               onIslandClick={handleIslandClick} onSkillClick={handleSkillClick} />
           ))}
