@@ -245,12 +245,14 @@ export default function SkillDetailDrawer({
               unlocked={level2Unlocked}
               unlockRequirement={!level2Unlocked ? `${Math.max(0, 3 - level1SimsCompleted)} more quests to unlock` : undefined}
               prominent
-              onStart={level2Unlocked && roles.length > 0 ? () => {
+              startLabel={level2Unlocked ? "⚔️ Start Level 2" : "⚡ Try Level 2 Preview"}
+              onStart={roles.length > 0 ? () => {
                 onOpenChange(false);
                 const r = roles[0];
                 navigate(`/role/${encodeURIComponent(r.title)}${r.company ? `?company=${encodeURIComponent(r.company)}&level=2` : "?level=2"}`);
               } : undefined}
             />
+
           </div>
 
           {/* ── Stats row ── */}
@@ -333,6 +335,7 @@ function TrackCard({
   simsCount,
   prominent,
   onStart,
+  startLabel,
 }: {
   icon: React.ReactNode;
   label: string;
@@ -345,6 +348,7 @@ function TrackCard({
   simsCount?: number;
   prominent?: boolean;
   onStart?: () => void;
+  startLabel?: string;
 }) {
   const pct = Math.min(100, Math.round((xp / maxXp) * 100));
 
@@ -433,27 +437,43 @@ function TrackCard({
               className="w-full py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all hover:brightness-110"
               style={{
                 background: `linear-gradient(135deg, ${color}, ${color}cc)`,
-                color: "hsl(var(--card))",
+                color: "hsl(var(--foreground))",
                 boxShadow: `0 2px 10px ${color}40`,
                 fontFamily: "'Cinzel', serif",
               }}
             >
-              ⚔️ Start Quest
+              {startLabel || "⚔️ Start Quest"}
             </button>
           )}
         </div>
       ) : (
-        unlockRequirement && (
-          <div
-            className="flex items-center gap-1.5 px-2 py-1.5 rounded-md mt-1"
-            style={{ background: "hsl(var(--muted) / 0.2)" }}
-          >
-            <Lock className="h-3 w-3 text-muted-foreground" />
-            <p className="text-[11px] text-muted-foreground font-medium">
-              {unlockRequirement}
-            </p>
-          </div>
-        )
+        <div className="space-y-2">
+          {unlockRequirement && (
+            <div
+              className="flex items-center gap-1.5 px-2 py-1.5 rounded-md mt-1"
+              style={{ background: "hsl(var(--muted) / 0.2)" }}
+            >
+              <Lock className="h-3 w-3 text-muted-foreground" />
+              <p className="text-[11px] text-muted-foreground font-medium">
+                {unlockRequirement}
+              </p>
+            </div>
+          )}
+          {onStart && (
+            <button
+              onClick={onStart}
+              className="w-full py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all hover:brightness-110"
+              style={{
+                background: `linear-gradient(135deg, ${color}, ${color}cc)`,
+                color: "hsl(var(--foreground))",
+                boxShadow: `0 2px 10px ${color}40`,
+                fontFamily: "'Cinzel', serif",
+              }}
+            >
+              {startLabel || "⚡ Try Preview"}
+            </button>
+          )}
+        </div>
       )}
     </div>
   );
