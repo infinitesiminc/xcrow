@@ -87,10 +87,7 @@ function KingdomCard({
         border: `1px solid ${TIER_BORDER[castle.tier]}`,
         boxShadow: "inset 0 1px 0 hsl(var(--emboss-light)), 0 2px 6px hsl(var(--emboss-shadow))",
       }}
-      onClick={() => {
-        const url = `/role/${encodeURIComponent(kingdom.title)}${kingdom.company ? `?company=${encodeURIComponent(kingdom.company)}` : ""}`;
-        onSelect(url);
-      }}
+      onClick={() => navigate(`/role/${encodeURIComponent(kingdom.title)}${kingdom.company ? `?company=${encodeURIComponent(kingdom.company)}` : ""}`)}
     >
       {/* Header: Castle emoji + title */}
       <div className="flex items-start gap-2.5 mb-2">
