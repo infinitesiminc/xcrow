@@ -272,7 +272,7 @@ export default function PublicProfile() {
             <Card className="bg-card/60 border-border/40">
               <CardContent className="p-5">
                 <h2 className="text-sm font-bold text-foreground mb-4 flex items-center gap-2">
-                  ⚔️ Top Skills
+                  💎 Top Skills
                 </h2>
                 <div className="space-y-3">
                   {Array.from(skillXpMap.entries())

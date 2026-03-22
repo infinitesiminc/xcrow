@@ -255,7 +255,7 @@ const Analysis = () => {
           <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-accent">
             <Zap className="h-6 w-6 text-primary animate-pulse" />
           </div>
-          <h1 className="text-xl font-sans font-bold text-foreground">⚔️ Scouting {jobTitle || "kingdom"}...</h1>
+          <h1 className="text-xl font-sans font-bold text-foreground">🧭 Scouting {jobTitle || "kingdom"}...</h1>
           <p className="mt-2 text-sm text-muted-foreground">Preparing your mission briefing</p>
           <div className="mt-8 space-y-3 w-full max-w-sm">
             {[1, 2, 3].map(i => <Skeleton key={i} className="h-16 w-full rounded-xl" />)}
@@ -290,7 +290,7 @@ const Analysis = () => {
           <ChevronLeft className="h-4 w-4" /> HQ
         </button>
         <div className="text-center">
-          <span className="text-[8px] uppercase tracking-wider text-primary font-semibold block">⚔️ Mission</span>
+          <span className="text-[8px] uppercase tracking-wider text-primary font-semibold block">🗺️ Mission</span>
           <span className="text-sm font-semibold text-foreground truncate max-w-[200px] block">{result.jobTitle}</span>
         </div>
         <button
@@ -349,7 +349,7 @@ const Analysis = () => {
                     <TaskIcon className="h-5 w-5" style={{ color: `hsl(${taskHue} 60% 65%)` }} />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">⚔️ Active quest</p>
+                    <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">🎯 Active quest</p>
                     <h3 className="text-base font-semibold text-foreground leading-snug">{focusedTask.name}</h3>
                   </div>
                   <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full shrink-0 ${style.badge}`}>{aiScore}%</span>
@@ -367,7 +367,7 @@ const Analysis = () => {
 
                 <div className="flex items-center gap-2">
                   <Button size="sm" variant={done ? "secondary" : "default"} className="h-8 rounded-full gap-1.5" onClick={() => setSimTask(focusedTask)}>
-                    <Play className="h-3.5 w-3.5" /> {done ? "Retry Quest" : "⚔️ Accept Quest"}
+                    <Play className="h-3.5 w-3.5" /> {done ? "Retry Quest" : "📜 Accept Quest"}
                   </Button>
                   <Button size="sm" variant="ghost" className="h-8 rounded-full text-xs" onClick={() => setShowAllTasks(true)}>
                     Full quest log <ArrowRight className="h-3 w-3" />
@@ -381,7 +381,7 @@ const Analysis = () => {
         {(!focusedTask || showAllTasks) && (
           <>
             {/* Task cards */}
-            <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">⚔️ Quest Log</h3>
+            <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">📜 Quest Log</h3>
             <div className="space-y-3 pb-8">
               {sortedTasks.map((task, i) => {
                 const aiScore = task.aiExposureScore ?? 50;

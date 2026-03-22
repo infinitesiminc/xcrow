@@ -286,7 +286,7 @@ const RoleDeepDive = () => {
         <DialogContent className="max-w-5xl w-[95vw] h-[85vh] p-0 gap-0 overflow-hidden rounded-2xl border-border/60 bg-background">
           <div className="h-full flex flex-col items-center justify-center px-4">
             <XcrowLoader
-              title={`⚔️ Scouting ${jobTitle || "kingdom"}…`}
+              title={`🧭 Scouting ${jobTitle || "kingdom"}…`}
               subtitle="Preparing your mission briefing"
             />
           </div>
@@ -324,7 +324,7 @@ const RoleDeepDive = () => {
               <ChevronLeft className="h-3.5 w-3.5" /> Back
             </button>
             <div className="text-center min-w-0 flex-1">
-              <span className="text-[10px] uppercase tracking-wider text-primary font-semibold">⚔️ Mission Briefing</span>
+              <span className="text-[10px] uppercase tracking-wider text-primary font-semibold">🗺️ Mission Briefing</span>
               <span className="text-sm font-semibold text-foreground truncate block">{result.jobTitle.trim()}</span>
               {company && <span className="text-[10px] text-muted-foreground">Kingdom of {company}</span>}
             </div>

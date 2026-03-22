@@ -4,7 +4,7 @@
  */
 import { useEffect, useState, useMemo } from "react";
 import { motion } from "framer-motion";
-import { Swords, Shield, Flame, Star, ChevronRight, Sparkles } from "lucide-react";
+import { Swords, Shield, Flame, Star, ChevronRight, Sparkles, Target } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
@@ -102,14 +102,14 @@ export default function QuestBoard() {
       {queue.length > 0 && (
         <div>
           <div className="flex items-center gap-2 mb-2.5">
-            <Swords className="h-3.5 w-3.5 text-warning" />
+            <Target className="h-3.5 w-3.5 text-warning" />
             <h3 className="text-xs font-bold uppercase tracking-wider text-warning">
               Active Quests
             </h3>
           </div>
           <div className="space-y-2">
             {queue.slice(0, 3).map((q, i) => {
-              const Icon = CATEGORY_ICONS[q.weakCategory] || Swords;
+              const Icon = CATEGORY_ICONS[q.weakCategory] || Star;
               const diffColor = DIFFICULTY_COLORS[Math.min(q.attemptNumber - 1, 2)];
               return (
                 <motion.button

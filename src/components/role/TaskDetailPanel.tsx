@@ -128,7 +128,7 @@ export function TaskDetailPanel({
       <div className="flex items-start justify-between gap-2 mb-4">
         <div className="min-w-0">
           <h3 className="text-sm font-bold text-foreground flex items-center gap-1.5">
-            <span className="text-xs font-bold text-muted-foreground/60 tabular-nums">{index != null ? `${index + 1}.` : "⚔️"}</span>
+            <span className="text-xs font-bold text-muted-foreground/60 tabular-nums">{index != null ? `${index + 1}.` : "📜"}</span>
             {task.name}
           </h3>
           {task.description && (
@@ -370,10 +370,10 @@ export function TaskDetailPanel({
         >
           <Play className="h-3 w-3" />
           {intelComplete
-            ? "⚔️ Begin Battle — Intel Advantage Active"
+            ? "🗡️ Begin Battle — Intel Advantage Active"
             : isCompleted
               ? "🔄 Retry Quest"
-              : "⚔️ Accept Quest"}
+              : "📜 Accept Quest"}
         </Button>
       </div>
     </motion.div>

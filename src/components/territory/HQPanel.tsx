@@ -239,7 +239,7 @@ export default function HQPanel({ onSelectRole }: HQPanelProps) {
             textShadow: "0 0 16px hsl(var(--filigree-glow) / 0.3)",
           }}
         >
-          {greeting}{userName ? `, ${userName}` : ""} ⚔️
+          {greeting}{userName ? `, ${userName}` : ""} 🏰
         </h2>
         <p className="text-[11px] text-muted-foreground mt-0.5">
           {nextQuest
