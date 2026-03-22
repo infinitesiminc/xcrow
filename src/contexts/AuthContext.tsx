@@ -96,6 +96,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         careerStage: row.career_stage ?? 'professional',
         cvUrl: row.cv_url ?? null,
         programName: row.program_name ?? null,
+        avatarId: row.avatar_id ?? null,
       });
     }
   }, []);
