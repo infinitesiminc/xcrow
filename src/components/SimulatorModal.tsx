@@ -1580,6 +1580,17 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                       </Button>
                     )}
 
+                    {/* Next Battle — return to kingdom chooser */}
+                    {onNextBattle && campaignStats && campaignStats.conquered + 1 < campaignStats.total && (
+                      <Button
+                        variant="outline"
+                        onClick={() => { onClose(); onNextBattle(); }}
+                        className="gap-2 rounded-xl w-full text-xs"
+                      >
+                        <Swords className="h-3 w-3" /> ⚔️ Next Battle ({campaignStats.total - campaignStats.conquered - 1} remain)
+                      </Button>
+                    )}
+
                     {/* View Territory — auto-pan to upgraded castle */}
                     {onViewTerritory && currentSkillIds.length > 0 && (
                       <Button
