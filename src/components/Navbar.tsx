@@ -20,6 +20,26 @@ export default function Navbar() {
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
 
+  // Parchment mode toggle
+  const [parchment, setParchment] = useState(() => {
+    return localStorage.getItem("xcrow-theme") === "parchment";
+  });
+
+  useEffect(() => {
+    const root = document.documentElement;
+    if (parchment) {
+      root.classList.add("parchment");
+      root.classList.remove("dark");
+      root.style.colorScheme = "light";
+      localStorage.setItem("xcrow-theme", "parchment");
+    } else {
+      root.classList.remove("parchment");
+      root.classList.add("dark");
+      root.style.colorScheme = "dark";
+      localStorage.setItem("xcrow-theme", "dark");
+    }
+  }, [parchment]);
+
   const isActive = (path: string) => location.pathname === path;
 
   const initials = user?.user_metadata?.display_name
