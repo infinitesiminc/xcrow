@@ -59,6 +59,12 @@ interface SimulatorModalProps {
   inline?: boolean;
   /** When set, unauthenticated users are capped at this many user turns before seeing a CTA */
   guestMaxTurns?: number;
+  /** Intel gathered from War Council pre-battle prep */
+  intelContext?: import("@/lib/simulator").IntelContext;
+  /** Return to battle chooser within same kingdom */
+  onNextBattle?: () => void;
+  /** Campaign stats for post-sim debrief */
+  campaignStats?: { conquered: number; total: number; sessionXP: number };
 }
 
 /* ── Objective Checklist (sidebar / inline) ── */
