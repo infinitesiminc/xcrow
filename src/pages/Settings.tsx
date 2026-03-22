@@ -260,6 +260,7 @@ export default function Settings() {
   const initials = profile?.displayName
     ? profile.displayName.slice(0, 2).toUpperCase()
     : (user?.email ?? "").slice(0, 2).toUpperCase();
+  const sidebarAvatar = getAvatarById(avatarId);
 
   return (
     <div className="settings-page min-h-[100dvh] bg-background flex">
