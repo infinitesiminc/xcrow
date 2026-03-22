@@ -37,6 +37,9 @@ interface ChatContextValue {
   onRolesFoundRef: React.MutableRefObject<((roles: RoleResult[]) => void) | null>;
   onRoleSelectRef: React.MutableRefObject<((role: RoleResult) => void) | null>;
   hasInteracted: boolean;
+  /** When true, the AI Coach button is hidden (e.g. during simulations) */
+  simActive: boolean;
+  setSimActive: (active: boolean) => void;
 }
 
 const ChatContext = createContext<ChatContextValue | null>(null);
@@ -68,6 +71,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   const [isStreaming, setIsStreaming] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [hasInteracted, setHasInteracted] = useState(false);
+  const [simActive, setSimActive] = useState(false);
   const [viewCtx, setViewCtx] = useState<ViewContext>({ page: "home" });
   const [loaded, setLoaded] = useState(false);
 
@@ -316,6 +320,8 @@ export function ChatProvider({ children }: { children: ReactNode }) {
         onRolesFoundRef,
         onRoleSelectRef,
         hasInteracted,
+        simActive,
+        setSimActive,
       }}
     >
       {children}

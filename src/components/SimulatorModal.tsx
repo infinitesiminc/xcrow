@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
+import { useChatContext } from "@/contexts/ChatContext";
 import { motion, AnimatePresence } from "framer-motion";
 import { Send, Loader2, RotateCcw, ChevronDown, ChevronUp, CheckCircle2, X, ArrowRight, Target, Circle, CircleCheck, AlertTriangle, TrendingUp, Trophy, Zap, Map, Star, Lock, Unlock, Sparkles } from "lucide-react";
 import { matchTaskToSkills, SKILL_TAXONOMY, XP_PER_SIM, getLevel, getNextLevel, type SkillXP } from "@/lib/skill-map";
@@ -478,6 +479,13 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
   const scrollRef = useRef<HTMLDivElement>(null);
   const { user, isPro } = useAuth();
   const { toast } = useToast();
+  const { setSimActive } = useChatContext();
+
+  // Hide AI Coach when simulation is active
+  useEffect(() => {
+    if (open) setSimActive(true);
+    return () => setSimActive(false);
+  }, [open, setSimActive]);
   const navigate = useNavigate();
   const simGate = useUsageGate("simulation");
   const [showUpgrade, setShowUpgrade] = useState(false);
