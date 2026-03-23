@@ -17,6 +17,52 @@ import { RadarChart, PolarGrid, PolarAngleAxis, Radar, ResponsiveContainer } fro
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 import type { CanonicalSkillGrowth } from "@/pages/MapPage";
 
+/* ── Skill Icon URL helper ── */
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+function getSkillIconUrl(skillId: string): string {
+  return `${SUPABASE_URL}/storage/v1/object/public/sim-images/skill-icon-${skillId}.png`;
+}
+
+/** Tracks which skill icons actually exist (checked via HEAD) */
+const iconExistsCache = new Map<string, boolean>();
+function useSkillIconExists(skillId: string) {
+  const [exists, setExists] = useState<boolean>(iconExistsCache.get(skillId) ?? false);
+  useEffect(() => {
+    if (iconExistsCache.has(skillId)) {
+      setExists(iconExistsCache.get(skillId)!);
+      return;
+    }
+    const url = getSkillIconUrl(skillId);
+    fetch(url, { method: "HEAD" })
+      .then(r => {
+        iconExistsCache.set(skillId, r.ok);
+        setExists(r.ok);
+      })
+      .catch(() => {
+        iconExistsCache.set(skillId, false);
+        setExists(false);
+      });
+  }, [skillId]);
+  return exists;
+}
+
+/** Inline skill icon component — falls back to emoji */
+function SkillIcon({ skill }: { skill: FutureSkill }) {
+  const hasIcon = useSkillIconExists(skill.id);
+  if (hasIcon) {
+    return (
+      <img
+        src={getSkillIconUrl(skill.id)}
+        alt={skill.name}
+        className="w-6 h-6 rounded-sm object-cover shrink-0"
+        loading="lazy"
+        onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+      />
+    );
+  }
+  return skill.iconEmoji ? <span className="text-sm shrink-0">{skill.iconEmoji}</span> : null;
+}
+
 type SortKey = "name" | "category" | "xp";
 type FilterMode = "all" | "bookmarked" | "practiced";
 
@@ -460,7 +506,7 @@ export default function FutureSkillsTable({ skills, onSkillClick, skillGrowthMap
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-1.5">
                           {isBookmarked && <span className="text-[8px]" style={{ color: "hsl(var(--filigree-glow))" }}>⭐</span>}
-                          {skill.iconEmoji && <span className="text-sm">{skill.iconEmoji}</span>}
+                          <SkillIcon skill={skill} />
                           <span className="font-medium text-foreground truncate text-xs">{skill.name}</span>
                         </div>
                         <div className="flex items-center gap-1.5 mt-0.5">
