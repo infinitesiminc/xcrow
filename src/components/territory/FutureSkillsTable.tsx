@@ -57,6 +57,7 @@ export default function FutureSkillsTable({ skills, onSkillClick, skillGrowthMap
   const [expandedSkillId, setExpandedSkillId] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const rowRefs = useRef<Map<string, HTMLTableRowElement>>(new Map());
+  const programmaticScroll = useRef(false);
 
   const toggleBookmark = useCallback((skillId: string, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -86,17 +87,31 @@ export default function FutureSkillsTable({ skills, onSkillClick, skillGrowthMap
   // Handle focus from map click — scroll to skill + expand it
   useEffect(() => {
     if (!focusSkillId) return;
-    // Clear domain filter so the skill is visible
     setDomainFilter(null);
     setFilterMode("all");
     setSearch("");
     setExpandedSkillId(focusSkillId);
-    // Scroll after render
+    // Mark as programmatic so scroll listener doesn't clear it
+    programmaticScroll.current = true;
     requestAnimationFrame(() => {
       const row = rowRefs.current.get(focusSkillId);
       row?.scrollIntoView({ behavior: "smooth", block: "center" });
+      // Allow programmatic scroll to finish before re-enabling user scroll detection
+      setTimeout(() => { programmaticScroll.current = false; }, 600);
     });
   }, [focusSkillId]);
+
+  // Clear highlight/dim on user scroll
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    const onScroll = () => {
+      if (programmaticScroll.current) return;
+      if (expandedSkillId) setExpandedSkillId(null);
+    };
+    el.addEventListener("scroll", onScroll, { passive: true });
+    return () => el.removeEventListener("scroll", onScroll);
+  }, [expandedSkillId]);
 
   // Dispatch focus_skill event when a skill is selected
   useEffect(() => {
