@@ -77,99 +77,56 @@ function KingdomCard({ kingdom, index }: { kingdom: Kingdom; index: number }) {
   const tierMeta = TIER_META[kingdom.tier];
   const questProgress = kingdom.totalQuests > 0
     ? Math.round((kingdom.questsCompleted / kingdom.totalQuests) * 100) : 0;
+  const roleUrl = `/role/${encodeURIComponent(kingdom.title)}${kingdom.company ? `?company=${encodeURIComponent(kingdom.company)}` : ""}`;
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 12 }}
+      initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.04, duration: 0.25 }}
-      className="group relative rounded-xl p-3 cursor-pointer transition-all hover:scale-[1.02] active:scale-[0.98]"
+      transition={{ delay: index * 0.03, duration: 0.2 }}
+      className="group flex items-center gap-2.5 rounded-lg px-2.5 py-2 cursor-pointer transition-all hover:scale-[1.01] active:scale-[0.99]"
       style={{
         background: `linear-gradient(135deg, hsl(var(--surface-stone)), ${TIER_GLOW[castle.tier]})`,
         border: `1px solid ${TIER_BORDER[castle.tier]}`,
-        boxShadow: "inset 0 1px 0 hsl(var(--emboss-light)), 0 2px 6px hsl(var(--emboss-shadow))",
+        boxShadow: "inset 0 1px 0 hsl(var(--emboss-light)), 0 1px 4px hsl(var(--emboss-shadow))",
       }}
-      onClick={() => navigate(`/role/${encodeURIComponent(kingdom.title)}${kingdom.company ? `?company=${encodeURIComponent(kingdom.company)}` : ""}`)}
+      onClick={() => navigate(roleUrl)}
     >
-      {/* Header */}
-      <div className="flex items-start gap-2 mb-2">
-        <span className="text-lg leading-none mt-0.5">{castle.emoji}</span>
-        <div className="flex-1 min-w-0">
-          <h4 className="text-[12px] font-semibold text-foreground truncate leading-tight">{kingdom.title}</h4>
-          {kingdom.company && <p className="text-[10px] text-muted-foreground truncate">{kingdom.company}</p>}
-        </div>
-      </div>
+      {/* Castle emoji */}
+      <span className="text-base leading-none shrink-0">{castle.emoji}</span>
 
-      {/* Tier badge + population */}
-      <div className="flex items-center gap-1.5 mb-2">
-        <span
-          className="inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-[0.06em] px-1.5 py-0.5 rounded-md"
-          style={{
-            background: `${tierMeta.color}15`,
-            color: tierMeta.color,
-            fontFamily: "'Cinzel', serif",
-          }}
-        >
-          {tierMeta.emoji} {tierMeta.label}
-        </span>
-        {kingdom.population != null && kingdom.population > 1 && (
-          <span className="ml-auto text-[9px] text-muted-foreground/70 flex items-center gap-0.5">
-            <Users className="h-2.5 w-2.5" /> {kingdom.population}
+      {/* Info */}
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-1.5">
+          <h4 className="text-[11px] font-semibold text-foreground truncate leading-tight">{kingdom.title}</h4>
+          <span
+            className="shrink-0 inline-flex items-center gap-0.5 text-[8px] font-bold uppercase tracking-[0.06em] px-1 py-px rounded"
+            style={{ background: `${tierMeta.color}15`, color: tierMeta.color, fontFamily: "'Cinzel', serif" }}
+          >
+            {tierMeta.emoji} {tierMeta.label}
           </span>
+        </div>
+        <div className="flex items-center gap-2 mt-0.5">
+          {kingdom.company && <span className="text-[9px] text-muted-foreground truncate">{kingdom.company}</span>}
+          {kingdom.tier !== "scouted" && (
+            <>
+              <span className="text-[9px] text-muted-foreground">{kingdom.questsCompleted}/8 quests</span>
+              <span className="text-[9px] font-medium" style={{ color: "hsl(var(--filigree-glow))" }}>{kingdom.xp} XP</span>
+            </>
+          )}
+          {kingdom.population != null && kingdom.population > 1 && (
+            <span className="text-[9px] text-muted-foreground/70 flex items-center gap-0.5 ml-auto shrink-0">
+              <Users className="h-2.5 w-2.5" /> {kingdom.population}
+            </span>
+          )}
+        </div>
+        {kingdom.tier !== "scouted" && (
+          <Progress value={questProgress} className="h-1 bg-muted/30 mt-1" />
         )}
       </div>
 
-      {/* Threat level */}
-      {kingdom.augmented > 0 && (
-        <div className="flex items-center gap-1.5 mb-2">
-          <Flame className="h-3 w-3" style={{ color: "hsl(var(--territory-leadership))" }} />
-          <span className="text-[10px] text-muted-foreground">AI Threat</span>
-          <span className="text-[10px] font-semibold text-foreground ml-auto">{kingdom.augmented}%</span>
-        </div>
-      )}
-
-      {/* Progress (contested/conquered only) */}
-      {kingdom.tier !== "scouted" && (
-        <>
-          <div className="flex items-center justify-between mb-1">
-            <span className="text-[10px] text-muted-foreground">
-              {kingdom.questsCompleted}/{kingdom.totalQuests || "?"} quests
-            </span>
-            <span className="text-[10px] font-medium" style={{ color: "hsl(var(--filigree-glow))" }}>
-              {kingdom.xp} XP
-            </span>
-          </div>
-          <Progress value={questProgress} className="h-1.5 bg-muted/30" />
-          {kingdom.skillsEarned.length > 0 && (
-            <div className="flex flex-wrap gap-1 mt-2">
-              {kingdom.skillsEarned.slice(0, 3).map(s => (
-                <span key={s} className="text-[9px] px-1.5 py-0.5 rounded-md truncate max-w-[80px]"
-                  style={{ background: "hsl(var(--muted) / 0.4)", color: "hsl(var(--muted-foreground))", border: "1px solid hsl(var(--border) / 0.3)" }}
-                >{s}</span>
-              ))}
-              {kingdom.skillsEarned.length > 3 && (
-                <span className="text-[9px] text-muted-foreground/60">+{kingdom.skillsEarned.length - 3}</span>
-              )}
-            </div>
-          )}
-        </>
-      )}
-
-      {/* CTA */}
-      <button
-        onClick={e => { e.stopPropagation(); navigate(`/role/${encodeURIComponent(kingdom.title)}${kingdom.company ? `?company=${encodeURIComponent(kingdom.company)}` : ""}`); }}
-        className="w-full mt-2 flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-lg text-xs font-medium transition-colors"
-        style={{
-          background: "hsl(var(--primary) / 0.1)",
-          color: "hsl(var(--primary))",
-          fontFamily: "'Cinzel', serif",
-          letterSpacing: "0.04em",
-        }}
-      >
-        {kingdom.tier === "scouted" ? <Shield className="h-3 w-3" /> : <Swords className="h-3 w-3" />}
-        {kingdom.tier === "scouted" ? "Scout Kingdom" : kingdom.tier === "conquered" ? "Revisit Kingdom" : "Continue Campaign"}
-        <ChevronRight className="h-3 w-3" />
-      </button>
+      {/* CTA arrow */}
+      <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/50 group-hover:text-primary shrink-0 transition-colors" />
     </motion.div>
   );
 }
