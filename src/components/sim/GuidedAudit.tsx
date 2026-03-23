@@ -636,6 +636,20 @@ export default function GuidedAudit({
           >
             <RotateCcw className="h-3 w-3" /> 🔮 Begin New Vigil
           </Button>
+          {onViewDebrief && (
+            <Button
+              size="sm"
+              onClick={onViewDebrief}
+              className="gap-1.5 text-xs rounded-xl"
+              style={{
+                fontFamily: "'Cinzel', serif",
+                background: "linear-gradient(135deg, hsl(262 80% 55%), hsl(262 60% 45%))",
+                boxShadow: "0 0 15px hsl(262 80% 55% / 0.3)",
+              }}
+            >
+              <Swords className="h-3 w-3" /> View Battle Report
+            </Button>
+          )}
         </div>
       </motion.div>
     );
