@@ -1050,13 +1050,14 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
     }
     setPhase("done");
 
-    // Fire elevation generation async (non-blocking) if unlocked
-    if (elevationUnlocked) {
-      setElevationLoading(true);
+    // Random Intel Drop — 35% chance on score 50+, generates async
+    const dropRoll = Math.random();
+    if (scores && scores.overall >= 50 && dropRoll < 0.35) {
       generateElevation(jobTitle, taskName, company)
         .then(narrative => {
-          setElevation(narrative);
-          // Persist to DB if user is logged in
+          const dropXP = 15 + Math.floor(Math.random() * 16); // 15-30 XP
+          setIntelDrop({ summary: narrative.shift_summary, skills: narrative.emerging_skills.slice(0, 3), xp: dropXP });
+          // Persist to DB
           if (user) {
             supabase.from("completed_simulations" as any)
               .update({ elevation_narrative: narrative } as any)
@@ -1068,8 +1069,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
               .then(() => {});
           }
         })
-        .catch(err => console.error("Elevation generation failed:", err))
-        .finally(() => setElevationLoading(false));
+        .catch(err => console.error("Intel drop generation failed:", err));
     }
   };
 
