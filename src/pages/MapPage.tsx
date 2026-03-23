@@ -67,6 +67,8 @@ const TAB_ITEMS = [
   { key: "allies" as const, icon: Users, label: "Allies" },
 ] as const;
 
+type PendingSimLaunch = SimLaunchRequest & { taskName?: string };
+
 const MapPage = () => {
   const { profile, user } = useAuth();
   const { skills: dbSkills } = useSkills();
@@ -97,8 +99,8 @@ const MapPage = () => {
   const [skillGrowthMap, setSkillGrowthMap] = useState<Map<string, CanonicalSkillGrowth>>(new Map());
 
   // In-place sim overlay state
-  const [activeSim, setActiveSim] = useState<SimLaunchRequest | null>(null);
-  const handleLaunchSim = useCallback((req: SimLaunchRequest) => setActiveSim(req), []);
+  const [activeSim, setActiveSim] = useState<PendingSimLaunch | null>(null);
+  const handleLaunchSim = useCallback((req: PendingSimLaunch) => setActiveSim(req), []);
   const handleCloseSim = useCallback(() => setActiveSim(null), []);
 
   const displaySkills = useMemo(
@@ -405,7 +407,7 @@ const MapPage = () => {
               <SimulatorModal
                 open={true}
                 onClose={handleCloseSim}
-                taskName={activeSim.jobTitle}
+                taskName={activeSim.taskName || activeSim.jobTitle}
                 jobTitle={activeSim.jobTitle}
                 company={activeSim.company}
                 level={activeSim.level || 1}
