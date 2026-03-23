@@ -160,18 +160,28 @@ export default function BossBattleArena({
   const totalCorrect = checkpoints.filter(cp => verdicts[cp.id] === cp.correctVerdict).length;
   const hintsUsed = Object.values(showHint).filter(Boolean).length;
 
-  const handleBossReaction = useCallback((isCorrect: boolean) => {
+  const handleBossReaction = useCallback((isCorrect: boolean, difficulty: DifficultyTier = "scout") => {
     if (bossStateTimer.current) clearTimeout(bossStateTimer.current);
+    const tier = DIFFICULTY_TIERS[difficulty];
     if (isCorrect) {
-      setBossHp(prev => Math.max(0, prev - 20));
+      const newStreak = streak + 1;
+      setStreak(newStreak);
+      const streakMultiplier = newStreak >= 3 ? 1.5 : 1;
+      const dmg = Math.round(tier.dmg * streakMultiplier);
+      setBossHp(prev => Math.max(0, prev - dmg));
       setBossState("damaged");
+      if (newStreak >= 3) {
+        setShowStreakBonus(true);
+        setTimeout(() => setShowStreakBonus(false), 1500);
+      }
     } else {
-      setBossHp(prev => Math.min(maxHp, prev + 10));
-      setUserPower(prev => Math.max(0, prev - 15));
+      setStreak(0);
+      setBossHp(prev => Math.min(maxHp, prev + tier.wrongHeal));
+      setUserPower(prev => Math.max(0, prev - tier.wrongDmg));
       setBossState("enraged");
     }
     bossStateTimer.current = setTimeout(() => setBossState("idle"), 1800);
-  }, [maxHp]);
+  }, [maxHp, streak]);
 
   const handleVerdict = (id: string, verdict: AuditVerdict) => {
     setVerdicts(prev => ({ ...prev, [id]: verdict }));
