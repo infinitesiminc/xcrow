@@ -1740,7 +1740,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                     style={{ maxHeight: "180px" }}
                   >
                     <img
-                      src={simVictoryBg}
+                      src={skillHeroBg || simVictoryBg}
                       alt=""
                       className="w-full h-full object-cover"
                       style={{ filter: scoreTier === "high" ? "brightness(0.7) saturate(1.2)" : scoreTier === "mid" ? "brightness(0.5) saturate(0.9)" : "brightness(0.35) saturate(0.6) hue-rotate(180deg)" }}
