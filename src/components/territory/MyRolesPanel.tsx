@@ -1,13 +1,14 @@
 /**
  * MyRolesPanel — Dynamic Kingdoms view.
- * Kingdoms auto-emerge from user behavior: Scouted → Contested → Conquered.
+ * Kingdoms auto-emerge from user behavior: Scouted → Contested → Fortified → Conquered.
+ * Kingdom tier is now derived from linked skill castles (unified progression).
  * Includes Arsenal tab for AI tools.
  */
 import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Search, ChevronRight, Shield, Flame, Wrench, ExternalLink, X,
-  Sparkles, Eye, Swords, Crown, Users,
+  Sparkles, Eye, Swords, Crown, Users, Castle,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { formatDistanceToNow } from "date-fns";
@@ -15,6 +16,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { getCastleState, type CastleTier } from "@/lib/castle-levels";
+import { type KingdomTier, KINGDOM_TIERS as KINGDOM_TIER_DEFS } from "@/lib/progression";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   AI_TOOL_REGISTRY, getSavedTools, removeToolFromList,
@@ -23,8 +25,6 @@ import {
 import type { RoleResult } from "@/components/InlineRoleCarousel";
 
 /* ── Types ── */
-
-type KingdomTier = "scouted" | "contested" | "conquered";
 
 interface Kingdom {
   key: string;
@@ -52,7 +52,8 @@ interface MyRolesPanelProps {
 const TIER_META: Record<KingdomTier, { icon: typeof Eye; label: string; emoji: string; color: string }> = {
   scouted:   { icon: Eye,    label: "Scouted",   emoji: "👁️", color: "hsl(var(--muted-foreground))" },
   contested: { icon: Swords, label: "Contested",  emoji: "⚔️", color: "hsl(var(--territory-communication))" },
-  conquered: { icon: Crown,  label: "Conquered",  emoji: "🏰", color: "hsl(var(--filigree-glow))" },
+  fortified: { icon: Castle, label: "Fortified",  emoji: "🏰", color: "hsl(var(--territory-analytical))" },
+  conquered: { icon: Crown,  label: "Conquered",  emoji: "👑", color: "hsl(var(--filigree-glow))" },
 };
 
 const TIER_GLOW: Record<CastleTier, string> = {
