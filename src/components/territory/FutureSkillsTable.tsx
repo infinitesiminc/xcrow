@@ -344,8 +344,8 @@ export default function FutureSkillsTable({ skills, onSkillClick, skillGrowthMap
       )}
 
       {/* Table */}
-      <div className="flex-1 overflow-y-auto px-3 pb-3" ref={scrollRef}>
-        <table className="w-full text-xs">
+      <div className="flex-1 overflow-y-auto overflow-x-hidden px-3 pb-3" ref={scrollRef}>
+        <table className="w-full text-xs table-fixed">
           <thead
             className="sticky top-0 z-10 backdrop-blur-sm"
             style={{ background: "hsl(var(--surface-stone) / 0.95)" }}
