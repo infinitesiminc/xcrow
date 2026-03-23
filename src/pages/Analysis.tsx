@@ -298,7 +298,7 @@ const Analysis = () => {
         <button
           onClick={toggleBookmark}
           disabled={bookmarkLoading}
-          className="p-2 rounded-lg hover:bg-muted/30 transition-colors"
+          className="relative z-10 p-2 rounded-lg hover:bg-muted/30 transition-colors"
         >
           {isBookmarked
             ? <BookmarkCheck className="h-4 w-4 text-primary" />
