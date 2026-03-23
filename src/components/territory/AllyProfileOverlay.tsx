@@ -147,11 +147,10 @@ export default function AllyProfileOverlay({ friend, onClose }: AllyProfileOverl
               {/* Avatar + Name */}
               <div className="flex items-center gap-3">
                 <div
-                  className="h-14 w-14 rounded-full flex items-center justify-center text-lg font-bold shrink-0 overflow-hidden ring-2"
+                  className="h-14 w-14 rounded-full flex items-center justify-center text-lg font-bold shrink-0 overflow-hidden ring-2 ring-border/20"
                   style={{
                     background: avatar ? "hsl(var(--filigree) / 0.1)" : `linear-gradient(135deg, hsl(${hue} 60% 35%), hsl(${hue + 40} 50% 25%))`,
                     color: avatar ? undefined : `hsl(${hue} 80% 85%)`,
-                    ringColor: "hsl(var(--filigree) / 0.2)",
                   }}
                 >
                   {avatar
