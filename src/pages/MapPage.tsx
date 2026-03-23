@@ -239,6 +239,7 @@ const MapPage = () => {
       const undefeatedCount = [...finalL2Ids].filter(id => !l2Completed.has(id)).length;
       if (undefeatedCount > 0) {
         setBossCount(undefeatedCount);
+        try { localStorage.setItem("xcrow-boss-count", String(undefeatedCount)); } catch {}
         if (!hasShownBossToast.current) {
           hasShownBossToast.current = true;
           setTimeout(() => {

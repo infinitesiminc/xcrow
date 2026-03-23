@@ -122,6 +122,21 @@ export default function Navbar() {
               >
                 {Icon && <Icon className="h-4 w-4" />}
                 {item.label}
+                {item.path === "/map" && bossCount > 0 && (
+                  <span
+                    className="ml-1 inline-flex items-center justify-center rounded-full text-[10px] font-bold leading-none"
+                    style={{
+                      minWidth: "18px",
+                      height: "18px",
+                      padding: "0 5px",
+                      background: "hsl(45 93% 48%)",
+                      color: "hsl(45 20% 10%)",
+                      boxShadow: "0 0 6px hsl(45 93% 58% / 0.5)",
+                    }}
+                  >
+                    ⚔️{bossCount}
+                  </span>
+                )}
               </button>
             );
           })}
