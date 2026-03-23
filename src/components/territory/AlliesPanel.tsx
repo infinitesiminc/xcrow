@@ -245,7 +245,7 @@ const AlliesPanel = () => {
                 friend={friend}
                 onAccept={() => acceptRequest(friend.id)}
                 onReject={() => removeFriend(friend.id)}
-                onView={() => friend.username && navigate(`/u/${friend.username}`)}
+                onView={() => setViewFriend(friend)}}
                 onMessage={() => setChatFriend(friend)}
                 onLaunchSim={handleLaunchSim}
                 onSendSim={(jt, tn) => handleSendSim(friend, jt, tn)}
