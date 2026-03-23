@@ -408,7 +408,7 @@ export default function FutureSkillsTable({ skills, onSkillClick, skillGrowthMap
                         </span>
                       </div>
                       {/* L1 / L2 quick-launch icons */}
-                      <div className="w-[100px] shrink-0 flex items-center justify-center gap-1.5">
+                      <div className="shrink-0 flex items-center justify-center gap-1">
                         {/* Level 1 */}
                         <Popover>
                           <PopoverTrigger asChild>
