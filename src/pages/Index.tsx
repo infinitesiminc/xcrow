@@ -26,20 +26,7 @@ const Index = () => {
   const showOnboarding = isSignedIn && profile && !profile.onboardingCompleted;
   const [onboardingDismissed, setOnboardingDismissed] = useState(false);
 
-  if (showOnboarding && !onboardingDismissed) {
-    return (
-      <OnboardingQuest
-        open
-        userId={user!.id}
-        onComplete={async () => {
-          await refreshProfile();
-          setOnboardingDismissed(true);
-        }}
-      />
-    );
-  }
-
-  if (isSignedIn) {
+  if (isSignedIn && (!showOnboarding || onboardingDismissed)) {
     return <Navigate to="/map" replace />;
   }
 
@@ -114,6 +101,18 @@ const Index = () => {
           21,000+ kingdoms to scout · 34,000+ quests available
         </motion.p>
       </motion.div>
+
+      {/* Onboarding overlay — renders on top of homepage */}
+      {showOnboarding && !onboardingDismissed && (
+        <OnboardingQuest
+          open
+          userId={user!.id}
+          onComplete={async () => {
+            await refreshProfile();
+            setOnboardingDismissed(true);
+          }}
+        />
+      )}
     </div>
   );
 };
