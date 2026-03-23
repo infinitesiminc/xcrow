@@ -448,8 +448,8 @@ function FriendCard({ friend, onAccept, onReject, onView, onMessage, onLaunchSim
         >
           {isInSim && currentSimName ? (
             /* Currently in a sim */
-            <div className="flex items-center gap-2">
-              <div className="flex items-center gap-1.5 flex-1 min-w-0">
+            <div>
+              <div className="flex items-center gap-1.5 mb-1">
                 <Swords className="h-3 w-3 shrink-0 animate-pulse" style={{ color: "hsl(var(--filigree-glow))" }} />
                 <span className="text-[10px] font-medium truncate" style={{ color: "hsl(var(--filigree-glow))" }}>
                   {currentSimName}
@@ -458,6 +458,26 @@ function FriendCard({ friend, onAccept, onReject, onView, onMessage, onLaunchSim
                   style={{ background: "hsl(142 70% 45% / 0.15)", color: "hsl(142 50% 30%)" }}>
                   LIVE
                 </span>
+              </div>
+              <div className="flex items-center justify-end gap-1 mt-1">
+                <button
+                  onClick={(e) => { e.stopPropagation(); onLaunchSim(friend.currentActivity?.replace("Sim: ", "") || "", currentSimName); }}
+                  className="flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[9px] font-medium transition-all hover:bg-white/10"
+                  style={{ color: "hsl(var(--filigree-glow))", fontFamily: "'Cinzel', serif" }}
+                  title="Try this sim"
+                >
+                  <Play className="h-2.5 w-2.5" />
+                  Try
+                </button>
+                <button
+                  onClick={(e) => { e.stopPropagation(); onSendSim(friend.currentActivity?.replace("Sim: ", "") || "", currentSimName); }}
+                  className="flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[9px] font-medium transition-all hover:bg-white/10"
+                  style={{ color: "hsl(var(--primary))", fontFamily: "'Cinzel', serif" }}
+                  title="Send this sim as challenge"
+                >
+                  <Send className="h-2.5 w-2.5" />
+                  Send
+                </button>
               </div>
             </div>
           ) : sim ? (
