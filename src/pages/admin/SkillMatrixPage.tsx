@@ -36,15 +36,28 @@ const CAT_COLORS: Record<string, string> = {
   "Human Edge": "bg-fuchsia-500/15 text-fuchsia-400",
 };
 
-type SortKey = "name" | "category" | "demand_count" | "job_count";
+const ISLANDS: { category: string; emoji: string; terrain: string }[] = [
+  { category: "All", emoji: "🗺️", terrain: "All Islands" },
+  { category: "Technical", emoji: "🔮", terrain: "Arcane Forge" },
+  { category: "Analytical", emoji: "🏔️", terrain: "Data Highlands" },
+  { category: "Strategic", emoji: "⚔️", terrain: "Command Summit" },
+  { category: "Communication", emoji: "🌉", terrain: "Bridge Isles" },
+  { category: "Leadership", emoji: "👑", terrain: "Crown Heights" },
+  { category: "Creative", emoji: "🌈", terrain: "Prism Coast" },
+  { category: "Ethics & Compliance", emoji: "🛡️", terrain: "Sentinel Watch" },
+  { category: "Human Edge", emoji: "🔥", terrain: "Soul Springs" },
+];
+
+type SortKey = "name" | "category";
 
 export default function SkillMatrixPage() {
   const [skills, setSkills] = useState<CanonicalSkill[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [catFilter, setCatFilter] = useState("All");
-  const [sortKey, setSortKey] = useState<SortKey>("demand_count");
-  const [sortAsc, setSortAsc] = useState(false);
+  const [islandFilter, setIslandFilter] = useState("All");
+  const [sortKey, setSortKey] = useState<SortKey>("name");
+  const [sortAsc, setSortAsc] = useState(true);
   const { toast } = useToast();
 
   const fetchSkills = useCallback(async () => {
@@ -70,19 +83,19 @@ export default function SkillMatrixPage() {
 
   const filtered = useMemo(() => {
     const q = search.toLowerCase();
+    const activeCat = islandFilter !== "All" ? islandFilter : catFilter;
     let list = skills.filter(s => {
-      if (catFilter !== "All" && s.category !== catFilter) return false;
+      if (activeCat !== "All" && s.category !== activeCat) return false;
       if (q && !s.name.toLowerCase().includes(q) && !s.category.toLowerCase().includes(q) && !(s.description || "").toLowerCase().includes(q)) return false;
       return true;
     });
     list.sort((a, b) => {
-      const av = a[sortKey];
-      const bv = b[sortKey];
-      if (typeof av === "string" && typeof bv === "string") return sortAsc ? av.localeCompare(bv) : bv.localeCompare(av);
-      return sortAsc ? (av as number) - (bv as number) : (bv as number) - (av as number);
+      const av = a[sortKey] as string;
+      const bv = b[sortKey] as string;
+      return sortAsc ? av.localeCompare(bv) : bv.localeCompare(av);
     });
     return list;
-  }, [skills, search, catFilter, sortKey, sortAsc]);
+  }, [skills, search, catFilter, islandFilter, sortKey, sortAsc]);
 
   const catStats = useMemo(() => {
     const m: Record<string, number> = {};
@@ -371,21 +384,48 @@ export default function SkillMatrixPage() {
         </TabsContent>
       </Tabs>
 
-      {/* Category pills */}
-      <div className="flex flex-wrap gap-1.5">
-        {CATEGORIES.map(cat => (
-          <button
-            key={cat}
-            onClick={() => setCatFilter(cat)}
-            className={`px-2.5 py-1 rounded-full text-xs font-medium transition-colors ${
-              catFilter === cat
-                ? "bg-primary text-primary-foreground"
-                : "bg-muted/50 text-muted-foreground hover:bg-muted"
-            }`}
-          >
-            {cat}{cat !== "All" && catStats[cat] ? ` (${catStats[cat]})` : cat === "All" ? ` (${skills.length})` : ""}
-          </button>
-        ))}
+      {/* Filters row */}
+      <div className="space-y-2">
+        {/* Domain pills */}
+        <div>
+          <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mb-1.5">Domain</p>
+          <div className="flex flex-wrap gap-1.5">
+            {CATEGORIES.map(cat => (
+              <button
+                key={cat}
+                onClick={() => { setCatFilter(cat); setIslandFilter("All"); }}
+                className={`px-2.5 py-1 rounded-full text-xs font-medium transition-colors ${
+                  catFilter === cat && islandFilter === "All"
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-muted/50 text-muted-foreground hover:bg-muted"
+                }`}
+              >
+                {cat}{cat !== "All" && catStats[cat] ? ` (${catStats[cat]})` : cat === "All" ? ` (${skills.length})` : ""}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Island pills */}
+        <div>
+          <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mb-1.5">Territory Island</p>
+          <div className="flex flex-wrap gap-1.5">
+            {ISLANDS.map(island => (
+              <button
+                key={island.category}
+                onClick={() => { setIslandFilter(island.category); setCatFilter("All"); }}
+                className={`px-2.5 py-1 rounded-full text-xs font-medium transition-colors flex items-center gap-1 ${
+                  islandFilter === island.category
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-muted/50 text-muted-foreground hover:bg-muted"
+                }`}
+              >
+                <span>{island.emoji}</span>
+                {island.terrain}
+              </button>
+            ))}
+          </div>
+        </div>
       </div>
 
       {/* Search */}
@@ -407,7 +447,7 @@ export default function SkillMatrixPage() {
               <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
             </div>
           ) : (
-            <div className="overflow-auto max-h-[calc(100vh-320px)]">
+            <div className="overflow-auto max-h-[calc(100vh-380px)]">
               <table className="w-full text-xs">
                 <thead className="sticky top-0 bg-background/95 backdrop-blur-sm z-10">
                   <tr className="border-b border-border/30">
@@ -415,8 +455,6 @@ export default function SkillMatrixPage() {
                     <th className="text-left py-2.5 px-3">{colBtn("name", "Skill")}</th>
                     <th className="text-left py-2.5 px-3">{colBtn("category", "Domain")}</th>
                     <th className="text-left py-2.5 px-3 min-w-[200px]">Definition</th>
-                    <th className="text-right py-2.5 px-3">{colBtn("demand_count", "Demand")}</th>
-                    <th className="text-right py-2.5 px-3">{colBtn("job_count", "Roles")}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -434,11 +472,9 @@ export default function SkillMatrixPage() {
                           {skill.category}
                         </span>
                       </td>
-                      <td className="py-2 px-3 text-muted-foreground max-w-[300px]">
+                      <td className="py-2 px-3 text-muted-foreground max-w-[400px]">
                         <span className="line-clamp-2">{skill.description || "—"}</span>
                       </td>
-                      <td className="py-2 px-3 text-right font-mono text-muted-foreground">{skill.demand_count}</td>
-                      <td className="py-2 px-3 text-right font-mono text-muted-foreground">{skill.job_count}</td>
                     </tr>
                   ))}
                 </tbody>
