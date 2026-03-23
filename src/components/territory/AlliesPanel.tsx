@@ -421,6 +421,25 @@ function FriendCard({ friend, onAccept, onReject, onView, onMessage, onLaunchSim
         )}
       </div>
 
+      {/* Unread message preview */}
+      {friend.status === "accepted" && friend.unreadMessages > 0 && friend.lastUnreadMessage && (
+        <button
+          onClick={onMessage}
+          className="mx-2 mb-1 px-2.5 py-2 rounded-md flex items-start gap-2 w-[calc(100%-16px)] text-left transition-all hover:brightness-110"
+          style={{ background: "hsl(var(--filigree) / 0.12)", border: "1px solid hsl(var(--filigree-glow) / 0.2)" }}
+        >
+          <MessageCircle className="h-3 w-3 shrink-0 mt-0.5" style={{ color: "hsl(var(--filigree-glow))" }} />
+          <div className="flex-1 min-w-0">
+            <p className="text-[10px] text-foreground/90 line-clamp-2 leading-relaxed">
+              {friend.lastUnreadMessage}
+            </p>
+            <span className="text-[9px] mt-0.5 block" style={{ color: "hsl(var(--filigree-glow))" }}>
+              {friend.unreadMessages} unread · Tap to read
+            </span>
+          </div>
+        </button>
+      )}
+
       {/* Sim status row (only for accepted friends) */}
       {friend.status === "accepted" && (isInSim || sim) && (
         <div
