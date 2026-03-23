@@ -110,7 +110,7 @@ const MapPage = () => {
   const userName = profile?.displayName?.split(" ")[0];
 
   const { onRolesFoundRef, onRoleSelectRef, sendMessage: chatSendMessage, setIsOpen: setChatDockOpen } = useChatContext();
-  const { updatePresence, goOffline, pendingCount } = useFriends();
+  const { updatePresence, goOffline, pendingCount, unreadCount } = useFriends();
 
   useEffect(() => {
     onRoleSelectRef.current = (role: RoleResult) => { setSelectedRole(role); };
