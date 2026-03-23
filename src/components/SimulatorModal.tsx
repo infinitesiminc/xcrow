@@ -169,9 +169,11 @@ function useSkillHeroBg(taskName: string, jobTitle: string) {
 const BriefingScreen = ({
   session,
   onStart,
+  jobTitle: propJobTitle,
 }: {
   session: SimSession;
   onStart: () => void;
+  jobTitle: string;
 }) => {
   const config = session.config;
   const hue1 = simHeroHue(session.scenario.title);
