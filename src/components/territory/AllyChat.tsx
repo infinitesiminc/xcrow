@@ -19,7 +19,7 @@ interface AllyChatProps {
 
 export default function AllyChat({ friend, onBack }: AllyChatProps) {
   const { user } = useAuth();
-  const { messages, loading, sending, sendMessage } = useFriendMessages(friend.friendId);
+  const { messages, loading, sending, friendIsTyping, sendMessage, broadcastTyping } = useFriendMessages(friend.friendId);
   const [draft, setDraft] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
