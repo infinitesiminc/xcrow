@@ -76,14 +76,31 @@ export interface ArenaRoundData {
 }
 
 async function simFetch<T>(action: string, payload: Record<string, unknown>): Promise<T> {
+  console.log(`[sim] simFetch action=${action}`, { taskName: payload.taskName, jobTitle: payload.jobTitle });
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 45000);
   try {
-    const { data, error } = await supabase.functions.invoke("sim-chat", {
-      body: { action, payload },
-    });
+    const resp = await fetch(
+      `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/sim-chat`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+        },
+        body: JSON.stringify({ action, payload }),
+        signal: controller.signal,
+      },
+    );
     clearTimeout(timeout);
-    if (error) throw new Error(`Simulator error: ${error.message}`);
+    if (!resp.ok) {
+      const errBody = await resp.text();
+      console.error(`[sim] simFetch ${action} HTTP ${resp.status}:`, errBody);
+      throw new Error(`Simulator error: HTTP ${resp.status}`);
+    }
+    const data = await resp.json();
+    console.log(`[sim] simFetch ${action} success`);
     return data as T;
   } catch (err: any) {
     clearTimeout(timeout);

@@ -774,7 +774,18 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
 
   useEffect(() => {
     if (open) startCompile();
-  }, [open]);
+  }, [open]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Safety timeout: if stuck in loading for >50s, show error
+  useEffect(() => {
+    if (phase !== "loading") return;
+    const safetyTimeout = setTimeout(() => {
+      console.error("Sim loading safety timeout hit (50s)");
+      setError("The quest forge is taking too long. Please try again.");
+      setPhase("chat");
+    }, 50_000);
+    return () => clearTimeout(safetyTimeout);
+  }, [phase]);
 
   const beginChat = () => {
     if (!session) return;
