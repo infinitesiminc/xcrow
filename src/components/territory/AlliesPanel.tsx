@@ -28,7 +28,7 @@ const AlliesPanel = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { friends, loading, pendingCount, acceptRequest, removeFriend, sendRequest } = useFriends();
-  const [subTab, setSubTab] = useState<SubTab>("online");
+  const [subTab, setSubTab] = useState<SubTab>("feed");
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<{ id: string; display_name: string; username: string | null; avatar_id: string | null }[]>([]);
   const [searching, setSearching] = useState(false);
