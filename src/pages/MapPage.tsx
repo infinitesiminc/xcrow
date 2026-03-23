@@ -187,6 +187,13 @@ const MapPage = () => {
       }
       setSkillGrowthMap(growthMap);
 
+      // Track which skills have completed L2 boss battles
+      const l2Completed = new Set<string>();
+      for (const [skillId, acc] of growthAcc) {
+        if (acc.l2Sims > 0) l2Completed.add(skillId);
+      }
+      setLevel2CompletedIds(l2Completed);
+
       const roleCounts = new Map<string, number>();
       const qualifiedRoles = new Set<string>();
       for (const sim of sims) {
