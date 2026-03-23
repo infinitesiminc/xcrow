@@ -27,6 +27,8 @@ interface Props {
   focusSkillId?: string | null;
   /** Level 2 unlocked skill IDs */
   level2SkillIds?: Set<string>;
+  /** If provided, launches sim in-place instead of navigating */
+  onLaunchSim?: (req: SimLaunchRequest) => void;
 }
 
 const BOOKMARK_KEY = "xcrow_skill_bookmarks";
