@@ -289,9 +289,20 @@ export default function FutureSkillsTable({ skills, onSkillClick, skillGrowthMap
                       const cat = domainData.find(d => d.domain === payload.value)?.fullCategory;
                       const isActive = domainFilter === cat;
                       return (
-                        <text x={x} y={y} textAnchor="middle" fontSize={isActive ? 9 : 8}
+                        <text
+                          x={x} y={y} textAnchor="middle" fontSize={isActive ? 9 : 8}
                           fill={isActive ? "hsl(var(--filigree-glow))" : "hsl(var(--muted-foreground))"}
-                          fontWeight={isActive ? 700 : 400} style={{ cursor: "pointer" }}
+                          fontWeight={isActive ? 700 : 400}
+                          style={{ cursor: "pointer" }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (cat) {
+                              setDomainFilter(prev => prev === cat ? null : cat);
+                              setFilterMode("all");
+                              setSearch("");
+                              setChartOpen(false);
+                            }
+                          }}
                         >
                           {payload.value}
                         </text>
