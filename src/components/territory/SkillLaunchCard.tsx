@@ -88,13 +88,14 @@ export default function SkillLaunchCard({
   const l2Xp = growth?.level2Xp || 0;
   const l1Sims = growth?.level1Sims || 0;
 
-  // Position: appear to the right of the node, or left if too close to edge
+  // Position: always to the right of the node for consistency
   const CARD_W = 220;
   const CARD_H = 180;
   const OFFSET = 30;
-  const clampedX = x + OFFSET + CARD_W > containerWidth
-    ? x - OFFSET - CARD_W
-    : x + OFFSET;
+  // Prefer right side; only fall back to left if card would overflow right edge
+  const rightX = x + OFFSET;
+  const leftX = x - OFFSET - CARD_W;
+  const clampedX = rightX + CARD_W <= containerWidth - 8 ? rightX : Math.max(8, leftX);
   const clampedY = Math.max(8, Math.min(containerHeight - CARD_H - 8, y - CARD_H / 2));
 
   return (
