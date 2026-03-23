@@ -319,12 +319,12 @@ export default function FutureIsland({ island, skillLookup, level2SkillIds, leve
                       fontSize: (isHovered || isHighlighted) ? "11px" : "10px",
                       fontWeight: (isHovered || isHighlighted) ? 700 : 600,
                       fill: isParchment
-                        ? (isLevel2
+                        ? (isBossCompleted
                           ? `hsl(45 ${isHovered ? 60 : 50}% ${isHovered ? 25 : 30}%)`
                           : isHovered
                             ? `hsl(${theme.baseHue} 50% 25%)`
                             : `hsl(${theme.baseHue} 35% 35%)`)
-                        : (isLevel2
+                        : (isBossCompleted
                           ? `hsl(45 ${isHovered ? 60 : 40}% ${isHovered ? 80 : 65}%)`
                           : isHovered
                             ? `hsl(${theme.baseHue} 40% 85%)`
