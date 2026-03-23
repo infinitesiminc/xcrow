@@ -57,6 +57,7 @@ export default function FutureSkillsTable({ skills, onSkillClick, skillGrowthMap
   const [expandedSkillId, setExpandedSkillId] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const rowRefs = useRef<Map<string, HTMLTableRowElement>>(new Map());
+  const programmaticScroll = useRef(false);
 
   const toggleBookmark = useCallback((skillId: string, e: React.MouseEvent) => {
     e.stopPropagation();
