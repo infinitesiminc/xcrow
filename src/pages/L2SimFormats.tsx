@@ -249,116 +249,274 @@ function DecisionTreeFormat() {
   );
 }
 
-/* ── FORMAT 3: Red Team / Audit ── */
+/* ── FORMAT 3: Red Team / Guided Audit ── */
+type AuditVerdict = "safe" | "risky" | "critical" | null;
+
+interface AuditCheckpoint {
+  id: string;
+  area: string;
+  question: string;
+  hint: string;
+  aiClaim: string;
+  correctVerdict: AuditVerdict;
+  explanation: string;
+  coachTip: string;
+}
+
+const AUDIT_CHECKPOINTS: AuditCheckpoint[] = [
+  {
+    id: "attribution",
+    area: "📊 Attribution Model",
+    question: "The AI uses 7-day last-click attribution to calculate ROAS. The brand campaign has a 21-day consideration cycle. Is this a concern?",
+    hint: "Think about what happens to conversions that take longer than 7 days to complete.",
+    aiClaim: "ROAS dropped 23% — primary driver: paid social CPM +18%.",
+    correctVerdict: "critical",
+    explanation: "The attribution window is too short for this campaign type. Conversions happening on days 8-21 are being credited to other channels or lost entirely, making social appear less effective than it is.",
+    coachTip: "Always check if the measurement window matches the customer journey length. This is the #1 most common AI analytics failure.",
+  },
+  {
+    id: "audience",
+    area: "👥 Audience Overlap",
+    question: "The AI recommends shifting 30% of social budget to display where CPM is 40% lower. Both channels target similar audiences. Is this safe?",
+    hint: "Consider: are these truly different audiences, or will you show the same people cheaper but lower-quality ads?",
+    aiClaim: "Display CPM $8.20 vs Social CPM $14.63 — shift budget for efficiency.",
+    correctVerdict: "risky",
+    explanation: "Display and social audiences often overlap significantly. Shifting budget may just retarget the same users at lower-quality touchpoints, reducing overall impact while appearing cheaper on paper.",
+    coachTip: "Cost efficiency ≠ effectiveness. Always ask: 'Am I reaching new people or the same people worse?'",
+  },
+  {
+    id: "seasonality",
+    area: "📅 Seasonality",
+    question: "Social CPM jumped 18% this week. The AI flagged this as anomalous and triggered a budget reallocation. It's currently Q4. Should the AI react this way?",
+    hint: "What typically happens to ad costs during Q4 holiday season?",
+    aiClaim: "Paid Social CPM: $12.40 → $14.63 (+18%) — flagged as performance degradation.",
+    correctVerdict: "critical",
+    explanation: "Q4 CPM spikes are entirely predictable. Every advertiser is competing for attention during holidays. The AI is treating a normal seasonal pattern as an anomaly and making a costly overreaction.",
+    coachTip: "AI systems without calendar/seasonal context will repeatedly overreact to predictable market patterns. This is a design flaw to flag.",
+  },
+  {
+    id: "incrementality",
+    area: "🔬 Incrementality",
+    question: "The AI notes that conversion rates are 'comparable' across social and display. Does this mean the channels are equally valuable?",
+    hint: "Conversion rate tells you who converted, but not whether the ad caused the conversion.",
+    aiClaim: "Overall conversion rate: 2.1% (unchanged across channels).",
+    correctVerdict: "risky",
+    explanation: "Same conversion rate doesn't mean same incremental lift. Some conversions would have happened anyway (organic). Without an incrementality test, you can't tell which channel is actually driving new revenue vs. getting credit for existing demand.",
+    coachTip: "This is the 'correlation vs. causation' blind spot in AI analytics. Always ask: 'Would this sale have happened without the ad?'",
+  },
+  {
+    id: "stakeholder",
+    area: "🎯 Stakeholder Alignment",
+    question: "The AI optimises for ROAS (return on ad spend). The CMO's OKR this quarter is brand awareness growth. Is the AI optimising for the right objective?",
+    hint: "Who set the AI's objective function, and does it match what leadership actually cares about?",
+    aiClaim: "Recommendation: shift budget to maximise ROAS efficiency.",
+    correctVerdict: "critical",
+    explanation: "The AI is optimising for the wrong metric. The CMO wants awareness (reach, impressions, brand lift), not short-term ROAS. This auto-action directly undermines the executive's stated goal — a dangerous misalignment.",
+    coachTip: "The most dangerous AI failures aren't bugs — they're objective misalignment. The AI did exactly what it was told. It just wasn't told the right thing.",
+  },
+];
+
 function RedTeamFormat() {
-  const [findings, setFindings] = useState<string[]>(["", "", ""]);
-  const [submitted, setSubmitted] = useState(false);
+  const [currentStep, setCurrentStep] = useState(0);
+  const [verdicts, setVerdicts] = useState<Record<string, AuditVerdict>>({});
+  const [revealed, setRevealed] = useState<Record<string, boolean>>({});
+  const [showHint, setShowHint] = useState<Record<string, boolean>>({});
+  const [completed, setCompleted] = useState(false);
+
+  const checkpoint = AUDIT_CHECKPOINTS[currentStep];
+  const totalCorrect = AUDIT_CHECKPOINTS.filter(cp => verdicts[cp.id] === cp.correctVerdict).length;
+
+  const handleVerdict = (id: string, verdict: AuditVerdict) => {
+    setVerdicts(prev => ({ ...prev, [id]: verdict }));
+  };
+
+  const handleReveal = (id: string) => {
+    setRevealed(prev => ({ ...prev, [id]: true }));
+  };
+
+  const handleNext = () => {
+    if (currentStep < AUDIT_CHECKPOINTS.length - 1) {
+      setCurrentStep(prev => prev + 1);
+    } else {
+      setCompleted(true);
+    }
+  };
+
+  const verdictColors: Record<string, { bg: string; border: string; text: string }> = {
+    safe: { bg: "hsl(142 60% 50% / 0.1)", border: "hsl(142 60% 50% / 0.3)", text: "hsl(142 60% 50%)" },
+    risky: { bg: "hsl(45 80% 55% / 0.1)", border: "hsl(45 80% 55% / 0.3)", text: "hsl(45 80% 55%)" },
+    critical: { bg: "hsl(0 60% 55% / 0.1)", border: "hsl(0 60% 55% / 0.3)", text: "hsl(0 60% 55%)" },
+  };
 
   const aiOutput = {
     summary: "Campaign ROAS dropped 23% week-over-week. Primary driver: paid social CPM increased 18% while conversion rates held steady. Recommendation: shift 30% of paid social budget to programmatic display where CPM is 40% lower with comparable conversion rates.",
-    dataPoints: [
-      "Paid Social CPM: $12.40 → $14.63 (+18%)",
-      "Display CPM: $8.20 (stable)",
-      "Overall conversion rate: 2.1% (unchanged)",
-      "Budget reallocation: $45K/day → $31.5K social + $13.5K display",
-    ],
     autoAction: "AI will execute budget shift at midnight unless overridden.",
   };
 
-  const hiddenFlaws = [
-    { flaw: "Attribution window mismatch", hint: "The AI uses 7-day last-click. The brand campaign has a 21-day consideration cycle." },
-    { flaw: "Audience overlap ignored", hint: "Shifting to display may just re-target the same users at lower quality touchpoints." },
-    { flaw: "Seasonality not modeled", hint: "CPM spikes are normal in Q4 — the AI is reacting to a predictable pattern." },
-    { flaw: "No incrementality test", hint: "Comparable conversion rates don't mean comparable incremental lift." },
-    { flaw: "Stakeholder impact missing", hint: "The CMO's OKR is brand awareness, not ROAS — this shift undermines their goal." },
-  ];
+  if (completed) {
+    return (
+      <div className="space-y-4">
+        <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="rounded-lg p-5 text-center"
+          style={{ background: "hsl(var(--surface-stone) / 0.6)", border: "1px solid hsl(var(--filigree) / 0.2)" }}>
+          <h3 className="text-base font-bold mb-1" style={{ fontFamily: "'Cinzel', serif", color: "hsl(var(--filigree-glow))" }}>
+            Audit Complete
+          </h3>
+          <p className="text-2xl font-bold text-foreground">{totalCorrect}/{AUDIT_CHECKPOINTS.length}</p>
+          <p className="text-xs text-muted-foreground mt-1">checkpoints correctly assessed</p>
+        </motion.div>
+
+        {/* Per-checkpoint summary */}
+        <div className="space-y-2">
+          {AUDIT_CHECKPOINTS.map(cp => {
+            const isCorrect = verdicts[cp.id] === cp.correctVerdict;
+            return (
+              <div key={cp.id} className="flex items-start gap-2 text-[11px] p-2 rounded-md"
+                style={{ background: isCorrect ? "hsl(142 60% 50% / 0.06)" : "hsl(0 60% 55% / 0.06)" }}>
+                <span className="shrink-0 mt-0.5">{isCorrect ? "✅" : "❌"}</span>
+                <div>
+                  <span className="font-semibold text-foreground">{cp.area}</span>
+                  <span className="text-muted-foreground"> — You said <strong>{verdicts[cp.id]}</strong>, answer was <strong>{cp.correctVerdict}</strong></span>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        <RubricFeedback scores={{
+          risk_awareness: { score: Math.round((totalCorrect / AUDIT_CHECKPOINTS.length) * 100), note: totalCorrect >= 4 ? "Excellent threat detection — you caught the key failure modes." : "Review the checkpoints you missed. Each represents a common AI oversight pattern." },
+          strategic_depth: { score: totalCorrect >= 3 ? 75 : 50, note: "The stakeholder alignment question tests strategic vs. tactical thinking." },
+          human_value: { score: 80, note: "Every checkpoint represents a judgment call that AI cannot make autonomously." },
+          actionability: { score: 65, note: "Now practice: for each flaw found, what guardrail would you add to prevent it?" },
+        }} />
+
+        <Button variant="outline" size="sm" onClick={() => { setCurrentStep(0); setVerdicts({}); setRevealed({}); setShowHint({}); setCompleted(false); }} className="gap-1.5 text-xs">
+          <RotateCcw className="h-3 w-3" /> Restart Audit
+        </Button>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4">
-      <div className="rounded-lg p-4" style={{ background: "hsl(0 60% 55% / 0.08)", border: "1px solid hsl(0 60% 55% / 0.2)" }}>
-        <div className="flex items-center gap-2 mb-2">
-          <Shield className="h-4 w-4" style={{ color: "hsl(0 60% 55%)" }} />
-          <h3 className="text-sm font-bold" style={{ fontFamily: "'Cinzel', serif", color: "hsl(0 60% 55%)" }}>
-            🔴 Red Team Brief
-          </h3>
+      {/* Brief */}
+      <div className="rounded-lg p-3" style={{ background: "hsl(0 60% 55% / 0.06)", border: "1px solid hsl(0 60% 55% / 0.15)" }}>
+        <div className="flex items-center justify-between mb-1">
+          <div className="flex items-center gap-2">
+            <Shield className="h-3.5 w-3.5" style={{ color: "hsl(0 60% 55%)" }} />
+            <span className="text-xs font-bold" style={{ fontFamily: "'Cinzel', serif", color: "hsl(0 60% 55%)" }}>Guided Audit</span>
+          </div>
+          <span className="text-[10px] font-mono px-2 py-0.5 rounded" style={{ background: "hsl(var(--muted) / 0.2)" }}>
+            {currentStep + 1} / {AUDIT_CHECKPOINTS.length}
+          </span>
         </div>
-        <p className="text-xs text-muted-foreground mb-2">
-          Below is an AI agent's analysis and auto-action. Your job: <strong className="text-foreground">find what's wrong, missing, or dangerous.</strong>
+        <p className="text-[10px] text-muted-foreground">
+          Review each checkpoint. Assess whether this aspect of the AI's output is <strong className="text-foreground">Safe</strong>, <strong style={{ color: "hsl(45 80% 55%)" }}>Risky</strong>, or <strong style={{ color: "hsl(0 60% 55%)" }}>Critical</strong>.
         </p>
       </div>
 
-      {/* AI Output to Audit */}
-      <div className="rounded-lg p-4 space-y-3" style={{ background: "hsl(var(--muted) / 0.1)", border: "1px solid hsl(var(--border) / 0.3)" }}>
-        <div className="flex items-center gap-2">
-          <span className="px-2 py-0.5 rounded text-[9px] font-mono font-bold" style={{ background: "hsl(var(--primary) / 0.15)", color: "hsl(var(--primary))" }}>AI AGENT OUTPUT</span>
-        </div>
-        <p className="text-xs text-foreground">{aiOutput.summary}</p>
-        <div className="grid grid-cols-2 gap-2">
-          {aiOutput.dataPoints.map((dp, i) => (
-            <div key={i} className="text-[10px] font-mono px-2 py-1 rounded" style={{ background: "hsl(var(--muted) / 0.2)" }}>{dp}</div>
-          ))}
-        </div>
-        <div className="flex items-center gap-2 px-3 py-2 rounded-md" style={{ background: "hsl(45 80% 55% / 0.1)", border: "1px solid hsl(45 80% 55% / 0.2)" }}>
-          <AlertTriangle className="h-3.5 w-3.5 shrink-0" style={{ color: "hsl(45 80% 55%)" }} />
-          <span className="text-[10px] text-foreground font-medium">{aiOutput.autoAction}</span>
-        </div>
+      {/* AI claim context */}
+      <div className="rounded-md px-3 py-2 text-[10px] font-mono" style={{ background: "hsl(var(--muted) / 0.12)", border: "1px solid hsl(var(--border) / 0.2)" }}>
+        <span className="text-[9px] font-bold uppercase tracking-wider" style={{ color: "hsl(var(--primary))" }}>AI Says: </span>
+        {checkpoint.aiClaim}
       </div>
 
-      {/* Finding inputs */}
-      {!submitted ? (
-        <div className="space-y-2">
-          <h4 className="text-xs font-bold text-foreground">Your Findings (identify at least 3 risks/flaws):</h4>
-          {findings.map((f, i) => (
-            <div key={i} className="flex items-start gap-2">
-              <span className="text-[10px] font-mono mt-2 shrink-0" style={{ color: "hsl(0 60% 55%)" }}>#{i + 1}</span>
-              <Textarea
-                value={f}
-                onChange={e => { const next = [...findings]; next[i] = e.target.value; setFindings(next); }}
-                placeholder={`Risk or flaw #${i + 1}...`}
-                className="min-h-[50px] text-xs"
-                style={{ background: "hsl(var(--surface-stone) / 0.5)" }}
-              />
+      {/* Checkpoint card */}
+      <AnimatePresence mode="wait">
+        <motion.div key={checkpoint.id} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
+          className="rounded-lg p-4 space-y-3" style={{ background: "hsl(var(--surface-stone) / 0.5)", border: "1px solid hsl(var(--filigree) / 0.15)" }}>
+          <div className="flex items-start gap-2">
+            <span className="text-base">{checkpoint.area.split(" ")[0]}</span>
+            <div>
+              <h4 className="text-xs font-bold text-foreground">{checkpoint.area.split(" ").slice(1).join(" ")}</h4>
+              <p className="text-[11px] text-muted-foreground mt-1">{checkpoint.question}</p>
             </div>
-          ))}
-          <div className="flex justify-between items-center">
-            <button
-              onClick={() => setFindings(prev => [...prev, ""])}
-              className="text-[10px] text-muted-foreground hover:text-foreground transition-colors"
-            >
-              + Add another finding
-            </button>
-            <Button size="sm" onClick={() => setSubmitted(true)} disabled={findings.filter(f => f.length > 10).length < 2} className="gap-1.5 text-xs">
-              <Shield className="h-3 w-3" /> Submit Audit
-            </Button>
           </div>
-        </div>
-      ) : (
-        <div className="space-y-3">
-          <div className="rounded-lg p-4 space-y-2" style={{ background: "hsl(var(--muted) / 0.1)", border: "1px solid hsl(var(--border) / 0.3)" }}>
-            <h4 className="text-xs font-bold" style={{ fontFamily: "'Cinzel', serif", color: "hsl(var(--filigree-glow))" }}>
-              Hidden Flaws Revealed
-            </h4>
-            {hiddenFlaws.map((hf, i) => (
-              <div key={i} className="flex gap-2 text-[11px]">
-                <span className="shrink-0" style={{ color: "hsl(0 60% 55%)" }}>⚠</span>
-                <div>
-                  <span className="font-semibold text-foreground">{hf.flaw}:</span>{" "}
-                  <span className="text-muted-foreground">{hf.hint}</span>
+
+          {/* Hint toggle */}
+          {!showHint[checkpoint.id] && !revealed[checkpoint.id] && (
+            <button onClick={() => setShowHint(prev => ({ ...prev, [checkpoint.id]: true }))}
+              className="text-[10px] underline underline-offset-2 transition-colors"
+              style={{ color: "hsl(var(--filigree-glow))" }}>
+              💡 Need a hint?
+            </button>
+          )}
+          {showHint[checkpoint.id] && !revealed[checkpoint.id] && (
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+              className="text-[10px] px-3 py-2 rounded-md italic"
+              style={{ background: "hsl(45 80% 55% / 0.08)", border: "1px solid hsl(45 80% 55% / 0.15)", color: "hsl(var(--foreground))" }}>
+              💡 {checkpoint.hint}
+            </motion.div>
+          )}
+
+          {/* Verdict buttons */}
+          {!revealed[checkpoint.id] && (
+            <div className="flex gap-2">
+              {(["safe", "risky", "critical"] as AuditVerdict[]).map(v => {
+                if (!v) return null;
+                const selected = verdicts[checkpoint.id] === v;
+                const colors = verdictColors[v];
+                return (
+                  <button key={v} onClick={() => handleVerdict(checkpoint.id, v)}
+                    className="flex-1 py-2 px-3 rounded-md text-[11px] font-semibold capitalize transition-all"
+                    style={{
+                      background: selected ? colors.bg : "hsl(var(--muted) / 0.1)",
+                      border: `1.5px solid ${selected ? colors.border : "hsl(var(--border) / 0.2)"}`,
+                      color: selected ? colors.text : "hsl(var(--muted-foreground))",
+                    }}>
+                    {v === "safe" ? "✅ " : v === "risky" ? "⚠️ " : "🚨 "}{v}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+
+          {/* Lock in / reveal */}
+          {verdicts[checkpoint.id] && !revealed[checkpoint.id] && (
+            <Button size="sm" onClick={() => handleReveal(checkpoint.id)} className="w-full gap-1.5 text-xs">
+              <CheckCircle2 className="h-3 w-3" /> Lock In & See Answer
+            </Button>
+          )}
+
+          {/* Revealed explanation */}
+          {revealed[checkpoint.id] && (
+            <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="space-y-2">
+              <div className="flex items-center gap-2">
+                {verdicts[checkpoint.id] === checkpoint.correctVerdict ? (
+                  <span className="text-[11px] font-bold" style={{ color: "hsl(142 60% 50%)" }}>✅ Correct!</span>
+                ) : (
+                  <span className="text-[11px] font-bold" style={{ color: "hsl(0 60% 55%)" }}>
+                    ❌ The answer was <span className="capitalize">{checkpoint.correctVerdict}</span>
+                  </span>
+                )}
+              </div>
+              <div className="rounded-md p-3 text-[11px] space-y-2" style={{ background: "hsl(var(--muted) / 0.1)", border: "1px solid hsl(var(--border) / 0.2)" }}>
+                <p className="text-foreground">{checkpoint.explanation}</p>
+                <div className="flex gap-1.5 items-start pt-1" style={{ borderTop: "1px solid hsl(var(--border) / 0.15)" }}>
+                  <span className="text-[10px]">🎓</span>
+                  <p className="text-[10px] font-medium" style={{ color: "hsl(var(--filigree-glow))" }}>{checkpoint.coachTip}</p>
                 </div>
               </div>
-            ))}
-          </div>
-          <RubricFeedback scores={{
-            risk_awareness: { score: 82, note: "You caught multiple flaws. Expert-level would also flag the missing incrementality test." },
-            strategic_depth: { score: 70, note: "Good identification of surface issues. The stakeholder misalignment (CMO's OKRs) is the strategic layer." },
-            human_value: { score: 78, note: "Your audit demonstrates exactly why human oversight of AI agents is non-negotiable." },
-            actionability: { score: 60, note: "Strong diagnostics. Next: what specific guardrails would you add to prevent this class of error?" },
-          }} />
-          <Button variant="outline" size="sm" onClick={() => { setSubmitted(false); setFindings(["", "", ""]); }} className="gap-1.5 text-xs">
-            <RotateCcw className="h-3 w-3" /> Reset Audit
-          </Button>
-        </div>
-      )}
+              <Button size="sm" variant="outline" onClick={handleNext} className="w-full gap-1.5 text-xs">
+                {currentStep < AUDIT_CHECKPOINTS.length - 1 ? "Next Checkpoint →" : "View Results"}
+              </Button>
+            </motion.div>
+          )}
+        </motion.div>
+      </AnimatePresence>
+
+      {/* Progress dots */}
+      <div className="flex justify-center gap-1.5">
+        {AUDIT_CHECKPOINTS.map((cp, i) => (
+          <div key={cp.id} className="h-1.5 rounded-full transition-all"
+            style={{
+              width: i === currentStep ? 20 : 8,
+              background: revealed[cp.id]
+                ? verdicts[cp.id] === cp.correctVerdict ? "hsl(142 60% 50%)" : "hsl(0 60% 55%)"
+                : i === currentStep ? "hsl(var(--filigree-glow))" : "hsl(var(--muted) / 0.3)",
+            }}
+          />
+        ))}
+      </div>
     </div>
   );
 }
