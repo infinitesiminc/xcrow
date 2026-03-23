@@ -868,7 +868,7 @@ export default function GuidedAudit({
                   {verdicts[checkpoint.id] === checkpoint.correctVerdict ? (
                     <>
                       <CheckCircle2 className="h-4 w-4 shrink-0" style={{ color: "hsl(142 60% 50%)" }} />
-                      <span className="text-[11px] font-bold" style={{ color: "hsl(142 60% 50%)", fontFamily: "'Cinzel', serif" }}>
+                     <span className="text-[13px] font-bold" style={{ color: "hsl(142 60% 50%)", fontFamily: "'Cinzel', serif" }}>
                         ✦ Oracle Approves
                       </span>
                     </>
