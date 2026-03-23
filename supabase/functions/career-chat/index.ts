@@ -7,91 +7,37 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-const SYSTEM_PROMPT = `You are the AI Career Coach at Xcrow.ai. You help university students build job-ready skills before they graduate. Everything feeds into the student's **Skill Territory** — a gamified grid of skills across 6 categories (Technical, Analytical, Communication, Leadership, Creative, Compliance).
+const SYSTEM_PROMPT = `You are the Wayfinder — Xcrow's AI Career Coach. You are a GPS, not a textbook. You know where the student is, where they've been, and where they should go next. You speak in actions, not essays.
 
-Your personality: encouraging, concise, slightly bold. You speak like a smart career coach who gets Gen Z — warm but not cringe. Use emoji naturally (🔥 💡 🚀 👀 📍 💼 🎯 ✨) — about 2-4 per message.
+## Your 4 functions:
 
-## What the platform does:
-- Indexes 20,000+ real job listings from 290+ companies across 70+ countries
-- Each role has real tasks that students can practice in AI-powered simulations
-- Practicing tasks earns XP toward specific skills on their Skill Map
-- Skills level up: Beginner → Developing → Proficient → Expert
-- The goal: build a verified skill map that proves job readiness to employers
-- Students have a Territory Map where practiced skills are "claimed" and target-role skills are "frontiers" to explore
-- Every analyzed role has **future skills** — skills that will be needed in 2-5 years as AI transforms tasks
+1. **Discovery** — Help students find roles. Narrow vague interests with 1-2 questions, then surface 2-3 curated role cards. Each card is a launch point.
 
-## Your coaching approach:
-- Always connect roles back to SKILLS: "This PM role builds Strategy, Stakeholder Management, and Data Analysis"
-- After showing role cards, suggest which task to practice first and why: "Start with the Roadmap Planning task — it builds your Strategy skill, which unlocks the most roles"
-- Frame everything as skill-building and territory expansion: "You're not just learning about PM — you're claiming Strategy territory"
-- For students unsure about careers, help them explore by skills: "You seem drawn to analytical thinking — let me show you roles that build those skills"
-- When you have task data for a role, mention specific tasks: "This role has 8 tasks — try 'Customer Feedback Synthesis' first, it builds your Communication and Data Analysis skills"
-- When future skills data is available, highlight what's COMING: "In 2-3 years, this role will need 'AI Output Curation' and 'Prompt Engineering' — get ahead now"
+2. **Context Translator** — Read the current view context (which skill/role/panel is active) and connect the dots without the student having to explain. Example: "You're looking at Prompt Engineering — 12 roles need this skill, and it bridges your Analytics gap."
 
-## SKILL-FIRST DISCOVERY
-When a student asks about a specific SKILL (like "prompt engineering", "data analysis", "stakeholder management"):
-- Use the search_by_skill tool to find which roles need that skill
-- Show them roles that build that skill, with context on how many roles demand it
-- Frame it as territory strategy: "This skill appears across 15 roles — claiming it gives you a huge advantage"
+3. **Next Action** — Give ONE clear next thing to do. Not a list of options. One specific quest, one skill to focus on, one role to scout. Always link to the action.
 
-## TERRITORY-AWARE COACHING
-When journey context is provided, personalize your responses:
-- Reference their target roles: "Since you're aiming for Product Manager, let's focus on your 3 frontier skills"
-- Highlight gaps: "You've claimed Strategy but Stakeholder Management is still a frontier — this role would help you claim it"
-- Celebrate progress: "Nice! You've covered 6 of 14 skills for your PM goal 🎯"
-- Suggest next moves: "Your weakest area is Design & UX — want to explore roles that build it?"
-- Use territory language naturally: "claimed", "frontier", "contested zone", "territory"
+4. **Debriefer** — After sims, synthesize performance patterns across sessions. "Your Human Value-Add is consistently strong but Tool Awareness lags — try the Data Pipeline Automation quest."
 
-## CRITICAL: Narrowing Before Searching
+## Rules:
 
-Do NOT search immediately when the user says something broad like "marketing" or "finance" or "tech jobs." Instead, ask 1-2 quick narrowing questions first. Your goal is to present 2-3 highly relevant roles, not 6 generic ones.
+- **ONE next action.** Never give a menu of 4 things to try. Pick the best one.
+- **3 sentences max per idea.** You're a GPS giving directions, not a professor giving a lecture.
+- **Show, don't tell.** Use tools (search_roles, search_by_skill, check_readiness) immediately when you have enough context. Don't describe what you *could* do.
+- **Narrowing:** For broad queries ("marketing", "tech"), ask ONE question to narrow, then search with limit 3.
+- **Specific queries:** For specific roles, companies, or skills — search immediately, limit 3.
+- **End with direction, not a question.** Instead of "Would you like to explore more?", say "Try the Stakeholder Feedback quest — it builds your weakest skill."
+- Keep responses SHORT. 2-4 sentences of commentary around the tool results.
+- Use emoji sparingly and naturally (1-2 per message max).
+- Use "augmented" not "automated/replaced/exposed."
+- When presenting roles: title, company, what skills it builds, one suggested task to try.
 
-**Narrowing flow:**
-1. If the user gives a BROAD field (e.g. "marketing", "engineering", "finance", "tech", "business"):
-   → Ask ONE quick question to narrow down. Examples:
-     - "Marketing is huge! Are you more drawn to the creative side (content, brand, social) or the data side (performance, SEO, analytics)? 🎯"
-     - "Engineering covers a lot! Are you into building products (frontend/backend), infrastructure (DevOps/cloud), or AI/ML? 💡"
-   → Then search with the narrowed intent and set limit to 3.
-
-2. If the user gives a SPECIFIC role (e.g. "data scientist", "UX designer", "product manager") or says "I am a [role]":
-   → ALWAYS call search_roles immediately to show matching role cards. Set limit to 3.
-   → If journey context is available, you can ALSO reference their territory progress in your text response, but the role cards MUST appear.
-   → Do NOT use check_readiness as the first response — show role cards first, then offer readiness checks as a follow-up.
-
-3. If the user mentions a company name:
-   → Search immediately for roles at that company. Set limit to 3.
-
-4. If the user asks about a SKILL (e.g. "prompt engineering", "data visualization", "stakeholder management"):
-   → Use search_by_skill to find roles that need that skill.
-
-When presenting roles after searching:
-a) **What is the job** — role title, company
-b) **What skills you'd build** — mention 2-3 specific skills from the taxonomy
-c) **AI's role** — what % is AI augmented and what that means practically
-d) **Future skills** — if available, mention 1-2 future skills this role will need
-e) **Key tasks** — if task data is available, mention 1-2 top tasks they can practice
-f) **Next step** — "Tap a card to see tasks you can practice right now"
-
-Rules:
-- Keep responses SHORT (3-5 sentences per role, max 2-3 roles described in text)
-- When you DO search, ALWAYS set limit to 3 so the cards feel curated
-- ALWAYS call search_roles or search_by_skill when you have enough specificity
-- Never say "I don't have access" — you DO have access to real job data via tools
-- Location is SECONDARY — the student is here to build skills, not apply for jobs
-- BANNED WORD: Never use "exposure" or "exposed." Use "augmented" or "AI augmented."
-- Frame everything positively — focus on skill-building and opportunity
-- Never use "automated," "replaced," or "at risk." Instead say "enhanced," "supercharged," or "augmented."
-- Always end with a question or suggestion to keep building their skill map
-- Use emoji naturally throughout your responses (2-4 per message)
-- When presenting multiple options or choices, put EACH option on its own line using markdown line breaks. Format choices as a short bulleted or numbered list so they're easy to scan — never cram multiple options into one paragraph.
-
-## CRITICAL: NEVER RUN SIMULATIONS IN CHAT
-You are a COACH, not a simulation engine. You must NEVER run, simulate, or roleplay a quest/simulation inside this chat. When a student wants to start a quest:
-- Tell them to navigate to the **Mission Briefing** page for that role (e.g. "Head to the Mission Briefing for [Role Title] and tap the quest to begin! ⚔️")
-- If the role has been mentioned with a company, say: "Open the Mission Briefing for **[Role Title]** at **[Company]** — you'll find all the quests there ready to launch."
-- NEVER generate scenario text, present tasks inline, ask quiz questions, or simulate any part of a quest in this chat.
-- Your job is to RECOMMEND which quest to take and WHY, then direct them to the Mission Briefing page to actually run it.
-- If a student says "start quest", "begin simulation", "let's practice", or similar — respond with direction to the Mission Briefing page, NOT with simulation content.`;
+## NEVER:
+- Run simulations in chat. Direct students to the Mission Briefing page.
+- Give long educational explanations.
+- Ask more than 2 clarifying questions before showing something actionable.
+- Repeat information already visible in the UI.
+- Say "I don't have access" — you have real job data via tools.`;
 
 
 // In-memory cache for search results (per-isolate, short-lived)
@@ -148,48 +94,45 @@ serve(async (req) => {
     let systemPrompt = SYSTEM_PROMPT;
     if (journeyContext) {
       const ctx = journeyContext;
-      let territoryBlock = "\n\n## CURRENT STUDENT TERRITORY STATE\n";
+      let territoryBlock = "\n\n## STUDENT STATE\n";
       if (ctx.targetRoles?.length > 0) {
         territoryBlock += `Target roles: ${ctx.targetRoles.map((r: any) => `${r.title}${r.company ? ` at ${r.company}` : ""}`).join(", ")}\n`;
       }
       if (ctx.skillLevels?.length > 0) {
-        territoryBlock += `Claimed skills (with levels): ${ctx.skillLevels.map((s: any) => `${s.name} [${s.level}, ${s.xp} XP]`).join(", ")}\n`;
-      } else if (ctx.activeSkills?.length > 0) {
-        territoryBlock += `Claimed territory (practiced skills): ${ctx.activeSkills.join(", ")}\n`;
+        territoryBlock += `Active skills: ${ctx.skillLevels.map((s: any) => `${s.name} [${s.level}, ${s.xp} XP]`).join(", ")}\n`;
       }
       if (ctx.frontierSkills?.length > 0) {
-        territoryBlock += `Frontier skills (needed but not practiced): ${ctx.frontierSkills.join(", ")}\n`;
+        territoryBlock += `Gap skills (needed but not practiced): ${ctx.frontierSkills.join(", ")}\n`;
       }
       if (ctx.weakestSkill) {
-        territoryBlock += `Weakest skill among targets: ${ctx.weakestSkill}\n`;
+        territoryBlock += `Weakest skill: ${ctx.weakestSkill}\n`;
       }
       if (ctx.coveragePct !== undefined) {
-        territoryBlock += `Territory coverage: ${ctx.coveragePct}% of target-role skills claimed\n`;
+        territoryBlock += `Coverage: ${ctx.coveragePct}% of target-role skills practiced\n`;
       }
       if (ctx.practicedTasks?.length > 0) {
-        territoryBlock += `Tasks already practiced: ${ctx.practicedTasks.join(", ")}\n`;
+        territoryBlock += `Practiced tasks: ${ctx.practicedTasks.join(", ")}\n`;
       }
-      territoryBlock += `\nUse this context to personalize your coaching. When the student asks "how ready am I" for a role, use the check_readiness tool to get a detailed breakdown. Reference their specific gaps and what to practice next.`;
+      territoryBlock += `\nUse this to give specific, personalized direction. Reference their actual gaps and progress.`;
       systemPrompt += territoryBlock;
     }
 
-    // Append view context for awareness of what the student is currently looking at
+    // Append view context
     if (viewContext) {
-      let viewBlock = "\n\n## CURRENT VIEW CONTEXT\n";
+      let viewBlock = "\n\n## CURRENT VIEW\n";
       if (viewContext.activePanel === "role-preview" && viewContext.selectedRole) {
-        viewBlock += `Student is currently viewing: ${viewContext.selectedRole.title}${viewContext.selectedRole.company ? ` at ${viewContext.selectedRole.company}` : ""}\n`;
-        viewBlock += `Assume questions like "what should I practice" or "how ready am I" refer to THIS role unless they specify otherwise.\n`;
+        viewBlock += `Viewing: ${viewContext.selectedRole.title}${viewContext.selectedRole.company ? ` at ${viewContext.selectedRole.company}` : ""}\n`;
+        viewBlock += `Assume questions refer to THIS role unless specified otherwise.\n`;
       } else if (viewContext.activePanel === "roles") {
-        viewBlock += `Student is browsing their ${viewContext.selectedTab || "saved"} roles.\n`;
-        viewBlock += `Proactively help them prioritize which role to practice next, or summarize their overall progress across saved roles.\n`;
-      } else {
-        viewBlock += `Student is viewing their skill territory map.\n`;
+        viewBlock += `Browsing kingdoms (${viewContext.selectedTab || "saved"} roles).\n`;
+      } else if (viewContext.activePanel === "territory" || viewContext.page === "map") {
+        viewBlock += `Viewing the World Map / Skill Forge.\n`;
       }
       if (viewContext.lastSimResult) {
         const sim = viewContext.lastSimResult;
         const scoreEntries = Object.entries(sim.scores || {}).map(([k, v]) => `${k}: ${v}%`).join(", ");
-        viewBlock += `\n🎉 Student just completed a simulation: "${sim.taskName}" for ${sim.jobTitle}. Scores: ${scoreEntries}.\n`;
-        viewBlock += `Acknowledge their progress, connect it to territory gains, and suggest the next task to practice.\n`;
+        viewBlock += `Just completed: "${sim.taskName}" for ${sim.jobTitle}. Scores: ${scoreEntries}.\n`;
+        viewBlock += `Acknowledge progress briefly, then give ONE next action.\n`;
       }
       systemPrompt += viewBlock;
     }
@@ -199,20 +142,12 @@ serve(async (req) => {
         type: "function",
         function: {
           name: "search_roles",
-          description:
-            "Search the job database for roles matching keywords. Returns matching roles with AI metrics, top tasks, future skills, and salary data.",
+          description: "Search the job database for roles matching keywords. Returns matching roles with AI metrics, tasks, future skills, and salary data.",
           parameters: {
             type: "object",
             properties: {
-              query: {
-                type: "string",
-                description:
-                  "Search keywords like 'software engineer', 'marketing', 'data science'",
-              },
-              limit: {
-                type: "number",
-                description: "Max results to return (default 3)",
-              },
+              query: { type: "string", description: "Search keywords like 'software engineer', 'marketing', 'data science'" },
+              limit: { type: "number", description: "Max results (default 3)" },
             },
             required: ["query"],
           },
@@ -222,19 +157,12 @@ serve(async (req) => {
         type: "function",
         function: {
           name: "search_by_skill",
-          description:
-            "Find roles that require a specific future skill. Use when students ask about learning a particular skill. Returns roles where that skill is predicted as important in the next 2-5 years.",
+          description: "Find roles that require a specific future skill. Returns roles where that skill is predicted as important in 2-5 years.",
           parameters: {
             type: "object",
             properties: {
-              skill: {
-                type: "string",
-                description: "Skill name to search for, e.g. 'prompt engineering', 'data visualization', 'stakeholder management'",
-              },
-              limit: {
-                type: "number",
-                description: "Max roles to return (default 3)",
-              },
+              skill: { type: "string", description: "Skill name e.g. 'prompt engineering', 'data visualization'" },
+              limit: { type: "number", description: "Max roles (default 3)" },
             },
             required: ["skill"],
           },
@@ -247,18 +175,12 @@ serve(async (req) => {
         type: "function",
         function: {
           name: "check_readiness",
-          description: "Check how ready the student is for a specific job role. Returns skill match %, gap skills, practiced vs unpracticed tasks, and a prioritized practice plan. Use when the student asks 'how ready am I', 'what should I practice', 'am I prepared for X interview', or similar readiness questions.",
+          description: "Check how ready the student is for a specific role. Returns skill match %, gaps, practiced vs unpracticed tasks, and a prioritized next-action plan.",
           parameters: {
             type: "object",
             properties: {
-              job_title: {
-                type: "string",
-                description: "The job title to check readiness for, e.g. 'Product Manager'",
-              },
-              company: {
-                type: "string",
-                description: "Optional company name to narrow down the specific role",
-              },
+              job_title: { type: "string", description: "Job title to check readiness for" },
+              company: { type: "string", description: "Optional company name" },
             },
             required: ["job_title"],
           },
@@ -308,7 +230,7 @@ serve(async (req) => {
       );
     }
 
-    // We need to intercept tool calls. Read the stream, handle tool calls, then re-stream.
+    // Read stream to check for tool calls
     const reader = response.body!.getReader();
     const decoder = new TextDecoder();
     let buffer = "";
@@ -317,7 +239,6 @@ serve(async (req) => {
     let hasToolCall = false;
     let fullTextContent = "";
 
-    // First pass: collect the stream to check for tool calls
     while (true) {
       const { done, value } = await reader.read();
       if (done) break;
@@ -367,7 +288,6 @@ serve(async (req) => {
             const parsed = JSON.parse(`{${rawArgs}}`);
             toolCallAccumulator = { name, arguments: JSON.stringify(parsed) };
           } catch {
-            // Try extracting key-value pairs
             const argMap: Record<string, string> = {};
             const kvPattern = /(\w+)\s*:\s*(?:"|')?\s*([^"'),}]+)\s*(?:"|')?/g;
             let kvMatch;
@@ -383,7 +303,7 @@ serve(async (req) => {
       }
     }
 
-    // If there's a tool call, execute it and make a follow-up request
+    // Execute tool call and follow up
     if (hasToolCall && toolCallAccumulator) {
       const toolName = toolCallAccumulator.name;
       let toolResult: any = null;
@@ -394,15 +314,12 @@ serve(async (req) => {
       const sb = createClient(supabaseUrl, supabaseKey);
 
       if (toolName === "check_readiness") {
-        // ── CHECK READINESS TOOL ──
         let args: { job_title: string; company?: string };
         try { args = JSON.parse(toolCallAccumulator.arguments); } catch { args = { job_title: toolCallAccumulator.arguments }; }
         
-        const userId = journeyContext?.userId;
         const practicedTaskNames = new Set((journeyContext?.practicedTasks || []).map((t: string) => t.toLowerCase()));
         const userSkillLevels = new Map((journeyContext?.skillLevels || []).map((s: any) => [s.name.toLowerCase(), s]));
 
-        // Find matching job
         const words = args.job_title.split(/\s+/).filter(Boolean);
         const patterns = words.map(w => `%${w}%`);
         let jobQuery = sb.from("jobs").select("id, title, company_id, companies(name)");
@@ -427,7 +344,6 @@ serve(async (req) => {
             for (const s of (t.skill_names || [])) allSkillNames.add(s);
           }
 
-          // Also fetch future skills for this job
           const { data: futureSkills } = await sb
             .from("job_future_skills")
             .select("skill_name, category")
@@ -445,7 +361,6 @@ serve(async (req) => {
 
           const matchPct = allSkillNames.size > 0 ? Math.round((matchedSkills.length / allSkillNames.size) * 100) : 0;
 
-          // Categorize tasks
           const practicedTasks: string[] = [];
           const unpracticedTasks: { name: string; priority: string; skills: string[] }[] = [];
           for (const t of tasks) {
@@ -462,10 +377,7 @@ serve(async (req) => {
 
           unpracticedTasks.sort((a, b) => {
             const pOrder: Record<string, number> = { high: 0, important: 1, medium: 2, low: 3 };
-            const pa = pOrder[a.priority] ?? 2;
-            const pb = pOrder[b.priority] ?? 2;
-            if (pa !== pb) return pa - pb;
-            return b.skills.length - a.skills.length;
+            return (pOrder[a.priority] ?? 2) - (pOrder[b.priority] ?? 2) || b.skills.length - a.skills.length;
           });
 
           const drillPlan = unpracticedTasks.slice(0, 3).map((t, i) => ({
@@ -484,22 +396,20 @@ serve(async (req) => {
             practicedTasks,
             unpracticedCount: unpracticedTasks.length,
             drillPlan,
-            summary: matchPct >= 80 ? "Strong match — focus on the remaining gaps" :
-                     matchPct >= 50 ? "Good foundation — targeted practice will close the gaps" :
-                     "Early stage — a focused practice plan will build readiness fast",
+            summary: matchPct >= 80 ? "Strong match — focus on remaining gaps" :
+                     matchPct >= 50 ? "Good foundation — targeted practice will close gaps" :
+                     "Early stage — focused practice will build readiness fast",
           };
         } else {
-          toolResult = { error: "No matching role found in database", suggestion: "Try a more specific job title or company" };
+          toolResult = { error: "No matching role found", suggestion: "Try a more specific job title" };
         }
       } else if (toolName === "search_by_skill") {
-        // ── SEARCH BY SKILL TOOL ──
         let args: { skill: string; limit?: number };
         try { args = JSON.parse(toolCallAccumulator.arguments); } catch { args = { skill: toolCallAccumulator.arguments }; }
 
         const limit = args.limit || 3;
         const skillPattern = `%${args.skill}%`;
 
-        // Query job_future_skills for matching skill names
         const { data: skillMatches } = await sb
           .from("job_future_skills")
           .select("job_id, skill_name, category, description, cluster_name")
@@ -507,18 +417,15 @@ serve(async (req) => {
           .limit(50);
 
         if (skillMatches && skillMatches.length > 0) {
-          // Get unique job IDs
           const jobIds = [...new Set(skillMatches.map((s: any) => s.job_id).filter(Boolean))];
           const totalRolesWithSkill = jobIds.length;
 
-          // Fetch job details
           const { data: jobs } = await sb
             .from("jobs")
             .select("id, title, department, location, work_mode, augmented_percent, automation_risk_percent, salary_min, salary_max, salary_currency, salary_period, company_id, companies(name, logo_url, website)")
             .in("id", jobIds.slice(0, limit * 3));
 
           if (jobs && jobs.length > 0) {
-            // Diversify by company
             const byCompany = new Map<string, any>();
             const noCompany: any[] = [];
             for (const j of jobs) {
@@ -533,7 +440,6 @@ serve(async (req) => {
             }
             const selected = pool.slice(0, limit);
 
-            // Get task counts and future skills for each
             const selectedIds = selected.map((j: any) => j.id);
             const { data: allFutureSkills } = await sb
               .from("job_future_skills")
@@ -563,12 +469,7 @@ serve(async (req) => {
               futureSkills: (futureSkillsByJob[j.id] || []).slice(0, 5),
             }));
 
-            toolResult = {
-              searchedSkill: args.skill,
-              totalRolesWithSkill,
-              roles: roleResults,
-            };
-
+            toolResult = { searchedSkill: args.skill, totalRolesWithSkill, roles: roleResults };
             const clientRoles = roleResults.map(({ futureSkills: _fs, ...rest }) => rest);
             if (clientRoles.length > 0) {
               clientEvent = `data: ${JSON.stringify({ type: "role_cards", roles: clientRoles })}\n\n`;
@@ -613,11 +514,10 @@ serve(async (req) => {
               clientEvent = `data: ${JSON.stringify({ type: "role_cards", roles: clientRoles })}\n\n`;
             }
           } else {
-            toolResult = { searchedSkill: args.skill, totalRolesWithSkill: 0, roles: [], message: "No roles found with this skill. Try a different skill name." };
+            toolResult = { searchedSkill: args.skill, totalRolesWithSkill: 0, roles: [], message: "No roles found with this skill." };
           }
         }
       } else if (toolName === "search_roles") {
-        // ── SEARCH ROLES TOOL ──
         let args: { query: string; limit?: number };
         try { args = JSON.parse(toolCallAccumulator.arguments); } catch { args = { query: toolCallAccumulator.arguments }; }
 
@@ -698,7 +598,6 @@ serve(async (req) => {
           let futureSkillsByJob: Record<string, string[]> = {};
 
           if (jobIds.length > 0) {
-            // Fetch tasks
             const { data: tasks } = await sb
               .from("job_task_clusters")
               .select("job_id, cluster_name, ai_exposure_score, sort_order")
@@ -714,7 +613,6 @@ serve(async (req) => {
               }
             }
 
-            // Fetch future skills
             const { data: futureSkills } = await sb
               .from("job_future_skills")
               .select("job_id, skill_name")
@@ -830,7 +728,7 @@ serve(async (req) => {
       });
     }
 
-    // No tool call — just re-stream the collected chunks
+    // No tool call — re-stream collected chunks
     const encoder = new TextEncoder();
     const body = regularChunks.join("");
     return new Response(encoder.encode(body), {
