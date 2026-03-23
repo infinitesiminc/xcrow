@@ -236,7 +236,7 @@ serve(async (req) => {
         console.log(`✅ Generated ${skill.name} (${generated})`);
 
         // Delay between generations to avoid rate limits
-        await sleep(3000);
+        await sleep(2000);
       } catch (e) {
         failed++;
         errors.push(`${skill.name}: ${e instanceof Error ? e.message : "unknown"}`);
