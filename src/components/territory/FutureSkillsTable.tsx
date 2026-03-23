@@ -542,10 +542,14 @@ export default function FutureSkillsTable({ skills, onSkillClick, skillGrowthMap
                             sims={growth?.level1Sims ?? 0}
                             color="hsl(var(--primary))"
                             unlocked
-                            onStart={expandedRoles.length > 0 ? () => {
-                              const r = expandedRoles[0];
-                              navigate(`/role/${encodeURIComponent(r.title)}${r.company ? `?company=${encodeURIComponent(r.company)}` : ""}`);
-                            } : undefined}
+                            onStart={() => {
+                              if (expandedRoles.length > 0) {
+                                const r = expandedRoles[0];
+                                navigate(`/role/${encodeURIComponent(r.title)}${r.company ? `?company=${encodeURIComponent(r.company)}` : ""}`);
+                              } else {
+                                navigate(`/role/${encodeURIComponent(skill.name)}?skill=${encodeURIComponent(skill.id)}`);
+                              }
+                            }}
                           />
                           <InlineTrackCard
                             label="Level 2 · Future Vision"
@@ -556,10 +560,14 @@ export default function FutureSkillsTable({ skills, onSkillClick, skillGrowthMap
                             color="hsl(45 93% 58%)"
                             unlocked={l2Unlocked}
                             unlockText={!l2Unlocked ? `${Math.max(0, 3 - (growth?.level1Sims ?? 0))} more quests` : undefined}
-                            onStart={expandedRoles.length > 0 ? () => {
-                              const r = expandedRoles[0];
-                              navigate(`/role/${encodeURIComponent(r.title)}${r.company ? `?company=${encodeURIComponent(r.company)}&level=2` : "?level=2"}`);
-                            } : undefined}
+                            onStart={() => {
+                              if (expandedRoles.length > 0) {
+                                const r = expandedRoles[0];
+                                navigate(`/role/${encodeURIComponent(r.title)}${r.company ? `?company=${encodeURIComponent(r.company)}&level=2` : "?level=2"}`);
+                              } else {
+                                navigate(`/role/${encodeURIComponent(skill.name)}?skill=${encodeURIComponent(skill.id)}&level=2`);
+                              }
+                            }}
                             startLabel={l2Unlocked ? "⚔️ Level 2" : "⚡ Preview"}
                           />
                         </div>
