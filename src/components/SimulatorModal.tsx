@@ -725,7 +725,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
     if (coaching) setCoachingContext(coaching);
     else setCoachingContext(null);
     try {
-      if (level === 2 && futurePrediction) {
+      if (level === 2) {
         // L2: compile audit checkpoints instead of chat session
         const audit = await compileAudit(taskName, jobTitle, company, futurePrediction, intelContext ?? undefined);
         setAuditData(audit);
