@@ -173,7 +173,7 @@ export default function UnifiedChatDock() {
               {items.length === 0 && !hasInteracted && (
                 <div className="text-center py-8">
                   <p className="text-sm text-muted-foreground mb-4">
-                    I know what you're looking at — ask me anything about the role, skills, or your career path.
+                    I see your map. Ask me where to go next.
                   </p>
                   <div className="flex flex-wrap justify-center gap-2">
                     {suggestions.map((s) => (
