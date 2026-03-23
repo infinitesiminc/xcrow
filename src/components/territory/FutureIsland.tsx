@@ -346,8 +346,8 @@ export default function FutureIsland({ island, skillLookup, level2SkillIds, skil
                     y={node.y + nodeRadius + 12}
                     textAnchor="middle"
                     style={{
-                      fontSize: isHovered ? "11px" : "10px",
-                      fontWeight: isHovered ? 700 : 600,
+                      fontSize: (isHovered || isHighlighted) ? "11px" : "10px",
+                      fontWeight: (isHovered || isHighlighted) ? 700 : 600,
                       fill: isParchment
                         ? (isLevel2
                           ? `hsl(45 ${isHovered ? 60 : 50}% ${isHovered ? 25 : 30}%)`
