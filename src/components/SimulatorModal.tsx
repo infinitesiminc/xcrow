@@ -169,18 +169,18 @@ function useSkillHeroBg(taskName: string, jobTitle: string) {
 const BriefingScreen = ({
   session,
   onStart,
-  jobTitle: propJobTitle,
+  skillHeroBg,
 }: {
   session: SimSession;
   onStart: () => void;
-  jobTitle: string;
+  skillHeroBg: string | null;
 }) => {
   const config = session.config;
   const hue1 = simHeroHue(session.scenario.title);
   const hue2 = (hue1 + 50) % 360;
   const hue3 = (hue1 + 160) % 360;
   const objectiveCount = session.learningObjectives?.length || config?.objectiveCount || 3;
-  const skillHeroBg = useSkillHeroBg(session.scenario.title, propJobTitle);
+  // skillHeroBg comes from prop now
 
   return (
     <motion.div
@@ -613,6 +613,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
   const [showUpgrade, setShowUpgrade] = useState(false);
   const [coachingContext, setCoachingContext] = useState<CoachingContext | null>(null);
 
+  const skillHeroBg = useSkillHeroBg(taskName, jobTitle);
   const taskMeta = { currentState: taskState, trend: taskTrend, impactLevel: taskImpactLevel };
 
   // Dynamic round config from server
@@ -1158,7 +1159,10 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
         {/* Header wrapper */}
         <div className="shrink-0">
         <div className="shrink-0 z-20 bg-background/95 backdrop-blur-md border-b border-border px-4 h-16 flex items-center justify-between gap-3 relative overflow-hidden">
-          <HeaderVibeImages seed={(taskName?.length ?? 0) * 23} count={4} />
+          {skillHeroBg && (
+            <img src={skillHeroBg} alt="" className="absolute inset-0 w-full h-full object-cover" style={{ filter: "brightness(0.2) saturate(0.6)", opacity: 0.7 }} />
+          )}
+          {!skillHeroBg && <HeaderVibeImages seed={(taskName?.length ?? 0) * 23} count={4} />}
             <div className="relative z-10 w-8 shrink-0" /> {/* spacer to balance close button */}
             <div className="relative z-10 text-center min-w-0 flex-1">
               <span className="text-[10px] uppercase tracking-wider text-primary font-semibold">🗡️ {level === 2 ? "Level 2 — Sentinel Audit" : "Level 1 — AI Mastery"}</span>
@@ -1267,7 +1271,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
               )}
 
               {phase === "briefing" && session && (
-                <BriefingScreen session={session} onStart={beginChat} jobTitle={jobTitle} />
+                <BriefingScreen session={session} onStart={beginChat} skillHeroBg={skillHeroBg} />
               )}
 
               {phase === "review" && session && (
@@ -1736,7 +1740,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                     style={{ maxHeight: "180px" }}
                   >
                     <img
-                      src={simVictoryBg}
+                      src={skillHeroBg || simVictoryBg}
                       alt=""
                       className="w-full h-full object-cover"
                       style={{ filter: scoreTier === "high" ? "brightness(0.7) saturate(1.2)" : scoreTier === "mid" ? "brightness(0.5) saturate(0.9)" : "brightness(0.35) saturate(0.6) hue-rotate(180deg)" }}
