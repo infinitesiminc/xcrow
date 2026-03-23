@@ -27,6 +27,7 @@ serve(async (req) => {
     const { action, payload } = body;
 
     if (action === "compile") return await handleCompile(payload, apiKey);
+    if (action === "compile-audit") return await handleCompileAudit(payload, apiKey);
     if (action === "chat") return await handleChat(payload, apiKey);
     if (action === "arena") return await handleArena(payload, apiKey);
     if (action === "score") return await handleScore(payload, apiKey);
