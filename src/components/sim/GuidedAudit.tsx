@@ -547,6 +547,23 @@ export default function GuidedAudit({
         animate={{ opacity: 1, y: 0 }}
         className="space-y-5 py-4 max-w-lg mx-auto"
       >
+        {/* Defeated Boss */}
+        {isBossBattle && (
+          <motion.div
+            className="flex justify-center mb-2"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.2 }}
+          >
+            <BossMonster
+              hp={0}
+              maxHp={maxHp}
+              state="defeated"
+              checkpointsDone={checkpoints.length}
+              totalCheckpoints={checkpoints.length}
+            />
+          </motion.div>
+        )}
         {/* Ascension Portrait + Score ring */}
         <div className="text-center relative">
           {/* Radial burst behind score */}
