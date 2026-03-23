@@ -25,6 +25,7 @@ export interface Friend {
   status: "pending" | "accepted" | "blocked";
   isRequester: boolean; // did current user send the request?
   lastSim: FriendLastSim | null;
+  unreadMessages: number;
 }
 
 export interface FriendMessage {
