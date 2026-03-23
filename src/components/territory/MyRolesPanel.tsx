@@ -486,7 +486,7 @@ export default function MyRolesPanel({ onSelectRole, onAskChat, onTabChange }: M
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-2 gap-2.5">
+          <div className="flex flex-col gap-2">
             {filteredKingdoms.map((k, i) => (
               <KingdomCard key={k.key} kingdom={k} index={i} />
             ))}
