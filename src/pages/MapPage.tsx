@@ -96,6 +96,7 @@ const MapPage = () => {
   const [rightPanelTab, setRightPanelTab] = useState<"table" | "roles" | "allies">("table");
   const [chatOpen, setChatOpen] = useState(!!user);
   const [mapFocusSkillId, setMapFocusSkillId] = useState<string | null>(null);
+  const [forgeFocusSkillId, setForgeFocusSkillId] = useState<string | null>(null);
   const [myRolesTab, setMyRolesTab] = useState<"saved" | "practiced">("saved");
 
 
