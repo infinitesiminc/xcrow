@@ -19,7 +19,7 @@ interface AllyChatProps {
 
 export default function AllyChat({ friend, onBack }: AllyChatProps) {
   const { user } = useAuth();
-  const { messages, loading, sending, sendMessage } = useFriendMessages(friend.friendId);
+  const { messages, loading, sending, friendIsTyping, sendMessage, broadcastTyping } = useFriendMessages(friend.friendId);
   const [draft, setDraft] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -166,6 +166,30 @@ export default function AllyChat({ friend, onBack }: AllyChatProps) {
         </div>
       </ScrollArea>
 
+      {/* Typing indicator */}
+      {friendIsTyping && (
+        <div className="px-4 py-1 shrink-0">
+          <div className="flex items-center gap-1.5">
+            <div className="flex gap-0.5">
+              {[0, 1, 2].map(i => (
+                <span
+                  key={i}
+                  className="w-1.5 h-1.5 rounded-full animate-bounce"
+                  style={{
+                    background: "hsl(var(--filigree-glow))",
+                    animationDelay: `${i * 150}ms`,
+                    animationDuration: "0.8s",
+                  }}
+                />
+              ))}
+            </div>
+            <span className="text-[10px] text-muted-foreground" style={{ fontFamily: "'Cinzel', serif" }}>
+              {friend.displayName} is writing...
+            </span>
+          </div>
+        </div>
+      )}
+
       {/* Input */}
       <div
         className="px-3 py-2.5 shrink-0 flex gap-2 items-center"
@@ -174,7 +198,7 @@ export default function AllyChat({ friend, onBack }: AllyChatProps) {
         <Input
           ref={inputRef}
           value={draft}
-          onChange={e => setDraft(e.target.value)}
+          onChange={e => { setDraft(e.target.value); broadcastTyping(); }}
           onKeyDown={e => e.key === "Enter" && !e.shiftKey && handleSend()}
           placeholder="Send a raven..."
           className="flex-1 h-8 text-xs bg-transparent border-muted/30"
