@@ -15,14 +15,13 @@ import {
 const mainItems = [
   { title: "Companies", url: "/admin", icon: Building2 },
   { title: "Task Analytics", url: "/admin/analytics", icon: BarChart3 },
-  
-  { title: "Skill Matrix", url: "/admin/skill-matrix", icon: Brain },
   { title: "Pricing & Usage", url: "/admin/pricing-usage", icon: DollarSign },
 ];
 
 const schoolItems = [
   { title: "Data Ops", url: "/admin/schools/data-ops", icon: Database },
   { title: "Skills Gap", url: "/admin/schools/skills-gap", icon: GitCompareArrows },
+  { title: "Skill Matrix", url: "/admin/schools/skill-matrix", icon: Brain },
   { title: "Accounts", url: "/admin/schools", icon: GraduationCap },
 ];
 
