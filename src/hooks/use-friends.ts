@@ -25,6 +25,7 @@ export interface Friend {
   status: "pending" | "accepted" | "blocked";
   isRequester: boolean; // did current user send the request?
   lastSim: FriendLastSim | null;
+  unreadMessages: number;
 }
 
 export interface FriendMessage {
@@ -61,13 +62,20 @@ export function useFriends() {
       f.requester_id === user.id ? f.recipient_id : f.requester_id
     );
 
-    const [profilesRes, presenceRes, xpRes, lastSimsRes, unreadRes] = await Promise.all([
+    const [profilesRes, presenceRes, xpRes, lastSimsRes, unreadRes, unreadPerFriendRes] = await Promise.all([
       supabase.from("profiles").select("id, display_name, username, avatar_id").in("id", friendIds),
       supabase.from("user_presence").select("user_id, is_online, last_seen_at, current_activity").in("user_id", friendIds),
       supabase.from("completed_simulations").select("user_id, skills_earned").in("user_id", friendIds),
       supabase.rpc("get_friends_last_sims", { _user_id: user.id }),
       supabase.from("friend_messages").select("id", { count: "exact", head: true }).eq("recipient_id", user.id).is("read_at", null),
+      supabase.from("friend_messages").select("sender_id").eq("recipient_id", user.id).is("read_at", null),
     ]);
+
+    // Count unread messages per sender
+    const unreadPerFriend = new Map<string, number>();
+    for (const msg of unreadPerFriendRes.data || []) {
+      unreadPerFriend.set(msg.sender_id, (unreadPerFriend.get(msg.sender_id) || 0) + 1);
+    }
 
     const profileMap = new Map((profilesRes.data || []).map(p => [p.id, p]));
     const presenceMap = new Map((presenceRes.data || []).map(p => [p.user_id, p]));
@@ -110,6 +118,7 @@ export function useFriends() {
         status: f.status as Friend["status"],
         isRequester: f.requester_id === user.id,
         lastSim: lastSimMap.get(friendId) || null,
+        unreadMessages: unreadPerFriend.get(friendId) || 0,
       };
     });
 

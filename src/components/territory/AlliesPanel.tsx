@@ -400,12 +400,20 @@ function FriendCard({ friend, onAccept, onReject, onView, onMessage, onLaunchSim
             <Clock className="h-3 w-3" /> Pending
           </span>
         ) : (
-          <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
-            <button onClick={onMessage} className="p-1.5 rounded-md transition-all hover:bg-white/10"
+          <div className="flex items-center gap-0.5">
+            <button onClick={onMessage} className="p-1.5 rounded-md transition-all hover:bg-white/10 relative"
               style={{ color: "hsl(var(--filigree-glow))" }} title="Message">
               <MessageCircle className="h-3.5 w-3.5" />
+              {friend.unreadMessages > 0 && (
+                <span
+                  className="absolute -top-1 -right-1 min-w-[14px] h-[14px] rounded-full text-[8px] flex items-center justify-center font-bold animate-pulse"
+                  style={{ background: "hsl(var(--filigree-glow))", color: "hsl(var(--background))" }}
+                >
+                  {friend.unreadMessages}
+                </span>
+              )}
             </button>
-            <button onClick={onView} className="p-1.5 rounded-md transition-all hover:bg-white/10"
+            <button onClick={onView} className={`p-1.5 rounded-md transition-all hover:bg-white/10 ${friend.unreadMessages > 0 ? '' : 'opacity-0 group-hover:opacity-100'}`}
               style={{ color: "hsl(var(--filigree-glow))" }} title="View profile">
               <Eye className="h-3.5 w-3.5" />
             </button>
