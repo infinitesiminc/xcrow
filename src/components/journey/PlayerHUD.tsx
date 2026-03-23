@@ -1,41 +1,30 @@
 /**
  * PlayerHUD — RPG Character Sheet (left panel).
- * Territory coverage, tier badge, stat rings, human edges as trophies.
+ * Now uses unified progression: Player Rank from breadth metrics (castles + kingdoms).
  */
 import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
-  ShieldCheck, Lock, ArrowRight, Swords, Star, Crown, Medal, Map,
+  ShieldCheck, Lock, ArrowRight, Swords, Star, Crown, Medal, Map, Compass,
 } from "lucide-react";
 import {
   SKILL_TAXONOMY,
   CATEGORY_META,
   type SkillXP,
 } from "@/lib/skill-map";
+import { getCastleState, type CastleTier } from "@/lib/castle-levels";
+import { getPlayerRank, PLAYER_RANKS, type KingdomTier } from "@/lib/progression";
 import type { TargetRole } from "@/pages/Journey";
 
-const TIERS = [
-  { name: "Recruit", threshold: 0, icon: Swords, color: "hsl(215, 20%, 55%)" },
-  { name: "Explorer", threshold: 500, icon: Medal, color: "hsl(180, 45%, 50%)" },
-  { name: "Strategist", threshold: 3000, icon: Star, color: "hsl(45, 70%, 55%)" },
-  { name: "Commander", threshold: 10000, icon: Crown, color: "hsl(270, 50%, 60%)" },
-  { name: "Legend", threshold: 30000, icon: Crown, color: "hsl(340, 60%, 55%)" },
-] as const;
-
-function getTier(xp: number) {
-  for (let i = TIERS.length - 1; i >= 0; i--) {
-    if (xp >= TIERS[i].threshold) return { ...TIERS[i], index: i };
-  }
-  return { ...TIERS[0], index: 0 };
-}
-
-function getTierProgress(xp: number) {
-  const tier = getTier(xp);
-  if (tier.index >= TIERS.length - 1) return 100;
-  const next = TIERS[tier.index + 1];
-  return Math.round(((xp - tier.threshold) / (next.threshold - tier.threshold)) * 100);
-}
+const RANK_ICONS = [Swords, Medal, Star, Crown, Crown] as const;
+const RANK_COLORS = [
+  "hsl(215, 20%, 55%)",
+  "hsl(180, 45%, 50%)",
+  "hsl(45, 70%, 55%)",
+  "hsl(270, 50%, 60%)",
+  "hsl(340, 60%, 55%)",
+];
 
 interface PlayerHUDProps {
   skills: SkillXP[];
@@ -43,18 +32,9 @@ interface PlayerHUDProps {
   isEmpty: boolean;
   targetRoles: TargetRole[];
   targetSkillNames: Set<string>;
+  /** Kingdom tiers from MyRolesPanel for rank calculation */
+  kingdomTiers?: KingdomTier[];
 }
-
-export default function PlayerHUD({ skills, uniqueTasks, isEmpty, targetRoles, targetSkillNames }: PlayerHUDProps) {
-  const navigate = useNavigate();
-
-  const activeSkills = useMemo(() => skills.filter(s => s.xp > 0), [skills]);
-  const totalXP = useMemo(() => activeSkills.reduce((sum, s) => sum + s.xp, 0), [activeSkills]);
-
-  const tier = getTier(totalXP);
-  const tierProgress = getTierProgress(totalXP);
-  const TierIcon = tier.icon;
-  const nextTier = tier.index < TIERS.length - 1 ? TIERS[tier.index + 1] : null;
 
   // Territory coverage: how many target-role skills are claimed
   const coverage = useMemo(() => {
