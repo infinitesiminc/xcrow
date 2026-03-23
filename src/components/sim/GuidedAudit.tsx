@@ -335,10 +335,10 @@ function RubricResults({ scores }: { scores: Record<string, { score: number; not
             transition={{ delay: RUBRIC_DIMENSIONS.indexOf(dim) * 0.1 }}
           >
             <div className="flex items-center justify-between mb-1">
-              <span className="text-[11px] font-semibold text-foreground flex items-center gap-1.5">
-                <span className="text-xs">{dim.icon}</span> {dim.label}
+              <span className="text-[13px] font-semibold text-foreground flex items-center gap-1.5">
+                <span className="text-sm">{dim.icon}</span> {dim.label}
               </span>
-              <span className="text-[11px] font-mono font-bold" style={{ color }}>{pct}%</span>
+              <span className="text-[13px] font-mono font-bold" style={{ color }}>{pct}%</span>
             </div>
             <div className="h-2 rounded-full overflow-hidden mb-1.5" style={{ background: "hsl(262 30% 18%)", border: "1px solid hsl(262 60% 40% / 0.15)" }}>
               <motion.div
