@@ -230,6 +230,7 @@ const AlliesPanel = () => {
                 onAccept={() => acceptRequest(friend.id)}
                 onReject={() => removeFriend(friend.id)}
                 onView={() => friend.username && navigate(`/u/${friend.username}`)}
+                onMessage={() => setChatFriend(friend)}
                 formatLastSeen={formatLastSeen}
               />
             ))
