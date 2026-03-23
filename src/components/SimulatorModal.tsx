@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/dialog";
 import {
   compileSession,
+  compileAudit,
   chatTurn,
   scoreSession,
   generateElevation,
@@ -28,7 +29,10 @@ import {
   type SimConfig,
   type ElevationNarrative,
   type CoachingContext,
+  type CompileAuditResult,
 } from "@/lib/simulator";
+
+import GuidedAudit, { type AuditResult, type AuditCheckpoint } from "@/components/sim/GuidedAudit";
 
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
