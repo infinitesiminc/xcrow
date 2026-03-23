@@ -1963,6 +1963,16 @@ export type Database = {
           username: string
         }[]
       }
+      get_friends_last_sims: {
+        Args: { _user_id: string }
+        Returns: {
+          company: string
+          completed_at: string
+          friend_id: string
+          job_title: string
+          task_name: string
+        }[]
+      }
       get_future_skill_demand: {
         Args: { top_n?: number }
         Returns: {
