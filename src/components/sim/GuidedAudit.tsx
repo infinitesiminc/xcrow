@@ -1,9 +1,9 @@
 /**
- * GuidedAudit — Level 2 Red Team simulation format.
+ * GuidedAudit — Level 2 "Sentinel's Sanctum" Red Team simulation format.
  * Sequential 5-step checkpoint audit with verdicts, hints, real-world examples, and deep-dive chat.
- * RPG-themed UI matching the SimulatorModal design system.
+ * Elevated RPG UI: violet/indigo theme, rune stone progress, AI-generated scene illustrations.
  */
-import { useState, useRef, useCallback, useMemo } from "react";
+import { useState, useRef, useCallback, useMemo, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Shield, CheckCircle2, HelpCircle, Loader2, Send,
@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import ReactMarkdown from "react-markdown";
+import { supabase } from "@/integrations/supabase/client";
 
 /* ── Types ── */
 export type AuditVerdict = "safe" | "risky" | "critical" | null;
@@ -54,30 +55,60 @@ const RUBRIC_DIMENSIONS = [
 
 const VERDICT_CONFIG = {
   safe: {
-    emoji: "✅",
+    emoji: "🟢",
     label: "Safe",
+    icon: "🛡️",
     bg: "hsl(142 60% 50% / 0.1)",
     border: "hsl(142 60% 50% / 0.35)",
     text: "hsl(142 60% 50%)",
     glow: "0 0 12px hsl(142 60% 50% / 0.15)",
   },
   risky: {
-    emoji: "⚠️",
+    emoji: "🟡",
     label: "Risky",
+    icon: "👁️",
     bg: "hsl(45 80% 55% / 0.1)",
     border: "hsl(45 80% 55% / 0.35)",
     text: "hsl(45 80% 55%)",
     glow: "0 0 12px hsl(45 80% 55% / 0.15)",
   },
   critical: {
-    emoji: "🚨",
+    emoji: "🔴",
     label: "Critical",
+    icon: "💀",
     bg: "hsl(0 60% 55% / 0.1)",
     border: "hsl(0 60% 55% / 0.35)",
     text: "hsl(0 60% 55%)",
     glow: "0 0 12px hsl(0 60% 55% / 0.15)",
   },
 } as const;
+
+/* ── AI Image Hook ── */
+function useSimImage(prompt: string, cacheKey: string, enabled: boolean) {
+  const [url, setUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!enabled || !prompt) return;
+    let cancelled = false;
+
+    (async () => {
+      try {
+        const { data, error } = await supabase.functions.invoke("generate-sim-image", {
+          body: { prompt, cacheKey },
+        });
+        if (!cancelled && !error && data?.url) {
+          setUrl(data.url);
+        }
+      } catch {
+        // Graceful degradation — no image
+      }
+    })();
+
+    return () => { cancelled = true; };
+  }, [prompt, cacheKey, enabled]);
+
+  return url;
+}
 
 /* ── Checkpoint Deep-Dive Chat ── */
 function CheckpointChat({ checkpoint }: { checkpoint: AuditCheckpoint }) {
@@ -173,15 +204,15 @@ function CheckpointChat({ checkpoint }: { checkpoint: AuditCheckpoint }) {
       exit={{ opacity: 0, height: 0 }}
       className="rounded-xl overflow-hidden"
       style={{
-        background: "hsl(var(--surface-stone))",
-        border: "1px solid hsl(var(--filigree) / 0.15)",
+        background: "hsl(262 30% 12%)",
+        border: "1px solid hsl(262 60% 40% / 0.2)",
         boxShadow: "inset 0 1px 0 hsl(var(--emboss-light))",
       }}
     >
-      <div className="px-3 py-2 flex items-center gap-1.5" style={{ borderBottom: "1px solid hsl(var(--filigree) / 0.1)" }}>
-        <HelpCircle className="h-3 w-3" style={{ color: "hsl(var(--filigree-glow))" }} />
-        <span className="text-[10px] font-semibold" style={{ color: "hsl(var(--filigree))", fontFamily: "'Cinzel', serif" }}>
-          Deep Dive
+      <div className="px-3 py-2 flex items-center gap-1.5" style={{ borderBottom: "1px solid hsl(262 60% 40% / 0.15)" }}>
+        <HelpCircle className="h-3 w-3" style={{ color: "hsl(262 80% 70%)" }} />
+        <span className="text-[10px] font-semibold" style={{ color: "hsl(262 80% 70%)", fontFamily: "'Cinzel', serif" }}>
+          📚 Sanctum Library
         </span>
       </div>
       <div ref={scrollRef} className="max-h-[200px] overflow-y-auto px-3 py-2 space-y-2">
@@ -198,8 +229,8 @@ function CheckpointChat({ checkpoint }: { checkpoint: AuditCheckpoint }) {
               className={`inline-block max-w-[90%] rounded-lg px-3 py-2 text-left`}
               style={
                 msg.role === "user"
-                  ? { background: "hsl(var(--primary) / 0.1)", border: "1px solid hsl(var(--primary) / 0.2)" }
-                  : { background: "hsl(var(--muted) / 0.15)", border: "1px solid hsl(var(--border) / 0.15)" }
+                  ? { background: "hsl(262 60% 50% / 0.15)", border: "1px solid hsl(262 60% 50% / 0.25)" }
+                  : { background: "hsl(262 30% 18%)", border: "1px solid hsl(262 60% 40% / 0.15)", borderLeft: "2px solid hsl(262 80% 60% / 0.3)" }
               }
             >
               {msg.role === "assistant" ? (
@@ -212,18 +243,18 @@ function CheckpointChat({ checkpoint }: { checkpoint: AuditCheckpoint }) {
         ))}
         {isStreaming && messages[messages.length - 1]?.role !== "assistant" && (
           <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
-            <Loader2 className="h-3 w-3 animate-spin" /> Thinking…
+            <Loader2 className="h-3 w-3 animate-spin" /> Consulting archives…
           </div>
         )}
       </div>
-      <div className="px-2 py-2 flex gap-1.5" style={{ borderTop: "1px solid hsl(var(--filigree) / 0.1)" }}>
+      <div className="px-2 py-2 flex gap-1.5" style={{ borderTop: "1px solid hsl(262 60% 40% / 0.15)" }}>
         <input
           value={input}
           onChange={e => setInput(e.target.value)}
           onKeyDown={e => e.key === "Enter" && !e.shiftKey && sendMessage()}
-          placeholder="Ask about this checkpoint…"
+          placeholder="Consult the archives…"
           className="flex-1 rounded-lg px-3 py-1.5 text-[11px] outline-none focus:ring-1 focus:ring-primary/30"
-          style={{ background: "hsl(var(--muted) / 0.1)", border: "1px solid hsl(var(--filigree) / 0.1)" }}
+          style={{ background: "hsl(262 30% 15%)", border: "1px solid hsl(262 60% 40% / 0.15)" }}
         />
         <Button size="icon" onClick={sendMessage} disabled={isStreaming || !input.trim()} className="h-7 w-7 rounded-lg shrink-0">
           <Send className="h-3 w-3" />
@@ -233,8 +264,8 @@ function CheckpointChat({ checkpoint }: { checkpoint: AuditCheckpoint }) {
   );
 }
 
-/* ── Step Progress Bar ── */
-function StepProgress({ total, current, verdicts, correctVerdicts, revealed }: {
+/* ── Rune Stone Progress ── */
+function RuneProgress({ total, current, verdicts, correctVerdicts, revealed }: {
   total: number;
   current: number;
   verdicts: Record<string, AuditVerdict>;
@@ -242,33 +273,39 @@ function StepProgress({ total, current, verdicts, correctVerdicts, revealed }: {
   revealed: Record<string, boolean>;
 }) {
   return (
-    <div className="flex items-center gap-1">
+    <div className="flex items-center gap-1.5">
       {Array.from({ length: total }).map((_, i) => {
         const cpId = Object.keys(correctVerdicts)[i];
         const isRevealed = revealed[cpId];
         const isCorrect = verdicts[cpId] === correctVerdicts[cpId];
         const isCurrent = i === current;
 
-        let bg = "hsl(var(--muted) / 0.25)";
-        let border = "transparent";
+        let bg = "hsl(262 30% 20%)";
+        let border = "hsl(262 40% 30%)";
         let shadow = "none";
+        let className = "transition-all duration-500";
 
         if (isRevealed) {
           bg = isCorrect ? "hsl(142 60% 50%)" : "hsl(0 60% 55%)";
-          shadow = isCorrect ? "0 0 6px hsl(142 60% 50% / 0.4)" : "0 0 6px hsl(0 60% 55% / 0.3)";
+          border = isCorrect ? "hsl(142 60% 60%)" : "hsl(0 60% 60%)";
+          shadow = isCorrect ? "0 0 8px hsl(142 60% 50% / 0.5)" : "0 0 8px hsl(0 60% 55% / 0.4)";
         } else if (isCurrent) {
-          bg = "hsl(var(--filigree-glow))";
-          border = "hsl(var(--filigree-glow) / 0.5)";
-          shadow = "0 0 8px hsl(var(--filigree-glow) / 0.3)";
+          bg = "hsl(262 80% 55%)";
+          border = "hsl(262 80% 65%)";
+          className += " animate-rune-pulse";
         }
 
         return (
-          <motion.div
-            key={i}
-            animate={{ width: isCurrent ? 28 : 10, height: 10 }}
-            className="rounded-full shrink-0"
-            style={{ background: bg, border: `1.5px solid ${border}`, boxShadow: shadow }}
-          />
+          <div key={i} className="flex items-center gap-1">
+            <motion.div
+              animate={{ scale: isCurrent ? 1.15 : 1 }}
+              className={`w-3 h-3 rotate-45 shrink-0 ${className}`}
+              style={{ background: bg, border: `1.5px solid ${border}`, boxShadow: shadow }}
+            />
+            {i < total - 1 && (
+              <div className="w-2 h-px" style={{ background: "hsl(262 40% 30%)" }} />
+            )}
+          </div>
         );
       })}
     </div>
@@ -281,8 +318,8 @@ function RubricResults({ scores }: { scores: Record<string, { score: number; not
     <div className="space-y-3">
       <div className="flex items-center gap-2 mb-1">
         <span className="text-xs">📜</span>
-        <span className="text-[10px] font-bold uppercase tracking-widest" style={{ fontFamily: "'Cinzel', serif", color: "hsl(var(--filigree-glow))" }}>
-          Coaching Rubric
+        <span className="text-[10px] font-bold uppercase tracking-widest" style={{ fontFamily: "'Cinzel', serif", color: "hsl(262 80% 70%)" }}>
+          Sentinel's Rubric
         </span>
       </div>
       {RUBRIC_DIMENSIONS.map(dim => {
@@ -302,7 +339,7 @@ function RubricResults({ scores }: { scores: Record<string, { score: number; not
               </span>
               <span className="text-[11px] font-mono font-bold" style={{ color }}>{pct}%</span>
             </div>
-            <div className="h-2 rounded-full overflow-hidden mb-1.5" style={{ background: "hsl(var(--muted) / 0.2)", border: "1px solid hsl(var(--filigree) / 0.1)" }}>
+            <div className="h-2 rounded-full overflow-hidden mb-1.5" style={{ background: "hsl(262 30% 18%)", border: "1px solid hsl(262 60% 40% / 0.15)" }}>
               <motion.div
                 initial={{ width: 0 }}
                 animate={{ width: `${pct}%` }}
@@ -315,6 +352,26 @@ function RubricResults({ scores }: { scores: Record<string, { score: number; not
           </motion.div>
         );
       })}
+    </div>
+  );
+}
+
+/* ── Sparkle Particles ── */
+function SparkleParticles() {
+  return (
+    <div className="absolute inset-0 pointer-events-none overflow-hidden">
+      {[0, 1, 2].map(i => (
+        <motion.div
+          key={i}
+          className="absolute text-xs"
+          initial={{ opacity: 0, y: 0, x: `${30 + i * 25}%` }}
+          animate={{ opacity: [0, 0.8, 0], y: -20, scale: [1, 0.3] }}
+          transition={{ delay: i * 0.15, duration: 1.2, ease: "easeOut" }}
+          style={{ left: `${30 + i * 20}%`, bottom: "30%" }}
+        >
+          ✨
+        </motion.div>
+      ))}
     </div>
   );
 }
@@ -344,12 +401,33 @@ export default function GuidedAudit({
     return map;
   }, [checkpoints]);
 
+  // AI-generated scene image for current checkpoint
+  const scenePrompt = checkpoint
+    ? `Dark fantasy oracle vision, ethereal indigo and violet glow, showing ${checkpoint.area.replace(/[^\w\s]/g, "")} concept — minimalist, no text, arcane observatory style, mystical runes, 256x256`
+    : "";
+  const sceneCacheKey = checkpoint ? `checkpoint-${checkpoint.id.slice(0, 8)}` : "";
+  const sceneImageUrl = useSimImage(scenePrompt, sceneCacheKey, !!checkpoint && !completed);
+
+  // AI-generated completion portrait
+  const ratio = completed ? totalCorrect / checkpoints.length : 0;
+  const completionTier = ratio >= 0.8 ? "high" : ratio >= 0.5 ? "mid" : "low";
+  const portraitPrompts: Record<string, string> = {
+    high: "Radiant oracle sentinel with golden halo, violet ethereal armor, glowing runes, dark fantasy portrait, indigo background, arcane power, 256x256",
+    mid: "Watchful sentinel warrior in violet crystalline armor, vigilant stance, dark fantasy portrait, indigo mist, 256x256",
+    low: "Hooded apprentice seer with glowing violet rune staff, humble pose, dark fantasy portrait, misty indigo background, 256x256",
+  };
+  const completionImageUrl = useSimImage(
+    completed ? portraitPrompts[completionTier] : "",
+    `completion-${completionTier}`,
+    completed,
+  );
+
   const computeRubricScores = useCallback((): Record<string, { score: number; note: string }> => {
-    const ratio = totalCorrect / checkpoints.length;
+    const r = totalCorrect / checkpoints.length;
     const hintPenalty = hintsUsed * 5;
     return {
       risk_awareness: {
-        score: Math.max(0, Math.round(ratio * 100) - hintPenalty),
+        score: Math.max(0, Math.round(r * 100) - hintPenalty),
         note: totalCorrect >= checkpoints.length - 1
           ? "Excellent threat detection — you caught the key failure modes."
           : "Review the checkpoints you missed. Each represents a common AI oversight pattern.",
@@ -402,11 +480,10 @@ export default function GuidedAudit({
     onRestart?.();
   };
 
-  /* ── Completion Screen ── */
+  /* ── Completion Screen — Ascension Ceremony ── */
   if (completed) {
-    const ratio = totalCorrect / checkpoints.length;
-    const tier = ratio >= 0.8 ? "high" : ratio >= 0.5 ? "mid" : "low";
-    const titles = { high: "🏆 Master Auditor", mid: "⚔️ Vigilant Inspector", low: "🌱 Apprentice Sentinel" };
+    const tier = completionTier;
+    const titles = { high: "🔮 Grand Sentinel", mid: "⚔️ Vigilant Watcher", low: "🌱 Apprentice Seer" };
     const subtitles = {
       high: "You identified the critical failure modes. Your oversight is battle-tested.",
       mid: "You caught some flaws but others slipped past. Study the misses — they're the most common in production.",
@@ -419,8 +496,30 @@ export default function GuidedAudit({
         animate={{ opacity: 1, y: 0 }}
         className="space-y-5 py-4 max-w-lg mx-auto"
       >
-        {/* Score ring */}
-        <div className="text-center">
+        {/* Ascension Portrait + Score ring */}
+        <div className="text-center relative">
+          {/* Radial burst behind score */}
+          <motion.div
+            initial={{ scale: 0, opacity: 0 }}
+            animate={{ scale: 1.5, opacity: 0.15 }}
+            transition={{ duration: 1.2 }}
+            className="absolute inset-0 mx-auto w-32 h-32 rounded-full"
+            style={{ background: "radial-gradient(circle, hsl(262 80% 55%), transparent 70%)", top: "-16px" }}
+          />
+
+          {/* Portrait image (if loaded) */}
+          {completionImageUrl && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.3 }}
+              className="mx-auto mb-3 w-20 h-20 rounded-full overflow-hidden"
+              style={{ border: "2px solid hsl(262 80% 55% / 0.5)", boxShadow: "0 0 20px hsl(262 80% 55% / 0.3)" }}
+            >
+              <img src={completionImageUrl} alt="Sentinel portrait" className="w-full h-full object-cover" />
+            </motion.div>
+          )}
+
           <motion.div
             initial={{ scale: 0.5, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
@@ -428,10 +527,16 @@ export default function GuidedAudit({
             className="relative inline-block"
           >
             <svg width="100" height="100" viewBox="0 0 100 100">
-              <circle cx="50" cy="50" r="44" fill="none" stroke="hsl(var(--muted) / 0.2)" strokeWidth="4" />
+              <defs>
+                <linearGradient id="sentinel-ring" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stopColor="hsl(262 80% 55%)" />
+                  <stop offset="100%" stopColor="hsl(45 85% 55%)" />
+                </linearGradient>
+              </defs>
+              <circle cx="50" cy="50" r="44" fill="none" stroke="hsl(262 30% 18%)" strokeWidth="4" />
               <motion.circle
                 cx="50" cy="50" r="44" fill="none"
-                stroke={tier === "high" ? "hsl(142 71% 45%)" : tier === "mid" ? "hsl(var(--filigree-glow))" : "hsl(38 92% 50%)"}
+                stroke="url(#sentinel-ring)"
                 strokeWidth="5"
                 strokeLinecap="round"
                 strokeDasharray={`${(totalCorrect / checkpoints.length) * 276} 276`}
@@ -455,7 +560,7 @@ export default function GuidedAudit({
             </div>
           </motion.div>
 
-          <h3 className="text-base font-bold text-foreground mt-3" style={{ fontFamily: "'Cinzel', serif" }}>
+          <h3 className="text-base font-bold mt-3" style={{ fontFamily: "'Cinzel', serif", color: "hsl(262 80% 70%)" }}>
             {titles[tier]}
           </h3>
           <p className="text-xs text-muted-foreground mt-1 max-w-sm mx-auto leading-relaxed">{subtitles[tier]}</p>
@@ -465,12 +570,12 @@ export default function GuidedAudit({
         <div
           className="rounded-xl p-4 space-y-2"
           style={{
-            background: "hsl(var(--surface-stone))",
-            border: "1px solid hsl(var(--filigree) / 0.15)",
+            background: "linear-gradient(135deg, hsl(262 30% 12%), hsl(var(--surface-stone)))",
+            border: "1px solid hsl(262 60% 40% / 0.2)",
             boxShadow: "inset 0 1px 0 hsl(var(--emboss-light))",
           }}
         >
-          <span className="text-[10px] font-bold uppercase tracking-widest" style={{ fontFamily: "'Cinzel', serif", color: "hsl(var(--filigree))" }}>
+          <span className="text-[10px] font-bold uppercase tracking-widest" style={{ fontFamily: "'Cinzel', serif", color: "hsl(262 80% 70%)" }}>
             Checkpoint Review
           </span>
           {checkpoints.map(cp => {
@@ -486,7 +591,14 @@ export default function GuidedAudit({
                   border: `1px solid ${isCorrect ? "hsl(142 60% 50% / 0.15)" : "hsl(0 60% 55% / 0.15)"}`,
                 }}
               >
-                <span className="shrink-0 mt-0.5 text-sm">{isCorrect ? "✅" : "❌"}</span>
+                {/* Diamond rune icon */}
+                <div
+                  className="w-2.5 h-2.5 rotate-45 shrink-0 mt-1"
+                  style={{
+                    background: isCorrect ? "hsl(142 60% 50%)" : "hsl(0 60% 55%)",
+                    boxShadow: isCorrect ? "0 0 6px hsl(142 60% 50% / 0.4)" : "0 0 6px hsl(0 60% 55% / 0.3)",
+                  }}
+                />
                 <div className="min-w-0">
                   <span className="font-semibold text-foreground">{cp.area}</span>
                   <span className="text-muted-foreground">
@@ -503,8 +615,8 @@ export default function GuidedAudit({
         <div
           className="rounded-xl p-4"
           style={{
-            background: "hsl(var(--surface-stone))",
-            border: "1px solid hsl(var(--filigree) / 0.2)",
+            background: "linear-gradient(135deg, hsl(262 30% 12%), hsl(var(--surface-stone)))",
+            border: "1px solid hsl(262 60% 40% / 0.2)",
             boxShadow: "inset 0 1px 0 hsl(var(--emboss-light)), 0 2px 8px hsl(var(--emboss-shadow))",
           }}
         >
@@ -513,46 +625,71 @@ export default function GuidedAudit({
 
         {/* Actions */}
         <div className="flex justify-center">
-          <Button variant="outline" size="sm" onClick={handleRestart} className="gap-1.5 text-xs rounded-xl" style={{ fontFamily: "'Cinzel', serif" }}>
-            <RotateCcw className="h-3 w-3" /> Restart Audit
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleRestart}
+            className="gap-1.5 text-xs rounded-xl"
+            style={{ fontFamily: "'Cinzel', serif", borderColor: "hsl(262 60% 40% / 0.3)", color: "hsl(262 80% 70%)" }}
+          >
+            <RotateCcw className="h-3 w-3" /> 🔮 Begin New Vigil
           </Button>
         </div>
       </motion.div>
     );
   }
 
-  /* ── Active Audit ── */
+  /* ── Active Audit — Sentinel's Sanctum ── */
   return (
     <div className="space-y-4 max-w-lg mx-auto py-2">
-      {/* Header banner */}
+      {/* Sanctum Header Banner */}
       <div
         className="rounded-xl p-3.5 relative overflow-hidden"
         style={{
-          background: "linear-gradient(135deg, hsl(0 60% 55% / 0.08), hsl(var(--surface-stone)))",
-          border: "1px solid hsl(0 60% 55% / 0.2)",
-          boxShadow: "inset 0 1px 0 hsl(var(--emboss-light))",
+          background: "linear-gradient(135deg, hsl(262 40% 15% / 0.6), hsl(270 30% 10% / 0.8))",
+          border: "1px solid hsl(262 60% 40% / 0.25)",
+          boxShadow: "inset 0 1px 0 hsl(var(--emboss-light)), 0 0 20px hsl(262 80% 55% / 0.08)",
         }}
       >
-        {/* Subtle glow */}
-        <div className="absolute -top-8 -right-8 w-24 h-24 rounded-full opacity-10 blur-2xl" style={{ background: "hsl(0 60% 55%)" }} />
+        {/* Animated glow orb */}
+        <div className="absolute -top-8 -right-8 w-24 h-24 rounded-full opacity-15 blur-2xl" style={{ background: "hsl(262 80% 55%)" }} />
+        {/* Floating particles */}
+        {[0, 1, 2].map(i => (
+          <motion.div
+            key={i}
+            className="absolute rounded-full"
+            animate={{ y: [0, -8, 0], opacity: [0.2, 0.5, 0.2] }}
+            transition={{ duration: 3 + i, repeat: Infinity, delay: i * 0.7 }}
+            style={{
+              width: 3, height: 3,
+              background: "hsl(262 80% 70%)",
+              right: `${20 + i * 25}%`,
+              top: `${30 + i * 15}%`,
+            }}
+          />
+        ))}
+
         <div className="relative flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <div
               className="h-8 w-8 rounded-lg flex items-center justify-center"
-              style={{ background: "hsl(0 60% 55% / 0.12)", border: "1px solid hsl(0 60% 55% / 0.2)" }}
+              style={{ background: "hsl(262 60% 50% / 0.15)", border: "1px solid hsl(262 60% 50% / 0.25)" }}
             >
-              <Shield className="h-4 w-4" style={{ color: "hsl(0 60% 55%)" }} />
+              <Eye className="h-4 w-4" style={{ color: "hsl(262 80% 70%)" }} />
             </div>
             <div>
-              <span className="text-xs font-bold" style={{ fontFamily: "'Cinzel', serif", color: "hsl(0 60% 55%)" }}>
-                Guided Audit
+              <span
+                className="text-xs font-bold drop-shadow-[0_0_8px_rgba(139,92,246,0.4)]"
+                style={{ fontFamily: "'Cinzel', serif", color: "hsl(262 80% 75%)" }}
+              >
+                🔮 Sentinel's Sanctum
               </span>
               <p className="text-[10px] text-muted-foreground">
-                Assess each checkpoint: Safe, Risky, or Critical
+                Evaluate AI claims from the future battlefield
               </p>
             </div>
           </div>
-          <StepProgress
+          <RuneProgress
             total={checkpoints.length}
             current={currentStep}
             verdicts={verdicts}
@@ -562,17 +699,25 @@ export default function GuidedAudit({
         </div>
       </div>
 
-      {/* AI output context — compact */}
+      {/* Oracle's Claim — AI output context */}
       <div
-        className="rounded-lg px-3.5 py-2.5 text-[10px] font-mono"
+        className="rounded-lg px-3.5 py-2.5 text-[10px] font-mono relative overflow-hidden"
         style={{
-          background: "hsl(var(--muted) / 0.1)",
-          border: "1px solid hsl(var(--border) / 0.2)",
+          background: "hsl(262 30% 12%)",
+          border: "1px solid hsl(262 60% 40% / 0.2)",
+          borderLeft: "3px solid hsl(262 80% 55% / 0.5)",
           boxShadow: "inset 0 1px 0 hsl(var(--emboss-light))",
         }}
       >
-        <span className="text-[9px] font-bold uppercase tracking-wider" style={{ color: "hsl(var(--primary))", fontFamily: "'Cinzel', serif" }}>
-          AI Report:{" "}
+        {/* Scanning line animation */}
+        <motion.div
+          className="absolute left-0 right-0 h-px pointer-events-none"
+          style={{ background: "linear-gradient(90deg, transparent, hsl(262 80% 70% / 0.3), transparent)" }}
+          animate={{ y: ["-100%", "200%"] }}
+          transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+        />
+        <span className="text-[9px] font-bold uppercase tracking-wider" style={{ color: "hsl(262 80% 70%)", fontFamily: "'Cinzel', serif" }}>
+          🔮 Oracle's Claim:{" "}
         </span>
         <span className="text-foreground/80">{checkpoint.aiClaim}</span>
       </div>
@@ -585,27 +730,40 @@ export default function GuidedAudit({
           animate={{ opacity: 1, x: 0 }}
           exit={{ opacity: 0, x: -30 }}
           transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
-          className="rounded-xl p-4 space-y-3 relative overflow-hidden"
+          className="rounded-xl p-4 space-y-3 relative overflow-hidden sentinel-constellation"
           style={{
-            background: "hsl(var(--surface-stone))",
-            border: "1px solid hsl(var(--filigree) / 0.2)",
+            background: "linear-gradient(135deg, hsl(262 30% 12%), hsl(var(--surface-stone)))",
+            border: "1px solid hsl(262 60% 40% / 0.2)",
             boxShadow: "inset 0 1px 0 hsl(var(--emboss-light)), 0 2px 8px hsl(var(--emboss-shadow))",
           }}
         >
-          {/* Parchment texture overlay */}
-          <div className="absolute inset-0 opacity-[0.02]" style={{
-            backgroundImage: "radial-gradient(circle at 50% 50%, hsl(var(--filigree)), transparent 70%)",
-          }} />
+          {/* Scene illustration background (AI-generated) */}
+          {sceneImageUrl && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 0.08 }}
+              transition={{ duration: 1.5 }}
+              className="absolute inset-0 bg-cover bg-center pointer-events-none"
+              style={{ backgroundImage: `url(${sceneImageUrl})`, filter: "blur(1px)" }}
+            />
+          )}
 
           <div className="relative">
             {/* Area header */}
             <div className="flex items-start gap-2.5">
-              <span className="text-xl shrink-0">{checkpoint.area.split(" ")[0]}</span>
+              <motion.span
+                initial={{ scale: 0.8 }}
+                animate={{ scale: 1 }}
+                transition={{ type: "spring", stiffness: 300 }}
+                className="text-xl shrink-0"
+              >
+                {checkpoint.area.split(" ")[0]}
+              </motion.span>
               <div>
                 <h4 className="text-sm font-bold text-foreground" style={{ fontFamily: "'Cinzel', serif" }}>
                   {checkpoint.area.split(" ").slice(1).join(" ")}
                 </h4>
-                <p className="text-[11px] text-muted-foreground mt-1.5 leading-relaxed">{checkpoint.question}</p>
+                <p className="text-[12px] text-muted-foreground mt-1.5 leading-relaxed">{checkpoint.question}</p>
               </div>
             </div>
 
@@ -614,7 +772,7 @@ export default function GuidedAudit({
               <button
                 onClick={() => setShowHint(prev => ({ ...prev, [checkpoint.id]: true }))}
                 className="text-[10px] mt-2 flex items-center gap-1 transition-colors hover:brightness-125"
-                style={{ color: "hsl(var(--filigree-glow))" }}
+                style={{ color: "hsl(262 80% 70%)" }}
               >
                 <Sparkles className="h-3 w-3" /> Need a hint?
               </button>
@@ -634,7 +792,7 @@ export default function GuidedAudit({
               </motion.div>
             )}
 
-            {/* Verdict buttons */}
+            {/* Verdict buttons — Seal of Judgment */}
             {!revealed[checkpoint.id] && (
               <div className="flex gap-2 mt-3">
                 {(["safe", "risky", "critical"] as const).map(v => {
@@ -648,29 +806,33 @@ export default function GuidedAudit({
                       onClick={() => handleVerdict(checkpoint.id, v)}
                       className="flex-1 py-2.5 px-3 rounded-lg text-[11px] font-semibold capitalize transition-all"
                       style={{
-                        background: selected ? cfg.bg : "hsl(var(--muted) / 0.08)",
-                        border: `1.5px solid ${selected ? cfg.border : "hsl(var(--filigree) / 0.12)"}`,
+                        background: selected ? cfg.bg : "hsl(262 30% 15%)",
+                        border: `1.5px solid ${selected ? cfg.border : "hsl(262 60% 40% / 0.15)"}`,
                         color: selected ? cfg.text : "hsl(var(--muted-foreground))",
                         boxShadow: selected ? cfg.glow : "none",
                       }}
                     >
-                      {cfg.emoji} {cfg.label}
+                      {cfg.icon} {cfg.label}
                     </motion.button>
                   );
                 })}
               </div>
             )}
 
-            {/* Lock in */}
+            {/* Seal Your Judgment */}
             {verdicts[checkpoint.id] && !revealed[checkpoint.id] && (
               <motion.div initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} className="mt-3">
                 <Button
                   size="sm"
                   onClick={() => handleReveal(checkpoint.id)}
                   className="w-full gap-1.5 text-xs rounded-xl h-9"
-                  style={{ fontFamily: "'Cinzel', serif" }}
+                  style={{
+                    fontFamily: "'Cinzel', serif",
+                    background: "linear-gradient(135deg, hsl(262 80% 55%), hsl(262 60% 45%))",
+                    boxShadow: "0 0 15px hsl(262 80% 55% / 0.3)",
+                  }}
                 >
-                  <Eye className="h-3 w-3" /> Lock In & Reveal
+                  <Eye className="h-3 w-3" /> ⚡ Seal Your Judgment
                 </Button>
               </motion.div>
             )}
@@ -680,13 +842,13 @@ export default function GuidedAudit({
               <motion.div
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="space-y-3 mt-3"
+                className="space-y-3 mt-3 relative"
               >
                 {/* Result banner */}
                 <motion.div
                   initial={verdicts[checkpoint.id] === checkpoint.correctVerdict ? { scale: 0.95 } : { x: [-3, 3, -2, 2, 0] }}
                   animate={{ scale: 1, x: 0 }}
-                  className="flex items-center gap-2 rounded-lg px-3 py-2"
+                  className="flex items-center gap-2 rounded-lg px-3 py-2 relative overflow-hidden"
                   style={{
                     background: verdicts[checkpoint.id] === checkpoint.correctVerdict
                       ? "hsl(142 60% 50% / 0.08)"
@@ -696,16 +858,19 @@ export default function GuidedAudit({
                       : "hsl(0 60% 55% / 0.25)"}`,
                   }}
                 >
+                  {verdicts[checkpoint.id] === checkpoint.correctVerdict && <SparkleParticles />}
                   {verdicts[checkpoint.id] === checkpoint.correctVerdict ? (
                     <>
                       <CheckCircle2 className="h-4 w-4 shrink-0" style={{ color: "hsl(142 60% 50%)" }} />
-                      <span className="text-[11px] font-bold" style={{ color: "hsl(142 60% 50%)" }}>Correct!</span>
+                      <span className="text-[11px] font-bold" style={{ color: "hsl(142 60% 50%)", fontFamily: "'Cinzel', serif" }}>
+                        ✦ Oracle Approves
+                      </span>
                     </>
                   ) : (
                     <>
                       <Shield className="h-4 w-4 shrink-0" style={{ color: "hsl(0 60% 55%)" }} />
-                      <span className="text-[11px] font-bold" style={{ color: "hsl(0 60% 55%)" }}>
-                        The answer was <span className="capitalize">{checkpoint.correctVerdict}</span>
+                      <span className="text-[11px] font-bold" style={{ color: "hsl(0 60% 55%)", fontFamily: "'Cinzel', serif" }}>
+                        The Oracle Corrects — <span className="capitalize">{checkpoint.correctVerdict}</span>
                       </span>
                     </>
                   )}
@@ -714,30 +879,33 @@ export default function GuidedAudit({
                 {/* Explanation */}
                 <div
                   className="rounded-lg p-3 text-[11px] space-y-2.5"
-                  style={{ background: "hsl(var(--muted) / 0.08)", border: "1px solid hsl(var(--border) / 0.15)" }}
+                  style={{ background: "hsl(262 30% 12%)", border: "1px solid hsl(262 60% 40% / 0.15)" }}
                 >
                   <p className="text-foreground leading-relaxed">{checkpoint.explanation}</p>
 
-                  {/* Real-world case study */}
+                  {/* Chronicle Entry (real-world case) */}
                   <div
                     className="rounded-lg p-3"
                     style={{
-                      background: "hsl(var(--filigree-glow) / 0.05)",
-                      border: "1px solid hsl(var(--filigree) / 0.12)",
+                      background: "hsl(262 30% 16%)",
+                      border: "1px solid hsl(262 60% 40% / 0.12)",
+                      boxShadow: "0 0 8px hsl(38 65% 55% / 0.05)",
                     }}
                   >
                     <div className="flex items-center gap-1.5 mb-1.5">
-                      <span className="text-[9px] font-bold uppercase tracking-wider" style={{ color: "hsl(var(--filigree-glow))", fontFamily: "'Cinzel', serif" }}>
-                        📖 Real-World Case
+                      <span className="text-[9px] font-bold uppercase tracking-wider" style={{ color: "hsl(262 80% 70%)", fontFamily: "'Cinzel', serif" }}>
+                        📜 Chronicle Entry
                       </span>
                     </div>
                     <p className="text-[10px] text-foreground/80 leading-relaxed">{checkpoint.realWorldExample}</p>
                   </div>
 
-                  {/* Coach tip */}
+                  {/* Sentinel's Counsel */}
                   <div className="flex items-start gap-2 text-[10px]">
-                    <span className="shrink-0">🎯</span>
-                    <p className="text-primary font-medium italic">{checkpoint.coachTip}</p>
+                    <span className="shrink-0">🧭</span>
+                    <p className="font-medium italic" style={{ color: "hsl(262 80% 70%)" }}>
+                      {checkpoint.coachTip}
+                    </p>
                   </div>
                 </div>
 
@@ -746,7 +914,7 @@ export default function GuidedAudit({
                   <button
                     onClick={() => setShowChat(prev => ({ ...prev, [checkpoint.id]: !prev[checkpoint.id] }))}
                     className="text-[10px] flex items-center gap-1 transition-colors hover:brightness-125"
-                    style={{ color: "hsl(var(--filigree-glow))" }}
+                    style={{ color: "hsl(262 80% 70%)" }}
                   >
                     <HelpCircle className="h-3 w-3" />
                     {showChat[checkpoint.id] ? "Hide" : "Ask questions about this"}
@@ -762,7 +930,10 @@ export default function GuidedAudit({
                   size="sm"
                   onClick={handleNext}
                   className="w-full gap-1.5 text-xs rounded-xl h-9"
-                  style={{ fontFamily: "'Cinzel', serif" }}
+                  style={{
+                    fontFamily: "'Cinzel', serif",
+                    background: "linear-gradient(135deg, hsl(262 80% 55%), hsl(262 60% 45%))",
+                  }}
                 >
                   {currentStep < checkpoints.length - 1 ? (
                     <>
