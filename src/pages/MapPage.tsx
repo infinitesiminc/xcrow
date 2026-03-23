@@ -280,7 +280,7 @@ const MapPage = () => {
         </div>
 
         {/* Panel content */}
-        <div className="flex-1 overflow-y-auto">
+        <div className="flex-1 overflow-y-auto overflow-x-hidden">
           {activeTab === "table" ? (
             <FutureSkillsTable
               skills={futureSkills}
