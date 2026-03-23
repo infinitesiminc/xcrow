@@ -64,10 +64,10 @@ export default function OnboardingQuest({ open, userId, onComplete }: Onboarding
       updates.username = username;
     }
 
+    updates.id = userId;
     const { error } = await supabase
       .from("profiles")
-      .update(updates)
-      .eq("id", userId);
+      .upsert(updates, { onConflict: "id" });
 
     if (error) {
       toast({ title: "Error", description: "Failed to save.", variant: "destructive" });
