@@ -13,6 +13,7 @@ import type { CanonicalSkillGrowth } from "@/pages/MapPage";
 
 export interface SimLaunchRequest {
   jobTitle: string;
+  taskName?: string;
   company?: string;
   skillId?: string;
   level?: 1 | 2;
@@ -85,7 +86,13 @@ export default function SkillLaunchCard({
   const launchLevel = useCallback((level: 1 | 2) => {
     if (!firstRole) return;
     if (onLaunchSim) {
-      onLaunchSim({ jobTitle: firstRole.title, company: firstRole.company || undefined, skillId: skill.id, level });
+      onLaunchSim({
+        jobTitle: firstRole.title,
+        taskName: skill.name,
+        company: firstRole.company || undefined,
+        skillId: skill.id,
+        level,
+      });
       onClose();
       return;
     }
