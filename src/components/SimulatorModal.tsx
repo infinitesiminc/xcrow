@@ -1198,6 +1198,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
               </div>
             </div>
           )}
+        </div>
 
         <div className="flex-1 flex min-h-0 relative">
           {/* Atmospheric vignette for immersion */}
