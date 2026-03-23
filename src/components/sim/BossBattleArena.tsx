@@ -207,7 +207,7 @@ export default function BossBattleArena({
       <div className="absolute inset-0 z-50">
         <BossCinematicIntro
           skillName={skillName || "Unknown Skill"}
-          onComplete={() => setShowIntro(false)}
+          onComplete={() => { setShowIntro(false); setShowTutorial(true); }}
         />
       </div>
     );
