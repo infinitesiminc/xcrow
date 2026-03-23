@@ -907,7 +907,7 @@ export default function GuidedAudit({
                   </div>
 
                   {/* Sentinel's Counsel */}
-                  <div className="flex items-start gap-2 text-[11px]">
+                  <div className="flex items-start gap-2 text-[15px]">
                     <span className="shrink-0">🧭</span>
                     <p className="font-medium italic" style={{ color: "hsl(262 80% 70%)" }}>
                       {checkpoint.coachTip}
