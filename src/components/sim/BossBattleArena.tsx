@@ -272,11 +272,30 @@ export default function BossBattleArena({
             ⚔️ How Battle Works
           </h3>
 
+          {/* Oracle context explanation */}
+          <motion.div
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }}
+            className="rounded-lg px-3 py-2.5 text-[11px] text-foreground/70 leading-relaxed"
+            style={{
+              background: "linear-gradient(135deg, hsl(262 30% 12%), hsl(262 25% 10%))",
+              border: "1px solid hsl(262 60% 40% / 0.2)",
+            }}
+          >
+            <span className="text-[10px] font-bold uppercase tracking-wider block mb-1.5"
+              style={{ color: "hsl(262 80% 70%)", fontFamily: "'Cinzel', serif" }}
+            >
+              🔮 Who is the Oracle?
+            </span>
+            The Oracle is an AI system making bold claims about what it can do for your role.
+            Some claims are accurate, but others overstate AI's capabilities or hide serious risks.{" "}
+            <span className="text-foreground/90 font-medium">Your job is to spot the difference</span> — judge whether each claim is safe, risky, or critically flawed.
+          </motion.div>
+
           {/* Example scenario */}
           <div className="space-y-3">
             {/* Step 1: Read the claim */}
             <motion.div
-              initial={{ x: -10, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ delay: 0.4 }}
+              initial={{ x: -10, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ delay: 0.5 }}
               className="rounded-lg px-3 py-2.5 space-y-1.5"
               style={{ background: "hsl(262 30% 14%)", borderLeft: "2px solid hsl(262 80% 55% / 0.5)" }}
             >
