@@ -1241,24 +1241,6 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                   exit={{ opacity: 0 }}
                   className="flex flex-col items-center justify-center h-full relative"
                 >
-                  {/* Rune circle background */}
-                  <motion.div
-                    className="absolute inset-0 flex items-center justify-center pointer-events-none"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 0.25 }}
-                    transition={{ duration: 1 }}
-                  >
-                    <motion.img
-                      src={simRuneCircle}
-                      alt=""
-                      className="w-[80%] max-w-[400px] object-contain"
-                      animate={{ 
-                        scale: [1, 1.05, 1],
-                        filter: ["brightness(0.8) blur(1px)", "brightness(1.2) blur(0px)", "brightness(0.8) blur(1px)"],
-                      }}
-                      transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-                    />
-                  </motion.div>
                   <div className="relative z-10">
                     <XcrowLoader size="sm" title="Forging your quest…" />
                   </div>
