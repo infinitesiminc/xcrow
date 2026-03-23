@@ -99,7 +99,7 @@ const ObjectiveChecklist = ({
       <div className="flex items-center gap-2 mb-1">
         <span className="text-xs">🎯</span>
         <span
-          className="text-[10px] font-semibold uppercase tracking-wider"
+          className="text-[11px] font-semibold uppercase tracking-wider"
           style={{ color: "hsl(var(--filigree))", fontFamily: "'Cinzel', serif" }}
         >
           Quest Objectives · {metCount}/{objectives.length}
@@ -131,7 +131,7 @@ const ObjectiveChecklist = ({
                 <p className="text-[11px] text-muted-foreground leading-snug mt-0.5">{obj.description}</p>
               )}
               {tier > 0 && (
-                <span className="text-[10px] text-muted-foreground/60 italic">{tierLabels[tier]}</span>
+                <span className="text-[11px] text-muted-foreground/60 italic">{tierLabels[tier]}</span>
               )}
             </div>
           </motion.div>
@@ -247,7 +247,7 @@ const BriefingScreen = ({
             <div className="flex items-center gap-2 mb-3">
               <span className="text-sm">🎯</span>
               <span
-                className="text-[10px] font-semibold uppercase tracking-wider"
+                className="text-[11px] font-semibold uppercase tracking-wider"
                 style={{ color: "hsl(var(--filigree))", fontFamily: "'Cinzel', serif" }}
               >
                 {objectiveCount} Objectives to Conquer
@@ -263,7 +263,7 @@ const BriefingScreen = ({
                   className="flex items-center gap-3 group"
                 >
                   <span
-                    className="inline-flex items-center justify-center w-6 h-6 rounded-md text-[10px] font-bold shrink-0"
+                    className="inline-flex items-center justify-center w-6 h-6 rounded-md text-[11px] font-bold shrink-0"
                     style={{
                       background: "hsl(var(--primary) / 0.12)",
                       color: "hsl(var(--primary))",
@@ -333,7 +333,7 @@ const MissionIntelCollapsible = ({ briefing, tips }: { briefing: string; tips?: 
         <div className="flex items-center gap-2">
           <span className="text-sm">📜</span>
           <span
-            className="text-[10px] font-semibold uppercase tracking-wider"
+            className="text-[11px] font-semibold uppercase tracking-wider"
             style={{ color: "hsl(var(--filigree))", fontFamily: "'Cinzel', serif" }}
           >
             Mission Intel {hasTips ? "& Tips" : ""}
@@ -1148,9 +1148,9 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
           {!skillHeroBg && <HeaderVibeImages seed={(taskName?.length ?? 0) * 23} count={4} />}
             <div className="relative z-10 w-8 shrink-0" /> {/* spacer to balance close button */}
             <div className="relative z-10 text-center min-w-0 flex-1">
-              <span className="text-[10px] uppercase tracking-wider text-primary font-semibold">🗡️ {level === 2 ? "Level 2 — Sentinel Audit" : "Level 1 — AI Mastery"}</span>
+              <span className="text-[11px] uppercase tracking-wider text-primary font-semibold">🗡️ {level === 2 ? "Level 2 — Sentinel Audit" : "Level 1 — AI Mastery"}</span>
               <span className="text-sm font-semibold text-foreground truncate block">{taskName}</span>
-              <span className="text-[10px] text-muted-foreground">{jobTitle}{company ? ` · ${company}` : ""}</span>
+              <span className="text-[11px] text-muted-foreground">{jobTitle}{company ? ` · ${company}` : ""}</span>
             </div>
             <div className="relative z-10 flex items-center gap-2 shrink-0">
               {phase === "chat" && (
@@ -1622,7 +1622,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                         <span className="w-2 h-2 rounded-full animate-bounce [animation-delay:150ms]" style={{ background: "hsl(var(--filigree) / 0.4)" }} />
                         <span className="w-2 h-2 rounded-full animate-bounce [animation-delay:300ms]" style={{ background: "hsl(var(--filigree) / 0.4)" }} />
                       </div>
-                      <span className="text-[10px] text-muted-foreground/50 ml-1" style={{ fontFamily: "'Cinzel', serif" }}>strategizing…</span>
+                      <span className="text-[11px] text-muted-foreground/50 ml-1" style={{ fontFamily: "'Cinzel', serif" }}>strategizing…</span>
                     </div>
                   </div>
                 </motion.div>
@@ -1763,7 +1763,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                           >
                             {overallScore}%
                           </motion.span>
-                          <span className="text-[10px] text-muted-foreground drop-shadow-md">power</span>
+                          <span className="text-[11px] text-muted-foreground drop-shadow-md">power</span>
                         </div>
                       </motion.div>
                     </div>
@@ -1797,7 +1797,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                     >
                       <div className="flex items-center gap-2 mb-2">
                         <Compass className="h-3.5 w-3.5 text-primary" />
-                        <span className="text-[10px] font-semibold uppercase tracking-wider text-primary">Intel Payoff</span>
+                        <span className="text-[11px] font-semibold uppercase tracking-wider text-primary">Intel Payoff</span>
                       </div>
                       {intelContext.hasFullIntel ? (
                         <div className="space-y-1.5">
@@ -1826,7 +1826,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                     <div className="w-full">
                       <div className="flex items-center gap-2 mb-2">
                         <Star className="h-3.5 w-3.5 text-primary" />
-                        <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Weapons Forged</span>
+                        <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Weapons Forged</span>
                       </div>
                       <div className="space-y-1.5">
                         {earnedSkills.map((skill, i) => (
@@ -1860,7 +1860,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                     >
                       <div className="flex items-center gap-2 mb-2">
                         <Flag className="h-3.5 w-3.5 text-foreground" />
-                        <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Campaign Status</span>
+                        <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Campaign Status</span>
                       </div>
                       <div className="flex items-center gap-1 mb-1.5">
                         {Array.from({ length: campaignStats.total }).map((_, i) => (
@@ -1920,18 +1920,18 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                           </p>
                           <div className="grid grid-cols-2 gap-3 mb-3">
                             <div className="rounded-xl bg-muted/50 p-3">
-                              <span className="text-[10px] font-mono uppercase text-muted-foreground block mb-1">Before</span>
+                              <span className="text-[11px] font-mono uppercase text-muted-foreground block mb-1">Before</span>
                               <p className="text-xs text-foreground/80">{elevation.before}</p>
                             </div>
                             <div className="rounded-xl bg-primary/5 border border-primary/20 p-3">
-                              <span className="text-[10px] font-mono uppercase text-primary block mb-1">After</span>
+                              <span className="text-[11px] font-mono uppercase text-primary block mb-1">After</span>
                               <p className="text-xs text-foreground/80">{elevation.after}</p>
                             </div>
                           </div>
                           {elevation.emerging_skills.length > 0 && (
                             <div className="flex flex-wrap gap-1.5 mb-2">
                               {elevation.emerging_skills.map((skill, i) => (
-                                <span key={i} className="text-[10px] px-2 py-0.5 rounded-full bg-primary/10 text-primary font-medium">
+                                <span key={i} className="text-[11px] px-2 py-0.5 rounded-full bg-primary/10 text-primary font-medium">
                                   {skill}
                                 </span>
                               ))}
