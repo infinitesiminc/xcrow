@@ -448,6 +448,7 @@ export default function FutureSkillsTable({ skills, onSkillClick, skillGrowthMap
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
+                                if (onLaunchSim) { onLaunchSim({ jobTitle: skill.name, skillId: skill.id, level: 1 }); return; }
                                 navigate(`/role/${encodeURIComponent(skill.name)}?skill=${encodeURIComponent(skill.id)}`);
                               }}
                               className="w-full px-2 py-1.5 rounded-md text-[10px] font-bold uppercase tracking-wider transition-all hover:brightness-110"
