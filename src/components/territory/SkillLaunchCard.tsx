@@ -84,13 +84,18 @@ export default function SkillLaunchCard({
 
   const launchLevel = useCallback((level: 1 | 2) => {
     if (!firstRole) return;
+    if (onLaunchSim) {
+      onLaunchSim({ jobTitle: firstRole.title, company: firstRole.company || undefined, skillId: skill.id, level });
+      onClose();
+      return;
+    }
     const params = new URLSearchParams();
     if (firstRole.company) params.set("company", firstRole.company);
     if (level === 2) params.set("level", "2");
     const qs = params.toString();
     navigate(`/role/${encodeURIComponent(firstRole.title)}${qs ? `?${qs}` : ""}`);
     onClose();
-  }, [firstRole, navigate, onClose]);
+  }, [firstRole, navigate, onClose, onLaunchSim, skill.id]);
 
   const territory = getTerritory(skill.category as any);
   const l1Xp = growth?.level1Xp || 0;
