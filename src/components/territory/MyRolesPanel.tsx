@@ -9,6 +9,7 @@ import {
   Search, ChevronRight, Shield, Flame, Wrench, ExternalLink, X,
   Sparkles, Eye, Swords, Crown, Users,
 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 import { formatDistanceToNow } from "date-fns";
 import { useAuth } from "@/contexts/AuthContext";
 import { Input } from "@/components/ui/input";
