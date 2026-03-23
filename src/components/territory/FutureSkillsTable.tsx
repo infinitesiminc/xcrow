@@ -351,13 +351,13 @@ export default function FutureSkillsTable({ skills, onSkillClick, skillGrowthMap
             style={{ background: "hsl(var(--surface-stone) / 0.95)" }}
           >
             <tr style={{ borderBottom: "1px solid hsl(var(--filigree) / 0.15)" }}>
-              <th className="text-left py-2 pr-2">{colBtn("name", "Skill")}</th>
-              <th className="text-center py-2 w-[100px]">
+              <th className="text-left py-2 pr-1" style={{ width: "55%" }}>{colBtn("name", "Skill")}</th>
+              <th className="text-center py-2" style={{ width: "35%" }}>
                 <span className="text-[10px] uppercase tracking-[0.1em] text-muted-foreground" style={{ fontFamily: "'Cinzel', serif", fontWeight: 600 }}>
                   Launch
                 </span>
               </th>
-              <th className="w-6 py-2" />
+              <th className="py-2" style={{ width: "10%" }} />
             </tr>
           </thead>
           <tbody>
