@@ -512,92 +512,9 @@ export default function FutureSkillsTable({ skills, onSkillClick, skillGrowthMap
                           </PopoverContent>
                         </Popover>
                       </div>
-                      {/* Expand chevron */}
-                      <div className="w-6 shrink-0 flex justify-center">
-                        {isExpanded ? (
-                          <ChevronUp className="h-3 w-3 text-muted-foreground" />
-                        ) : (
-                          <ChevronDown className="h-3 w-3 text-muted-foreground/40" />
-                        )}
-                      </div>
                     </div>
-
-                    {/* Expanded inline detail */}
-                    {isExpanded && (
-                      <div
-                        className="px-3 pb-3 pt-1 space-y-3 animate-in slide-in-from-top-2 duration-200"
-                        style={{ background: "hsl(var(--muted) / 0.06)" }}
-                      >
-                        {skill.description && (
-                          <p className="text-[11px] text-muted-foreground leading-relaxed">{skill.description}</p>
-                        )}
-
-                        {/* Battle cards */}
-                        <div className="space-y-2">
-                          <InlineTrackCard
-                            label="Level 1 · AI Mastery"
-                            icon={<Zap className="h-3.5 w-3.5" />}
-                            xp={growth?.level1Xp ?? 0}
-                            maxXp={500}
-                            sims={growth?.level1Sims ?? 0}
-                            color="hsl(var(--primary))"
-                            unlocked
-                            onStart={() => {
-                              if (expandedRoles.length > 0) {
-                                const r = expandedRoles[0];
-                                navigate(`/role/${encodeURIComponent(r.title)}${r.company ? `?company=${encodeURIComponent(r.company)}` : ""}`);
-                              } else {
-                                navigate(`/role/${encodeURIComponent(skill.name)}?skill=${encodeURIComponent(skill.id)}`);
-                              }
-                            }}
-                          />
-                          <InlineTrackCard
-                            label="Level 2 · Future Vision"
-                            icon={<Diamond className="h-3.5 w-3.5" />}
-                            xp={growth?.level2Xp ?? 0}
-                            maxXp={500}
-                            sims={growth?.level2Sims ?? 0}
-                            color="hsl(45 93% 58%)"
-                            unlocked={l2Unlocked}
-                            unlockText={!l2Unlocked ? `${Math.max(0, 3 - (growth?.level1Sims ?? 0))} more quests` : undefined}
-                            onStart={() => {
-                              if (expandedRoles.length > 0) {
-                                const r = expandedRoles[0];
-                                navigate(`/role/${encodeURIComponent(r.title)}${r.company ? `?company=${encodeURIComponent(r.company)}&level=2` : "?level=2"}`);
-                              } else {
-                                navigate(`/role/${encodeURIComponent(skill.name)}?skill=${encodeURIComponent(skill.id)}&level=2`);
-                              }
-                            }}
-                            startLabel={l2Unlocked ? "⚔️ Level 2" : "⚡ Preview"}
-                          />
-                        </div>
-
-                        {/* Linked roles (compact) */}
-                        {loadingRoles ? (
-                          <div className="flex gap-1">
-                            {[1,2].map(i => <div key={i} className="h-6 w-24 rounded bg-muted/20 animate-pulse" />)}
-                          </div>
-                        ) : expandedRoles.length > 0 && (
-                          <div className="flex flex-wrap gap-1">
-                            {expandedRoles.map(r => (
-                              <button
-                                key={r.jobId}
-                                onClick={() => navigate(`/role/${encodeURIComponent(r.title)}${r.company ? `?company=${encodeURIComponent(r.company)}` : ""}`)}
-                                className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-medium transition-all hover:brightness-110"
-                                style={{
-                                  background: "hsl(var(--muted) / 0.2)",
-                                  border: "1px solid hsl(var(--filigree) / 0.12)",
-                                  color: "hsl(var(--foreground))",
-                                }}
-                              >
-                                <Swords className="h-2.5 w-2.5" style={{ color: territory.hsl }} />
-                                <span className="truncate max-w-[120px]">{r.title}</span>
-                                {r.company && <span className="text-muted-foreground">· {r.company}</span>}
-                              </button>
-                            ))}
-                          </div>
-                        )}
-                      </div>
+                  </td>
+                </tr>
                     )}
                   </td>
                 </tr>
