@@ -1,4 +1,4 @@
-import { useRef, useEffect, useState } from "react";
+import { useRef, useEffect, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Send, Loader2, Sparkles, X, Trash2, ChevronDown } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -7,21 +7,64 @@ import { useAuth } from "@/contexts/AuthContext";
 import TypewriterMarkdown from "@/components/TypewriterMarkdown";
 import InlineChatRoleCards from "@/components/chat/InlineChatRoleCards";
 
-const GUEST_SUGGESTIONS = [
-  "What skills matter most for graduates?",
-  "Show me roles where AI helps the most",
-  "What does a product manager do?",
-];
+/** Context-aware suggestion chips — teaches capabilities by example */
+function useSuggestionChips(user: any, viewCtx: any, hasJourneyData: boolean) {
+  return useMemo(() => {
+    if (!user) {
+      return [
+        "What roles match my interests?",
+        "Show me high-growth skills",
+      ];
+    }
 
-const SIGNED_IN_SUGGESTIONS = [
-  "How ready am I for my target roles?",
-  "What should I practice next?",
-  "Find roles that match my skills",
-];
+    const panel = viewCtx?.activePanel;
+    const selectedRole = viewCtx?.selectedRole;
+    const lastSim = viewCtx?.lastSimResult;
+    const page = viewCtx?.page;
+
+    // Just finished a sim
+    if (lastSim) {
+      return [
+        "How did I do overall?",
+        "What should I practice next?",
+      ];
+    }
+
+    // Viewing a specific role
+    if (panel === "role-preview" && selectedRole) {
+      return [
+        `Am I ready for ${selectedRole.title}?`,
+        "What quests build the most skills here?",
+      ];
+    }
+
+    // Browsing kingdoms
+    if (panel === "roles") {
+      return [
+        "Which kingdom should I conquer first?",
+        "What's my weakest area?",
+      ];
+    }
+
+    // On map / skill forge
+    if (page === "map" || panel === "territory") {
+      return hasJourneyData
+        ? ["What should I practice next?", "Find roles that match my skills"]
+        : ["What roles match my interests?", "Show me high-growth skills"];
+    }
+
+    // Default signed-in
+    return hasJourneyData
+      ? ["What should I practice next?", "How am I progressing?"]
+      : ["What roles match my interests?", "Show me high-growth skills"];
+  }, [user, viewCtx?.activePanel, viewCtx?.selectedRole?.title, viewCtx?.lastSimResult, viewCtx?.page, hasJourneyData]);
+}
 
 export default function UnifiedChatDock() {
-  const { items, isStreaming, isOpen, setIsOpen, sendMessage, clearChat, hasInteracted, onRoleSelectRef, simActive } = useChatContext();
+  const { items, isStreaming, isOpen, setIsOpen, sendMessage, clearChat, hasInteracted, onRoleSelectRef, simActive, viewContext } = useChatContext();
   const { user } = useAuth();
+  const hasJourneyData = items.length > 0 || hasInteracted;
+  const suggestions = useSuggestionChips(user, viewContext, hasJourneyData);
   const [input, setInput] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -130,10 +173,10 @@ export default function UnifiedChatDock() {
               {items.length === 0 && !hasInteracted && (
                 <div className="text-center py-8">
                   <p className="text-sm text-muted-foreground mb-4">
-                    I know what you're looking at — ask me anything about the role, skills, or your career path.
+                    I see your map. Ask me where to go next.
                   </p>
                   <div className="flex flex-wrap justify-center gap-2">
-                    {(user ? SIGNED_IN_SUGGESTIONS : GUEST_SUGGESTIONS).map((s) => (
+                    {suggestions.map((s) => (
                       <button
                         key={s}
                         onClick={() => {
