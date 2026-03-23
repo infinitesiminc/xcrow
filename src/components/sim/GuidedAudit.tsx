@@ -787,7 +787,7 @@ export default function GuidedAudit({
               <motion.div
                 initial={{ opacity: 0, y: -4 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="text-[11px] px-3 py-2 rounded-lg mt-2 italic"
+                className="text-[15px] px-3 py-2 rounded-lg mt-2 italic"
                 style={{
                   background: "hsl(45 80% 55% / 0.08)",
                   border: "1px solid hsl(45 80% 55% / 0.15)",
