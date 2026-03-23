@@ -1293,19 +1293,6 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                 </motion.div>
               )}
 
-              {/* L2 Boss Battle Arena — full-screen no-scroll */}
-              {phase === "chat" && !error && level === 2 && auditData && (
-                <BossBattleArena
-                  checkpoints={auditData.checkpoints as AuditCheckpoint[]}
-                  aiOutputSummary={auditData.aiOutputSummary}
-                  aiAutoAction={auditData.aiAutoAction}
-                  scenarioContext={auditData.scenarioContext}
-                  onComplete={handleAuditComplete}
-                  onRestart={() => startCompile()}
-                  onViewDebrief={() => setPhase("done")}
-                  skillName={taskName}
-                />
-              )}
 
               {phase === "chat" && !error && !(level === 2 && auditData) && (
                 <div className="max-w-2xl mx-auto space-y-4">
