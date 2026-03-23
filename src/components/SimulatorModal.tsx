@@ -1899,78 +1899,71 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                     </motion.div>
                   )}
 
-                  {/* Elevation Narrative */}
-                  {(() => {
-                    const unlocked = overallScore >= 60;
-
-                    if (unlocked && elevation) {
-                      return (
-                        <motion.div
-                          initial={{ opacity: 0, y: 12 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: 0.6, duration: 0.5 }}
-                          className="w-full rounded-2xl border border-primary/30 bg-gradient-to-b from-primary/5 to-transparent p-5 text-left"
-                        >
-                          <div className="flex items-center gap-2 mb-3">
-                            <Unlock className="h-4 w-4 text-primary" />
-                            <span className="text-xs font-medium uppercase tracking-widest text-primary">Role Evolution Unlocked</span>
-                          </div>
-                          <p className="text-base font-display font-bold text-foreground mb-3">
-                            {elevation.shift_summary}
-                          </p>
-                          <div className="grid grid-cols-2 gap-3 mb-3">
-                            <div className="rounded-xl bg-muted/50 p-3">
-                              <span className="text-[11px] font-mono uppercase text-muted-foreground block mb-1">Before</span>
-                              <p className="text-xs text-foreground/80">{elevation.before}</p>
-                            </div>
-                            <div className="rounded-xl bg-primary/5 border border-primary/20 p-3">
-                              <span className="text-[11px] font-mono uppercase text-primary block mb-1">After</span>
-                              <p className="text-xs text-foreground/80">{elevation.after}</p>
-                            </div>
-                          </div>
-                          {elevation.emerging_skills.length > 0 && (
-                            <div className="flex flex-wrap gap-1.5 mb-2">
-                              {elevation.emerging_skills.map((skill, i) => (
-                                <span key={i} className="text-[11px] px-2 py-0.5 rounded-full bg-primary/10 text-primary font-medium">
-                                  {skill}
-                                </span>
-                              ))}
-                            </div>
-                          )}
-                          {elevation.analogy && (
-                            <p className="text-[11px] text-muted-foreground italic mt-2">💡 {elevation.analogy}</p>
-                          )}
-                        </motion.div>
-                      );
-                    }
-
-                    if (unlocked && elevationLoading) {
-                      return (
+                  {/* Intel Drop — rare collectible */}
+                  {intelDrop && (
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.8, y: 16 }}
+                      animate={{ opacity: 1, scale: 1, y: 0 }}
+                      transition={{ delay: 0.5, type: "spring", stiffness: 300, damping: 20 }}
+                      className="w-full rounded-2xl overflow-hidden cursor-pointer"
+                      style={{
+                        background: "linear-gradient(135deg, hsl(var(--primary) / 0.12), hsl(262 60% 30% / 0.15))",
+                        border: "1px solid hsl(var(--primary) / 0.35)",
+                        boxShadow: "0 0 20px hsl(var(--primary) / 0.15)",
+                      }}
+                      onClick={() => setIntelDropRevealed(true)}
+                    >
+                      {!intelDropRevealed ? (
+                        <div className="p-4 text-center">
+                          <motion.div
+                            animate={{ rotate: [0, -5, 5, 0] }}
+                            transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
+                            className="text-2xl mb-1"
+                          >📜</motion.div>
+                          <p className="text-xs font-display font-bold text-primary">Intel Drop Found!</p>
+                          <p className="text-[11px] text-muted-foreground mt-0.5">Tap to collect</p>
+                        </div>
+                      ) : (
                         <motion.div
                           initial={{ opacity: 0 }}
                           animate={{ opacity: 1 }}
-                          className="w-full rounded-2xl border border-primary/20 bg-primary/5 p-5 flex items-center justify-center gap-3"
+                          className="p-4"
                         >
-                          <Loader2 className="h-4 w-4 animate-spin text-primary" />
-                          <span className="text-xs text-primary font-medium">Generating your role evolution insight…</span>
+                          <div className="flex items-center justify-between mb-2">
+                            <div className="flex items-center gap-1.5">
+                              <Scroll className="h-3.5 w-3.5 text-primary" />
+                              <span className="text-[11px] font-medium uppercase tracking-widest text-primary">Role Intel</span>
+                            </div>
+                            <motion.span
+                              initial={{ scale: 0 }}
+                              animate={{ scale: 1 }}
+                              transition={{ delay: 0.2, type: "spring" }}
+                              className="text-xs font-bold font-mono px-2 py-0.5 rounded-full"
+                              style={{ color: "hsl(var(--filigree-glow))", background: "hsl(var(--filigree-glow) / 0.12)" }}
+                            >
+                              +{intelDrop.xp} XP
+                            </motion.span>
+                          </div>
+                          <p className="text-[13px] font-medium text-foreground/90 mb-2">{intelDrop.summary}</p>
+                          {intelDrop.skills.length > 0 && (
+                            <div className="flex flex-wrap gap-1.5">
+                              {intelDrop.skills.map((skill, i) => (
+                                <motion.span
+                                  key={i}
+                                  initial={{ opacity: 0, x: -8 }}
+                                  animate={{ opacity: 1, x: 0 }}
+                                  transition={{ delay: 0.3 + i * 0.1 }}
+                                  className="text-[11px] px-2 py-0.5 rounded-full bg-primary/10 text-primary font-medium"
+                                >
+                                  {skill}
+                                </motion.span>
+                              ))}
+                            </div>
+                          )}
                         </motion.div>
-                      );
-                    }
-
-                    return (
-                      <motion.div
-                        initial={{ opacity: 0, y: 8 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.5 }}
-                        className="w-full rounded-2xl border border-border/40 bg-muted/30 p-4 text-center"
-                      >
-                        <Lock className="h-4 w-4 text-muted-foreground/40 mx-auto mb-1.5" />
-                        <p className="text-xs font-medium text-muted-foreground">
-                          Score 60%+ to unlock <span className="text-foreground">how this role is evolving</span>
-                        </p>
-                      </motion.div>
-                    );
-                  })()}
+                      )}
+                    </motion.div>
+                  )}
 
                   {!user && (
                     <p className="text-xs text-muted-foreground">
