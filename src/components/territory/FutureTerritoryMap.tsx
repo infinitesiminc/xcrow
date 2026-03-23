@@ -21,6 +21,8 @@ interface FutureTerritoryMapProps {
   focusSkillId?: string | null;
   level2SkillIds?: Set<string>;
   skillGrowthMap?: Map<string, CanonicalSkillGrowth>;
+  /** Called when user clicks a skill node on the map */
+  onSkillSelect?: (skill: FutureSkill) => void;
 }
 
 const ISLAND_COLORS: Record<string, string> = {
