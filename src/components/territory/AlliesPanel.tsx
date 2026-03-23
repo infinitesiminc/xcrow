@@ -392,6 +392,7 @@ function FriendCard({ friend, onAccept, onReject, onView, onMessage, formatLastS
 /* ── Empty state ── */
 function EmptyState({ subTab, onSearch }: { subTab: SubTab; onSearch: () => void }) {
   const messages: Record<SubTab, { icon: typeof Users; title: string; desc: string }> = {
+    feed: { icon: Swords, title: "No tales yet", desc: "Your allies' quests will appear here." },
     online: { icon: Sparkles, title: "No allies online", desc: "Your allies are resting. Check back soon!" },
     all: { icon: Users, title: "No allies yet", desc: "Find adventurers and forge alliances." },
     pending: { icon: Shield, title: "No pending requests", desc: "All caught up!" },
