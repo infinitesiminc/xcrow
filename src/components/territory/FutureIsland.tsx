@@ -230,40 +230,6 @@ export default function FutureIsland({ island, skillLookup, level2SkillIds, leve
                       className="transition-all"
                     />
                   </>
-                ) : isBossAvailable ? (
-                  <>
-                    {/* Boss Available: Pulsing diamond with animated glow */}
-                    <motion.rect
-                      x={node.x - diamondSide / 2 - 4}
-                      y={node.y - diamondSide / 2 - 4}
-                      width={diamondSide + 8}
-                      height={diamondSide + 8}
-                      rx={3}
-                      fill="none"
-                      stroke="hsl(45 93% 58% / 0.5)"
-                      strokeWidth={2}
-                      transform={`rotate(45 ${node.x} ${node.y})`}
-                      filter="url(#future-glow)"
-                      animate={{ opacity: [0.3, 0.7, 0.3] }}
-                      transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-                    />
-                    <rect
-                      x={node.x - diamondSide / 2}
-                      y={node.y - diamondSide / 2}
-                      width={diamondSide}
-                      height={diamondSide}
-                      rx={2}
-                      fill={isParchment
-                        ? `hsl(45 ${20 + intensity * 15}% ${75 + intensity * 8}%)`
-                        : `hsl(45 ${30 + intensity * 20}% ${16 + intensity * 8}%)`}
-                      stroke={isParchment
-                        ? `hsl(45 55% ${40 + intensity * 10}%)`
-                        : `hsl(45 55% ${45 + intensity * 15}%)`}
-                      strokeWidth={isHovered ? 3 : 2}
-                      transform={`rotate(45 ${node.x} ${node.y})`}
-                      className="transition-all"
-                    />
-                  </>
                 ) : (
                   <>
                     {/* Level 1: Glow ring for high-demand */}
