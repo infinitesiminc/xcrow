@@ -159,9 +159,7 @@ export default function FutureTerritoryMap({ skills, focusSkillId, level2SkillId
       }
     }
 
-    setSelectedSkill(skill);
-    setHighlightedSkillId(skill.id);
-    setDrawerOpen(true);
+    setHighlightedSkillId(focusSkillId);
   }, [focusSkillId, skillLookup, layout]);
 
   // Minimap
