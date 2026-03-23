@@ -304,6 +304,8 @@ const MapPage = () => {
               onSkillClick={(skill) => {
                 setMapFocusSkillId(skill.id);
                 setTimeout(() => setMapFocusSkillId(null), 100);
+                setDrawerSkill(skill);
+                setDrawerOpen(true);
               }}
             />
           ) : activeTab === "roles" && isSignedIn ? (
