@@ -10,6 +10,9 @@ import { X, Swords, ScrollText, Users, BookOpen } from "lucide-react";
 import SimulatorModal from "@/components/SimulatorModal";
 import type { SimLaunchRequest } from "@/components/territory/SkillLaunchCard";
 
+/** IDs of skills where user has completed a L2 boss battle */
+type Level2CompletedIds = Set<string>;
+
 import { useFutureSkills } from "@/hooks/use-future-skills";
 import FutureTerritoryMap from "@/components/territory/FutureTerritoryMap";
 import FutureSkillsTable from "@/components/territory/FutureSkillsTable";
