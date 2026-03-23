@@ -17,6 +17,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import SimulatorModal from "@/components/SimulatorModal";
+import HeaderVibeImages from "@/components/HeaderVibeImages";
 import { FutureTaskPreview } from "@/components/analysis/FutureTaskPreview";
 
 const isWebsite = (value: string) =>
