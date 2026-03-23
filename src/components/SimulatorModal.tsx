@@ -1144,7 +1144,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
             background: "linear-gradient(180deg, hsl(var(--primary) / 0.08) 0%, transparent 100%)",
           }} />
           <div
-            className="relative flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4"
+            className="relative flex items-center justify-between px-4 sm:px-6 h-16"
             style={{ borderBottom: "1px solid hsl(var(--filigree) / 0.25)" }}
           >
             <div className="min-w-0 flex-1">

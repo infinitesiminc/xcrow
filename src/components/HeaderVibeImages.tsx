@@ -73,9 +73,9 @@ export default function HeaderVibeImages({ seed, count = 4 }: HeaderVibeImagesPr
         url: `${SUPABASE_URL}/storage/v1/object/public/sim-images/skill-hero-${id}.png`,
         rotation: (r1 - 0.5) * 28,
         left: `${8 + r2 * 84}%`,
-        top: `${35 + r3 * 30}%`,
-        width: `${110 + r4 * 90}px`,
-        opacity: 0.2 + r3 * 0.14,
+        top: "50%",
+        width: `${100 + r4 * 80}px`,
+        opacity: 0.18 + r3 * 0.12,
       };
     });
   }, [seed, count, heroIds]);
@@ -93,7 +93,7 @@ export default function HeaderVibeImages({ seed, count = 4 }: HeaderVibeImagesPr
             left: img.left,
             top: img.top,
             width: img.width,
-            height: "68px",
+            height: "100%",
             transform: `translate(-50%, -50%) rotate(${img.rotation}deg)`,
             opacity: img.opacity,
             filter: "saturate(1.05)",
