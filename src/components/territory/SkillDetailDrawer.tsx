@@ -21,39 +21,33 @@ import { type FutureSkill, type FutureSkillCategory, FUTURE_CATEGORY_META } from
 import { ArrowRight, Briefcase, Zap, Sparkles, Lock, Diamond } from "lucide-react";
 import { getTerritory } from "@/lib/territory-colors";
 
-/* ── AI Hero Image Cache (session-level) ── */
-const heroImageCache = new Map<string, string>();
+/* ── Skill Hero Image — direct from storage (pre-generated) ── */
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 
 function useSkillHeroImage(skill: FutureSkill | null, open: boolean) {
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
+    // Reset immediately when skill changes to prevent bleed
+    setImageUrl(null);
+
     if (!skill || !open) return;
 
-    const cacheKey = `skill-hero-${skill.id}`;
-
-    // Check in-memory cache
-    if (heroImageCache.has(cacheKey)) {
-      setImageUrl(heroImageCache.get(cacheKey)!);
-      return;
-    }
-
     setLoading(true);
-    const meta = FUTURE_CATEGORY_META[skill.category as FutureSkillCategory];
-    const terrain = meta?.terrain || "mystical realm";
-    const prompt = `Dark fantasy RPG skill illustration for "${skill.name}" — ${terrain} domain. Ethereal ${skill.category} energy, glowing runes, arcane atmosphere. Wide banner format, moody lighting, no text, painterly style, indigo and violet tones with ${skill.category === "Leadership" ? "golden" : skill.category === "Creative" ? "prismatic" : "arcane blue"} accents.`;
+    const url = `${SUPABASE_URL}/storage/v1/object/public/sim-images/skill-hero-${skill.id}.png`;
 
-    supabase.functions
-      .invoke("generate-sim-image", { body: { prompt, cacheKey } })
-      .then(({ data, error }) => {
-        if (!error && data?.url) {
-          heroImageCache.set(cacheKey, data.url);
-          setImageUrl(data.url);
-        }
-      })
-      .catch(() => {})
-      .finally(() => setLoading(false));
+    // Verify image exists with an Image load
+    const img = new Image();
+    img.onload = () => {
+      setImageUrl(url);
+      setLoading(false);
+    };
+    img.onerror = () => {
+      setImageUrl(null);
+      setLoading(false);
+    };
+    img.src = url;
   }, [skill?.id, open]);
 
   return { imageUrl, loading };
