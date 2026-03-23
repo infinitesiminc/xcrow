@@ -359,7 +359,7 @@ export default function BossBattleArena({
         </div>
 
         {/* Center — Challenge Card */}
-        <div className="flex-1 max-w-sm mx-4 sm:mx-8 relative z-20">
+        <div className="flex-1 max-w-sm mx-4 sm:mx-8 relative z-20 overflow-y-auto max-h-full scrollbar-thin">
           <AnimatePresence mode="wait">
             {!transitioning && (
               <motion.div
