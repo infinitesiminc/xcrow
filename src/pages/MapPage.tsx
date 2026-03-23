@@ -414,6 +414,8 @@ const MapPage = () => {
                 <FutureSkillsTable
                   skills={futureSkills}
                   skillGrowthMap={skillGrowthMap}
+                  level2SkillIds={level2SkillIds}
+                  focusSkillId={forgeFocusSkillId}
                   onSkillClick={(skill) => {
                     setMapFocusSkillId(skill.id);
                     setTimeout(() => setMapFocusSkillId(null), 100);
