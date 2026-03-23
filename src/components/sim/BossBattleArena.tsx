@@ -127,6 +127,7 @@ export default function BossBattleArena({
   const [showHint, setShowHint] = useState<Record<string, boolean>>({});
   const [completed, setCompleted] = useState(false);
   const [showIntro, setShowIntro] = useState(true);
+  const [showTutorial, setShowTutorial] = useState(false);
   const [transitioning, setTransitioning] = useState(false);
 
   // Boss HP
