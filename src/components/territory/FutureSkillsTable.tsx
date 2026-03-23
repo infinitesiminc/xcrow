@@ -99,30 +99,9 @@ export default function FutureSkillsTable({ skills, onSkillClick, skillGrowthMap
     });
   }, [focusSkillId]);
 
-  // Load roles when expanding a skill
+  // Dispatch focus_skill event when a skill is selected
   useEffect(() => {
-    if (!expandedSkillId) { setExpandedRoles([]); return; }
-    setLoadingRoles(true);
-    (async () => {
-      const { data } = await supabase
-        .from("job_future_skills")
-        .select("job_id")
-        .eq("canonical_skill_id", expandedSkillId)
-        .limit(10);
-      const jobIds = [...new Set((data || []).map(d => d.job_id).filter(Boolean))] as string[];
-      if (jobIds.length === 0) { setExpandedRoles([]); setLoadingRoles(false); return; }
-      const { data: jobs } = await supabase.from("jobs").select("id, title, company_id").in("id", jobIds.slice(0, 5));
-      if (!jobs) { setExpandedRoles([]); setLoadingRoles(false); return; }
-      const companyIds = [...new Set(jobs.map(j => j.company_id).filter(Boolean))] as string[];
-      let cMap = new Map<string, string>();
-      if (companyIds.length > 0) {
-        const { data: companies } = await supabase.from("companies").select("id, name").in("id", companyIds);
-        if (companies) cMap = new Map(companies.map(c => [c.id, c.name]));
-      }
-      setExpandedRoles(jobs.map(j => ({ jobId: j.id, title: j.title, company: j.company_id ? cMap.get(j.company_id) || null : null })));
-      setLoadingRoles(false);
-    })();
-    // Dispatch focus_skill event for AI coach
+    if (!expandedSkillId) return;
     const skill = skills.find(s => s.id === expandedSkillId);
     if (skill) {
       window.dispatchEvent(new CustomEvent("focus_skill", {
