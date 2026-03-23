@@ -271,11 +271,8 @@ export default function MyRolesPanel({ onSelectRole, onAskChat, onTabChange }: M
         }
       }
 
-      // Sort: conquered first, then contested (by XP desc), then scouted (by recency)
+      // Sort by most recent activity
       const sorted = Array.from(roleMap.values()).sort((a, b) => {
-        const tierOrder: Record<KingdomTier, number> = { conquered: 0, contested: 1, scouted: 2 };
-        if (tierOrder[a.tier] !== tierOrder[b.tier]) return tierOrder[a.tier] - tierOrder[b.tier];
-        if (a.xp !== b.xp) return b.xp - a.xp;
         return (b.lastActivity || "").localeCompare(a.lastActivity || "");
       });
 
