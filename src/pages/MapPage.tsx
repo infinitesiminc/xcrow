@@ -6,7 +6,7 @@ import type { FutureSkill } from "@/hooks/use-future-skills";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { X, Swords, ScrollText, Users } from "lucide-react";
+import { X, Swords, ScrollText, Users, BookOpen } from "lucide-react";
 import SimulatorModal from "@/components/SimulatorModal";
 import type { SimLaunchRequest } from "@/components/territory/SkillLaunchCard";
 
@@ -24,6 +24,7 @@ import type { EdgeContext } from "@/components/HumanEdgesCard";
 import CompactHUD from "@/components/territory/CompactHUD";
 import MyRolesPanel from "@/components/territory/MyRolesPanel";
 import AlliesPanel from "@/components/territory/AlliesPanel";
+import CodexPanel from "@/components/territory/CodexPanel";
 import { useSkills } from "@/hooks/use-skills";
 import SkillDetailDrawer from "@/components/territory/SkillDetailDrawer";
 import { useFriends } from "@/hooks/use-friends";
@@ -66,6 +67,7 @@ function buildEmptySkills(taxonomy: TaxonomySkill[]): SkillXP[] {
 const TAB_ITEMS = [
   { key: "table" as const, icon: ScrollText, label: "Skill Forge" },
   { key: "roles" as const, icon: Swords, label: "Kingdoms" },
+  { key: "codex" as const, icon: BookOpen, label: "Codex" },
   { key: "allies" as const, icon: Users, label: "Allies" },
 ] as const;
 
@@ -90,7 +92,7 @@ const MapPage = () => {
 
   const [selectedRole, setSelectedRole] = useState<RoleResult | null>(null);
   const [activeEdge, setActiveEdge] = useState<EdgeContext | null>(null);
-  const [activeTab, setActiveTab] = useState<"table" | "roles" | "allies">("table");
+  const [activeTab, setActiveTab] = useState<"table" | "roles" | "codex" | "allies">("table");
   const [mapFocusSkillId, setMapFocusSkillId] = useState<string | null>(null);
   const [forgeFocusSkillId, setForgeFocusSkillId] = useState<string | null>(null);
   const [myRolesTab, setMyRolesTab] = useState<"saved" | "practiced">("saved");
@@ -234,7 +236,7 @@ const MapPage = () => {
 
   const chatViewCtx = useMemo(() => ({
     page: "map" as const,
-    activePanel: activeTab === "roles" ? "roles" : activeTab === "allies" ? "allies" : "territory",
+    activePanel: activeTab === "roles" ? "roles" : activeTab === "allies" ? "allies" : activeTab === "codex" ? "codex" : "territory",
     selectedRole: selectedRole ? { title: selectedRole.title, company: selectedRole.company, jobId: selectedRole.jobId } : null,
     selectedTab: activeTab === "roles" ? myRolesTab : undefined,
   }), [selectedRole, activeTab, myRolesTab]);
@@ -314,6 +316,8 @@ const MapPage = () => {
               onAskChat={(prompt) => { setChatDockOpen(true); chatSendMessage(prompt); }}
               onTabChange={setMyRolesTab}
             />
+          ) : activeTab === "codex" && isSignedIn ? (
+            <CodexPanel />
           ) : activeTab === "allies" && isSignedIn ? (
             <AlliesPanel onLaunchSim={handleLaunchSim} />
           ) : null}
