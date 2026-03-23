@@ -190,7 +190,10 @@ export default function BossBattleArena({
   const handleReveal = (id: string) => {
     setRevealed(prev => ({ ...prev, [id]: true }));
     const cp = checkpoints.find(c => c.id === id);
-    if (cp) handleBossReaction(verdicts[id] === cp.correctVerdict);
+    if (cp) {
+      const diff = ((cp as any).difficulty as DifficultyTier) || (checkpoints.indexOf(cp) < 2 ? "scout" : checkpoints.indexOf(cp) < 4 ? "sentinel" : "arbiter");
+      handleBossReaction(verdicts[id] === cp.correctVerdict, diff);
+    }
   };
 
   const handleNext = () => {
