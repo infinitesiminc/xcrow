@@ -346,7 +346,6 @@ export default function FutureIsland({ island, skillLookup, level2SkillIds, leve
             <TooltipContent side="top" className="max-w-[240px]">
               <p className="font-semibold text-xs">
                 {isBossCompleted && <span className="text-amber-400 mr-1">👑</span>}
-                {isBossAvailable && <span className="text-amber-400 mr-1">⚔️</span>}
                 {skill.name}
               </p>
               {skill.description && (
@@ -356,7 +355,6 @@ export default function FutureIsland({ island, skillLookup, level2SkillIds, leve
                 <span>📈 {skill.demandCount} demand</span>
                 <span>💼 {skill.jobCount} roles</span>
                 {isBossCompleted && <span className="text-amber-400">👑 Conquered</span>}
-                {isBossAvailable && <span className="text-amber-400">⚔️ Boss Ready</span>}
               </div>
             </TooltipContent>
           </Tooltip>
