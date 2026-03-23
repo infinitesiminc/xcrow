@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { JobAnalysisResult, TaskAnalysis } from "@/types/analysis";
 import { findPrebuiltRole } from "@/data/prebuilt-roles";
 import { analyzeJobWithAI } from "@/lib/ai-analysis";
+import { fetchStructuredRoleAnalysis } from "@/lib/role-analysis";
 import { useAuth } from "@/contexts/AuthContext";
 import type { IntelContext } from "@/lib/simulator";
 import { supabase } from "@/integrations/supabase/client";
@@ -223,6 +224,15 @@ const RoleDeepDive = () => {
             if (r.jobId) setJobId(r.jobId);
             setResult(r); saveHistory(r); setLoading(false);
             if (!r.jobId) resolveJobId(r.jobTitle, company);
+            return;
+          }
+
+          const structured = await fetchStructuredRoleAnalysis(jobTitle, company || undefined);
+          if (structured) {
+            setJobId(structured.jobId);
+            setResult(structured);
+            saveHistory(structured);
+            setLoading(false);
             return;
           }
         } catch (err) { console.error(err); }
