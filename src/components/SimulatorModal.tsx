@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/dialog";
 import {
   compileSession,
+  compileAudit,
   chatTurn,
   scoreSession,
   generateElevation,
@@ -28,7 +29,10 @@ import {
   type SimConfig,
   type ElevationNarrative,
   type CoachingContext,
+  type CompileAuditResult,
 } from "@/lib/simulator";
+
+import GuidedAudit, { type AuditResult, type AuditCheckpoint } from "@/components/sim/GuidedAudit";
 
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -574,6 +578,8 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
   const [objectiveFailCounts, setObjectiveFailCounts] = useState<Record<string, number>>({});
   const [showInactivityNudge, setShowInactivityNudge] = useState(false);
 
+  // L2 Guided Audit state
+  const [auditData, setAuditData] = useState<CompileAuditResult | null>(null);
 
   const inactivityTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -715,12 +721,32 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
     setScaffoldingTiers({});
     setObjectiveFailCounts({});
     setShowInactivityNudge(false);
+    setAuditData(null);
     if (coaching) setCoachingContext(coaching);
     else setCoachingContext(null);
     try {
-      const compiled = await compileSession(taskName, jobTitle, company, 3, mode, taskMeta, coaching ?? undefined, intelContext ?? undefined, level, futurePrediction ?? undefined);
-      setSession(compiled);
-      setPhase("briefing");
+      if (level === 2 && futurePrediction) {
+        // L2: compile audit checkpoints instead of chat session
+        const audit = await compileAudit(taskName, jobTitle, company, futurePrediction, intelContext ?? undefined);
+        setAuditData(audit);
+        // Still compile a minimal session for header/metadata
+        setSession({
+          sessionId: crypto.randomUUID(),
+          systemPrompt: "",
+          openingMessage: "",
+          briefing: `**Level 2 — Guided Audit**\n\n${audit.scenarioContext}\n\nYou'll review 5 checkpoints from an AI system that has automated "${taskName}". For each, evaluate whether the AI's claim is **Safe**, **Risky**, or **Critical**.`,
+          tips: ["Look for subtle assumptions in AI claims", "Real-world examples help calibrate your judgment"],
+          learningObjectives: [],
+          scenario: { id: crypto.randomUUID(), title: taskName, description: `${taskName} for ${jobTitle}`, slug: "dynamic" },
+          level: 2,
+          config: { minRounds: 5, maxRounds: 5, objectiveCount: 5 },
+        });
+        setPhase("briefing");
+      } else {
+        const compiled = await compileSession(taskName, jobTitle, company, 3, mode, taskMeta, coaching ?? undefined, intelContext ?? undefined, level, futurePrediction ?? undefined);
+        setSession(compiled);
+        setPhase("briefing");
+      }
     } catch (err) {
       console.error("Failed to start simulation:", err);
       setError("Couldn't forge the quest. Please try again.");
@@ -756,11 +782,74 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
 
   const beginChat = () => {
     if (!session) return;
+    if (level === 2 && auditData) {
+      // L2 goes directly to audit phase
+      setPhase("chat");
+      return;
+    }
     const openingText = typeof session.openingMessage === "string"
       ? session.openingMessage
       : (session.openingMessage as any)?.text ?? JSON.stringify(session.openingMessage);
     setMessages([{ role: "assistant", content: openingText }]);
     setPhase("chat");
+  };
+
+  // Handle L2 Guided Audit completion
+  const handleAuditComplete = async (result: AuditResult) => {
+    setPhase("completing");
+    clearInactivityTimer();
+
+    // Map audit rubric to sim score dimensions
+    const rubric = result.rubricScores;
+    const overallPct = Math.round((result.totalCorrect / result.totalCheckpoints) * 100);
+    const scores: SimScoreResult = {
+      overall: overallPct,
+      categories: [
+        { name: "AI Tool Awareness", score: rubric.risk_awareness?.score ?? overallPct, feedback: rubric.risk_awareness?.note ?? "" },
+        { name: "Human Value-Add", score: rubric.human_value?.score ?? 80, feedback: rubric.human_value?.note ?? "" },
+        { name: "Adaptive Thinking", score: rubric.strategic_depth?.score ?? 65, feedback: rubric.strategic_depth?.note ?? "" },
+        { name: "Domain Judgment", score: rubric.actionability?.score ?? 65, feedback: rubric.actionability?.note ?? "" },
+      ],
+      summary: `Detected ${result.totalCorrect}/${result.totalCheckpoints} issues with ${result.hintsUsed} hints used.`,
+    };
+    setScoreResult(scores);
+
+    // Compute skill XP
+    const skillIds = matchTaskToSkills(taskName, jobTitle);
+    const xpPerSkill = calculateSkillXP(overallPct, true);
+    const skillsEarnedData = skillIds.map(id => ({ skill_id: id, xp: xpPerSkill }));
+    const earned = skillIds.map(id => {
+      const tax = SKILL_TAXONOMY.find(s => s.id === id);
+      return { skill_id: id, xp: xpPerSkill, name: tax?.name || id, levelBefore: "Novice", levelAfter: "Novice", leveledUp: false };
+    });
+    setEarnedSkills(earned);
+
+    if (user) {
+      try {
+        await supabase.from("completed_simulations").insert({
+          user_id: user.id,
+          task_name: taskName,
+          job_title: jobTitle,
+          company: company || null,
+          rounds_completed: result.totalCheckpoints,
+          correct_answers: result.totalCorrect,
+          total_questions: result.totalCheckpoints,
+          experience_level: mode,
+          tool_awareness_score: scores.categories[0].score,
+          human_value_add_score: scores.categories[1].score,
+          adaptive_thinking_score: scores.categories[2].score,
+          domain_judgment_score: scores.categories[3].score,
+          skills_earned: skillsEarnedData,
+          sim_level: 2,
+        } as any);
+        onCompleted?.();
+        await simGate.increment();
+        toast({ title: "Audit complete! 🛡️", description: `${result.totalCorrect}/${result.totalCheckpoints} threats detected`, action: <Button variant="link" className="text-xs p-0 h-auto" onClick={() => navigate("/map")}>Skill Map</Button> });
+      } catch (err) {
+        console.error("Failed to save audit:", err);
+      }
+    }
+    setPhase("done");
   };
 
 
@@ -1079,7 +1168,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                     className="text-xs font-bold"
                     style={{ color: "hsl(var(--filigree-glow))", fontFamily: "'Cinzel', serif" }}
                   >
-                    Quest {roundCount}/{maxRounds}{level === 2 ? " · Level 2" : ""}
+                    {level === 2 ? "🛡️ Guided Audit · Level 2" : `Quest ${roundCount}/${maxRounds}`}
                   </span>
                 </motion.div>
               )}
@@ -1182,10 +1271,26 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                 </motion.div>
               )}
 
+              {/* L2 Guided Audit */}
+              {phase === "chat" && !error && level === 2 && auditData && (
+                <motion.div
+                  key="guided-audit"
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="max-w-2xl mx-auto"
+                >
+                  <GuidedAudit
+                    checkpoints={auditData.checkpoints as AuditCheckpoint[]}
+                    aiOutputSummary={auditData.aiOutputSummary}
+                    aiAutoAction={auditData.aiAutoAction}
+                    scenarioContext={auditData.scenarioContext}
+                    onComplete={handleAuditComplete}
+                    onRestart={() => startCompile()}
+                  />
+                </motion.div>
+              )}
 
-
-
-              {phase === "chat" && !error && (
+              {phase === "chat" && !error && !(level === 2 && auditData) && (
                 <div className="max-w-2xl mx-auto space-y-4">
                   {messages.map((msg, i) => {
                     const isUser = msg.role === "user";
