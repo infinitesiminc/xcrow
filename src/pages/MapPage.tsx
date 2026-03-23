@@ -2,6 +2,7 @@
  * MapPage — Split-panel layout: left panel (Forge/Kingdoms/Allies) + right map.
  */
 import { useState, useCallback, useEffect, useMemo, useRef } from "react";
+import { useToast } from "@/hooks/use-toast";
 import type { FutureSkill } from "@/hooks/use-future-skills";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
@@ -107,6 +108,9 @@ const MapPage = () => {
   const [level2SkillIds, setLevel2SkillIds] = useState<Set<string>>(new Set());
   const [level2CompletedIds, setLevel2CompletedIds] = useState<Level2CompletedIds>(new Set());
   const [skillGrowthMap, setSkillGrowthMap] = useState<Map<string, CanonicalSkillGrowth>>(new Map());
+  const [bossCount, setBossCount] = useState(0);
+  const { toast } = useToast();
+  const hasShownBossToast = useRef(false);
 
   // In-place sim overlay state
   const [activeSim, setActiveSim] = useState<PendingSimLaunch | null>(null);
@@ -213,8 +217,10 @@ const MapPage = () => {
         "datadriven-narrative-development", "ethical-ai-development", "complex-solution-architecture",
       ]);
 
+      let finalL2Ids = DEMO_LEVEL2_SKILLS;
+
       if (sims.length > 0 && qualifiedRoles.size === 0) {
-        setLevel2SkillIds(DEMO_LEVEL2_SKILLS);
+        finalL2Ids = DEMO_LEVEL2_SKILLS;
       } else if (qualifiedRoles.size > 0) {
         const { data: jobs } = await supabase.from("jobs").select("id, title").in("title", Array.from(qualifiedRoles));
         if (jobs && jobs.length > 0) {
@@ -223,9 +229,25 @@ const MapPage = () => {
           const l2ids = new Set<string>();
           for (const link of futureSkillLinks || []) { if (link.canonical_skill_id) l2ids.add(link.canonical_skill_id); }
           for (const id of DEMO_LEVEL2_SKILLS) l2ids.add(id);
-          setLevel2SkillIds(l2ids);
-        } else {
-          setLevel2SkillIds(DEMO_LEVEL2_SKILLS);
+          finalL2Ids = l2ids;
+        }
+      }
+
+      setLevel2SkillIds(finalL2Ids);
+
+      // Count undefeated bosses and fire toast
+      const undefeatedCount = [...finalL2Ids].filter(id => !l2Completed.has(id)).length;
+      if (undefeatedCount > 0) {
+        setBossCount(undefeatedCount);
+        try { localStorage.setItem("xcrow-boss-count", String(undefeatedCount)); } catch {}
+        if (!hasShownBossToast.current) {
+          hasShownBossToast.current = true;
+          setTimeout(() => {
+            toast({
+              title: `⚔️ ${undefeatedCount} Boss Battle${undefeatedCount > 1 ? "s" : ""} Available!`,
+              description: "Defeat boss nodes on the map to evolve your skills and earn exclusive badges.",
+            });
+          }, 1500);
         }
       }
 
