@@ -48,7 +48,7 @@ function getXpLevel(xp: number): { name: string; color: string; next: number } {
   return { name: "Novice", color: "hsl(var(--muted-foreground))", next: 150 };
 }
 
-export default function FutureSkillsTable({ skills, onSkillClick, skillGrowthMap, focusSkillId, level2SkillIds }: Props) {
+export default function FutureSkillsTable({ skills, onSkillClick, skillGrowthMap, focusSkillId, level2SkillIds, onLaunchSim }: Props) {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [search, setSearch] = useState("");
