@@ -161,12 +161,13 @@ export default function SkillDetailDrawer({
     })();
   }, [skill, open]);
 
-  if (!skill) return null;
-
-  const territory = getTerritory(skill.category as FutureSkillCategory);
+  const territory = skill ? getTerritory(skill.category as FutureSkillCategory) : null;
   const { imageUrl: heroImage, loading: heroLoading } = useSkillHeroImage(skill, open);
-  const demandTier =
-    skill.demandCount >= 12 ? "🔥 High Demand" : skill.demandCount >= 5 ? "📈 Growing" : "🌱 Emerging";
+  const demandTier = skill
+    ? (skill.demandCount >= 12 ? "🔥 High Demand" : skill.demandCount >= 5 ? "📈 Growing" : "🌱 Emerging")
+    : "";
+
+  if (!skill || !territory) return null;
 
   // (timeline removed)
 
