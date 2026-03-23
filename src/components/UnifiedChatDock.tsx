@@ -61,8 +61,10 @@ function useSuggestionChips(user: any, viewCtx: any, hasJourneyData: boolean) {
 }
 
 export default function UnifiedChatDock() {
-  const { items, isStreaming, isOpen, setIsOpen, sendMessage, clearChat, hasInteracted, onRoleSelectRef, simActive } = useChatContext();
+  const { items, isStreaming, isOpen, setIsOpen, sendMessage, clearChat, hasInteracted, onRoleSelectRef, simActive, viewContext } = useChatContext();
   const { user } = useAuth();
+  const hasJourneyData = items.length > 0 || hasInteracted;
+  const suggestions = useSuggestionChips(user, viewContext, hasJourneyData);
   const [input, setInput] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
