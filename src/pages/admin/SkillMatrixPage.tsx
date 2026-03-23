@@ -55,7 +55,6 @@ export default function SkillMatrixPage() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [catFilter, setCatFilter] = useState("All");
-  const [islandFilter, setIslandFilter] = useState("All");
   const [sortKey, setSortKey] = useState<SortKey>("name");
   const [sortAsc, setSortAsc] = useState(true);
   const { toast } = useToast();
@@ -83,9 +82,8 @@ export default function SkillMatrixPage() {
 
   const filtered = useMemo(() => {
     const q = search.toLowerCase();
-    const activeCat = islandFilter !== "All" ? islandFilter : catFilter;
     let list = skills.filter(s => {
-      if (activeCat !== "All" && s.category !== activeCat) return false;
+      if (catFilter !== "All" && s.category !== catFilter) return false;
       if (q && !s.name.toLowerCase().includes(q) && !s.category.toLowerCase().includes(q) && !(s.description || "").toLowerCase().includes(q)) return false;
       return true;
     });
@@ -95,7 +93,7 @@ export default function SkillMatrixPage() {
       return sortAsc ? av.localeCompare(bv) : bv.localeCompare(av);
     });
     return list;
-  }, [skills, search, catFilter, islandFilter, sortKey, sortAsc]);
+  }, [skills, search, catFilter, sortKey, sortAsc]);
 
   const catStats = useMemo(() => {
     const m: Record<string, number> = {};
@@ -384,48 +382,27 @@ export default function SkillMatrixPage() {
         </TabsContent>
       </Tabs>
 
-      {/* Filters row */}
-      <div className="space-y-2">
-        {/* Domain pills */}
-        <div>
-          <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mb-1.5">Domain</p>
-          <div className="flex flex-wrap gap-1.5">
-            {CATEGORIES.map(cat => (
-              <button
-                key={cat}
-                onClick={() => { setCatFilter(cat); setIslandFilter("All"); }}
-                className={`px-2.5 py-1 rounded-full text-xs font-medium transition-colors ${
-                  catFilter === cat && islandFilter === "All"
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-muted/50 text-muted-foreground hover:bg-muted"
-                }`}
-              >
-                {cat}{cat !== "All" && catStats[cat] ? ` (${catStats[cat]})` : cat === "All" ? ` (${skills.length})` : ""}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Island pills */}
-        <div>
-          <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mb-1.5">Territory Island</p>
-          <div className="flex flex-wrap gap-1.5">
-            {ISLANDS.map(island => (
-              <button
-                key={island.category}
-                onClick={() => { setIslandFilter(island.category); setCatFilter("All"); }}
-                className={`px-2.5 py-1 rounded-full text-xs font-medium transition-colors flex items-center gap-1 ${
-                  islandFilter === island.category
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-muted/50 text-muted-foreground hover:bg-muted"
-                }`}
-              >
-                <span>{island.emoji}</span>
-                {island.terrain}
-              </button>
-            ))}
-          </div>
-        </div>
+      {/* Filter pills — unified island + count */}
+      <div className="flex flex-wrap gap-1.5">
+        {ISLANDS.map(island => {
+          const count = island.category === "All" ? skills.length : (catStats[island.category] || 0);
+          const active = catFilter === island.category;
+          return (
+            <button
+              key={island.category}
+              onClick={() => setCatFilter(island.category)}
+              className={`px-2.5 py-1 rounded-full text-xs font-medium transition-colors flex items-center gap-1 ${
+                active
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-muted/50 text-muted-foreground hover:bg-muted"
+              }`}
+            >
+              <span>{island.emoji}</span>
+              {island.terrain}
+              {count > 0 && <span className="opacity-70">({count})</span>}
+            </button>
+          );
+        })}
       </div>
 
       {/* Search */}
