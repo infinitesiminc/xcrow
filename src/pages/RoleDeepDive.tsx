@@ -393,7 +393,7 @@ const RoleDeepDive = () => {
       <DialogContent className="max-w-5xl w-[95vw] h-[85vh] p-0 gap-0 overflow-hidden rounded-2xl border-border/60 bg-background">
         <div className="h-full flex flex-col overflow-hidden">
           {/* ── Kingdom Header ── */}
-          <div className="shrink-0 z-20 bg-background/95 backdrop-blur-md border-b border-border px-4 py-2.5 flex items-center justify-between gap-3 relative overflow-hidden">
+          <div className="shrink-0 z-20 bg-background/95 backdrop-blur-md border-b border-border px-4 h-16 flex items-center justify-between gap-3 relative overflow-hidden">
             <HeaderVibeImages seed={result.jobTitle.length * 17} count={4} />
             <button onClick={handleClose} className="relative z-10 flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors shrink-0">
               <ChevronLeft className="h-3.5 w-3.5" /> Back
