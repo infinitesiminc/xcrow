@@ -587,7 +587,7 @@ export default function GuidedAudit({
                 key={cp.id}
                 initial={{ opacity: 0, x: -4 }}
                 animate={{ opacity: 1, x: 0 }}
-                className="flex items-start gap-2.5 text-[11px] p-2.5 rounded-lg"
+                className="flex items-start gap-2.5 text-[13px] p-2.5 rounded-lg"
                 style={{
                   background: isCorrect ? "hsl(142 60% 50% / 0.05)" : "hsl(0 60% 55% / 0.05)",
                   border: `1px solid ${isCorrect ? "hsl(142 60% 50% / 0.15)" : "hsl(0 60% 55% / 0.15)"}`,
