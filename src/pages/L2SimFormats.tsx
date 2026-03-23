@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import ReactMarkdown from "react-markdown";
 import GuidedAudit, { type AuditCheckpoint, type AuditVerdict } from "@/components/sim/GuidedAudit";
+import { useChatContext } from "@/contexts/ChatContext";
 
 /* ── Shared scenario context ── */
 const SCENARIO = {
