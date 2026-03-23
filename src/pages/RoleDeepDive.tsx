@@ -403,7 +403,7 @@ const RoleDeepDive = () => {
               <span className="text-sm font-semibold text-foreground truncate block">{result.jobTitle.trim()}</span>
               {company && <span className="text-[10px] text-muted-foreground">Kingdom of {company}</span>}
             </div>
-            <div className="flex items-center gap-2 shrink-0">
+            <div className="relative z-10 flex items-center gap-2 shrink-0">
               <button onClick={toggleBookmark} disabled={bookmarkLoading} className="p-1.5 rounded-lg hover:bg-muted/30 transition-colors">
                 {isBookmarked ? <BookmarkCheck className="h-4 w-4 text-primary" /> : <Bookmark className="h-4 w-4 text-muted-foreground" />}
               </button>
