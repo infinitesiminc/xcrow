@@ -236,6 +236,17 @@ const AlliesPanel = () => {
           )}
         </div>
       </ScrollArea>
+
+      {/* DM Chat Drawer */}
+      <AnimatePresence>
+        {chatFriend && (
+          <AllyChat
+            key={chatFriend.friendId}
+            friend={chatFriend}
+            onBack={() => setChatFriend(null)}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 };
