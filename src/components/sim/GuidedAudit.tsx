@@ -706,7 +706,25 @@ export default function GuidedAudit({
 
   /* ── Active Audit — Sentinel's Sanctum ── */
   return (
-    <div className="space-y-4 max-w-lg mx-auto py-2">
+    <div className="space-y-4 max-w-lg mx-auto py-2 relative">
+      {/* Floating Boss Monster — fixed to top-right */}
+      {isBossBattle && (
+        <motion.div
+          className="absolute -top-2 -right-2 z-20"
+          initial={{ opacity: 0, scale: 0.5 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.3, type: "spring", stiffness: 200 }}
+          style={{ pointerEvents: "none" }}
+        >
+          <BossMonster
+            hp={bossHp}
+            maxHp={maxHp}
+            state={bossState}
+            checkpointsDone={Object.keys(revealed).length}
+            totalCheckpoints={checkpoints.length}
+          />
+        </motion.div>
+      )}
       {/* Sanctum Header Banner */}
       <div
         className="rounded-xl p-3.5 relative overflow-hidden"
