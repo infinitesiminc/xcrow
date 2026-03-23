@@ -362,6 +362,14 @@ function FriendCard({ friend, onAccept, onReject, onView, onMessage, formatLastS
       ) : (
         <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
           <button
+            onClick={onMessage}
+            className="p-1.5 rounded-md transition-all hover:bg-white/10"
+            style={{ color: "hsl(var(--filigree-glow))" }}
+            title="Message"
+          >
+            <MessageCircle className="h-3.5 w-3.5" />
+          </button>
+          <button
             onClick={onView}
             className="p-1.5 rounded-md transition-all hover:bg-white/10"
             style={{ color: "hsl(var(--filigree-glow))" }}
