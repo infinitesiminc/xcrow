@@ -117,6 +117,8 @@ interface BossBattleArenaProps {
   onRestart?: () => void;
   onViewDebrief?: () => void;
   skillName?: string;
+  jobTitle?: string;
+  company?: string;
 }
 
 /* ── Main Arena ── */
@@ -124,10 +126,13 @@ export default function BossBattleArena({
   checkpoints,
   aiOutputSummary,
   aiAutoAction,
+  scenarioContext,
   onComplete,
   onRestart,
   onViewDebrief,
   skillName,
+  jobTitle,
+  company,
 }: BossBattleArenaProps) {
   const { profile } = useAuth();
   const [currentStep, setCurrentStep] = useState(0);
