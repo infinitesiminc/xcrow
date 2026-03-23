@@ -36,7 +36,19 @@ const CAT_COLORS: Record<string, string> = {
   "Human Edge": "bg-fuchsia-500/15 text-fuchsia-400",
 };
 
-type SortKey = "name" | "category" | "demand_count" | "job_count";
+const ISLANDS: { category: string; emoji: string; terrain: string }[] = [
+  { category: "All", emoji: "🗺️", terrain: "All Islands" },
+  { category: "Technical", emoji: "🔮", terrain: "Arcane Forge" },
+  { category: "Analytical", emoji: "🏔️", terrain: "Data Highlands" },
+  { category: "Strategic", emoji: "⚔️", terrain: "Command Summit" },
+  { category: "Communication", emoji: "🌉", terrain: "Bridge Isles" },
+  { category: "Leadership", emoji: "👑", terrain: "Crown Heights" },
+  { category: "Creative", emoji: "🌈", terrain: "Prism Coast" },
+  { category: "Ethics & Compliance", emoji: "🛡️", terrain: "Sentinel Watch" },
+  { category: "Human Edge", emoji: "🔥", terrain: "Soul Springs" },
+];
+
+type SortKey = "name" | "category";
 
 export default function SkillMatrixPage() {
   const [skills, setSkills] = useState<CanonicalSkill[]>([]);
