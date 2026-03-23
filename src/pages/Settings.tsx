@@ -349,16 +349,18 @@ function ProfileSection({
           <Label className="text-xs uppercase tracking-wider text-muted-foreground">Choose your companion</Label>
           <div className="flex gap-6 items-start">
             {/* Large preview */}
-            <div className="shrink-0 w-48 h-48 rounded-2xl border-2 border-primary/30 bg-primary/5 flex items-center justify-center overflow-hidden">
-              {avatarId ? (
+            <div className="shrink-0 w-48 h-48 rounded-2xl border-2 border-primary/30 bg-primary/5 flex items-center justify-center overflow-hidden relative">
+              {AVATAR_OPTIONS.map((avatar) => (
                 <img
-                  src={AVATAR_OPTIONS.find(a => a.id === avatarId)?.src}
-                  alt={AVATAR_OPTIONS.find(a => a.id === avatarId)?.label}
-                  className="w-44 h-44 object-contain"
+                  key={avatar.id}
+                  src={avatar.src}
+                  alt={avatar.label}
+                  className={`w-44 h-44 object-contain absolute inset-0 m-auto transition-opacity duration-150 ${
+                    avatarId === avatar.id ? "opacity-100" : "opacity-0 pointer-events-none"
+                  }`}
                 />
-              ) : (
-                <span className="text-muted-foreground text-xs">Select</span>
-              )}
+              ))}
+              {!avatarId && <span className="text-muted-foreground text-xs">Select</span>}
             </div>
             {/* Grid */}
             <div className="grid grid-cols-5 sm:grid-cols-6 gap-2 flex-1">
