@@ -205,7 +205,7 @@ export default function FutureSkillsTable({ skills, onSkillClick, skillGrowthMap
   );
 
   return (
-    <div className="h-full flex flex-col">
+    <div className="h-full flex flex-col overflow-x-hidden">
       {/* Search + Filters */}
       <div className="px-3 py-2.5 shrink-0 space-y-2">
         <div className="flex items-center gap-2">
@@ -344,20 +344,20 @@ export default function FutureSkillsTable({ skills, onSkillClick, skillGrowthMap
       )}
 
       {/* Table */}
-      <div className="flex-1 overflow-y-auto px-3 pb-3" ref={scrollRef}>
-        <table className="w-full text-xs">
+      <div className="flex-1 overflow-y-auto overflow-x-hidden px-3 pb-3" ref={scrollRef}>
+        <table className="w-full text-xs table-fixed">
           <thead
             className="sticky top-0 z-10 backdrop-blur-sm"
             style={{ background: "hsl(var(--surface-stone) / 0.95)" }}
           >
             <tr style={{ borderBottom: "1px solid hsl(var(--filigree) / 0.15)" }}>
-              <th className="text-left py-2 pr-2">{colBtn("name", "Skill")}</th>
-              <th className="text-center py-2 w-[100px]">
+              <th className="text-left py-2 pr-1" style={{ width: "55%" }}>{colBtn("name", "Skill")}</th>
+              <th className="text-center py-2" style={{ width: "35%" }}>
                 <span className="text-[10px] uppercase tracking-[0.1em] text-muted-foreground" style={{ fontFamily: "'Cinzel', serif", fontWeight: 600 }}>
                   Launch
                 </span>
               </th>
-              <th className="w-6 py-2" />
+              <th className="py-2" style={{ width: "10%" }} />
             </tr>
           </thead>
           <tbody>
@@ -408,7 +408,7 @@ export default function FutureSkillsTable({ skills, onSkillClick, skillGrowthMap
                         </span>
                       </div>
                       {/* L1 / L2 quick-launch icons */}
-                      <div className="w-[100px] shrink-0 flex items-center justify-center gap-1.5">
+                      <div className="shrink-0 flex items-center justify-center gap-1">
                         {/* Level 1 */}
                         <Popover>
                           <PopoverTrigger asChild>
