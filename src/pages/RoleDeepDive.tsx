@@ -501,7 +501,7 @@ const RoleDeepDive = () => {
 
         <SimulatorModal
           open={!!simTask}
-          onClose={() => { setSimTask(null); setCurrentIntel(null); setSimLevel(1); setSimFuturePrediction(undefined); fetchCompletions(); setPhase("choose"); setChosenTask(null); }}
+          onClose={() => { setSimTask(null); setCurrentIntel(null); setSimLevel(1); setSimFuturePrediction(undefined); fetchCompletions(); }}
           taskName={simTask?.name || ""}
           jobTitle={result.jobTitle}
           company={result.company}
