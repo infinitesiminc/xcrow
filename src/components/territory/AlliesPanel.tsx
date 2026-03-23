@@ -13,6 +13,8 @@ import {
   Users, Search, UserPlus, Check, X, Shield,
   MessageCircle, Eye, Swords, Clock, Sparkles,
 } from "lucide-react";
+
+import AllyChat from "./AllyChat";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -29,6 +31,7 @@ const AlliesPanel = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<{ id: string; display_name: string; username: string | null; avatar_id: string | null }[]>([]);
   const [searching, setSearching] = useState(false);
+  const [chatFriend, setChatFriend] = useState<Friend | null>(null);
 
   // Search users by display name or username
   const handleSearch = useCallback(async () => {
@@ -73,7 +76,7 @@ const AlliesPanel = () => {
   };
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full relative">
       {/* Header */}
       <div
         className="px-4 py-3 flex items-center justify-between shrink-0"
@@ -227,12 +230,24 @@ const AlliesPanel = () => {
                 onAccept={() => acceptRequest(friend.id)}
                 onReject={() => removeFriend(friend.id)}
                 onView={() => friend.username && navigate(`/u/${friend.username}`)}
+                onMessage={() => setChatFriend(friend)}
                 formatLastSeen={formatLastSeen}
               />
             ))
           )}
         </div>
       </ScrollArea>
+
+      {/* DM Chat Drawer */}
+      <AnimatePresence>
+        {chatFriend && (
+          <AllyChat
+            key={chatFriend.friendId}
+            friend={chatFriend}
+            onBack={() => setChatFriend(null)}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 };
@@ -264,9 +279,9 @@ function FriendRow({ name, username, avatarId, trailing, onClick }: {
 }
 
 /* ── Friend Card (full detail) ── */
-function FriendCard({ friend, onAccept, onReject, onView, formatLastSeen }: {
+function FriendCard({ friend, onAccept, onReject, onView, onMessage, formatLastSeen }: {
   friend: Friend; onAccept: () => void; onReject: () => void;
-  onView: () => void; formatLastSeen: (d: string | null) => string;
+  onView: () => void; onMessage: () => void; formatLastSeen: (d: string | null) => string;
 }) {
   const avatar = friend.avatarId ? getAvatarById(friend.avatarId) : null;
   const isPending = friend.status === "pending";
@@ -346,6 +361,14 @@ function FriendCard({ friend, onAccept, onReject, onView, formatLastSeen }: {
         </span>
       ) : (
         <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+          <button
+            onClick={onMessage}
+            className="p-1.5 rounded-md transition-all hover:bg-white/10"
+            style={{ color: "hsl(var(--filigree-glow))" }}
+            title="Message"
+          >
+            <MessageCircle className="h-3.5 w-3.5" />
+          </button>
           <button
             onClick={onView}
             className="p-1.5 rounded-md transition-all hover:bg-white/10"
