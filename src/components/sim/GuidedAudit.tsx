@@ -717,7 +717,7 @@ export default function GuidedAudit({
 
       {/* Oracle's Claim — AI output context */}
       <div
-        className="rounded-lg px-3.5 py-2.5 text-[11px] font-mono relative overflow-hidden"
+        className="rounded-lg px-3.5 py-2.5 text-[13px] font-mono relative overflow-hidden"
         style={{
           background: "hsl(262 30% 12%)",
           border: "1px solid hsl(262 60% 40% / 0.2)",
