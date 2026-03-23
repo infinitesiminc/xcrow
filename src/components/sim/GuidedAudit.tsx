@@ -769,7 +769,7 @@ export default function GuidedAudit({
                 <h4 className="text-sm font-bold text-foreground" style={{ fontFamily: "'Cinzel', serif" }}>
                   {checkpoint.area.split(" ").slice(1).join(" ")}
                 </h4>
-                <p className="text-[12px] text-muted-foreground mt-1.5 leading-relaxed">{checkpoint.question}</p>
+                <p className="text-[15px] text-muted-foreground mt-1.5 leading-relaxed">{checkpoint.question}</p>
               </div>
             </div>
 
