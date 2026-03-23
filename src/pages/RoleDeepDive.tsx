@@ -220,7 +220,7 @@ const RoleDeepDive = () => {
       setLoading(false);
     };
     analyze();
-  }, [jobTitle, company, hasJd, navigate, initialResult]);
+  }, [jobTitle, company, hasJd, navigate, initialResult, skillResolved]);
 
   const resolveJobId = useCallback(async (title: string, _comp: string) => {
     try {
