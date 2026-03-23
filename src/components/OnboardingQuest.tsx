@@ -1,14 +1,15 @@
 /**
  * OnboardingQuest — Cinematic RPG intro overlay.
- * 3 steps: Mission Intro → Choose Avatar → Enter the Map.
+ * 4 steps: Mission Intro → Choose Avatar → Set Username → Enter the Map.
  */
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { AVATAR_OPTIONS, type AvatarOption } from "@/lib/avatars";
-import { Map, ChevronRight, Loader2 } from "lucide-react";
+import { AVATAR_OPTIONS } from "@/lib/avatars";
+import { Map, ChevronRight, Loader2, AtSign, Check, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import xcrowLogo from "@/assets/xcrow-logo.png";
 
 interface OnboardingQuestProps {
@@ -17,7 +18,11 @@ interface OnboardingQuestProps {
   onComplete: () => void;
 }
 
-type Step = "intro" | "avatar" | "launch";
+type Step = "intro" | "avatar" | "username" | "launch";
+
+function sanitizeUsername(raw: string): string {
+  return raw.toLowerCase().replace(/[^a-z0-9_-]/g, "").slice(0, 24);
+}
 
 export default function OnboardingQuest({ open, userId, onComplete }: OnboardingQuestProps) {
   const { toast } = useToast();
@@ -25,14 +30,43 @@ export default function OnboardingQuest({ open, userId, onComplete }: Onboarding
   const [selectedAvatar, setSelectedAvatar] = useState<string>("crow");
   const [saving, setSaving] = useState(false);
 
+  // Username state
+  const [usernameRaw, setUsernameRaw] = useState("");
+  const [usernameStatus, setUsernameStatus] = useState<"idle" | "checking" | "available" | "taken">("idle");
+  const username = sanitizeUsername(usernameRaw);
+
+  // Check username availability with debounce
+  useEffect(() => {
+    if (username.length < 3) {
+      setUsernameStatus("idle");
+      return;
+    }
+    setUsernameStatus("checking");
+    const timer = setTimeout(async () => {
+      const { data } = await supabase
+        .from("profiles")
+        .select("id")
+        .eq("username", username)
+        .neq("id", userId)
+        .maybeSingle();
+      setUsernameStatus(data ? "taken" : "available");
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [username, userId]);
+
   const handleComplete = useCallback(async () => {
     setSaving(true);
+    const updates: any = {
+      onboarding_completed: true,
+      avatar_id: selectedAvatar,
+    };
+    if (username.length >= 3 && usernameStatus === "available") {
+      updates.username = username;
+    }
+
     const { error } = await supabase
       .from("profiles")
-      .update({
-        onboarding_completed: true,
-        avatar_id: selectedAvatar,
-      })
+      .update(updates)
       .eq("id", userId);
 
     if (error) {
@@ -40,7 +74,7 @@ export default function OnboardingQuest({ open, userId, onComplete }: Onboarding
     }
     setSaving(false);
     onComplete();
-  }, [userId, selectedAvatar, onComplete, toast]);
+  }, [userId, selectedAvatar, username, usernameStatus, onComplete, toast]);
 
   if (!open) return null;
 
@@ -72,7 +106,6 @@ export default function OnboardingQuest({ open, userId, onComplete }: Onboarding
             transition={{ duration: 0.5, ease: "easeOut" }}
             className="text-center max-w-md px-6"
           >
-            {/* Crow mascot with glow */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -92,7 +125,6 @@ export default function OnboardingQuest({ open, userId, onComplete }: Onboarding
               />
             </motion.div>
 
-            {/* Title */}
             <motion.h1
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
@@ -102,7 +134,6 @@ export default function OnboardingQuest({ open, userId, onComplete }: Onboarding
               A New Era Dawns
             </motion.h1>
 
-            {/* Narrative text */}
             <motion.p
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
@@ -120,7 +151,6 @@ export default function OnboardingQuest({ open, userId, onComplete }: Onboarding
               You've been chosen to scout the frontier. Choose your companion and claim your place on the world map.
             </motion.p>
 
-            {/* Decorative divider */}
             <motion.div
               initial={{ opacity: 0, scaleX: 0 }}
               animate={{ opacity: 1, scaleX: 1 }}
@@ -177,7 +207,6 @@ export default function OnboardingQuest({ open, userId, onComplete }: Onboarding
               This creature will represent you across the realm
             </motion.p>
 
-            {/* Avatar grid */}
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
@@ -231,7 +260,7 @@ export default function OnboardingQuest({ open, userId, onComplete }: Onboarding
             >
               <Button
                 size="lg"
-                onClick={() => setStep("launch")}
+                onClick={() => setStep("username")}
                 disabled={!selectedAvatar}
                 className="px-8"
                 style={{ boxShadow: "0 0 20px hsl(var(--filigree-glow) / 0.15)" }}
@@ -243,7 +272,119 @@ export default function OnboardingQuest({ open, userId, onComplete }: Onboarding
           </motion.div>
         )}
 
-        {/* ─── Step 3: Launch ─── */}
+        {/* ─── Step 3: Choose Username ─── */}
+        {step === "username" && (
+          <motion.div
+            key="username"
+            initial={{ opacity: 0, x: 40 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -40 }}
+            transition={{ duration: 0.35 }}
+            className="text-center max-w-md px-6"
+          >
+            {/* Show selected avatar small */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.1 }}
+              className="mx-auto w-16 h-16 mb-4"
+            >
+              <img
+                src={AVATAR_OPTIONS.find(a => a.id === selectedAvatar)?.src}
+                alt="Your companion"
+                className="h-16 w-16 rounded-full object-cover border-2 border-primary/20 drop-shadow-[0_0_12px_hsl(var(--filigree-glow)/0.3)]"
+              />
+            </motion.div>
+
+            <motion.h2
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.15 }}
+              className="text-2xl font-fantasy font-bold text-foreground mb-2"
+            >
+              Claim Your Name
+            </motion.h2>
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.25 }}
+              className="text-sm text-muted-foreground mb-6"
+            >
+              Choose a unique name so allies can find and challenge you
+            </motion.p>
+
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              className="max-w-xs mx-auto space-y-3"
+            >
+              <div className="relative">
+                <AtSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="e.g. darkwolf, skyarcher"
+                  value={usernameRaw}
+                  onChange={(e) => setUsernameRaw(e.target.value)}
+                  className="pl-10 pr-10 text-center"
+                  autoFocus
+                  maxLength={24}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && username.length >= 3 && usernameStatus === "available") {
+                      setStep("launch");
+                    }
+                  }}
+                />
+                {/* Status indicator */}
+                <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                  {usernameStatus === "checking" && (
+                    <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                  )}
+                  {usernameStatus === "available" && (
+                    <Check className="h-4 w-4 text-success" />
+                  )}
+                  {usernameStatus === "taken" && (
+                    <AlertCircle className="h-4 w-4 text-destructive" />
+                  )}
+                </div>
+              </div>
+
+              {/* Live URL preview */}
+              {username.length >= 3 && (
+                <motion.p
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className={`text-[11px] ${
+                    usernameStatus === "taken" ? "text-destructive" : "text-muted-foreground"
+                  }`}
+                >
+                  {usernameStatus === "taken"
+                    ? "This name is already taken — try another"
+                    : `xcrow.ai/u/${username}`}
+                </motion.p>
+              )}
+
+              <Button
+                size="lg"
+                onClick={() => setStep("launch")}
+                disabled={username.length < 3 || usernameStatus === "taken" || usernameStatus === "checking"}
+                className="w-full"
+                style={{ boxShadow: "0 0 20px hsl(var(--filigree-glow) / 0.15)" }}
+              >
+                Claim Name
+                <ChevronRight className="h-4 w-4 ml-1" />
+              </Button>
+
+              <button
+                onClick={() => setStep("launch")}
+                className="text-[11px] text-muted-foreground hover:text-foreground transition-colors"
+              >
+                Skip — I'll set this later
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+
+        {/* ─── Step 4: Launch ─── */}
         {step === "launch" && (
           <motion.div
             key="launch"
@@ -253,7 +394,6 @@ export default function OnboardingQuest({ open, userId, onComplete }: Onboarding
             transition={{ duration: 0.5 }}
             className="text-center max-w-md px-6"
           >
-            {/* Selected avatar big reveal */}
             <motion.div
               initial={{ scale: 0.5, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
@@ -275,9 +415,11 @@ export default function OnboardingQuest({ open, userId, onComplete }: Onboarding
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
-              className="text-2xl font-fantasy font-bold text-foreground mb-2"
+              className="text-2xl font-fantasy font-bold text-foreground mb-1"
             >
-              The {AVATAR_OPTIONS.find(a => a.id === selectedAvatar)?.label} Stands Ready
+              {username.length >= 3 && usernameStatus === "available"
+                ? `${username}, The ${AVATAR_OPTIONS.find(a => a.id === selectedAvatar)?.label}`
+                : `The ${AVATAR_OPTIONS.find(a => a.id === selectedAvatar)?.label} Stands Ready`}
             </motion.h2>
             <motion.p
               initial={{ opacity: 0 }}
@@ -310,7 +452,7 @@ export default function OnboardingQuest({ open, userId, onComplete }: Onboarding
 
       {/* Step dots */}
       <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-2">
-        {(["intro", "avatar", "launch"] as Step[]).map((s) => (
+        {(["intro", "avatar", "username", "launch"] as Step[]).map((s) => (
           <div
             key={s}
             className={`h-1.5 rounded-full transition-all duration-300 ${
