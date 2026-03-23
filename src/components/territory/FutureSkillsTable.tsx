@@ -340,11 +340,7 @@ export default function FutureSkillsTable({ skills, onSkillClick, skillGrowthMap
           <tbody>
             {filtered.map(skill => {
               const territory = getTerritory(skill.category as FutureSkillCategory);
-              const xp = getSkillXp(skill.id);
-              const level = getXpLevel(xp);
-              const progressPct = xp >= 2500 ? 100 : Math.min(100, (xp / level.next) * 100);
               const isBookmarked = bookmarks.has(skill.id);
-              const isExpanded = expandedSkillId === skill.id;
               const growth = getSkillGrowth(skill.id);
               const l2Unlocked = level2SkillIds?.has(skill.id) ?? false;
 
