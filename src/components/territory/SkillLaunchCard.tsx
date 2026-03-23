@@ -11,6 +11,13 @@ import { type FutureSkill } from "@/hooks/use-future-skills";
 import { getTerritory } from "@/lib/territory-colors";
 import type { CanonicalSkillGrowth } from "@/pages/MapPage";
 
+export interface SimLaunchRequest {
+  jobTitle: string;
+  company?: string;
+  skillId?: string;
+  level?: 1 | 2;
+}
+
 interface SkillLaunchCardProps {
   skill: FutureSkill;
   /** Screen-space position (relative to map container) */
@@ -22,6 +29,8 @@ interface SkillLaunchCardProps {
   level2Unlocked?: boolean;
   growth?: CanonicalSkillGrowth | null;
   onClose: () => void;
+  /** If provided, launches sim in-place instead of navigating */
+  onLaunchSim?: (req: SimLaunchRequest) => void;
 }
 
 export default function SkillLaunchCard({
