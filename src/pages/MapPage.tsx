@@ -351,6 +351,29 @@ const MapPage = () => {
 
       {/* ── Right: Territory Map ── */}
       <div className="flex-1 relative">
+        {/* Boss Battle Banner */}
+        {bossCount > 0 && (
+          <BossBanner
+            availableBosses={
+              [...level2SkillIds]
+                .filter(id => !level2CompletedIds.has(id))
+                .map(id => {
+                  const skill = futureSkills.find(s => s.id === id);
+                  return skill ? { skill, skillId: id } : null;
+                })
+                .filter(Boolean) as { skill: FutureSkill; skillId: string }[]
+            }
+            onLaunchBoss={(skillId, skillName) => {
+              handleLaunchSim({
+                jobTitle: skillName,
+                taskName: skillName,
+                skillId,
+                level: 2,
+              });
+            }}
+            onDismiss={() => setBossCount(0)}
+          />
+        )}
         <FutureTerritoryMap
           skills={futureSkills}
           focusSkillId={mapFocusSkillId}
