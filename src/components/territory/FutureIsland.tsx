@@ -207,22 +207,49 @@ export default function FutureIsland({ island, skillLookup, level2SkillIds, leve
                   </>
                 )}
 
-                {isLevel2 ? (
+                {isBossCompleted ? (
                   <>
-                    {/* Level 2: Gold diamond glow */}
-                    <rect
-                      x={node.x - diamondSide / 2 - 3}
-                      y={node.y - diamondSide / 2 - 3}
-                      width={diamondSide + 6}
-                      height={diamondSide + 6}
+                    {/* Boss Conquered: Evolved gold circle with crown */}
+                    <motion.circle
+                      cx={node.x}
+                      cy={node.y}
+                      r={nodeRadius + 6}
+                      fill="none"
+                      stroke="hsl(45 93% 58% / 0.5)"
+                      strokeWidth={2}
+                      filter="url(#future-glow)"
+                      animate={{ r: [nodeRadius + 5, nodeRadius + 8, nodeRadius + 5], opacity: [0.5, 0.3, 0.5] }}
+                      transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                    />
+                    <circle
+                      cx={node.x}
+                      cy={node.y}
+                      r={nodeRadius}
+                      fill={isParchment
+                        ? `hsl(45 35% 78%)`
+                        : `hsl(45 40% 18%)`}
+                      stroke="hsl(45 70% 55%)"
+                      strokeWidth={isHovered ? 3.5 : 2.5}
+                      className="transition-all"
+                    />
+                  </>
+                ) : isBossAvailable ? (
+                  <>
+                    {/* Boss Available: Pulsing diamond with animated glow */}
+                    <motion.rect
+                      x={node.x - diamondSide / 2 - 4}
+                      y={node.y - diamondSide / 2 - 4}
+                      width={diamondSide + 8}
+                      height={diamondSide + 8}
                       rx={3}
                       fill="none"
-                      stroke="hsl(45 93% 58% / 0.4)"
+                      stroke="hsl(45 93% 58% / 0.5)"
                       strokeWidth={2}
                       transform={`rotate(45 ${node.x} ${node.y})`}
                       filter="url(#future-glow)"
+                      animate={{ opacity: [0.3, 0.7, 0.3] }}
+                      transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
                     />
-                    {/* Level 2: Diamond body */}
                     <rect
                       x={node.x - diamondSide / 2}
                       y={node.y - diamondSide / 2}
@@ -271,7 +298,6 @@ export default function FutureIsland({ island, skillLookup, level2SkillIds, leve
                     />
                   </>
                 )}
-
                 {/* Emoji */}
                 {skill.iconEmoji && (
                   <text
