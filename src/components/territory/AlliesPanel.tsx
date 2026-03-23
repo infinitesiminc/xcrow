@@ -31,6 +31,7 @@ const AlliesPanel = () => {
   const [searchResults, setSearchResults] = useState<{ id: string; display_name: string; username: string | null; avatar_id: string | null }[]>([]);
   const [searching, setSearching] = useState(false);
   const [chatFriend, setChatFriend] = useState<Friend | null>(null);
+  const [viewFriend, setViewFriend] = useState<Friend | null>(null);
 
   const handleSearch = useCallback(async () => {
     if (!searchQuery.trim() || !user) return;
