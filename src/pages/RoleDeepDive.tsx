@@ -20,6 +20,7 @@ import { CampaignTracker } from "@/components/role/CampaignTracker";
 import { ThreatBar } from "@/components/role/ThreatBar";
 import XcrowLoader from "@/components/XcrowLoader";
 import { useChatViewContext } from "@/contexts/ChatContext";
+import HeaderVibeImages from "@/components/HeaderVibeImages";
 import type { FuturePrediction } from "@/components/analysis/FutureTaskPreview";
 
 // ── View context for unified chat ────────────────────────────────
@@ -392,16 +393,17 @@ const RoleDeepDive = () => {
       <DialogContent className="max-w-5xl w-[95vw] h-[85vh] p-0 gap-0 overflow-hidden rounded-2xl border-border/60 bg-background">
         <div className="h-full flex flex-col overflow-hidden">
           {/* ── Kingdom Header ── */}
-          <div className="shrink-0 z-20 bg-background/95 backdrop-blur-md border-b border-border px-4 py-2.5 flex items-center justify-between gap-3">
-            <button onClick={handleClose} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors shrink-0">
+          <div className="shrink-0 z-20 bg-background/95 backdrop-blur-md border-b border-border px-4 py-2.5 flex items-center justify-between gap-3 relative overflow-hidden">
+            <HeaderVibeImages seed={result.jobTitle.length * 17} count={4} />
+            <button onClick={handleClose} className="relative z-10 flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors shrink-0">
               <ChevronLeft className="h-3.5 w-3.5" /> Back
             </button>
-            <div className="text-center min-w-0 flex-1">
+            <div className="relative z-10 text-center min-w-0 flex-1">
               <span className="text-[10px] uppercase tracking-wider text-primary font-semibold">🗺️ Mission Briefing</span>
               <span className="text-sm font-semibold text-foreground truncate block">{result.jobTitle.trim()}</span>
               {company && <span className="text-[10px] text-muted-foreground">Kingdom of {company}</span>}
             </div>
-            <div className="flex items-center gap-2 shrink-0">
+            <div className="relative z-10 flex items-center gap-2 shrink-0">
               <button onClick={toggleBookmark} disabled={bookmarkLoading} className="p-1.5 rounded-lg hover:bg-muted/30 transition-colors">
                 {isBookmarked ? <BookmarkCheck className="h-4 w-4 text-primary" /> : <Bookmark className="h-4 w-4 text-muted-foreground" />}
               </button>

@@ -8,6 +8,7 @@ import { calculateSkillXP } from "@/lib/castle-levels";
 import ReactMarkdown from "react-markdown";
 import TypewriterMarkdown from "@/components/TypewriterMarkdown";
 import XcrowLoader from "@/components/XcrowLoader";
+import HeaderVibeImages from "@/components/HeaderVibeImages";
 import simRuneCircle from "@/assets/sim-rune-circle.jpg";
 import simBriefingBg from "@/assets/sim-briefing.jpg";
 import simVictoryBg from "@/assets/sim-victory.jpg";
@@ -1136,9 +1137,10 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
   const content = (
     <div className={inline ? "h-full flex flex-col overflow-hidden" : "max-w-3xl w-[95vw] h-[90vh] sm:h-[90vh] h-[100dvh] sm:rounded-2xl rounded-none p-0 flex flex-col overflow-hidden gap-0 border-border/50"}>
         {/* Header — war room banner */}
-        <div className="shrink-0 relative">
+        <div className="shrink-0 relative overflow-hidden">
+          <HeaderVibeImages seed={(taskName?.length ?? 0) * 23} count={4} />
           {/* Subtle atmospheric gradient behind header */}
-          <div className="absolute inset-0 opacity-40" style={{
+          <div className="absolute inset-0 opacity-40 pointer-events-none" style={{
             background: "linear-gradient(180deg, hsl(var(--primary) / 0.08) 0%, transparent 100%)",
           }} />
           <div

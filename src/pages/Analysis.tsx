@@ -17,6 +17,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import SimulatorModal from "@/components/SimulatorModal";
+import HeaderVibeImages from "@/components/HeaderVibeImages";
 import { FutureTaskPreview } from "@/components/analysis/FutureTaskPreview";
 
 const isWebsite = (value: string) =>
@@ -285,18 +286,19 @@ const Analysis = () => {
   return (
     <div className="min-h-[100dvh] bg-background overflow-y-auto">
       {/* Sticky header — Mission Briefing */}
-      <div className="sticky top-0 z-20 bg-background/95 backdrop-blur-md border-b border-border px-4 py-3 flex items-center justify-between">
-        <button onClick={() => navigate(backPath)} className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
+      <div className="sticky top-0 z-20 bg-background/95 backdrop-blur-md border-b border-border px-4 py-3 flex items-center justify-between relative overflow-hidden">
+        <HeaderVibeImages seed={(result.jobTitle?.length ?? 0) * 11} count={4} />
+        <button onClick={() => navigate(backPath)} className="relative z-10 flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
           <ChevronLeft className="h-4 w-4" /> HQ
         </button>
-        <div className="text-center">
+        <div className="relative z-10 text-center">
           <span className="text-[8px] uppercase tracking-wider text-primary font-semibold block">🗺️ Mission</span>
           <span className="text-sm font-semibold text-foreground truncate max-w-[200px] block">{result.jobTitle}</span>
         </div>
         <button
           onClick={toggleBookmark}
           disabled={bookmarkLoading}
-          className="p-2 rounded-lg hover:bg-muted/30 transition-colors"
+          className="relative z-10 p-2 rounded-lg hover:bg-muted/30 transition-colors"
         >
           {isBookmarked
             ? <BookmarkCheck className="h-4 w-4 text-primary" />
