@@ -450,9 +450,21 @@ const MapPage = () => {
         open={drawerOpen}
         onOpenChange={setDrawerOpen}
         level2Unlocked={drawerSkill ? level2SkillIds.has(drawerSkill.id) : false}
+        level2Completed={drawerSkill ? level2CompletedIds.has(drawerSkill.id) : false}
         level1Xp={drawerSkill ? (skillGrowthMap.get(drawerSkill.id)?.level1Xp ?? 0) : 0}
         level2Xp={drawerSkill ? (skillGrowthMap.get(drawerSkill.id)?.level2Xp ?? 0) : 0}
         level1SimsCompleted={drawerSkill ? (skillGrowthMap.get(drawerSkill.id)?.level1Sims ?? 0) : 0}
+        onLaunchBoss={drawerSkill && level2SkillIds.has(drawerSkill.id) && !level2CompletedIds.has(drawerSkill.id) ? () => {
+          const growth = skillGrowthMap.get(drawerSkill.id);
+          const roles2 = []; // will use first role from drawer
+          handleLaunchSim({
+            jobTitle: drawerSkill.name,
+            taskName: drawerSkill.name,
+            skillId: drawerSkill.id,
+            level: 2,
+          });
+          setDrawerOpen(false);
+        } : undefined}
       />
     </div>
   );
