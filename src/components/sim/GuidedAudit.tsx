@@ -558,7 +558,7 @@ export default function GuidedAudit({
               >
                 {totalCorrect}/{checkpoints.length}
               </motion.span>
-              <span className="text-[11px] text-muted-foreground">detected</span>
+              <span className="text-[13px] text-muted-foreground">detected</span>
             </div>
           </motion.div>
 
