@@ -76,7 +76,7 @@ const AlliesPanel = () => {
   };
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full relative">
       {/* Header */}
       <div
         className="px-4 py-3 flex items-center justify-between shrink-0"
