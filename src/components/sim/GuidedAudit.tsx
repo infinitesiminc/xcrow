@@ -777,7 +777,7 @@ export default function GuidedAudit({
             {!showHint[checkpoint.id] && !revealed[checkpoint.id] && (
               <button
                 onClick={() => setShowHint(prev => ({ ...prev, [checkpoint.id]: true }))}
-                className="text-[11px] mt-2 flex items-center gap-1 transition-colors hover:brightness-125"
+                className="text-[13px] mt-2 flex items-center gap-1 transition-colors hover:brightness-125"
                 style={{ color: "hsl(262 80% 70%)" }}
               >
                 <Sparkles className="h-3 w-3" /> Need a hint?
