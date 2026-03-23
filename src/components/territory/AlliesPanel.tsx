@@ -476,7 +476,7 @@ function FriendCard({ friend, onAccept, onReject, onView, onMessage, onLaunchSim
                   Try
                 </button>
                 <button
-                  onClick={(e) => { e.stopPropagation(); onSendSim(friend.currentActivity?.replace("Sim: ", "") || "", currentSimName); }}
+                  onClick={(e) => { e.stopPropagation(); onSendSim(sim?.job_title || currentSimName, currentSimName); }}
                   className="flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[9px] font-medium transition-all hover:bg-white/10"
                   style={{ color: "hsl(var(--primary))", fontFamily: "'Cinzel', serif" }}
                   title="Send this sim as challenge"
