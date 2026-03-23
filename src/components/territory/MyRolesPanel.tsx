@@ -374,7 +374,8 @@ export default function MyRolesPanel({ onSelectRole, onAskChat, onTabChange }: M
         <div className="flex gap-1 mb-3 shrink-0">
           {([
             { key: "all" as const, label: "All", count: kingdoms.length },
-            { key: "conquered" as const, label: "🏰 Conquered", count: tierCounts.conquered },
+            { key: "conquered" as const, label: "👑 Conquered", count: tierCounts.conquered },
+            { key: "fortified" as const, label: "🏰 Fortified", count: tierCounts.fortified },
             { key: "contested" as const, label: "⚔️ Contested", count: tierCounts.contested },
             { key: "scouted" as const, label: "👁️ Scouted", count: tierCounts.scouted },
           ] as const).map(f => (
