@@ -696,3 +696,45 @@ html:not(.light):not(.parchment) {
 .font-fantasy {
   font-family: 'Cinzel', serif;
 }
+
+/* ── Sentinel's Sanctum (L2) Keyframes ── */
+
+@keyframes rune-pulse {
+  0%, 100% { box-shadow: 0 0 6px hsl(262 80% 55% / 0.3); }
+  50% { box-shadow: 0 0 14px hsl(262 80% 55% / 0.6); }
+}
+
+@keyframes constellation-drift {
+  0% { background-position: 0% 0%; }
+  100% { background-position: 100% 100%; }
+}
+
+@keyframes oracle-scan {
+  0% { transform: translateY(-100%); opacity: 0; }
+  10% { opacity: 0.4; }
+  90% { opacity: 0.4; }
+  100% { transform: translateY(100%); opacity: 0; }
+}
+
+@keyframes sentinel-sparkle {
+  0% { transform: translateY(0) scale(1); opacity: 0.8; }
+  100% { transform: translateY(-20px) scale(0.3); opacity: 0; }
+}
+
+.animate-rune-pulse {
+  animation: rune-pulse 2s ease-in-out infinite;
+}
+
+.sentinel-glow {
+  box-shadow: 0 0 20px hsl(262 80% 55% / 0.2), inset 0 0 20px hsl(262 80% 55% / 0.05);
+}
+
+.sentinel-constellation {
+  background-image:
+    radial-gradient(1px 1px at 20% 30%, hsl(262 80% 70% / 0.15) 1px, transparent 0),
+    radial-gradient(1px 1px at 60% 70%, hsl(262 80% 70% / 0.1) 1px, transparent 0),
+    radial-gradient(1px 1px at 80% 20%, hsl(262 80% 70% / 0.12) 1px, transparent 0),
+    radial-gradient(1px 1px at 40% 80%, hsl(262 80% 70% / 0.08) 1px, transparent 0);
+  background-size: 200% 200%;
+  animation: constellation-drift 30s linear infinite;
+}
