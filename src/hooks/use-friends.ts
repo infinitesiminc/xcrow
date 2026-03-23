@@ -178,6 +178,7 @@ export function useFriends() {
     friends,
     loading,
     pendingCount,
+    unreadCount,
     sendRequest,
     acceptRequest,
     removeFriend,
