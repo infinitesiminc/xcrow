@@ -24,6 +24,7 @@ interface FutureIslandProps {
   island: FutureIslandLayout;
   skillLookup: Map<string, FutureSkill>;
   level2SkillIds?: Set<string>;
+  level2CompletedIds?: Set<string>;
   skillGrowthMap?: Map<string, CanonicalSkillGrowth>;
   isFocused?: boolean;
   highlightedSkillId?: string | null;
