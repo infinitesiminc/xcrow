@@ -23,7 +23,7 @@ const Index = () => {
   const navigate = useNavigate();
   const isSignedIn = !!user;
 
-  const showOnboarding = isSignedIn && profile && !profile.onboardingCompleted;
+  const showOnboarding = isSignedIn && (profile === null || (profile && !profile.onboardingCompleted));
   const [onboardingDismissed, setOnboardingDismissed] = useState(false);
 
   if (isSignedIn && (!showOnboarding || onboardingDismissed)) {
