@@ -319,6 +319,7 @@ const MapPage = () => {
           focusSkillId={mapFocusSkillId}
           level2SkillIds={level2SkillIds}
           skillGrowthMap={skillGrowthMap}
+          onLaunchSim={handleLaunchSim}
           onSkillSelect={(skill) => {
             setActiveTab("table");
             setForgeFocusSkillId(skill.id);
