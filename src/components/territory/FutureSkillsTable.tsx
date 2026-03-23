@@ -514,10 +514,8 @@ export default function FutureSkillsTable({ skills, onSkillClick, skillGrowthMap
                       </div>
                     </div>
                   </td>
-                </tr>
-                    )}
-                  </td>
-                </tr>
+              );
+            })}
               );
             })}
           </tbody>
