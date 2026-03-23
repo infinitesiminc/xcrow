@@ -8,6 +8,7 @@ import { calculateSkillXP } from "@/lib/castle-levels";
 import ReactMarkdown from "react-markdown";
 import TypewriterMarkdown from "@/components/TypewriterMarkdown";
 import XcrowLoader from "@/components/XcrowLoader";
+import HeaderVibeImages from "@/components/HeaderVibeImages";
 import simRuneCircle from "@/assets/sim-rune-circle.jpg";
 import simBriefingBg from "@/assets/sim-briefing.jpg";
 import simVictoryBg from "@/assets/sim-victory.jpg";
