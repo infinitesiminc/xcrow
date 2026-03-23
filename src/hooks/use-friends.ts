@@ -26,6 +26,7 @@ export interface Friend {
   isRequester: boolean; // did current user send the request?
   lastSim: FriendLastSim | null;
   unreadMessages: number;
+  lastUnreadMessage: string | null;
 }
 
 export interface FriendMessage {
