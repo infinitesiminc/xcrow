@@ -22,10 +22,9 @@ interface FutureTerritoryMapProps {
   skills: FutureSkill[];
   focusSkillId?: string | null;
   level2SkillIds?: Set<string>;
+  level2CompletedIds?: Set<string>;
   skillGrowthMap?: Map<string, CanonicalSkillGrowth>;
-  /** Called when user clicks a skill node on the map */
   onSkillSelect?: (skill: FutureSkill) => void;
-  /** If provided, launches sim in-place instead of navigating */
   onLaunchSim?: (req: SimLaunchRequest) => void;
 }
 
