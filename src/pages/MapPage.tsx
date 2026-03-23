@@ -105,6 +105,7 @@ const MapPage = () => {
   const [realSkills, setRealSkills] = useState<SkillXP[]>([]);
   const [targetSkillIds, setTargetSkillIds] = useState<Set<string>>(new Set());
   const [level2SkillIds, setLevel2SkillIds] = useState<Set<string>>(new Set());
+  const [level2CompletedIds, setLevel2CompletedIds] = useState<Level2CompletedIds>(new Set());
   const [skillGrowthMap, setSkillGrowthMap] = useState<Map<string, CanonicalSkillGrowth>>(new Map());
 
   // In-place sim overlay state
