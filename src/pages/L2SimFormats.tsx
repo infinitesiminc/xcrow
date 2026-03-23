@@ -624,7 +624,7 @@ function RedTeamFormat() {
 
           {/* Revealed explanation */}
           {revealed[checkpoint.id] && (
-            <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="space-y-2">
+            <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="space-y-3">
               <div className="flex items-center gap-2">
                 {verdicts[checkpoint.id] === checkpoint.correctVerdict ? (
                   <span className="text-[11px] font-bold" style={{ color: "hsl(142 60% 50%)" }}>✅ Correct!</span>
@@ -636,11 +636,21 @@ function RedTeamFormat() {
               </div>
               <div className="rounded-md p-3 text-[11px] space-y-2" style={{ background: "hsl(var(--muted) / 0.1)", border: "1px solid hsl(var(--border) / 0.2)" }}>
                 <p className="text-foreground">{checkpoint.explanation}</p>
+                {/* Real-world example */}
+                <div className="rounded-md p-2.5 mt-2" style={{ background: "hsl(var(--filigree-glow) / 0.06)", border: "1px solid hsl(var(--filigree) / 0.12)" }}>
+                  <div className="flex items-center gap-1.5 mb-1">
+                    <span className="text-[10px]">📰</span>
+                    <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: "hsl(var(--filigree-glow))" }}>Real-World Case</span>
+                  </div>
+                  <p className="text-[10px] text-foreground/80 leading-relaxed">{checkpoint.realWorldExample}</p>
+                </div>
                 <div className="flex gap-1.5 items-start pt-1" style={{ borderTop: "1px solid hsl(var(--border) / 0.15)" }}>
                   <span className="text-[10px]">🎓</span>
                   <p className="text-[10px] font-medium" style={{ color: "hsl(var(--filigree-glow))" }}>{checkpoint.coachTip}</p>
                 </div>
               </div>
+              {/* Deep-dive chat */}
+              <CheckpointChat checkpoint={checkpoint} />
               <Button size="sm" variant="outline" onClick={handleNext} className="w-full gap-1.5 text-xs">
                 {currentStep < AUDIT_CHECKPOINTS.length - 1 ? "Next Checkpoint →" : "View Results"}
               </Button>
