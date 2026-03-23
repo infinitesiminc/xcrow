@@ -219,7 +219,7 @@ function CheckpointChat({ checkpoint }: { checkpoint: AuditCheckpoint }) {
       <div ref={scrollRef} className="max-h-[200px] overflow-y-auto px-3 py-2 space-y-2">
         {messages.length === 0 && (
           <div className="text-center py-3">
-            <p className="text-[11px] text-muted-foreground italic">
+            <p className="text-[13px] text-muted-foreground italic">
               "How would I detect this in my own data?" or "What guardrail prevents this?"
             </p>
           </div>
