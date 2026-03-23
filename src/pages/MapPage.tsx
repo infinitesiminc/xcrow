@@ -96,6 +96,11 @@ const MapPage = () => {
   const [level2SkillIds, setLevel2SkillIds] = useState<Set<string>>(new Set());
   const [skillGrowthMap, setSkillGrowthMap] = useState<Map<string, CanonicalSkillGrowth>>(new Map());
 
+  // In-place sim overlay state
+  const [activeSim, setActiveSim] = useState<SimLaunchRequest | null>(null);
+  const handleLaunchSim = useCallback((req: SimLaunchRequest) => setActiveSim(req), []);
+  const handleCloseSim = useCallback(() => setActiveSim(null), []);
+
   const displaySkills = useMemo(
     () => (realSkills.length > 0 ? realSkills : buildEmptySkills(taxonomy)),
     [realSkills, taxonomy]
