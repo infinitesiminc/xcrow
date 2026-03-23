@@ -20,6 +20,7 @@ import { CampaignTracker } from "@/components/role/CampaignTracker";
 import { ThreatBar } from "@/components/role/ThreatBar";
 import XcrowLoader from "@/components/XcrowLoader";
 import { useChatViewContext } from "@/contexts/ChatContext";
+import HeaderVibeImages from "@/components/HeaderVibeImages";
 import type { FuturePrediction } from "@/components/analysis/FutureTaskPreview";
 
 // ── View context for unified chat ────────────────────────────────
