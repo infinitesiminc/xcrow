@@ -5,7 +5,7 @@
  * 3. Battle card aesthetic for kingdoms
  */
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Sheet,
@@ -17,9 +17,47 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
-import { type FutureSkill, type FutureSkillCategory } from "@/hooks/use-future-skills";
+import { type FutureSkill, type FutureSkillCategory, FUTURE_CATEGORY_META } from "@/hooks/use-future-skills";
 import { ArrowRight, Briefcase, Zap, Sparkles, Lock, Diamond } from "lucide-react";
 import { getTerritory } from "@/lib/territory-colors";
+
+/* ── AI Hero Image Cache (session-level) ── */
+const heroImageCache = new Map<string, string>();
+
+function useSkillHeroImage(skill: FutureSkill | null, open: boolean) {
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (!skill || !open) return;
+
+    const cacheKey = `skill-hero-${skill.id}`;
+
+    // Check in-memory cache
+    if (heroImageCache.has(cacheKey)) {
+      setImageUrl(heroImageCache.get(cacheKey)!);
+      return;
+    }
+
+    setLoading(true);
+    const meta = FUTURE_CATEGORY_META[skill.category as FutureSkillCategory];
+    const terrain = meta?.terrain || "mystical realm";
+    const prompt = `Dark fantasy RPG skill illustration for "${skill.name}" — ${terrain} domain. Ethereal ${skill.category} energy, glowing runes, arcane atmosphere. Wide banner format, moody lighting, no text, painterly style, indigo and violet tones with ${skill.category === "Leadership" ? "golden" : skill.category === "Creative" ? "prismatic" : "arcane blue"} accents.`;
+
+    supabase.functions
+      .invoke("generate-sim-image", { body: { prompt, cacheKey } })
+      .then(({ data, error }) => {
+        if (!error && data?.url) {
+          heroImageCache.set(cacheKey, data.url);
+          setImageUrl(data.url);
+        }
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, [skill?.id, open]);
+
+  return { imageUrl, loading };
+}
 
 interface RoleLink {
   jobId: string;
