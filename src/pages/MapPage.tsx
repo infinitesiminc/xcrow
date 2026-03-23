@@ -79,7 +79,7 @@ const TAB_ITEMS = [
 type PendingSimLaunch = SimLaunchRequest & { taskName?: string };
 
 const MapPage = () => {
-  const { profile, user } = useAuth();
+  const { profile, user, isSuperAdmin } = useAuth();
   const { skills: dbSkills } = useSkills();
   const { futureSkills } = useFutureSkills();
 
