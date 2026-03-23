@@ -35,7 +35,7 @@ interface SkillLaunchCardProps {
 
 export default function SkillLaunchCard({
   skill, x, y, containerWidth, containerHeight,
-  level2Unlocked, growth, onClose,
+  level2Unlocked, growth, onClose, onLaunchSim,
 }: SkillLaunchCardProps) {
   const navigate = useNavigate();
   const [firstRole, setFirstRole] = useState<{ title: string; company: string | null } | null>(null);
