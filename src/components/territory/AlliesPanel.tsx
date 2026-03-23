@@ -339,7 +339,7 @@ function FriendCard({ friend, onAccept, onReject, onView, onMessage, formatLastS
       {isPending && !friend.isRequester ? (
         <div className="flex items-center gap-1">
           <button
-            onClick={onAccept}
+            onClick={(e) => { e.stopPropagation(); onAccept(); }}
             className="p-1.5 rounded-md transition-all hover:bg-white/10"
             style={{ color: "hsl(142 70% 55%)" }}
             title="Accept"
@@ -347,7 +347,7 @@ function FriendCard({ friend, onAccept, onReject, onView, onMessage, formatLastS
             <Check className="h-3.5 w-3.5" />
           </button>
           <button
-            onClick={onReject}
+            onClick={(e) => { e.stopPropagation(); onReject(); }}
             className="p-1.5 rounded-md transition-all hover:bg-white/10"
             style={{ color: "hsl(var(--muted-foreground))" }}
             title="Decline"
