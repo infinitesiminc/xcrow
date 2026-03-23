@@ -1,42 +1,64 @@
 
 
-## Prompt Arena Result Cards — Visual Enhancement Plan
+## Level 2 Sentinel's Sanctum — AI Image Enhancement Plan
 
-### Problem
-After the user picks which prompt is better, the "Better approach" / "Less effective" badges and result reveal feel buried and lack visual impact. The feedback moment should be a dramatic RPG reveal.
+### Concept
 
-### Changes — `src/components/sim/PromptArena.tsx`
+Use the Lovable AI image generation API (Gemini flash-image) to create **dynamic, context-aware visuals** that CSS alone cannot achieve. Each checkpoint gets a unique AI-generated illustration tied to the actual scenario content, making every L2 audit feel bespoke rather than templated.
 
-**1. Victory / Defeat Badges (replace current result strip)**
-- Replace the flat text strip (lines 211-226) with full-width animated badge banners:
-  - **Winner card**: Gold shield badge with "🏆 Superior Strategy" in Cinzel, glowing filigree border, subtle gold shimmer animation
-  - **Loser card**: Muted "💀 Weaker Approach" badge with desaturated styling
-  - "Your pick" tag gets a larger, animated treatment — green glow for correct, red pulse for incorrect
+---
 
-**2. Card Border Animations on Reveal**
-- Winner card: animated gold glow border pulse (keyframe from `hsl(var(--filigree))` to `hsl(var(--filigree-glow))`)
-- Loser card: border dims to near-invisible, card opacity drops to 0.7
-- Both use `motion.div` `animate` transitions for smooth state change
+### Where AI Images Add Value
 
-**3. Typography Upgrade**
-- "Better approach" → "🏆 Superior Strategy" at 15px bold Cinzel
-- "Less effective" → "💀 Weaker Approach" at 13px Cinzel, muted
-- Correct/Incorrect banner headline bumped to `text-lg` with Cinzel font
+**1. Checkpoint Scene Illustrations**
+- When each checkpoint loads, generate a small (256×256) illustration based on the checkpoint's `area` + `aiClaim` text
+- Prompt pattern: *"Dark fantasy oracle vision, ethereal indigo glow, showing [area topic] — minimalist, no text, arcane observatory style"*
+- Display as a subtle background or card hero image with low opacity overlay
+- Cache in Supabase Storage by checkpoint hash to avoid re-generation
 
-**4. Correct/Incorrect Banner Enhancement**
-- Correct: Add sparkle particles animation (3 small ✨ dots floating up)
-- Incorrect: Subtle shake animation on reveal
-- Both banners get stone-textured backgrounds consistent with RPG panels
+**2. Completion "Ascension" Portrait**
+- On audit completion, generate a unique sentinel portrait based on the user's score tier
+- Grand Sentinel (80%+): radiant oracle with golden halo
+- Vigilant Watcher (50-79%): watchful sentinel in violet armor
+- Apprentice Seer (below 50%): hooded figure with glowing rune staff
+- Display prominently in the completion ceremony screen
 
-**5. Key Insight Card**
-- Add a scroll/parchment emoji and Cinzel header
-- Slightly larger text (14px) for the insight body
+**3. Oracle's Claim Visual**
+- Generate a small "vision card" illustration for the AI claim being evaluated — a visual representation of the future scenario described
+- Makes the abstract AI prediction feel tangible and real
+
+---
+
+### Implementation
+
+**Backend: New edge function `generate-sim-image`**
+- Accepts: `prompt` string, `cacheKey` string
+- Checks Supabase Storage for cached image by key
+- If miss: calls Gemini flash-image API, uploads result to `sim-images` storage bucket, returns public URL
+- If hit: returns cached URL directly
+
+**Frontend: `GuidedAudit.tsx` changes**
+- Add `useEffect` per checkpoint step that calls `generate-sim-image` with a constructed prompt
+- Display image with fade-in behind checkpoint card (opacity 0.12 as atmospheric background)
+- Completion screen triggers portrait generation on mount
+- All images are non-blocking — UI renders immediately, images fade in when ready
+
+**Storage: New `sim-images` bucket**
+- Public read, service-role write
+- Images cached by hash of prompt to prevent duplicate generation
+
+---
 
 ### Files Modified
-- `src/components/sim/PromptArena.tsx` — all changes in this single file
+1. `supabase/functions/generate-sim-image/index.ts` — new edge function
+2. `src/components/sim/GuidedAudit.tsx` — image fetch + display logic
+3. Database migration — create `sim-images` storage bucket with public policy
 
-### No Breaking Changes
-- ArenaRound interface unchanged
-- All props/callbacks remain the same
-- Only visual/animation enhancements
+### Combined with CSS Plan
+This layers on top of the existing Sentinel's Sanctum CSS changes (rune stones, violet gradients, animations). The AI images add atmosphere while CSS handles the core UI structure.
+
+### Performance Guardrails
+- Images load async, never block interaction
+- Cache-first strategy eliminates repeated API calls
+- Fallback: if generation fails, component renders normally without images (graceful degradation)
 
