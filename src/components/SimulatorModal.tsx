@@ -33,6 +33,7 @@ import {
 } from "@/lib/simulator";
 
 import GuidedAudit, { type AuditResult, type AuditCheckpoint } from "@/components/sim/GuidedAudit";
+import BossBattleArena from "@/components/sim/BossBattleArena";
 
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -1207,8 +1208,21 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
         </div>
 
         <div className="flex-1 flex min-h-0 relative">
+          {/* L2 Boss Battle Arena — full-screen overlay, outside scroll container */}
+          {phase === "chat" && !error && level === 2 && auditData && (
+            <BossBattleArena
+              checkpoints={auditData.checkpoints as AuditCheckpoint[]}
+              aiOutputSummary={auditData.aiOutputSummary}
+              aiAutoAction={auditData.aiAutoAction}
+              scenarioContext={auditData.scenarioContext}
+              onComplete={handleAuditComplete}
+              onRestart={() => startCompile()}
+              onViewDebrief={() => setPhase("done")}
+              skillName={taskName}
+            />
+          )}
           {/* Atmospheric vignette for immersion */}
-          {phase === "chat" && (
+          {phase === "chat" && !(level === 2 && auditData) && (
             <div className="absolute inset-0 pointer-events-none z-0" style={{
               background: "radial-gradient(ellipse at center, transparent 50%, hsl(var(--background) / 0.4) 100%)",
             }} />
@@ -1279,27 +1293,6 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                 </motion.div>
               )}
 
-              {/* L2 Guided Audit — stays visible through its own Ascension Ceremony */}
-              {phase === "chat" && !error && level === 2 && auditData && (
-                <motion.div
-                  key="guided-audit"
-                  initial={{ opacity: 0, y: 12 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="max-w-2xl mx-auto"
-                >
-                  <GuidedAudit
-                    checkpoints={auditData.checkpoints as AuditCheckpoint[]}
-                    aiOutputSummary={auditData.aiOutputSummary}
-                    aiAutoAction={auditData.aiAutoAction}
-                    scenarioContext={auditData.scenarioContext}
-                    onComplete={handleAuditComplete}
-                    onRestart={() => startCompile()}
-                    onViewDebrief={() => setPhase("done")}
-                    isBossBattle={level === 2}
-                    skillName={taskName}
-                  />
-                </motion.div>
-              )}
 
               {phase === "chat" && !error && !(level === 2 && auditData) && (
                 <div className="max-w-2xl mx-auto space-y-4">
