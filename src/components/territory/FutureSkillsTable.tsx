@@ -17,29 +17,9 @@ import { RadarChart, PolarGrid, PolarAngleAxis, Radar, ResponsiveContainer } fro
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 import type { CanonicalSkillGrowth } from "@/pages/MapPage";
 
-/* ── Skill Icon URL helper ── */
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
-function getSkillIconUrl(skillId: string): string {
-  return `${SUPABASE_URL}/storage/v1/object/public/sim-images/skill-icon-${skillId}.png`;
-}
-
-/** Inline skill icon component — shows custom icon with emoji fallback on error */
+/** Inline skill icon — emoji only */
 function SkillIcon({ skill }: { skill: FutureSkill }) {
-  const [failed, setFailed] = useState(false);
-
-  if (failed) {
-    return skill.iconEmoji ? <span className="text-sm shrink-0">{skill.iconEmoji}</span> : null;
-  }
-
-  return (
-    <img
-      src={getSkillIconUrl(skill.id)}
-      alt={skill.name}
-      className="w-6 h-6 rounded-sm object-cover shrink-0"
-      loading="lazy"
-      onError={() => setFailed(true)}
-    />
-  );
+  return skill.iconEmoji ? <span className="text-sm shrink-0">{skill.iconEmoji}</span> : null;
 }
 
 type SortKey = "name" | "category" | "xp";
