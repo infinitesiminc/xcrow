@@ -355,15 +355,17 @@ export default function FutureSkillsTable({ skills, onSkillClick, skillGrowthMap
               const l2Unlocked = level2SkillIds?.has(skill.id) ?? false;
 
               const isFocused = expandedSkillId === skill.id;
+              const isDimmed = !!expandedSkillId && !isFocused;
 
               return (
                 <tr
                   key={skill.id}
                   ref={el => { if (el) rowRefs.current.set(skill.id, el); }}
-                  className="transition-colors"
+                  className="transition-all duration-200"
                   style={{
                     borderBottom: "1px solid hsl(var(--border) / 0.3)",
                     ...(isFocused ? { background: "hsl(var(--filigree-glow) / 0.08)" } : {}),
+                    ...(isDimmed ? { opacity: 0.35 } : {}),
                   }}
                 >
                   <td colSpan={3} className="p-0">
