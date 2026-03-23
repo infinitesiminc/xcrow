@@ -1145,7 +1145,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
               <span className="text-sm font-semibold text-foreground truncate block">{taskName}</span>
               <span className="text-[10px] text-muted-foreground">{jobTitle}{company ? ` · ${company}` : ""}</span>
             </div>
-            <div className="flex items-center gap-2 shrink-0">
+            <div className="relative z-10 flex items-center gap-2 shrink-0">
               {phase === "chat" && (
                 <motion.div
                   initial={{ opacity: 0, scale: 0.9 }}
