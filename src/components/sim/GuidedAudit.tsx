@@ -903,7 +903,7 @@ export default function GuidedAudit({
                         📜 Chronicle Entry
                       </span>
                     </div>
-                    <p className="text-[11px] text-foreground/80 leading-relaxed">{checkpoint.realWorldExample}</p>
+                    <p className="text-[15px] text-foreground/80 leading-relaxed">{checkpoint.realWorldExample}</p>
                   </div>
 
                   {/* Sentinel's Counsel */}
