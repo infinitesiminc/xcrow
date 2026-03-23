@@ -375,6 +375,33 @@ const MapPage = () => {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* In-place Sim overlay — preserves map state underneath */}
+      <AnimatePresence>
+        {activeSim && (
+          <motion.div
+            key="sim-overlay"
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 16 }}
+            transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+            className="fixed inset-0 z-[60]"
+            style={{ background: "hsl(var(--background) / 0.97)" }}
+          >
+            <SimulatorModal
+              open={true}
+              onClose={handleCloseSim}
+              taskName={activeSim.jobTitle}
+              jobTitle={activeSim.jobTitle}
+              company={activeSim.company}
+              level={activeSim.level || 1}
+              inline
+              onCompleted={handleCloseSim}
+              onBackToFeed={handleCloseSim}
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
