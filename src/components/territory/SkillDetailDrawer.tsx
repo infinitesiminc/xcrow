@@ -180,11 +180,37 @@ export default function SkillDetailDrawer({
           borderLeft: "1px solid hsl(var(--filigree) / 0.2)",
         }}
       >
+        {/* ── Hero Image Banner ── */}
+        <div className="relative w-full h-32 overflow-hidden">
+          {heroImage ? (
+            <img
+              src={heroImage}
+              alt={`${skill.name} illustration`}
+              className="w-full h-full object-cover transition-opacity duration-700"
+              style={{ filter: "brightness(0.55) saturate(1.1)" }}
+            />
+          ) : heroLoading ? (
+            <div
+              className="w-full h-full animate-pulse"
+              style={{ background: `linear-gradient(135deg, hsl(var(--surface-stone)), hsl(var(--muted) / 0.3))` }}
+            />
+          ) : (
+            <div
+              className="w-full h-full"
+              style={{ background: `linear-gradient(135deg, hsl(var(--surface-stone)), hsl(var(--muted) / 0.2))` }}
+            />
+          )}
+          {/* Gradient fade into content */}
+          <div
+            className="absolute inset-x-0 bottom-0 h-16"
+            style={{ background: `linear-gradient(to top, hsl(var(--surface-stone)), transparent)` }}
+          />
+        </div>
+
         {/* ── Header with territory gradient ── */}
         <div
-          className="px-5 pt-5 pb-4"
+          className="px-5 pt-3 pb-4"
           style={{
-            background: `linear-gradient(180deg, hsl(var(--surface-stone)) 0%, hsl(var(--surface-stone)) 100%)`,
             borderBottom: "1px solid hsl(var(--filigree) / 0.12)",
           }}
         >
