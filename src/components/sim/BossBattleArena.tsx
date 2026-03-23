@@ -127,6 +127,7 @@ export default function BossBattleArena({
   const [showHint, setShowHint] = useState<Record<string, boolean>>({});
   const [completed, setCompleted] = useState(false);
   const [showIntro, setShowIntro] = useState(true);
+  const [showTutorial, setShowTutorial] = useState(false);
   const [transitioning, setTransitioning] = useState(false);
 
   // Boss HP
@@ -206,9 +207,135 @@ export default function BossBattleArena({
       <div className="absolute inset-0 z-50">
         <BossCinematicIntro
           skillName={skillName || "Unknown Skill"}
-          onComplete={() => setShowIntro(false)}
+          onComplete={() => { setShowIntro(false); setShowTutorial(true); }}
         />
       </div>
+    );
+  }
+
+  /* ── Tutorial Screen ── */
+  if (showTutorial) {
+    return (
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        className="absolute inset-0 flex items-center justify-center px-6"
+        style={{ background: "radial-gradient(ellipse at center, hsl(262 40% 10%), hsl(0 0% 3%))" }}
+      >
+        <motion.div
+          initial={{ scale: 0.9, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ delay: 0.2, type: "spring", damping: 20 }}
+          className="max-w-md w-full rounded-xl p-6 space-y-5"
+          style={{
+            background: "hsl(262 30% 10% / 0.95)",
+            border: "1px solid hsl(262 60% 40% / 0.3)",
+            boxShadow: "0 0 40px hsl(262 80% 55% / 0.1), inset 0 1px 0 hsl(262 60% 40% / 0.15)",
+          }}
+        >
+          <h3
+            className="text-center text-lg font-bold"
+            style={{ fontFamily: "'Cinzel', serif", color: "hsl(45 90% 65%)", textShadow: "0 0 15px hsl(45 90% 55% / 0.3)" }}
+          >
+            ⚔️ How Battle Works
+          </h3>
+
+          {/* Example scenario */}
+          <div className="space-y-3">
+            {/* Step 1: Read the claim */}
+            <motion.div
+              initial={{ x: -10, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ delay: 0.4 }}
+              className="rounded-lg px-3 py-2.5 space-y-1.5"
+              style={{ background: "hsl(262 30% 14%)", borderLeft: "2px solid hsl(262 80% 55% / 0.5)" }}
+            >
+              <span className="text-[10px] font-bold uppercase tracking-wider flex items-center gap-1.5"
+                style={{ color: "hsl(262 80% 70%)", fontFamily: "'Cinzel', serif" }}
+              >
+                <span className="text-sm">①</span> Read the Oracle's Claim
+              </span>
+              <p className="text-[11px] text-foreground/70 leading-relaxed italic">
+                "🔮 This AI can fully automate all customer support without human oversight."
+              </p>
+            </motion.div>
+
+            {/* Step 2: Judge it */}
+            <motion.div
+              initial={{ x: -10, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ delay: 0.6 }}
+              className="rounded-lg px-3 py-2.5 space-y-1.5"
+              style={{ background: "hsl(262 30% 14%)", borderLeft: "2px solid hsl(45 80% 55% / 0.5)" }}
+            >
+              <span className="text-[10px] font-bold uppercase tracking-wider flex items-center gap-1.5"
+                style={{ color: "hsl(45 80% 60%)", fontFamily: "'Cinzel', serif" }}
+              >
+                <span className="text-sm">②</span> Judge the Risk
+              </span>
+              <div className="flex gap-1.5 mt-1">
+                {[
+                  { emoji: "🛡️", label: "Safe", color: "hsl(142 60% 50%)" },
+                  { emoji: "👁️", label: "Risky", color: "hsl(45 80% 55%)" },
+                  { emoji: "💀", label: "Critical", color: "hsl(0 60% 55%)" },
+                ].map(v => (
+                  <div
+                    key={v.label}
+                    className="flex-1 py-1.5 rounded-md text-center text-[10px] font-semibold"
+                    style={{
+                      background: v.label === "Critical" ? "hsl(0 60% 55% / 0.15)" : "hsl(262 30% 15%)",
+                      border: `1px solid ${v.label === "Critical" ? "hsl(0 60% 55% / 0.4)" : "hsl(262 60% 40% / 0.15)"}`,
+                      color: v.label === "Critical" ? v.color : "hsl(var(--muted-foreground))",
+                    }}
+                  >
+                    {v.emoji} {v.label}
+                  </div>
+                ))}
+              </div>
+              <p className="text-[10px] text-muted-foreground mt-1">
+                ✓ Correct answer: <span style={{ color: "hsl(0 60% 55%)" }}>Critical</span> — full automation without oversight is dangerous
+              </p>
+            </motion.div>
+
+            {/* Step 3: Impact */}
+            <motion.div
+              initial={{ x: -10, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ delay: 0.8 }}
+              className="rounded-lg px-3 py-2.5 space-y-1.5"
+              style={{ background: "hsl(262 30% 14%)", borderLeft: "2px solid hsl(142 60% 50% / 0.5)" }}
+            >
+              <span className="text-[10px] font-bold uppercase tracking-wider flex items-center gap-1.5"
+                style={{ color: "hsl(142 60% 50%)", fontFamily: "'Cinzel', serif" }}
+              >
+                <span className="text-sm">③</span> See the Impact
+              </span>
+              <div className="flex items-center gap-3 text-[10px] text-foreground/70">
+                <span>✅ Correct → Boss takes <span className="font-bold" style={{ color: "hsl(142 60% 50%)" }}>-20 HP</span></span>
+                <span>❌ Wrong → You lose <span className="font-bold" style={{ color: "hsl(0 60% 55%)" }}>-15 Power</span></span>
+              </div>
+            </motion.div>
+          </div>
+
+          {/* Hint note */}
+          <motion.p
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1 }}
+            className="text-[10px] text-center text-muted-foreground"
+          >
+            💡 Use <span style={{ color: "hsl(262 80% 70%)" }}>Hints</span> if you're unsure — but they cost points!
+          </motion.p>
+
+          {/* Start button */}
+          <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 1.1 }}>
+            <Button
+              size="sm"
+              onClick={() => setShowTutorial(false)}
+              className="w-full gap-1.5 text-[12px] rounded-xl h-9"
+              style={{
+                fontFamily: "'Cinzel', serif",
+                background: "linear-gradient(135deg, hsl(262 80% 55%), hsl(262 60% 45%))",
+                boxShadow: "0 0 20px hsl(262 80% 55% / 0.3)",
+              }}
+            >
+              <Swords className="h-3.5 w-3.5" /> Begin Battle
+            </Button>
+          </motion.div>
+        </motion.div>
+      </motion.div>
     );
   }
 
