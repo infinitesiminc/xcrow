@@ -488,15 +488,21 @@ export default function FutureSkillsTable({ skills, onSkillClick, skillGrowthMap
                                   <span className="text-[9px] font-mono text-muted-foreground">{growth?.level2Xp ?? 0}/500</span>
                                 </div>
                                 <div className="text-[9px] text-muted-foreground mb-2">{growth?.level2Sims ?? 0} quests completed</div>
-                                {expandedRoles.length > 0 && expandedSkillId === skill.id && (
-                                  <button
-                                    onClick={(e) => { e.stopPropagation(); const r = expandedRoles[0]; navigate(`/role/${encodeURIComponent(r.title)}${r.company ? `?company=${encodeURIComponent(r.company)}&level=2` : "?level=2"}`); }}
-                                    className="w-full px-2 py-1.5 rounded-md text-[10px] font-bold uppercase tracking-wider transition-all hover:brightness-110"
-                                    style={{ background: "linear-gradient(135deg, hsl(45 93% 58%), hsl(45 93% 48%))", color: "hsl(var(--background))", fontFamily: "'Cinzel', serif" }}
-                                  >
-                                    ⚔️ Level 2 Quest
-                                  </button>
-                                )}
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    if (expandedRoles.length > 0 && expandedSkillId === skill.id) {
+                                      const r = expandedRoles[0];
+                                      navigate(`/role/${encodeURIComponent(r.title)}${r.company ? `?company=${encodeURIComponent(r.company)}&level=2` : "?level=2"}`);
+                                    } else {
+                                      navigate(`/role/${encodeURIComponent(skill.name)}?skill=${encodeURIComponent(skill.id)}&level=2`);
+                                    }
+                                  }}
+                                  className="w-full px-2 py-1.5 rounded-md text-[10px] font-bold uppercase tracking-wider transition-all hover:brightness-110"
+                                  style={{ background: "linear-gradient(135deg, hsl(45 93% 58%), hsl(45 93% 48%))", color: "hsl(var(--background))", fontFamily: "'Cinzel', serif" }}
+                                >
+                                  ⚔️ Level 2 Quest
+                                </button>
                               </>
                             ) : (
                               <div className="text-[9px] text-muted-foreground">
