@@ -1261,9 +1261,78 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                   exit={{ opacity: 0 }}
                   className="flex flex-col items-center justify-center h-full relative"
                 >
-                  <div className="relative z-10">
-                    <XcrowLoader size="sm" title="Forging your quest…" />
-                  </div>
+                  {level === 2 ? (
+                    <div className="relative z-10 flex flex-col items-center gap-6">
+                      {/* Rotating rune ring */}
+                      <div className="relative w-28 h-28 flex items-center justify-center">
+                        <motion.div
+                          className="absolute inset-0 rounded-full border-2 border-[hsl(262_80%_55%/0.5)]"
+                          animate={{ rotate: 360 }}
+                          transition={{ duration: 6, repeat: Infinity, ease: "linear" }}
+                          style={{
+                            borderStyle: "dashed",
+                            borderSpacing: "8px",
+                          }}
+                        />
+                        <motion.div
+                          className="absolute inset-2 rounded-full border border-[hsl(262_80%_55%/0.3)]"
+                          animate={{ rotate: -360 }}
+                          transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
+                          style={{ borderStyle: "dotted" }}
+                        />
+                        <motion.div
+                          animate={{ 
+                            scale: [1, 1.15, 1],
+                            opacity: [0.8, 1, 0.8],
+                          }}
+                          transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                          className="text-5xl drop-shadow-[0_0_24px_hsl(262_80%_55%/0.6)]"
+                        >
+                          ⚔️
+                        </motion.div>
+                      </div>
+
+                      {/* Glowing text */}
+                      <div className="text-center space-y-2">
+                        <motion.p
+                          initial={{ opacity: 0, letterSpacing: "0.3em" }}
+                          animate={{ opacity: [0.5, 1, 0.5], letterSpacing: ["0.3em", "0.15em", "0.3em"] }}
+                          transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                          className="text-[10px] uppercase tracking-[0.3em] text-[hsl(262_80%_70%)]"
+                        >
+                          Boss Drop Incoming
+                        </motion.p>
+                        <motion.h2
+                          initial={{ opacity: 0, y: 8 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: 0.3 }}
+                          className="text-lg font-bold text-foreground"
+                          style={{ fontFamily: "'Cinzel', serif" }}
+                        >
+                          Summoning The Arbiter
+                        </motion.h2>
+                        <motion.div
+                          className="flex items-center justify-center gap-1.5"
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          transition={{ delay: 0.6 }}
+                        >
+                          {[0, 1, 2].map(i => (
+                            <motion.span
+                              key={i}
+                              className="w-1.5 h-1.5 rounded-full bg-[hsl(262_80%_55%)]"
+                              animate={{ opacity: [0.2, 1, 0.2] }}
+                              transition={{ duration: 1.2, repeat: Infinity, delay: i * 0.3 }}
+                            />
+                          ))}
+                        </motion.div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="relative z-10">
+                      <XcrowLoader size="sm" title="Forging your quest…" />
+                    </div>
+                  )}
                 </motion.div>
               )}
 
