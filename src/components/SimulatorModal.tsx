@@ -1271,10 +1271,26 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                 </motion.div>
               )}
 
+              {/* L2 Guided Audit */}
+              {phase === "chat" && !error && level === 2 && auditData && (
+                <motion.div
+                  key="guided-audit"
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="max-w-2xl mx-auto"
+                >
+                  <GuidedAudit
+                    checkpoints={auditData.checkpoints as AuditCheckpoint[]}
+                    aiOutputSummary={auditData.aiOutputSummary}
+                    aiAutoAction={auditData.aiAutoAction}
+                    scenarioContext={auditData.scenarioContext}
+                    onComplete={handleAuditComplete}
+                    onRestart={() => startCompile()}
+                  />
+                </motion.div>
+              )}
 
-
-
-              {phase === "chat" && !error && (
+              {phase === "chat" && !error && !(level === 2 && auditData) && (
                 <div className="max-w-2xl mx-auto space-y-4">
                   {messages.map((msg, i) => {
                     const isUser = msg.role === "user";
