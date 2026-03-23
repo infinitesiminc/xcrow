@@ -196,50 +196,33 @@ const BriefingScreen = ({
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.5, ease: "easeOut" }}
-        className="relative rounded-2xl overflow-hidden"
+        className="relative rounded-2xl overflow-hidden px-6 py-8 sm:py-10 text-center"
         style={{
-          border: "1px solid hsl(var(--filigree) / 0.3)",
-          boxShadow: "0 0 40px hsl(var(--primary) / 0.08), inset 0 1px 0 hsl(var(--filigree) / 0.15)",
+          background: "hsl(var(--surface-stone))",
+          border: "1px solid hsl(var(--filigree) / 0.25)",
+          boxShadow: "inset 0 1px 0 hsl(var(--emboss-light)), 0 2px 12px hsl(var(--emboss-shadow))",
         }}
       >
-        <img
-          src={skillHeroBg || simBriefingBg}
-          alt=""
-          className="absolute inset-0 w-full h-full object-cover transition-opacity duration-500"
-          style={{ filter: "brightness(0.35) saturate(0.8)" }}
-        />
-        {/* Gradient overlay for text readability */}
-        <div className="absolute inset-0" style={{
-          background: "linear-gradient(180deg, transparent 0%, hsl(var(--background) / 0.7) 100%)",
-        }} />
-        {/* Atmospheric glow */}
-        <div
-          className="absolute -top-16 -right-16 w-48 h-48 rounded-full opacity-20 blur-3xl"
-          style={{ background: `hsl(${hue1} 70% 50%)` }}
-        />
-
-        <div className="relative z-10 flex flex-col items-center justify-center text-center px-6 py-10 sm:py-14">
-          <motion.span
-            initial={{ scale: 0, rotate: -20 }}
-            animate={{ scale: 1, rotate: 0 }}
-            transition={{ delay: 0.2, type: "spring", damping: 12 }}
-            className="text-3xl mb-3 drop-shadow-[0_0_8px_rgba(255,255,255,0.3)]"
-          >
-            📜
-          </motion.span>
-          <h3
-            className="text-lg sm:text-xl font-bold drop-shadow-lg"
-            style={{ fontFamily: "'Cinzel', serif", color: "hsl(0 0% 95%)", textShadow: "0 2px 12px rgba(0,0,0,0.8)" }}
-          >
-            {session.scenario.title}
-          </h3>
-          <p className="text-[11px] mt-1.5 max-w-md leading-relaxed drop-shadow-md" style={{ color: "hsl(0 0% 80%)" }}>{session.scenario.description}</p>
-          {/* Ornamental divider */}
-          <div className="flex items-center gap-2 mt-3 opacity-40">
-            <div className="h-px w-8" style={{ background: "linear-gradient(90deg, transparent, hsl(var(--filigree)))" }} />
-            <span className="text-[8px]" style={{ color: "hsl(var(--filigree))" }}>✦</span>
-            <div className="h-px w-8" style={{ background: "linear-gradient(90deg, hsl(var(--filigree)), transparent)" }} />
-          </div>
+        <motion.span
+          initial={{ scale: 0, rotate: -20 }}
+          animate={{ scale: 1, rotate: 0 }}
+          transition={{ delay: 0.2, type: "spring", damping: 12 }}
+          className="text-3xl mb-3 inline-block drop-shadow-[0_0_8px_rgba(255,255,255,0.3)]"
+        >
+          📜
+        </motion.span>
+        <h3
+          className="text-lg sm:text-xl font-bold"
+          style={{ fontFamily: "'Cinzel', serif", color: "hsl(var(--foreground))" }}
+        >
+          {session.scenario.title}
+        </h3>
+        <p className="text-[11px] mt-1.5 max-w-md mx-auto leading-relaxed text-muted-foreground">{session.scenario.description}</p>
+        {/* Ornamental divider */}
+        <div className="flex items-center justify-center gap-2 mt-3 opacity-40">
+          <div className="h-px w-8" style={{ background: "linear-gradient(90deg, transparent, hsl(var(--filigree)))" }} />
+          <span className="text-[8px]" style={{ color: "hsl(var(--filigree))" }}>✦</span>
+          <div className="h-px w-8" style={{ background: "linear-gradient(90deg, hsl(var(--filigree)), transparent)" }} />
         </div>
       </motion.div>
 
