@@ -1142,7 +1142,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
           <HeaderVibeImages seed={(taskName?.length ?? 0) * 23} count={4} />
             <div className="relative z-10 w-8 shrink-0" /> {/* spacer to balance close button */}
             <div className="relative z-10 text-center min-w-0 flex-1">
-              <span className="text-[10px] uppercase tracking-wider text-primary font-semibold">🗡️ {simLevel === 2 ? "Level 2 — Sentinel Audit" : "Level 1 — AI Mastery"}</span>
+              <span className="text-[10px] uppercase tracking-wider text-primary font-semibold">🗡️ {level === 2 ? "Level 2 — Sentinel Audit" : "Level 1 — AI Mastery"}</span>
               <span className="text-sm font-semibold text-foreground truncate block">{taskName}</span>
               <span className="text-[10px] text-muted-foreground">{jobTitle}{company ? ` · ${company}` : ""}</span>
             </div>
