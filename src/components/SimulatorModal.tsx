@@ -1018,9 +1018,8 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
       };
     });
     setEarnedSkills(earned);
-    
-    // Check if elevation unlock is earned (60%+ overall)
-    const elevationUnlocked = scores && scores.overall >= 60;
+
+
 
     if (user) {
       try {
