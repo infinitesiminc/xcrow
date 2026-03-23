@@ -245,7 +245,7 @@ const AlliesPanel = () => {
                 friend={friend}
                 onAccept={() => acceptRequest(friend.id)}
                 onReject={() => removeFriend(friend.id)}
-                onView={() => setViewFriend(friend)}}
+                onView={() => setViewFriend(friend)}
                 onMessage={() => setChatFriend(friend)}
                 onLaunchSim={handleLaunchSim}
                 onSendSim={(jt, tn) => handleSendSim(friend, jt, tn)}
