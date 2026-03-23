@@ -1268,7 +1268,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
               )}
 
               {phase === "briefing" && session && (
-                <BriefingScreen session={session} onStart={beginChat} jobTitle={jobTitle} />
+                <BriefingScreen session={session} onStart={beginChat} skillHeroBg={skillHeroBg} />
               )}
 
               {phase === "review" && session && (
