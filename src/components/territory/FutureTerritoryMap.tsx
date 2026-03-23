@@ -152,7 +152,8 @@ export default function FutureTerritoryMap({ skills, focusSkillId, level2SkillId
           const rect = container.getBoundingClientRect();
           const svgScale = rect.width / FUTURE_MAP_WIDTH;
           const zoomLevel = 2.5;
-          const targetX = rect.width / 2 - node.x * svgScale * zoomLevel;
+          // Offset node slightly left of center to leave room for the launch card on the right
+          const targetX = rect.width * 0.35 - node.x * svgScale * zoomLevel;
           const targetY = rect.height / 2 - node.y * svgScale * (FUTURE_MAP_WIDTH / FUTURE_MAP_HEIGHT) * (rect.height / rect.width) * zoomLevel;
           setTransform({ x: targetX, y: targetY, scale: zoomLevel });
           setFocusedIsland(island.category);
