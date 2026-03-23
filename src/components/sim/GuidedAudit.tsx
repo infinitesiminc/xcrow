@@ -391,6 +391,8 @@ export default function GuidedAudit({
   onComplete,
   onRestart,
   onViewDebrief,
+  skillName,
+  isBossBattle = false,
 }: GuidedAuditProps) {
   const [currentStep, setCurrentStep] = useState(0);
   const [verdicts, setVerdicts] = useState<Record<string, AuditVerdict>>({});
@@ -398,6 +400,29 @@ export default function GuidedAudit({
   const [showHint, setShowHint] = useState<Record<string, boolean>>({});
   const [showChat, setShowChat] = useState<Record<string, boolean>>({});
   const [completed, setCompleted] = useState(false);
+  const [showIntro, setShowIntro] = useState(isBossBattle);
+
+  // Boss battle state
+  const maxHp = checkpoints.length * 20;
+  const [bossHp, setBossHp] = useState(maxHp);
+  const [bossState, setBossState] = useState<BossState>("idle");
+  const bossStateTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Compute boss reactions when verdicts are revealed
+  const handleBossReaction = useCallback((isCorrect: boolean) => {
+    if (!isBossBattle) return;
+    if (bossStateTimer.current) clearTimeout(bossStateTimer.current);
+
+    if (isCorrect) {
+      setBossHp(prev => Math.max(0, prev - 20));
+      setBossState("damaged");
+    } else {
+      setBossHp(prev => Math.min(maxHp, prev + 10));
+      setBossState("enraged");
+    }
+    // Return to idle after reaction
+    bossStateTimer.current = setTimeout(() => setBossState("idle"), 1500);
+  }, [isBossBattle, maxHp]);
 
   const checkpoint = checkpoints[currentStep];
   const totalCorrect = checkpoints.filter(cp => verdicts[cp.id] === cp.correctVerdict).length;
