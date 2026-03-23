@@ -2052,6 +2052,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
               })()}
             </AnimatePresence>
           </div>
+        </div>
 
         {/* Input bar — war room command panel */}
         {phase === "chat" && !error && (
