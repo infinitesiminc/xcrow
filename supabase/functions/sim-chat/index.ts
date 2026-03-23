@@ -685,3 +685,84 @@ Rules:
     headers: { ...corsHeaders, "Content-Type": "application/json" },
   });
 }
+
+// ─── COMPILE AUDIT (Level 2 Guided Audit checkpoints) ───
+
+async function handleCompileAudit(payload: any, apiKey: string) {
+  const { taskName, jobTitle, company, futurePrediction, intel } = payload;
+  const toolVersions = await fetchToolVersions();
+  const dateCtx = currentDateContext(toolVersions);
+
+  const threatList = futurePrediction?.disrupting_tech?.join(", ") || "AI Agents";
+  const collapseSummary = futurePrediction?.collapse_summary || `AI has automated most of ${taskName}`;
+  const newHumanRole = futurePrediction?.new_human_role || "oversight, validation, and strategic direction";
+  const equippedSkills = intel?.equippedSkills?.map((s: any) => s.name).join(", ") || "general oversight skills";
+
+  const prompt = `You are designing a Level 2 "Guided Audit" simulation for AI oversight training.
+
+${dateCtx}
+
+Role: ${jobTitle}${company ? ` at ${company}` : ""}
+Task: ${taskName}
+Disrupting Technologies: ${threatList}
+Collapse Summary: ${collapseSummary}
+New Human Role: ${newHumanRole}
+Equipped Skills: ${equippedSkills}
+
+Generate EXACTLY 5 audit checkpoints. Each checkpoint presents an AI system claim about ${taskName} that the user must evaluate as "safe", "risky", or "critical".
+
+The checkpoints should progress in difficulty:
+1-2: Obvious issues (data bias, missing validation)
+3-4: Subtle issues (edge cases, compounding errors, false confidence)
+5: Non-obvious systemic risk
+
+For EACH checkpoint, return a JSON object with:
+- "id": short snake_case identifier (e.g., "bias_detection", "edge_case_handling")
+- "area": 2-4 word topic label (e.g., "Data Validation", "Model Confidence")
+- "aiClaim": A specific claim the AI system makes about its output or process (1-2 sentences). Written as if the AI is reporting to the user. Should sound plausible but may contain a flaw.
+- "question": The evaluation question posed to the user (e.g., "Is this AI claim reliable for production use?")
+- "hint": A subtle clue that points toward the correct verdict WITHOUT revealing it (1 sentence)
+- "correctVerdict": one of "safe", "risky", or "critical"
+- "explanation": 2-3 sentences explaining WHY this verdict is correct, referencing specific failure modes
+- "realWorldExample": A concrete, real-world case study (company name, year, what happened) that illustrates this type of issue. Use REAL examples from AI/ML history.
+- "coachTip": One actionable sentence the user can apply in their work
+
+Also return:
+- "aiOutputSummary": 1-2 sentences describing what the AI system produced (the artifact being audited)
+- "aiAutoAction": 1 sentence describing what the AI will do automatically if the user approves everything
+- "scenarioContext": 2-3 sentences setting the scene for this audit
+
+IMPORTANT:
+- Mix verdicts: aim for 1-2 "safe", 2-3 "risky", 0-1 "critical"
+- NOT everything should be wrong — some AI claims ARE safe
+- Real-world examples must be factually accurate and well-known
+- Reference the specific disrupting technologies (${threatList}) in scenarios
+
+Respond ONLY with valid JSON object containing: checkpoints (array of 5), aiOutputSummary, aiAutoAction, scenarioContext.
+No markdown wrapping.`;
+
+  const result = await callAI(apiKey, [{ role: "user", content: prompt }], 0.85);
+
+  let parsed;
+  try {
+    const jsonMatch = result.match(/```(?:json)?\s*([\s\S]*?)```/) || [null, result];
+    const cleaned = jsonMatch[1].trim();
+    const objMatch = cleaned.match(/\{[\s\S]*\}/);
+    parsed = JSON.parse(objMatch ? objMatch[0] : cleaned);
+  } catch {
+    throw new Error("Failed to parse AI audit checkpoint response");
+  }
+
+  if (!parsed.checkpoints || !Array.isArray(parsed.checkpoints) || parsed.checkpoints.length < 3) {
+    throw new Error("AI returned insufficient checkpoints");
+  }
+
+  return new Response(JSON.stringify({
+    checkpoints: parsed.checkpoints.slice(0, 5),
+    aiOutputSummary: parsed.aiOutputSummary || `AI-generated ${taskName} output`,
+    aiAutoAction: parsed.aiAutoAction || "The AI will proceed with deployment if approved.",
+    scenarioContext: parsed.scenarioContext || `You are reviewing an AI system that has automated ${taskName}.`,
+  }), {
+    headers: { ...corsHeaders, "Content-Type": "application/json" },
+  });
+}

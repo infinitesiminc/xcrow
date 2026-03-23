@@ -174,3 +174,32 @@ export async function fetchArenaRound(
 ): Promise<ArenaRoundData> {
   return simFetch("arena", { taskName, jobTitle, company, round, learningObjectives, targetObjectiveId, objectiveStatus });
 }
+
+export interface AuditCheckpointData {
+  id: string;
+  area: string;
+  question: string;
+  hint: string;
+  aiClaim: string;
+  correctVerdict: "safe" | "risky" | "critical";
+  explanation: string;
+  realWorldExample: string;
+  coachTip: string;
+}
+
+export interface CompileAuditResult {
+  checkpoints: AuditCheckpointData[];
+  aiOutputSummary: string;
+  aiAutoAction: string;
+  scenarioContext: string;
+}
+
+export async function compileAudit(
+  taskName: string,
+  jobTitle: string,
+  company?: string,
+  futurePrediction?: any,
+  intel?: IntelContext,
+): Promise<CompileAuditResult> {
+  return simFetch("compile-audit", { taskName, jobTitle, company, futurePrediction, intel });
+}
