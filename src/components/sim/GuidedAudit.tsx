@@ -875,7 +875,7 @@ export default function GuidedAudit({
                   ) : (
                     <>
                       <Shield className="h-4 w-4 shrink-0" style={{ color: "hsl(0 60% 55%)" }} />
-                      <span className="text-[11px] font-bold" style={{ color: "hsl(0 60% 55%)", fontFamily: "'Cinzel', serif" }}>
+                      <span className="text-[13px] font-bold" style={{ color: "hsl(0 60% 55%)", fontFamily: "'Cinzel', serif" }}>
                         The Oracle Corrects — <span className="capitalize">{checkpoint.correctVerdict}</span>
                       </span>
                     </>
