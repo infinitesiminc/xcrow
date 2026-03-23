@@ -610,8 +610,8 @@ export default function BossBattleArena({
                   </div>
                 </div>
 
-                {/* Hint */}
-                {!showHint[checkpoint.id] && !isRevealed && (
+                {/* Hint — hidden for arbiter level */}
+                {!isArbiter && !showHint[checkpoint.id] && !isRevealed && (
                   <button
                     onClick={() => setShowHint(prev => ({ ...prev, [checkpoint.id]: true }))}
                     className="text-[11px] flex items-center gap-1 hover:brightness-125"
@@ -619,6 +619,11 @@ export default function BossBattleArena({
                   >
                     <Sparkles className="h-3 w-3" /> Hint
                   </button>
+                )}
+                {isArbiter && !isRevealed && (
+                  <span className="text-[10px] italic" style={{ color: "hsl(0 60% 55% / 0.7)" }}>
+                    🔴 No hints at Arbiter level — trust your expertise
+                  </span>
                 )}
                 {showHint[checkpoint.id] && !isRevealed && (
                   <motion.p
