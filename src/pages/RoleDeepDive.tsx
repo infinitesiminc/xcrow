@@ -398,7 +398,7 @@ const RoleDeepDive = () => {
             <button onClick={handleClose} className="relative z-10 flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors shrink-0">
               <ChevronLeft className="h-3.5 w-3.5" /> Back
             </button>
-            <div className="text-center min-w-0 flex-1">
+            <div className="relative z-10 text-center min-w-0 flex-1">
               <span className="text-[10px] uppercase tracking-wider text-primary font-semibold">🗺️ Mission Briefing</span>
               <span className="text-sm font-semibold text-foreground truncate block">{result.jobTitle.trim()}</span>
               {company && <span className="text-[10px] text-muted-foreground">Kingdom of {company}</span>}
