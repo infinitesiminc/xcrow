@@ -279,9 +279,9 @@ function FriendRow({ name, username, avatarId, trailing, onClick }: {
 }
 
 /* ── Friend Card (full detail) ── */
-function FriendCard({ friend, onAccept, onReject, onView, formatLastSeen }: {
+function FriendCard({ friend, onAccept, onReject, onView, onMessage, formatLastSeen }: {
   friend: Friend; onAccept: () => void; onReject: () => void;
-  onView: () => void; formatLastSeen: (d: string | null) => string;
+  onView: () => void; onMessage: () => void; formatLastSeen: (d: string | null) => string;
 }) {
   const avatar = friend.avatarId ? getAvatarById(friend.avatarId) : null;
   const isPending = friend.status === "pending";
