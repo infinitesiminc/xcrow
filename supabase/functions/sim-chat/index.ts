@@ -741,15 +741,77 @@ IMPORTANT:
 Respond ONLY with valid JSON object containing: checkpoints (array of 5), aiOutputSummary, aiAutoAction, scenarioContext.
 No markdown wrapping.`;
 
-  const result = await callAI(apiKey, [{ role: "user", content: prompt }], 0.85);
+  const tools = [{
+    type: "function",
+    function: {
+      name: "audit_checkpoints",
+      description: "Return 5 audit checkpoints for AI oversight training",
+      parameters: {
+        type: "object",
+        properties: {
+          checkpoints: {
+            type: "array",
+            items: {
+              type: "object",
+              properties: {
+                id: { type: "string" },
+                area: { type: "string" },
+                aiClaim: { type: "string" },
+                question: { type: "string" },
+                hint: { type: "string" },
+                correctVerdict: { type: "string", enum: ["safe", "risky", "critical"] },
+                explanation: { type: "string" },
+                realWorldExample: { type: "string" },
+                coachTip: { type: "string" },
+              },
+              required: ["id", "area", "aiClaim", "question", "hint", "correctVerdict", "explanation"],
+            },
+          },
+          aiOutputSummary: { type: "string" },
+          aiAutoAction: { type: "string" },
+          scenarioContext: { type: "string" },
+        },
+        required: ["checkpoints", "aiOutputSummary", "aiAutoAction", "scenarioContext"],
+      },
+    },
+  }];
 
+  const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify({
+      model: "google/gemini-2.5-flash",
+      messages: [{ role: "user", content: prompt }],
+      temperature: 0.85,
+      tools,
+      tool_choice: { type: "function", function: { name: "audit_checkpoints" } },
+    }),
+  });
+
+  if (!res.ok) {
+    const text = await res.text();
+    console.error("AI API error for compile-audit:", res.status, text);
+    throw new Error(`AI API error (${res.status})`);
+  }
+
+  const data = await res.json();
   let parsed;
   try {
-    const jsonMatch = result.match(/```(?:json)?\s*([\s\S]*?)```/) || [null, result];
-    const cleaned = jsonMatch[1].trim();
-    const objMatch = cleaned.match(/\{[\s\S]*\}/);
-    parsed = JSON.parse(objMatch ? objMatch[0] : cleaned);
-  } catch {
+    const toolCall = data.choices[0].message.tool_calls?.[0];
+    if (toolCall) {
+      parsed = JSON.parse(toolCall.function.arguments);
+    } else {
+      // Fallback: try parsing content directly
+      const content = data.choices[0].message.content || "";
+      console.error("No tool call returned, raw content:", content.slice(0, 200));
+      const objMatch = content.match(/\{[\s\S]*\}/);
+      parsed = JSON.parse(objMatch ? objMatch[0] : content);
+    }
+  } catch (e) {
+    console.error("Failed to parse audit response:", e.message, JSON.stringify(data.choices?.[0]?.message).slice(0, 500));
     throw new Error("Failed to parse AI audit checkpoint response");
   }
 
