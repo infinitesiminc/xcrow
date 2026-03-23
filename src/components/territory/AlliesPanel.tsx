@@ -112,8 +112,8 @@ const AlliesPanel = () => {
             <span
               className="text-[10px] px-1.5 py-0.5 rounded-full font-medium"
               style={{
-                background: "hsl(142 70% 45% / 0.2)",
-                color: "hsl(142 70% 55%)",
+                background: "hsl(142 70% 45% / 0.15)",
+                color: "hsl(142 50% 30%)",
               }}
             >
               {onlineFriends.length} online
