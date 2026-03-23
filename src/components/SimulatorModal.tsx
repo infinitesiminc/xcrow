@@ -170,56 +170,52 @@ const BriefingScreen = ({
       transition={{ duration: 0.4, ease: "easeOut" }}
       className="flex flex-col gap-5 py-6 px-2 max-w-2xl mx-auto"
     >
-      {/* Hero banner with ornamental frame */}
+      {/* Hero banner with fantasy background */}
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.5, ease: "easeOut" }}
         className="relative rounded-2xl overflow-hidden"
         style={{
-          background: `linear-gradient(135deg, hsl(${hue1} 55% 14%) 0%, hsl(${hue2} 50% 9%) 50%, hsl(${hue3} 45% 6%) 100%)`,
           border: "1px solid hsl(var(--filigree) / 0.3)",
           boxShadow: "0 0 40px hsl(var(--primary) / 0.08), inset 0 1px 0 hsl(var(--filigree) / 0.15)",
         }}
       >
+        {/* Background image */}
+        <img
+          src={simBriefingBg}
+          alt=""
+          className="absolute inset-0 w-full h-full object-cover"
+          style={{ filter: "brightness(0.35) saturate(0.8)" }}
+        />
+        {/* Gradient overlay for text readability */}
+        <div className="absolute inset-0" style={{
+          background: "linear-gradient(180deg, transparent 0%, hsl(var(--background) / 0.7) 100%)",
+        }} />
         {/* Atmospheric glow */}
         <div
-          className="absolute -top-16 -right-16 w-48 h-48 rounded-full opacity-15 blur-3xl"
+          className="absolute -top-16 -right-16 w-48 h-48 rounded-full opacity-20 blur-3xl"
           style={{ background: `hsl(${hue1} 70% 50%)` }}
         />
-        <div
-          className="absolute -bottom-12 -left-12 w-36 h-36 rounded-full opacity-10 blur-3xl"
-          style={{ background: `hsl(${hue3} 60% 40%)` }}
-        />
-        {/* Grid overlay */}
-        <div className="absolute inset-0 opacity-[0.03]" style={{
-          backgroundImage: `linear-gradient(hsl(${hue1} 50% 80%) 1px, transparent 1px), linear-gradient(90deg, hsl(${hue1} 50% 80%) 1px, transparent 1px)`,
-          backgroundSize: '20px 20px',
-        }} />
-        {/* Corner ornaments */}
-        <div className="absolute top-2 left-3 text-[10px] opacity-20" style={{ color: "hsl(var(--filigree))" }}>⟐</div>
-        <div className="absolute top-2 right-3 text-[10px] opacity-20" style={{ color: "hsl(var(--filigree))" }}>⟐</div>
-        <div className="absolute bottom-2 left-3 text-[10px] opacity-20 rotate-180" style={{ color: "hsl(var(--filigree))" }}>⟐</div>
-        <div className="absolute bottom-2 right-3 text-[10px] opacity-20 rotate-180" style={{ color: "hsl(var(--filigree))" }}>⟐</div>
 
-        <div className="relative z-10 flex flex-col items-center justify-center text-center px-6 py-8 sm:py-10">
+        <div className="relative z-10 flex flex-col items-center justify-center text-center px-6 py-10 sm:py-14">
           <motion.span
             initial={{ scale: 0, rotate: -20 }}
             animate={{ scale: 1, rotate: 0 }}
             transition={{ delay: 0.2, type: "spring", damping: 12 }}
-            className="text-3xl mb-3"
+            className="text-3xl mb-3 drop-shadow-[0_0_8px_rgba(255,255,255,0.3)]"
           >
             📜
           </motion.span>
           <h3
             className="text-lg sm:text-xl font-bold drop-shadow-lg"
-            style={{ fontFamily: "'Cinzel', serif", color: "hsl(0 0% 95%)" }}
+            style={{ fontFamily: "'Cinzel', serif", color: "hsl(0 0% 95%)", textShadow: "0 2px 12px rgba(0,0,0,0.8)" }}
           >
             {session.scenario.title}
           </h3>
-          <p className="text-[11px] mt-1.5 max-w-md leading-relaxed" style={{ color: "hsl(0 0% 75%)" }}>{session.scenario.description}</p>
+          <p className="text-[11px] mt-1.5 max-w-md leading-relaxed drop-shadow-md" style={{ color: "hsl(0 0% 80%)" }}>{session.scenario.description}</p>
           {/* Ornamental divider */}
-          <div className="flex items-center gap-2 mt-3 opacity-30">
+          <div className="flex items-center gap-2 mt-3 opacity-40">
             <div className="h-px w-8" style={{ background: "linear-gradient(90deg, transparent, hsl(var(--filigree)))" }} />
             <span className="text-[8px]" style={{ color: "hsl(var(--filigree))" }}>✦</span>
             <div className="h-px w-8" style={{ background: "linear-gradient(90deg, hsl(var(--filigree)), transparent)" }} />
