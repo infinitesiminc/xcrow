@@ -935,7 +935,7 @@ export default function GuidedAudit({
                 <Button
                   size="sm"
                   onClick={handleNext}
-                  className="w-full gap-1.5 text-xs rounded-xl h-9"
+                   className="w-full gap-1.5 text-[13px] rounded-xl h-9"
                   style={{
                     fontFamily: "'Cinzel', serif",
                     background: "linear-gradient(135deg, hsl(262 80% 55%), hsl(262 60% 45%))",
