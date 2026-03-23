@@ -149,10 +149,7 @@ export default function FutureIsland({ island, skillLookup, level2SkillIds, leve
         const nodeRadius = isFocused && !isHovered && !isHighlighted ? 14 : 18;
         const intensity = Math.min(1, skill.demandCount / 15);
         const showLabel = !isFocused || isHovered || isHighlighted;
-        const isLevel2 = level2SkillIds?.has(node.skillId) ?? false;
         const isBossCompleted = level2CompletedIds?.has(node.skillId) ?? false;
-        const isBossAvailable = isLevel2 && !isBossCompleted;
-        const diamondSide = nodeRadius * 1.35;
 
         return (
           <Tooltip key={node.skillId}>
@@ -233,40 +230,6 @@ export default function FutureIsland({ island, skillLookup, level2SkillIds, leve
                       className="transition-all"
                     />
                   </>
-                ) : isBossAvailable ? (
-                  <>
-                    {/* Boss Available: Pulsing diamond with animated glow */}
-                    <motion.rect
-                      x={node.x - diamondSide / 2 - 4}
-                      y={node.y - diamondSide / 2 - 4}
-                      width={diamondSide + 8}
-                      height={diamondSide + 8}
-                      rx={3}
-                      fill="none"
-                      stroke="hsl(45 93% 58% / 0.5)"
-                      strokeWidth={2}
-                      transform={`rotate(45 ${node.x} ${node.y})`}
-                      filter="url(#future-glow)"
-                      animate={{ opacity: [0.3, 0.7, 0.3] }}
-                      transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-                    />
-                    <rect
-                      x={node.x - diamondSide / 2}
-                      y={node.y - diamondSide / 2}
-                      width={diamondSide}
-                      height={diamondSide}
-                      rx={2}
-                      fill={isParchment
-                        ? `hsl(45 ${20 + intensity * 15}% ${75 + intensity * 8}%)`
-                        : `hsl(45 ${30 + intensity * 20}% ${16 + intensity * 8}%)`}
-                      stroke={isParchment
-                        ? `hsl(45 55% ${40 + intensity * 10}%)`
-                        : `hsl(45 55% ${45 + intensity * 15}%)`}
-                      strokeWidth={isHovered ? 3 : 2}
-                      transform={`rotate(45 ${node.x} ${node.y})`}
-                      className="transition-all"
-                    />
-                  </>
                 ) : (
                   <>
                     {/* Level 1: Glow ring for high-demand */}
@@ -306,7 +269,7 @@ export default function FutureIsland({ island, skillLookup, level2SkillIds, leve
                   dominantBaseline="central"
                   style={{ fontSize: isBossCompleted ? "16px" : "14px", pointerEvents: "none" }}
                 >
-                  {isBossCompleted ? "👑" : isBossAvailable ? "⚔️" : (skill.iconEmoji || "")}
+                  {isBossCompleted ? "👑" : (skill.iconEmoji || "")}
                 </text>
 
                 {/* Growth Rings — 3 arcs around the node */}
@@ -345,26 +308,6 @@ export default function FutureIsland({ island, skillLookup, level2SkillIds, leve
                   });
                 })()}
 
-                {isBossAvailable && (
-                  <g>
-                    <rect
-                      x={node.x + nodeRadius * 0.4}
-                      y={node.y - nodeRadius - 6}
-                      width={22}
-                      height={10}
-                      rx={3}
-                      fill="hsl(45 80% 50%)"
-                    />
-                    <text
-                      x={node.x + nodeRadius * 0.4 + 11}
-                      y={node.y - nodeRadius - 1}
-                      textAnchor="middle"
-                      style={{ fontSize: "6px", fontWeight: 800, fill: "hsl(45 20% 10%)", pointerEvents: "none" }}
-                    >
-                      BOSS
-                    </text>
-                  </g>
-                )}
 
                 {/* Name label */}
                 {showLabel && (
@@ -376,12 +319,12 @@ export default function FutureIsland({ island, skillLookup, level2SkillIds, leve
                       fontSize: (isHovered || isHighlighted) ? "11px" : "10px",
                       fontWeight: (isHovered || isHighlighted) ? 700 : 600,
                       fill: isParchment
-                        ? (isLevel2
+                        ? (isBossCompleted
                           ? `hsl(45 ${isHovered ? 60 : 50}% ${isHovered ? 25 : 30}%)`
                           : isHovered
                             ? `hsl(${theme.baseHue} 50% 25%)`
                             : `hsl(${theme.baseHue} 35% 35%)`)
-                        : (isLevel2
+                        : (isBossCompleted
                           ? `hsl(45 ${isHovered ? 60 : 40}% ${isHovered ? 80 : 65}%)`
                           : isHovered
                             ? `hsl(${theme.baseHue} 40% 85%)`
@@ -403,7 +346,6 @@ export default function FutureIsland({ island, skillLookup, level2SkillIds, leve
             <TooltipContent side="top" className="max-w-[240px]">
               <p className="font-semibold text-xs">
                 {isBossCompleted && <span className="text-amber-400 mr-1">👑</span>}
-                {isBossAvailable && <span className="text-amber-400 mr-1">⚔️</span>}
                 {skill.name}
               </p>
               {skill.description && (
@@ -413,7 +355,6 @@ export default function FutureIsland({ island, skillLookup, level2SkillIds, leve
                 <span>📈 {skill.demandCount} demand</span>
                 <span>💼 {skill.jobCount} roles</span>
                 {isBossCompleted && <span className="text-amber-400">👑 Conquered</span>}
-                {isBossAvailable && <span className="text-amber-400">⚔️ Boss Ready</span>}
               </div>
             </TooltipContent>
           </Tooltip>

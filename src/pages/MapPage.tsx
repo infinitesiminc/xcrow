@@ -8,6 +8,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { X, Swords, ScrollText, Users, BookOpen } from "lucide-react";
+import BossBanner from "@/components/territory/BossBanner";
 import SimulatorModal from "@/components/SimulatorModal";
 import type { SimLaunchRequest } from "@/components/territory/SkillLaunchCard";
 
@@ -235,20 +236,11 @@ const MapPage = () => {
 
       setLevel2SkillIds(finalL2Ids);
 
-      // Count undefeated bosses and fire toast
+      // Count undefeated bosses
       const undefeatedCount = [...finalL2Ids].filter(id => !l2Completed.has(id)).length;
       if (undefeatedCount > 0) {
         setBossCount(undefeatedCount);
         try { localStorage.setItem("xcrow-boss-count", String(undefeatedCount)); } catch {}
-        if (!hasShownBossToast.current) {
-          hasShownBossToast.current = true;
-          setTimeout(() => {
-            toast({
-              title: `⚔️ ${undefeatedCount} Boss Battle${undefeatedCount > 1 ? "s" : ""} Available!`,
-              description: "Defeat boss nodes on the map to evolve your skills and earn exclusive badges.",
-            });
-          }, 1500);
-        }
       }
 
       const targetRoles = ((profileRes.data as any)?.target_roles || []) as { job_id: string }[];
@@ -359,6 +351,29 @@ const MapPage = () => {
 
       {/* ── Right: Territory Map ── */}
       <div className="flex-1 relative">
+        {/* Boss Battle Banner */}
+        {bossCount > 0 && (
+          <BossBanner
+            availableBosses={
+              [...level2SkillIds]
+                .filter(id => !level2CompletedIds.has(id))
+                .map(id => {
+                  const skill = futureSkills.find(s => s.id === id);
+                  return skill ? { skill, skillId: id } : null;
+                })
+                .filter(Boolean) as { skill: FutureSkill; skillId: string }[]
+            }
+            onLaunchBoss={(skillId, skillName) => {
+              handleLaunchSim({
+                jobTitle: skillName,
+                taskName: skillName,
+                skillId,
+                level: 2,
+              });
+            }}
+            onDismiss={() => setBossCount(0)}
+          />
+        )}
         <FutureTerritoryMap
           skills={futureSkills}
           focusSkillId={mapFocusSkillId}
