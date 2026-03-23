@@ -381,12 +381,19 @@ export default function FutureSkillsTable({ skills, onSkillClick, skillGrowthMap
                           {skill.iconEmoji && <span className="text-sm">{skill.iconEmoji}</span>}
                           <span className="font-medium text-foreground truncate text-xs">{skill.name}</span>
                         </div>
-                        <span
-                          className="inline-block px-1 py-0 rounded text-[9px] font-medium mt-0.5"
-                          style={{ background: `${territory.hsl}12`, color: territory.hsl }}
-                        >
-                          {skill.category}
-                        </span>
+                        <div className="flex items-center gap-1.5 mt-0.5">
+                          <span
+                            className="inline-block px-1 py-0 rounded text-[9px] font-medium"
+                            style={{ background: `${territory.hsl}12`, color: territory.hsl }}
+                          >
+                            {skill.category}
+                          </span>
+                          {skill.jobCount > 0 && (
+                            <span className="text-[9px] font-mono text-muted-foreground" title={`${skill.jobCount} job${skill.jobCount !== 1 ? "s" : ""} available for simulation`}>
+                              {skill.jobCount} {skill.jobCount === 1 ? "job" : "jobs"}
+                            </span>
+                          )}
+                        </div>
                       </div>
                       {/* L1 / L2 quick-launch icons */}
                       <div className="shrink-0 flex items-center justify-center gap-1">
