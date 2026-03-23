@@ -351,7 +351,6 @@ export default function FutureSkillsTable({ skills, onSkillClick, skillGrowthMap
             style={{ background: "hsl(var(--surface-stone) / 0.95)" }}
           >
             <tr style={{ borderBottom: "1px solid hsl(var(--filigree) / 0.15)" }}>
-              <th className="w-6 py-2" />
               <th className="text-left py-2 pr-2">{colBtn("name", "Skill")}</th>
               <th className="text-center py-2 w-[100px]">
                 <span className="text-[10px] uppercase tracking-[0.1em] text-muted-foreground" style={{ fontFamily: "'Cinzel', serif", fontWeight: 600 }}>
@@ -379,10 +378,10 @@ export default function FutureSkillsTable({ skills, onSkillClick, skillGrowthMap
                   className="transition-colors"
                   style={{ borderBottom: "1px solid hsl(var(--border) / 0.3)" }}
                 >
-                  <td colSpan={4} className="p-0">
+                  <td colSpan={3} className="p-0">
                     {/* Main row */}
                     <div
-                      className={`flex items-center gap-1 px-0 py-1.5 cursor-pointer transition-colors hover:bg-muted/20 ${
+                      className={`flex items-center gap-1 px-1 py-1.5 cursor-pointer transition-colors hover:bg-muted/20 ${
                         isExpanded ? "bg-muted/10" : ""
                       }`}
                       onClick={() => {
@@ -392,23 +391,12 @@ export default function FutureSkillsTable({ skills, onSkillClick, skillGrowthMap
                           onSkillClick?.(skill);
                         }
                       }}
+                      onContextMenu={(e) => { e.preventDefault(); toggleBookmark(skill.id, e); }}
                     >
-                      {/* Bookmark */}
-                      <div className="w-6 shrink-0 flex justify-center">
-                        <button
-                          onClick={(e) => toggleBookmark(skill.id, e)}
-                          className="p-0.5 rounded transition-colors hover:bg-white/10"
-                        >
-                          {isBookmarked ? (
-                            <BookmarkCheck className="h-3.5 w-3.5" style={{ color: "hsl(var(--filigree-glow))" }} />
-                          ) : (
-                            <Bookmark className="h-3.5 w-3.5 text-muted-foreground/40" />
-                          )}
-                        </button>
-                      </div>
                       {/* Name + domain pill */}
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-1.5">
+                          {isBookmarked && <span className="text-[8px]" style={{ color: "hsl(var(--filigree-glow))" }}>⭐</span>}
                           {skill.iconEmoji && <span className="text-sm">{skill.iconEmoji}</span>}
                           <span className="font-medium text-foreground truncate text-xs">{skill.name}</span>
                         </div>
