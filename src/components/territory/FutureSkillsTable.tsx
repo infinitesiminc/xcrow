@@ -13,6 +13,7 @@ import { getTerritory, TERRITORY_ORDER } from "@/lib/territory-colors";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { RadarChart, PolarGrid, PolarAngleAxis, Radar, ResponsiveContainer } from "recharts";
+import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 import type { CanonicalSkillGrowth } from "@/pages/MapPage";
 
 type SortKey = "name" | "category" | "xp";
