@@ -124,6 +124,7 @@ export function useFriends() {
         isRequester: f.requester_id === user.id,
         lastSim: lastSimMap.get(friendId) || null,
         unreadMessages: unreadPerFriend.get(friendId) || 0,
+        lastUnreadMessage: lastUnreadMsg.get(friendId) || null,
       };
     });
 
