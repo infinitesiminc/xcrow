@@ -5,6 +5,13 @@ import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 
+export interface FriendLastSim {
+  job_title: string;
+  task_name: string;
+  completed_at: string;
+  company: string | null;
+}
+
 export interface Friend {
   id: string; // friendship row id
   friendId: string;
@@ -17,6 +24,7 @@ export interface Friend {
   totalXp: number;
   status: "pending" | "accepted" | "blocked";
   isRequester: boolean; // did current user send the request?
+  lastSim: FriendLastSim | null;
 }
 
 export interface FriendMessage {
@@ -52,14 +60,26 @@ export function useFriends() {
       f.requester_id === user.id ? f.recipient_id : f.requester_id
     );
 
-    const [profilesRes, presenceRes, xpRes] = await Promise.all([
+    const [profilesRes, presenceRes, xpRes, lastSimsRes] = await Promise.all([
       supabase.from("profiles").select("id, display_name, username, avatar_id").in("id", friendIds),
       supabase.from("user_presence").select("user_id, is_online, last_seen_at, current_activity").in("user_id", friendIds),
       supabase.from("completed_simulations").select("user_id, skills_earned").in("user_id", friendIds),
+      supabase.rpc("get_friends_last_sims", { _user_id: user.id }),
     ]);
 
     const profileMap = new Map((profilesRes.data || []).map(p => [p.id, p]));
     const presenceMap = new Map((presenceRes.data || []).map(p => [p.user_id, p]));
+
+    // Last sim per friend
+    const lastSimMap = new Map<string, FriendLastSim>();
+    for (const s of lastSimsRes.data || []) {
+      lastSimMap.set((s as any).friend_id, {
+        job_title: (s as any).job_title,
+        task_name: (s as any).task_name,
+        company: (s as any).company,
+        completed_at: (s as any).completed_at,
+      });
+    }
 
     // Calculate XP per user
     const xpMap = new Map<string, number>();
@@ -87,6 +107,7 @@ export function useFriends() {
         totalXp: xpMap.get(friendId) || 0,
         status: f.status as Friend["status"],
         isRequester: f.requester_id === user.id,
+        lastSim: lastSimMap.get(friendId) || null,
       };
     });
 
