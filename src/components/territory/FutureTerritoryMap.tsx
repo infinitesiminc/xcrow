@@ -43,9 +43,7 @@ export default function FutureTerritoryMap({ skills, focusSkillId, level2SkillId
   const containerRef = useRef<HTMLDivElement>(null);
   const [transform, setTransform] = useState({ x: 0, y: 0, scale: 1 });
   const [focusedIsland, setFocusedIsland] = useState<FutureSkillCategory | null>(null);
-  const [selectedSkill, setSelectedSkill] = useState<FutureSkill | null>(null);
   const [highlightedSkillId, setHighlightedSkillId] = useState<string | null>(null);
-  const [drawerOpen, setDrawerOpen] = useState(false);
   const dragRef = useRef<{ startX: number; startY: number; tx: number; ty: number } | null>(null);
   const isDragging = useRef(false);
 
