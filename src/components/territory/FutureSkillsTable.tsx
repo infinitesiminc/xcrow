@@ -56,8 +56,6 @@ export default function FutureSkillsTable({ skills, onSkillClick, skillGrowthMap
   const [domainFilter, setDomainFilter] = useState<string | null>(null);
   const [bookmarks, setBookmarks] = useState<Set<string>>(loadBookmarks);
   const [expandedSkillId, setExpandedSkillId] = useState<string | null>(null);
-  const [expandedRoles, setExpandedRoles] = useState<{ jobId: string; title: string; company: string | null }[]>([]);
-  const [loadingRoles, setLoadingRoles] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const rowRefs = useRef<Map<string, HTMLTableRowElement>>(new Map());
 
