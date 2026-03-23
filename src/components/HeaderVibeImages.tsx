@@ -73,8 +73,8 @@ export default function HeaderVibeImages({ seed, count = 3 }: HeaderVibeImagesPr
             top: "50%",
             transform: `translate(-50%, -50%) rotate(${img.rotation}deg) scale(${img.scale})`,
             opacity: img.opacity,
-            filter: "blur(1px) saturate(0.6)",
-            mixBlendMode: "lighten",
+            filter: "blur(0.5px) saturate(0.8)",
+            mixBlendMode: "screen",
           }}
         />
       ))}
