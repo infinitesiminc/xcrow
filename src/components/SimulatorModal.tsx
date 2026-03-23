@@ -782,11 +782,74 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
 
   const beginChat = () => {
     if (!session) return;
+    if (level === 2 && auditData) {
+      // L2 goes directly to audit phase
+      setPhase("chat");
+      return;
+    }
     const openingText = typeof session.openingMessage === "string"
       ? session.openingMessage
       : (session.openingMessage as any)?.text ?? JSON.stringify(session.openingMessage);
     setMessages([{ role: "assistant", content: openingText }]);
     setPhase("chat");
+  };
+
+  // Handle L2 Guided Audit completion
+  const handleAuditComplete = async (result: AuditResult) => {
+    setPhase("completing");
+    clearInactivityTimer();
+
+    // Map audit rubric to sim score dimensions
+    const rubric = result.rubricScores;
+    const overallPct = Math.round((result.totalCorrect / result.totalCheckpoints) * 100);
+    const scores: SimScoreResult = {
+      overall: overallPct,
+      categories: [
+        { name: "AI Tool Awareness", score: rubric.risk_awareness?.score ?? overallPct, feedback: rubric.risk_awareness?.note ?? "" },
+        { name: "Human Value-Add", score: rubric.human_value?.score ?? 80, feedback: rubric.human_value?.note ?? "" },
+        { name: "Adaptive Thinking", score: rubric.strategic_depth?.score ?? 65, feedback: rubric.strategic_depth?.note ?? "" },
+        { name: "Domain Judgment", score: rubric.actionability?.score ?? 65, feedback: rubric.actionability?.note ?? "" },
+      ],
+      summary: `Detected ${result.totalCorrect}/${result.totalCheckpoints} issues with ${result.hintsUsed} hints used.`,
+    };
+    setScoreResult(scores);
+
+    // Compute skill XP
+    const skillIds = matchTaskToSkills(taskName, jobTitle);
+    const xpPerSkill = calculateSkillXP(overallPct, true);
+    const skillsEarnedData = skillIds.map(id => ({ skill_id: id, xp: xpPerSkill }));
+    const earned = skillIds.map(id => {
+      const tax = SKILL_TAXONOMY.find(s => s.id === id);
+      return { skill_id: id, xp: xpPerSkill, name: tax?.name || id, levelBefore: "Novice", levelAfter: "Novice", leveledUp: false };
+    });
+    setEarnedSkills(earned);
+
+    if (user) {
+      try {
+        await supabase.from("completed_simulations").insert({
+          user_id: user.id,
+          task_name: taskName,
+          job_title: jobTitle,
+          company: company || null,
+          rounds_completed: result.totalCheckpoints,
+          correct_answers: result.totalCorrect,
+          total_questions: result.totalCheckpoints,
+          experience_level: mode,
+          tool_awareness_score: scores.categories[0].score,
+          human_value_add_score: scores.categories[1].score,
+          adaptive_thinking_score: scores.categories[2].score,
+          domain_judgment_score: scores.categories[3].score,
+          skills_earned: skillsEarnedData,
+          sim_level: 2,
+        } as any);
+        onCompleted?.();
+        await simGate.increment();
+        toast({ title: "Audit complete! 🛡️", description: `${result.totalCorrect}/${result.totalCheckpoints} threats detected`, action: <Button variant="link" className="text-xs p-0 h-auto" onClick={() => navigate("/map")}>Skill Map</Button> });
+      } catch (err) {
+        console.error("Failed to save audit:", err);
+      }
+    }
+    setPhase("done");
   };
 
 
