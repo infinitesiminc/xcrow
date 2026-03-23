@@ -212,20 +212,20 @@ function CheckpointChat({ checkpoint }: { checkpoint: AuditCheckpoint }) {
     >
       <div className="px-3 py-2 flex items-center gap-1.5" style={{ borderBottom: "1px solid hsl(262 60% 40% / 0.15)" }}>
         <HelpCircle className="h-3 w-3" style={{ color: "hsl(262 80% 70%)" }} />
-        <span className="text-[11px] font-semibold" style={{ color: "hsl(262 80% 70%)", fontFamily: "'Cinzel', serif" }}>
+        <span className="text-[13px] font-semibold" style={{ color: "hsl(262 80% 70%)", fontFamily: "'Cinzel', serif" }}>
           📚 Sanctum Library
         </span>
       </div>
       <div ref={scrollRef} className="max-h-[200px] overflow-y-auto px-3 py-2 space-y-2">
         {messages.length === 0 && (
           <div className="text-center py-3">
-            <p className="text-[11px] text-muted-foreground italic">
+            <p className="text-[13px] text-muted-foreground italic">
               "How would I detect this in my own data?" or "What guardrail prevents this?"
             </p>
           </div>
         )}
         {messages.map((msg, i) => (
-          <div key={i} className={`text-[11px] leading-relaxed ${msg.role === "user" ? "text-right" : ""}`}>
+          <div key={i} className={`text-[15px] leading-relaxed ${msg.role === "user" ? "text-right" : ""}`}>
             <div
               className={`inline-block max-w-[90%] rounded-lg px-3 py-2 text-left`}
               style={
@@ -243,7 +243,7 @@ function CheckpointChat({ checkpoint }: { checkpoint: AuditCheckpoint }) {
           </div>
         ))}
         {isStreaming && messages[messages.length - 1]?.role !== "assistant" && (
-          <div className="flex items-center gap-1 text-[11px] text-muted-foreground">
+          <div className="flex items-center gap-1 text-[13px] text-muted-foreground">
             <Loader2 className="h-3 w-3 animate-spin" /> Consulting archives…
           </div>
         )}
@@ -254,7 +254,7 @@ function CheckpointChat({ checkpoint }: { checkpoint: AuditCheckpoint }) {
           onChange={e => setInput(e.target.value)}
           onKeyDown={e => e.key === "Enter" && !e.shiftKey && sendMessage()}
           placeholder="Consult the archives…"
-          className="flex-1 rounded-lg px-3 py-1.5 text-[11px] outline-none focus:ring-1 focus:ring-primary/30"
+          className="flex-1 rounded-lg px-3 py-1.5 text-[15px] outline-none focus:ring-1 focus:ring-primary/30"
           style={{ background: "hsl(262 30% 15%)", border: "1px solid hsl(262 60% 40% / 0.15)" }}
         />
         <Button size="icon" onClick={sendMessage} disabled={isStreaming || !input.trim()} className="h-7 w-7 rounded-lg shrink-0">
@@ -319,7 +319,7 @@ function RubricResults({ scores }: { scores: Record<string, { score: number; not
     <div className="space-y-3">
       <div className="flex items-center gap-2 mb-1">
         <span className="text-xs">📜</span>
-        <span className="text-[11px] font-bold uppercase tracking-widest" style={{ fontFamily: "'Cinzel', serif", color: "hsl(262 80% 70%)" }}>
+        <span className="text-[13px] font-bold uppercase tracking-widest" style={{ fontFamily: "'Cinzel', serif", color: "hsl(262 80% 70%)" }}>
           Sentinel's Rubric
         </span>
       </div>
@@ -335,10 +335,10 @@ function RubricResults({ scores }: { scores: Record<string, { score: number; not
             transition={{ delay: RUBRIC_DIMENSIONS.indexOf(dim) * 0.1 }}
           >
             <div className="flex items-center justify-between mb-1">
-              <span className="text-[11px] font-semibold text-foreground flex items-center gap-1.5">
-                <span className="text-xs">{dim.icon}</span> {dim.label}
+              <span className="text-[13px] font-semibold text-foreground flex items-center gap-1.5">
+                <span className="text-sm">{dim.icon}</span> {dim.label}
               </span>
-              <span className="text-[11px] font-mono font-bold" style={{ color }}>{pct}%</span>
+              <span className="text-[13px] font-mono font-bold" style={{ color }}>{pct}%</span>
             </div>
             <div className="h-2 rounded-full overflow-hidden mb-1.5" style={{ background: "hsl(262 30% 18%)", border: "1px solid hsl(262 60% 40% / 0.15)" }}>
               <motion.div
@@ -349,7 +349,7 @@ function RubricResults({ scores }: { scores: Record<string, { score: number; not
                 style={{ background: `linear-gradient(90deg, ${color}, ${color}dd)`, boxShadow: `0 0 8px ${color}40` }}
               />
             </div>
-            <p className="text-[11px] text-muted-foreground italic leading-relaxed">{s.note}</p>
+            <p className="text-[13px] text-muted-foreground italic leading-relaxed">{s.note}</p>
           </motion.div>
         );
       })}
@@ -558,14 +558,14 @@ export default function GuidedAudit({
               >
                 {totalCorrect}/{checkpoints.length}
               </motion.span>
-              <span className="text-[11px] text-muted-foreground">detected</span>
+              <span className="text-[13px] text-muted-foreground">detected</span>
             </div>
           </motion.div>
 
           <h3 className="text-base font-bold mt-3" style={{ fontFamily: "'Cinzel', serif", color: "hsl(262 80% 70%)" }}>
             {titles[tier]}
           </h3>
-          <p className="text-xs text-muted-foreground mt-1 max-w-sm mx-auto leading-relaxed">{subtitles[tier]}</p>
+          <p className="text-[13px] text-muted-foreground mt-1 max-w-sm mx-auto leading-relaxed">{subtitles[tier]}</p>
         </div>
 
         {/* Per-checkpoint results */}
@@ -577,7 +577,7 @@ export default function GuidedAudit({
             boxShadow: "inset 0 1px 0 hsl(var(--emboss-light))",
           }}
         >
-          <span className="text-[11px] font-bold uppercase tracking-widest" style={{ fontFamily: "'Cinzel', serif", color: "hsl(262 80% 70%)" }}>
+          <span className="text-[13px] font-bold uppercase tracking-widest" style={{ fontFamily: "'Cinzel', serif", color: "hsl(262 80% 70%)" }}>
             Checkpoint Review
           </span>
           {checkpoints.map(cp => {
@@ -587,7 +587,7 @@ export default function GuidedAudit({
                 key={cp.id}
                 initial={{ opacity: 0, x: -4 }}
                 animate={{ opacity: 1, x: 0 }}
-                className="flex items-start gap-2.5 text-[11px] p-2.5 rounded-lg"
+                className="flex items-start gap-2.5 text-[13px] p-2.5 rounded-lg"
                 style={{
                   background: isCorrect ? "hsl(142 60% 50% / 0.05)" : "hsl(0 60% 55% / 0.05)",
                   border: `1px solid ${isCorrect ? "hsl(142 60% 50% / 0.15)" : "hsl(0 60% 55% / 0.15)"}`,
@@ -631,7 +631,7 @@ export default function GuidedAudit({
             variant="outline"
             size="sm"
             onClick={handleRestart}
-            className="gap-1.5 text-xs rounded-xl"
+            className="gap-1.5 text-[13px] rounded-xl"
             style={{ fontFamily: "'Cinzel', serif", borderColor: "hsl(262 60% 40% / 0.3)", color: "hsl(262 80% 70%)" }}
           >
             <RotateCcw className="h-3 w-3" /> 🔮 Begin New Vigil
@@ -640,7 +640,7 @@ export default function GuidedAudit({
             <Button
               size="sm"
               onClick={onViewDebrief}
-              className="gap-1.5 text-xs rounded-xl"
+              className="gap-1.5 text-[13px] rounded-xl"
               style={{
                 fontFamily: "'Cinzel', serif",
                 background: "linear-gradient(135deg, hsl(262 80% 55%), hsl(262 60% 45%))",
@@ -695,12 +695,12 @@ export default function GuidedAudit({
             </div>
             <div>
               <span
-                className="text-xs font-bold drop-shadow-[0_0_8px_rgba(139,92,246,0.4)]"
+                className="text-[15px] font-bold drop-shadow-[0_0_8px_rgba(139,92,246,0.4)]"
                 style={{ fontFamily: "'Cinzel', serif", color: "hsl(262 80% 75%)" }}
               >
                 🔮 Sentinel's Sanctum
               </span>
-              <p className="text-[11px] text-muted-foreground">
+              <p className="text-[13px] text-muted-foreground">
                 Evaluate AI claims from the future battlefield
               </p>
             </div>
@@ -717,7 +717,7 @@ export default function GuidedAudit({
 
       {/* Oracle's Claim — AI output context */}
       <div
-        className="rounded-lg px-3.5 py-2.5 text-[11px] font-mono relative overflow-hidden"
+        className="rounded-lg px-3.5 py-2.5 text-[13px] font-mono relative overflow-hidden"
         style={{
           background: "hsl(262 30% 12%)",
           border: "1px solid hsl(262 60% 40% / 0.2)",
@@ -732,10 +732,10 @@ export default function GuidedAudit({
           animate={{ y: ["-100%", "200%"] }}
           transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
         />
-        <span className="text-[11px] font-bold uppercase tracking-wider" style={{ color: "hsl(262 80% 70%)", fontFamily: "'Cinzel', serif" }}>
+        <span className="text-[13px] font-bold uppercase tracking-wider" style={{ color: "hsl(262 80% 70%)", fontFamily: "'Cinzel', serif" }}>
           🔮 Oracle's Claim:{" "}
         </span>
-        <span className="text-foreground/80">{checkpoint.aiClaim}</span>
+        <span className="text-[15px] text-foreground/80 leading-relaxed">{checkpoint.aiClaim}</span>
       </div>
 
       {/* Checkpoint card */}
@@ -769,7 +769,7 @@ export default function GuidedAudit({
                 <h4 className="text-sm font-bold text-foreground" style={{ fontFamily: "'Cinzel', serif" }}>
                   {checkpoint.area.split(" ").slice(1).join(" ")}
                 </h4>
-                <p className="text-[12px] text-muted-foreground mt-1.5 leading-relaxed">{checkpoint.question}</p>
+                <p className="text-[15px] text-muted-foreground mt-1.5 leading-relaxed">{checkpoint.question}</p>
               </div>
             </div>
 
@@ -777,7 +777,7 @@ export default function GuidedAudit({
             {!showHint[checkpoint.id] && !revealed[checkpoint.id] && (
               <button
                 onClick={() => setShowHint(prev => ({ ...prev, [checkpoint.id]: true }))}
-                className="text-[11px] mt-2 flex items-center gap-1 transition-colors hover:brightness-125"
+                className="text-[13px] mt-2 flex items-center gap-1 transition-colors hover:brightness-125"
                 style={{ color: "hsl(262 80% 70%)" }}
               >
                 <Sparkles className="h-3 w-3" /> Need a hint?
@@ -787,7 +787,7 @@ export default function GuidedAudit({
               <motion.div
                 initial={{ opacity: 0, y: -4 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="text-[11px] px-3 py-2 rounded-lg mt-2 italic"
+                className="text-[15px] px-3 py-2 rounded-lg mt-2 italic"
                 style={{
                   background: "hsl(45 80% 55% / 0.08)",
                   border: "1px solid hsl(45 80% 55% / 0.15)",
@@ -810,7 +810,7 @@ export default function GuidedAudit({
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
                       onClick={() => handleVerdict(checkpoint.id, v)}
-                      className="flex-1 py-2.5 px-3 rounded-lg text-[11px] font-semibold capitalize transition-all"
+                      className="flex-1 py-2.5 px-3 rounded-lg text-[13px] font-semibold capitalize transition-all"
                       style={{
                         background: selected ? cfg.bg : "hsl(262 30% 15%)",
                         border: `1.5px solid ${selected ? cfg.border : "hsl(262 60% 40% / 0.15)"}`,
@@ -831,7 +831,7 @@ export default function GuidedAudit({
                 <Button
                   size="sm"
                   onClick={() => handleReveal(checkpoint.id)}
-                  className="w-full gap-1.5 text-xs rounded-xl h-9"
+                   className="w-full gap-1.5 text-[13px] rounded-xl h-9"
                   style={{
                     fontFamily: "'Cinzel', serif",
                     background: "linear-gradient(135deg, hsl(262 80% 55%), hsl(262 60% 45%))",
@@ -868,14 +868,14 @@ export default function GuidedAudit({
                   {verdicts[checkpoint.id] === checkpoint.correctVerdict ? (
                     <>
                       <CheckCircle2 className="h-4 w-4 shrink-0" style={{ color: "hsl(142 60% 50%)" }} />
-                      <span className="text-[11px] font-bold" style={{ color: "hsl(142 60% 50%)", fontFamily: "'Cinzel', serif" }}>
+                     <span className="text-[13px] font-bold" style={{ color: "hsl(142 60% 50%)", fontFamily: "'Cinzel', serif" }}>
                         ✦ Oracle Approves
                       </span>
                     </>
                   ) : (
                     <>
                       <Shield className="h-4 w-4 shrink-0" style={{ color: "hsl(0 60% 55%)" }} />
-                      <span className="text-[11px] font-bold" style={{ color: "hsl(0 60% 55%)", fontFamily: "'Cinzel', serif" }}>
+                      <span className="text-[13px] font-bold" style={{ color: "hsl(0 60% 55%)", fontFamily: "'Cinzel', serif" }}>
                         The Oracle Corrects — <span className="capitalize">{checkpoint.correctVerdict}</span>
                       </span>
                     </>
@@ -884,7 +884,7 @@ export default function GuidedAudit({
 
                 {/* Explanation */}
                 <div
-                  className="rounded-lg p-3 text-[11px] space-y-2.5"
+                  className="rounded-lg p-3 text-[15px] space-y-2.5"
                   style={{ background: "hsl(262 30% 12%)", border: "1px solid hsl(262 60% 40% / 0.15)" }}
                 >
                   <p className="text-foreground leading-relaxed">{checkpoint.explanation}</p>
@@ -899,15 +899,15 @@ export default function GuidedAudit({
                     }}
                   >
                     <div className="flex items-center gap-1.5 mb-1.5">
-                      <span className="text-[11px] font-bold uppercase tracking-wider" style={{ color: "hsl(262 80% 70%)", fontFamily: "'Cinzel', serif" }}>
+                      <span className="text-[13px] font-bold uppercase tracking-wider" style={{ color: "hsl(262 80% 70%)", fontFamily: "'Cinzel', serif" }}>
                         📜 Chronicle Entry
                       </span>
                     </div>
-                    <p className="text-[11px] text-foreground/80 leading-relaxed">{checkpoint.realWorldExample}</p>
+                    <p className="text-[15px] text-foreground/80 leading-relaxed">{checkpoint.realWorldExample}</p>
                   </div>
 
                   {/* Sentinel's Counsel */}
-                  <div className="flex items-start gap-2 text-[11px]">
+                  <div className="flex items-start gap-2 text-[15px]">
                     <span className="shrink-0">🧭</span>
                     <p className="font-medium italic" style={{ color: "hsl(262 80% 70%)" }}>
                       {checkpoint.coachTip}
@@ -919,7 +919,7 @@ export default function GuidedAudit({
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => setShowChat(prev => ({ ...prev, [checkpoint.id]: !prev[checkpoint.id] }))}
-                    className="text-[11px] flex items-center gap-1 transition-colors hover:brightness-125"
+                    className="text-[13px] flex items-center gap-1 transition-colors hover:brightness-125"
                     style={{ color: "hsl(262 80% 70%)" }}
                   >
                     <HelpCircle className="h-3 w-3" />
@@ -935,7 +935,7 @@ export default function GuidedAudit({
                 <Button
                   size="sm"
                   onClick={handleNext}
-                  className="w-full gap-1.5 text-xs rounded-xl h-9"
+                   className="w-full gap-1.5 text-[13px] rounded-xl h-9"
                   style={{
                     fontFamily: "'Cinzel', serif",
                     background: "linear-gradient(135deg, hsl(262 80% 55%), hsl(262 60% 45%))",
