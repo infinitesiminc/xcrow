@@ -8,6 +8,9 @@ import { calculateSkillXP } from "@/lib/castle-levels";
 import ReactMarkdown from "react-markdown";
 import TypewriterMarkdown from "@/components/TypewriterMarkdown";
 import XcrowLoader from "@/components/XcrowLoader";
+import simRuneCircle from "@/assets/sim-rune-circle.jpg";
+import simBriefingBg from "@/assets/sim-briefing.jpg";
+import simVictoryBg from "@/assets/sim-victory.jpg";
 import { useToolMentionComponents } from "@/components/sim/AIToolChip";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -167,56 +170,52 @@ const BriefingScreen = ({
       transition={{ duration: 0.4, ease: "easeOut" }}
       className="flex flex-col gap-5 py-6 px-2 max-w-2xl mx-auto"
     >
-      {/* Hero banner with ornamental frame */}
+      {/* Hero banner with fantasy background */}
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.5, ease: "easeOut" }}
         className="relative rounded-2xl overflow-hidden"
         style={{
-          background: `linear-gradient(135deg, hsl(${hue1} 55% 14%) 0%, hsl(${hue2} 50% 9%) 50%, hsl(${hue3} 45% 6%) 100%)`,
           border: "1px solid hsl(var(--filigree) / 0.3)",
           boxShadow: "0 0 40px hsl(var(--primary) / 0.08), inset 0 1px 0 hsl(var(--filigree) / 0.15)",
         }}
       >
+        {/* Background image */}
+        <img
+          src={simBriefingBg}
+          alt=""
+          className="absolute inset-0 w-full h-full object-cover"
+          style={{ filter: "brightness(0.35) saturate(0.8)" }}
+        />
+        {/* Gradient overlay for text readability */}
+        <div className="absolute inset-0" style={{
+          background: "linear-gradient(180deg, transparent 0%, hsl(var(--background) / 0.7) 100%)",
+        }} />
         {/* Atmospheric glow */}
         <div
-          className="absolute -top-16 -right-16 w-48 h-48 rounded-full opacity-15 blur-3xl"
+          className="absolute -top-16 -right-16 w-48 h-48 rounded-full opacity-20 blur-3xl"
           style={{ background: `hsl(${hue1} 70% 50%)` }}
         />
-        <div
-          className="absolute -bottom-12 -left-12 w-36 h-36 rounded-full opacity-10 blur-3xl"
-          style={{ background: `hsl(${hue3} 60% 40%)` }}
-        />
-        {/* Grid overlay */}
-        <div className="absolute inset-0 opacity-[0.03]" style={{
-          backgroundImage: `linear-gradient(hsl(${hue1} 50% 80%) 1px, transparent 1px), linear-gradient(90deg, hsl(${hue1} 50% 80%) 1px, transparent 1px)`,
-          backgroundSize: '20px 20px',
-        }} />
-        {/* Corner ornaments */}
-        <div className="absolute top-2 left-3 text-[10px] opacity-20" style={{ color: "hsl(var(--filigree))" }}>⟐</div>
-        <div className="absolute top-2 right-3 text-[10px] opacity-20" style={{ color: "hsl(var(--filigree))" }}>⟐</div>
-        <div className="absolute bottom-2 left-3 text-[10px] opacity-20 rotate-180" style={{ color: "hsl(var(--filigree))" }}>⟐</div>
-        <div className="absolute bottom-2 right-3 text-[10px] opacity-20 rotate-180" style={{ color: "hsl(var(--filigree))" }}>⟐</div>
 
-        <div className="relative z-10 flex flex-col items-center justify-center text-center px-6 py-8 sm:py-10">
+        <div className="relative z-10 flex flex-col items-center justify-center text-center px-6 py-10 sm:py-14">
           <motion.span
             initial={{ scale: 0, rotate: -20 }}
             animate={{ scale: 1, rotate: 0 }}
             transition={{ delay: 0.2, type: "spring", damping: 12 }}
-            className="text-3xl mb-3"
+            className="text-3xl mb-3 drop-shadow-[0_0_8px_rgba(255,255,255,0.3)]"
           >
             📜
           </motion.span>
           <h3
             className="text-lg sm:text-xl font-bold drop-shadow-lg"
-            style={{ fontFamily: "'Cinzel', serif", color: "hsl(0 0% 95%)" }}
+            style={{ fontFamily: "'Cinzel', serif", color: "hsl(0 0% 95%)", textShadow: "0 2px 12px rgba(0,0,0,0.8)" }}
           >
             {session.scenario.title}
           </h3>
-          <p className="text-[11px] mt-1.5 max-w-md leading-relaxed" style={{ color: "hsl(0 0% 75%)" }}>{session.scenario.description}</p>
+          <p className="text-[11px] mt-1.5 max-w-md leading-relaxed drop-shadow-md" style={{ color: "hsl(0 0% 80%)" }}>{session.scenario.description}</p>
           {/* Ornamental divider */}
-          <div className="flex items-center gap-2 mt-3 opacity-30">
+          <div className="flex items-center gap-2 mt-3 opacity-40">
             <div className="h-px w-8" style={{ background: "linear-gradient(90deg, transparent, hsl(var(--filigree)))" }} />
             <span className="text-[8px]" style={{ color: "hsl(var(--filigree))" }}>✦</span>
             <div className="h-px w-8" style={{ background: "linear-gradient(90deg, hsl(var(--filigree)), transparent)" }} />
@@ -1213,8 +1212,14 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
           )}
         </div>
 
-        <div className="flex-1 flex min-h-0">
-          <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 sm:px-6 py-4 sm:py-6 scrollbar-thin">
+        <div className="flex-1 flex min-h-0 relative">
+          {/* Atmospheric vignette for immersion */}
+          {phase === "chat" && (
+            <div className="absolute inset-0 pointer-events-none z-0" style={{
+              background: "radial-gradient(ellipse at center, transparent 50%, hsl(var(--background) / 0.4) 100%)",
+            }} />
+          )}
+          <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 sm:px-6 py-4 sm:py-6 scrollbar-thin relative z-10">
             {/* Coaching banner for retry sessions */}
             {coachingContext && phase === "chat" && (
               <motion.div
@@ -1245,9 +1250,29 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
-                  className="flex flex-col items-center justify-center h-full"
+                  className="flex flex-col items-center justify-center h-full relative"
                 >
-                  <XcrowLoader size="sm" title="Forging your quest…" />
+                  {/* Rune circle background */}
+                  <motion.div
+                    className="absolute inset-0 flex items-center justify-center pointer-events-none"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 0.25 }}
+                    transition={{ duration: 1 }}
+                  >
+                    <motion.img
+                      src={simRuneCircle}
+                      alt=""
+                      className="w-[80%] max-w-[400px] object-contain"
+                      animate={{ 
+                        scale: [1, 1.05, 1],
+                        filter: ["brightness(0.8) blur(1px)", "brightness(1.2) blur(0px)", "brightness(0.8) blur(1px)"],
+                      }}
+                      transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                    />
+                  </motion.div>
+                  <div className="relative z-10">
+                    <XcrowLoader size="sm" title="Forging your quest…" />
+                  </div>
                 </motion.div>
               )}
 
@@ -1425,22 +1450,40 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                         initial={{ opacity: 0, scaleX: 0.6 }}
                         animate={{ opacity: 1, scaleX: 1 }}
                         transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-                        className="flex items-center gap-3 py-3 my-2"
+                        className="flex items-center gap-3 py-4 my-3 relative"
                       >
-                        <div className="flex-1 h-px" style={{ background: "linear-gradient(90deg, transparent, hsl(var(--filigree) / 0.4), transparent)" }} />
-                        <span
-                          className="text-[11px] font-semibold uppercase tracking-[0.15em] shrink-0 px-3 py-1 rounded-full"
+                        {/* Rune flash background */}
+                        <motion.div
+                          className="absolute inset-0 pointer-events-none"
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: [0, 0.08, 0] }}
+                          transition={{ duration: 1.2, ease: "easeOut" }}
+                        >
+                          <img
+                            src={simRuneCircle}
+                            alt=""
+                            className="w-24 h-24 object-contain mx-auto opacity-40"
+                            style={{ filter: "blur(2px)" }}
+                          />
+                        </motion.div>
+                        <div className="flex-1 h-px" style={{ background: "linear-gradient(90deg, transparent, hsl(var(--filigree) / 0.5), transparent)" }} />
+                        <motion.span
+                          className="text-[11px] font-semibold uppercase tracking-[0.15em] shrink-0 px-4 py-1.5 rounded-full relative z-10"
                           style={{
                             color: "hsl(var(--filigree-glow))",
-                            background: "hsl(var(--filigree) / 0.08)",
-                            border: "1px solid hsl(var(--filigree) / 0.15)",
+                            background: "hsl(var(--filigree) / 0.1)",
+                            border: "1px solid hsl(var(--filigree) / 0.2)",
                             fontFamily: "'Cinzel', serif",
-                            textShadow: "0 0 8px hsl(var(--filigree-glow) / 0.4)",
+                            textShadow: "0 0 12px hsl(var(--filigree-glow) / 0.5)",
+                            boxShadow: "0 0 16px hsl(var(--filigree-glow) / 0.1)",
                           }}
+                          initial={{ scale: 0.8 }}
+                          animate={{ scale: 1 }}
+                          transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
                         >
                           ⚔️ New Scenario
-                        </span>
-                        <div className="flex-1 h-px" style={{ background: "linear-gradient(90deg, transparent, hsl(var(--filigree) / 0.4), transparent)" }} />
+                        </motion.span>
+                        <div className="flex-1 h-px" style={{ background: "linear-gradient(90deg, transparent, hsl(var(--filigree) / 0.5), transparent)" }} />
                       </motion.div>
                     );
 
@@ -1692,39 +1735,60 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                   initial={{ opacity: 0, y: 16 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5, ease: "easeOut" }}
-                  className="flex flex-col items-center py-8 gap-5 w-full max-w-lg mx-auto text-center"
+                  className="flex flex-col items-center py-4 gap-5 w-full max-w-lg mx-auto text-center"
                 >
-                  {/* Score ring */}
+                  {/* Victory hero image */}
                   <motion.div
-                    initial={{ scale: 0.5, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    transition={{ delay: 0.15, type: "spring", stiffness: 200 }}
-                    className="relative"
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.6, ease: "easeOut" }}
+                    className="relative w-full rounded-2xl overflow-hidden"
+                    style={{ maxHeight: "180px" }}
                   >
-                    <svg width="96" height="96" viewBox="0 0 96 96">
-                      <circle cx="48" cy="48" r="42" fill="none" stroke="hsl(var(--muted))" strokeWidth="4" />
-                      <motion.circle
-                        cx="48" cy="48" r="42" fill="none"
-                        stroke={scoreTier === "high" ? "hsl(142 71% 45%)" : scoreTier === "mid" ? "hsl(var(--primary))" : "hsl(38 92% 50%)"}
-                        strokeWidth="4.5"
-                        strokeLinecap="round"
-                        strokeDasharray={`${overallScore * 2.64} 264`}
-                        transform="rotate(-90 48 48)"
-                        initial={{ strokeDasharray: "0 264" }}
-                        animate={{ strokeDasharray: `${overallScore * 2.64} 264` }}
-                        transition={{ delay: 0.3, duration: 1, ease: "easeOut" }}
-                      />
-                    </svg>
-                    <div className="absolute inset-0 flex flex-col items-center justify-center">
-                      <motion.span
-                        className="text-2xl font-bold text-foreground"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        transition={{ delay: 0.6 }}
+                    <img
+                      src={simVictoryBg}
+                      alt=""
+                      className="w-full h-full object-cover"
+                      style={{ filter: scoreTier === "high" ? "brightness(0.7) saturate(1.2)" : scoreTier === "mid" ? "brightness(0.5) saturate(0.9)" : "brightness(0.35) saturate(0.6) hue-rotate(180deg)" }}
+                    />
+                    <div className="absolute inset-0" style={{
+                      background: "linear-gradient(180deg, transparent 30%, hsl(var(--background) / 0.9) 100%)",
+                    }} />
+                    {/* Score ring overlaid on image */}
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <motion.div
+                        initial={{ scale: 0.5, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        transition={{ delay: 0.15, type: "spring", stiffness: 200 }}
+                        className="relative"
                       >
-                        {overallScore}%
-                      </motion.span>
-                      <span className="text-[10px] text-muted-foreground">power</span>
+                        <svg width="96" height="96" viewBox="0 0 96 96">
+                          <circle cx="48" cy="48" r="42" fill="hsl(var(--background) / 0.5)" stroke="hsl(var(--muted) / 0.5)" strokeWidth="4" />
+                          <motion.circle
+                            cx="48" cy="48" r="42" fill="none"
+                            stroke={scoreTier === "high" ? "hsl(142 71% 45%)" : scoreTier === "mid" ? "hsl(var(--primary))" : "hsl(38 92% 50%)"}
+                            strokeWidth="4.5"
+                            strokeLinecap="round"
+                            strokeDasharray={`${overallScore * 2.64} 264`}
+                            transform="rotate(-90 48 48)"
+                            initial={{ strokeDasharray: "0 264" }}
+                            animate={{ strokeDasharray: `${overallScore * 2.64} 264` }}
+                            transition={{ delay: 0.3, duration: 1, ease: "easeOut" }}
+                            style={{ filter: "drop-shadow(0 0 6px currentColor)" }}
+                          />
+                        </svg>
+                        <div className="absolute inset-0 flex flex-col items-center justify-center">
+                          <motion.span
+                            className="text-2xl font-bold text-foreground drop-shadow-lg"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            transition={{ delay: 0.6 }}
+                          >
+                            {overallScore}%
+                          </motion.span>
+                          <span className="text-[10px] text-muted-foreground drop-shadow-md">power</span>
+                        </div>
+                      </motion.div>
                     </div>
                   </motion.div>
 
