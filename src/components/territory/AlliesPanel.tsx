@@ -415,7 +415,7 @@ function FriendCard({ friend, onAccept, onReject, onView, onMessage, onLaunchSim
                   {currentSimName}
                 </span>
                 <span className="text-[9px] px-1 py-0.5 rounded-full animate-pulse"
-                  style={{ background: "hsl(142 70% 45% / 0.2)", color: "hsl(142 70% 55%)" }}>
+                  style={{ background: "hsl(142 70% 45% / 0.15)", color: "hsl(142 50% 30%)" }}>
                   LIVE
                 </span>
               </div>
