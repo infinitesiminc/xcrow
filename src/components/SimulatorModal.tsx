@@ -1136,30 +1136,16 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
 
   const content = (
     <div className={inline ? "h-full flex flex-col overflow-hidden" : "max-w-3xl w-[95vw] h-[90vh] sm:h-[90vh] h-[100dvh] sm:rounded-2xl rounded-none p-0 flex flex-col overflow-hidden gap-0 border-border/50"}>
-        {/* Header — war room banner */}
-        <div className="shrink-0 relative overflow-hidden h-16">
+        {/* Header — war room banner (matches Mission Briefing layout) */}
+        <div className="shrink-0 z-20 bg-background/95 backdrop-blur-md border-b border-border px-4 h-16 flex items-center justify-between gap-3 relative overflow-hidden">
           <HeaderVibeImages seed={(taskName?.length ?? 0) * 23} count={4} />
-          {/* Subtle atmospheric gradient behind header */}
-          <div className="absolute inset-0 opacity-40 pointer-events-none" style={{
-            background: "linear-gradient(180deg, hsl(var(--primary) / 0.08) 0%, transparent 100%)",
-          }} />
-          <div
-            className="relative flex items-center justify-between px-4 sm:px-6 h-16"
-            style={{ borderBottom: "1px solid hsl(var(--filigree) / 0.25)" }}
-          >
-            <div className="min-w-0 flex-1">
-              <div className="flex items-center gap-2">
-                <span className="text-base">🗡️</span>
-                <h2
-                  className="text-sm sm:text-base font-semibold text-foreground truncate"
-                  style={{ fontFamily: "'Cinzel', serif" }}
-                >
-                  {taskName}
-                </h2>
-              </div>
-              <p className="text-[11px] sm:text-xs text-muted-foreground mt-0.5 truncate pl-7">{jobTitle}{company ? ` · ${company}` : ""}</p>
+            <div className="relative z-10 w-8 shrink-0" /> {/* spacer to balance close button */}
+            <div className="relative z-10 text-center min-w-0 flex-1">
+              <span className="text-[10px] uppercase tracking-wider text-primary font-semibold">🗡️ {simLevel === 2 ? "Level 2 — Sentinel Audit" : "Level 1 — AI Mastery"}</span>
+              <span className="text-sm font-semibold text-foreground truncate block">{taskName}</span>
+              <span className="text-[10px] text-muted-foreground">{jobTitle}{company ? ` · ${company}` : ""}</span>
             </div>
-            <div className="flex items-center gap-2 shrink-0">
+            <div className="relative z-10 flex items-center gap-2 shrink-0">
               {phase === "chat" && (
                 <motion.div
                   initial={{ opacity: 0, scale: 0.9 }}
