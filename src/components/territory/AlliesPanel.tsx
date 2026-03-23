@@ -266,6 +266,17 @@ const AlliesPanel = () => {
           />
         )}
       </AnimatePresence>
+
+      {/* Profile Overlay */}
+      <AnimatePresence>
+        {viewFriend && (
+          <AllyProfileOverlay
+            key={viewFriend.friendId}
+            friend={viewFriend}
+            onClose={() => setViewFriend(null)}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 };
