@@ -15,6 +15,15 @@ import { useAuth } from "@/contexts/AuthContext";
 import { getAvatarById, AVATAR_OPTIONS } from "@/lib/avatars";
 import type { AuditCheckpoint, AuditVerdict, AuditResult } from "./GuidedAudit";
 
+/* ── Difficulty tier config ── */
+const DIFFICULTY_TIERS = {
+  scout: { label: "Scout", emoji: "🟢", color: "hsl(142 60% 50%)", dmg: 15, wrongDmg: 10, wrongHeal: 5 },
+  sentinel: { label: "Sentinel", emoji: "🟡", color: "hsl(45 80% 55%)", dmg: 25, wrongDmg: 15, wrongHeal: 10 },
+  arbiter: { label: "Arbiter", emoji: "🔴", color: "hsl(0 60% 55%)", dmg: 40, wrongDmg: 20, wrongHeal: 15 },
+} as const;
+
+type DifficultyTier = keyof typeof DIFFICULTY_TIERS;
+
 /* ── Verdict button config ── */
 const VERDICT_CONFIG = {
   safe: {
