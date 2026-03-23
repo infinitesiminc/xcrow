@@ -17,6 +17,8 @@ import FutureIsland from "./FutureIsland";
 import SkillLaunchCard from "./SkillLaunchCard";
 import type { CanonicalSkillGrowth } from "@/pages/MapPage";
 
+import type { SimLaunchRequest } from "./SkillLaunchCard";
+
 interface FutureTerritoryMapProps {
   skills: FutureSkill[];
   focusSkillId?: string | null;
@@ -24,6 +26,8 @@ interface FutureTerritoryMapProps {
   skillGrowthMap?: Map<string, CanonicalSkillGrowth>;
   /** Called when user clicks a skill node on the map */
   onSkillSelect?: (skill: FutureSkill) => void;
+  /** If provided, launches sim in-place instead of navigating */
+  onLaunchSim?: (req: SimLaunchRequest) => void;
 }
 
 const ISLAND_COLORS: Record<string, string> = {
@@ -37,7 +41,7 @@ const ISLAND_COLORS: Record<string, string> = {
   "Communication & Collaboration": "hsl(var(--primary))",
 };
 
-export default function FutureTerritoryMap({ skills, focusSkillId, level2SkillIds, skillGrowthMap, onSkillSelect }: FutureTerritoryMapProps) {
+export default function FutureTerritoryMap({ skills, focusSkillId, level2SkillIds, skillGrowthMap, onSkillSelect, onLaunchSim }: FutureTerritoryMapProps) {
   const layout = useMemo(() => buildFutureMapLayout(skills), [skills]);
   const connections = useMemo(() => buildFutureConnections(layout), [layout]);
 
@@ -304,6 +308,7 @@ export default function FutureTerritoryMap({ skills, focusSkillId, level2SkillId
                 level2Unlocked={level2SkillIds?.has(highlightedSkillId)}
                 growth={skillGrowthMap?.get(highlightedSkillId) || null}
                 onClose={() => setHighlightedSkillId(null)}
+                onLaunchSim={onLaunchSim}
               />
             );
           })()}

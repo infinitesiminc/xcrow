@@ -6,6 +6,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { X, Swords, ScrollText, Users } from "lucide-react";
+import SimulatorModal from "@/components/SimulatorModal";
+import type { SimLaunchRequest } from "@/components/territory/SkillLaunchCard";
 
 import { useFutureSkills } from "@/hooks/use-future-skills";
 import FutureTerritoryMap from "@/components/territory/FutureTerritoryMap";
@@ -93,6 +95,11 @@ const MapPage = () => {
   const [targetSkillIds, setTargetSkillIds] = useState<Set<string>>(new Set());
   const [level2SkillIds, setLevel2SkillIds] = useState<Set<string>>(new Set());
   const [skillGrowthMap, setSkillGrowthMap] = useState<Map<string, CanonicalSkillGrowth>>(new Map());
+
+  // In-place sim overlay state
+  const [activeSim, setActiveSim] = useState<SimLaunchRequest | null>(null);
+  const handleLaunchSim = useCallback((req: SimLaunchRequest) => setActiveSim(req), []);
+  const handleCloseSim = useCallback(() => setActiveSim(null), []);
 
   const displaySkills = useMemo(
     () => (realSkills.length > 0 ? realSkills : buildEmptySkills(taxonomy)),
@@ -287,6 +294,7 @@ const MapPage = () => {
               skillGrowthMap={skillGrowthMap}
               level2SkillIds={level2SkillIds}
               focusSkillId={forgeFocusSkillId}
+              onLaunchSim={handleLaunchSim}
               onSkillClick={(skill) => {
                 setMapFocusSkillId(skill.id);
                 setTimeout(() => setMapFocusSkillId(null), 100);
@@ -311,6 +319,7 @@ const MapPage = () => {
           focusSkillId={mapFocusSkillId}
           level2SkillIds={level2SkillIds}
           skillGrowthMap={skillGrowthMap}
+          onLaunchSim={handleLaunchSim}
           onSkillSelect={(skill) => {
             setActiveTab("table");
             setForgeFocusSkillId(skill.id);
@@ -363,6 +372,33 @@ const MapPage = () => {
             <div className="h-[calc(100%-3.25rem)] overflow-hidden">
               <RolePreviewPanel role={selectedRole} onClose={() => setSelectedRole(null)} edgeContext={activeEdge} />
             </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* In-place Sim overlay — preserves map state underneath */}
+      <AnimatePresence>
+        {activeSim && (
+          <motion.div
+            key="sim-overlay"
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 16 }}
+            transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+            className="fixed inset-0 z-[60]"
+            style={{ background: "hsl(var(--background) / 0.97)" }}
+          >
+            <SimulatorModal
+              open={true}
+              onClose={handleCloseSim}
+              taskName={activeSim.jobTitle}
+              jobTitle={activeSim.jobTitle}
+              company={activeSim.company}
+              level={activeSim.level || 1}
+              inline
+              onCompleted={handleCloseSim}
+              onBackToFeed={handleCloseSim}
+            />
           </motion.div>
         )}
       </AnimatePresence>

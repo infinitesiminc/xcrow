@@ -7,6 +7,7 @@
 import { useState, useMemo, useCallback, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { type FutureSkill, type FutureSkillCategory } from "@/hooks/use-future-skills";
+import type { SimLaunchRequest } from "@/components/territory/SkillLaunchCard";
 import { Input } from "@/components/ui/input";
 import { ArrowUpDown, Search, Zap, Diamond, Lock } from "lucide-react";
 import { getTerritory, TERRITORY_ORDER } from "@/lib/territory-colors";
@@ -26,6 +27,8 @@ interface Props {
   focusSkillId?: string | null;
   /** Level 2 unlocked skill IDs */
   level2SkillIds?: Set<string>;
+  /** If provided, launches sim in-place instead of navigating */
+  onLaunchSim?: (req: SimLaunchRequest) => void;
 }
 
 const BOOKMARK_KEY = "xcrow_skill_bookmarks";
@@ -45,7 +48,7 @@ function getXpLevel(xp: number): { name: string; color: string; next: number } {
   return { name: "Novice", color: "hsl(var(--muted-foreground))", next: 150 };
 }
 
-export default function FutureSkillsTable({ skills, onSkillClick, skillGrowthMap, focusSkillId, level2SkillIds }: Props) {
+export default function FutureSkillsTable({ skills, onSkillClick, skillGrowthMap, focusSkillId, level2SkillIds, onLaunchSim }: Props) {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [search, setSearch] = useState("");
@@ -445,6 +448,7 @@ export default function FutureSkillsTable({ skills, onSkillClick, skillGrowthMap
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
+                                if (onLaunchSim) { onLaunchSim({ jobTitle: skill.name, skillId: skill.id, level: 1 }); return; }
                                 navigate(`/role/${encodeURIComponent(skill.name)}?skill=${encodeURIComponent(skill.id)}`);
                               }}
                               className="w-full px-2 py-1.5 rounded-md text-[10px] font-bold uppercase tracking-wider transition-all hover:brightness-110"
@@ -491,6 +495,7 @@ export default function FutureSkillsTable({ skills, onSkillClick, skillGrowthMap
                                 <button
                                   onClick={(e) => {
                                     e.stopPropagation();
+                                    if (onLaunchSim) { onLaunchSim({ jobTitle: skill.name, skillId: skill.id, level: 2 }); return; }
                                     navigate(`/role/${encodeURIComponent(skill.name)}?skill=${encodeURIComponent(skill.id)}&level=2`);
                                   }}
                                   className="w-full px-2 py-1.5 rounded-md text-[10px] font-bold uppercase tracking-wider transition-all hover:brightness-110"

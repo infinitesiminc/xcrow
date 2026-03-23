@@ -11,6 +11,13 @@ import { type FutureSkill } from "@/hooks/use-future-skills";
 import { getTerritory } from "@/lib/territory-colors";
 import type { CanonicalSkillGrowth } from "@/pages/MapPage";
 
+export interface SimLaunchRequest {
+  jobTitle: string;
+  company?: string;
+  skillId?: string;
+  level?: 1 | 2;
+}
+
 interface SkillLaunchCardProps {
   skill: FutureSkill;
   /** Screen-space position (relative to map container) */
@@ -22,11 +29,13 @@ interface SkillLaunchCardProps {
   level2Unlocked?: boolean;
   growth?: CanonicalSkillGrowth | null;
   onClose: () => void;
+  /** If provided, launches sim in-place instead of navigating */
+  onLaunchSim?: (req: SimLaunchRequest) => void;
 }
 
 export default function SkillLaunchCard({
   skill, x, y, containerWidth, containerHeight,
-  level2Unlocked, growth, onClose,
+  level2Unlocked, growth, onClose, onLaunchSim,
 }: SkillLaunchCardProps) {
   const navigate = useNavigate();
   const [firstRole, setFirstRole] = useState<{ title: string; company: string | null } | null>(null);
@@ -75,13 +84,18 @@ export default function SkillLaunchCard({
 
   const launchLevel = useCallback((level: 1 | 2) => {
     if (!firstRole) return;
+    if (onLaunchSim) {
+      onLaunchSim({ jobTitle: firstRole.title, company: firstRole.company || undefined, skillId: skill.id, level });
+      onClose();
+      return;
+    }
     const params = new URLSearchParams();
     if (firstRole.company) params.set("company", firstRole.company);
     if (level === 2) params.set("level", "2");
     const qs = params.toString();
     navigate(`/role/${encodeURIComponent(firstRole.title)}${qs ? `?${qs}` : ""}`);
     onClose();
-  }, [firstRole, navigate, onClose]);
+  }, [firstRole, navigate, onClose, onLaunchSim, skill.id]);
 
   const territory = getTerritory(skill.category as any);
   const l1Xp = growth?.level1Xp || 0;
