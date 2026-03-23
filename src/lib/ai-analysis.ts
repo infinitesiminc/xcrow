@@ -1,12 +1,33 @@
 import { JobAnalysisResult } from "@/types/analysis";
 import { supabase } from "@/integrations/supabase/client";
 
+const inFlightAnalyses = new Map<string, Promise<JobAnalysisResult>>();
+
+const buildAnalysisKey = (
+  jobTitle: string,
+  company: string,
+  jobDescription?: string,
+  jdUrl?: string,
+) => {
+  return [
+    jobTitle.trim().toLowerCase(),
+    company.trim().toLowerCase(),
+    (jobDescription || "").trim(),
+    (jdUrl || "").trim(),
+  ].join("::");
+};
+
 export async function analyzeJobWithAI(
   jobTitle: string,
   company: string,
   jobDescription?: string,
   jdUrl?: string,
 ): Promise<JobAnalysisResult> {
+  const requestKey = buildAnalysisKey(jobTitle, company, jobDescription, jdUrl);
+  const existingRequest = inFlightAnalyses.get(requestKey);
+  if (existingRequest) return existingRequest;
+
+  const requestPromise = (async () => {
   const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
   const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 
@@ -56,4 +77,13 @@ export async function analyzeJobWithAI(
 
   const data = await response.json();
   return data as JobAnalysisResult;
+  })();
+
+  inFlightAnalyses.set(requestKey, requestPromise);
+
+  try {
+    return await requestPromise;
+  } finally {
+    inFlightAnalyses.delete(requestKey);
+  }
 }
