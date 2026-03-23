@@ -756,6 +756,7 @@ No markdown wrapping.`;
               properties: {
                 id: { type: "string" },
                 area: { type: "string" },
+                difficulty: { type: "string", enum: ["scout", "sentinel", "arbiter"] },
                 aiClaim: { type: "string" },
                 question: { type: "string" },
                 hint: { type: "string" },
