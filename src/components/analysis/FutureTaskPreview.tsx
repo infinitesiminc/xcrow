@@ -5,6 +5,7 @@
  */
 
 import { useState } from "react";
+import RuneEmoji from "@/components/RuneEmoji";
 import { motion, AnimatePresence } from "framer-motion";
 import { Zap, Clock, ArrowRight, Cpu, Sparkles, AlertTriangle, Play } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -153,7 +154,7 @@ export function FutureTaskPreview({
                         key={skill.id}
                         className="flex items-center gap-1.5 rounded-md border border-dashed border-primary/30 bg-primary/[0.03] px-2 py-1"
                       >
-                        <span className="text-sm">{skill.icon_emoji}</span>
+                        <RuneEmoji emoji={skill.icon_emoji} size="xs" glow="subtle" />
                         <div>
                           <div className="text-[11px] font-medium text-foreground/80">{skill.name}</div>
                           <div className="text-[9px] text-muted-foreground">{skill.description}</div>

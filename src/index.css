@@ -738,3 +738,61 @@ html:not(.light):not(.parchment) {
   background-size: 200% 200%;
   animation: constellation-drift 30s linear infinite;
 }
+
+/* ── Rune Emoji System ── */
+
+.rune-emoji {
+  --rune-color: var(--primary);
+  background: radial-gradient(
+    circle at center,
+    hsl(var(--rune-color) / 0.15) 0%,
+    hsl(var(--rune-color) / 0.05) 60%,
+    transparent 100%
+  );
+  border: 1px solid hsl(var(--rune-color) / 0.2);
+  position: relative;
+  filter: saturate(1.2) contrast(1.05);
+}
+
+.rune-emoji::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+.rune-emoji-subtle {
+  box-shadow:
+    0 0 6px hsl(var(--rune-color) / 0.12),
+    inset 0 1px 0 hsl(0 0% 100% / 0.06);
+}
+
+.rune-emoji-medium {
+  box-shadow:
+    0 0 10px hsl(var(--rune-color) / 0.2),
+    0 0 4px hsl(var(--rune-color) / 0.1),
+    inset 0 1px 0 hsl(0 0% 100% / 0.08);
+  border-color: hsl(var(--rune-color) / 0.3);
+}
+
+.rune-emoji-intense {
+  box-shadow:
+    0 0 16px hsl(var(--rune-color) / 0.35),
+    0 0 6px hsl(var(--rune-color) / 0.15),
+    inset 0 1px 0 hsl(0 0% 100% / 0.1);
+  border-color: hsl(var(--rune-color) / 0.4);
+  animation: rune-pulse 2.5s ease-in-out infinite;
+}
+
+/* Gold filigree variant for special/legendary items */
+.rune-emoji-gold {
+  border-color: hsl(45 80% 50% / 0.4);
+  box-shadow:
+    0 0 12px hsl(45 80% 50% / 0.2),
+    inset 0 1px 0 hsl(45 80% 60% / 0.15);
+}
+
+.rune-emoji-gold::after {
+  box-shadow: inset 0 0 8px hsl(45 80% 50% / 0.08);
+}

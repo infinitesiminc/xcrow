@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect, useCallback } from "react";
 import type { IntelContext } from "@/lib/simulator";
 import { isStandardEmoji } from "@/lib/emoji-utils";
+import RuneEmoji from "@/components/RuneEmoji";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Play, AlertTriangle, Sparkles, Clock, ArrowLeft, ArrowRight, Compass, Archive, Swords,
@@ -367,7 +368,7 @@ export function WarCouncil({
                       boxShadow: "inset 0 1px 0 hsl(var(--emboss-light))",
                     }}
                   >
-                    <div className="text-xl mb-1.5">{isStandardEmoji(skill.icon_emoji) ? skill.icon_emoji : "⚡"}</div>
+                    <RuneEmoji emoji={isStandardEmoji(skill.icon_emoji) ? skill.icon_emoji : "⚡"} size="sm" glow="medium" className="mb-1.5" />
                     <div className="text-[11px] font-semibold text-foreground leading-tight mb-1">{skill.name}</div>
                     <div className="text-[10px] text-muted-foreground leading-snug line-clamp-2">{skill.description}</div>
                   </motion.div>
