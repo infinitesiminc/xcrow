@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect, useCallback } from "react";
 import { isStandardEmoji } from "@/lib/emoji-utils";
+import RuneEmoji from "@/components/RuneEmoji";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Play, AlertTriangle, Sparkles, Clock, X, ArrowRight, Compass, Archive,

@@ -5,6 +5,7 @@
  */
 
 import { useState } from "react";
+import RuneEmoji from "@/components/RuneEmoji";
 import { motion, AnimatePresence } from "framer-motion";
 import { Zap, Clock, ArrowRight, Cpu, Sparkles, AlertTriangle, Play } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
