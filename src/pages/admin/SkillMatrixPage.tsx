@@ -384,21 +384,48 @@ export default function SkillMatrixPage() {
         </TabsContent>
       </Tabs>
 
-      {/* Category pills */}
-      <div className="flex flex-wrap gap-1.5">
-        {CATEGORIES.map(cat => (
-          <button
-            key={cat}
-            onClick={() => setCatFilter(cat)}
-            className={`px-2.5 py-1 rounded-full text-xs font-medium transition-colors ${
-              catFilter === cat
-                ? "bg-primary text-primary-foreground"
-                : "bg-muted/50 text-muted-foreground hover:bg-muted"
-            }`}
-          >
-            {cat}{cat !== "All" && catStats[cat] ? ` (${catStats[cat]})` : cat === "All" ? ` (${skills.length})` : ""}
-          </button>
-        ))}
+      {/* Filters row */}
+      <div className="space-y-2">
+        {/* Domain pills */}
+        <div>
+          <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mb-1.5">Domain</p>
+          <div className="flex flex-wrap gap-1.5">
+            {CATEGORIES.map(cat => (
+              <button
+                key={cat}
+                onClick={() => { setCatFilter(cat); setIslandFilter("All"); }}
+                className={`px-2.5 py-1 rounded-full text-xs font-medium transition-colors ${
+                  catFilter === cat && islandFilter === "All"
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-muted/50 text-muted-foreground hover:bg-muted"
+                }`}
+              >
+                {cat}{cat !== "All" && catStats[cat] ? ` (${catStats[cat]})` : cat === "All" ? ` (${skills.length})` : ""}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Island pills */}
+        <div>
+          <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mb-1.5">Territory Island</p>
+          <div className="flex flex-wrap gap-1.5">
+            {ISLANDS.map(island => (
+              <button
+                key={island.category}
+                onClick={() => { setIslandFilter(island.category); setCatFilter("All"); }}
+                className={`px-2.5 py-1 rounded-full text-xs font-medium transition-colors flex items-center gap-1 ${
+                  islandFilter === island.category
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-muted/50 text-muted-foreground hover:bg-muted"
+                }`}
+              >
+                <span>{island.emoji}</span>
+                {island.terrain}
+              </button>
+            ))}
+          </div>
+        </div>
       </div>
 
       {/* Search */}
@@ -420,7 +447,7 @@ export default function SkillMatrixPage() {
               <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
             </div>
           ) : (
-            <div className="overflow-auto max-h-[calc(100vh-320px)]">
+            <div className="overflow-auto max-h-[calc(100vh-380px)]">
               <table className="w-full text-xs">
                 <thead className="sticky top-0 bg-background/95 backdrop-blur-sm z-10">
                   <tr className="border-b border-border/30">
@@ -428,8 +455,6 @@ export default function SkillMatrixPage() {
                     <th className="text-left py-2.5 px-3">{colBtn("name", "Skill")}</th>
                     <th className="text-left py-2.5 px-3">{colBtn("category", "Domain")}</th>
                     <th className="text-left py-2.5 px-3 min-w-[200px]">Definition</th>
-                    <th className="text-right py-2.5 px-3">{colBtn("demand_count", "Demand")}</th>
-                    <th className="text-right py-2.5 px-3">{colBtn("job_count", "Roles")}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -447,11 +472,9 @@ export default function SkillMatrixPage() {
                           {skill.category}
                         </span>
                       </td>
-                      <td className="py-2 px-3 text-muted-foreground max-w-[300px]">
+                      <td className="py-2 px-3 text-muted-foreground max-w-[400px]">
                         <span className="line-clamp-2">{skill.description || "—"}</span>
                       </td>
-                      <td className="py-2 px-3 text-right font-mono text-muted-foreground">{skill.demand_count}</td>
-                      <td className="py-2 px-3 text-right font-mono text-muted-foreground">{skill.job_count}</td>
                     </tr>
                   ))}
                 </tbody>
