@@ -640,7 +640,7 @@ export default function GuidedAudit({
             <Button
               size="sm"
               onClick={onViewDebrief}
-              className="gap-1.5 text-xs rounded-xl"
+              className="gap-1.5 text-[13px] rounded-xl"
               style={{
                 fontFamily: "'Cinzel', serif",
                 background: "linear-gradient(135deg, hsl(262 80% 55%), hsl(262 60% 45%))",
