@@ -796,7 +796,6 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
 
   // Handle L2 Guided Audit completion
   const handleAuditComplete = async (result: AuditResult) => {
-    setPhase("completing");
     clearInactivityTimer();
 
     // Map audit rubric to sim score dimensions
@@ -849,7 +848,8 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
         console.error("Failed to save audit:", err);
       }
     }
-    setPhase("done");
+    // Stay on "chat" phase so GuidedAudit's Ascension Ceremony stays visible
+    // User clicks "View Battle Report" → onViewDebrief → setPhase("done")
   };
 
 
@@ -1271,7 +1271,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                 </motion.div>
               )}
 
-              {/* L2 Guided Audit */}
+              {/* L2 Guided Audit — stays visible through its own Ascension Ceremony */}
               {phase === "chat" && !error && level === 2 && auditData && (
                 <motion.div
                   key="guided-audit"
@@ -1286,6 +1286,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                     scenarioContext={auditData.scenarioContext}
                     onComplete={handleAuditComplete}
                     onRestart={() => startCompile()}
+                    onViewDebrief={() => setPhase("done")}
                   />
                 </motion.div>
               )}
