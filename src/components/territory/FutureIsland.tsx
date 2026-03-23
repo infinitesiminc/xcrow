@@ -364,7 +364,7 @@ export default function FutureIsland({ island, skillLookup, level2SkillIds, skil
                       transition: "fill 0.2s, font-size 0.2s",
                     }}
                   >
-                    {isHovered
+                    {isHovered || isHighlighted
                       ? skill.name
                       : skill.name.length > 28
                         ? skill.name.slice(0, 26) + "…"
