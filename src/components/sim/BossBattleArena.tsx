@@ -447,6 +447,9 @@ export default function BossBattleArena({
   /* ── Active Battle Arena ── */
   const isRevealed = revealed[checkpoint.id];
   const isCorrect = verdicts[checkpoint.id] === checkpoint.correctVerdict;
+  const cpDifficulty: DifficultyTier = (checkpoint as any).difficulty || (currentStep < 2 ? "scout" : currentStep < 4 ? "sentinel" : "arbiter");
+  const cpTier = DIFFICULTY_TIERS[cpDifficulty];
+  const isArbiter = cpDifficulty === "arbiter";
 
   return (
     <div
