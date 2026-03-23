@@ -1212,8 +1212,14 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
           )}
         </div>
 
-        <div className="flex-1 flex min-h-0">
-          <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 sm:px-6 py-4 sm:py-6 scrollbar-thin">
+        <div className="flex-1 flex min-h-0 relative">
+          {/* Atmospheric vignette for immersion */}
+          {phase === "chat" && (
+            <div className="absolute inset-0 pointer-events-none z-0" style={{
+              background: "radial-gradient(ellipse at center, transparent 50%, hsl(var(--background) / 0.4) 100%)",
+            }} />
+          )}
+          <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 sm:px-6 py-4 sm:py-6 scrollbar-thin relative z-10">
             {/* Coaching banner for retry sessions */}
             {coachingContext && phase === "chat" && (
               <motion.div
