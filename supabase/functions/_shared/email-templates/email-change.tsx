@@ -30,10 +30,10 @@ export const EmailChangeEmail = ({
 }: EmailChangeEmailProps) => (
   <Html lang="en" dir="ltr">
     <Head />
-    <Preview>Confirm your email change for Infinite Sim</Preview>
+    <Preview>Confirm your email change for Xcrow.ai</Preview>
     <Body style={main}>
       <Container style={container}>
-        <Img src="https://xtfubistkgodiksegtcx.supabase.co/storage/v1/object/public/email-assets/logo.png" alt="Infinite Sim" width="140" height="auto" style={{ marginBottom: '30px' }} />
+        <Img src="https://xtfubistkgodiksegtcx.supabase.co/storage/v1/object/public/email-assets/xcrow-logo.png" alt="Xcrow.ai" width="140" height="auto" style={{ marginBottom: '30px' }} />
         <Heading style={h1}>Confirm your email change</Heading>
         <Text style={text}>
           You requested to change your email from{' '}

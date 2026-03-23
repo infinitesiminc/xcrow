@@ -33,7 +33,7 @@ export const SignupEmail = ({
     <Preview>Confirm your email for Xcrow.ai</Preview>
     <Body style={main}>
       <Container style={container}>
-        <Img src="https://xtfubistkgodiksegtcx.supabase.co/storage/v1/object/public/email-assets/logo.png" alt="Xcrow.ai" width="140" height="auto" style={{ marginBottom: '30px' }} />
+        <Img src="https://xtfubistkgodiksegtcx.supabase.co/storage/v1/object/public/email-assets/xcrow-logo.png" alt="Xcrow.ai" width="140" height="auto" style={{ marginBottom: '30px' }} />
         <Heading style={h1}>Welcome to Xcrow.ai</Heading>
         <Text style={text}>
           Thanks for signing up! Confirm your email address (
