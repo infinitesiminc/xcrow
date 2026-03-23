@@ -486,6 +486,11 @@ export default function GuidedAudit({
 
   const handleReveal = (id: string) => {
     setRevealed(prev => ({ ...prev, [id]: true }));
+    // Trigger boss reaction
+    const checkpoint = checkpoints.find(cp => cp.id === id);
+    if (checkpoint) {
+      handleBossReaction(verdicts[id] === checkpoint.correctVerdict);
+    }
   };
 
   const handleNext = () => {
