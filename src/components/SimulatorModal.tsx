@@ -180,7 +180,7 @@ const BriefingScreen = ({
   const hue2 = (hue1 + 50) % 360;
   const hue3 = (hue1 + 160) % 360;
   const objectiveCount = session.learningObjectives?.length || config?.objectiveCount || 3;
-  const skillHeroBg = useSkillHeroBg(session.scenario.title, session.scenario.role);
+  const skillHeroBg = useSkillHeroBg(session.scenario.title, propJobTitle);
 
   return (
     <motion.div
