@@ -456,8 +456,18 @@ export default function BossBattleArena({
       className="absolute inset-0 flex flex-col overflow-hidden"
       style={{ background: "radial-gradient(ellipse at center, hsl(262 40% 8%), hsl(0 0% 2%))" }}
     >
-      {/* Top bar — Round counter */}
+      {/* Top bar — Round counter + Difficulty + Streak */}
       <div className="flex items-center justify-center gap-3 py-2 px-4 shrink-0" style={{ borderBottom: "1px solid hsl(262 40% 20% / 0.4)" }}>
+        {/* Difficulty badge */}
+        <span className="text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full" style={{
+          background: `${cpTier.color.replace(")", " / 0.15)")}`,
+          border: `1px solid ${cpTier.color.replace(")", " / 0.4)")}`,
+          color: cpTier.color,
+          fontFamily: "'Cinzel', serif",
+        }}>
+          {cpTier.emoji} {cpTier.label}
+        </span>
+
         <div className="flex gap-1.5">
           {checkpoints.map((cp, i) => {
             const done = revealed[cp.id];
@@ -478,7 +488,48 @@ export default function BossBattleArena({
         <span className="text-[10px] text-muted-foreground font-mono">
           {currentStep + 1}/{checkpoints.length}
         </span>
+
+        {/* Streak indicator */}
+        <AnimatePresence>
+          {streak >= 2 && (
+            <motion.span
+              initial={{ scale: 0, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0, opacity: 0 }}
+              className="text-[9px] font-bold px-2 py-0.5 rounded-full"
+              style={{
+                background: streak >= 3 ? "hsl(45 90% 55% / 0.15)" : "hsl(262 80% 55% / 0.15)",
+                border: `1px solid ${streak >= 3 ? "hsl(45 90% 55% / 0.4)" : "hsl(262 80% 55% / 0.3)"}`,
+                color: streak >= 3 ? "hsl(45 90% 65%)" : "hsl(262 80% 70%)",
+                fontFamily: "'Cinzel', serif",
+              }}
+            >
+              🔥 {streak}× Streak{streak >= 3 ? " · 1.5× DMG!" : ""}
+            </motion.span>
+          )}
+        </AnimatePresence>
       </div>
+
+      {/* Streak bonus flash */}
+      <AnimatePresence>
+        {showStreakBonus && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0 }}
+            className="absolute top-12 left-1/2 -translate-x-1/2 z-50 text-[11px] font-bold px-3 py-1 rounded-full"
+            style={{
+              background: "hsl(45 90% 55% / 0.2)",
+              border: "1px solid hsl(45 90% 55% / 0.5)",
+              color: "hsl(45 90% 65%)",
+              fontFamily: "'Cinzel', serif",
+              boxShadow: "0 0 20px hsl(45 90% 55% / 0.3)",
+            }}
+          >
+            🔥 STREAK BONUS — 1.5× Damage!
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Arena — Combatants */}
       <div className="flex-1 flex items-center justify-between px-4 sm:px-8 min-h-0 relative">
