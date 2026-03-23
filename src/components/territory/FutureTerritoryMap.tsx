@@ -118,7 +118,8 @@ export default function FutureTerritoryMap({ skills, focusSkillId, level2SkillId
 
   const handleSkillClick = useCallback((skill: FutureSkill) => {
     if (isDragging.current) return;
-    setHighlightedSkillId(skill.id);
+    // Toggle: clicking same skill closes the card
+    setHighlightedSkillId(prev => prev === skill.id ? null : skill.id);
     onSkillSelect?.(skill);
   }, [onSkillSelect]);
 
