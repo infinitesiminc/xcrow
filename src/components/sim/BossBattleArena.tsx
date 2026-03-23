@@ -330,7 +330,7 @@ export default function BossBattleArena({
         {[0, 1, 2, 3, 4].map(i => (
           <motion.div
             key={i}
-            className="absolute rounded-full"
+            className="absolute rounded-full pointer-events-none"
             style={{
               width: 2, height: 2,
               background: "hsl(262 80% 70%)",
@@ -344,7 +344,7 @@ export default function BossBattleArena({
 
         {/* VS flash in center */}
         <motion.div
-          className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none z-0"
+          className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none z-0 select-none"
           animate={{ opacity: [0.03, 0.08, 0.03] }}
           transition={{ duration: 4, repeat: Infinity }}
         >
@@ -359,7 +359,7 @@ export default function BossBattleArena({
         </div>
 
         {/* Center — Challenge Card */}
-        <div className="flex-1 max-w-sm mx-4 sm:mx-8 relative z-10">
+        <div className="flex-1 max-w-sm mx-4 sm:mx-8 relative z-20">
           <AnimatePresence mode="wait">
             {!transitioning && (
               <motion.div
