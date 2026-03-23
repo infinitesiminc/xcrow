@@ -179,7 +179,7 @@ export default function FutureSkillsTable({ skills, onSkillClick, skillGrowthMap
   }, [skills, getSkillXp]);
 
   const totalXp = useMemo(() => domainData.reduce((s, d) => s + d.xp, 0), [domainData]);
-  const [showChart, setShowChart] = useState(true);
+  const [chartOpen, setChartOpen] = useState(false);
 
   // Click handler for radar chart domains
   const handleRadarClick = useCallback((data: any) => {
