@@ -115,9 +115,9 @@ function KingdomCard({ kingdom, index }: { kingdom: Kingdom; index: number }) {
               <span className="text-[9px] font-medium" style={{ color: "hsl(var(--filigree-glow))" }}>{kingdom.xp} XP</span>
             </>
           )}
-          {kingdom.population != null && kingdom.population > 1 && (
-            <span className="text-[9px] text-muted-foreground/70 flex items-center gap-0.5 ml-auto shrink-0">
-              <Users className="h-2.5 w-2.5" /> {kingdom.population}
+          {kingdom.lastActivity && (
+            <span className="text-[9px] text-muted-foreground/60 shrink-0 ml-auto">
+              {formatDistanceToNow(new Date(kingdom.lastActivity), { addSuffix: true })}
             </span>
           )}
         </div>
