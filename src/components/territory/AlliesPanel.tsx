@@ -80,7 +80,9 @@ const AlliesPanel = ({ onLaunchSim: onLaunchSimProp }: AlliesPanelProps) => {
   };
 
   const handleLaunchSim = (jobTitle: string, taskName: string) => {
-    navigate(`/sim?role=${encodeURIComponent(jobTitle)}&task=${encodeURIComponent(taskName)}`);
+    if (onLaunchSimProp) {
+      onLaunchSimProp({ jobTitle, taskName });
+    }
   };
 
   const handleSendSim = (friend: Friend, jobTitle: string, taskName: string) => {
