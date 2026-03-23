@@ -53,8 +53,8 @@ export default function HeaderVibeImages({ seed, count = 3 }: HeaderVibeImagesPr
         url: `${SUPABASE_URL}/storage/v1/object/public/sim-images/skill-hero-${id}.png`,
         rotation: (r - 0.5) * 24, // -12 to +12 degrees
         left: `${10 + r2 * 80}%`,
-        opacity: 0.06 + r3 * 0.06, // 0.06 to 0.12
-        scale: 0.7 + r3 * 0.5,
+        opacity: 0.12 + r3 * 0.1, // 0.12 to 0.22
+        scale: 0.8 + r3 * 0.6,
       };
     });
   }, [seed, count]);
