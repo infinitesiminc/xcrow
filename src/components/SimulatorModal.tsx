@@ -1280,26 +1280,18 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                 </motion.div>
               )}
 
-              {/* L2 Guided Audit — stays visible through its own Ascension Ceremony */}
+              {/* L2 Boss Battle Arena — full-screen no-scroll */}
               {phase === "chat" && !error && level === 2 && auditData && (
-                <motion.div
-                  key="guided-audit"
-                  initial={{ opacity: 0, y: 12 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="max-w-2xl mx-auto"
-                >
-                  <GuidedAudit
-                    checkpoints={auditData.checkpoints as AuditCheckpoint[]}
-                    aiOutputSummary={auditData.aiOutputSummary}
-                    aiAutoAction={auditData.aiAutoAction}
-                    scenarioContext={auditData.scenarioContext}
-                    onComplete={handleAuditComplete}
-                    onRestart={() => startCompile()}
-                    onViewDebrief={() => setPhase("done")}
-                    isBossBattle={level === 2}
-                    skillName={taskName}
-                  />
-                </motion.div>
+                <BossBattleArena
+                  checkpoints={auditData.checkpoints as AuditCheckpoint[]}
+                  aiOutputSummary={auditData.aiOutputSummary}
+                  aiAutoAction={auditData.aiAutoAction}
+                  scenarioContext={auditData.scenarioContext}
+                  onComplete={handleAuditComplete}
+                  onRestart={() => startCompile()}
+                  onViewDebrief={() => setPhase("done")}
+                  skillName={taskName}
+                />
               )}
 
               {phase === "chat" && !error && !(level === 2 && auditData) && (
