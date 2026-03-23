@@ -381,24 +381,39 @@ const MapPage = () => {
         {activeSim && (
           <motion.div
             key="sim-overlay"
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 16 }}
-            transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-            className="fixed inset-0 z-[60]"
-            style={{ background: "hsl(var(--background) / 0.97)" }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.25 }}
+            className="fixed inset-0 z-[60] flex items-center justify-center"
+            style={{ background: "hsl(var(--background) / 0.6)", backdropFilter: "blur(6px)" }}
+            onClick={handleCloseSim}
           >
-            <SimulatorModal
-              open={true}
-              onClose={handleCloseSim}
-              taskName={activeSim.jobTitle}
-              jobTitle={activeSim.jobTitle}
-              company={activeSim.company}
-              level={activeSim.level || 1}
-              inline
-              onCompleted={handleCloseSim}
-              onBackToFeed={handleCloseSim}
-            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+              className="w-[95vw] max-w-3xl h-[85vh] rounded-2xl overflow-hidden"
+              style={{
+                background: "hsl(var(--background))",
+                border: "1px solid hsl(var(--filigree) / 0.2)",
+                boxShadow: "0 25px 80px hsl(var(--emboss-shadow)), 0 0 40px hsl(var(--background) / 0.5)",
+              }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <SimulatorModal
+                open={true}
+                onClose={handleCloseSim}
+                taskName={activeSim.jobTitle}
+                jobTitle={activeSim.jobTitle}
+                company={activeSim.company}
+                level={activeSim.level || 1}
+                inline
+                onCompleted={handleCloseSim}
+                onBackToFeed={handleCloseSim}
+              />
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
