@@ -732,7 +732,7 @@ export default function GuidedAudit({
           animate={{ y: ["-100%", "200%"] }}
           transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
         />
-        <span className="text-[11px] font-bold uppercase tracking-wider" style={{ color: "hsl(262 80% 70%)", fontFamily: "'Cinzel', serif" }}>
+        <span className="text-[13px] font-bold uppercase tracking-wider" style={{ color: "hsl(262 80% 70%)", fontFamily: "'Cinzel', serif" }}>
           🔮 Oracle's Claim:{" "}
         </span>
         <span className="text-[15px] text-foreground/80 leading-relaxed">{checkpoint.aiClaim}</span>
