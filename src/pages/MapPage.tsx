@@ -332,6 +332,8 @@ const MapPage = () => {
             setActiveTab("table");
             setForgeFocusSkillId(skill.id);
             setTimeout(() => setForgeFocusSkillId(null), 200);
+            setDrawerSkill(skill);
+            setDrawerOpen(true);
           }}
         />
         {!isSignedIn && <MapIntroGuide />}
