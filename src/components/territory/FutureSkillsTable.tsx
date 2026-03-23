@@ -113,7 +113,6 @@ export default function FutureSkillsTable({ skills, onSkillClick, skillGrowthMap
       navigate(`/role/${encodeURIComponent(jobTitle)}?${params.toString()}`);
     }
   }, [roleCache, onLaunchSim, navigate]);
-  const navigate = useNavigate();
   const [search, setSearch] = useState("");
   const [sortKey, setSortKey] = useState<SortKey>("xp");
   const [sortAsc, setSortAsc] = useState(false);
