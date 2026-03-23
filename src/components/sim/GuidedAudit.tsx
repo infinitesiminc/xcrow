@@ -43,6 +43,7 @@ interface GuidedAuditProps {
   scenarioContext?: string;
   onComplete?: (result: AuditResult) => void;
   onRestart?: () => void;
+  onViewDebrief?: () => void;
 }
 
 /* ── Rubric Dimensions ── */
