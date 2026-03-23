@@ -83,19 +83,19 @@ export default function SkillMatrixPage() {
 
   const filtered = useMemo(() => {
     const q = search.toLowerCase();
+    const activeCat = islandFilter !== "All" ? islandFilter : catFilter;
     let list = skills.filter(s => {
-      if (catFilter !== "All" && s.category !== catFilter) return false;
+      if (activeCat !== "All" && s.category !== activeCat) return false;
       if (q && !s.name.toLowerCase().includes(q) && !s.category.toLowerCase().includes(q) && !(s.description || "").toLowerCase().includes(q)) return false;
       return true;
     });
     list.sort((a, b) => {
-      const av = a[sortKey];
-      const bv = b[sortKey];
-      if (typeof av === "string" && typeof bv === "string") return sortAsc ? av.localeCompare(bv) : bv.localeCompare(av);
-      return sortAsc ? (av as number) - (bv as number) : (bv as number) - (av as number);
+      const av = a[sortKey] as string;
+      const bv = b[sortKey] as string;
+      return sortAsc ? av.localeCompare(bv) : bv.localeCompare(av);
     });
     return list;
-  }, [skills, search, catFilter, sortKey, sortAsc]);
+  }, [skills, search, catFilter, islandFilter, sortKey, sortAsc]);
 
   const catStats = useMemo(() => {
     const m: Record<string, number> = {};
