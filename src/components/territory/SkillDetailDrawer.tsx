@@ -182,7 +182,7 @@ export default function SkillDetailDrawer({
         }}
       >
         {/* ── Hero Image Banner ── */}
-        <div className="relative w-full h-32 overflow-hidden">
+        <div className="relative w-full h-32 overflow-hidden shrink-0" style={{ isolation: "isolate" }}>
           {heroImage ? (
             <img
               src={heroImage}
