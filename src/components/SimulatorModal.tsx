@@ -1444,22 +1444,40 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                         initial={{ opacity: 0, scaleX: 0.6 }}
                         animate={{ opacity: 1, scaleX: 1 }}
                         transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-                        className="flex items-center gap-3 py-3 my-2"
+                        className="flex items-center gap-3 py-4 my-3 relative"
                       >
-                        <div className="flex-1 h-px" style={{ background: "linear-gradient(90deg, transparent, hsl(var(--filigree) / 0.4), transparent)" }} />
-                        <span
-                          className="text-[11px] font-semibold uppercase tracking-[0.15em] shrink-0 px-3 py-1 rounded-full"
+                        {/* Rune flash background */}
+                        <motion.div
+                          className="absolute inset-0 pointer-events-none"
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: [0, 0.08, 0] }}
+                          transition={{ duration: 1.2, ease: "easeOut" }}
+                        >
+                          <img
+                            src={simRuneCircle}
+                            alt=""
+                            className="w-24 h-24 object-contain mx-auto opacity-40"
+                            style={{ filter: "blur(2px)" }}
+                          />
+                        </motion.div>
+                        <div className="flex-1 h-px" style={{ background: "linear-gradient(90deg, transparent, hsl(var(--filigree) / 0.5), transparent)" }} />
+                        <motion.span
+                          className="text-[11px] font-semibold uppercase tracking-[0.15em] shrink-0 px-4 py-1.5 rounded-full relative z-10"
                           style={{
                             color: "hsl(var(--filigree-glow))",
-                            background: "hsl(var(--filigree) / 0.08)",
-                            border: "1px solid hsl(var(--filigree) / 0.15)",
+                            background: "hsl(var(--filigree) / 0.1)",
+                            border: "1px solid hsl(var(--filigree) / 0.2)",
                             fontFamily: "'Cinzel', serif",
-                            textShadow: "0 0 8px hsl(var(--filigree-glow) / 0.4)",
+                            textShadow: "0 0 12px hsl(var(--filigree-glow) / 0.5)",
+                            boxShadow: "0 0 16px hsl(var(--filigree-glow) / 0.1)",
                           }}
+                          initial={{ scale: 0.8 }}
+                          animate={{ scale: 1 }}
+                          transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
                         >
                           ⚔️ New Scenario
-                        </span>
-                        <div className="flex-1 h-px" style={{ background: "linear-gradient(90deg, transparent, hsl(var(--filigree) / 0.4), transparent)" }} />
+                        </motion.span>
+                        <div className="flex-1 h-px" style={{ background: "linear-gradient(90deg, transparent, hsl(var(--filigree) / 0.5), transparent)" }} />
                       </motion.div>
                     );
 
