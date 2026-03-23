@@ -88,8 +88,13 @@ export default function UnifiedChatDock() {
   }, [input]);
 
   const handleSend = () => {
-    if (!input.trim() || isStreaming) return;
-    sendMessage(input);
+    const trimmed = input.trim();
+    if (!trimmed || isStreaming) return;
+    // Allow shorthand: "1", "2", "a", "b" etc. to pick a suggestion
+    const shortMap: Record<string, number> = { "1": 0, "2": 1, "3": 2, "a": 0, "b": 1, "c": 2 };
+    const idx = shortMap[trimmed.toLowerCase()];
+    const resolved = idx !== undefined && suggestions[idx] ? suggestions[idx] : trimmed;
+    sendMessage(resolved);
     setInput("");
   };
 
