@@ -51,6 +51,68 @@ function getXpLevel(xp: number): { name: string; color: string; next: number } {
 export default function FutureSkillsTable({ skills, onSkillClick, skillGrowthMap, focusSkillId, level2SkillIds, onLaunchSim }: Props) {
   const { user } = useAuth();
   const navigate = useNavigate();
+
+  // Cache of skill ID -> first linked job role
+  const [roleCache, setRoleCache] = useState<Map<string, { title: string; company?: string }>>(new Map());
+
+  const lookupAndLaunch = useCallback(async (skill: FutureSkill, level: 1 | 2) => {
+    // Check cache first
+    const cached = roleCache.get(skill.id);
+    if (cached) {
+      if (onLaunchSim) {
+        onLaunchSim({ jobTitle: cached.title, taskName: skill.name, company: cached.company, skillId: skill.id, level });
+      } else {
+        const params = new URLSearchParams();
+        if (cached.company) params.set("company", cached.company);
+        if (level === 2) params.set("level", "2");
+        params.set("skill", skill.id);
+        navigate(`/role/${encodeURIComponent(cached.title)}?${params.toString()}`);
+      }
+      return;
+    }
+
+    // Look up the first job linked to this canonical skill
+    const { data: links } = await supabase
+      .from("job_future_skills")
+      .select("job_id")
+      .eq("canonical_skill_id", skill.id)
+      .limit(1);
+
+    let jobTitle = skill.name; // fallback
+    let company: string | undefined;
+
+    if (links?.length && links[0].job_id) {
+      const { data: job } = await supabase
+        .from("jobs")
+        .select("title, company_id")
+        .eq("id", links[0].job_id)
+        .single();
+
+      if (job) {
+        jobTitle = job.title;
+        if (job.company_id) {
+          const { data: c } = await supabase
+            .from("companies")
+            .select("name")
+            .eq("id", job.company_id)
+            .single();
+          company = c?.name || undefined;
+        }
+        setRoleCache(prev => new Map(prev).set(skill.id, { title: jobTitle, company }));
+      }
+    }
+
+    if (onLaunchSim) {
+      onLaunchSim({ jobTitle, taskName: skill.name, company, skillId: skill.id, level });
+    } else {
+      const params = new URLSearchParams();
+      if (company) params.set("company", company);
+      if (level === 2) params.set("level", "2");
+      params.set("skill", skill.id);
+      navigate(`/role/${encodeURIComponent(jobTitle)}?${params.toString()}`);
+    }
+  }, [roleCache, onLaunchSim, navigate]);
+  const navigate = useNavigate();
   const [search, setSearch] = useState("");
   const [sortKey, setSortKey] = useState<SortKey>("xp");
   const [sortAsc, setSortAsc] = useState(false);
