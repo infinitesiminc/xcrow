@@ -349,12 +349,12 @@ function ProfileSection({
           <Label className="text-xs uppercase tracking-wider text-muted-foreground">Choose your companion</Label>
           <div className="flex gap-6 items-start">
             {/* Large preview */}
-            <div className="shrink-0 w-32 h-32 rounded-2xl border-2 border-primary/30 bg-primary/5 flex items-center justify-center overflow-hidden">
+            <div className="shrink-0 w-48 h-48 rounded-2xl border-2 border-primary/30 bg-primary/5 flex items-center justify-center overflow-hidden">
               {avatarId ? (
                 <img
                   src={AVATAR_OPTIONS.find(a => a.id === avatarId)?.src}
                   alt={AVATAR_OPTIONS.find(a => a.id === avatarId)?.label}
-                  className="w-28 h-28 object-contain"
+                  className="w-44 h-44 object-contain"
                 />
               ) : (
                 <span className="text-muted-foreground text-xs">Select</span>
