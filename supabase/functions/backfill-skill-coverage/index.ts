@@ -4,25 +4,20 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 /**
  * backfill-skill-coverage
  * 
- * Finds canonical_future_skills with < 3 analyzed jobs,
- * generates synthetic job titles via AI, and calls analyze-job
- * for each. Designed to be called repeatedly (idempotent) —
- * skips skills that already meet the threshold.
- * 
- * Processes BATCH_SIZE skills per invocation to stay within
- * edge function time limits. Cron retries handle continuation.
+ * Finds canonical_future_skills with < 3 analyzed jobs via a single
+ * RPC call, generates synthetic job titles via AI, and calls analyze-job.
+ * Processes BATCH_SIZE skills per invocation. Cron auto-retries every 5min.
  */
 
-const BATCH_SIZE = 5; // skills per invocation (conservative for reliability)
-const JOBS_PER_SKILL = 3; // target minimum
-const MAX_RETRIES_PER_ANALYSIS = 2;
+const BATCH_SIZE = 3; // skills per invocation (conservative — each triggers up to 3 analyses)
+const MAX_RETRIES = 2;
+
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+};
 
 serve(async (req) => {
-  const corsHeaders = {
-    "Access-Control-Allow-Origin": "*",
-    "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-  };
-
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
@@ -33,90 +28,43 @@ serve(async (req) => {
   const sb = createClient(supabaseUrl, serviceKey);
 
   if (!apiKey) {
-    return new Response(JSON.stringify({ error: "Missing LOVABLE_API_KEY" }), {
-      status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    return json({ error: "Missing LOVABLE_API_KEY" }, 500);
   }
 
   try {
-    // 1. Find skills with < 3 analyzed jobs
-    const { data: allSkills } = await sb
-      .from("canonical_future_skills")
-      .select("id, name, category, description");
+    // Single query: get all under-covered skills sorted by priority
+    const { data: underCovered, error } = await sb.rpc("get_undercovered_skills", { min_analyzed: 3 });
 
-    if (!allSkills || allSkills.length === 0) {
-      return respond(corsHeaders, { status: "done", message: "No skills found" });
+    if (error) {
+      console.error("RPC error:", error);
+      return json({ error: error.message }, 500);
     }
 
-    // For each skill, count analyzed jobs
-    const underCovered: { id: string; name: string; category: string; description: string | null; gap: number }[] = [];
-
-    for (const skill of allSkills) {
-      const { count } = await sb
-        .from("job_future_skills")
-        .select("id", { count: "exact", head: true })
-        .eq("canonical_skill_id", skill.id)
-        .not("job_id", "is", null);
-
-      // Now check how many of those jobs are actually analyzed
-      const { data: linkedJobs } = await sb
-        .from("job_future_skills")
-        .select("job_id")
-        .eq("canonical_skill_id", skill.id)
-        .not("job_id", "is", null)
-        .limit(10);
-
-      let analyzedCount = 0;
-      if (linkedJobs && linkedJobs.length > 0) {
-        const jobIds = linkedJobs.map((j: any) => j.job_id).filter(Boolean);
-        if (jobIds.length > 0) {
-          const { count: ac } = await sb
-            .from("jobs")
-            .select("id", { count: "exact", head: true })
-            .in("id", jobIds)
-            .not("automation_risk_percent", "is", null);
-          analyzedCount = ac || 0;
-        }
-      }
-
-      const gap = JOBS_PER_SKILL - analyzedCount;
-      if (gap > 0) {
-        underCovered.push({ ...skill, gap });
-      }
+    if (!underCovered || underCovered.length === 0) {
+      // All done! Unschedule the cron
+      console.log("🎉 All skills covered! Unscheduling cron.");
+      try {
+        await sb.rpc("unschedule_backfill");
+      } catch (_) { /* cron function may not exist */ }
+      return json({ status: "complete", message: "All skills have 3+ analyzed jobs! 🎉" });
     }
 
-    if (underCovered.length === 0) {
-      return respond(corsHeaders, {
-        status: "complete",
-        message: "All 183 skills have 3+ analyzed jobs! 🎉",
-        totalSkills: allSkills.length,
-      });
-    }
+    console.log(`Found ${underCovered.length} under-covered skills. Processing batch of ${BATCH_SIZE}.`);
 
-    // Sort: prioritize skills with 0 coverage, then by gap size
-    underCovered.sort((a, b) => {
-      const aZero = a.gap === JOBS_PER_SKILL ? 0 : 1;
-      const bZero = b.gap === JOBS_PER_SKILL ? 0 : 1;
-      return aZero - bZero || b.gap - a.gap;
-    });
-
-    // Take a batch
     const batch = underCovered.slice(0, BATCH_SIZE);
     const results: any[] = [];
 
     for (const skill of batch) {
-      console.log(`Processing skill: "${skill.name}" (gap: ${skill.gap})`);
+      console.log(`\n📌 Skill: "${skill.skill_name}" (${skill.category}) — need ${skill.gap} more`);
 
-      // Generate synthetic job titles for this skill
-      const jobTitles = await generateJobTitles(apiKey, skill, skill.gap);
-      console.log(`Generated ${jobTitles.length} job titles for "${skill.name}"`);
+      // Generate synthetic job titles
+      const jobTitles = await generateJobTitles(apiKey, skill);
 
       for (const jt of jobTitles) {
         let success = false;
-        for (let attempt = 0; attempt <= MAX_RETRIES_PER_ANALYSIS; attempt++) {
+        for (let attempt = 1; attempt <= MAX_RETRIES + 1; attempt++) {
           try {
-            console.log(`  Analyzing: "${jt.title}" at "${jt.company}" (attempt ${attempt + 1})`);
+            console.log(`  → Analyzing: "${jt.title}" at ${jt.company} (attempt ${attempt})`);
             const res = await fetch(`${supabaseUrl}/functions/v1/analyze-job`, {
               method: "POST",
               headers: {
@@ -128,114 +76,89 @@ serve(async (req) => {
 
             if (res.ok) {
               success = true;
-              console.log(`  ✅ Analyzed: "${jt.title}"`);
+              console.log(`  ✅ Done: "${jt.title}"`);
               break;
             } else {
-              const errText = await res.text();
-              console.error(`  ❌ Attempt ${attempt + 1} failed (${res.status}): ${errText.slice(0, 200)}`);
-              if (attempt < MAX_RETRIES_PER_ANALYSIS) {
-                await sleep(2000 * (attempt + 1)); // backoff
-              }
+              console.error(`  ❌ ${res.status}: ${(await res.text()).slice(0, 150)}`);
+              if (attempt <= MAX_RETRIES) await sleep(2000 * attempt);
             }
           } catch (e) {
-            console.error(`  ❌ Attempt ${attempt + 1} error: ${e.message}`);
-            if (attempt < MAX_RETRIES_PER_ANALYSIS) {
-              await sleep(2000 * (attempt + 1));
-            }
+            console.error(`  ❌ Error: ${e.message}`);
+            if (attempt <= MAX_RETRIES) await sleep(2000 * attempt);
           }
         }
+        results.push({ skill: skill.skill_name, job: jt.title, company: jt.company, success });
 
-        results.push({
-          skill: skill.name,
-          jobTitle: jt.title,
-          company: jt.company,
-          success,
-        });
-
-        // Small delay between analyses to avoid rate limits
-        await sleep(1500);
+        // Throttle between analyses
+        await sleep(1000);
       }
     }
 
-    const successCount = results.filter(r => r.success).length;
-    const failCount = results.filter(r => !r.success).length;
+    const ok = results.filter(r => r.success).length;
+    const fail = results.filter(r => !r.success).length;
 
-    return respond(corsHeaders, {
-      status: "batch_complete",
-      processed: batch.length,
+    return json({
+      status: "batch_done",
+      skillsProcessed: batch.length,
       remaining: underCovered.length - batch.length,
-      analyses: { success: successCount, failed: failCount },
+      analyses: { success: ok, failed: fail },
       details: results,
     });
   } catch (err) {
-    console.error("backfill-skill-coverage error:", err);
-    return new Response(JSON.stringify({ error: err.message }), {
-      status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    console.error("Fatal:", err);
+    return json({ error: err.message }, 500);
   }
 });
 
 async function generateJobTitles(
   apiKey: string,
-  skill: { name: string; category: string; description: string | null },
-  count: number
+  skill: { skill_name: string; category: string; description: string | null; gap: number }
 ): Promise<{ title: string; company: string }[]> {
-  const prompt = `Generate exactly ${count} realistic job titles that would require the skill "${skill.name}" (${skill.category}).
-${skill.description ? `Skill description: ${skill.description}` : ""}
+  const count = Math.min(skill.gap, 3);
+  const prompt = `Generate exactly ${count} realistic job titles that REQUIRE the skill "${skill.skill_name}" (${skill.category}).
+${skill.description ? `Skill: ${skill.description}` : ""}
 
-Requirements:
-- Each job title should be a REAL job title found on job boards (not made up)
-- Pair each with a well-known company where this role would exist
-- Vary the seniority levels and industries
-- Focus on US-based companies
+Rules:
+- Real job titles from job boards — not invented
+- Pair with well-known US companies where this role exists
+- Vary seniority and industry
+- Keep titles concise (e.g. "Data Analyst", "Product Marketing Manager")
 
-Respond ONLY with a JSON array:
-[{"title": "...", "company": "..."}, ...]`;
-
-  const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${apiKey}`,
-    },
-    body: JSON.stringify({
-      model: "google/gemini-2.5-flash-lite",
-      messages: [{ role: "user", content: prompt }],
-      temperature: 0.9,
-    }),
-  });
-
-  if (!res.ok) {
-    console.error("AI error generating job titles:", await res.text());
-    // Fallback: generic titles
-    return Array.from({ length: count }, (_, i) => ({
-      title: `${skill.name} Specialist`,
-      company: ["Google", "Microsoft", "Amazon"][i % 3],
-    }));
-  }
-
-  const data = await res.json();
-  const content = data.choices[0].message.content;
+Respond ONLY with JSON array: [{"title":"...","company":"..."}]`;
 
   try {
+    const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${apiKey}` },
+      body: JSON.stringify({
+        model: "google/gemini-2.5-flash-lite",
+        messages: [{ role: "user", content: prompt }],
+        temperature: 0.9,
+      }),
+    });
+
+    if (!res.ok) throw new Error(`AI ${res.status}`);
+    const data = await res.json();
+    const content = data.choices[0].message.content;
     const match = content.match(/\[[\s\S]*\]/);
-    const parsed = JSON.parse(match ? match[0] : content);
-    return parsed.slice(0, count);
-  } catch {
+    return JSON.parse(match ? match[0] : content).slice(0, count);
+  } catch (e) {
+    console.error("Fallback job titles for:", skill.skill_name, e.message);
+    const companies = ["Google", "Microsoft", "Amazon", "Meta", "Apple"];
     return Array.from({ length: count }, (_, i) => ({
-      title: `${skill.name} Specialist`,
-      company: ["Google", "Microsoft", "Amazon"][i % 3],
+      title: `${skill.skill_name} Specialist`,
+      company: companies[i % companies.length],
     }));
   }
 }
 
 function sleep(ms: number) {
-  return new Promise(resolve => setTimeout(resolve, ms));
+  return new Promise(r => setTimeout(r, ms));
 }
 
-function respond(headers: Record<string, string>, body: any) {
+function json(body: any, status = 200) {
   return new Response(JSON.stringify(body), {
-    headers: { ...headers, "Content-Type": "application/json" },
+    status,
+    headers: { ...corsHeaders, "Content-Type": "application/json" },
   });
 }
