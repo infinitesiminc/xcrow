@@ -107,6 +107,7 @@ export function useFriends() {
         totalXp: xpMap.get(friendId) || 0,
         status: f.status as Friend["status"],
         isRequester: f.requester_id === user.id,
+        lastSim: lastSimMap.get(friendId) || null,
       };
     });
 
