@@ -22,10 +22,9 @@ interface FutureTerritoryMapProps {
   skills: FutureSkill[];
   focusSkillId?: string | null;
   level2SkillIds?: Set<string>;
+  level2CompletedIds?: Set<string>;
   skillGrowthMap?: Map<string, CanonicalSkillGrowth>;
-  /** Called when user clicks a skill node on the map */
   onSkillSelect?: (skill: FutureSkill) => void;
-  /** If provided, launches sim in-place instead of navigating */
   onLaunchSim?: (req: SimLaunchRequest) => void;
 }
 
@@ -40,7 +39,7 @@ const ISLAND_COLORS: Record<string, string> = {
   "Communication & Collaboration": "hsl(var(--primary))",
 };
 
-export default function FutureTerritoryMap({ skills, focusSkillId, level2SkillIds, skillGrowthMap, onSkillSelect, onLaunchSim }: FutureTerritoryMapProps) {
+export default function FutureTerritoryMap({ skills, focusSkillId, level2SkillIds, level2CompletedIds, skillGrowthMap, onSkillSelect, onLaunchSim }: FutureTerritoryMapProps) {
   const layout = useMemo(() => buildFutureMapLayout(skills), [skills]);
   const connections = useMemo(() => buildFutureConnections(layout), [layout]);
 
@@ -247,7 +246,7 @@ export default function FutureTerritoryMap({ skills, focusSkillId, level2SkillId
 
           {layout.map(island => (
             <FutureIsland key={island.category} island={island} skillLookup={skillLookup}
-              level2SkillIds={level2SkillIds} skillGrowthMap={skillGrowthMap}
+              level2SkillIds={level2SkillIds} level2CompletedIds={level2CompletedIds} skillGrowthMap={skillGrowthMap}
               isFocused={focusedIsland === island.category} highlightedSkillId={highlightedSkillId}
               onIslandClick={handleIslandClick} onSkillClick={handleSkillClick} />
           ))}

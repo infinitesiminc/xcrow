@@ -198,43 +198,7 @@ export default function SkillLaunchCard({
             <ArrowRight className="h-3 w-3 text-muted-foreground group-hover:text-primary shrink-0 transition-colors" />
           </button>
 
-          {/* Level 2 */}
-          <button
-            onClick={() => launchLevel(2)}
-            disabled={loading || !firstRole}
-            className="w-full flex items-center gap-2 px-2.5 py-2 rounded-lg text-left transition-all hover:brightness-110 disabled:opacity-40 group"
-            style={{
-              background: level2Unlocked ? "hsl(45 40% 15% / 0.4)" : "hsl(var(--muted) / 0.1)",
-              border: level2Unlocked ? "1px solid hsl(45 60% 50% / 0.3)" : "1px solid hsl(var(--filigree) / 0.1)",
-            }}
-          >
-            <div
-              className="w-6 h-6 rounded flex items-center justify-center shrink-0"
-              style={{
-                background: level2Unlocked ? "hsl(45 40% 20%)" : "hsl(var(--muted) / 0.2)",
-                transform: "rotate(45deg)",
-              }}
-            >
-              <Diamond
-                className="h-3 w-3"
-                style={{
-                  color: level2Unlocked ? "hsl(45 93% 58%)" : "hsl(var(--muted-foreground))",
-                  transform: "rotate(-45deg)",
-                }}
-              />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-[11px] font-bold text-foreground" style={{ fontFamily: "'Cinzel', serif" }}>
-                {level2Unlocked ? "Level 2 Quest" : "Level 2 Preview"}
-              </p>
-              <p className="text-[9px] text-muted-foreground">
-                {level2Unlocked
-                  ? (l2Xp > 0 ? `${l2Xp} XP earned` : "Future sentinel audit")
-                  : `${Math.max(0, 3 - l1Sims)} quests to unlock`}
-              </p>
-            </div>
-            <ArrowRight className="h-3 w-3 text-muted-foreground group-hover:text-foreground shrink-0 transition-colors" />
-          </button>
+          {/* Level 2 removed — now a map boss event */}
         </div>
 
         {/* Role context */}

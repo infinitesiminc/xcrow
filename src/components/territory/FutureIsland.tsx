@@ -24,6 +24,7 @@ interface FutureIslandProps {
   island: FutureIslandLayout;
   skillLookup: Map<string, FutureSkill>;
   level2SkillIds?: Set<string>;
+  level2CompletedIds?: Set<string>;
   skillGrowthMap?: Map<string, CanonicalSkillGrowth>;
   isFocused?: boolean;
   highlightedSkillId?: string | null;
@@ -50,7 +51,7 @@ function getDisplacedPosition(
   return { x: node.x + nx * force, y: node.y + ny * force };
 }
 
-export default function FutureIsland({ island, skillLookup, level2SkillIds, skillGrowthMap, isFocused, highlightedSkillId, onIslandClick, onSkillClick }: FutureIslandProps) {
+export default function FutureIsland({ island, skillLookup, level2SkillIds, level2CompletedIds, skillGrowthMap, isFocused, highlightedSkillId, onIslandClick, onSkillClick }: FutureIslandProps) {
   const { cx, cy, radius, theme, nodes, expandedNodes, category, skillCount } = island;
   const activeNodes = isFocused ? expandedNodes : nodes;
   const visibleCount = activeNodes.length;
@@ -149,6 +150,8 @@ export default function FutureIsland({ island, skillLookup, level2SkillIds, skil
         const intensity = Math.min(1, skill.demandCount / 15);
         const showLabel = !isFocused || isHovered || isHighlighted;
         const isLevel2 = level2SkillIds?.has(node.skillId) ?? false;
+        const isBossCompleted = level2CompletedIds?.has(node.skillId) ?? false;
+        const isBossAvailable = isLevel2 && !isBossCompleted;
         const diamondSide = nodeRadius * 1.35;
 
         return (
@@ -318,23 +321,23 @@ export default function FutureIsland({ island, skillLookup, level2SkillIds, skil
                   });
                 })()}
 
-                {isLevel2 && (
+                {isBossAvailable && (
                   <g>
                     <rect
                       x={node.x + nodeRadius * 0.4}
                       y={node.y - nodeRadius - 6}
-                      width={16}
+                      width={22}
                       height={10}
                       rx={3}
                       fill="hsl(45 80% 50%)"
                     />
                     <text
-                      x={node.x + nodeRadius * 0.4 + 8}
+                      x={node.x + nodeRadius * 0.4 + 11}
                       y={node.y - nodeRadius - 1}
                       textAnchor="middle"
                       style={{ fontSize: "6px", fontWeight: 800, fill: "hsl(45 20% 10%)", pointerEvents: "none" }}
                     >
-                      L2
+                      BOSS
                     </text>
                   </g>
                 )}
@@ -375,7 +378,8 @@ export default function FutureIsland({ island, skillLookup, level2SkillIds, skil
             </TooltipTrigger>
             <TooltipContent side="top" className="max-w-[240px]">
               <p className="font-semibold text-xs">
-                {isLevel2 && <span className="text-amber-400 mr-1">◆</span>}
+                {isBossCompleted && <span className="text-amber-400 mr-1">👑</span>}
+                {isBossAvailable && <span className="text-amber-400 mr-1">⚔️</span>}
                 {skill.name}
               </p>
               {skill.description && (
@@ -384,7 +388,8 @@ export default function FutureIsland({ island, skillLookup, level2SkillIds, skil
               <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground">
                 <span>📈 {skill.demandCount} demand</span>
                 <span>💼 {skill.jobCount} roles</span>
-                {isLevel2 && <span className="text-amber-400">◆ Level 2</span>}
+                {isBossCompleted && <span className="text-amber-400">👑 Conquered</span>}
+                {isBossAvailable && <span className="text-amber-400">⚔️ Boss Ready</span>}
               </div>
             </TooltipContent>
           </Tooltip>

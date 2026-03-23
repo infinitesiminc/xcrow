@@ -19,7 +19,7 @@ import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
 import { type FutureSkill, type FutureSkillCategory, FUTURE_CATEGORY_META } from "@/hooks/use-future-skills";
-import { ArrowRight, Briefcase, Zap, Sparkles, Lock, Diamond } from "lucide-react";
+import { ArrowRight, Briefcase, Zap, Sparkles, Lock, Diamond, Crown, Swords } from "lucide-react";
 import { getTerritory } from "@/lib/territory-colors";
 
 /* ── Skill Hero Image — direct from storage (pre-generated) ── */
@@ -73,12 +73,16 @@ interface SkillDetailDrawerProps {
   onOpenChange: (open: boolean) => void;
   /** Whether this skill has Level 2 unlocked for the user */
   level2Unlocked?: boolean;
+  /** Whether the L2 boss has been completed */
+  level2Completed?: boolean;
   /** Level 1 XP earned */
   level1Xp?: number;
   /** Level 2 XP earned */
   level2Xp?: number;
   /** Number of Level 1 sims completed for this skill */
   level1SimsCompleted?: number;
+  /** Launch the L2 boss battle */
+  onLaunchBoss?: () => void;
 }
 
 export default function SkillDetailDrawer({
@@ -86,9 +90,11 @@ export default function SkillDetailDrawer({
   open,
   onOpenChange,
   level2Unlocked = false,
+  level2Completed = false,
   level1Xp = 0,
   level2Xp = 0,
   level1SimsCompleted = 0,
+  onLaunchBoss,
 }: SkillDetailDrawerProps) {
   const navigate = useNavigate();
   const [roles, setRoles] = useState<RoleLink[]>([]);
@@ -300,24 +306,67 @@ export default function SkillDetailDrawer({
               } : undefined}
             />
 
-            {/* Level 2 — Future Vision Track */}
-            <TrackCard
-              icon={<Diamond className="h-4 w-4" />}
-              label="Level 2 · Future Role"
-              sublabel="Practice the evolved human-in-the-loop role"
-              xp={level2Xp}
-              maxXp={500}
-              color="hsl(45 93% 58%)"
-              unlocked={level2Unlocked}
-              unlockRequirement={!level2Unlocked ? `${Math.max(0, 3 - level1SimsCompleted)} more quests to unlock` : undefined}
-              prominent
-              startLabel={level2Unlocked ? "⚔️ Start Level 2" : "⚡ Try Level 2 Preview"}
-              onStart={roles.length > 0 ? () => {
-                onOpenChange(false);
-                const r = roles[0];
-                navigate(`/role/${encodeURIComponent(r.title)}${r.company ? `?company=${encodeURIComponent(r.company)}&level=2` : "?level=2"}`);
-              } : undefined}
-            />
+            {/* Boss Battle / Trophy Section */}
+            {level2Completed ? (
+              /* Conquered Trophy */
+              <div
+                className="rounded-xl p-4 relative overflow-hidden"
+                style={{
+                  background: "linear-gradient(135deg, hsl(45 30% 15%), hsl(45 20% 10%))",
+                  border: "2px solid hsl(45 70% 50%)",
+                  boxShadow: "0 0 30px hsl(45 93% 58% / 0.15), inset 0 1px 0 hsl(45 80% 60% / 0.2)",
+                }}
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-lg flex items-center justify-center text-xl"
+                    style={{ background: "hsl(45 40% 20%)", border: "1px solid hsl(45 60% 50% / 0.4)" }}>
+                    👑
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold" style={{ fontFamily: "'Cinzel', serif", color: "hsl(45 93% 58%)" }}>
+                      Boss Conquered
+                    </p>
+                    <p className="text-[11px] text-muted-foreground">
+                      {level2Xp} XP earned · Human Edge mastered
+                    </p>
+                  </div>
+                </div>
+              </div>
+            ) : level2Unlocked && onLaunchBoss ? (
+              /* Boss Available */
+              <motion.button
+                onClick={onLaunchBoss}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.97 }}
+                className="w-full rounded-xl p-4 text-left relative overflow-hidden group"
+                style={{
+                  background: "linear-gradient(135deg, hsl(45 30% 12%), hsl(280 30% 12%))",
+                  border: "2px solid hsl(45 60% 50% / 0.5)",
+                  boxShadow: "0 0 30px hsl(45 93% 58% / 0.1), 0 4px 20px hsl(var(--emboss-shadow))",
+                }}
+              >
+                <span className="absolute inset-0 bg-gradient-to-r from-transparent via-amber-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                <div className="flex items-center gap-3 relative z-10">
+                  <div className="w-10 h-10 rounded flex items-center justify-center text-xl shrink-0"
+                    style={{
+                      background: "hsl(45 40% 18%)",
+                      border: "1.5px solid hsl(45 60% 50% / 0.5)",
+                      transform: "rotate(45deg)",
+                    }}>
+                    <span style={{ transform: "rotate(-45deg)" }}>⚔️</span>
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-sm font-bold" style={{ fontFamily: "'Cinzel', serif", color: "hsl(45 93% 58%)" }}>
+                      Boss Battle Available
+                    </p>
+                    <p className="text-[11px] text-muted-foreground">
+                      One-time challenge · Strategic oversight audit
+                    </p>
+                  </div>
+                  <ArrowRight className="h-4 w-4 text-amber-400 shrink-0 group-hover:translate-x-0.5 transition-transform" />
+                </div>
+              </motion.button>
+            ) : null}
 
           </div>
 

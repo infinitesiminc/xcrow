@@ -10,6 +10,9 @@ import { X, Swords, ScrollText, Users, BookOpen } from "lucide-react";
 import SimulatorModal from "@/components/SimulatorModal";
 import type { SimLaunchRequest } from "@/components/territory/SkillLaunchCard";
 
+/** IDs of skills where user has completed a L2 boss battle */
+type Level2CompletedIds = Set<string>;
+
 import { useFutureSkills } from "@/hooks/use-future-skills";
 import FutureTerritoryMap from "@/components/territory/FutureTerritoryMap";
 import FutureSkillsTable from "@/components/territory/FutureSkillsTable";
@@ -102,6 +105,7 @@ const MapPage = () => {
   const [realSkills, setRealSkills] = useState<SkillXP[]>([]);
   const [targetSkillIds, setTargetSkillIds] = useState<Set<string>>(new Set());
   const [level2SkillIds, setLevel2SkillIds] = useState<Set<string>>(new Set());
+  const [level2CompletedIds, setLevel2CompletedIds] = useState<Level2CompletedIds>(new Set());
   const [skillGrowthMap, setSkillGrowthMap] = useState<Map<string, CanonicalSkillGrowth>>(new Map());
 
   // In-place sim overlay state
@@ -182,6 +186,13 @@ const MapPage = () => {
         growthMap.set(skillId, { level1Xp: acc.l1Xp, level2Xp: acc.l2Xp, level1Sims: acc.l1Sims, level2Sims: acc.l2Sims, growth });
       }
       setSkillGrowthMap(growthMap);
+
+      // Track which skills have completed L2 boss battles
+      const l2Completed = new Set<string>();
+      for (const [skillId, acc] of growthAcc) {
+        if (acc.l2Sims > 0) l2Completed.add(skillId);
+      }
+      setLevel2CompletedIds(l2Completed);
 
       const roleCounts = new Map<string, number>();
       const qualifiedRoles = new Set<string>();
@@ -330,6 +341,7 @@ const MapPage = () => {
           skills={futureSkills}
           focusSkillId={mapFocusSkillId}
           level2SkillIds={level2SkillIds}
+          level2CompletedIds={level2CompletedIds}
           skillGrowthMap={skillGrowthMap}
           onLaunchSim={handleLaunchSim}
           onSkillSelect={(skill) => {
@@ -438,9 +450,21 @@ const MapPage = () => {
         open={drawerOpen}
         onOpenChange={setDrawerOpen}
         level2Unlocked={drawerSkill ? level2SkillIds.has(drawerSkill.id) : false}
+        level2Completed={drawerSkill ? level2CompletedIds.has(drawerSkill.id) : false}
         level1Xp={drawerSkill ? (skillGrowthMap.get(drawerSkill.id)?.level1Xp ?? 0) : 0}
         level2Xp={drawerSkill ? (skillGrowthMap.get(drawerSkill.id)?.level2Xp ?? 0) : 0}
         level1SimsCompleted={drawerSkill ? (skillGrowthMap.get(drawerSkill.id)?.level1Sims ?? 0) : 0}
+        onLaunchBoss={drawerSkill && level2SkillIds.has(drawerSkill.id) && !level2CompletedIds.has(drawerSkill.id) ? () => {
+          const growth = skillGrowthMap.get(drawerSkill.id);
+          const roles2 = []; // will use first role from drawer
+          handleLaunchSim({
+            jobTitle: drawerSkill.name,
+            taskName: drawerSkill.name,
+            skillId: drawerSkill.id,
+            level: 2,
+          });
+          setDrawerOpen(false);
+        } : undefined}
       />
     </div>
   );
