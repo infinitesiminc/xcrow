@@ -384,6 +384,7 @@ export default function GuidedAudit({
   aiAutoAction,
   onComplete,
   onRestart,
+  onViewDebrief,
 }: GuidedAuditProps) {
   const [currentStep, setCurrentStep] = useState(0);
   const [verdicts, setVerdicts] = useState<Record<string, AuditVerdict>>({});
