@@ -15,6 +15,15 @@ import { useAuth } from "@/contexts/AuthContext";
 import { getAvatarById, AVATAR_OPTIONS } from "@/lib/avatars";
 import type { AuditCheckpoint, AuditVerdict, AuditResult } from "./GuidedAudit";
 
+/* ── Difficulty tier config ── */
+const DIFFICULTY_TIERS = {
+  scout: { label: "Scout", emoji: "🟢", color: "hsl(142 60% 50%)", dmg: 15, wrongDmg: 10, wrongHeal: 5 },
+  sentinel: { label: "Sentinel", emoji: "🟡", color: "hsl(45 80% 55%)", dmg: 25, wrongDmg: 15, wrongHeal: 10 },
+  arbiter: { label: "Arbiter", emoji: "🔴", color: "hsl(0 60% 55%)", dmg: 40, wrongDmg: 20, wrongHeal: 15 },
+} as const;
+
+type DifficultyTier = keyof typeof DIFFICULTY_TIERS;
+
 /* ── Verdict button config ── */
 const VERDICT_CONFIG = {
   safe: {
@@ -140,6 +149,10 @@ export default function BossBattleArena({
   const userMaxPower = checkpoints.length * 20;
   const [userPower, setUserPower] = useState(userMaxPower);
 
+  // Streak tracking
+  const [streak, setStreak] = useState(0);
+  const [showStreakBonus, setShowStreakBonus] = useState(false);
+
   // Avatar
   const avatarOption = getAvatarById(profile?.avatarId) || AVATAR_OPTIONS[0];
 
@@ -147,18 +160,28 @@ export default function BossBattleArena({
   const totalCorrect = checkpoints.filter(cp => verdicts[cp.id] === cp.correctVerdict).length;
   const hintsUsed = Object.values(showHint).filter(Boolean).length;
 
-  const handleBossReaction = useCallback((isCorrect: boolean) => {
+  const handleBossReaction = useCallback((isCorrect: boolean, difficulty: DifficultyTier = "scout") => {
     if (bossStateTimer.current) clearTimeout(bossStateTimer.current);
+    const tier = DIFFICULTY_TIERS[difficulty];
     if (isCorrect) {
-      setBossHp(prev => Math.max(0, prev - 20));
+      const newStreak = streak + 1;
+      setStreak(newStreak);
+      const streakMultiplier = newStreak >= 3 ? 1.5 : 1;
+      const dmg = Math.round(tier.dmg * streakMultiplier);
+      setBossHp(prev => Math.max(0, prev - dmg));
       setBossState("damaged");
+      if (newStreak >= 3) {
+        setShowStreakBonus(true);
+        setTimeout(() => setShowStreakBonus(false), 1500);
+      }
     } else {
-      setBossHp(prev => Math.min(maxHp, prev + 10));
-      setUserPower(prev => Math.max(0, prev - 15));
+      setStreak(0);
+      setBossHp(prev => Math.min(maxHp, prev + tier.wrongHeal));
+      setUserPower(prev => Math.max(0, prev - tier.wrongDmg));
       setBossState("enraged");
     }
     bossStateTimer.current = setTimeout(() => setBossState("idle"), 1800);
-  }, [maxHp]);
+  }, [maxHp, streak]);
 
   const handleVerdict = (id: string, verdict: AuditVerdict) => {
     setVerdicts(prev => ({ ...prev, [id]: verdict }));
@@ -167,7 +190,10 @@ export default function BossBattleArena({
   const handleReveal = (id: string) => {
     setRevealed(prev => ({ ...prev, [id]: true }));
     const cp = checkpoints.find(c => c.id === id);
-    if (cp) handleBossReaction(verdicts[id] === cp.correctVerdict);
+    if (cp) {
+      const diff = ((cp as any).difficulty as DifficultyTier) || (checkpoints.indexOf(cp) < 2 ? "scout" : checkpoints.indexOf(cp) < 4 ? "sentinel" : "arbiter");
+      handleBossReaction(verdicts[id] === cp.correctVerdict, diff);
+    }
   };
 
   const handleNext = () => {
@@ -421,14 +447,27 @@ export default function BossBattleArena({
   /* ── Active Battle Arena ── */
   const isRevealed = revealed[checkpoint.id];
   const isCorrect = verdicts[checkpoint.id] === checkpoint.correctVerdict;
+  const cpDifficulty: DifficultyTier = (checkpoint as any).difficulty || (currentStep < 2 ? "scout" : currentStep < 4 ? "sentinel" : "arbiter");
+  const cpTier = DIFFICULTY_TIERS[cpDifficulty];
+  const isArbiter = cpDifficulty === "arbiter";
 
   return (
     <div
       className="absolute inset-0 flex flex-col overflow-hidden"
       style={{ background: "radial-gradient(ellipse at center, hsl(262 40% 8%), hsl(0 0% 2%))" }}
     >
-      {/* Top bar — Round counter */}
+      {/* Top bar — Round counter + Difficulty + Streak */}
       <div className="flex items-center justify-center gap-3 py-2 px-4 shrink-0" style={{ borderBottom: "1px solid hsl(262 40% 20% / 0.4)" }}>
+        {/* Difficulty badge */}
+        <span className="text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full" style={{
+          background: `${cpTier.color.replace(")", " / 0.15)")}`,
+          border: `1px solid ${cpTier.color.replace(")", " / 0.4)")}`,
+          color: cpTier.color,
+          fontFamily: "'Cinzel', serif",
+        }}>
+          {cpTier.emoji} {cpTier.label}
+        </span>
+
         <div className="flex gap-1.5">
           {checkpoints.map((cp, i) => {
             const done = revealed[cp.id];
@@ -449,7 +488,48 @@ export default function BossBattleArena({
         <span className="text-[10px] text-muted-foreground font-mono">
           {currentStep + 1}/{checkpoints.length}
         </span>
+
+        {/* Streak indicator */}
+        <AnimatePresence>
+          {streak >= 2 && (
+            <motion.span
+              initial={{ scale: 0, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0, opacity: 0 }}
+              className="text-[9px] font-bold px-2 py-0.5 rounded-full"
+              style={{
+                background: streak >= 3 ? "hsl(45 90% 55% / 0.15)" : "hsl(262 80% 55% / 0.15)",
+                border: `1px solid ${streak >= 3 ? "hsl(45 90% 55% / 0.4)" : "hsl(262 80% 55% / 0.3)"}`,
+                color: streak >= 3 ? "hsl(45 90% 65%)" : "hsl(262 80% 70%)",
+                fontFamily: "'Cinzel', serif",
+              }}
+            >
+              🔥 {streak}× Streak{streak >= 3 ? " · 1.5× DMG!" : ""}
+            </motion.span>
+          )}
+        </AnimatePresence>
       </div>
+
+      {/* Streak bonus flash */}
+      <AnimatePresence>
+        {showStreakBonus && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0 }}
+            className="absolute top-12 left-1/2 -translate-x-1/2 z-50 text-[11px] font-bold px-3 py-1 rounded-full"
+            style={{
+              background: "hsl(45 90% 55% / 0.2)",
+              border: "1px solid hsl(45 90% 55% / 0.5)",
+              color: "hsl(45 90% 65%)",
+              fontFamily: "'Cinzel', serif",
+              boxShadow: "0 0 20px hsl(45 90% 55% / 0.3)",
+            }}
+          >
+            🔥 STREAK BONUS — 1.5× Damage!
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Arena — Combatants */}
       <div className="flex-1 flex items-center justify-between px-4 sm:px-8 min-h-0 relative">
@@ -530,8 +610,8 @@ export default function BossBattleArena({
                   </div>
                 </div>
 
-                {/* Hint */}
-                {!showHint[checkpoint.id] && !isRevealed && (
+                {/* Hint — hidden for arbiter level */}
+                {!isArbiter && !showHint[checkpoint.id] && !isRevealed && (
                   <button
                     onClick={() => setShowHint(prev => ({ ...prev, [checkpoint.id]: true }))}
                     className="text-[11px] flex items-center gap-1 hover:brightness-125"
@@ -539,6 +619,11 @@ export default function BossBattleArena({
                   >
                     <Sparkles className="h-3 w-3" /> Hint
                   </button>
+                )}
+                {isArbiter && !isRevealed && (
+                  <span className="text-[10px] italic" style={{ color: "hsl(0 60% 55% / 0.7)" }}>
+                    🔴 No hints at Arbiter level — trust your expertise
+                  </span>
                 )}
                 {showHint[checkpoint.id] && !isRevealed && (
                   <motion.p
