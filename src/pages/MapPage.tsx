@@ -108,6 +108,9 @@ const MapPage = () => {
   const [level2SkillIds, setLevel2SkillIds] = useState<Set<string>>(new Set());
   const [level2CompletedIds, setLevel2CompletedIds] = useState<Level2CompletedIds>(new Set());
   const [skillGrowthMap, setSkillGrowthMap] = useState<Map<string, CanonicalSkillGrowth>>(new Map());
+  const [bossCount, setBossCount] = useState(0);
+  const { toast } = useToast();
+  const hasShownBossToast = useRef(false);
 
   // In-place sim overlay state
   const [activeSim, setActiveSim] = useState<PendingSimLaunch | null>(null);
