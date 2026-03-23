@@ -320,7 +320,7 @@ export default function MyRolesPanel({ onSelectRole, onAskChat, onTabChange }: M
   }, [kingdoms, tierFilter, q]);
 
   const tierCounts = useMemo(() => {
-    const c = { scouted: 0, contested: 0, conquered: 0 };
+    const c = { scouted: 0, contested: 0, fortified: 0, conquered: 0 };
     for (const k of kingdoms) c[k.tier]++;
     return c;
   }, [kingdoms]);
