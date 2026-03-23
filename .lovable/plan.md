@@ -1,55 +1,24 @@
 
 
-# Progression System Explainer Page
+# Seed Boss Battle Markers on the Map
 
-## What We're Building
+## Problem
+The `FutureIsland.tsx` rendering only checks `isLevel2` and shows a generic gold diamond for all L2 skills. It doesn't visually differentiate between **boss available** (pulsing challenge marker) and **boss completed** (evolved crown node). The variables `isBossAvailable` and `isBossCompleted` are computed but never used in the render logic.
 
-A visually rich marketing page at `/progression` that explains the unified 3-layer progression framework to users. Uses the Dark Fantasy RPG aesthetic with animated sections, clear visual hierarchy, and interactive elements.
+## What Changes
 
-## Page Structure
+### `src/components/territory/FutureIsland.tsx`
+Replace the single `isLevel2` diamond rendering block (lines ~210-273) with three distinct states:
 
-### 1. Hero Section
-- Headline: "Your Path to Mastery" with Cinzel typography
-- Subhead: "Every simulation ripples through your entire career map"
-- Animated flow diagram: `Sim → Skill Rings → Castle → Kingdom → Rank`
+1. **Boss Completed** (`isBossCompleted`): Gold circle with crown 👑 emoji, amber glow ring, elevated stroke — the "evolved" trophy state
+2. **Boss Available** (`isBossAvailable`): Pulsing diamond with ⚔️ BOSS badge, animated glow pulse — impossible to miss on the map
+3. **Normal L1**: Current circle rendering (unchanged)
 
-### 2. Layer 1: Skill Castles (The Atom)
-- Visual: Animated castle evolving through 4 tiers (Ruins → Outpost → Fortress → Citadel)
-- 3-Ring diagram showing Foundation / AI Mastery / Human Edge with colored arcs
-- Explanation: L1 sims fill the AI Mastery ring, L2 sims fill the Human Edge ring, Foundation is passive
-- Castle tier table with emoji, XP thresholds, and ring requirements
+Also update the tooltip content to show "⚔️ Boss Battle Available!" or "👑 Conquered" based on state.
 
-### 3. Layer 2: Kingdoms (Per Role)
-- Visual: 4-stage kingdom progression cards (Scouted → Contested → Fortified → Conquered)
-- Explanation: Kingdom tier is driven by how many linked skill castles you've leveled up
-- Callout: "Fortified unlocks Level 2 content" as a gate indicator
-- Skill checklist preview showing linked castles per role
+### `src/pages/MapPage.tsx`
+The `DEMO_LEVEL2_SKILLS` set already seeds 12 skills as L2-eligible. No changes needed — the boss markers will appear automatically for these demo skills since `level2CompletedIds` starts empty (making all 12 show as "boss available").
 
-### 4. Layer 3: Player Rank (Aggregate)
-- Visual: Rank badges in a horizontal ladder (Recruit → Explorer → Strategist → Commander → Legend)
-- Requirements listed per rank (castles + kingdoms needed)
-- Emphasis on breadth over grinding
-
-### 5. The Ripple Effect (Summary)
-- Animated chain showing how one sim completion cascades upward through all 3 layers
-- "Every action has a clear, visible ripple effect up the chain"
-
-### 6. CTA
-- "Start Your First Battle" button linking to the map page
-
-## Technical Details
-
-### Files Created
-- `src/pages/Progression.tsx` — new page component (~400 lines)
-
-### Files Modified
-- `src/App.tsx` — add route `/progression`
-- `src/components/Navbar.tsx` — optionally add nav link
-
-### Design Patterns
-- Follows `SimulationDesign.tsx` pattern: sectioned layout with `fadeUp` motion animations
-- Uses existing UI components: Card, Badge, Progress, Button
-- Reuses `GrowthRings` component for the 3-ring visual
-- RPG aesthetic: stone textures, Cinzel headings, territory colors
-- Fully responsive with mobile-first approach
+## Visual Result
+On first load, ~12 skills across the map will show pulsing diamond ⚔️ boss markers instead of normal circles, creating visible map events that draw the user in.
 
