@@ -565,7 +565,7 @@ export default function GuidedAudit({
           <h3 className="text-base font-bold mt-3" style={{ fontFamily: "'Cinzel', serif", color: "hsl(262 80% 70%)" }}>
             {titles[tier]}
           </h3>
-          <p className="text-xs text-muted-foreground mt-1 max-w-sm mx-auto leading-relaxed">{subtitles[tier]}</p>
+          <p className="text-[13px] text-muted-foreground mt-1 max-w-sm mx-auto leading-relaxed">{subtitles[tier]}</p>
         </div>
 
         {/* Per-checkpoint results */}
