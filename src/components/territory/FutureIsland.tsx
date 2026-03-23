@@ -51,7 +51,7 @@ function getDisplacedPosition(
   return { x: node.x + nx * force, y: node.y + ny * force };
 }
 
-export default function FutureIsland({ island, skillLookup, level2SkillIds, skillGrowthMap, isFocused, highlightedSkillId, onIslandClick, onSkillClick }: FutureIslandProps) {
+export default function FutureIsland({ island, skillLookup, level2SkillIds, level2CompletedIds, skillGrowthMap, isFocused, highlightedSkillId, onIslandClick, onSkillClick }: FutureIslandProps) {
   const { cx, cy, radius, theme, nodes, expandedNodes, category, skillCount } = island;
   const activeNodes = isFocused ? expandedNodes : nodes;
   const visibleCount = activeNodes.length;
