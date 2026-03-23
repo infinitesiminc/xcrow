@@ -149,6 +149,10 @@ export default function BossBattleArena({
   const userMaxPower = checkpoints.length * 20;
   const [userPower, setUserPower] = useState(userMaxPower);
 
+  // Streak tracking
+  const [streak, setStreak] = useState(0);
+  const [showStreakBonus, setShowStreakBonus] = useState(false);
+
   // Avatar
   const avatarOption = getAvatarById(profile?.avatarId) || AVATAR_OPTIONS[0];
 
