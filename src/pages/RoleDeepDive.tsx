@@ -205,7 +205,10 @@ const RoleDeepDive = () => {
   }, [user]);
 
   useEffect(() => {
-    if (!skillResolved) return; // Wait for skill→job resolution
+    // Only block while the URL still carries a skill param and resolution is in-flight.
+    // If we've already redirected to a concrete /role/:jobTitle route (no skill param),
+    // proceed even if skillResolved state is stale from the previous route instance.
+    if (skillParam && !skillResolved) return;
     if (!jobTitle && !hasJd) { navigate("/"); return; }
     if (initialResult) { saveHistory(initialResult); return; }
     const analyze = async () => {
@@ -232,7 +235,7 @@ const RoleDeepDive = () => {
       setLoading(false);
     };
     analyze();
-  }, [jobTitle, company, hasJd, navigate, initialResult, skillResolved]);
+  }, [jobTitle, company, hasJd, navigate, initialResult, skillResolved, skillParam]);
 
   const resolveJobId = useCallback(async (title: string, _comp: string) => {
     try {
