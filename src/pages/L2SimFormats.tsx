@@ -2,13 +2,14 @@
  * L2SimFormats — Interactive mockup comparing 4 Level 2 simulation formats.
  * Each tab is a self-contained mini-sim prototype with rubric-based coaching.
  */
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Send, RotateCcw, CheckCircle2, AlertTriangle, Shield, Users, MessageSquare, GitBranch, HelpCircle, Loader2 } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import ReactMarkdown from "react-markdown";
 import GuidedAudit, { type AuditCheckpoint, type AuditVerdict } from "@/components/sim/GuidedAudit";
+import { useChatContext } from "@/contexts/ChatContext";
 
 /* ── Shared scenario context ── */
 const SCENARIO = {
@@ -461,6 +462,8 @@ function StakeholderFormat() {
 /* ── Main Page ── */
 export default function L2SimFormats() {
   const [activeTab, setActiveTab] = useState<Tab>("case");
+  const { setSimActive } = useChatContext();
+  useEffect(() => { setSimActive(true); return () => setSimActive(false); }, [setSimActive]);
 
   const FormatComponent = {
     case: CaseStudyFormat,
