@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 
 import AllyChat from "./AllyChat";
+import FriendActivityFeed from "./FriendActivityFeed";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
