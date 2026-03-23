@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import xcrowLogo from "@/assets/xcrow-logo.png";
+import xcrowBattleLogo from "@/assets/xcrow-battle-logo.png";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { getAvatarById } from "@/lib/avatars";
@@ -80,7 +80,7 @@ export default function Navbar() {
           onClick={() => handleNav("/")}
           className="flex items-center gap-2 hover:opacity-80 transition-opacity"
         >
-          <img src={xcrowLogo} alt="Xcrow" className="h-11 w-11 object-contain" />
+          <img src={xcrowBattleLogo} alt="Xcrow" className="h-11 w-11 object-contain" />
           <span
             className="hidden sm:inline text-lg font-extrabold text-foreground tracking-tight"
             style={{ fontFamily: "'Cinzel', serif", letterSpacing: "0.02em" }}
