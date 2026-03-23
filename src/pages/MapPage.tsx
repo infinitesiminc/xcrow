@@ -25,6 +25,7 @@ import CompactHUD from "@/components/territory/CompactHUD";
 import MyRolesPanel from "@/components/territory/MyRolesPanel";
 import AlliesPanel from "@/components/territory/AlliesPanel";
 import { useSkills } from "@/hooks/use-skills";
+import SkillDetailDrawer from "@/components/territory/SkillDetailDrawer";
 import { useFriends } from "@/hooks/use-friends";
 import {
   SKILL_TAXONOMY,
