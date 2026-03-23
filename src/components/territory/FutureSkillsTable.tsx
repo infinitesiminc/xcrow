@@ -388,7 +388,7 @@ export default function FutureSkillsTable({ skills, onSkillClick, skillGrowthMap
                     <div
                       className={`flex items-center gap-1 px-1 py-1.5 cursor-pointer transition-colors hover:bg-muted/20`}
                       style={isFocused ? { boxShadow: "inset 2px 0 0 hsl(var(--filigree-glow))" } : undefined}
-                      onClick={() => onSkillClick?.(skill)}
+                      onClick={() => { setExpandedSkillId(prev => prev === skill.id ? null : skill.id); onSkillClick?.(skill); }}
                       onContextMenu={(e) => { e.preventDefault(); toggleBookmark(skill.id, e); }}
                     >
                       {/* Name + domain pill */}
