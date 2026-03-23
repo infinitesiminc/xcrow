@@ -115,6 +115,7 @@ export function useFriends() {
 
     setFriends(result);
     setPendingCount(result.filter(f => f.status === "pending" && !f.isRequester).length);
+    setUnreadCount(unreadRes.count || 0);
     setLoading(false);
   }, [user]);
 
