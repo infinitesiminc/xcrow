@@ -1711,39 +1711,60 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                   initial={{ opacity: 0, y: 16 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5, ease: "easeOut" }}
-                  className="flex flex-col items-center py-8 gap-5 w-full max-w-lg mx-auto text-center"
+                  className="flex flex-col items-center py-4 gap-5 w-full max-w-lg mx-auto text-center"
                 >
-                  {/* Score ring */}
+                  {/* Victory hero image */}
                   <motion.div
-                    initial={{ scale: 0.5, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    transition={{ delay: 0.15, type: "spring", stiffness: 200 }}
-                    className="relative"
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.6, ease: "easeOut" }}
+                    className="relative w-full rounded-2xl overflow-hidden"
+                    style={{ maxHeight: "180px" }}
                   >
-                    <svg width="96" height="96" viewBox="0 0 96 96">
-                      <circle cx="48" cy="48" r="42" fill="none" stroke="hsl(var(--muted))" strokeWidth="4" />
-                      <motion.circle
-                        cx="48" cy="48" r="42" fill="none"
-                        stroke={scoreTier === "high" ? "hsl(142 71% 45%)" : scoreTier === "mid" ? "hsl(var(--primary))" : "hsl(38 92% 50%)"}
-                        strokeWidth="4.5"
-                        strokeLinecap="round"
-                        strokeDasharray={`${overallScore * 2.64} 264`}
-                        transform="rotate(-90 48 48)"
-                        initial={{ strokeDasharray: "0 264" }}
-                        animate={{ strokeDasharray: `${overallScore * 2.64} 264` }}
-                        transition={{ delay: 0.3, duration: 1, ease: "easeOut" }}
-                      />
-                    </svg>
-                    <div className="absolute inset-0 flex flex-col items-center justify-center">
-                      <motion.span
-                        className="text-2xl font-bold text-foreground"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        transition={{ delay: 0.6 }}
+                    <img
+                      src={simVictoryBg}
+                      alt=""
+                      className="w-full h-full object-cover"
+                      style={{ filter: scoreTier === "high" ? "brightness(0.7) saturate(1.2)" : scoreTier === "mid" ? "brightness(0.5) saturate(0.9)" : "brightness(0.35) saturate(0.6) hue-rotate(180deg)" }}
+                    />
+                    <div className="absolute inset-0" style={{
+                      background: "linear-gradient(180deg, transparent 30%, hsl(var(--background) / 0.9) 100%)",
+                    }} />
+                    {/* Score ring overlaid on image */}
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <motion.div
+                        initial={{ scale: 0.5, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        transition={{ delay: 0.15, type: "spring", stiffness: 200 }}
+                        className="relative"
                       >
-                        {overallScore}%
-                      </motion.span>
-                      <span className="text-[10px] text-muted-foreground">power</span>
+                        <svg width="96" height="96" viewBox="0 0 96 96">
+                          <circle cx="48" cy="48" r="42" fill="hsl(var(--background) / 0.5)" stroke="hsl(var(--muted) / 0.5)" strokeWidth="4" />
+                          <motion.circle
+                            cx="48" cy="48" r="42" fill="none"
+                            stroke={scoreTier === "high" ? "hsl(142 71% 45%)" : scoreTier === "mid" ? "hsl(var(--primary))" : "hsl(38 92% 50%)"}
+                            strokeWidth="4.5"
+                            strokeLinecap="round"
+                            strokeDasharray={`${overallScore * 2.64} 264`}
+                            transform="rotate(-90 48 48)"
+                            initial={{ strokeDasharray: "0 264" }}
+                            animate={{ strokeDasharray: `${overallScore * 2.64} 264` }}
+                            transition={{ delay: 0.3, duration: 1, ease: "easeOut" }}
+                            style={{ filter: "drop-shadow(0 0 6px currentColor)" }}
+                          />
+                        </svg>
+                        <div className="absolute inset-0 flex flex-col items-center justify-center">
+                          <motion.span
+                            className="text-2xl font-bold text-foreground drop-shadow-lg"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            transition={{ delay: 0.6 }}
+                          >
+                            {overallScore}%
+                          </motion.span>
+                          <span className="text-[10px] text-muted-foreground drop-shadow-md">power</span>
+                        </div>
+                      </motion.div>
                     </div>
                   </motion.div>
 
