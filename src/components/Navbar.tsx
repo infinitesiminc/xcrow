@@ -19,6 +19,18 @@ export default function Navbar() {
   const navigate = useNavigate();
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [bossCount, setBossCount] = useState(0);
+
+  // Read boss count from localStorage (set by MapPage)
+  useEffect(() => {
+    const stored = localStorage.getItem("xcrow-boss-count");
+    if (stored) setBossCount(parseInt(stored, 10) || 0);
+    const handleStorage = (e: StorageEvent) => {
+      if (e.key === "xcrow-boss-count") setBossCount(parseInt(e.newValue || "0", 10));
+    };
+    window.addEventListener("storage", handleStorage);
+    return () => window.removeEventListener("storage", handleStorage);
+  }, []);
 
   // Parchment mode toggle
   const [parchment, setParchment] = useState(() => {
