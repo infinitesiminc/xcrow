@@ -330,7 +330,7 @@ export default function BossBattleArena({
         {[0, 1, 2, 3, 4].map(i => (
           <motion.div
             key={i}
-            className="absolute rounded-full"
+            className="absolute rounded-full pointer-events-none"
             style={{
               width: 2, height: 2,
               background: "hsl(262 80% 70%)",
