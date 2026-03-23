@@ -176,7 +176,7 @@ export default function UnifiedChatDock() {
                     I know what you're looking at — ask me anything about the role, skills, or your career path.
                   </p>
                   <div className="flex flex-wrap justify-center gap-2">
-                    {(user ? SIGNED_IN_SUGGESTIONS : GUEST_SUGGESTIONS).map((s) => (
+                    {suggestions.map((s) => (
                       <button
                         key={s}
                         onClick={() => {
