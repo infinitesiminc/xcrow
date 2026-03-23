@@ -343,7 +343,7 @@ function CheckpointChat({ checkpoint }: { checkpoint: AuditCheckpoint }) {
     let assistantSoFar = "";
 
     try {
-      const resp = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/career-chat`, {
+      const resp = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/checkpoint-chat`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -351,11 +351,10 @@ function CheckpointChat({ checkpoint }: { checkpoint: AuditCheckpoint }) {
         },
         body: JSON.stringify({
           messages: allMsgs.map(m => ({ role: m.role, content: m.content })),
-          viewContext: {
-            page: "l2-sim-audit",
-            checkpointArea: checkpoint.area,
-            checkpointQuestion: checkpoint.question,
-            checkpointExplanation: checkpoint.explanation,
+          checkpoint: {
+            area: checkpoint.area,
+            question: checkpoint.question,
+            explanation: checkpoint.explanation,
             realWorldExample: checkpoint.realWorldExample,
             coachTip: checkpoint.coachTip,
             correctVerdict: checkpoint.correctVerdict,
