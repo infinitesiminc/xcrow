@@ -286,7 +286,8 @@ const Analysis = () => {
   return (
     <div className="min-h-[100dvh] bg-background overflow-y-auto">
       {/* Sticky header — Mission Briefing */}
-      <div className="sticky top-0 z-20 bg-background/95 backdrop-blur-md border-b border-border px-4 py-3 flex items-center justify-between">
+      <div className="sticky top-0 z-20 bg-background/95 backdrop-blur-md border-b border-border px-4 py-3 flex items-center justify-between relative overflow-hidden">
+        <HeaderVibeImages seed={(result.jobTitle?.length ?? 0) * 11} count={4} />
         <button onClick={() => navigate(backPath)} className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
           <ChevronLeft className="h-4 w-4" /> HQ
         </button>
