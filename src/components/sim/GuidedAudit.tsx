@@ -212,7 +212,7 @@ function CheckpointChat({ checkpoint }: { checkpoint: AuditCheckpoint }) {
     >
       <div className="px-3 py-2 flex items-center gap-1.5" style={{ borderBottom: "1px solid hsl(262 60% 40% / 0.15)" }}>
         <HelpCircle className="h-3 w-3" style={{ color: "hsl(262 80% 70%)" }} />
-        <span className="text-[11px] font-semibold" style={{ color: "hsl(262 80% 70%)", fontFamily: "'Cinzel', serif" }}>
+        <span className="text-[13px] font-semibold" style={{ color: "hsl(262 80% 70%)", fontFamily: "'Cinzel', serif" }}>
           📚 Sanctum Library
         </span>
       </div>
