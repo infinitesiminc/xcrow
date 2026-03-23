@@ -110,7 +110,7 @@ const MapPage = () => {
   const userName = profile?.displayName?.split(" ")[0];
 
   const { onRolesFoundRef, onRoleSelectRef, sendMessage: chatSendMessage, setIsOpen: setChatDockOpen } = useChatContext();
-  const { updatePresence, goOffline, pendingCount } = useFriends();
+  const { updatePresence, goOffline, pendingCount, unreadCount } = useFriends();
 
   useEffect(() => {
     onRoleSelectRef.current = (role: RoleResult) => { setSelectedRole(role); };
@@ -273,12 +273,12 @@ const MapPage = () => {
               >
                 <Icon className="h-3 w-3" />
                 {label}
-                {key === "allies" && pendingCount > 0 && (
+                {key === "allies" && (pendingCount + unreadCount) > 0 && (
                   <span
                     className="absolute -top-1 -right-1 w-4 h-4 rounded-full text-[8px] flex items-center justify-center font-bold animate-pulse"
                     style={{ background: "hsl(var(--filigree-glow))", color: "hsl(var(--background))" }}
                   >
-                    {pendingCount}
+                    {pendingCount + unreadCount}
                   </span>
                 )}
               </button>
