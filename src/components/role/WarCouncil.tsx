@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect, useCallback } from "react";
 import type { IntelContext } from "@/lib/simulator";
 import { isStandardEmoji } from "@/lib/emoji-utils";
+import RuneEmoji from "@/components/RuneEmoji";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Play, AlertTriangle, Sparkles, Clock, ArrowLeft, ArrowRight, Compass, Archive, Swords,
