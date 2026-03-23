@@ -33,6 +33,7 @@ import {
 } from "@/lib/simulator";
 
 import GuidedAudit, { type AuditResult, type AuditCheckpoint } from "@/components/sim/GuidedAudit";
+import BossBattleArena from "@/components/sim/BossBattleArena";
 
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
