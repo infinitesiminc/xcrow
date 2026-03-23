@@ -519,6 +519,18 @@ export default function GuidedAudit({
     onRestart?.();
   };
 
+  /* ── Cinematic Boss Intro ── */
+  if (showIntro && isBossBattle) {
+    return (
+      <div className="relative w-full h-full min-h-[400px]">
+        <BossCinematicIntro
+          skillName={skillName || "Unknown Skill"}
+          onComplete={() => setShowIntro(false)}
+        />
+      </div>
+    );
+  }
+
   /* ── Completion Screen — Ascension Ceremony ── */
   if (completed) {
     const tier = completionTier;
