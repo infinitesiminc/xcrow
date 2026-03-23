@@ -1271,8 +1271,8 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                 </motion.div>
               )}
 
-              {/* L2 Guided Audit */}
-              {phase === "chat" && !error && level === 2 && auditData && (
+              {/* L2 Guided Audit — stays visible through completion so its own Ascension Ceremony shows */}
+              {(phase === "chat" || phase === "completing" || phase === "done") && !error && level === 2 && auditData && phase !== "done" ? (
                 <motion.div
                   key="guided-audit"
                   initial={{ opacity: 0, y: 12 }}
@@ -1286,9 +1286,10 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                     scenarioContext={auditData.scenarioContext}
                     onComplete={handleAuditComplete}
                     onRestart={() => startCompile()}
+                    onViewDebrief={() => setPhase("done")}
                   />
                 </motion.div>
-              )}
+              ) : null}
 
               {phase === "chat" && !error && !(level === 2 && auditData) && (
                 <div className="max-w-2xl mx-auto space-y-4">
