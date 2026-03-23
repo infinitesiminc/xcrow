@@ -294,6 +294,7 @@ const MapPage = () => {
               skillGrowthMap={skillGrowthMap}
               level2SkillIds={level2SkillIds}
               focusSkillId={forgeFocusSkillId}
+              onLaunchSim={handleLaunchSim}
               onSkillClick={(skill) => {
                 setMapFocusSkillId(skill.id);
                 setTimeout(() => setMapFocusSkillId(null), 100);
