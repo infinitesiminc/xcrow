@@ -14,7 +14,6 @@ import {
   FUTURE_MAP_HEIGHT,
 } from "@/lib/future-territory-layout";
 import FutureIsland from "./FutureIsland";
-import SkillDetailDrawer from "./SkillDetailDrawer";
 import type { CanonicalSkillGrowth } from "@/pages/MapPage";
 
 interface FutureTerritoryMapProps {
@@ -22,6 +21,8 @@ interface FutureTerritoryMapProps {
   focusSkillId?: string | null;
   level2SkillIds?: Set<string>;
   skillGrowthMap?: Map<string, CanonicalSkillGrowth>;
+  /** Called when user clicks a skill node on the map */
+  onSkillSelect?: (skill: FutureSkill) => void;
 }
 
 const ISLAND_COLORS: Record<string, string> = {
@@ -35,16 +36,14 @@ const ISLAND_COLORS: Record<string, string> = {
   "Communication & Collaboration": "hsl(var(--primary))",
 };
 
-export default function FutureTerritoryMap({ skills, focusSkillId, level2SkillIds, skillGrowthMap }: FutureTerritoryMapProps) {
+export default function FutureTerritoryMap({ skills, focusSkillId, level2SkillIds, skillGrowthMap, onSkillSelect }: FutureTerritoryMapProps) {
   const layout = useMemo(() => buildFutureMapLayout(skills), [skills]);
   const connections = useMemo(() => buildFutureConnections(layout), [layout]);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const [transform, setTransform] = useState({ x: 0, y: 0, scale: 1 });
   const [focusedIsland, setFocusedIsland] = useState<FutureSkillCategory | null>(null);
-  const [selectedSkill, setSelectedSkill] = useState<FutureSkill | null>(null);
   const [highlightedSkillId, setHighlightedSkillId] = useState<string | null>(null);
-  const [drawerOpen, setDrawerOpen] = useState(false);
   const dragRef = useRef<{ startX: number; startY: number; tx: number; ty: number } | null>(null);
   const isDragging = useRef(false);
 
@@ -118,10 +117,9 @@ export default function FutureTerritoryMap({ skills, focusSkillId, level2SkillId
 
   const handleSkillClick = useCallback((skill: FutureSkill) => {
     if (isDragging.current) return;
-    setSelectedSkill(skill);
     setHighlightedSkillId(skill.id);
-    setDrawerOpen(true);
-  }, []);
+    onSkillSelect?.(skill);
+  }, [onSkillSelect]);
 
   const nodePositions = useMemo(() => {
     const m = new Map<string, { x: number; y: number }>();
@@ -161,9 +159,7 @@ export default function FutureTerritoryMap({ skills, focusSkillId, level2SkillId
       }
     }
 
-    setSelectedSkill(skill);
-    setHighlightedSkillId(skill.id);
-    setDrawerOpen(true);
+    setHighlightedSkillId(focusSkillId);
   }, [focusSkillId, skillLookup, layout]);
 
   // Minimap
@@ -281,20 +277,8 @@ export default function FutureTerritoryMap({ skills, focusSkillId, level2SkillId
 
       </div>
 
-      {(() => {
-        const sg = selectedSkill && skillGrowthMap?.get(selectedSkill.id);
-        return (
-          <SkillDetailDrawer
-            skill={selectedSkill}
-            open={drawerOpen}
-            onOpenChange={setDrawerOpen}
-            level2Unlocked={selectedSkill ? (level2SkillIds?.has(selectedSkill.id) ?? false) : false}
-            level1Xp={sg?.level1Xp ?? 0}
-            level2Xp={sg?.level2Xp ?? 0}
-            level1SimsCompleted={sg?.level1Sims ?? 0}
-          />
-        );
-      })()}
+
+
     </TooltipProvider>
   );
 }
