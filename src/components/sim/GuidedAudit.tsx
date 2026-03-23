@@ -225,7 +225,7 @@ function CheckpointChat({ checkpoint }: { checkpoint: AuditCheckpoint }) {
           </div>
         )}
         {messages.map((msg, i) => (
-          <div key={i} className={`text-[11px] leading-relaxed ${msg.role === "user" ? "text-right" : ""}`}>
+          <div key={i} className={`text-[15px] leading-relaxed ${msg.role === "user" ? "text-right" : ""}`}>
             <div
               className={`inline-block max-w-[90%] rounded-lg px-3 py-2 text-left`}
               style={
