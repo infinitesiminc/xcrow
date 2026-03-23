@@ -498,6 +498,7 @@ export default function GuidedAudit({
       setCurrentStep(prev => prev + 1);
     } else {
       setCompleted(true);
+      if (isBossBattle) setBossState("defeated");
       onComplete?.({
         totalCorrect,
         totalCheckpoints: checkpoints.length,
