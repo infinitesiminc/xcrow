@@ -214,8 +214,10 @@ const MapPage = () => {
         "datadriven-narrative-development", "ethical-ai-development", "complex-solution-architecture",
       ]);
 
+      let finalL2Ids = DEMO_LEVEL2_SKILLS;
+
       if (sims.length > 0 && qualifiedRoles.size === 0) {
-        setLevel2SkillIds(DEMO_LEVEL2_SKILLS);
+        finalL2Ids = DEMO_LEVEL2_SKILLS;
       } else if (qualifiedRoles.size > 0) {
         const { data: jobs } = await supabase.from("jobs").select("id, title").in("title", Array.from(qualifiedRoles));
         if (jobs && jobs.length > 0) {
@@ -224,10 +226,16 @@ const MapPage = () => {
           const l2ids = new Set<string>();
           for (const link of futureSkillLinks || []) { if (link.canonical_skill_id) l2ids.add(link.canonical_skill_id); }
           for (const id of DEMO_LEVEL2_SKILLS) l2ids.add(id);
-          setLevel2SkillIds(l2ids);
-        } else {
-          setLevel2SkillIds(DEMO_LEVEL2_SKILLS);
+          finalL2Ids = l2ids;
         }
+      }
+
+      setLevel2SkillIds(finalL2Ids);
+
+      // Count undefeated bosses and fire toast
+      const undefeatedCount = [...finalL2Ids].filter(id => !l2Completed.has(id)).length;
+      if (undefeatedCount > 0) {
+        setBossCount(undefeatedCount);
       }
 
       const targetRoles = ((profileRes.data as any)?.target_roles || []) as { job_id: string }[];
