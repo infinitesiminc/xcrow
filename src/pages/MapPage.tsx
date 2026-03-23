@@ -341,6 +341,7 @@ const MapPage = () => {
           skills={futureSkills}
           focusSkillId={mapFocusSkillId}
           level2SkillIds={level2SkillIds}
+          level2CompletedIds={level2CompletedIds}
           skillGrowthMap={skillGrowthMap}
           onLaunchSim={handleLaunchSim}
           onSkillSelect={(skill) => {
