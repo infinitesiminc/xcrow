@@ -93,7 +93,7 @@ export default function HeaderVibeImages({ seed, count = 4 }: HeaderVibeImagesPr
             left: img.left,
             top: img.top,
             width: img.width,
-            height: "68px",
+            height: "100%",
             transform: `translate(-50%, -50%) rotate(${img.rotation}deg)`,
             opacity: img.opacity,
             filter: "saturate(1.05)",
