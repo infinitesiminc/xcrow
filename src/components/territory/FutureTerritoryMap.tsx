@@ -308,6 +308,7 @@ export default function FutureTerritoryMap({ skills, focusSkillId, level2SkillId
                 level2Unlocked={level2SkillIds?.has(highlightedSkillId)}
                 growth={skillGrowthMap?.get(highlightedSkillId) || null}
                 onClose={() => setHighlightedSkillId(null)}
+                onLaunchSim={onLaunchSim}
               />
             );
           })()}
