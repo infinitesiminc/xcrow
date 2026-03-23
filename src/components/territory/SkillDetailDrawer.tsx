@@ -73,12 +73,16 @@ interface SkillDetailDrawerProps {
   onOpenChange: (open: boolean) => void;
   /** Whether this skill has Level 2 unlocked for the user */
   level2Unlocked?: boolean;
+  /** Whether the L2 boss has been completed */
+  level2Completed?: boolean;
   /** Level 1 XP earned */
   level1Xp?: number;
   /** Level 2 XP earned */
   level2Xp?: number;
   /** Number of Level 1 sims completed for this skill */
   level1SimsCompleted?: number;
+  /** Launch the L2 boss battle */
+  onLaunchBoss?: () => void;
 }
 
 export default function SkillDetailDrawer({
@@ -86,9 +90,11 @@ export default function SkillDetailDrawer({
   open,
   onOpenChange,
   level2Unlocked = false,
+  level2Completed = false,
   level1Xp = 0,
   level2Xp = 0,
   level1SimsCompleted = 0,
+  onLaunchBoss,
 }: SkillDetailDrawerProps) {
   const navigate = useNavigate();
   const [roles, setRoles] = useState<RoleLink[]>([]);
