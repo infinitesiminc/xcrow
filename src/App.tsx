@@ -142,12 +142,11 @@ const App = () => (
               <Route path="/admin" element={<AdminGate />}>
                 <Route index element={<PipelinePage />} />
                 <Route path="analytics" element={<TaskAnalyticsPage />} />
-                
-                <Route path="skill-matrix" element={<SkillMatrixPage />} />
                 <Route path="pricing-usage" element={<PricingUsagePage />} />
                 <Route path="schools" element={<SchoolsPage />} />
                 <Route path="schools/data-ops" element={<SchoolDataOpsPage />} />
                 <Route path="schools/skills-gap" element={<SchoolSkillsGapPage />} />
+                <Route path="schools/skill-matrix" element={<SkillMatrixPage />} />
                 <Route path="schools/:schoolId" element={<SchoolDetailPage />} />
               </Route>
 
