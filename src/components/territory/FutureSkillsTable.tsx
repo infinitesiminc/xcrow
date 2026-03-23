@@ -437,15 +437,21 @@ export default function FutureSkillsTable({ skills, onSkillClick, skillGrowthMap
                               <span className="text-[9px] font-mono text-muted-foreground">{growth?.level1Xp ?? 0}/500</span>
                             </div>
                             <div className="text-[9px] text-muted-foreground mb-2">{growth?.level1Sims ?? 0} quests completed</div>
-                            {expandedRoles.length > 0 && expandedSkillId === skill.id && (
-                              <button
-                                onClick={(e) => { e.stopPropagation(); const r = expandedRoles[0]; navigate(`/role/${encodeURIComponent(r.title)}${r.company ? `?company=${encodeURIComponent(r.company)}` : ""}`); }}
-                                className="w-full px-2 py-1.5 rounded-md text-[10px] font-bold uppercase tracking-wider transition-all hover:brightness-110"
-                                style={{ background: "linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary) / 0.8))", color: "hsl(var(--foreground))", fontFamily: "'Cinzel', serif" }}
-                              >
-                                ⚔️ Start Quest
-                              </button>
-                            )}
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                if (expandedRoles.length > 0 && expandedSkillId === skill.id) {
+                                  const r = expandedRoles[0];
+                                  navigate(`/role/${encodeURIComponent(r.title)}${r.company ? `?company=${encodeURIComponent(r.company)}` : ""}`)
+                                } else {
+                                  navigate(`/role/${encodeURIComponent(skill.name)}?skill=${encodeURIComponent(skill.id)}`);
+                                }
+                              }}
+                              className="w-full px-2 py-1.5 rounded-md text-[10px] font-bold uppercase tracking-wider transition-all hover:brightness-110"
+                              style={{ background: "linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary) / 0.8))", color: "hsl(var(--foreground))", fontFamily: "'Cinzel', serif" }}
+                            >
+                              ⚔️ Start Quest
+                            </button>
                           </PopoverContent>
                         </Popover>
 
