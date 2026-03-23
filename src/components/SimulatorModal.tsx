@@ -1135,7 +1135,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
   const DoneIconComponent = doneIcon.icon;
 
   const content = (
-    <div className={inline ? "h-full flex flex-col overflow-hidden" : "max-w-3xl w-[95vw] h-[90vh] sm:h-[90vh] h-[100dvh] sm:rounded-2xl rounded-none p-0 flex flex-col overflow-hidden gap-0 border-border/50"}>
+    <div className="h-full flex flex-col overflow-hidden gap-0">
         {/* Header wrapper */}
         <div className="shrink-0">
         <div className="shrink-0 z-20 bg-background/95 backdrop-blur-md border-b border-border px-4 h-16 flex items-center justify-between gap-3 relative overflow-hidden">
@@ -2176,7 +2176,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
               transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-              className="w-[95vw] max-w-3xl h-[90vh] sm:h-[90vh] h-[100dvh] sm:rounded-2xl rounded-none overflow-hidden flex flex-col"
+              className="w-[95vw] max-w-5xl h-[85vh] rounded-2xl overflow-hidden flex flex-col"
               style={{
                 background: "hsl(var(--surface-stone))",
                 border: "1px solid hsl(var(--filigree) / 0.25)",
