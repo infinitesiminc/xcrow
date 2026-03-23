@@ -8,7 +8,7 @@ import { useState, useMemo, useCallback, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { type FutureSkill, type FutureSkillCategory } from "@/hooks/use-future-skills";
 import { Input } from "@/components/ui/input";
-import { ArrowUpDown, Search, Bookmark, BookmarkCheck, Zap, Diamond, Lock, ChevronDown, ChevronUp, Swords } from "lucide-react";
+import { ArrowUpDown, Search, Zap, Diamond, Lock, Swords } from "lucide-react";
 import { getTerritory, TERRITORY_ORDER } from "@/lib/territory-colors";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
