@@ -2099,18 +2099,36 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
 
   return (
     <>
-      <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
-        <DialogContent
-          className="max-w-3xl w-[95vw] h-[90vh] sm:h-[90vh] h-[100dvh] sm:rounded-2xl rounded-none p-0 flex flex-col overflow-hidden gap-0 [&>button]:hidden"
-          style={{
-            background: "hsl(var(--surface-stone))",
-            border: "1px solid hsl(var(--filigree) / 0.25)",
-            boxShadow: "0 0 60px hsl(var(--emboss-shadow)), inset 0 1px 0 hsl(var(--emboss-light))",
-          }}
-        >
-          {content}
-        </DialogContent>
-      </Dialog>
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            key="sim-overlay"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.25 }}
+            className="fixed inset-0 z-[60] flex items-center justify-center"
+            style={{ background: "hsl(var(--background) / 0.6)", backdropFilter: "blur(6px)" }}
+            onClick={onClose}
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+              className="w-[95vw] max-w-3xl h-[90vh] sm:h-[90vh] h-[100dvh] sm:rounded-2xl rounded-none overflow-hidden flex flex-col"
+              style={{
+                background: "hsl(var(--surface-stone))",
+                border: "1px solid hsl(var(--filigree) / 0.25)",
+                boxShadow: "0 25px 80px hsl(var(--emboss-shadow)), 0 0 40px hsl(var(--background) / 0.5)",
+              }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              {content}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
       <UpgradeModal open={showUpgrade} onOpenChange={(v) => { setShowUpgrade(v); if (!v) onClose(); }} type="simulation" used={simGate.used} limit={simGate.limit} />
     </>
   );
