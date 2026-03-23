@@ -8,10 +8,9 @@ import { useState, useMemo, useCallback, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { type FutureSkill, type FutureSkillCategory } from "@/hooks/use-future-skills";
 import { Input } from "@/components/ui/input";
-import { ArrowUpDown, Search, Bookmark, BookmarkCheck, Zap, Diamond, Lock, ChevronDown, ChevronUp, Swords } from "lucide-react";
+import { ArrowUpDown, Search, Zap, Diamond, Lock } from "lucide-react";
 import { getTerritory, TERRITORY_ORDER } from "@/lib/territory-colors";
 import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
 import { RadarChart, PolarGrid, PolarAngleAxis, Radar, ResponsiveContainer } from "recharts";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 import type { CanonicalSkillGrowth } from "@/pages/MapPage";
@@ -56,8 +55,6 @@ export default function FutureSkillsTable({ skills, onSkillClick, skillGrowthMap
   const [domainFilter, setDomainFilter] = useState<string | null>(null);
   const [bookmarks, setBookmarks] = useState<Set<string>>(loadBookmarks);
   const [expandedSkillId, setExpandedSkillId] = useState<string | null>(null);
-  const [expandedRoles, setExpandedRoles] = useState<{ jobId: string; title: string; company: string | null }[]>([]);
-  const [loadingRoles, setLoadingRoles] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const rowRefs = useRef<Map<string, HTMLTableRowElement>>(new Map());
 
@@ -101,30 +98,9 @@ export default function FutureSkillsTable({ skills, onSkillClick, skillGrowthMap
     });
   }, [focusSkillId]);
 
-  // Load roles when expanding a skill
+  // Dispatch focus_skill event when a skill is selected
   useEffect(() => {
-    if (!expandedSkillId) { setExpandedRoles([]); return; }
-    setLoadingRoles(true);
-    (async () => {
-      const { data } = await supabase
-        .from("job_future_skills")
-        .select("job_id")
-        .eq("canonical_skill_id", expandedSkillId)
-        .limit(10);
-      const jobIds = [...new Set((data || []).map(d => d.job_id).filter(Boolean))] as string[];
-      if (jobIds.length === 0) { setExpandedRoles([]); setLoadingRoles(false); return; }
-      const { data: jobs } = await supabase.from("jobs").select("id, title, company_id").in("id", jobIds.slice(0, 5));
-      if (!jobs) { setExpandedRoles([]); setLoadingRoles(false); return; }
-      const companyIds = [...new Set(jobs.map(j => j.company_id).filter(Boolean))] as string[];
-      let cMap = new Map<string, string>();
-      if (companyIds.length > 0) {
-        const { data: companies } = await supabase.from("companies").select("id, name").in("id", companyIds);
-        if (companies) cMap = new Map(companies.map(c => [c.id, c.name]));
-      }
-      setExpandedRoles(jobs.map(j => ({ jobId: j.id, title: j.title, company: j.company_id ? cMap.get(j.company_id) || null : null })));
-      setLoadingRoles(false);
-    })();
-    // Dispatch focus_skill event for AI coach
+    if (!expandedSkillId) return;
     const skill = skills.find(s => s.id === expandedSkillId);
     if (skill) {
       window.dispatchEvent(new CustomEvent("focus_skill", {
@@ -363,11 +339,7 @@ export default function FutureSkillsTable({ skills, onSkillClick, skillGrowthMap
           <tbody>
             {filtered.map(skill => {
               const territory = getTerritory(skill.category as FutureSkillCategory);
-              const xp = getSkillXp(skill.id);
-              const level = getXpLevel(xp);
-              const progressPct = xp >= 2500 ? 100 : Math.min(100, (xp / level.next) * 100);
               const isBookmarked = bookmarks.has(skill.id);
-              const isExpanded = expandedSkillId === skill.id;
               const growth = getSkillGrowth(skill.id);
               const l2Unlocked = level2SkillIds?.has(skill.id) ?? false;
 
@@ -381,16 +353,8 @@ export default function FutureSkillsTable({ skills, onSkillClick, skillGrowthMap
                   <td colSpan={3} className="p-0">
                     {/* Main row */}
                     <div
-                      className={`flex items-center gap-1 px-1 py-1.5 cursor-pointer transition-colors hover:bg-muted/20 ${
-                        isExpanded ? "bg-muted/10" : ""
-                      }`}
-                      onClick={() => {
-                        if (isExpanded) { setExpandedSkillId(null); }
-                        else {
-                          setExpandedSkillId(skill.id);
-                          onSkillClick?.(skill);
-                        }
-                      }}
+                      className="flex items-center gap-1 px-1 py-1.5 cursor-pointer transition-colors hover:bg-muted/20"
+                      onClick={() => onSkillClick?.(skill)}
                       onContextMenu={(e) => { e.preventDefault(); toggleBookmark(skill.id, e); }}
                     >
                       {/* Name + domain pill */}
@@ -440,12 +404,7 @@ export default function FutureSkillsTable({ skills, onSkillClick, skillGrowthMap
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
-                                if (expandedRoles.length > 0 && expandedSkillId === skill.id) {
-                                  const r = expandedRoles[0];
-                                  navigate(`/role/${encodeURIComponent(r.title)}${r.company ? `?company=${encodeURIComponent(r.company)}` : ""}`)
-                                } else {
-                                  navigate(`/role/${encodeURIComponent(skill.name)}?skill=${encodeURIComponent(skill.id)}`);
-                                }
+                                navigate(`/role/${encodeURIComponent(skill.name)}?skill=${encodeURIComponent(skill.id)}`);
                               }}
                               className="w-full px-2 py-1.5 rounded-md text-[10px] font-bold uppercase tracking-wider transition-all hover:brightness-110"
                               style={{ background: "linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary) / 0.8))", color: "hsl(var(--foreground))", fontFamily: "'Cinzel', serif" }}
@@ -491,12 +450,7 @@ export default function FutureSkillsTable({ skills, onSkillClick, skillGrowthMap
                                 <button
                                   onClick={(e) => {
                                     e.stopPropagation();
-                                    if (expandedRoles.length > 0 && expandedSkillId === skill.id) {
-                                      const r = expandedRoles[0];
-                                      navigate(`/role/${encodeURIComponent(r.title)}${r.company ? `?company=${encodeURIComponent(r.company)}&level=2` : "?level=2"}`);
-                                    } else {
-                                      navigate(`/role/${encodeURIComponent(skill.name)}?skill=${encodeURIComponent(skill.id)}&level=2`);
-                                    }
+                                    navigate(`/role/${encodeURIComponent(skill.name)}?skill=${encodeURIComponent(skill.id)}&level=2`);
                                   }}
                                   className="w-full px-2 py-1.5 rounded-md text-[10px] font-bold uppercase tracking-wider transition-all hover:brightness-110"
                                   style={{ background: "linear-gradient(135deg, hsl(45 93% 58%), hsl(45 93% 48%))", color: "hsl(var(--background))", fontFamily: "'Cinzel', serif" }}
@@ -512,93 +466,7 @@ export default function FutureSkillsTable({ skills, onSkillClick, skillGrowthMap
                           </PopoverContent>
                         </Popover>
                       </div>
-                      {/* Expand chevron */}
-                      <div className="w-6 shrink-0 flex justify-center">
-                        {isExpanded ? (
-                          <ChevronUp className="h-3 w-3 text-muted-foreground" />
-                        ) : (
-                          <ChevronDown className="h-3 w-3 text-muted-foreground/40" />
-                        )}
-                      </div>
                     </div>
-
-                    {/* Expanded inline detail */}
-                    {isExpanded && (
-                      <div
-                        className="px-3 pb-3 pt-1 space-y-3 animate-in slide-in-from-top-2 duration-200"
-                        style={{ background: "hsl(var(--muted) / 0.06)" }}
-                      >
-                        {skill.description && (
-                          <p className="text-[11px] text-muted-foreground leading-relaxed">{skill.description}</p>
-                        )}
-
-                        {/* Battle cards */}
-                        <div className="space-y-2">
-                          <InlineTrackCard
-                            label="Level 1 · AI Mastery"
-                            icon={<Zap className="h-3.5 w-3.5" />}
-                            xp={growth?.level1Xp ?? 0}
-                            maxXp={500}
-                            sims={growth?.level1Sims ?? 0}
-                            color="hsl(var(--primary))"
-                            unlocked
-                            onStart={() => {
-                              if (expandedRoles.length > 0) {
-                                const r = expandedRoles[0];
-                                navigate(`/role/${encodeURIComponent(r.title)}${r.company ? `?company=${encodeURIComponent(r.company)}` : ""}`);
-                              } else {
-                                navigate(`/role/${encodeURIComponent(skill.name)}?skill=${encodeURIComponent(skill.id)}`);
-                              }
-                            }}
-                          />
-                          <InlineTrackCard
-                            label="Level 2 · Future Vision"
-                            icon={<Diamond className="h-3.5 w-3.5" />}
-                            xp={growth?.level2Xp ?? 0}
-                            maxXp={500}
-                            sims={growth?.level2Sims ?? 0}
-                            color="hsl(45 93% 58%)"
-                            unlocked={l2Unlocked}
-                            unlockText={!l2Unlocked ? `${Math.max(0, 3 - (growth?.level1Sims ?? 0))} more quests` : undefined}
-                            onStart={() => {
-                              if (expandedRoles.length > 0) {
-                                const r = expandedRoles[0];
-                                navigate(`/role/${encodeURIComponent(r.title)}${r.company ? `?company=${encodeURIComponent(r.company)}&level=2` : "?level=2"}`);
-                              } else {
-                                navigate(`/role/${encodeURIComponent(skill.name)}?skill=${encodeURIComponent(skill.id)}&level=2`);
-                              }
-                            }}
-                            startLabel={l2Unlocked ? "⚔️ Level 2" : "⚡ Preview"}
-                          />
-                        </div>
-
-                        {/* Linked roles (compact) */}
-                        {loadingRoles ? (
-                          <div className="flex gap-1">
-                            {[1,2].map(i => <div key={i} className="h-6 w-24 rounded bg-muted/20 animate-pulse" />)}
-                          </div>
-                        ) : expandedRoles.length > 0 && (
-                          <div className="flex flex-wrap gap-1">
-                            {expandedRoles.map(r => (
-                              <button
-                                key={r.jobId}
-                                onClick={() => navigate(`/role/${encodeURIComponent(r.title)}${r.company ? `?company=${encodeURIComponent(r.company)}` : ""}`)}
-                                className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-medium transition-all hover:brightness-110"
-                                style={{
-                                  background: "hsl(var(--muted) / 0.2)",
-                                  border: "1px solid hsl(var(--filigree) / 0.12)",
-                                  color: "hsl(var(--foreground))",
-                                }}
-                              >
-                                <Swords className="h-2.5 w-2.5" style={{ color: territory.hsl }} />
-                                <span className="truncate max-w-[120px]">{r.title}</span>
-                                {r.company && <span className="text-muted-foreground">· {r.company}</span>}
-                              </button>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    )}
                   </td>
                 </tr>
               );
@@ -611,87 +479,6 @@ export default function FutureSkillsTable({ skills, onSkillClick, skillGrowthMap
           </p>
         )}
       </div>
-    </div>
-  );
-}
-
-/* ── Inline Track Card (compact battle card for expanded rows) ── */
-function InlineTrackCard({
-  label, icon, xp, maxXp, sims, color, unlocked, unlockText, onStart, startLabel,
-}: {
-  label: string; icon: React.ReactNode; xp: number; maxXp: number; sims: number;
-  color: string; unlocked: boolean; unlockText?: string; onStart?: () => void; startLabel?: string;
-}) {
-  const pct = Math.min(100, Math.round((xp / maxXp) * 100));
-  return (
-    <div
-      className="rounded-lg p-3 relative overflow-hidden"
-      style={{
-        background: unlocked
-          ? `linear-gradient(135deg, hsl(var(--muted) / 0.3), hsl(var(--muted) / 0.12))`
-          : "hsl(var(--muted) / 0.06)",
-        border: unlocked ? `1px solid ${color}33` : "1px solid hsl(var(--filigree) / 0.06)",
-        opacity: unlocked ? 1 : 0.65,
-      }}
-    >
-      {unlocked && <div className="absolute left-0 top-0 bottom-0 w-0.5" style={{ background: color }} />}
-      <div className="flex items-center justify-between mb-2">
-        <div className="flex items-center gap-2">
-          <span style={{ color: unlocked ? color : "hsl(var(--muted-foreground))" }}>
-            {unlocked ? icon : <Lock className="h-3.5 w-3.5" />}
-          </span>
-          <span className="text-[11px] font-bold" style={{ fontFamily: "'Cinzel', serif" }}>{label}</span>
-        </div>
-        {unlocked && (
-          <span className="text-xs font-black tabular-nums" style={{ color, fontFamily: "'Cinzel', serif" }}>
-            {xp} XP
-          </span>
-        )}
-      </div>
-      {unlocked ? (
-        <div className="flex items-center gap-2">
-          <div className="flex-1 h-1.5 rounded-full overflow-hidden" style={{ background: "hsl(var(--muted) / 0.4)" }}>
-            <div className="h-full rounded-full" style={{ width: `${pct}%`, background: color }} />
-          </div>
-          <span className="text-[9px] text-muted-foreground shrink-0">{sims} quests</span>
-          {onStart && (
-            <button
-              onClick={(e) => { e.stopPropagation(); onStart(); }}
-              className="px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider shrink-0 transition-all hover:brightness-110"
-              style={{
-                background: `linear-gradient(135deg, ${color}, ${color}cc)`,
-                color: "hsl(var(--foreground))",
-                fontFamily: "'Cinzel', serif",
-                boxShadow: `0 1px 6px ${color}30`,
-              }}
-            >
-              {startLabel || "⚔️ Quest"}
-            </button>
-          )}
-        </div>
-      ) : (
-        <div className="flex items-center gap-2">
-          {unlockText && (
-            <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
-              <Lock className="h-2.5 w-2.5" />
-              {unlockText}
-            </div>
-          )}
-          {onStart && (
-            <button
-              onClick={(e) => { e.stopPropagation(); onStart(); }}
-              className="ml-auto px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider shrink-0 transition-all hover:brightness-110"
-              style={{
-                background: `linear-gradient(135deg, ${color}, ${color}cc)`,
-                color: "hsl(var(--foreground))",
-                fontFamily: "'Cinzel', serif",
-              }}
-            >
-              {startLabel || "⚡ Preview"}
-            </button>
-          )}
-        </div>
-      )}
     </div>
   );
 }
