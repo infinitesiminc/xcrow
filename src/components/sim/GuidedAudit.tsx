@@ -243,7 +243,7 @@ function CheckpointChat({ checkpoint }: { checkpoint: AuditCheckpoint }) {
           </div>
         ))}
         {isStreaming && messages[messages.length - 1]?.role !== "assistant" && (
-          <div className="flex items-center gap-1 text-[11px] text-muted-foreground">
+          <div className="flex items-center gap-1 text-[13px] text-muted-foreground">
             <Loader2 className="h-3 w-3 animate-spin" /> Consulting archives…
           </div>
         )}
