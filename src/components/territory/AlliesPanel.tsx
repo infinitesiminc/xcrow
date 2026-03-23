@@ -22,7 +22,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { getAvatarById } from "@/lib/avatars";
 
 /* ── Sub-tabs ── */
-type SubTab = "online" | "all" | "pending" | "search";
+type SubTab = "online" | "all" | "pending" | "search" | "feed";
 
 const AlliesPanel = () => {
   const { user } = useAuth();
