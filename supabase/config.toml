@@ -57,3 +57,5 @@ project_id = "xtfubistkgodiksegtcx"
     verify_jwt = false
   [functions.backfill-salary]
     verify_jwt = false
+  [functions.generate-sim-image]
+    verify_jwt = false
