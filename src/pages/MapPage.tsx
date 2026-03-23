@@ -239,6 +239,15 @@ const MapPage = () => {
       const undefeatedCount = [...finalL2Ids].filter(id => !l2Completed.has(id)).length;
       if (undefeatedCount > 0) {
         setBossCount(undefeatedCount);
+        if (!hasShownBossToast.current) {
+          hasShownBossToast.current = true;
+          setTimeout(() => {
+            toast({
+              title: `⚔️ ${undefeatedCount} Boss Battle${undefeatedCount > 1 ? "s" : ""} Available!`,
+              description: "Defeat boss nodes on the map to evolve your skills and earn exclusive badges.",
+            });
+          }, 1500);
+        }
       }
 
       const targetRoles = ((profileRes.data as any)?.target_roles || []) as { job_id: string }[];
