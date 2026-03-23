@@ -43,6 +43,8 @@ const RoleDeepDive = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
 
+  const skillParam = searchParams.get("skill") || "";
+  const levelParam = searchParams.get("level") || "";
   const company = searchParams.get("company") || "";
   const jdMarker = searchParams.get("jd") || "";
   const jdUrlParam = searchParams.get("jdUrl") || "";
@@ -50,13 +52,56 @@ const RoleDeepDive = () => {
   const jdText = jdMarker === "session" ? (sessionStorage.getItem("jd_text") || "") : jdMarker;
   const hasJd = !!(jdText || jdUrlParam);
 
+  // ── Skill → Job resolution: redirect to a real job linked to this skill ──
+  const [skillResolved, setSkillResolved] = useState(!skillParam);
+  useEffect(() => {
+    if (!skillParam) return;
+    (async () => {
+      try {
+        // Find jobs linked to this canonical skill
+        const { data: links } = await supabase
+          .from("job_future_skills")
+          .select("job_id")
+          .eq("canonical_skill_id", skillParam)
+          .limit(5);
+        const jobIds = [...new Set((links || []).map(l => l.job_id).filter(Boolean))] as string[];
+        if (jobIds.length > 0) {
+          const { data: jobs } = await supabase
+            .from("jobs")
+            .select("id, title, company_id")
+            .in("id", jobIds)
+            .limit(1);
+          if (jobs && jobs.length > 0) {
+            const job = jobs[0];
+            let companyName = "";
+            if (job.company_id) {
+              const { data: comp } = await supabase.from("companies").select("name").eq("id", job.company_id).single();
+              if (comp) companyName = comp.name;
+            }
+            const params = new URLSearchParams();
+            if (companyName) params.set("company", companyName);
+            if (levelParam) params.set("level", levelParam);
+            const qs = params.toString();
+            navigate(`/role/${encodeURIComponent(job.title)}${qs ? `?${qs}` : ""}`, { replace: true });
+            return;
+          }
+        }
+        // No linked job found — proceed with skill name as job title (fallback to AI analysis)
+        setSkillResolved(true);
+      } catch (err) {
+        console.error("Skill resolution failed:", err);
+        setSkillResolved(true);
+      }
+    })();
+  }, [skillParam, levelParam, navigate]);
+
   const initialResult = useMemo(() => {
-    if (jobTitle && !hasJd) {
+    if (jobTitle && !hasJd && skillResolved) {
       const prebuilt = findPrebuiltRole(jobTitle);
       if (prebuilt) return { ...prebuilt, company };
     }
     return null;
-  }, [jobTitle, company, hasJd]);
+  }, [jobTitle, company, hasJd, skillResolved]);
 
   const [result, setResult] = useState<JobAnalysisResult | null>(initialResult);
   const [loading, setLoading] = useState(!initialResult);
