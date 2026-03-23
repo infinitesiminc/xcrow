@@ -741,7 +741,8 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
           level: 2,
           config: { minRounds: 5, maxRounds: 5, objectiveCount: 5 },
         });
-        setPhase("briefing");
+        // Boss battles skip briefing — cinematic intro handles the setup
+        setPhase("chat");
       } else {
         const compiled = await compileSession(taskName, jobTitle, company, 3, mode, taskMeta, coaching ?? undefined, intelContext ?? undefined, level, futurePrediction ?? undefined);
         setSession(compiled);
