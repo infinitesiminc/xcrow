@@ -14,7 +14,6 @@ import {
   FUTURE_MAP_HEIGHT,
 } from "@/lib/future-territory-layout";
 import FutureIsland from "./FutureIsland";
-import SkillLaunchCard from "./SkillLaunchCard";
 import type { CanonicalSkillGrowth } from "@/pages/MapPage";
 
 import type { SimLaunchRequest } from "./SkillLaunchCard";
