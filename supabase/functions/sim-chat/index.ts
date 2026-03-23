@@ -711,17 +711,33 @@ Equipped Skills: ${equippedSkills}
 
 Generate EXACTLY 5 audit checkpoints. Each checkpoint presents an AI system claim about ${taskName} that the user must evaluate as "safe", "risky", or "critical".
 
-The checkpoints should progress in difficulty:
-1-2: Obvious issues (data bias, missing validation)
-3-4: Subtle issues (edge cases, compounding errors, false confidence)
-5: Non-obvious systemic risk
+DIFFICULTY TIERS — checkpoints MUST follow this escalation pattern:
+
+🟢 SCOUT (Checkpoints 1-2): Warm-up. Obvious AI failures.
+- Red flags are clearly visible (blatant bias, missing validation, hallucinated data)
+- Hints are generous and direct
+- Claims contain clear logical flaws or missing safeguards
+- A professional with basic AI literacy should get these right
+
+🟡 SENTINEL (Checkpoints 3-4): Real challenge. Subtle, plausible risks.
+- AI output looks correct at first glance but has buried issues
+- Risks involve edge cases, compounding errors, false confidence, or statistical misuse
+- Hints are vague — they point at the right area but don't reveal the answer
+- Claims sound professional and well-reasoned, making the flaw harder to spot
+
+🔴 ARBITER (Checkpoint 5): Boss's final form. Adversarial-level difficulty.
+- The AI claim is ALMOST correct — the flaw is systemic, non-obvious, or involves second-order effects
+- NO hint provided (set hint to "Trust your expertise. No hints at this level.")
+- May involve regulatory risk, cascading failures, or sociotechnical blind spots
+- IMPORTANT: Sometimes the correct answer IS "safe" — not everything is dangerous. Punish trigger-happy players who mark everything as critical.
 
 For EACH checkpoint, return a JSON object with:
 - "id": short snake_case identifier (e.g., "bias_detection", "edge_case_handling")
 - "area": 2-4 word topic label (e.g., "Data Validation", "Model Confidence")
+- "difficulty": one of "scout", "sentinel", or "arbiter"
 - "aiClaim": A specific claim the AI system makes about its output or process (1-2 sentences). Written as if the AI is reporting to the user. Should sound plausible but may contain a flaw.
 - "question": The evaluation question posed to the user (e.g., "Is this AI claim reliable for production use?")
-- "hint": A subtle clue that points toward the correct verdict WITHOUT revealing it (1 sentence)
+- "hint": A subtle clue that points toward the correct verdict WITHOUT revealing it (1 sentence). For arbiter difficulty, set to "Trust your expertise. No hints at this level."
 - "correctVerdict": one of "safe", "risky", or "critical"
 - "explanation": 2-3 sentences explaining WHY this verdict is correct, referencing specific failure modes
 - "realWorldExample": A concrete, real-world case study (company name, year, what happened) that illustrates this type of issue. Use REAL examples from AI/ML history.
@@ -734,9 +750,10 @@ Also return:
 
 IMPORTANT:
 - Mix verdicts: aim for 1-2 "safe", 2-3 "risky", 0-1 "critical"
-- NOT everything should be wrong — some AI claims ARE safe
+- NOT everything should be wrong — some AI claims ARE safe (especially consider making the arbiter checkpoint "safe" to trap over-cautious players)
 - Real-world examples must be factually accurate and well-known
 - Reference the specific disrupting technologies (${threatList}) in scenarios
+- Checkpoint difficulty MUST be: scout, scout, sentinel, sentinel, arbiter (in that order)
 
 Respond ONLY with valid JSON object containing: checkpoints (array of 5), aiOutputSummary, aiAutoAction, scenarioContext.
 No markdown wrapping.`;
