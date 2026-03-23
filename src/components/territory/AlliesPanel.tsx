@@ -13,6 +13,8 @@ import {
   Users, Search, UserPlus, Check, X, Shield,
   MessageCircle, Eye, Swords, Clock, Sparkles,
 } from "lucide-react";
+import { AnimatePresence } from "framer-motion";
+import AllyChat from "./AllyChat";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
