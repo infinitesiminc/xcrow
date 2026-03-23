@@ -344,7 +344,7 @@ export default function BossBattleArena({
 
         {/* VS flash in center */}
         <motion.div
-          className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none z-0"
+          className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none z-0 select-none"
           animate={{ opacity: [0.03, 0.08, 0.03] }}
           transition={{ duration: 4, repeat: Infinity }}
         >
