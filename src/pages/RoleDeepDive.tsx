@@ -53,9 +53,26 @@ const RoleDeepDive = () => {
   const hasJd = !!(jdText || jdUrlParam);
 
   // ── Skill → Job resolution: single-query redirect to a real linked job ──
-  const [skillResolved, setSkillResolved] = useState(!skillParam);
+  const [skillResolved, setSkillResolved] = useState(true);
   useEffect(() => {
-    if (!skillParam) return;
+    let isActive = true;
+    let redirected = false;
+    let timeoutId: ReturnType<typeof setTimeout> | null = null;
+
+    if (!skillParam) {
+      setSkillResolved(true);
+      return () => {
+        isActive = false;
+      };
+    }
+
+    setSkillResolved(false);
+    timeoutId = setTimeout(() => {
+      if (!isActive || redirected) return;
+      console.warn("Skill resolution timed out, continuing with fallback role context.");
+      setSkillResolved(true);
+    }, 8000);
+
     (async () => {
       try {
         // Single joined query: skill → job + company in one round-trip
@@ -67,6 +84,7 @@ const RoleDeepDive = () => {
 
         const job = links?.[0]?.jobs;
         if (job) {
+          redirected = true;
           const companyName = job.companies?.name || "";
           const params = new URLSearchParams();
           if (companyName) params.set("company", companyName);
@@ -75,12 +93,18 @@ const RoleDeepDive = () => {
           navigate(`/role/${encodeURIComponent(job.title)}${qs ? `?${qs}` : ""}`, { replace: true });
           return;
         }
-        setSkillResolved(true);
       } catch (err) {
         console.error("Skill resolution failed:", err);
-        setSkillResolved(true);
+      } finally {
+        if (timeoutId) clearTimeout(timeoutId);
+        if (isActive && !redirected) setSkillResolved(true);
       }
     })();
+
+    return () => {
+      isActive = false;
+      if (timeoutId) clearTimeout(timeoutId);
+    };
   }, [skillParam, levelParam, navigate]);
 
   const initialResult = useMemo(() => {
