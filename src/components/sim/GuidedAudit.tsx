@@ -735,7 +735,7 @@ export default function GuidedAudit({
         <span className="text-[11px] font-bold uppercase tracking-wider" style={{ color: "hsl(262 80% 70%)", fontFamily: "'Cinzel', serif" }}>
           🔮 Oracle's Claim:{" "}
         </span>
-        <span className="text-foreground/80">{checkpoint.aiClaim}</span>
+        <span className="text-[15px] text-foreground/80 leading-relaxed">{checkpoint.aiClaim}</span>
       </div>
 
       {/* Checkpoint card */}
