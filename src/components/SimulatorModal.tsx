@@ -1136,12 +1136,13 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
 
   const content = (
     <div className={inline ? "h-full flex flex-col overflow-hidden" : "max-w-3xl w-[95vw] h-[90vh] sm:h-[90vh] h-[100dvh] sm:rounded-2xl rounded-none p-0 flex flex-col overflow-hidden gap-0 border-border/50"}>
-        {/* Header — war room banner (matches Mission Briefing layout) */}
+        {/* Header wrapper */}
+        <div className="shrink-0">
         <div className="shrink-0 z-20 bg-background/95 backdrop-blur-md border-b border-border px-4 h-16 flex items-center justify-between gap-3 relative overflow-hidden">
           <HeaderVibeImages seed={(taskName?.length ?? 0) * 23} count={4} />
             <div className="relative z-10 w-8 shrink-0" /> {/* spacer to balance close button */}
             <div className="relative z-10 text-center min-w-0 flex-1">
-              <span className="text-[10px] uppercase tracking-wider text-primary font-semibold">🗡️ {simLevel === 2 ? "Level 2 — Sentinel Audit" : "Level 1 — AI Mastery"}</span>
+              <span className="text-[10px] uppercase tracking-wider text-primary font-semibold">🗡️ {level === 2 ? "Level 2 — Sentinel Audit" : "Level 1 — AI Mastery"}</span>
               <span className="text-sm font-semibold text-foreground truncate block">{taskName}</span>
               <span className="text-[10px] text-muted-foreground">{jobTitle}{company ? ` · ${company}` : ""}</span>
             </div>
