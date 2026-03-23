@@ -40,6 +40,7 @@ export function useFriends() {
   const [friends, setFriends] = useState<Friend[]>([]);
   const [loading, setLoading] = useState(true);
   const [pendingCount, setPendingCount] = useState(0);
+  const [unreadCount, setUnreadCount] = useState(0);
 
   const fetchFriends = useCallback(async () => {
     if (!user) { setFriends([]); setLoading(false); return; }
