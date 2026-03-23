@@ -219,10 +219,36 @@ export default function MyRolesPanel({ onSelectRole, onAskChat, onTabChange }: M
         }
       }
 
-      // Mark conquered (all quests done or high XP)
+      // Derive kingdom tier from skill XP using unified progression
+      // For each kingdom, compute how many skills are at each castle tier
       for (const k of roleMap.values()) {
-        if (k.questsCompleted >= k.totalQuests || k.xp >= 800) {
+        if (k.tier === "scouted") continue; // scouted stays scouted until overridden
+        // Use XP per skill earned — approximate castle tier from accumulated XP
+        // Each skill's XP threshold: Outpost=150, Fortress=500, Citadel=1200
+        const skillXPs = new Map<string, number>();
+        for (const s of (simsRes.data || []) as any[]) {
+          if (getKey(s.job_title, s.company) !== k.key) continue;
+          const earned = s.skills_earned as any[];
+          if (Array.isArray(earned)) {
+            for (const sk of earned) {
+              const id = typeof sk === "string" ? sk : (sk?.skillId || sk?.skill_id || sk?.name);
+              const xp = typeof sk === "object" ? (sk?.xp || 40) : 40;
+              if (id) skillXPs.set(id, (skillXPs.get(id) || 0) + xp);
+            }
+          }
+        }
+
+        const castleTiers: CastleTier[] = Array.from(skillXPs.values()).map(xp => getCastleState(xp).tier);
+        const atOutpost = castleTiers.filter(t => t !== "ruins").length;
+        const atFortress = castleTiers.filter(t => t === "fortress" || t === "citadel" || t === "grandmaster").length;
+        const atCitadel = castleTiers.filter(t => t === "citadel" || t === "grandmaster").length;
+
+        if (atCitadel >= castleTiers.length && castleTiers.length > 0) {
           k.tier = "conquered";
+        } else if (atFortress >= 3) {
+          k.tier = "fortified";
+        } else if (atOutpost >= 1) {
+          k.tier = "contested";
         }
       }
 
