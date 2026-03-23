@@ -1295,6 +1295,8 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                     onComplete={handleAuditComplete}
                     onRestart={() => startCompile()}
                     onViewDebrief={() => setPhase("done")}
+                    isBossBattle={level === 2}
+                    skillName={taskName}
                   />
                 </motion.div>
               )}
