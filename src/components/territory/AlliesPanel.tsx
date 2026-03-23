@@ -23,7 +23,11 @@ import { getAvatarById } from "@/lib/avatars";
 /* ── Sub-tabs ── */
 type SubTab = "online" | "all" | "pending" | "search";
 
-const AlliesPanel = () => {
+interface AlliesPanelProps {
+  onLaunchSim?: (req: { jobTitle: string; taskName: string; company?: string }) => void;
+}
+
+const AlliesPanel = ({ onLaunchSim: onLaunchSimProp }: AlliesPanelProps) => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { friends, loading, pendingCount, acceptRequest, removeFriend, sendRequest } = useFriends();
