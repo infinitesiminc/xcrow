@@ -261,74 +261,85 @@ export default function FutureSkillsTable({ skills, onSkillClick, skillGrowthMap
         </div>
       </div>
 
-      {/* Domain Radar Chart — clickable territories */}
-      {showChart && totalXp > 0 && (
-        <div
-          className="mx-3 mb-2 rounded-lg shrink-0 relative"
-          style={{
-            background: "hsl(var(--surface-stone) / 0.5)",
-            border: "1px solid hsl(var(--filigree) / 0.1)",
-          }}
-        >
-          <div className="flex items-center justify-between px-3 pt-2">
-            <span
-              className="text-[10px] font-bold uppercase tracking-widest"
-              style={{ fontFamily: "'Cinzel', serif", color: "hsl(var(--filigree-glow))" }}
-            >
-              Territory Power
-            </span>
-            <button
-              onClick={() => setShowChart(false)}
-              className="text-[9px] text-muted-foreground hover:text-foreground transition-colors"
-            >
-              Hide
-            </button>
-          </div>
-          <p className="px-3 text-[9px] text-muted-foreground/60 italic">Click a domain to filter</p>
-          <ResponsiveContainer width="100%" height={160}>
-            <RadarChart cx="50%" cy="50%" outerRadius="70%" data={domainData} onClick={handleRadarClick}>
-              <PolarGrid stroke="hsl(var(--filigree) / 0.15)" />
-              <PolarAngleAxis
-                dataKey="domain"
-                tick={({ x, y, payload }: any) => {
-                  const cat = domainData.find(d => d.domain === payload.value)?.fullCategory;
-                  const isActive = domainFilter === cat;
-                  return (
-                    <text
-                      x={x} y={y}
-                      textAnchor="middle"
-                      fontSize={isActive ? 9 : 8}
-                      fill={isActive ? "hsl(var(--filigree-glow))" : "hsl(var(--muted-foreground))"}
-                      fontWeight={isActive ? 700 : 400}
-                      style={{ cursor: "pointer" }}
-                    >
-                      {payload.value}
-                    </text>
-                  );
+      {/* Mini Territory Power radar — inline thumbnail + popover */}
+      {totalXp > 0 && (
+        <div className="px-3 mb-2 shrink-0">
+          <Popover open={chartOpen} onOpenChange={setChartOpen}>
+            <PopoverTrigger asChild>
+              <button
+                className="flex items-center gap-2 w-full rounded-lg px-2 py-1.5 transition-all hover:brightness-110"
+                style={{
+                  background: "hsl(var(--surface-stone) / 0.5)",
+                  border: "1px solid hsl(var(--filigree) / 0.1)",
                 }}
-              />
-              <Radar
-                name="XP"
-                dataKey="xp"
-                stroke="hsl(var(--filigree-glow))"
-                fill="hsl(var(--filigree-glow))"
-                fillOpacity={0.15}
-                strokeWidth={1.5}
-              />
-            </RadarChart>
-          </ResponsiveContainer>
-        </div>
-      )}
-
-      {!showChart && totalXp > 0 && (
-        <div className="px-3 mb-1 shrink-0">
-          <button
-            onClick={() => setShowChart(true)}
-            className="text-[9px] text-muted-foreground hover:text-foreground transition-colors"
-            style={{ fontFamily: "'Cinzel', serif" }}
-          >
-            Show Territory Power ▾
-          </button>
+              >
+                {/* Tiny inline radar thumbnail */}
+                <div className="w-10 h-10 shrink-0">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <RadarChart cx="50%" cy="50%" outerRadius="80%" data={domainData}>
+                      <Radar dataKey="xp" stroke="hsl(var(--filigree-glow))" fill="hsl(var(--filigree-glow))" fillOpacity={0.2} strokeWidth={1} />
+                    </RadarChart>
+                  </ResponsiveContainer>
+                </div>
+                <div className="flex flex-col items-start">
+                  <span className="text-[10px] font-bold uppercase tracking-widest" style={{ fontFamily: "'Cinzel', serif", color: "hsl(var(--filigree-glow))" }}>
+                    Territory Power
+                  </span>
+                  <span className="text-[9px] text-muted-foreground">{totalXp.toLocaleString()} XP · click to explore</span>
+                </div>
+              </button>
+            </PopoverTrigger>
+            <PopoverContent
+              side="right"
+              align="start"
+              className="w-72 p-0"
+              style={{
+                background: "hsl(var(--surface-stone))",
+                border: "1px solid hsl(var(--filigree) / 0.2)",
+              }}
+            >
+              <div className="px-3 pt-2 pb-1">
+                <span className="text-[10px] font-bold uppercase tracking-widest" style={{ fontFamily: "'Cinzel', serif", color: "hsl(var(--filigree-glow))" }}>
+                  Territory Power
+                </span>
+                <p className="text-[9px] text-muted-foreground/60 italic">Click a domain to filter</p>
+              </div>
+              <ResponsiveContainer width="100%" height={200}>
+                <RadarChart cx="50%" cy="50%" outerRadius="70%" data={domainData} onClick={handleRadarClick}>
+                  <PolarGrid stroke="hsl(var(--filigree) / 0.15)" />
+                  <PolarAngleAxis
+                    dataKey="domain"
+                    tick={({ x, y, payload }: any) => {
+                      const cat = domainData.find(d => d.domain === payload.value)?.fullCategory;
+                      const isActive = domainFilter === cat;
+                      return (
+                        <text x={x} y={y} textAnchor="middle" fontSize={isActive ? 9 : 8}
+                          fill={isActive ? "hsl(var(--filigree-glow))" : "hsl(var(--muted-foreground))"}
+                          fontWeight={isActive ? 700 : 400} style={{ cursor: "pointer" }}
+                        >
+                          {payload.value}
+                        </text>
+                      );
+                    }}
+                  />
+                  <Radar name="XP" dataKey="xp" stroke="hsl(var(--filigree-glow))" fill="hsl(var(--filigree-glow))" fillOpacity={0.15} strokeWidth={1.5} />
+                </RadarChart>
+              </ResponsiveContainer>
+              {/* Domain XP legend */}
+              <div className="px-3 pb-2 grid grid-cols-2 gap-x-2 gap-y-0.5">
+                {domainData.filter(d => d.xp > 0).map(d => (
+                  <button
+                    key={d.fullCategory}
+                    onClick={() => { setDomainFilter(prev => prev === d.fullCategory ? null : d.fullCategory); setChartOpen(false); }}
+                    className="flex items-center gap-1 text-[9px] text-muted-foreground hover:text-foreground transition-colors truncate"
+                  >
+                    <span>{d.domain.split(" ")[0]}</span>
+                    <span className="font-mono" style={{ color: "hsl(var(--filigree-glow))" }}>{d.xp}</span>
+                  </button>
+                ))}
+              </div>
+            </PopoverContent>
+          </Popover>
         </div>
       )}
 
