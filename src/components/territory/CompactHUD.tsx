@@ -1,22 +1,16 @@
 /**
  * CompactHUD — Dark Fantasy RPG status bar.
- * Stone-textured bar with Cinzel typography, filigree borders, and territory-colored stats.
+ * Now uses unified progression: breadth-based Player Rank from castles + kingdoms.
  */
 
 import { useMemo } from "react";
 import { Shield, Target, Zap, Crown, Star } from "lucide-react";
 import { motion } from "framer-motion";
 import type { SkillXP } from "@/lib/skill-map";
+import { getCastleState } from "@/lib/castle-levels";
+import { getPlayerRank, PLAYER_RANKS, type KingdomTier } from "@/lib/progression";
 
-const TIERS = [
-  { name: "Recruit", minXP: 0, icon: Shield },
-  { name: "Explorer", minXP: 500, icon: Shield },
-  { name: "Strategist", minXP: 3000, icon: Crown },
-  { name: "Commander", minXP: 10000, icon: Crown },
-  { name: "Legend", minXP: 30000, icon: Star },
-] as const;
-
-const TIER_COLORS = [
+const RANK_COLORS = [
   "hsl(var(--muted-foreground))",
   "hsl(var(--territory-analytical))",
   "hsl(var(--territory-technical))",
@@ -24,33 +18,27 @@ const TIER_COLORS = [
   "hsl(var(--filigree-glow))",
 ];
 
-function getTierIndex(xp: number) {
-  for (let i = TIERS.length - 1; i >= 0; i--) {
-    if (xp >= TIERS[i].minXP) return i;
-  }
-  return 0;
-}
+const RANK_ICONS = [Shield, Shield, Crown, Crown, Star] as const;
 
 interface CompactHUDProps {
   skills: SkillXP[];
   targetSkillIds: Set<string>;
   userName?: string;
+  kingdomTiers?: KingdomTier[];
 }
 
-export default function CompactHUD({ skills, targetSkillIds, userName }: CompactHUDProps) {
-  const { totalXP, tierIdx, claimed, total, coveragePct, castlesClaimed } = useMemo(() => {
-    const totalXP = skills.reduce((sum, s) => sum + s.xp, 0);
-    const tierIdx = getTierIndex(totalXP);
+export default function CompactHUD({ skills, targetSkillIds, userName, kingdomTiers = [] }: CompactHUDProps) {
+  const { rank, rankColor, RankIcon, claimed, total, coveragePct, castlesClaimed } = useMemo(() => {
+    const castleTiers = skills.filter(s => s.xp > 0).map(s => getCastleState(s.xp).tier);
+    const rank = getPlayerRank(castleTiers, kingdomTiers);
+    const rankColor = RANK_COLORS[rank.index];
+    const RankIcon = RANK_ICONS[rank.index];
     const claimed = skills.filter((s) => s.xp > 0 && targetSkillIds.has(s.id)).length;
     const total = targetSkillIds.size;
     const coveragePct = total > 0 ? Math.round((claimed / total) * 100) : 0;
-    const castlesClaimed = skills.filter(s => s.xp >= 150).length;
-    return { totalXP, tierIdx, claimed, total, coveragePct, castlesClaimed };
-  }, [skills, targetSkillIds]);
-
-  const tier = TIERS[tierIdx];
-  const tierColor = TIER_COLORS[tierIdx];
-  const TierIcon = tier.icon;
+    const castlesClaimed = castleTiers.filter(t => t !== "ruins").length;
+    return { rank, rankColor, RankIcon, claimed, total, coveragePct, castlesClaimed };
+  }, [skills, targetSkillIds, kingdomTiers]);
 
   return (
     <motion.div
@@ -64,43 +52,35 @@ export default function CompactHUD({ skills, targetSkillIds, userName }: Compact
         boxShadow: "inset 0 -1px 0 hsl(var(--emboss-light)), 0 2px 8px hsl(var(--emboss-shadow))",
       }}
     >
-      {/* Tier badge */}
+      {/* Rank badge */}
       <div className="flex items-center gap-1.5">
-        <TierIcon className="h-3.5 w-3.5" style={{ color: tierColor }} />
+        <RankIcon className="h-3.5 w-3.5" style={{ color: rankColor }} />
         <span
           className="text-xs tracking-widest uppercase"
           style={{
-            color: tierColor,
+            color: rankColor,
             fontFamily: "'Cinzel', serif",
             fontWeight: 700,
-            textShadow: `0 0 12px ${tierColor}`,
+            textShadow: `0 0 12px ${rankColor}`,
           }}
         >
-          {tier.name}
+          {rank.rank}
         </span>
       </div>
 
       {/* Filigree separator */}
       <div className="w-px h-4 opacity-30" style={{ background: "hsl(var(--filigree))" }} />
 
-      {/* XP */}
-      <div className="flex items-center gap-1.5">
-        <Zap className="h-3 w-3" style={{ color: "hsl(var(--filigree-glow))" }} />
-        <span
-          className="text-[11px] font-mono"
-          style={{ color: "hsl(var(--filigree-glow))", textShadow: "0 0 6px hsl(var(--filigree-glow) / 0.4)" }}
-        >
-          {totalXP.toLocaleString()} XP
-        </span>
-      </div>
-
-      {/* Filigree separator */}
-      <div className="w-px h-4 opacity-30" style={{ background: "hsl(var(--filigree))" }} />
-
-      {/* Castles */}
-      <div className="flex items-center gap-1">
-        <span className="text-[11px]">🏰</span>
-        <span className="text-[11px] font-mono text-foreground/70">{castlesClaimed} castles</span>
+      {/* Castles + Kingdoms */}
+      <div className="flex items-center gap-3">
+        <div className="flex items-center gap-1">
+          <span className="text-[11px]">🏰</span>
+          <span className="text-[11px] font-mono text-foreground/70">{castlesClaimed}</span>
+        </div>
+        <div className="flex items-center gap-1">
+          <span className="text-[11px]">👑</span>
+          <span className="text-[11px] font-mono text-foreground/70">{kingdomTiers.length}</span>
+        </div>
       </div>
 
       {/* Territory coverage */}

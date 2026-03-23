@@ -1,13 +1,14 @@
 /**
  * MyRolesPanel — Dynamic Kingdoms view.
- * Kingdoms auto-emerge from user behavior: Scouted → Contested → Conquered.
+ * Kingdoms auto-emerge from user behavior: Scouted → Contested → Fortified → Conquered.
+ * Kingdom tier is now derived from linked skill castles (unified progression).
  * Includes Arsenal tab for AI tools.
  */
 import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Search, ChevronRight, Shield, Flame, Wrench, ExternalLink, X,
-  Sparkles, Eye, Swords, Crown, Users,
+  Sparkles, Eye, Swords, Crown, Users, Castle,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { formatDistanceToNow } from "date-fns";
@@ -15,6 +16,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { getCastleState, type CastleTier } from "@/lib/castle-levels";
+import { type KingdomTier, KINGDOM_TIERS as KINGDOM_TIER_DEFS } from "@/lib/progression";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   AI_TOOL_REGISTRY, getSavedTools, removeToolFromList,
@@ -23,8 +25,6 @@ import {
 import type { RoleResult } from "@/components/InlineRoleCarousel";
 
 /* ── Types ── */
-
-type KingdomTier = "scouted" | "contested" | "conquered";
 
 interface Kingdom {
   key: string;
@@ -52,7 +52,8 @@ interface MyRolesPanelProps {
 const TIER_META: Record<KingdomTier, { icon: typeof Eye; label: string; emoji: string; color: string }> = {
   scouted:   { icon: Eye,    label: "Scouted",   emoji: "👁️", color: "hsl(var(--muted-foreground))" },
   contested: { icon: Swords, label: "Contested",  emoji: "⚔️", color: "hsl(var(--territory-communication))" },
-  conquered: { icon: Crown,  label: "Conquered",  emoji: "🏰", color: "hsl(var(--filigree-glow))" },
+  fortified: { icon: Castle, label: "Fortified",  emoji: "🏰", color: "hsl(var(--territory-analytical))" },
+  conquered: { icon: Crown,  label: "Conquered",  emoji: "👑", color: "hsl(var(--filigree-glow))" },
 };
 
 const TIER_GLOW: Record<CastleTier, string> = {
@@ -218,10 +219,36 @@ export default function MyRolesPanel({ onSelectRole, onAskChat, onTabChange }: M
         }
       }
 
-      // Mark conquered (all quests done or high XP)
+      // Derive kingdom tier from skill XP using unified progression
+      // For each kingdom, compute how many skills are at each castle tier
       for (const k of roleMap.values()) {
-        if (k.questsCompleted >= k.totalQuests || k.xp >= 800) {
+        if (k.tier === "scouted") continue; // scouted stays scouted until overridden
+        // Use XP per skill earned — approximate castle tier from accumulated XP
+        // Each skill's XP threshold: Outpost=150, Fortress=500, Citadel=1200
+        const skillXPs = new Map<string, number>();
+        for (const s of (simsRes.data || []) as any[]) {
+          if (getKey(s.job_title, s.company) !== k.key) continue;
+          const earned = s.skills_earned as any[];
+          if (Array.isArray(earned)) {
+            for (const sk of earned) {
+              const id = typeof sk === "string" ? sk : (sk?.skillId || sk?.skill_id || sk?.name);
+              const xp = typeof sk === "object" ? (sk?.xp || 40) : 40;
+              if (id) skillXPs.set(id, (skillXPs.get(id) || 0) + xp);
+            }
+          }
+        }
+
+        const castleTiers: CastleTier[] = Array.from(skillXPs.values()).map(xp => getCastleState(xp).tier);
+        const atOutpost = castleTiers.filter(t => t !== "ruins").length;
+        const atFortress = castleTiers.filter(t => t === "fortress" || t === "citadel" || t === "grandmaster").length;
+        const atCitadel = castleTiers.filter(t => t === "citadel" || t === "grandmaster").length;
+
+        if (atCitadel >= castleTiers.length && castleTiers.length > 0) {
           k.tier = "conquered";
+        } else if (atFortress >= 3) {
+          k.tier = "fortified";
+        } else if (atOutpost >= 1) {
+          k.tier = "contested";
         }
       }
 
@@ -293,7 +320,7 @@ export default function MyRolesPanel({ onSelectRole, onAskChat, onTabChange }: M
   }, [kingdoms, tierFilter, q]);
 
   const tierCounts = useMemo(() => {
-    const c = { scouted: 0, contested: 0, conquered: 0 };
+    const c = { scouted: 0, contested: 0, fortified: 0, conquered: 0 };
     for (const k of kingdoms) c[k.tier]++;
     return c;
   }, [kingdoms]);
@@ -347,7 +374,8 @@ export default function MyRolesPanel({ onSelectRole, onAskChat, onTabChange }: M
         <div className="flex gap-1 mb-3 shrink-0">
           {([
             { key: "all" as const, label: "All", count: kingdoms.length },
-            { key: "conquered" as const, label: "🏰 Conquered", count: tierCounts.conquered },
+            { key: "conquered" as const, label: "👑 Conquered", count: tierCounts.conquered },
+            { key: "fortified" as const, label: "🏰 Fortified", count: tierCounts.fortified },
             { key: "contested" as const, label: "⚔️ Contested", count: tierCounts.contested },
             { key: "scouted" as const, label: "👁️ Scouted", count: tierCounts.scouted },
           ] as const).map(f => (

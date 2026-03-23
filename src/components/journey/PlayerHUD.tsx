@@ -1,41 +1,30 @@
 /**
  * PlayerHUD — RPG Character Sheet (left panel).
- * Territory coverage, tier badge, stat rings, human edges as trophies.
+ * Now uses unified progression: Player Rank from breadth metrics (castles + kingdoms).
  */
 import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
-  ShieldCheck, Lock, ArrowRight, Swords, Star, Crown, Medal, Map,
+  ShieldCheck, Lock, ArrowRight, Swords, Star, Crown, Medal, Map, Compass,
 } from "lucide-react";
 import {
   SKILL_TAXONOMY,
   CATEGORY_META,
   type SkillXP,
 } from "@/lib/skill-map";
+import { getCastleState, type CastleTier } from "@/lib/castle-levels";
+import { getPlayerRank, PLAYER_RANKS, type KingdomTier } from "@/lib/progression";
 import type { TargetRole } from "@/pages/Journey";
 
-const TIERS = [
-  { name: "Recruit", threshold: 0, icon: Swords, color: "hsl(215, 20%, 55%)" },
-  { name: "Explorer", threshold: 500, icon: Medal, color: "hsl(180, 45%, 50%)" },
-  { name: "Strategist", threshold: 3000, icon: Star, color: "hsl(45, 70%, 55%)" },
-  { name: "Commander", threshold: 10000, icon: Crown, color: "hsl(270, 50%, 60%)" },
-  { name: "Legend", threshold: 30000, icon: Crown, color: "hsl(340, 60%, 55%)" },
-] as const;
-
-function getTier(xp: number) {
-  for (let i = TIERS.length - 1; i >= 0; i--) {
-    if (xp >= TIERS[i].threshold) return { ...TIERS[i], index: i };
-  }
-  return { ...TIERS[0], index: 0 };
-}
-
-function getTierProgress(xp: number) {
-  const tier = getTier(xp);
-  if (tier.index >= TIERS.length - 1) return 100;
-  const next = TIERS[tier.index + 1];
-  return Math.round(((xp - tier.threshold) / (next.threshold - tier.threshold)) * 100);
-}
+const RANK_ICONS = [Swords, Medal, Star, Crown, Crown] as const;
+const RANK_COLORS = [
+  "hsl(215, 20%, 55%)",
+  "hsl(180, 45%, 50%)",
+  "hsl(45, 70%, 55%)",
+  "hsl(270, 50%, 60%)",
+  "hsl(340, 60%, 55%)",
+];
 
 interface PlayerHUDProps {
   skills: SkillXP[];
@@ -43,18 +32,23 @@ interface PlayerHUDProps {
   isEmpty: boolean;
   targetRoles: TargetRole[];
   targetSkillNames: Set<string>;
+  /** Kingdom tiers from MyRolesPanel for rank calculation */
+  kingdomTiers?: KingdomTier[];
 }
 
-export default function PlayerHUD({ skills, uniqueTasks, isEmpty, targetRoles, targetSkillNames }: PlayerHUDProps) {
+export default function PlayerHUD({ skills, uniqueTasks, isEmpty, targetRoles, targetSkillNames, kingdomTiers = [] }: PlayerHUDProps) {
   const navigate = useNavigate();
 
   const activeSkills = useMemo(() => skills.filter(s => s.xp > 0), [skills]);
   const totalXP = useMemo(() => activeSkills.reduce((sum, s) => sum + s.xp, 0), [activeSkills]);
 
-  const tier = getTier(totalXP);
-  const tierProgress = getTierProgress(totalXP);
-  const TierIcon = tier.icon;
-  const nextTier = tier.index < TIERS.length - 1 ? TIERS[tier.index + 1] : null;
+  // Breadth-based rank from unified progression
+  const castleTiers = useMemo(() => activeSkills.map(s => getCastleState(s.xp).tier), [activeSkills]);
+  const rank = useMemo(() => getPlayerRank(castleTiers, kingdomTiers), [castleTiers, kingdomTiers]);
+
+  const rankColor = RANK_COLORS[rank.index];
+  const RankIcon = RANK_ICONS[rank.index];
+  const castlesClaimed = useMemo(() => castleTiers.filter(t => t !== "ruins").length, [castleTiers]);
 
   // Territory coverage: how many target-role skills are claimed
   const coverage = useMemo(() => {
@@ -82,52 +76,54 @@ export default function PlayerHUD({ skills, uniqueTasks, isEmpty, targetRoles, t
 
   return (
     <div className="h-full flex flex-col overflow-hidden">
-      {/* Tier Badge */}
+      {/* Rank Badge */}
       <div className="px-4 pt-5 pb-3">
         <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="flex items-center gap-3">
           <div
             className="h-11 w-11 rounded-xl flex items-center justify-center shrink-0"
             style={{
-              background: `linear-gradient(135deg, ${tier.color}, transparent)`,
-              border: `1.5px solid ${tier.color}`,
-              boxShadow: `0 0 14px ${tier.color}33`,
+              background: `linear-gradient(135deg, ${rankColor}, transparent)`,
+              border: `1.5px solid ${rankColor}`,
+              boxShadow: `0 0 14px ${rankColor}33`,
             }}
           >
-            <TierIcon className="h-5 w-5" style={{ color: tier.color }} />
+            <RankIcon className="h-5 w-5" style={{ color: rankColor }} />
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-[10px] uppercase tracking-[0.15em] text-white/40 font-medium">Rank</p>
-            <p className="text-sm font-bold text-white/90">{tier.name}</p>
+            <p className="text-sm font-bold text-white/90">{rank.rank}</p>
           </div>
         </motion.div>
 
-        {/* Tier progress */}
+        {/* Rank progress */}
         <div className="mt-3">
           <div className="flex items-center justify-between mb-1.5">
-            <span className="text-[9px] font-mono text-white/40">{totalXP} XP</span>
-            {nextTier && <span className="text-[9px] font-mono text-white/30">{nextTier.name} at {nextTier.threshold}</span>}
+            <span className="text-[9px] font-mono text-white/40">🏰 {castlesClaimed} castles · 👑 {kingdomTiers.length} kingdoms</span>
           </div>
           <div className="h-1.5 rounded-full overflow-hidden" style={{ background: "hsla(0,0%,100%,0.06)" }}>
             <motion.div
               className="h-full rounded-full"
               initial={{ width: 0 }}
-              animate={{ width: `${tierProgress}%` }}
+              animate={{ width: `${rank.progress}%` }}
               transition={{ duration: 0.8, ease: "easeOut" }}
-              style={{ background: `linear-gradient(90deg, ${tier.color}, ${tier.color}88)` }}
+              style={{ background: `linear-gradient(90deg, ${rankColor}, ${rankColor}88)` }}
             />
           </div>
+          {rank.nextRequirement && (
+            <p className="text-[8px] text-white/30 mt-1.5 truncate">{rank.nextRequirement}</p>
+          )}
         </div>
 
-        {/* Tier ladder */}
+        {/* Rank ladder */}
         <div className="flex items-center gap-1 mt-3">
-          {TIERS.map((t, i) => (
-            <div key={t.name} className="flex-1 flex flex-col items-center gap-1">
+          {PLAYER_RANKS.map((r, i) => (
+            <div key={r.rank} className="flex-1 flex flex-col items-center gap-1">
               <div
                 className="h-1 w-full rounded-full"
-                style={{ background: i <= tier.index ? t.color : "hsla(0,0%,100%,0.06)", opacity: i <= tier.index ? 0.8 : 1 }}
+                style={{ background: i <= rank.index ? RANK_COLORS[i] : "hsla(0,0%,100%,0.06)", opacity: i <= rank.index ? 0.8 : 1 }}
               />
-              <span className="text-[7px] font-mono" style={{ color: i <= tier.index ? t.color : "hsla(0,0%,100%,0.2)" }}>
-                {t.name.slice(0, 3).toUpperCase()}
+              <span className="text-[7px] font-mono" style={{ color: i <= rank.index ? RANK_COLORS[i] : "hsla(0,0%,100%,0.2)" }}>
+                {r.rank.slice(0, 3).toUpperCase()}
               </span>
             </div>
           ))}

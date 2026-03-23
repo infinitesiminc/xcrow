@@ -70,39 +70,21 @@ export const CATEGORY_META: Record<SkillCategory, { label: string; emoji: string
   compliance: { label: "Compliance", emoji: "📋" },
 };
 
-// ── XP & Level System (unified with castle-levels.ts thresholds) ──
+// ── XP & Level System — now delegated to progression.ts ──
+// Re-exported for backward compat. New code should import from @/lib/progression.
 
-export const LEVELS = [
-  { name: "Novice", threshold: 0 },
-  { name: "Apprentice", threshold: 150 },
-  { name: "Adept", threshold: 500 },
-  { name: "Master", threshold: 1200 },
-  { name: "Grandmaster", threshold: 2500 },
-] as const;
+import { LEVELS as _LEVELS, getLevel as _getLevel, getNextLevel as _getNextLevel, levelProgress as _levelProgress, type LevelName as _LevelName } from "@/lib/progression";
 
-export type LevelName = (typeof LEVELS)[number]["name"];
-
-export function getLevel(xp: number): { name: LevelName; index: number } {
-  for (let i = LEVELS.length - 1; i >= 0; i--) {
-    if (xp >= LEVELS[i].threshold) return { name: LEVELS[i].name, index: i };
-  }
-  return { name: "Novice", index: 0 };
-}
-
-export function getNextLevel(xp: number): { name: LevelName; threshold: number; xpNeeded: number } | null {
-  const current = getLevel(xp);
-  if (current.index >= LEVELS.length - 1) return null;
-  const next = LEVELS[current.index + 1];
-  return { name: next.name, threshold: next.threshold, xpNeeded: next.threshold - xp };
-}
-
-export function levelProgress(xp: number): number {
-  const current = getLevel(xp);
-  if (current.index >= LEVELS.length - 1) return 100;
-  const currentThreshold = LEVELS[current.index].threshold;
-  const nextThreshold = LEVELS[current.index + 1].threshold;
-  return Math.min(100, Math.round(((xp - currentThreshold) / (nextThreshold - currentThreshold)) * 100));
-}
+/** @deprecated Import from @/lib/progression instead */
+export const LEVELS = _LEVELS;
+/** @deprecated Import from @/lib/progression instead */
+export type LevelName = _LevelName;
+/** @deprecated Import from @/lib/progression instead */
+export const getLevel = _getLevel;
+/** @deprecated Import from @/lib/progression instead */
+export const getNextLevel = _getNextLevel;
+/** @deprecated Import from @/lib/progression instead */
+export const levelProgress = _levelProgress;
 
 // ── Keyword matcher ──
 
