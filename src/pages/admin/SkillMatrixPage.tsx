@@ -55,7 +55,6 @@ export default function SkillMatrixPage() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [catFilter, setCatFilter] = useState("All");
-  const [islandFilter, setIslandFilter] = useState("All");
   const [sortKey, setSortKey] = useState<SortKey>("name");
   const [sortAsc, setSortAsc] = useState(true);
   const { toast } = useToast();
