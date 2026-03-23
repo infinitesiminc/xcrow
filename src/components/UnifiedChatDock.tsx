@@ -175,8 +175,8 @@ export default function UnifiedChatDock() {
                   <p className="text-sm text-muted-foreground mb-4">
                     I see your map. Ask me where to go next.
                   </p>
-                  <div className="flex flex-wrap justify-center gap-2">
-                    {suggestions.map((s) => (
+                    <div className="flex flex-wrap justify-center gap-2">
+                    {suggestions.map((s, idx) => (
                       <button
                         key={s}
                         onClick={() => {
@@ -185,7 +185,7 @@ export default function UnifiedChatDock() {
                         }}
                         className="text-[11px] px-3 py-1.5 rounded-full border border-border text-muted-foreground hover:text-foreground hover:border-primary/40 transition-colors"
                       >
-                        {s}
+                        <span className="font-semibold text-primary mr-1">{idx + 1}.</span>{s}
                       </button>
                     ))}
                   </div>
