@@ -352,7 +352,7 @@ function FriendCard({ friend, onAccept, onReject, onView, onMessage, onLaunchSim
               </span>
             )}
           </div>
-          <p className="text-[10px] text-muted-foreground truncate">
+          <p className="text-[10px] text-foreground/75 truncate">
             {isPending
               ? (friend.isRequester ? "Request sent" : "Wants to ally with you")
               : friend.isOnline
@@ -383,7 +383,7 @@ function FriendCard({ friend, onAccept, onReject, onView, onMessage, onLaunchSim
             </button>
           </div>
         ) : isPending && friend.isRequester ? (
-          <span className="text-[10px] text-muted-foreground flex items-center gap-1">
+          <span className="text-[10px] text-foreground/75 flex items-center gap-1">
             <Clock className="h-3 w-3" /> Pending
           </span>
         ) : (
@@ -424,14 +424,14 @@ function FriendCard({ friend, onAccept, onReject, onView, onMessage, onLaunchSim
             /* Last completed sim */
             <div>
               <div className="flex items-center gap-1.5 mb-1">
-                <Swords className="h-3 w-3 shrink-0" style={{ color: "hsl(var(--muted-foreground))" }} />
-                <span className="text-[10px] text-muted-foreground">Last quest:</span>
+                <Swords className="h-3 w-3 shrink-0" style={{ color: "hsl(var(--foreground) / 0.65)" }} />
+                <span className="text-[10px] text-foreground/75">Last quest:</span>
               </div>
               <p className="text-[11px] font-medium text-foreground truncate pl-[18px]">
                 {sim.task_name}
               </p>
               <div className="flex items-center justify-between pl-[18px] mt-1">
-                <span className="text-[9px] text-muted-foreground">{sim.job_title}</span>
+                <span className="text-[9px] text-foreground/70">{sim.job_title}</span>
                 <div className="flex items-center gap-1">
                   <button
                     onClick={(e) => { e.stopPropagation(); onLaunchSim(sim.job_title, sim.task_name); }}
