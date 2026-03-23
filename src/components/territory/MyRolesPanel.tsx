@@ -213,7 +213,7 @@ export default function MyRolesPanel({ onSelectRole, onAskChat, onTabChange }: M
         .order("completed_at", { ascending: false })
         .limit(200),
       // Population counts (how many users have sims per role title)
-      supabase.rpc("get_kingdom_populations"),
+      supabase.rpc("get_kingdom_populations" as any),
     ]).then(([analysisRes, bookmarkRes, simsRes, popRes]) => {
       const roleMap = new Map<string, Kingdom>();
       const popMap = new Map<string, number>();

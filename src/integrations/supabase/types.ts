@@ -1959,6 +1959,13 @@ export type Database = {
           skill_name: string
         }[]
       }
+      get_kingdom_populations: {
+        Args: never
+        Returns: {
+          job_title: string
+          player_count: number
+        }[]
+      }
       get_leaderboard: {
         Args: never
         Returns: {
