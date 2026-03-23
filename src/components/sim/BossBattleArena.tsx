@@ -289,11 +289,14 @@ export default function BossBattleArena({
             <span className="text-[10px] font-bold uppercase tracking-wider block mb-1.5"
               style={{ color: "hsl(262 80% 70%)", fontFamily: "'Cinzel', serif" }}
             >
-              🔮 Who is the Oracle?
+              🔮 Why this matters
             </span>
-            The Oracle is an AI system making bold claims about what it can do for your role.
-            Some claims are accurate, but others overstate AI's capabilities or hide serious risks.{" "}
-            <span className="text-foreground/90 font-medium">Your job is to spot the difference</span> — judge whether each claim is safe, risky, or critically flawed.
+            AI tools will increasingly pitch their own capabilities to your team — recommending automations, claiming they can handle complex decisions, or suggesting they replace human oversight entirely.{" "}
+            <span className="text-foreground/90 font-medium">This is already happening</span>, and it will only accelerate.
+            <span className="block mt-1.5">
+              The Oracle represents these AI systems. Some of its claims are legitimate — others overstate what AI can safely do.{" "}
+              <span className="text-foreground/90 font-medium">Learning to tell the difference is one of the most valuable skills you can build.</span>
+            </span>
           </motion.div>
 
           {/* Example scenario */}
