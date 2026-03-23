@@ -919,7 +919,7 @@ export default function GuidedAudit({
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => setShowChat(prev => ({ ...prev, [checkpoint.id]: !prev[checkpoint.id] }))}
-                    className="text-[11px] flex items-center gap-1 transition-colors hover:brightness-125"
+                    className="text-[13px] flex items-center gap-1 transition-colors hover:brightness-125"
                     style={{ color: "hsl(262 80% 70%)" }}
                   >
                     <HelpCircle className="h-3 w-3" />
