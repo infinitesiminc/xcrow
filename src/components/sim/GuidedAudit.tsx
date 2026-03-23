@@ -319,7 +319,7 @@ function RubricResults({ scores }: { scores: Record<string, { score: number; not
     <div className="space-y-3">
       <div className="flex items-center gap-2 mb-1">
         <span className="text-xs">📜</span>
-        <span className="text-[11px] font-bold uppercase tracking-widest" style={{ fontFamily: "'Cinzel', serif", color: "hsl(262 80% 70%)" }}>
+        <span className="text-[13px] font-bold uppercase tracking-widest" style={{ fontFamily: "'Cinzel', serif", color: "hsl(262 80% 70%)" }}>
           Sentinel's Rubric
         </span>
       </div>
