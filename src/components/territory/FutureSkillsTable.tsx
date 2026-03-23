@@ -343,17 +343,23 @@ export default function FutureSkillsTable({ skills, onSkillClick, skillGrowthMap
               const growth = getSkillGrowth(skill.id);
               const l2Unlocked = level2SkillIds?.has(skill.id) ?? false;
 
+              const isFocused = expandedSkillId === skill.id;
+
               return (
                 <tr
                   key={skill.id}
                   ref={el => { if (el) rowRefs.current.set(skill.id, el); }}
                   className="transition-colors"
-                  style={{ borderBottom: "1px solid hsl(var(--border) / 0.3)" }}
+                  style={{
+                    borderBottom: "1px solid hsl(var(--border) / 0.3)",
+                    ...(isFocused ? { background: "hsl(var(--filigree-glow) / 0.08)" } : {}),
+                  }}
                 >
                   <td colSpan={3} className="p-0">
                     {/* Main row */}
                     <div
-                      className="flex items-center gap-1 px-1 py-1.5 cursor-pointer transition-colors hover:bg-muted/20"
+                      className={`flex items-center gap-1 px-1 py-1.5 cursor-pointer transition-colors hover:bg-muted/20`}
+                      style={isFocused ? { boxShadow: "inset 2px 0 0 hsl(var(--filigree-glow))" } : undefined}
                       onClick={() => onSkillClick?.(skill)}
                       onContextMenu={(e) => { e.preventDefault(); toggleBookmark(skill.id, e); }}
                     >
