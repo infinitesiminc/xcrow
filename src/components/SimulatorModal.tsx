@@ -721,12 +721,32 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
     setScaffoldingTiers({});
     setObjectiveFailCounts({});
     setShowInactivityNudge(false);
+    setAuditData(null);
     if (coaching) setCoachingContext(coaching);
     else setCoachingContext(null);
     try {
-      const compiled = await compileSession(taskName, jobTitle, company, 3, mode, taskMeta, coaching ?? undefined, intelContext ?? undefined, level, futurePrediction ?? undefined);
-      setSession(compiled);
-      setPhase("briefing");
+      if (level === 2 && futurePrediction) {
+        // L2: compile audit checkpoints instead of chat session
+        const audit = await compileAudit(taskName, jobTitle, company, futurePrediction, intelContext ?? undefined);
+        setAuditData(audit);
+        // Still compile a minimal session for header/metadata
+        setSession({
+          sessionId: crypto.randomUUID(),
+          systemPrompt: "",
+          openingMessage: "",
+          briefing: `**Level 2 — Guided Audit**\n\n${audit.scenarioContext}\n\nYou'll review 5 checkpoints from an AI system that has automated "${taskName}". For each, evaluate whether the AI's claim is **Safe**, **Risky**, or **Critical**.`,
+          tips: ["Look for subtle assumptions in AI claims", "Real-world examples help calibrate your judgment"],
+          learningObjectives: [],
+          scenario: { id: crypto.randomUUID(), title: taskName, description: `${taskName} for ${jobTitle}`, slug: "dynamic" },
+          level: 2,
+          config: { minRounds: 5, maxRounds: 5, objectiveCount: 5 },
+        });
+        setPhase("briefing");
+      } else {
+        const compiled = await compileSession(taskName, jobTitle, company, 3, mode, taskMeta, coaching ?? undefined, intelContext ?? undefined, level, futurePrediction ?? undefined);
+        setSession(compiled);
+        setPhase("briefing");
+      }
     } catch (err) {
       console.error("Failed to start simulation:", err);
       setError("Couldn't forge the quest. Please try again.");
