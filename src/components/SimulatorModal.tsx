@@ -1137,7 +1137,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
   const content = (
     <div className={inline ? "h-full flex flex-col overflow-hidden" : "max-w-3xl w-[95vw] h-[90vh] sm:h-[90vh] h-[100dvh] sm:rounded-2xl rounded-none p-0 flex flex-col overflow-hidden gap-0 border-border/50"}>
         {/* Header — war room banner */}
-        <div className="shrink-0 relative overflow-hidden">
+        <div className="shrink-0 relative overflow-hidden h-16">
           <HeaderVibeImages seed={(taskName?.length ?? 0) * 23} count={4} />
           {/* Subtle atmospheric gradient behind header */}
           <div className="absolute inset-0 opacity-40 pointer-events-none" style={{
