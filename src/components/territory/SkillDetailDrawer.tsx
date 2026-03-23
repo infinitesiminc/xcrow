@@ -19,7 +19,7 @@ import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
 import { type FutureSkill, type FutureSkillCategory, FUTURE_CATEGORY_META } from "@/hooks/use-future-skills";
-import { ArrowRight, Briefcase, Zap, Sparkles, Lock, Diamond } from "lucide-react";
+import { ArrowRight, Briefcase, Zap, Sparkles, Lock, Diamond, Crown, Swords } from "lucide-react";
 import { getTerritory } from "@/lib/territory-colors";
 
 /* ── Skill Hero Image — direct from storage (pre-generated) ── */
