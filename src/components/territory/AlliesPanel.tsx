@@ -127,6 +127,7 @@ const AlliesPanel = () => {
         style={{ borderBottom: "1px solid hsl(var(--filigree) / 0.1)" }}
       >
         {([
+          { key: "feed" as SubTab, label: "Feed", icon: Swords },
           { key: "online" as SubTab, label: "Online", icon: Sparkles },
           { key: "all" as SubTab, label: "All", icon: Users },
           { key: "pending" as SubTab, label: "Requests", icon: Shield, badge: pendingCount },
