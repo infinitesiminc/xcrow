@@ -39,6 +39,7 @@ const JoinWorkspace = lazy(() => import("./pages/JoinWorkspace.tsx"));
 const ScoreDistributions = lazy(() => import("./pages/ScoreDistributions.tsx"));
 const PublicProfile = lazy(() => import("./pages/PublicProfile.tsx"));
 const MapPage = lazy(() => import("./pages/MapPage.tsx"));
+const L2SimFormats = lazy(() => import("./pages/L2SimFormats.tsx"));
 
 // Admin (lazy)
 const HRLayout = lazy(() => import("./layouts/HRLayout.tsx"));
