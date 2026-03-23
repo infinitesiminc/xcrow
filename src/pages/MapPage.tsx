@@ -1,12 +1,13 @@
 /**
  * MapPage — Dedicated Skill Map page at /map.
- * Contains the full-screen Future Territory Map, Skill Forge, Kingdoms panel, Allies panel, HUD.
+ * Full-screen Territory Map with a bottom-sheet drawer for Skill Forge / Kingdoms / Allies.
  */
 import { useState, useCallback, useEffect, useMemo, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { X, Swords, ScrollText, Users } from "lucide-react";
+import { X, Swords, ScrollText, Users, ChevronUp } from "lucide-react";
+import { Drawer, DrawerContent, DrawerTrigger } from "@/components/ui/drawer";
 
 import { useFutureSkills } from "@/hooks/use-future-skills";
 import FutureTerritoryMap from "@/components/territory/FutureTerritoryMap";
@@ -74,6 +75,12 @@ function buildEmptySkills(taxonomy: TaxonomySkill[]): SkillXP[] {
   }));
 }
 
+const TAB_ITEMS = [
+  { key: "table" as const, icon: ScrollText, label: "Skill Forge" },
+  { key: "roles" as const, icon: Swords, label: "Kingdoms" },
+  { key: "allies" as const, icon: Users, label: "Allies" },
+] as const;
+
 const MapPage = () => {
   const { profile, user } = useAuth();
   const { skills: dbSkills } = useSkills();
@@ -94,7 +101,7 @@ const MapPage = () => {
   const [selectedRole, setSelectedRole] = useState<RoleResult | null>(null);
   const [activeEdge, setActiveEdge] = useState<EdgeContext | null>(null);
   const [rightPanelTab, setRightPanelTab] = useState<"table" | "roles" | "allies">("table");
-  const [chatOpen, setChatOpen] = useState(!!user);
+  const [drawerOpen, setDrawerOpen] = useState(false);
   const [mapFocusSkillId, setMapFocusSkillId] = useState<string | null>(null);
   const [forgeFocusSkillId, setForgeFocusSkillId] = useState<string | null>(null);
   const [myRolesTab, setMyRolesTab] = useState<"saved" | "practiced">("saved");
@@ -131,6 +138,7 @@ const MapPage = () => {
     const interval = setInterval(() => updatePresence("Exploring the Map"), 60_000);
     return () => { clearInterval(interval); goOffline(); };
   }, [user, updatePresence, goOffline]);
+
   // Load real skills + target roles + Level 2 unlock detection
   useEffect(() => {
     if (!user) return;
@@ -190,7 +198,6 @@ const MapPage = () => {
       setSkillGrowthMap(growthMap);
 
       // --- Level 2 unlock detection ---
-      // Unlock if ≥3 sims for same job_title OR any sim scored ≥80%
       const roleCounts = new Map<string, number>();
       const qualifiedRoles = new Set<string>();
       for (const sim of sims) {
@@ -208,8 +215,6 @@ const MapPage = () => {
         if (count >= 3) qualifiedRoles.add(title);
       }
 
-      // For demo: if user has sims at all, unlock a curated set of future skills
-      // This gives Jackson a visible Level 2 experience
       const DEMO_LEVEL2_SKILLS = new Set([
         "ai-ethics-governance",
         "complex-problem-solving-humanai-teams",
@@ -226,10 +231,8 @@ const MapPage = () => {
       ]);
 
       if (sims.length > 0 && qualifiedRoles.size === 0) {
-        // Demo mode: show Level 2 diamonds for high-demand skills
         setLevel2SkillIds(DEMO_LEVEL2_SKILLS);
       } else if (qualifiedRoles.size > 0) {
-        // Production: fetch future skills linked to qualified roles
         const { data: jobs } = await supabase
           .from("jobs")
           .select("id, title")
@@ -245,7 +248,6 @@ const MapPage = () => {
           for (const link of futureSkillLinks || []) {
             if (link.canonical_skill_id) l2ids.add(link.canonical_skill_id);
           }
-          // Merge demo set for richer visuals
           for (const id of DEMO_LEVEL2_SKILLS) l2ids.add(id);
           setLevel2SkillIds(l2ids);
         } else {
@@ -295,9 +297,8 @@ const MapPage = () => {
           level2SkillIds={level2SkillIds}
           skillGrowthMap={skillGrowthMap}
           onSkillSelect={(skill) => {
-            // Open forge panel + scroll to skill
             setRightPanelTab("table");
-            setChatOpen(true);
+            setDrawerOpen(true);
             setForgeFocusSkillId(skill.id);
             setTimeout(() => setForgeFocusSkillId(null), 200);
           }}
@@ -319,131 +320,109 @@ const MapPage = () => {
         </div>
       )}
 
-      {/* Floating tab bar — Dark Fantasy stone style */}
-      <div
-        className="absolute top-14 left-4 z-20 flex items-center gap-1 backdrop-blur-md rounded-lg p-1"
-        style={{
-          background: "hsl(var(--surface-stone) / 0.92)",
-          border: "1px solid hsl(var(--filigree) / 0.25)",
-          boxShadow: "0 4px 20px hsl(var(--emboss-shadow)), inset 0 1px 0 hsl(var(--emboss-light))",
-        }}
-      >
-        <button
-          onClick={() => {
-            if (rightPanelTab === "table" && chatOpen) { setChatOpen(false); }
-            else { setRightPanelTab("table"); setChatOpen(true); }
-          }}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all"
-          style={{
-            fontFamily: "'Cinzel', serif",
-            letterSpacing: "0.05em",
-            ...(rightPanelTab === "table" && chatOpen
-              ? { color: "hsl(var(--filigree-glow))", background: "hsl(var(--filigree) / 0.12)", textShadow: "0 0 8px hsl(var(--filigree-glow) / 0.5)" }
-              : { color: "hsl(var(--muted-foreground))" }),
-          }}
-        >
-          <ScrollText className="h-3 w-3" />
-          Skill Forge
-        </button>
-        {isSignedIn && (
+      {/* Bottom sheet drawer */}
+      <Drawer open={drawerOpen} onOpenChange={setDrawerOpen}>
+        {/* Floating pull-up trigger */}
+        <DrawerTrigger asChild>
           <button
-            onClick={() => {
-              if (rightPanelTab === "roles" && chatOpen) { setChatOpen(false); }
-              else { setRightPanelTab("roles"); setChatOpen(true); }
-            }}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all"
+            className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2 px-5 py-2 rounded-full backdrop-blur-md transition-all hover:scale-105 active:scale-[0.97]"
             style={{
+              background: "hsl(var(--surface-stone) / 0.92)",
+              border: "1px solid hsl(var(--filigree) / 0.25)",
+              boxShadow: "0 4px 20px hsl(var(--emboss-shadow)), inset 0 1px 0 hsl(var(--emboss-light))",
               fontFamily: "'Cinzel', serif",
-              letterSpacing: "0.05em",
-              ...(rightPanelTab === "roles" && chatOpen
-                ? { color: "hsl(var(--filigree-glow))", background: "hsl(var(--filigree) / 0.12)", textShadow: "0 0 8px hsl(var(--filigree-glow) / 0.5)" }
-                : { color: "hsl(var(--muted-foreground))" }),
             }}
           >
-            <Swords className="h-3 w-3" />
-            Kingdoms
-          </button>
-        )}
-        {isSignedIn && (
-          <button
-            onClick={() => {
-              if (rightPanelTab === "allies" && chatOpen) { setChatOpen(false); }
-              else { setRightPanelTab("allies"); setChatOpen(true); }
-            }}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all relative"
-            style={{
-              fontFamily: "'Cinzel', serif",
-              letterSpacing: "0.05em",
-              ...(rightPanelTab === "allies" && chatOpen
-                ? { color: "hsl(var(--filigree-glow))", background: "hsl(var(--filigree) / 0.12)", textShadow: "0 0 8px hsl(var(--filigree-glow) / 0.5)" }
-                : { color: "hsl(var(--muted-foreground))" }),
-            }}
-          >
-            <Users className="h-3 w-3" />
-            Allies
+            <ChevronUp className="h-3.5 w-3.5 text-muted-foreground" />
+            <span className="text-xs font-medium tracking-wider uppercase" style={{ color: "hsl(var(--filigree-glow))" }}>
+              {rightPanelTab === "table" ? "Skill Forge" : rightPanelTab === "roles" ? "Kingdoms" : "Allies"}
+            </span>
             {pendingCount > 0 && (
               <span
-                className="absolute -top-1 -right-1 w-4 h-4 rounded-full text-[8px] flex items-center justify-center font-bold animate-pulse"
+                className="w-4 h-4 rounded-full text-[8px] flex items-center justify-center font-bold animate-pulse"
                 style={{ background: "hsl(var(--filigree-glow))", color: "hsl(var(--background))" }}
               >
                 {pendingCount}
               </span>
             )}
           </button>
-        )}
-      </div>
+        </DrawerTrigger>
 
-      {/* Side panel */}
-      <AnimatePresence>
-        {chatOpen && (
-          <motion.div
-            key="side-panel"
-            initial={{ x: "-100%", opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            exit={{ x: "-100%", opacity: 0 }}
-            transition={{ type: "spring", damping: 28, stiffness: 300 }}
-            className="absolute top-24 left-4 bottom-20 w-[420px] z-20 flex flex-col backdrop-blur-xl rounded-xl overflow-hidden"
-            style={{
-              background: "hsl(var(--surface-stone) / 0.92)",
-              border: "1px solid hsl(var(--filigree) / 0.2)",
-              boxShadow: "0 8px 40px hsl(var(--emboss-shadow)), inset 0 1px 0 hsl(var(--emboss-light))",
-            }}
-          >
+        <DrawerContent
+          className="max-h-[85vh] border-t-0"
+          style={{
+            background: "hsl(var(--surface-stone) / 0.97)",
+            borderTop: "1px solid hsl(var(--filigree) / 0.2)",
+            boxShadow: "0 -8px 40px hsl(var(--emboss-shadow))",
+          }}
+        >
+          {/* Tab bar inside the drawer header */}
+          <div className="flex items-center justify-center gap-1 px-4 pt-1 pb-2">
+            {TAB_ITEMS.map(({ key, icon: Icon, label }) => {
+              if (key !== "table" && !isSignedIn) return null;
+              const isActive = rightPanelTab === key;
+              return (
+                <button
+                  key={key}
+                  onClick={() => setRightPanelTab(key)}
+                  className="flex items-center gap-1.5 px-4 py-1.5 rounded-md text-xs font-medium transition-all relative"
+                  style={{
+                    fontFamily: "'Cinzel', serif",
+                    letterSpacing: "0.05em",
+                    ...(isActive
+                      ? { color: "hsl(var(--filigree-glow))", background: "hsl(var(--filigree) / 0.12)", textShadow: "0 0 8px hsl(var(--filigree-glow) / 0.5)" }
+                      : { color: "hsl(var(--muted-foreground))" }),
+                  }}
+                >
+                  <Icon className="h-3 w-3" />
+                  {label}
+                  {key === "allies" && pendingCount > 0 && (
+                    <span
+                      className="absolute -top-1 -right-1 w-4 h-4 rounded-full text-[8px] flex items-center justify-center font-bold animate-pulse"
+                      style={{ background: "hsl(var(--filigree-glow))", color: "hsl(var(--background))" }}
+                    >
+                      {pendingCount}
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Filigree divider */}
+          <div className="h-px mx-4" style={{ background: "hsl(var(--filigree) / 0.15)" }} />
+
+          {/* Panel content */}
+          <div className="flex-1 overflow-y-auto" style={{ maxHeight: "calc(85vh - 3.5rem)" }}>
             {rightPanelTab === "table" ? (
-              <div className="flex-1 overflow-hidden">
-                <FutureSkillsTable
-                  skills={futureSkills}
-                  skillGrowthMap={skillGrowthMap}
-                  level2SkillIds={level2SkillIds}
-                  focusSkillId={forgeFocusSkillId}
-                  onSkillClick={(skill) => {
-                    setMapFocusSkillId(skill.id);
-                    setTimeout(() => setMapFocusSkillId(null), 100);
-                  }}
-                />
-              </div>
+              <FutureSkillsTable
+                skills={futureSkills}
+                skillGrowthMap={skillGrowthMap}
+                level2SkillIds={level2SkillIds}
+                focusSkillId={forgeFocusSkillId}
+                onSkillClick={(skill) => {
+                  setMapFocusSkillId(skill.id);
+                  setTimeout(() => setMapFocusSkillId(null), 100);
+                }}
+              />
             ) : rightPanelTab === "roles" && isSignedIn ? (
-              <div className="flex-1 overflow-hidden">
-                <MyRolesPanel
-                  onSelectRole={(role) => {
-                    setSelectedRole(role);
-                    setRightPanelTab("table");
-                  }}
-                  onAskChat={(prompt) => {
-                    setChatDockOpen(true);
-                    chatSendMessage(prompt);
-                  }}
-                  onTabChange={setMyRolesTab}
-                />
-              </div>
+              <MyRolesPanel
+                onSelectRole={(role) => {
+                  setSelectedRole(role);
+                  setRightPanelTab("table");
+                }}
+                onAskChat={(prompt) => {
+                  setChatDockOpen(true);
+                  chatSendMessage(prompt);
+                }}
+                onTabChange={setMyRolesTab}
+              />
             ) : rightPanelTab === "allies" && isSignedIn ? (
-              <div className="flex-1 overflow-hidden">
-                <AlliesPanel />
-              </div>
+              <AlliesPanel />
             ) : null}
-          </motion.div>
-        )}
-      </AnimatePresence>
+          </div>
+        </DrawerContent>
+      </Drawer>
 
       {/* Role preview overlay */}
       <AnimatePresence>
