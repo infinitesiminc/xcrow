@@ -1,64 +1,55 @@
 
 
-## Level 2 Sentinel's Sanctum — AI Image Enhancement Plan
+# Progression System Explainer Page
 
-### Concept
+## What We're Building
 
-Use the Lovable AI image generation API (Gemini flash-image) to create **dynamic, context-aware visuals** that CSS alone cannot achieve. Each checkpoint gets a unique AI-generated illustration tied to the actual scenario content, making every L2 audit feel bespoke rather than templated.
+A visually rich marketing page at `/progression` that explains the unified 3-layer progression framework to users. Uses the Dark Fantasy RPG aesthetic with animated sections, clear visual hierarchy, and interactive elements.
 
----
+## Page Structure
 
-### Where AI Images Add Value
+### 1. Hero Section
+- Headline: "Your Path to Mastery" with Cinzel typography
+- Subhead: "Every simulation ripples through your entire career map"
+- Animated flow diagram: `Sim → Skill Rings → Castle → Kingdom → Rank`
 
-**1. Checkpoint Scene Illustrations**
-- When each checkpoint loads, generate a small (256×256) illustration based on the checkpoint's `area` + `aiClaim` text
-- Prompt pattern: *"Dark fantasy oracle vision, ethereal indigo glow, showing [area topic] — minimalist, no text, arcane observatory style"*
-- Display as a subtle background or card hero image with low opacity overlay
-- Cache in Supabase Storage by checkpoint hash to avoid re-generation
+### 2. Layer 1: Skill Castles (The Atom)
+- Visual: Animated castle evolving through 4 tiers (Ruins → Outpost → Fortress → Citadel)
+- 3-Ring diagram showing Foundation / AI Mastery / Human Edge with colored arcs
+- Explanation: L1 sims fill the AI Mastery ring, L2 sims fill the Human Edge ring, Foundation is passive
+- Castle tier table with emoji, XP thresholds, and ring requirements
 
-**2. Completion "Ascension" Portrait**
-- On audit completion, generate a unique sentinel portrait based on the user's score tier
-- Grand Sentinel (80%+): radiant oracle with golden halo
-- Vigilant Watcher (50-79%): watchful sentinel in violet armor
-- Apprentice Seer (below 50%): hooded figure with glowing rune staff
-- Display prominently in the completion ceremony screen
+### 3. Layer 2: Kingdoms (Per Role)
+- Visual: 4-stage kingdom progression cards (Scouted → Contested → Fortified → Conquered)
+- Explanation: Kingdom tier is driven by how many linked skill castles you've leveled up
+- Callout: "Fortified unlocks Level 2 content" as a gate indicator
+- Skill checklist preview showing linked castles per role
 
-**3. Oracle's Claim Visual**
-- Generate a small "vision card" illustration for the AI claim being evaluated — a visual representation of the future scenario described
-- Makes the abstract AI prediction feel tangible and real
+### 4. Layer 3: Player Rank (Aggregate)
+- Visual: Rank badges in a horizontal ladder (Recruit → Explorer → Strategist → Commander → Legend)
+- Requirements listed per rank (castles + kingdoms needed)
+- Emphasis on breadth over grinding
 
----
+### 5. The Ripple Effect (Summary)
+- Animated chain showing how one sim completion cascades upward through all 3 layers
+- "Every action has a clear, visible ripple effect up the chain"
 
-### Implementation
+### 6. CTA
+- "Start Your First Battle" button linking to the map page
 
-**Backend: New edge function `generate-sim-image`**
-- Accepts: `prompt` string, `cacheKey` string
-- Checks Supabase Storage for cached image by key
-- If miss: calls Gemini flash-image API, uploads result to `sim-images` storage bucket, returns public URL
-- If hit: returns cached URL directly
+## Technical Details
 
-**Frontend: `GuidedAudit.tsx` changes**
-- Add `useEffect` per checkpoint step that calls `generate-sim-image` with a constructed prompt
-- Display image with fade-in behind checkpoint card (opacity 0.12 as atmospheric background)
-- Completion screen triggers portrait generation on mount
-- All images are non-blocking — UI renders immediately, images fade in when ready
-
-**Storage: New `sim-images` bucket**
-- Public read, service-role write
-- Images cached by hash of prompt to prevent duplicate generation
-
----
+### Files Created
+- `src/pages/Progression.tsx` — new page component (~400 lines)
 
 ### Files Modified
-1. `supabase/functions/generate-sim-image/index.ts` — new edge function
-2. `src/components/sim/GuidedAudit.tsx` — image fetch + display logic
-3. Database migration — create `sim-images` storage bucket with public policy
+- `src/App.tsx` — add route `/progression`
+- `src/components/Navbar.tsx` — optionally add nav link
 
-### Combined with CSS Plan
-This layers on top of the existing Sentinel's Sanctum CSS changes (rune stones, violet gradients, animations). The AI images add atmosphere while CSS handles the core UI structure.
-
-### Performance Guardrails
-- Images load async, never block interaction
-- Cache-first strategy eliminates repeated API calls
-- Fallback: if generation fails, component renders normally without images (graceful degradation)
+### Design Patterns
+- Follows `SimulationDesign.tsx` pattern: sectioned layout with `fadeUp` motion animations
+- Uses existing UI components: Card, Badge, Progress, Button
+- Reuses `GrowthRings` component for the 3-ring visual
+- RPG aesthetic: stone textures, Cinzel headings, territory colors
+- Fully responsive with mobile-first approach
 
