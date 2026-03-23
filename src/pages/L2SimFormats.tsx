@@ -461,6 +461,8 @@ function StakeholderFormat() {
 /* ── Main Page ── */
 export default function L2SimFormats() {
   const [activeTab, setActiveTab] = useState<Tab>("case");
+  const { setSimActive } = useChatContext();
+  useEffect(() => { setSimActive(true); return () => setSimActive(false); }, [setSimActive]);
 
   const FormatComponent = {
     case: CaseStudyFormat,
