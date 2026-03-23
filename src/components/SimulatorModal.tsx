@@ -1208,8 +1208,21 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
         </div>
 
         <div className="flex-1 flex min-h-0 relative">
+          {/* L2 Boss Battle Arena — full-screen overlay, outside scroll container */}
+          {phase === "chat" && !error && level === 2 && auditData && (
+            <BossBattleArena
+              checkpoints={auditData.checkpoints as AuditCheckpoint[]}
+              aiOutputSummary={auditData.aiOutputSummary}
+              aiAutoAction={auditData.aiAutoAction}
+              scenarioContext={auditData.scenarioContext}
+              onComplete={handleAuditComplete}
+              onRestart={() => startCompile()}
+              onViewDebrief={() => setPhase("done")}
+              skillName={taskName}
+            />
+          )}
           {/* Atmospheric vignette for immersion */}
-          {phase === "chat" && (
+          {phase === "chat" && !(level === 2 && auditData) && (
             <div className="absolute inset-0 pointer-events-none z-0" style={{
               background: "radial-gradient(ellipse at center, transparent 50%, hsl(var(--background) / 0.4) 100%)",
             }} />
