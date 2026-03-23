@@ -26,20 +26,7 @@ const Index = () => {
   const showOnboarding = isSignedIn && profile && !profile.onboardingCompleted;
   const [onboardingDismissed, setOnboardingDismissed] = useState(false);
 
-  if (showOnboarding && !onboardingDismissed) {
-    return (
-      <OnboardingQuest
-        open
-        userId={user!.id}
-        onComplete={async () => {
-          await refreshProfile();
-          setOnboardingDismissed(true);
-        }}
-      />
-    );
-  }
-
-  if (isSignedIn) {
+  if (isSignedIn && (!showOnboarding || onboardingDismissed)) {
     return <Navigate to="/map" replace />;
   }
 
