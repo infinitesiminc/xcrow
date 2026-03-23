@@ -7,6 +7,7 @@
 import { useState, useMemo, useCallback, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { type FutureSkill, type FutureSkillCategory } from "@/hooks/use-future-skills";
+import { supabase } from "@/integrations/supabase/client";
 import type { SimLaunchRequest } from "@/components/territory/SkillLaunchCard";
 import { Input } from "@/components/ui/input";
 import { ArrowUpDown, Search, Zap, Diamond, Lock } from "lucide-react";
@@ -51,6 +52,67 @@ function getXpLevel(xp: number): { name: string; color: string; next: number } {
 export default function FutureSkillsTable({ skills, onSkillClick, skillGrowthMap, focusSkillId, level2SkillIds, onLaunchSim }: Props) {
   const { user } = useAuth();
   const navigate = useNavigate();
+
+  // Cache of skill ID -> first linked job role
+  const [roleCache, setRoleCache] = useState<Map<string, { title: string; company?: string }>>(new Map());
+
+  const lookupAndLaunch = useCallback(async (skill: FutureSkill, level: 1 | 2) => {
+    // Check cache first
+    const cached = roleCache.get(skill.id);
+    if (cached) {
+      if (onLaunchSim) {
+        onLaunchSim({ jobTitle: cached.title, taskName: skill.name, company: cached.company, skillId: skill.id, level });
+      } else {
+        const params = new URLSearchParams();
+        if (cached.company) params.set("company", cached.company);
+        if (level === 2) params.set("level", "2");
+        params.set("skill", skill.id);
+        navigate(`/role/${encodeURIComponent(cached.title)}?${params.toString()}`);
+      }
+      return;
+    }
+
+    // Look up the first job linked to this canonical skill
+    const { data: links } = await supabase
+      .from("job_future_skills")
+      .select("job_id")
+      .eq("canonical_skill_id", skill.id)
+      .limit(1);
+
+    let jobTitle = skill.name; // fallback
+    let company: string | undefined;
+
+    if (links?.length && links[0].job_id) {
+      const { data: job } = await supabase
+        .from("jobs")
+        .select("title, company_id")
+        .eq("id", links[0].job_id)
+        .single();
+
+      if (job) {
+        jobTitle = job.title;
+        if (job.company_id) {
+          const { data: c } = await supabase
+            .from("companies")
+            .select("name")
+            .eq("id", job.company_id)
+            .single();
+          company = c?.name || undefined;
+        }
+        setRoleCache(prev => new Map(prev).set(skill.id, { title: jobTitle, company }));
+      }
+    }
+
+    if (onLaunchSim) {
+      onLaunchSim({ jobTitle, taskName: skill.name, company, skillId: skill.id, level });
+    } else {
+      const params = new URLSearchParams();
+      if (company) params.set("company", company);
+      if (level === 2) params.set("level", "2");
+      params.set("skill", skill.id);
+      navigate(`/role/${encodeURIComponent(jobTitle)}?${params.toString()}`);
+    }
+  }, [roleCache, onLaunchSim, navigate]);
   const [search, setSearch] = useState("");
   const [sortKey, setSortKey] = useState<SortKey>("xp");
   const [sortAsc, setSortAsc] = useState(false);
@@ -448,8 +510,7 @@ export default function FutureSkillsTable({ skills, onSkillClick, skillGrowthMap
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
-                                if (onLaunchSim) { onLaunchSim({ jobTitle: skill.name, taskName: skill.name, skillId: skill.id, level: 1 }); return; }
-                                navigate(`/role/${encodeURIComponent(skill.name)}?skill=${encodeURIComponent(skill.id)}`);
+                                lookupAndLaunch(skill, 1);
                               }}
                               className="w-full px-2 py-1.5 rounded-md text-[10px] font-bold uppercase tracking-wider transition-all hover:brightness-110"
                               style={{ background: "linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary) / 0.8))", color: "hsl(var(--foreground))", fontFamily: "'Cinzel', serif" }}
@@ -495,8 +556,7 @@ export default function FutureSkillsTable({ skills, onSkillClick, skillGrowthMap
                                 <button
                                   onClick={(e) => {
                                     e.stopPropagation();
-                                    if (onLaunchSim) { onLaunchSim({ jobTitle: skill.name, taskName: skill.name, skillId: skill.id, level: 2 }); return; }
-                                    navigate(`/role/${encodeURIComponent(skill.name)}?skill=${encodeURIComponent(skill.id)}&level=2`);
+                                    lookupAndLaunch(skill, 2);
                                   }}
                                   className="w-full px-2 py-1.5 rounded-md text-[10px] font-bold uppercase tracking-wider transition-all hover:brightness-110"
                                   style={{ background: "linear-gradient(135deg, hsl(45 93% 58%), hsl(45 93% 48%))", color: "hsl(var(--background))", fontFamily: "'Cinzel', serif" }}
