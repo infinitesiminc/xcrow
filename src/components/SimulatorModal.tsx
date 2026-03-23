@@ -756,7 +756,10 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
 
   const beginChat = () => {
     if (!session) return;
-    setMessages([{ role: "assistant", content: session.openingMessage }]);
+    const openingText = typeof session.openingMessage === "string"
+      ? session.openingMessage
+      : (session.openingMessage as any)?.text ?? JSON.stringify(session.openingMessage);
+    setMessages([{ role: "assistant", content: openingText }]);
     setPhase("chat");
   };
 
