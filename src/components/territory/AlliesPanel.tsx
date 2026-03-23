@@ -15,19 +15,20 @@ import {
 } from "lucide-react";
 
 import AllyChat from "./AllyChat";
+import FriendActivityFeed from "./FriendActivityFeed";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { getAvatarById } from "@/lib/avatars";
 
 /* ── Sub-tabs ── */
-type SubTab = "online" | "all" | "pending" | "search";
+type SubTab = "online" | "all" | "pending" | "search" | "feed";
 
 const AlliesPanel = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { friends, loading, pendingCount, acceptRequest, removeFriend, sendRequest } = useFriends();
-  const [subTab, setSubTab] = useState<SubTab>("online");
+  const [subTab, setSubTab] = useState<SubTab>("feed");
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<{ id: string; display_name: string; username: string | null; avatar_id: string | null }[]>([]);
   const [searching, setSearching] = useState(false);
@@ -126,6 +127,7 @@ const AlliesPanel = () => {
         style={{ borderBottom: "1px solid hsl(var(--filigree) / 0.1)" }}
       >
         {([
+          { key: "feed" as SubTab, label: "Feed", icon: Swords },
           { key: "online" as SubTab, label: "Online", icon: Sparkles },
           { key: "all" as SubTab, label: "All", icon: Users },
           { key: "pending" as SubTab, label: "Requests", icon: Shield, badge: pendingCount },
@@ -173,6 +175,9 @@ const AlliesPanel = () => {
       )}
 
       {/* Content */}
+      {subTab === "feed" ? (
+        <FriendActivityFeed />
+      ) : (
       <ScrollArea className="flex-1">
         <div className="px-3 py-2 space-y-1">
           {loading ? (
@@ -237,6 +242,7 @@ const AlliesPanel = () => {
           )}
         </div>
       </ScrollArea>
+      )}
 
       {/* DM Chat Drawer */}
       <AnimatePresence>
@@ -386,6 +392,7 @@ function FriendCard({ friend, onAccept, onReject, onView, onMessage, formatLastS
 /* ── Empty state ── */
 function EmptyState({ subTab, onSearch }: { subTab: SubTab; onSearch: () => void }) {
   const messages: Record<SubTab, { icon: typeof Users; title: string; desc: string }> = {
+    feed: { icon: Swords, title: "No tales yet", desc: "Your allies' quests will appear here." },
     online: { icon: Sparkles, title: "No allies online", desc: "Your allies are resting. Check back soon!" },
     all: { icon: Users, title: "No allies yet", desc: "Find adventurers and forge alliances." },
     pending: { icon: Shield, title: "No pending requests", desc: "All caught up!" },

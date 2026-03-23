@@ -1948,6 +1948,21 @@ export type Database = {
           task_cluster_count: number
         }[]
       }
+      get_friend_activity: {
+        Args: { _limit?: number; _user_id: string }
+        Returns: {
+          activity_type: string
+          avatar_id: string
+          completed_at: string
+          display_name: string
+          job_title: string
+          skills_earned: Json
+          task_name: string
+          total_xp: number
+          user_id: string
+          username: string
+        }[]
+      }
       get_future_skill_demand: {
         Args: { top_n?: number }
         Returns: {
