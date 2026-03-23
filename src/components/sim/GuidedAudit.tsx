@@ -577,7 +577,7 @@ export default function GuidedAudit({
             boxShadow: "inset 0 1px 0 hsl(var(--emboss-light))",
           }}
         >
-          <span className="text-[11px] font-bold uppercase tracking-widest" style={{ fontFamily: "'Cinzel', serif", color: "hsl(262 80% 70%)" }}>
+          <span className="text-[13px] font-bold uppercase tracking-widest" style={{ fontFamily: "'Cinzel', serif", color: "hsl(262 80% 70%)" }}>
             Checkpoint Review
           </span>
           {checkpoints.map(cp => {
