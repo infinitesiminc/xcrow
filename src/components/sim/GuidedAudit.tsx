@@ -1,7 +1,7 @@
 /**
- * GuidedAudit — Level 2 "Sentinel's Sanctum" Red Team simulation format.
- * Sequential 5-step checkpoint audit with verdicts, hints, real-world examples, and deep-dive chat.
- * Elevated RPG UI: violet/indigo theme, rune stone progress, AI-generated scene illustrations.
+ * GuidedAudit — Level 2 "Boss Battle" Red Team simulation format.
+ * Features a cinematic intro, floating animated boss monster, and real-time
+ * boss HP reactions to user verdicts.
  */
 import { useState, useRef, useCallback, useMemo, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -12,6 +12,8 @@ import {
 import { Button } from "@/components/ui/button";
 import ReactMarkdown from "react-markdown";
 import { supabase } from "@/integrations/supabase/client";
+import BossMonster, { type BossState } from "./BossMonster";
+import BossCinematicIntro from "./BossCinematicIntro";
 
 /* ── Types ── */
 export type AuditVerdict = "safe" | "risky" | "critical" | null;
