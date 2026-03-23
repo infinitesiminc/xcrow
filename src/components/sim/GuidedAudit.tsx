@@ -1,7 +1,7 @@
 /**
- * GuidedAudit — Level 2 "Sentinel's Sanctum" Red Team simulation format.
- * Sequential 5-step checkpoint audit with verdicts, hints, real-world examples, and deep-dive chat.
- * Elevated RPG UI: violet/indigo theme, rune stone progress, AI-generated scene illustrations.
+ * GuidedAudit — Level 2 "Boss Battle" Red Team simulation format.
+ * Features a cinematic intro, floating animated boss monster, and real-time
+ * boss HP reactions to user verdicts.
  */
 import { useState, useRef, useCallback, useMemo, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -12,6 +12,8 @@ import {
 import { Button } from "@/components/ui/button";
 import ReactMarkdown from "react-markdown";
 import { supabase } from "@/integrations/supabase/client";
+import BossMonster, { type BossState } from "./BossMonster";
+import BossCinematicIntro from "./BossCinematicIntro";
 
 /* ── Types ── */
 export type AuditVerdict = "safe" | "risky" | "critical" | null;
@@ -44,6 +46,10 @@ interface GuidedAuditProps {
   onComplete?: (result: AuditResult) => void;
   onRestart?: () => void;
   onViewDebrief?: () => void;
+  /** Skill name for boss battle intro */
+  skillName?: string;
+  /** Whether this is a boss battle (L2 from map) */
+  isBossBattle?: boolean;
 }
 
 /* ── Rubric Dimensions ── */
@@ -385,6 +391,8 @@ export default function GuidedAudit({
   onComplete,
   onRestart,
   onViewDebrief,
+  skillName,
+  isBossBattle = false,
 }: GuidedAuditProps) {
   const [currentStep, setCurrentStep] = useState(0);
   const [verdicts, setVerdicts] = useState<Record<string, AuditVerdict>>({});
@@ -392,6 +400,29 @@ export default function GuidedAudit({
   const [showHint, setShowHint] = useState<Record<string, boolean>>({});
   const [showChat, setShowChat] = useState<Record<string, boolean>>({});
   const [completed, setCompleted] = useState(false);
+  const [showIntro, setShowIntro] = useState(isBossBattle);
+
+  // Boss battle state
+  const maxHp = checkpoints.length * 20;
+  const [bossHp, setBossHp] = useState(maxHp);
+  const [bossState, setBossState] = useState<BossState>("idle");
+  const bossStateTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Compute boss reactions when verdicts are revealed
+  const handleBossReaction = useCallback((isCorrect: boolean) => {
+    if (!isBossBattle) return;
+    if (bossStateTimer.current) clearTimeout(bossStateTimer.current);
+
+    if (isCorrect) {
+      setBossHp(prev => Math.max(0, prev - 20));
+      setBossState("damaged");
+    } else {
+      setBossHp(prev => Math.min(maxHp, prev + 10));
+      setBossState("enraged");
+    }
+    // Return to idle after reaction
+    bossStateTimer.current = setTimeout(() => setBossState("idle"), 1500);
+  }, [isBossBattle, maxHp]);
 
   const checkpoint = checkpoints[currentStep];
   const totalCorrect = checkpoints.filter(cp => verdicts[cp.id] === cp.correctVerdict).length;
@@ -455,6 +486,11 @@ export default function GuidedAudit({
 
   const handleReveal = (id: string) => {
     setRevealed(prev => ({ ...prev, [id]: true }));
+    // Trigger boss reaction
+    const checkpoint = checkpoints.find(cp => cp.id === id);
+    if (checkpoint) {
+      handleBossReaction(verdicts[id] === checkpoint.correctVerdict);
+    }
   };
 
   const handleNext = () => {
@@ -462,6 +498,7 @@ export default function GuidedAudit({
       setCurrentStep(prev => prev + 1);
     } else {
       setCompleted(true);
+      if (isBossBattle) setBossState("defeated");
       onComplete?.({
         totalCorrect,
         totalCheckpoints: checkpoints.length,
@@ -482,6 +519,18 @@ export default function GuidedAudit({
     onRestart?.();
   };
 
+  /* ── Cinematic Boss Intro ── */
+  if (showIntro && isBossBattle) {
+    return (
+      <div className="relative w-full h-full min-h-[400px]">
+        <BossCinematicIntro
+          skillName={skillName || "Unknown Skill"}
+          onComplete={() => setShowIntro(false)}
+        />
+      </div>
+    );
+  }
+
   /* ── Completion Screen — Ascension Ceremony ── */
   if (completed) {
     const tier = completionTier;
@@ -498,6 +547,23 @@ export default function GuidedAudit({
         animate={{ opacity: 1, y: 0 }}
         className="space-y-5 py-4 max-w-lg mx-auto"
       >
+        {/* Defeated Boss */}
+        {isBossBattle && (
+          <motion.div
+            className="flex justify-center mb-2"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.2 }}
+          >
+            <BossMonster
+              hp={0}
+              maxHp={maxHp}
+              state="defeated"
+              checkpointsDone={checkpoints.length}
+              totalCheckpoints={checkpoints.length}
+            />
+          </motion.div>
+        )}
         {/* Ascension Portrait + Score ring */}
         <div className="text-center relative">
           {/* Radial burst behind score */}
@@ -657,7 +723,25 @@ export default function GuidedAudit({
 
   /* ── Active Audit — Sentinel's Sanctum ── */
   return (
-    <div className="space-y-4 max-w-lg mx-auto py-2">
+    <div className="space-y-4 max-w-lg mx-auto py-2 relative">
+      {/* Floating Boss Monster — fixed to top-right */}
+      {isBossBattle && (
+        <motion.div
+          className="absolute -top-2 -right-2 z-20"
+          initial={{ opacity: 0, scale: 0.5 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.3, type: "spring", stiffness: 200 }}
+          style={{ pointerEvents: "none" }}
+        >
+          <BossMonster
+            hp={bossHp}
+            maxHp={maxHp}
+            state={bossState}
+            checkpointsDone={Object.keys(revealed).length}
+            totalCheckpoints={checkpoints.length}
+          />
+        </motion.div>
+      )}
       {/* Sanctum Header Banner */}
       <div
         className="rounded-xl p-3.5 relative overflow-hidden"
