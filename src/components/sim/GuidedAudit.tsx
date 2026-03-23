@@ -46,6 +46,10 @@ interface GuidedAuditProps {
   onComplete?: (result: AuditResult) => void;
   onRestart?: () => void;
   onViewDebrief?: () => void;
+  /** Skill name for boss battle intro */
+  skillName?: string;
+  /** Whether this is a boss battle (L2 from map) */
+  isBossBattle?: boolean;
 }
 
 /* ── Rubric Dimensions ── */
