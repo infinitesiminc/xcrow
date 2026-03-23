@@ -753,16 +753,6 @@ export default function GuidedAudit({
             boxShadow: "inset 0 1px 0 hsl(var(--emboss-light)), 0 2px 8px hsl(var(--emboss-shadow))",
           }}
         >
-          {/* Scene illustration background (AI-generated) */}
-          {sceneImageUrl && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 0.08 }}
-              transition={{ duration: 1.5 }}
-              className="absolute inset-0 bg-cover bg-center pointer-events-none"
-              style={{ backgroundImage: `url(${sceneImageUrl})`, filter: "blur(1px)" }}
-            />
-          )}
 
           <div className="relative">
             {/* Area header */}
