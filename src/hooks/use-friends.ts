@@ -61,11 +61,12 @@ export function useFriends() {
       f.requester_id === user.id ? f.recipient_id : f.requester_id
     );
 
-    const [profilesRes, presenceRes, xpRes, lastSimsRes] = await Promise.all([
+    const [profilesRes, presenceRes, xpRes, lastSimsRes, unreadRes] = await Promise.all([
       supabase.from("profiles").select("id, display_name, username, avatar_id").in("id", friendIds),
       supabase.from("user_presence").select("user_id, is_online, last_seen_at, current_activity").in("user_id", friendIds),
       supabase.from("completed_simulations").select("user_id, skills_earned").in("user_id", friendIds),
       supabase.rpc("get_friends_last_sims", { _user_id: user.id }),
+      supabase.from("friend_messages").select("id", { count: "exact", head: true }).eq("recipient_id", user.id).is("read_at", null),
     ]);
 
     const profileMap = new Map((profilesRes.data || []).map(p => [p.id, p]));
