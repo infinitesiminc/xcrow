@@ -2,11 +2,12 @@
  * L2SimFormats — Interactive mockup comparing 4 Level 2 simulation formats.
  * Each tab is a self-contained mini-sim prototype with rubric-based coaching.
  */
-import { useState, useRef } from "react";
+import { useState, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Send, RotateCcw, CheckCircle2, AlertTriangle, Shield, Users, MessageSquare, GitBranch } from "lucide-react";
+import { Send, RotateCcw, CheckCircle2, AlertTriangle, Shield, Users, MessageSquare, GitBranch, HelpCircle, Loader2 } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
+import ReactMarkdown from "react-markdown";
 
 /* ── Shared scenario context ── */
 const SCENARIO = {
@@ -260,6 +261,7 @@ interface AuditCheckpoint {
   aiClaim: string;
   correctVerdict: AuditVerdict;
   explanation: string;
+  realWorldExample: string;
   coachTip: string;
 }
 
@@ -272,6 +274,7 @@ const AUDIT_CHECKPOINTS: AuditCheckpoint[] = [
     aiClaim: "ROAS dropped 23% — primary driver: paid social CPM +18%.",
     correctVerdict: "critical",
     explanation: "The attribution window is too short for this campaign type. Conversions happening on days 8-21 are being credited to other channels or lost entirely, making social appear less effective than it is.",
+    realWorldExample: "In 2023, Airbnb reported that shortening their attribution window from 30 to 7 days made paid social appear 40% less effective. When they restored the longer window, they discovered social was actually their highest-LTV acquisition channel — they had been systematically under-investing for two quarters.",
     coachTip: "Always check if the measurement window matches the customer journey length. This is the #1 most common AI analytics failure.",
   },
   {
@@ -282,6 +285,7 @@ const AUDIT_CHECKPOINTS: AuditCheckpoint[] = [
     aiClaim: "Display CPM $8.20 vs Social CPM $14.63 — shift budget for efficiency.",
     correctVerdict: "risky",
     explanation: "Display and social audiences often overlap significantly. Shifting budget may just retarget the same users at lower-quality touchpoints, reducing overall impact while appearing cheaper on paper.",
+    realWorldExample: "Chase JPMorgan ran an experiment in 2019 where they reduced their programmatic display from 400,000 websites to just 5,000 pre-approved sites. Performance stayed identical — proving that most of their 'broad reach' display was hitting the same users on low-quality sites. The AI's CPM comparison was meaningless because it wasn't comparing equivalent impressions.",
     coachTip: "Cost efficiency ≠ effectiveness. Always ask: 'Am I reaching new people or the same people worse?'",
   },
   {
@@ -292,6 +296,7 @@ const AUDIT_CHECKPOINTS: AuditCheckpoint[] = [
     aiClaim: "Paid Social CPM: $12.40 → $14.63 (+18%) — flagged as performance degradation.",
     correctVerdict: "critical",
     explanation: "Q4 CPM spikes are entirely predictable. Every advertiser is competing for attention during holidays. The AI is treating a normal seasonal pattern as an anomaly and making a costly overreaction.",
+    realWorldExample: "Meta's own 2022 data showed CPMs increase 30-50% every Q4 across all advertisers. An e-commerce brand using automated bidding pulled back spend in November 2022 when their AI flagged 'rising costs' — they missed Black Friday entirely and lost an estimated $2.3M in revenue. Their competitor, who manually overrode the same signal, had their best quarter ever.",
     coachTip: "AI systems without calendar/seasonal context will repeatedly overreact to predictable market patterns. This is a design flaw to flag.",
   },
   {
@@ -302,6 +307,7 @@ const AUDIT_CHECKPOINTS: AuditCheckpoint[] = [
     aiClaim: "Overall conversion rate: 2.1% (unchanged across channels).",
     correctVerdict: "risky",
     explanation: "Same conversion rate doesn't mean same incremental lift. Some conversions would have happened anyway (organic). Without an incrementality test, you can't tell which channel is actually driving new revenue vs. getting credit for existing demand.",
+    realWorldExample: "eBay ran one of the most famous incrementality studies in marketing history (2014). They discovered that their Google branded search ads — which showed a high conversion rate — had nearly zero incremental impact. People searching 'eBay' were going to click through to eBay anyway. They were paying for conversions that would have happened for free, costing $20M+/year.",
     coachTip: "This is the 'correlation vs. causation' blind spot in AI analytics. Always ask: 'Would this sale have happened without the ad?'",
   },
   {
@@ -312,9 +318,148 @@ const AUDIT_CHECKPOINTS: AuditCheckpoint[] = [
     aiClaim: "Recommendation: shift budget to maximise ROAS efficiency.",
     correctVerdict: "critical",
     explanation: "The AI is optimising for the wrong metric. The CMO wants awareness (reach, impressions, brand lift), not short-term ROAS. This auto-action directly undermines the executive's stated goal — a dangerous misalignment.",
+    realWorldExample: "Adidas publicly admitted in 2019 that they had over-invested in performance marketing (optimising for ROAS) and neglected brand building for years because their attribution models couldn't measure brand impact. Their former global media director said: 'We were over-investing in digital performance at the expense of brand building by 23%.' The AI was maximising what it could measure, not what actually mattered.",
     coachTip: "The most dangerous AI failures aren't bugs — they're objective misalignment. The AI did exactly what it was told. It just wasn't told the right thing.",
   },
 ];
+
+/* ── Deep-Dive Chat for Red Team Checkpoints ── */
+function CheckpointChat({ checkpoint }: { checkpoint: AuditCheckpoint }) {
+  const [messages, setMessages] = useState<{ role: "user" | "assistant"; content: string }[]>([]);
+  const [input, setInput] = useState("");
+  const [isStreaming, setIsStreaming] = useState(false);
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  const sendMessage = useCallback(async () => {
+    const text = input.trim();
+    if (!text || isStreaming) return;
+
+    const userMsg = { role: "user" as const, content: text };
+    const allMsgs = [...messages, userMsg];
+    setMessages(allMsgs);
+    setInput("");
+    setIsStreaming(true);
+
+    let assistantSoFar = "";
+
+    try {
+      const resp = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/career-chat`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+        },
+        body: JSON.stringify({
+          messages: allMsgs.map(m => ({ role: m.role, content: m.content })),
+          viewContext: {
+            page: "l2-sim-audit",
+            checkpointArea: checkpoint.area,
+            checkpointQuestion: checkpoint.question,
+            checkpointExplanation: checkpoint.explanation,
+            realWorldExample: checkpoint.realWorldExample,
+            coachTip: checkpoint.coachTip,
+            correctVerdict: checkpoint.correctVerdict,
+          },
+        }),
+      });
+
+      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+
+      const reader = resp.body!.getReader();
+      const decoder = new TextDecoder();
+      let buf = "";
+
+      const upsert = (chunk: string) => {
+        assistantSoFar += chunk;
+        setMessages(prev => {
+          const last = prev[prev.length - 1];
+          if (last?.role === "assistant") {
+            return prev.map((m, i) => i === prev.length - 1 ? { ...m, content: assistantSoFar } : m);
+          }
+          return [...prev, { role: "assistant", content: assistantSoFar }];
+        });
+      };
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buf += decoder.decode(value, { stream: true });
+        let idx: number;
+        while ((idx = buf.indexOf("\n")) !== -1) {
+          let line = buf.slice(0, idx);
+          buf = buf.slice(idx + 1);
+          if (line.endsWith("\r")) line = line.slice(0, -1);
+          if (!line.startsWith("data: ")) continue;
+          const jsonStr = line.slice(6).trim();
+          if (jsonStr === "[DONE]") continue;
+          try {
+            const parsed = JSON.parse(jsonStr);
+            const content = parsed.choices?.[0]?.delta?.content;
+            if (content) upsert(content);
+          } catch {
+            buf = line + "\n" + buf;
+            break;
+          }
+        }
+      }
+    } catch {
+      setMessages(prev => [...prev, { role: "assistant", content: "Sorry, couldn't connect. Try again." }]);
+    }
+
+    setIsStreaming(false);
+  }, [input, isStreaming, messages, checkpoint]);
+
+  // Auto-scroll
+  if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+
+  return (
+    <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="rounded-lg overflow-hidden"
+      style={{ background: "hsl(var(--muted) / 0.06)", border: "1px solid hsl(var(--border) / 0.15)" }}>
+      <div className="px-3 py-1.5 flex items-center gap-1.5" style={{ borderBottom: "1px solid hsl(var(--border) / 0.1)" }}>
+        <HelpCircle className="h-3 w-3 text-muted-foreground" />
+        <span className="text-[10px] font-semibold text-muted-foreground">Deep Dive — ask anything about this checkpoint</span>
+      </div>
+      <div ref={scrollRef} className="max-h-[180px] overflow-y-auto px-3 py-2 space-y-2">
+        {messages.length === 0 && (
+          <p className="text-[10px] text-muted-foreground text-center py-2 italic">
+            e.g. "How would I detect this in my own data?" or "What guardrail prevents this?"
+          </p>
+        )}
+        {messages.map((msg, i) => (
+          <div key={i} className={`text-[11px] leading-relaxed ${msg.role === "user" ? "text-right" : ""}`}>
+            <div className={`inline-block max-w-[90%] rounded-md px-2.5 py-1.5 text-left ${
+              msg.role === "user" ? "bg-primary/10 text-foreground" : ""
+            }`} style={msg.role === "assistant" ? { background: "hsl(var(--surface-stone) / 0.6)" } : undefined}>
+              {msg.role === "assistant" ? (
+                <div className="prose prose-xs dark:prose-invert max-w-none [&_p]:mb-1 [&_p]:mt-0">
+                  <ReactMarkdown>{msg.content}</ReactMarkdown>
+                </div>
+              ) : msg.content}
+            </div>
+          </div>
+        ))}
+        {isStreaming && messages[messages.length - 1]?.role !== "assistant" && (
+          <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
+            <Loader2 className="h-3 w-3 animate-spin" /> Thinking…
+          </div>
+        )}
+      </div>
+      <div className="px-2 py-1.5 flex gap-1.5" style={{ borderTop: "1px solid hsl(var(--border) / 0.1)" }}>
+        <input
+          value={input}
+          onChange={e => setInput(e.target.value)}
+          onKeyDown={e => e.key === "Enter" && !e.shiftKey && sendMessage()}
+          placeholder="Ask about this checkpoint…"
+          className="flex-1 bg-transparent rounded-md px-2 py-1 text-[11px] outline-none focus:ring-1 focus:ring-primary/30"
+          style={{ background: "hsl(var(--muted) / 0.1)" }}
+        />
+        <Button size="icon" onClick={sendMessage} disabled={isStreaming || !input.trim()} className="h-6 w-6 rounded-md shrink-0">
+          <Send className="h-2.5 w-2.5" />
+        </Button>
+      </div>
+    </motion.div>
+  );
+}
 
 function RedTeamFormat() {
   const [currentStep, setCurrentStep] = useState(0);
@@ -479,7 +624,7 @@ function RedTeamFormat() {
 
           {/* Revealed explanation */}
           {revealed[checkpoint.id] && (
-            <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="space-y-2">
+            <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="space-y-3">
               <div className="flex items-center gap-2">
                 {verdicts[checkpoint.id] === checkpoint.correctVerdict ? (
                   <span className="text-[11px] font-bold" style={{ color: "hsl(142 60% 50%)" }}>✅ Correct!</span>
@@ -491,11 +636,21 @@ function RedTeamFormat() {
               </div>
               <div className="rounded-md p-3 text-[11px] space-y-2" style={{ background: "hsl(var(--muted) / 0.1)", border: "1px solid hsl(var(--border) / 0.2)" }}>
                 <p className="text-foreground">{checkpoint.explanation}</p>
+                {/* Real-world example */}
+                <div className="rounded-md p-2.5 mt-2" style={{ background: "hsl(var(--filigree-glow) / 0.06)", border: "1px solid hsl(var(--filigree) / 0.12)" }}>
+                  <div className="flex items-center gap-1.5 mb-1">
+                    <span className="text-[10px]">📰</span>
+                    <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: "hsl(var(--filigree-glow))" }}>Real-World Case</span>
+                  </div>
+                  <p className="text-[10px] text-foreground/80 leading-relaxed">{checkpoint.realWorldExample}</p>
+                </div>
                 <div className="flex gap-1.5 items-start pt-1" style={{ borderTop: "1px solid hsl(var(--border) / 0.15)" }}>
                   <span className="text-[10px]">🎓</span>
                   <p className="text-[10px] font-medium" style={{ color: "hsl(var(--filigree-glow))" }}>{checkpoint.coachTip}</p>
                 </div>
               </div>
+              {/* Deep-dive chat */}
+              <CheckpointChat checkpoint={checkpoint} />
               <Button size="sm" variant="outline" onClick={handleNext} className="w-full gap-1.5 text-xs">
                 {currentStep < AUDIT_CHECKPOINTS.length - 1 ? "Next Checkpoint →" : "View Results"}
               </Button>
