@@ -578,6 +578,8 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
   const [objectiveFailCounts, setObjectiveFailCounts] = useState<Record<string, number>>({});
   const [showInactivityNudge, setShowInactivityNudge] = useState(false);
 
+  // L2 Guided Audit state
+  const [auditData, setAuditData] = useState<CompileAuditResult | null>(null);
 
   const inactivityTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
