@@ -39,6 +39,7 @@ const JoinWorkspace = lazy(() => import("./pages/JoinWorkspace.tsx"));
 const ScoreDistributions = lazy(() => import("./pages/ScoreDistributions.tsx"));
 const PublicProfile = lazy(() => import("./pages/PublicProfile.tsx"));
 const MapPage = lazy(() => import("./pages/MapPage.tsx"));
+const L2SimFormats = lazy(() => import("./pages/L2SimFormats.tsx"));
 
 // Admin (lazy)
 const HRLayout = lazy(() => import("./layouts/HRLayout.tsx"));
@@ -104,6 +105,7 @@ const App = () => (
               <Route path="/settings" element={<><Navbar /><Settings /><Footer /></>} />
               <Route path="/company/:slug" element={<><Navbar /><CompanyPage /><Footer /></>} />
               <Route path="/card-styles" element={<><Navbar /><CardStyleMockup /></>} />
+              <Route path="/l2-formats" element={<><Navbar /><L2SimFormats /></>} />
               <Route path="/journey" element={<JourneyGate />} />
               <Route path="/students" element={<Students />} />
               <Route path="/leaderboard" element={<Leaderboard />} />
