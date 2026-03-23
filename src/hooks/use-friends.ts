@@ -118,6 +118,7 @@ export function useFriends() {
         status: f.status as Friend["status"],
         isRequester: f.requester_id === user.id,
         lastSim: lastSimMap.get(friendId) || null,
+        unreadMessages: unreadPerFriend.get(friendId) || 0,
       };
     });
 
