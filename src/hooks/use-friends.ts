@@ -26,6 +26,7 @@ export interface Friend {
   isRequester: boolean; // did current user send the request?
   lastSim: FriendLastSim | null;
   unreadMessages: number;
+  lastUnreadMessage: string | null;
 }
 
 export interface FriendMessage {
@@ -68,13 +69,17 @@ export function useFriends() {
       supabase.from("completed_simulations").select("user_id, skills_earned").in("user_id", friendIds),
       supabase.rpc("get_friends_last_sims", { _user_id: user.id }),
       supabase.from("friend_messages").select("id", { count: "exact", head: true }).eq("recipient_id", user.id).is("read_at", null),
-      supabase.from("friend_messages").select("sender_id").eq("recipient_id", user.id).is("read_at", null),
+      supabase.from("friend_messages").select("sender_id, content, created_at").eq("recipient_id", user.id).is("read_at", null).order("created_at", { ascending: false }),
     ]);
 
-    // Count unread messages per sender
+    // Count unread messages per sender + latest message
     const unreadPerFriend = new Map<string, number>();
+    const lastUnreadMsg = new Map<string, string>();
     for (const msg of unreadPerFriendRes.data || []) {
       unreadPerFriend.set(msg.sender_id, (unreadPerFriend.get(msg.sender_id) || 0) + 1);
+      if (!lastUnreadMsg.has(msg.sender_id)) {
+        lastUnreadMsg.set(msg.sender_id, msg.content);
+      }
     }
 
     const profileMap = new Map((profilesRes.data || []).map(p => [p.id, p]));
@@ -119,6 +124,7 @@ export function useFriends() {
         isRequester: f.requester_id === user.id,
         lastSim: lastSimMap.get(friendId) || null,
         unreadMessages: unreadPerFriend.get(friendId) || 0,
+        lastUnreadMessage: lastUnreadMsg.get(friendId) || null,
       };
     });
 
