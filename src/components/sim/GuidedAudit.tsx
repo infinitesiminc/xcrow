@@ -349,7 +349,7 @@ function RubricResults({ scores }: { scores: Record<string, { score: number; not
                 style={{ background: `linear-gradient(90deg, ${color}, ${color}dd)`, boxShadow: `0 0 8px ${color}40` }}
               />
             </div>
-            <p className="text-[11px] text-muted-foreground italic leading-relaxed">{s.note}</p>
+            <p className="text-[13px] text-muted-foreground italic leading-relaxed">{s.note}</p>
           </motion.div>
         );
       })}
