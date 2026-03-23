@@ -43,7 +43,8 @@ function mapRow(row: any): FutureSkill {
 }
 
 async function fetchOnce(): Promise<FutureSkill[]> {
-  if (_cache) return _cache;
+  // Return cached data if we have actual skills
+  if (_cache && _cache.length > 0) return _cache;
   if (_promise) return _promise;
 
   _promise = (async () => {
@@ -54,8 +55,9 @@ async function fetchOnce(): Promise<FutureSkill[]> {
 
     if (error || !data || data.length === 0) {
       console.warn("Failed to fetch future skills:", error?.message);
-      _cache = [];
-      return _cache;
+      // Don't cache empty — allow retry on next mount
+      _promise = null;
+      return [];
     }
 
     _cache = data.map(mapRow);
