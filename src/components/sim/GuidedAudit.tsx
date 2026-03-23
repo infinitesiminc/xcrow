@@ -700,7 +700,7 @@ export default function GuidedAudit({
               >
                 🔮 Sentinel's Sanctum
               </span>
-              <p className="text-[11px] text-muted-foreground">
+              <p className="text-[13px] text-muted-foreground">
                 Evaluate AI claims from the future battlefield
               </p>
             </div>
