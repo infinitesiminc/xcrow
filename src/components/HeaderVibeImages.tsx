@@ -1,63 +1,84 @@
 /**
  * HeaderVibeImages — Decorative skill hero images scattered behind header areas.
- * Picks random images from the pre-generated skill hero pool with varied opacity/rotation.
+ * Uses real canonical skill IDs from database so URLs always exist.
  */
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+const FALLBACK_IDS = ["complex-threat-modeling", "ai-code-review", "ai-ethics-governance"];
 
-// Pool of known skill hero image IDs (subset for variety)
-const HERO_IDS = [
-  "adaptive-workforce-strategy", "ai-powered-code-review", "autonomous-agent-orchestration",
-  "boardroom-crisis-navigation", "brand-narrative-engineering", "cognitive-load-design",
-  "complex-threat-modeling", "creative-campaign-fusion", "cross-cultural-ai-diplomacy",
-  "data-storytelling-mastery", "design-system-evolution", "dynamic-pricing-orchestration",
-  "empathetic-feedback-loops", "ethical-ai-governance", "explainable-ai-advocacy",
-  "future-workforce-planning", "generative-ux-prototyping", "human-ai-co-creation",
-  "inclusive-design-thinking", "intelligent-process-mining", "multi-agent-workflow-design",
-  "narrative-data-visualization", "neural-interface-design", "organizational-resilience",
-  "predictive-analytics-strategy", "prompt-engineering-mastery", "quantum-ready-architecture",
-  "realtime-decision-systems", "responsible-innovation", "scenario-planning-mastery",
-  "semantic-search-optimization", "stakeholder-trust-architecture", "strategic-automation-mapping",
-  "sustainable-tech-leadership", "synthetic-data-governance", "trust-safety-operations",
-];
+let heroIdCache: string[] | null = null;
+let heroIdPromise: Promise<string[]> | null = null;
+
+async function loadHeroIds(): Promise<string[]> {
+  if (heroIdCache) return heroIdCache;
+  if (heroIdPromise) return heroIdPromise;
+
+  heroIdPromise = (async () => {
+    const { data } = await supabase
+      .from("canonical_future_skills")
+      .select("id")
+      .limit(250);
+
+    const ids = (data ?? []).map((row) => row.id).filter(Boolean);
+    heroIdCache = ids.length > 0 ? ids : FALLBACK_IDS;
+    return heroIdCache;
+  })();
+
+  return heroIdPromise;
+}
 
 function seededRandom(seed: number) {
-  let x = Math.sin(seed) * 10000;
+  const x = Math.sin(seed) * 10000;
   return x - Math.floor(x);
 }
 
 interface HeaderVibeImagesProps {
-  /** Seed for deterministic randomness per page load (e.g. hash of job title) */
   seed?: number;
   count?: number;
 }
 
-export default function HeaderVibeImages({ seed, count = 3 }: HeaderVibeImagesProps) {
+export default function HeaderVibeImages({ seed, count = 4 }: HeaderVibeImagesProps) {
+  const [heroIds, setHeroIds] = useState<string[]>(heroIdCache ?? FALLBACK_IDS);
+
+  useEffect(() => {
+    let active = true;
+    loadHeroIds().then((ids) => {
+      if (active) setHeroIds(ids);
+    });
+    return () => {
+      active = false;
+    };
+  }, []);
+
   const images = useMemo(() => {
     const s = seed ?? Math.floor(Math.random() * 100000);
-    const picked: typeof HERO_IDS[number][] = [];
-    const pool = [...HERO_IDS];
-    
+    const pool = [...heroIds];
+    const picked: string[] = [];
+
     for (let i = 0; i < Math.min(count, pool.length); i++) {
-      const idx = Math.floor(seededRandom(s + i * 7) * pool.length);
+      const idx = Math.floor(seededRandom(s + i * 17) * pool.length);
       picked.push(pool.splice(idx, 1)[0]);
     }
 
     return picked.map((id, i) => {
-      const r = seededRandom(s + i * 13);
-      const r2 = seededRandom(s + i * 19);
-      const r3 = seededRandom(s + i * 31);
+      const r1 = seededRandom(s + i * 23);
+      const r2 = seededRandom(s + i * 31);
+      const r3 = seededRandom(s + i * 41);
+      const r4 = seededRandom(s + i * 53);
+
       return {
         id,
         url: `${SUPABASE_URL}/storage/v1/object/public/sim-images/skill-hero-${id}.png`,
-        rotation: (r - 0.5) * 24, // -12 to +12 degrees
-        left: `${10 + r2 * 80}%`,
-        opacity: 0.12 + r3 * 0.1, // 0.12 to 0.22
-        scale: 0.8 + r3 * 0.6,
+        rotation: (r1 - 0.5) * 28,
+        left: `${8 + r2 * 84}%`,
+        top: `${35 + r3 * 30}%`,
+        width: `${110 + r4 * 90}px`,
+        opacity: 0.2 + r3 * 0.14,
       };
     });
-  }, [seed, count]);
+  }, [seed, count, heroIds]);
 
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none" aria-hidden="true">
@@ -66,15 +87,21 @@ export default function HeaderVibeImages({ seed, count = 3 }: HeaderVibeImagesPr
           key={img.id}
           src={img.url}
           alt=""
-          loading="lazy"
-          className="absolute h-full w-auto object-cover"
+          loading="eager"
+          className="absolute object-cover rounded-md"
           style={{
             left: img.left,
-            top: "50%",
-            transform: `translate(-50%, -50%) rotate(${img.rotation}deg) scale(${img.scale})`,
+            top: img.top,
+            width: img.width,
+            height: "68px",
+            transform: `translate(-50%, -50%) rotate(${img.rotation}deg)`,
             opacity: img.opacity,
-            filter: "blur(0.5px) saturate(0.8)",
-            mixBlendMode: "screen",
+            filter: "saturate(1.05)",
+            border: "1px solid hsl(var(--filigree) / 0.35)",
+            boxShadow: "0 0 0 1px hsl(var(--background) / 0.25), 0 6px 16px hsl(var(--background) / 0.4)",
+          }}
+          onError={(e) => {
+            (e.currentTarget as HTMLImageElement).style.display = "none";
           }}
         />
       ))}
