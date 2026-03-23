@@ -6,6 +6,7 @@
  */
 
 import { useEffect, useState, useCallback } from "react";
+import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import {
   Sheet,
@@ -497,18 +498,23 @@ function TrackCard({
             )}
           </div>
           {onStart && (
-            <button
+            <motion.button
               onClick={onStart}
-              className="w-full py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all hover:brightness-110"
+              whileHover={{ scale: 1.03, y: -1 }}
+              whileTap={{ scale: 0.97 }}
+              className="w-full py-3 rounded-xl text-sm font-bold uppercase tracking-wider transition-all relative overflow-hidden group"
               style={{
-                background: `linear-gradient(135deg, ${color}, ${color}cc)`,
-                color: "hsl(var(--foreground))",
-                boxShadow: `0 2px 10px ${color}40`,
+                background: `linear-gradient(135deg, ${color}, ${color}dd, ${color}aa)`,
+                color: "hsl(0 0% 100%)",
+                boxShadow: `0 4px 20px ${color}50, 0 0 40px ${color}20, inset 0 1px 0 rgba(255,255,255,0.2)`,
                 fontFamily: "'Cinzel', serif",
+                textShadow: "0 1px 3px rgba(0,0,0,0.4)",
+                border: `1px solid ${color}60`,
               }}
             >
-              {startLabel || "⚔️ Start Quest"}
-            </button>
+              <span className="absolute inset-0 bg-gradient-to-t from-transparent via-white/10 to-white/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              <span className="relative z-10">{startLabel || "⚔️ Start Quest"}</span>
+            </motion.button>
           )}
         </div>
       ) : (
