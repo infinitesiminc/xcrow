@@ -193,6 +193,7 @@ const RoleDeepDive = () => {
   }, [user]);
 
   useEffect(() => {
+    if (!skillResolved) return; // Wait for skill→job resolution
     if (!jobTitle && !hasJd) { navigate("/"); return; }
     if (initialResult) { saveHistory(initialResult); return; }
     const analyze = async () => {
