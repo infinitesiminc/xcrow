@@ -5,6 +5,13 @@ import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 
+export interface FriendLastSim {
+  job_title: string;
+  task_name: string;
+  completed_at: string;
+  company: string | null;
+}
+
 export interface Friend {
   id: string; // friendship row id
   friendId: string;
@@ -17,6 +24,7 @@ export interface Friend {
   totalXp: number;
   status: "pending" | "accepted" | "blocked";
   isRequester: boolean; // did current user send the request?
+  lastSim: FriendLastSim | null;
 }
 
 export interface FriendMessage {
