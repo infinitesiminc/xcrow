@@ -95,7 +95,7 @@ function UserChampion({ avatarSrc, power, maxPower }: { avatarSrc: string; power
             boxShadow: "0 0 20px hsl(195 90% 55% / 0.3), inset 0 0 10px hsl(195 90% 55% / 0.1)",
           }}
         >
-          <img src={avatarSrc} alt="Champion" className="w-full h-full object-cover" />
+          <img src={avatarSrc} alt="Champion" className="w-full h-full object-cover" loading="eager" fetchPriority="high" />
         </div>
         {/* Sword overlay */}
         <div className="absolute -bottom-1 -right-1 text-sm">⚔️</div>
