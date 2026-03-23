@@ -12,10 +12,6 @@ import { useToolMentionComponents } from "@/components/sim/AIToolChip";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import {
-  Dialog,
-  DialogContent,
-} from "@/components/ui/dialog";
-import {
   compileSession,
   compileAudit,
   chatTurn,
