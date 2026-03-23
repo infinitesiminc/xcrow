@@ -269,7 +269,7 @@ export default function FutureIsland({ island, skillLookup, level2SkillIds, leve
                   dominantBaseline="central"
                   style={{ fontSize: isBossCompleted ? "16px" : "14px", pointerEvents: "none" }}
                 >
-                  {isBossCompleted ? "👑" : isBossAvailable ? "⚔️" : (skill.iconEmoji || "")}
+                  {isBossCompleted ? "👑" : (skill.iconEmoji || "")}
                 </text>
 
                 {/* Growth Rings — 3 arcs around the node */}
