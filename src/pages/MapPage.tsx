@@ -193,9 +193,12 @@ const MapPage = () => {
       setSkillGrowthMap(growthMap);
 
       // Track which skills have completed L2 boss battles
+      // Superadmins always see bosses as available for repeated testing
       const l2Completed = new Set<string>();
-      for (const [skillId, acc] of growthAcc) {
-        if (acc.l2Sims > 0) l2Completed.add(skillId);
+      if (!isSuperAdmin) {
+        for (const [skillId, acc] of growthAcc) {
+          if (acc.l2Sims > 0) l2Completed.add(skillId);
+        }
       }
       setLevel2CompletedIds(l2Completed);
 
