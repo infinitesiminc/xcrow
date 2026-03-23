@@ -23,23 +23,28 @@ import { getTerritory } from "@/lib/territory-colors";
 
 /* ── Skill Hero Image — direct from storage (pre-generated) ── */
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+const heroImageCache = new Set<string>();
 
 function useSkillHeroImage(skill: FutureSkill | null, open: boolean) {
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    // Reset immediately when skill changes to prevent bleed
     setImageUrl(null);
-
     if (!skill || !open) return;
 
-    setLoading(true);
     const url = `${SUPABASE_URL}/storage/v1/object/public/sim-images/skill-hero-${skill.id}.png`;
 
-    // Verify image exists with an Image load
+    // If already verified, show instantly
+    if (heroImageCache.has(skill.id)) {
+      setImageUrl(url);
+      return;
+    }
+
+    setLoading(true);
     const img = new Image();
     img.onload = () => {
+      heroImageCache.add(skill.id);
       setImageUrl(url);
       setLoading(false);
     };
