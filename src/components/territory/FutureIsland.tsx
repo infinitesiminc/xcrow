@@ -150,6 +150,8 @@ export default function FutureIsland({ island, skillLookup, level2SkillIds, leve
         const intensity = Math.min(1, skill.demandCount / 15);
         const showLabel = !isFocused || isHovered || isHighlighted;
         const isLevel2 = level2SkillIds?.has(node.skillId) ?? false;
+        const isBossCompleted = level2CompletedIds?.has(node.skillId) ?? false;
+        const isBossAvailable = isLevel2 && !isBossCompleted;
         const diamondSide = nodeRadius * 1.35;
 
         return (
