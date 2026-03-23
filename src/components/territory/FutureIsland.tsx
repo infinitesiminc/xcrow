@@ -308,26 +308,6 @@ export default function FutureIsland({ island, skillLookup, level2SkillIds, leve
                   });
                 })()}
 
-                {isBossAvailable && (
-                  <g>
-                    <rect
-                      x={node.x + nodeRadius * 0.4}
-                      y={node.y - nodeRadius - 6}
-                      width={22}
-                      height={10}
-                      rx={3}
-                      fill="hsl(45 80% 50%)"
-                    />
-                    <text
-                      x={node.x + nodeRadius * 0.4 + 11}
-                      y={node.y - nodeRadius - 1}
-                      textAnchor="middle"
-                      style={{ fontSize: "6px", fontWeight: 800, fill: "hsl(45 20% 10%)", pointerEvents: "none" }}
-                    >
-                      BOSS
-                    </text>
-                  </g>
-                )}
 
                 {/* Name label */}
                 {showLabel && (
