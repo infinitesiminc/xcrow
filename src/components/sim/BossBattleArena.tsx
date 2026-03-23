@@ -486,6 +486,19 @@ export default function BossBattleArena({
       className="absolute inset-0 flex flex-col overflow-hidden"
       style={{ background: "radial-gradient(ellipse at center, hsl(262 40% 8%), hsl(0 0% 2%))" }}
     >
+      {/* Job context bar */}
+      {(jobTitle || scenarioContext) && (
+        <div className="flex items-center justify-center gap-2 py-1.5 px-4 shrink-0" style={{ borderBottom: "1px solid hsl(262 40% 20% / 0.2)" }}>
+          <span className="text-[10px] text-muted-foreground truncate max-w-md text-center">
+            {scenarioContext || (
+              <>
+                <span className="text-foreground/70 font-medium">{jobTitle}</span>
+                {company && <span className="text-muted-foreground"> · {company}</span>}
+              </>
+            )}
+          </span>
+        </div>
+      )}
       {/* Top bar — Round counter + Difficulty + Streak */}
       <div className="flex items-center justify-center gap-3 py-2 px-4 shrink-0" style={{ borderBottom: "1px solid hsl(262 40% 20% / 0.4)" }}>
         {/* Difficulty badge */}

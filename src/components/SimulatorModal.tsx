@@ -1221,6 +1221,8 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                 onRestart={() => startCompile()}
                 onViewDebrief={() => setPhase("done")}
                 skillName={taskName}
+                jobTitle={jobTitle}
+                company={company}
               />
             </div>
           )}
