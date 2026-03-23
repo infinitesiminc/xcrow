@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 
 import AllyChat from "./AllyChat";
+import AllyProfileOverlay from "./AllyProfileOverlay";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -31,6 +32,7 @@ const AlliesPanel = () => {
   const [searchResults, setSearchResults] = useState<{ id: string; display_name: string; username: string | null; avatar_id: string | null }[]>([]);
   const [searching, setSearching] = useState(false);
   const [chatFriend, setChatFriend] = useState<Friend | null>(null);
+  const [viewFriend, setViewFriend] = useState<Friend | null>(null);
 
   const handleSearch = useCallback(async () => {
     if (!searchQuery.trim() || !user) return;
@@ -243,7 +245,7 @@ const AlliesPanel = () => {
                 friend={friend}
                 onAccept={() => acceptRequest(friend.id)}
                 onReject={() => removeFriend(friend.id)}
-                onView={() => friend.username && navigate(`/u/${friend.username}`)}
+                onView={() => setViewFriend(friend)}
                 onMessage={() => setChatFriend(friend)}
                 onLaunchSim={handleLaunchSim}
                 onSendSim={(jt, tn) => handleSendSim(friend, jt, tn)}
@@ -261,6 +263,17 @@ const AlliesPanel = () => {
             key={chatFriend.friendId}
             friend={chatFriend}
             onBack={() => setChatFriend(null)}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Profile Overlay */}
+      <AnimatePresence>
+        {viewFriend && (
+          <AllyProfileOverlay
+            key={viewFriend.friendId}
+            friend={viewFriend}
+            onClose={() => setViewFriend(null)}
           />
         )}
       </AnimatePresence>
