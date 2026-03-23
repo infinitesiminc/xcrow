@@ -1,7 +1,6 @@
 /**
  * AlliesPanel — Social tab on the Territory Map.
- * Shows friend list with online status, activity feed, pending requests,
- * and friend search. Dark Fantasy RPG themed.
+ * Shows friend list with sim status, pending requests, and friend search.
  */
 import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -11,30 +10,28 @@ import { supabase } from "@/integrations/supabase/client";
 import { useFriends, type Friend } from "@/hooks/use-friends";
 import {
   Users, Search, UserPlus, Check, X, Shield,
-  MessageCircle, Eye, Swords, Clock, Sparkles,
+  MessageCircle, Eye, Swords, Clock, Sparkles, Play, Send,
 } from "lucide-react";
 
 import AllyChat from "./AllyChat";
-import FriendActivityFeed from "./FriendActivityFeed";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { getAvatarById } from "@/lib/avatars";
 
 /* ── Sub-tabs ── */
-type SubTab = "online" | "all" | "pending" | "search" | "feed";
+type SubTab = "online" | "all" | "pending" | "search";
 
 const AlliesPanel = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { friends, loading, pendingCount, acceptRequest, removeFriend, sendRequest } = useFriends();
-  const [subTab, setSubTab] = useState<SubTab>("feed");
+  const [subTab, setSubTab] = useState<SubTab>("online");
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<{ id: string; display_name: string; username: string | null; avatar_id: string | null }[]>([]);
   const [searching, setSearching] = useState(false);
   const [chatFriend, setChatFriend] = useState<Friend | null>(null);
 
-  // Search users by display name or username
   const handleSearch = useCallback(async () => {
     if (!searchQuery.trim() || !user) return;
     setSearching(true);
@@ -74,6 +71,23 @@ const AlliesPanel = () => {
     if (diff < 3_600_000) return `${Math.floor(diff / 60_000)}m ago`;
     if (diff < 86_400_000) return `${Math.floor(diff / 3_600_000)}h ago`;
     return `${Math.floor(diff / 86_400_000)}d ago`;
+  };
+
+  const handleLaunchSim = (jobTitle: string, taskName: string) => {
+    navigate(`/sim?role=${encodeURIComponent(jobTitle)}&task=${encodeURIComponent(taskName)}`);
+  };
+
+  const handleSendSim = (friend: Friend, jobTitle: string, taskName: string) => {
+    setChatFriend(friend);
+    // Pre-fill a challenge message after a tick so chat opens first
+    setTimeout(() => {
+      const msgInput = document.querySelector<HTMLInputElement>('[data-ally-chat-input]');
+      if (msgInput) {
+        msgInput.value = `⚔️ Challenge! Try "${taskName}" in ${jobTitle} — can you beat my score?`;
+        msgInput.focus();
+        msgInput.dispatchEvent(new Event('input', { bubbles: true }));
+      }
+    }, 300);
   };
 
   return (
@@ -127,7 +141,6 @@ const AlliesPanel = () => {
         style={{ borderBottom: "1px solid hsl(var(--filigree) / 0.1)" }}
       >
         {([
-          { key: "feed" as SubTab, label: "Feed", icon: Swords },
           { key: "online" as SubTab, label: "Online", icon: Sparkles },
           { key: "all" as SubTab, label: "All", icon: Users },
           { key: "pending" as SubTab, label: "Requests", icon: Shield, badge: pendingCount },
@@ -175,9 +188,6 @@ const AlliesPanel = () => {
       )}
 
       {/* Content */}
-      {subTab === "feed" ? (
-        <FriendActivityFeed />
-      ) : (
       <ScrollArea className="flex-1">
         <div className="px-3 py-2 space-y-1">
           {loading ? (
@@ -187,7 +197,6 @@ const AlliesPanel = () => {
               </div>
             </div>
           ) : subTab === "search" ? (
-            /* Search results */
             searchResults.length === 0 && searchQuery.length >= 2 ? (
               <div className="text-center py-8 text-xs text-muted-foreground">
                 {searching ? "Searching..." : "No adventurers found"}
@@ -236,13 +245,14 @@ const AlliesPanel = () => {
                 onReject={() => removeFriend(friend.id)}
                 onView={() => friend.username && navigate(`/u/${friend.username}`)}
                 onMessage={() => setChatFriend(friend)}
+                onLaunchSim={handleLaunchSim}
+                onSendSim={(jt, tn) => handleSendSim(friend, jt, tn)}
                 formatLastSeen={formatLastSeen}
               />
             ))
           )}
         </div>
       </ScrollArea>
-      )}
 
       {/* DM Chat Drawer */}
       <AnimatePresence>
@@ -284,105 +294,167 @@ function FriendRow({ name, username, avatarId, trailing, onClick }: {
   );
 }
 
-/* ── Friend Card (full detail) ── */
-function FriendCard({ friend, onAccept, onReject, onView, onMessage, formatLastSeen }: {
-  friend: Friend; onAccept: () => void; onReject: () => void;
-  onView: () => void; onMessage: () => void; formatLastSeen: (d: string | null) => string;
+/* ── Friend Card (with sim status) ── */
+function FriendCard({ friend, onAccept, onReject, onView, onMessage, onLaunchSim, onSendSim, formatLastSeen }: {
+  friend: Friend;
+  onAccept: () => void; onReject: () => void;
+  onView: () => void; onMessage: () => void;
+  onLaunchSim: (jobTitle: string, taskName: string) => void;
+  onSendSim: (jobTitle: string, taskName: string) => void;
+  formatLastSeen: (d: string | null) => string;
 }) {
   const avatar = friend.avatarId ? getAvatarById(friend.avatarId) : null;
   const isPending = friend.status === "pending";
+  const sim = friend.lastSim;
+
+  // Determine what the friend is doing now
+  const isInSim = friend.currentActivity?.startsWith("Sim:");
+  const currentSimName = isInSim ? friend.currentActivity!.replace("Sim: ", "") : null;
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 4 }}
       animate={{ opacity: 1, y: 0 }}
-      className="flex items-center gap-2.5 px-2 py-2 rounded-lg transition-all hover:bg-white/5 group"
+      className="rounded-lg transition-all hover:bg-white/5 group"
       style={{
         border: friend.isOnline ? "1px solid hsl(142 70% 45% / 0.2)" : "1px solid transparent",
       }}
     >
-      {/* Avatar with status dot */}
-      <div className="relative shrink-0">
-        <div
-          className="w-8 h-8 rounded-full flex items-center justify-center text-sm overflow-hidden"
-          style={{ background: "hsl(var(--filigree) / 0.1)" }}
-        >
-          {avatar ? <img src={avatar.src} alt={avatar.label} className="w-full h-full object-cover" /> : friend.displayName[0]?.toUpperCase() || "?"}
-        </div>
-        {friend.status === "accepted" && (
+      {/* Top row: avatar + name + actions */}
+      <div className="flex items-center gap-2.5 px-2 pt-2 pb-1">
+        {/* Avatar with status dot */}
+        <div className="relative shrink-0">
           <div
-            className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2"
-            style={{
-              borderColor: "hsl(var(--surface-stone))",
-              background: friend.isOnline ? "hsl(142 70% 50%)" : "hsl(var(--muted-foreground) / 0.3)",
-            }}
-          />
+            className="w-8 h-8 rounded-full flex items-center justify-center text-sm overflow-hidden"
+            style={{ background: "hsl(var(--filigree) / 0.1)" }}
+          >
+            {avatar ? <img src={avatar.src} alt={avatar.label} className="w-full h-full object-cover" /> : friend.displayName[0]?.toUpperCase() || "?"}
+          </div>
+          {friend.status === "accepted" && (
+            <div
+              className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2"
+              style={{
+                borderColor: "hsl(var(--surface-stone))",
+                background: friend.isOnline ? "hsl(142 70% 50%)" : "hsl(var(--muted-foreground) / 0.3)",
+              }}
+            />
+          )}
+        </div>
+
+        {/* Name + status */}
+        <div className="flex-1 min-w-0 cursor-pointer" onClick={onView}>
+          <div className="flex items-center gap-1.5">
+            <p className="text-xs font-medium text-foreground truncate">{friend.displayName}</p>
+            {friend.totalXp > 0 && (
+              <span className="text-[9px] px-1 py-0.5 rounded font-medium"
+                style={{ background: "hsl(var(--filigree) / 0.1)", color: "hsl(var(--filigree-glow))", fontFamily: "'Cinzel', serif" }}>
+                {friend.totalXp.toLocaleString()} XP
+              </span>
+            )}
+          </div>
+          <p className="text-[10px] text-muted-foreground truncate">
+            {isPending
+              ? (friend.isRequester ? "Request sent" : "Wants to ally with you")
+              : friend.isOnline
+                ? (isInSim ? `⚔️ In simulation` : "Online")
+                : `Last seen ${formatLastSeen(friend.lastSeenAt)}`
+            }
+          </p>
+        </div>
+
+        {/* Actions */}
+        {isPending && !friend.isRequester ? (
+          <div className="flex items-center gap-1">
+            <button
+              onClick={(e) => { e.stopPropagation(); onAccept(); }}
+              className="p-1.5 rounded-md transition-all hover:bg-white/10"
+              style={{ color: "hsl(142 70% 55%)" }}
+              title="Accept"
+            >
+              <Check className="h-3.5 w-3.5" />
+            </button>
+            <button
+              onClick={(e) => { e.stopPropagation(); onReject(); }}
+              className="p-1.5 rounded-md transition-all hover:bg-white/10"
+              style={{ color: "hsl(var(--muted-foreground))" }}
+              title="Decline"
+            >
+              <X className="h-3.5 w-3.5" />
+            </button>
+          </div>
+        ) : isPending && friend.isRequester ? (
+          <span className="text-[10px] text-muted-foreground flex items-center gap-1">
+            <Clock className="h-3 w-3" /> Pending
+          </span>
+        ) : (
+          <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+            <button onClick={onMessage} className="p-1.5 rounded-md transition-all hover:bg-white/10"
+              style={{ color: "hsl(var(--filigree-glow))" }} title="Message">
+              <MessageCircle className="h-3.5 w-3.5" />
+            </button>
+            <button onClick={onView} className="p-1.5 rounded-md transition-all hover:bg-white/10"
+              style={{ color: "hsl(var(--filigree-glow))" }} title="View profile">
+              <Eye className="h-3.5 w-3.5" />
+            </button>
+          </div>
         )}
       </div>
 
-      {/* Info */}
-      <div className="flex-1 min-w-0 cursor-pointer" onClick={onView}>
-        <div className="flex items-center gap-1.5">
-          <p className="text-xs font-medium text-foreground truncate">{friend.displayName}</p>
-          {friend.totalXp > 0 && (
-            <span className="text-[9px] px-1 py-0.5 rounded font-medium"
-              style={{ background: "hsl(var(--filigree) / 0.1)", color: "hsl(var(--filigree-glow))", fontFamily: "'Cinzel', serif" }}>
-              {friend.totalXp.toLocaleString()} XP
-            </span>
-          )}
-        </div>
-        <p className="text-[10px] text-muted-foreground truncate">
-          {isPending
-            ? (friend.isRequester ? "Request sent" : "Wants to ally with you")
-            : friend.isOnline
-              ? (friend.currentActivity || "Online")
-              : `Last seen ${formatLastSeen(friend.lastSeenAt)}`
-          }
-        </p>
-      </div>
-
-      {/* Actions */}
-      {isPending && !friend.isRequester ? (
-        <div className="flex items-center gap-1">
-          <button
-            onClick={(e) => { e.stopPropagation(); onAccept(); }}
-            className="p-1.5 rounded-md transition-all hover:bg-white/10"
-            style={{ color: "hsl(142 70% 55%)" }}
-            title="Accept"
-          >
-            <Check className="h-3.5 w-3.5" />
-          </button>
-          <button
-            onClick={(e) => { e.stopPropagation(); onReject(); }}
-            className="p-1.5 rounded-md transition-all hover:bg-white/10"
-            style={{ color: "hsl(var(--muted-foreground))" }}
-            title="Decline"
-          >
-            <X className="h-3.5 w-3.5" />
-          </button>
-        </div>
-      ) : isPending && friend.isRequester ? (
-        <span className="text-[10px] text-muted-foreground flex items-center gap-1">
-          <Clock className="h-3 w-3" /> Pending
-        </span>
-      ) : (
-        <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
-          <button
-            onClick={onMessage}
-            className="p-1.5 rounded-md transition-all hover:bg-white/10"
-            style={{ color: "hsl(var(--filigree-glow))" }}
-            title="Message"
-          >
-            <MessageCircle className="h-3.5 w-3.5" />
-          </button>
-          <button
-            onClick={onView}
-            className="p-1.5 rounded-md transition-all hover:bg-white/10"
-            style={{ color: "hsl(var(--filigree-glow))" }}
-            title="View map"
-          >
-            <Eye className="h-3.5 w-3.5" />
-          </button>
+      {/* Sim status row (only for accepted friends) */}
+      {friend.status === "accepted" && (isInSim || sim) && (
+        <div
+          className="mx-2 mb-2 px-2.5 py-2 rounded-md"
+          style={{ background: "hsl(var(--filigree) / 0.06)" }}
+        >
+          {isInSim && currentSimName ? (
+            /* Currently in a sim */
+            <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1.5 flex-1 min-w-0">
+                <Swords className="h-3 w-3 shrink-0 animate-pulse" style={{ color: "hsl(var(--filigree-glow))" }} />
+                <span className="text-[10px] font-medium truncate" style={{ color: "hsl(var(--filigree-glow))" }}>
+                  {currentSimName}
+                </span>
+                <span className="text-[9px] px-1 py-0.5 rounded-full animate-pulse"
+                  style={{ background: "hsl(142 70% 45% / 0.2)", color: "hsl(142 70% 55%)" }}>
+                  LIVE
+                </span>
+              </div>
+            </div>
+          ) : sim ? (
+            /* Last completed sim */
+            <div>
+              <div className="flex items-center gap-1.5 mb-1">
+                <Swords className="h-3 w-3 shrink-0" style={{ color: "hsl(var(--muted-foreground))" }} />
+                <span className="text-[10px] text-muted-foreground">Last quest:</span>
+              </div>
+              <p className="text-[11px] font-medium text-foreground truncate pl-[18px]">
+                {sim.task_name}
+              </p>
+              <div className="flex items-center justify-between pl-[18px] mt-1">
+                <span className="text-[9px] text-muted-foreground">{sim.job_title}</span>
+                <div className="flex items-center gap-1">
+                  <button
+                    onClick={(e) => { e.stopPropagation(); onLaunchSim(sim.job_title, sim.task_name); }}
+                    className="flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[9px] font-medium transition-all hover:bg-white/10"
+                    style={{ color: "hsl(var(--filigree-glow))", fontFamily: "'Cinzel', serif" }}
+                    title="Try this sim"
+                  >
+                    <Play className="h-2.5 w-2.5" />
+                    Try
+                  </button>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); onSendSim(sim.job_title, sim.task_name); }}
+                    className="flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[9px] font-medium transition-all hover:bg-white/10"
+                    style={{ color: "hsl(var(--primary))", fontFamily: "'Cinzel', serif" }}
+                    title="Send this sim as challenge"
+                  >
+                    <Send className="h-2.5 w-2.5" />
+                    Send
+                  </button>
+                </div>
+              </div>
+            </div>
+          ) : null}
         </div>
       )}
     </motion.div>
@@ -392,7 +464,6 @@ function FriendCard({ friend, onAccept, onReject, onView, onMessage, formatLastS
 /* ── Empty state ── */
 function EmptyState({ subTab, onSearch }: { subTab: SubTab; onSearch: () => void }) {
   const messages: Record<SubTab, { icon: typeof Users; title: string; desc: string }> = {
-    feed: { icon: Swords, title: "No tales yet", desc: "Your allies' quests will appear here." },
     online: { icon: Sparkles, title: "No allies online", desc: "Your allies are resting. Check back soon!" },
     all: { icon: Users, title: "No allies yet", desc: "Find adventurers and forge alliances." },
     pending: { icon: Shield, title: "No pending requests", desc: "All caught up!" },
