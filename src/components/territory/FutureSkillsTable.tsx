@@ -23,44 +23,23 @@ function getSkillIconUrl(skillId: string): string {
   return `${SUPABASE_URL}/storage/v1/object/public/sim-images/skill-icon-${skillId}.png`;
 }
 
-/** Tracks which skill icons actually exist (checked via HEAD) */
-const iconExistsCache = new Map<string, boolean>();
-function useSkillIconExists(skillId: string) {
-  const [exists, setExists] = useState<boolean>(iconExistsCache.get(skillId) ?? false);
-  useEffect(() => {
-    if (iconExistsCache.has(skillId)) {
-      setExists(iconExistsCache.get(skillId)!);
-      return;
-    }
-    const url = getSkillIconUrl(skillId);
-    fetch(url, { method: "HEAD" })
-      .then(r => {
-        iconExistsCache.set(skillId, r.ok);
-        setExists(r.ok);
-      })
-      .catch(() => {
-        iconExistsCache.set(skillId, false);
-        setExists(false);
-      });
-  }, [skillId]);
-  return exists;
-}
-
-/** Inline skill icon component — falls back to emoji */
+/** Inline skill icon component — shows custom icon with emoji fallback on error */
 function SkillIcon({ skill }: { skill: FutureSkill }) {
-  const hasIcon = useSkillIconExists(skill.id);
-  if (hasIcon) {
-    return (
-      <img
-        src={getSkillIconUrl(skill.id)}
-        alt={skill.name}
-        className="w-6 h-6 rounded-sm object-cover shrink-0"
-        loading="lazy"
-        onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
-      />
-    );
+  const [failed, setFailed] = useState(false);
+
+  if (failed) {
+    return skill.iconEmoji ? <span className="text-sm shrink-0">{skill.iconEmoji}</span> : null;
   }
-  return skill.iconEmoji ? <span className="text-sm shrink-0">{skill.iconEmoji}</span> : null;
+
+  return (
+    <img
+      src={getSkillIconUrl(skill.id)}
+      alt={skill.name}
+      className="w-6 h-6 rounded-sm object-cover shrink-0"
+      loading="lazy"
+      onError={() => setFailed(true)}
+    />
+  );
 }
 
 type SortKey = "name" | "category" | "xp";
