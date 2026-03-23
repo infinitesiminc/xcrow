@@ -316,6 +316,8 @@ const MapPage = () => {
               onAskChat={(prompt) => { setChatDockOpen(true); chatSendMessage(prompt); }}
               onTabChange={setMyRolesTab}
             />
+          ) : activeTab === "codex" && isSignedIn ? (
+            <CodexPanel />
           ) : activeTab === "allies" && isSignedIn ? (
             <AlliesPanel onLaunchSim={handleLaunchSim} />
           ) : null}
