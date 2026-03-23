@@ -2,6 +2,7 @@
  * MapPage — Split-panel layout: left panel (Forge/Kingdoms/Allies) + right map.
  */
 import { useState, useCallback, useEffect, useMemo, useRef } from "react";
+import type { FutureSkill } from "@/hooks/use-future-skills";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -24,6 +25,7 @@ import CompactHUD from "@/components/territory/CompactHUD";
 import MyRolesPanel from "@/components/territory/MyRolesPanel";
 import AlliesPanel from "@/components/territory/AlliesPanel";
 import { useSkills } from "@/hooks/use-skills";
+import SkillDetailDrawer from "@/components/territory/SkillDetailDrawer";
 import { useFriends } from "@/hooks/use-friends";
 import {
   SKILL_TAXONOMY,
@@ -92,6 +94,8 @@ const MapPage = () => {
   const [mapFocusSkillId, setMapFocusSkillId] = useState<string | null>(null);
   const [forgeFocusSkillId, setForgeFocusSkillId] = useState<string | null>(null);
   const [myRolesTab, setMyRolesTab] = useState<"saved" | "practiced">("saved");
+  const [drawerSkill, setDrawerSkill] = useState<FutureSkill | null>(null);
+  const [drawerOpen, setDrawerOpen] = useState(false);
 
   const [realSkills, setRealSkills] = useState<SkillXP[]>([]);
   const [targetSkillIds, setTargetSkillIds] = useState<Set<string>>(new Set());
@@ -300,6 +304,8 @@ const MapPage = () => {
               onSkillClick={(skill) => {
                 setMapFocusSkillId(skill.id);
                 setTimeout(() => setMapFocusSkillId(null), 100);
+                setDrawerSkill(skill);
+                setDrawerOpen(true);
               }}
             />
           ) : activeTab === "roles" && isSignedIn ? (
@@ -326,6 +332,8 @@ const MapPage = () => {
             setActiveTab("table");
             setForgeFocusSkillId(skill.id);
             setTimeout(() => setForgeFocusSkillId(null), 200);
+            setDrawerSkill(skill);
+            setDrawerOpen(true);
           }}
         />
         {!isSignedIn && <MapIntroGuide />}
@@ -419,6 +427,17 @@ const MapPage = () => {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Skill Detail Drawer */}
+      <SkillDetailDrawer
+        skill={drawerSkill}
+        open={drawerOpen}
+        onOpenChange={setDrawerOpen}
+        level2Unlocked={drawerSkill ? level2SkillIds.has(drawerSkill.id) : false}
+        level1Xp={drawerSkill ? (skillGrowthMap.get(drawerSkill.id)?.level1Xp ?? 0) : 0}
+        level2Xp={drawerSkill ? (skillGrowthMap.get(drawerSkill.id)?.level2Xp ?? 0) : 0}
+        level1SimsCompleted={drawerSkill ? (skillGrowthMap.get(drawerSkill.id)?.level1Sims ?? 0) : 0}
+      />
     </div>
   );
 };
