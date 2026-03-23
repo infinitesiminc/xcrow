@@ -14,7 +14,6 @@ import {
   FUTURE_MAP_HEIGHT,
 } from "@/lib/future-territory-layout";
 import FutureIsland from "./FutureIsland";
-import SkillDetailDrawer from "./SkillDetailDrawer";
 import type { CanonicalSkillGrowth } from "@/pages/MapPage";
 
 interface FutureTerritoryMapProps {
