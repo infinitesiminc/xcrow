@@ -307,7 +307,7 @@ const MapPage = () => {
               onTabChange={setMyRolesTab}
             />
           ) : activeTab === "allies" && isSignedIn ? (
-            <AlliesPanel />
+            <AlliesPanel onLaunchSim={handleLaunchSim} />
           ) : null}
         </div>
       </div>

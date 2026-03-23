@@ -23,7 +23,11 @@ import { getAvatarById } from "@/lib/avatars";
 /* ── Sub-tabs ── */
 type SubTab = "online" | "all" | "pending" | "search";
 
-const AlliesPanel = () => {
+interface AlliesPanelProps {
+  onLaunchSim?: (req: { jobTitle: string; taskName: string; company?: string }) => void;
+}
+
+const AlliesPanel = ({ onLaunchSim: onLaunchSimProp }: AlliesPanelProps) => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { friends, loading, pendingCount, acceptRequest, removeFriend, sendRequest } = useFriends();
@@ -76,7 +80,9 @@ const AlliesPanel = () => {
   };
 
   const handleLaunchSim = (jobTitle: string, taskName: string) => {
-    navigate(`/sim?role=${encodeURIComponent(jobTitle)}&task=${encodeURIComponent(taskName)}`);
+    if (onLaunchSimProp) {
+      onLaunchSimProp({ jobTitle, taskName });
+    }
   };
 
   const handleSendSim = (friend: Friend, jobTitle: string, taskName: string) => {
@@ -461,7 +467,7 @@ function FriendCard({ friend, onAccept, onReject, onView, onMessage, onLaunchSim
               </div>
               <div className="flex items-center justify-end gap-1 mt-1">
                 <button
-                  onClick={(e) => { e.stopPropagation(); onLaunchSim(friend.currentActivity?.replace("Sim: ", "") || "", currentSimName); }}
+                  onClick={(e) => { e.stopPropagation(); onLaunchSim(sim?.job_title || currentSimName, currentSimName); }}
                   className="flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[9px] font-medium transition-all hover:bg-white/10"
                   style={{ color: "hsl(var(--filigree-glow))", fontFamily: "'Cinzel', serif" }}
                   title="Try this sim"
@@ -470,7 +476,7 @@ function FriendCard({ friend, onAccept, onReject, onView, onMessage, onLaunchSim
                   Try
                 </button>
                 <button
-                  onClick={(e) => { e.stopPropagation(); onSendSim(friend.currentActivity?.replace("Sim: ", "") || "", currentSimName); }}
+                  onClick={(e) => { e.stopPropagation(); onSendSim(sim?.job_title || currentSimName, currentSimName); }}
                   className="flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[9px] font-medium transition-all hover:bg-white/10"
                   style={{ color: "hsl(var(--primary))", fontFamily: "'Cinzel', serif" }}
                   title="Send this sim as challenge"
