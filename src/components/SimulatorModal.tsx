@@ -148,6 +148,23 @@ function simHeroHue(str: string): number {
   return Math.abs(h) % 360;
 }
 
+/* ── Skill hero image for briefing background ── */
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+
+function useSkillHeroBg(taskName: string, jobTitle: string) {
+  const [url, setUrl] = useState<string | null>(null);
+  useEffect(() => {
+    const skillIds = matchTaskToSkills(taskName, jobTitle);
+    if (!skillIds.length) return;
+    const heroUrl = `${SUPABASE_URL}/storage/v1/object/public/sim-images/skill-hero-${skillIds[0]}.png`;
+    const img = new window.Image();
+    img.onload = () => setUrl(heroUrl);
+    img.onerror = () => setUrl(null);
+    img.src = heroUrl;
+  }, [taskName, jobTitle]);
+  return url;
+}
+
 /* ── Briefing Screen ── */
 const BriefingScreen = ({
   session,
@@ -161,6 +178,7 @@ const BriefingScreen = ({
   const hue2 = (hue1 + 50) % 360;
   const hue3 = (hue1 + 160) % 360;
   const objectiveCount = session.learningObjectives?.length || config?.objectiveCount || 3;
+  const skillHeroBg = useSkillHeroBg(session.scenario.title, session.scenario.role);
 
   return (
     <motion.div
