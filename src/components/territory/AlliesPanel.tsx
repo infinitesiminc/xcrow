@@ -175,6 +175,9 @@ const AlliesPanel = () => {
       )}
 
       {/* Content */}
+      {subTab === "feed" ? (
+        <FriendActivityFeed />
+      ) : (
       <ScrollArea className="flex-1">
         <div className="px-3 py-2 space-y-1">
           {loading ? (
@@ -239,6 +242,7 @@ const AlliesPanel = () => {
           )}
         </div>
       </ScrollArea>
+      )}
 
       {/* DM Chat Drawer */}
       <AnimatePresence>
