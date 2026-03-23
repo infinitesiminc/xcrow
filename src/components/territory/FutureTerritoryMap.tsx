@@ -1,10 +1,10 @@
 /**
  * FutureTerritoryMap — Full-screen RPG-style SVG map for the future skills catalogue.
- * 8 island regions with minimap, pan clamping, and click-to-zoom.
+ * 8 island regions with minimap, pan clamping, click-to-zoom, and floating skill launch card.
  */
 
 import { useMemo, useState, useRef, useCallback, useEffect } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { type FutureSkill, type FutureSkillCategory } from "@/hooks/use-future-skills";
 import {
