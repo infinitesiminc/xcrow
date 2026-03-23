@@ -202,11 +202,10 @@ const BriefingScreen = ({
           boxShadow: "0 0 40px hsl(var(--primary) / 0.08), inset 0 1px 0 hsl(var(--filigree) / 0.15)",
         }}
       >
-        {/* Background image */}
         <img
-          src={simBriefingBg}
+          src={skillHeroBg || simBriefingBg}
           alt=""
-          className="absolute inset-0 w-full h-full object-cover"
+          className="absolute inset-0 w-full h-full object-cover transition-opacity duration-500"
           style={{ filter: "brightness(0.35) saturate(0.8)" }}
         />
         {/* Gradient overlay for text readability */}
