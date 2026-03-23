@@ -121,12 +121,16 @@ export function useFriends() {
 
   useEffect(() => { fetchFriends(); }, [fetchFriends]);
 
-  // Real-time subscription for friendship changes
+  // Real-time subscription for friendship and message changes
   useEffect(() => {
     if (!user) return;
     const channel = supabase
-      .channel("friendships-changes")
+      .channel("friendships-messages-changes")
       .on("postgres_changes", { event: "*", schema: "public", table: "friendships" }, () => {
+        fetchFriends();
+      })
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "friend_messages", filter: `recipient_id=eq.${user.id}` }, () => {
+        // New message received — update unread count
         fetchFriends();
       })
       .subscribe();
