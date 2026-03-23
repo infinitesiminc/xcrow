@@ -18,15 +18,29 @@ export async function analyzeJobWithAI(
   const { data: { session } } = await supabase.auth.getSession();
   const authToken = session?.access_token || supabaseKey;
 
-  const response = await fetch(`${supabaseUrl}/functions/v1/analyze-job`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${authToken}`,
-      apikey: supabaseKey,
-    },
-    body: JSON.stringify({ jobTitle, company, jobDescription, jdUrl }),
-  });
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 45000); // 45s timeout
+
+  let response: Response;
+  try {
+    response = await fetch(`${supabaseUrl}/functions/v1/analyze-job`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${authToken}`,
+        apikey: supabaseKey,
+      },
+      body: JSON.stringify({ jobTitle, company, jobDescription, jdUrl }),
+      signal: controller.signal,
+    });
+  } catch (err: any) {
+    clearTimeout(timeout);
+    if (err.name === "AbortError") {
+      throw new Error("Analysis timed out. Please try again.");
+    }
+    throw err;
+  }
+  clearTimeout(timeout);
 
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));

@@ -76,11 +76,20 @@ export interface ArenaRoundData {
 }
 
 async function simFetch<T>(action: string, payload: Record<string, unknown>): Promise<T> {
-  const { data, error } = await supabase.functions.invoke("sim-chat", {
-    body: { action, payload },
-  });
-  if (error) throw new Error(`Simulator error: ${error.message}`);
-  return data as T;
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 45000);
+  try {
+    const { data, error } = await supabase.functions.invoke("sim-chat", {
+      body: { action, payload },
+    });
+    clearTimeout(timeout);
+    if (error) throw new Error(`Simulator error: ${error.message}`);
+    return data as T;
+  } catch (err: any) {
+    clearTimeout(timeout);
+    if (err.name === "AbortError") throw new Error("Request timed out. Please try again.");
+    throw err;
+  }
 }
 
 export interface CoachingContext {
