@@ -273,9 +273,40 @@ export default function FutureTerritoryMap({ skills, focusSkillId, level2SkillId
             className="w-8 h-8 rounded-md bg-card/80 border border-border/50 text-muted-foreground hover:text-foreground flex items-center justify-center text-sm font-bold backdrop-blur-md transition-colors active:scale-[0.95]">+</button>
           <button onClick={() => setTransform(t => { const s = Math.max(0.5, t.scale * 0.8); const c = clampTransform(t.x, t.y, s); return { ...c, scale: s }; })}
             className="w-8 h-8 rounded-md bg-card/80 border border-border/50 text-muted-foreground hover:text-foreground flex items-center justify-center text-sm font-bold backdrop-blur-md transition-colors active:scale-[0.95]">−</button>
-          <button onClick={() => { setTransform({ x: 0, y: 0, scale: 1 }); setFocusedIsland(null); }}
+          <button onClick={() => { setTransform({ x: 0, y: 0, scale: 1 }); setFocusedIsland(null); setHighlightedSkillId(null); }}
             className="w-8 h-8 rounded-md bg-card/80 border border-border/50 text-muted-foreground hover:text-foreground flex items-center justify-center text-xs font-bold backdrop-blur-md transition-colors active:scale-[0.95]">⟲</button>
         </div>
+
+        {/* Floating Skill Launch Card */}
+        <AnimatePresence>
+          {highlightedSkillId && (() => {
+            const skill = skillLookup.get(highlightedSkillId);
+            const nodePos = nodePositions.get(highlightedSkillId);
+            const container = containerRef.current;
+            if (!skill || !nodePos || !container) return null;
+
+            const rect = container.getBoundingClientRect();
+            const svgScale = rect.width / FUTURE_MAP_WIDTH;
+            const aspectCorrection = (FUTURE_MAP_WIDTH / FUTURE_MAP_HEIGHT) * (rect.height / rect.width);
+
+            const screenX = nodePos.x * svgScale * transform.scale + transform.x;
+            const screenY = nodePos.y * svgScale * aspectCorrection * transform.scale + transform.y;
+
+            return (
+              <SkillLaunchCard
+                key={highlightedSkillId}
+                skill={skill}
+                x={screenX}
+                y={screenY}
+                containerWidth={rect.width}
+                containerHeight={rect.height}
+                level2Unlocked={level2SkillIds?.has(highlightedSkillId)}
+                growth={skillGrowthMap?.get(highlightedSkillId) || null}
+                onClose={() => setHighlightedSkillId(null)}
+              />
+            );
+          })()}
+        </AnimatePresence>
 
       </div>
 
