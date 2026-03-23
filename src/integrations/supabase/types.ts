@@ -2063,6 +2063,17 @@ export type Database = {
           skill_names: string[]
         }[]
       }
+      get_undercovered_skills: {
+        Args: { min_analyzed?: number }
+        Returns: {
+          analyzed_count: number
+          category: string
+          description: string
+          gap: number
+          skill_id: string
+          skill_name: string
+        }[]
+      }
       get_workspace_progress: {
         Args: { p_workspace_id: string }
         Returns: {
