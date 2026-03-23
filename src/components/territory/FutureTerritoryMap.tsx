@@ -119,10 +119,9 @@ export default function FutureTerritoryMap({ skills, focusSkillId, level2SkillId
 
   const handleSkillClick = useCallback((skill: FutureSkill) => {
     if (isDragging.current) return;
-    setSelectedSkill(skill);
     setHighlightedSkillId(skill.id);
-    setDrawerOpen(true);
-  }, []);
+    onSkillSelect?.(skill);
+  }, [onSkillSelect]);
 
   const nodePositions = useMemo(() => {
     const m = new Map<string, { x: number; y: number }>();
