@@ -156,6 +156,12 @@ export default function BossBattleArena({
   // Avatar
   const avatarOption = getAvatarById(profile?.avatarId) || AVATAR_OPTIONS[0];
 
+  // Preload avatar image during intro so it's cached for the arena
+  useEffect(() => {
+    const img = new Image();
+    img.src = avatarOption.src;
+  }, [avatarOption.src]);
+
   const checkpoint = checkpoints[currentStep];
   const totalCorrect = checkpoints.filter(cp => verdicts[cp.id] === cp.correctVerdict).length;
   const hintsUsed = Object.values(showHint).filter(Boolean).length;
