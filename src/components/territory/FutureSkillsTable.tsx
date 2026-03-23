@@ -419,30 +419,105 @@ export default function FutureSkillsTable({ skills, onSkillClick, skillGrowthMap
                           {skill.category}
                         </span>
                       </div>
-                      {/* Progress */}
-                      <div className="w-[90px] shrink-0 text-right">
-                        {xp > 0 ? (
-                          <div className="flex flex-col items-end gap-0.5">
-                            <div className="flex items-center gap-1">
-                              <span className="text-[9px] font-medium" style={{ color: level.color, fontFamily: "'Cinzel', serif" }}>
-                                {level.name}
-                              </span>
-                              <span className="text-[9px] font-mono text-muted-foreground">{xp}</span>
+                      {/* L1 / L2 quick-launch icons */}
+                      <div className="w-[100px] shrink-0 flex items-center justify-center gap-1.5">
+                        {/* Level 1 */}
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <button
+                              onClick={e => e.stopPropagation()}
+                              className="flex items-center gap-1 px-1.5 py-1 rounded-md text-[9px] font-medium transition-all hover:brightness-110"
+                              style={{
+                                background: (growth?.level1Xp ?? 0) > 0
+                                  ? "hsl(var(--primary) / 0.15)"
+                                  : "hsl(var(--muted) / 0.15)",
+                                border: `1px solid ${(growth?.level1Xp ?? 0) > 0 ? "hsl(var(--primary) / 0.3)" : "hsl(var(--border) / 0.2)"}`,
+                                color: (growth?.level1Xp ?? 0) > 0 ? "hsl(var(--primary))" : "hsl(var(--muted-foreground))",
+                              }}
+                              title="Level 1 · AI Mastery"
+                            >
+                              <Zap className="h-3 w-3" />
+                              <span className="font-mono">{growth?.level1Xp ?? 0}</span>
+                            </button>
+                          </PopoverTrigger>
+                          <PopoverContent side="top" align="center" className="w-48 p-2.5" style={{ background: "hsl(var(--surface-stone))", border: "1px solid hsl(var(--filigree) / 0.2)" }}>
+                            <div className="text-[10px] font-bold mb-1" style={{ fontFamily: "'Cinzel', serif" }}>⚡ Level 1 · AI Mastery</div>
+                            <div className="flex items-center gap-2 mb-1.5">
+                              <div className="flex-1 h-1.5 rounded-full overflow-hidden" style={{ background: "hsl(var(--muted) / 0.4)" }}>
+                                <div className="h-full rounded-full" style={{ width: `${Math.min(100, ((growth?.level1Xp ?? 0) / 500) * 100)}%`, background: "hsl(var(--primary))" }} />
+                              </div>
+                              <span className="text-[9px] font-mono text-muted-foreground">{growth?.level1Xp ?? 0}/500</span>
                             </div>
-                            <div className="w-[70px] h-1 rounded-full overflow-hidden" style={{ background: "hsl(var(--muted) / 0.3)" }}>
-                              <div className="h-full rounded-full" style={{ width: `${progressPct}%`, background: level.color }} />
+                            <div className="text-[9px] text-muted-foreground mb-2">{growth?.level1Sims ?? 0} quests completed</div>
+                            {expandedRoles.length > 0 && expandedSkillId === skill.id && (
+                              <button
+                                onClick={(e) => { e.stopPropagation(); const r = expandedRoles[0]; navigate(`/role/${encodeURIComponent(r.title)}${r.company ? `?company=${encodeURIComponent(r.company)}` : ""}`); }}
+                                className="w-full px-2 py-1.5 rounded-md text-[10px] font-bold uppercase tracking-wider transition-all hover:brightness-110"
+                                style={{ background: "linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary) / 0.8))", color: "hsl(var(--foreground))", fontFamily: "'Cinzel', serif" }}
+                              >
+                                ⚔️ Start Quest
+                              </button>
+                            )}
+                          </PopoverContent>
+                        </Popover>
+
+                        {/* Level 2 */}
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <button
+                              onClick={e => e.stopPropagation()}
+                              className="flex items-center gap-1 px-1.5 py-1 rounded-md text-[9px] font-medium transition-all hover:brightness-110"
+                              style={{
+                                background: l2Unlocked
+                                  ? (growth?.level2Xp ?? 0) > 0 ? "hsl(45 93% 58% / 0.15)" : "hsl(45 93% 58% / 0.08)"
+                                  : "hsl(var(--muted) / 0.08)",
+                                border: `1px solid ${l2Unlocked ? "hsl(45 93% 58% / 0.3)" : "hsl(var(--border) / 0.15)"}`,
+                                color: l2Unlocked ? "hsl(45 93% 58%)" : "hsl(var(--muted-foreground) / 0.5)",
+                                opacity: l2Unlocked ? 1 : 0.6,
+                              }}
+                              title={l2Unlocked ? "Level 2 · Human Edge" : "Locked — complete more L1 quests"}
+                            >
+                              {l2Unlocked ? <Diamond className="h-3 w-3" /> : <Lock className="h-3 w-3" />}
+                              <span className="font-mono">{growth?.level2Xp ?? 0}</span>
+                            </button>
+                          </PopoverTrigger>
+                          <PopoverContent side="top" align="center" className="w-48 p-2.5" style={{ background: "hsl(var(--surface-stone))", border: "1px solid hsl(var(--filigree) / 0.2)" }}>
+                            <div className="text-[10px] font-bold mb-1" style={{ fontFamily: "'Cinzel', serif" }}>
+                              {l2Unlocked ? "✦ Level 2 · Human Edge" : "🔒 Level 2 · Locked"}
                             </div>
-                          </div>
-                        ) : (
-                          <span className="text-[10px] text-muted-foreground/50">—</span>
-                        )}
+                            {l2Unlocked ? (
+                              <>
+                                <div className="flex items-center gap-2 mb-1.5">
+                                  <div className="flex-1 h-1.5 rounded-full overflow-hidden" style={{ background: "hsl(var(--muted) / 0.4)" }}>
+                                    <div className="h-full rounded-full" style={{ width: `${Math.min(100, ((growth?.level2Xp ?? 0) / 500) * 100)}%`, background: "hsl(45 93% 58%)" }} />
+                                  </div>
+                                  <span className="text-[9px] font-mono text-muted-foreground">{growth?.level2Xp ?? 0}/500</span>
+                                </div>
+                                <div className="text-[9px] text-muted-foreground mb-2">{growth?.level2Sims ?? 0} quests completed</div>
+                                {expandedRoles.length > 0 && expandedSkillId === skill.id && (
+                                  <button
+                                    onClick={(e) => { e.stopPropagation(); const r = expandedRoles[0]; navigate(`/role/${encodeURIComponent(r.title)}${r.company ? `?company=${encodeURIComponent(r.company)}&level=2` : "?level=2"}`); }}
+                                    className="w-full px-2 py-1.5 rounded-md text-[10px] font-bold uppercase tracking-wider transition-all hover:brightness-110"
+                                    style={{ background: "linear-gradient(135deg, hsl(45 93% 58%), hsl(45 93% 48%))", color: "hsl(var(--background))", fontFamily: "'Cinzel', serif" }}
+                                  >
+                                    ⚔️ Level 2 Quest
+                                  </button>
+                                )}
+                              </>
+                            ) : (
+                              <div className="text-[9px] text-muted-foreground">
+                                Complete {Math.max(0, 3 - (growth?.level1Sims ?? 0))} more L1 quests or score 80%+ to unlock
+                              </div>
+                            )}
+                          </PopoverContent>
+                        </Popover>
                       </div>
                       {/* Expand chevron */}
-                      <div className="w-8 shrink-0 flex justify-center">
+                      <div className="w-6 shrink-0 flex justify-center">
                         {isExpanded ? (
-                          <ChevronUp className="h-3.5 w-3.5 text-muted-foreground" />
+                          <ChevronUp className="h-3 w-3 text-muted-foreground" />
                         ) : (
-                          <ChevronDown className="h-3.5 w-3.5 text-muted-foreground/40" />
+                          <ChevronDown className="h-3 w-3 text-muted-foreground/40" />
                         )}
                       </div>
                     </div>
