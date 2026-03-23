@@ -884,7 +884,7 @@ export default function GuidedAudit({
 
                 {/* Explanation */}
                 <div
-                  className="rounded-lg p-3 text-[11px] space-y-2.5"
+                  className="rounded-lg p-3 text-[15px] space-y-2.5"
                   style={{ background: "hsl(262 30% 12%)", border: "1px solid hsl(262 60% 40% / 0.15)" }}
                 >
                   <p className="text-foreground leading-relaxed">{checkpoint.explanation}</p>
