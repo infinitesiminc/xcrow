@@ -39,8 +39,6 @@ const ScoreDistributions = lazy(() => import("./pages/ScoreDistributions.tsx"));
 const PublicProfile = lazy(() => import("./pages/PublicProfile.tsx"));
 const MapPage = lazy(() => import("./pages/MapPage.tsx"));
 const L2SimFormats = lazy(() => import("./pages/L2SimFormats.tsx"));
-const Progression = lazy(() => import("./pages/Progression.tsx"));
-const Play = lazy(() => import("./pages/Play.tsx"));
 const HowItWorks = lazy(() => import("./pages/HowItWorks.tsx"));
 const SkillsCodex = lazy(() => import("./pages/Skills.tsx"));
 
