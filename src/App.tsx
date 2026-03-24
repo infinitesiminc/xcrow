@@ -132,7 +132,7 @@ const App = () => (
               <Route path="/l2-formats" element={<><Navbar /><L2SimFormats /></>} />
               <Route path="/journey" element={<JourneyGate />} />
               <Route path="/students" element={<Students />} />
-              <Route path="/leaderboard" element={<Leaderboard />} />
+              
               <Route path="/pricing" element={<><Navbar /><Pricing /><Footer /></>} />
               <Route path="/schools" element={<Schools />} />
               <Route path="/about" element={<About />} />
