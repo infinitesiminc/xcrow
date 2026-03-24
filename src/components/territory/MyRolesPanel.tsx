@@ -410,31 +410,75 @@ export default function MyRolesPanel({ onSelectRole, onAskChat, onTabChange, onL
   }, [selectedRealm]);
 
   /* ── Fetch skills for expanded job ── */
-  const fetchedJobsRef = useRef(new Set<string>());
   useEffect(() => {
-    if (!expandedJobId || fetchedJobsRef.current.has(expandedJobId)) return;
-    fetchedJobsRef.current.add(expandedJobId);
+    if (!expandedJobId) return;
+
+    const currentStatus = jobSkillsStatus[expandedJobId];
+    if (currentStatus === "loading" || currentStatus === "loaded" || currentStatus === "empty" || currentStatus === "error") {
+      return;
+    }
+
+    setJobSkillsStatus(prev => ({ ...prev, [expandedJobId]: "loading" }));
+
     (async () => {
       const { data, error } = await supabase
         .from("job_future_skills")
         .select("skill_name, canonical_skill_id, category, icon_emoji")
         .eq("job_id", expandedJobId)
         .limit(20);
+
       if (error) {
         console.error("Failed to fetch job skills:", error);
-        setJobSkills(p => ({ ...p, [expandedJobId]: [] }));
+        setJobSkills(prev => ({ ...prev, [expandedJobId]: [] }));
+        setJobSkillsStatus(prev => ({ ...prev, [expandedJobId]: "error" }));
         return;
       }
+
       const seen = new Set<string>();
-      const unique = ((data || []) as JobSkillLink[]).filter(s => {
-        const k = s.skill_name.toLowerCase();
-        if (seen.has(k)) return false;
-        seen.add(k);
+      const unique = ((data || []) as JobSkillLink[]).filter((s) => {
+        const key = s.skill_name.toLowerCase();
+        if (seen.has(key)) return false;
+        seen.add(key);
         return true;
       });
-      setJobSkills(p => ({ ...p, [expandedJobId]: unique }));
+
+      if (unique.length > 0) {
+        setJobSkills(prev => ({ ...prev, [expandedJobId]: unique }));
+        setJobSkillsStatus(prev => ({ ...prev, [expandedJobId]: "loaded" }));
+        return;
+      }
+
+      // Fallback: derive skill labels from task-cluster skill_names when canonical mapping is missing
+      const { data: clusterRows } = await supabase
+        .from("job_task_clusters")
+        .select("skill_names")
+        .eq("job_id", expandedJobId)
+        .limit(50);
+
+      const fallbackSet = new Set<string>();
+      for (const row of (clusterRows || []) as Array<{ skill_names: string[] | null }>) {
+        for (const skill of row.skill_names || []) {
+          const trimmed = (skill || "").trim();
+          if (trimmed) fallbackSet.add(trimmed);
+        }
+      }
+
+      const fallbackSkills: JobSkillLink[] = Array.from(fallbackSet).map((skill_name) => ({
+        skill_name,
+        canonical_skill_id: null,
+        category: "Task Cluster",
+        icon_emoji: "⚡",
+      }));
+
+      if (fallbackSkills.length > 0) {
+        setJobSkills(prev => ({ ...prev, [expandedJobId]: fallbackSkills }));
+        setJobSkillsStatus(prev => ({ ...prev, [expandedJobId]: "loaded" }));
+      } else {
+        setJobSkills(prev => ({ ...prev, [expandedJobId]: [] }));
+        setJobSkillsStatus(prev => ({ ...prev, [expandedJobId]: "empty" }));
+      }
     })();
-  }, [expandedJobId]);
+  }, [expandedJobId, jobSkillsStatus]);
 
 
   const q = search.toLowerCase();
