@@ -188,7 +188,7 @@ export default function Play() {
                   title: "Conquer Territories",
                   desc: "Earn XP, upgrade castles, and climb the rank ladder. Build a verified skill portfolio that proves you're future-ready.",
                   color: "var(--territory-strategic)",
-                  img: simBriefing,
+                  img: heroConquer,
                 },
               ].map((s, i) => (
                 <motion.div
