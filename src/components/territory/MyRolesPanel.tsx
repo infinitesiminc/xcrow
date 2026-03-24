@@ -836,7 +836,11 @@ export default function MyRolesPanel({ onSelectRole, onAskChat, onTabChange, onL
                 </div>
               ) : (() => {
                 const searchQ = search.toLowerCase();
-                const filteredRealms = enrichedRealms.filter(r => !searchQ || r.name.toLowerCase().includes(searchQ));
+                let filteredRealms = enrichedRealms.filter(r => !searchQ || r.name.toLowerCase().includes(searchQ));
+                // "My Kingdoms" filter: show only companies where user has kingdoms
+                if (tierFilter !== "all") {
+                  filteredRealms = filteredRealms.filter(r => r.kingdoms.length > 0);
+                }
                 const hasRoleResults = searchQ.length >= 2 && searchRoles.length > 0;
                 const showingRoles = hasRoleResults && !searchRolesLoading;
 
@@ -844,7 +848,7 @@ export default function MyRolesPanel({ onSelectRole, onAskChat, onTabChange, onL
                   <div className="text-center py-12">
                     <span className="text-3xl mb-3 block">🏰</span>
                     <p className="text-sm text-muted-foreground" style={{ fontFamily: "'Cinzel', serif" }}>
-                      {search ? "No realms or roles match" : "No realms discovered"}
+                      {search ? "No kingdoms or roles match" : tierFilter !== "all" ? "No kingdoms discovered yet" : "No companies found"}
                     </p>
                   </div>
                 ) : (
