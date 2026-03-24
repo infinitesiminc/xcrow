@@ -25,14 +25,14 @@ const fade = (delay = 0) => ({
 });
 
 const TERRITORIES = [
-  { category: "technical", name: "Technical", count: "Skills #1–#28", examples: ["Prompt Engineering", "AI Tool Selection", "Data Pipeline Design"] },
-  { category: "analytical", name: "Analytical", count: "Skills #29–#52", examples: ["AI Output Validation", "Predictive Modeling", "Risk Assessment"] },
-  { category: "strategic", name: "Strategic", count: "Skills #53–#76", examples: ["AI Integration Strategy", "Change Management", "Scenario Planning"] },
-  { category: "creative", name: "Creative", count: "Skills #77–#100", examples: ["AI-Augmented Design", "Content Strategy", "Creative Direction"] },
-  { category: "communication", name: "Communication", count: "Skills #101–#124", examples: ["AI-Assisted Writing", "Stakeholder Translation", "Data Storytelling"] },
-  { category: "leadership", name: "Leadership", count: "Skills #125–#148", examples: ["Human-AI Team Management", "Ethical AI Governance", "Digital Transformation"] },
-  { category: "human-edge", name: "Human Edge", count: "Skills #149–#166", examples: ["Judgment Under Ambiguity", "Empathy at Scale", "Cultural Intelligence"] },
-  { category: "operational", name: "Operational", count: "Skills #167–#183", examples: ["AI Workflow Automation", "Process Optimization", "Quality Assurance"] },
+  { category: "Technical" as const, name: "Technical", count: "Skills #1–#28", examples: ["Prompt Engineering", "AI Tool Selection", "Data Pipeline Design"] },
+  { category: "Analytical" as const, name: "Analytical", count: "Skills #29–#52", examples: ["AI Output Validation", "Predictive Modeling", "Risk Assessment"] },
+  { category: "Strategic" as const, name: "Strategic", count: "Skills #53–#76", examples: ["AI Integration Strategy", "Change Management", "Scenario Planning"] },
+  { category: "Creative" as const, name: "Creative", count: "Skills #77–#100", examples: ["AI-Augmented Design", "Content Strategy", "Creative Direction"] },
+  { category: "Communication" as const, name: "Communication", count: "Skills #101–#124", examples: ["AI-Assisted Writing", "Stakeholder Translation", "Data Storytelling"] },
+  { category: "Leadership" as const, name: "Leadership", count: "Skills #125–#148", examples: ["Human-AI Team Management", "Ethical AI Governance", "Digital Transformation"] },
+  { category: "Human Edge" as const, name: "Human Edge", count: "Skills #149–#166", examples: ["Judgment Under Ambiguity", "Empathy at Scale", "Cultural Intelligence"] },
+  { category: "Operational" as const, name: "Operational", count: "Skills #167–#183", examples: ["AI Workflow Automation", "Process Optimization", "Quality Assurance"] },
 ];
 
 const PROBLEM_CARDS = [
