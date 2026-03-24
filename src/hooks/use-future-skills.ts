@@ -67,10 +67,10 @@ export function useFutureSkills() {
   const [loading, setLoading] = useState(!_cache);
 
   useEffect(() => {
-    fetchOnce().then((s) => {
-      setSkills(s);
-      setLoading(false);
-    });
+    fetchOnce()
+      .then((s) => setSkills(s))
+      .catch(() => setSkills(_cache ?? []))
+      .finally(() => setLoading(false));
   }, []);
 
   return { futureSkills: skills, loading };
