@@ -1,60 +1,85 @@
 /**
  * CinematicHeroSlideshow — Curated skill hero images that crossfade.
- * Shows a pill overlay with skill number and name.
+ * Shows a pill overlay with skill number and name from the database.
  */
 import { useEffect, useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { supabase } from "@/integrations/supabase/client";
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 
-const CURATED_SKILLS = [
-  { id: "complex-threat-modeling", name: "Complex Threat Modeling" },
-  { id: "ai-ethics-governance", name: "AI Ethics & Governance" },
-  { id: "prompt-engineering", name: "Prompt Engineering" },
-  { id: "strategic-problem-solving", name: "Strategic Problem Solving" },
-  { id: "ethical-ai-leadership-governance", name: "Ethical AI Leadership" },
+const CURATED_IDS = [
+  "complex-threat-modeling",
+  "ai-ethics-governance",
+  "prompt-engineering",
+  "strategic-problem-solving",
+  "ethical-ai-leadership-governance",
 ];
 
 const CYCLE_MS = 5000;
 
+interface SkillSlide {
+  id: string;
+  name: string;
+  skillNumber: number;
+}
+
 export default function CinematicHeroSlideshow() {
   const [activeIndex, setActiveIndex] = useState(0);
-  const [loadedSkills, setLoadedSkills] = useState<typeof CURATED_SKILLS>([]);
+  const [slides, setSlides] = useState<SkillSlide[]>([]);
   const intervalRef = useRef<ReturnType<typeof setInterval>>();
 
   useEffect(() => {
-    let loaded = 0;
-    const verified: (typeof CURATED_SKILLS[0] | null)[] = CURATED_SKILLS.map(() => null);
+    // Fetch skill metadata from DB
+    supabase
+      .from("canonical_future_skills")
+      .select("id, name, skill_number")
+      .in("id", CURATED_IDS)
+      .then(({ data }) => {
+        if (!data || data.length === 0) return;
 
-    CURATED_SKILLS.forEach((skill, i) => {
-      const img = new Image();
-      const url = `${SUPABASE_URL}/storage/v1/object/public/sim-images/skill-hero-${skill.id}.png`;
-      img.onload = () => {
-        verified[i] = skill;
-        loaded++;
-        if (loaded === CURATED_SKILLS.length)
-          setLoadedSkills(verified.filter(Boolean) as typeof CURATED_SKILLS);
-      };
-      img.onerror = () => {
-        loaded++;
-        if (loaded === CURATED_SKILLS.length)
-          setLoadedSkills(verified.filter(Boolean) as typeof CURATED_SKILLS);
-      };
-      img.src = url;
-    });
+        // Order by the CURATED_IDS array order
+        const ordered = CURATED_IDS
+          .map((cid) => data.find((d) => d.id === cid))
+          .filter(Boolean)
+          .map((d) => ({
+            id: d!.id,
+            name: d!.name,
+            skillNumber: d!.skill_number ?? 0,
+          }));
+
+        // Preload images, keep only those that load
+        let loaded = 0;
+        const verified: (SkillSlide | null)[] = ordered.map(() => null);
+        ordered.forEach((skill, i) => {
+          const img = new Image();
+          img.onload = () => {
+            verified[i] = skill;
+            loaded++;
+            if (loaded === ordered.length)
+              setSlides(verified.filter(Boolean) as SkillSlide[]);
+          };
+          img.onerror = () => {
+            loaded++;
+            if (loaded === ordered.length)
+              setSlides(verified.filter(Boolean) as SkillSlide[]);
+          };
+          img.src = `${SUPABASE_URL}/storage/v1/object/public/sim-images/skill-hero-${skill.id}.png`;
+        });
+      });
   }, []);
 
   useEffect(() => {
-    if (loadedSkills.length < 2) return;
+    if (slides.length < 2) return;
     intervalRef.current = setInterval(() => {
-      setActiveIndex((prev) => (prev + 1) % loadedSkills.length);
+      setActiveIndex((prev) => (prev + 1) % slides.length);
     }, CYCLE_MS);
     return () => clearInterval(intervalRef.current);
-  }, [loadedSkills.length]);
+  }, [slides.length]);
 
-  if (loadedSkills.length === 0) return null;
+  if (slides.length === 0) return null;
 
-  const current = loadedSkills[activeIndex];
+  const current = slides[activeIndex];
 
   return (
     <div className="absolute inset-0 overflow-hidden">
@@ -101,10 +126,15 @@ export default function CinematicHeroSlideshow() {
             backdropFilter: "blur(12px)",
           }}
         >
-          <span className="text-[10px] font-mono text-muted-foreground">
-            {activeIndex + 1}/{loadedSkills.length}
+          <span
+            className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded-md"
+            style={{
+              background: "hsl(var(--primary) / 0.15)",
+              color: "hsl(var(--primary))",
+            }}
+          >
+            #{current.skillNumber}
           </span>
-          <span className="w-px h-3 bg-border/50" />
           <span className="text-xs font-medium text-foreground/90">
             {current.name}
           </span>

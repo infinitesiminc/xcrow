@@ -116,6 +116,7 @@ export type Database = {
           id: string
           job_count: number
           name: string
+          skill_number: number | null
         }
         Insert: {
           aliases?: string[] | null
@@ -128,6 +129,7 @@ export type Database = {
           id: string
           job_count?: number
           name: string
+          skill_number?: number | null
         }
         Update: {
           aliases?: string[] | null
@@ -140,6 +142,7 @@ export type Database = {
           id?: string
           job_count?: number
           name?: string
+          skill_number?: number | null
         }
         Relationships: []
       }
