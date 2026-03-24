@@ -152,6 +152,40 @@ export default function About() {
           </div>
         </Section>
 
+        {/* ═══ JENSEN HUANG QUOTE ═══ */}
+        <Section className="py-16 px-6">
+          <div className="max-w-3xl mx-auto">
+            <motion.blockquote variants={fade} custom={0} className="relative rounded-xl border p-6 sm:p-8"
+              style={{ borderColor: "hsl(var(--filigree) / 0.25)", background: "hsl(var(--surface-stone) / 0.25)" }}
+            >
+              <span className="absolute -top-4 left-6 text-5xl font-serif" style={{ color: "hsl(var(--filigree) / 0.4)" }}>"</span>
+              <p className="text-base sm:text-lg leading-relaxed text-muted-foreground italic mb-4">
+                People kept saying radiologists would be replaced by AI because all scans would be read by machines. 
+                But the opposite happened — <span className="text-foreground font-semibold not-italic">demand for radiologists went up</span>. 
+                Because when you can read more scans, you find more things. When you find more things, 
+                you need more experts to decide what to do about them. 
+                <span className="text-foreground font-semibold not-italic"> AI doesn't replace the expert — it elevates the role</span>.
+              </p>
+              <footer className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full flex items-center justify-center text-lg font-bold"
+                  style={{ background: "hsl(var(--primary) / 0.15)", color: "hsl(var(--primary))" }}>
+                  JH
+                </div>
+                <div>
+                  <p className="text-sm font-bold text-foreground">Jensen Huang</p>
+                  <p className="text-xs text-muted-foreground">CEO, NVIDIA</p>
+                </div>
+              </footer>
+            </motion.blockquote>
+            <motion.p variants={fade} custom={1} className="text-center text-sm text-muted-foreground mt-6 max-w-xl mx-auto">
+              This is the shift from <span className="text-destructive font-medium">defense</span> to{" "}
+              <span className="font-medium" style={{ color: "hsl(var(--success))" }}>offense</span>. 
+              AI doesn't eliminate the radiologist — it transforms them into someone who manages AI-powered diagnostics, 
+              interprets edge cases, and makes the calls machines can't. <strong className="text-foreground">Every role will follow this pattern.</strong>
+            </motion.p>
+          </div>
+        </Section>
+
         {/* ═══ WHY A GAME? ═══ */}
         <Section className="py-20 px-6">
           <div className="max-w-4xl mx-auto">
