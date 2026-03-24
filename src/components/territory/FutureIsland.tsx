@@ -8,112 +8,33 @@ import { motion } from "framer-motion";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import { type FutureSkill, type FutureSkillCategory } from "@/hooks/use-future-skills";
 import { type FutureIslandLayout, type FutureNodePosition } from "@/lib/future-territory-layout";
+import TerritoryEmblem from "@/components/TerritoryEmblem";
 import type { CanonicalSkillGrowth } from "@/pages/MapPage";
 
-/* ─── RPG emblem icon per island — unified hex badge with unique inner symbol ─── */
-function IslandIcon({ category, cx, cy, hue, isParchment }: {
-  category: FutureSkillCategory; cx: number; cy: number; hue: number; isParchment: boolean;
-}) {
-  const stroke = isParchment ? `hsl(${hue} 50% 35%)` : `hsl(${hue} 70% 65%)`;
-  const borderStroke = `hsl(0 0% 100%)`;
-  const fill = isParchment ? `hsl(${hue} 30% 25% / 0.4)` : `hsl(${hue} 40% 15% / 0.6)`;
-  const accent = isParchment ? `hsl(${hue} 60% 45%)` : `hsl(${hue} 80% 70%)`;
-  const glow = `drop-shadow(0 0 10px hsl(${hue} 90% 60% / 0.6)) drop-shadow(0 0 20px hsl(${hue} 80% 50% / 0.3))`;
-  const r = 27;
-
-  // Medieval shield shape
-  const shield = `M${cx} ${cy - r} L${cx + r * 0.85} ${cy - r * 0.55} L${cx + r * 0.75} ${cy + r * 0.3} Q${cx + r * 0.35} ${cy + r * 0.9} ${cx} ${cy + r} Q${cx - r * 0.35} ${cy + r * 0.9} ${cx - r * 0.75} ${cy + r * 0.3} L${cx - r * 0.85} ${cy - r * 0.55} Z`;
-
-  const inner: Record<FutureSkillCategory, JSX.Element> = {
-    // Gear/cog
-    Technical: (
-      <g>
-        <circle cx={cx} cy={cy} r={6} fill="none" stroke={accent} strokeWidth={1.5} />
-        <circle cx={cx} cy={cy} r={2.5} fill={accent} opacity={0.6} />
-        {[0, 60, 120, 180, 240, 300].map(a => {
-          const rad = (a * Math.PI) / 180;
-          return <line key={a} x1={cx + Math.cos(rad) * 5} y1={cy + Math.sin(rad) * 5} x2={cx + Math.cos(rad) * 9} y2={cy + Math.sin(rad) * 9} stroke={accent} strokeWidth={2} strokeLinecap="round" />;
-        })}
-      </g>
-    ),
-    // Crystal gem
-    Analytical: (
-      <g>
-        <path d={`M${cx} ${cy - 10} L${cx + 7} ${cy - 2} L${cx + 4} ${cy + 9} L${cx - 4} ${cy + 9} L${cx - 7} ${cy - 2} Z`} fill="none" stroke={accent} strokeWidth={1.5} strokeLinejoin="round" />
-        <line x1={cx - 7} y1={cy - 2} x2={cx + 7} y2={cy - 2} stroke={accent} strokeWidth={1} opacity={0.6} />
-        <line x1={cx} y1={cy - 10} x2={cx - 2} y2={cy + 9} stroke={accent} strokeWidth={0.8} opacity={0.4} />
-        <line x1={cx} y1={cy - 10} x2={cx + 2} y2={cy + 9} stroke={accent} strokeWidth={0.8} opacity={0.4} />
-      </g>
-    ),
-    // Eye of providence
-    "Human Edge": (
-      <g>
-        <path d={`M${cx - 10} ${cy} Q${cx} ${cy - 9} ${cx + 10} ${cy} Q${cx} ${cy + 9} ${cx - 10} ${cy}`} fill="none" stroke={accent} strokeWidth={1.5} />
-        <circle cx={cx} cy={cy} r={3.5} fill="none" stroke={accent} strokeWidth={1.2} />
-        <circle cx={cx} cy={cy} r={1.5} fill={accent} opacity={0.7} />
-      </g>
-    ),
-    // Compass rose
-    Strategic: (
-      <g>
-        <path d={`M${cx} ${cy - 10} L${cx + 3} ${cy} L${cx} ${cy + 10} L${cx - 3} ${cy} Z`} fill={accent} opacity={0.3} stroke={accent} strokeWidth={1} />
-        <path d={`M${cx - 10} ${cy} L${cx} ${cy + 3} L${cx + 10} ${cy} L${cx} ${cy - 3} Z`} fill={accent} opacity={0.3} stroke={accent} strokeWidth={1} />
-        <circle cx={cx} cy={cy} r={2} fill={accent} opacity={0.6} />
-      </g>
-    ),
-    // Horn/trumpet
-    Communication: (
-      <g>
-        <path d={`M${cx - 8} ${cy - 2} L${cx + 4} ${cy - 8} L${cx + 4} ${cy + 8} L${cx - 8} ${cy + 2} Z`} fill="none" stroke={accent} strokeWidth={1.5} strokeLinejoin="round" />
-        <line x1={cx + 4} y1={cy} x2={cx + 10} y2={cy} stroke={accent} strokeWidth={1.5} strokeLinecap="round" />
-        <line x1={cx + 5} y1={cy - 4} x2={cx + 9} y2={cy - 6} stroke={accent} strokeWidth={1} strokeLinecap="round" opacity={0.6} />
-        <line x1={cx + 5} y1={cy + 4} x2={cx + 9} y2={cy + 6} stroke={accent} strokeWidth={1} strokeLinecap="round" opacity={0.6} />
-      </g>
-    ),
-    // Wand with star
-    Creative: (
-      <g>
-        <line x1={cx - 6} y1={cy + 9} x2={cx + 4} y2={cy - 5} stroke={accent} strokeWidth={1.8} strokeLinecap="round" />
-        <path d={`M${cx + 5} ${cy - 9} L${cx + 6.5} ${cy - 5.5} L${cx + 10} ${cy - 6} L${cx + 7.5} ${cy - 3} L${cx + 9} ${cy} L${cx + 5} ${cy - 2} L${cx + 1} ${cy} L${cx + 2.5} ${cy - 3} L${cx} ${cy - 6} L${cx + 3.5} ${cy - 5.5} Z`} fill={accent} opacity={0.7} />
-      </g>
-    ),
-    // Crown
-    Leadership: (
-      <g>
-        <path d={`M${cx - 9} ${cy + 5} L${cx - 9} ${cy - 3} L${cx - 4} ${cy + 1} L${cx} ${cy - 8} L${cx + 4} ${cy + 1} L${cx + 9} ${cy - 3} L${cx + 9} ${cy + 5} Z`} fill={accent} opacity={0.3} stroke={accent} strokeWidth={1.5} strokeLinejoin="round" />
-        <rect x={cx - 9} y={cy + 5} width={18} height={3} rx={1} fill={accent} opacity={0.5} />
-      </g>
-    ),
-    // Shield with cross
-    "Ethics & Compliance": (
-      <g>
-        <path d={`M${cx} ${cy - 10} L${cx + 9} ${cy - 5} L${cx + 7} ${cy + 4} Q${cx + 3} ${cy + 10} ${cx} ${cy + 11} Q${cx - 3} ${cy + 10} ${cx - 7} ${cy + 4} L${cx - 9} ${cy - 5} Z`} fill={accent} opacity={0.2} stroke={accent} strokeWidth={1.5} />
-        <line x1={cx} y1={cy - 4} x2={cx} y2={cy + 5} stroke={accent} strokeWidth={1.5} strokeLinecap="round" />
-        <line x1={cx - 4} y1={cy + 1} x2={cx + 4} y2={cy + 1} stroke={accent} strokeWidth={1.5} strokeLinecap="round" />
-      </g>
-    ),
-  };
-
-  // Unique float delay per category for organic feel
-  const floatId = `island-float-${category.replace(/\s+/g, '-')}`;
-
-  return (
-    <g style={{ filter: glow }} pointerEvents="none">
-      <style>{`
-        @keyframes ${floatId} {
-          0%, 100% { transform: translate(0, 0); }
-          50% { transform: translate(0, -6px); }
-        }
-      `}</style>
-      <g style={{ animation: `${floatId} 3s ease-in-out infinite`, transformOrigin: `${cx}px ${cy}px` }}>
-        <path d={shield} fill={fill} stroke={borderStroke} strokeWidth={2} />
-        <circle cx={cx} cy={cy} r={r * 0.7} fill="none" stroke={stroke} strokeWidth={0.6} opacity={0.3} />
-        <g transform={`translate(${cx}, ${cy}) scale(1.5) translate(${-cx}, ${-cy})`}>
-          {inner[category]}
-        </g>
-      </g>
-    </g>
-  );
+/**
+ * Generate an organic irregular polygon path for territory borders.
+ * Creates a natural-looking boundary around each island.
+ */
+function buildTerritoryBorder(cx: number, cy: number, radius: number, seed: number): string {
+  const points: [number, number][] = [];
+  const sides = 12;
+  for (let i = 0; i < sides; i++) {
+    const angle = (i / sides) * Math.PI * 2 - Math.PI / 2;
+    // Use a seeded variation for organic feel
+    const variation = 0.85 + 0.3 * Math.sin(seed * 7 + i * 2.7) * Math.cos(seed * 3 + i * 1.3);
+    const r = (radius + 25) * variation;
+    points.push([cx + Math.cos(angle) * r, cy + Math.sin(angle) * r]);
+  }
+  // Build smooth path with quadratic curves
+  let d = `M${points[0][0]} ${points[0][1]}`;
+  for (let i = 0; i < points.length; i++) {
+    const next = points[(i + 1) % points.length];
+    const midX = (points[i][0] + next[0]) / 2;
+    const midY = (points[i][1] + next[1]) / 2;
+    d += ` Q${points[i][0]} ${points[i][1]} ${midX} ${midY}`;
+  }
+  d += " Z";
+  return d;
 }
 
 function useIsParchment() {
