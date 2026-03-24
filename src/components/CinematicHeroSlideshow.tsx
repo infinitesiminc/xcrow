@@ -81,12 +81,12 @@ export default function CinematicHeroSlideshow() {
         </motion.div>
       </AnimatePresence>
 
-      {/* Dark overlay for text legibility */}
+      {/* Subtle vignette only */}
       <div
         className="absolute inset-0 pointer-events-none"
         style={{
           background:
-            "linear-gradient(to bottom, hsl(var(--background) / 0.7) 0%, hsl(var(--background) / 0.85) 50%, hsl(var(--background)) 100%)",
+            "radial-gradient(ellipse at center, transparent 50%, hsl(var(--background) / 0.5) 100%)",
         }}
       />
     </div>
