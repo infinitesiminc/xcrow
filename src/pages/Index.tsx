@@ -104,9 +104,9 @@ const Index = () => {
       <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
 
         {/* ═══ HERO ═══ */}
-        <section className="relative min-h-[90vh] flex items-center justify-center px-4 overflow-hidden">
+        <section className="relative pt-24 md:pt-32 pb-0 px-4 overflow-hidden">
 
-          <motion.div {...fade()} className="text-center max-w-3xl relative z-10">
+          <motion.div {...fade()} className="text-center max-w-3xl mx-auto relative z-10">
 
             <h1 className="font-fantasy text-4xl md:text-6xl font-bold mb-4 leading-tight">
               Level Up Your Career.
@@ -154,14 +154,21 @@ const Index = () => {
                 How It Works
               </Button>
             </div>
+          </motion.div>
 
-            <motion.div
-              className="mt-12 flex justify-center"
-              animate={{ y: [0, 6, 0] }}
-              transition={{ duration: 2, repeat: Infinity }}
-            >
-              <ChevronDown className="h-6 w-6 text-muted-foreground/40" />
-            </motion.div>
+          {/* Cinematic hero image — stacked below text */}
+          <motion.div
+            {...fade(0.3)}
+            className="relative max-w-5xl mx-auto mt-12 rounded-xl overflow-hidden border border-border/50"
+            style={{
+              aspectRatio: "16/7",
+              boxShadow: "0 8px 40px hsl(var(--emboss-shadow)), inset 0 1px 0 hsl(var(--emboss-light))",
+            }}
+          >
+            <CinematicHeroSlideshow />
+            {/* Bottom fade into page background */}
+            <div className="absolute bottom-0 left-0 right-0 h-24 pointer-events-none"
+              style={{ background: "linear-gradient(to top, hsl(var(--background)), transparent)" }} />
           </motion.div>
         </section>
 
