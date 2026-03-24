@@ -87,15 +87,8 @@ export default function FutureIsland({ island, skillLookup, level2SkillIds, leve
         onClick={() => onIslandClick?.(category, cx, cy)}
       />
 
-      {/* Island icon */}
-      <text
-        x={cx}
-        y={cy - radius - 18}
-        textAnchor="middle"
-        style={{ fontSize: "28px", pointerEvents: "none" }}
-      >
-        {theme.emoji}
-      </text>
+      {/* Island icon — custom SVG per category */}
+      <IslandIcon category={category} cx={cx} cy={cy - radius - 12} hue={theme.baseHue} isParchment={isParchment} />
 
       {/* Island label */}
       <text
