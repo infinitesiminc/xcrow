@@ -1,5 +1,6 @@
 /**
- * /about — Founder manifesto: Defense → Offense, why a real-time AI game is the only answer.
+ * /about — Problem-Solution narrative for university leadership:
+ * Employability Crisis → Evidence → Why It's Getting Worse → Why Fixes Fail → Solution → Proof → CTA
  */
 import { useRef } from "react";
 import founderImg from "@/assets/founder-jackson.png";
@@ -7,7 +8,7 @@ import { motion, useInView } from "framer-motion";
 import xcrowLogo from "@/assets/xcrow-logo.webp";
 import {
   ArrowRight, Brain, Crosshair, Database, Gamepad2,
-  Layers, Linkedin, Radio, RefreshCw, Shield, ShieldAlert,
+  GraduationCap, Layers, Linkedin, Radio, RefreshCw, Shield, ShieldAlert,
   Sword, Target, TrendingUp, Zap,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -83,9 +84,9 @@ const SKILL_SAMPLES: { cat: FutureSkillCategory; skills: string[] }[] = [
 
 /* ── REAL-TIME ENGINE PILLARS ── */
 const ENGINE_PILLARS = [
-  { icon: Database, label: "Real-Time Job Market", desc: "5,000+ roles continuously analyzed. Tasks decomposed. AI exposure scored. Updated as companies evolve.", color: "territory-analytical" },
-  { icon: Zap, label: "Real-Time AI Tool Tracking", desc: "Every major AI release tracked and mapped to task impact. Your simulations reflect today's capabilities, not last quarter's.", color: "territory-technical" },
-  { icon: Gamepad2, label: "Real-Time Simulation Engine", desc: "Adaptive scenarios generated from live data. No static courses. Every battle is current, contextual, and challenging.", color: "territory-creative" },
+  { icon: Database, label: "Real-Time Job Market", desc: "5,000+ roles continuously analyzed. Tasks decomposed. AI exposure scored. Your curriculum layer stays current without manual updates.", color: "territory-analytical" },
+  { icon: Zap, label: "Real-Time AI Tool Tracking", desc: "Every major AI release tracked and mapped to task impact. Simulations reflect today's capabilities, not last semester's syllabus.", color: "territory-technical" },
+  { icon: Gamepad2, label: "Adaptive Simulation Engine", desc: "Scenarios generated from live data. No static content. Every challenge is current, contextual, and mapped to employer demand.", color: "territory-creative" },
 ];
 
 export default function About() {
@@ -96,63 +97,32 @@ export default function About() {
       <Navbar />
       <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
 
-        {/* ═══ HERO: THE URGENCY ═══ */}
+        {/* ═══ 1. HERO: THE EMPLOYABILITY CRISIS ═══ */}
         <Section className="pt-28 pb-20 px-6">
           <div className="max-w-4xl mx-auto text-center">
             <motion.div variants={fade} custom={0} className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-destructive/30 bg-destructive/5 text-sm text-destructive mb-6">
-              <ShieldAlert className="h-4 w-4" /> The workforce is under siege
+              <GraduationCap className="h-4 w-4" /> FOR UNIVERSITY LEADERSHIP
             </motion.div>
             <motion.h1 variants={fade} custom={1} className="text-4xl sm:text-5xl lg:text-6xl font-fantasy font-bold leading-[1.08] tracking-tight mb-6">
-              From <span className="text-destructive">Defense</span> to{" "}
-              <span style={{ color: "hsl(var(--success))" }}>Offense</span>.
+              Your Students Graduate Into an{" "}
+              <span className="text-primary">AI Economy</span>.{" "}
+              <span className="text-destructive">Are They Ready?</span>
             </motion.h1>
-            <motion.p variants={fade} custom={2} className="text-2xl sm:text-3xl font-fantasy font-semibold mb-4 italic" style={{ color: "hsl(var(--filigree-glow))" }}>
-              Master AI. Or be mastered.
+            <motion.p variants={fade} custom={2} className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed mb-4">
+              Employers say graduates lack AI-era skills. Rankings increasingly weight employability outcomes.
+              Yet most curricula haven't been updated for a world where <span className="text-foreground font-semibold">every role now has an AI agent counterpart</span>.
             </motion.p>
-            <motion.p variants={fade} custom={3} className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-              The world is stuck asking <em>"How do we protect jobs from AI?"</em>{" "}
-              We're building the platform that answers a different question:{" "}
-              <span className="text-foreground font-semibold">"How do we manage our AI agent employees?"</span>
+            <motion.p variants={fade} custom={3} className="text-base text-muted-foreground max-w-xl mx-auto">
+              We analyzed <strong className="text-foreground">4,176 university programs</strong> against real job market demand.
+              The gap is measurable — and alarming.
             </motion.p>
           </div>
         </Section>
 
-        {/* ═══ FOUNDER'S LETTER ═══ */}
-        <Section className="py-20 px-6" style={{ background: "hsl(var(--surface-stone) / 0.4)" }}>
-          <div className="max-w-4xl mx-auto">
-            <motion.div variants={fade} custom={0} className="flex flex-col md:flex-row gap-8 items-start">
-              <div className="shrink-0 mx-auto md:mx-0">
-                <div className="w-28 h-28 rounded-2xl overflow-hidden border-2" style={{ borderColor: "hsl(var(--filigree))" }}>
-                  <img src={founderImg} alt="Jackson Lam, Founder & CEO" className="w-full h-full object-cover object-top" />
-                </div>
-                <div className="text-center mt-3">
-                  <p className="text-sm font-bold">Jackson Lam</p>
-                  <p className="text-xs text-muted-foreground">Founder & CEO</p>
-                  <a href="https://linkedin.com/in/jacksonlamkh" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground mt-1">
-                    <Linkedin className="h-3 w-3" /> LinkedIn
-                  </a>
-                </div>
-              </div>
-              <motion.div variants={fade} custom={1} className="space-y-4 text-muted-foreground leading-relaxed">
-                <p className="text-lg">
-                  <span className="text-foreground font-semibold">Every company on Earth is about to hire AI agents.</span>{" "}
-                  Not as tools. As employees. Agents that write code, run campaigns, negotiate deals, analyze markets, and make decisions.
-                </p>
-                <p>
-                  The conversation right now is about <span className="text-destructive font-medium">defense</span> — which jobs will AI replace? How do we protect workers? That's the wrong question. It's like asking "How do we stop the internet?" in 1998.
-                </p>
-                <p>
-                  The right question is <span className="font-medium" style={{ color: "hsl(var(--success))" }}>offense</span> — how do we train humans to <em>manage, direct, audit, and collaborate with</em> AI agents? How do we evolve from <strong>doing the work</strong> to <strong>leading the machines that do it</strong>?
-                </p>
-                <p className="text-foreground font-medium">
-                  That's why I built Xcrow. Not a course platform. Not a career quiz. A real-time AI-powered game engine that evolves as fast as AI itself.
-                </p>
-              </motion.div>
-            </motion.div>
-          </div>
-        </Section>
+        {/* ═══ 2. EVIDENCE: THE SKILL GAP IS MEASURABLE ═══ */}
+        <SkillGapSection />
 
-        {/* ═══ JENSEN HUANG QUOTE ═══ */}
+        {/* ═══ 3. JENSEN HUANG QUOTE — "Roles evolve, curricula don't" ═══ */}
         <Section className="py-16 px-6">
           <div className="max-w-3xl mx-auto">
             <motion.blockquote variants={fade} custom={0} className="relative rounded-xl border p-6 sm:p-8"
@@ -178,29 +148,44 @@ export default function About() {
               </footer>
             </motion.blockquote>
             <motion.p variants={fade} custom={1} className="text-center text-sm text-muted-foreground mt-6 max-w-xl mx-auto">
-              This is the shift from <span className="text-destructive font-medium">defense</span> to{" "}
-              <span className="font-medium" style={{ color: "hsl(var(--success))" }}>offense</span>. 
-              AI doesn't eliminate the radiologist — it transforms them into someone who manages AI-powered diagnostics, 
-              interprets edge cases, and makes the calls machines can't. <strong className="text-foreground">Every role will follow this pattern.</strong>
+              Every discipline your university teaches is undergoing this transformation.
+              Roles aren't disappearing — they're <strong className="text-foreground">evolving faster than curricula can follow</strong>.
             </motion.p>
           </div>
         </Section>
 
-        {/* ═══ WHY A GAME? ═══ */}
+        {/* ═══ 4. WHY IT'S GETTING WORSE: AI AGENT EVOLUTION ═══ */}
+        <Section className="py-4 px-6">
+          <div className="max-w-4xl mx-auto text-center">
+            <motion.div variants={fade} custom={0}>
+              <span className="text-sm font-mono text-destructive/80 tracking-widest uppercase">Why It's Accelerating</span>
+              <p className="text-muted-foreground mt-3 max-w-2xl mx-auto text-base">
+                The roles your <strong className="text-foreground">2027 graduates</strong> will fill don't exist in your current curriculum.
+                AI agents are evolving from simple tools to autonomous employees — and they're reshaping every job function.
+              </p>
+            </motion.div>
+          </div>
+        </Section>
+        <AIAgentEvolutionSection />
+
+        {/* ═══ 5. WHY TRADITIONAL APPROACHES FAIL ═══ */}
         <Section className="py-20 px-6">
           <div className="max-w-4xl mx-auto">
             <motion.div variants={fade} custom={0} className="text-center mb-12">
-              <span className="text-sm font-mono text-muted-foreground tracking-widest uppercase">The Thesis</span>
+              <span className="text-sm font-mono text-muted-foreground tracking-widest uppercase">The Hard Truth</span>
               <h2 className="text-3xl sm:text-4xl font-fantasy font-bold mt-4">
-                Why an AI-Powered <span className="text-primary">Game</span>?
+                Adding an AI Elective <span className="text-destructive">Isn't Enough</span>
               </h2>
+              <p className="text-muted-foreground mt-3 max-w-xl mx-auto">
+                Traditional approaches fail because the AI landscape moves faster than any curriculum committee.
+              </p>
             </motion.div>
             <motion.div variants={fade} custom={1} className="grid md:grid-cols-2 gap-6 mb-10">
               {[
-                { icon: Shield, title: "Courses expire. Games evolve.", desc: "A course is a snapshot. It's outdated the moment a new model drops. A game engine regenerates its challenges from live data — every simulation reflects today's AI landscape, not last quarter's." },
-                { icon: Sword, title: "Reading ≠ Readiness.", desc: "You can't learn to manage AI agents by reading about them. You need to practice — make decisions, audit AI output, catch hallucinations, evaluate tradeoffs. Under pressure. Repeatedly." },
-                { icon: Target, title: "Motivation at scale.", desc: "Progression systems, boss battles, skill trees, and leaderboards create intrinsic motivation loops that courses can't match. Students practice 4x more when the learning feels like play." },
-                { icon: Brain, title: "AI trains against AI.", desc: "Our simulation engine uses AI to generate scenarios, grade responses, and adapt difficulty — creating an infinite practice environment that no human instructor could deliver alone." },
+                { icon: Shield, title: "Courses expire. The market doesn't wait.", desc: "A course is a snapshot. It's outdated the moment a new model drops. Your LMS can't regenerate content weekly — but the job market shifts that fast." },
+                { icon: Sword, title: "Reading ≠ Readiness.", desc: "Students can't learn to manage AI agents by reading about them. They need to practice — make decisions, audit AI output, catch hallucinations — under pressure. Employers expect day-one competence." },
+                { icon: Target, title: "Engagement is the bottleneck.", desc: "Completion rates on supplemental modules average 23%. Progression systems, boss battles, and leaderboards create intrinsic motivation loops — students practice 4x more when learning feels like play." },
+                { icon: Brain, title: "Faculty can't scale this alone.", desc: "AI-era skills span every department. No single instructor can build and maintain simulations across 183 skills. You need an engine that generates, grades, and adapts automatically." },
               ].map((item, i) => (
                 <motion.div key={item.title} variants={fade} custom={i + 2} className="rounded-xl border border-border bg-card p-6">
                   <item.icon className="h-6 w-6 text-primary mb-3" />
@@ -212,16 +197,17 @@ export default function About() {
           </div>
         </Section>
 
-        {/* ═══ THE REAL-TIME ENGINE ═══ */}
+        {/* ═══ 6. SOLUTION: ZERO-GAP INSTITUTIONAL INFRASTRUCTURE ═══ */}
         <Section className="py-20 px-6" style={{ background: "hsl(var(--surface-stone) / 0.4)" }}>
           <div className="max-w-4xl mx-auto">
             <motion.div variants={fade} custom={0} className="text-center mb-12">
-              <span className="text-sm font-mono text-muted-foreground tracking-widest uppercase">The Engine</span>
+              <span className="text-sm font-mono text-muted-foreground tracking-widest uppercase">The Solution</span>
               <h2 className="text-3xl sm:text-4xl font-fantasy font-bold mt-4">
-                Zero-Gap: Learn → Apply → <span className="text-primary">Repeat</span>
+                A Curriculum Layer That <span className="text-primary">Never Goes Stale</span>
               </h2>
               <p className="text-muted-foreground mt-3 max-w-xl mx-auto">
-                Three real-time data streams feed one adaptive simulation engine. The gap between "learning" and "applying" collapses to zero.
+                Xcrow is institutional infrastructure — three real-time data streams feeding one adaptive simulation engine.
+                Deploy it across departments. The gap between "learning" and "applying" collapses to zero.
               </p>
             </motion.div>
             <motion.div variants={fade} custom={1} className="grid md:grid-cols-3 gap-6">
@@ -236,7 +222,7 @@ export default function About() {
               ))}
             </motion.div>
             {/* Loop visualization */}
-            <motion.div variants={fade} custom={5} className="mt-10 flex items-center justify-center gap-3 text-sm text-muted-foreground">
+            <motion.div variants={fade} custom={5} className="mt-10 flex items-center justify-center gap-3 text-sm text-muted-foreground flex-wrap">
               {["Job Market Shifts", "AI Tool Releases", "Sim Engine Regenerates", "Skills Re-Scored"].map((step, i) => (
                 <span key={step} className="flex items-center gap-2">
                   <span className="px-3 py-1.5 rounded-lg border border-border bg-card text-xs font-medium text-foreground">{step}</span>
@@ -247,16 +233,16 @@ export default function About() {
           </div>
         </Section>
 
-        {/* ═══ REVERSE ENGINEERING THE FUTURE: 183 SKILLS ═══ */}
+        {/* ═══ 7. 183 SKILLS CATALOGUE ═══ */}
         <Section className="py-20 px-6">
           <div className="max-w-5xl mx-auto">
             <motion.div variants={fade} custom={0} className="text-center mb-6">
               <span className="text-sm font-mono text-muted-foreground tracking-widest uppercase">The Catalogue</span>
               <h2 className="text-3xl sm:text-4xl font-fantasy font-bold mt-4">
-                183 Skills Your Brain Must <span className="text-primary">Evolve</span> to Master
+                183 Skills Mapped to <span className="text-primary">Employer Demand</span>
               </h2>
               <p className="text-muted-foreground mt-3 max-w-2xl mx-auto">
-                We reverse-engineered the future. By analyzing how AI is reshaping 5,000+ roles and 33,000+ task clusters, we distilled the skills that will define human value in the AI economy — skills no algorithm can replicate.
+                By analyzing how AI is reshaping 5,000+ roles and 33,000+ task clusters, we distilled the skills that define human value in the AI economy — organized into 8 territories, each simulation-ready.
               </p>
             </motion.div>
             <motion.div variants={fade} custom={1} className="flex flex-wrap justify-center gap-2 mb-8">
@@ -288,15 +274,12 @@ export default function About() {
               ))}
             </motion.div>
             <motion.p variants={fade} custom={11} className="text-center text-sm text-muted-foreground mt-6">
-              8 territories. 183 canonical skills. Each one simulation-ready — because knowing a skill exists isn't enough. You need to <em>practice</em> it.
+              8 territories. 183 canonical skills. Each one simulation-ready — because knowing a skill exists isn't enough. Your students need to <em>practice</em> it.
             </motion.p>
           </div>
         </Section>
 
-        {/* ═══ SKILL GAP: CURRICULUM vs MARKET ═══ */}
-        <SkillGapSection />
-
-        {/* ═══ LEVEL 2 GLIMPSE: BOSS BATTLE AUDIT ═══ */}
+        {/* ═══ 8. L2 CHECKPOINT — "What graduates need to do on day one" ═══ */}
         <Section className="py-20 px-6" style={{ background: "linear-gradient(180deg, hsl(262 40% 8%) 0%, hsl(var(--background)) 100%)" }}>
           <div className="max-w-4xl mx-auto">
             <motion.div variants={fade} custom={0} className="text-center mb-10">
@@ -304,10 +287,10 @@ export default function About() {
                 <Crosshair className="h-3 w-3" /> LEVEL 2 · HUMAN EDGE
               </div>
               <h2 className="text-3xl sm:text-4xl font-fantasy font-bold mb-3">
-                Can You <span style={{ color: "hsl(262 80% 65%)" }}>Judge</span> an AI Agent?
+                This Is What Your Graduates Need to Do on <span style={{ color: "hsl(262 80% 65%)" }}>Day One</span>
               </h2>
               <p className="text-muted-foreground max-w-xl mx-auto">
-                Level 2 simulations pit you against AI claims pulled from real future scenarios. Your job isn't to <em>use</em> AI — it's to <strong>oversee</strong> it. To catch what it gets wrong. To know when to trust and when to intervene.
+                Level 2 simulations pit students against AI claims pulled from real future scenarios. The task isn't to <em>use</em> AI — it's to <strong>oversee</strong> it. To catch what it gets wrong. To know when to trust and when to intervene.
               </p>
             </motion.div>
 
@@ -341,46 +324,62 @@ export default function About() {
             </motion.div>
 
             <motion.p variants={fade} custom={5} className="text-center text-sm text-muted-foreground mt-8 max-w-lg mx-auto">
-              This is what "staying ahead of AI" actually looks like — not learning to use the tools, but learning to <strong className="text-foreground">lead the machines</strong>.
+              This is what "AI-ready graduates" actually means — not learning to use the tools, but learning to <strong className="text-foreground">lead the machines</strong>.
             </motion.p>
           </div>
         </Section>
 
-        {/* ═══ AI AGENT EVOLUTION ═══ */}
-        <AIAgentEvolutionSection />
+        {/* ═══ 9. CREDIBILITY: FOUNDER LETTER (condensed) ═══ */}
+        <Section className="py-16 px-6" style={{ background: "hsl(var(--surface-stone) / 0.4)" }}>
+          <div className="max-w-4xl mx-auto">
+            <motion.div variants={fade} custom={0} className="flex flex-col md:flex-row gap-8 items-start">
+              <div className="shrink-0 mx-auto md:mx-0">
+                <div className="w-28 h-28 rounded-2xl overflow-hidden border-2" style={{ borderColor: "hsl(var(--filigree))" }}>
+                  <img src={founderImg} alt="Jackson Lam, Founder & CEO" className="w-full h-full object-cover object-top" />
+                </div>
+                <div className="text-center mt-3">
+                  <p className="text-sm font-bold">Jackson Lam</p>
+                  <p className="text-xs text-muted-foreground">Founder & CEO</p>
+                  <a href="https://linkedin.com/in/jacksonlamkh" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground mt-1">
+                    <Linkedin className="h-3 w-3" /> LinkedIn
+                  </a>
+                </div>
+              </div>
+              <motion.div variants={fade} custom={1} className="space-y-4 text-muted-foreground leading-relaxed">
+                <p className="text-lg">
+                  <span className="text-foreground font-semibold">Every company on Earth is about to hire AI agents — not as tools, but as employees.</span>{" "}
+                  The question isn't whether jobs will change. It's whether your institution is preparing graduates for the jobs that exist <em>now</em>.
+                </p>
+                <p>
+                  I built Xcrow because the gap between what universities teach and what employers need isn't shrinking — it's accelerating.
+                  A real-time simulation engine was the only architecture that could keep pace.
+                </p>
+                <p className="text-foreground font-medium">
+                  We've already mapped 4,176 university programs against market demand. The data is clear. Let us show you where your institution stands.
+                </p>
+              </motion.div>
+            </motion.div>
+          </div>
+        </Section>
 
-        {/* ═══ THE CROW ═══ */}
+        {/* ═══ 10. CTA: EQUIP YOUR INSTITUTION ═══ */}
         <Section className="py-20 px-6">
           <div className="max-w-3xl mx-auto text-center">
-            <motion.div variants={fade} custom={0} className="mb-8">
-              <img src={xcrowLogo} alt="Xcrow logo" className="w-48 h-48 object-contain mx-auto crow-glow" />
+            <motion.div variants={fade} custom={0} className="mb-4">
+              <img src={xcrowLogo} alt="Xcrow logo" className="w-24 h-24 object-contain mx-auto crow-glow" />
             </motion.div>
-            <motion.h2 variants={fade} custom={1} className="text-2xl sm:text-3xl font-fantasy font-bold mb-4">Why the Crow?</motion.h2>
-            <motion.p variants={fade} custom={2} className="text-muted-foreground leading-relaxed max-w-xl mx-auto mb-4">
-              Crows are the best problem solvers in the animal kingdom. They use tools, devise multi-step strategies, and adapt to environments they've never seen.
-            </motion.p>
-            <motion.p variants={fade} custom={3} className="text-muted-foreground leading-relaxed max-w-xl mx-auto">
-              <span className="text-foreground font-semibold">Xcrow</span> is the <span className="text-primary font-semibold">X — the multiplier</span> — applied to that innate problem-solving power. We take the adaptive intelligence nature perfected in the crow and amplify it for the AI economy. Not memorization. Not passive learning.{" "}
-              <span className="text-foreground font-semibold">Multiplied human ingenuity</span>.
-            </motion.p>
-          </div>
-        </Section>
-
-        {/* ═══ CTA ═══ */}
-        <Section className="py-20 px-6" style={{ background: "hsl(var(--surface-stone) / 0.4)" }}>
-          <div className="max-w-3xl mx-auto text-center">
-            <motion.h2 variants={fade} custom={0} className="text-3xl sm:text-4xl font-fantasy font-bold mb-4">
-              Stop defending. Start leading.
+            <motion.h2 variants={fade} custom={1} className="text-3xl sm:text-4xl font-fantasy font-bold mb-4">
+              Equip Your Institution for the <span className="text-primary">AI Economy</span>
             </motion.h2>
-            <motion.p variants={fade} custom={1} className="text-muted-foreground mb-8 max-w-md mx-auto">
-              Whether you're a professional, student, or institution — the AI economy rewards those who move first.
+            <motion.p variants={fade} custom={2} className="text-muted-foreground mb-8 max-w-md mx-auto">
+              See exactly where your curriculum stands — and deploy the infrastructure to close the gap. No course redesign required.
             </motion.p>
-            <motion.div variants={fade} custom={2} className="flex flex-col sm:flex-row items-center justify-center gap-3">
+            <motion.div variants={fade} custom={3} className="flex flex-col sm:flex-row items-center justify-center gap-3">
               <Button size="lg" onClick={() => navigate("/contact")} className="gap-2 px-8">
-                Get in Touch <ArrowRight className="h-4 w-4" />
+                Schedule a Pilot <ArrowRight className="h-4 w-4" />
               </Button>
-              <Button size="lg" variant="outline" onClick={() => navigate("/")} className="px-8">
-                Explore the Map
+              <Button size="lg" variant="outline" onClick={() => navigate("/schools")} className="px-8">
+                See the Schools Program
               </Button>
             </motion.div>
           </div>
