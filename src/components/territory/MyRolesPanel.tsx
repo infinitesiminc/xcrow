@@ -819,7 +819,7 @@ export default function MyRolesPanel({ onSelectRole, onAskChat, onTabChange, onL
               <div className="relative mb-2">
                 <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
                 <Input
-                  placeholder="Search realms..."
+                  placeholder="Search roles or companies..."
                   value={search}
                   onChange={e => setSearch(e.target.value)}
                   className="pl-8 h-8 text-xs bg-transparent border-border/40"
@@ -831,18 +831,94 @@ export default function MyRolesPanel({ onSelectRole, onAskChat, onTabChange, onL
                   <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
                 </div>
               ) : (() => {
-                const rq = search.toLowerCase();
-                const filteredRealms = enrichedRealms.filter(r => !rq || r.name.toLowerCase().includes(rq));
-                return filteredRealms.length === 0 ? (
+                const searchQ = search.toLowerCase();
+                const filteredRealms = enrichedRealms.filter(r => !searchQ || r.name.toLowerCase().includes(searchQ));
+                const hasRoleResults = searchQ.length >= 2 && searchRoles.length > 0;
+                const showingRoles = hasRoleResults && !searchRolesLoading;
+
+                return (filteredRealms.length === 0 && !hasRoleResults && !searchRolesLoading) ? (
                   <div className="text-center py-12">
                     <span className="text-3xl mb-3 block">🏰</span>
                     <p className="text-sm text-muted-foreground" style={{ fontFamily: "'Cinzel', serif" }}>
-                      {search ? "No realms match" : "No realms discovered"}
+                      {search ? "No realms or roles match" : "No realms discovered"}
                     </p>
                   </div>
                 ) : (
-                  <div className="space-y-1">
-                    {filteredRealms.map((rc, i) => {
+                  <div className="space-y-2">
+                    {/* Role search results */}
+                    {searchRolesLoading && searchQ.length >= 2 && (
+                      <div className="flex items-center gap-2 py-2 px-2">
+                        <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />
+                        <span className="text-[10px] text-muted-foreground">Searching roles…</span>
+                      </div>
+                    )}
+                    {showingRoles && (
+                      <div>
+                        <p className="text-[8px] font-mono uppercase tracking-wider text-muted-foreground mb-1 px-1" style={{ fontFamily: "'Cinzel', serif" }}>
+                          ⚔️ Roles · {searchRoles.length}
+                        </p>
+                        <div className="space-y-1">
+                          {searchRoles.map((role, i) => {
+                            const logoUrl = role.company_name ? brandfetchFromName(role.company_name) : null;
+                            return (
+                              <motion.button
+                                key={role.id}
+                                initial={{ opacity: 0, y: 4 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: Math.min(i * 0.02, 0.2), duration: 0.2 }}
+                                onClick={() => {
+                                  // Navigate to role deep dive
+                                  const roleResult: RoleResult = {
+                                    title: role.title,
+                                    company: role.company_name || undefined,
+                                    jobId: role.id,
+                                  };
+                                  onSelectRole(roleResult);
+                                }}
+                                className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-left transition-all hover:brightness-110 group"
+                                style={{
+                                  background: "hsl(var(--surface-stone) / 0.5)",
+                                  border: "1px solid hsl(var(--primary) / 0.08)",
+                                }}
+                              >
+                                <div className="w-5 h-5 rounded-md overflow-hidden flex items-center justify-center bg-muted/50 shrink-0">
+                                  {logoUrl ? (
+                                    <img src={logoUrl} alt="" className="w-5 h-5 object-contain" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                                  ) : (
+                                    <Swords className="h-2.5 w-2.5 text-muted-foreground" />
+                                  )}
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <p className="text-[11px] font-bold text-foreground truncate group-hover:text-primary transition-colors" style={{ fontFamily: "'Cinzel', serif" }}>
+                                    {role.title}
+                                  </p>
+                                  <div className="flex items-center gap-2">
+                                    {role.company_name && <span className="text-[9px] text-muted-foreground truncate">{role.company_name}</span>}
+                                    {role.department && <span className="text-[8px] text-muted-foreground/60 truncate">{role.department}</span>}
+                                  </div>
+                                </div>
+                                {role.augmented_percent != null && (
+                                  <div className="flex items-center gap-0.5 shrink-0">
+                                    <Bot className="h-2.5 w-2.5 text-brand-ai" />
+                                    <span className="text-[8px] font-mono text-brand-ai">{role.augmented_percent}%</span>
+                                  </div>
+                                )}
+                              </motion.button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Company results */}
+                    {filteredRealms.length > 0 && (
+                      <div>
+                        {showingRoles && (
+                          <p className="text-[8px] font-mono uppercase tracking-wider text-muted-foreground mb-1 px-1 mt-2" style={{ fontFamily: "'Cinzel', serif" }}>
+                            🏰 Companies · {filteredRealms.length}
+                          </p>
+                        )}
+                        <div className="space-y-1">
                       const logoUrl = rc.logo_url || brandfetchFromName(rc.name);
                       const hasProgress = rc.kingdoms.length > 0;
                       const bestTier = rc.kingdoms.reduce<KingdomTier | null>((best, k) => {
