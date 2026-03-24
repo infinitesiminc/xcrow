@@ -32,7 +32,7 @@ export default function XcrowLoader({
         <img
           src={xcrowLogo}
           alt="Xcrow"
-          className="object-contain drop-shadow-[0_0_20px_hsl(var(--primary)/0.4)]"
+          className="object-contain crow-glow"
           style={{ width: imgSize, height: imgSize }}
           draggable={false}
         />
