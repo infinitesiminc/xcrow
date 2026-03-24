@@ -292,16 +292,15 @@ export default function Professionals() {
               </motion.div>
             ))}
           </div>
-        </div>
 
-        {/* Mid-page CTA */}
-        <motion.div {...fade(0.2)} className="mt-14 text-center">
-          <Button size="lg" onClick={handleCTA} className="gap-2 text-base font-fantasy"
-            style={{ boxShadow: "0 0 20px hsl(var(--primary) / 0.25)" }}>
-            <Sword className="h-4 w-4" /> Start Practicing Now <ArrowRight className="h-4 w-4" />
-          </Button>
-          <p className="text-xs text-muted-foreground mt-3">Free to start · No credit card required</p>
-        </motion.div>
+          {/* Mid-page CTA */}
+          <motion.div {...fade(0.2)} className="mt-14 text-center">
+            <Button size="lg" onClick={handleCTA} className="gap-2 text-base font-fantasy"
+              style={{ boxShadow: "0 0 20px hsl(var(--primary) / 0.25)" }}>
+              <Sword className="h-4 w-4" /> Start Practicing Now <ArrowRight className="h-4 w-4" />
+            </Button>
+            <p className="text-xs text-muted-foreground mt-3">Free to start · No credit card required</p>
+          </motion.div>
         </div>
       </section>
 
