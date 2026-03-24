@@ -90,8 +90,6 @@ const Index = () => {
 
         {/* ═══ HERO ═══ */}
         <section className="relative min-h-[90vh] flex items-center justify-center px-4 overflow-hidden">
-          {/* Cinematic skill hero slideshow */}
-          <CinematicHeroSlideshow />
 
           <motion.div {...fade()} className="text-center max-w-3xl relative z-10">
 
