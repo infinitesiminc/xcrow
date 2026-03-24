@@ -243,6 +243,7 @@ Format: Structured Learn→Apply coaching conversation, exactly ${FIXED_ROUNDS} 
 ${coachingInstructions}
 ${intelInstructions}
 ${level2Context}
+${roleChallengeContext}
 
 PEDAGOGY: TEACH-THEN-TEST (Learn → Apply)
 Every round follows this exact 2-beat loop:
