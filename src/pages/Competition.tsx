@@ -12,7 +12,7 @@ import { TERRITORIES } from "@/lib/territory-colors";
 
 /* ── Config ── */
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
-const EVENT_DATE = new Date("2026-06-10T09:00:00-06:00");
+const EVENT_DATE = new Date("2026-06-22T09:00:00-06:00");
 
 /* Curated hero images for the cinematic banner */
 const HERO_SKILL_IDS = [
