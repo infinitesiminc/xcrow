@@ -280,22 +280,39 @@ const Index = () => {
               </p>
             </motion.div>
 
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {TERRITORY_DOMAINS.map((t, i) => (
                 <motion.div
                   key={t.name}
                   {...fade(i * 0.06)}
-                  className="rounded-xl p-4 border border-border/50 cursor-default hover:border-border transition-colors"
+                  className="rounded-xl overflow-hidden border border-border/50 cursor-default hover:border-border transition-colors group"
                   style={{
-                    background: `linear-gradient(135deg, hsl(var(--${t.cssVar}) / 0.06), hsl(var(--card)))`,
-                    boxShadow: `inset 0 1px 0 hsl(var(--emboss-light))`,
+                    background: `hsl(var(--card))`,
+                    boxShadow: `inset 0 1px 0 hsl(var(--emboss-light)), 0 4px 16px hsl(var(--emboss-shadow))`,
                   }}
                 >
-                  <TerritoryEmblem category={t.category} size={40} className="mb-2" />
-                  <h4 className="font-fantasy text-sm font-bold mb-1" style={{ color: `hsl(var(--${t.cssVar}))` }}>
-                    {t.name}
-                  </h4>
-                  <p className="text-[11px] text-muted-foreground leading-relaxed">{t.category}</p>
+                  {/* Hero image */}
+                  <div className="h-28 md:h-32 overflow-hidden relative">
+                    <img
+                      src={t.heroImg}
+                      alt={t.name}
+                      className="w-full h-full object-cover opacity-60 group-hover:opacity-80 transition-opacity duration-500 group-hover:scale-105"
+                      style={{ transition: "opacity 0.5s, transform 0.5s" }}
+                      onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
+                    />
+                    <div className="absolute inset-0" style={{
+                      background: `linear-gradient(to top, hsl(var(--card)), transparent 60%), linear-gradient(135deg, hsl(var(--${t.cssVar}) / 0.15), transparent)`,
+                    }} />
+                    <div className="absolute top-2 right-2">
+                      <TerritoryEmblem category={t.category} size={32} />
+                    </div>
+                  </div>
+                  <div className="px-4 pb-4 pt-2">
+                    <h4 className="font-fantasy text-sm font-bold mb-0.5" style={{ color: `hsl(var(--${t.cssVar}))` }}>
+                      {t.name}
+                    </h4>
+                    <p className="text-[11px] text-muted-foreground leading-relaxed">{t.category}</p>
+                  </div>
                 </motion.div>
               ))}
             </div>
