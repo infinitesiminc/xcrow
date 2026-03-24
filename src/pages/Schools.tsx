@@ -252,6 +252,18 @@ export default function Schools() {
           </div>
         </section>
 
+        {/* ═══ MID-PAGE CTA ═══ */}
+        <section className="py-16 px-4">
+          <motion.div {...fade()} className="text-center max-w-lg mx-auto">
+            <Button size="lg" onClick={() => navigate("/contact")}
+              className="text-base px-8 gap-2 font-fantasy"
+              style={{ boxShadow: "0 0 20px hsl(var(--primary) / 0.25)" }}>
+              <Shield className="h-4 w-4" /> Schedule a Demo <ArrowRight className="h-4 w-4" />
+            </Button>
+            <p className="text-xs text-muted-foreground mt-3">Free pilot for qualifying institutions · No IT integration needed</p>
+          </motion.div>
+        </section>
+
         {/* ═══ FINAL CTA ═══ */}
         <section className="py-24 px-4 relative overflow-hidden" style={{ background: "hsl(var(--surface-stone) / 0.5)" }}>
           <div className="absolute inset-0 pointer-events-none">

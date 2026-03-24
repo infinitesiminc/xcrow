@@ -312,6 +312,18 @@ export default function HowItWorks() {
           </div>
         </section>
 
+        {/* ═══ MID-PAGE CTA ═══ */}
+        <section className="py-16 px-4">
+          <motion.div {...fade()} className="text-center max-w-lg mx-auto">
+            <h3 className="font-fantasy text-2xl font-bold mb-3">Ready to claim your first castle?</h3>
+            <p className="text-muted-foreground text-sm mb-6">Open the World Map and start your first quest — free, no credit card required.</p>
+            <Button size="lg" onClick={() => navigate("/map")} className="text-base px-8 gap-2"
+              style={{ boxShadow: "0 0 20px hsl(var(--filigree-glow) / 0.25)" }}>
+              <Map className="h-5 w-5" /> Enter the World Map
+            </Button>
+          </motion.div>
+        </section>
+
         {/* ═══ LAYER 3: PLAYER RANK ═══ */}
         <section className="py-20 px-4" style={{ background: "hsl(var(--secondary) / 0.4)" }}>
           <div className="max-w-5xl mx-auto">
