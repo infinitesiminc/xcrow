@@ -29,7 +29,7 @@ export const AVATAR_OPTIONS: AvatarOption[] = [
   { id: "lion", label: "Lion", src: lionAvatar },
   { id: "serpent", label: "Serpent", src: serpentAvatar },
   { id: "scorpion", label: "Scorpion", src: scorpionAvatar },
-  { id: "spider", label: "Spider", src: spiderAvatar },
+  { id: "shark", label: "Shark", src: sharkAvatar },
 ];
 
 export function getAvatarById(id: string | null | undefined): AvatarOption | undefined {

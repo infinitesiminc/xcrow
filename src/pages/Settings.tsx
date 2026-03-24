@@ -355,7 +355,7 @@ function ProfileSection({
                   key={avatar.id}
                   src={avatar.src}
                   alt={avatar.label}
-                  className={`w-44 h-44 object-contain absolute inset-0 m-auto transition-opacity duration-150 ${
+                  className={`w-44 h-44 object-contain absolute inset-0 m-auto transition-opacity duration-150 crow-glow ${
                     avatarId === avatar.id ? "opacity-100" : "opacity-0 pointer-events-none"
                   }`}
                 />
