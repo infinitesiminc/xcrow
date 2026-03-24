@@ -139,9 +139,9 @@ const Index = () => {
           <motion.div {...fade()} className="text-center max-w-3xl mx-auto relative z-10">
 
             <h1 className="font-fantasy text-4xl md:text-6xl font-bold mb-4 leading-tight">
-              Level Up Your Career.
+              183 new skills. 1 game.
               <br />
-              <span style={{ color: "hsl(var(--filigree-glow))" }}>Play the Game.</span>
+              <span style={{ color: "hsl(var(--filigree-glow))" }}>Get ready for AI agent economy.</span>
             </h1>
 
             <p className="text-muted-foreground text-lg md:text-xl max-w-xl mx-auto mb-8">
