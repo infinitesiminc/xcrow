@@ -61,6 +61,13 @@ interface CompanyJob {
   topTask: string | null;
 }
 
+interface JobSkillLink {
+  skill_name: string;
+  canonical_skill_id: string | null;
+  category: string;
+  icon_emoji: string | null;
+}
+
 interface MyRolesPanelProps {
   onSelectRole: (role: RoleResult) => void;
   onAskChat: (prompt: string) => void;
@@ -172,6 +179,8 @@ export default function MyRolesPanel({ onSelectRole, onAskChat, onTabChange, onL
   const [selectedRealm, setSelectedRealm] = useState<RealmCompany | null>(null);
   const [realmJobs, setRealmJobs] = useState<CompanyJob[]>([]);
   const [realmJobsLoading, setRealmJobsLoading] = useState(false);
+  const [expandedJobId, setExpandedJobId] = useState<string | null>(null);
+  const [jobSkills, setJobSkills] = useState<Record<string, JobSkillLink[]>>({});
 
   /* ── Fetch & merge kingdoms from behavior ── */
   useEffect(() => {
@@ -399,7 +408,29 @@ export default function MyRolesPanel({ onSelectRole, onAskChat, onTabChange, onL
     })();
   }, [selectedRealm]);
 
-  /* ── Filtering ── */
+  /* ── Fetch skills for expanded job ── */
+  useEffect(() => {
+    if (!expandedJobId || jobSkills[expandedJobId]) return;
+    (async () => {
+      const { data } = await supabase
+        .from("job_future_skills")
+        .select("skill_name, canonical_skill_id, category, icon_emoji")
+        .eq("job_id", expandedJobId)
+        .limit(20);
+      if (data) {
+        const seen = new Set<string>();
+        const unique = (data as JobSkillLink[]).filter(s => {
+          const k = s.skill_name.toLowerCase();
+          if (seen.has(k)) return false;
+          seen.add(k);
+          return true;
+        });
+        setJobSkills(prev => ({ ...prev, [expandedJobId]: unique }));
+      }
+    })();
+  }, [expandedJobId]);
+
+
   const q = search.toLowerCase();
   const filteredKingdoms = useMemo(() => {
     return kingdoms.filter(k => {
@@ -582,45 +613,103 @@ export default function MyRolesPanel({ onSelectRole, onAskChat, onTabChange, onL
                   <div className="space-y-1">
                     {realmJobs.map((job, i) => {
                       const isKingdom = selectedRealm.kingdoms.some(k => k.title.toLowerCase() === job.title.toLowerCase());
+                      const isExpanded = expandedJobId === job.id;
+                      const skills = jobSkills[job.id] || [];
                       return (
-                        <motion.button
+                        <motion.div
                           key={job.id}
                           initial={{ opacity: 0, y: 4 }}
                           animate={{ opacity: 1, y: 0 }}
                           transition={{ delay: i * 0.025, duration: 0.2 }}
-                          className="w-full text-left px-2.5 py-2 rounded-lg transition-all group hover:brightness-110"
+                          className="rounded-lg overflow-hidden"
                           style={{
                             background: isKingdom ? "hsl(var(--filigree) / 0.06)" : "hsl(var(--surface-stone) / 0.5)",
-                            border: isKingdom ? "1px solid hsl(var(--filigree) / 0.15)" : "1px solid hsl(var(--filigree) / 0.06)",
-                          }}
-                          onClick={() => {
-                            if (job.topTask && onLaunchSim) {
-                              onLaunchSim({ jobTitle: job.title, taskName: job.topTask, company: selectedRealm.name, level: 1 });
-                            }
+                            border: isExpanded ? "1px solid hsl(var(--primary) / 0.25)" : isKingdom ? "1px solid hsl(var(--filigree) / 0.15)" : "1px solid hsl(var(--filigree) / 0.06)",
                           }}
                         >
-                          <div className="flex items-center justify-between gap-2">
-                            <div className="min-w-0 flex-1">
-                              <div className="flex items-center gap-1.5">
-                                <p className="text-[11px] font-bold text-foreground truncate group-hover:text-primary transition-colors" style={{ fontFamily: "'Cinzel', serif" }}>
-                                  {job.title}
-                                </p>
-                                {isKingdom && <Crown className="h-2.5 w-2.5 shrink-0" style={{ color: "hsl(var(--filigree-glow))" }} />}
-                              </div>
-                              {job.department && <p className="text-[9px] text-muted-foreground truncate">{job.department}</p>}
-                            </div>
-                            <div className="flex items-center gap-2 shrink-0">
-                              {job.augmented_percent != null && (
-                                <div className="flex items-center gap-0.5">
-                                  <Bot className="h-2.5 w-2.5 text-brand-ai" />
-                                  <span className="text-[8px] font-mono text-brand-ai">{job.augmented_percent}%</span>
+                          <button
+                            className="w-full text-left px-2.5 py-2 transition-all group hover:brightness-110"
+                            onClick={() => setExpandedJobId(isExpanded ? null : job.id)}
+                          >
+                            <div className="flex items-center justify-between gap-2">
+                              <div className="min-w-0 flex-1">
+                                <div className="flex items-center gap-1.5">
+                                  <p className="text-[11px] font-bold text-foreground truncate group-hover:text-primary transition-colors" style={{ fontFamily: "'Cinzel', serif" }}>
+                                    {job.title}
+                                  </p>
+                                  {isKingdom && <Crown className="h-2.5 w-2.5 shrink-0" style={{ color: "hsl(var(--filigree-glow))" }} />}
                                 </div>
-                              )}
-                              <Play className="h-2.5 w-2.5 text-primary opacity-0 group-hover:opacity-100 transition-opacity" />
+                                {job.department && <p className="text-[9px] text-muted-foreground truncate">{job.department}</p>}
+                              </div>
+                              <div className="flex items-center gap-2 shrink-0">
+                                {job.augmented_percent != null && (
+                                  <div className="flex items-center gap-0.5">
+                                    <Bot className="h-2.5 w-2.5 text-brand-ai" />
+                                    <span className="text-[8px] font-mono text-brand-ai">{job.augmented_percent}%</span>
+                                  </div>
+                                )}
+                                <ChevronRight className={`h-3 w-3 text-muted-foreground transition-transform ${isExpanded ? "rotate-90" : ""}`} />
+                              </div>
                             </div>
-                          </div>
-                          {job.topTask && <p className="text-[8px] text-muted-foreground mt-0.5 truncate">⚔️ {job.topTask}</p>}
-                        </motion.button>
+                            {job.topTask && <p className="text-[8px] text-muted-foreground mt-0.5 truncate">⚔️ {job.topTask}</p>}
+                          </button>
+
+                          {/* Expanded: linked skills with launch */}
+                          <AnimatePresence>
+                            {isExpanded && (
+                              <motion.div
+                                initial={{ height: 0, opacity: 0 }}
+                                animate={{ height: "auto", opacity: 1 }}
+                                exit={{ height: 0, opacity: 0 }}
+                                transition={{ duration: 0.2 }}
+                                className="overflow-hidden"
+                              >
+                                <div className="px-2.5 pb-2 pt-1 border-t border-border/20">
+                                  {skills.length === 0 ? (
+                                    <div className="flex items-center justify-center py-2">
+                                      <Loader2 className="h-3 w-3 animate-spin text-muted-foreground mr-1.5" />
+                                      <span className="text-[9px] text-muted-foreground">Loading skills…</span>
+                                    </div>
+                                  ) : (
+                                    <div className="space-y-1">
+                                      <p className="text-[8px] font-mono uppercase tracking-wider text-muted-foreground mb-1">
+                                        Linked Skills · {skills.length}
+                                      </p>
+                                      {skills.slice(0, 8).map((sk) => (
+                                        <button
+                                          key={sk.skill_name}
+                                          className="w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-left transition-all hover:brightness-110 group/sk"
+                                          style={{
+                                            background: "hsl(var(--surface-stone) / 0.6)",
+                                            border: "1px solid hsl(var(--border) / 0.2)",
+                                          }}
+                                          onClick={() => {
+                                            if (job.topTask && onLaunchSim) {
+                                              onLaunchSim({ jobTitle: job.title, taskName: job.topTask, company: selectedRealm.name, level: 1 });
+                                            }
+                                          }}
+                                        >
+                                          <span className="text-xs leading-none shrink-0">{sk.icon_emoji || "⚡"}</span>
+                                          <div className="flex-1 min-w-0">
+                                            <p className="text-[10px] font-semibold text-foreground truncate">{sk.skill_name}</p>
+                                            <p className="text-[8px] text-muted-foreground truncate">{sk.category}</p>
+                                          </div>
+                                          <div className="flex items-center gap-1 shrink-0 opacity-0 group-hover/sk:opacity-100 transition-opacity">
+                                            <Play className="h-2.5 w-2.5 text-primary" />
+                                            <span className="text-[8px] font-bold text-primary" style={{ fontFamily: "'Cinzel', serif" }}>Quest</span>
+                                          </div>
+                                        </button>
+                                      ))}
+                                      {skills.length > 8 && (
+                                        <p className="text-[8px] text-muted-foreground text-center pt-0.5">+{skills.length - 8} more</p>
+                                      )}
+                                    </div>
+                                  )}
+                                </div>
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
+                        </motion.div>
                       );
                     })}
                   </div>
