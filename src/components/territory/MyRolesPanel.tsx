@@ -1,14 +1,14 @@
 /**
- * MyRolesPanel — Dynamic Kingdoms view.
- * Kingdoms auto-emerge from user behavior: Scouted → Contested → Fortified → Conquered.
- * Kingdom tier is now derived from linked skill castles (unified progression).
- * Includes Arsenal tab for AI tools.
+ * MyRolesPanel — Unified "Realms" view.
+ * Three sub-tabs: Realms (companies → kingdoms), Kingdoms (flat), Arsenal.
+ * Realms: Browse companies, drill into one to see your kingdoms + discoverable roles.
  */
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Search, ChevronRight, Shield, Flame, Wrench, ExternalLink, X,
-  Sparkles, Eye, Swords, Crown, Users, Castle,
+  Sparkles, Eye, Swords, Crown, Users, Castle, Building2,
+  ChevronLeft, Bot, Play, Loader2, Briefcase,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { formatDistanceToNow } from "date-fns";
@@ -23,6 +23,8 @@ import {
   groupToolsByCompany, type AIToolInfo,
 } from "@/lib/ai-tool-registry";
 import type { RoleResult } from "@/components/InlineRoleCarousel";
+import { brandfetchFromName } from "@/lib/logo";
+import type { SimLaunchRequest } from "@/components/territory/SkillLaunchCard";
 
 /* ── Types ── */
 
@@ -41,10 +43,29 @@ interface Kingdom {
   population?: number;
 }
 
+interface RealmCompany {
+  id: string;
+  name: string;
+  industry: string | null;
+  logo_url: string | null;
+  job_count: number;
+  /** User's kingdoms that belong to this company */
+  kingdoms: Kingdom[];
+}
+
+interface CompanyJob {
+  id: string;
+  title: string;
+  department: string | null;
+  augmented_percent: number | null;
+  topTask: string | null;
+}
+
 interface MyRolesPanelProps {
   onSelectRole: (role: RoleResult) => void;
   onAskChat: (prompt: string) => void;
   onTabChange?: (tab: "saved" | "practiced") => void;
+  onLaunchSim?: (req: SimLaunchRequest) => void;
 }
 
 /* ── Tier config ── */
