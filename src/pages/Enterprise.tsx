@@ -103,7 +103,10 @@ export default function Enterprise() {
         </div>
       </Section>
 
-      <CompanyMarquee />
+      <CompanyMarquee rows={[
+        ["Anthropic", "OpenAI", "Stripe", "Spotify", "SpaceX", "Anduril"],
+        ["McKinsey", "Deloitte", "JPMorgan", "Goldman Sachs", "Meta", "Google"],
+      ]} />
 
       {/* Capabilities */}
       <Section className="py-16 px-6">

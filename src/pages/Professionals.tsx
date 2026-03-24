@@ -120,7 +120,10 @@ export default function Professionals() {
         </div>
       </Section>
 
-      <CompanyMarquee />
+      <CompanyMarquee rows={[
+        ["Anthropic", "OpenAI", "Google DeepMind", "Stripe", "Spotify", "SpaceX"],
+        ["McKinsey", "Deloitte", "JPMorgan", "Goldman Sachs", "Bain", "BCG"],
+      ]} />
 
       {/* Benefits */}
       <Section className="py-16 px-6">
