@@ -44,14 +44,14 @@ const fade = (delay = 0) => ({
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 
 const TERRITORY_HERO_SKILLS: Record<string, string> = {
-  "territory-technical": "complex-threat-modeling",
-  "territory-analytical": "predictive-analytics",
-  "territory-strategic": "strategic-narrative-design",
-  "territory-communication": "stakeholder-influence-mapping",
-  "territory-leadership": "ai-ethics-governance",
-  "territory-creative": "generative-design-thinking",
-  "territory-ethics": "algorithmic-bias-auditing",
-  "territory-humanedge": "human-ai-collaboration",
+  "territory-technical": "prompt-engineering",
+  "territory-analytical": "ai-strategy-governance",
+  "territory-strategic": "strategic-problem-solving",
+  "territory-communication": "datadriven-narrative-development",
+  "territory-leadership": "ethical-ai-leadership-governance",
+  "territory-creative": "humancentric-design-empathy",
+  "territory-ethics": "ai-ethics-governance",
+  "territory-humanedge": "complex-problem-solving-humanai-teams",
 };
 
 const TERRITORY_DOMAINS = TERRITORIES.map(t => ({
