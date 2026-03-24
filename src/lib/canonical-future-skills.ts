@@ -12,7 +12,7 @@ export interface CanonicalFutureSkillRow {
 }
 
 const CACHE_KEY = "canonical_future_skills_cache_v1";
-const REQUEST_TIMEOUT_MS = 8000;
+const REQUEST_TIMEOUT_MS = 30000;
 const MAX_ATTEMPTS = 3;
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
