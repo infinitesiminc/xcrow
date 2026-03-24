@@ -431,32 +431,26 @@ export default function MyRolesPanel({ onSelectRole, onAskChat, onTabChange, onL
     <div className="h-full flex flex-col p-4 overflow-hidden">
       {/* Tabs */}
       <div className="flex items-center gap-1 rounded-lg p-0.5 mb-3 shrink-0" style={{ background: "hsl(var(--surface-stone))" }}>
-        <button
-          onClick={() => setTab("kingdoms")}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[11px] font-medium transition-all flex-1 justify-center"
-          style={{
-            fontFamily: "'Cinzel', serif", letterSpacing: "0.04em",
-            ...(tab === "kingdoms"
-              ? { background: "hsl(var(--background))", color: "hsl(var(--foreground))", boxShadow: "0 1px 3px hsl(var(--emboss-shadow))" }
-              : { color: "hsl(var(--muted-foreground))" }),
-          }}
-        >
-          <Crown className="h-3 w-3" />
-          Kingdoms
-        </button>
-        <button
-          onClick={() => { setTab("arsenal"); setArsenalFilter("all"); }}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[11px] font-medium transition-all flex-1 justify-center"
-          style={{
-            fontFamily: "'Cinzel', serif", letterSpacing: "0.04em",
-            ...(tab === "arsenal"
-              ? { background: "hsl(var(--background))", color: "hsl(var(--foreground))", boxShadow: "0 1px 3px hsl(var(--emboss-shadow))" }
-              : { color: "hsl(var(--muted-foreground))" }),
-          }}
-        >
-          <Wrench className="h-3 w-3" />
-          Arsenal
-        </button>
+        {([
+          { key: "realms" as const, icon: Building2, label: "Realms" },
+          { key: "kingdoms" as const, icon: Crown, label: "Kingdoms" },
+          { key: "arsenal" as const, icon: Wrench, label: "Arsenal" },
+        ] as const).map(t => (
+          <button
+            key={t.key}
+            onClick={() => { setTab(t.key); if (t.key === "arsenal") setArsenalFilter("all"); }}
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-[10px] font-medium transition-all flex-1 justify-center"
+            style={{
+              fontFamily: "'Cinzel', serif", letterSpacing: "0.04em",
+              ...(tab === t.key
+                ? { background: "hsl(var(--background))", color: "hsl(var(--foreground))", boxShadow: "0 1px 3px hsl(var(--emboss-shadow))" }
+                : { color: "hsl(var(--muted-foreground))" }),
+            }}
+          >
+            <t.icon className="h-3 w-3" />
+            {t.label}
+          </button>
+        ))}
       </div>
 
       {/* Kingdom tier filter pills */}
