@@ -4,8 +4,6 @@ import { Mail, MapPin, Send, Loader2, CheckCircle2, Calendar, GraduationCap, Pho
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
 
 const fade = (delay = 0) => ({
   initial: { opacity: 0, y: 20 },
@@ -46,9 +44,7 @@ const Contact = () => {
   const inputClass = "w-full rounded-xl border border-border bg-background px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-primary/50 placeholder:text-muted-foreground/50";
 
   return (
-    <>
-      <Navbar />
-      <div className="min-h-screen bg-background text-foreground">
+    <div className="min-h-screen bg-background text-foreground">
         <div className="mx-auto max-w-5xl px-4 py-16 sm:py-24">
 
           {/* ═══ FOUNDER LETTER ═══ */}
@@ -198,11 +194,9 @@ const Contact = () => {
                 </Card>
               </motion.div>
             </div>
-          </div>
         </div>
       </div>
-      <Footer />
-    </>
+    </div>
   );
 };
 
