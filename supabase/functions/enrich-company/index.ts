@@ -13,6 +13,21 @@ Deno.serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  // Auth guard - superadmin only
+  const authHeader = req.headers.get("Authorization");
+  if (!authHeader?.startsWith("Bearer ")) {
+    return respond({ error: "Unauthorized" }, 401);
+  }
+  const _sb = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
+  const { data: claimsData, error: claimsError } = await _sb.auth.getClaims(authHeader.replace("Bearer ", ""));
+  if (claimsError || !claimsData?.claims) {
+    return respond({ error: "Unauthorized" }, 401);
+  }
+  const { data: isAdmin } = await _sb.rpc("is_superadmin", { _user_id: claimsData.claims.sub });
+  if (!isAdmin) {
+    return respond({ error: "Forbidden" }, 403);
+  }
+
   try {
     const { website, careers_url, company_id } = await req.json();
     if (!website && !careers_url) {

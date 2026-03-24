@@ -84,6 +84,21 @@ async function searchApollo(apolloBody: Record<string, unknown>, apiKey: string)
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
+  // Auth guard - superadmin only
+  const authHeader = req.headers.get("Authorization");
+  if (!authHeader?.startsWith("Bearer ")) {
+    return respond({ error: "Unauthorized" }, 401);
+  }
+  const _sb = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
+  const { data: claimsData, error: claimsError } = await _sb.auth.getClaims(authHeader.replace("Bearer ", ""));
+  if (claimsError || !claimsData?.claims) {
+    return respond({ error: "Unauthorized" }, 401);
+  }
+  const { data: isAdmin } = await _sb.rpc("is_superadmin", { _user_id: claimsData.claims.sub });
+  if (!isAdmin) {
+    return respond({ error: "Forbidden" }, 403);
+  }
+
   try {
     const APOLLO_API_KEY = Deno.env.get("APOLLO_API_KEY");
     if (!APOLLO_API_KEY) throw new Error("APOLLO_API_KEY not configured");

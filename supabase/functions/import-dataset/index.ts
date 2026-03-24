@@ -29,11 +29,28 @@ Deno.serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  // Auth guard - superadmin only
+  const _supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+  const _serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+  const _authSb = createClient(_supabaseUrl, _serviceKey);
+  const authHeader = req.headers.get("Authorization");
+  if (!authHeader?.startsWith("Bearer ")) {
+    return respond({ error: "Unauthorized" }, 401);
+  }
+  const { data: claimsData, error: claimsError } = await _authSb.auth.getClaims(authHeader.replace("Bearer ", ""));
+  if (claimsError || !claimsData?.claims) {
+    return respond({ error: "Unauthorized" }, 401);
+  }
+  const { data: isAdmin } = await _authSb.rpc("is_superadmin", { _user_id: claimsData.claims.sub });
+  if (!isAdmin) {
+    return respond({ error: "Forbidden" }, 403);
+  }
+
   try {
     const { step = "companies", offset = 0, batch_size = 10 } = await req.json().catch(() => ({}));
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const sb = createClient(supabaseUrl, serviceKey);
+    const supabaseUrl = _supabaseUrl;
+    const serviceKey = _serviceKey;
+    const sb = _authSb;
 
     // STEP 1: Import companies
     if (step === "companies") {
