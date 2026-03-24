@@ -132,7 +132,68 @@ const stats = [
   { value: "$1M", label: "Cash Prizes", icon: Trophy },
 ];
 
-/* ══════════════════════════════════════════════════════════════ */
+/* ── Arena Card with image fallback ── */
+function ArenaCard({ skill, territory, index }: { skill: typeof ARENA_SKILLS[number]; territory: (typeof TERRITORIES)[number]; index: number }) {
+  const [imgStatus, setImgStatus] = useState<"loading" | "loaded" | "error">("loading");
+  const cssVar = territory?.cssVar || "primary";
+
+  return (
+    <motion.div
+      {...fade(index * 0.06)}
+      className="group relative rounded-2xl overflow-hidden cursor-pointer"
+      style={{
+        border: `1px solid hsl(var(--${cssVar}) / 0.3)`,
+        boxShadow: `0 0 20px hsl(var(--${cssVar}) / 0.1)`,
+      }}
+      whileHover={{ scale: 1.03, y: -4 }}
+      transition={{ type: "spring", stiffness: 300, damping: 20 }}
+    >
+      <div className="aspect-[3/4] relative overflow-hidden">
+        {/* Gradient fallback — always rendered behind image */}
+        <div
+          className="absolute inset-0 flex items-center justify-center"
+          style={{
+            background: `linear-gradient(135deg, hsl(var(--background)), hsl(var(--${cssVar}) / 0.2))`,
+          }}
+        >
+          {imgStatus !== "loaded" && (
+            <span className="text-5xl sm:text-6xl opacity-60 select-none">{territory?.emoji}</span>
+          )}
+        </div>
+
+        {imgStatus !== "error" && (
+          <img
+            src={skillHeroUrl(skill.id)}
+            alt={skill.name}
+            className={`absolute inset-0 w-full h-full object-cover transition-all duration-700 group-hover:scale-110 ${imgStatus === "loaded" ? "opacity-100" : "opacity-0"}`}
+            loading="lazy"
+            onLoad={() => setImgStatus("loaded")}
+            onError={() => setImgStatus("error")}
+          />
+        )}
+
+        {/* Gradient overlay */}
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{ background: `linear-gradient(to top, hsl(var(--background)) 0%, hsl(var(--background) / 0.6) 40%, transparent 70%)` }}
+        />
+        {/* Territory glow edge */}
+        <div className="absolute bottom-0 left-0 right-0 h-1" style={{ background: territory?.hsl || "hsl(var(--primary))" }} />
+      </div>
+
+      {/* Label */}
+      <div className="absolute bottom-0 left-0 right-0 p-3 sm:p-4">
+        <div className="flex items-center gap-1.5 mb-1">
+          <span className="text-sm">{territory?.emoji}</span>
+          <span className="text-[9px] uppercase tracking-[0.15em] font-bold" style={{ color: territory?.hsl }}>{territory?.terrain}</span>
+        </div>
+        <h3 className="text-sm sm:text-base font-bold leading-tight">{skill.name}</h3>
+      </div>
+    </motion.div>
+  );
+}
+
+
 export default function Competition() {
   const { openAuthModal } = useAuth();
   const { toast } = useToast();
