@@ -107,32 +107,45 @@ function KingdomCard({ kingdom, index, onLaunchSim }: { kingdom: Kingdom; index:
   const questProgress = kingdom.totalQuests > 0
     ? Math.round((kingdom.questsCompleted / kingdom.totalQuests) * 100) : 0;
 
+  const [launching, setLaunching] = useState(false);
+
   const handleClick = async () => {
+    console.log("[KingdomCard] clicked", kingdom.title, "onLaunchSim?", !!onLaunchSim);
     if (!onLaunchSim) return;
-    // Auto-resolve: find top task cluster for this role and launch sim
-    const { data: jobs } = await supabase
-      .from("jobs")
-      .select("id, title")
-      .ilike("title", kingdom.title)
-      .limit(1);
-    const jobId = jobs?.[0]?.id;
-    let topTask = kingdom.title;
-    if (jobId) {
-      const { data: clusters } = await supabase
-        .from("job_task_clusters")
-        .select("cluster_name, skill_names")
-        .eq("job_id", jobId)
-        .order("sort_order", { ascending: true })
+    setLaunching(true);
+    try {
+      // Auto-resolve: find top task cluster for this role and launch sim
+      const { data: jobs, error: jobErr } = await supabase
+        .from("jobs")
+        .select("id, title")
+        .ilike("title", kingdom.title)
         .limit(1);
-      if (clusters?.[0]) topTask = clusters[0].cluster_name;
+      console.log("[KingdomCard] jobs query:", jobs?.length, jobErr?.message);
+      const jobId = jobs?.[0]?.id;
+      let topTask = kingdom.title;
+      if (jobId) {
+        const { data: clusters } = await supabase
+          .from("job_task_clusters")
+          .select("cluster_name, skill_names")
+          .eq("job_id", jobId)
+          .order("sort_order", { ascending: true })
+          .limit(1);
+        if (clusters?.[0]) topTask = clusters[0].cluster_name;
+        console.log("[KingdomCard] resolved topTask:", topTask);
+      }
+      console.log("[KingdomCard] launching sim", { jobTitle: kingdom.title, taskName: topTask });
+      onLaunchSim({
+        jobTitle: kingdom.title,
+        taskName: topTask,
+        company: kingdom.company || undefined,
+        level: 1,
+        roleChallenge: true,
+      });
+    } catch (err) {
+      console.error("[KingdomCard] launch error:", err);
+    } finally {
+      setLaunching(false);
     }
-    onLaunchSim({
-      jobTitle: kingdom.title,
-      taskName: topTask,
-      company: kingdom.company || undefined,
-      level: 1,
-      roleChallenge: true,
-    });
   };
 
   return (
