@@ -20,7 +20,7 @@ import { CampaignTracker } from "@/components/role/CampaignTracker";
 import { ThreatBar } from "@/components/role/ThreatBar";
 import XcrowLoader from "@/components/XcrowLoader";
 import { useChatViewContext } from "@/contexts/ChatContext";
-import HeaderVibeImages from "@/components/HeaderVibeImages";
+
 import type { FuturePrediction } from "@/components/analysis/FutureTaskPreview";
 
 // ── View context for unified chat ────────────────────────────────
@@ -393,8 +393,18 @@ const RoleDeepDive = () => {
       <DialogContent className="max-w-5xl w-[95vw] h-[85vh] p-0 gap-0 overflow-hidden rounded-2xl border-border/60 bg-background">
         <div className="h-full flex flex-col overflow-hidden">
           {/* ── Kingdom Header ── */}
-          <div className="shrink-0 z-20 bg-background/95 backdrop-blur-md border-b border-border px-4 h-16 flex items-center justify-between gap-3 relative overflow-hidden">
-            <HeaderVibeImages seed={result.jobTitle.length * 17} count={4} />
+          <div
+            className="shrink-0 z-20 border-b border-border px-4 h-16 flex items-center justify-between gap-3 relative overflow-hidden"
+          >
+            {/* Single background image */}
+            <div className="absolute inset-0 z-0">
+              <img
+                src={`${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/skill-heroes/${encodeURIComponent((() => { const ids = ["complex-threat-modeling","ai-code-review","ai-ethics-governance","adversarial-ai-defense","advanced-prompt-engineering"]; return ids[(result.jobTitle.length * 7) % ids.length]; })())}.webp`}
+                alt=""
+                className="w-full h-full object-cover"
+              />
+              <div className="absolute inset-0" style={{ background: "linear-gradient(to right, hsl(var(--background) / 0.85), hsl(var(--background) / 0.6), hsl(var(--background) / 0.85))" }} />
+            </div>
             <button onClick={handleClose} className="relative z-10 flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors shrink-0">
               <ChevronLeft className="h-3.5 w-3.5" /> Back
             </button>
