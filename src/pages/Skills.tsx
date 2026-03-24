@@ -30,6 +30,7 @@ interface CanonicalSkill {
   category: string;
   description: string | null;
   icon_emoji: string | null;
+  skill_number: number | null;
   job_count: number;
   demand_count: number;
   avg_relevance: number | null;
