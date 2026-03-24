@@ -160,12 +160,20 @@ function useSkillHeroBg(taskName: string, jobTitle: string) {
   const [url, setUrl] = useState<string | null>(null);
   useEffect(() => {
     const skillIds = matchTaskToSkills(taskName, jobTitle);
-    if (!skillIds.length) return;
-    const heroUrl = `${SUPABASE_URL}/storage/v1/object/public/sim-images/skill-hero-${skillIds[0]}.png`;
-    const img = new window.Image();
-    img.onload = () => setUrl(heroUrl);
-    img.onerror = () => setUrl(null);
-    img.src = heroUrl;
+    // Also try task name as a slug (for L2 boss battles where taskName IS the skill name)
+    const taskSlug = taskName.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+    const candidates = skillIds.length > 0
+      ? [`skill-hero-${skillIds[0]}.png`, `skill-hero-${taskSlug}.png`]
+      : [`skill-hero-${taskSlug}.png`];
+
+    let found = false;
+    for (const filename of candidates) {
+      if (found) break;
+      const heroUrl = `${SUPABASE_URL}/storage/v1/object/public/sim-images/${filename}`;
+      const img = new window.Image();
+      img.onload = () => { if (!found) { found = true; setUrl(heroUrl); } };
+      img.src = heroUrl;
+    }
   }, [taskName, jobTitle]);
   return url;
 }
@@ -1146,11 +1154,13 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
     <div className="h-full flex flex-col overflow-hidden gap-0">
         {/* Header wrapper */}
         <div className="shrink-0">
-        <div className="shrink-0 z-20 bg-background/95 backdrop-blur-md border-b border-border px-4 h-16 flex items-center justify-between gap-3 relative overflow-hidden">
+        <div className="shrink-0 z-20 backdrop-blur-md border-b border-border px-4 h-16 flex items-center justify-between gap-3 relative overflow-hidden" style={{ background: skillHeroBg ? "hsl(var(--background) / 0.95)" : "hsl(var(--background) / 0.95)" }}>
           {skillHeroBg && (
             <img src={skillHeroBg} alt="" className="absolute inset-0 w-full h-full object-cover" style={{ filter: "brightness(0.2) saturate(0.6)", opacity: 0.7 }} />
           )}
-          {!skillHeroBg && <HeaderVibeImages seed={(taskName?.length ?? 0) * 23} count={4} />}
+          {!skillHeroBg && (
+            <div className="absolute inset-0" style={{ background: "linear-gradient(135deg, hsl(var(--surface-stone)), hsl(var(--background)))" }} />
+          )}
             <div className="relative z-10 w-8 shrink-0" /> {/* spacer to balance close button */}
             <div className="relative z-10 text-center min-w-0 flex-1">
               <span className="text-[11px] uppercase tracking-wider text-primary font-semibold">🗡️ {level === 2 ? "Level 2 — Sentinel Audit" : "Level 1 — AI Mastery"}</span>
