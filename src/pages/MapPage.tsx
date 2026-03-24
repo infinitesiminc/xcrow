@@ -402,44 +402,60 @@ const MapPage = () => {
         {selectedRole && (
           <motion.div
             key="role-preview"
-            initial={{ opacity: 0, scale: 0.97 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.97 }}
-            transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-            className="fixed inset-0 z-50 bg-background"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.25 }}
+            className="fixed inset-0 z-50 flex items-center justify-center"
+            style={{ background: "hsl(var(--background) / 0.6)", backdropFilter: "blur(6px)" }}
+            onClick={() => setSelectedRole(null)}
           >
-            <div
-              className="flex items-center justify-between px-5 py-3 backdrop-blur-sm"
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+              className="w-[95vw] max-w-4xl h-[85vh] rounded-2xl overflow-hidden flex flex-col"
               style={{
-                background: "hsl(var(--surface-stone) / 0.9)",
-                borderBottom: "1px solid hsl(var(--filigree) / 0.2)",
+                background: "hsl(var(--background))",
+                border: "1px solid hsl(var(--filigree) / 0.2)",
+                boxShadow: "0 25px 80px hsl(var(--emboss-shadow)), 0 0 40px hsl(var(--background) / 0.5)",
               }}
+              onClick={(e) => e.stopPropagation()}
             >
-              <div className="flex items-center gap-2">
-                <div
-                  className="w-7 h-7 rounded-md flex items-center justify-center text-[11px] font-bold text-white"
-                  style={{ background: `hsl(${(selectedRole.title.length * 47) % 360}, 55%, 45%)` }}
-                >
-                  {(selectedRole.company || selectedRole.title)[0]?.toUpperCase()}
-                </div>
-                <div>
-                  <h2 className="text-sm font-semibold text-foreground leading-tight" style={{ fontFamily: "'Cinzel', serif" }}>
-                    {selectedRole.title}
-                  </h2>
-                  {selectedRole.company && <p className="text-xs text-muted-foreground">{selectedRole.company}</p>}
-                </div>
-              </div>
-              <button
-                onClick={() => setSelectedRole(null)}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium text-muted-foreground hover:text-foreground transition-all active:scale-[0.97]"
-                style={{ fontFamily: "'Cinzel', serif" }}
+              <div
+                className="flex items-center justify-between px-5 py-3 shrink-0"
+                style={{
+                  background: "hsl(var(--surface-stone) / 0.9)",
+                  borderBottom: "1px solid hsl(var(--filigree) / 0.2)",
+                }}
               >
-                <X className="h-3.5 w-3.5" /> Close
-              </button>
-            </div>
-            <div className="h-[calc(100%-3.25rem)] overflow-hidden">
-              <RolePreviewPanel role={selectedRole} onClose={() => setSelectedRole(null)} edgeContext={activeEdge} />
-            </div>
+                <div className="flex items-center gap-2">
+                  <div
+                    className="w-7 h-7 rounded-md flex items-center justify-center text-[11px] font-bold text-white"
+                    style={{ background: `hsl(${(selectedRole.title.length * 47) % 360}, 55%, 45%)` }}
+                  >
+                    {(selectedRole.company || selectedRole.title)[0]?.toUpperCase()}
+                  </div>
+                  <div>
+                    <h2 className="text-sm font-semibold text-foreground leading-tight" style={{ fontFamily: "'Cinzel', serif" }}>
+                      {selectedRole.title}
+                    </h2>
+                    {selectedRole.company && <p className="text-xs text-muted-foreground">{selectedRole.company}</p>}
+                  </div>
+                </div>
+                <button
+                  onClick={() => setSelectedRole(null)}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium text-muted-foreground hover:text-foreground transition-all active:scale-[0.97]"
+                  style={{ fontFamily: "'Cinzel', serif" }}
+                >
+                  <X className="h-3.5 w-3.5" /> Close
+                </button>
+              </div>
+              <div className="flex-1 overflow-hidden">
+                <RolePreviewPanel role={selectedRole} onClose={() => setSelectedRole(null)} edgeContext={activeEdge} />
+              </div>
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
