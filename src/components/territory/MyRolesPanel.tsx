@@ -183,6 +183,11 @@ export default function MyRolesPanel({ onSelectRole, onAskChat, onTabChange, onL
   const [jobSkills, setJobSkills] = useState<Record<string, JobSkillLink[]>>({});
   const [jobSkillsStatus, setJobSkillsStatus] = useState<Record<string, "loading" | "loaded" | "empty" | "error">>({});
 
+  // Unified search: role results from DB
+  const [searchRoles, setSearchRoles] = useState<Array<{ id: string; title: string; company_name: string | null; company_id: string | null; department: string | null; augmented_percent: number | null; topTask: string | null }>>([]);
+  const [searchRolesLoading, setSearchRolesLoading] = useState(false);
+  const searchDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   /* ── Fetch & merge kingdoms from behavior ── */
   useEffect(() => {
     if (!user) return;
