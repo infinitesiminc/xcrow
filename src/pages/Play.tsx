@@ -21,6 +21,7 @@ import castleFortress from "@/assets/castle-fortress.png";
 import castleCitadel from "@/assets/castle-citadel.png";
 import simBriefing from "@/assets/sim-briefing.jpg";
 import simVictory from "@/assets/sim-victory.jpg";
+import heroConquer from "@/assets/hero-conquer.jpg";
 
 import avatarCrow from "@/assets/avatars/crow.png";
 import avatarDragon from "@/assets/avatars/dragon.png";
