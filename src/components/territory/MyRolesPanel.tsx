@@ -1050,27 +1050,7 @@ export default function MyRolesPanel({ onSelectRole, onAskChat, onTabChange, onL
               ))}
             </div>
           )
-        ) : loading ? (
-          <div className="flex items-center justify-center py-12">
-            <div className="h-5 w-5 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-          </div>
-        ) : filteredKingdoms.length === 0 ? (
-          <div className="text-center py-12">
-            <span className="text-3xl mb-3 block">🗺️</span>
-            <p className="text-sm text-muted-foreground" style={{ fontFamily: "'Cinzel', serif" }}>
-              {tierFilter !== "all" ? `No ${tierFilter} kingdoms` : "No kingdoms discovered yet"}
-            </p>
-            <p className="text-xs text-muted-foreground/60 mt-1">
-              Explore roles via the chat or search to discover your first kingdom.
-            </p>
-          </div>
-        ) : (
-          <div className="flex flex-col gap-2">
-            {filteredKingdoms.map((k, i) => (
-              <KingdomCard key={k.key} kingdom={k} index={i} />
-            ))}
-          </div>
-        )}
+        ) : null}
       </div>
     </div>
   );
