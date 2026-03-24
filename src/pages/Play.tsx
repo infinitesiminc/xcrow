@@ -296,15 +296,15 @@ export default function Play() {
                   {...fade(i * 0.06)}
                   className="rounded-xl p-4 border border-border/50 cursor-default hover:border-border transition-colors"
                   style={{
-                    background: `linear-gradient(135deg, hsl(${t.color} / 0.06), hsl(var(--card)))`,
+                    background: `linear-gradient(135deg, hsl(var(--${t.cssVar}) / 0.06), hsl(var(--card)))`,
                     boxShadow: `inset 0 1px 0 hsl(var(--emboss-light))`,
                   }}
                 >
                   <span className="text-2xl block mb-2">{t.emoji}</span>
-                  <h4 className="font-fantasy text-sm font-bold mb-1" style={{ color: `hsl(${t.color})` }}>
+                  <h4 className="font-fantasy text-sm font-bold mb-1" style={{ color: `hsl(var(--${t.cssVar}))` }}>
                     {t.name}
                   </h4>
-                  <p className="text-[11px] text-muted-foreground leading-relaxed">{t.skills}</p>
+                  <p className="text-[11px] text-muted-foreground leading-relaxed">{t.category}</p>
                 </motion.div>
               ))}
             </div>
