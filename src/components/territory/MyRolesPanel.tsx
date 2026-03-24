@@ -3,7 +3,7 @@
  * Three sub-tabs: Realms (companies → kingdoms), Kingdoms (flat), Arsenal.
  * Realms: Browse companies, drill into one to see your kingdoms + discoverable roles.
  */
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Search, ChevronRight, Shield, Flame, Wrench, ExternalLink, X,
@@ -409,24 +409,29 @@ export default function MyRolesPanel({ onSelectRole, onAskChat, onTabChange, onL
   }, [selectedRealm]);
 
   /* ── Fetch skills for expanded job ── */
+  const fetchedJobsRef = useRef(new Set<string>());
   useEffect(() => {
-    if (!expandedJobId || jobSkills[expandedJobId]) return;
+    if (!expandedJobId || fetchedJobsRef.current.has(expandedJobId)) return;
+    fetchedJobsRef.current.add(expandedJobId);
     (async () => {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from("job_future_skills")
         .select("skill_name, canonical_skill_id, category, icon_emoji")
         .eq("job_id", expandedJobId)
         .limit(20);
-      if (data) {
-        const seen = new Set<string>();
-        const unique = (data as JobSkillLink[]).filter(s => {
-          const k = s.skill_name.toLowerCase();
-          if (seen.has(k)) return false;
-          seen.add(k);
-          return true;
-        });
-        setJobSkills(prev => ({ ...prev, [expandedJobId]: unique }));
+      if (error) {
+        console.error("Failed to fetch job skills:", error);
+        setJobSkills(p => ({ ...p, [expandedJobId]: [] }));
+        return;
       }
+      const seen = new Set<string>();
+      const unique = ((data || []) as JobSkillLink[]).filter(s => {
+        const k = s.skill_name.toLowerCase();
+        if (seen.has(k)) return false;
+        seen.add(k);
+        return true;
+      });
+      setJobSkills(p => ({ ...p, [expandedJobId]: unique }));
     })();
   }, [expandedJobId]);
 
