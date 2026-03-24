@@ -496,6 +496,8 @@ const MapPage = () => {
                 inline
                 onCompleted={handleCloseSim}
                 onBackToFeed={handleCloseSim}
+                roleChallenge={activeSim.roleChallenge}
+                linkedSkillIds={activeSim.linkedSkillIds}
               />
             </motion.div>
           </motion.div>
