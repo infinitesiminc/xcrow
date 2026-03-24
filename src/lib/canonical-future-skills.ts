@@ -6,6 +6,7 @@ export interface CanonicalFutureSkillRow {
   category: string;
   description: string | null;
   icon_emoji: string | null;
+  skill_number: number | null;
   demand_count: number | null;
   job_count: number | null;
   avg_relevance: number | null;
