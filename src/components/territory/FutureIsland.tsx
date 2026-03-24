@@ -111,8 +111,23 @@ export default function FutureIsland({ island, skillLookup, level2SkillIds, leve
         onClick={() => onIslandClick?.(category, cx, cy)}
       />
 
-      {/* Island icon — custom SVG per category */}
-      <IslandIcon category={category} cx={cx} cy={cy - radius - 50} hue={theme.baseHue} isParchment={isParchment} />
+      {/* Island icon — TerritoryEmblem with float animation */}
+      <g pointerEvents="none">
+        <style>{`
+          @keyframes island-float-${category.replace(/[^a-zA-Z]/g, '')} {
+            0%, 100% { transform: translate(0, 0); }
+            50% { transform: translate(0, -6px); }
+          }
+        `}</style>
+        <foreignObject
+          x={cx - 28} y={cy - radius - 78} width={56} height={56}
+          style={{ animation: `island-float-${category.replace(/[^a-zA-Z]/g, '')} 3s ease-in-out infinite`, overflow: "visible" }}
+        >
+          <div style={{ width: 56, height: 56, display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <TerritoryEmblem category={category} size={52} />
+          </div>
+        </foreignObject>
+      </g>
 
       {/* Island label */}
       <text
