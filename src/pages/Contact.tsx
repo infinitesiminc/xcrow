@@ -4,8 +4,6 @@ import { Mail, MapPin, Send, Loader2, CheckCircle2, Calendar, GraduationCap, Pho
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
 
 const fade = (delay = 0) => ({
   initial: { opacity: 0, y: 20 },
