@@ -157,6 +157,13 @@ const Contact = () => {
                       </div>
                     </div>
                     <div className="flex items-start gap-3">
+                      <Phone className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+                      <div>
+                        <a href="tel:+16266931127" className="text-sm font-medium hover:text-primary transition-colors">+1 (626) 693-1127</a>
+                        <p className="text-[11px] text-muted-foreground">Call or text</p>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-3">
                       <MapPin className="h-4 w-4 text-primary mt-0.5 shrink-0" />
                       <div>
                         <p className="text-sm font-medium">160 Glendale Blvd</p>
