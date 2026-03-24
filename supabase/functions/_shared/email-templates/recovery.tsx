@@ -33,9 +33,9 @@ export const RecoveryEmail = ({
     <Preview>🔑 Reset your password — reclaim your stronghold</Preview>
     <Body style={main}>
       <Container style={container}>
-        <Img src={`${STORAGE}/castle-citadel.png`} alt="" width="520" style={heroBanner} />
+        <Img src={HERO_IMG} alt="" width="520" style={heroBanner} />
         <Section style={logoOverlay}>
-          <Img src={`${STORAGE}/xcrow-logo.png`} alt="Xcrow.ai" width="48" height="48" style={logoStyle} />
+          <Img src={`${STORAGE}/email-assets/xcrow-logo.png`} alt="Xcrow.ai" width="48" height="48" style={logoStyle} />
         </Section>
         <Section style={content}>
           <Heading style={h1}>Reclaim Your Stronghold</Heading>
