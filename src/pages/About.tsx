@@ -305,16 +305,18 @@ export default function About() {
         </Section>
 
         {/* ═══ THE CROW ═══ */}
-        <Section className="py-16 px-6">
+        <Section className="py-20 px-6">
           <div className="max-w-3xl mx-auto text-center">
-            <motion.div variants={fade} custom={0} className="inline-flex items-center justify-center w-24 h-24 rounded-2xl bg-primary/10 mb-5">
-              <img src={xcrowLogo} alt="Xcrow logo" className="w-16 h-16 object-contain" />
+            <motion.div variants={fade} custom={0} className="mb-8">
+              <img src={xcrowLogo} alt="Xcrow logo" className="w-48 h-48 object-contain mx-auto crow-glow" />
             </motion.div>
             <motion.h2 variants={fade} custom={1} className="text-2xl sm:text-3xl font-fantasy font-bold mb-4">Why the Crow?</motion.h2>
-            <motion.p variants={fade} custom={2} className="text-muted-foreground leading-relaxed max-w-lg mx-auto">
-              Crows use tools. They solve novel problems. They adapt to environments they've never seen.
-              That's the skillset the AI economy demands — not memorization, but{" "}
-              <span className="text-foreground font-semibold">adaptive intelligence</span>.
+            <motion.p variants={fade} custom={2} className="text-muted-foreground leading-relaxed max-w-xl mx-auto mb-4">
+              Crows are the best problem solvers in the animal kingdom. They use tools, devise multi-step strategies, and adapt to environments they've never seen.
+            </motion.p>
+            <motion.p variants={fade} custom={3} className="text-muted-foreground leading-relaxed max-w-xl mx-auto">
+              <span className="text-foreground font-semibold">Xcrow</span> is the <span className="text-primary font-semibold">X — the multiplier</span> — applied to that innate problem-solving power. We take the adaptive intelligence nature perfected in the crow and amplify it for the AI economy. Not memorization. Not passive learning.{" "}
+              <span className="text-foreground font-semibold">Multiplied human ingenuity</span>.
             </motion.p>
           </div>
         </Section>
