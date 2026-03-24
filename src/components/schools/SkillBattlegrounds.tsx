@@ -12,12 +12,12 @@ interface Props {
 const TERRITORY_BENEFITS: Record<string, string> = {
   Technical: "Cloud, data pipelines, and system design — the foundation employers test first.",
   Analytical: "Data-driven reasoning and pattern recognition that AI augments but can't replace.",
-  Strategic: "Long-term planning and resource allocation skills that define senior-level performance.",
+  Strategic: "Long-term planning and resource allocation that defines senior-level performance.",
   Creative: "Innovation, design thinking, and lateral problem-solving for differentiated outcomes.",
   Communication: "Stakeholder alignment, persuasion, and cross-functional clarity under pressure.",
   Leadership: "Team mobilization, conflict resolution, and decision-making when stakes are high.",
-  "AI Mastery": "Prompt engineering, AI evaluation, and human-AI collaboration fluency.",
-  "Human Edge": "Ethical reasoning, empathy, and judgment that no algorithm can replicate.",
+  "Ethics & Compliance": "Governance, risk assessment, and regulatory judgment AI can't replicate.",
+  "Human Edge": "Empathy, ethical reasoning, and adaptive judgment no algorithm can replace.",
 };
 
 export default function SchoolsSkillBattlegrounds({ fade }: Props) {
