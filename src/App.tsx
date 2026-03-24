@@ -72,6 +72,16 @@ function JourneyGate() {
   return <Suspense fallback={null}><Journey /></Suspense>;
 }
 
+/** Route / to the right dashboard per tier */
+function HomeDashboard() {
+  const { user, loading, isSuperAdmin, isSchoolAdmin } = useAuth();
+  if (loading) return null;
+  if (!user) return <Suspense fallback={null}><Index /></Suspense>;
+  if (isSuperAdmin) return <Navigate to="/admin" replace />;
+  if (isSchoolAdmin) return <Navigate to="/school" replace />;
+  return <Navigate to="/map" replace />;
+}
+
 /** Gate admin routes to superadmins */
 function AdminGate() {
   const { user, loading, isSuperAdmin } = useAuth();
@@ -88,6 +98,17 @@ function SchoolAdminGate() {
   return <Suspense fallback={null}><SchoolLayout /></Suspense>;
 }
 
+/** Gate authenticated-only routes */
+function AuthGate({ children }: { children: React.ReactNode }) {
+  const { user, loading, openAuthModal } = useAuth();
+  if (loading) return null;
+  if (!user) {
+    openAuthModal();
+    return <Navigate to="/" replace />;
+  }
+  return <>{children}</>;
+}
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <BrowserRouter>
@@ -99,18 +120,19 @@ const App = () => (
           <Suspense fallback={null}>
             <Routes>
               {/* Public B2C routes */}
-              <Route path="/" element={<><Navbar /><Index /></>} />
-              <Route path="/map" element={<><Navbar /><MapPage /></>} />
+              <Route path="/" element={<><Navbar /><HomeDashboard /></>} />
+              <Route path="/map" element={<AuthGate><Navbar /><MapPage /></AuthGate>} />
               <Route path="/role/:jobTitle" element={<><Navbar /><RoleDeepDive /></>} />
               <Route path="/analysis" element={<><Navbar /><Analysis /><Footer /></>} />
               <Route path="/auth" element={<><Navbar /><Auth /></>} />
-              <Route path="/settings" element={<><Navbar /><Settings /><Footer /></>} />
+              <Route path="/settings" element={<AuthGate><Navbar /><Settings /><Footer /></AuthGate>} />
               <Route path="/company/:slug" element={<><Navbar /><CompanyPage /><Footer /></>} />
+              <Route path="/leaderboard" element={<AuthGate><Navbar /><Leaderboard /></AuthGate>} />
               <Route path="/card-styles" element={<><Navbar /><CardStyleMockup /></>} />
               <Route path="/l2-formats" element={<><Navbar /><L2SimFormats /></>} />
               <Route path="/journey" element={<JourneyGate />} />
               <Route path="/students" element={<Students />} />
-              <Route path="/leaderboard" element={<Leaderboard />} />
+              
               <Route path="/pricing" element={<><Navbar /><Pricing /><Footer /></>} />
               <Route path="/schools" element={<Schools />} />
               <Route path="/about" element={<About />} />
