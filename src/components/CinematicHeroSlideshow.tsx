@@ -1,21 +1,12 @@
 /**
- * CinematicHeroSlideshow — Curated skill hero images that crossfade.
+ * CinematicHeroSlideshow — All 183 skill hero images rotating with crossfade.
  * Shows a pill overlay with skill number and name from the database.
  */
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
-
-const CURATED_IDS = [
-  "complex-threat-modeling",
-  "ai-ethics-governance",
-  "prompt-engineering",
-  "strategic-problem-solving",
-  "ethical-ai-leadership-governance",
-];
-
 const CYCLE_MS = 5000;
 
 interface SkillSlide {
@@ -24,48 +15,35 @@ interface SkillSlide {
   skillNumber: number;
 }
 
+function shuffle<T>(arr: T[]): T[] {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
 export default function CinematicHeroSlideshow() {
   const [activeIndex, setActiveIndex] = useState(0);
   const [slides, setSlides] = useState<SkillSlide[]>([]);
   const intervalRef = useRef<ReturnType<typeof setInterval>>();
 
   useEffect(() => {
-    // Fetch skill metadata from DB
     supabase
       .from("canonical_future_skills")
       .select("id, name, skill_number")
-      .in("id", CURATED_IDS)
+      .order("skill_number", { ascending: true })
       .then(({ data }) => {
         if (!data || data.length === 0) return;
-
-        // Order by the CURATED_IDS array order
-        const ordered = CURATED_IDS
-          .map((cid) => data.find((d) => d.id === cid))
-          .filter(Boolean)
-          .map((d) => ({
-            id: d!.id,
-            name: d!.name,
-            skillNumber: d!.skill_number ?? 0,
-          }));
-
-        // Preload images, keep only those that load
-        let loaded = 0;
-        const verified: (SkillSlide | null)[] = ordered.map(() => null);
-        ordered.forEach((skill, i) => {
-          const img = new Image();
-          img.onload = () => {
-            verified[i] = skill;
-            loaded++;
-            if (loaded === ordered.length)
-              setSlides(verified.filter(Boolean) as SkillSlide[]);
-          };
-          img.onerror = () => {
-            loaded++;
-            if (loaded === ordered.length)
-              setSlides(verified.filter(Boolean) as SkillSlide[]);
-          };
-          img.src = `${SUPABASE_URL}/storage/v1/object/public/sim-images/skill-hero-${skill.id}.png`;
-        });
+        const mapped = shuffle(
+          data.map((d) => ({
+            id: d.id,
+            name: d.name,
+            skillNumber: d.skill_number ?? 0,
+          }))
+        );
+        setSlides(mapped);
       });
   }, []);
 
@@ -80,6 +58,7 @@ export default function CinematicHeroSlideshow() {
   if (slides.length === 0) return null;
 
   const current = slides[activeIndex];
+  const imgUrl = `${SUPABASE_URL}/storage/v1/object/public/sim-images/skill-hero-${current.id}.png`;
 
   return (
     <div className="absolute inset-0 overflow-hidden">
@@ -93,12 +72,15 @@ export default function CinematicHeroSlideshow() {
           transition={{ duration: 2, ease: "easeInOut" }}
         >
           <motion.img
-            src={`${SUPABASE_URL}/storage/v1/object/public/sim-images/skill-hero-${current.id}.png`}
+            src={imgUrl}
             alt={current.name}
             className="w-full h-full object-cover"
             initial={{ scale: 1.05 }}
             animate={{ scale: 1.15 }}
             transition={{ duration: CYCLE_MS / 1000 + 2, ease: "linear" }}
+            onError={(e) => {
+              (e.currentTarget as HTMLImageElement).style.display = "none";
+            }}
           />
         </motion.div>
       </AnimatePresence>
