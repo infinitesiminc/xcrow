@@ -105,7 +105,7 @@ function IslandIcon({ category, cx, cy, hue, isParchment }: {
         }
       `}</style>
       <g style={{ animation: `${floatId} 3s ease-in-out infinite`, transformOrigin: `${cx}px ${cy}px` }}>
-        <path d={hex} fill={fill} stroke={stroke} strokeWidth={1.5} />
+        <path d={shield} fill={fill} stroke={stroke} strokeWidth={1.5} />
         <circle cx={cx} cy={cy} r={r * 0.7} fill="none" stroke={stroke} strokeWidth={0.6} opacity={0.3} />
         <g transform={`translate(${cx}, ${cy}) scale(1.5) translate(${-cx}, ${-cy})`}>
           {inner[category]}
