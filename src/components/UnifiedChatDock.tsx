@@ -107,8 +107,9 @@ export default function UnifiedChatDock() {
     navigate(`/role/${slug}?${params.toString()}`);
   };
 
-  // Don't render anything when a simulation is active
+  // Don't render anything when a simulation is active or user is not logged in
   if (simActive) return null;
+  if (!user) return null;
 
   return (
     <>
