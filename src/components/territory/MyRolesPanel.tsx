@@ -526,7 +526,195 @@ export default function MyRolesPanel({ onSelectRole, onAskChat, onTabChange, onL
 
       {/* Content */}
       <div className="flex-1 overflow-y-auto scrollbar-thin">
-        {tab === "arsenal" ? (
+        {tab === "realms" ? (
+          /* ═══ REALMS TAB ═══ */
+          selectedRealm ? (
+            /* Realm detail: company's roles + user's kingdoms */
+            <div className="space-y-3 p-1">
+              <button
+                onClick={() => setSelectedRealm(null)}
+                className="flex items-center gap-1 text-[10px] text-muted-foreground hover:text-foreground transition-colors"
+                style={{ fontFamily: "'Cinzel', serif" }}
+              >
+                <ChevronLeft className="h-3 w-3" /> All Realms
+              </button>
+
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg overflow-hidden flex items-center justify-center bg-muted border border-border/40">
+                  {selectedRealm.logo_url ? (
+                    <img src={selectedRealm.logo_url} alt="" className="w-8 h-8 object-contain" />
+                  ) : (() => {
+                    const url = brandfetchFromName(selectedRealm.name);
+                    return url ? <img src={url} alt="" className="w-8 h-8 object-contain" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} /> :
+                      <Building2 className="h-4 w-4 text-muted-foreground" />;
+                  })()}
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-foreground" style={{ fontFamily: "'Cinzel', serif" }}>{selectedRealm.name}</h3>
+                  {selectedRealm.industry && <p className="text-[9px] text-muted-foreground">{selectedRealm.industry}</p>}
+                </div>
+              </div>
+
+              {/* User's kingdoms in this realm */}
+              {selectedRealm.kingdoms.length > 0 && (
+                <div>
+                  <p className="text-[9px] font-mono uppercase tracking-wider text-muted-foreground mb-1.5">Your Kingdoms</p>
+                  <div className="flex flex-col gap-1.5">
+                    {selectedRealm.kingdoms.map((k, i) => (
+                      <KingdomCard key={k.key} kingdom={k} index={i} />
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Discoverable roles */}
+              <div>
+                <p className="text-[9px] font-mono uppercase tracking-wider text-muted-foreground mb-1.5">
+                  {selectedRealm.kingdoms.length > 0 ? "Discover More Roles" : "Roles to Conquer"}
+                </p>
+                {realmJobsLoading ? (
+                  <div className="flex items-center justify-center py-6">
+                    <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                  </div>
+                ) : realmJobs.length === 0 ? (
+                  <p className="text-[10px] text-muted-foreground text-center py-4">No analyzed roles yet.</p>
+                ) : (
+                  <div className="space-y-1">
+                    {realmJobs.map((job, i) => {
+                      const isKingdom = selectedRealm.kingdoms.some(k => k.title.toLowerCase() === job.title.toLowerCase());
+                      return (
+                        <motion.button
+                          key={job.id}
+                          initial={{ opacity: 0, y: 4 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: i * 0.025, duration: 0.2 }}
+                          className="w-full text-left px-2.5 py-2 rounded-lg transition-all group hover:brightness-110"
+                          style={{
+                            background: isKingdom ? "hsl(var(--filigree) / 0.06)" : "hsl(var(--surface-stone) / 0.5)",
+                            border: isKingdom ? "1px solid hsl(var(--filigree) / 0.15)" : "1px solid hsl(var(--filigree) / 0.06)",
+                          }}
+                          onClick={() => {
+                            if (job.topTask && onLaunchSim) {
+                              onLaunchSim({ jobTitle: job.title, taskName: job.topTask, company: selectedRealm.name, level: 1 });
+                            }
+                          }}
+                        >
+                          <div className="flex items-center justify-between gap-2">
+                            <div className="min-w-0 flex-1">
+                              <div className="flex items-center gap-1.5">
+                                <p className="text-[11px] font-bold text-foreground truncate group-hover:text-primary transition-colors" style={{ fontFamily: "'Cinzel', serif" }}>
+                                  {job.title}
+                                </p>
+                                {isKingdom && <Crown className="h-2.5 w-2.5 shrink-0" style={{ color: "hsl(var(--filigree-glow))" }} />}
+                              </div>
+                              {job.department && <p className="text-[9px] text-muted-foreground truncate">{job.department}</p>}
+                            </div>
+                            <div className="flex items-center gap-2 shrink-0">
+                              {job.augmented_percent != null && (
+                                <div className="flex items-center gap-0.5">
+                                  <Bot className="h-2.5 w-2.5 text-brand-ai" />
+                                  <span className="text-[8px] font-mono text-brand-ai">{job.augmented_percent}%</span>
+                                </div>
+                              )}
+                              <Play className="h-2.5 w-2.5 text-primary opacity-0 group-hover:opacity-100 transition-opacity" />
+                            </div>
+                          </div>
+                          {job.topTask && <p className="text-[8px] text-muted-foreground mt-0.5 truncate">⚔️ {job.topTask}</p>}
+                        </motion.button>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            </div>
+          ) : (
+            /* Realm company list */
+            <div className="space-y-1 p-1">
+              <div className="relative mb-2">
+                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                <Input
+                  placeholder="Search realms..."
+                  value={search}
+                  onChange={e => setSearch(e.target.value)}
+                  className="pl-8 h-8 text-xs bg-transparent border-border/40"
+                  style={{ background: "hsl(var(--surface-stone))" }}
+                />
+              </div>
+              {realmsLoading ? (
+                <div className="flex items-center justify-center py-8">
+                  <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                </div>
+              ) : (() => {
+                const rq = search.toLowerCase();
+                const filteredRealms = enrichedRealms.filter(r => !rq || r.name.toLowerCase().includes(rq));
+                return filteredRealms.length === 0 ? (
+                  <div className="text-center py-12">
+                    <span className="text-3xl mb-3 block">🏰</span>
+                    <p className="text-sm text-muted-foreground" style={{ fontFamily: "'Cinzel', serif" }}>
+                      {search ? "No realms match" : "No realms discovered"}
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-1">
+                    {filteredRealms.map((rc, i) => {
+                      const logoUrl = rc.logo_url || brandfetchFromName(rc.name);
+                      const hasProgress = rc.kingdoms.length > 0;
+                      const bestTier = rc.kingdoms.reduce<KingdomTier | null>((best, k) => {
+                        const order: KingdomTier[] = ["scouted", "contested", "fortified", "conquered"];
+                        if (!best) return k.tier;
+                        return order.indexOf(k.tier) > order.indexOf(best) ? k.tier : best;
+                      }, null);
+                      return (
+                        <motion.button
+                          key={rc.id}
+                          initial={{ opacity: 0, y: 4 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: Math.min(i * 0.02, 0.3), duration: 0.2 }}
+                          onClick={() => setSelectedRealm(rc)}
+                          className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-left transition-all hover:brightness-110 group"
+                          style={{
+                            background: hasProgress ? "hsl(var(--filigree) / 0.06)" : "hsl(var(--surface-stone) / 0.4)",
+                            border: hasProgress ? "1px solid hsl(var(--filigree) / 0.12)" : "1px solid hsl(var(--filigree) / 0.06)",
+                          }}
+                        >
+                          <div className="w-6 h-6 rounded-md overflow-hidden flex items-center justify-center bg-muted/50 shrink-0">
+                            {logoUrl ? (
+                              <img src={logoUrl} alt="" className="w-6 h-6 object-contain" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                            ) : (
+                              <Building2 className="h-3 w-3 text-muted-foreground" />
+                            )}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-1.5">
+                              <p className="text-[11px] font-bold text-foreground truncate group-hover:text-primary transition-colors" style={{ fontFamily: "'Cinzel', serif" }}>
+                                {rc.name}
+                              </p>
+                              {bestTier && (
+                                <span className="text-[8px] shrink-0">{TIER_META[bestTier].emoji}</span>
+                              )}
+                            </div>
+                            <div className="flex items-center gap-2">
+                              {rc.industry && <p className="text-[9px] text-muted-foreground truncate">{rc.industry}</p>}
+                              {hasProgress && (
+                                <span className="text-[8px] font-medium shrink-0" style={{ color: "hsl(var(--filigree-glow))" }}>
+                                  {rc.kingdoms.length} kingdom{rc.kingdoms.length !== 1 ? "s" : ""}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-1 shrink-0">
+                            <Briefcase className="h-3 w-3 text-muted-foreground" />
+                            <span className="text-[9px] font-mono text-muted-foreground">{rc.job_count}</span>
+                          </div>
+                        </motion.button>
+                      );
+                    })}
+                  </div>
+                );
+              })()}
+            </div>
+          )
+        ) : tab === "arsenal" ? (
           companyGroups.length === 0 ? (
             <div className="text-center py-12">
               <span className="text-3xl mb-3 block">🔧</span>
