@@ -18,7 +18,7 @@ import { TERRITORIES } from "@/lib/territory-colors";
 import TerritoryEmblem from "@/components/TerritoryEmblem";
 import Footer from "@/components/Footer";
 
-import xcrowLogo from "@/assets/xcrow-logo.png";
+import xcrowLogo from "@/assets/xcrow-logo.webp";
 import castleRuins from "@/assets/castle-ruins.png";
 import castleOutpost from "@/assets/castle-outpost.png";
 import castleFortress from "@/assets/castle-fortress.png";

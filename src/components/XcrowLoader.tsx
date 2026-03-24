@@ -3,7 +3,7 @@
  * Crow logo with smooth fade in/out pulse effect.
  */
 import { motion } from "framer-motion";
-import xcrowLogo from "@/assets/xcrow-logo.png";
+import xcrowLogo from "@/assets/xcrow-logo.webp";
 
 interface XcrowLoaderProps {
   title?: string;

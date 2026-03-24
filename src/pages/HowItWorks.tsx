@@ -15,7 +15,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { BOSS_ROSTER, type BossCharacter } from "@/lib/boss-roster";
 
-import xcrowLogo from "@/assets/xcrow-logo.png";
+import xcrowLogo from "@/assets/xcrow-logo.webp";
 import simBriefing from "@/assets/sim-briefing.jpg";
 import simVictory from "@/assets/sim-victory.jpg";
 import heroConquer from "@/assets/hero-conquer.jpg";

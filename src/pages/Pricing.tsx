@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/accordion";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import xcrowLogo from "@/assets/xcrow-logo.png";
+import xcrowLogo from "@/assets/xcrow-logo.webp";
 
 const FREE_FEATURES = [
   "3 quests per moon (recruit allies for more!)",

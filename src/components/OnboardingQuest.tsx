@@ -10,7 +10,7 @@ import { AVATAR_OPTIONS } from "@/lib/avatars";
 import { Map, ChevronRight, Loader2, AtSign, Check, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import xcrowLogo from "@/assets/xcrow-logo.png";
+import xcrowLogo from "@/assets/xcrow-logo.webp";
 
 interface OnboardingQuestProps {
   open: boolean;

@@ -15,7 +15,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
 // Assets
-import xcrowLogo from "@/assets/xcrow-logo.png";
+import xcrowLogo from "@/assets/xcrow-logo.webp";
 import castleRuins from "@/assets/castle-ruins.png";
 import castleOutpost from "@/assets/castle-outpost.png";
 import castleFortress from "@/assets/castle-fortress.png";

@@ -15,7 +15,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import type { FutureSkillCategory } from "@/hooks/use-future-skills";
 
-import xcrowLogo from "@/assets/xcrow-logo.png";
+import xcrowLogo from "@/assets/xcrow-logo.webp";
 
 const fade = (delay = 0) => ({
   initial: { opacity: 0, y: 20 },
