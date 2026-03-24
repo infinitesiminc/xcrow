@@ -13,6 +13,7 @@ import { TERRITORIES, getTerritory } from "@/lib/territory-colors";
 import TerritoryEmblem from "@/components/TerritoryEmblem";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import CinematicHeroSlideshow from "@/components/CinematicHeroSlideshow";
 import type { FutureSkillCategory } from "@/hooks/use-future-skills";
 
 import xcrowLogo from "@/assets/xcrow-logo.webp";
