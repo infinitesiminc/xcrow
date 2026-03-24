@@ -209,6 +209,9 @@ export default function HowItWorks() {
           </div>
         </section>
 
+        {/* Full-width cinematic banner */}
+        <FullWidthBanner skillId={BANNER_SKILLS[1]} flip />
+
         {/* ═══ 3. THE 183 SKILLS — 8 TERRITORIES ═══ */}
         <section className="py-20 px-4 relative overflow-hidden">
           <div className="absolute inset-0 pointer-events-none">
