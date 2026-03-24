@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button";
 import OnboardingQuest from "@/components/OnboardingQuest";
 import SkillSuggestionCards from "@/components/SkillSuggestionCards";
 import { useState } from "react";
-import CinematicHeroSlideshow from "@/components/CinematicHeroSlideshow";
+
 import { TERRITORIES } from "@/lib/territory-colors";
 import TerritoryEmblem from "@/components/TerritoryEmblem";
 import Footer from "@/components/Footer";
