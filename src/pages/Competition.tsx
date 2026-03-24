@@ -228,7 +228,7 @@ export default function Competition() {
             className="text-[10px] tracking-[0.2em] uppercase border-primary/30 px-4 py-1.5"
             style={{ background: "hsl(var(--primary) / 0.12)", color: "hsl(var(--primary))", fontFamily: "'Cinzel', serif" }}
           >
-            ⚔️ June 10, 2026 · Denver, CO & Virtual
+            ⚔️ June 22, 2026 · Denver, CO & Virtual
           </Badge>
 
           <h1
