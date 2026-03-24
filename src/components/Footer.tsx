@@ -18,7 +18,7 @@ const Footer = () => (
           >
             Xcrow.ai
           </Link>
-          <p className="text-xs text-muted-foreground mt-1 italic">Master AI. Or be mastered.</p>
+          <p className="text-xs text-muted-foreground mt-1 italic">183 new skills. 1 game. Get ready for AI agent economy.</p>
         </div>
         <div className="flex gap-10">
           <div className="flex flex-col gap-2">
