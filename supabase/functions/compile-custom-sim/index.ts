@@ -17,16 +17,27 @@ serve(async (req) => {
     });
   }
 
+  // Auth guard - require authenticated user, derive userId from JWT
+  const authHeader = req.headers.get("Authorization");
+  if (!authHeader?.startsWith("Bearer ")) {
+    return new Response(JSON.stringify({ error: "Unauthorized" }), {
+      status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+  const _authSb = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
+  const { data: claimsData, error: claimsError } = await _authSb.auth.getClaims(authHeader.replace("Bearer ", ""));
+  if (claimsError || !claimsData?.claims) {
+    return new Response(JSON.stringify({ error: "Unauthorized" }), {
+      status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+  const userId = claimsData.claims.sub;
+
   try {
-    const { prompt, documentText, userId } = await req.json();
+    const { prompt, documentText } = await req.json();
 
     if (!prompt && !documentText) {
       return new Response(JSON.stringify({ error: "Provide either prompt or documentText" }), {
-        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-    if (!userId) {
-      return new Response(JSON.stringify({ error: "userId required" }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
