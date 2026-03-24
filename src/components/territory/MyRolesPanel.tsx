@@ -555,7 +555,6 @@ export default function MyRolesPanel({ onSelectRole, onAskChat, onTabChange, onL
       {/* Tabs */}
       <div className="flex items-center gap-1 rounded-lg p-0.5 mb-3 shrink-0" style={{ background: "hsl(var(--surface-stone))" }}>
         {([
-          { key: "realms" as const, icon: Building2, label: "Realms" },
           { key: "kingdoms" as const, icon: Crown, label: "Kingdoms" },
           { key: "arsenal" as const, icon: Wrench, label: "Arsenal" },
         ] as const).map(t => (
