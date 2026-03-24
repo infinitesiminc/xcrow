@@ -77,6 +77,36 @@ serve(async (req) => {
             if (res.ok) {
               success = true;
               console.log(`  ✅ Done: "${jt.title}"`);
+
+              // Link the new job to the target canonical skill
+              const { data: jobs } = await sb
+                .from("jobs")
+                .select("id")
+                .eq("title", jt.title)
+                .order("imported_at", { ascending: false })
+                .limit(1);
+
+              if (jobs && jobs.length > 0) {
+                const jobId = jobs[0].id;
+                // Insert a direct link to the canonical skill
+                const { error: linkErr } = await sb
+                  .from("job_future_skills")
+                  .upsert({
+                    job_id: jobId,
+                    canonical_skill_id: skill.skill_id,
+                    skill_id: skill.skill_id,
+                    skill_name: skill.skill_name,
+                    category: skill.category,
+                    cluster_name: skill.skill_name,
+                  }, { onConflict: "id" });
+
+                if (linkErr) {
+                  console.error(`  ⚠️ Link error: ${linkErr.message}`);
+                } else {
+                  console.log(`  🔗 Linked job to canonical skill: ${skill.skill_name}`);
+                }
+              }
+
               break;
             } else {
               console.error(`  ❌ ${res.status}: ${(await res.text()).slice(0, 150)}`);
