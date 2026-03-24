@@ -48,23 +48,7 @@ async function fetchOnce(): Promise<FutureSkill[]> {
   if (_promise) return _promise;
 
   _promise = (async () => {
-    const { data, error } = await supabase
-      .from("canonical_future_skills")
-      .select("*")
-      .order("demand_count", { ascending: false });
-
-    if (error) {
-      console.warn("Failed to fetch future skills:", error?.message, error?.code, error?.details);
-      _promise = null;
-      return [];
-    }
-
-    if (!data || data.length === 0) {
-      console.warn("Future skills query returned empty data set");
-      _promise = null;
-      return [];
-    }
-
+    const data = await fetchCanonicalFutureSkillsRows();
     _cache = data.map(mapRow);
     return _cache;
   })();

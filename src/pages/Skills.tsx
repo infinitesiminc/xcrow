@@ -42,14 +42,11 @@ export default function Skills() {
   const { data: skills = [], isLoading } = useQuery({
     queryKey: ["canonical-skills-codex"],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("canonical_future_skills")
-        .select("id, name, category, description, icon_emoji, job_count, demand_count, avg_relevance")
-        .order("demand_count", { ascending: false });
-      if (error) throw error;
+      const data = await fetchCanonicalFutureSkillsRows();
       return data as CanonicalSkill[];
     },
     staleTime: 5 * 60_000,
+    retry: 2,
   });
 
   const filtered = useMemo(() => {
