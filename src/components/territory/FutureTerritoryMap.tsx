@@ -251,29 +251,38 @@ export default function FutureTerritoryMap({ skills, focusSkillId, level2SkillId
                 <path d="M310 315 L320 290 L305 265" strokeWidth="0.5" opacity="0.08" />
               </g>
             </pattern>
-            {/* Diagonal glow sweep */}
+            {/* Glow sweep gradient — brighter, narrower band */}
             <linearGradient id="sweep-grad" x1="0" y1="0" x2="1" y2="1">
               <stop offset="0%" stopColor="hsl(var(--filigree-glow))" stopOpacity="0" />
-              <stop offset="40%" stopColor="hsl(var(--filigree-glow))" stopOpacity="0" />
-              <stop offset="50%" stopColor="hsl(var(--filigree-glow))" stopOpacity="0.07" />
-              <stop offset="60%" stopColor="hsl(var(--filigree-glow))" stopOpacity="0" />
+              <stop offset="42%" stopColor="hsl(var(--filigree-glow))" stopOpacity="0" />
+              <stop offset="48%" stopColor="hsl(var(--filigree-glow))" stopOpacity="0.6" />
+              <stop offset="50%" stopColor="hsl(var(--filigree-glow))" stopOpacity="0.9" />
+              <stop offset="52%" stopColor="hsl(var(--filigree-glow))" stopOpacity="0.6" />
+              <stop offset="58%" stopColor="hsl(var(--filigree-glow))" stopOpacity="0" />
               <stop offset="100%" stopColor="hsl(var(--filigree-glow))" stopOpacity="0" />
             </linearGradient>
+            {/* Mask: only the texture lines are white (visible) */}
+            <mask id="texture-line-mask">
+              <rect width={FUTURE_MAP_WIDTH} height={FUTURE_MAP_HEIGHT} fill="black" />
+              <rect width={FUTURE_MAP_WIDTH} height={FUTURE_MAP_HEIGHT} fill="url(#map-texture)" style={{ filter: "brightness(8)" }} />
+            </mask>
           </defs>
 
           {/* Texture background layer */}
           <rect x="0" y="0" width={FUTURE_MAP_WIDTH} height={FUTURE_MAP_HEIGHT} fill="url(#map-texture)" />
 
-          {/* Animated diagonal glow sweep */}
-          <rect
-            x={-FUTURE_MAP_WIDTH}
-            y={-FUTURE_MAP_HEIGHT}
-            width={FUTURE_MAP_WIDTH * 3}
-            height={FUTURE_MAP_HEIGHT * 3}
-            fill="url(#sweep-grad)"
-            className="animate-map-sweep"
-            style={{ pointerEvents: "none" }}
-          />
+          {/* Animated glow sweep — masked to only show on pattern lines */}
+          <g mask="url(#texture-line-mask)">
+            <rect
+              x={-FUTURE_MAP_WIDTH}
+              y={-FUTURE_MAP_HEIGHT}
+              width={FUTURE_MAP_WIDTH * 3}
+              height={FUTURE_MAP_HEIGHT * 3}
+              fill="url(#sweep-grad)"
+              className="animate-map-sweep"
+              style={{ pointerEvents: "none" }}
+            />
+          </g>
 
           {Array.from({ length: 9 }, (_, i) => {
             const x = (FUTURE_MAP_WIDTH / 8) * i;
