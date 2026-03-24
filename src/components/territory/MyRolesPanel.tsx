@@ -773,7 +773,7 @@ export default function MyRolesPanel({ onSelectRole, onAskChat, onTabChange, onL
                                     </p>
                                   ) : (
                                     <div className="space-y-1">
-                                      {/* Challenge Kingdom CTA */}
+                                      {/* Challenge Kingdom CTA — auto-resolves top task + linked skills */}
                                       {onLaunchSim && job.topTask && (
                                         <button
                                           className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-[11px] font-bold transition-all hover:brightness-110 active:scale-[0.98] mb-1.5"
@@ -785,11 +785,16 @@ export default function MyRolesPanel({ onSelectRole, onAskChat, onTabChange, onL
                                             textShadow: "0 0 8px hsl(var(--filigree-glow) / 0.3)",
                                           }}
                                           onClick={() => {
+                                            const linkedSkillIds = skills
+                                              .filter(sk => sk.canonical_skill_id)
+                                              .map(sk => sk.canonical_skill_id!);
                                             onLaunchSim({
                                               jobTitle: job.title,
                                               taskName: job.topTask!,
                                               company: selectedRealm.name,
                                               level: 1,
+                                              roleChallenge: true,
+                                              linkedSkillIds,
                                             });
                                           }}
                                         >

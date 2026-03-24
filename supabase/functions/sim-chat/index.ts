@@ -161,7 +161,7 @@ function aiStateDescription(taskMeta?: any): string {
 // ─── COMPILE ───
 
 async function handleCompile(payload: any, apiKey: string) {
-  const { taskName, jobTitle, company, difficulty = 3, mode = "assess", taskMeta, coaching, intel, level = 1, futurePrediction } = payload;
+  const { taskName, jobTitle, company, difficulty = 3, mode = "assess", taskMeta, coaching, intel, level = 1, futurePrediction, roleChallenge, linkedSkillIds } = payload;
   const aiContext = aiStateDescription(taskMeta);
   const toolVersions = await fetchToolVersions();
   const dateCtx = currentDateContext(toolVersions);
@@ -213,6 +213,18 @@ CRITICAL LEVEL 2 INSTRUCTIONS:
 - Reference the specific disrupting technologies by name.`
     : "";
 
+  // Role challenge: sim spans multiple skill domains
+  const roleChallengeContext = roleChallenge
+    ? `\n\nROLE CHALLENGE MODE — KINGDOM CONQUEST:
+This is a ROLE CHALLENGE spanning the entire "${jobTitle}" role${company ? ` at ${company}` : ""}.
+${linkedSkillIds?.length ? `LINKED SKILL DOMAINS (${linkedSkillIds.length} total): Each of the ${FIXED_ROUNDS} rounds MUST test a DIFFERENT skill domain from this role.` : ""}
+CRITICAL INSTRUCTIONS:
+1. Each round's objective MUST target a DISTINCT skill area relevant to "${jobTitle}" — do NOT repeat the same domain.
+2. Scenarios should reflect the BREADTH of the role, covering different daily responsibilities.
+3. The opening message should frame this as a comprehensive kingdom challenge: "Commander, this is a full-scale campaign across the ${jobTitle} domain. You'll face challenges spanning the role's entire territory."
+4. Design scenarios that feel like a complete audit of readiness for this role.`
+    : "";
+
   const levelLabel = isLevel2 ? "LEVEL 2 — FUTURE SCENARIO" : "LEVEL 1 — CURRENT TOOLS";
   const levelDescription = isLevel2
     ? "Future-focused: the task is automated, teach the NEW human oversight role"
@@ -231,6 +243,7 @@ Format: Structured Learn→Apply coaching conversation, exactly ${FIXED_ROUNDS} 
 ${coachingInstructions}
 ${intelInstructions}
 ${level2Context}
+${roleChallengeContext}
 
 PEDAGOGY: TEACH-THEN-TEST (Learn → Apply)
 Every round follows this exact 2-beat loop:

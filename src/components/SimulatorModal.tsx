@@ -78,6 +78,10 @@ interface SimulatorModalProps {
   level?: 1 | 2;
   /** Future prediction data for Level 2 sims */
   futurePrediction?: import("@/components/analysis/FutureTaskPreview").FuturePrediction;
+  /** When true, sim spans the role's breadth (multiple skill domains) */
+  roleChallenge?: boolean;
+  /** Canonical skill IDs linked to this role challenge */
+  linkedSkillIds?: string[];
 }
 
 /* ── Objective Checklist (sidebar / inline) ── */
@@ -561,7 +565,7 @@ const UnmetObjectivesReview = ({
 };
 
 /* ── Main Modal ── */
-const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState, taskTrend, taskImpactLevel, mode = "assess", onCompleted, onNextTask, onBackToFeed, onViewTerritory, inline = false, guestMaxTurns, intelContext, onNextBattle, campaignStats, level = 1, futurePrediction }: SimulatorModalProps) => {
+const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState, taskTrend, taskImpactLevel, mode = "assess", onCompleted, onNextTask, onBackToFeed, onViewTerritory, inline = false, guestMaxTurns, intelContext, onNextBattle, campaignStats, level = 1, futurePrediction, roleChallenge, linkedSkillIds }: SimulatorModalProps) => {
   const [phase, setPhase] = useState<Phase>("loading");
   const [session, setSession] = useState<SimSession | null>(null);
   const [messages, setMessages] = useState<SimMessage[]>([]);
@@ -744,7 +748,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
         // Boss battles skip briefing — cinematic intro handles the setup
         setPhase("chat");
       } else {
-        const compiled = await compileSession(taskName, jobTitle, company, 3, mode, taskMeta, coaching ?? undefined, intelContext ?? undefined, level, futurePrediction ?? undefined);
+        const compiled = await compileSession(taskName, jobTitle, company, 3, mode, taskMeta, coaching ?? undefined, intelContext ?? undefined, level, futurePrediction ?? undefined, roleChallenge, linkedSkillIds);
         setSession(compiled);
         setPhase("briefing");
       }
@@ -753,7 +757,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
       setError("Couldn't forge the quest. Please try again.");
       setPhase("chat");
     }
-  }, [taskName, jobTitle, company, mode, taskState, taskTrend, taskImpactLevel, user, isPro, simGate, level, futurePrediction]);
+  }, [taskName, jobTitle, company, mode, taskState, taskTrend, taskImpactLevel, user, isPro, simGate, level, futurePrediction, roleChallenge, linkedSkillIds]);
 
   const startRetryWithCoaching = useCallback(() => {
     if (!scoreResult) return startCompile();
