@@ -165,7 +165,7 @@ function KingdomCard({ kingdom, index }: { kingdom: Kingdom; index: number }) {
 
 export default function MyRolesPanel({ onSelectRole, onAskChat, onTabChange, onLaunchSim }: MyRolesPanelProps) {
   const { user } = useAuth();
-  const [tab, setTab] = useState<"realms" | "kingdoms" | "arsenal">("realms");
+  const [tab, setTab] = useState<"kingdoms" | "arsenal">("kingdoms");
   const [tierFilter, setTierFilter] = useState<"all" | KingdomTier>("all");
   const [search, setSearch] = useState("");
   const [kingdoms, setKingdoms] = useState<Kingdom[]>([]);
