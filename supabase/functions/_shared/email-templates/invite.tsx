@@ -17,7 +17,7 @@ import {
   Hr,
 } from 'npm:@react-email/components@0.0.22'
 
-const STORAGE = 'https://xtfubistkgodiksegtcx.supabase.co/storage/v1/object/public/email-assets'
+const STORAGE = 'https://xtfubistkgodiksegtcx.supabase.co/storage/v1/object/public'
 
 interface InviteEmailProps {
   siteName: string
