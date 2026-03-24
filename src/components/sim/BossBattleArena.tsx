@@ -13,6 +13,7 @@ import BossMonster, { type BossState } from "./BossMonster";
 import BossCinematicIntro from "./BossCinematicIntro";
 import { useAuth } from "@/contexts/AuthContext";
 import { getAvatarById, AVATAR_OPTIONS } from "@/lib/avatars";
+import { pickBoss } from "@/lib/boss-roster";
 import type { AuditCheckpoint, AuditVerdict, AuditResult } from "./GuidedAudit";
 
 /* ── Difficulty tier config ── */
