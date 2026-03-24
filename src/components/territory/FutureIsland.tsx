@@ -37,6 +37,12 @@ function buildTerritoryBorder(cx: number, cy: number, radius: number, seed: numb
   return d;
 }
 
+/** Seed index per category for deterministic border variation */
+const ALL_CAT_INDEX: Record<string, number> = {
+  Technical: 0, Analytical: 1, Strategic: 2, Communication: 3,
+  Leadership: 4, Creative: 5, "Ethics & Compliance": 6, "Human Edge": 7,
+};
+
 function useIsParchment() {
   const [p, setP] = useState(() => document.documentElement.classList.contains("parchment"));
   useEffect(() => {
