@@ -15,6 +15,7 @@ import { useNavigate } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import TerritoryEmblem from "@/components/TerritoryEmblem";
+import AIAgentEvolutionSection from "@/components/about/AIAgentEvolutionSection";
 import type { FutureSkillCategory } from "@/hooks/use-future-skills";
 import { FUTURE_CATEGORY_META } from "@/hooks/use-future-skills";
 
@@ -306,6 +307,9 @@ export default function About() {
             </motion.p>
           </div>
         </Section>
+
+        {/* ═══ AI AGENT EVOLUTION ═══ */}
+        <AIAgentEvolutionSection />
 
         {/* ═══ THE CROW ═══ */}
         <Section className="py-20 px-6">
