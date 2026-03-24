@@ -40,6 +40,7 @@ const L2SimFormats = lazy(() => import("./pages/L2SimFormats.tsx"));
 const HowItWorks = lazy(() => import("./pages/HowItWorks.tsx"));
 const Professionals = lazy(() => import("./pages/Professionals.tsx"));
 const SkillsCodex = lazy(() => import("./pages/Skills.tsx"));
+const Competition = lazy(() => import("./pages/Competition.tsx"));
 
 // Admin (lazy)
 const HRLayout = lazy(() => import("./layouts/HRLayout.tsx"));
