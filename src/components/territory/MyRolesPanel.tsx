@@ -773,6 +773,31 @@ export default function MyRolesPanel({ onSelectRole, onAskChat, onTabChange, onL
                                     </p>
                                   ) : (
                                     <div className="space-y-1">
+                                      {/* Challenge Kingdom CTA */}
+                                      {onLaunchSim && job.topTask && (
+                                        <button
+                                          className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-[11px] font-bold transition-all hover:brightness-110 active:scale-[0.98] mb-1.5"
+                                          style={{
+                                            fontFamily: "'Cinzel', serif",
+                                            background: "linear-gradient(135deg, hsl(var(--filigree) / 0.15), hsl(var(--filigree-glow) / 0.1))",
+                                            border: "1px solid hsl(var(--filigree-glow) / 0.3)",
+                                            color: "hsl(var(--filigree-glow))",
+                                            textShadow: "0 0 8px hsl(var(--filigree-glow) / 0.3)",
+                                          }}
+                                          onClick={() => {
+                                            onLaunchSim({
+                                              jobTitle: job.title,
+                                              taskName: job.topTask!,
+                                              company: selectedRealm.name,
+                                              level: 1,
+                                            });
+                                          }}
+                                        >
+                                          <Swords className="h-3.5 w-3.5" />
+                                          Challenge Kingdom
+                                        </button>
+                                      )}
+
                                       <p className="text-[8px] font-mono uppercase tracking-wider text-muted-foreground mb-1">
                                         Linked Skills · {skills.length}
                                       </p>
@@ -785,7 +810,9 @@ export default function MyRolesPanel({ onSelectRole, onAskChat, onTabChange, onL
                                             border: "1px solid hsl(var(--border) / 0.2)",
                                           }}
                                           onClick={() => {
-                                            if (job.topTask && onLaunchSim) {
+                                            if (onLaunchSim && sk.canonical_skill_id) {
+                                              onLaunchSim({ jobTitle: job.title, taskName: sk.skill_name, company: selectedRealm.name, skillId: sk.canonical_skill_id, level: 1 });
+                                            } else if (job.topTask && onLaunchSim) {
                                               onLaunchSim({ jobTitle: job.title, taskName: job.topTask, company: selectedRealm.name, level: 1 });
                                             }
                                           }}
