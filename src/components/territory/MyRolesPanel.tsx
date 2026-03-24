@@ -932,21 +932,24 @@ export default function MyRolesPanel({ onSelectRole, onAskChat, onTabChange, onL
                                 initial={{ opacity: 0, y: 4 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ delay: Math.min(i * 0.02, 0.2), duration: 0.2 }}
-                                onClick={() => {
-                                  const roleResult: RoleResult = {
-                                    title: role.title,
-                                    company: role.company_name || null,
-                                    jobId: role.id,
-                                    logo: role.company_name ? brandfetchFromName(role.company_name) : null,
-                                    location: null,
-                                    country: null,
-                                    workMode: null,
-                                    seniority: null,
-                                    augmented: role.augmented_percent || 0,
-                                    risk: 0,
-                                  };
-                                  onSelectRole(roleResult);
-                                }}
+                                onClick={async () => {
+                                   if (!onLaunchSim) return;
+                                   let topTask = role.title;
+                                   const { data: clusters } = await supabase
+                                     .from("job_task_clusters")
+                                     .select("cluster_name")
+                                     .eq("job_id", role.id)
+                                     .order("sort_order", { ascending: true })
+                                     .limit(1);
+                                   if (clusters?.[0]) topTask = clusters[0].cluster_name;
+                                   onLaunchSim({
+                                     jobTitle: role.title,
+                                     taskName: topTask,
+                                     company: role.company_name || undefined,
+                                     level: 1,
+                                     roleChallenge: true,
+                                   });
+                                 }}
                                 className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-left transition-all hover:brightness-110 group"
                                 style={{
                                   background: "hsl(var(--surface-stone) / 0.5)",
