@@ -16,6 +16,7 @@ const mainItems = [
   { title: "Companies", url: "/admin", icon: Building2 },
   { title: "Task Analytics", url: "/admin/analytics", icon: BarChart3 },
   { title: "Pricing & Usage", url: "/admin/pricing-usage", icon: DollarSign },
+  { title: "Users", url: "/admin/users", icon: Users },
 ];
 
 const schoolItems = [
