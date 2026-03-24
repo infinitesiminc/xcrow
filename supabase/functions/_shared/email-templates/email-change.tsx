@@ -17,7 +17,7 @@ import {
   Hr,
 } from 'npm:@react-email/components@0.0.22'
 
-const STORAGE = 'https://xtfubistkgodiksegtcx.supabase.co/storage/v1/object/public/email-assets'
+const STORAGE = 'https://xtfubistkgodiksegtcx.supabase.co/storage/v1/object/public'
 
 interface EmailChangeEmailProps {
   siteName: string
@@ -37,9 +37,9 @@ export const EmailChangeEmail = ({
     <Preview>🛡️ Confirm your new identity seal</Preview>
     <Body style={main}>
       <Container style={container}>
-        <Img src={`${STORAGE}/castle-citadel.png`} alt="" width="520" style={heroBanner} />
+        <Img src={`${STORAGE}/sim-images/skill-hero-ai-ethics-governance.png`} alt="" width="520" style={heroBanner} />
         <Section style={logoOverlay}>
-          <Img src={`${STORAGE}/xcrow-logo.png`} alt="Xcrow.ai" width="48" height="48" style={logoStyle} />
+          <Img src={`${STORAGE}/email-assets/xcrow-logo.png`} alt="Xcrow.ai" width="48" height="48" style={logoStyle} />
         </Section>
         <Section style={content}>
           <Heading style={h1}>New Identity Seal</Heading>

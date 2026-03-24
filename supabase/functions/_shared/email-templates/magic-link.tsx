@@ -16,7 +16,7 @@ import {
   Hr,
 } from 'npm:@react-email/components@0.0.22'
 
-const STORAGE = 'https://xtfubistkgodiksegtcx.supabase.co/storage/v1/object/public/email-assets'
+const STORAGE = 'https://xtfubistkgodiksegtcx.supabase.co/storage/v1/object/public'
 
 interface MagicLinkEmailProps {
   siteName: string
@@ -32,9 +32,9 @@ export const MagicLinkEmail = ({
     <Preview>🔮 Your portal awaits — one-click access to your realm</Preview>
     <Body style={main}>
       <Container style={container}>
-        <Img src={`${STORAGE}/sim-rune-circle.jpg`} alt="" width="520" style={heroBanner} />
+        <Img src={`${STORAGE}/sim-images/skill-hero-ai-agent-architecture-orchestration.png`} alt="" width="520" style={heroBanner} />
         <Section style={logoOverlay}>
-          <Img src={`${STORAGE}/xcrow-logo.png`} alt="Xcrow.ai" width="48" height="48" style={logoStyle} />
+          <Img src={`${STORAGE}/email-assets/xcrow-logo.png`} alt="Xcrow.ai" width="48" height="48" style={logoStyle} />
         </Section>
         <Section style={content}>
           <Heading style={h1}>Your Portal Awaits</Heading>

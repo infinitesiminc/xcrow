@@ -17,7 +17,7 @@ import {
   Hr,
 } from 'npm:@react-email/components@0.0.22'
 
-const STORAGE = 'https://xtfubistkgodiksegtcx.supabase.co/storage/v1/object/public/email-assets'
+const STORAGE = 'https://xtfubistkgodiksegtcx.supabase.co/storage/v1/object/public'
 
 interface InviteEmailProps {
   siteName: string
@@ -35,9 +35,9 @@ export const InviteEmail = ({
     <Preview>📜 You've been summoned — join the ranks on Xcrow.ai</Preview>
     <Body style={main}>
       <Container style={container}>
-        <Img src={`${STORAGE}/sim-briefing.jpg`} alt="" width="520" style={heroBanner} />
+        <Img src={`${STORAGE}/sim-images/skill-hero-community-engagement.png`} alt="" width="520" style={heroBanner} />
         <Section style={logoOverlay}>
-          <Img src={`${STORAGE}/xcrow-logo.png`} alt="Xcrow.ai" width="48" height="48" style={logoStyle} />
+          <Img src={`${STORAGE}/email-assets/xcrow-logo.png`} alt="Xcrow.ai" width="48" height="48" style={logoStyle} />
         </Section>
         <Section style={content}>
           <Heading style={h1}>You've Been Summoned</Heading>
