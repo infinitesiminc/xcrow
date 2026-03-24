@@ -63,10 +63,34 @@ const TERRITORY_DOMAINS = TERRITORIES.map(t => ({
   heroImg: `${SUPABASE_URL}/storage/v1/object/public/sim-images/skill-hero-${TERRITORY_HERO_SKILLS[t.cssVar] || "complex-threat-modeling"}.png`,
 }));
 
-/** 2x4 island positions on the 960×540 viewBox */
-const ISLAND_POSITIONS: [number, number][] = [
-  [140, 160], [340, 140], [580, 150], [800, 160],
-  [140, 380], [340, 400], [580, 390], [800, 380],
+/**
+ * Irregular polygon borders for 8 territories in a 960×540 viewBox.
+ * Arranged as a 2×4 political map with shared edges — no gaps, no overlaps.
+ * Order: Technical, Analytical, Strategic, Communication, Leadership, Creative, Ethics, Human Edge
+ */
+const TERRITORY_BORDERS: string[] = [
+  // Row 1: Top-left (Technical)
+  "0,0 240,0 260,120 220,270 0,270",
+  // Row 1: Top-center-left (Analytical)
+  "240,0 500,0 520,100 480,270 220,270 260,120",
+  // Row 1: Top-center-right (Strategic)
+  "500,0 720,0 740,130 700,270 480,270 520,100",
+  // Row 1: Top-right (Communication)
+  "720,0 960,0 960,270 700,270 740,130",
+  // Row 2: Bottom-left (Leadership)
+  "0,270 220,270 240,400 200,540 0,540",
+  // Row 2: Bottom-center-left (Creative)
+  "220,270 480,270 500,390 460,540 200,540 240,400",
+  // Row 2: Bottom-center-right (Ethics & Compliance)
+  "480,270 700,270 720,410 680,540 460,540 500,390",
+  // Row 2: Bottom-right (Human Edge)
+  "700,270 960,270 960,540 680,540 720,410",
+];
+
+/** Visual centers for labels & emblems inside each polygon */
+const TERRITORY_CENTERS: [number, number][] = [
+  [120, 140], [370, 130], [610, 135], [840, 140],
+  [115, 400], [350, 400], [590, 405], [820, 400],
 ];
 
 const CASTLE_STAGES = [
@@ -294,75 +318,58 @@ const Index = () => {
               </p>
             </motion.div>
 
-            {/* SVG Territory Map */}
+            {/* SVG Territory Map — political-style with shared borders */}
             <motion.div {...fade(0.1)} className="relative w-full" style={{ aspectRatio: "16/9" }}>
-              <svg
-                viewBox="0 0 960 540"
-                className="w-full h-full"
-                style={{ filter: "drop-shadow(0 0 40px hsl(var(--primary) / 0.08))" }}
-              >
-                {/* Background glow */}
+              <svg viewBox="0 0 960 540" className="w-full h-full" style={{ filter: "drop-shadow(0 0 40px hsl(var(--primary) / 0.08))" }}>
                 <defs>
                   {TERRITORY_DOMAINS.map(t => (
-                    <radialGradient key={`glow-${t.cssVar}`} id={`glow-${t.cssVar}`}>
-                      <stop offset="0%" stopColor={`hsl(var(--${t.cssVar}))`} stopOpacity="0.15" />
-                      <stop offset="100%" stopColor={`hsl(var(--${t.cssVar}))`} stopOpacity="0" />
+                    <radialGradient key={`fill-${t.cssVar}`} id={`fill-${t.cssVar}`} cx="50%" cy="40%">
+                      <stop offset="0%" stopColor={`hsl(var(--${t.cssVar}))`} stopOpacity="0.18" />
+                      <stop offset="100%" stopColor={`hsl(var(--${t.cssVar}))`} stopOpacity="0.04" />
                     </radialGradient>
                   ))}
                 </defs>
 
-                {/* Connection lines between territories */}
-                {[
-                  [0, 1], [1, 2], [2, 3], [0, 4], [1, 5], [2, 6], [3, 7], [4, 5], [5, 6], [6, 7],
-                ].map(([a, b]) => {
-                  const positions = ISLAND_POSITIONS;
-                  return (
-                    <line
-                      key={`${a}-${b}`}
-                      x1={positions[a][0]} y1={positions[a][1]}
-                      x2={positions[b][0]} y2={positions[b][1]}
-                      stroke="hsl(var(--filigree) / 0.12)"
-                      strokeWidth="1"
-                      strokeDasharray="6 4"
-                    />
-                  );
-                })}
-
-                {/* Territory nodes */}
+                {/* Territory border polygons */}
                 {TERRITORY_DOMAINS.map((t, i) => {
-                  const [cx, cy] = ISLAND_POSITIONS[i];
+                  const borders = TERRITORY_BORDERS[i];
+                  const center = TERRITORY_CENTERS[i];
                   return (
                     <g key={t.cssVar}>
-                      {/* Glow aura */}
-                      <circle cx={cx} cy={cy} r="60" fill={`url(#glow-${t.cssVar})`} />
+                      <polygon
+                        points={borders}
+                        fill={`url(#fill-${t.cssVar})`}
+                        stroke={`hsl(var(--${t.cssVar}) / 0.3)`}
+                        strokeWidth="1.5"
+                        strokeLinejoin="round"
+                      />
+                      {/* Inner highlight stroke */}
+                      <polygon
+                        points={borders}
+                        fill="none"
+                        stroke={`hsl(var(--${t.cssVar}) / 0.08)`}
+                        strokeWidth="3"
+                        strokeLinejoin="round"
+                      />
 
                       {/* Floating emblem */}
-                      <g style={{ transformOrigin: `${cx}px ${cy}px` }}>
-                        <foreignObject
-                          x={cx - 28} y={cy - 28} width={56} height={56}
-                          className="animate-territory-float"
-                          style={{ animationDelay: `${i * 0.4}s` }}
-                        >
-                          <div className="w-full h-full flex items-center justify-center">
-                            <TerritoryEmblem category={t.category} size={52} />
-                          </div>
-                        </foreignObject>
-                      </g>
+                      <foreignObject
+                        x={center[0] - 26} y={center[1] - 50} width={52} height={52}
+                        className="animate-territory-float"
+                        style={{ animationDelay: `${i * 0.4}s` }}
+                      >
+                        <div className="w-full h-full flex items-center justify-center">
+                          <TerritoryEmblem category={t.category} size={48} />
+                        </div>
+                      </foreignObject>
 
                       {/* Territory name */}
-                      <text
-                        x={cx} y={cy + 42}
-                        textAnchor="middle"
-                        className="fill-foreground text-[12px] font-bold"
-                        style={{ fontFamily: "'Cinzel', serif" }}
-                      >
+                      <text x={center[0]} y={center[1] + 16} textAnchor="middle"
+                        className="fill-foreground text-[11px] font-bold" style={{ fontFamily: "'Cinzel', serif" }}>
                         {t.name}
                       </text>
-                      <text
-                        x={cx} y={cy + 56}
-                        textAnchor="middle"
-                        className="fill-muted-foreground text-[10px]"
-                      >
+                      <text x={center[0]} y={center[1] + 30} textAnchor="middle"
+                        className="fill-muted-foreground text-[9px]">
                         {t.category}
                       </text>
                     </g>
