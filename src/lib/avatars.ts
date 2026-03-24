@@ -9,7 +9,7 @@ import hawkAvatar from "@/assets/avatars/hawk.png";
 import lionAvatar from "@/assets/avatars/lion.png";
 import serpentAvatar from "@/assets/avatars/serpent.png";
 import scorpionAvatar from "@/assets/avatars/scorpion.png";
-import spiderAvatar from "@/assets/avatars/spider.png";
+import sharkAvatar from "@/assets/avatars/shark.png";
 
 export interface AvatarOption {
   id: string;
