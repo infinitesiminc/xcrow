@@ -63,6 +63,12 @@ const TERRITORY_DOMAINS = TERRITORIES.map(t => ({
   heroImg: `${SUPABASE_URL}/storage/v1/object/public/sim-images/skill-hero-${TERRITORY_HERO_SKILLS[t.cssVar] || "complex-threat-modeling"}.png`,
 }));
 
+/** 2x4 island positions on the 960×540 viewBox */
+const ISLAND_POSITIONS: [number, number][] = [
+  [140, 160], [340, 140], [580, 150], [800, 160],
+  [140, 380], [340, 400], [580, 390], [800, 380],
+];
+
 const CASTLE_STAGES = [
   { img: castleRuins, label: "Ruins", desc: "Uncharted skill", xp: "0 XP" },
   { img: castleOutpost, label: "Outpost", desc: "Foundation built", xp: "150 XP" },
