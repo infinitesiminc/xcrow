@@ -1,0 +1,1 @@
+DROP POLICY "Authenticated users can search schools" ON public.school_accounts;
