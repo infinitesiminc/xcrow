@@ -15,6 +15,7 @@ function IslandIcon({ category, cx, cy, hue, isParchment }: {
   category: FutureSkillCategory; cx: number; cy: number; hue: number; isParchment: boolean;
 }) {
   const stroke = isParchment ? `hsl(${hue} 50% 35%)` : `hsl(${hue} 70% 65%)`;
+  const borderStroke = isParchment ? `hsl(45 70% 55%)` : `hsl(45 85% 70%)`;
   const fill = isParchment ? `hsl(${hue} 30% 25% / 0.4)` : `hsl(${hue} 40% 15% / 0.6)`;
   const accent = isParchment ? `hsl(${hue} 60% 45%)` : `hsl(${hue} 80% 70%)`;
   const glow = `drop-shadow(0 0 10px hsl(${hue} 90% 60% / 0.6)) drop-shadow(0 0 20px hsl(${hue} 80% 50% / 0.3))`;
