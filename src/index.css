@@ -70,13 +70,13 @@
 
     /* ── 8 Territory Colors ── */
     --territory-technical:   262 83% 58%;   /* Amethyst — Circuit Peaks     */
-    --territory-analytical:  210 80% 55%;   /* Sapphire — Data Highlands    */
+    --territory-analytical:  195 85% 50%;   /* Cyan     — Data Highlands    */
     --territory-strategic:   45  85% 50%;   /* Gold     — Command Summit    */
     --territory-communication: 152 60% 45%; /* Emerald  — Bridge Isles      */
-    --territory-leadership:  30  90% 55%;   /* Amber    — Crown Heights     */
+    --territory-leadership:  25  90% 55%;   /* Flame    — Crown Heights     */
     --territory-creative:    340 75% 55%;   /* Ruby     — Prism Coast       */
     --territory-ethics:      175 70% 42%;   /* Jade     — Sentinel Watch    */
-    --territory-humanedge:   285 70% 60%;   /* Orchid   — Soul Springs      */
+    --territory-humanedge:   320 70% 58%;   /* Magenta  — Soul Springs      */
 
     /* ── Fantasy surface tokens ── */
     --surface-stone: 240 6% 92%;
@@ -156,13 +156,13 @@
 
     /* ── 8 Territory Colors (dark — lifted lightness) ── */
     --territory-technical:   262 83% 65%;
-    --territory-analytical:  210 80% 62%;
+    --territory-analytical:  195 85% 58%;
     --territory-strategic:   45  85% 55%;
     --territory-communication: 152 60% 50%;
-    --territory-leadership:  30  90% 58%;
+    --territory-leadership:  25  90% 58%;
     --territory-creative:    340 75% 60%;
     --territory-ethics:      175 70% 48%;
-    --territory-humanedge:   285 70% 65%;
+    --territory-humanedge:   320 70% 62%;
 
     /* ── Fantasy surface tokens (dark) ── */
     --surface-stone: 240 8% 12%;
@@ -284,13 +284,13 @@ html:not(.light):not(.parchment) {
 
   /* Territory colors — deeper for light bg */
   --territory-technical:   262 60% 45%;
-  --territory-analytical:  210 65% 42%;
+  --territory-analytical:  195 70% 38%;
   --territory-strategic:   45  70% 40%;
   --territory-communication: 152 50% 35%;
-  --territory-leadership:  30  70% 42%;
+  --territory-leadership:  25  70% 42%;
   --territory-creative:    340 60% 42%;
   --territory-ethics:      175 55% 32%;
-  --territory-humanedge:   285 55% 45%;
+  --territory-humanedge:   320 55% 42%;
 
   /* Fantasy surface tokens — warm parchment */
   --surface-stone: 35 22% 88%;
