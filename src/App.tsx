@@ -40,6 +40,7 @@ const L2SimFormats = lazy(() => import("./pages/L2SimFormats.tsx"));
 const HowItWorks = lazy(() => import("./pages/HowItWorks.tsx"));
 const Professionals = lazy(() => import("./pages/Professionals.tsx"));
 const SkillsCodex = lazy(() => import("./pages/Skills.tsx"));
+const Competition = lazy(() => import("./pages/Competition.tsx"));
 
 // Admin (lazy)
 const HRLayout = lazy(() => import("./layouts/HRLayout.tsx"));
@@ -128,6 +129,7 @@ const App = () => (
               <Route path="/play" element={<Navigate to="/" replace />} />
               <Route path="/how-it-works" element={<HowItWorks />} />
               <Route path="/skills" element={<SkillsCodex />} />
+              <Route path="/competition" element={<><Navbar /><Competition /><Footer /></>} />
               {/* Redirects — old routes all go to feed */}
               <Route path="/practice" element={<Navigate to="/" replace />} />
               <Route path="/simulations" element={<Navigate to="/" replace />} />
