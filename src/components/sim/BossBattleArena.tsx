@@ -13,6 +13,7 @@ import BossMonster, { type BossState } from "./BossMonster";
 import BossCinematicIntro from "./BossCinematicIntro";
 import { useAuth } from "@/contexts/AuthContext";
 import { getAvatarById, AVATAR_OPTIONS } from "@/lib/avatars";
+import { pickBoss } from "@/lib/boss-roster";
 import type { AuditCheckpoint, AuditVerdict, AuditResult } from "./GuidedAudit";
 
 /* ── Difficulty tier config ── */
@@ -135,6 +136,8 @@ export default function BossBattleArena({
   company,
 }: BossBattleArenaProps) {
   const { profile } = useAuth();
+  // Pick a boss from the roster — memoized so it stays consistent for the battle
+  const boss = useMemo(() => pickBoss(), []);
   const [currentStep, setCurrentStep] = useState(0);
   const [verdicts, setVerdicts] = useState<Record<string, AuditVerdict>>({});
   const [revealed, setRevealed] = useState<Record<string, boolean>>({});
@@ -244,6 +247,7 @@ export default function BossBattleArena({
       <div className="absolute inset-0 z-50">
         <BossCinematicIntro
           skillName={skillName || "Unknown Skill"}
+          boss={boss}
           onComplete={() => { setShowIntro(false); setShowTutorial(true); }}
         />
       </div>
@@ -419,7 +423,7 @@ export default function BossBattleArena({
       >
         {/* Defeated boss (small) */}
         <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
-          <BossMonster hp={0} maxHp={maxHp} state="defeated" checkpointsDone={checkpoints.length} totalCheckpoints={checkpoints.length} />
+          <BossMonster hp={0} maxHp={maxHp} state="defeated" checkpointsDone={checkpoints.length} totalCheckpoints={checkpoints.length} boss={boss} />
         </motion.div>
 
         {/* Score */}
@@ -773,7 +777,7 @@ export default function BossBattleArena({
 
         {/* Right — Boss Monster */}
         <div className="relative z-10">
-          <PowerBar value={bossHp} max={maxHp} color="hsl(0 70% 55%)" label="The Arbiter" side="right" />
+          <PowerBar value={bossHp} max={maxHp} color={`hsl(${boss.hue} 70% 55%)`} label={boss.name} side="right" />
           <div className="mt-2">
             <BossMonster
               hp={bossHp}
@@ -781,6 +785,7 @@ export default function BossBattleArena({
               state={bossState}
               checkpointsDone={Object.keys(revealed).length}
               totalCheckpoints={checkpoints.length}
+              boss={boss}
             />
           </div>
         </div>
