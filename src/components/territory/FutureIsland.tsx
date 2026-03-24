@@ -93,12 +93,23 @@ function IslandIcon({ category, cx, cy, hue, isParchment }: {
     ),
   };
 
+  // Unique float delay per category for organic feel
+  const floatId = `island-float-${category.replace(/\s+/g, '-')}`;
+
   return (
     <g style={{ filter: glow }} pointerEvents="none">
-      <path d={hex} fill={fill} stroke={stroke} strokeWidth={2} />
-      <circle cx={cx} cy={cy} r={r * 0.7} fill="none" stroke={stroke} strokeWidth={1} opacity={0.3} />
-      <g transform={`translate(${cx}, ${cy}) scale(3) translate(${-cx}, ${-cy})`}>
-        {inner[category]}
+      <style>{`
+        @keyframes ${floatId} {
+          0%, 100% { transform: translate(0, 0); }
+          50% { transform: translate(0, -6px); }
+        }
+      `}</style>
+      <g style={{ animation: `${floatId} 3s ease-in-out infinite`, transformOrigin: `${cx}px ${cy}px` }}>
+        <path d={hex} fill={fill} stroke={stroke} strokeWidth={1.5} />
+        <circle cx={cx} cy={cy} r={r * 0.7} fill="none" stroke={stroke} strokeWidth={0.6} opacity={0.3} />
+        <g transform={`translate(${cx}, ${cy}) scale(1.5) translate(${-cx}, ${-cy})`}>
+          {inner[category]}
+        </g>
       </g>
     </g>
   );
