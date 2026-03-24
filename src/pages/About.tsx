@@ -308,6 +308,9 @@ export default function About() {
           </div>
         </Section>
 
+        {/* ═══ AI AGENT EVOLUTION ═══ */}
+        <AIAgentEvolutionSection />
+
         {/* ═══ THE CROW ═══ */}
         <Section className="py-20 px-6">
           <div className="max-w-3xl mx-auto text-center">
