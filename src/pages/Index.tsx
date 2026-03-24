@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button";
 import OnboardingQuest from "@/components/OnboardingQuest";
 import SkillSuggestionCards from "@/components/SkillSuggestionCards";
 import { useState } from "react";
-import CinematicHeroSlideshow from "@/components/CinematicHeroSlideshow";
+
 import { TERRITORIES } from "@/lib/territory-colors";
 import TerritoryEmblem from "@/components/TerritoryEmblem";
 import Footer from "@/components/Footer";
@@ -41,11 +41,25 @@ const fade = (delay = 0) => ({
   transition: { duration: 0.6, delay, ease: "easeOut" as const },
 });
 
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+
+const TERRITORY_HERO_SKILLS: Record<string, string> = {
+  "territory-technical": "complex-threat-modeling",
+  "territory-analytical": "predictive-analytics",
+  "territory-strategic": "strategic-narrative-design",
+  "territory-communication": "stakeholder-influence-mapping",
+  "territory-leadership": "ai-ethics-governance",
+  "territory-creative": "generative-design-thinking",
+  "territory-ethics": "algorithmic-bias-auditing",
+  "territory-humanedge": "human-ai-collaboration",
+};
+
 const TERRITORY_DOMAINS = TERRITORIES.map(t => ({
   name: t.terrain,
   emoji: t.emoji,
   cssVar: t.cssVar,
   category: t.category,
+  heroImg: `${SUPABASE_URL}/storage/v1/object/public/sim-images/skill-hero-${TERRITORY_HERO_SKILLS[t.cssVar] || "complex-threat-modeling"}.png`,
 }));
 
 const CASTLE_STAGES = [
@@ -90,8 +104,6 @@ const Index = () => {
 
         {/* ═══ HERO ═══ */}
         <section className="relative min-h-[90vh] flex items-center justify-center px-4 overflow-hidden">
-          {/* Cinematic skill hero slideshow */}
-          <CinematicHeroSlideshow />
 
           <motion.div {...fade()} className="text-center max-w-3xl relative z-10">
 
@@ -268,22 +280,39 @@ const Index = () => {
               </p>
             </motion.div>
 
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {TERRITORY_DOMAINS.map((t, i) => (
                 <motion.div
                   key={t.name}
                   {...fade(i * 0.06)}
-                  className="rounded-xl p-4 border border-border/50 cursor-default hover:border-border transition-colors"
+                  className="rounded-xl overflow-hidden border border-border/50 cursor-default hover:border-border transition-colors group"
                   style={{
-                    background: `linear-gradient(135deg, hsl(var(--${t.cssVar}) / 0.06), hsl(var(--card)))`,
-                    boxShadow: `inset 0 1px 0 hsl(var(--emboss-light))`,
+                    background: `hsl(var(--card))`,
+                    boxShadow: `inset 0 1px 0 hsl(var(--emboss-light)), 0 4px 16px hsl(var(--emboss-shadow))`,
                   }}
                 >
-                  <TerritoryEmblem category={t.category} size={40} className="mb-2" />
-                  <h4 className="font-fantasy text-sm font-bold mb-1" style={{ color: `hsl(var(--${t.cssVar}))` }}>
-                    {t.name}
-                  </h4>
-                  <p className="text-[11px] text-muted-foreground leading-relaxed">{t.category}</p>
+                  {/* Hero image */}
+                  <div className="h-28 md:h-32 overflow-hidden relative">
+                    <img
+                      src={t.heroImg}
+                      alt={t.name}
+                      className="w-full h-full object-cover opacity-60 group-hover:opacity-80 transition-opacity duration-500 group-hover:scale-105"
+                      style={{ transition: "opacity 0.5s, transform 0.5s" }}
+                      onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
+                    />
+                    <div className="absolute inset-0" style={{
+                      background: `linear-gradient(to top, hsl(var(--card)), transparent 60%), linear-gradient(135deg, hsl(var(--${t.cssVar}) / 0.15), transparent)`,
+                    }} />
+                    <div className="absolute top-2 right-2">
+                      <TerritoryEmblem category={t.category} size={32} />
+                    </div>
+                  </div>
+                  <div className="px-4 pb-4 pt-2">
+                    <h4 className="font-fantasy text-sm font-bold mb-0.5" style={{ color: `hsl(var(--${t.cssVar}))` }}>
+                      {t.name}
+                    </h4>
+                    <p className="text-[11px] text-muted-foreground leading-relaxed">{t.category}</p>
+                  </div>
                 </motion.div>
               ))}
             </div>
