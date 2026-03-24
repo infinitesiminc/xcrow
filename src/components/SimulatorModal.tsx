@@ -160,12 +160,20 @@ function useSkillHeroBg(taskName: string, jobTitle: string) {
   const [url, setUrl] = useState<string | null>(null);
   useEffect(() => {
     const skillIds = matchTaskToSkills(taskName, jobTitle);
-    if (!skillIds.length) return;
-    const heroUrl = `${SUPABASE_URL}/storage/v1/object/public/sim-images/skill-hero-${skillIds[0]}.png`;
-    const img = new window.Image();
-    img.onload = () => setUrl(heroUrl);
-    img.onerror = () => setUrl(null);
-    img.src = heroUrl;
+    // Also try task name as a slug (for L2 boss battles where taskName IS the skill name)
+    const taskSlug = taskName.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+    const candidates = skillIds.length > 0
+      ? [`skill-hero-${skillIds[0]}.png`, `skill-hero-${taskSlug}.png`]
+      : [`skill-hero-${taskSlug}.png`];
+
+    let found = false;
+    for (const filename of candidates) {
+      if (found) break;
+      const heroUrl = `${SUPABASE_URL}/storage/v1/object/public/sim-images/${filename}`;
+      const img = new window.Image();
+      img.onload = () => { if (!found) { found = true; setUrl(heroUrl); } };
+      img.src = heroUrl;
+    }
   }, [taskName, jobTitle]);
   return url;
 }
