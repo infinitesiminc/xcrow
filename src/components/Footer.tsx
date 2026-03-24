@@ -18,7 +18,7 @@ const Footer = () => (
           >
             Xcrow.ai
           </Link>
-          <p className="text-xs text-muted-foreground mt-1">AI career prep for everyone 🚀</p>
+          <p className="text-xs text-muted-foreground mt-1 italic">Master AI. Or be mastered.</p>
         </div>
         <div className="flex gap-10">
           <div className="flex flex-col gap-2">
