@@ -9,8 +9,11 @@ import {
   Head,
   Heading,
   Html,
+  Img,
   Preview,
+  Section,
   Text,
+  Hr,
 } from 'npm:@react-email/components@0.0.22'
 
 interface RecoveryEmailProps {
@@ -24,20 +27,28 @@ export const RecoveryEmail = ({
 }: RecoveryEmailProps) => (
   <Html lang="en" dir="ltr">
     <Head />
-    <Preview>Reset your password for {siteName}</Preview>
+    <Preview>🔑 Reset your password — reclaim your stronghold</Preview>
     <Body style={main}>
       <Container style={container}>
-        <Heading style={h1}>Reset your password</Heading>
+        <Section style={headerSection}>
+          <Img src="https://xtfubistkgodiksegtcx.supabase.co/storage/v1/object/public/email-assets/xcrow-logo.png" alt="Xcrow.ai" width="56" height="56" style={logoStyle} />
+        </Section>
+        <Hr style={divider} />
+        <Heading style={h1}>Reclaim Your Stronghold</Heading>
         <Text style={text}>
-          We received a request to reset your password for {siteName}. Click
-          the button below to choose a new password.
+          A request was made to reset your password. Use the seal below to forge a new one and regain access to your territories.
         </Text>
-        <Button style={button} href={confirmationUrl}>
-          Reset Password
-        </Button>
+        <Section style={buttonSection}>
+          <Button style={button} href={confirmationUrl}>
+            🔑 Reset Password
+          </Button>
+        </Section>
+        <Hr style={divider} />
+        <Text style={flavorText}>
+          "A true warrior never loses their way for long."
+        </Text>
         <Text style={footer}>
-          If you didn't request a password reset, you can safely ignore this
-          email. Your password will not be changed.
+          If you didn't request this, your defenses remain intact — ignore this scroll.
         </Text>
       </Container>
     </Body>
@@ -46,26 +57,49 @@ export const RecoveryEmail = ({
 
 export default RecoveryEmail
 
-const main = { backgroundColor: '#ffffff', fontFamily: 'Arial, sans-serif' }
-const container = { padding: '20px 25px' }
+const main = { backgroundColor: '#ffffff', fontFamily: "'Inter', Arial, sans-serif" }
+const container = {
+  padding: '40px 32px',
+  maxWidth: '520px',
+  margin: '0 auto',
+  backgroundColor: '#1C1A17',
+  borderRadius: '12px',
+  border: '1px solid #3A3530',
+}
+const headerSection = { textAlign: 'center' as const, marginBottom: '8px' }
+const logoStyle = { margin: '0 auto', borderRadius: '12px' }
+const divider = { borderColor: '#3A3530', margin: '20px 0' }
 const h1 = {
-  fontSize: '22px',
+  fontFamily: "'Cinzel', 'Playfair Display', Georgia, serif",
+  fontSize: '24px',
   fontWeight: 'bold' as const,
-  color: '#000000',
+  color: '#D4AF37',
   margin: '0 0 20px',
+  textAlign: 'center' as const,
 }
 const text = {
-  fontSize: '14px',
-  color: '#55575d',
-  lineHeight: '1.5',
-  margin: '0 0 25px',
+  fontSize: '15px',
+  color: '#C4BFB5',
+  lineHeight: '1.7',
+  margin: '0 0 18px',
 }
+const buttonSection = { textAlign: 'center' as const, margin: '28px 0' }
 const button = {
-  backgroundColor: '#000000',
-  color: '#ffffff',
+  backgroundColor: '#D4AF37',
+  color: '#1C1A17',
   fontSize: '14px',
+  fontWeight: '700' as const,
+  fontFamily: "'Cinzel', Georgia, serif",
   borderRadius: '8px',
-  padding: '12px 20px',
+  padding: '14px 28px',
   textDecoration: 'none',
+  letterSpacing: '0.5px',
 }
-const footer = { fontSize: '12px', color: '#999999', margin: '30px 0 0' }
+const flavorText = {
+  fontSize: '13px',
+  color: '#8B8579',
+  fontStyle: 'italic' as const,
+  textAlign: 'center' as const,
+  margin: '0 0 20px',
+}
+const footer = { fontSize: '12px', color: '#6B6560', margin: '0' }
