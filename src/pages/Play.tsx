@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { TERRITORIES } from "@/lib/territory-colors";
+import TerritoryEmblem from "@/components/TerritoryEmblem";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
