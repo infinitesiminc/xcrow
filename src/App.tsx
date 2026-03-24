@@ -39,8 +39,6 @@ const ScoreDistributions = lazy(() => import("./pages/ScoreDistributions.tsx"));
 const PublicProfile = lazy(() => import("./pages/PublicProfile.tsx"));
 const MapPage = lazy(() => import("./pages/MapPage.tsx"));
 const L2SimFormats = lazy(() => import("./pages/L2SimFormats.tsx"));
-const Progression = lazy(() => import("./pages/Progression.tsx"));
-const Play = lazy(() => import("./pages/Play.tsx"));
 const HowItWorks = lazy(() => import("./pages/HowItWorks.tsx"));
 const SkillsCodex = lazy(() => import("./pages/Skills.tsx"));
 
@@ -127,8 +125,8 @@ const App = () => (
               <Route path="/join" element={<JoinWorkspace />} />
               <Route path="/score-distributions" element={<><Navbar /><ScoreDistributions /><Footer /></>} />
               <Route path="/u/:username" element={<PublicProfile />} />
-              <Route path="/progression" element={<Progression />} />
-              <Route path="/play" element={<Play />} />
+              <Route path="/progression" element={<Navigate to="/how-it-works" replace />} />
+              <Route path="/play" element={<Navigate to="/" replace />} />
               <Route path="/how-it-works" element={<HowItWorks />} />
               <Route path="/skills" element={<SkillsCodex />} />
               {/* Redirects — old routes all go to feed */}
