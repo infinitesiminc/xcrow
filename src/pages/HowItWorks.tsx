@@ -37,6 +37,40 @@ const fade = (delay = 0) => ({
   transition: { duration: 0.6, delay, ease: "easeOut" as const },
 });
 
+/* Curated skill IDs for full-width cinematic banners between sections */
+const BANNER_SKILLS = [
+  "prompt-engineering",
+  "ethical-ai-leadership-governance",
+  "complex-problem-solving-humanai-teams",
+  "ai-strategy-governance",
+  "humancentric-design-empathy",
+];
+
+const FullWidthBanner = ({ skillId, flip = false }: { skillId: string; flip?: boolean }) => (
+  <motion.div
+    {...fade()}
+    className="relative w-full overflow-hidden"
+    style={{ height: "clamp(180px, 25vw, 320px)" }}
+  >
+    <img
+      src={heroUrl(skillId)}
+      alt=""
+      loading="lazy"
+      className="absolute inset-0 w-full h-full object-cover"
+      style={{
+        filter: "brightness(0.5) saturate(0.8)",
+        transform: flip ? "scaleX(-1)" : undefined,
+      }}
+    />
+    <div
+      className="absolute inset-0 pointer-events-none"
+      style={{
+        background: `linear-gradient(to bottom, hsl(var(--background)) 0%, transparent 25%, transparent 75%, hsl(var(--background)) 100%)`,
+      }}
+    />
+  </motion.div>
+);
+
 const TERRITORIES = [
   { category: "Technical" as const, name: "Technical", count: "Skills #1–#28", examples: ["Prompt Engineering", "AI Tool Selection", "Data Pipeline Design"] },
   { category: "Analytical" as const, name: "Analytical", count: "Skills #29–#52", examples: ["AI Output Validation", "Predictive Modeling", "Risk Assessment"] },
@@ -112,8 +146,8 @@ export default function HowItWorks() {
         <section className="relative min-h-[70vh] flex items-center justify-center px-4 overflow-hidden">
           {/* Skill hero backdrop */}
           <div className="absolute inset-0 pointer-events-none">
-            <img src={HERO_IMAGES.hero} alt="" className="absolute inset-0 w-full h-full object-cover opacity-[0.12]" loading="eager" />
-            <div className="absolute inset-0" style={{ background: "linear-gradient(to bottom, hsl(var(--background)), hsl(var(--background) / 0.6), hsl(var(--background)))" }} />
+            <img src={HERO_IMAGES.hero} alt="" className="absolute inset-0 w-full h-full object-cover opacity-[0.2]" loading="eager" />
+            <div className="absolute inset-0" style={{ background: "linear-gradient(to bottom, hsl(var(--background)), hsl(var(--background) / 0.5), hsl(var(--background)))" }} />
             <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] rounded-full blur-[180px] opacity-15"
               style={{ background: "hsl(var(--territory-technical))" }} />
             <div className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] rounded-full blur-[160px] opacity-10"
@@ -144,6 +178,9 @@ export default function HowItWorks() {
           </motion.div>
         </section>
 
+        {/* Full-width cinematic banner */}
+        <FullWidthBanner skillId={BANNER_SKILLS[0]} />
+
         {/* ═══ 2. THE PROBLEM ═══ */}
         <section className="py-20 px-4" style={{ background: "hsl(var(--secondary) / 0.4)" }}>
           <div className="max-w-5xl mx-auto">
@@ -171,6 +208,9 @@ export default function HowItWorks() {
             </motion.p>
           </div>
         </section>
+
+        {/* Full-width cinematic banner */}
+        <FullWidthBanner skillId={BANNER_SKILLS[1]} flip />
 
         {/* ═══ 3. THE 183 SKILLS — 8 TERRITORIES ═══ */}
         <section className="py-20 px-4 relative overflow-hidden">
@@ -208,6 +248,9 @@ export default function HowItWorks() {
             </div>
           </div>
         </section>
+
+        {/* Full-width cinematic banner */}
+        <FullWidthBanner skillId={BANNER_SKILLS[2]} />
 
         {/* ═══ 4. THE ENGINE ═══ */}
         <section className="py-20 px-4" style={{ background: "hsl(var(--secondary) / 0.4)" }}>
@@ -259,6 +302,9 @@ export default function HowItWorks() {
             </motion.div>
           </div>
         </section>
+
+        {/* Full-width cinematic banner */}
+        <FullWidthBanner skillId={BANNER_SKILLS[3]} flip />
 
         {/* ═══ 5. THE PROGRESSION LOOP ═══ */}
         <section className="py-20 px-4">
