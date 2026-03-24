@@ -379,8 +379,12 @@ export default function BossBattleArena({
           >
             💡 Use <span style={{ color: "hsl(262 80% 70%)" }}>Hints</span> if you're unsure — but they cost points!
           </motion.p>
+        </motion.div>
+          </div>
+        </div>
 
-          {/* Start button */}
+        {/* Sticky CTA at bottom */}
+        <div className="shrink-0 px-6 pb-5 pt-3 max-w-md mx-auto w-full">
           <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 1.1 }}>
             <Button
               size="sm"
@@ -395,7 +399,7 @@ export default function BossBattleArena({
               <Swords className="h-3.5 w-3.5" /> Begin Battle
             </Button>
           </motion.div>
-        </motion.div>
+        </div>
       </motion.div>
     );
   }
