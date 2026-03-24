@@ -140,7 +140,8 @@ function RegistrationForm() {
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [university, setUniversity] = useState("");
-  const [gradYear, setGradYear] = useState("");
+  const [jobTitle, setJobTitle] = useState("");
+  const [studentCount, setStudentCount] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const { toast } = useToast();
@@ -160,14 +161,15 @@ function RegistrationForm() {
       full_name: fullName.trim(),
       email: email.trim().toLowerCase(),
       university: university.trim(),
-      graduation_year: gradYear ? parseInt(gradYear) : null,
+      job_title: jobTitle.trim() || null,
+      student_count: studentCount ? parseInt(studentCount) : null,
     } as any);
 
     setSubmitting(false);
 
     if (error) {
       if (error.code === "23505") {
-        toast({ title: "Already registered!", description: "This email is already signed up for the Championship." });
+        toast({ title: "Already registered!", description: "This email is already signed up." });
         setSubmitted(true);
       } else {
         toast({ title: "Registration failed", description: error.message, variant: "destructive" });
@@ -176,7 +178,7 @@ function RegistrationForm() {
     }
 
     setSubmitted(true);
-    toast({ title: "⚔️ You're in!", description: "Check your email for next steps." });
+    toast({ title: "🏛️ Registered!", description: "We'll be in touch with next steps for your students." });
   };
 
   return (
@@ -186,13 +188,13 @@ function RegistrationForm() {
       <div className="max-w-lg mx-auto relative z-10">
         <motion.div {...fade()} className="text-center mb-10">
           <Badge className="mb-4 bg-primary/10 text-primary border-primary/20 text-[10px] tracking-[0.2em] uppercase">
-            🏟️ Free Registration
+            🏛️ Career Services Registration
           </Badge>
           <h2 className="text-3xl sm:text-4xl font-black" style={{ fontFamily: "'Cinzel', serif" }}>
             Register Your University
           </h2>
-          <p className="text-muted-foreground mt-2 text-sm">
-            Sign up now to qualify. Open to all US college students.
+          <p className="text-muted-foreground mt-2 text-sm max-w-md mx-auto">
+            Sign up your institution to give students access to the Championship. Free for career services teams.
           </p>
         </motion.div>
 
@@ -209,7 +211,7 @@ function RegistrationForm() {
           >
             <CheckCircle className="h-12 w-12 text-primary mx-auto mb-4" />
             <h3 className="text-xl font-bold mb-2" style={{ fontFamily: "'Cinzel', serif" }}>Registration Complete</h3>
-            <p className="text-muted-foreground text-sm">You're on the roster. Prepare for battle.</p>
+            <p className="text-muted-foreground text-sm">We'll reach out with onboarding details for your students.</p>
           </motion.div>
         ) : (
           <motion.form
@@ -223,9 +225,9 @@ function RegistrationForm() {
             }}
           >
             <div>
-              <label className="text-[11px] uppercase tracking-[0.12em] text-muted-foreground mb-1.5 block">Full Name</label>
+              <label className="text-[11px] uppercase tracking-[0.12em] text-muted-foreground mb-1.5 block">Your Name</label>
               <Input
-                placeholder="Your name"
+                placeholder="Jane Smith"
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
                 maxLength={100}
@@ -235,10 +237,10 @@ function RegistrationForm() {
             </div>
 
             <div>
-              <label className="text-[11px] uppercase tracking-[0.12em] text-muted-foreground mb-1.5 block">Email</label>
+              <label className="text-[11px] uppercase tracking-[0.12em] text-muted-foreground mb-1.5 block">Work Email</label>
               <Input
                 type="email"
-                placeholder="you@university.edu"
+                placeholder="jane@university.edu"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 maxLength={255}
@@ -253,14 +255,25 @@ function RegistrationForm() {
             </div>
 
             <div>
-              <label className="text-[11px] uppercase tracking-[0.12em] text-muted-foreground mb-1.5 block">Graduation Year (optional)</label>
+              <label className="text-[11px] uppercase tracking-[0.12em] text-muted-foreground mb-1.5 block">Your Title / Role</label>
+              <Input
+                placeholder="Director of Career Services"
+                value={jobTitle}
+                onChange={(e) => setJobTitle(e.target.value)}
+                maxLength={100}
+                className="bg-background/50"
+              />
+            </div>
+
+            <div>
+              <label className="text-[11px] uppercase tracking-[0.12em] text-muted-foreground mb-1.5 block">Estimated Students Competing (optional)</label>
               <Input
                 type="number"
-                placeholder="2027"
-                value={gradYear}
-                onChange={(e) => setGradYear(e.target.value)}
-                min={2024}
-                max={2032}
+                placeholder="200"
+                value={studentCount}
+                onChange={(e) => setStudentCount(e.target.value)}
+                min={1}
+                max={100000}
                 className="bg-background/50"
               />
             </div>
@@ -272,8 +285,8 @@ function RegistrationForm() {
               disabled={submitting || !fullName.trim() || !email.trim() || !university.trim()}
               style={{ fontFamily: "'Cinzel', serif", letterSpacing: "0.05em", boxShadow: "0 0 30px hsl(var(--primary) / 0.25)" }}
             >
-              {submitting ? <Loader2 className="h-5 w-5 animate-spin" /> : <Swords className="h-5 w-5" />}
-              {submitting ? "Registering…" : "Register Now"}
+              {submitting ? <Loader2 className="h-5 w-5 animate-spin" /> : <GraduationCap className="h-5 w-5" />}
+              {submitting ? "Registering…" : "Register My University"}
             </Button>
           </motion.form>
         )}
