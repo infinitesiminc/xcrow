@@ -2,12 +2,15 @@ import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Trophy, Medal, Award, Star, Shield, CheckCircle, Swords, Timer,
-  Brain, Zap, Users, GraduationCap, Map, Share2, Crown, Flame, Target,
+  Brain, Zap, Users, GraduationCap, Map, Share2, Crown, Flame, Target, Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { SchoolAutocomplete } from "@/components/SchoolAutocomplete";
 import { TERRITORIES } from "@/lib/territory-colors";
 
 /* ── Config ── */
