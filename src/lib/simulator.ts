@@ -80,13 +80,20 @@ async function simFetch<T>(action: string, payload: Record<string, unknown>): Pr
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 45000);
   try {
+    const { data: { session } } = await supabase.auth.getSession();
+    const authToken = session?.access_token;
+
+    if (!authToken) {
+      throw new Error("Please sign in to launch simulations.");
+    }
+
     const resp = await fetch(
       `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/sim-chat`,
       {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          Authorization: `Bearer ${authToken}`,
           apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
         },
         body: JSON.stringify({ action, payload }),
@@ -95,6 +102,9 @@ async function simFetch<T>(action: string, payload: Record<string, unknown>): Pr
     );
     clearTimeout(timeout);
     if (!resp.ok) {
+      if (resp.status === 401) {
+        throw new Error("Unauthorized. Please sign in again and retry.");
+      }
       const errBody = await resp.text();
       console.error(`[sim] simFetch ${action} HTTP ${resp.status}:`, errBody);
       throw new Error(`Simulator error: HTTP ${resp.status}`);
