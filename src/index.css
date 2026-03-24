@@ -821,3 +821,12 @@ html:not(.light):not(.parchment) {
   mask-image: linear-gradient(to right, transparent 0%, black 5%, black 95%, transparent 100%);
   -webkit-mask-image: linear-gradient(to right, transparent 0%, black 5%, black 95%, transparent 100%);
 }
+
+/* Territory emblem floating animation for homepage map */
+@keyframes territory-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+.animate-territory-float {
+  animation: territory-float 3s ease-in-out infinite;
+}
