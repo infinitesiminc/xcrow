@@ -6,10 +6,10 @@ const corsHeaders = {
     'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 }
 
-const SENDER_DOMAIN = 'notify.infinitesim.co'
-const FROM_DOMAIN = 'notify.infinitesim.co'
-const SITE_NAME = 'infinitesimulation'
-const RECIPIENT = 'jackson@infinitesim.co'
+const SENDER_DOMAIN = 'notify.xcrow.ai'
+const FROM_DOMAIN = 'notify.xcrow.ai'
+const SITE_NAME = 'Xcrow'
+const RECIPIENT = 'jackson@xcrow.ai'
 
 function buildContactHtml(data: {
   name: string
