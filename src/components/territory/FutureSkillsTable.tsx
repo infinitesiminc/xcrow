@@ -17,9 +17,14 @@ import { RadarChart, PolarGrid, PolarAngleAxis, Radar, ResponsiveContainer } fro
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 import type { CanonicalSkillGrowth } from "@/pages/MapPage";
 
-/** Inline skill icon — emoji only */
+/** Inline skill badge — skill number from DB */
 function SkillIcon({ skill }: { skill: FutureSkill }) {
-  return skill.iconEmoji ? <span className="text-sm shrink-0">{skill.iconEmoji}</span> : null;
+  if (skill.skillNumber == null) return null;
+  return (
+    <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded-md shrink-0 bg-primary/15 text-primary">
+      #{skill.skillNumber}
+    </span>
+  );
 }
 
 type SortKey = "name" | "category" | "xp";

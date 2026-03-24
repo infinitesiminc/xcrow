@@ -6,6 +6,7 @@ export interface CanonicalFutureSkillRow {
   category: string;
   description: string | null;
   icon_emoji: string | null;
+  skill_number: number | null;
   demand_count: number | null;
   job_count: number | null;
   avg_relevance: number | null;
@@ -47,7 +48,7 @@ async function queryCanonicalRowsOnce(): Promise<CanonicalFutureSkillRow[]> {
   try {
     const { data, error } = await supabase
       .from("canonical_future_skills")
-      .select("id, name, category, description, icon_emoji, job_count, demand_count, avg_relevance")
+      .select("id, name, category, description, icon_emoji, skill_number, job_count, demand_count, avg_relevance")
       .order("demand_count", { ascending: false })
       .abortSignal(controller.signal);
 
