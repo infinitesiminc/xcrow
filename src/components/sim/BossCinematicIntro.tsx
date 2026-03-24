@@ -1,24 +1,33 @@
 /**
  * BossCinematicIntro — Full-screen cinematic reveal before a Boss Battle begins.
- * Dark dramatic sequence: title card → boss reveal → "Begin Battle" CTA.
+ * Now renders the selected boss character's unique silhouette, colors, and lore.
  */
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Swords } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import type { BossCharacter } from "@/lib/boss-roster";
 
 interface BossCinematicIntroProps {
   skillName: string;
+  boss?: BossCharacter;
+  /** @deprecated Use boss.name instead */
   bossName?: string;
   onComplete: () => void;
 }
 
 export default function BossCinematicIntro({
   skillName,
-  bossName = "The Arbiter",
+  boss,
+  bossName,
   onComplete,
 }: BossCinematicIntroProps) {
   const [phase, setPhase] = useState<"title" | "reveal" | "ready">("title");
+  const name = boss?.name || bossName || "The Arbiter";
+  const title = boss?.title || "Guardian of forbidden knowledge";
+  const hue = boss?.hue ?? 262;
+  const bodyPath = boss?.bodyPath || "M60 8 L95 35 L100 70 L80 100 L60 110 L40 100 L20 70 L25 35 Z";
+  const crownPath = boss?.crownPath || "M38 30 L30 12 L42 24 M60 20 L60 4 L60 20 M82 30 L90 12 L78 24";
 
   useEffect(() => {
     const t1 = setTimeout(() => setPhase("reveal"), 2000);
@@ -33,10 +42,10 @@ export default function BossCinematicIntro({
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       style={{
-        background: "radial-gradient(ellipse at center, hsl(262 40% 8%), hsl(0 0% 2%))",
+        background: `radial-gradient(ellipse at center, hsl(${hue} 40% 8%), hsl(0 0% 2%))`,
       }}
     >
-      {/* Ambient particles */}
+      {/* Ambient particles — colored by boss hue */}
       {Array.from({ length: 12 }).map((_, i) => (
         <motion.div
           key={i}
@@ -44,19 +53,12 @@ export default function BossCinematicIntro({
           style={{
             width: 2 + (i % 3),
             height: 2 + (i % 3),
-            background: "hsl(262 80% 70%)",
+            background: `hsl(${hue} 80% 70%)`,
             left: `${8 + (i * 7.5) % 85}%`,
             top: `${10 + (i * 11) % 75}%`,
           }}
-          animate={{
-            opacity: [0, 0.4, 0],
-            y: [0, -30, 0],
-          }}
-          transition={{
-            duration: 4 + (i % 3),
-            repeat: Infinity,
-            delay: i * 0.3,
-          }}
+          animate={{ opacity: [0, 0.4, 0], y: [0, -30, 0] }}
+          transition={{ duration: 4 + (i % 3), repeat: Infinity, delay: i * 0.3 }}
         />
       ))}
 
@@ -77,11 +79,11 @@ export default function BossCinematicIntro({
                 animate={{ width: "100%" }}
                 transition={{ duration: 1.2, ease: "easeOut" }}
                 className="h-px mx-auto"
-                style={{ background: "linear-gradient(90deg, transparent, hsl(262 80% 55%), transparent)" }}
+                style={{ background: `linear-gradient(90deg, transparent, hsl(${hue} 80% 55%), transparent)` }}
               />
               <span
                 className="text-[11px] uppercase tracking-[0.25em] block"
-                style={{ color: "hsl(262 80% 70%)", fontFamily: "'Cinzel', serif" }}
+                style={{ color: `hsl(${hue} 80% 70%)`, fontFamily: "'Cinzel', serif" }}
               >
                 Boss Battle
               </span>
@@ -100,12 +102,12 @@ export default function BossCinematicIntro({
                 animate={{ width: "100%" }}
                 transition={{ duration: 1.2, ease: "easeOut", delay: 0.2 }}
                 className="h-px mx-auto"
-                style={{ background: "linear-gradient(90deg, transparent, hsl(262 80% 55%), transparent)" }}
+                style={{ background: `linear-gradient(90deg, transparent, hsl(${hue} 80% 55%), transparent)` }}
               />
             </motion.div>
           )}
 
-          {/* Phase 2: Boss reveal */}
+          {/* Phase 2: Boss reveal — renders the boss's unique SVG */}
           {phase === "reveal" && (
             <motion.div
               key="reveal"
@@ -115,7 +117,6 @@ export default function BossCinematicIntro({
               transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
               className="space-y-4"
             >
-              {/* Boss silhouette */}
               <motion.div
                 className="mx-auto relative"
                 initial={{ y: 30 }}
@@ -134,17 +135,15 @@ export default function BossCinematicIntro({
                   </defs>
                   <motion.circle
                     cx="60" cy="55" r="50"
-                    fill="none"
-                    stroke="hsl(262 80% 55%)"
-                    strokeWidth="1"
+                    fill="none" stroke={`hsl(${hue} 80% 55%)`} strokeWidth="1"
                     initial={{ r: 20, opacity: 0 }}
                     animate={{ r: [45, 50, 45], opacity: [0.1, 0.25, 0.1] }}
                     transition={{ duration: 3, repeat: Infinity }}
                   />
                   <motion.path
-                    d="M60 8 L95 35 L100 70 L80 100 L60 110 L40 100 L20 70 L25 35 Z"
-                    fill="hsl(262 30% 10%)"
-                    stroke="hsl(262 80% 55%)"
+                    d={bodyPath}
+                    fill={`hsl(${hue} 30% 10%)`}
+                    stroke={`hsl(${hue} 80% 55%)`}
                     strokeWidth="2"
                     filter="url(#intro-glow)"
                     initial={{ pathLength: 0, opacity: 0 }}
@@ -152,11 +151,9 @@ export default function BossCinematicIntro({
                     transition={{ duration: 1.5 }}
                   />
                   <motion.path
-                    d="M38 30 L30 12 L42 24 M60 20 L60 4 L60 20 M82 30 L90 12 L78 24"
-                    stroke="hsl(262 60% 50%)"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    fill="none"
+                    d={crownPath}
+                    stroke={`hsl(${hue} 60% 50%)`}
+                    strokeWidth="2" strokeLinecap="round" fill="none"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 0.8 }}
                     transition={{ delay: 0.8 }}
@@ -179,11 +176,11 @@ export default function BossCinematicIntro({
                 className="text-lg font-bold"
                 style={{
                   fontFamily: "'Cinzel', serif",
-                  color: "hsl(0 70% 60%)",
-                  textShadow: "0 0 12px hsl(0 70% 50% / 0.4)",
+                  color: `hsl(${hue > 30 ? 0 : hue} 70% 60%)`,
+                  textShadow: `0 0 12px hsl(${hue} 70% 50% / 0.4)`,
                 }}
               >
-                {bossName}
+                {name}
               </motion.p>
               <motion.p
                 initial={{ opacity: 0 }}
@@ -191,7 +188,7 @@ export default function BossCinematicIntro({
                 transition={{ delay: 0.9 }}
                 className="text-[13px] text-muted-foreground"
               >
-                Guardian of forbidden knowledge
+                {title}
               </motion.p>
             </motion.div>
           )}
@@ -208,7 +205,7 @@ export default function BossCinematicIntro({
               <div className="space-y-2">
                 <span
                   className="text-[11px] uppercase tracking-[0.2em] block"
-                  style={{ color: "hsl(262 80% 70%)", fontFamily: "'Cinzel', serif" }}
+                  style={{ color: `hsl(${hue} 80% 70%)`, fontFamily: "'Cinzel', serif" }}
                 >
                   Prepare yourself
                 </span>
@@ -220,12 +217,22 @@ export default function BossCinematicIntro({
                     textShadow: "0 0 16px hsl(45 90% 55% / 0.3)",
                   }}
                 >
-                  {bossName} awaits
+                  {name} awaits
                 </h3>
                 <p className="text-[13px] text-muted-foreground max-w-xs mx-auto leading-relaxed">
                   Identify the critical flaws in AI-generated future scenarios. 
                   Every correct verdict weakens the boss. Miss too many and it grows stronger.
                 </p>
+                {boss?.quote && (
+                  <motion.p
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 0.5 }}
+                    transition={{ delay: 0.4 }}
+                    className="text-[12px] italic text-muted-foreground pt-2"
+                  >
+                    "{boss.quote}"
+                  </motion.p>
+                )}
               </div>
 
               <motion.div
@@ -239,9 +246,9 @@ export default function BossCinematicIntro({
                   className="gap-2 text-sm rounded-xl px-8"
                   style={{
                     fontFamily: "'Cinzel', serif",
-                    background: "linear-gradient(135deg, hsl(0 70% 45%), hsl(262 60% 40%))",
-                    boxShadow: "0 0 25px hsl(0 70% 50% / 0.3), 0 0 50px hsl(262 80% 55% / 0.15)",
-                    border: "1px solid hsl(0 60% 50% / 0.3)",
+                    background: `linear-gradient(135deg, hsl(${Math.max(0, hue - 30)} 70% 45%), hsl(${hue} 60% 40%))`,
+                    boxShadow: `0 0 25px hsl(${hue} 70% 50% / 0.3), 0 0 50px hsl(${hue} 80% 55% / 0.15)`,
+                    border: `1px solid hsl(${hue} 60% 50% / 0.3)`,
                   }}
                 >
                   <Swords className="h-4 w-4" />
