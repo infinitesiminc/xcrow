@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from "recharts";
-import openclawChart from "@/assets/openclaw-adoption.png";
+import openclawChart from "@/assets/openclaw-chart-dark.png";
 import { Bot, Cpu, Network, Users } from "lucide-react";
 
 const fade = {
