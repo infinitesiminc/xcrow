@@ -24,7 +24,7 @@ import simBriefing from "@/assets/sim-briefing.jpg";
 import simVictory from "@/assets/sim-victory.jpg";
 import heroConquer from "@/assets/hero-conquer.jpg";
 
-import avatarCrow from "@/assets/avatars/crow.png";
+import avatarCrow from "@/assets/avatars/crow.webp";
 import avatarDragon from "@/assets/avatars/dragon.png";
 import avatarPhoenix from "@/assets/avatars/phoenix.png";
 import avatarWolf from "@/assets/avatars/wolf.png";
