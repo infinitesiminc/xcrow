@@ -13,6 +13,7 @@ import { TERRITORIES, getTerritory } from "@/lib/territory-colors";
 import TerritoryEmblem from "@/components/TerritoryEmblem";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import CinematicHeroSlideshow from "@/components/CinematicHeroSlideshow";
 import type { FutureSkillCategory } from "@/hooks/use-future-skills";
 
 import xcrowLogo from "@/assets/xcrow-logo.webp";
@@ -84,7 +85,7 @@ export default function Skills() {
       <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
 
         {/* ═══ HERO ═══ */}
-        <section className="relative pt-20 pb-16 px-4 overflow-hidden">
+        <section className="relative pt-24 md:pt-32 pb-0 px-4 overflow-hidden">
           <div className="absolute inset-0 pointer-events-none">
             <div className="absolute top-1/3 left-1/3 w-[500px] h-[500px] rounded-full blur-[180px] opacity-10"
               style={{ background: "hsl(var(--territory-technical))" }} />
@@ -94,10 +95,10 @@ export default function Skills() {
 
           <motion.div {...fade()} className="text-center max-w-3xl mx-auto relative z-10">
             <p className="text-xs font-mono uppercase tracking-[0.2em] text-muted-foreground mb-3">📖 The Codex</p>
-            <h1 className="font-fantasy text-4xl md:text-5xl font-bold mb-4">
+            <h1 className="font-fantasy text-4xl md:text-6xl font-bold mb-4">
               <span style={{ color: "hsl(var(--filigree-glow))" }}>183</span> Skills to Master
             </h1>
-            <p className="text-muted-foreground text-lg max-w-xl mx-auto mb-8">
+            <p className="text-muted-foreground text-lg md:text-xl max-w-xl mx-auto mb-8">
               The complete catalogue of AI-era skills — each one a castle waiting to be built. Explore by territory or search for specifics.
             </p>
 
@@ -112,6 +113,21 @@ export default function Skills() {
                 style={{ background: "hsl(var(--surface-stone))", border: "1px solid hsl(var(--filigree) / 0.2)" }}
               />
             </div>
+          </motion.div>
+
+          {/* Cinematic hero slideshow — stacked below text */}
+          <motion.div
+            {...fade(0.3)}
+            className="relative max-w-5xl mx-auto mt-10 rounded-xl overflow-hidden border border-border/30"
+            style={{
+              aspectRatio: "16/7",
+              boxShadow: "0 8px 40px hsl(var(--background) / 0.8), inset 0 1px 0 hsl(var(--emboss-light))",
+            }}
+          >
+            <CinematicHeroSlideshow />
+            {/* Bottom fade into page background */}
+            <div className="absolute bottom-0 left-0 right-0 h-24 pointer-events-none"
+              style={{ background: "linear-gradient(to top, hsl(var(--background)), transparent)" }} />
           </motion.div>
         </section>
 
