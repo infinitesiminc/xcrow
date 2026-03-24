@@ -19,10 +19,10 @@ import TerritoryEmblem from "@/components/TerritoryEmblem";
 import Footer from "@/components/Footer";
 
 import xcrowLogo from "@/assets/xcrow-logo.webp";
-import castleRuins from "@/assets/castle-ruins.png";
-import castleOutpost from "@/assets/castle-outpost.png";
-import castleFortress from "@/assets/castle-fortress.png";
-import castleCitadel from "@/assets/castle-citadel.png";
+import castleRuins from "@/assets/castle-ruins.webp";
+import castleOutpost from "@/assets/castle-outpost.webp";
+import castleFortress from "@/assets/castle-fortress.webp";
+import castleCitadel from "@/assets/castle-citadel.webp";
 import simBriefing from "@/assets/sim-briefing.jpg";
 import simVictory from "@/assets/sim-victory.jpg";
 import heroConquer from "@/assets/hero-conquer.jpg";
