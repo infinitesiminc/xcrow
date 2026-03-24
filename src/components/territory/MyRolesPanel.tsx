@@ -410,24 +410,33 @@ export default function MyRolesPanel({ onSelectRole, onAskChat, onTabChange, onL
 
   /* ── Fetch skills for expanded job ── */
   useEffect(() => {
-    if (!expandedJobId || jobSkills[expandedJobId]) return;
-    (async () => {
-      const { data } = await supabase
-        .from("job_future_skills")
-        .select("skill_name, canonical_skill_id, category, icon_emoji")
-        .eq("job_id", expandedJobId)
-        .limit(20);
-      if (data) {
+    if (!expandedJobId) return;
+    // Skip if already fetched
+    setJobSkills(prev => {
+      if (prev[expandedJobId]) return prev;
+      // Trigger fetch outside setState
+      (async () => {
+        const { data, error } = await supabase
+          .from("job_future_skills")
+          .select("skill_name, canonical_skill_id, category, icon_emoji")
+          .eq("job_id", expandedJobId)
+          .limit(20);
+        if (error) {
+          console.error("Failed to fetch job skills:", error);
+          setJobSkills(p => ({ ...p, [expandedJobId]: [] }));
+          return;
+        }
         const seen = new Set<string>();
-        const unique = (data as JobSkillLink[]).filter(s => {
+        const unique = ((data || []) as JobSkillLink[]).filter(s => {
           const k = s.skill_name.toLowerCase();
           if (seen.has(k)) return false;
           seen.add(k);
           return true;
         });
-        setJobSkills(prev => ({ ...prev, [expandedJobId]: unique }));
-      }
-    })();
+        setJobSkills(p => ({ ...p, [expandedJobId]: unique }));
+      })();
+      return prev;
+    });
   }, [expandedJobId]);
 
 
