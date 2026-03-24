@@ -9,7 +9,7 @@ import hawkAvatar from "@/assets/avatars/hawk.png";
 import lionAvatar from "@/assets/avatars/lion.png";
 import serpentAvatar from "@/assets/avatars/serpent.png";
 import scorpionAvatar from "@/assets/avatars/scorpion.png";
-import spiderAvatar from "@/assets/avatars/spider.png";
+import sharkAvatar from "@/assets/avatars/shark.png";
 
 export interface AvatarOption {
   id: string;
@@ -29,7 +29,7 @@ export const AVATAR_OPTIONS: AvatarOption[] = [
   { id: "lion", label: "Lion", src: lionAvatar },
   { id: "serpent", label: "Serpent", src: serpentAvatar },
   { id: "scorpion", label: "Scorpion", src: scorpionAvatar },
-  { id: "spider", label: "Spider", src: spiderAvatar },
+  { id: "shark", label: "Shark", src: sharkAvatar },
 ];
 
 export function getAvatarById(id: string | null | undefined): AvatarOption | undefined {
