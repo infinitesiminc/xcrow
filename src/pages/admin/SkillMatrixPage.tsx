@@ -64,7 +64,7 @@ export default function SkillMatrixPage() {
     setLoading(true);
     const { data, error } = await supabase
       .from("canonical_future_skills")
-      .select("id, name, category, description, icon_emoji, demand_count, job_count, avg_relevance")
+      .select("id, name, category, description, icon_emoji, skill_number, demand_count, job_count, avg_relevance")
       .order("demand_count", { ascending: false });
     if (error) {
       toast({ title: "Error loading skills", description: error.message, variant: "destructive" });
