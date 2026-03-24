@@ -21,6 +21,7 @@ import castleFortress from "@/assets/castle-fortress.png";
 import castleCitadel from "@/assets/castle-citadel.png";
 import simBriefing from "@/assets/sim-briefing.jpg";
 import simVictory from "@/assets/sim-victory.jpg";
+import heroConquer from "@/assets/hero-conquer.jpg";
 
 import avatarCrow from "@/assets/avatars/crow.png";
 import avatarDragon from "@/assets/avatars/dragon.png";
@@ -187,6 +188,7 @@ export default function Play() {
                   title: "Conquer Territories",
                   desc: "Earn XP, upgrade castles, and climb the rank ladder. Build a verified skill portfolio that proves you're future-ready.",
                   color: "var(--territory-strategic)",
+                  img: heroConquer,
                 },
               ].map((s, i) => (
                 <motion.div
