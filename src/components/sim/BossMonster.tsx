@@ -1,7 +1,6 @@
 /**
  * BossMonster — Animated floating boss entity for L2 Boss Battle simulations.
- * Now supports the full boss roster — each boss has unique body shape,
- * color palette, eye layout, crown, and particle effects.
+ * Each boss has a unique frightening animal form with creature-specific detail paths.
  */
 import { useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -16,11 +15,9 @@ interface BossMonsterProps {
   name?: string;
   checkpointsDone: number;
   totalCheckpoints: number;
-  /** Boss character definition — drives visuals */
   boss?: BossCharacter;
 }
 
-/** Derive all colors from a single hue */
 function makeColors(hue: number, state: BossState, isDead: boolean) {
   const core = isDead
     ? `hsl(${hue} 20% 25%)`
@@ -63,31 +60,26 @@ function makeColors(hue: number, state: BossState, isDead: boolean) {
   return { core, glow, eye, nameplate, statusColor, crown };
 }
 
-/** Default fallback boss shape */
 const DEFAULT_BOSS: BossCharacter = {
   id: "arbiter",
   name: "The Arbiter",
   title: "Guardian of Forbidden Knowledge",
   hue: 262,
-  bodyPath: "M60 8 L95 35 L100 70 L80 100 L60 110 L40 100 L20 70 L25 35 Z",
-  innerPath: "M60 22 L82 40 L86 65 L72 88 L60 95 L48 88 L34 65 L38 40 Z",
-  crownPath: "M38 30 L30 12 L42 24 M60 20 L60 4 L60 20 M82 30 L90 12 L78 24",
-  eyeLayout: "triple",
-  runes: [{ x: 48, y: 65, r: 2 }, { x: 60, y: 72, r: 2.5 }, { x: 72, y: 65, r: 2 }],
+  bodyPath: "M40 8 L28 2 L26 30 L16 48 L14 70 L22 94 L38 112 L60 120 L82 112 L98 94 L106 70 L104 48 L94 30 L92 2 L80 8 L60 16 Z",
+  innerPath: "M45 30 L35 44 L32 64 L38 84 L52 100 L60 104 L68 100 L82 84 L88 64 L85 44 L75 30 L60 24 Z",
+  crownPath: "M28 2 L20 -10 L30 8 M92 2 L100 -10 L90 8",
+  detailPaths: [],
+  eyeLayout: "dual",
+  eyePositions: [{ cx: 42, cy: 55, r: 7 }, { cx: 78, cy: 55, r: 7 }],
+  runes: [{ x: 60, y: 80, r: 2.5 }],
   quote: "Every legend begins with a single quest.",
-  emoji: "👁️",
-  damageParticle: "✨",
+  emoji: "🦉",
+  damageParticle: "🪶",
   rageParticle: "🔥",
 };
 
 export default function BossMonster({
-  hp,
-  maxHp,
-  state,
-  name,
-  checkpointsDone,
-  totalCheckpoints,
-  boss,
+  hp, maxHp, state, name, checkpointsDone, totalCheckpoints, boss,
 }: BossMonsterProps) {
   const b = boss || DEFAULT_BOSS;
   const displayName = name || b.name;
@@ -95,13 +87,12 @@ export default function BossMonster({
   const isDead = state === "defeated";
   const colors = useMemo(() => makeColors(b.hue, state, isDead), [b.hue, state, isDead]);
 
-  // Unique filter IDs to avoid SVG conflicts when multiple instances exist
   const filterId = `boss-glow-${b.id}`;
   const damageFilterId = `boss-damage-${b.id}`;
 
   return (
     <div className="relative flex flex-col items-center select-none" style={{ pointerEvents: "none" }}>
-      {/* Boss name plate */}
+      {/* Name plate */}
       <motion.div className="text-center mb-1" animate={{ opacity: isDead ? 0.4 : 1 }}>
         <span
           className="text-[11px] font-bold uppercase tracking-[0.15em]"
@@ -128,11 +119,7 @@ export default function BossMonster({
             className="h-full rounded-full"
             animate={{
               width: `${hpPct}%`,
-              background: hpPct > 60
-                ? "hsl(0 70% 50%)"
-                : hpPct > 30
-                  ? "hsl(45 80% 55%)"
-                  : "hsl(142 60% 50%)",
+              background: hpPct > 60 ? "hsl(0 70% 50%)" : hpPct > 30 ? "hsl(45 80% 55%)" : "hsl(142 60% 50%)",
             }}
             transition={{ duration: 0.6, ease: "easeOut" }}
             style={{
@@ -146,7 +133,7 @@ export default function BossMonster({
         </div>
       </div>
 
-      {/* Boss Body — SVG creature */}
+      {/* Boss Body SVG */}
       <motion.div
         className="relative"
         animate={
@@ -164,7 +151,7 @@ export default function BossMonster({
               : { duration: 3, repeat: Infinity, ease: "easeInOut" }
         }
       >
-        <svg width="120" height="130" viewBox="0 0 120 130" fill="none">
+        <svg width="120" height="130" viewBox="-10 -15 140 160" fill="none">
           <defs>
             <filter id={filterId} x="-50%" y="-50%" width="200%" height="200%">
               <feGaussianBlur stdDeviation="4" result="blur" />
@@ -186,16 +173,31 @@ export default function BossMonster({
 
           {/* Ambient aura */}
           <motion.circle
-            cx="60" cy="55" r="45"
+            cx="60" cy="60" r="50"
             fill="none" stroke={colors.core} strokeWidth="1" opacity={0.15}
             animate={{
-              r: isDead ? [45, 45] : [42, 48, 42],
-              opacity: isDead ? 0 : [0.1, 0.2, 0.1],
+              r: isDead ? [50, 50] : [46, 54, 46],
+              opacity: isDead ? 0 : [0.08, 0.18, 0.08],
             }}
             transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
           />
 
-          {/* Outer shell — unique body shape */}
+          {/* Creature detail paths (legs, tentacles, wings, teeth) */}
+          {b.detailPaths.map((d, i) => (
+            <motion.path
+              key={`detail-${i}`}
+              d={d}
+              fill="none"
+              stroke={colors.core}
+              strokeWidth={1.2}
+              strokeLinecap="round"
+              opacity={isDead ? 0.15 : 0.6}
+              animate={isDead ? {} : { opacity: [0.4, 0.7, 0.4] }}
+              transition={{ duration: 2.5, repeat: Infinity, delay: i * 0.15 }}
+            />
+          ))}
+
+          {/* Outer body shell */}
           <motion.path
             d={b.bodyPath}
             fill={isDead ? `hsl(${b.hue} 15% 12%)` : `hsl(${b.hue} 30% 14%)`}
@@ -218,120 +220,54 @@ export default function BossMonster({
             opacity={isDead ? 0.1 : 0.4}
           />
 
-          {/* Eyes — layout varies by boss */}
-          {b.eyeLayout === "single" && (
-            <>
+          {/* Crown / horns / ears */}
+          {b.crownPath && (
+            <motion.path
+              d={b.crownPath}
+              stroke={colors.crown}
+              strokeWidth="2"
+              strokeLinecap="round"
+              fill="none"
+              opacity={isDead ? 0.2 : 0.8}
+            />
+          )}
+
+          {/* Eyes using eyePositions */}
+          {b.eyePositions.map((eye, i) => (
+            <g key={`eye-${i}`}>
               <motion.circle
-                cx="60" cy="50"
+                cx={eye.cx} cy={eye.cy}
                 fill={colors.eye}
                 filter={`url(#${filterId})`}
                 animate={{
-                  r: isDead ? [5, 5] : state === "enraged" ? [7, 9, 7] : [6, 7, 6],
-                  opacity: isDead ? 0.2 : 1,
+                  r: isDead ? [eye.r * 0.6, eye.r * 0.6] : state === "enraged"
+                    ? [eye.r, eye.r * 1.3, eye.r]
+                    : [eye.r * 0.85, eye.r, eye.r * 0.85],
+                  opacity: isDead ? 0.15 : 1,
                 }}
-                transition={{ duration: state === "enraged" ? 0.8 : 2, repeat: Infinity }}
+                transition={{ duration: state === "enraged" ? 0.8 : 2, repeat: Infinity, delay: i * 0.15 }}
               />
               {!isDead && (
                 <motion.ellipse
-                  cx="60" cy="50" rx="1.5"
-                  ry={state === "enraged" ? 9 : 6}
+                  cx={eye.cx} cy={eye.cy}
+                  rx={eye.r * 0.22}
+                  ry={state === "enraged" ? eye.r * 1.2 : eye.r * 0.8}
                   fill="hsl(0 0% 5%)"
-                  animate={{ ry: state === "enraged" ? [9, 3, 9] : [6, 4, 6] }}
-                  transition={{ duration: 2, repeat: Infinity }}
+                  animate={{
+                    ry: state === "enraged"
+                      ? [eye.r * 1.2, eye.r * 0.4, eye.r * 1.2]
+                      : [eye.r * 0.8, eye.r * 0.6, eye.r * 0.8],
+                  }}
+                  transition={{ duration: 2, repeat: Infinity, delay: i * 0.2 }}
                 />
               )}
-            </>
-          )}
+            </g>
+          ))}
 
-          {b.eyeLayout === "dual" && !isDead && (
-            <>
-              <motion.circle
-                cx="45" cy="48" fill={colors.eye}
-                filter={`url(#${filterId})`}
-                animate={{
-                  r: state === "enraged" ? [5, 7, 5] : [4, 5, 4],
-                  opacity: isDead ? 0.2 : 1,
-                }}
-                transition={{ duration: state === "enraged" ? 0.8 : 2, repeat: Infinity }}
-              />
-              <motion.ellipse
-                cx="45" cy="48" rx="1" ry={state === "enraged" ? 6 : 4}
-                fill="hsl(0 0% 5%)"
-                animate={{ ry: state === "enraged" ? [6, 2, 6] : [4, 3, 4] }}
-                transition={{ duration: 2, repeat: Infinity }}
-              />
-              <motion.circle
-                cx="75" cy="48" fill={colors.eye}
-                filter={`url(#${filterId})`}
-                animate={{
-                  r: state === "enraged" ? [5, 7, 5] : [4, 5, 4],
-                  opacity: isDead ? 0.2 : 1,
-                }}
-                transition={{ duration: state === "enraged" ? 0.8 : 2, repeat: Infinity, delay: 0.2 }}
-              />
-              <motion.ellipse
-                cx="75" cy="48" rx="1" ry={state === "enraged" ? 6 : 4}
-                fill="hsl(0 0% 5%)"
-                animate={{ ry: state === "enraged" ? [6, 2, 6] : [4, 3, 4] }}
-                transition={{ duration: 2, repeat: Infinity, delay: 0.2 }}
-              />
-            </>
-          )}
-
-          {b.eyeLayout === "triple" && (
-            <>
-              {/* Central eye */}
-              <motion.circle
-                cx="60" cy="50"
-                fill={colors.eye}
-                filter={`url(#${filterId})`}
-                animate={{
-                  r: isDead ? [4, 4] : state === "enraged" ? [6, 8, 6] : [5, 6, 5],
-                  opacity: isDead ? 0.2 : 1,
-                }}
-                transition={{ duration: state === "enraged" ? 0.8 : 2, repeat: Infinity }}
-              />
-              {!isDead && (
-                <motion.ellipse
-                  cx="60" cy="50" rx="1.5"
-                  ry={state === "enraged" ? 8 : 5}
-                  fill="hsl(0 0% 5%)"
-                  animate={{ ry: state === "enraged" ? [8, 3, 8] : [5, 4, 5] }}
-                  transition={{ duration: 2, repeat: Infinity }}
-                />
-              )}
-              {/* Side eyes */}
-              {!isDead && (
-                <>
-                  <motion.circle
-                    cx="42" cy="45" r="2.5" fill={colors.eye} opacity={0.7}
-                    animate={{ opacity: [0.5, 0.8, 0.5] }}
-                    transition={{ duration: 2.5, repeat: Infinity, delay: 0.3 }}
-                  />
-                  <motion.circle
-                    cx="78" cy="45" r="2.5" fill={colors.eye} opacity={0.7}
-                    animate={{ opacity: [0.5, 0.8, 0.5] }}
-                    transition={{ duration: 2.5, repeat: Infinity, delay: 0.6 }}
-                  />
-                </>
-              )}
-            </>
-          )}
-
-          {/* Crown / horns */}
-          <motion.path
-            d={b.crownPath}
-            stroke={colors.crown}
-            strokeWidth="2"
-            strokeLinecap="round"
-            fill="none"
-            opacity={isDead ? 0.2 : 0.8}
-          />
-
-          {/* Rune marks on body */}
+          {/* Rune marks */}
           {b.runes.map((rune, i) => (
             <motion.circle
-              key={i}
+              key={`rune-${i}`}
               cx={rune.x} cy={rune.y} r={rune.r}
               fill={colors.core}
               opacity={isDead ? 0.05 : 0.3}
@@ -343,10 +279,12 @@ export default function BossMonster({
           {/* Defeat X marks */}
           {isDead && (
             <>
-              <line x1="52" y1="43" x2="58" y2="57" stroke="hsl(0 60% 55%)" strokeWidth="2" opacity="0.6" />
-              <line x1="58" y1="43" x2="52" y2="57" stroke="hsl(0 60% 55%)" strokeWidth="2" opacity="0.6" />
-              <line x1="62" y1="43" x2="68" y2="57" stroke="hsl(0 60% 55%)" strokeWidth="2" opacity="0.6" />
-              <line x1="68" y1="43" x2="62" y2="57" stroke="hsl(0 60% 55%)" strokeWidth="2" opacity="0.6" />
+              {b.eyePositions.map((eye, i) => (
+                <g key={`x-${i}`}>
+                  <line x1={eye.cx - 4} y1={eye.cy - 5} x2={eye.cx + 4} y2={eye.cy + 5} stroke="hsl(0 60% 55%)" strokeWidth="2" opacity="0.6" />
+                  <line x1={eye.cx + 4} y1={eye.cy - 5} x2={eye.cx - 4} y2={eye.cy + 5} stroke="hsl(0 60% 55%)" strokeWidth="2" opacity="0.6" />
+                </g>
+              ))}
             </>
           )}
         </svg>

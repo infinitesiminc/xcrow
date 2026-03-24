@@ -398,7 +398,7 @@ function RippleSection() {
 function BossMiniSVG({ boss }: { boss: BossCharacter }) {
   const h = boss.hue;
   return (
-    <svg viewBox="0 0 120 130" className="w-20 h-20 sm:w-24 sm:h-24 drop-shadow-lg">
+    <svg viewBox="-10 -15 140 160" className="w-20 h-20 sm:w-24 sm:h-24 drop-shadow-lg">
       <defs>
         <radialGradient id={`bg-${boss.id}`} cx="50%" cy="40%">
           <stop offset="0%" stopColor={`hsl(${h}, 70%, 25%)`} />
@@ -409,28 +409,21 @@ function BossMiniSVG({ boss }: { boss: BossCharacter }) {
           <stop offset="100%" stopColor={`hsl(${h}, 80%, 60%)`} stopOpacity="0" />
         </radialGradient>
       </defs>
+      {/* Creature detail paths (legs, tentacles, wings, etc.) */}
+      {boss.detailPaths.map((d, i) => (
+        <path key={`d-${i}`} d={d} fill="none" stroke={`hsl(${h}, 50%, 40%)`} strokeWidth="1" strokeLinecap="round" opacity="0.5" />
+      ))}
       {/* Body */}
       <path d={boss.bodyPath} fill={`url(#bg-${boss.id})`} stroke={`hsl(${h}, 60%, 50%)`} strokeWidth="1.5" />
       <path d={boss.innerPath} fill="none" stroke={`hsl(${h}, 50%, 40%)`} strokeWidth="0.7" opacity="0.5" />
-      {/* Crown */}
-      <path d={boss.crownPath} fill="none" stroke={`hsl(${h}, 70%, 60%)`} strokeWidth="1.5" strokeLinecap="round" />
-      {/* Eyes */}
-      {boss.eyeLayout === "single" && (
-        <circle cx="60" cy="48" r="6" fill={`url(#glow-${boss.id})`} stroke={`hsl(${h}, 80%, 70%)`} strokeWidth="1" />
+      {/* Crown / horns / ears */}
+      {boss.crownPath && (
+        <path d={boss.crownPath} fill="none" stroke={`hsl(${h}, 70%, 60%)`} strokeWidth="1.5" strokeLinecap="round" />
       )}
-      {boss.eyeLayout === "dual" && (
-        <>
-          <circle cx="48" cy="48" r="4.5" fill={`url(#glow-${boss.id})`} stroke={`hsl(${h}, 80%, 70%)`} strokeWidth="1" />
-          <circle cx="72" cy="48" r="4.5" fill={`url(#glow-${boss.id})`} stroke={`hsl(${h}, 80%, 70%)`} strokeWidth="1" />
-        </>
-      )}
-      {boss.eyeLayout === "triple" && (
-        <>
-          <circle cx="60" cy="40" r="4" fill={`url(#glow-${boss.id})`} stroke={`hsl(${h}, 80%, 70%)`} strokeWidth="1" />
-          <circle cx="46" cy="52" r="3.5" fill={`url(#glow-${boss.id})`} stroke={`hsl(${h}, 80%, 70%)`} strokeWidth="0.8" />
-          <circle cx="74" cy="52" r="3.5" fill={`url(#glow-${boss.id})`} stroke={`hsl(${h}, 80%, 70%)`} strokeWidth="0.8" />
-        </>
-      )}
+      {/* Eyes from eyePositions */}
+      {boss.eyePositions.map((eye, i) => (
+        <circle key={`eye-${i}`} cx={eye.cx} cy={eye.cy} r={eye.r} fill={`url(#glow-${boss.id})`} stroke={`hsl(${h}, 80%, 70%)`} strokeWidth="1" />
+      ))}
       {/* Runes */}
       {boss.runes.map((r, i) => (
         <circle key={i} cx={r.x} cy={r.y} r={r.r} fill={`hsl(${h}, 60%, 55%)`} opacity="0.6">
