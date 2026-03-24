@@ -251,10 +251,29 @@ export default function FutureTerritoryMap({ skills, focusSkillId, level2SkillId
                 <path d="M310 315 L320 290 L305 265" strokeWidth="0.5" opacity="0.08" />
               </g>
             </pattern>
+            {/* Diagonal glow sweep */}
+            <linearGradient id="sweep-grad" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stopColor="hsl(var(--filigree-glow))" stopOpacity="0" />
+              <stop offset="40%" stopColor="hsl(var(--filigree-glow))" stopOpacity="0" />
+              <stop offset="50%" stopColor="hsl(var(--filigree-glow))" stopOpacity="0.07" />
+              <stop offset="60%" stopColor="hsl(var(--filigree-glow))" stopOpacity="0" />
+              <stop offset="100%" stopColor="hsl(var(--filigree-glow))" stopOpacity="0" />
+            </linearGradient>
           </defs>
 
           {/* Texture background layer */}
           <rect x="0" y="0" width={FUTURE_MAP_WIDTH} height={FUTURE_MAP_HEIGHT} fill="url(#map-texture)" />
+
+          {/* Animated diagonal glow sweep */}
+          <rect
+            x={-FUTURE_MAP_WIDTH}
+            y={-FUTURE_MAP_HEIGHT}
+            width={FUTURE_MAP_WIDTH * 3}
+            height={FUTURE_MAP_HEIGHT * 3}
+            fill="url(#sweep-grad)"
+            className="animate-map-sweep"
+            style={{ pointerEvents: "none" }}
+          />
 
           {Array.from({ length: 9 }, (_, i) => {
             const x = (FUTURE_MAP_WIDTH / 8) * i;
