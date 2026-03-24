@@ -30,7 +30,7 @@ export const InviteEmail = ({
 }: InviteEmailProps) => (
   <Html lang="en" dir="ltr">
     <Head />
-    <Preview>📜 You've been summoned — join the guild on Xcrow.ai</Preview>
+    <Preview>📜 You've been summoned — join the ranks on Xcrow.ai</Preview>
     <Body style={main}>
       <Container style={container}>
         <Section style={headerSection}>
@@ -39,23 +39,23 @@ export const InviteEmail = ({
         <Hr style={divider} />
         <Heading style={h1}>You've Been Summoned</Heading>
         <Text style={text}>
-          A guild on{' '}
+          A fellow champion has invited you to join{' '}
           <Link href={siteUrl} style={link}>
             <strong>Xcrow.ai</strong>
-          </Link>{' '}
-          has called for reinforcements. Accept the summons to join the ranks and begin conquering new territories together.
+          </Link>
+          . Accept the summons below to create your account and begin your conquest.
         </Text>
         <Section style={buttonSection}>
           <Button style={button} href={confirmationUrl}>
-            📜 Accept the Summons
+            📜 Accept Summons
           </Button>
         </Section>
         <Hr style={divider} />
         <Text style={flavorText}>
-          "Allies forge the strongest kingdoms."
+          "The strongest guilds are forged by invitation."
         </Text>
         <Text style={footer}>
-          If you weren't expecting this invitation, you can safely ignore this scroll.
+          If you weren't expecting this summons, you can safely ignore this scroll.
         </Text>
       </Container>
     </Body>

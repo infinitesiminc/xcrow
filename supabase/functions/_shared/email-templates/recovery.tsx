@@ -27,25 +27,25 @@ export const RecoveryEmail = ({
 }: RecoveryEmailProps) => (
   <Html lang="en" dir="ltr">
     <Head />
-    <Preview>🛡️ Reset your defenses — reclaim access to your territory</Preview>
+    <Preview>🔑 Reset your password — reclaim your stronghold</Preview>
     <Body style={main}>
       <Container style={container}>
         <Section style={headerSection}>
           <Img src="https://xtfubistkgodiksegtcx.supabase.co/storage/v1/object/public/email-assets/xcrow-logo.png" alt="Xcrow.ai" width="56" height="56" style={logoStyle} />
         </Section>
         <Hr style={divider} />
-        <Heading style={h1}>Fortify Your Defenses</Heading>
+        <Heading style={h1}>Reclaim Your Stronghold</Heading>
         <Text style={text}>
-          A request has been made to reset the wards protecting your territory. Use the seal below to forge a new password.
+          A request was made to reset your password. Use the seal below to forge a new one and regain access to your territories.
         </Text>
         <Section style={buttonSection}>
           <Button style={button} href={confirmationUrl}>
-            🛡️ Reset Password
+            🔑 Reset Password
           </Button>
         </Section>
         <Hr style={divider} />
         <Text style={flavorText}>
-          "A wise champion secures their gates before venturing forth."
+          "A true warrior never loses their way for long."
         </Text>
         <Text style={footer}>
           If you didn't request this, your defenses remain intact — ignore this scroll.

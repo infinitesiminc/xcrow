@@ -22,7 +22,7 @@ interface ReauthenticationEmailProps {
 export const ReauthenticationEmail = ({ token }: ReauthenticationEmailProps) => (
   <Html lang="en" dir="ltr">
     <Head />
-    <Preview>🏰 Your verification rune for Xcrow.ai</Preview>
+    <Preview>🔐 Your verification rune — confirm your identity</Preview>
     <Body style={main}>
       <Container style={container}>
         <Section style={headerSection}>
@@ -31,14 +31,12 @@ export const ReauthenticationEmail = ({ token }: ReauthenticationEmailProps) => 
         <Hr style={divider} />
         <Heading style={h1}>Verification Rune</Heading>
         <Text style={text}>
-          Speak the rune below to confirm your identity and proceed:
+          Use the rune below to confirm your identity and proceed:
         </Text>
-        <Section style={codeSection}>
-          <Text style={codeStyle}>{token}</Text>
-        </Section>
+        <Text style={codeStyle}>{token}</Text>
         <Hr style={divider} />
         <Text style={flavorText}>
-          "Only the true champion knows the rune."
+          "Only the worthy may pass this threshold."
         </Text>
         <Text style={footer}>
           This rune will expire shortly. If you didn't request this, ignore this scroll.
@@ -75,23 +73,15 @@ const text = {
   color: '#C4BFB5',
   lineHeight: '1.7',
   margin: '0 0 18px',
-  textAlign: 'center' as const,
-}
-const codeSection = {
-  textAlign: 'center' as const,
-  backgroundColor: '#2A2722',
-  borderRadius: '8px',
-  border: '1px solid #D4AF37',
-  padding: '20px',
-  margin: '24px 0',
 }
 const codeStyle = {
-  fontFamily: "'Space Grotesk', Courier, monospace",
-  fontSize: '32px',
+  fontFamily: 'Courier, monospace',
+  fontSize: '28px',
   fontWeight: 'bold' as const,
   color: '#D4AF37',
-  letterSpacing: '6px',
-  margin: '0',
+  margin: '0 0 30px',
+  textAlign: 'center' as const,
+  letterSpacing: '4px',
 }
 const flavorText = {
   fontSize: '13px',

@@ -32,7 +32,7 @@ export const EmailChangeEmail = ({
 }: EmailChangeEmailProps) => (
   <Html lang="en" dir="ltr">
     <Head />
-    <Preview>🔮 Confirm your new identity seal on Xcrow.ai</Preview>
+    <Preview>🛡️ Confirm your new identity seal</Preview>
     <Body style={main}>
       <Container style={container}>
         <Section style={headerSection}>
@@ -41,22 +41,22 @@ export const EmailChangeEmail = ({
         <Hr style={divider} />
         <Heading style={h1}>New Identity Seal</Heading>
         <Text style={text}>
-          You've requested to transfer your champion's seal from{' '}
-          <Link href={`mailto:${email}`} style={link}>{email}</Link>{' '}
-          to{' '}
+          You've requested to change your identity seal from{' '}
+          <Link href={`mailto:${email}`} style={link}>{email}</Link>
+          {' '}to{' '}
           <Link href={`mailto:${newEmail}`} style={link}>{newEmail}</Link>.
         </Text>
         <Text style={text}>
-          Confirm below to bind your territory to the new seal.
+          Confirm the change below to update your records in the realm.
         </Text>
         <Section style={buttonSection}>
           <Button style={button} href={confirmationUrl}>
-            🔮 Confirm New Seal
+            🛡️ Confirm Change
           </Button>
         </Section>
         <Hr style={divider} />
         <Text style={flavorText}>
-          "Guard your seal well — it is the key to your kingdom."
+          "Guard your identity as fiercely as your kingdom."
         </Text>
         <Text style={footer}>
           If you didn't request this change, secure your account immediately.

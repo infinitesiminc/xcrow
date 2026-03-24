@@ -27,7 +27,7 @@ export const MagicLinkEmail = ({
 }: MagicLinkEmailProps) => (
   <Html lang="en" dir="ltr">
     <Head />
-    <Preview>🗝️ Your portal awaits — one click to enter</Preview>
+    <Preview>🔮 Your portal awaits — one-click access to your realm</Preview>
     <Body style={main}>
       <Container style={container}>
         <Section style={headerSection}>
@@ -36,19 +36,16 @@ export const MagicLinkEmail = ({
         <Hr style={divider} />
         <Heading style={h1}>Your Portal Awaits</Heading>
         <Text style={text}>
-          A magical seal has been prepared for your return. Use the enchanted link below to enter your Territory HQ instantly.
-        </Text>
-        <Text style={textSmall}>
-          This portal will close shortly — use it before the magic fades.
+          A magic link has been conjured for your return. Use the portal below to enter your realm instantly. This link will expire shortly.
         </Text>
         <Section style={buttonSection}>
           <Button style={button} href={confirmationUrl}>
-            🗝️ Open Portal
+            🔮 Enter Portal
           </Button>
         </Section>
         <Hr style={divider} />
         <Text style={flavorText}>
-          "Swift passage for those who carry the seal."
+          "Some doors open only once — step through while you can."
         </Text>
         <Text style={footer}>
           If you didn't request this link, you can safely ignore this scroll.
@@ -85,12 +82,6 @@ const text = {
   color: '#C4BFB5',
   lineHeight: '1.7',
   margin: '0 0 18px',
-}
-const textSmall = {
-  fontSize: '13px',
-  color: '#8B8579',
-  lineHeight: '1.6',
-  margin: '0 0 8px',
 }
 const buttonSection = { textAlign: 'center' as const, margin: '28px 0' }
 const button = {
