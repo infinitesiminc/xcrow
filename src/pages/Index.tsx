@@ -288,42 +288,82 @@ const Index = () => {
               </p>
             </motion.div>
 
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {TERRITORY_DOMAINS.map((t, i) => (
-                <motion.div
-                  key={t.name}
-                  {...fade(i * 0.06)}
-                  className="rounded-xl overflow-hidden border border-border/50 cursor-default hover:border-border transition-colors group"
-                  style={{
-                    background: `hsl(var(--card))`,
-                    boxShadow: `inset 0 1px 0 hsl(var(--emboss-light)), 0 4px 16px hsl(var(--emboss-shadow))`,
-                  }}
-                >
-                  {/* Hero image */}
-                  <div className="h-28 md:h-32 overflow-hidden relative">
-                    <img
-                      src={t.heroImg}
-                      alt={t.name}
-                      className="w-full h-full object-cover opacity-60 group-hover:opacity-80 transition-opacity duration-500 group-hover:scale-105"
-                      style={{ transition: "opacity 0.5s, transform 0.5s" }}
-                      onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
+            {/* SVG Territory Map */}
+            <motion.div {...fade(0.1)} className="relative w-full" style={{ aspectRatio: "16/9" }}>
+              <svg
+                viewBox="0 0 960 540"
+                className="w-full h-full"
+                style={{ filter: "drop-shadow(0 0 40px hsl(var(--primary) / 0.08))" }}
+              >
+                {/* Background glow */}
+                <defs>
+                  {TERRITORY_DOMAINS.map(t => (
+                    <radialGradient key={`glow-${t.cssVar}`} id={`glow-${t.cssVar}`}>
+                      <stop offset="0%" stopColor={`hsl(var(--${t.cssVar}))`} stopOpacity="0.15" />
+                      <stop offset="100%" stopColor={`hsl(var(--${t.cssVar}))`} stopOpacity="0" />
+                    </radialGradient>
+                  ))}
+                </defs>
+
+                {/* Connection lines between territories */}
+                {[
+                  [0, 1], [1, 2], [2, 3], [0, 4], [1, 5], [2, 6], [3, 7], [4, 5], [5, 6], [6, 7],
+                ].map(([a, b]) => {
+                  const positions = ISLAND_POSITIONS;
+                  return (
+                    <line
+                      key={`${a}-${b}`}
+                      x1={positions[a][0]} y1={positions[a][1]}
+                      x2={positions[b][0]} y2={positions[b][1]}
+                      stroke="hsl(var(--filigree) / 0.12)"
+                      strokeWidth="1"
+                      strokeDasharray="6 4"
                     />
-                    <div className="absolute inset-0" style={{
-                      background: `linear-gradient(to top, hsl(var(--card)), transparent 60%), linear-gradient(135deg, hsl(var(--${t.cssVar}) / 0.15), transparent)`,
-                    }} />
-                    <div className="absolute top-2 right-2">
-                      <TerritoryEmblem category={t.category} size={32} />
-                    </div>
-                  </div>
-                  <div className="px-4 pb-4 pt-2">
-                    <h4 className="font-fantasy text-sm font-bold mb-0.5" style={{ color: `hsl(var(--${t.cssVar}))` }}>
-                      {t.name}
-                    </h4>
-                    <p className="text-[11px] text-muted-foreground leading-relaxed">{t.category}</p>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
+                  );
+                })}
+
+                {/* Territory nodes */}
+                {TERRITORY_DOMAINS.map((t, i) => {
+                  const [cx, cy] = ISLAND_POSITIONS[i];
+                  return (
+                    <g key={t.cssVar}>
+                      {/* Glow aura */}
+                      <circle cx={cx} cy={cy} r="60" fill={`url(#glow-${t.cssVar})`} />
+
+                      {/* Floating emblem */}
+                      <g style={{ transformOrigin: `${cx}px ${cy}px` }}>
+                        <foreignObject
+                          x={cx - 28} y={cy - 28} width={56} height={56}
+                          className="animate-territory-float"
+                          style={{ animationDelay: `${i * 0.4}s` }}
+                        >
+                          <div className="w-full h-full flex items-center justify-center">
+                            <TerritoryEmblem category={t.category} size={52} />
+                          </div>
+                        </foreignObject>
+                      </g>
+
+                      {/* Territory name */}
+                      <text
+                        x={cx} y={cy + 42}
+                        textAnchor="middle"
+                        className="fill-foreground text-[12px] font-bold"
+                        style={{ fontFamily: "'Cinzel', serif" }}
+                      >
+                        {t.name}
+                      </text>
+                      <text
+                        x={cx} y={cy + 56}
+                        textAnchor="middle"
+                        className="fill-muted-foreground text-[10px]"
+                      >
+                        {t.category}
+                      </text>
+                    </g>
+                  );
+                })}
+              </svg>
+            </motion.div>
           </div>
         </section>
 
