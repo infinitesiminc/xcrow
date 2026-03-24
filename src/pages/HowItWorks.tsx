@@ -15,8 +15,20 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import TerritoryEmblem from "@/components/TerritoryEmblem";
 import SimChatPreview from "@/components/SimChatPreview";
+import { TERRITORIES as TERRITORY_COLORS } from "@/lib/territory-colors";
 
 import xcrowLogo from "@/assets/xcrow-logo.webp";
+
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+const heroUrl = (id: string) => `${SUPABASE_URL}/storage/v1/object/public/sim-images/skill-hero-${id}.png`;
+
+/* Curated skill hero images for section backdrops */
+const HERO_IMAGES = {
+  hero: heroUrl("strategic-ai-orchestration"),
+  territories: heroUrl("crossfunctional-aidriven-collaboration"),
+  engine: heroUrl("strategic-problem-solving"),
+  cta: heroUrl("complex-problem-solving-humanai-teams"),
+};
 
 const fade = (delay = 0) => ({
   initial: { opacity: 0, y: 24 },
@@ -98,7 +110,10 @@ export default function HowItWorks() {
 
         {/* ═══ 1. HERO ═══ */}
         <section className="relative min-h-[70vh] flex items-center justify-center px-4 overflow-hidden">
+          {/* Skill hero backdrop */}
           <div className="absolute inset-0 pointer-events-none">
+            <img src={HERO_IMAGES.hero} alt="" className="absolute inset-0 w-full h-full object-cover opacity-[0.12]" loading="eager" />
+            <div className="absolute inset-0" style={{ background: "linear-gradient(to bottom, hsl(var(--background)), hsl(var(--background) / 0.6), hsl(var(--background)))" }} />
             <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] rounded-full blur-[180px] opacity-15"
               style={{ background: "hsl(var(--territory-technical))" }} />
             <div className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] rounded-full blur-[160px] opacity-10"
@@ -158,8 +173,12 @@ export default function HowItWorks() {
         </section>
 
         {/* ═══ 3. THE 183 SKILLS — 8 TERRITORIES ═══ */}
-        <section className="py-20 px-4">
-          <div className="max-w-5xl mx-auto">
+        <section className="py-20 px-4 relative overflow-hidden">
+          <div className="absolute inset-0 pointer-events-none">
+            <img src={HERO_IMAGES.territories} alt="" className="absolute inset-0 w-full h-full object-cover opacity-[0.08]" loading="lazy" />
+            <div className="absolute inset-0" style={{ background: "linear-gradient(to bottom, hsl(var(--background)), hsl(var(--background) / 0.7), hsl(var(--background)))" }} />
+          </div>
+          <div className="max-w-5xl mx-auto relative z-10">
             <motion.div {...fade()} className="text-center mb-14">
               <p className="text-xs font-mono uppercase tracking-[0.2em] text-muted-foreground mb-2">The Skill Map</p>
               <h2 className="font-fantasy text-3xl md:text-4xl font-bold">8 Territories. One Map.</h2>
@@ -294,6 +313,8 @@ export default function HowItWorks() {
         {/* ═══ 7. FINAL CTA ═══ */}
         <section className="py-24 px-4 relative overflow-hidden">
           <div className="absolute inset-0 pointer-events-none">
+            <img src={HERO_IMAGES.cta} alt="" className="absolute inset-0 w-full h-full object-cover opacity-[0.1]" loading="lazy" />
+            <div className="absolute inset-0" style={{ background: "linear-gradient(to bottom, hsl(var(--background)), hsl(var(--background) / 0.5), hsl(var(--background)))" }} />
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[400px] rounded-full blur-[200px] opacity-10"
               style={{ background: "hsl(var(--primary))" }} />
           </div>
