@@ -385,38 +385,48 @@ export default function HowItWorks() {
               </p>
             </motion.div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
-              {BOSS_ROSTER.map((boss, i) => (
-                <motion.div
-                  key={boss.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true, margin: "-40px" }}
-                  transition={{ duration: 0.4, delay: i * 0.06 }}
-                  whileHover={{ y: -6, scale: 1.03 }}
-                  className="group relative flex flex-col items-center rounded-xl border border-border/50 p-4 text-center overflow-hidden"
-                  style={{
-                    background: "hsl(var(--card))",
-                    boxShadow: `0 4px 20px -6px hsl(${boss.hue}, 50%, 30%, 0.3)`,
-                  }}
-                >
-                  <div
-                    className="absolute inset-x-0 top-0 h-16 opacity-20 pointer-events-none"
+            {/* Two-row auto-scrolling marquee */}
+            <div className="relative overflow-hidden -mx-4 px-4 mask-marquee">
+              {[0, 1].map(row => {
+                const half = Math.ceil(BOSS_ROSTER.length / 2);
+                const rowBosses = row === 0 ? BOSS_ROSTER.slice(0, half) : BOSS_ROSTER.slice(half);
+                const duped = [...rowBosses, ...rowBosses]; // duplicate for seamless loop
+                return (
+                  <div key={row} className="flex gap-4 mb-4 w-max"
                     style={{
-                      background: `radial-gradient(ellipse at 50% 0%, hsl(${boss.hue}, 60%, 50%), transparent 70%)`,
-                    }}
-                  />
-                  <div className="relative z-10 mb-3">
-                    <BossMiniSVG boss={boss} />
+                      animation: `scroll-marquee ${rowBosses.length * 4}s linear infinite`,
+                      animationDirection: row === 1 ? "reverse" : "normal",
+                    }}>
+                    {duped.map((boss, i) => (
+                      <div
+                        key={`${boss.id}-${i}`}
+                        className="group relative flex flex-col items-center rounded-xl border border-border/50 p-4 text-center overflow-hidden shrink-0"
+                        style={{
+                          width: 160,
+                          background: "hsl(var(--card))",
+                          boxShadow: `0 4px 20px -6px hsl(${boss.hue}, 50%, 30%, 0.3)`,
+                        }}
+                      >
+                        <div
+                          className="absolute inset-x-0 top-0 h-16 opacity-20 pointer-events-none"
+                          style={{
+                            background: `radial-gradient(ellipse at 50% 0%, hsl(${boss.hue}, 60%, 50%), transparent 70%)`,
+                          }}
+                        />
+                        <div className="relative z-10 mb-3">
+                          <BossMiniSVG boss={boss} />
+                        </div>
+                        <span className="text-lg mb-1">{boss.emoji}</span>
+                        <h4 className="font-fantasy font-bold text-sm leading-tight">{boss.name}</h4>
+                        <p className="text-[10px] text-muted-foreground mt-1 italic leading-snug line-clamp-2">{boss.title}</p>
+                        <div className="absolute inset-0 flex items-end justify-center p-3 bg-gradient-to-t from-background/95 via-background/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-20">
+                          <p className="text-[11px] text-foreground italic text-center leading-snug">"{boss.quote}"</p>
+                        </div>
+                      </div>
+                    ))}
                   </div>
-                  <span className="text-lg mb-1">{boss.emoji}</span>
-                  <h4 className="font-fantasy font-bold text-sm leading-tight">{boss.name}</h4>
-                  <p className="text-[10px] text-muted-foreground mt-1 italic leading-snug line-clamp-2">{boss.title}</p>
-                  <div className="absolute inset-0 flex items-end justify-center p-3 bg-gradient-to-t from-background/95 via-background/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-20">
-                    <p className="text-[11px] text-foreground italic text-center leading-snug">"{boss.quote}"</p>
-                  </div>
-                </motion.div>
-              ))}
+                );
+              })}
             </div>
 
             <motion.div {...fade(0.3)} className="mt-8 rounded-xl border border-border/50 p-5 sm:p-6 text-center"
