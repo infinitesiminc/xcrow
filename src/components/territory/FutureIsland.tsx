@@ -17,8 +17,8 @@ function IslandIcon({ category, cx, cy, hue, isParchment }: {
   const stroke = isParchment ? `hsl(${hue} 50% 35%)` : `hsl(${hue} 70% 65%)`;
   const fill = isParchment ? `hsl(${hue} 30% 25% / 0.4)` : `hsl(${hue} 40% 15% / 0.6)`;
   const accent = isParchment ? `hsl(${hue} 60% 45%)` : `hsl(${hue} 80% 70%)`;
-  const glow = isParchment ? "none" : `drop-shadow(0 0 6px hsl(${hue} 80% 55% / 0.5))`;
-  const r = 54;
+  const glow = `drop-shadow(0 0 10px hsl(${hue} 90% 60% / 0.6)) drop-shadow(0 0 20px hsl(${hue} 80% 50% / 0.3))`;
+  const r = 27;
 
   // Shared hexagonal badge frame
   const hex = `M${cx} ${cy - r} L${cx + r * 0.866} ${cy - r * 0.5} L${cx + r * 0.866} ${cy + r * 0.5} L${cx} ${cy + r} L${cx - r * 0.866} ${cy + r * 0.5} L${cx - r * 0.866} ${cy - r * 0.5} Z`;
@@ -93,12 +93,23 @@ function IslandIcon({ category, cx, cy, hue, isParchment }: {
     ),
   };
 
+  // Unique float delay per category for organic feel
+  const floatId = `island-float-${category.replace(/\s+/g, '-')}`;
+
   return (
     <g style={{ filter: glow }} pointerEvents="none">
-      <path d={hex} fill={fill} stroke={stroke} strokeWidth={2} />
-      <circle cx={cx} cy={cy} r={r * 0.7} fill="none" stroke={stroke} strokeWidth={1} opacity={0.3} />
-      <g transform={`translate(${cx}, ${cy}) scale(3) translate(${-cx}, ${-cy})`}>
-        {inner[category]}
+      <style>{`
+        @keyframes ${floatId} {
+          0%, 100% { transform: translate(0, 0); }
+          50% { transform: translate(0, -6px); }
+        }
+      `}</style>
+      <g style={{ animation: `${floatId} 3s ease-in-out infinite`, transformOrigin: `${cx}px ${cy}px` }}>
+        <path d={hex} fill={fill} stroke={stroke} strokeWidth={1.5} />
+        <circle cx={cx} cy={cy} r={r * 0.7} fill="none" stroke={stroke} strokeWidth={0.6} opacity={0.3} />
+        <g transform={`translate(${cx}, ${cy}) scale(1.5) translate(${-cx}, ${-cy})`}>
+          {inner[category]}
+        </g>
       </g>
     </g>
   );
@@ -182,7 +193,7 @@ export default function FutureIsland({ island, skillLookup, level2SkillIds, leve
       />
 
       {/* Island icon — custom SVG per category */}
-      <IslandIcon category={category} cx={cx} cy={cy - radius - 58} hue={theme.baseHue} isParchment={isParchment} />
+      <IslandIcon category={category} cx={cx} cy={cy - radius - 32} hue={theme.baseHue} isParchment={isParchment} />
 
       {/* Island label */}
       <text
