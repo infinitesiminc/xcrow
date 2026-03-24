@@ -622,8 +622,8 @@ function CTASection() {
             Walk through a real deployment — 400+ roles at Anthropic decomposed, simulated, and tracked in real time.
           </p>
           <div className="flex items-center justify-center gap-4 pt-2">
-            <Button size="lg" onClick={() => navigate("/enterprise")}>
-              See Enterprise
+            <Button size="lg" onClick={() => navigate("/contact")}>
+              Contact Us
               <ArrowRight className="h-4 w-4 ml-1" />
             </Button>
             <Button variant="outline" size="lg" onClick={() => navigate("/contact")}>

@@ -31,8 +31,6 @@ const Terms = lazy(() => import("./pages/Terms.tsx"));
 const CookiePolicy = lazy(() => import("./pages/CookiePolicy.tsx"));
 const Contact = lazy(() => import("./pages/Contact.tsx"));
 
-const Professionals = lazy(() => import("./pages/Professionals.tsx"));
-const Enterprise = lazy(() => import("./pages/Enterprise.tsx"));
 const SimulationDesign = lazy(() => import("./pages/SimulationDesign.tsx"));
 const JoinWorkspace = lazy(() => import("./pages/JoinWorkspace.tsx"));
 const ScoreDistributions = lazy(() => import("./pages/ScoreDistributions.tsx"));
@@ -119,8 +117,8 @@ const App = () => (
               <Route path="/cookies" element={<CookiePolicy />} />
               <Route path="/contact" element={<><Navbar /><Contact /><Footer /></>} />
               
-              <Route path="/professionals" element={<Professionals />} />
-              <Route path="/enterprise" element={<Enterprise />} />
+              <Route path="/professionals" element={<Navigate to="/" replace />} />
+              <Route path="/enterprise" element={<Navigate to="/" replace />} />
               <Route path="/simulation-design" element={<SimulationDesign />} />
               <Route path="/join" element={<JoinWorkspace />} />
               <Route path="/score-distributions" element={<><Navbar /><ScoreDistributions /><Footer /></>} />
