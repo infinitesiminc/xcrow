@@ -3,7 +3,7 @@
  * Powers the Territory Map with AI-era skill catalogue.
  */
 import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { fetchCanonicalFutureSkillsRows } from "@/lib/canonical-future-skills";
 
 export type FutureSkillCategory =
   | "Technical"
@@ -48,25 +48,15 @@ async function fetchOnce(): Promise<FutureSkill[]> {
   if (_promise) return _promise;
 
   _promise = (async () => {
-    const { data, error } = await supabase
-      .from("canonical_future_skills")
-      .select("*")
-      .order("demand_count", { ascending: false });
-
-    if (error) {
-      console.warn("Failed to fetch future skills:", error?.message, error?.code, error?.details);
+    try {
+      const data = await fetchCanonicalFutureSkillsRows();
+      _cache = data.map(mapRow);
+      return _cache;
+    } catch (error) {
+      console.warn("Failed to fetch future skills:", error);
       _promise = null;
-      return [];
+      return _cache ?? [];
     }
-
-    if (!data || data.length === 0) {
-      console.warn("Future skills query returned empty data set");
-      _promise = null;
-      return [];
-    }
-
-    _cache = data.map(mapRow);
-    return _cache;
   })();
 
   return _promise;
@@ -77,10 +67,10 @@ export function useFutureSkills() {
   const [loading, setLoading] = useState(!_cache);
 
   useEffect(() => {
-    fetchOnce().then((s) => {
-      setSkills(s);
-      setLoading(false);
-    });
+    fetchOnce()
+      .then((s) => setSkills(s))
+      .catch(() => setSkills(_cache ?? []))
+      .finally(() => setLoading(false));
   }, []);
 
   return { futureSkills: skills, loading };

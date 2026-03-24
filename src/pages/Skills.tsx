@@ -5,7 +5,7 @@
 import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { fetchCanonicalFutureSkillsRows } from "@/lib/canonical-future-skills";
 import { Search, BookOpen, Sparkles, Filter, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -42,14 +42,11 @@ export default function Skills() {
   const { data: skills = [], isLoading } = useQuery({
     queryKey: ["canonical-skills-codex"],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("canonical_future_skills")
-        .select("id, name, category, description, icon_emoji, job_count, demand_count, avg_relevance")
-        .order("demand_count", { ascending: false });
-      if (error) throw error;
+      const data = await fetchCanonicalFutureSkillsRows();
       return data as CanonicalSkill[];
     },
     staleTime: 5 * 60_000,
+    retry: 2,
   });
 
   const filtered = useMemo(() => {
