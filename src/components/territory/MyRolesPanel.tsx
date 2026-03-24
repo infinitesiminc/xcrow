@@ -61,6 +61,13 @@ interface CompanyJob {
   topTask: string | null;
 }
 
+interface JobSkillLink {
+  skill_name: string;
+  canonical_skill_id: string | null;
+  category: string;
+  icon_emoji: string | null;
+}
+
 interface MyRolesPanelProps {
   onSelectRole: (role: RoleResult) => void;
   onAskChat: (prompt: string) => void;
