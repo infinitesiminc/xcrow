@@ -18,7 +18,7 @@ function IslandIcon({ category, cx, cy, hue, isParchment }: {
   const fill = isParchment ? `hsl(${hue} 30% 25% / 0.4)` : `hsl(${hue} 40% 15% / 0.6)`;
   const accent = isParchment ? `hsl(${hue} 60% 45%)` : `hsl(${hue} 80% 70%)`;
   const glow = isParchment ? "none" : `drop-shadow(0 0 6px hsl(${hue} 80% 55% / 0.5))`;
-  const r = 18;
+  const r = 54;
 
   // Shared hexagonal badge frame
   const hex = `M${cx} ${cy - r} L${cx + r * 0.866} ${cy - r * 0.5} L${cx + r * 0.866} ${cy + r * 0.5} L${cx} ${cy + r} L${cx - r * 0.866} ${cy + r * 0.5} L${cx - r * 0.866} ${cy - r * 0.5} Z`;
