@@ -40,6 +40,7 @@ const PublicProfile = lazy(() => import("./pages/PublicProfile.tsx"));
 const MapPage = lazy(() => import("./pages/MapPage.tsx"));
 const L2SimFormats = lazy(() => import("./pages/L2SimFormats.tsx"));
 const Progression = lazy(() => import("./pages/Progression.tsx"));
+const Play = lazy(() => import("./pages/Play.tsx"));
 
 // Admin (lazy)
 const HRLayout = lazy(() => import("./layouts/HRLayout.tsx"));
