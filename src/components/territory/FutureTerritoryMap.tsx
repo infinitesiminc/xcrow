@@ -223,32 +223,33 @@ export default function FutureTerritoryMap({ skills, focusSkillId, level2SkillId
               </feMerge>
             </filter>
             {/* Subtle topographic texture pattern */}
-            <pattern id="map-texture" x="0" y="0" width="200" height="200" patternUnits="userSpaceOnUse">
-              {/* Topographic contour rings — cluster 1 */}
-              <circle cx="60" cy="50" r="20" fill="none" stroke="hsl(var(--muted-foreground))" strokeWidth="1.2" opacity="0.25" />
-              <circle cx="60" cy="50" r="35" fill="none" stroke="hsl(var(--muted-foreground))" strokeWidth="1" opacity="0.2" />
-              <circle cx="60" cy="50" r="50" fill="none" stroke="hsl(var(--muted-foreground))" strokeWidth="0.8" opacity="0.15" />
-              <circle cx="60" cy="50" r="65" fill="none" stroke="hsl(var(--muted-foreground))" strokeWidth="0.6" opacity="0.1" />
-              {/* Cluster 2 */}
-              <circle cx="170" cy="160" r="18" fill="none" stroke="hsl(var(--muted-foreground))" strokeWidth="1.2" opacity="0.22" />
-              <circle cx="170" cy="160" r="32" fill="none" stroke="hsl(var(--muted-foreground))" strokeWidth="1" opacity="0.17" />
-              <circle cx="170" cy="160" r="48" fill="none" stroke="hsl(var(--muted-foreground))" strokeWidth="0.7" opacity="0.12" />
-              {/* Cluster 3 — offset */}
-              <circle cx="150" cy="30" r="15" fill="none" stroke="hsl(var(--muted-foreground))" strokeWidth="1" opacity="0.2" />
-              <circle cx="150" cy="30" r="28" fill="none" stroke="hsl(var(--muted-foreground))" strokeWidth="0.8" opacity="0.14" />
-              {/* Cross markers */}
-              <g stroke="hsl(var(--muted-foreground))" strokeWidth="1.5" opacity="0.25">
-                <line x1="18" y1="140" x2="28" y2="140" />
-                <line x1="23" y1="135" x2="23" y2="145" />
-                <line x1="120" y1="100" x2="130" y2="100" />
-                <line x1="125" y1="95" x2="125" y2="105" />
+            <pattern id="map-texture" x="0" y="0" width="400" height="400" patternUnits="userSpaceOnUse">
+              {/* Cracked earth / rugged land lines */}
+              <g fill="none" stroke="hsl(var(--muted-foreground))" strokeLinecap="round">
+                {/* Major fractures */}
+                <path d="M0 180 L45 165 L80 190 L130 170 L160 185 L200 160 L250 175 L290 155 L340 170 L400 150" strokeWidth="1.4" opacity="0.2" />
+                <path d="M0 320 L60 305 L100 330 L150 310 L210 325 L260 300 L310 315 L370 295 L400 310" strokeWidth="1.2" opacity="0.18" />
+                <path d="M0 80 L50 95 L90 70 L140 85 L185 65 L230 80 L280 60 L330 78 L400 55" strokeWidth="1.2" opacity="0.16" />
+                {/* Vertical fractures */}
+                <path d="M120 0 L110 50 L125 100 L115 160 L130 220 L118 280 L128 340 L120 400" strokeWidth="1.3" opacity="0.18" />
+                <path d="M280 0 L290 60 L275 120 L285 180 L270 240 L282 300 L275 360 L285 400" strokeWidth="1.1" opacity="0.15" />
+                {/* Diagonal cracks */}
+                <path d="M0 0 L40 35 L55 80 L95 110 L120 160" strokeWidth="1" opacity="0.14" />
+                <path d="M400 0 L360 45 L345 90 L310 130 L280 160" strokeWidth="1" opacity="0.14" />
+                <path d="M0 400 L50 360 L80 310 L120 280" strokeWidth="0.9" opacity="0.12" />
+                <path d="M400 400 L355 365 L330 310 L290 275" strokeWidth="0.9" opacity="0.12" />
+                {/* Secondary fissures — thinner */}
+                <path d="M80 190 L95 230 L85 270 L100 310" strokeWidth="0.7" opacity="0.12" />
+                <path d="M200 160 L210 200 L195 240 L205 280" strokeWidth="0.7" opacity="0.1" />
+                <path d="M290 155 L300 195 L285 235 L295 270" strokeWidth="0.7" opacity="0.1" />
+                <path d="M45 165 L35 200 L50 240" strokeWidth="0.6" opacity="0.09" />
+                <path d="M340 170 L350 210 L338 250 L345 290" strokeWidth="0.6" opacity="0.09" />
+                {/* Micro cracks — hairline */}
+                <path d="M160 185 L170 210 L155 230" strokeWidth="0.5" opacity="0.08" />
+                <path d="M250 175 L240 200 L255 220" strokeWidth="0.5" opacity="0.08" />
+                <path d="M60 305 L70 280 L55 260" strokeWidth="0.5" opacity="0.08" />
+                <path d="M310 315 L320 290 L305 265" strokeWidth="0.5" opacity="0.08" />
               </g>
-              {/* Grain dots */}
-              <circle cx="40" cy="180" r="1.5" fill="hsl(var(--muted-foreground))" opacity="0.2" />
-              <circle cx="100" cy="40" r="1.5" fill="hsl(var(--muted-foreground))" opacity="0.18" />
-              <circle cx="180" cy="80" r="1.5" fill="hsl(var(--muted-foreground))" opacity="0.2" />
-              <circle cx="10" cy="90" r="1.2" fill="hsl(var(--muted-foreground))" opacity="0.15" />
-              <circle cx="130" cy="170" r="1.2" fill="hsl(var(--muted-foreground))" opacity="0.16" />
             </pattern>
           </defs>
 
