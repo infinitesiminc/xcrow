@@ -538,11 +538,11 @@ export default function MyRolesPanel({ onSelectRole, onAskChat, onTabChange, onL
     return c;
   }, [kingdoms]);
 
-  /* ── Arsenal logic ── */
+  const arsenalQ = search.toLowerCase();
   const allToolsFiltered = AI_TOOL_REGISTRY.filter(t => {
     if (arsenalFilter === "saved" && !savedToolNames.includes(t.name)) return false;
     if (arsenalFilter !== "all" && arsenalFilter !== "saved" && t.category !== arsenalFilter) return false;
-    if (q && !t.name.toLowerCase().includes(q) && !t.description.toLowerCase().includes(q) && !t.company.toLowerCase().includes(q)) return false;
+    if (arsenalQ && !t.name.toLowerCase().includes(arsenalQ) && !t.description.toLowerCase().includes(arsenalQ) && !t.company.toLowerCase().includes(arsenalQ)) return false;
     return true;
   });
   const seen = new Set<string>();
