@@ -76,7 +76,7 @@ function JourneyGate() {
 function HomeDashboard() {
   const { user, loading, isSuperAdmin, isSchoolAdmin } = useAuth();
   if (loading) return null;
-  if (!user) return <Suspense fallback={null}><Index /></Suspense>;
+  if (!user) return <Suspense fallback={null}><Navbar /><Index /></Suspense>;
   if (isSuperAdmin) return <Navigate to="/admin" replace />;
   if (isSchoolAdmin) return <Navigate to="/school" replace />;
   return <Navigate to="/map" replace />;
@@ -120,7 +120,7 @@ const App = () => (
           <Suspense fallback={null}>
             <Routes>
               {/* Public B2C routes */}
-              <Route path="/" element={<><Navbar /><HomeDashboard /></>} />
+              <Route path="/" element={<HomeDashboard />} />
               <Route path="/map" element={<AuthGate><Navbar /><MapPage /></AuthGate>} />
               <Route path="/role/:jobTitle" element={<><Navbar /><RoleDeepDive /></>} />
               <Route path="/analysis" element={<><Navbar /><Analysis /><Footer /></>} />
