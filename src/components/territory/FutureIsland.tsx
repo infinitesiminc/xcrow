@@ -10,6 +10,89 @@ import { type FutureSkill, type FutureSkillCategory } from "@/hooks/use-future-s
 import { type FutureIslandLayout, type FutureNodePosition } from "@/lib/future-territory-layout";
 import type { CanonicalSkillGrowth } from "@/pages/MapPage";
 
+/* ─── Custom SVG icon per island category ─── */
+function IslandIcon({ category, cx, cy, hue, isParchment }: {
+  category: FutureSkillCategory; cx: number; cy: number; hue: number; isParchment: boolean;
+}) {
+  const fill = isParchment ? `hsl(${hue} 55% 35%)` : `hsl(${hue} 70% 65%)`;
+  const glow = isParchment ? "none" : `drop-shadow(0 0 4px hsl(${hue} 80% 55% / 0.5))`;
+  const s = 14; // half-size
+
+  const icons: Record<FutureSkillCategory, JSX.Element> = {
+    // Arcane Forge — anvil with spark
+    Technical: (
+      <g transform={`translate(${cx - s},${cy - s})`} style={{ filter: glow }}>
+        <path d="M6 22 L10 12 L18 12 L22 22 Z" fill={fill} opacity={0.9} />
+        <rect x={8} y={8} width={12} height={4} rx={1} fill={fill} />
+        <path d="M14 4 L16 0 L18 6" stroke={fill} strokeWidth={1.5} fill="none" />
+        <circle cx={17} cy={2} r={1.5} fill={fill} opacity={0.7} />
+      </g>
+    ),
+    // Data Highlands — mountain with chart line
+    Analytical: (
+      <g transform={`translate(${cx - s},${cy - s})`} style={{ filter: glow }}>
+        <path d="M2 24 L14 4 L20 14 L26 8 L26 24 Z" fill={fill} opacity={0.8} />
+        <polyline points="4,20 10,14 16,18 22,10" stroke={fill} strokeWidth={1.5} fill="none" opacity={0.9} />
+        <circle cx={22} cy={10} r={1.5} fill={fill} />
+      </g>
+    ),
+    // Soul Springs — flame/heart hybrid
+    "Human Edge": (
+      <g transform={`translate(${cx - s},${cy - s})`} style={{ filter: glow }}>
+        <path d="M14 4 Q8 10 8 16 Q8 22 14 26 Q20 22 20 16 Q20 10 14 4 Z" fill={fill} opacity={0.85} />
+        <path d="M14 10 Q11 14 12 18 Q13 20 14 20 Q15 20 16 18 Q17 14 14 10 Z" fill={isParchment ? `hsl(${hue} 40% 50%)` : `hsl(${hue} 90% 80%)`} opacity={0.6} />
+      </g>
+    ),
+    // Command Summit — crossed swords
+    Strategic: (
+      <g transform={`translate(${cx - s},${cy - s})`} style={{ filter: glow }}>
+        <line x1={6} y1={22} x2={22} y2={4} stroke={fill} strokeWidth={2} strokeLinecap="round" />
+        <line x1={22} y1={22} x2={6} y2={4} stroke={fill} strokeWidth={2} strokeLinecap="round" />
+        <line x1={4} y1={6} x2={8} y2={2} stroke={fill} strokeWidth={1.5} strokeLinecap="round" />
+        <line x1={20} y1={6} x2={24} y2={2} stroke={fill} strokeWidth={1.5} strokeLinecap="round" />
+        <circle cx={14} cy={13} r={2.5} fill={fill} opacity={0.5} />
+      </g>
+    ),
+    // Bridge Isles — speech/signal waves
+    Communication: (
+      <g transform={`translate(${cx - s},${cy - s})`} style={{ filter: glow }}>
+        <path d="M4 24 L4 10 L20 10 L20 20 L10 20 L6 24 Z" fill={fill} opacity={0.8} />
+        <line x1={8} y1={14} x2={16} y2={14} stroke={isParchment ? `hsl(${hue} 30% 60%)` : "hsl(0 0% 10%)"} strokeWidth={1.2} />
+        <line x1={8} y1={17} x2={14} y2={17} stroke={isParchment ? `hsl(${hue} 30% 60%)` : "hsl(0 0% 10%)"} strokeWidth={1.2} />
+        <path d="M22 8 Q26 12 22 16" stroke={fill} strokeWidth={1.2} fill="none" opacity={0.6} />
+        <path d="M24 6 Q30 12 24 18" stroke={fill} strokeWidth={1} fill="none" opacity={0.4} />
+      </g>
+    ),
+    // Prism Coast — palette/brush
+    Creative: (
+      <g transform={`translate(${cx - s},${cy - s})`} style={{ filter: glow }}>
+        <ellipse cx={14} cy={16} rx={12} ry={8} fill={fill} opacity={0.8} />
+        <circle cx={8} cy={14} r={2} fill={isParchment ? `hsl(${hue} 50% 50%)` : `hsl(${hue} 90% 80%)`} opacity={0.7} />
+        <circle cx={14} cy={12} r={1.5} fill={isParchment ? `hsl(${hue + 40} 50% 50%)` : `hsl(${hue + 40} 80% 70%)`} opacity={0.7} />
+        <circle cx={20} cy={14} r={1.8} fill={isParchment ? `hsl(${hue - 20} 50% 50%)` : `hsl(${hue - 20} 80% 70%)`} opacity={0.7} />
+        <circle cx={18} cy={18} r={3} fill={isParchment ? `hsl(${hue} 20% 70%)` : "hsl(0 0% 12%)"} />
+      </g>
+    ),
+    // Crown Heights — crown
+    Leadership: (
+      <g transform={`translate(${cx - s},${cy - s})`} style={{ filter: glow }}>
+        <path d="M4 22 L4 12 L10 16 L14 6 L18 16 L24 12 L24 22 Z" fill={fill} opacity={0.9} />
+        <rect x={4} y={22} width={20} height={3} rx={1} fill={fill} opacity={0.7} />
+        <circle cx={14} cy={10} r={1.5} fill={isParchment ? `hsl(${hue} 60% 50%)` : `hsl(${hue} 90% 80%)`} opacity={0.8} />
+      </g>
+    ),
+    // Sentinel Watch — shield with check
+    "Ethics & Compliance": (
+      <g transform={`translate(${cx - s},${cy - s})`} style={{ filter: glow }}>
+        <path d="M14 2 L26 8 L24 18 Q20 26 14 28 Q8 26 4 18 L2 8 Z" fill={fill} opacity={0.85} />
+        <polyline points="9,15 13,19 20,10" stroke={isParchment ? `hsl(${hue} 30% 60%)` : "hsl(0 0% 10%)"} strokeWidth={2} fill="none" strokeLinecap="round" strokeLinejoin="round" />
+      </g>
+    ),
+  };
+
+  return icons[category] || null;
+}
+
 function useIsParchment() {
   const [p, setP] = useState(() => document.documentElement.classList.contains("parchment"));
   useEffect(() => {
