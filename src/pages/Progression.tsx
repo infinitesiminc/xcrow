@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import { BOSS_ROSTER, type BossCharacter } from "@/lib/boss-roster";
 
 const fadeUp = {
   initial: { opacity: 0, y: 24 },
