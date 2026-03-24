@@ -14,6 +14,7 @@ import { Badge } from "@/components/ui/badge";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import TerritoryEmblem from "@/components/TerritoryEmblem";
+import SimChatPreview from "@/components/SimChatPreview";
 
 import xcrowLogo from "@/assets/xcrow-logo.webp";
 
@@ -219,6 +220,24 @@ export default function HowItWorks() {
                 </motion.div>
               ))}
             </div>
+          </div>
+        </section>
+
+        {/* ═══ 4b. SEE IT IN ACTION ═══ */}
+        <section className="py-20 px-4">
+          <div className="max-w-5xl mx-auto">
+            <motion.div {...fade()} className="text-center mb-12">
+              <Badge variant="outline" className="mb-4 border-primary/30 text-primary font-fantasy text-xs tracking-wider">
+                See It In Action
+              </Badge>
+              <h2 className="font-fantasy text-3xl md:text-4xl font-bold">This Is What a Simulation Feels Like</h2>
+              <p className="text-muted-foreground mt-3 max-w-lg mx-auto">
+                Real scenario. Real decisions. Real-time scoring. Watch a simulation unfold — this is how you build AI-era skills.
+              </p>
+            </motion.div>
+            <motion.div {...fade(0.15)}>
+              <SimChatPreview />
+            </motion.div>
           </div>
         </section>
 
