@@ -3,7 +3,7 @@
  * Powers the Territory Map with AI-era skill catalogue.
  */
 import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { fetchCanonicalFutureSkillsRows } from "@/lib/canonical-future-skills";
 
 export type FutureSkillCategory =
   | "Technical"
