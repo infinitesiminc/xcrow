@@ -21,6 +21,7 @@ export interface FutureSkill {
   category: FutureSkillCategory;
   description: string | null;
   iconEmoji: string | null;
+  skillNumber: number | null;
   demandCount: number;
   jobCount: number;
   avgRelevance: number;
