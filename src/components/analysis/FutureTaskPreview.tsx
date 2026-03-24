@@ -154,7 +154,9 @@ export function FutureTaskPreview({
                         key={skill.id}
                         className="flex items-center gap-1.5 rounded-md border border-dashed border-primary/30 bg-primary/[0.03] px-2 py-1"
                       >
-                        <RuneEmoji emoji={skill.icon_emoji} size="xs" glow="subtle" />
+                        <span className="text-[9px] font-mono font-bold px-1 py-0.5 rounded bg-primary/15 text-primary shrink-0">
+                          {(skill as any).skill_number != null ? `#${(skill as any).skill_number}` : "⚡"}
+                        </span>
                         <div>
                           <div className="text-[11px] font-medium text-foreground/80">{skill.name}</div>
                           <div className="text-[9px] text-muted-foreground">{skill.description}</div>

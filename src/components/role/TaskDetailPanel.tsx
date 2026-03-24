@@ -343,7 +343,9 @@ export function TaskDetailPanel({
                   onClick={() => onPractice(task)}
                   className="sim-glow-border relative flex-none w-40 rounded-xl border border-primary/20 bg-gradient-to-br from-primary/[0.06] to-accent/[0.04] p-3.5 text-left hover:border-primary/40 hover:shadow-md hover:shadow-primary/5 transition-all group"
                 >
-                  <RuneEmoji emoji={isStandardEmoji(skill.icon_emoji) ? skill.icon_emoji : "⚡"} size="md" glow="medium" className="mb-2" />
+                  <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded-md bg-primary/15 text-primary mb-2 inline-block">
+                    {skill.skill_number != null ? `#${skill.skill_number}` : "⚡"}
+                  </span>
                   <div className="text-[11px] font-semibold text-foreground group-hover:text-primary transition-colors leading-tight mb-1">
                     {skill.name}
                   </div>

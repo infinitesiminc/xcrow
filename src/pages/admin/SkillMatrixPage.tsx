@@ -441,7 +441,11 @@ export default function SkillMatrixPage() {
                       <td className="py-2 px-3 text-muted-foreground font-mono">{i + 1}</td>
                       <td className="py-2 px-3">
                         <div className="flex items-center gap-1.5">
-                          {skill.icon_emoji && <span className="text-sm">{skill.icon_emoji}</span>}
+                          {skill.skill_number != null && (
+                            <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded-md bg-primary/15 text-primary">
+                              #{skill.skill_number}
+                            </span>
+                          )}
                           <span className="font-medium text-foreground">{skill.name}</span>
                         </div>
                       </td>

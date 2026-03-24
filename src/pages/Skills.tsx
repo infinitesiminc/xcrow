@@ -192,7 +192,9 @@ export default function Skills() {
                           }}
                         >
                           <div className="flex items-start gap-3">
-                            <span className="text-xl shrink-0">{skill.icon_emoji || "⚡"}</span>
+                            <span className="text-[11px] font-mono font-bold px-1.5 py-0.5 rounded-md shrink-0 bg-primary/15 text-primary">
+                              {skill.skill_number != null ? `#${skill.skill_number}` : "—"}
+                            </span>
                             <div className="flex-1 min-w-0">
                               <h3 className="font-fantasy text-sm font-bold leading-tight mb-1">{skill.name}</h3>
                               {skill.description && (
