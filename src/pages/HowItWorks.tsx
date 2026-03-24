@@ -32,7 +32,7 @@ const TERRITORIES = [
   { category: "Communication" as const, name: "Communication", count: "Skills #101–#124", examples: ["AI-Assisted Writing", "Stakeholder Translation", "Data Storytelling"] },
   { category: "Leadership" as const, name: "Leadership", count: "Skills #125–#148", examples: ["Human-AI Team Management", "Ethical AI Governance", "Digital Transformation"] },
   { category: "Human Edge" as const, name: "Human Edge", count: "Skills #149–#166", examples: ["Judgment Under Ambiguity", "Empathy at Scale", "Cultural Intelligence"] },
-  { category: "Operational" as const, name: "Operational", count: "Skills #167–#183", examples: ["AI Workflow Automation", "Process Optimization", "Quality Assurance"] },
+  { category: "Ethics & Compliance" as const, name: "Ethics & Compliance", count: "Skills #167–#183", examples: ["AI Governance", "Regulatory Compliance", "Responsible AI Deployment"] },
 ];
 
 const PROBLEM_CARDS = [
