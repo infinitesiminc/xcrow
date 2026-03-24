@@ -366,6 +366,76 @@ const ROSTER: BossCharacter[] = [
     damageParticle: "✨",
     rageParticle: "🐺",
   },
+  {
+    // SCORPION — armored, pincers, curved stinger tail
+    id: "venomclause",
+    name: "Venom Clause",
+    title: "Arbiter of Hidden Conditions",
+    hue: 52,
+    bodyPath: "M60 30 L80 34 L95 48 L100 68 L92 88 L75 102 L60 108 L45 102 L28 88 L20 68 L25 48 L40 34 Z",
+    innerPath: "M60 42 L72 44 L82 54 L86 68 L80 82 L68 92 L60 96 L52 92 L40 82 L34 68 L38 54 L48 44 Z",
+    crownPath: "",
+    detailPaths: [
+      // Pincers
+      "M25 48 L8 32 L2 22 L12 30 L10 38",
+      "M8 32 L4 28 L14 34",
+      "M95 48 L112 32 L118 22 L108 30 L110 38",
+      "M112 32 L116 28 L106 34",
+      // Stinger tail curving up
+      "M60 30 L58 18 L55 8 L52 2 L50 -4 L54 0 L56 6",
+      // Armored segments
+      "M40 60 L32 58 M40 68 L30 68 M40 76 L32 78",
+      "M80 60 L88 58 M80 68 L90 68 M80 76 L88 78",
+      // Leg stubs
+      "M28 88 L18 96 L22 92",
+      "M92 88 L102 96 L98 92",
+    ],
+    eyeLayout: "dual",
+    eyePositions: [
+      { cx: 48, cy: 56, r: 4.5 },
+      { cx: 72, cy: 56, r: 4.5 },
+    ],
+    runes: [{ x: 60, y: 72, r: 2 }, { x: 52, y: 80, r: 1.5 }, { x: 68, y: 80, r: 1.5 }],
+    quote: "Read the fine print. Oh wait — there is none.",
+    emoji: "🦂",
+    damageParticle: "💚",
+    rageParticle: "☠️",
+  },
+  {
+    // SERPENT — coiled, hooded cobra, hypnotic
+    id: "eclipsecoil",
+    name: "Eclipse Coil",
+    title: "Serpent of Subtle Misdirection",
+    hue: 145,
+    bodyPath: "M60 12 L76 16 L88 28 L95 46 L92 66 L82 82 L68 94 L60 98 L52 94 L38 82 L28 66 L25 46 L32 28 L44 16 Z",
+    innerPath: "M60 26 L70 28 L80 38 L84 50 L82 64 L74 76 L64 84 L60 86 L56 84 L46 76 L38 64 L36 50 L40 38 L50 28 Z",
+    crownPath: "",
+    detailPaths: [
+      // Hood flare
+      "M44 16 L28 8 L18 12 L24 20 L32 24",
+      "M76 16 L92 8 L102 12 L96 20 L88 24",
+      // Hood inner lines
+      "M32 24 L28 18",
+      "M88 24 L92 18",
+      // Coiled body below
+      "M52 94 L42 104 L38 112 L44 118 L56 120 L68 118 L76 112 L80 104 L72 96",
+      "M44 118 L40 124 L50 128 L62 128 L72 124 L76 118",
+      // Forked tongue
+      "M58 86 L56 96 L54 100 M58 86 L60 96 L62 100",
+      // Scale pattern
+      "M44 50 L40 46 M44 58 L38 56 M44 66 L40 68",
+      "M76 50 L80 46 M76 58 L82 56 M76 66 L80 68",
+    ],
+    eyeLayout: "single",
+    eyePositions: [
+      { cx: 60, cy: 46, r: 7 },
+    ],
+    runes: [{ x: 50, y: 60, r: 1.8 }, { x: 70, y: 60, r: 1.8 }, { x: 60, y: 72, r: 2 }],
+    quote: "Sssleep now. The answer will come to you... wrong.",
+    emoji: "🐍",
+    damageParticle: "💀",
+    rageParticle: "🐍",
+  },
 ];
 
 /**
