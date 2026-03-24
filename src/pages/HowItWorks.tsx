@@ -178,6 +178,9 @@ export default function HowItWorks() {
           </motion.div>
         </section>
 
+        {/* Full-width cinematic banner */}
+        <FullWidthBanner skillId={BANNER_SKILLS[0]} />
+
         {/* ═══ 2. THE PROBLEM ═══ */}
         <section className="py-20 px-4" style={{ background: "hsl(var(--secondary) / 0.4)" }}>
           <div className="max-w-5xl mx-auto">
