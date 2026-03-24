@@ -72,6 +72,16 @@ function JourneyGate() {
   return <Suspense fallback={null}><Journey /></Suspense>;
 }
 
+/** Route / to the right dashboard per tier */
+function HomeDashboard() {
+  const { user, loading, isSuperAdmin, isSchoolAdmin } = useAuth();
+  if (loading) return null;
+  if (!user) return <Suspense fallback={null}><Index /></Suspense>;
+  if (isSuperAdmin) return <Navigate to="/admin" replace />;
+  if (isSchoolAdmin) return <Navigate to="/school" replace />;
+  return <Navigate to="/map" replace />;
+}
+
 /** Gate admin routes to superadmins */
 function AdminGate() {
   const { user, loading, isSuperAdmin } = useAuth();
@@ -86,6 +96,17 @@ function SchoolAdminGate() {
   if (loading) return null;
   if (!user || !isSchoolAdmin) return <Navigate to="/" replace />;
   return <Suspense fallback={null}><SchoolLayout /></Suspense>;
+}
+
+/** Gate authenticated-only routes */
+function AuthGate({ children }: { children: React.ReactNode }) {
+  const { user, loading, openAuthModal } = useAuth();
+  if (loading) return null;
+  if (!user) {
+    openAuthModal();
+    return <Navigate to="/" replace />;
+  }
+  return <>{children}</>;
 }
 
 const App = () => (
