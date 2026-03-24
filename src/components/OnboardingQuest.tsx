@@ -1,8 +1,9 @@
 /**
  * OnboardingQuest — Cinematic RPG intro overlay.
  * 4 steps: Mission Intro → Choose Avatar → Set Username → Enter the Map.
+ * Each step features a skill hero image backdrop for immersive atmosphere.
  */
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -11,6 +12,16 @@ import { Map, ChevronRight, Loader2, AtSign, Check, AlertCircle } from "lucide-r
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import xcrowLogo from "@/assets/xcrow-logo.webp";
+
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+
+/** One curated hero image per onboarding step for atmosphere */
+const STEP_HERO_IMAGES: Record<string, string> = {
+  intro: "complex-threat-modeling",
+  avatar: "ethical-ai-leadership-governance",
+  username: "prompt-engineering",
+  launch: "strategic-problem-solving",
+};
 
 interface OnboardingQuestProps {
   open: boolean;
@@ -85,10 +96,32 @@ export default function OnboardingQuest({ open, userId, onComplete }: Onboarding
       exit={{ opacity: 0 }}
       className="fixed inset-0 z-[60] flex items-center justify-center"
       style={{
-        background: "radial-gradient(ellipse at center, hsl(var(--background)) 0%, hsl(var(--background) / 0.97) 100%)",
-        backdropFilter: "blur(20px)",
+        background: "hsl(var(--background))",
       }}
     >
+      {/* Skill hero backdrop — crossfades per step */}
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={step}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 1, ease: "easeInOut" }}
+          className="absolute inset-0 pointer-events-none"
+        >
+          <img
+            src={`${SUPABASE_URL}/storage/v1/object/public/sim-images/skill-hero-${STEP_HERO_IMAGES[step]}.png`}
+            alt=""
+            className="w-full h-full object-cover"
+            style={{ opacity: 0.15, filter: "saturate(0.8)" }}
+            onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
+          />
+          <div className="absolute inset-0" style={{
+            background: "radial-gradient(ellipse at center, hsl(var(--background) / 0.6) 0%, hsl(var(--background) / 0.92) 70%, hsl(var(--background)) 100%)",
+          }} />
+        </motion.div>
+      </AnimatePresence>
+
       {/* Ambient glow */}
       <div
         className="absolute top-1/3 left-1/2 -translate-x-1/2 w-[500px] h-[350px] rounded-full blur-[120px] pointer-events-none opacity-30"
