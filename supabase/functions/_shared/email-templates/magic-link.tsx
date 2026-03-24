@@ -34,7 +34,7 @@ export const MagicLinkEmail = ({
       <Container style={container}>
         <Img src={`${STORAGE}/sim-images/skill-hero-ai-agent-architecture-orchestration.png`} alt="" width="520" style={heroBanner} />
         <Section style={logoOverlay}>
-          <Img src={`${STORAGE}/xcrow-logo.png`} alt="Xcrow.ai" width="48" height="48" style={logoStyle} />
+          <Img src={`${STORAGE}/email-assets/xcrow-logo.png`} alt="Xcrow.ai" width="48" height="48" style={logoStyle} />
         </Section>
         <Section style={content}>
           <Heading style={h1}>Your Portal Awaits</Heading>
