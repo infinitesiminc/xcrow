@@ -575,30 +575,35 @@ export default function MyRolesPanel({ onSelectRole, onAskChat, onTabChange, onL
         ))}
       </div>
 
-      {/* Kingdom tier filter pills */}
-      {tab === "kingdoms" && (
-        <div className="flex gap-1 mb-3 shrink-0">
-          {([
-            { key: "all" as const, label: "All", count: kingdoms.length },
-            { key: "conquered" as const, label: "👑 Conquered", count: tierCounts.conquered },
-            { key: "fortified" as const, label: "🏰 Fortified", count: tierCounts.fortified },
-            { key: "contested" as const, label: "⚔️ Contested", count: tierCounts.contested },
-            { key: "scouted" as const, label: "👁️ Scouted", count: tierCounts.scouted },
-          ] as const).map(f => (
+      {/* My Kingdoms filter toggle — only when browsing company list (not drilled in) */}
+      {tab === "kingdoms" && !selectedRealm && kingdoms.length > 0 && (
+        <div className="flex gap-1 mb-2 shrink-0 flex-wrap">
+          <button
+            onClick={() => setTierFilter("all")}
+            className="px-2 py-0.5 rounded-md text-[10px] font-medium transition-all"
+            style={{
+              fontFamily: "'Cinzel', serif",
+              background: tierFilter === "all" ? "hsl(var(--primary) / 0.15)" : "hsl(var(--muted) / 0.3)",
+              color: tierFilter === "all" ? "hsl(var(--primary))" : "hsl(var(--muted-foreground))",
+              border: tierFilter === "all" ? "1px solid hsl(var(--primary) / 0.3)" : "1px solid transparent",
+            }}
+          >
+            All
+          </button>
+          {kingdoms.length > 0 && (
             <button
-              key={f.key}
-              onClick={() => setTierFilter(f.key)}
+              onClick={() => setTierFilter(tierFilter === "scouted" ? "all" : "scouted")}
               className="px-2 py-0.5 rounded-md text-[10px] font-medium transition-all"
               style={{
                 fontFamily: "'Cinzel', serif",
-                background: tierFilter === f.key ? "hsl(var(--primary) / 0.15)" : "hsl(var(--muted) / 0.3)",
-                color: tierFilter === f.key ? "hsl(var(--primary))" : "hsl(var(--muted-foreground))",
-                border: tierFilter === f.key ? "1px solid hsl(var(--primary) / 0.3)" : "1px solid transparent",
+                background: tierFilter !== "all" ? "hsl(var(--filigree) / 0.15)" : "hsl(var(--muted) / 0.3)",
+                color: tierFilter !== "all" ? "hsl(var(--filigree-glow))" : "hsl(var(--muted-foreground))",
+                border: tierFilter !== "all" ? "1px solid hsl(var(--filigree-glow) / 0.3)" : "1px solid transparent",
               }}
             >
-              {f.label} ({f.count})
+              👑 My Kingdoms ({kingdoms.length})
             </button>
-          ))}
+          )}
         </div>
       )}
 
