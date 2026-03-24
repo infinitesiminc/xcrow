@@ -24,28 +24,33 @@ import { getTerritory } from "@/lib/territory-colors";
 
 /* ── Skill Hero Image — direct from storage (pre-generated) ── */
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
-const heroImageCache = new Set<string>();
+const heroImageCache = new Map<string, string>();
 
 function useSkillHeroImage(skill: FutureSkill | null, open: boolean) {
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    setImageUrl(null);
-    if (!skill || !open) return;
-
-    const url = `${SUPABASE_URL}/storage/v1/object/public/sim-images/skill-hero-${skill.id}.png`;
-
-    // If already verified, show instantly
-    if (heroImageCache.has(skill.id)) {
-      setImageUrl(url);
+    if (!skill || !open) {
+      setImageUrl(null);
       return;
     }
 
+    const url = `${SUPABASE_URL}/storage/v1/object/public/sim-images/skill-hero-${skill.id}.png`;
+
+    // If already verified, show instantly — no flash
+    if (heroImageCache.has(skill.id)) {
+      setImageUrl(heroImageCache.get(skill.id)!);
+      setLoading(false);
+      return;
+    }
+
+    // Only null out for uncached skills
+    setImageUrl(null);
     setLoading(true);
     const img = new Image();
     img.onload = () => {
-      heroImageCache.add(skill.id);
+      heroImageCache.set(skill.id, url);
       setImageUrl(url);
       setLoading(false);
     };
