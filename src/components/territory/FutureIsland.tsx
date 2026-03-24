@@ -95,9 +95,11 @@ function IslandIcon({ category, cx, cy, hue, isParchment }: {
 
   return (
     <g style={{ filter: glow }} pointerEvents="none">
-      <path d={hex} fill={fill} stroke={stroke} strokeWidth={1.2} />
-      <circle cx={cx} cy={cy} r={r * 0.7} fill="none" stroke={stroke} strokeWidth={0.5} opacity={0.3} />
-      {inner[category]}
+      <path d={hex} fill={fill} stroke={stroke} strokeWidth={2} />
+      <circle cx={cx} cy={cy} r={r * 0.7} fill="none" stroke={stroke} strokeWidth={1} opacity={0.3} />
+      <g transform={`translate(${cx}, ${cy}) scale(3) translate(${-cx}, ${-cy})`}>
+        {inner[category]}
+      </g>
     </g>
   );
 }
