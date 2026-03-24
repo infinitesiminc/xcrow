@@ -104,7 +104,10 @@ export default function About() {
               From <span className="text-destructive">Defense</span> to{" "}
               <span style={{ color: "hsl(var(--success))" }}>Offense</span>.
             </motion.h1>
-            <motion.p variants={fade} custom={2} className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+            <motion.p variants={fade} custom={2} className="text-2xl sm:text-3xl font-fantasy font-semibold mb-4 italic" style={{ color: "hsl(var(--filigree-glow))" }}>
+              Master AI. Or be mastered.
+            </motion.p>
+            <motion.p variants={fade} custom={3} className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
               The world is stuck asking <em>"How do we protect jobs from AI?"</em>{" "}
               We're building the platform that answers a different question:{" "}
               <span className="text-foreground font-semibold">"How do we manage our AI agent employees?"</span>
