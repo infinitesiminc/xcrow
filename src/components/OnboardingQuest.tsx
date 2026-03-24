@@ -119,7 +119,7 @@ export default function OnboardingQuest({ open, userId, onComplete }: Onboarding
               <motion.img
                 src={xcrowLogo}
                 alt="Xcrow"
-                className="relative h-24 w-24 mx-auto drop-shadow-[0_0_20px_hsl(var(--filigree-glow)/0.4)]"
+                className="relative h-24 w-24 mx-auto crow-glow"
                 animate={{ y: [0, -8, 0] }}
                 transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
               />

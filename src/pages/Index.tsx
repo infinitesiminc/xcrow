@@ -45,7 +45,7 @@ const Index = () => {
         <motion.img
           src={xcrowLogo}
           alt="Xcrow"
-          className="h-20 w-20 mx-auto mb-4 drop-shadow-[0_0_12px_hsl(var(--filigree-glow)/0.3)]"
+          className="h-20 w-20 mx-auto mb-4 crow-glow"
           animate={{ y: [0, -6, 0] }}
           transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
         />
