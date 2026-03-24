@@ -423,7 +423,7 @@ export default function BossBattleArena({
       >
         {/* Defeated boss (small) */}
         <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
-          <BossMonster hp={0} maxHp={maxHp} state="defeated" checkpointsDone={checkpoints.length} totalCheckpoints={checkpoints.length} />
+          <BossMonster hp={0} maxHp={maxHp} state="defeated" checkpointsDone={checkpoints.length} totalCheckpoints={checkpoints.length} boss={boss} />
         </motion.div>
 
         {/* Score */}
