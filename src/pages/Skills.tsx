@@ -200,14 +200,6 @@ export default function Skills() {
                               {skill.description && (
                                 <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2">{skill.description}</p>
                               )}
-                              <div className="flex items-center gap-3 mt-2">
-                                <span className="text-[10px] font-mono text-muted-foreground">
-                                  {skill.job_count} roles
-                                </span>
-                                <span className="text-[10px] font-mono" style={{ color: t.hsl }}>
-                                  {skill.demand_count} demand
-                                </span>
-                              </div>
                             </div>
                           </div>
                         </motion.div>
