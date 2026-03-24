@@ -714,7 +714,7 @@ export default function MyRolesPanel({ onSelectRole, onAskChat, onTabChange, onL
                   <p className="text-[9px] font-mono uppercase tracking-wider text-muted-foreground mb-1.5">Your Progress</p>
                   <div className="flex flex-col gap-1.5">
                     {selectedRealm.kingdoms.map((k, i) => (
-                      <KingdomCard key={k.key} kingdom={k} index={i} />
+                      <KingdomCard key={k.key} kingdom={k} index={i} onLaunchSim={onLaunchSim} />
                     ))}
                   </div>
                 </div>
