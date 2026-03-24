@@ -194,7 +194,6 @@ const Contact = () => {
                 </Card>
               </motion.div>
             </div>
-          </div>
         </div>
       </div>
     </div>
