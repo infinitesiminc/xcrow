@@ -94,11 +94,9 @@ export default function FutureIsland({ island, skillLookup, level2SkillIds, leve
 
   return (
     <g>
-      {/* Clickable background territory */}
-      <motion.circle
-        cx={cx}
-        cy={cy}
-        r={(isFocused ? 165 : radius) + 15}
+      {/* Territory border — organic polygon boundary */}
+      <motion.path
+        d={buildTerritoryBorder(cx, cy, isFocused ? 165 : radius, ALL_CAT_INDEX[category] ?? 0)}
         fill={isParchment
           ? `hsl(${theme.baseHue} 15% ${isFocused ? 82 : 78}% / ${isFocused ? 0.8 : 0.6})`
           : `hsl(${theme.baseHue} 25% ${isFocused ? 14 : 10}% / ${isFocused ? 0.7 : 0.5})`}
@@ -106,7 +104,6 @@ export default function FutureIsland({ island, skillLookup, level2SkillIds, leve
           ? `hsl(${theme.baseHue} ${isFocused ? 40 : 25}% ${isFocused ? 55 : 45}%)`
           : `hsl(${theme.baseHue} ${isFocused ? 50 : 30}% ${isFocused ? 40 : 25}%)`}
         strokeWidth={isFocused ? 2.5 : 1.5}
-        strokeDasharray={isFocused ? "none" : "6 4"}
         initial={{ scale: 0, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
