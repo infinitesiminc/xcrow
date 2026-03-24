@@ -1,63 +1,60 @@
 /**
- * CinematicHeroSlideshow — 5 skill hero images that crossfade behind the homepage hero.
- * Uses real canonical skill IDs from storage with a slow Ken Burns + crossfade effect.
+ * CinematicHeroSlideshow — Curated skill hero images that crossfade.
+ * Shows a pill overlay with skill number and name.
  */
-import { useEffect, useMemo, useState, useRef } from "react";
+import { useEffect, useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { supabase } from "@/integrations/supabase/client";
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 
-const CURATED_IDS = [
-  "complex-threat-modeling",
-  "ai-ethics-governance",
-  "strategic-narrative-design",
-  "predictive-analytics",
-  "human-ai-collaboration",
+const CURATED_SKILLS = [
+  { id: "complex-threat-modeling", name: "Complex Threat Modeling" },
+  { id: "ai-ethics-governance", name: "AI Ethics & Governance" },
+  { id: "prompt-engineering", name: "Prompt Engineering" },
+  { id: "strategic-problem-solving", name: "Strategic Problem Solving" },
+  { id: "ethical-ai-leadership-governance", name: "Ethical AI Leadership" },
 ];
 
-const CYCLE_MS = 5000; // 5 seconds per image
+const CYCLE_MS = 5000;
 
 export default function CinematicHeroSlideshow() {
   const [activeIndex, setActiveIndex] = useState(0);
-  const [loadedUrls, setLoadedUrls] = useState<string[]>([]);
+  const [loadedSkills, setLoadedSkills] = useState<typeof CURATED_SKILLS>([]);
   const intervalRef = useRef<ReturnType<typeof setInterval>>();
 
-  // Build URLs and preload
   useEffect(() => {
-    const urls = CURATED_IDS.map(
-      (id) => `${SUPABASE_URL}/storage/v1/object/public/sim-images/skill-hero-${id}.png`
-    );
-
-    // Preload all images
     let loaded = 0;
-    const verified: string[] = [];
-    urls.forEach((url, i) => {
+    const verified: (typeof CURATED_SKILLS[0] | null)[] = CURATED_SKILLS.map(() => null);
+
+    CURATED_SKILLS.forEach((skill, i) => {
       const img = new Image();
+      const url = `${SUPABASE_URL}/storage/v1/object/public/sim-images/skill-hero-${skill.id}.png`;
       img.onload = () => {
-        verified[i] = url;
+        verified[i] = skill;
         loaded++;
-        if (loaded === urls.length) setLoadedUrls([...verified]);
+        if (loaded === CURATED_SKILLS.length)
+          setLoadedSkills(verified.filter(Boolean) as typeof CURATED_SKILLS);
       };
       img.onerror = () => {
-        verified[i] = ""; // skip broken
         loaded++;
-        if (loaded === urls.length) setLoadedUrls([...verified].filter(Boolean));
+        if (loaded === CURATED_SKILLS.length)
+          setLoadedSkills(verified.filter(Boolean) as typeof CURATED_SKILLS);
       };
       img.src = url;
     });
   }, []);
 
-  // Cycle through images
   useEffect(() => {
-    if (loadedUrls.length < 2) return;
+    if (loadedSkills.length < 2) return;
     intervalRef.current = setInterval(() => {
-      setActiveIndex((prev) => (prev + 1) % loadedUrls.length);
+      setActiveIndex((prev) => (prev + 1) % loadedSkills.length);
     }, CYCLE_MS);
     return () => clearInterval(intervalRef.current);
-  }, [loadedUrls.length]);
+  }, [loadedSkills.length]);
 
-  if (loadedUrls.length === 0) return null;
+  if (loadedSkills.length === 0) return null;
+
+  const current = loadedSkills[activeIndex];
 
   return (
     <div className="absolute inset-0 overflow-hidden">
@@ -71,8 +68,8 @@ export default function CinematicHeroSlideshow() {
           transition={{ duration: 2, ease: "easeInOut" }}
         >
           <motion.img
-            src={loadedUrls[activeIndex]}
-            alt=""
+            src={`${SUPABASE_URL}/storage/v1/object/public/sim-images/skill-hero-${current.id}.png`}
+            alt={current.name}
             className="w-full h-full object-cover"
             initial={{ scale: 1.05 }}
             animate={{ scale: 1.15 }}
@@ -81,7 +78,7 @@ export default function CinematicHeroSlideshow() {
         </motion.div>
       </AnimatePresence>
 
-      {/* Subtle vignette only */}
+      {/* Vignette */}
       <div
         className="absolute inset-0 pointer-events-none"
         style={{
@@ -89,6 +86,30 @@ export default function CinematicHeroSlideshow() {
             "radial-gradient(ellipse at center, transparent 50%, hsl(var(--background) / 0.5) 100%)",
         }}
       />
+
+      {/* Skill pill */}
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={current.id}
+          initial={{ opacity: 0, y: 6 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -6 }}
+          transition={{ duration: 0.5 }}
+          className="absolute bottom-4 left-4 z-10 flex items-center gap-2 px-3 py-1.5 rounded-full border border-border/40"
+          style={{
+            background: "hsl(var(--background) / 0.7)",
+            backdropFilter: "blur(12px)",
+          }}
+        >
+          <span className="text-[10px] font-mono text-muted-foreground">
+            {activeIndex + 1}/{loadedSkills.length}
+          </span>
+          <span className="w-px h-3 bg-border/50" />
+          <span className="text-xs font-medium text-foreground/90">
+            {current.name}
+          </span>
+        </motion.div>
+      </AnimatePresence>
     </div>
   );
 }
