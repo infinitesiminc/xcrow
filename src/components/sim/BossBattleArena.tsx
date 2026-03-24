@@ -256,14 +256,16 @@ export default function BossBattleArena({
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        className="absolute inset-0 flex items-center justify-center px-6"
+        className="absolute inset-0 flex flex-col overflow-hidden"
         style={{ background: "radial-gradient(ellipse at center, hsl(262 40% 10%), hsl(0 0% 3%))" }}
       >
+        <div className="flex-1 overflow-y-auto px-6 py-6 scrollbar-thin">
+          <div className="max-w-md mx-auto">
         <motion.div
           initial={{ scale: 0.9, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ delay: 0.2, type: "spring", damping: 20 }}
-          className="max-w-md w-full rounded-xl p-6 space-y-5"
+          className="w-full rounded-xl p-6 space-y-5"
           style={{
             background: "hsl(262 30% 10% / 0.95)",
             border: "1px solid hsl(262 60% 40% / 0.3)",
