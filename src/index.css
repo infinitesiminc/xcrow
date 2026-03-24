@@ -284,13 +284,13 @@ html:not(.light):not(.parchment) {
 
   /* Territory colors — deeper for light bg */
   --territory-technical:   262 60% 45%;
-  --territory-analytical:  210 65% 42%;
+  --territory-analytical:  195 70% 38%;
   --territory-strategic:   45  70% 40%;
   --territory-communication: 152 50% 35%;
-  --territory-leadership:  30  70% 42%;
+  --territory-leadership:  25  70% 42%;
   --territory-creative:    340 60% 42%;
   --territory-ethics:      175 55% 32%;
-  --territory-humanedge:   285 55% 45%;
+  --territory-humanedge:   320 55% 42%;
 
   /* Fantasy surface tokens — warm parchment */
   --surface-stone: 35 22% 88%;
