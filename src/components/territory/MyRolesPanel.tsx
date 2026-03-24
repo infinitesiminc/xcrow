@@ -101,13 +101,39 @@ const TIER_BORDER: Record<CastleTier, string> = {
 
 /* ── Kingdom Card ── */
 
-function KingdomCard({ kingdom, index }: { kingdom: Kingdom; index: number }) {
-  const navigate = useNavigate();
+function KingdomCard({ kingdom, index, onLaunchSim }: { kingdom: Kingdom; index: number; onLaunchSim?: (req: SimLaunchRequest) => void }) {
   const castle = getCastleState(kingdom.xp);
   const tierMeta = TIER_META[kingdom.tier];
   const questProgress = kingdom.totalQuests > 0
     ? Math.round((kingdom.questsCompleted / kingdom.totalQuests) * 100) : 0;
-  const roleUrl = `/role/${encodeURIComponent(kingdom.title)}${kingdom.company ? `?company=${encodeURIComponent(kingdom.company)}` : ""}`;
+
+  const handleClick = async () => {
+    if (!onLaunchSim) return;
+    // Auto-resolve: find top task cluster for this role and launch sim
+    const { data: jobs } = await supabase
+      .from("jobs")
+      .select("id, title")
+      .ilike("title", kingdom.title)
+      .limit(1);
+    const jobId = jobs?.[0]?.id;
+    let topTask = kingdom.title;
+    if (jobId) {
+      const { data: clusters } = await supabase
+        .from("job_task_clusters")
+        .select("cluster_name, skill_names")
+        .eq("job_id", jobId)
+        .order("sort_order", { ascending: true })
+        .limit(1);
+      if (clusters?.[0]) topTask = clusters[0].cluster_name;
+    }
+    onLaunchSim({
+      jobTitle: kingdom.title,
+      taskName: topTask,
+      company: kingdom.company || undefined,
+      level: 1,
+      roleChallenge: true,
+    });
+  };
 
   return (
     <motion.div
@@ -120,7 +146,7 @@ function KingdomCard({ kingdom, index }: { kingdom: Kingdom; index: number }) {
         border: `1px solid ${TIER_BORDER[castle.tier]}`,
         boxShadow: "inset 0 1px 0 hsl(var(--emboss-light)), 0 1px 4px hsl(var(--emboss-shadow))",
       }}
-      onClick={() => navigate(roleUrl)}
+      onClick={handleClick}
     >
       {/* Castle emoji */}
       <span className="text-base leading-none shrink-0">{castle.emoji}</span>
@@ -155,8 +181,8 @@ function KingdomCard({ kingdom, index }: { kingdom: Kingdom; index: number }) {
         )}
       </div>
 
-      {/* CTA arrow */}
-      <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/50 group-hover:text-primary shrink-0 transition-colors" />
+      {/* CTA */}
+      <Swords className="h-3.5 w-3.5 text-muted-foreground/50 group-hover:text-primary shrink-0 transition-colors" />
     </motion.div>
   );
 }
