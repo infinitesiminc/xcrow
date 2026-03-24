@@ -375,7 +375,7 @@ function ProfileSection({
                       : "border-border/40 bg-muted/20 hover:border-border hover:bg-muted/40"
                   }`}
                 >
-                  <img src={avatar.src} alt={avatar.label} className="w-full aspect-square object-contain" />
+                  <img src={avatar.src} alt={avatar.label} className="w-full aspect-square object-contain crow-glow" />
                   {avatarId === avatar.id && (
                     <div className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-primary flex items-center justify-center">
                       <Check className="h-2.5 w-2.5 text-primary-foreground" />

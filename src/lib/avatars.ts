@@ -1,4 +1,3 @@
-import crowAvatar from "@/assets/avatars/crow.png";
 import wolfAvatar from "@/assets/avatars/wolf.png";
 import foxAvatar from "@/assets/avatars/fox.png";
 import owlAvatar from "@/assets/avatars/owl.png";
@@ -9,6 +8,8 @@ import bearAvatar from "@/assets/avatars/bear.png";
 import hawkAvatar from "@/assets/avatars/hawk.png";
 import lionAvatar from "@/assets/avatars/lion.png";
 import serpentAvatar from "@/assets/avatars/serpent.png";
+import scorpionAvatar from "@/assets/avatars/scorpion.png";
+import spiderAvatar from "@/assets/avatars/spider.png";
 
 export interface AvatarOption {
   id: string;
@@ -17,7 +18,6 @@ export interface AvatarOption {
 }
 
 export const AVATAR_OPTIONS: AvatarOption[] = [
-  { id: "crow", label: "Crow", src: crowAvatar },
   { id: "wolf", label: "Wolf", src: wolfAvatar },
   { id: "fox", label: "Fox", src: foxAvatar },
   { id: "owl", label: "Owl", src: owlAvatar },
@@ -28,6 +28,8 @@ export const AVATAR_OPTIONS: AvatarOption[] = [
   { id: "hawk", label: "Hawk", src: hawkAvatar },
   { id: "lion", label: "Lion", src: lionAvatar },
   { id: "serpent", label: "Serpent", src: serpentAvatar },
+  { id: "scorpion", label: "Scorpion", src: scorpionAvatar },
+  { id: "spider", label: "Spider", src: spiderAvatar },
 ];
 
 export function getAvatarById(id: string | null | undefined): AvatarOption | undefined {
