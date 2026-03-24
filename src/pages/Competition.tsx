@@ -303,55 +303,7 @@ export default function Competition() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
             {ARENA_SKILLS.map((skill, i) => {
               const territory = TERRITORIES.find((t) => t.category === skill.territory);
-              return (
-                <motion.div
-                  key={skill.id}
-                  {...fade(i * 0.06)}
-                  className="group relative rounded-2xl overflow-hidden cursor-pointer"
-                  style={{
-                    border: `1px solid hsl(var(--${territory?.cssVar || "primary"}) / 0.3)`,
-                    boxShadow: `0 0 20px hsl(var(--${territory?.cssVar || "primary"}) / 0.1)`,
-                  }}
-                  whileHover={{ scale: 1.03, y: -4 }}
-                  transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                >
-                  {/* Skill hero image */}
-                  <div className="aspect-[3/4] relative overflow-hidden">
-                    <img
-                      src={skillHeroUrl(skill.id)}
-                      alt={skill.name}
-                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                      loading="lazy"
-                    />
-                    {/* Gradient overlay */}
-                    <div
-                      className="absolute inset-0 pointer-events-none"
-                      style={{
-                        background: `linear-gradient(to top, hsl(var(--background)) 0%, hsl(var(--background) / 0.6) 40%, transparent 70%)`,
-                      }}
-                    />
-                    {/* Territory glow edge */}
-                    <div
-                      className="absolute bottom-0 left-0 right-0 h-1"
-                      style={{ background: territory?.hsl || "hsl(var(--primary))" }}
-                    />
-                  </div>
-
-                  {/* Label */}
-                  <div className="absolute bottom-0 left-0 right-0 p-3 sm:p-4">
-                    <div className="flex items-center gap-1.5 mb-1">
-                      <span className="text-sm">{territory?.emoji}</span>
-                      <span
-                        className="text-[9px] uppercase tracking-[0.15em] font-bold"
-                        style={{ color: territory?.hsl }}
-                      >
-                        {territory?.terrain}
-                      </span>
-                    </div>
-                    <h3 className="text-sm sm:text-base font-bold leading-tight">{skill.name}</h3>
-                  </div>
-                </motion.div>
-              );
+              return <ArenaCard key={skill.id} skill={skill} territory={territory!} index={i} />;
             })}
           </div>
         </div>
