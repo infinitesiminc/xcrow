@@ -303,6 +303,9 @@ export default function HowItWorks() {
           </div>
         </section>
 
+        {/* Full-width cinematic banner */}
+        <FullWidthBanner skillId={BANNER_SKILLS[3]} flip />
+
         {/* ═══ 5. THE PROGRESSION LOOP ═══ */}
         <section className="py-20 px-4">
           <div className="max-w-4xl mx-auto">
