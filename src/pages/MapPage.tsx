@@ -344,6 +344,7 @@ const MapPage = () => {
               onSelectRole={(role) => { setSelectedRole(role); setActiveTab("table"); }}
               onAskChat={(prompt) => { setChatDockOpen(true); chatSendMessage(prompt); }}
               onTabChange={setMyRolesTab}
+              onLaunchSim={handleLaunchSim}
             />
           ) : activeTab === "codex" && isSignedIn ? (
             <CodexPanel />
