@@ -9,6 +9,7 @@ import {
   Compass, Target, Zap, Trophy, ChevronDown,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { TERRITORIES } from "@/lib/territory-colors";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
