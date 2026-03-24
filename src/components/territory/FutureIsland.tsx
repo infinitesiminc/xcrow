@@ -182,7 +182,7 @@ export default function FutureIsland({ island, skillLookup, level2SkillIds, leve
       />
 
       {/* Island icon — custom SVG per category */}
-      <IslandIcon category={category} cx={cx} cy={cy - radius - 22} hue={theme.baseHue} isParchment={isParchment} />
+      <IslandIcon category={category} cx={cx} cy={cy - radius - 58} hue={theme.baseHue} isParchment={isParchment} />
 
       {/* Island label */}
       <text
