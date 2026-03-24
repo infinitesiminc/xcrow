@@ -17,6 +17,10 @@ export interface SimLaunchRequest {
   company?: string;
   skillId?: string;
   level?: 1 | 2;
+  /** When true, sim spans the role's breadth (multiple skill domains) */
+  roleChallenge?: boolean;
+  /** Canonical skill IDs linked to this role challenge */
+  linkedSkillIds?: string[];
 }
 
 interface SkillLaunchCardProps {
