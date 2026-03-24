@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import OnboardingQuest from "@/components/OnboardingQuest";
 import SkillSuggestionCards from "@/components/SkillSuggestionCards";
 import { useState } from "react";
+import CinematicHeroSlideshow from "@/components/CinematicHeroSlideshow";
 import { TERRITORIES } from "@/lib/territory-colors";
 import TerritoryEmblem from "@/components/TerritoryEmblem";
 import Footer from "@/components/Footer";
@@ -89,14 +90,8 @@ const Index = () => {
 
         {/* ═══ HERO ═══ */}
         <section className="relative min-h-[90vh] flex items-center justify-center px-4 overflow-hidden">
-          <div className="absolute inset-0 pointer-events-none">
-            <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] rounded-full blur-[180px] opacity-15"
-              style={{ background: "hsl(var(--territory-technical))" }} />
-            <div className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] rounded-full blur-[160px] opacity-10"
-              style={{ background: "hsl(var(--territory-strategic))" }} />
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] rounded-full blur-[200px] opacity-8"
-              style={{ background: "hsl(var(--filigree-glow))" }} />
-          </div>
+          {/* Cinematic skill hero slideshow */}
+          <CinematicHeroSlideshow />
 
           <motion.div {...fade()} className="text-center max-w-3xl relative z-10">
             <motion.img
