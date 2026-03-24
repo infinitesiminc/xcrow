@@ -466,7 +466,7 @@ export default function FutureSkillsTable({ skills, onSkillClick, skillGrowthMap
                         <div className="flex items-center gap-1.5">
                           {isBookmarked && <span className="text-[8px]" style={{ color: "hsl(var(--filigree-glow))" }}>⭐</span>}
                           <SkillIcon skill={skill} />
-                          <span className="font-medium text-foreground truncate text-xs">{skill.name}</span>
+                          <span className="font-medium text-foreground truncate text-[11px]" style={{ fontFamily: "'Cinzel', serif" }}>{skill.name}</span>
                         </div>
                         <div className="flex items-center gap-1.5 mt-0.5">
                           <span
