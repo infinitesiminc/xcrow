@@ -249,6 +249,9 @@ export default function HowItWorks() {
           </div>
         </section>
 
+        {/* Full-width cinematic banner */}
+        <FullWidthBanner skillId={BANNER_SKILLS[2]} />
+
         {/* ═══ 4. THE ENGINE ═══ */}
         <section className="py-20 px-4" style={{ background: "hsl(var(--secondary) / 0.4)" }}>
           <div className="max-w-4xl mx-auto">
