@@ -26,13 +26,13 @@ const HERO_SKILL_IDS = [
 /* Battle arena skill images — one per territory */
 const ARENA_SKILLS: { id: string; territory: string; name: string }[] = [
   { id: "prompt-engineering", territory: "Technical", name: "Prompt Engineering" },
-  { id: "complex-threat-modeling", territory: "Analytical", name: "Threat Modeling" },
-  { id: "strategic-problem-solving", territory: "Strategic", name: "Strategic Problem Solving" },
-  { id: "stakeholder-communication", territory: "Communication", name: "Stakeholder Comms" },
-  { id: "ethical-ai-leadership-governance", territory: "Leadership", name: "AI Leadership" },
-  { id: "humancentric-design-empathy", territory: "Creative", name: "Human-Centric Design" },
+  { id: "strategic-forecasting-scenario-planning", territory: "Analytical", name: "Scenario Planning" },
+  { id: "strategic-ai-orchestration", territory: "Strategic", name: "AI Orchestration" },
+  { id: "brand-narrative-development", territory: "Communication", name: "Brand Narrative" },
+  { id: "culture-architecting", territory: "Leadership", name: "Culture Architecting" },
+  { id: "creative-direction-innovation", territory: "Creative", name: "Creative Direction" },
   { id: "ai-ethics-governance", territory: "Ethics & Compliance", name: "AI Ethics" },
-  { id: "complex-problem-solving-humanai-teams", territory: "Human Edge", name: "Human-AI Teams" },
+  { id: "emotional-intelligence-empathy", territory: "Human Edge", name: "Emotional Intelligence" },
 ];
 
 function skillHeroUrl(id: string) {
