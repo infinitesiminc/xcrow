@@ -117,7 +117,7 @@ const App = () => (
               <Route path="/cookies" element={<CookiePolicy />} />
               <Route path="/contact" element={<><Navbar /><Contact /><Footer /></>} />
               
-              <Route path="/professionals" element={<Navigate to="/" replace />} />
+              <Route path="/professionals" element={<Professionals />} />
               <Route path="/enterprise" element={<Navigate to="/" replace />} />
               <Route path="/simulation-design" element={<SimulationDesign />} />
               <Route path="/join" element={<JoinWorkspace />} />
