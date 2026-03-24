@@ -72,7 +72,7 @@ function buildEmptySkills(taxonomy: TaxonomySkill[]): SkillXP[] {
 
 const TAB_ITEMS = [
   { key: "table" as const, icon: ScrollText, label: "Skill Forge" },
-  { key: "roles" as const, icon: Swords, label: "Realms" },
+  { key: "roles" as const, icon: Swords, label: "Kingdoms" },
   { key: "codex" as const, icon: BookOpen, label: "Codex" },
   { key: "allies" as const, icon: Users, label: "Allies" },
 ] as const;
@@ -265,7 +265,7 @@ const MapPage = () => {
 
   const chatViewCtx = useMemo(() => ({
     page: "map" as const,
-    activePanel: activeTab === "roles" ? "roles" : activeTab === "allies" ? "allies" : activeTab === "codex" ? "codex" : "territory",
+    activePanel: activeTab === "roles" ? "kingdoms" : activeTab === "allies" ? "allies" : activeTab === "codex" ? "codex" : "territory",
     selectedRole: selectedRole ? { title: selectedRole.title, company: selectedRole.company, jobId: selectedRole.jobId } : null,
     selectedTab: activeTab === "roles" ? myRolesTab : undefined,
   }), [selectedRole, activeTab, myRolesTab]);

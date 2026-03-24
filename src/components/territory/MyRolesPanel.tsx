@@ -1,7 +1,7 @@
 /**
- * MyRolesPanel — Unified "Realms" view.
- * Three sub-tabs: Realms (companies → kingdoms), Kingdoms (flat), Arsenal.
- * Realms: Browse companies, drill into one to see your kingdoms + discoverable roles.
+ * MyRolesPanel — Unified "Kingdoms" view.
+ * Two sub-tabs: Kingdoms (companies → roles with progression), Arsenal.
+ * Kingdoms: Browse companies, search roles, drill into one to see kingdoms + discoverable roles.
  */
 import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
@@ -165,7 +165,7 @@ function KingdomCard({ kingdom, index }: { kingdom: Kingdom; index: number }) {
 
 export default function MyRolesPanel({ onSelectRole, onAskChat, onTabChange, onLaunchSim }: MyRolesPanelProps) {
   const { user } = useAuth();
-  const [tab, setTab] = useState<"realms" | "kingdoms" | "arsenal">("realms");
+  const [tab, setTab] = useState<"kingdoms" | "arsenal">("kingdoms");
   const [tierFilter, setTierFilter] = useState<"all" | KingdomTier>("all");
   const [search, setSearch] = useState("");
   const [kingdoms, setKingdoms] = useState<Kingdom[]>([]);
@@ -488,7 +488,7 @@ export default function MyRolesPanel({ onSelectRole, onAskChat, onTabChange, onL
 
   /* ── Debounced role search when on Realms tab ── */
   useEffect(() => {
-    if (tab !== "realms" || selectedRealm) return;
+    if (tab !== "kingdoms" || selectedRealm) return;
     if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
     const q = search.trim().toLowerCase();
     if (!q || q.length < 2) { setSearchRoles([]); setSearchRolesLoading(false); return; }
@@ -555,7 +555,6 @@ export default function MyRolesPanel({ onSelectRole, onAskChat, onTabChange, onL
       {/* Tabs */}
       <div className="flex items-center gap-1 rounded-lg p-0.5 mb-3 shrink-0" style={{ background: "hsl(var(--surface-stone))" }}>
         {([
-          { key: "realms" as const, icon: Building2, label: "Realms" },
           { key: "kingdoms" as const, icon: Crown, label: "Kingdoms" },
           { key: "arsenal" as const, icon: Wrench, label: "Arsenal" },
         ] as const).map(t => (
@@ -576,30 +575,35 @@ export default function MyRolesPanel({ onSelectRole, onAskChat, onTabChange, onL
         ))}
       </div>
 
-      {/* Kingdom tier filter pills */}
-      {tab === "kingdoms" && (
-        <div className="flex gap-1 mb-3 shrink-0">
-          {([
-            { key: "all" as const, label: "All", count: kingdoms.length },
-            { key: "conquered" as const, label: "👑 Conquered", count: tierCounts.conquered },
-            { key: "fortified" as const, label: "🏰 Fortified", count: tierCounts.fortified },
-            { key: "contested" as const, label: "⚔️ Contested", count: tierCounts.contested },
-            { key: "scouted" as const, label: "👁️ Scouted", count: tierCounts.scouted },
-          ] as const).map(f => (
+      {/* My Kingdoms filter toggle — only when browsing company list (not drilled in) */}
+      {tab === "kingdoms" && !selectedRealm && kingdoms.length > 0 && (
+        <div className="flex gap-1 mb-2 shrink-0 flex-wrap">
+          <button
+            onClick={() => setTierFilter("all")}
+            className="px-2 py-0.5 rounded-md text-[10px] font-medium transition-all"
+            style={{
+              fontFamily: "'Cinzel', serif",
+              background: tierFilter === "all" ? "hsl(var(--primary) / 0.15)" : "hsl(var(--muted) / 0.3)",
+              color: tierFilter === "all" ? "hsl(var(--primary))" : "hsl(var(--muted-foreground))",
+              border: tierFilter === "all" ? "1px solid hsl(var(--primary) / 0.3)" : "1px solid transparent",
+            }}
+          >
+            All
+          </button>
+          {kingdoms.length > 0 && (
             <button
-              key={f.key}
-              onClick={() => setTierFilter(f.key)}
+              onClick={() => setTierFilter(tierFilter === "scouted" ? "all" : "scouted")}
               className="px-2 py-0.5 rounded-md text-[10px] font-medium transition-all"
               style={{
                 fontFamily: "'Cinzel', serif",
-                background: tierFilter === f.key ? "hsl(var(--primary) / 0.15)" : "hsl(var(--muted) / 0.3)",
-                color: tierFilter === f.key ? "hsl(var(--primary))" : "hsl(var(--muted-foreground))",
-                border: tierFilter === f.key ? "1px solid hsl(var(--primary) / 0.3)" : "1px solid transparent",
+                background: tierFilter !== "all" ? "hsl(var(--filigree) / 0.15)" : "hsl(var(--muted) / 0.3)",
+                color: tierFilter !== "all" ? "hsl(var(--filigree-glow))" : "hsl(var(--muted-foreground))",
+                border: tierFilter !== "all" ? "1px solid hsl(var(--filigree-glow) / 0.3)" : "1px solid transparent",
               }}
             >
-              {f.label} ({f.count})
+              👑 My Kingdoms ({kingdoms.length})
             </button>
-          ))}
+          )}
         </div>
       )}
 
@@ -633,33 +637,33 @@ export default function MyRolesPanel({ onSelectRole, onAskChat, onTabChange, onL
         </div>
       )}
 
-      {/* Search */}
-      <div className="relative mb-3 shrink-0">
-        <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
-        {tab !== "realms" && (
+      {/* Search — only for Arsenal tab; Kingdoms has its own search inside */}
+      {tab === "arsenal" && (
+        <div className="relative mb-3 shrink-0">
+          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
           <Input
             value={search}
             onChange={e => setSearch(e.target.value)}
-            placeholder={tab === "arsenal" ? "Search AI tools…" : "Search kingdoms…"}
+            placeholder="Search AI tools…"
             className="h-8 pl-8 text-xs border-border/40"
             style={{ background: "hsl(var(--surface-stone))" }}
           />
-        )}
-      </div>
+        </div>
+      )}
 
       {/* Content */}
       <div className="flex-1 overflow-y-auto scrollbar-thin">
-        {tab === "realms" ? (
-          /* ═══ REALMS TAB ═══ */
+        {tab === "kingdoms" ? (
+          /* ═══ KINGDOMS TAB (was Realms) ═══ */
           selectedRealm ? (
-            /* Realm detail: company's roles + user's kingdoms */
+            /* Company detail: roles + user's kingdoms */
             <div className="space-y-3 p-1">
               <button
                 onClick={() => setSelectedRealm(null)}
                 className="flex items-center gap-1 text-[10px] text-muted-foreground hover:text-foreground transition-colors"
                 style={{ fontFamily: "'Cinzel', serif" }}
               >
-                <ChevronLeft className="h-3 w-3" /> All Realms
+                <ChevronLeft className="h-3 w-3" /> All Kingdoms
               </button>
 
               <div className="flex items-center gap-2.5">
@@ -681,7 +685,7 @@ export default function MyRolesPanel({ onSelectRole, onAskChat, onTabChange, onL
               {/* User's kingdoms in this realm */}
               {selectedRealm.kingdoms.length > 0 && (
                 <div>
-                  <p className="text-[9px] font-mono uppercase tracking-wider text-muted-foreground mb-1.5">Your Kingdoms</p>
+                  <p className="text-[9px] font-mono uppercase tracking-wider text-muted-foreground mb-1.5">Your Progress</p>
                   <div className="flex flex-col gap-1.5">
                     {selectedRealm.kingdoms.map((k, i) => (
                       <KingdomCard key={k.key} kingdom={k} index={i} />
@@ -832,7 +836,11 @@ export default function MyRolesPanel({ onSelectRole, onAskChat, onTabChange, onL
                 </div>
               ) : (() => {
                 const searchQ = search.toLowerCase();
-                const filteredRealms = enrichedRealms.filter(r => !searchQ || r.name.toLowerCase().includes(searchQ));
+                let filteredRealms = enrichedRealms.filter(r => !searchQ || r.name.toLowerCase().includes(searchQ));
+                // "My Kingdoms" filter: show only companies where user has kingdoms
+                if (tierFilter !== "all") {
+                  filteredRealms = filteredRealms.filter(r => r.kingdoms.length > 0);
+                }
                 const hasRoleResults = searchQ.length >= 2 && searchRoles.length > 0;
                 const showingRoles = hasRoleResults && !searchRolesLoading;
 
@@ -840,7 +848,7 @@ export default function MyRolesPanel({ onSelectRole, onAskChat, onTabChange, onL
                   <div className="text-center py-12">
                     <span className="text-3xl mb-3 block">🏰</span>
                     <p className="text-sm text-muted-foreground" style={{ fontFamily: "'Cinzel', serif" }}>
-                      {search ? "No realms or roles match" : "No realms discovered"}
+                      {search ? "No kingdoms or roles match" : tierFilter !== "all" ? "No kingdoms discovered yet" : "No companies found"}
                     </p>
                   </div>
                 ) : (
@@ -1046,27 +1054,7 @@ export default function MyRolesPanel({ onSelectRole, onAskChat, onTabChange, onL
               ))}
             </div>
           )
-        ) : loading ? (
-          <div className="flex items-center justify-center py-12">
-            <div className="h-5 w-5 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-          </div>
-        ) : filteredKingdoms.length === 0 ? (
-          <div className="text-center py-12">
-            <span className="text-3xl mb-3 block">🗺️</span>
-            <p className="text-sm text-muted-foreground" style={{ fontFamily: "'Cinzel', serif" }}>
-              {tierFilter !== "all" ? `No ${tierFilter} kingdoms` : "No kingdoms discovered yet"}
-            </p>
-            <p className="text-xs text-muted-foreground/60 mt-1">
-              Explore roles via the chat or search to discover your first kingdom.
-            </p>
-          </div>
-        ) : (
-          <div className="flex flex-col gap-2">
-            {filteredKingdoms.map((k, i) => (
-              <KingdomCard key={k.key} kingdom={k} index={i} />
-            ))}
-          </div>
-        )}
+        ) : null}
       </div>
     </div>
   );
