@@ -156,13 +156,13 @@
 
     /* ── 8 Territory Colors (dark — lifted lightness) ── */
     --territory-technical:   262 83% 65%;
-    --territory-analytical:  210 80% 62%;
+    --territory-analytical:  195 85% 58%;
     --territory-strategic:   45  85% 55%;
     --territory-communication: 152 60% 50%;
-    --territory-leadership:  30  90% 58%;
+    --territory-leadership:  25  90% 58%;
     --territory-creative:    340 75% 60%;
     --territory-ethics:      175 70% 48%;
-    --territory-humanedge:   285 70% 65%;
+    --territory-humanedge:   320 70% 62%;
 
     /* ── Fantasy surface tokens (dark) ── */
     --surface-stone: 240 8% 12%;
