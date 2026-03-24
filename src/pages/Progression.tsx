@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import { BOSS_ROSTER, type BossCharacter } from "@/lib/boss-roster";
 
 const fadeUp = {
   initial: { opacity: 0, y: 24 },
@@ -391,6 +392,130 @@ function RippleSection() {
 }
 
 /* ═══════════════════════════════════════════════════════════════ */
+/*  BOSS BESTIARY                                                  */
+/* ═══════════════════════════════════════════════════════════════ */
+
+function BossMiniSVG({ boss }: { boss: BossCharacter }) {
+  const h = boss.hue;
+  return (
+    <svg viewBox="0 0 120 130" className="w-20 h-20 sm:w-24 sm:h-24 drop-shadow-lg">
+      <defs>
+        <radialGradient id={`bg-${boss.id}`} cx="50%" cy="40%">
+          <stop offset="0%" stopColor={`hsl(${h}, 70%, 25%)`} />
+          <stop offset="100%" stopColor={`hsl(${h}, 50%, 10%)`} />
+        </radialGradient>
+        <radialGradient id={`glow-${boss.id}`} cx="50%" cy="50%">
+          <stop offset="0%" stopColor={`hsl(${h}, 80%, 60%)`} stopOpacity="0.5" />
+          <stop offset="100%" stopColor={`hsl(${h}, 80%, 60%)`} stopOpacity="0" />
+        </radialGradient>
+      </defs>
+      {/* Body */}
+      <path d={boss.bodyPath} fill={`url(#bg-${boss.id})`} stroke={`hsl(${h}, 60%, 50%)`} strokeWidth="1.5" />
+      <path d={boss.innerPath} fill="none" stroke={`hsl(${h}, 50%, 40%)`} strokeWidth="0.7" opacity="0.5" />
+      {/* Crown */}
+      <path d={boss.crownPath} fill="none" stroke={`hsl(${h}, 70%, 60%)`} strokeWidth="1.5" strokeLinecap="round" />
+      {/* Eyes */}
+      {boss.eyeLayout === "single" && (
+        <circle cx="60" cy="48" r="6" fill={`url(#glow-${boss.id})`} stroke={`hsl(${h}, 80%, 70%)`} strokeWidth="1" />
+      )}
+      {boss.eyeLayout === "dual" && (
+        <>
+          <circle cx="48" cy="48" r="4.5" fill={`url(#glow-${boss.id})`} stroke={`hsl(${h}, 80%, 70%)`} strokeWidth="1" />
+          <circle cx="72" cy="48" r="4.5" fill={`url(#glow-${boss.id})`} stroke={`hsl(${h}, 80%, 70%)`} strokeWidth="1" />
+        </>
+      )}
+      {boss.eyeLayout === "triple" && (
+        <>
+          <circle cx="60" cy="40" r="4" fill={`url(#glow-${boss.id})`} stroke={`hsl(${h}, 80%, 70%)`} strokeWidth="1" />
+          <circle cx="46" cy="52" r="3.5" fill={`url(#glow-${boss.id})`} stroke={`hsl(${h}, 80%, 70%)`} strokeWidth="0.8" />
+          <circle cx="74" cy="52" r="3.5" fill={`url(#glow-${boss.id})`} stroke={`hsl(${h}, 80%, 70%)`} strokeWidth="0.8" />
+        </>
+      )}
+      {/* Runes */}
+      {boss.runes.map((r, i) => (
+        <circle key={i} cx={r.x} cy={r.y} r={r.r} fill={`hsl(${h}, 60%, 55%)`} opacity="0.6">
+          <animate attributeName="opacity" values="0.3;0.8;0.3" dur={`${2 + i * 0.4}s`} repeatCount="indefinite" />
+        </circle>
+      ))}
+    </svg>
+  );
+}
+
+function BossBestiarySection() {
+  return (
+    <section className="px-4 py-20">
+      <div className="mx-auto max-w-5xl">
+        <motion.div {...fadeUp} className="text-center mb-14">
+          <Badge variant="outline" className="mb-4 border-destructive/30 text-destructive font-['Cinzel'] text-xs tracking-wider">
+            Level 2 — Boss Battles
+          </Badge>
+          <h2 className="font-['Cinzel'] text-3xl sm:text-4xl font-bold text-foreground">
+            The Bestiary
+          </h2>
+          <p className="mt-4 text-muted-foreground max-w-2xl mx-auto text-[15px] leading-relaxed">
+            Ten unique adversaries guard the Sentinel's Sanctum. Each boss rotates between battles — 
+            no two encounters feel the same.
+          </p>
+        </motion.div>
+
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+          {BOSS_ROSTER.map((boss, i) => (
+            <motion.div
+              key={boss.id}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-40px" }}
+              transition={{ duration: 0.4, delay: i * 0.06 }}
+              whileHover={{ y: -6, scale: 1.03 }}
+              className="group relative flex flex-col items-center rounded-xl border border-border bg-card p-4 text-center overflow-hidden"
+              style={{
+                boxShadow: `0 4px 20px -6px hsl(${boss.hue}, 50%, 30%, 0.3)`,
+              }}
+            >
+              {/* Subtle hue tint at top */}
+              <div
+                className="absolute inset-x-0 top-0 h-16 opacity-20 pointer-events-none"
+                style={{
+                  background: `radial-gradient(ellipse at 50% 0%, hsl(${boss.hue}, 60%, 50%), transparent 70%)`,
+                }}
+              />
+
+              <div className="relative z-10 mb-3">
+                <BossMiniSVG boss={boss} />
+              </div>
+
+              <span className="text-lg mb-1">{boss.emoji}</span>
+              <h4 className="font-['Cinzel'] font-bold text-foreground text-sm leading-tight">
+                {boss.name}
+              </h4>
+              <p className="text-[10px] text-muted-foreground mt-1 italic leading-snug line-clamp-2">
+                {boss.title}
+              </p>
+
+              {/* Hover quote tooltip */}
+              <div className="absolute inset-0 flex items-end justify-center p-3 bg-gradient-to-t from-background/95 via-background/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-20">
+                <p className="text-[11px] text-foreground italic text-center leading-snug">
+                  "{boss.quote}"
+                </p>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+
+        {/* Rotation callout */}
+        <motion.div {...fadeUp} transition={{ delay: 0.3 }} className="mt-8 rounded-xl border border-border bg-card p-5 sm:p-6 text-center">
+          <p className="text-sm text-muted-foreground leading-relaxed">
+            <span className="font-semibold text-foreground">Smart Rotation:</span>{" "}
+            Each battle picks from the roster while avoiding your last 4 opponents — 
+            keeping every encounter fresh and unpredictable.
+          </p>
+        </motion.div>
+      </div>
+    </section>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════════ */
 /*  CTA                                                            */
 /* ═══════════════════════════════════════════════════════════════ */
 
@@ -432,6 +557,7 @@ export default function Progression() {
         <SkillCastlesSection />
         <KingdomsSection />
         <PlayerRankSection />
+        <BossBestiarySection />
         <RippleSection />
         <CTASection />
       </main>
