@@ -294,30 +294,36 @@ export default function About() {
               </p>
             </motion.div>
 
-            <motion.div variants={fade} custom={1} className="space-y-4">
+            <motion.div variants={fade} custom={1} className="grid md:grid-cols-3 gap-5">
               {L2_CHECKPOINTS.map((cp, i) => {
                 const vs = VERDICT_STYLES[cp.verdict];
                 return (
                   <motion.div key={i} variants={fade} custom={i + 2}
-                    className="rounded-xl border p-5"
-                    style={{ borderColor: "hsl(262 80% 55% / 0.15)", background: "hsl(262 30% 10% / 0.5)" }}
+                    className="rounded-xl border p-6 flex flex-col"
+                    style={{ borderColor: "hsl(262 80% 55% / 0.2)", background: "hsl(262 30% 10% / 0.6)" }}
                   >
-                    <div className="flex items-center gap-2 mb-3">
-                      <span className="text-xs font-mono px-2 py-0.5 rounded" style={{ background: "hsl(262 80% 55% / 0.15)", color: "hsl(262 80% 70%)" }}>
-                        {cp.area}
-                      </span>
-                      <span className="text-xs font-mono px-2 py-0.5 rounded" style={{ background: vs.bg, color: vs.text, border: `1px solid ${vs.border}` }}>
-                        {vs.label}
-                      </span>
-                    </div>
-                    <div className="mb-3 p-3 rounded-lg" style={{ background: "hsl(262 80% 55% / 0.06)", border: "1px solid hsl(262 80% 55% / 0.1)" }}>
-                      <p className="text-sm font-medium flex items-start gap-2">
-                        <Radio className="h-4 w-4 shrink-0 mt-0.5" style={{ color: "hsl(262 80% 65%)" }} />
-                        <span className="italic text-muted-foreground">"{cp.claim}"</span>
-                      </p>
-                    </div>
-                    <p className="text-sm font-medium mb-2">{cp.question}</p>
-                    <p className="text-xs text-muted-foreground leading-relaxed">{cp.explanation}</p>
+                    <span className="text-xs font-mono px-2 py-0.5 rounded self-start mb-4" style={{ background: "hsl(262 80% 55% / 0.15)", color: "hsl(262 80% 70%)" }}>
+                      {cp.area}
+                    </span>
+
+                    <p className="text-base sm:text-lg font-medium italic text-muted-foreground leading-relaxed mb-4 flex-1">
+                      "{cp.claim}"
+                    </p>
+
+                    <p className="text-sm font-semibold text-foreground mb-3">{cp.question}</p>
+
+                    <p className="text-xs text-muted-foreground leading-relaxed mb-5">{cp.explanation}</p>
+
+                    <button
+                      className="w-full py-3 rounded-lg text-sm font-bold tracking-wide transition-all cursor-default"
+                      style={{
+                        background: vs.bg,
+                        color: vs.text,
+                        border: `1.5px solid ${vs.border}`,
+                      }}
+                    >
+                      ✦ {vs.label}
+                    </button>
                   </motion.div>
                 );
               })}
