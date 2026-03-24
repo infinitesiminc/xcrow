@@ -3,7 +3,7 @@
  * Three sub-tabs: Realms (companies → kingdoms), Kingdoms (flat), Arsenal.
  * Realms: Browse companies, drill into one to see your kingdoms + discoverable roles.
  */
-import { useState, useEffect, useMemo, useCallback, useRef } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Search, ChevronRight, Shield, Flame, Wrench, ExternalLink, X,
