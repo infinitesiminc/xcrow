@@ -6,10 +6,10 @@ const corsHeaders = {
     'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 }
 
-const SENDER_DOMAIN = 'notify.infinitesim.co'
-const FROM_DOMAIN = 'notify.infinitesim.co'
-const SITE_NAME = 'infinitesimulation'
-const RECIPIENT = 'jackson@infinitesim.co'
+const SENDER_DOMAIN = 'notify.xcrow.ai'
+const FROM_DOMAIN = 'notify.xcrow.ai'
+const SITE_NAME = 'Xcrow'
+const RECIPIENT = 'jackson@xcrow.ai'
 
 function buildContactHtml(data: {
   name: string
@@ -32,7 +32,7 @@ function buildContactHtml(data: {
   return `<!DOCTYPE html><html><body style="font-family:sans-serif;color:#1a1a1a;padding:24px">
 <h2 style="margin:0 0 16px">New ${data.formType === 'org' ? 'Organization Inquiry' : 'Contact Message'}</h2>
 <table style="border-collapse:collapse;width:100%;max-width:500px">${rows.join('')}</table>
-<p style="margin-top:24px;color:#999;font-size:12px">Sent from infinitesimulation.lovable.app</p>
+<p style="margin-top:24px;color:#999;font-size:12px">Sent from xcrow.ai contact form</p>
 </body></html>`
 }
 
