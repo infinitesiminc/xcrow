@@ -87,11 +87,11 @@ export default function SkillGapSection() {
             <AlertTriangle className="h-3 w-3" /> DATA FROM OUR DATABASE
           </div>
           <h2 className="text-3xl sm:text-4xl font-fantasy font-bold mb-3">
-            The <span className="text-destructive">Skill Gap</span> Is Real
+            The <span className="text-destructive">Skill Gap</span> Is Measurable
           </h2>
           <p className="text-muted-foreground max-w-2xl mx-auto">
-            We scraped and analyzed <strong className="text-foreground">4,176 university curricula</strong> and mapped them against 
-            the <strong className="text-foreground">183 future skills</strong> the AI economy demands. The results are alarming.
+            We analyzed <strong className="text-foreground">4,176 university curricula</strong> and mapped them against 
+            the <strong className="text-foreground">183 future skills</strong> employers now demand. Here's what your programs are missing.
           </p>
         </motion.div>
 
