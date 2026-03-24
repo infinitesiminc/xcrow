@@ -290,6 +290,21 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  // Auth guard - superadmin only
+  const authHeader = req.headers.get("Authorization");
+  if (!authHeader?.startsWith("Bearer ")) {
+    return respond({ error: "Unauthorized" }, 401);
+  }
+  const _authSb = getSupabaseAdmin();
+  const { data: claimsData, error: claimsError } = await _authSb.auth.getClaims(authHeader.replace("Bearer ", ""));
+  if (claimsError || !claimsData?.claims) {
+    return respond({ error: "Unauthorized" }, 401);
+  }
+  const { data: isAdmin } = await _authSb.rpc("is_superadmin", { _user_id: claimsData.claims.sub });
+  if (!isAdmin) {
+    return respond({ error: "Forbidden" }, 403);
+  }
+
   try {
     const { step, company_id, ats_platform, us_only = true, limit = 50, offset = 0 } =
       await req.json();
