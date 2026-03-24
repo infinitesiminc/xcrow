@@ -20,8 +20,8 @@ function IslandIcon({ category, cx, cy, hue, isParchment }: {
   const glow = `drop-shadow(0 0 10px hsl(${hue} 90% 60% / 0.6)) drop-shadow(0 0 20px hsl(${hue} 80% 50% / 0.3))`;
   const r = 27;
 
-  // Shared hexagonal badge frame
-  const hex = `M${cx} ${cy - r} L${cx + r * 0.866} ${cy - r * 0.5} L${cx + r * 0.866} ${cy + r * 0.5} L${cx} ${cy + r} L${cx - r * 0.866} ${cy + r * 0.5} L${cx - r * 0.866} ${cy - r * 0.5} Z`;
+  // Medieval shield shape
+  const shield = `M${cx} ${cy - r} L${cx + r * 0.85} ${cy - r * 0.55} L${cx + r * 0.75} ${cy + r * 0.3} Q${cx + r * 0.35} ${cy + r * 0.9} ${cx} ${cy + r} Q${cx - r * 0.35} ${cy + r * 0.9} ${cx - r * 0.75} ${cy + r * 0.3} L${cx - r * 0.85} ${cy - r * 0.55} Z`;
 
   const inner: Record<FutureSkillCategory, JSX.Element> = {
     // Gear/cog
