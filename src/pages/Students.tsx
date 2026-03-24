@@ -18,7 +18,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import SimulatorModal from "@/components/SimulatorModal";
-import xcrowLogo from "@/assets/xcrow-logo.png";
+import xcrowLogo from "@/assets/xcrow-logo.webp";
 
 const fade = (delay = 0) => ({
   initial: { opacity: 0, y: 24 },

@@ -15,10 +15,10 @@ import { getLevel, levelProgress } from "@/lib/skill-map";
 import { getAvatarById } from "@/lib/avatars";
 import type { Friend } from "@/hooks/use-friends";
 
-import castleRuins from "@/assets/castle-ruins.png";
-import castleOutpost from "@/assets/castle-outpost.png";
-import castleFortress from "@/assets/castle-fortress.png";
-import castleCitadel from "@/assets/castle-citadel.png";
+import castleRuins from "@/assets/castle-ruins.webp";
+import castleOutpost from "@/assets/castle-outpost.webp";
+import castleFortress from "@/assets/castle-fortress.webp";
+import castleCitadel from "@/assets/castle-citadel.webp";
 
 const TIER_IMAGES: Record<string, string> = {
   ruins: castleRuins,

@@ -15,21 +15,21 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
 // Assets
-import xcrowLogo from "@/assets/xcrow-logo.png";
-import castleRuins from "@/assets/castle-ruins.png";
-import castleOutpost from "@/assets/castle-outpost.png";
-import castleFortress from "@/assets/castle-fortress.png";
-import castleCitadel from "@/assets/castle-citadel.png";
+import xcrowLogo from "@/assets/xcrow-logo.webp";
+import castleRuins from "@/assets/castle-ruins.webp";
+import castleOutpost from "@/assets/castle-outpost.webp";
+import castleFortress from "@/assets/castle-fortress.webp";
+import castleCitadel from "@/assets/castle-citadel.webp";
 import simBriefing from "@/assets/sim-briefing.jpg";
 import simVictory from "@/assets/sim-victory.jpg";
 import heroConquer from "@/assets/hero-conquer.jpg";
 
-import avatarCrow from "@/assets/avatars/crow.png";
-import avatarDragon from "@/assets/avatars/dragon.png";
-import avatarPhoenix from "@/assets/avatars/phoenix.png";
-import avatarWolf from "@/assets/avatars/wolf.png";
-import avatarHawk from "@/assets/avatars/hawk.png";
-import avatarLion from "@/assets/avatars/lion.png";
+import avatarCrow from "@/assets/avatars/crow.webp";
+import avatarDragon from "@/assets/avatars/dragon.webp";
+import avatarPhoenix from "@/assets/avatars/phoenix.webp";
+import avatarWolf from "@/assets/avatars/wolf.webp";
+import avatarHawk from "@/assets/avatars/hawk.webp";
+import avatarLion from "@/assets/avatars/lion.webp";
 
 const fade = (delay = 0) => ({
   initial: { opacity: 0, y: 24 },
