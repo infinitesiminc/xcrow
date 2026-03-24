@@ -282,8 +282,9 @@ export type Database = {
           created_at: string
           email: string
           full_name: string
-          graduation_year: number | null
           id: string
+          job_title: string | null
+          student_count: number | null
           university: string
           user_id: string | null
         }
@@ -291,8 +292,9 @@ export type Database = {
           created_at?: string
           email: string
           full_name: string
-          graduation_year?: number | null
           id?: string
+          job_title?: string | null
+          student_count?: number | null
           university: string
           user_id?: string | null
         }
@@ -300,8 +302,9 @@ export type Database = {
           created_at?: string
           email?: string
           full_name?: string
-          graduation_year?: number | null
           id?: string
+          job_title?: string | null
+          student_count?: number | null
           university?: string
           user_id?: string | null
         }
