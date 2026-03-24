@@ -3,7 +3,7 @@
  * Three sub-tabs: Realms (companies → kingdoms), Kingdoms (flat), Arsenal.
  * Realms: Browse companies, drill into one to see your kingdoms + discoverable roles.
  */
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Search, ChevronRight, Shield, Flame, Wrench, ExternalLink, X,
@@ -182,6 +182,11 @@ export default function MyRolesPanel({ onSelectRole, onAskChat, onTabChange, onL
   const [expandedJobId, setExpandedJobId] = useState<string | null>(null);
   const [jobSkills, setJobSkills] = useState<Record<string, JobSkillLink[]>>({});
   const [jobSkillsStatus, setJobSkillsStatus] = useState<Record<string, "loading" | "loaded" | "empty" | "error">>({});
+
+  // Unified search: role results from DB
+  const [searchRoles, setSearchRoles] = useState<Array<{ id: string; title: string; company_name: string | null; company_id: string | null; department: string | null; augmented_percent: number | null; topTask: string | null }>>([]);
+  const [searchRolesLoading, setSearchRolesLoading] = useState(false);
+  const searchDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   /* ── Fetch & merge kingdoms from behavior ── */
   useEffect(() => {
@@ -481,14 +486,51 @@ export default function MyRolesPanel({ onSelectRole, onAskChat, onTabChange, onL
   }, [expandedJobId, jobSkillsStatus]);
 
 
-  const q = search.toLowerCase();
+  /* ── Debounced role search when on Realms tab ── */
+  useEffect(() => {
+    if (tab !== "realms" || selectedRealm) return;
+    if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
+    const q = search.trim().toLowerCase();
+    if (!q || q.length < 2) { setSearchRoles([]); setSearchRolesLoading(false); return; }
+    setSearchRolesLoading(true);
+    searchDebounceRef.current = setTimeout(async () => {
+      const { data } = await supabase
+        .from("jobs")
+        .select("id, title, department, augmented_percent, company_id, companies!inner(name)")
+        .or(`title.ilike.%${q}%`)
+        .limit(15);
+      if (!data) { setSearchRoles([]); setSearchRolesLoading(false); return; }
+      // Deduplicate by title+company
+      const seen = new Set<string>();
+      const results: typeof searchRoles = [];
+      for (const row of data as any[]) {
+        const key = `${row.title.toLowerCase()}||${(row.companies?.name || "").toLowerCase()}`;
+        if (seen.has(key)) continue;
+        seen.add(key);
+        results.push({
+          id: row.id,
+          title: row.title,
+          company_name: row.companies?.name || null,
+          company_id: row.company_id,
+          department: row.department,
+          augmented_percent: row.augmented_percent,
+          topTask: null,
+        });
+      }
+      setSearchRoles(results);
+      setSearchRolesLoading(false);
+    }, 300);
+    return () => { if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current); };
+  }, [search, tab, selectedRealm]);
+
+  const rq = search.toLowerCase();
   const filteredKingdoms = useMemo(() => {
     return kingdoms.filter(k => {
       if (tierFilter !== "all" && k.tier !== tierFilter) return false;
-      if (q && !k.title.toLowerCase().includes(q) && !(k.company || "").toLowerCase().includes(q)) return false;
+      if (rq && !k.title.toLowerCase().includes(rq) && !(k.company || "").toLowerCase().includes(rq)) return false;
       return true;
     });
-  }, [kingdoms, tierFilter, q]);
+  }, [kingdoms, tierFilter, rq]);
 
   const tierCounts = useMemo(() => {
     const c = { scouted: 0, contested: 0, fortified: 0, conquered: 0 };
@@ -496,11 +538,11 @@ export default function MyRolesPanel({ onSelectRole, onAskChat, onTabChange, onL
     return c;
   }, [kingdoms]);
 
-  /* ── Arsenal logic ── */
+  const arsenalQ = search.toLowerCase();
   const allToolsFiltered = AI_TOOL_REGISTRY.filter(t => {
     if (arsenalFilter === "saved" && !savedToolNames.includes(t.name)) return false;
     if (arsenalFilter !== "all" && arsenalFilter !== "saved" && t.category !== arsenalFilter) return false;
-    if (q && !t.name.toLowerCase().includes(q) && !t.description.toLowerCase().includes(q) && !t.company.toLowerCase().includes(q)) return false;
+    if (arsenalQ && !t.name.toLowerCase().includes(arsenalQ) && !t.description.toLowerCase().includes(arsenalQ) && !t.company.toLowerCase().includes(arsenalQ)) return false;
     return true;
   });
   const seen = new Set<string>();
@@ -777,7 +819,7 @@ export default function MyRolesPanel({ onSelectRole, onAskChat, onTabChange, onL
               <div className="relative mb-2">
                 <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
                 <Input
-                  placeholder="Search realms..."
+                  placeholder="Search roles or companies..."
                   value={search}
                   onChange={e => setSearch(e.target.value)}
                   className="pl-8 h-8 text-xs bg-transparent border-border/40"
@@ -789,70 +831,156 @@ export default function MyRolesPanel({ onSelectRole, onAskChat, onTabChange, onL
                   <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
                 </div>
               ) : (() => {
-                const rq = search.toLowerCase();
-                const filteredRealms = enrichedRealms.filter(r => !rq || r.name.toLowerCase().includes(rq));
-                return filteredRealms.length === 0 ? (
+                const searchQ = search.toLowerCase();
+                const filteredRealms = enrichedRealms.filter(r => !searchQ || r.name.toLowerCase().includes(searchQ));
+                const hasRoleResults = searchQ.length >= 2 && searchRoles.length > 0;
+                const showingRoles = hasRoleResults && !searchRolesLoading;
+
+                return (filteredRealms.length === 0 && !hasRoleResults && !searchRolesLoading) ? (
                   <div className="text-center py-12">
                     <span className="text-3xl mb-3 block">🏰</span>
                     <p className="text-sm text-muted-foreground" style={{ fontFamily: "'Cinzel', serif" }}>
-                      {search ? "No realms match" : "No realms discovered"}
+                      {search ? "No realms or roles match" : "No realms discovered"}
                     </p>
                   </div>
                 ) : (
-                  <div className="space-y-1">
-                    {filteredRealms.map((rc, i) => {
-                      const logoUrl = rc.logo_url || brandfetchFromName(rc.name);
-                      const hasProgress = rc.kingdoms.length > 0;
-                      const bestTier = rc.kingdoms.reduce<KingdomTier | null>((best, k) => {
-                        const order: KingdomTier[] = ["scouted", "contested", "fortified", "conquered"];
-                        if (!best) return k.tier;
-                        return order.indexOf(k.tier) > order.indexOf(best) ? k.tier : best;
-                      }, null);
-                      return (
-                        <motion.button
-                          key={rc.id}
-                          initial={{ opacity: 0, y: 4 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: Math.min(i * 0.02, 0.3), duration: 0.2 }}
-                          onClick={() => setSelectedRealm(rc)}
-                          className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-left transition-all hover:brightness-110 group"
-                          style={{
-                            background: hasProgress ? "hsl(var(--filigree) / 0.06)" : "hsl(var(--surface-stone) / 0.4)",
-                            border: hasProgress ? "1px solid hsl(var(--filigree) / 0.12)" : "1px solid hsl(var(--filigree) / 0.06)",
-                          }}
-                        >
-                          <div className="w-6 h-6 rounded-md overflow-hidden flex items-center justify-center bg-muted/50 shrink-0">
-                            {logoUrl ? (
-                              <img src={logoUrl} alt="" className="w-6 h-6 object-contain" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
-                            ) : (
-                              <Building2 className="h-3 w-3 text-muted-foreground" />
-                            )}
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-1.5">
-                              <p className="text-[11px] font-bold text-foreground truncate group-hover:text-primary transition-colors" style={{ fontFamily: "'Cinzel', serif" }}>
-                                {rc.name}
-                              </p>
-                              {bestTier && (
-                                <span className="text-[8px] shrink-0">{TIER_META[bestTier].emoji}</span>
-                              )}
-                            </div>
-                            <div className="flex items-center gap-2">
-                              {rc.industry && <p className="text-[9px] text-muted-foreground truncate">{rc.industry}</p>}
-                              {hasProgress && (
-                                <span className="text-[8px] font-medium shrink-0" style={{ color: "hsl(var(--filigree-glow))" }}>
-                                  {rc.kingdoms.length} kingdom{rc.kingdoms.length !== 1 ? "s" : ""}
-                                </span>
-                              )}
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-1 shrink-0">
-                            <Briefcase className="h-3 w-3 text-muted-foreground" />
-                            <span className="text-[9px] font-mono text-muted-foreground">{rc.job_count}</span>
-                          </div>
-                        </motion.button>
-                      );
-                    })}
+                  <div className="space-y-2">
+                    {/* Role search results */}
+                    {searchRolesLoading && searchQ.length >= 2 && (
+                      <div className="flex items-center gap-2 py-2 px-2">
+                        <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />
+                        <span className="text-[10px] text-muted-foreground">Searching roles…</span>
+                      </div>
+                    )}
+                    {showingRoles && (
+                      <div>
+                        <p className="text-[8px] font-mono uppercase tracking-wider text-muted-foreground mb-1 px-1" style={{ fontFamily: "'Cinzel', serif" }}>
+                          ⚔️ Roles · {searchRoles.length}
+                        </p>
+                        <div className="space-y-1">
+                          {searchRoles.map((role, i) => {
+                            const logoUrl = role.company_name ? brandfetchFromName(role.company_name) : null;
+                            return (
+                              <motion.button
+                                key={role.id}
+                                initial={{ opacity: 0, y: 4 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: Math.min(i * 0.02, 0.2), duration: 0.2 }}
+                                onClick={() => {
+                                  const roleResult: RoleResult = {
+                                    title: role.title,
+                                    company: role.company_name || null,
+                                    jobId: role.id,
+                                    logo: role.company_name ? brandfetchFromName(role.company_name) : null,
+                                    location: null,
+                                    country: null,
+                                    workMode: null,
+                                    seniority: null,
+                                    augmented: role.augmented_percent || 0,
+                                    risk: 0,
+                                  };
+                                  onSelectRole(roleResult);
+                                }}
+                                className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-left transition-all hover:brightness-110 group"
+                                style={{
+                                  background: "hsl(var(--surface-stone) / 0.5)",
+                                  border: "1px solid hsl(var(--primary) / 0.08)",
+                                }}
+                              >
+                                <div className="w-5 h-5 rounded-md overflow-hidden flex items-center justify-center bg-muted/50 shrink-0">
+                                  {logoUrl ? (
+                                    <img src={logoUrl} alt="" className="w-5 h-5 object-contain" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                                  ) : (
+                                    <Swords className="h-2.5 w-2.5 text-muted-foreground" />
+                                  )}
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <p className="text-[11px] font-bold text-foreground truncate group-hover:text-primary transition-colors" style={{ fontFamily: "'Cinzel', serif" }}>
+                                    {role.title}
+                                  </p>
+                                  <div className="flex items-center gap-2">
+                                    {role.company_name && <span className="text-[9px] text-muted-foreground truncate">{role.company_name}</span>}
+                                    {role.department && <span className="text-[8px] text-muted-foreground/60 truncate">{role.department}</span>}
+                                  </div>
+                                </div>
+                                {role.augmented_percent != null && (
+                                  <div className="flex items-center gap-0.5 shrink-0">
+                                    <Bot className="h-2.5 w-2.5 text-brand-ai" />
+                                    <span className="text-[8px] font-mono text-brand-ai">{role.augmented_percent}%</span>
+                                  </div>
+                                )}
+                              </motion.button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Company results */}
+                    {filteredRealms.length > 0 && (
+                      <div>
+                        {showingRoles && (
+                          <p className="text-[8px] font-mono uppercase tracking-wider text-muted-foreground mb-1 px-1 mt-2" style={{ fontFamily: "'Cinzel', serif" }}>
+                            🏰 Companies · {filteredRealms.length}
+                          </p>
+                        )}
+                        <div className="space-y-1">
+                          {filteredRealms.map((rc, i) => {
+                            const logoUrl = rc.logo_url || brandfetchFromName(rc.name);
+                            const hasProgress = rc.kingdoms.length > 0;
+                            const bestTier = rc.kingdoms.reduce<KingdomTier | null>((best, k) => {
+                              const order: KingdomTier[] = ["scouted", "contested", "fortified", "conquered"];
+                              if (!best) return k.tier;
+                              return order.indexOf(k.tier) > order.indexOf(best) ? k.tier : best;
+                            }, null);
+                            return (
+                              <motion.button
+                                key={rc.id}
+                                initial={{ opacity: 0, y: 4 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: Math.min(i * 0.02, 0.3), duration: 0.2 }}
+                                onClick={() => setSelectedRealm(rc)}
+                                className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-left transition-all hover:brightness-110 group"
+                                style={{
+                                  background: hasProgress ? "hsl(var(--filigree) / 0.06)" : "hsl(var(--surface-stone) / 0.4)",
+                                  border: hasProgress ? "1px solid hsl(var(--filigree) / 0.12)" : "1px solid hsl(var(--filigree) / 0.06)",
+                                }}
+                              >
+                                <div className="w-6 h-6 rounded-md overflow-hidden flex items-center justify-center bg-muted/50 shrink-0">
+                                  {logoUrl ? (
+                                    <img src={logoUrl} alt="" className="w-6 h-6 object-contain" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                                  ) : (
+                                    <Building2 className="h-3 w-3 text-muted-foreground" />
+                                  )}
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <div className="flex items-center gap-1.5">
+                                    <p className="text-[11px] font-bold text-foreground truncate group-hover:text-primary transition-colors" style={{ fontFamily: "'Cinzel', serif" }}>
+                                      {rc.name}
+                                    </p>
+                                    {bestTier && (
+                                      <span className="text-[8px] shrink-0">{TIER_META[bestTier].emoji}</span>
+                                    )}
+                                  </div>
+                                  <div className="flex items-center gap-2">
+                                    {rc.industry && <p className="text-[9px] text-muted-foreground truncate">{rc.industry}</p>}
+                                    {hasProgress && (
+                                      <span className="text-[8px] font-medium shrink-0" style={{ color: "hsl(var(--filigree-glow))" }}>
+                                        {rc.kingdoms.length} kingdom{rc.kingdoms.length !== 1 ? "s" : ""}
+                                      </span>
+                                    )}
+                                  </div>
+                                </div>
+                                <div className="flex items-center gap-1 shrink-0">
+                                  <Briefcase className="h-3 w-3 text-muted-foreground" />
+                                  <span className="text-[9px] font-mono text-muted-foreground">{rc.job_count}</span>
+                                </div>
+                              </motion.button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 );
               })()}
