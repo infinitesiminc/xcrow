@@ -126,6 +126,7 @@ const App = () => (
               <Route path="/score-distributions" element={<><Navbar /><ScoreDistributions /><Footer /></>} />
               <Route path="/u/:username" element={<PublicProfile />} />
               <Route path="/progression" element={<Progression />} />
+              <Route path="/play" element={<Play />} />
               {/* Redirects — old routes all go to feed */}
               <Route path="/practice" element={<Navigate to="/" replace />} />
               <Route path="/simulations" element={<Navigate to="/" replace />} />
