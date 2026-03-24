@@ -1971,6 +1971,24 @@ export type Database = {
         Args: { payload: Json; queue_name: string }
         Returns: number
       }
+      get_admin_user_stats: {
+        Args: never
+        Returns: {
+          career_stage: string
+          company: string
+          created_at: string
+          display_name: string
+          email: string
+          job_title: string
+          last_active: string
+          onboarding_completed: boolean
+          school_name: string
+          total_analyses: number
+          total_sims: number
+          total_xp: number
+          user_id: string
+        }[]
+      }
       get_coaching_tip: {
         Args: { category: string; score: number }
         Returns: string
