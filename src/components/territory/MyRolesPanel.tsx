@@ -1,7 +1,7 @@
 /**
- * MyRolesPanel — Unified "Realms" view.
- * Three sub-tabs: Realms (companies → kingdoms), Kingdoms (flat), Arsenal.
- * Realms: Browse companies, drill into one to see your kingdoms + discoverable roles.
+ * MyRolesPanel — Unified "Kingdoms" view.
+ * Two sub-tabs: Kingdoms (companies → roles with progression), Arsenal.
+ * Kingdoms: Browse companies, search roles, drill into one to see kingdoms + discoverable roles.
  */
 import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
