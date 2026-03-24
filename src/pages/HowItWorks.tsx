@@ -1,25 +1,21 @@
 /**
- * How It Works — The definitive progression explainer.
- * Merges the best of old /how-it-works + /progression into one page.
+ * How It Works — Experience-focused preview to hook users.
+ * Shows what you SEE and DO, not behind-the-scenes mechanics.
  */
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import {
-  Sword, Map, Crown, ArrowRight, Sparkles, Target, Zap,
-  Shield, BookOpen, Compass, Trophy,
+  Sword, Map, ArrowRight, Sparkles, Search, Zap,
+  Shield, BookOpen, Compass, Crown, Eye, Play,
+  Target, TrendingUp, BarChart3, Brain,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { BOSS_ROSTER, type BossCharacter } from "@/lib/boss-roster";
 
 import xcrowLogo from "@/assets/xcrow-logo.png";
-import castleRuins from "@/assets/castle-ruins.png";
-import castleOutpost from "@/assets/castle-outpost.png";
-import castleFortress from "@/assets/castle-fortress.png";
-import castleCitadel from "@/assets/castle-citadel.png";
 import simBriefing from "@/assets/sim-briefing.jpg";
 import simVictory from "@/assets/sim-victory.jpg";
 import heroConquer from "@/assets/hero-conquer.jpg";
@@ -30,60 +26,6 @@ const fade = (delay = 0) => ({
   viewport: { once: true, margin: "-60px" },
   transition: { duration: 0.6, delay, ease: "easeOut" as const },
 });
-
-const QUEST_STEPS = [
-  {
-    step: "01", icon: Compass, title: "Scout a Kingdom",
-    desc: "Pick any role from 21,000+ real jobs. The Mission Briefing reveals which skills it demands and how AI is reshaping it.",
-    color: "var(--territory-analytical)", img: simBriefing,
-  },
-  {
-    step: "02", icon: Sword, title: "Battle & Learn",
-    desc: "Enter AI simulations built from real tasks. Face boss monsters that test your judgment, tool awareness, and human edge.",
-    color: "var(--territory-creative)", img: simVictory,
-  },
-  {
-    step: "03", icon: Crown, title: "Conquer & Rank Up",
-    desc: "Earn XP, evolve skill castles, advance kingdoms, and climb the global rank ladder — proving you're future-ready.",
-    color: "var(--territory-strategic)", img: heroConquer,
-  },
-];
-
-const CASTLE_STAGES = [
-  { img: castleRuins, label: "Ruins", desc: "Unexplored", xp: "0 XP" },
-  { img: castleOutpost, label: "Outpost", desc: "Foundation built", xp: "150 XP" },
-  { img: castleFortress, label: "Fortress", desc: "Battle-tested", xp: "500 XP" },
-  { img: castleCitadel, label: "Citadel", desc: "Mastery proven", xp: "1,200 XP" },
-];
-
-const RINGS = [
-  { emoji: "🎓", name: "Foundation", desc: "Core knowledge from curricula and coursework", source: "Passive", color: "hsl(var(--muted-foreground))" },
-  { emoji: "⚡", name: "AI Mastery", desc: "How AI reshapes this skill — tools & workflows", source: "Level 1 Sims", color: "hsl(var(--primary))" },
-  { emoji: "✦", name: "Human Edge", desc: "What AI can't replace — judgment, empathy, creativity", source: "Level 2 Sims", color: "hsl(var(--spectrum-6))" },
-];
-
-const KINGDOM_TIERS = [
-  { emoji: "🔭", name: "Scouted", req: "Viewed or bookmarked the role", unlocks: "Role briefing & task overview" },
-  { emoji: "⚔️", name: "Contested", req: "1+ linked skill at Outpost tier", unlocks: "Level 1 simulations" },
-  { emoji: "🏰", name: "Fortified", req: "3+ linked skills at Fortress tier", unlocks: "Level 2 — Sentinel's Sanctum", highlight: true },
-  { emoji: "👑", name: "Conquered", req: "All linked skills at Citadel tier", unlocks: "Full mastery badge & leaderboard" },
-];
-
-const PLAYER_RANKS = [
-  { emoji: "🌱", name: "Recruit", castles: "—", kingdoms: "—", desc: "Your journey begins" },
-  { emoji: "🧭", name: "Explorer", castles: "5 at Outpost+", kingdoms: "—", desc: "Charting the landscape" },
-  { emoji: "🗡️", name: "Strategist", castles: "15 at Fortress+", kingdoms: "2 Fortified", desc: "A force to reckon with" },
-  { emoji: "⚔️", name: "Commander", castles: "30 at Fortress+", kingdoms: "5 Conquered", desc: "Leading the charge" },
-  { emoji: "✨", name: "Legend", castles: "50 at Citadel+", kingdoms: "10 Conquered", desc: "A name etched in history" },
-];
-
-const RIPPLE_STEPS = [
-  { step: "1", emoji: "⚔️", title: "Complete a Battle", desc: "Earn up to 100 XP per skill based on your score and context variety" },
-  { step: "2", emoji: "💍", title: "Skill Rings Fill", desc: "L1 sims advance AI Mastery ⚡ — L2 sims advance Human Edge ✦" },
-  { step: "3", emoji: "🏰", title: "Castle Evolves", desc: "As rings fill, your castle ascends from Ruins to Citadel" },
-  { step: "4", emoji: "👑", title: "Kingdom Advances", desc: "Enough castles at the right tier and your Kingdom tier climbs" },
-  { step: "5", emoji: "✨", title: "Rank Rises", desc: "Breadth of castles and kingdoms lifts your overall Player Rank" },
-];
 
 /* ═══ Boss Mini SVG ═══ */
 function BossMiniSVG({ boss }: { boss: BossCharacter }) {
@@ -120,6 +62,48 @@ function BossMiniSVG({ boss }: { boss: BossCharacter }) {
   );
 }
 
+const EXPERIENCE_STEPS = [
+  {
+    num: "01",
+    title: "Search any job role",
+    desc: "Type a role like 'Product Manager' or 'Data Analyst' and get an instant AI threat assessment — see exactly which tasks are being automated.",
+    icon: Search,
+    color: "var(--territory-analytical)",
+    features: ["21,000+ real roles", "AI threat scores per task", "Skill gap breakdown"],
+  },
+  {
+    num: "02",
+    title: "Read the Mission Briefing",
+    desc: "See which tasks AI is taking over, what skills you need to stay relevant, and how the role is changing — all in one interactive dashboard.",
+    icon: Eye,
+    color: "var(--territory-technical)",
+    features: ["Task-by-task AI impact", "Required future skills", "Industry benchmarks"],
+  },
+  {
+    num: "03",
+    title: "Practice in AI Simulations",
+    desc: "Enter realistic scenarios built from real job tasks. Compare AI tools, make strategic decisions, and build muscle memory for the AI-augmented workplace.",
+    icon: Sword,
+    color: "var(--territory-creative)",
+    features: ["Hands-on practice", "Real job scenarios", "Instant AI feedback"],
+  },
+  {
+    num: "04",
+    title: "Level up & track progress",
+    desc: "Watch your skills grow on the World Map. Earn XP, evolve castles, conquer kingdoms — and prove you're ready for the future of work.",
+    icon: TrendingUp,
+    color: "var(--territory-strategic)",
+    features: ["Visual skill map", "XP & rankings", "Shareable profile"],
+  },
+];
+
+const SIM_PREVIEW_FEATURES = [
+  { icon: Brain, label: "AI Tool Comparison", desc: "Compare ChatGPT vs Claude vs Gemini on real tasks" },
+  { icon: Shield, label: "Risk Assessment", desc: "Judge which AI outputs are safe to trust" },
+  { icon: BarChart3, label: "Strategic Decisions", desc: "Make calls AI can't — ethics, nuance, judgment" },
+  { icon: Sparkles, label: "Instant Scoring", desc: "Get scored on 4 dimensions with actionable feedback" },
+];
+
 export default function HowItWorks() {
   const navigate = useNavigate();
 
@@ -138,62 +122,59 @@ export default function HowItWorks() {
           </div>
 
           <motion.div {...fade()} className="text-center max-w-3xl relative z-10">
-            <p className="text-xs font-mono uppercase tracking-[0.2em] text-muted-foreground mb-4">📜 The Commander's Codex</p>
+            <Badge variant="outline" className="mb-4 border-primary/30 text-primary font-fantasy text-xs tracking-wider">
+              Free to play · No credit card
+            </Badge>
             <h1 className="font-fantasy text-4xl md:text-6xl font-bold mb-4 leading-tight">
-              How <span style={{ color: "hsl(var(--filigree-glow))" }}>Xcrow</span> Works
+              See What <span style={{ color: "hsl(var(--filigree-glow))" }}>Xcrow</span> Looks Like
             </h1>
             <p className="text-muted-foreground text-lg md:text-xl max-w-xl mx-auto mb-8">
-              Three layers of progression. Every simulation ripples upward. Here's the complete system.
+              Search a role. See the AI threat. Practice in a simulation. Track your growth. All in under 5 minutes.
             </p>
-
-            {/* Flow diagram */}
-            <div className="flex items-center justify-center gap-2 sm:gap-3 flex-wrap">
-              {[
-                { emoji: "⚔️", label: "Battle" },
-                { emoji: "💍", label: "Skill Rings" },
-                { emoji: "🏰", label: "Castle" },
-                { emoji: "👑", label: "Kingdom" },
-                { emoji: "✨", label: "Rank" },
-              ].map((s, i) => (
-                <div key={s.label} className="flex items-center gap-2 sm:gap-3">
-                  <div className="flex flex-col items-center gap-1">
-                    <span className="text-2xl sm:text-3xl">{s.emoji}</span>
-                    <span className="text-[10px] sm:text-xs font-medium text-muted-foreground uppercase tracking-wide">{s.label}</span>
-                  </div>
-                  {i < 4 && <ArrowRight className="w-4 h-4 text-muted-foreground/30 shrink-0" />}
-                </div>
-              ))}
+            <div className="flex flex-col sm:flex-row gap-3 justify-center">
+              <Button size="lg" onClick={() => navigate("/")} className="text-base px-8 gap-2"
+                style={{ boxShadow: "0 0 20px hsl(var(--filigree-glow) / 0.25)" }}>
+                <Play className="h-5 w-5" /> Try It Free <ArrowRight className="h-4 w-4" />
+              </Button>
+              <Button size="lg" variant="outline" onClick={() => navigate("/skills")} className="text-base px-8 gap-2">
+                <BookOpen className="h-5 w-5" /> Browse 183 Skills
+              </Button>
             </div>
           </motion.div>
         </section>
 
-        {/* ═══ 3-STEP QUEST LOOP ═══ */}
+        {/* ═══ 4-STEP EXPERIENCE FLOW ═══ */}
         <section className="py-20 px-4">
           <div className="max-w-5xl mx-auto">
             <motion.div {...fade()} className="text-center mb-16">
-              <p className="text-xs font-mono uppercase tracking-[0.2em] text-muted-foreground mb-2">The Core Loop</p>
-              <h2 className="font-fantasy text-3xl md:text-4xl font-bold">Scout. Battle. Conquer.</h2>
+              <p className="text-xs font-mono uppercase tracking-[0.2em] text-muted-foreground mb-2">Your First Session</p>
+              <h2 className="font-fantasy text-3xl md:text-4xl font-bold">Four Steps to Future-Ready</h2>
             </motion.div>
 
-            <div className="grid md:grid-cols-3 gap-6">
-              {QUEST_STEPS.map((s, i) => (
-                <motion.div key={s.step} {...fade(i * 0.15)}
-                  className="rounded-2xl overflow-hidden border border-border/50 group"
+            <div className="space-y-6">
+              {EXPERIENCE_STEPS.map((step, i) => (
+                <motion.div key={step.num} {...fade(i * 0.1)}
+                  className="rounded-2xl border border-border/50 overflow-hidden"
                   style={{ background: "hsl(var(--card))", boxShadow: `inset 0 1px 0 hsl(var(--emboss-light)), 0 4px 20px hsl(var(--emboss-shadow))` }}>
-                  <div className="h-40 overflow-hidden relative">
-                    <img src={s.img} alt={s.title} className="w-full h-full object-cover opacity-70 group-hover:opacity-90 transition-opacity" />
-                    <div className="absolute inset-0" style={{ background: `linear-gradient(to top, hsl(var(--card)), transparent)` }} />
-                  </div>
-                  <div className="p-6">
-                    <div className="flex items-center gap-3 mb-3">
-                      <div className="h-10 w-10 rounded-xl flex items-center justify-center"
-                        style={{ background: `hsl(${s.color} / 0.15)`, border: `1px solid hsl(${s.color} / 0.25)` }}>
-                        <s.icon className="h-5 w-5" style={{ color: `hsl(${s.color})` }} />
+                  <div className="p-6 sm:p-8 flex flex-col sm:flex-row gap-6 items-start">
+                    <div className="flex items-center gap-4 shrink-0">
+                      <div className="h-12 w-12 rounded-xl flex items-center justify-center"
+                        style={{ background: `hsl(${step.color} / 0.15)`, border: `1px solid hsl(${step.color} / 0.25)` }}>
+                        <step.icon className="h-6 w-6" style={{ color: `hsl(${step.color})` }} />
                       </div>
-                      <span className="text-xs font-mono text-muted-foreground">{s.step}</span>
+                      <span className="text-xs font-mono text-muted-foreground/50 font-bold">{step.num}</span>
                     </div>
-                    <h3 className="font-fantasy text-xl font-bold mb-2">{s.title}</h3>
-                    <p className="text-sm text-muted-foreground leading-relaxed">{s.desc}</p>
+                    <div className="flex-1">
+                      <h3 className="font-fantasy text-xl font-bold mb-2">{step.title}</h3>
+                      <p className="text-sm text-muted-foreground leading-relaxed mb-4">{step.desc}</p>
+                      <div className="flex flex-wrap gap-2">
+                        {step.features.map(f => (
+                          <span key={f} className="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full bg-secondary text-secondary-foreground">
+                            <Sparkles className="h-3 w-3 text-primary" /> {f}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
                   </div>
                 </motion.div>
               ))}
@@ -201,178 +182,74 @@ export default function HowItWorks() {
           </div>
         </section>
 
-        {/* ═══ LAYER 1: SKILL CASTLES ═══ */}
+        {/* ═══ WHAT A SIMULATION FEELS LIKE ═══ */}
         <section className="py-20 px-4" style={{ background: "hsl(var(--secondary) / 0.4)" }}>
           <div className="max-w-5xl mx-auto">
             <motion.div {...fade()} className="text-center mb-14">
               <Badge variant="outline" className="mb-4 border-primary/30 text-primary font-fantasy text-xs tracking-wider">
-                Layer 1 — The Atom
+                Inside a Simulation
               </Badge>
-              <h2 className="font-fantasy text-3xl md:text-4xl font-bold">Skill Castles</h2>
+              <h2 className="font-fantasy text-3xl md:text-4xl font-bold">What You'll Actually Do</h2>
               <p className="text-muted-foreground mt-3 max-w-lg mx-auto">
-                Every skill is a castle powered by three growth rings. Fill them through simulations and watch your castle ascend.
+                Each simulation drops you into a real scenario. No lectures, no quizzes — pure hands-on practice.
               </p>
             </motion.div>
 
-            {/* 3-Ring Model */}
-            <div className="grid sm:grid-cols-3 gap-4 mb-14">
-              {RINGS.map((ring, i) => (
-                <motion.div key={ring.name} {...fade(i * 0.1)}
-                  className="rounded-xl border border-border/50 p-6 text-center"
+            {/* Preview images */}
+            <div className="grid md:grid-cols-2 gap-6 mb-12">
+              <motion.div {...fade(0.1)} className="rounded-2xl overflow-hidden border border-border/50 group">
+                <div className="h-48 md:h-56 overflow-hidden relative">
+                  <img src={simBriefing} alt="Mission briefing screen" className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" />
+                  <div className="absolute inset-0" style={{ background: `linear-gradient(to top, hsl(var(--card)), transparent 60%)` }} />
+                  <div className="absolute bottom-4 left-4 right-4">
+                    <Badge className="bg-primary/20 text-primary border-primary/30 mb-2">Level 1 — AI Mastery</Badge>
+                    <h4 className="font-fantasy font-bold text-lg">The Mission Briefing</h4>
+                    <p className="text-xs text-muted-foreground mt-1">See exactly which tasks AI is disrupting in your role</p>
+                  </div>
+                </div>
+              </motion.div>
+              <motion.div {...fade(0.2)} className="rounded-2xl overflow-hidden border border-border/50 group">
+                <div className="h-48 md:h-56 overflow-hidden relative">
+                  <img src={simVictory} alt="Simulation victory screen" className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" />
+                  <div className="absolute inset-0" style={{ background: `linear-gradient(to top, hsl(var(--card)), transparent 60%)` }} />
+                  <div className="absolute bottom-4 left-4 right-4">
+                    <Badge className="bg-destructive/20 text-destructive border-destructive/30 mb-2">Level 2 — Boss Battle</Badge>
+                    <h4 className="font-fantasy font-bold text-lg">The Arena</h4>
+                    <p className="text-xs text-muted-foreground mt-1">Face boss monsters that test your judgment under pressure</p>
+                  </div>
+                </div>
+              </motion.div>
+            </div>
+
+            {/* What you do in sims */}
+            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {SIM_PREVIEW_FEATURES.map((feat, i) => (
+                <motion.div key={feat.label} {...fade(i * 0.08)}
+                  className="rounded-xl border border-border/50 p-5 text-center"
                   style={{ background: "hsl(var(--card))", boxShadow: `inset 0 1px 0 hsl(var(--emboss-light))` }}>
-                  <div className="text-3xl mb-3">{ring.emoji}</div>
-                  <h4 className="font-fantasy font-semibold text-lg mb-2">{ring.name}</h4>
-                  <p className="text-sm text-muted-foreground mb-3">{ring.desc}</p>
-                  <div className="inline-flex items-center gap-1.5 rounded-full bg-secondary px-3 py-1">
-                    <div className="w-2 h-2 rounded-full" style={{ background: ring.color }} />
-                    <span className="text-xs font-medium text-secondary-foreground">{ring.source}</span>
-                  </div>
+                  <feat.icon className="h-8 w-8 mx-auto mb-3 text-primary" />
+                  <h4 className="font-fantasy font-semibold text-sm mb-1.5">{feat.label}</h4>
+                  <p className="text-xs text-muted-foreground leading-relaxed">{feat.desc}</p>
                 </motion.div>
               ))}
             </div>
-
-            {/* Castle Evolution */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
-              {CASTLE_STAGES.map((c, i) => (
-                <motion.div key={c.label} {...fade(i * 0.1)} className="text-center">
-                  <div className="relative mx-auto w-28 h-28 md:w-36 md:h-36 mb-4">
-                    <motion.img src={c.img} alt={c.label}
-                      className="w-full h-full object-contain drop-shadow-lg crow-glow"
-                      whileHover={{ scale: 1.08, y: -4 }}
-                      transition={{ type: "spring", stiffness: 300 }} />
-                  </div>
-                  <h4 className="font-fantasy text-lg font-bold">{c.label}</h4>
-                  <p className="text-xs text-muted-foreground">{c.desc}</p>
-                  <span className="inline-block mt-1.5 text-[10px] font-mono px-2 py-0.5 rounded-full bg-muted text-muted-foreground">{c.xp}</span>
-                </motion.div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* ═══ LAYER 2: KINGDOMS ═══ */}
-        <section className="py-20 px-4">
-          <div className="max-w-5xl mx-auto">
-            <motion.div {...fade()} className="text-center mb-14">
-              <Badge variant="outline" className="mb-4 font-fantasy text-xs tracking-wider"
-                style={{ borderColor: "hsl(var(--territory-strategic) / 0.3)", color: "hsl(var(--territory-strategic))" }}>
-                Layer 2 — Per Role
-              </Badge>
-              <h2 className="font-fantasy text-3xl md:text-4xl font-bold">Kingdoms</h2>
-              <p className="text-muted-foreground mt-3 max-w-lg mx-auto">
-                Each role becomes a Kingdom. Advance it by leveling the skills it demands.
-              </p>
-            </motion.div>
-
-            <div className="grid sm:grid-cols-2 gap-4">
-              {KINGDOM_TIERS.map((tier, i) => (
-                <motion.div key={tier.name} {...fade(i * 0.1)}
-                  className={`rounded-xl border p-6 ${tier.highlight
-                    ? "border-primary/40 ring-1 ring-primary/20"
-                    : "border-border/50"}`}
-                  style={{ background: "hsl(var(--card))", boxShadow: `inset 0 1px 0 hsl(var(--emboss-light))` }}>
-                  <div className="flex items-center gap-3 mb-3">
-                    <span className="text-3xl">{tier.emoji}</span>
-                    <h4 className="font-fantasy font-bold text-lg">{tier.name}</h4>
-                  </div>
-                  <div className="space-y-2">
-                    <div className="flex items-start gap-2">
-                      <Target className="w-4 h-4 text-primary mt-0.5 shrink-0" />
-                      <p className="text-sm text-muted-foreground">
-                        <span className="font-medium text-foreground">Requires: </span>{tier.req}
-                      </p>
-                    </div>
-                    <div className="flex items-start gap-2">
-                      <Sparkles className="w-4 h-4 text-warning mt-0.5 shrink-0" />
-                      <p className="text-sm text-muted-foreground">
-                        <span className="font-medium text-foreground">Unlocks: </span>{tier.unlocks}
-                      </p>
-                    </div>
-                  </div>
-                  {tier.highlight && (
-                    <div className="mt-3 rounded-lg px-3 py-2 text-xs font-medium text-center"
-                      style={{ background: "hsl(var(--primary) / 0.1)", color: "hsl(var(--primary))" }}>
-                      ⚡ Level 2 — Boss Battles unlock here
-                    </div>
-                  )}
-                </motion.div>
-              ))}
-            </div>
-
-            {/* How skills feed kingdoms */}
-            <motion.div {...fade(0.2)} className="mt-10 rounded-xl border border-border/50 p-6 sm:p-8"
-              style={{ background: "hsl(var(--card))", boxShadow: `inset 0 1px 0 hsl(var(--emboss-light))` }}>
-              <h4 className="font-fantasy font-semibold text-center mb-4">How Skills Feed Kingdoms</h4>
-              <p className="text-sm text-muted-foreground text-center max-w-xl mx-auto leading-relaxed">
-                Each role links to specific skills from our taxonomy of 183 canonical skills.
-                As you level up those skill castles through simulations, your Kingdom tier advances automatically.
-                No guessing — you always know which castles to build next.
-              </p>
-            </motion.div>
           </div>
         </section>
 
         {/* ═══ MID-PAGE CTA ═══ */}
         <section className="py-16 px-4">
           <motion.div {...fade()} className="text-center max-w-lg mx-auto">
-            <h3 className="font-fantasy text-2xl font-bold mb-3">Ready to claim your first castle?</h3>
-            <p className="text-muted-foreground text-sm mb-6">Open the World Map and start your first quest — free, no credit card required.</p>
-            <Button size="lg" onClick={() => navigate("/map")} className="text-base px-8 gap-2"
+            <h3 className="font-fantasy text-2xl font-bold mb-3">Ready to try your first simulation?</h3>
+            <p className="text-muted-foreground text-sm mb-6">Pick any role. Your first battle is free — see what the AI future holds.</p>
+            <Button size="lg" onClick={() => navigate("/")} className="text-base px-8 gap-2"
               style={{ boxShadow: "0 0 20px hsl(var(--filigree-glow) / 0.25)" }}>
-              <Map className="h-5 w-5" /> Enter the World Map
+              <Sword className="h-5 w-5" /> Start Your First Battle
             </Button>
           </motion.div>
         </section>
 
-        {/* ═══ LAYER 3: PLAYER RANK ═══ */}
-        <section className="py-20 px-4" style={{ background: "hsl(var(--secondary) / 0.4)" }}>
-          <div className="max-w-5xl mx-auto">
-            <motion.div {...fade()} className="text-center mb-14">
-              <Badge variant="outline" className="mb-4 font-fantasy text-xs tracking-wider"
-                style={{ borderColor: "hsl(var(--territory-leadership) / 0.3)", color: "hsl(var(--territory-leadership))" }}>
-                Layer 3 — Global
-              </Badge>
-              <h2 className="font-fantasy text-3xl md:text-4xl font-bold">Player Rank</h2>
-              <p className="text-muted-foreground mt-3 max-w-md mx-auto">
-                Your rank reflects breadth — mastering many skills across many roles, not grinding one.
-              </p>
-            </motion.div>
-
-            {/* Horizontal rank ladder with details */}
-            <div className="overflow-x-auto pb-4">
-              <div className="flex gap-3 min-w-max mx-auto justify-center">
-                {PLAYER_RANKS.map((rank, i) => (
-                  <div key={rank.name} className="flex items-center gap-3">
-                    <div className="flex flex-col items-center gap-2 rounded-xl border border-border/50 p-5 w-[140px] text-center"
-                      style={{ background: "hsl(var(--card))", boxShadow: `inset 0 1px 0 hsl(var(--emboss-light))` }}>
-                      <span className="text-3xl">{rank.emoji}</span>
-                      <span className="font-fantasy font-bold text-sm">{rank.name}</span>
-                      <p className="text-[11px] text-muted-foreground leading-tight">{rank.desc}</p>
-                      {rank.castles !== "—" && (
-                        <div className="mt-2 space-y-1 w-full">
-                          <div className="text-[10px] text-muted-foreground flex items-center gap-1">
-                            <span>🏰</span> {rank.castles}
-                          </div>
-                          {rank.kingdoms !== "—" && (
-                            <div className="text-[10px] text-muted-foreground flex items-center gap-1">
-                              <span>👑</span> {rank.kingdoms}
-                            </div>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                    {i < PLAYER_RANKS.length - 1 && (
-                      <ArrowRight className="w-4 h-4 text-primary/40 shrink-0" />
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </section>
-
         {/* ═══ BOSS BESTIARY ═══ */}
-        <section className="py-20 px-4">
+        <section className="py-20 px-4" style={{ background: "hsl(var(--secondary) / 0.4)" }}>
           <div className="max-w-5xl mx-auto">
             <motion.div {...fade()} className="text-center mb-14">
               <Badge variant="outline" className="mb-4 border-destructive/30 text-destructive font-fantasy text-xs tracking-wider">
@@ -380,7 +257,7 @@ export default function HowItWorks() {
               </Badge>
               <h2 className="font-fantasy text-3xl md:text-4xl font-bold">The Bestiary</h2>
               <p className="text-muted-foreground mt-3 max-w-2xl mx-auto">
-                Ten unique adversaries guard the Sentinel's Sanctum. Each boss rotates between battles — 
+                Twelve unique adversaries guard the Sentinel's Sanctum. Each boss rotates between battles — 
                 no two encounters feel the same.
               </p>
             </motion.div>
@@ -390,7 +267,7 @@ export default function HowItWorks() {
               {[0, 1].map(row => {
                 const half = Math.ceil(BOSS_ROSTER.length / 2);
                 const rowBosses = row === 0 ? BOSS_ROSTER.slice(0, half) : BOSS_ROSTER.slice(half);
-                const duped = [...rowBosses, ...rowBosses]; // duplicate for seamless loop
+                const duped = [...rowBosses, ...rowBosses];
                 return (
                   <div key={row} className="flex gap-4 mb-4 w-max"
                     style={{
@@ -428,58 +305,34 @@ export default function HowItWorks() {
                 );
               })}
             </div>
-
-            <motion.div {...fade(0.3)} className="mt-8 rounded-xl border border-border/50 p-5 sm:p-6 text-center"
-              style={{ background: "hsl(var(--card))", boxShadow: `inset 0 1px 0 hsl(var(--emboss-light))` }}>
-              <p className="text-sm text-muted-foreground leading-relaxed">
-                <span className="font-semibold text-foreground">Smart Rotation:</span>{" "}
-                Each battle picks from the roster while avoiding your last 4 opponents — 
-                keeping every encounter fresh and unpredictable.
-              </p>
-            </motion.div>
           </div>
         </section>
 
-        {/* ═══ THE RIPPLE EFFECT ═══ */}
-        <section className="py-20 px-4" style={{ background: "hsl(var(--secondary) / 0.4)" }}>
+        {/* ═══ WHAT YOU GET ═══ */}
+        <section className="py-20 px-4">
           <div className="max-w-4xl mx-auto">
             <motion.div {...fade()} className="text-center mb-12">
-              <h2 className="font-fantasy text-3xl md:text-4xl font-bold">The Ripple Effect</h2>
+              <h2 className="font-fantasy text-3xl md:text-4xl font-bold">What You Walk Away With</h2>
               <p className="text-muted-foreground mt-3 max-w-xl mx-auto">
-                Complete one simulation and watch the impact cascade upward through every layer of your progression.
+                Every session builds something real. Not certificates — proof.
               </p>
             </motion.div>
 
-            <div className="space-y-3">
-              {RIPPLE_STEPS.map((item, i) => (
-                <motion.div key={item.step} {...fade(i * 0.08)}
-                  className="flex items-center gap-4 rounded-xl border border-border/50 p-5"
+            <div className="grid sm:grid-cols-3 gap-4">
+              {[
+                { emoji: "🗺️", title: "Your Skill Map", desc: "A living visual of every skill you've practiced, with growth rings showing depth of mastery." },
+                { emoji: "🏰", title: "Evolved Castles", desc: "Each skill is a castle that levels up as you practice — from Ruins to Citadel." },
+                { emoji: "📊", title: "Shareable Profile", desc: "Show employers exactly which AI skills you've practiced, not just studied." },
+              ].map((item, i) => (
+                <motion.div key={item.title} {...fade(i * 0.1)}
+                  className="rounded-xl border border-border/50 p-6 text-center"
                   style={{ background: "hsl(var(--card))", boxShadow: `inset 0 1px 0 hsl(var(--emboss-light))` }}>
-                  <div className="flex items-center justify-center w-8 h-8 rounded-full shrink-0"
-                    style={{ background: "hsl(var(--primary) / 0.1)", color: "hsl(var(--primary))" }}>
-                    <span className="text-sm font-bold">{item.step}</span>
-                  </div>
-                  <span className="text-2xl shrink-0">{item.emoji}</span>
-                  <div className="flex-1">
-                    <h4 className="font-fantasy font-semibold text-[15px]">{item.title}</h4>
-                    <p className="text-sm text-muted-foreground">{item.desc}</p>
-                  </div>
-                  {i < RIPPLE_STEPS.length - 1 && <ArrowRight className="h-4 w-4 text-muted-foreground/30 hidden sm:block" />}
+                  <span className="text-4xl mb-4 block">{item.emoji}</span>
+                  <h4 className="font-fantasy font-semibold text-lg mb-2">{item.title}</h4>
+                  <p className="text-sm text-muted-foreground leading-relaxed">{item.desc}</p>
                 </motion.div>
               ))}
             </div>
-
-            {/* Summary box */}
-            <motion.div {...fade(0.3)}
-              className="mt-10 rounded-xl border border-primary/30 p-6 sm:p-8 text-center"
-              style={{ background: "hsl(var(--primary) / 0.05)" }}>
-              <p className="font-fantasy text-lg sm:text-xl font-semibold">
-                "Every action has a clear, visible ripple effect up the chain."
-              </p>
-              <p className="mt-3 text-sm text-muted-foreground">
-                You always know: level up this skill castle → advance this kingdom → reach the next rank.
-              </p>
-            </motion.div>
           </div>
         </section>
 
@@ -492,11 +345,11 @@ export default function HowItWorks() {
           <motion.div {...fade()} className="text-center max-w-lg mx-auto relative z-10">
             <motion.img src={xcrowLogo} alt="Xcrow" className="h-16 w-16 mx-auto mb-6 crow-glow"
               animate={{ y: [0, -6, 0] }} transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }} />
-            <h2 className="font-fantasy text-3xl md:text-4xl font-bold mb-4">Ready to Begin?</h2>
-            <p className="text-muted-foreground mb-8">Open the World Map and start your first quest. Free to play — no credit card required.</p>
-            <Button size="lg" onClick={() => navigate("/map")} className="text-base px-10"
+            <h2 className="font-fantasy text-3xl md:text-4xl font-bold mb-4">Your Future Starts Here</h2>
+            <p className="text-muted-foreground mb-8">Search any role, run your first simulation, and see exactly how AI is changing your career — in under 5 minutes.</p>
+            <Button size="lg" onClick={() => navigate("/")} className="text-base px-10"
               style={{ boxShadow: "0 0 24px hsl(var(--filigree-glow) / 0.3)" }}>
-              <Map className="h-5 w-5 mr-2" /> Enter the World Map
+              <Play className="h-5 w-5 mr-2" /> Try Xcrow Free
             </Button>
           </motion.div>
         </section>
