@@ -4,8 +4,9 @@
 import { useRef } from "react";
 import founderImg from "@/assets/founder-jackson.png";
 import { motion, useInView } from "framer-motion";
+import xcrowLogo from "@/assets/xcrow-logo-transparent.png";
 import {
-  ArrowRight, Bird, Brain, Crosshair, Database, Gamepad2,
+  ArrowRight, Brain, Crosshair, Database, Gamepad2,
   Layers, Linkedin, Radio, RefreshCw, Shield, ShieldAlert,
   Sword, Target, TrendingUp, Zap,
 } from "lucide-react";
@@ -306,8 +307,8 @@ export default function About() {
         {/* ═══ THE CROW ═══ */}
         <Section className="py-16 px-6">
           <div className="max-w-3xl mx-auto text-center">
-            <motion.div variants={fade} custom={0} className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-primary/10 mb-5">
-              <Bird className="h-7 w-7 text-primary" />
+            <motion.div variants={fade} custom={0} className="inline-flex items-center justify-center w-24 h-24 rounded-2xl bg-primary/10 mb-5">
+              <img src={xcrowLogo} alt="Xcrow logo" className="w-16 h-16 object-contain" />
             </motion.div>
             <motion.h2 variants={fade} custom={1} className="text-2xl sm:text-3xl font-fantasy font-bold mb-4">Why the Crow?</motion.h2>
             <motion.p variants={fade} custom={2} className="text-muted-foreground leading-relaxed max-w-lg mx-auto">
