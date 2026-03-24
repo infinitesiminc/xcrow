@@ -53,9 +53,14 @@ async function fetchOnce(): Promise<FutureSkill[]> {
       .select("*")
       .order("demand_count", { ascending: false });
 
-    if (error || !data || data.length === 0) {
-      console.warn("Failed to fetch future skills:", error?.message);
-      // Don't cache empty — allow retry on next mount
+    if (error) {
+      console.warn("Failed to fetch future skills:", error?.message, error?.code, error?.details);
+      _promise = null;
+      return [];
+    }
+
+    if (!data || data.length === 0) {
+      console.warn("Future skills query returned empty data set");
       _promise = null;
       return [];
     }
