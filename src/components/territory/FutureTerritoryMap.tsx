@@ -204,9 +204,54 @@ export default function FutureTerritoryMap({ skills, focusSkillId, level2SkillId
         onPointerUp={handlePointerUp}
         style={{ cursor: dragRef.current ? "grabbing" : "grab", touchAction: "none" }}
       >
+        {/* Full-bleed background texture that extends to panel edges */}
+        <svg className="absolute inset-0 w-full h-full pointer-events-none" preserveAspectRatio="none">
+          <defs>
+            <pattern id="bg-map-texture" x="0" y="0" width="400" height="400" patternUnits="userSpaceOnUse">
+              <g fill="none" stroke="hsl(var(--muted-foreground))" strokeLinecap="round">
+                <path d="M0 180 L45 165 L80 190 L130 170 L160 185 L200 160 L250 175 L290 155 L340 170 L400 150" strokeWidth="1.4" opacity="0.2" />
+                <path d="M0 320 L60 305 L100 330 L150 310 L210 325 L260 300 L310 315 L370 295 L400 310" strokeWidth="1.2" opacity="0.18" />
+                <path d="M0 80 L50 95 L90 70 L140 85 L185 65 L230 80 L280 60 L330 78 L400 55" strokeWidth="1.2" opacity="0.16" />
+                <path d="M120 0 L110 50 L125 100 L115 160 L130 220 L118 280 L128 340 L120 400" strokeWidth="1.3" opacity="0.18" />
+                <path d="M280 0 L290 60 L275 120 L285 180 L270 240 L282 300 L275 360 L285 400" strokeWidth="1.1" opacity="0.15" />
+                <path d="M0 0 L40 35 L55 80 L95 110 L120 160" strokeWidth="1" opacity="0.14" />
+                <path d="M400 0 L360 45 L345 90 L310 130 L280 160" strokeWidth="1" opacity="0.14" />
+                <path d="M0 400 L50 360 L80 310 L120 280" strokeWidth="0.9" opacity="0.12" />
+                <path d="M400 400 L355 365 L330 310 L290 275" strokeWidth="0.9" opacity="0.12" />
+                <path d="M80 190 L95 230 L85 270 L100 310" strokeWidth="0.7" opacity="0.12" />
+                <path d="M200 160 L210 200 L195 240 L205 280" strokeWidth="0.7" opacity="0.1" />
+                <path d="M290 155 L300 195 L285 235 L295 270" strokeWidth="0.7" opacity="0.1" />
+                <path d="M45 165 L35 200 L50 240" strokeWidth="0.6" opacity="0.09" />
+                <path d="M340 170 L350 210 L338 250 L345 290" strokeWidth="0.6" opacity="0.09" />
+                <path d="M160 185 L170 210 L155 230" strokeWidth="0.5" opacity="0.08" />
+                <path d="M250 175 L240 200 L255 220" strokeWidth="0.5" opacity="0.08" />
+                <path d="M60 305 L70 280 L55 260" strokeWidth="0.5" opacity="0.08" />
+                <path d="M310 315 L320 290 L305 265" strokeWidth="0.5" opacity="0.08" />
+              </g>
+            </pattern>
+            <linearGradient id="bg-sweep-grad" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stopColor="white" stopOpacity="0" />
+              <stop offset="42%" stopColor="white" stopOpacity="0" />
+              <stop offset="48%" stopColor="white" stopOpacity="1" />
+              <stop offset="50%" stopColor="white" stopOpacity="1" />
+              <stop offset="52%" stopColor="white" stopOpacity="1" />
+              <stop offset="58%" stopColor="white" stopOpacity="0" />
+              <stop offset="100%" stopColor="white" stopOpacity="0" />
+            </linearGradient>
+            <mask id="bg-texture-mask">
+              <rect width="100%" height="100%" fill="black" />
+              <rect width="100%" height="100%" fill="url(#bg-map-texture)" style={{ filter: "brightness(40)" }} />
+            </mask>
+          </defs>
+          <rect width="100%" height="100%" fill="url(#bg-map-texture)" />
+          <g mask="url(#bg-texture-mask)">
+            <rect x="-200%" y="-200%" width="500%" height="500%" fill="url(#bg-sweep-grad)" className="animate-map-sweep" />
+          </g>
+        </svg>
+
         <svg
           viewBox={`0 0 ${FUTURE_MAP_WIDTH} ${FUTURE_MAP_HEIGHT}`}
-          className="w-full h-full"
+          className="w-full h-full relative"
           preserveAspectRatio="xMidYMid meet"
           style={{
             transform: `translate(${transform.x}px, ${transform.y}px) scale(${transform.scale})`,
