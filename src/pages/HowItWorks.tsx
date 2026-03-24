@@ -178,7 +178,7 @@ export default function HowItWorks() {
             <img src={HERO_IMAGES.territories} alt="" className="absolute inset-0 w-full h-full object-cover opacity-[0.08]" loading="lazy" />
             <div className="absolute inset-0" style={{ background: "linear-gradient(to bottom, hsl(var(--background)), hsl(var(--background) / 0.7), hsl(var(--background)))" }} />
           </div>
-          <div className="max-w-5xl mx-auto">
+          <div className="max-w-5xl mx-auto relative z-10">
             <motion.div {...fade()} className="text-center mb-14">
               <p className="text-xs font-mono uppercase tracking-[0.2em] text-muted-foreground mb-2">The Skill Map</p>
               <h2 className="font-fantasy text-3xl md:text-4xl font-bold">8 Territories. One Map.</h2>
