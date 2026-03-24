@@ -264,7 +264,7 @@ export default function FutureTerritoryMap({ skills, focusSkillId, level2SkillId
             {/* Mask: only the texture lines are white (visible) */}
             <mask id="texture-line-mask">
               <rect width={FUTURE_MAP_WIDTH} height={FUTURE_MAP_HEIGHT} fill="black" />
-              <rect width={FUTURE_MAP_WIDTH} height={FUTURE_MAP_HEIGHT} fill="url(#map-texture)" style={{ filter: "brightness(8)" }} />
+              <rect width={FUTURE_MAP_WIDTH} height={FUTURE_MAP_HEIGHT} fill="url(#map-texture)" style={{ filter: "brightness(40)" }} />
             </mask>
           </defs>
 
