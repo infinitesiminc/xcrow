@@ -3,7 +3,7 @@
  * Three sub-tabs: Realms (companies → kingdoms), Kingdoms (flat), Arsenal.
  * Realms: Browse companies, drill into one to see your kingdoms + discoverable roles.
  */
-import { useState, useEffect, useMemo, useCallback, useRef } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Search, ChevronRight, Shield, Flame, Wrench, ExternalLink, X,
@@ -181,6 +181,7 @@ export default function MyRolesPanel({ onSelectRole, onAskChat, onTabChange, onL
   const [realmJobsLoading, setRealmJobsLoading] = useState(false);
   const [expandedJobId, setExpandedJobId] = useState<string | null>(null);
   const [jobSkills, setJobSkills] = useState<Record<string, JobSkillLink[]>>({});
+  const [jobSkillsStatus, setJobSkillsStatus] = useState<Record<string, "loading" | "loaded" | "empty" | "error">>({});
 
   /* ── Fetch & merge kingdoms from behavior ── */
   useEffect(() => {
@@ -409,31 +410,75 @@ export default function MyRolesPanel({ onSelectRole, onAskChat, onTabChange, onL
   }, [selectedRealm]);
 
   /* ── Fetch skills for expanded job ── */
-  const fetchedJobsRef = useRef(new Set<string>());
   useEffect(() => {
-    if (!expandedJobId || fetchedJobsRef.current.has(expandedJobId)) return;
-    fetchedJobsRef.current.add(expandedJobId);
+    if (!expandedJobId) return;
+
+    const currentStatus = jobSkillsStatus[expandedJobId];
+    if (currentStatus === "loading" || currentStatus === "loaded" || currentStatus === "empty" || currentStatus === "error") {
+      return;
+    }
+
+    setJobSkillsStatus(prev => ({ ...prev, [expandedJobId]: "loading" }));
+
     (async () => {
       const { data, error } = await supabase
         .from("job_future_skills")
         .select("skill_name, canonical_skill_id, category, icon_emoji")
         .eq("job_id", expandedJobId)
         .limit(20);
+
       if (error) {
         console.error("Failed to fetch job skills:", error);
-        setJobSkills(p => ({ ...p, [expandedJobId]: [] }));
+        setJobSkills(prev => ({ ...prev, [expandedJobId]: [] }));
+        setJobSkillsStatus(prev => ({ ...prev, [expandedJobId]: "error" }));
         return;
       }
+
       const seen = new Set<string>();
-      const unique = ((data || []) as JobSkillLink[]).filter(s => {
-        const k = s.skill_name.toLowerCase();
-        if (seen.has(k)) return false;
-        seen.add(k);
+      const unique = ((data || []) as JobSkillLink[]).filter((s) => {
+        const key = s.skill_name.toLowerCase();
+        if (seen.has(key)) return false;
+        seen.add(key);
         return true;
       });
-      setJobSkills(p => ({ ...p, [expandedJobId]: unique }));
+
+      if (unique.length > 0) {
+        setJobSkills(prev => ({ ...prev, [expandedJobId]: unique }));
+        setJobSkillsStatus(prev => ({ ...prev, [expandedJobId]: "loaded" }));
+        return;
+      }
+
+      // Fallback: derive skill labels from task-cluster skill_names when canonical mapping is missing
+      const { data: clusterRows } = await supabase
+        .from("job_task_clusters")
+        .select("skill_names")
+        .eq("job_id", expandedJobId)
+        .limit(50);
+
+      const fallbackSet = new Set<string>();
+      for (const row of (clusterRows || []) as Array<{ skill_names: string[] | null }>) {
+        for (const skill of row.skill_names || []) {
+          const trimmed = (skill || "").trim();
+          if (trimmed) fallbackSet.add(trimmed);
+        }
+      }
+
+      const fallbackSkills: JobSkillLink[] = Array.from(fallbackSet).map((skill_name) => ({
+        skill_name,
+        canonical_skill_id: null,
+        category: "Task Cluster",
+        icon_emoji: "⚡",
+      }));
+
+      if (fallbackSkills.length > 0) {
+        setJobSkills(prev => ({ ...prev, [expandedJobId]: fallbackSkills }));
+        setJobSkillsStatus(prev => ({ ...prev, [expandedJobId]: "loaded" }));
+      } else {
+        setJobSkills(prev => ({ ...prev, [expandedJobId]: [] }));
+        setJobSkillsStatus(prev => ({ ...prev, [expandedJobId]: "empty" }));
+      }
     })();
-  }, [expandedJobId]);
+  }, [expandedJobId, jobSkillsStatus]);
 
 
   const q = search.toLowerCase();
@@ -620,6 +665,7 @@ export default function MyRolesPanel({ onSelectRole, onAskChat, onTabChange, onL
                       const isKingdom = selectedRealm.kingdoms.some(k => k.title.toLowerCase() === job.title.toLowerCase());
                       const isExpanded = expandedJobId === job.id;
                       const skills = jobSkills[job.id] || [];
+                      const skillsStatus = jobSkillsStatus[job.id] || "loading";
                       return (
                         <motion.div
                           key={job.id}
@@ -670,11 +716,15 @@ export default function MyRolesPanel({ onSelectRole, onAskChat, onTabChange, onL
                                 className="overflow-hidden"
                               >
                                 <div className="px-2.5 pb-2 pt-1 border-t border-border/20">
-                                  {skills.length === 0 ? (
+                                  {skillsStatus === "loading" ? (
                                     <div className="flex items-center justify-center py-2">
                                       <Loader2 className="h-3 w-3 animate-spin text-muted-foreground mr-1.5" />
                                       <span className="text-[9px] text-muted-foreground">Loading skills…</span>
                                     </div>
+                                  ) : skillsStatus === "empty" || skillsStatus === "error" ? (
+                                    <p className="text-[9px] text-muted-foreground text-center py-2">
+                                      No mapped skills yet for this role.
+                                    </p>
                                   ) : (
                                     <div className="space-y-1">
                                       <p className="text-[8px] font-mono uppercase tracking-wider text-muted-foreground mb-1">
