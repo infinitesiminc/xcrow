@@ -716,11 +716,15 @@ export default function MyRolesPanel({ onSelectRole, onAskChat, onTabChange, onL
                                 className="overflow-hidden"
                               >
                                 <div className="px-2.5 pb-2 pt-1 border-t border-border/20">
-                                  {skills.length === 0 ? (
+                                  {skillsStatus === "loading" ? (
                                     <div className="flex items-center justify-center py-2">
                                       <Loader2 className="h-3 w-3 animate-spin text-muted-foreground mr-1.5" />
                                       <span className="text-[9px] text-muted-foreground">Loading skills…</span>
                                     </div>
+                                  ) : skillsStatus === "empty" || skillsStatus === "error" ? (
+                                    <p className="text-[9px] text-muted-foreground text-center py-2">
+                                      No mapped skills yet for this role.
+                                    </p>
                                   ) : (
                                     <div className="space-y-1">
                                       <p className="text-[8px] font-mono uppercase tracking-wider text-muted-foreground mb-1">
