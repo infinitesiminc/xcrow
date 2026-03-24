@@ -369,7 +369,7 @@ export function WarCouncil({
                     }}
                   >
                     <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded-md bg-primary/15 text-primary mb-1.5 inline-block">
-                      {skill.skill_number != null ? `#${skill.skill_number}` : "⚡"}
+                      {(skill as any).skill_number != null ? `#${(skill as any).skill_number}` : "⚡"}
                     </span>
                     <div className="text-[11px] font-semibold text-foreground leading-tight mb-1">{skill.name}</div>
                     <div className="text-[10px] text-muted-foreground leading-snug line-clamp-2">{skill.description}</div>
