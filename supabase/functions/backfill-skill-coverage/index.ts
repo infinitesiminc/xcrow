@@ -78,8 +78,7 @@ serve(async (req) => {
               success = true;
               console.log(`  ✅ Done: "${jt.title}"`);
 
-              // Link unlinked job_future_skills to this canonical skill
-              // Find the job that was just created (most recent with this title)
+              // Link the new job to the target canonical skill
               const { data: jobs } = await sb
                 .from("jobs")
                 .select("id")
@@ -89,17 +88,22 @@ serve(async (req) => {
 
               if (jobs && jobs.length > 0) {
                 const jobId = jobs[0].id;
-                // Update any unlinked future skills for this job to point to the target canonical skill
+                // Insert a direct link to the canonical skill
                 const { error: linkErr } = await sb
                   .from("job_future_skills")
-                  .update({ canonical_skill_id: skill.skill_id })
-                  .eq("job_id", jobId)
-                  .is("canonical_skill_id", null);
+                  .upsert({
+                    job_id: jobId,
+                    canonical_skill_id: skill.skill_id,
+                    skill_id: skill.skill_id,
+                    skill_name: skill.skill_name,
+                    category: skill.category,
+                    cluster_name: skill.skill_name,
+                  }, { onConflict: "id" });
 
                 if (linkErr) {
                   console.error(`  ⚠️ Link error: ${linkErr.message}`);
                 } else {
-                  console.log(`  🔗 Linked future skills to canonical: ${skill.skill_name}`);
+                  console.log(`  🔗 Linked job to canonical skill: ${skill.skill_name}`);
                 }
               }
 
