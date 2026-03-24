@@ -313,6 +313,8 @@ export default function HowItWorks() {
         {/* ═══ 7. FINAL CTA ═══ */}
         <section className="py-24 px-4 relative overflow-hidden">
           <div className="absolute inset-0 pointer-events-none">
+            <img src={HERO_IMAGES.cta} alt="" className="absolute inset-0 w-full h-full object-cover opacity-[0.1]" loading="lazy" />
+            <div className="absolute inset-0" style={{ background: "linear-gradient(to bottom, hsl(var(--background)), hsl(var(--background) / 0.5), hsl(var(--background)))" }} />
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[400px] rounded-full blur-[200px] opacity-10"
               style={{ background: "hsl(var(--primary))" }} />
           </div>
