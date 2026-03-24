@@ -18,7 +18,7 @@ import {
 } from 'npm:@react-email/components@0.0.22'
 
 const STORAGE = 'https://xtfubistkgodiksegtcx.supabase.co/storage/v1/object/public'
-const HERO_IMG = `${STORAGE}/sim-images/skill-hero-creative-direction-innovation.png`
+const HERO_IMG = `${STORAGE}/email-assets/hero-creative-direction-innovation.jpg`
 
 interface SignupEmailProps {
   siteName: string

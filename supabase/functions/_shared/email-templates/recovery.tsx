@@ -17,7 +17,7 @@ import {
 } from 'npm:@react-email/components@0.0.22'
 
 const STORAGE = 'https://xtfubistkgodiksegtcx.supabase.co/storage/v1/object/public'
-const HERO_IMG = `${STORAGE}/sim-images/skill-hero-aidriven-risk-management.png`
+const HERO_IMG = `${STORAGE}/email-assets/hero-aidriven-risk-management.jpg`
 
 interface RecoveryEmailProps {
   siteName: string

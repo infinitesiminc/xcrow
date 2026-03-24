@@ -27,7 +27,7 @@ export const ReauthenticationEmail = ({ token }: ReauthenticationEmailProps) => 
     <Preview>🔐 Your verification rune — confirm your identity</Preview>
     <Body style={main}>
       <Container style={container}>
-        <Img src={`${STORAGE}/sim-images/skill-hero-compliance-strategy.png`} alt="" width="520" style={heroBanner} />
+        <Img src={`${STORAGE}/email-assets/hero-compliance-strategy.jpg`} alt="" width="520" style={heroBanner} />
         <Section style={logoOverlay}>
           <Img src={`${STORAGE}/email-assets/xcrow-logo.png`} alt="Xcrow.ai" width="48" height="48" style={logoStyle} />
         </Section>
