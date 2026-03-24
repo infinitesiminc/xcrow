@@ -486,14 +486,51 @@ export default function MyRolesPanel({ onSelectRole, onAskChat, onTabChange, onL
   }, [expandedJobId, jobSkillsStatus]);
 
 
-  const q = search.toLowerCase();
+  /* ── Debounced role search when on Realms tab ── */
+  useEffect(() => {
+    if (tab !== "realms" || selectedRealm) return;
+    if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
+    const q = search.trim().toLowerCase();
+    if (!q || q.length < 2) { setSearchRoles([]); setSearchRolesLoading(false); return; }
+    setSearchRolesLoading(true);
+    searchDebounceRef.current = setTimeout(async () => {
+      const { data } = await supabase
+        .from("jobs")
+        .select("id, title, department, augmented_percent, company_id, companies!inner(name)")
+        .or(`title.ilike.%${q}%`)
+        .limit(15);
+      if (!data) { setSearchRoles([]); setSearchRolesLoading(false); return; }
+      // Deduplicate by title+company
+      const seen = new Set<string>();
+      const results: typeof searchRoles = [];
+      for (const row of data as any[]) {
+        const key = `${row.title.toLowerCase()}||${(row.companies?.name || "").toLowerCase()}`;
+        if (seen.has(key)) continue;
+        seen.add(key);
+        results.push({
+          id: row.id,
+          title: row.title,
+          company_name: row.companies?.name || null,
+          company_id: row.company_id,
+          department: row.department,
+          augmented_percent: row.augmented_percent,
+          topTask: null,
+        });
+      }
+      setSearchRoles(results);
+      setSearchRolesLoading(false);
+    }, 300);
+    return () => { if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current); };
+  }, [search, tab, selectedRealm]);
+
+  const rq = search.toLowerCase();
   const filteredKingdoms = useMemo(() => {
     return kingdoms.filter(k => {
       if (tierFilter !== "all" && k.tier !== tierFilter) return false;
-      if (q && !k.title.toLowerCase().includes(q) && !(k.company || "").toLowerCase().includes(q)) return false;
+      if (rq && !k.title.toLowerCase().includes(rq) && !(k.company || "").toLowerCase().includes(rq)) return false;
       return true;
     });
-  }, [kingdoms, tierFilter, q]);
+  }, [kingdoms, tierFilter, rq]);
 
   const tierCounts = useMemo(() => {
     const c = { scouted: 0, contested: 0, fortified: 0, conquered: 0 };
