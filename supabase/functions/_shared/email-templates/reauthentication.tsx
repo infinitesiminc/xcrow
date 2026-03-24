@@ -8,11 +8,8 @@ import {
   Head,
   Heading,
   Html,
-  Img,
   Preview,
-  Section,
   Text,
-  Hr,
 } from 'npm:@react-email/components@0.0.22'
 
 interface ReauthenticationEmailProps {
@@ -22,26 +19,15 @@ interface ReauthenticationEmailProps {
 export const ReauthenticationEmail = ({ token }: ReauthenticationEmailProps) => (
   <Html lang="en" dir="ltr">
     <Head />
-    <Preview>🏰 Your verification rune for Xcrow.ai</Preview>
+    <Preview>Your verification code</Preview>
     <Body style={main}>
       <Container style={container}>
-        <Section style={headerSection}>
-          <Img src="https://xtfubistkgodiksegtcx.supabase.co/storage/v1/object/public/email-assets/xcrow-logo.png" alt="Xcrow.ai" width="56" height="56" style={logoStyle} />
-        </Section>
-        <Hr style={divider} />
-        <Heading style={h1}>Verification Rune</Heading>
-        <Text style={text}>
-          Speak the rune below to confirm your identity and proceed:
-        </Text>
-        <Section style={codeSection}>
-          <Text style={codeStyle}>{token}</Text>
-        </Section>
-        <Hr style={divider} />
-        <Text style={flavorText}>
-          "Only the true champion knows the rune."
-        </Text>
+        <Heading style={h1}>Confirm reauthentication</Heading>
+        <Text style={text}>Use the code below to confirm your identity:</Text>
+        <Text style={codeStyle}>{token}</Text>
         <Text style={footer}>
-          This rune will expire shortly. If you didn't request this, ignore this scroll.
+          This code will expire shortly. If you didn't request this, you can
+          safely ignore this email.
         </Text>
       </Container>
     </Body>
@@ -50,54 +36,25 @@ export const ReauthenticationEmail = ({ token }: ReauthenticationEmailProps) => 
 
 export default ReauthenticationEmail
 
-const main = { backgroundColor: '#ffffff', fontFamily: "'Inter', Arial, sans-serif" }
-const container = {
-  padding: '40px 32px',
-  maxWidth: '520px',
-  margin: '0 auto',
-  backgroundColor: '#1C1A17',
-  borderRadius: '12px',
-  border: '1px solid #3A3530',
-}
-const headerSection = { textAlign: 'center' as const, marginBottom: '8px' }
-const logoStyle = { margin: '0 auto', borderRadius: '12px' }
-const divider = { borderColor: '#3A3530', margin: '20px 0' }
+const main = { backgroundColor: '#ffffff', fontFamily: 'Arial, sans-serif' }
+const container = { padding: '20px 25px' }
 const h1 = {
-  fontFamily: "'Cinzel', 'Playfair Display', Georgia, serif",
-  fontSize: '24px',
+  fontSize: '22px',
   fontWeight: 'bold' as const,
-  color: '#D4AF37',
+  color: '#000000',
   margin: '0 0 20px',
-  textAlign: 'center' as const,
 }
 const text = {
-  fontSize: '15px',
-  color: '#C4BFB5',
-  lineHeight: '1.7',
-  margin: '0 0 18px',
-  textAlign: 'center' as const,
-}
-const codeSection = {
-  textAlign: 'center' as const,
-  backgroundColor: '#2A2722',
-  borderRadius: '8px',
-  border: '1px solid #D4AF37',
-  padding: '20px',
-  margin: '24px 0',
+  fontSize: '14px',
+  color: '#55575d',
+  lineHeight: '1.5',
+  margin: '0 0 25px',
 }
 const codeStyle = {
-  fontFamily: "'Space Grotesk', Courier, monospace",
-  fontSize: '32px',
+  fontFamily: 'Courier, monospace',
+  fontSize: '22px',
   fontWeight: 'bold' as const,
-  color: '#D4AF37',
-  letterSpacing: '6px',
-  margin: '0',
+  color: '#000000',
+  margin: '0 0 30px',
 }
-const flavorText = {
-  fontSize: '13px',
-  color: '#8B8579',
-  fontStyle: 'italic' as const,
-  textAlign: 'center' as const,
-  margin: '0 0 20px',
-}
-const footer = { fontSize: '12px', color: '#6B6560', margin: '0' }
+const footer = { fontSize: '12px', color: '#999999', margin: '30px 0 0' }
