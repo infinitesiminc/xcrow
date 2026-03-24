@@ -32,7 +32,7 @@ export const MagicLinkEmail = ({
     <Preview>🔮 Your portal awaits — one-click access to your realm</Preview>
     <Body style={main}>
       <Container style={container}>
-        <Img src={`${STORAGE}/sim-images/skill-hero-ai-agent-architecture-orchestration.png`} alt="" width="520" style={heroBanner} />
+        <Img src={`${STORAGE}/email-assets/hero-ai-agent-architecture-orchestration.jpg`} alt="" width="520" style={heroBanner} />
         <Section style={logoOverlay}>
           <Img src={`${STORAGE}/email-assets/xcrow-logo.png`} alt="Xcrow.ai" width="48" height="48" style={logoStyle} />
         </Section>

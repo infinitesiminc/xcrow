@@ -37,7 +37,7 @@ export const EmailChangeEmail = ({
     <Preview>🛡️ Confirm your new identity seal</Preview>
     <Body style={main}>
       <Container style={container}>
-        <Img src={`${STORAGE}/sim-images/skill-hero-ai-ethics-governance.png`} alt="" width="520" style={heroBanner} />
+        <Img src={`${STORAGE}/email-assets/hero-ai-ethics-governance.jpg`} alt="" width="520" style={heroBanner} />
         <Section style={logoOverlay}>
           <Img src={`${STORAGE}/email-assets/xcrow-logo.png`} alt="Xcrow.ai" width="48" height="48" style={logoStyle} />
         </Section>
