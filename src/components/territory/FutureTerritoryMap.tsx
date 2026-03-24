@@ -253,13 +253,13 @@ export default function FutureTerritoryMap({ skills, focusSkillId, level2SkillId
             </pattern>
             {/* Glow sweep gradient — brighter, narrower band */}
             <linearGradient id="sweep-grad" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0%" stopColor="hsl(var(--filigree-glow))" stopOpacity="0" />
-              <stop offset="42%" stopColor="hsl(var(--filigree-glow))" stopOpacity="0" />
-              <stop offset="48%" stopColor="hsl(var(--filigree-glow))" stopOpacity="0.6" />
-              <stop offset="50%" stopColor="hsl(var(--filigree-glow))" stopOpacity="0.9" />
-              <stop offset="52%" stopColor="hsl(var(--filigree-glow))" stopOpacity="0.6" />
-              <stop offset="58%" stopColor="hsl(var(--filigree-glow))" stopOpacity="0" />
-              <stop offset="100%" stopColor="hsl(var(--filigree-glow))" stopOpacity="0" />
+              <stop offset="0%" stopColor="white" stopOpacity="0" />
+              <stop offset="42%" stopColor="white" stopOpacity="0" />
+              <stop offset="48%" stopColor="white" stopOpacity="1" />
+              <stop offset="50%" stopColor="white" stopOpacity="1" />
+              <stop offset="52%" stopColor="white" stopOpacity="1" />
+              <stop offset="58%" stopColor="white" stopOpacity="0" />
+              <stop offset="100%" stopColor="white" stopOpacity="0" />
             </linearGradient>
             {/* Mask: only the texture lines are white (visible) */}
             <mask id="texture-line-mask">
