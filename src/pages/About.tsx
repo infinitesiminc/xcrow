@@ -25,11 +25,11 @@ const fade = {
   }),
 };
 
-function Section({ children, className = "" }: { children: React.ReactNode; className?: string }) {
+function Section({ children, className = "", style }: { children: React.ReactNode; className?: string; style?: React.CSSProperties }) {
   const ref = useRef<HTMLDivElement>(null);
   const inView = useInView(ref, { once: true, margin: "-60px" });
   return (
-    <motion.section ref={ref} initial="hidden" animate={inView ? "visible" : "hidden"} className={`relative ${className}`}>
+    <motion.section ref={ref} initial="hidden" animate={inView ? "visible" : "hidden"} className={`relative ${className}`} style={style}>
       {children}
     </motion.section>
   );
