@@ -339,8 +339,6 @@ const MapPage = () => {
                 setDrawerOpen(true);
               }}
             />
-          ) : activeTab === "companies" ? (
-            <CompaniesPanel onLaunchSim={handleLaunchSim} />
           ) : activeTab === "roles" && isSignedIn ? (
             <MyRolesPanel
               onSelectRole={(role) => { setSelectedRole(role); setActiveTab("table"); }}
