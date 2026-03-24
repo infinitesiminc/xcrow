@@ -488,7 +488,7 @@ export default function MyRolesPanel({ onSelectRole, onAskChat, onTabChange, onL
 
   /* ── Debounced role search when on Realms tab ── */
   useEffect(() => {
-    if (tab !== "realms" || selectedRealm) return;
+    if (tab !== "kingdoms" || selectedRealm) return;
     if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
     const q = search.trim().toLowerCase();
     if (!q || q.length < 2) { setSearchRoles([]); setSearchRolesLoading(false); return; }
