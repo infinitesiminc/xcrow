@@ -181,6 +181,7 @@ export default function MyRolesPanel({ onSelectRole, onAskChat, onTabChange, onL
   const [realmJobsLoading, setRealmJobsLoading] = useState(false);
   const [expandedJobId, setExpandedJobId] = useState<string | null>(null);
   const [jobSkills, setJobSkills] = useState<Record<string, JobSkillLink[]>>({});
+  const [jobSkillsStatus, setJobSkillsStatus] = useState<Record<string, "loading" | "loaded" | "empty" | "error">>({});
 
   /* ── Fetch & merge kingdoms from behavior ── */
   useEffect(() => {
