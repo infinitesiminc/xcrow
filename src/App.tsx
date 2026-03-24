@@ -118,9 +118,8 @@ const App = () => (
               <Route path="/cookies" element={<CookiePolicy />} />
               <Route path="/contact" element={<><Navbar /><Contact /><Footer /></>} />
               
-              <Route path="/investors" element={<Investors />} />
-              <Route path="/roadmap" element={<Roadmap />} />
-              <Route path="/case-study" element={<CaseStudy />} />
+              <Route path="/professionals" element={<Professionals />} />
+              <Route path="/enterprise" element={<Enterprise />} />
               <Route path="/simulation-design" element={<SimulationDesign />} />
               <Route path="/join" element={<JoinWorkspace />} />
               <Route path="/score-distributions" element={<><Navbar /><ScoreDistributions /><Footer /></>} />
