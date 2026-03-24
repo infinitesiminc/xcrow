@@ -777,7 +777,7 @@ export default function BossBattleArena({
 
         {/* Right — Boss Monster */}
         <div className="relative z-10">
-          <PowerBar value={bossHp} max={maxHp} color="hsl(0 70% 55%)" label="The Arbiter" side="right" />
+          <PowerBar value={bossHp} max={maxHp} color={`hsl(${boss.hue} 70% 55%)`} label={boss.name} side="right" />
           <div className="mt-2">
             <BossMonster
               hp={bossHp}
@@ -785,6 +785,7 @@ export default function BossBattleArena({
               state={bossState}
               checkpointsDone={Object.keys(revealed).length}
               totalCheckpoints={checkpoints.length}
+              boss={boss}
             />
           </div>
         </div>
