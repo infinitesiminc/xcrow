@@ -360,15 +360,16 @@ export default function FutureIsland({ island, skillLookup, level2SkillIds, leve
                     />
                   </>
                 )}
-                {/* Emoji — crown for conquered, sword for boss, normal otherwise */}
+                {/* Skill number badge — crown for conquered */}
                 <text
                   x={node.x}
                   y={node.y + 1}
                   textAnchor="middle"
                   dominantBaseline="central"
-                  style={{ fontSize: isBossCompleted ? "16px" : "14px", pointerEvents: "none" }}
+                  style={{ fontSize: isBossCompleted ? "16px" : "9px", pointerEvents: "none", fontFamily: "monospace", fontWeight: 700 }}
+                  fill={isBossCompleted ? undefined : "hsl(var(--primary))"}
                 >
-                  {isBossCompleted ? "👑" : (skill.iconEmoji || "")}
+                  {isBossCompleted ? "👑" : (skill.skillNumber != null ? `#${skill.skillNumber}` : "")}
                 </text>
 
                 {/* Growth Rings — 3 arcs around the node */}

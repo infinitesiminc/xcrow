@@ -148,7 +148,11 @@ export default function SkillLaunchCard({
           className="px-3 py-2.5 flex items-center gap-2"
           style={{ borderBottom: `1px solid hsl(var(--filigree) / 0.12)` }}
         >
-          <span className="text-lg">{skill.iconEmoji || "⚔️"}</span>
+          {skill.skillNumber != null && (
+            <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded-md shrink-0 bg-primary/15 text-primary">
+              #{skill.skillNumber}
+            </span>
+          )}
           <div className="flex-1 min-w-0">
             <p
               className="text-[11px] font-bold text-foreground truncate leading-tight"

@@ -245,10 +245,10 @@ export default function SkillDetailDrawer({
                 }}
               >
                 <span
-                  className="text-xl"
+                  className="text-sm font-mono font-bold text-primary"
                   style={{ transform: level2Unlocked ? "rotate(-45deg)" : "none" }}
                 >
-                  {skill.iconEmoji || "⚔️"}
+                  {skill.skillNumber != null ? `#${skill.skillNumber}` : "⚔️"}
                 </span>
               </div>
               <div className="min-w-0">

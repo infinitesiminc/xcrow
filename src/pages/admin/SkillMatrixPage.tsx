@@ -18,6 +18,7 @@ interface CanonicalSkill {
   category: string;
   description: string | null;
   icon_emoji: string | null;
+  skill_number: number | null;
   demand_count: number;
   job_count: number;
   avg_relevance: number | null;
@@ -63,7 +64,7 @@ export default function SkillMatrixPage() {
     setLoading(true);
     const { data, error } = await supabase
       .from("canonical_future_skills")
-      .select("id, name, category, description, icon_emoji, demand_count, job_count, avg_relevance")
+      .select("id, name, category, description, icon_emoji, skill_number, demand_count, job_count, avg_relevance")
       .order("demand_count", { ascending: false });
     if (error) {
       toast({ title: "Error loading skills", description: error.message, variant: "destructive" });
@@ -440,7 +441,11 @@ export default function SkillMatrixPage() {
                       <td className="py-2 px-3 text-muted-foreground font-mono">{i + 1}</td>
                       <td className="py-2 px-3">
                         <div className="flex items-center gap-1.5">
-                          {skill.icon_emoji && <span className="text-sm">{skill.icon_emoji}</span>}
+                          {skill.skill_number != null && (
+                            <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded-md bg-primary/15 text-primary">
+                              #{skill.skill_number}
+                            </span>
+                          )}
                           <span className="font-medium text-foreground">{skill.name}</span>
                         </div>
                       </td>
