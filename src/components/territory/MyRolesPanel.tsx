@@ -408,7 +408,29 @@ export default function MyRolesPanel({ onSelectRole, onAskChat, onTabChange, onL
     })();
   }, [selectedRealm]);
 
-  /* ── Filtering ── */
+  /* ── Fetch skills for expanded job ── */
+  useEffect(() => {
+    if (!expandedJobId || jobSkills[expandedJobId]) return;
+    (async () => {
+      const { data } = await supabase
+        .from("job_future_skills")
+        .select("skill_name, canonical_skill_id, category, icon_emoji")
+        .eq("job_id", expandedJobId)
+        .limit(20);
+      if (data) {
+        const seen = new Set<string>();
+        const unique = (data as JobSkillLink[]).filter(s => {
+          const k = s.skill_name.toLowerCase();
+          if (seen.has(k)) return false;
+          seen.add(k);
+          return true;
+        });
+        setJobSkills(prev => ({ ...prev, [expandedJobId]: unique }));
+      }
+    })();
+  }, [expandedJobId]);
+
+
   const q = search.toLowerCase();
   const filteredKingdoms = useMemo(() => {
     return kingdoms.filter(k => {
