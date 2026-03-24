@@ -1,74 +1,58 @@
 
 
-# Restructure /about → Problem-Solution Narrative for University Leadership
+# National Xcrow Competition Page — `/competition`
 
-## Current State
-The page is a general "founder manifesto" targeting all segments (professionals, students, institutions). It leads with abstract "Defense → Offense" framing that doesn't speak to a specific buyer.
+## Overview
+New standalone landing page for the **National Xcrow Championship** on **June 10, 2026**, open to all US college students, **$1,000,000 cash prize pool**. RPG-themed, high-energy, conversion-focused.
 
-## Proposed Narrative Arc
+## New file: `src/pages/Competition.tsx`
 
-```text
-1. PROBLEM: The Employability Crisis
-   "Your graduates aren't prepared for the jobs that exist now"
-   → Data: 69% skill gap in Human Edge, 0% Ethics coverage
+### 1. Hero Section
+- Headline: **"The National Xcrow Championship"**
+- Date badge: **June 10, 2026**
+- Subtext: "All US college students. One day. $1,000,000 in prizes."
+- Live countdown timer (days/hours/minutes/seconds) using `useState` + `useEffect` interval
+- "Register Now" CTA → opens auth modal via `useAuth().openAuthModal`
+- RPG atmospheric glows using existing CSS variables
 
-2. EVIDENCE: The Skill Gap Is Measurable
-   → SkillGapSection charts (already built) — promoted higher
-   → Jensen Huang quote reframed as "roles evolve, curricula don't"
+### 2. Prize Breakdown — $1M total
+- 4-card grid with gold/silver/bronze/steel styling:
+  - 1st Place: **$500,000**
+  - 2nd Place: **$250,000**
+  - 3rd Place: **$150,000**
+  - Top 10: **$10,000 each**
+- Trophy/medal icons from Lucide (`Trophy`, `Medal`, `Award`)
 
-3. WHY IT'S GETTING WORSE: AI Agent Evolution
-   → AIAgentEvolutionSection (already built) — reframed as
-     "the jobs your students will enter look nothing like today"
+### 3. How It Works
+- 4-step flow cards: Register → Qualify → Compete → Win
+- Each with icon, title, description
+- Qualification via platform practice, competition day is live sims
 
-4. WHY TRADITIONAL FIXES FAIL
-   → Courses expire, reading ≠ readiness (existing "Why a Game?" content)
-   → Reframed: "Adding an AI elective isn't enough"
+### 4. Eligibility & Rules
+- US college/university enrollment required
+- Individual competition
+- All 183 skill territories in play
+- Clean list layout with shield/check icons
 
-5. SOLUTION: Xcrow as Institutional Infrastructure
-   → Zero-Gap engine, 183 skills, real-time sim updates
-   → L2 checkpoint glimpse (shows depth of training)
+### 5. What You'll Battle
+- Preview cards: timed AI simulations, L2 checkpoints, boss battles
+- Real-world job tasks from actual companies
+- Uses existing RPG card styling
 
-6. PROOF & CREDIBILITY
-   → Founder letter (kept but shortened)
-   → Stats bar (4,176 universities analyzed)
+### 6. Social Proof Strip
+- Stats: universities represented, students registered, skill territories (placeholder numbers)
+- "Your university could be represented"
 
-7. CTA: "Schedule a Pilot" / "Talk to Our Team"
-   → University-specific language
-```
+### 7. Final CTA
+- "Claim Your Spot" primary button → auth modal
+- "Tell Your Campus" secondary → `navigator.share` or copy link
 
-## Specific Changes
+### Tech
+- `framer-motion` animations using existing `fade` pattern
+- Navbar + Footer wrapper
+- Fully responsive
 
-### File: `src/pages/About.tsx`
-
-1. **New Hero** — Replace "Defense to Offense" with university-facing headline:
-   - *"Your Students Graduate Into an AI Economy. Are They Ready?"*
-   - Subtext addresses deans/provosts directly: employability rankings, employer complaints, curriculum lag
-   - Badge: "FOR UNIVERSITY LEADERSHIP" instead of "The workforce is under siege"
-
-2. **Move SkillGapSection up** — Immediately after hero as the "proof of problem" section. This is the most compelling data for a dean.
-
-3. **Jensen Huang quote** — Keep but add framing: *"Every discipline your university teaches is undergoing this transformation"*
-
-4. **AI Agent Evolution** — Keep, add intro text: *"The roles your 2027 graduates will fill don't exist in your current curriculum"*
-
-5. **Reframe "Why a Game?"** → **"Why Traditional Approaches Fail"** — Same 4 cards but with university-specific descriptions (e.g., "Your LMS can't regenerate content weekly" instead of generic statements)
-
-6. **Zero-Gap Engine** — Reframe as institutional infrastructure: *"A curriculum layer that never goes stale"*
-
-7. **183 Skills Catalogue** — Keep as-is, it's strong proof of depth
-
-8. **L2 Checkpoint** — Keep, reframe intro: *"This is what your graduates need to be able to do on day one"*
-
-9. **Founder Letter** — Move lower, shorten slightly. Still valuable for credibility but shouldn't lead.
-
-10. **New CTA** — *"Equip Your Institution"* with "Schedule a Pilot" primary button and "Download the Skill Gap Report" secondary
-
-11. **Remove/trim** the "Why the Crow?" section — it's brand storytelling that doesn't serve the university buyer journey. Can keep as a small footnote.
-
-## Technical Details
-
-- All changes in `src/pages/About.tsx` (section reordering + copy rewrites)
-- Minor updates to `src/components/about/SkillGapSection.tsx` header copy to address university leaders directly
-- No new components needed — this is primarily a content restructure
-- Existing `AIAgentEvolutionSection` and `SkillGapSection` components stay intact, just repositioned and given new intro framing in the parent page
+## Edit: `src/App.tsx`
+- Add lazy import: `const Competition = lazy(() => import("./pages/Competition.tsx"));`
+- Add route: `<Route path="/competition" element={<><Navbar /><Competition /><Footer /></>} />`
 
