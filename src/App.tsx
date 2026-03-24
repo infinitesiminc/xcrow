@@ -38,6 +38,7 @@ const PublicProfile = lazy(() => import("./pages/PublicProfile.tsx"));
 const MapPage = lazy(() => import("./pages/MapPage.tsx"));
 const L2SimFormats = lazy(() => import("./pages/L2SimFormats.tsx"));
 const HowItWorks = lazy(() => import("./pages/HowItWorks.tsx"));
+const Professionals = lazy(() => import("./pages/Professionals.tsx"));
 const SkillsCodex = lazy(() => import("./pages/Skills.tsx"));
 
 // Admin (lazy)
@@ -117,7 +118,7 @@ const App = () => (
               <Route path="/cookies" element={<CookiePolicy />} />
               <Route path="/contact" element={<><Navbar /><Contact /><Footer /></>} />
               
-              <Route path="/professionals" element={<Navigate to="/" replace />} />
+              <Route path="/professionals" element={<Professionals />} />
               <Route path="/enterprise" element={<Navigate to="/" replace />} />
               <Route path="/simulation-design" element={<SimulationDesign />} />
               <Route path="/join" element={<JoinWorkspace />} />
