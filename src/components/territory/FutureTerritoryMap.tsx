@@ -224,20 +224,20 @@ export default function FutureTerritoryMap({ skills, focusSkillId, level2SkillId
             </filter>
             {/* Subtle topographic texture pattern */}
             <pattern id="map-texture" x="0" y="0" width="300" height="300" patternUnits="userSpaceOnUse">
-              {/* Topographic contour rings — large */}
-              <circle cx="80" cy="70" r="35" fill="none" stroke="hsl(var(--border))" strokeWidth="0.6" opacity="0.12" />
-              <circle cx="80" cy="70" r="55" fill="none" stroke="hsl(var(--border))" strokeWidth="0.5" opacity="0.09" />
-              <circle cx="80" cy="70" r="75" fill="none" stroke="hsl(var(--border))" strokeWidth="0.4" opacity="0.07" />
-              <circle cx="80" cy="70" r="95" fill="none" stroke="hsl(var(--border))" strokeWidth="0.3" opacity="0.05" />
-              {/* Second cluster */}
-              <circle cx="240" cy="220" r="30" fill="none" stroke="hsl(var(--border))" strokeWidth="0.6" opacity="0.11" />
-              <circle cx="240" cy="220" r="50" fill="none" stroke="hsl(var(--border))" strokeWidth="0.5" opacity="0.08" />
-              <circle cx="240" cy="220" r="70" fill="none" stroke="hsl(var(--border))" strokeWidth="0.4" opacity="0.06" />
-              {/* Third offset cluster */}
-              <circle cx="200" cy="40" r="25" fill="none" stroke="hsl(var(--border))" strokeWidth="0.5" opacity="0.09" />
-              <circle cx="200" cy="40" r="42" fill="none" stroke="hsl(var(--border))" strokeWidth="0.4" opacity="0.07" />
+              {/* Topographic contour rings — cluster 1 */}
+              <circle cx="80" cy="70" r="35" fill="none" stroke="hsl(var(--muted-foreground))" strokeWidth="1" opacity="0.18" />
+              <circle cx="80" cy="70" r="55" fill="none" stroke="hsl(var(--muted-foreground))" strokeWidth="0.8" opacity="0.14" />
+              <circle cx="80" cy="70" r="75" fill="none" stroke="hsl(var(--muted-foreground))" strokeWidth="0.6" opacity="0.1" />
+              <circle cx="80" cy="70" r="95" fill="none" stroke="hsl(var(--muted-foreground))" strokeWidth="0.5" opacity="0.07" />
+              {/* Cluster 2 */}
+              <circle cx="240" cy="220" r="30" fill="none" stroke="hsl(var(--muted-foreground))" strokeWidth="1" opacity="0.16" />
+              <circle cx="240" cy="220" r="50" fill="none" stroke="hsl(var(--muted-foreground))" strokeWidth="0.8" opacity="0.12" />
+              <circle cx="240" cy="220" r="70" fill="none" stroke="hsl(var(--muted-foreground))" strokeWidth="0.6" opacity="0.08" />
+              {/* Cluster 3 */}
+              <circle cx="200" cy="40" r="25" fill="none" stroke="hsl(var(--muted-foreground))" strokeWidth="0.8" opacity="0.14" />
+              <circle cx="200" cy="40" r="42" fill="none" stroke="hsl(var(--muted-foreground))" strokeWidth="0.6" opacity="0.1" />
               {/* Cross markers */}
-              <g stroke="hsl(var(--border))" strokeWidth="0.8" opacity="0.1">
+              <g stroke="hsl(var(--muted-foreground))" strokeWidth="1.2" opacity="0.18">
                 <line x1="28" y1="190" x2="36" y2="190" />
                 <line x1="32" y1="186" x2="32" y2="194" />
                 <line x1="150" y1="130" x2="158" y2="130" />
@@ -245,13 +245,13 @@ export default function FutureTerritoryMap({ skills, focusSkillId, level2SkillId
                 <line x1="270" y1="90" x2="278" y2="90" />
                 <line x1="274" y1="86" x2="274" y2="94" />
               </g>
-              {/* Dotted grain */}
-              <circle cx="50" cy="260" r="1" fill="hsl(var(--border))" opacity="0.08" />
-              <circle cx="130" cy="50" r="1" fill="hsl(var(--border))" opacity="0.07" />
-              <circle cx="270" cy="160" r="1" fill="hsl(var(--border))" opacity="0.08" />
-              <circle cx="20" cy="100" r="0.8" fill="hsl(var(--border))" opacity="0.06" />
-              <circle cx="180" cy="280" r="0.8" fill="hsl(var(--border))" opacity="0.07" />
-              <circle cx="100" cy="200" r="0.8" fill="hsl(var(--border))" opacity="0.06" />
+              {/* Grain dots */}
+              <circle cx="50" cy="260" r="1.5" fill="hsl(var(--muted-foreground))" opacity="0.12" />
+              <circle cx="130" cy="50" r="1.2" fill="hsl(var(--muted-foreground))" opacity="0.1" />
+              <circle cx="270" cy="160" r="1.5" fill="hsl(var(--muted-foreground))" opacity="0.12" />
+              <circle cx="20" cy="100" r="1" fill="hsl(var(--muted-foreground))" opacity="0.09" />
+              <circle cx="180" cy="280" r="1" fill="hsl(var(--muted-foreground))" opacity="0.1" />
+              <circle cx="100" cy="200" r="1" fill="hsl(var(--muted-foreground))" opacity="0.09" />
             </pattern>
           </defs>
 
