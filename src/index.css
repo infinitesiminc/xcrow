@@ -811,3 +811,13 @@ html:not(.light):not(.parchment) {
 .animate-map-sweep {
   animation: map-sweep 10s ease-in-out infinite;
 }
+
+/* Boss bestiary marquee */
+@keyframes scroll-marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+.mask-marquee {
+  mask-image: linear-gradient(to right, transparent 0%, black 5%, black 95%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, black 5%, black 95%, transparent 100%);
+}
