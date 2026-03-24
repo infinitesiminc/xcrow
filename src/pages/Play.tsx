@@ -6,7 +6,7 @@ import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import {
   Map, Sword, Shield, Star, Crown, Sparkles, ArrowRight,
-  Compass, Target, Zap, Trophy, ChevronDown,
+  Compass, Target, Zap, Trophy, ChevronDown, Users,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { TERRITORIES } from "@/lib/territory-colors";
@@ -427,6 +427,88 @@ export default function Play() {
                 <p className="text-xs text-muted-foreground mt-1">{s.label}</p>
               </motion.div>
             ))}
+          </div>
+        </section>
+
+        {/* ═══ SOCIAL — ALLIES & LEADERBOARD ═══ */}
+        <section className="py-20 px-4">
+          <div className="max-w-5xl mx-auto">
+            <motion.div {...fade()} className="text-center mb-14">
+              <p className="text-xs font-mono uppercase tracking-[0.2em] text-muted-foreground mb-2">Social Arena</p>
+              <h2 className="font-fantasy text-3xl md:text-4xl font-bold">
+                You Don't Quest Alone
+              </h2>
+              <p className="text-muted-foreground mt-3 max-w-lg mx-auto">
+                Recruit allies, challenge friends, and compete on the global leaderboard. Every warrior needs a war party.
+              </p>
+            </motion.div>
+
+            <div className="grid md:grid-cols-3 gap-6">
+              {[
+                {
+                  emoji: "🤝",
+                  title: "Recruit Allies",
+                  desc: "Add friends, see what they're questing, and try their latest simulations. Your ally panel shows who's online now.",
+                  cta: "Find Allies",
+                  ctaPath: "/map",
+                },
+                {
+                  emoji: "⚔️",
+                  title: "Challenge Friends",
+                  desc: "Send direct challenges to your allies. See who scores higher on the same simulation and earn bragging rights.",
+                  cta: "Start a Duel",
+                  ctaPath: "/map",
+                },
+                {
+                  emoji: "🏆",
+                  title: "Hall of Champions",
+                  desc: "Climb the global leaderboard ranked by XP, skills unlocked, and quests completed. Your name in lights awaits.",
+                  cta: "View Leaderboard",
+                  ctaPath: "/leaderboard",
+                },
+              ].map((card, i) => (
+                <motion.div
+                  key={card.title}
+                  {...fade(i * 0.12)}
+                  className="rounded-2xl p-6 border border-border/50"
+                  style={{
+                    background: "hsl(var(--card))",
+                    boxShadow: `inset 0 1px 0 hsl(var(--emboss-light)), 0 4px 20px hsl(var(--emboss-shadow))`,
+                  }}
+                >
+                  <span className="text-4xl block mb-4">{card.emoji}</span>
+                  <h3 className="font-fantasy text-xl font-bold mb-2">{card.title}</h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed mb-4">{card.desc}</p>
+                  <Button variant="ghost" size="sm" onClick={() => navigate(card.ctaPath)}
+                    className="text-xs font-medium group">
+                    {card.cta} <ArrowRight className="h-3.5 w-3.5 ml-1 group-hover:translate-x-0.5 transition-transform" />
+                  </Button>
+                </motion.div>
+              ))}
+            </div>
+
+            {/* Live activity teaser */}
+            <motion.div {...fade(0.2)} className="mt-8 rounded-xl p-5 border border-border/50 flex flex-col sm:flex-row items-center gap-4"
+              style={{ background: "hsl(var(--surface-stone))", boxShadow: `inset 0 1px 0 hsl(var(--emboss-light))` }}>
+              <div className="flex -space-x-2">
+                {AVATARS.slice(0, 4).map(a => (
+                  <img key={a.name} src={a.img} alt={a.name} className="h-8 w-8 rounded-full border-2 border-background crow-glow" />
+                ))}
+              </div>
+              <div className="text-center sm:text-left flex-1">
+                <p className="text-sm font-medium">
+                  <span style={{ color: "hsl(var(--filigree-glow))" }}>Phoenix</span>{" "}
+                  <span className="text-muted-foreground">just conquered</span>{" "}
+                  <span className="text-foreground font-semibold">Prompt Engineering</span>
+                </p>
+                <p className="text-xs text-muted-foreground">2 minutes ago · +85 XP earned</p>
+              </div>
+              <Button variant="outline" size="sm" onClick={() => navigate("/leaderboard")}
+                className="shrink-0 text-xs font-fantasy"
+                style={{ border: "1px solid hsl(var(--filigree) / 0.2)" }}>
+                <Trophy className="h-3.5 w-3.5 mr-1" /> Leaderboard
+              </Button>
+            </motion.div>
           </div>
         </section>
 
