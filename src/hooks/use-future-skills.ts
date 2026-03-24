@@ -48,9 +48,15 @@ async function fetchOnce(): Promise<FutureSkill[]> {
   if (_promise) return _promise;
 
   _promise = (async () => {
-    const data = await fetchCanonicalFutureSkillsRows();
-    _cache = data.map(mapRow);
-    return _cache;
+    try {
+      const data = await fetchCanonicalFutureSkillsRows();
+      _cache = data.map(mapRow);
+      return _cache;
+    } catch (error) {
+      console.warn("Failed to fetch future skills:", error);
+      _promise = null;
+      return _cache ?? [];
+    }
   })();
 
   return _promise;
