@@ -6,7 +6,7 @@ import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import {
   Map, Sword, Shield, Star, Crown, Sparkles, ArrowRight,
-  Compass, Target, Zap, Trophy, ChevronDown,
+  Compass, Target, Zap, Trophy, ChevronDown, Users,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { TERRITORIES } from "@/lib/territory-colors";
