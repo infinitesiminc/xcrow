@@ -663,7 +663,7 @@ export default function MyRolesPanel({ onSelectRole, onAskChat, onTabChange, onL
                 className="flex items-center gap-1 text-[10px] text-muted-foreground hover:text-foreground transition-colors"
                 style={{ fontFamily: "'Cinzel', serif" }}
               >
-                <ChevronLeft className="h-3 w-3" /> All Realms
+                <ChevronLeft className="h-3 w-3" /> All Kingdoms
               </button>
 
               <div className="flex items-center gap-2.5">
