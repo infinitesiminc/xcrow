@@ -135,6 +135,153 @@ const stats = [
   { value: "$1M", label: "Cash Prizes", icon: Trophy },
 ];
 
+/* ── Registration Form ── */
+function RegistrationForm() {
+  const [fullName, setFullName] = useState("");
+  const [email, setEmail] = useState("");
+  const [university, setUniversity] = useState("");
+  const [gradYear, setGradYear] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+  const { toast } = useToast();
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!fullName.trim() || !email.trim() || !university.trim()) return;
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email.trim())) {
+      toast({ title: "Invalid email", description: "Please enter a valid email address.", variant: "destructive" });
+      return;
+    }
+
+    setSubmitting(true);
+    const { error } = await supabase.from("competition_registrations").insert({
+      full_name: fullName.trim(),
+      email: email.trim().toLowerCase(),
+      university: university.trim(),
+      graduation_year: gradYear ? parseInt(gradYear) : null,
+    } as any);
+
+    setSubmitting(false);
+
+    if (error) {
+      if (error.code === "23505") {
+        toast({ title: "Already registered!", description: "This email is already signed up for the Championship." });
+        setSubmitted(true);
+      } else {
+        toast({ title: "Registration failed", description: error.message, variant: "destructive" });
+      }
+      return;
+    }
+
+    setSubmitted(true);
+    toast({ title: "⚔️ You're in!", description: "Check your email for next steps." });
+  };
+
+  return (
+    <section id="register" className="py-24 px-4 relative overflow-hidden">
+      <div className="absolute top-0 right-1/4 w-[400px] h-[400px] rounded-full bg-primary/6 blur-[140px] pointer-events-none" />
+
+      <div className="max-w-lg mx-auto relative z-10">
+        <motion.div {...fade()} className="text-center mb-10">
+          <Badge className="mb-4 bg-primary/10 text-primary border-primary/20 text-[10px] tracking-[0.2em] uppercase">
+            🏟️ Free Registration
+          </Badge>
+          <h2 className="text-3xl sm:text-4xl font-black" style={{ fontFamily: "'Cinzel', serif" }}>
+            Register Your University
+          </h2>
+          <p className="text-muted-foreground mt-2 text-sm">
+            Sign up now to qualify. Open to all US college students.
+          </p>
+        </motion.div>
+
+        {submitted ? (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="text-center p-10 rounded-2xl"
+            style={{
+              background: "hsl(var(--card))",
+              border: "1px solid hsl(var(--primary) / 0.3)",
+              boxShadow: "0 0 40px hsl(var(--primary) / 0.1), inset 0 1px 0 hsl(var(--emboss-light))",
+            }}
+          >
+            <CheckCircle className="h-12 w-12 text-primary mx-auto mb-4" />
+            <h3 className="text-xl font-bold mb-2" style={{ fontFamily: "'Cinzel', serif" }}>Registration Complete</h3>
+            <p className="text-muted-foreground text-sm">You're on the roster. Prepare for battle.</p>
+          </motion.div>
+        ) : (
+          <motion.form
+            {...fade(0.1)}
+            onSubmit={handleSubmit}
+            className="space-y-4 p-6 sm:p-8 rounded-2xl"
+            style={{
+              background: "hsl(var(--card))",
+              border: "1px solid hsl(var(--filigree) / 0.2)",
+              boxShadow: "inset 0 1px 0 hsl(var(--emboss-light)), 0 4px 20px hsl(var(--emboss-shadow))",
+            }}
+          >
+            <div>
+              <label className="text-[11px] uppercase tracking-[0.12em] text-muted-foreground mb-1.5 block">Full Name</label>
+              <Input
+                placeholder="Your name"
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                maxLength={100}
+                required
+                className="bg-background/50"
+              />
+            </div>
+
+            <div>
+              <label className="text-[11px] uppercase tracking-[0.12em] text-muted-foreground mb-1.5 block">Email</label>
+              <Input
+                type="email"
+                placeholder="you@university.edu"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                maxLength={255}
+                required
+                className="bg-background/50"
+              />
+            </div>
+
+            <div>
+              <label className="text-[11px] uppercase tracking-[0.12em] text-muted-foreground mb-1.5 block">University</label>
+              <SchoolAutocomplete value={university} onChange={setUniversity} />
+            </div>
+
+            <div>
+              <label className="text-[11px] uppercase tracking-[0.12em] text-muted-foreground mb-1.5 block">Graduation Year (optional)</label>
+              <Input
+                type="number"
+                placeholder="2027"
+                value={gradYear}
+                onChange={(e) => setGradYear(e.target.value)}
+                min={2024}
+                max={2032}
+                className="bg-background/50"
+              />
+            </div>
+
+            <Button
+              type="submit"
+              size="lg"
+              className="w-full text-base py-6 gap-2 mt-2"
+              disabled={submitting || !fullName.trim() || !email.trim() || !university.trim()}
+              style={{ fontFamily: "'Cinzel', serif", letterSpacing: "0.05em", boxShadow: "0 0 30px hsl(var(--primary) / 0.25)" }}
+            >
+              {submitting ? <Loader2 className="h-5 w-5 animate-spin" /> : <Swords className="h-5 w-5" />}
+              {submitting ? "Registering…" : "Register Now"}
+            </Button>
+          </motion.form>
+        )}
+      </div>
+    </section>
+  );
+}
+
 /* ── Arena Card with image fallback ── */
 function ArenaCard({ skill, territory, index }: { skill: typeof ARENA_SKILLS[number]; territory: (typeof TERRITORIES)[number]; index: number }) {
   const [imgStatus, setImgStatus] = useState<"loading" | "loaded" | "error">("loading");
