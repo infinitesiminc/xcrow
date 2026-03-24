@@ -337,6 +337,68 @@ export default function MyRolesPanel({ onSelectRole, onAskChat, onTabChange, onL
     });
   }, [user]);
 
+  /* ── Fetch realm companies (companies with roles) ── */
+  useEffect(() => {
+    (async () => {
+      setRealmsLoading(true);
+      const { data: stats } = await supabase.rpc("get_company_stats");
+      if (!stats) { setRealmsLoading(false); return; }
+      const withJobs = (stats as any[]).filter(s => s.job_count > 0);
+      if (!withJobs.length) { setRealmsLoading(false); setRealmCompanies([]); return; }
+      const { data: cos } = await supabase
+        .from("companies")
+        .select("id, name, industry, logo_url")
+        .in("id", withJobs.map(s => s.company_id))
+        .order("name");
+      if (!cos) { setRealmsLoading(false); return; }
+      const statsMap = new Map(withJobs.map(s => [s.company_id, s]));
+      setRealmCompanies(cos.map((c: any) => ({
+        ...c,
+        job_count: statsMap.get(c.id)?.job_count || 0,
+        kingdoms: [], // will be enriched below
+      })));
+      setRealmsLoading(false);
+    })();
+  }, []);
+
+  /* Enrich realm companies with user's kingdoms */
+  const enrichedRealms = useMemo(() => {
+    if (!realmCompanies.length) return realmCompanies;
+    return realmCompanies.map(rc => ({
+      ...rc,
+      kingdoms: kingdoms.filter(k => k.company?.toLowerCase() === rc.name.toLowerCase()),
+    })).sort((a, b) => {
+      // Companies with user kingdoms first, then by job count
+      if (a.kingdoms.length !== b.kingdoms.length) return b.kingdoms.length - a.kingdoms.length;
+      return b.job_count - a.job_count;
+    });
+  }, [realmCompanies, kingdoms]);
+
+  /* Load jobs when realm selected */
+  useEffect(() => {
+    if (!selectedRealm) return;
+    setRealmJobsLoading(true);
+    setRealmJobs([]);
+    (async () => {
+      const { data: taskJobs } = await supabase
+        .from("job_task_clusters")
+        .select("job_id, cluster_name, jobs!inner(id, title, department, augmented_percent)")
+        .eq("jobs.company_id", selectedRealm.id)
+        .order("sort_order", { ascending: true })
+        .limit(50);
+      if (!taskJobs?.length) { setRealmJobsLoading(false); return; }
+      const jobMap = new Map<string, CompanyJob>();
+      for (const row of taskJobs) {
+        const j = (row as any).jobs;
+        if (!j || jobMap.has(j.id)) continue;
+        if (jobMap.size >= 15) break;
+        jobMap.set(j.id, { id: j.id, title: j.title, department: j.department, augmented_percent: j.augmented_percent, topTask: row.cluster_name });
+      }
+      setRealmJobs(Array.from(jobMap.values()));
+      setRealmJobsLoading(false);
+    })();
+  }, [selectedRealm]);
+
   /* ── Filtering ── */
   const q = search.toLowerCase();
   const filteredKingdoms = useMemo(() => {
