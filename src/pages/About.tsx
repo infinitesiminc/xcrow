@@ -259,6 +259,9 @@ export default function About() {
           </div>
         </Section>
 
+        {/* ═══ SKILL GAP: CURRICULUM vs MARKET ═══ */}
+        <SkillGapSection />
+
         {/* ═══ LEVEL 2 GLIMPSE: BOSS BATTLE AUDIT ═══ */}
         <Section className="py-20 px-6" style={{ background: "linear-gradient(180deg, hsl(262 40% 8%) 0%, hsl(var(--background)) 100%)" }}>
           <div className="max-w-4xl mx-auto">
