@@ -37,6 +37,7 @@ function mapRow(row: any): FutureSkill {
     category: row.category as FutureSkillCategory,
     description: row.description,
     iconEmoji: row.icon_emoji,
+    skillNumber: row.skill_number ?? null,
     demandCount: row.demand_count ?? 1,
     jobCount: row.job_count ?? 1,
     avgRelevance: row.avg_relevance ?? 50,
