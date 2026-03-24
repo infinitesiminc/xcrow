@@ -14,6 +14,7 @@ import { Badge } from "@/components/ui/badge";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import TerritoryEmblem from "@/components/TerritoryEmblem";
+import SimChatPreview from "@/components/SimChatPreview";
 
 import xcrowLogo from "@/assets/xcrow-logo.webp";
 
