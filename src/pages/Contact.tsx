@@ -1,219 +1,201 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Mail, MessageSquare, MapPin, Send, Loader2, CheckCircle2, Calendar, Building2 } from "lucide-react";
+import { Mail, MapPin, Send, Loader2, CheckCircle2, Calendar, GraduationCap, Phone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
+import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
+
+const fade = (delay = 0) => ({
+  initial: { opacity: 0, y: 20 },
+  animate: { opacity: 1, y: 0 },
+  transition: { duration: 0.5, delay, ease: "easeOut" as const },
+});
 
 const Contact = () => {
   const { toast } = useToast();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
-  const [subject, setSubject] = useState("");
-  const [company, setCompany] = useState("");
-  const [teamSize, setTeamSize] = useState("");
+  const [university, setUniversity] = useState("");
+  const [phone, setPhone] = useState("");
   const [message, setMessage] = useState("");
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
 
-  const isOrgInquiry = subject !== "" && subject !== "other";
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim() || !email.trim() || !message.trim()) return;
+    if (!name.trim() || !email.trim() || !university.trim()) return;
     setSending(true);
     try {
       const { supabase } = await import("@/integrations/supabase/client");
       const { error } = await supabase.functions.invoke("send-contact-email", {
-        body: { name, email, subject, company, teamSize, message, formType: isOrgInquiry ? "org" : "general" },
+        body: { name, email, subject: "university-inquiry", company: university, teamSize: "", message: message || `University inquiry from ${university}`, formType: "org", phone },
       });
       if (error) throw error;
       setSent(true);
-      toast({ title: "Message sent", description: "We'll get back to you soon." });
+      toast({ title: "Message sent", description: "I'll get back to you within 24 hours. — Jackson" });
     } catch (err) {
       console.error("Contact form error:", err);
-      toast({ title: "Failed to send", description: "Please try again or email us directly.", variant: "destructive" });
+      toast({ title: "Failed to send", description: "Please try again or email jackson@xcrow.ai directly.", variant: "destructive" });
     } finally {
       setSending(false);
     }
   };
 
+  const inputClass = "w-full rounded-xl border border-border bg-background px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-primary/50 placeholder:text-muted-foreground/50";
+
   return (
-    <div className="min-h-screen bg-background">
-      <div className="mx-auto max-w-4xl px-4 py-16">
-        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-12">
-          <h1 className="text-3xl sm:text-4xl font-serif font-bold text-foreground mb-3">Get in Touch</h1>
-          <p className="text-sm text-muted-foreground max-w-md mx-auto">
-            Have a question, feedback, or partnership idea? We'd love to hear from you.
-          </p>
-        </motion.div>
+    <>
+      <Navbar />
+      <div className="min-h-screen bg-background text-foreground">
+        <div className="mx-auto max-w-5xl px-4 py-16 sm:py-24">
 
-        <div className="grid md:grid-cols-3 gap-6 mb-12">
-          {[
-            { icon: Mail, title: "Email", detail: "jackson@Xcrow.ai", sub: "We respond within 24 hours" },
-            { icon: MessageSquare, title: "Support", detail: "jackson@Xcrow.ai", sub: "For account & technical issues" },
-            { icon: MapPin, title: "Location", detail: "San Francisco, CA", sub: "Remote-first team" },
-          ].map((item, i) => (
-            <motion.div key={item.title} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 + i * 0.05 }}>
-              <Card className="h-full text-center">
-                <CardContent className="p-6">
-                  <div className="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-accent mb-3">
-                    <item.icon className="h-5 w-5 text-primary" />
-                  </div>
-                  <h3 className="text-sm font-semibold text-foreground mb-1">{item.title}</h3>
-                  <p className="text-sm text-foreground/80">{item.detail}</p>
-                  <p className="text-[11px] text-muted-foreground mt-1">{item.sub}</p>
-                </CardContent>
-              </Card>
-            </motion.div>
-          ))}
-        </div>
+          {/* ═══ FOUNDER LETTER ═══ */}
+          <motion.div {...fade()} className="max-w-2xl mx-auto text-center mb-16">
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl mb-6"
+              style={{ background: "hsl(var(--primary) / 0.1)", border: "1px solid hsl(var(--primary) / 0.2)" }}>
+              <span className="text-2xl">👋</span>
+            </div>
+            <h1 className="font-fantasy text-3xl sm:text-5xl font-bold mb-5 leading-tight">
+              Let's Talk About Your Students' Future
+            </h1>
+            <p className="text-muted-foreground text-base sm:text-lg leading-relaxed mb-6">
+              I'm <span className="text-foreground font-semibold">Jackson</span>, founder of Xcrow. I built this platform because I saw the same gap
+              at every university I visited — career services teams want to prepare students for AI, but the tools don't exist yet.
+            </p>
+            <p className="text-muted-foreground text-base sm:text-lg leading-relaxed">
+              If you're running career support, employability programs, or workforce readiness initiatives,
+              I'd love to hear what challenges your students face. Every partnership starts with a conversation.
+            </p>
+          </motion.div>
 
-        <div className="grid lg:grid-cols-2 gap-8 max-w-5xl mx-auto">
-        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
-          {sent ? (
-            <Card>
-              <CardContent className="p-10 text-center">
-                <CheckCircle2 className="h-12 w-12 text-success mx-auto mb-4" />
-                <h2 className="text-lg font-semibold text-foreground mb-2">Message sent!</h2>
-                <p className="text-sm text-muted-foreground mb-4">Thanks for reaching out. We'll get back to you shortly.</p>
-                <Button variant="outline" onClick={() => { setSent(false); setName(""); setEmail(""); setSubject(""); setCompany(""); setTeamSize(""); setMessage(""); }}>
-                  Send another message
-                </Button>
-              </CardContent>
-            </Card>
-          ) : (
-            <Card>
-              <CardContent className="p-6">
-                <h2 className="text-lg font-serif font-bold text-foreground mb-4">Send us a message</h2>
-                <form onSubmit={handleSubmit} className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="text-sm font-medium text-foreground mb-1 block">Name *</label>
-                      <input
-                        type="text"
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                        required
-                        maxLength={100}
-                        className="w-full rounded-lg border border-input bg-background px-3 py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-ring"
-                        placeholder="Your name"
-                      />
-                    </div>
-                    <div>
-                      <label className="text-sm font-medium text-foreground mb-1 block">Email *</label>
-                      <input
-                        type="email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        required
-                        maxLength={255}
-                        className="w-full rounded-lg border border-input bg-background px-3 py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-ring"
-                        placeholder="you@email.com"
-                      />
-                    </div>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-foreground mb-1 block">Interested Use Case</label>
-                    <select
-                      value={subject}
-                      onChange={(e) => setSubject(e.target.value)}
-                      className="w-full rounded-lg border border-input bg-background px-3 py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-ring"
-                    >
-                      <option value="">Select a use case…</option>
-                      <option value="hiring">Hiring</option>
-                      <option value="onboarding">Onboarding</option>
-                      <option value="learning-development">Learning & Development</option>
-                      <option value="performance-assessment">Performance Assessment</option>
-                      <option value="project-staffing">Project Staffing</option>
-                      <option value="other">Other (specify in message)</option>
-                    </select>
-                  </div>
+          <div className="grid lg:grid-cols-5 gap-8">
 
-                  {/* Show company/team-size fields for enterprise/partnership inquiries */}
-                  {isOrgInquiry && (
-                    <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="space-y-4">
+            {/* ═══ CONTACT FORM — 3 cols ═══ */}
+            <motion.div {...fade(0.15)} className="lg:col-span-3">
+              {sent ? (
+                <Card className="border-border/50" style={{ background: "hsl(var(--card))", boxShadow: "inset 0 1px 0 hsl(var(--emboss-light))" }}>
+                  <CardContent className="p-10 text-center">
+                    <CheckCircle2 className="h-12 w-12 mx-auto mb-4 text-primary" />
+                    <h2 className="font-fantasy text-xl font-bold mb-2">Message sent!</h2>
+                    <p className="text-sm text-muted-foreground mb-6">Thanks for reaching out. I'll personally reply within 24 hours. — Jackson</p>
+                    <Button variant="outline" onClick={() => { setSent(false); setName(""); setEmail(""); setUniversity(""); setPhone(""); setMessage(""); }}>
+                      Send another message
+                    </Button>
+                  </CardContent>
+                </Card>
+              ) : (
+                <Card className="border-border/50" style={{ background: "hsl(var(--card))", boxShadow: "inset 0 1px 0 hsl(var(--emboss-light)), 0 4px 20px hsl(var(--emboss-shadow))" }}>
+                  <CardContent className="p-6 sm:p-8">
+                    <h2 className="font-fantasy text-xl font-bold mb-1">Get in Touch</h2>
+                    <p className="text-sm text-muted-foreground mb-6">Tell me about your university and I'll show you how Xcrow fits.</p>
+                    <form onSubmit={handleSubmit} className="space-y-4">
+
+                      <div>
+                        <label className="text-sm font-medium mb-1.5 block">
+                          <GraduationCap className="inline h-3.5 w-3.5 mr-1.5 -mt-0.5 text-primary" />
+                          University Name *
+                        </label>
+                        <input type="text" value={university} onChange={e => setUniversity(e.target.value)}
+                          required maxLength={150} className={inputClass} placeholder="e.g. UCLA, NYU, University of Michigan" />
+                      </div>
+
                       <div className="grid grid-cols-2 gap-4">
                         <div>
-                          <label className="text-sm font-medium text-foreground mb-1 block">
-                            <Building2 className="inline h-3.5 w-3.5 mr-1 -mt-0.5" />
-                            Company
-                          </label>
-                          <input
-                            type="text"
-                            value={company}
-                            onChange={(e) => setCompany(e.target.value)}
-                            maxLength={100}
-                            className="w-full rounded-lg border border-input bg-background px-3 py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-ring"
-                            placeholder="Acme Inc."
-                          />
+                          <label className="text-sm font-medium mb-1.5 block">Your Name *</label>
+                          <input type="text" value={name} onChange={e => setName(e.target.value)}
+                            required maxLength={100} className={inputClass} placeholder="Full name" />
                         </div>
                         <div>
-                          <label className="text-sm font-medium text-foreground mb-1 block">Team size</label>
-                          <select
-                            value={teamSize}
-                            onChange={(e) => setTeamSize(e.target.value)}
-                            className="w-full rounded-lg border border-input bg-background px-3 py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-ring"
-                          >
-                            <option value="">Select…</option>
-                            <option value="1-10">1–10</option>
-                            <option value="11-50">11–50</option>
-                            <option value="51-200">51–200</option>
-                            <option value="201-1000">201–1,000</option>
-                            <option value="1000+">1,000+</option>
-                          </select>
+                          <label className="text-sm font-medium mb-1.5 block">Work Email *</label>
+                          <input type="email" value={email} onChange={e => setEmail(e.target.value)}
+                            required maxLength={255} className={inputClass} placeholder="you@university.edu" />
                         </div>
                       </div>
-                    </motion.div>
-                  )}
 
-                  <div>
-                    <label className="text-sm font-medium text-foreground mb-1 block">Message *</label>
-                    <textarea
-                      value={message}
-                      onChange={(e) => setMessage(e.target.value)}
-                      required
-                      maxLength={2000}
-                      rows={5}
-                      className="w-full rounded-lg border border-input bg-background px-3 py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-ring resize-y"
-                      placeholder="How can we help?"
+                      <div>
+                        <label className="text-sm font-medium mb-1.5 block">
+                          <Phone className="inline h-3.5 w-3.5 mr-1.5 -mt-0.5 text-primary" />
+                          Office Number
+                        </label>
+                        <input type="tel" value={phone} onChange={e => setPhone(e.target.value)}
+                          maxLength={30} className={inputClass} placeholder="+1 (555) 123-4567" />
+                      </div>
+
+                      <div>
+                        <label className="text-sm font-medium mb-1.5 block">Message <span className="text-muted-foreground font-normal">(optional)</span></label>
+                        <textarea value={message} onChange={e => setMessage(e.target.value)}
+                          maxLength={2000} rows={4} className={`${inputClass} resize-y`}
+                          placeholder="Tell me about your career services goals, student cohort size, or any specific challenges…" />
+                      </div>
+
+                      <Button type="submit" className="w-full gap-2 h-12 text-base" disabled={sending}>
+                        {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+                        {sending ? "Sending…" : "Send to Jackson"}
+                      </Button>
+                      <p className="text-[11px] text-muted-foreground text-center">I reply to every message personally within 24 hours.</p>
+                    </form>
+                  </CardContent>
+                </Card>
+              )}
+            </motion.div>
+
+            {/* ═══ SIDEBAR — 2 cols ═══ */}
+            <div className="lg:col-span-2 space-y-5">
+
+              {/* Direct contact */}
+              <motion.div {...fade(0.25)}>
+                <Card className="border-border/50" style={{ background: "hsl(var(--card))", boxShadow: "inset 0 1px 0 hsl(var(--emboss-light))" }}>
+                  <CardContent className="p-6 space-y-4">
+                    <h3 className="font-fantasy font-bold text-sm">Reach Me Directly</h3>
+                    <div className="flex items-start gap-3">
+                      <Mail className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+                      <div>
+                        <p className="text-sm font-medium">jackson@xcrow.ai</p>
+                        <p className="text-[11px] text-muted-foreground">I respond within 24 hours</p>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <MapPin className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+                      <div>
+                        <p className="text-sm font-medium">160 Glendale Blvd</p>
+                        <p className="text-[11px] text-muted-foreground">Los Angeles, CA 90026</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
+
+              {/* Calendly */}
+              <motion.div {...fade(0.35)}>
+                <Card className="border-border/50 overflow-hidden" style={{ background: "hsl(var(--card))", boxShadow: "inset 0 1px 0 hsl(var(--emboss-light))" }}>
+                  <CardContent className="p-6">
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className="h-9 w-9 rounded-xl flex items-center justify-center"
+                        style={{ background: "hsl(var(--primary) / 0.1)", border: "1px solid hsl(var(--primary) / 0.2)" }}>
+                        <Calendar className="h-4 w-4 text-primary" />
+                      </div>
+                      <div>
+                        <h3 className="font-fantasy font-bold text-sm">Book a Call</h3>
+                        <p className="text-[11px] text-muted-foreground">30 min · free · no pressure</p>
+                      </div>
+                    </div>
+                    <iframe
+                      src="https://calendly.com/jacksonlam?hide_gdpr_banner=1&background_color=0a0a0a&text_color=fafafa&primary_color=6366f1"
+                      className="w-full border-0 rounded-lg"
+                      style={{ minHeight: 500 }}
+                      title="Book a meeting with Jackson"
                     />
-                  </div>
-                  <Button type="submit" className="w-full gap-2" disabled={sending}>
-                    {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-                    {sending ? "Sending…" : "Send Message"}
-                  </Button>
-                </form>
-              </CardContent>
-            </Card>
-          )}
-        </motion.div>
-
-        {/* Book a Meeting */}
-        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
-          <Card className="overflow-hidden h-full">
-            <CardContent className="p-6">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-accent">
-                  <Calendar className="h-5 w-5 text-primary" />
-                </div>
-                <div>
-                  <h2 className="text-lg font-serif font-bold text-foreground">Book a Meeting</h2>
-                  <p className="text-xs text-muted-foreground">Schedule a 30-minute call with our team</p>
-                </div>
-              </div>
-              <iframe
-                src="https://calendly.com/jacksonlam?hide_gdpr_banner=1&background_color=0a0a0a&text_color=fafafa&primary_color=6366f1"
-                className="w-full border-0 rounded-lg"
-                style={{ minHeight: 580 }}
-                title="Book a meeting"
-              />
-            </CardContent>
-          </Card>
-        </motion.div>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            </div>
+          </div>
         </div>
       </div>
-    </div>
+      <Footer />
+    </>
   );
 };
 
