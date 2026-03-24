@@ -41,11 +41,25 @@ const fade = (delay = 0) => ({
   transition: { duration: 0.6, delay, ease: "easeOut" as const },
 });
 
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+
+const TERRITORY_HERO_SKILLS: Record<string, string> = {
+  "territory-technical": "complex-threat-modeling",
+  "territory-analytical": "predictive-analytics",
+  "territory-strategic": "strategic-narrative-design",
+  "territory-communication": "stakeholder-influence-mapping",
+  "territory-leadership": "ai-ethics-governance",
+  "territory-creative": "generative-design-thinking",
+  "territory-ethics": "algorithmic-bias-auditing",
+  "territory-humanedge": "human-ai-collaboration",
+};
+
 const TERRITORY_DOMAINS = TERRITORIES.map(t => ({
   name: t.terrain,
   emoji: t.emoji,
   cssVar: t.cssVar,
   category: t.category,
+  heroImg: `${SUPABASE_URL}/storage/v1/object/public/sim-images/skill-hero-${TERRITORY_HERO_SKILLS[t.cssVar] || "complex-threat-modeling"}.png`,
 }));
 
 const CASTLE_STAGES = [
