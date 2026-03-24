@@ -120,13 +120,14 @@ const App = () => (
           <Suspense fallback={null}>
             <Routes>
               {/* Public B2C routes */}
-              <Route path="/" element={<><Navbar /><Index /></>} />
-              <Route path="/map" element={<><Navbar /><MapPage /></>} />
+              <Route path="/" element={<><Navbar /><HomeDashboard /></>} />
+              <Route path="/map" element={<AuthGate><Navbar /><MapPage /></AuthGate>} />
               <Route path="/role/:jobTitle" element={<><Navbar /><RoleDeepDive /></>} />
               <Route path="/analysis" element={<><Navbar /><Analysis /><Footer /></>} />
               <Route path="/auth" element={<><Navbar /><Auth /></>} />
-              <Route path="/settings" element={<><Navbar /><Settings /><Footer /></>} />
+              <Route path="/settings" element={<AuthGate><Navbar /><Settings /><Footer /></AuthGate>} />
               <Route path="/company/:slug" element={<><Navbar /><CompanyPage /><Footer /></>} />
+              <Route path="/leaderboard" element={<AuthGate><Navbar /><Leaderboard /></AuthGate>} />
               <Route path="/card-styles" element={<><Navbar /><CardStyleMockup /></>} />
               <Route path="/l2-formats" element={<><Navbar /><L2SimFormats /></>} />
               <Route path="/journey" element={<JourneyGate />} />
