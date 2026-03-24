@@ -867,11 +867,17 @@ export default function MyRolesPanel({ onSelectRole, onAskChat, onTabChange, onL
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ delay: Math.min(i * 0.02, 0.2), duration: 0.2 }}
                                 onClick={() => {
-                                  // Navigate to role deep dive
                                   const roleResult: RoleResult = {
                                     title: role.title,
-                                    company: role.company_name || undefined,
+                                    company: role.company_name || null,
                                     jobId: role.id,
+                                    logo: role.company_name ? brandfetchFromName(role.company_name) : null,
+                                    location: null,
+                                    country: null,
+                                    workMode: null,
+                                    seniority: null,
+                                    augmented: role.augmented_percent || 0,
+                                    risk: 0,
                                   };
                                   onSelectRole(roleResult);
                                 }}
