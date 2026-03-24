@@ -1,8 +1,9 @@
 /**
  * OnboardingQuest — Cinematic RPG intro overlay.
  * 4 steps: Mission Intro → Choose Avatar → Set Username → Enter the Map.
+ * Each step features a skill hero image backdrop for immersive atmosphere.
  */
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -11,6 +12,16 @@ import { Map, ChevronRight, Loader2, AtSign, Check, AlertCircle } from "lucide-r
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import xcrowLogo from "@/assets/xcrow-logo.webp";
+
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+
+/** One curated hero image per onboarding step for atmosphere */
+const STEP_HERO_IMAGES: Record<string, string> = {
+  intro: "complex-threat-modeling",
+  avatar: "ethical-ai-leadership-governance",
+  username: "prompt-engineering",
+  launch: "strategic-problem-solving",
+};
 
 interface OnboardingQuestProps {
   open: boolean;
