@@ -9,6 +9,7 @@ import {
   Compass, Target, Zap, Trophy, ChevronDown,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { TERRITORIES } from "@/lib/territory-colors";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
@@ -35,16 +36,12 @@ const fade = (delay = 0) => ({
   transition: { duration: 0.6, delay, ease: "easeOut" as const },
 });
 
-const TERRITORY_DOMAINS = [
-  { name: "Circuit Peaks", emoji: "⚡", color: "var(--territory-technical)", skills: "Software Dev · AI & ML · DevOps" },
-  { name: "Data Highlands", emoji: "📊", color: "var(--territory-analytical)", skills: "Data Analysis · Research · Risk" },
-  { name: "Command Summit", emoji: "👑", color: "var(--territory-strategic)", skills: "Strategy · Project Mgmt · Leadership" },
-  { name: "Bridge Isles", emoji: "🌉", color: "var(--territory-communication)", skills: "Stakeholder Mgmt · Negotiation · Sales" },
-  { name: "Prism Coast", emoji: "🎨", color: "var(--territory-creative)", skills: "Design · Brand · Content & SEO" },
-  { name: "Crown Heights", emoji: "🏛️", color: "var(--territory-leadership)", skills: "Team Leadership · Change Mgmt" },
-  { name: "Sentinel Watch", emoji: "⚖️", color: "var(--territory-ethics)", skills: "Regulatory · Audit · Compliance" },
-  { name: "Soul Springs", emoji: "💎", color: "var(--territory-humanedge)", skills: "Emotional IQ · Human Connection" },
-];
+const TERRITORY_DOMAINS = TERRITORIES.map(t => ({
+  name: t.terrain,
+  emoji: t.emoji,
+  cssVar: t.cssVar,
+  category: t.category,
+}));
 
 const CASTLE_STAGES = [
   { img: castleRuins, label: "Ruins", desc: "Uncharted skill", xp: "0 XP" },
@@ -299,15 +296,15 @@ export default function Play() {
                   {...fade(i * 0.06)}
                   className="rounded-xl p-4 border border-border/50 cursor-default hover:border-border transition-colors"
                   style={{
-                    background: `linear-gradient(135deg, hsl(${t.color} / 0.06), hsl(var(--card)))`,
+                    background: `linear-gradient(135deg, hsl(var(--${t.cssVar}) / 0.06), hsl(var(--card)))`,
                     boxShadow: `inset 0 1px 0 hsl(var(--emboss-light))`,
                   }}
                 >
                   <span className="text-2xl block mb-2">{t.emoji}</span>
-                  <h4 className="font-fantasy text-sm font-bold mb-1" style={{ color: `hsl(${t.color})` }}>
+                  <h4 className="font-fantasy text-sm font-bold mb-1" style={{ color: `hsl(var(--${t.cssVar}))` }}>
                     {t.name}
                   </h4>
-                  <p className="text-[11px] text-muted-foreground leading-relaxed">{t.skills}</p>
+                  <p className="text-[11px] text-muted-foreground leading-relaxed">{t.category}</p>
                 </motion.div>
               ))}
             </div>
