@@ -919,58 +919,62 @@ export default function MyRolesPanel({ onSelectRole, onAskChat, onTabChange, onL
                           </p>
                         )}
                         <div className="space-y-1">
-                      const logoUrl = rc.logo_url || brandfetchFromName(rc.name);
-                      const hasProgress = rc.kingdoms.length > 0;
-                      const bestTier = rc.kingdoms.reduce<KingdomTier | null>((best, k) => {
-                        const order: KingdomTier[] = ["scouted", "contested", "fortified", "conquered"];
-                        if (!best) return k.tier;
-                        return order.indexOf(k.tier) > order.indexOf(best) ? k.tier : best;
-                      }, null);
-                      return (
-                        <motion.button
-                          key={rc.id}
-                          initial={{ opacity: 0, y: 4 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: Math.min(i * 0.02, 0.3), duration: 0.2 }}
-                          onClick={() => setSelectedRealm(rc)}
-                          className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-left transition-all hover:brightness-110 group"
-                          style={{
-                            background: hasProgress ? "hsl(var(--filigree) / 0.06)" : "hsl(var(--surface-stone) / 0.4)",
-                            border: hasProgress ? "1px solid hsl(var(--filigree) / 0.12)" : "1px solid hsl(var(--filigree) / 0.06)",
-                          }}
-                        >
-                          <div className="w-6 h-6 rounded-md overflow-hidden flex items-center justify-center bg-muted/50 shrink-0">
-                            {logoUrl ? (
-                              <img src={logoUrl} alt="" className="w-6 h-6 object-contain" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
-                            ) : (
-                              <Building2 className="h-3 w-3 text-muted-foreground" />
-                            )}
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-1.5">
-                              <p className="text-[11px] font-bold text-foreground truncate group-hover:text-primary transition-colors" style={{ fontFamily: "'Cinzel', serif" }}>
-                                {rc.name}
-                              </p>
-                              {bestTier && (
-                                <span className="text-[8px] shrink-0">{TIER_META[bestTier].emoji}</span>
-                              )}
-                            </div>
-                            <div className="flex items-center gap-2">
-                              {rc.industry && <p className="text-[9px] text-muted-foreground truncate">{rc.industry}</p>}
-                              {hasProgress && (
-                                <span className="text-[8px] font-medium shrink-0" style={{ color: "hsl(var(--filigree-glow))" }}>
-                                  {rc.kingdoms.length} kingdom{rc.kingdoms.length !== 1 ? "s" : ""}
-                                </span>
-                              )}
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-1 shrink-0">
-                            <Briefcase className="h-3 w-3 text-muted-foreground" />
-                            <span className="text-[9px] font-mono text-muted-foreground">{rc.job_count}</span>
-                          </div>
-                        </motion.button>
-                      );
-                    })}
+                          {filteredRealms.map((rc, i) => {
+                            const logoUrl = rc.logo_url || brandfetchFromName(rc.name);
+                            const hasProgress = rc.kingdoms.length > 0;
+                            const bestTier = rc.kingdoms.reduce<KingdomTier | null>((best, k) => {
+                              const order: KingdomTier[] = ["scouted", "contested", "fortified", "conquered"];
+                              if (!best) return k.tier;
+                              return order.indexOf(k.tier) > order.indexOf(best) ? k.tier : best;
+                            }, null);
+                            return (
+                              <motion.button
+                                key={rc.id}
+                                initial={{ opacity: 0, y: 4 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: Math.min(i * 0.02, 0.3), duration: 0.2 }}
+                                onClick={() => setSelectedRealm(rc)}
+                                className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-left transition-all hover:brightness-110 group"
+                                style={{
+                                  background: hasProgress ? "hsl(var(--filigree) / 0.06)" : "hsl(var(--surface-stone) / 0.4)",
+                                  border: hasProgress ? "1px solid hsl(var(--filigree) / 0.12)" : "1px solid hsl(var(--filigree) / 0.06)",
+                                }}
+                              >
+                                <div className="w-6 h-6 rounded-md overflow-hidden flex items-center justify-center bg-muted/50 shrink-0">
+                                  {logoUrl ? (
+                                    <img src={logoUrl} alt="" className="w-6 h-6 object-contain" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                                  ) : (
+                                    <Building2 className="h-3 w-3 text-muted-foreground" />
+                                  )}
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <div className="flex items-center gap-1.5">
+                                    <p className="text-[11px] font-bold text-foreground truncate group-hover:text-primary transition-colors" style={{ fontFamily: "'Cinzel', serif" }}>
+                                      {rc.name}
+                                    </p>
+                                    {bestTier && (
+                                      <span className="text-[8px] shrink-0">{TIER_META[bestTier].emoji}</span>
+                                    )}
+                                  </div>
+                                  <div className="flex items-center gap-2">
+                                    {rc.industry && <p className="text-[9px] text-muted-foreground truncate">{rc.industry}</p>}
+                                    {hasProgress && (
+                                      <span className="text-[8px] font-medium shrink-0" style={{ color: "hsl(var(--filigree-glow))" }}>
+                                        {rc.kingdoms.length} kingdom{rc.kingdoms.length !== 1 ? "s" : ""}
+                                      </span>
+                                    )}
+                                  </div>
+                                </div>
+                                <div className="flex items-center gap-1 shrink-0">
+                                  <Briefcase className="h-3 w-3 text-muted-foreground" />
+                                  <span className="text-[9px] font-mono text-muted-foreground">{rc.job_count}</span>
+                                </div>
+                              </motion.button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 );
               })()}
