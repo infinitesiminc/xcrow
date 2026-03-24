@@ -136,6 +136,8 @@ export default function BossBattleArena({
   company,
 }: BossBattleArenaProps) {
   const { profile } = useAuth();
+  // Pick a boss from the roster — memoized so it stays consistent for the battle
+  const boss = useMemo(() => pickBoss(), []);
   const [currentStep, setCurrentStep] = useState(0);
   const [verdicts, setVerdicts] = useState<Record<string, AuditVerdict>>({});
   const [revealed, setRevealed] = useState<Record<string, boolean>>({});
