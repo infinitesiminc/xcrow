@@ -30,9 +30,7 @@ const Footer = () => (
             </span>
             <Link to="/" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Explore Roles</Link>
             <Link to="/students" className="text-sm text-muted-foreground hover:text-foreground transition-colors">For Students</Link>
-            <Link to="/professionals" className="text-sm text-muted-foreground hover:text-foreground transition-colors">For Professionals</Link>
             <Link to="/schools" className="text-sm text-muted-foreground hover:text-foreground transition-colors">For Schools</Link>
-            <Link to="/enterprise" className="text-sm text-muted-foreground hover:text-foreground transition-colors">For Enterprise</Link>
             <Link to="/pricing" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Pricing</Link>
           </div>
           <div className="flex flex-col gap-2">
