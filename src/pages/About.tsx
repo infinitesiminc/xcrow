@@ -4,7 +4,7 @@
 import { useRef } from "react";
 import founderImg from "@/assets/founder-jackson.png";
 import { motion, useInView } from "framer-motion";
-import xcrowLogo from "@/assets/xcrow-logo-transparent.png";
+import xcrowLogo from "@/assets/xcrow-logo.png";
 import {
   ArrowRight, Brain, Crosshair, Database, Gamepad2,
   Layers, Linkedin, Radio, RefreshCw, Shield, ShieldAlert,
