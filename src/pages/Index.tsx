@@ -94,13 +94,6 @@ const Index = () => {
           <CinematicHeroSlideshow />
 
           <motion.div {...fade()} className="text-center max-w-3xl relative z-10">
-            <motion.img
-              src={xcrowLogo}
-              alt="Xcrow"
-              className="h-24 w-24 mx-auto mb-6 crow-glow"
-              animate={{ y: [0, -8, 0] }}
-              transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-            />
 
             <h1 className="font-fantasy text-4xl md:text-6xl font-bold mb-4 leading-tight">
               Level Up Your Career.
