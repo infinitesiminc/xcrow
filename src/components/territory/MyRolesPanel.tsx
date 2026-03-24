@@ -637,26 +637,26 @@ export default function MyRolesPanel({ onSelectRole, onAskChat, onTabChange, onL
         </div>
       )}
 
-      {/* Search */}
-      <div className="relative mb-3 shrink-0">
-        <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
-        {tab !== "realms" && (
+      {/* Search — only for Arsenal tab; Kingdoms has its own search inside */}
+      {tab === "arsenal" && (
+        <div className="relative mb-3 shrink-0">
+          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
           <Input
             value={search}
             onChange={e => setSearch(e.target.value)}
-            placeholder={tab === "arsenal" ? "Search AI tools…" : "Search kingdoms…"}
+            placeholder="Search AI tools…"
             className="h-8 pl-8 text-xs border-border/40"
             style={{ background: "hsl(var(--surface-stone))" }}
           />
-        )}
-      </div>
+        </div>
+      )}
 
       {/* Content */}
       <div className="flex-1 overflow-y-auto scrollbar-thin">
-        {tab === "realms" ? (
-          /* ═══ REALMS TAB ═══ */
+        {tab === "kingdoms" ? (
+          /* ═══ KINGDOMS TAB (was Realms) ═══ */
           selectedRealm ? (
-            /* Realm detail: company's roles + user's kingdoms */
+            /* Company detail: roles + user's kingdoms */
             <div className="space-y-3 p-1">
               <button
                 onClick={() => setSelectedRealm(null)}
