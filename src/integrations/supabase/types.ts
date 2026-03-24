@@ -277,6 +277,36 @@ export type Database = {
         }
         Relationships: []
       }
+      competition_registrations: {
+        Row: {
+          created_at: string
+          email: string
+          full_name: string
+          graduation_year: number | null
+          id: string
+          university: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          full_name: string
+          graduation_year?: number | null
+          id?: string
+          university: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          full_name?: string
+          graduation_year?: number | null
+          id?: string
+          university?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       completed_simulations: {
         Row: {
           adaptive_thinking_score: number | null
