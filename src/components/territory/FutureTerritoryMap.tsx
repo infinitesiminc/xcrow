@@ -222,7 +222,35 @@ export default function FutureTerritoryMap({ skills, focusSkillId, level2SkillId
                 <feMergeNode in="SourceGraphic" />
               </feMerge>
             </filter>
+            {/* Subtle topographic texture pattern */}
+            <pattern id="map-texture" x="0" y="0" width="200" height="200" patternUnits="userSpaceOnUse">
+              {/* Topographic contour rings */}
+              <circle cx="60" cy="50" r="30" fill="none" stroke="hsl(var(--border))" strokeWidth="0.3" opacity="0.08" />
+              <circle cx="60" cy="50" r="45" fill="none" stroke="hsl(var(--border))" strokeWidth="0.2" opacity="0.06" />
+              <circle cx="60" cy="50" r="60" fill="none" stroke="hsl(var(--border))" strokeWidth="0.2" opacity="0.04" />
+              <circle cx="160" cy="140" r="25" fill="none" stroke="hsl(var(--border))" strokeWidth="0.3" opacity="0.07" />
+              <circle cx="160" cy="140" r="40" fill="none" stroke="hsl(var(--border))" strokeWidth="0.2" opacity="0.05" />
+              <circle cx="160" cy="140" r="55" fill="none" stroke="hsl(var(--border))" strokeWidth="0.2" opacity="0.03" />
+              {/* Small cross markers */}
+              <g opacity="0.06" stroke="hsl(var(--border))" strokeWidth="0.4">
+                <line x1="18" y1="130" x2="22" y2="130" />
+                <line x1="20" y1="128" x2="20" y2="132" />
+                <line x1="140" y1="30" x2="144" y2="30" />
+                <line x1="142" y1="28" x2="142" y2="32" />
+                <line x1="100" y1="170" x2="104" y2="170" />
+                <line x1="102" y1="168" x2="102" y2="172" />
+              </g>
+              {/* Scattered dots for parchment grain */}
+              <circle cx="30" cy="100" r="0.5" fill="hsl(var(--border))" opacity="0.06" />
+              <circle cx="90" cy="170" r="0.5" fill="hsl(var(--border))" opacity="0.05" />
+              <circle cx="170" cy="80" r="0.5" fill="hsl(var(--border))" opacity="0.06" />
+              <circle cx="120" cy="20" r="0.4" fill="hsl(var(--border))" opacity="0.05" />
+              <circle cx="50" cy="180" r="0.4" fill="hsl(var(--border))" opacity="0.04" />
+            </pattern>
           </defs>
+
+          {/* Texture background */}
+          <rect x="0" y="0" width={FUTURE_MAP_WIDTH} height={FUTURE_MAP_HEIGHT} fill="url(#map-texture)" />
 
           {Array.from({ length: 9 }, (_, i) => {
             const x = (FUTURE_MAP_WIDTH / 8) * i;
