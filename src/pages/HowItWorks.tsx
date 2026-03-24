@@ -37,6 +37,40 @@ const fade = (delay = 0) => ({
   transition: { duration: 0.6, delay, ease: "easeOut" as const },
 });
 
+/* Curated skill IDs for full-width cinematic banners between sections */
+const BANNER_SKILLS = [
+  "prompt-engineering",
+  "ethical-ai-leadership-governance",
+  "complex-problem-solving-humanai-teams",
+  "ai-strategy-governance",
+  "humancentric-design-empathy",
+];
+
+const FullWidthBanner = ({ skillId, flip = false }: { skillId: string; flip?: boolean }) => (
+  <motion.div
+    {...fade()}
+    className="relative w-full overflow-hidden"
+    style={{ height: "clamp(180px, 25vw, 320px)" }}
+  >
+    <img
+      src={heroUrl(skillId)}
+      alt=""
+      loading="lazy"
+      className="absolute inset-0 w-full h-full object-cover"
+      style={{
+        filter: "brightness(0.5) saturate(0.8)",
+        transform: flip ? "scaleX(-1)" : undefined,
+      }}
+    />
+    <div
+      className="absolute inset-0 pointer-events-none"
+      style={{
+        background: `linear-gradient(to bottom, hsl(var(--background)) 0%, transparent 25%, transparent 75%, hsl(var(--background)) 100%)`,
+      }}
+    />
+  </motion.div>
+);
+
 const TERRITORIES = [
   { category: "Technical" as const, name: "Technical", count: "Skills #1–#28", examples: ["Prompt Engineering", "AI Tool Selection", "Data Pipeline Design"] },
   { category: "Analytical" as const, name: "Analytical", count: "Skills #29–#52", examples: ["AI Output Validation", "Predictive Modeling", "Risk Assessment"] },
