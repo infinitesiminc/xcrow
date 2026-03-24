@@ -63,10 +63,34 @@ const TERRITORY_DOMAINS = TERRITORIES.map(t => ({
   heroImg: `${SUPABASE_URL}/storage/v1/object/public/sim-images/skill-hero-${TERRITORY_HERO_SKILLS[t.cssVar] || "complex-threat-modeling"}.png`,
 }));
 
-/** 2x4 island positions on the 960×540 viewBox */
-const ISLAND_POSITIONS: [number, number][] = [
-  [140, 160], [340, 140], [580, 150], [800, 160],
-  [140, 380], [340, 400], [580, 390], [800, 380],
+/**
+ * Irregular polygon borders for 8 territories in a 960×540 viewBox.
+ * Arranged as a 2×4 political map with shared edges — no gaps, no overlaps.
+ * Order: Technical, Analytical, Strategic, Communication, Leadership, Creative, Ethics, Human Edge
+ */
+const TERRITORY_BORDERS: string[] = [
+  // Row 1: Top-left (Technical)
+  "0,0 240,0 260,120 220,270 0,270",
+  // Row 1: Top-center-left (Analytical)
+  "240,0 500,0 520,100 480,270 220,270 260,120",
+  // Row 1: Top-center-right (Strategic)
+  "500,0 720,0 740,130 700,270 480,270 520,100",
+  // Row 1: Top-right (Communication)
+  "720,0 960,0 960,270 700,270 740,130",
+  // Row 2: Bottom-left (Leadership)
+  "0,270 220,270 240,400 200,540 0,540",
+  // Row 2: Bottom-center-left (Creative)
+  "220,270 480,270 500,390 460,540 200,540 240,400",
+  // Row 2: Bottom-center-right (Ethics & Compliance)
+  "480,270 700,270 720,410 680,540 460,540 500,390",
+  // Row 2: Bottom-right (Human Edge)
+  "700,270 960,270 960,540 680,540 720,410",
+];
+
+/** Visual centers for labels & emblems inside each polygon */
+const TERRITORY_CENTERS: [number, number][] = [
+  [120, 140], [370, 130], [610, 135], [840, 140],
+  [115, 400], [350, 400], [590, 405], [820, 400],
 ];
 
 const CASTLE_STAGES = [
