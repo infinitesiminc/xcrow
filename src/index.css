@@ -70,13 +70,13 @@
 
     /* ── 8 Territory Colors ── */
     --territory-technical:   262 83% 58%;   /* Amethyst — Circuit Peaks     */
-    --territory-analytical:  210 80% 55%;   /* Sapphire — Data Highlands    */
+    --territory-analytical:  195 85% 50%;   /* Cyan     — Data Highlands    */
     --territory-strategic:   45  85% 50%;   /* Gold     — Command Summit    */
     --territory-communication: 152 60% 45%; /* Emerald  — Bridge Isles      */
-    --territory-leadership:  30  90% 55%;   /* Amber    — Crown Heights     */
+    --territory-leadership:  25  90% 55%;   /* Flame    — Crown Heights     */
     --territory-creative:    340 75% 55%;   /* Ruby     — Prism Coast       */
     --territory-ethics:      175 70% 42%;   /* Jade     — Sentinel Watch    */
-    --territory-humanedge:   285 70% 60%;   /* Orchid   — Soul Springs      */
+    --territory-humanedge:   320 70% 58%;   /* Magenta  — Soul Springs      */
 
     /* ── Fantasy surface tokens ── */
     --surface-stone: 240 6% 92%;
