@@ -1146,11 +1146,13 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
     <div className="h-full flex flex-col overflow-hidden gap-0">
         {/* Header wrapper */}
         <div className="shrink-0">
-        <div className="shrink-0 z-20 bg-background/95 backdrop-blur-md border-b border-border px-4 h-16 flex items-center justify-between gap-3 relative overflow-hidden">
+        <div className="shrink-0 z-20 backdrop-blur-md border-b border-border px-4 h-16 flex items-center justify-between gap-3 relative overflow-hidden" style={{ background: skillHeroBg ? "hsl(var(--background) / 0.95)" : "hsl(var(--background) / 0.95)" }}>
           {skillHeroBg && (
             <img src={skillHeroBg} alt="" className="absolute inset-0 w-full h-full object-cover" style={{ filter: "brightness(0.2) saturate(0.6)", opacity: 0.7 }} />
           )}
-          {!skillHeroBg && <HeaderVibeImages seed={(taskName?.length ?? 0) * 23} count={4} />}
+          {!skillHeroBg && (
+            <div className="absolute inset-0" style={{ background: "linear-gradient(135deg, hsl(var(--surface-stone)), hsl(var(--background)))" }} />
+          )}
             <div className="relative z-10 w-8 shrink-0" /> {/* spacer to balance close button */}
             <div className="relative z-10 text-center min-w-0 flex-1">
               <span className="text-[11px] uppercase tracking-wider text-primary font-semibold">🗡️ {level === 2 ? "Level 2 — Sentinel Audit" : "Level 1 — AI Mastery"}</span>
