@@ -765,7 +765,23 @@ export default function MyRolesPanel({ onSelectRole, onAskChat, onTabChange, onL
                         >
                           <button
                             className="w-full text-left px-2.5 py-2 transition-all group hover:brightness-110"
-                            onClick={() => setExpandedJobId(isExpanded ? null : job.id)}
+                            onClick={() => {
+                              if (onLaunchSim) {
+                                const linkedSkillIds = skills
+                                  .filter(sk => sk.canonical_skill_id)
+                                  .map(sk => sk.canonical_skill_id!);
+                                onLaunchSim({
+                                  jobTitle: job.title,
+                                  taskName: job.topTask || job.title,
+                                  company: selectedRealm.name,
+                                  level: 1,
+                                  roleChallenge: true,
+                                  linkedSkillIds: linkedSkillIds.length > 0 ? linkedSkillIds : undefined,
+                                });
+                              } else {
+                                setExpandedJobId(isExpanded ? null : job.id);
+                              }
+                            }}
                           >
                             <div className="flex items-center justify-between gap-2">
                               <div className="min-w-0 flex-1">
