@@ -15,8 +15,20 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import TerritoryEmblem from "@/components/TerritoryEmblem";
 import SimChatPreview from "@/components/SimChatPreview";
+import { TERRITORIES as TERRITORY_COLORS } from "@/lib/territory-colors";
 
 import xcrowLogo from "@/assets/xcrow-logo.webp";
+
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+const heroUrl = (id: string) => `${SUPABASE_URL}/storage/v1/object/public/sim-images/skill-hero-${id}.png`;
+
+/* Curated skill hero images for section backdrops */
+const HERO_IMAGES = {
+  hero: heroUrl("strategic-ai-orchestration"),
+  territories: heroUrl("crossfunctional-aidriven-collaboration"),
+  engine: heroUrl("strategic-problem-solving"),
+  cta: heroUrl("complex-problem-solving-humanai-teams"),
+};
 
 const fade = (delay = 0) => ({
   initial: { opacity: 0, y: 24 },
