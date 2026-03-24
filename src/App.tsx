@@ -125,8 +125,8 @@ const App = () => (
               <Route path="/join" element={<JoinWorkspace />} />
               <Route path="/score-distributions" element={<><Navbar /><ScoreDistributions /><Footer /></>} />
               <Route path="/u/:username" element={<PublicProfile />} />
-              <Route path="/progression" element={<Progression />} />
-              <Route path="/play" element={<Play />} />
+              <Route path="/progression" element={<Navigate to="/how-it-works" replace />} />
+              <Route path="/play" element={<Navigate to="/" replace />} />
               <Route path="/how-it-works" element={<HowItWorks />} />
               <Route path="/skills" element={<SkillsCodex />} />
               {/* Redirects — old routes all go to feed */}
