@@ -501,6 +501,9 @@ export default function Competition() {
         </div>
       </section>
 
+      {/* ═══════════════ UNIVERSITY SIGN-UP FORM ═══════════════ */}
+      <RegistrationForm />
+
       {/* ═══════════════ FINAL CTA ═══════════════ */}
       <section className="py-28 px-4 text-center relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-t from-primary/8 via-transparent to-transparent pointer-events-none" />
