@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { TERRITORIES } from "@/lib/territory-colors";
+import TerritoryEmblem from "@/components/TerritoryEmblem";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
@@ -302,7 +303,7 @@ export default function Play() {
                     boxShadow: `inset 0 1px 0 hsl(var(--emboss-light))`,
                   }}
                 >
-                  <span className="text-2xl block mb-2">{t.emoji}</span>
+                  <TerritoryEmblem category={t.category} size={40} className="mb-2" />
                   <h4 className="font-fantasy text-sm font-bold mb-1" style={{ color: `hsl(var(--${t.cssVar}))` }}>
                     {t.name}
                   </h4>
