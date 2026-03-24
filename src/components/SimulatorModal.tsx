@@ -78,6 +78,10 @@ interface SimulatorModalProps {
   level?: 1 | 2;
   /** Future prediction data for Level 2 sims */
   futurePrediction?: import("@/components/analysis/FutureTaskPreview").FuturePrediction;
+  /** When true, sim spans the role's breadth (multiple skill domains) */
+  roleChallenge?: boolean;
+  /** Canonical skill IDs linked to this role challenge */
+  linkedSkillIds?: string[];
 }
 
 /* ── Objective Checklist (sidebar / inline) ── */
