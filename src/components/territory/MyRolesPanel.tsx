@@ -156,15 +156,22 @@ function KingdomCard({ kingdom, index }: { kingdom: Kingdom; index: number }) {
 
 /* ── Main Panel ── */
 
-export default function MyRolesPanel({ onSelectRole, onAskChat, onTabChange }: MyRolesPanelProps) {
+export default function MyRolesPanel({ onSelectRole, onAskChat, onTabChange, onLaunchSim }: MyRolesPanelProps) {
   const { user } = useAuth();
-  const [tab, setTab] = useState<"kingdoms" | "arsenal">("kingdoms");
+  const [tab, setTab] = useState<"realms" | "kingdoms" | "arsenal">("realms");
   const [tierFilter, setTierFilter] = useState<"all" | KingdomTier>("all");
   const [search, setSearch] = useState("");
   const [kingdoms, setKingdoms] = useState<Kingdom[]>([]);
   const [loading, setLoading] = useState(true);
   const [savedToolNames, setSavedToolNames] = useState<string[]>(getSavedTools());
   const [arsenalFilter, setArsenalFilter] = useState("all");
+
+  // Realms state
+  const [realmCompanies, setRealmCompanies] = useState<RealmCompany[]>([]);
+  const [realmsLoading, setRealmsLoading] = useState(true);
+  const [selectedRealm, setSelectedRealm] = useState<RealmCompany | null>(null);
+  const [realmJobs, setRealmJobs] = useState<CompanyJob[]>([]);
+  const [realmJobsLoading, setRealmJobsLoading] = useState(false);
 
   /* ── Fetch & merge kingdoms from behavior ── */
   useEffect(() => {
