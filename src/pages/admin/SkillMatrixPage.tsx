@@ -18,6 +18,7 @@ interface CanonicalSkill {
   category: string;
   description: string | null;
   icon_emoji: string | null;
+  skill_number: number | null;
   demand_count: number;
   job_count: number;
   avg_relevance: number | null;
