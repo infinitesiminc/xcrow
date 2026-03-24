@@ -146,8 +146,8 @@ export default function HowItWorks() {
         <section className="relative min-h-[70vh] flex items-center justify-center px-4 overflow-hidden">
           {/* Skill hero backdrop */}
           <div className="absolute inset-0 pointer-events-none">
-            <img src={HERO_IMAGES.hero} alt="" className="absolute inset-0 w-full h-full object-cover opacity-[0.12]" loading="eager" />
-            <div className="absolute inset-0" style={{ background: "linear-gradient(to bottom, hsl(var(--background)), hsl(var(--background) / 0.6), hsl(var(--background)))" }} />
+            <img src={HERO_IMAGES.hero} alt="" className="absolute inset-0 w-full h-full object-cover opacity-[0.2]" loading="eager" />
+            <div className="absolute inset-0" style={{ background: "linear-gradient(to bottom, hsl(var(--background)), hsl(var(--background) / 0.5), hsl(var(--background)))" }} />
             <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] rounded-full blur-[180px] opacity-15"
               style={{ background: "hsl(var(--territory-technical))" }} />
             <div className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] rounded-full blur-[160px] opacity-10"
