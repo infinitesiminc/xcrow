@@ -25,11 +25,11 @@ import simVictory from "@/assets/sim-victory.jpg";
 import heroConquer from "@/assets/hero-conquer.jpg";
 
 import avatarCrow from "@/assets/avatars/crow.webp";
-import avatarDragon from "@/assets/avatars/dragon.png";
-import avatarPhoenix from "@/assets/avatars/phoenix.png";
-import avatarWolf from "@/assets/avatars/wolf.png";
-import avatarHawk from "@/assets/avatars/hawk.png";
-import avatarLion from "@/assets/avatars/lion.png";
+import avatarDragon from "@/assets/avatars/dragon.webp";
+import avatarPhoenix from "@/assets/avatars/phoenix.webp";
+import avatarWolf from "@/assets/avatars/wolf.webp";
+import avatarHawk from "@/assets/avatars/hawk.webp";
+import avatarLion from "@/assets/avatars/lion.webp";
 
 const fade = (delay = 0) => ({
   initial: { opacity: 0, y: 24 },
