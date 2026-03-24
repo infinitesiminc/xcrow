@@ -513,13 +513,15 @@ export default function MyRolesPanel({ onSelectRole, onAskChat, onTabChange, onL
       {/* Search */}
       <div className="relative mb-3 shrink-0">
         <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
-        <Input
-          value={search}
-          onChange={e => setSearch(e.target.value)}
-          placeholder={tab === "arsenal" ? "Search AI tools…" : "Search kingdoms…"}
-          className="h-8 pl-8 text-xs border-border/40"
-          style={{ background: "hsl(var(--surface-stone))" }}
-        />
+        {tab !== "realms" && (
+          <Input
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            placeholder={tab === "arsenal" ? "Search AI tools…" : "Search kingdoms…"}
+            className="h-8 pl-8 text-xs border-border/40"
+            style={{ background: "hsl(var(--surface-stone))" }}
+          />
+        )}
       </div>
 
       {/* Content */}
