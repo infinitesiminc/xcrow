@@ -556,6 +556,7 @@ export default function Progression() {
         <SkillCastlesSection />
         <KingdomsSection />
         <PlayerRankSection />
+        <BossBestiarySection />
         <RippleSection />
         <CTASection />
       </main>
