@@ -676,6 +676,12 @@ html:not(.light):not(.parchment) {
   background-clip: text;
 }
 
+/* Crow logo amber glow — subtle contour halo */
+.crow-glow {
+  filter: drop-shadow(0 0 6px hsl(var(--filigree-glow) / 0.45))
+          drop-shadow(0 0 14px hsl(var(--filigree-glow) / 0.2));
+}
+
 /* Territory accent border — set --t-color via inline style */
 .territory-accent {
   border-left: 3px solid hsl(var(--t-color, var(--primary)));

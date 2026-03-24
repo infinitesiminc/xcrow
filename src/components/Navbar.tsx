@@ -92,7 +92,7 @@ export default function Navbar() {
           onClick={() => handleNav("/")}
           className="flex items-center gap-2 hover:opacity-80 transition-opacity"
         >
-          <img src={xcrowBattleLogo} alt="Xcrow" className="h-11 w-11 object-contain" />
+          <img src={xcrowBattleLogo} alt="Xcrow" className="h-11 w-11 object-contain crow-glow" />
           <span
             className="hidden sm:inline text-lg font-extrabold text-foreground tracking-tight"
             style={{ fontFamily: "'Cinzel', serif", letterSpacing: "0.02em" }}
