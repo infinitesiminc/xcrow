@@ -4,7 +4,7 @@
  * Kingdoms: Browse companies, search roles, drill into one to see kingdoms + discoverable roles.
  */
 import { useState, useEffect, useMemo, useCallback, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+
 import {
   Search, ChevronRight, Shield, Flame, Wrench, ExternalLink, X,
   Sparkles, Eye, Swords, Crown, Users, Castle, Building2,
