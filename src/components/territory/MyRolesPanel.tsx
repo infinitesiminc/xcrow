@@ -665,6 +665,7 @@ export default function MyRolesPanel({ onSelectRole, onAskChat, onTabChange, onL
                       const isKingdom = selectedRealm.kingdoms.some(k => k.title.toLowerCase() === job.title.toLowerCase());
                       const isExpanded = expandedJobId === job.id;
                       const skills = jobSkills[job.id] || [];
+                      const skillsStatus = jobSkillsStatus[job.id] || "loading";
                       return (
                         <motion.div
                           key={job.id}
