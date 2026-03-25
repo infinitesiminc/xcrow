@@ -12,6 +12,7 @@ import {
 import { useNavigate, Navigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import OnboardingQuest from "@/components/OnboardingQuest";
+import CompanyMarquee from "@/components/CompanyMarquee";
 import SkillSuggestionCards from "@/components/SkillSuggestionCards";
 import { useState, useEffect, useRef } from "react";
 import CinematicHeroSlideshow from "@/components/CinematicHeroSlideshow";
