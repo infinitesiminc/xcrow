@@ -153,7 +153,7 @@ export default function Pricing() {
               </div>
             </div>
             <div className="flex items-baseline gap-1 mb-1">
-              <span className="text-3xl font-bold" style={cinzel}>$9.99</span>
+              <span className="text-3xl font-bold" style={cinzel}>$12</span>
               <span className="text-sm text-muted-foreground">/month</span>
             </div>
             <p className="text-sm text-muted-foreground mb-5">Unlimited quests. Full territory. Stay ahead.</p>
