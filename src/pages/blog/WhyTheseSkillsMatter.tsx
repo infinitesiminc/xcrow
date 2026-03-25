@@ -85,7 +85,7 @@ export default function WhyTheseSkillsMatter() {
               <section>
                 <h2 className="text-2xl font-bold font-fantasy text-foreground">Why 183? Not 10, Not 1,000</h2>
                 <p className="text-muted-foreground leading-relaxed">
-                  We reverse-engineered the catalogue from <strong className="text-foreground">21,000+ real job postings</strong> across every
+                  We reverse-engineered the catalogue from <strong className="text-foreground">100,000+ real job postings</strong> across every
                   major industry. Each skill passed a strict "sim-worthiness" test: it must represent
                   a distinct, non-overlapping learning action. No padding, no synonyms, no filler.
                 </p>
