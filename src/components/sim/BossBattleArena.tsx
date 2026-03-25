@@ -314,7 +314,7 @@ export default function BossBattleArena({
               style={{ background: "hsl(var(--sentinel-surface-deep))", borderLeft: "2px solid hsl(var(--sentinel-glow) / 0.5)" }}
             >
               <span className="text-[10px] font-bold uppercase tracking-wider flex items-center gap-1.5"
-                style={{ color: "hsl(262 80% 70%)", fontFamily: "'Cinzel', serif" }}
+                style={{ color: "hsl(var(--sentinel-text))", fontFamily: "'Cinzel', serif" }}
               >
                 <span className="text-sm">①</span> Read the Oracle's Claim
               </span>
