@@ -211,8 +211,8 @@ function CheckpointChat({ checkpoint }: { checkpoint: AuditCheckpoint }) {
       exit={{ opacity: 0, height: 0 }}
       className="rounded-xl overflow-hidden"
       style={{
-        background: "hsl(262 30% 12%)",
-        border: "1px solid hsl(262 60% 40% / 0.2)",
+        background: "hsl(var(--sentinel-surface))",
+        border: "1px solid hsl(var(--sentinel-border) / 0.2)",
         boxShadow: "inset 0 1px 0 hsl(var(--emboss-light))",
       }}
     >
