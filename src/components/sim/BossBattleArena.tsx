@@ -497,7 +497,7 @@ export default function BossBattleArena({
   return (
     <div
       className="absolute inset-0 flex flex-col overflow-hidden"
-      style={{ background: "radial-gradient(ellipse at center, hsl(262 40% 8%), hsl(0 0% 2%))" }}
+      style={{ background: `radial-gradient(ellipse at center, hsl(var(--sentinel-arena-bg)), hsl(var(--background)))` }}
     >
       {/* Job context bar */}
       {(jobTitle || scenarioContext) && (
