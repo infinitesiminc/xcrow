@@ -88,11 +88,10 @@ export default function BossCinematicIntro({
                 Boss Battle
               </span>
               <h2
-                className="text-2xl font-bold"
+                className="text-2xl font-bold text-foreground"
                 style={{
                   fontFamily: "'Cinzel', serif",
-                  color: "hsl(45 90% 65%)",
-                  textShadow: "0 0 20px hsl(45 90% 55% / 0.4)",
+                  textShadow: "0 0 20px hsl(var(--filigree-glow) / 0.4)",
                 }}
               >
                 {skillName}
