@@ -436,7 +436,7 @@ export default function BossBattleArena({
           <h3 className="text-xl font-bold" style={{ fontFamily: "'Cinzel', serif", color: "hsl(var(--filigree-glow))", textShadow: "0 0 20px hsl(var(--filigree-glow) / 0.4)" }}>
             {titles[tier]}
           </h3>
-          <p className="text-3xl font-bold mt-2" style={{ fontFamily: "'Cinzel', serif", color: "hsl(262 80% 75%)" }}>
+          <p className="text-3xl font-bold mt-2" style={{ fontFamily: "'Cinzel', serif", color: "hsl(var(--sentinel-text))" }}>
             {totalCorrect}/{checkpoints.length}
           </p>
           <p className="text-[11px] text-muted-foreground mt-1">Flaws Detected</p>
