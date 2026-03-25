@@ -3,6 +3,7 @@
  * Employability Crisis → Evidence → Why It's Getting Worse → Why Fixes Fail → Solution → Proof → CTA
  */
 import { useRef } from "react";
+import SEOHead from "@/components/SEOHead";
 import founderImg from "@/assets/founder-jackson.png";
 import { motion, useInView } from "framer-motion";
 import xcrowLogo from "@/assets/xcrow-logo.webp";
