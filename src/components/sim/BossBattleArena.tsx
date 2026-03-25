@@ -293,7 +293,7 @@ export default function BossBattleArena({
             }}
           >
             <span className="text-[10px] font-bold uppercase tracking-wider block mb-1.5"
-              style={{ color: "hsl(262 80% 70%)", fontFamily: "'Cinzel', serif" }}
+              style={{ color: "hsl(var(--sentinel-text))", fontFamily: "'Cinzel', serif" }}
             >
               🔮 Why this matters
             </span>
