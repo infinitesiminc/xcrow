@@ -419,7 +419,7 @@ export default function BossBattleArena({
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         className="absolute inset-0 flex flex-col items-center justify-center gap-4 px-6"
-        style={{ background: "radial-gradient(ellipse at center, hsl(262 40% 10%), hsl(0 0% 3%))" }}
+        style={{ background: `radial-gradient(ellipse at center, hsl(var(--sentinel-arena-bg)), hsl(var(--background)))` }}
       >
         {/* Defeated boss (small) */}
         <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
