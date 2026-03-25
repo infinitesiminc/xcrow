@@ -396,8 +396,8 @@ export default function BossBattleArena({
               className="w-full gap-1.5 text-[12px] rounded-xl h-9"
               style={{
                 fontFamily: "'Cinzel', serif",
-                background: "linear-gradient(135deg, hsl(262 80% 55%), hsl(262 60% 45%))",
-                boxShadow: "0 0 20px hsl(262 80% 55% / 0.3)",
+                background: "linear-gradient(135deg, hsl(var(--sentinel-glow)), hsl(var(--sentinel)))",
+                boxShadow: "0 0 20px hsl(var(--sentinel-glow) / 0.3)",
               }}
             >
               <Swords className="h-3.5 w-3.5" /> Begin Battle
