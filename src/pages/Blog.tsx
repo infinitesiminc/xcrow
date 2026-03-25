@@ -2,6 +2,7 @@
  * /blog — The Chronicle: Scrolls & dispatches from the frontier.
  */
 import { motion } from "framer-motion";
+import SEOHead from "@/components/SEOHead";
 import { ArrowRight, Scroll } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
