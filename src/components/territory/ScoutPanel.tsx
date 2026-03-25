@@ -749,8 +749,9 @@ function MatchedJobCard({
                     e.stopPropagation();
                     onOpenRole?.({
                       title: job.title,
-                      company: job.company || undefined,
+                      company: job.company || null,
                       jobId: job.id,
+                      logo: null, location: null, country: null, workMode: null, seniority: null, augmented: 0, risk: 0,
                     });
                   }}
                 >
