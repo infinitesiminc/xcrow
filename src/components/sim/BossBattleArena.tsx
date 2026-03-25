@@ -513,7 +513,7 @@ export default function BossBattleArena({
         </div>
       )}
       {/* Top bar — Round counter + Difficulty + Streak */}
-      <div className="flex items-center justify-center gap-3 py-2 px-4 shrink-0" style={{ borderBottom: "1px solid hsl(262 40% 20% / 0.4)" }}>
+      <div className="flex items-center justify-center gap-3 py-2 px-4 shrink-0" style={{ borderBottom: "1px solid hsl(var(--sentinel-border) / 0.4)" }}>
         {/* Difficulty badge */}
         <span className="text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full" style={{
           background: `${cpTier.color.replace(")", " / 0.15)")}`,
