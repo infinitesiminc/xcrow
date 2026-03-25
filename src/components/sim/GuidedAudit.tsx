@@ -287,8 +287,8 @@ function RuneProgress({ total, current, verdicts, correctVerdicts, revealed }: {
         const isCorrect = verdicts[cpId] === correctVerdicts[cpId];
         const isCurrent = i === current;
 
-        let bg = "hsl(262 30% 20%)";
-        let border = "hsl(262 40% 30%)";
+        let bg = "hsl(var(--sentinel-surface))";
+        let border = "hsl(var(--sentinel-border) / 0.5)";
         let shadow = "none";
         let className = "transition-all duration-500";
 
