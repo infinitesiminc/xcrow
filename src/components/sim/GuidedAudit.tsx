@@ -1004,7 +1004,7 @@ export default function GuidedAudit({
                   <button
                     onClick={() => setShowChat(prev => ({ ...prev, [checkpoint.id]: !prev[checkpoint.id] }))}
                     className="text-[13px] flex items-center gap-1 transition-colors hover:brightness-125"
-                    style={{ color: "hsl(262 80% 70%)" }}
+                    style={{ color: "hsl(var(--sentinel-text))" }}
                   >
                     <HelpCircle className="h-3 w-3" />
                     {showChat[checkpoint.id] ? "Hide" : "Ask questions about this"}
