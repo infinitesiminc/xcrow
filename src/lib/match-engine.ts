@@ -211,11 +211,7 @@ export async function matchJobsForUser(
   }
 
   // Step 1: Get all canonical skill links (job_id → skill_id)
-  const allSkillLinks = await fetchAll<{ job_id: string; canonical_skill_id: string }>(
-    "job_future_skills",
-    "job_id, canonical_skill_id",
-    (q: any) => q.not("canonical_skill_id", "is", null),
-  );
+  const allSkillLinks = await fetchAllSkillLinks();
 
   // Build job → canonical skills map
   const jobSkillMap = new Map<string, Set<string>>();
