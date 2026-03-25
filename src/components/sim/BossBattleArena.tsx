@@ -261,7 +261,7 @@ export default function BossBattleArena({
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         className="absolute inset-0 flex flex-col overflow-hidden"
-        style={{ background: "radial-gradient(ellipse at center, hsl(262 40% 10%), hsl(0 0% 3%))" }}
+        style={{ background: `radial-gradient(ellipse at center, hsl(var(--sentinel-arena-bg)), hsl(var(--background)))` }}
       >
         <div className="flex-1 overflow-y-auto px-6 py-6 scrollbar-thin">
           <div className="max-w-md mx-auto">
