@@ -73,6 +73,7 @@ function buildEmptySkills(taxonomy: TaxonomySkill[]): SkillXP[] {
 
 const TAB_ITEMS = [
   { key: "table" as const, icon: ScrollText, label: "Skill Forge" },
+  { key: "scout" as const, icon: Compass, label: "Scout" },
   { key: "roles" as const, icon: Swords, label: "Kingdoms" },
   { key: "codex" as const, icon: BookOpen, label: "Codex" },
   { key: "allies" as const, icon: Users, label: "Allies" },
