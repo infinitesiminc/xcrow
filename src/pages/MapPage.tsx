@@ -100,7 +100,7 @@ const MapPage = () => {
 
   const [selectedRole, setSelectedRole] = useState<RoleResult | null>(null);
   const [activeEdge, setActiveEdge] = useState<EdgeContext | null>(null);
-  const [activeTab, setActiveTab] = useState<"table" | "roles" | "codex" | "allies">("table");
+  const [activeTab, setActiveTab] = useState<"table" | "scout" | "roles" | "codex" | "allies">("table");
   const [mapFocusSkillId, setMapFocusSkillId] = useState<string | null>(null);
   const [forgeFocusSkillId, setForgeFocusSkillId] = useState<string | null>(null);
   const [myRolesTab, setMyRolesTab] = useState<"saved" | "practiced">("saved");
