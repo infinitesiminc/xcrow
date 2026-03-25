@@ -54,7 +54,7 @@ function PowerBar({ value, max, color, label, side }: {
       <span className="text-[10px] font-bold uppercase tracking-widest" style={{ fontFamily: "'Cinzel', serif", color }}>
         {label}
       </span>
-      <div className="w-28 sm:w-36 h-3 rounded-full overflow-hidden" style={{ background: "hsl(262 30% 12%)", border: "1px solid hsl(262 40% 25%)" }}>
+      <div className="w-28 sm:w-36 h-3 rounded-full overflow-hidden" style={{ background: "hsl(var(--sentinel-surface))", border: "1px solid hsl(var(--sentinel-border) / 0.4)" }}>
         <motion.div
           className="h-full rounded-full"
           animate={{ width: `${pct}%` }}
