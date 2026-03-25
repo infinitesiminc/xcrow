@@ -586,24 +586,14 @@ export default function RolePreviewPanel({ role, onClose, edgeContext, kingdomCo
                                     );
                                   })()}
 
-                                  {/* Future preview + Practice CTA */}
+                                   {/* Future preview (read-only in overlay) */}
                                   <FutureTaskPreview
                                     taskName={t.cluster_name}
                                     jobTitle={role.title}
                                     company={role.company || undefined}
                                     aiExposureScore={score}
                                     description={t.description || undefined}
-                                    onStartSim={() => startSimulation(t)}
                                   />
-                                  <Button
-                                    size="sm"
-                                    variant={done ? "secondary" : "default"}
-                                    className="w-full h-8 text-xs rounded-lg gap-1.5"
-                                    onClick={() => startSimulation(t)}
-                                  >
-                                    <Play className="h-3 w-3" />
-                                    {done ? "Practice Again" : "Practice Now"}
-                                  </Button>
                                 </div>
                               </motion.div>
                             )}
