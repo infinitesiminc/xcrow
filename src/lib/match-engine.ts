@@ -258,21 +258,29 @@ export async function matchJobsForUser(
 
   if (allJobIds.size === 0) return [];
 
-  // Step 3: Fetch job metadata for relevant jobs (paginated)
+  // Step 3: Fetch job metadata for relevant jobs.
+  // NOTE: Avoid giant `.in("id", [...])` batches here — long URLs can fail silently
+  // and lead to an empty Matched tab after relogin.
   const jobIdArr = [...allJobIds];
+  const relevantJobIdSet = new Set(jobIdArr);
   const jobsMap = new Map<string, any>();
 
-  // Fetch in batches of 500 to avoid URL length issues
-  const BATCH = 500;
-  for (let i = 0; i < jobIdArr.length; i += BATCH) {
-    const batch = jobIdArr.slice(i, i + BATCH);
-    const { data } = await supabase
+  const PAGE = 1000;
+  let from = 0;
+  while (true) {
+    const { data, error } = await supabase
       .from("jobs")
       .select("id, title, department, location, seniority, slug, company_id, companies!jobs_company_id_fkey ( name, logo_url )")
-      .in("id", batch);
-    if (data) {
-      for (const j of data) jobsMap.set(j.id, j);
+      .range(from, from + PAGE - 1);
+
+    if (error || !data || data.length === 0) break;
+
+    for (const j of data) {
+      if (relevantJobIdSet.has(j.id)) jobsMap.set(j.id, j);
     }
+
+    if (jobsMap.size >= relevantJobIdSet.size || data.length < PAGE) break;
+    from += PAGE;
   }
 
   // Step 4: Score each job
