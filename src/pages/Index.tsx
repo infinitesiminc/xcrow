@@ -270,6 +270,49 @@ const Index = () => {
           </div>
         </section>
 
+        {/* ═══ BOSS BATTLE SHOWCASE ═══ */}
+        <section className="py-20 px-4" style={{ background: "hsl(var(--secondary) / 0.4)" }}>
+          <div className="max-w-5xl mx-auto">
+            <motion.div {...fade()} className="text-center mb-10">
+              <p className="text-xs font-mono uppercase tracking-[0.2em] text-muted-foreground mb-2">Level 2 — Boss Battles</p>
+              <h2 className="font-fantasy text-3xl md:text-4xl font-bold">
+                Face the Sentinel's Judgment
+              </h2>
+              <p className="text-muted-foreground mt-3 max-w-lg mx-auto">
+                Can you spot the flaws in AI-generated analysis? Boss battles test your strategic oversight — 
+                the one skill AI can't replace.
+              </p>
+            </motion.div>
+
+            <motion.div
+              {...fade(0.2)}
+              className="relative rounded-2xl overflow-hidden border border-border/50 mx-auto"
+              style={{
+                maxWidth: 900,
+                boxShadow: "0 8px 60px hsl(var(--primary) / 0.15), inset 0 1px 0 hsl(var(--emboss-light))",
+              }}
+            >
+              <img
+                src={bossBattlePreview}
+                alt="Level 2 Boss Battle — Sentinel Audit arena with AI Oracle claim evaluation"
+                className="w-full h-auto block"
+                loading="lazy"
+              />
+              {/* Bottom fade */}
+              <div className="absolute bottom-0 left-0 right-0 h-16 pointer-events-none"
+                style={{ background: "linear-gradient(to top, hsl(var(--secondary) / 0.4), transparent)" }} />
+            </motion.div>
+
+            <motion.div {...fade(0.35)} className="text-center mt-8">
+              <Button size="lg" variant="outline" onClick={() => navigate("/map")}
+                className="text-sm px-6 font-fantasy">
+                <Swords className="h-4 w-4 mr-2" />
+                Enter the Arena
+              </Button>
+            </motion.div>
+          </div>
+        </section>
+
         {/* ═══ CASTLE PROGRESSION ═══ */}
         <section className="py-20 px-4" style={{ background: "hsl(var(--secondary) / 0.4)" }}>
           <div className="max-w-5xl mx-auto">
