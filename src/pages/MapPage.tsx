@@ -27,7 +27,7 @@ import type { RoleResult } from "@/components/InlineRoleCarousel";
 import type { EdgeContext } from "@/components/HumanEdgesCard";
 
 import CompactHUD from "@/components/territory/CompactHUD";
-import MyRolesPanel from "@/components/territory/MyRolesPanel";
+
 import AlliesPanel from "@/components/territory/AlliesPanel";
 import CodexPanel from "@/components/territory/CodexPanel";
 import ScoutPanel from "@/components/territory/ScoutPanel";
