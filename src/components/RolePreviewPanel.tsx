@@ -396,16 +396,22 @@ export default function RolePreviewPanel({ role, onClose, edgeContext, kingdomCo
 
   // ── Details view — expandable task cards ──
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.2 }} className="h-full flex flex-col bg-card overflow-hidden">
-      {/* Compact header */}
-      <div className="px-3 py-2.5 shrink-0 border-b border-border/50" style={{ background: `linear-gradient(135deg, hsl(${hue1} 50% 10%) 0%, hsl(${hue2} 40% 8%) 100%)` }}>
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.2 }} className="h-full flex flex-col overflow-hidden"
+      style={{ background: "hsl(var(--surface-stone))" }}>
+      {/* Compact header — stone texture with filigree border */}
+      <div className="px-3 py-2.5 shrink-0" style={{
+        background: `linear-gradient(135deg, hsl(${hue1} 50% 10%) 0%, hsl(${hue2} 40% 8%) 100%)`,
+        borderBottom: "1px solid hsl(var(--filigree) / 0.2)",
+        boxShadow: "inset 0 -1px 0 hsl(var(--emboss-shadow))",
+      }}>
         <div className="flex items-center gap-2.5">
           {logoUrl && (
-            <img src={logoUrl} alt="" className="h-7 w-7 rounded-md object-contain bg-muted/20 p-0.5 shrink-0"
+            <img src={logoUrl} alt="" className="h-7 w-7 rounded-md object-contain p-0.5 shrink-0"
+              style={{ background: "hsl(var(--filigree) / 0.08)", border: "1px solid hsl(var(--filigree) / 0.12)" }}
               onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
           )}
           <div className="min-w-0 flex-1">
-            <h2 className="text-sm font-bold text-foreground leading-snug truncate">{role.title}</h2>
+            <h2 className="text-sm font-bold text-foreground leading-snug truncate" style={{ fontFamily: "'Cinzel', serif" }}>{role.title}</h2>
             <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
               {role.company && <span>{role.company}</span>}
               {role.location && <span className="flex items-center gap-0.5"><MapPin className="h-2.5 w-2.5" />{role.location}</span>}
@@ -425,11 +431,11 @@ export default function RolePreviewPanel({ role, onClose, edgeContext, kingdomCo
         </div>
         {role.augmented > 0 && (
           <div className="mt-2 flex items-center gap-2">
-            <div className="flex-1 h-1 rounded-full bg-muted/30 overflow-hidden">
+            <div className="flex-1 h-1 rounded-full overflow-hidden" style={{ background: "hsl(var(--filigree) / 0.12)" }}>
               <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${role.augmented}%` }} />
             </div>
             <span className="text-[11px] font-semibold text-primary">{role.augmented}%</span>
-            <span className="text-[10px] text-muted-foreground uppercase tracking-wide">AI</span>
+            <span className="text-[10px] text-muted-foreground uppercase tracking-wider" style={{ fontFamily: "'Cinzel', serif" }}>Threat</span>
           </div>
         )}
       </div>
