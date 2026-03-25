@@ -918,8 +918,8 @@ export default function GuidedAudit({
                    className="w-full gap-1.5 text-[13px] rounded-xl h-9"
                   style={{
                     fontFamily: "'Cinzel', serif",
-                    background: "linear-gradient(135deg, hsl(262 80% 55%), hsl(262 60% 45%))",
-                    boxShadow: "0 0 15px hsl(262 80% 55% / 0.3)",
+                    background: "linear-gradient(135deg, hsl(var(--sentinel-glow)), hsl(var(--sentinel)))",
+                    boxShadow: "0 0 15px hsl(var(--sentinel-glow) / 0.3)",
                   }}
                 >
                   <Eye className="h-3 w-3" /> ⚡ Seal Your Judgment
