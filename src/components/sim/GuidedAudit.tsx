@@ -983,7 +983,7 @@ export default function GuidedAudit({
                     }}
                   >
                     <div className="flex items-center gap-1.5 mb-1.5">
-                      <span className="text-[13px] font-bold uppercase tracking-wider" style={{ color: "hsl(262 80% 70%)", fontFamily: "'Cinzel', serif" }}>
+                      <span className="text-[13px] font-bold uppercase tracking-wider" style={{ color: "hsl(var(--sentinel-text))", fontFamily: "'Cinzel', serif" }}>
                         📜 Chronicle Entry
                       </span>
                     </div>
