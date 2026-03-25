@@ -170,6 +170,7 @@ function JobCard({
   isExpanded: boolean;
   onToggle: () => void;
 }) {
+  const navigate = useNavigate();
   const scoreTier = job.matchScore >= 60 ? "high" : job.matchScore >= 30 ? "mid" : "low";
   const tierColor = scoreTier === "high"
     ? "hsl(142 71% 45%)"
