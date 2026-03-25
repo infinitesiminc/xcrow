@@ -297,8 +297,8 @@ function RuneProgress({ total, current, verdicts, correctVerdicts, revealed }: {
           border = isCorrect ? "hsl(142 60% 60%)" : "hsl(0 60% 60%)";
           shadow = isCorrect ? "0 0 8px hsl(142 60% 50% / 0.5)" : "0 0 8px hsl(0 60% 55% / 0.4)";
         } else if (isCurrent) {
-          bg = "hsl(262 80% 55%)";
-          border = "hsl(262 80% 65%)";
+          bg = "hsl(var(--sentinel-glow))";
+          border = "hsl(var(--sentinel-text))";
           className += " animate-rune-pulse";
         }
 
