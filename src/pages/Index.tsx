@@ -421,6 +421,14 @@ const Index = () => {
                 })}
               </svg>
             </motion.div>
+
+            <motion.div {...fade(0.2)} className="text-center mt-8">
+              <Button size="lg" variant="outline" onClick={() => navigate("/skills")}
+                className="text-sm px-6 font-fantasy">
+                <BookOpen className="h-4 w-4 mr-2" />
+                Browse All 183 Skills
+              </Button>
+            </motion.div>
           </div>
         </section>
 
