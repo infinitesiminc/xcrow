@@ -310,7 +310,7 @@ function RuneProgress({ total, current, verdicts, correctVerdicts, revealed }: {
               style={{ background: bg, border: `1.5px solid ${border}`, boxShadow: shadow }}
             />
             {i < total - 1 && (
-              <div className="w-2 h-px" style={{ background: "hsl(262 40% 30%)" }} />
+              <div className="w-2 h-px" style={{ background: "hsl(var(--sentinel-border) / 0.5)" }} />
             )}
           </div>
         );
