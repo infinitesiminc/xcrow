@@ -102,7 +102,7 @@ const MapPage = () => {
   const [activeTab, setActiveTab] = useState<"table" | "scout" | "codex" | "allies">("table");
   const [mapFocusSkillId, setMapFocusSkillId] = useState<string | null>(null);
   const [forgeFocusSkillId, setForgeFocusSkillId] = useState<string | null>(null);
-  const [myRolesTab, setMyRolesTab] = useState<"saved" | "practiced">("saved");
+  
   const [drawerSkill, setDrawerSkill] = useState<FutureSkill | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
 
