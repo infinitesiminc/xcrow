@@ -168,6 +168,22 @@ export default function Skills() {
           </div>
         </section>
 
+        {/* ═══ INLINE CTA ═══ */}
+        <section className="px-4 pb-8">
+          <motion.div {...fade(0.1)} className="max-w-5xl mx-auto">
+            <div className="rounded-xl border border-primary/20 p-5 flex flex-col sm:flex-row items-center justify-between gap-4"
+              style={{ background: "hsl(var(--primary) / 0.05)" }}>
+              <div className="flex items-center gap-3">
+                <Sparkles className="h-5 w-5 text-primary shrink-0" />
+                <p className="text-sm text-foreground font-medium">Ready to start mastering these skills? Open your World Map and claim your first territory.</p>
+              </div>
+              <Button size="sm" onClick={() => window.location.href = "/map"} className="shrink-0">
+                Open World Map <ArrowRight className="h-4 w-4 ml-1" />
+              </Button>
+            </div>
+          </motion.div>
+        </section>
+
         {/* ═══ SKILLS GRID ═══ */}
         <section className="px-4 pb-20">
           <div className="max-w-5xl mx-auto">
