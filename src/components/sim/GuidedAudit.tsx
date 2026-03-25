@@ -211,14 +211,14 @@ function CheckpointChat({ checkpoint }: { checkpoint: AuditCheckpoint }) {
       exit={{ opacity: 0, height: 0 }}
       className="rounded-xl overflow-hidden"
       style={{
-        background: "hsl(262 30% 12%)",
-        border: "1px solid hsl(262 60% 40% / 0.2)",
+        background: "hsl(var(--sentinel-surface))",
+        border: "1px solid hsl(var(--sentinel-border) / 0.2)",
         boxShadow: "inset 0 1px 0 hsl(var(--emboss-light))",
       }}
     >
-      <div className="px-3 py-2 flex items-center gap-1.5" style={{ borderBottom: "1px solid hsl(262 60% 40% / 0.15)" }}>
-        <HelpCircle className="h-3 w-3" style={{ color: "hsl(262 80% 70%)" }} />
-        <span className="text-[13px] font-semibold" style={{ color: "hsl(262 80% 70%)", fontFamily: "'Cinzel', serif" }}>
+      <div className="px-3 py-2 flex items-center gap-1.5" style={{ borderBottom: "1px solid hsl(var(--sentinel-border) / 0.15)" }}>
+        <HelpCircle className="h-3 w-3" style={{ color: "hsl(var(--sentinel-text))" }} />
+        <span className="text-[13px] font-semibold" style={{ color: "hsl(var(--sentinel-text))", fontFamily: "'Cinzel', serif" }}>
           📚 Sanctum Library
         </span>
       </div>
@@ -236,8 +236,8 @@ function CheckpointChat({ checkpoint }: { checkpoint: AuditCheckpoint }) {
               className={`inline-block max-w-[90%] rounded-lg px-3 py-2 text-left`}
               style={
                 msg.role === "user"
-                  ? { background: "hsl(262 60% 50% / 0.15)", border: "1px solid hsl(262 60% 50% / 0.25)" }
-                  : { background: "hsl(262 30% 18%)", border: "1px solid hsl(262 60% 40% / 0.15)", borderLeft: "2px solid hsl(262 80% 60% / 0.3)" }
+                  ? { background: "hsl(var(--sentinel) / 0.15)", border: "1px solid hsl(var(--sentinel) / 0.25)" }
+                  : { background: "hsl(var(--sentinel-surface-deep))", border: "1px solid hsl(var(--sentinel-border) / 0.15)", borderLeft: "2px solid hsl(var(--sentinel-glow) / 0.3)" }
               }
             >
               {msg.role === "assistant" ? (
@@ -254,14 +254,14 @@ function CheckpointChat({ checkpoint }: { checkpoint: AuditCheckpoint }) {
           </div>
         )}
       </div>
-      <div className="px-2 py-2 flex gap-1.5" style={{ borderTop: "1px solid hsl(262 60% 40% / 0.15)" }}>
+      <div className="px-2 py-2 flex gap-1.5" style={{ borderTop: "1px solid hsl(var(--sentinel-border) / 0.15)" }}>
         <input
           value={input}
           onChange={e => setInput(e.target.value)}
           onKeyDown={e => e.key === "Enter" && !e.shiftKey && sendMessage()}
           placeholder="Consult the archives…"
           className="flex-1 rounded-lg px-3 py-1.5 text-[15px] outline-none focus:ring-1 focus:ring-primary/30"
-          style={{ background: "hsl(262 30% 15%)", border: "1px solid hsl(262 60% 40% / 0.15)" }}
+          style={{ background: "hsl(var(--sentinel-surface-deep))", border: "1px solid hsl(var(--sentinel-border) / 0.15)" }}
         />
         <Button size="icon" onClick={sendMessage} disabled={isStreaming || !input.trim()} className="h-7 w-7 rounded-lg shrink-0">
           <Send className="h-3 w-3" />
@@ -287,8 +287,8 @@ function RuneProgress({ total, current, verdicts, correctVerdicts, revealed }: {
         const isCorrect = verdicts[cpId] === correctVerdicts[cpId];
         const isCurrent = i === current;
 
-        let bg = "hsl(262 30% 20%)";
-        let border = "hsl(262 40% 30%)";
+        let bg = "hsl(var(--sentinel-surface))";
+        let border = "hsl(var(--sentinel-border) / 0.5)";
         let shadow = "none";
         let className = "transition-all duration-500";
 
@@ -297,8 +297,8 @@ function RuneProgress({ total, current, verdicts, correctVerdicts, revealed }: {
           border = isCorrect ? "hsl(142 60% 60%)" : "hsl(0 60% 60%)";
           shadow = isCorrect ? "0 0 8px hsl(142 60% 50% / 0.5)" : "0 0 8px hsl(0 60% 55% / 0.4)";
         } else if (isCurrent) {
-          bg = "hsl(262 80% 55%)";
-          border = "hsl(262 80% 65%)";
+          bg = "hsl(var(--sentinel-glow))";
+          border = "hsl(var(--sentinel-text))";
           className += " animate-rune-pulse";
         }
 
@@ -310,7 +310,7 @@ function RuneProgress({ total, current, verdicts, correctVerdicts, revealed }: {
               style={{ background: bg, border: `1.5px solid ${border}`, boxShadow: shadow }}
             />
             {i < total - 1 && (
-              <div className="w-2 h-px" style={{ background: "hsl(262 40% 30%)" }} />
+              <div className="w-2 h-px" style={{ background: "hsl(var(--sentinel-border) / 0.5)" }} />
             )}
           </div>
         );
@@ -325,7 +325,7 @@ function RubricResults({ scores }: { scores: Record<string, { score: number; not
     <div className="space-y-3">
       <div className="flex items-center gap-2 mb-1">
         <span className="text-xs">📜</span>
-        <span className="text-[13px] font-bold uppercase tracking-widest" style={{ fontFamily: "'Cinzel', serif", color: "hsl(262 80% 70%)" }}>
+        <span className="text-[13px] font-bold uppercase tracking-widest" style={{ fontFamily: "'Cinzel', serif", color: "hsl(var(--sentinel-text))" }}>
           Sentinel's Rubric
         </span>
       </div>
@@ -346,7 +346,7 @@ function RubricResults({ scores }: { scores: Record<string, { score: number; not
               </span>
               <span className="text-[13px] font-mono font-bold" style={{ color }}>{pct}%</span>
             </div>
-            <div className="h-2 rounded-full overflow-hidden mb-1.5" style={{ background: "hsl(262 30% 18%)", border: "1px solid hsl(262 60% 40% / 0.15)" }}>
+            <div className="h-2 rounded-full overflow-hidden mb-1.5" style={{ background: "hsl(var(--sentinel-surface-deep))", border: "1px solid hsl(var(--sentinel-border) / 0.15)" }}>
               <motion.div
                 initial={{ width: 0 }}
                 animate={{ width: `${pct}%` }}
@@ -572,7 +572,7 @@ export default function GuidedAudit({
             animate={{ scale: 1.5, opacity: 0.15 }}
             transition={{ duration: 1.2 }}
             className="absolute inset-0 mx-auto w-32 h-32 rounded-full"
-            style={{ background: "radial-gradient(circle, hsl(262 80% 55%), transparent 70%)", top: "-16px" }}
+            style={{ background: "radial-gradient(circle, hsl(var(--sentinel-glow)), transparent 70%)", top: "-16px" }}
           />
 
           {/* Portrait image (if loaded) */}
@@ -582,7 +582,7 @@ export default function GuidedAudit({
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.3 }}
               className="mx-auto mb-3 w-20 h-20 rounded-full overflow-hidden"
-              style={{ border: "2px solid hsl(262 80% 55% / 0.5)", boxShadow: "0 0 20px hsl(262 80% 55% / 0.3)" }}
+              style={{ border: "2px solid hsl(var(--sentinel-glow) / 0.5)", boxShadow: "0 0 20px hsl(var(--sentinel-glow) / 0.3)" }}
             >
               <img src={completionImageUrl} alt="Sentinel portrait" className="w-full h-full object-cover" />
             </motion.div>
@@ -601,7 +601,7 @@ export default function GuidedAudit({
                   <stop offset="100%" stopColor="hsl(45 85% 55%)" />
                 </linearGradient>
               </defs>
-              <circle cx="50" cy="50" r="44" fill="none" stroke="hsl(262 30% 18%)" strokeWidth="4" />
+              <circle cx="50" cy="50" r="44" fill="none" stroke="hsl(var(--sentinel-surface-deep))" strokeWidth="4" />
               <motion.circle
                 cx="50" cy="50" r="44" fill="none"
                 stroke="url(#sentinel-ring)"
@@ -628,7 +628,7 @@ export default function GuidedAudit({
             </div>
           </motion.div>
 
-          <h3 className="text-base font-bold mt-3" style={{ fontFamily: "'Cinzel', serif", color: "hsl(262 80% 70%)" }}>
+          <h3 className="text-base font-bold mt-3" style={{ fontFamily: "'Cinzel', serif", color: "hsl(var(--sentinel-text))" }}>
             {titles[tier]}
           </h3>
           <p className="text-[13px] text-muted-foreground mt-1 max-w-sm mx-auto leading-relaxed">{subtitles[tier]}</p>
@@ -638,12 +638,12 @@ export default function GuidedAudit({
         <div
           className="rounded-xl p-4 space-y-2"
           style={{
-            background: "linear-gradient(135deg, hsl(262 30% 12%), hsl(var(--surface-stone)))",
-            border: "1px solid hsl(262 60% 40% / 0.2)",
+            background: "linear-gradient(135deg, hsl(var(--sentinel-surface)), hsl(var(--surface-stone)))",
+            border: "1px solid hsl(var(--sentinel-border) / 0.2)",
             boxShadow: "inset 0 1px 0 hsl(var(--emboss-light))",
           }}
         >
-          <span className="text-[13px] font-bold uppercase tracking-widest" style={{ fontFamily: "'Cinzel', serif", color: "hsl(262 80% 70%)" }}>
+          <span className="text-[13px] font-bold uppercase tracking-widest" style={{ fontFamily: "'Cinzel', serif", color: "hsl(var(--sentinel-text))" }}>
             Checkpoint Review
           </span>
           {checkpoints.map(cp => {
@@ -683,8 +683,8 @@ export default function GuidedAudit({
         <div
           className="rounded-xl p-4"
           style={{
-            background: "linear-gradient(135deg, hsl(262 30% 12%), hsl(var(--surface-stone)))",
-            border: "1px solid hsl(262 60% 40% / 0.2)",
+            background: "linear-gradient(135deg, hsl(var(--sentinel-surface)), hsl(var(--surface-stone)))",
+            border: "1px solid hsl(var(--sentinel-border) / 0.2)",
             boxShadow: "inset 0 1px 0 hsl(var(--emboss-light)), 0 2px 8px hsl(var(--emboss-shadow))",
           }}
         >
@@ -698,7 +698,7 @@ export default function GuidedAudit({
             size="sm"
             onClick={handleRestart}
             className="gap-1.5 text-[13px] rounded-xl"
-            style={{ fontFamily: "'Cinzel', serif", borderColor: "hsl(262 60% 40% / 0.3)", color: "hsl(262 80% 70%)" }}
+            style={{ fontFamily: "'Cinzel', serif", borderColor: "hsl(var(--sentinel-border) / 0.3)", color: "hsl(var(--sentinel-text))" }}
           >
             <RotateCcw className="h-3 w-3" /> 🔮 Begin New Vigil
           </Button>
@@ -709,8 +709,8 @@ export default function GuidedAudit({
               className="gap-1.5 text-[13px] rounded-xl"
               style={{
                 fontFamily: "'Cinzel', serif",
-                background: "linear-gradient(135deg, hsl(262 80% 55%), hsl(262 60% 45%))",
-                boxShadow: "0 0 15px hsl(262 80% 55% / 0.3)",
+                background: "linear-gradient(135deg, hsl(var(--sentinel-glow)), hsl(var(--sentinel)))",
+                boxShadow: "0 0 15px hsl(var(--sentinel-glow) / 0.3)",
               }}
             >
               <Swords className="h-3 w-3" /> View Battle Report
@@ -746,13 +746,13 @@ export default function GuidedAudit({
       <div
         className="rounded-xl p-3.5 relative overflow-hidden"
         style={{
-          background: "linear-gradient(135deg, hsl(262 40% 15% / 0.6), hsl(270 30% 10% / 0.8))",
-          border: "1px solid hsl(262 60% 40% / 0.25)",
+          background: "linear-gradient(135deg, hsl(var(--sentinel-surface-deep) / 0.6), hsl(var(--sentinel-surface) / 0.8))",
+          border: "1px solid hsl(var(--sentinel-border) / 0.25)",
           boxShadow: "inset 0 1px 0 hsl(var(--emboss-light)), 0 0 20px hsl(262 80% 55% / 0.08)",
         }}
       >
         {/* Animated glow orb */}
-        <div className="absolute -top-8 -right-8 w-24 h-24 rounded-full opacity-15 blur-2xl" style={{ background: "hsl(262 80% 55%)" }} />
+        <div className="absolute -top-8 -right-8 w-24 h-24 rounded-full opacity-15 blur-2xl" style={{ background: "hsl(var(--sentinel-glow))" }} />
         {/* Floating particles */}
         {[0, 1, 2].map(i => (
           <motion.div
@@ -762,7 +762,7 @@ export default function GuidedAudit({
             transition={{ duration: 3 + i, repeat: Infinity, delay: i * 0.7 }}
             style={{
               width: 3, height: 3,
-              background: "hsl(262 80% 70%)",
+              background: "hsl(var(--sentinel-text))",
               right: `${20 + i * 25}%`,
               top: `${30 + i * 15}%`,
             }}
@@ -773,14 +773,14 @@ export default function GuidedAudit({
           <div className="flex items-center gap-2.5">
             <div
               className="h-8 w-8 rounded-lg flex items-center justify-center"
-              style={{ background: "hsl(262 60% 50% / 0.15)", border: "1px solid hsl(262 60% 50% / 0.25)" }}
+              style={{ background: "hsl(var(--sentinel) / 0.15)", border: "1px solid hsl(var(--sentinel) / 0.25)" }}
             >
-              <Eye className="h-4 w-4" style={{ color: "hsl(262 80% 70%)" }} />
+              <Eye className="h-4 w-4" style={{ color: "hsl(var(--sentinel-text))" }} />
             </div>
             <div>
               <span
                 className="text-[15px] font-bold drop-shadow-[0_0_8px_rgba(139,92,246,0.4)]"
-                style={{ fontFamily: "'Cinzel', serif", color: "hsl(262 80% 75%)" }}
+                style={{ fontFamily: "'Cinzel', serif", color: "hsl(var(--sentinel-text))" }}
               >
                 🔮 Sentinel's Sanctum
               </span>
@@ -803,20 +803,20 @@ export default function GuidedAudit({
       <div
         className="rounded-lg px-3.5 py-2.5 text-[13px] font-mono relative overflow-hidden"
         style={{
-          background: "hsl(262 30% 12%)",
-          border: "1px solid hsl(262 60% 40% / 0.2)",
-          borderLeft: "3px solid hsl(262 80% 55% / 0.5)",
+          background: "hsl(var(--sentinel-surface))",
+          border: "1px solid hsl(var(--sentinel-border) / 0.2)",
+          borderLeft: "3px solid hsl(var(--sentinel-glow) / 0.5)",
           boxShadow: "inset 0 1px 0 hsl(var(--emboss-light))",
         }}
       >
         {/* Scanning line animation */}
         <motion.div
           className="absolute left-0 right-0 h-px pointer-events-none"
-          style={{ background: "linear-gradient(90deg, transparent, hsl(262 80% 70% / 0.3), transparent)" }}
+          style={{ background: "linear-gradient(90deg, transparent, hsl(var(--sentinel-text) / 0.3), transparent)" }}
           animate={{ y: ["-100%", "200%"] }}
           transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
         />
-        <span className="text-[13px] font-bold uppercase tracking-wider" style={{ color: "hsl(262 80% 70%)", fontFamily: "'Cinzel', serif" }}>
+        <span className="text-[13px] font-bold uppercase tracking-wider" style={{ color: "hsl(var(--sentinel-text))", fontFamily: "'Cinzel', serif" }}>
           🔮 Oracle's Claim:{" "}
         </span>
         <span className="text-[15px] text-foreground/80 leading-relaxed">{checkpoint.aiClaim}</span>
@@ -832,8 +832,8 @@ export default function GuidedAudit({
           transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
           className="rounded-xl p-4 space-y-3 relative overflow-hidden sentinel-constellation"
           style={{
-            background: "linear-gradient(135deg, hsl(262 30% 12%), hsl(var(--surface-stone)))",
-            border: "1px solid hsl(262 60% 40% / 0.2)",
+            background: "linear-gradient(135deg, hsl(var(--sentinel-surface)), hsl(var(--surface-stone)))",
+            border: "1px solid hsl(var(--sentinel-border) / 0.2)",
             boxShadow: "inset 0 1px 0 hsl(var(--emboss-light)), 0 2px 8px hsl(var(--emboss-shadow))",
           }}
         >
@@ -862,7 +862,7 @@ export default function GuidedAudit({
               <button
                 onClick={() => setShowHint(prev => ({ ...prev, [checkpoint.id]: true }))}
                 className="text-[13px] mt-2 flex items-center gap-1 transition-colors hover:brightness-125"
-                style={{ color: "hsl(262 80% 70%)" }}
+                style={{ color: "hsl(var(--sentinel-text))" }}
               >
                 <Sparkles className="h-3 w-3" /> Need a hint?
               </button>
@@ -896,8 +896,8 @@ export default function GuidedAudit({
                       onClick={() => handleVerdict(checkpoint.id, v)}
                       className="flex-1 py-2.5 px-3 rounded-lg text-[13px] font-semibold capitalize transition-all"
                       style={{
-                        background: selected ? cfg.bg : "hsl(262 30% 15%)",
-                        border: `1.5px solid ${selected ? cfg.border : "hsl(262 60% 40% / 0.15)"}`,
+                        background: selected ? cfg.bg : "hsl(var(--sentinel-surface-deep))",
+                        border: `1.5px solid ${selected ? cfg.border : "hsl(var(--sentinel-border) / 0.15)"}`,
                         color: selected ? cfg.text : "hsl(var(--muted-foreground))",
                         boxShadow: selected ? cfg.glow : "none",
                       }}
@@ -918,8 +918,8 @@ export default function GuidedAudit({
                    className="w-full gap-1.5 text-[13px] rounded-xl h-9"
                   style={{
                     fontFamily: "'Cinzel', serif",
-                    background: "linear-gradient(135deg, hsl(262 80% 55%), hsl(262 60% 45%))",
-                    boxShadow: "0 0 15px hsl(262 80% 55% / 0.3)",
+                    background: "linear-gradient(135deg, hsl(var(--sentinel-glow)), hsl(var(--sentinel)))",
+                    boxShadow: "0 0 15px hsl(var(--sentinel-glow) / 0.3)",
                   }}
                 >
                   <Eye className="h-3 w-3" /> ⚡ Seal Your Judgment
@@ -969,7 +969,7 @@ export default function GuidedAudit({
                 {/* Explanation */}
                 <div
                   className="rounded-lg p-3 text-[15px] space-y-2.5"
-                  style={{ background: "hsl(262 30% 12%)", border: "1px solid hsl(262 60% 40% / 0.15)" }}
+                  style={{ background: "hsl(var(--sentinel-surface))", border: "1px solid hsl(var(--sentinel-border) / 0.15)" }}
                 >
                   <p className="text-foreground leading-relaxed">{checkpoint.explanation}</p>
 
@@ -977,13 +977,13 @@ export default function GuidedAudit({
                   <div
                     className="rounded-lg p-3"
                     style={{
-                      background: "hsl(262 30% 16%)",
-                      border: "1px solid hsl(262 60% 40% / 0.12)",
+                      background: "hsl(var(--sentinel-surface-deep))",
+                      border: "1px solid hsl(var(--sentinel-border) / 0.12)",
                       boxShadow: "0 0 8px hsl(38 65% 55% / 0.05)",
                     }}
                   >
                     <div className="flex items-center gap-1.5 mb-1.5">
-                      <span className="text-[13px] font-bold uppercase tracking-wider" style={{ color: "hsl(262 80% 70%)", fontFamily: "'Cinzel', serif" }}>
+                      <span className="text-[13px] font-bold uppercase tracking-wider" style={{ color: "hsl(var(--sentinel-text))", fontFamily: "'Cinzel', serif" }}>
                         📜 Chronicle Entry
                       </span>
                     </div>
@@ -993,7 +993,7 @@ export default function GuidedAudit({
                   {/* Sentinel's Counsel */}
                   <div className="flex items-start gap-2 text-[15px]">
                     <span className="shrink-0">🧭</span>
-                    <p className="font-medium italic" style={{ color: "hsl(262 80% 70%)" }}>
+                    <p className="font-medium italic" style={{ color: "hsl(var(--sentinel-text))" }}>
                       {checkpoint.coachTip}
                     </p>
                   </div>
@@ -1004,7 +1004,7 @@ export default function GuidedAudit({
                   <button
                     onClick={() => setShowChat(prev => ({ ...prev, [checkpoint.id]: !prev[checkpoint.id] }))}
                     className="text-[13px] flex items-center gap-1 transition-colors hover:brightness-125"
-                    style={{ color: "hsl(262 80% 70%)" }}
+                    style={{ color: "hsl(var(--sentinel-text))" }}
                   >
                     <HelpCircle className="h-3 w-3" />
                     {showChat[checkpoint.id] ? "Hide" : "Ask questions about this"}
@@ -1022,7 +1022,7 @@ export default function GuidedAudit({
                    className="w-full gap-1.5 text-[13px] rounded-xl h-9"
                   style={{
                     fontFamily: "'Cinzel', serif",
-                    background: "linear-gradient(135deg, hsl(262 80% 55%), hsl(262 60% 45%))",
+                    background: "linear-gradient(135deg, hsl(var(--sentinel-glow)), hsl(var(--sentinel)))",
                   }}
                 >
                   {currentStep < checkpoints.length - 1 ? (

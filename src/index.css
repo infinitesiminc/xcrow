@@ -86,6 +86,16 @@
     --emboss-light: 0 0% 100% / 0.08;
     --emboss-shadow: 0 0% 0% / 0.15;
 
+    /* ── Sentinel / L2 battle tokens ── */
+    --sentinel: 262 60% 48%;
+    --sentinel-surface: 262 15% 88%;
+    --sentinel-surface-deep: 262 12% 82%;
+    --sentinel-border: 262 30% 70%;
+    --sentinel-text: 262 60% 40%;
+    --sentinel-glow: 262 70% 55%;
+    --sentinel-arena-bg: 262 10% 92%;
+    --sentinel-arena-fg: 262 15% 15%;
+
     --sidebar-background: 240 5% 95%;
     --sidebar-foreground: 240 10% 20%;
     --sidebar-primary: 262 83% 58%;
@@ -171,6 +181,16 @@
     --filigree-glow: 38 65% 55%;
     --emboss-light: 0 0% 100% / 0.05;
     --emboss-shadow: 0 0% 0% / 0.4;
+
+    /* ── Sentinel / L2 battle tokens (dark) ── */
+    --sentinel: 262 80% 55%;
+    --sentinel-surface: 262 30% 12%;
+    --sentinel-surface-deep: 262 30% 14%;
+    --sentinel-border: 262 60% 40%;
+    --sentinel-text: 262 80% 70%;
+    --sentinel-glow: 262 80% 55%;
+    --sentinel-arena-bg: 262 40% 8%;
+    --sentinel-arena-fg: 0 0% 90%;
 
     --sidebar-background: 240 10% 9%;
     --sidebar-foreground: 220 8% 78%;
@@ -299,6 +319,16 @@ html:not(.light):not(.parchment) {
   --filigree-glow: 35 55% 42%;
   --emboss-light: 0 0% 100% / 0.5;
   --emboss-shadow: 30 20% 30% / 0.12;
+
+  /* ── Sentinel / L2 battle tokens (parchment) ── */
+  --sentinel: 262 55% 45%;
+  --sentinel-surface: 262 12% 85%;
+  --sentinel-surface-deep: 262 10% 80%;
+  --sentinel-border: 262 25% 65%;
+  --sentinel-text: 262 55% 38%;
+  --sentinel-glow: 262 65% 50%;
+  --sentinel-arena-bg: 262 8% 90%;
+  --sentinel-arena-fg: 262 15% 15%;
 
   --sidebar-background: 35 20% 90%;
   --sidebar-foreground: 30 15% 20%;

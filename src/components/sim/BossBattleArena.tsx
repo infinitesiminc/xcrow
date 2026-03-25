@@ -54,7 +54,7 @@ function PowerBar({ value, max, color, label, side }: {
       <span className="text-[10px] font-bold uppercase tracking-widest" style={{ fontFamily: "'Cinzel', serif", color }}>
         {label}
       </span>
-      <div className="w-28 sm:w-36 h-3 rounded-full overflow-hidden" style={{ background: "hsl(262 30% 12%)", border: "1px solid hsl(262 40% 25%)" }}>
+      <div className="w-28 sm:w-36 h-3 rounded-full overflow-hidden" style={{ background: "hsl(var(--sentinel-surface))", border: "1px solid hsl(var(--sentinel-border) / 0.4)" }}>
         <motion.div
           className="h-full rounded-full"
           animate={{ width: `${pct}%` }}
@@ -261,7 +261,7 @@ export default function BossBattleArena({
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         className="absolute inset-0 flex flex-col overflow-hidden"
-        style={{ background: "radial-gradient(ellipse at center, hsl(262 40% 10%), hsl(0 0% 3%))" }}
+        style={{ background: `radial-gradient(ellipse at center, hsl(var(--sentinel-arena-bg)), hsl(var(--background)))` }}
       >
         <div className="flex-1 overflow-y-auto px-6 py-6 scrollbar-thin">
           <div className="max-w-md mx-auto">
@@ -271,9 +271,9 @@ export default function BossBattleArena({
           transition={{ delay: 0.2, type: "spring", damping: 20 }}
           className="w-full rounded-xl p-6 space-y-5"
           style={{
-            background: "hsl(262 30% 10% / 0.95)",
-            border: "1px solid hsl(262 60% 40% / 0.3)",
-            boxShadow: "0 0 40px hsl(262 80% 55% / 0.1), inset 0 1px 0 hsl(262 60% 40% / 0.15)",
+            background: "hsl(var(--sentinel-surface) / 0.95)",
+            border: "1px solid hsl(var(--sentinel-border) / 0.3)",
+            boxShadow: "0 0 40px hsl(var(--sentinel-glow) / 0.1), inset 0 1px 0 hsl(var(--sentinel-border) / 0.15)",
           }}
         >
           <h3
@@ -288,12 +288,12 @@ export default function BossBattleArena({
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }}
             className="rounded-lg px-3 py-2.5 text-[11px] text-foreground/70 leading-relaxed"
             style={{
-              background: "linear-gradient(135deg, hsl(262 30% 12%), hsl(262 25% 10%))",
-              border: "1px solid hsl(262 60% 40% / 0.2)",
+              background: "linear-gradient(135deg, hsl(var(--sentinel-surface)), hsl(var(--sentinel-surface-deep)))",
+              border: "1px solid hsl(var(--sentinel-border) / 0.2)",
             }}
           >
             <span className="text-[10px] font-bold uppercase tracking-wider block mb-1.5"
-              style={{ color: "hsl(262 80% 70%)", fontFamily: "'Cinzel', serif" }}
+              style={{ color: "hsl(var(--sentinel-text))", fontFamily: "'Cinzel', serif" }}
             >
               🔮 Why this matters
             </span>
@@ -311,10 +311,10 @@ export default function BossBattleArena({
             <motion.div
               initial={{ x: -10, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ delay: 0.5 }}
               className="rounded-lg px-3 py-2.5 space-y-1.5"
-              style={{ background: "hsl(262 30% 14%)", borderLeft: "2px solid hsl(262 80% 55% / 0.5)" }}
+              style={{ background: "hsl(var(--sentinel-surface-deep))", borderLeft: "2px solid hsl(var(--sentinel-glow) / 0.5)" }}
             >
               <span className="text-[10px] font-bold uppercase tracking-wider flex items-center gap-1.5"
-                style={{ color: "hsl(262 80% 70%)", fontFamily: "'Cinzel', serif" }}
+                style={{ color: "hsl(var(--sentinel-text))", fontFamily: "'Cinzel', serif" }}
               >
                 <span className="text-sm">①</span> Read the Oracle's Claim
               </span>
@@ -327,7 +327,7 @@ export default function BossBattleArena({
             <motion.div
               initial={{ x: -10, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ delay: 0.6 }}
               className="rounded-lg px-3 py-2.5 space-y-1.5"
-              style={{ background: "hsl(262 30% 14%)", borderLeft: "2px solid hsl(45 80% 55% / 0.5)" }}
+              style={{ background: "hsl(var(--sentinel-surface-deep))", borderLeft: "2px solid hsl(45 80% 55% / 0.5)" }}
             >
               <span className="text-[10px] font-bold uppercase tracking-wider flex items-center gap-1.5"
                 style={{ color: "hsl(45 80% 60%)", fontFamily: "'Cinzel', serif" }}
@@ -344,8 +344,8 @@ export default function BossBattleArena({
                     key={v.label}
                     className="flex-1 py-1.5 rounded-md text-center text-[10px] font-semibold"
                     style={{
-                      background: v.label === "Critical" ? "hsl(0 60% 55% / 0.15)" : "hsl(262 30% 15%)",
-                      border: `1px solid ${v.label === "Critical" ? "hsl(0 60% 55% / 0.4)" : "hsl(262 60% 40% / 0.15)"}`,
+                      background: v.label === "Critical" ? "hsl(0 60% 55% / 0.15)" : "hsl(var(--sentinel-surface-deep))",
+                      border: `1px solid ${v.label === "Critical" ? "hsl(0 60% 55% / 0.4)" : "hsl(var(--sentinel-border) / 0.15)"}`,
                       color: v.label === "Critical" ? v.color : "hsl(var(--muted-foreground))",
                     }}
                   >
@@ -362,7 +362,7 @@ export default function BossBattleArena({
             <motion.div
               initial={{ x: -10, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ delay: 0.8 }}
               className="rounded-lg px-3 py-2.5 space-y-1.5"
-              style={{ background: "hsl(262 30% 14%)", borderLeft: "2px solid hsl(142 60% 50% / 0.5)" }}
+              style={{ background: "hsl(var(--sentinel-surface-deep))", borderLeft: "2px solid hsl(142 60% 50% / 0.5)" }}
             >
               <span className="text-[10px] font-bold uppercase tracking-wider flex items-center gap-1.5"
                 style={{ color: "hsl(142 60% 50%)", fontFamily: "'Cinzel', serif" }}
@@ -381,7 +381,7 @@ export default function BossBattleArena({
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1 }}
             className="text-[10px] text-center text-muted-foreground"
           >
-            💡 Use <span style={{ color: "hsl(262 80% 70%)" }}>Hints</span> if you're unsure — but they cost points!
+            💡 Use <span style={{ color: "hsl(var(--sentinel-text))" }}>Hints</span> if you're unsure — but they cost points!
           </motion.p>
         </motion.div>
           </div>
@@ -396,8 +396,8 @@ export default function BossBattleArena({
               className="w-full gap-1.5 text-[12px] rounded-xl h-9"
               style={{
                 fontFamily: "'Cinzel', serif",
-                background: "linear-gradient(135deg, hsl(262 80% 55%), hsl(262 60% 45%))",
-                boxShadow: "0 0 20px hsl(262 80% 55% / 0.3)",
+                background: "linear-gradient(135deg, hsl(var(--sentinel-glow)), hsl(var(--sentinel)))",
+                boxShadow: "0 0 20px hsl(var(--sentinel-glow) / 0.3)",
               }}
             >
               <Swords className="h-3.5 w-3.5" /> Begin Battle
@@ -419,7 +419,7 @@ export default function BossBattleArena({
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         className="absolute inset-0 flex flex-col items-center justify-center gap-4 px-6"
-        style={{ background: "radial-gradient(ellipse at center, hsl(262 40% 10%), hsl(0 0% 3%))" }}
+        style={{ background: `radial-gradient(ellipse at center, hsl(var(--sentinel-arena-bg)), hsl(var(--background)))` }}
       >
         {/* Defeated boss (small) */}
         <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
@@ -433,10 +433,10 @@ export default function BossBattleArena({
           transition={{ delay: 0.5, type: "spring" }}
           className="text-center"
         >
-          <h3 className="text-xl font-bold" style={{ fontFamily: "'Cinzel', serif", color: "hsl(45 90% 65%)", textShadow: "0 0 20px hsl(45 90% 55% / 0.4)" }}>
+          <h3 className="text-xl font-bold" style={{ fontFamily: "'Cinzel', serif", color: "hsl(var(--filigree-glow))", textShadow: "0 0 20px hsl(var(--filigree-glow) / 0.4)" }}>
             {titles[tier]}
           </h3>
-          <p className="text-3xl font-bold mt-2" style={{ fontFamily: "'Cinzel', serif", color: "hsl(262 80% 75%)" }}>
+          <p className="text-3xl font-bold mt-2" style={{ fontFamily: "'Cinzel', serif", color: "hsl(var(--sentinel-text))" }}>
             {totalCorrect}/{checkpoints.length}
           </p>
           <p className="text-[11px] text-muted-foreground mt-1">Flaws Detected</p>
@@ -469,7 +469,7 @@ export default function BossBattleArena({
           <Button
             variant="outline" size="sm" onClick={onRestart}
             className="gap-1.5 text-[11px] rounded-xl"
-            style={{ fontFamily: "'Cinzel', serif", borderColor: "hsl(262 60% 40% / 0.3)", color: "hsl(262 80% 70%)" }}
+            style={{ fontFamily: "'Cinzel', serif", borderColor: "hsl(var(--sentinel-border) / 0.3)", color: "hsl(var(--sentinel-text))" }}
           >
             <RotateCcw className="h-3 w-3" /> Retry
           </Button>
@@ -477,7 +477,7 @@ export default function BossBattleArena({
             <Button
               size="sm" onClick={onViewDebrief}
               className="gap-1.5 text-[11px] rounded-xl"
-              style={{ fontFamily: "'Cinzel', serif", background: "linear-gradient(135deg, hsl(262 80% 55%), hsl(262 60% 45%))", boxShadow: "0 0 15px hsl(262 80% 55% / 0.3)" }}
+              style={{ fontFamily: "'Cinzel', serif", background: "linear-gradient(135deg, hsl(var(--sentinel-glow)), hsl(var(--sentinel)))", boxShadow: "0 0 15px hsl(var(--sentinel-glow) / 0.3)" }}
             >
               <Swords className="h-3 w-3" /> Battle Report
             </Button>
@@ -497,11 +497,11 @@ export default function BossBattleArena({
   return (
     <div
       className="absolute inset-0 flex flex-col overflow-hidden"
-      style={{ background: "radial-gradient(ellipse at center, hsl(262 40% 8%), hsl(0 0% 2%))" }}
+      style={{ background: `radial-gradient(ellipse at center, hsl(var(--sentinel-arena-bg)), hsl(var(--background)))` }}
     >
       {/* Job context bar */}
       {(jobTitle || scenarioContext) && (
-        <div className="flex items-center justify-center gap-2 py-1.5 px-4 shrink-0" style={{ borderBottom: "1px solid hsl(262 40% 20% / 0.2)" }}>
+        <div className="flex items-center justify-center gap-2 py-1.5 px-4 shrink-0" style={{ borderBottom: "1px solid hsl(var(--sentinel-border) / 0.2)" }}>
           <span className="text-[10px] text-muted-foreground truncate max-w-md text-center">
             {scenarioContext || (
               <>
@@ -513,7 +513,7 @@ export default function BossBattleArena({
         </div>
       )}
       {/* Top bar — Round counter + Difficulty + Streak */}
-      <div className="flex items-center justify-center gap-3 py-2 px-4 shrink-0" style={{ borderBottom: "1px solid hsl(262 40% 20% / 0.4)" }}>
+      <div className="flex items-center justify-center gap-3 py-2 px-4 shrink-0" style={{ borderBottom: "1px solid hsl(var(--sentinel-border) / 0.4)" }}>
         {/* Difficulty badge */}
         <span className="text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full" style={{
           background: `${cpTier.color.replace(")", " / 0.15)")}`,
@@ -528,15 +528,15 @@ export default function BossBattleArena({
           {checkpoints.map((cp, i) => {
             const done = revealed[cp.id];
             const isCurrent = i === currentStep;
-            let bg = "hsl(262 30% 20%)";
+            let bg = "hsl(var(--sentinel-surface))";
             if (done) bg = verdicts[cp.id] === cp.correctVerdict ? "hsl(142 60% 50%)" : "hsl(0 60% 55%)";
-            else if (isCurrent) bg = "hsl(262 80% 55%)";
+            else if (isCurrent) bg = "hsl(var(--sentinel-glow))";
             return (
               <motion.div
                 key={i}
                 animate={{ scale: isCurrent ? 1.3 : 1 }}
                 className="w-2.5 h-2.5 rotate-45 transition-colors"
-                style={{ background: bg, border: `1px solid ${isCurrent ? "hsl(262 80% 70%)" : "hsl(262 40% 30%)"}` }}
+                style={{ background: bg, border: `1px solid ${isCurrent ? "hsl(var(--sentinel-text))" : "hsl(var(--sentinel-border) / 0.5)"}` }}
               />
             );
           })}
@@ -554,9 +554,9 @@ export default function BossBattleArena({
               exit={{ scale: 0, opacity: 0 }}
               className="text-[9px] font-bold px-2 py-0.5 rounded-full"
               style={{
-                background: streak >= 3 ? "hsl(45 90% 55% / 0.15)" : "hsl(262 80% 55% / 0.15)",
-                border: `1px solid ${streak >= 3 ? "hsl(45 90% 55% / 0.4)" : "hsl(262 80% 55% / 0.3)"}`,
-                color: streak >= 3 ? "hsl(45 90% 65%)" : "hsl(262 80% 70%)",
+                background: streak >= 3 ? "hsl(45 90% 55% / 0.15)" : "hsl(var(--sentinel-glow) / 0.15)",
+                border: `1px solid ${streak >= 3 ? "hsl(45 90% 55% / 0.4)" : "hsl(var(--sentinel-glow) / 0.3)"}`,
+                color: streak >= 3 ? "hsl(45 90% 65%)" : "hsl(var(--sentinel-text))",
                 fontFamily: "'Cinzel', serif",
               }}
             >
@@ -596,7 +596,7 @@ export default function BossBattleArena({
             className="absolute rounded-full pointer-events-none"
             style={{
               width: 2, height: 2,
-              background: "hsl(262 80% 70%)",
+              background: "hsl(var(--sentinel-text))",
               left: `${10 + i * 20}%`,
               top: `${20 + (i * 13) % 60}%`,
             }}
@@ -611,7 +611,7 @@ export default function BossBattleArena({
           animate={{ opacity: [0.03, 0.08, 0.03] }}
           transition={{ duration: 4, repeat: Infinity }}
         >
-          <span className="text-5xl sm:text-7xl font-black" style={{ fontFamily: "'Cinzel', serif", color: "hsl(262 60% 50%)" }}>
+          <span className="text-5xl sm:text-7xl font-black" style={{ fontFamily: "'Cinzel', serif", color: "hsl(var(--sentinel))" }}>
             VS
           </span>
         </motion.div>
@@ -633,23 +633,23 @@ export default function BossBattleArena({
                 transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
                 className="rounded-xl p-4 space-y-3"
                 style={{
-                  background: "hsl(262 30% 10% / 0.9)",
-                  border: "1px solid hsl(262 60% 40% / 0.25)",
-                  boxShadow: "0 0 30px hsl(262 80% 55% / 0.08), inset 0 1px 0 hsl(262 60% 40% / 0.1)",
+                  background: "hsl(var(--sentinel-surface) / 0.9)",
+                  border: "1px solid hsl(var(--sentinel-border) / 0.25)",
+                  boxShadow: "0 0 30px hsl(var(--sentinel-glow) / 0.08), inset 0 1px 0 hsl(var(--sentinel-border) / 0.1)",
                   backdropFilter: "blur(8px)",
                 }}
               >
                 {/* Oracle's Claim */}
                 <div className="rounded-lg px-3 py-2 text-[11px] font-mono relative overflow-hidden"
-                  style={{ background: "hsl(262 30% 14%)", borderLeft: "2px solid hsl(262 80% 55% / 0.5)" }}
+                  style={{ background: "hsl(var(--sentinel-surface-deep))", borderLeft: "2px solid hsl(var(--sentinel-glow) / 0.5)" }}
                 >
                   <motion.div
                     className="absolute left-0 right-0 h-px pointer-events-none"
-                    style={{ background: "linear-gradient(90deg, transparent, hsl(262 80% 70% / 0.3), transparent)" }}
+                    style={{ background: "linear-gradient(90deg, transparent, hsl(var(--sentinel-text) / 0.3), transparent)" }}
                     animate={{ y: ["-100%", "200%"] }}
                     transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
                   />
-                  <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: "hsl(262 80% 70%)", fontFamily: "'Cinzel', serif" }}>
+                  <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: "hsl(var(--sentinel-text))", fontFamily: "'Cinzel', serif" }}>
                     🔮 Oracle:{" "}
                   </span>
                   <span className="text-[12px] text-foreground/80 leading-relaxed">{checkpoint.aiClaim}</span>
@@ -671,7 +671,7 @@ export default function BossBattleArena({
                   <button
                     onClick={() => setShowHint(prev => ({ ...prev, [checkpoint.id]: true }))}
                     className="text-[11px] flex items-center gap-1 hover:brightness-125"
-                    style={{ color: "hsl(262 80% 70%)" }}
+                    style={{ color: "hsl(var(--sentinel-text))" }}
                   >
                     <Sparkles className="h-3 w-3" /> Hint
                   </button>
@@ -706,8 +706,8 @@ export default function BossBattleArena({
                           onClick={() => handleVerdict(checkpoint.id, v)}
                           className="flex-1 py-2 px-2 rounded-lg text-[11px] font-semibold capitalize transition-all"
                           style={{
-                            background: selected ? cfg.bg : "hsl(262 30% 15%)",
-                            border: `1.5px solid ${selected ? cfg.border : "hsl(262 60% 40% / 0.15)"}`,
+                            background: selected ? cfg.bg : "hsl(var(--sentinel-surface-deep))",
+                            border: `1.5px solid ${selected ? cfg.border : "hsl(var(--sentinel-border) / 0.15)"}`,
                             color: selected ? cfg.text : "hsl(var(--muted-foreground))",
                             boxShadow: selected ? cfg.glow : "none",
                           }}
@@ -724,7 +724,7 @@ export default function BossBattleArena({
                   <Button
                     size="sm" onClick={() => handleReveal(checkpoint.id)}
                     className="w-full gap-1.5 text-[11px] rounded-xl h-8"
-                    style={{ fontFamily: "'Cinzel', serif", background: "linear-gradient(135deg, hsl(262 80% 55%), hsl(262 60% 45%))", boxShadow: "0 0 15px hsl(262 80% 55% / 0.3)" }}
+                    style={{ fontFamily: "'Cinzel', serif", background: "linear-gradient(135deg, hsl(var(--sentinel-glow)), hsl(var(--sentinel)))", boxShadow: "0 0 15px hsl(var(--sentinel-glow) / 0.3)" }}
                   >
                     <Eye className="h-3 w-3" /> ⚡ Seal Judgment
                   </Button>
@@ -760,7 +760,7 @@ export default function BossBattleArena({
                     <Button
                       size="sm" onClick={handleNext}
                       className="w-full gap-1.5 text-[11px] rounded-xl h-8"
-                      style={{ fontFamily: "'Cinzel', serif", background: "linear-gradient(135deg, hsl(262 80% 55%), hsl(262 60% 45%))" }}
+                      style={{ fontFamily: "'Cinzel', serif", background: "linear-gradient(135deg, hsl(var(--sentinel-glow)), hsl(var(--sentinel)))" }}
                     >
                       {currentStep < checkpoints.length - 1 ? (
                         <><ChevronRight className="h-3 w-3" /> Next Round ({currentStep + 2}/{checkpoints.length})</>
