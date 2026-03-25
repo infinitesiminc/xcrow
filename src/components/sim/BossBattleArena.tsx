@@ -645,7 +645,7 @@ export default function BossBattleArena({
                 >
                   <motion.div
                     className="absolute left-0 right-0 h-px pointer-events-none"
-                    style={{ background: "linear-gradient(90deg, transparent, hsl(262 80% 70% / 0.3), transparent)" }}
+                    style={{ background: "linear-gradient(90deg, transparent, hsl(var(--sentinel-text) / 0.3), transparent)" }}
                     animate={{ y: ["-100%", "200%"] }}
                     transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
                   />
