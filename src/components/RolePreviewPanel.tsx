@@ -449,11 +449,15 @@ export default function RolePreviewPanel({ role, onClose, edgeContext, kingdomCo
             style={{
               background: "hsl(var(--filigree) / 0.08)",
               border: "1px solid hsl(var(--filigree) / 0.15)",
+              boxShadow: "inset 0 1px 0 hsl(var(--emboss-light))",
             }}
           >
             <div className="flex items-center gap-1.5">
               <Shield className="h-3.5 w-3.5" style={{ color: kingdomContext.tier === "conquered" ? "hsl(45 93% 47%)" : kingdomContext.tier === "fortified" ? "hsl(142 71% 45%)" : kingdomContext.tier === "contested" ? "hsl(var(--primary))" : "hsl(var(--muted-foreground))" }} />
-              <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: kingdomContext.tier === "conquered" ? "hsl(45 93% 47%)" : kingdomContext.tier === "fortified" ? "hsl(142 71% 45%)" : kingdomContext.tier === "contested" ? "hsl(var(--primary))" : "hsl(var(--muted-foreground))" }}>
+              <span className="text-[10px] font-bold uppercase tracking-widest" style={{
+                fontFamily: "'Cinzel', serif",
+                color: kingdomContext.tier === "conquered" ? "hsl(45 93% 47%)" : kingdomContext.tier === "fortified" ? "hsl(142 71% 45%)" : kingdomContext.tier === "contested" ? "hsl(var(--primary))" : "hsl(var(--muted-foreground))"
+              }}>
                 {kingdomContext.tier}
               </span>
             </div>
