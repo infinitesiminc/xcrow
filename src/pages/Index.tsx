@@ -6,7 +6,7 @@ import { motion } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import {
   Map, Sword, Shield, Star, Crown, Sparkles, ArrowRight,
-  Compass, Target, Zap, Trophy, ChevronDown, Users, Swords,
+  Compass, Target, Zap, Trophy, ChevronDown, Users, Swords, BookOpen,
 } from "lucide-react";
 import { useNavigate, Navigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -420,6 +420,14 @@ const Index = () => {
                   );
                 })}
               </svg>
+            </motion.div>
+
+            <motion.div {...fade(0.2)} className="text-center mt-8">
+              <Button size="lg" variant="outline" onClick={() => navigate("/skills")}
+                className="text-sm px-6 font-fantasy">
+                <BookOpen className="h-4 w-4 mr-2" />
+                Browse All 183 Skills
+              </Button>
             </motion.div>
           </div>
         </section>
