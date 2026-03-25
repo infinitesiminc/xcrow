@@ -554,9 +554,9 @@ export default function BossBattleArena({
               exit={{ scale: 0, opacity: 0 }}
               className="text-[9px] font-bold px-2 py-0.5 rounded-full"
               style={{
-                background: streak >= 3 ? "hsl(45 90% 55% / 0.15)" : "hsl(262 80% 55% / 0.15)",
-                border: `1px solid ${streak >= 3 ? "hsl(45 90% 55% / 0.4)" : "hsl(262 80% 55% / 0.3)"}`,
-                color: streak >= 3 ? "hsl(45 90% 65%)" : "hsl(262 80% 70%)",
+                background: streak >= 3 ? "hsl(45 90% 55% / 0.15)" : "hsl(var(--sentinel-glow) / 0.15)",
+                border: `1px solid ${streak >= 3 ? "hsl(45 90% 55% / 0.4)" : "hsl(var(--sentinel-glow) / 0.3)"}`,
+                color: streak >= 3 ? "hsl(45 90% 65%)" : "hsl(var(--sentinel-text))",
                 fontFamily: "'Cinzel', serif",
               }}
             >
