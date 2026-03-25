@@ -271,9 +271,9 @@ export default function BossBattleArena({
           transition={{ delay: 0.2, type: "spring", damping: 20 }}
           className="w-full rounded-xl p-6 space-y-5"
           style={{
-            background: "hsl(262 30% 10% / 0.95)",
-            border: "1px solid hsl(262 60% 40% / 0.3)",
-            boxShadow: "0 0 40px hsl(262 80% 55% / 0.1), inset 0 1px 0 hsl(262 60% 40% / 0.15)",
+            background: "hsl(var(--sentinel-surface) / 0.95)",
+            border: "1px solid hsl(var(--sentinel-border) / 0.3)",
+            boxShadow: "0 0 40px hsl(var(--sentinel-glow) / 0.1), inset 0 1px 0 hsl(var(--sentinel-border) / 0.15)",
           }}
         >
           <h3
