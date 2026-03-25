@@ -504,7 +504,7 @@ export default function RolePreviewPanel({ role, onClose, edgeContext, kingdomCo
               <div>
                 <div className="flex items-center gap-2 mb-3">
                   <Layers className="h-4 w-4 text-primary" />
-                  <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{tasks.length} tasks analyzed</h4>
+                  <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-widest" style={{ fontFamily: "'Cinzel', serif" }}>{tasks.length} Battles Mapped</h4>
                 </div>
 
                 <div className="space-y-2">
