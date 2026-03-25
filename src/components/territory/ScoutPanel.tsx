@@ -56,8 +56,15 @@ interface BrowseJob {
   company_id: string | null;
 }
 
+export interface KingdomContextData {
+  tier?: string;
+  xp?: number;
+  questsCompleted?: number;
+  totalQuests?: number;
+}
+
 interface Props {
-  onOpenRole?: (role: RoleResult) => void;
+  onOpenRole?: (role: RoleResult, kingdomContext?: KingdomContextData) => void;
 }
 
 /* ── Tier Meta ── */
