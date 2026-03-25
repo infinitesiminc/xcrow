@@ -207,12 +207,11 @@ export default function BossCinematicIntro({
                 >
                   Prepare yourself
                 </span>
-                <h3
-                  className="text-xl font-bold"
+              <h3
+                  className="text-xl font-bold text-foreground"
                   style={{
                     fontFamily: "'Cinzel', serif",
-                    color: "hsl(45 90% 65%)",
-                    textShadow: "0 0 16px hsl(45 90% 55% / 0.3)",
+                    textShadow: "0 0 16px hsl(var(--filigree-glow) / 0.3)",
                   }}
                 >
                   {name} awaits

@@ -1338,7 +1338,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                           {[0, 1, 2].map(i => (
                             <motion.span
                               key={i}
-                              className="w-1.5 h-1.5 rounded-full bg-[hsl(262_80%_55%)]"
+                              className="w-1.5 h-1.5 rounded-full bg-primary"
                               animate={{ opacity: [0.2, 1, 0.2] }}
                               transition={{ duration: 1.2, repeat: Infinity, delay: i * 0.3 }}
                             />
