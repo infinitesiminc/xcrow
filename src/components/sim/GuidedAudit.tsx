@@ -601,7 +601,7 @@ export default function GuidedAudit({
                   <stop offset="100%" stopColor="hsl(45 85% 55%)" />
                 </linearGradient>
               </defs>
-              <circle cx="50" cy="50" r="44" fill="none" stroke="hsl(262 30% 18%)" strokeWidth="4" />
+              <circle cx="50" cy="50" r="44" fill="none" stroke="hsl(var(--sentinel-surface-deep))" strokeWidth="4" />
               <motion.circle
                 cx="50" cy="50" r="44" fill="none"
                 stroke="url(#sentinel-ring)"
