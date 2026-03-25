@@ -605,6 +605,11 @@ function KingdomsSubTab({ onOpenRole }: { onOpenRole?: (role: RoleResult) => voi
               company: k.company || null,
               jobId: k.key,
               logo: null, location: null, country: null, workMode: null, seniority: null, augmented: 0, risk: 0,
+            }, {
+              tier: k.tier,
+              xp: k.xp,
+              questsCompleted: k.questsCompleted,
+              totalQuests: k.totalQuests,
             })}
           >
             <div className="flex items-center gap-2.5">
