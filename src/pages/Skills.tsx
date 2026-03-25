@@ -168,6 +168,22 @@ export default function Skills() {
           </div>
         </section>
 
+        {/* ═══ INLINE CTA ═══ */}
+        <section className="px-4 pb-8">
+          <motion.div {...fade(0.1)} className="max-w-5xl mx-auto">
+            <div className="rounded-xl border border-primary/20 p-5 flex flex-col sm:flex-row items-center justify-between gap-4"
+              style={{ background: "hsl(var(--primary) / 0.05)" }}>
+              <div className="flex items-center gap-3">
+                <Sparkles className="h-5 w-5 text-primary shrink-0" />
+                <p className="text-sm text-foreground font-medium">Ready to start mastering these skills? Open your World Map and claim your first territory.</p>
+              </div>
+              <Button size="sm" onClick={() => window.location.href = "/map"} className="shrink-0">
+                Open World Map <ArrowRight className="h-4 w-4 ml-1" />
+              </Button>
+            </div>
+          </motion.div>
+        </section>
+
         {/* ═══ SKILLS GRID ═══ */}
         <section className="px-4 pb-20">
           <div className="max-w-5xl mx-auto">
@@ -181,48 +197,63 @@ export default function Skills() {
                 <p className="text-muted-foreground font-fantasy">No skills found matching your search.</p>
               </div>
             ) : (
-              Array.from(grouped.entries()).map(([category, categorySkills]) => {
+              Array.from(grouped.entries()).map(([category, categorySkills], groupIdx) => {
                 const t = getTerritory(category as FutureSkillCategory);
                 return (
-                  <motion.div key={category} {...fade()} className="mb-12">
-                    {/* Category header */}
-                    <div className="flex items-center gap-3 mb-4">
-                      <TerritoryEmblem category={category as FutureSkillCategory} size={32} />
-                      <div>
-                        <h2 className="font-fantasy text-xl font-bold" style={{ color: t.hsl }}>{t.terrain}</h2>
-                        <p className="text-xs text-muted-foreground">{category} · {categorySkills.length} skills</p>
+                  <div key={category}>
+                    <motion.div {...fade()} className="mb-12">
+                      {/* Category header */}
+                      <div className="flex items-center gap-3 mb-4">
+                        <TerritoryEmblem category={category as FutureSkillCategory} size={32} />
+                        <div>
+                          <h2 className="font-fantasy text-xl font-bold" style={{ color: t.hsl }}>{t.terrain}</h2>
+                          <p className="text-xs text-muted-foreground">{category} · {categorySkills.length} skills</p>
+                        </div>
                       </div>
-                    </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                      {categorySkills.map((skill, i) => (
-                        <motion.div
-                          key={skill.id}
-                          initial={{ opacity: 0, y: 12 }}
-                          whileInView={{ opacity: 1, y: 0 }}
-                          viewport={{ once: true }}
-                          transition={{ duration: 0.3, delay: Math.min(i * 0.03, 0.3) }}
-                          className="rounded-xl border border-border/50 p-4 group hover:border-border transition-colors"
-                          style={{
-                            background: "hsl(var(--card))",
-                            boxShadow: `inset 0 1px 0 hsl(var(--emboss-light))`,
-                          }}
-                        >
-                          <div className="flex items-start gap-3">
-                            <span className="text-[11px] font-mono font-bold px-1.5 py-0.5 rounded-md shrink-0 bg-primary/15 text-primary">
-                              {skill.skill_number != null ? `#${skill.skill_number}` : "—"}
-                            </span>
-                            <div className="flex-1 min-w-0">
-                              <h3 className="font-fantasy text-sm font-bold leading-tight mb-1">{skill.name}</h3>
-                              {skill.description && (
-                                <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2">{skill.description}</p>
-                              )}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                        {categorySkills.map((skill, i) => (
+                          <motion.div
+                            key={skill.id}
+                            initial={{ opacity: 0, y: 12 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            viewport={{ once: true }}
+                            transition={{ duration: 0.3, delay: Math.min(i * 0.03, 0.3) }}
+                            className="rounded-xl border border-border/50 p-4 group hover:border-border transition-colors"
+                            style={{
+                              background: "hsl(var(--card))",
+                              boxShadow: `inset 0 1px 0 hsl(var(--emboss-light))`,
+                            }}
+                          >
+                            <div className="flex items-start gap-3">
+                              <span className="text-[11px] font-mono font-bold px-1.5 py-0.5 rounded-md shrink-0 bg-primary/15 text-primary">
+                                {skill.skill_number != null ? `#${skill.skill_number}` : "—"}
+                              </span>
+                              <div className="flex-1 min-w-0">
+                                <h3 className="font-fantasy text-sm font-bold leading-tight mb-1">{skill.name}</h3>
+                                {skill.description && (
+                                  <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2">{skill.description}</p>
+                                )}
+                              </div>
                             </div>
-                          </div>
-                        </motion.div>
-                      ))}
-                    </div>
-                  </motion.div>
+                          </motion.div>
+                        ))}
+                      </div>
+                    </motion.div>
+
+                    {/* Mid-grid CTA after every 3rd territory */}
+                    {(groupIdx === 2 || groupIdx === 4) && (
+                      <motion.div {...fade()} className="mb-12 text-center py-6 rounded-xl border border-primary/10"
+                        style={{ background: "hsl(var(--secondary) / 0.3)" }}>
+                        <p className="text-sm text-muted-foreground mb-3">
+                          {groupIdx === 2 ? "Feeling inspired? Start conquering these skills now." : "Almost at the end — your territory awaits."}
+                        </p>
+                        <Button variant="outline" size="sm" onClick={() => window.location.href = "/map"}>
+                          <Sparkles className="h-3.5 w-3.5 mr-1.5" /> Go to World Map
+                        </Button>
+                      </motion.div>
+                    )}
+                  </div>
                 );
               })
             )}
