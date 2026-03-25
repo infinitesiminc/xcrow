@@ -288,8 +288,8 @@ export default function BossBattleArena({
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }}
             className="rounded-lg px-3 py-2.5 text-[11px] text-foreground/70 leading-relaxed"
             style={{
-              background: "linear-gradient(135deg, hsl(262 30% 12%), hsl(262 25% 10%))",
-              border: "1px solid hsl(262 60% 40% / 0.2)",
+              background: "linear-gradient(135deg, hsl(var(--sentinel-surface)), hsl(var(--sentinel-surface-deep)))",
+              border: "1px solid hsl(var(--sentinel-border) / 0.2)",
             }}
           >
             <span className="text-[10px] font-bold uppercase tracking-wider block mb-1.5"
