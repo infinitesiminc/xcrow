@@ -1022,7 +1022,7 @@ export default function GuidedAudit({
                    className="w-full gap-1.5 text-[13px] rounded-xl h-9"
                   style={{
                     fontFamily: "'Cinzel', serif",
-                    background: "linear-gradient(135deg, hsl(262 80% 55%), hsl(262 60% 45%))",
+                    background: "linear-gradient(135deg, hsl(var(--sentinel-glow)), hsl(var(--sentinel)))",
                   }}
                 >
                   {currentStep < checkpoints.length - 1 ? (
