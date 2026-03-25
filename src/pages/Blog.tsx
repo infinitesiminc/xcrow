@@ -4,6 +4,7 @@
 import { motion } from "framer-motion";
 import SEOHead from "@/components/SEOHead";
 import { ArrowRight, Scroll } from "lucide-react";
+import { Link } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
@@ -22,6 +23,13 @@ const CATEGORIES: Record<string, { bg: string; text: string }> = {
 };
 
 const ARTICLES = [
+  {
+    title: "Why the 183 Skills Are Critical for Everyone",
+    excerpt: "AI isn't replacing jobs — it's replacing tasks. The 183 future skills are the new literacy. Here's why they matter for every professional, student, and leader.",
+    date: "Mar 2026",
+    category: "Intel",
+    href: "/blog/why-183-skills",
+  },
   {
     title: "Which Kingdoms Are Most Exposed to AI? A Task-Level Analysis",
     excerpt: "We analyzed 33,000+ quest clusters to map AI exposure across industries. Here's what the data shows about the future of work.",
@@ -70,6 +78,8 @@ export default function Blog() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
               {ARTICLES.map((article, i) => {
                 const cat = CATEGORIES[article.category] || CATEGORIES["Intel"];
+                const Wrapper = article.href ? Link : "div";
+                const wrapperProps = article.href ? { to: article.href } : {};
                 return (
                   <motion.article
                     key={article.title}
@@ -81,19 +91,21 @@ export default function Blog() {
                       boxShadow: "inset 0 1px 0 hsl(var(--emboss-light))",
                     }}
                   >
-                    <div className="flex items-center gap-2 mb-3">
-                      <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${cat.bg} ${cat.text}`}>
-                        {article.category}
+                    <Wrapper {...wrapperProps as any} className="block no-underline text-inherit">
+                      <div className="flex items-center gap-2 mb-3">
+                        <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${cat.bg} ${cat.text}`}>
+                          {article.category}
+                        </span>
+                        <span className="text-xs text-muted-foreground">{article.date}</span>
+                      </div>
+                      <h2 className="text-lg font-bold mb-2 group-hover:text-[hsl(var(--filigree-glow))] transition-colors leading-snug">
+                        {article.title}
+                      </h2>
+                      <p className="text-sm text-muted-foreground leading-relaxed mb-4">{article.excerpt}</p>
+                      <span className="text-sm font-medium text-[hsl(var(--filigree-glow))] inline-flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        Read scroll <ArrowRight className="h-3 w-3" />
                       </span>
-                      <span className="text-xs text-muted-foreground">{article.date}</span>
-                    </div>
-                    <h2 className="text-lg font-bold mb-2 group-hover:text-[hsl(var(--filigree-glow))] transition-colors leading-snug">
-                      {article.title}
-                    </h2>
-                    <p className="text-sm text-muted-foreground leading-relaxed mb-4">{article.excerpt}</p>
-                    <span className="text-sm font-medium text-[hsl(var(--filigree-glow))] inline-flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                      Read scroll <ArrowRight className="h-3 w-3" />
-                    </span>
+                    </Wrapper>
                   </motion.article>
                 );
               })}
