@@ -578,7 +578,9 @@ function KingdomsSubTab({ onOpenRole }: { onOpenRole?: (role: RoleResult) => voi
             }}
             onClick={() => onOpenRole?.({
               title: k.title,
-              company: k.company || undefined,
+              company: k.company || null,
+              jobId: k.key,
+              logo: null, location: null, country: null, workMode: null, seniority: null, augmented: 0, risk: 0,
             })}
           >
             <div className="flex items-center gap-2.5">
