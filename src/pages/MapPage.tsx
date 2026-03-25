@@ -341,14 +341,7 @@ const MapPage = () => {
               }}
             />
           ) : activeTab === "scout" && isSignedIn ? (
-            <ScoutPanel />
-          ) : activeTab === "roles" && isSignedIn ? (
-            <MyRolesPanel
-              onSelectRole={(role) => { setSelectedRole(role); setActiveTab("table"); }}
-              onAskChat={(prompt) => { setChatDockOpen(true); chatSendMessage(prompt); }}
-              onTabChange={setMyRolesTab}
-              onLaunchSim={handleLaunchSim}
-            />
+            <ScoutPanel onOpenRole={(role) => setSelectedRole(role)} />
           ) : activeTab === "codex" && isSignedIn ? (
             <CodexPanel />
           ) : activeTab === "allies" && isSignedIn ? (
