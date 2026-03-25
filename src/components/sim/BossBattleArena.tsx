@@ -381,7 +381,7 @@ export default function BossBattleArena({
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1 }}
             className="text-[10px] text-center text-muted-foreground"
           >
-            💡 Use <span style={{ color: "hsl(262 80% 70%)" }}>Hints</span> if you're unsure — but they cost points!
+            💡 Use <span style={{ color: "hsl(var(--sentinel-text))" }}>Hints</span> if you're unsure — but they cost points!
           </motion.p>
         </motion.div>
           </div>
