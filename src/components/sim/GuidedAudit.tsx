@@ -803,9 +803,9 @@ export default function GuidedAudit({
       <div
         className="rounded-lg px-3.5 py-2.5 text-[13px] font-mono relative overflow-hidden"
         style={{
-          background: "hsl(262 30% 12%)",
-          border: "1px solid hsl(262 60% 40% / 0.2)",
-          borderLeft: "3px solid hsl(262 80% 55% / 0.5)",
+          background: "hsl(var(--sentinel-surface))",
+          border: "1px solid hsl(var(--sentinel-border) / 0.2)",
+          borderLeft: "3px solid hsl(var(--sentinel-glow) / 0.5)",
           boxShadow: "inset 0 1px 0 hsl(var(--emboss-light))",
         }}
       >
