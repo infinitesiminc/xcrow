@@ -977,8 +977,8 @@ export default function GuidedAudit({
                   <div
                     className="rounded-lg p-3"
                     style={{
-                      background: "hsl(262 30% 16%)",
-                      border: "1px solid hsl(262 60% 40% / 0.12)",
+                      background: "hsl(var(--sentinel-surface-deep))",
+                      border: "1px solid hsl(var(--sentinel-border) / 0.12)",
                       boxShadow: "0 0 8px hsl(38 65% 55% / 0.05)",
                     }}
                   >
