@@ -13,6 +13,7 @@ import { TERRITORIES, getTerritory } from "@/lib/territory-colors";
 import TerritoryEmblem from "@/components/TerritoryEmblem";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import SEOHead from "@/components/SEOHead";
 import CinematicHeroSlideshow from "@/components/CinematicHeroSlideshow";
 import type { FutureSkillCategory } from "@/hooks/use-future-skills";
 
@@ -81,6 +82,7 @@ export default function Skills() {
 
   return (
     <>
+      <SEOHead title="183 AI-Era Skills Codex" description="Explore 183 future skills across 7 territories. The complete catalogue of AI-era capabilities to master." path="/skills" />
       <Navbar />
       <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
 

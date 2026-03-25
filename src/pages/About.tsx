@@ -3,6 +3,7 @@
  * Employability Crisis → Evidence → Why It's Getting Worse → Why Fixes Fail → Solution → Proof → CTA
  */
 import { useRef } from "react";
+import SEOHead from "@/components/SEOHead";
 import founderImg from "@/assets/founder-jackson.png";
 import { motion, useInView } from "framer-motion";
 import xcrowLogo from "@/assets/xcrow-logo.webp";
@@ -94,6 +95,7 @@ export default function About() {
 
   return (
     <>
+      <SEOHead title="About" description="Why 183 skills matter and how Xcrow.ai helps students and professionals get AI-ready through gamified skill building." path="/about" />
       <Navbar />
       <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
 

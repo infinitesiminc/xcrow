@@ -3,6 +3,7 @@
  * Narrative: What are they, why they matter, how the engine helps you acquire them.
  */
 import { motion } from "framer-motion";
+import SEOHead from "@/components/SEOHead";
 import { useNavigate } from "react-router-dom";
 import {
   ArrowRight, Play, Sparkles, Search, Zap, BookOpen,
@@ -139,6 +140,7 @@ export default function HowItWorks() {
 
   return (
     <>
+      <SEOHead title="How It Works" description="Discover the 183 AI-era skills, see how our engine maps your gaps, and level up through quest-based simulations." path="/how-it-works" />
       <Navbar />
       <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
 
