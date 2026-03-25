@@ -628,7 +628,7 @@ export default function GuidedAudit({
             </div>
           </motion.div>
 
-          <h3 className="text-base font-bold mt-3" style={{ fontFamily: "'Cinzel', serif", color: "hsl(262 80% 70%)" }}>
+          <h3 className="text-base font-bold mt-3" style={{ fontFamily: "'Cinzel', serif", color: "hsl(var(--sentinel-text))" }}>
             {titles[tier]}
           </h3>
           <p className="text-[13px] text-muted-foreground mt-1 max-w-sm mx-auto leading-relaxed">{subtitles[tier]}</p>
