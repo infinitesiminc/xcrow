@@ -42,7 +42,7 @@ export default function BossCinematicIntro({
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       style={{
-        background: `radial-gradient(ellipse at center, hsl(${hue} 40% 8%), hsl(0 0% 2%))`,
+        background: `radial-gradient(ellipse at center, hsl(var(--sentinel-arena-bg)), hsl(var(--background)))`,
       }}
     >
       {/* Ambient particles — colored by boss hue */}
@@ -88,11 +88,10 @@ export default function BossCinematicIntro({
                 Boss Battle
               </span>
               <h2
-                className="text-2xl font-bold"
+                className="text-2xl font-bold text-foreground"
                 style={{
                   fontFamily: "'Cinzel', serif",
-                  color: "hsl(45 90% 65%)",
-                  textShadow: "0 0 20px hsl(45 90% 55% / 0.4)",
+                  textShadow: "0 0 20px hsl(var(--filigree-glow) / 0.4)",
                 }}
               >
                 {skillName}
@@ -173,11 +172,10 @@ export default function BossCinematicIntro({
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.6 }}
-                className="text-lg font-bold"
+                className="text-lg font-bold text-foreground"
                 style={{
                   fontFamily: "'Cinzel', serif",
-                  color: `hsl(${hue > 30 ? 0 : hue} 70% 60%)`,
-                  textShadow: `0 0 12px hsl(${hue} 70% 50% / 0.4)`,
+                  textShadow: `0 0 12px hsl(var(--primary) / 0.4)`,
                 }}
               >
                 {name}
@@ -209,12 +207,11 @@ export default function BossCinematicIntro({
                 >
                   Prepare yourself
                 </span>
-                <h3
-                  className="text-xl font-bold"
+              <h3
+                  className="text-xl font-bold text-foreground"
                   style={{
                     fontFamily: "'Cinzel', serif",
-                    color: "hsl(45 90% 65%)",
-                    textShadow: "0 0 16px hsl(45 90% 55% / 0.3)",
+                    textShadow: "0 0 16px hsl(var(--filigree-glow) / 0.3)",
                   }}
                 >
                   {name} awaits
