@@ -596,7 +596,7 @@ export default function BossBattleArena({
             className="absolute rounded-full pointer-events-none"
             style={{
               width: 2, height: 2,
-              background: "hsl(262 80% 70%)",
+              background: "hsl(var(--sentinel-text))",
               left: `${10 + i * 20}%`,
               top: `${20 + (i * 13) % 60}%`,
             }}
