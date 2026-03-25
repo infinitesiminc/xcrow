@@ -760,7 +760,7 @@ export default function BossBattleArena({
                     <Button
                       size="sm" onClick={handleNext}
                       className="w-full gap-1.5 text-[11px] rounded-xl h-8"
-                      style={{ fontFamily: "'Cinzel', serif", background: "linear-gradient(135deg, hsl(262 80% 55%), hsl(262 60% 45%))" }}
+                      style={{ fontFamily: "'Cinzel', serif", background: "linear-gradient(135deg, hsl(var(--sentinel-glow)), hsl(var(--sentinel)))" }}
                     >
                       {currentStep < checkpoints.length - 1 ? (
                         <><ChevronRight className="h-3 w-3" /> Next Round ({currentStep + 2}/{checkpoints.length})</>
