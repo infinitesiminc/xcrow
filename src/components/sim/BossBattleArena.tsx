@@ -633,9 +633,9 @@ export default function BossBattleArena({
                 transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
                 className="rounded-xl p-4 space-y-3"
                 style={{
-                  background: "hsl(262 30% 10% / 0.9)",
-                  border: "1px solid hsl(262 60% 40% / 0.25)",
-                  boxShadow: "0 0 30px hsl(262 80% 55% / 0.08), inset 0 1px 0 hsl(262 60% 40% / 0.1)",
+                  background: "hsl(var(--sentinel-surface) / 0.9)",
+                  border: "1px solid hsl(var(--sentinel-border) / 0.25)",
+                  boxShadow: "0 0 30px hsl(var(--sentinel-glow) / 0.08), inset 0 1px 0 hsl(var(--sentinel-border) / 0.1)",
                   backdropFilter: "blur(8px)",
                 }}
               >
