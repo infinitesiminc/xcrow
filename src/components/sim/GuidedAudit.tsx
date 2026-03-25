@@ -775,7 +775,7 @@ export default function GuidedAudit({
               className="h-8 w-8 rounded-lg flex items-center justify-center"
               style={{ background: "hsl(var(--sentinel) / 0.15)", border: "1px solid hsl(var(--sentinel) / 0.25)" }}
             >
-              <Eye className="h-4 w-4" style={{ color: "hsl(262 80% 70%)" }} />
+              <Eye className="h-4 w-4" style={{ color: "hsl(var(--sentinel-text))" }} />
             </div>
             <div>
               <span
