@@ -641,7 +641,7 @@ export default function BossBattleArena({
               >
                 {/* Oracle's Claim */}
                 <div className="rounded-lg px-3 py-2 text-[11px] font-mono relative overflow-hidden"
-                  style={{ background: "hsl(262 30% 14%)", borderLeft: "2px solid hsl(262 80% 55% / 0.5)" }}
+                  style={{ background: "hsl(var(--sentinel-surface-deep))", borderLeft: "2px solid hsl(var(--sentinel-glow) / 0.5)" }}
                 >
                   <motion.div
                     className="absolute left-0 right-0 h-px pointer-events-none"
