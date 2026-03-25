@@ -1,4 +1,4 @@
-/** ScoutPanel — Act 2: Discover jobs ranked by composite match score. Pure discovery — no simulation launching. */
+/**
  * ScoutPanel — Act 2: Discover jobs ranked by composite match score.
  * Pure discovery — no simulation launching from this view.
  */
