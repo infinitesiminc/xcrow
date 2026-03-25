@@ -1316,7 +1316,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                           initial={{ opacity: 0, letterSpacing: "0.3em" }}
                           animate={{ opacity: [0.5, 1, 0.5], letterSpacing: ["0.3em", "0.15em", "0.3em"] }}
                           transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-                          className="text-[10px] uppercase tracking-[0.3em] text-[hsl(262_80%_70%)]"
+                          className="text-[10px] uppercase tracking-[0.3em] text-primary"
                         >
                           Boss Drop Incoming
                         </motion.p>
