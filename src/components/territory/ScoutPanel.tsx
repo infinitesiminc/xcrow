@@ -3,6 +3,7 @@
  * Pure discovery — no simulation launching from this view.
  */
 import { useState, useEffect, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Compass, TrendingUp, MapPin, Building2, Search, Loader2, Shield, Zap, Users, ChevronDown, Star, Bookmark } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -15,6 +16,7 @@ type SortMode = "match" | "skills" | "recent";
 
 export default function ScoutPanel() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [candidates, setCandidates] = useState<JobCandidate[]>([]);
   const [search, setSearch] = useState("");
@@ -289,7 +291,7 @@ function JobCard({
                   className="text-[11px] h-7 flex-1 font-fantasy"
                   onClick={(e) => {
                     e.stopPropagation();
-                    // TODO: Navigate to role detail or add to campaign
+                    navigate(`/analysis?title=${encodeURIComponent(job.title)}${job.company ? `&company=${encodeURIComponent(job.company)}` : ""}`);
                   }}
                 >
                   <Star className="h-3 w-3 mr-1" />
