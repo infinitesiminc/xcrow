@@ -654,7 +654,7 @@ export default function RolePreviewPanel({ role, onClose, edgeContext, kingdomCo
         <button
           onClick={() => {
             onClose();
-            navigate(`/role/${encodeURIComponent(role.title)}${role.company ? `?company=${encodeURIComponent(role.company)}` : ""}`);
+            navigate(`/analysis?title=${encodeURIComponent(role.title)}${role.company ? `&company=${encodeURIComponent(role.company)}` : ""}`);
           }}
           className="flex-1 flex items-center justify-center gap-2 rounded-xl bg-primary text-primary-foreground py-2 text-sm font-medium hover:bg-primary/90 transition-colors"
         >
