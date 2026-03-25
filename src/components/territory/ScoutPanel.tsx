@@ -16,6 +16,7 @@ type SortMode = "match" | "skills" | "recent";
 
 export default function ScoutPanel() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [candidates, setCandidates] = useState<JobCandidate[]>([]);
   const [search, setSearch] = useState("");
