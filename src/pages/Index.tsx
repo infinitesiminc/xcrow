@@ -222,7 +222,7 @@ const Index = () => {
                   icon: Compass,
                   step: "01",
                   title: "Scout Kingdoms",
-                  desc: "Explore 21,000+ real roles across every industry. See which skills each kingdom demands and where AI is reshaping the battlefield.",
+                  desc: "Explore 100,000+ real roles across every industry. See which skills each kingdom demands and where AI is reshaping the battlefield.",
                   color: "var(--territory-analytical)",
                   img: simBriefing,
                 },
