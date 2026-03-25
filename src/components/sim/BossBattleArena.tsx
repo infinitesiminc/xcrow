@@ -536,7 +536,7 @@ export default function BossBattleArena({
                 key={i}
                 animate={{ scale: isCurrent ? 1.3 : 1 }}
                 className="w-2.5 h-2.5 rotate-45 transition-colors"
-                style={{ background: bg, border: `1px solid ${isCurrent ? "hsl(262 80% 70%)" : "hsl(262 40% 30%)"}` }}
+                style={{ background: bg, border: `1px solid ${isCurrent ? "hsl(var(--sentinel-text))" : "hsl(var(--sentinel-border) / 0.5)"}` }}
               />
             );
           })}
