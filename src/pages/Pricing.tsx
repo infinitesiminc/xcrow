@@ -2,6 +2,7 @@
  * /pricing — The Armory: Individuals vs Institutions
  */
 import { useState } from "react";
+import SEOHead from "@/components/SEOHead";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
