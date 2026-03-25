@@ -15,227 +15,183 @@ serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
 
-    // Auth guard — superadmin only
-    const authHeader = req.headers.get("Authorization");
-    if (!authHeader?.startsWith("Bearer ")) {
-      return json({ error: "Unauthorized" }, 401);
-    }
-    const token = authHeader.replace("Bearer ", "");
-    const { data: userData } = await sb.auth.getUser(token);
-    if (!userData?.user) return json({ error: "Unauthorized" }, 401);
-    const { data: isAdmin } = await sb.rpc("is_superadmin", { _user_id: userData.user.id });
-    if (!isAdmin) return json({ error: "Forbidden" }, 403);
+    const { phase } = await req.json().catch(() => ({ phase: "all" }));
+    console.log(`Running phase: ${phase}`);
 
-    console.log("Starting canonical links backfill...");
-
-    // Step 1: Build canonical lookup from DB
-    const { data: canonSkills, error: csErr } = await sb
+    // Load canonical skills
+    const { data: canonSkills } = await sb
       .from("canonical_future_skills")
-      .select("id, name, aliases");
-    if (csErr) throw csErr;
+      .select("id, name, aliases, category");
+    if (!canonSkills) throw new Error("No canonical skills");
 
-    console.log(`Loaded ${canonSkills.length} canonical skills`);
-
-    // Build a name→id map (lowercase) for exact + alias matching
-    const nameToId = new Map<string, string>();
+    const nameToSkill = new Map<string, { id: string; name: string; category: string }>();
     for (const cs of canonSkills) {
-      nameToId.set(cs.name.toLowerCase().trim(), cs.id);
-      if (cs.aliases && Array.isArray(cs.aliases)) {
-        for (const alias of cs.aliases) {
-          if (alias) nameToId.set(alias.toLowerCase().trim(), cs.id);
+      nameToSkill.set(cs.name.toLowerCase().trim(), cs);
+      if (cs.aliases) {
+        for (const a of cs.aliases) {
+          if (a) nameToSkill.set(a.toLowerCase().trim(), cs);
         }
       }
     }
 
-    // Step 2: Link unlinked job_future_skills using exact name match
-    let exactLinked = 0;
-    const { data: unlinked, error: ulErr } = await sb
-      .from("job_future_skills")
-      .select("id, skill_name")
-      .is("canonical_skill_id", null)
-      .limit(10000);
-    if (ulErr) throw ulErr;
+    const results: Record<string, number> = {};
 
-    const batchUpdates: { id: string; canonical_skill_id: string }[] = [];
-    for (const row of unlinked) {
-      const norm = row.skill_name.toLowerCase().trim();
-      const cid = nameToId.get(norm);
-      if (cid) {
-        batchUpdates.push({ id: row.id, canonical_skill_id: cid });
-      }
-    }
-
-    // Execute updates in batches
-    const BATCH = 200;
-    for (let i = 0; i < batchUpdates.length; i += BATCH) {
-      const batch = batchUpdates.slice(i, i + BATCH);
-      for (const item of batch) {
-        await sb
+    // Phase 1: Exact-match unlinked job_future_skills
+    if (phase === "all" || phase === "exact") {
+      let linked = 0;
+      let offset = 0;
+      const PAGE = 2000;
+      
+      while (true) {
+        const { data: unlinked } = await sb
           .from("job_future_skills")
-          .update({ canonical_skill_id: item.canonical_skill_id })
-          .eq("id", item.id);
-        exactLinked++;
+          .select("id, skill_name")
+          .is("canonical_skill_id", null)
+          .range(offset, offset + PAGE - 1);
+        
+        if (!unlinked || unlinked.length === 0) break;
+        
+        for (const row of unlinked) {
+          const match = nameToSkill.get(row.skill_name.toLowerCase().trim());
+          if (match) {
+            await sb.from("job_future_skills")
+              .update({ canonical_skill_id: match.id })
+              .eq("id", row.id);
+            linked++;
+          }
+        }
+        
+        if (unlinked.length < PAGE) break;
+        offset += PAGE;
       }
-    }
-    console.log(`Step 2: Exact-matched ${exactLinked} job_future_skills`);
-
-    // Step 3: Expand coverage via job_task_clusters.skill_names → canonical fuzzy match
-    // Get distinct skill_names from job_task_clusters
-    const { data: clusters, error: clErr } = await sb
-      .from("job_task_clusters")
-      .select("job_id, skill_names")
-      .not("skill_names", "is", null)
-      .limit(10000);
-    if (clErr) throw clErr;
-
-    // For each cluster skill_name, try to match to a canonical skill
-    // Use exact match first, then substring containment
-    const canonNames = canonSkills.map(cs => ({ id: cs.id, name: cs.name, nameLower: cs.name.toLowerCase().trim() }));
-    
-    let fuzzyLinked = 0;
-    const jobCanonicalMap = new Map<string, Set<string>>(); // job_id → Set<canonical_skill_id>
-
-    for (const cluster of clusters) {
-      if (!cluster.skill_names || !Array.isArray(cluster.skill_names)) continue;
       
-      for (const sn of cluster.skill_names) {
-        if (!sn) continue;
-        const snLower = sn.toLowerCase().trim();
-        
-        // Try exact match first
-        let matchedId = nameToId.get(snLower);
-        
-        // Try containment match (canonical name is contained in skill_name or vice versa)
-        if (!matchedId) {
-          for (const cn of canonNames) {
-            if (snLower.includes(cn.nameLower) || cn.nameLower.includes(snLower)) {
-              // Only match if the shorter string is at least 60% of the longer
-              const ratio = Math.min(snLower.length, cn.nameLower.length) / Math.max(snLower.length, cn.nameLower.length);
-              if (ratio >= 0.5) {
-                matchedId = cn.id;
-                break;
-              }
-            }
-          }
-        }
-        
-        if (matchedId) {
-          const key = `${cluster.job_id}:${matchedId}`;
-          if (!jobCanonicalMap.has(key)) {
-            jobCanonicalMap.set(key, new Set());
-            // Track for counting
-            if (!jobCanonicalMap.has(matchedId)) {
-              jobCanonicalMap.set(matchedId, new Set());
-            }
-            (jobCanonicalMap.get(matchedId) as Set<string>).add(cluster.job_id);
-          }
-        }
-      }
+      results.exact_linked = linked;
+      console.log(`Exact-matched: ${linked}`);
     }
 
-    // Now insert missing job_future_skills links for cluster-matched skills
-    // First check what links already exist
-    const existingLinks = new Set<string>();
-    const { data: existing } = await sb
-      .from("job_future_skills")
-      .select("job_id, canonical_skill_id")
-      .not("canonical_skill_id", "is", null)
-      .limit(50000);
-    
-    if (existing) {
-      for (const e of existing) {
-        existingLinks.add(`${e.job_id}:${e.canonical_skill_id}`);
-      }
-    }
-
-    // Insert new links
-    const newLinks: any[] = [];
-    for (const cluster of clusters) {
-      if (!cluster.skill_names || !Array.isArray(cluster.skill_names)) continue;
+    // Phase 2: Expand from job_task_clusters
+    if (phase === "all" || phase === "expand") {
+      let inserted = 0;
+      let offset = 0;
+      const PAGE = 1000;
       
-      for (const sn of cluster.skill_names) {
-        if (!sn) continue;
-        const snLower = sn.toLowerCase().trim();
+      // Get existing links to avoid duplicates
+      const existingLinks = new Set<string>();
+      let eo = 0;
+      while (true) {
+        const { data: ex } = await sb
+          .from("job_future_skills")
+          .select("job_id, canonical_skill_id")
+          .not("canonical_skill_id", "is", null)
+          .range(eo, eo + 5000 - 1);
+        if (!ex || ex.length === 0) break;
+        for (const e of ex) existingLinks.add(`${e.job_id}:${e.canonical_skill_id}`);
+        if (ex.length < 5000) break;
+        eo += 5000;
+      }
+      console.log(`Existing links: ${existingLinks.size}`);
+
+      while (true) {
+        const { data: clusters } = await sb
+          .from("job_task_clusters")
+          .select("job_id, skill_names")
+          .not("skill_names", "is", null)
+          .range(offset, offset + PAGE - 1);
         
-        let matchedId = nameToId.get(snLower);
-        if (!matchedId) {
-          for (const cn of canonNames) {
-            if (snLower.includes(cn.nameLower) || cn.nameLower.includes(snLower)) {
-              const ratio = Math.min(snLower.length, cn.nameLower.length) / Math.max(snLower.length, cn.nameLower.length);
-              if (ratio >= 0.5) {
-                matchedId = cn.id;
-                break;
+        if (!clusters || clusters.length === 0) break;
+        
+        const batch: any[] = [];
+        
+        for (const c of clusters) {
+          if (!c.skill_names) continue;
+          for (const sn of c.skill_names) {
+            if (!sn) continue;
+            const snLow = sn.toLowerCase().trim();
+            const match = nameToSkill.get(snLow);
+            if (!match) continue;
+            
+            const key = `${c.job_id}:${match.id}`;
+            if (existingLinks.has(key)) continue;
+            existingLinks.add(key);
+            
+            batch.push({
+              job_id: c.job_id,
+              canonical_skill_id: match.id,
+              skill_id: match.id,
+              skill_name: match.name,
+              category: match.category,
+              cluster_name: sn,
+            });
+          }
+        }
+        
+        // Insert batch
+        if (batch.length > 0) {
+          for (let i = 0; i < batch.length; i += 200) {
+            const sub = batch.slice(i, i + 200);
+            const { error } = await sb.from("job_future_skills").insert(sub);
+            if (error) {
+              console.error(`Batch error: ${error.message}`);
+              // Try individually for this sub-batch
+              for (const item of sub) {
+                const { error: se } = await sb.from("job_future_skills").insert(item);
+                if (!se) inserted++;
               }
+            } else {
+              inserted += sub.length;
             }
           }
         }
         
-        if (matchedId && !existingLinks.has(`${cluster.job_id}:${matchedId}`)) {
-          existingLinks.add(`${cluster.job_id}:${matchedId}`);
-          const matchedSkill = canonSkills.find(cs => cs.id === matchedId);
-          newLinks.push({
-            job_id: cluster.job_id,
-            canonical_skill_id: matchedId,
-            skill_id: matchedId,
-            skill_name: matchedSkill?.name || sn,
-            category: "Technical",
-            cluster_name: sn,
-          });
+        if (clusters.length < PAGE) break;
+        offset += PAGE;
+      }
+      
+      results.expanded_links = inserted;
+      console.log(`Expanded: ${inserted}`);
+    }
+
+    // Phase 3: Recalculate counters
+    if (phase === "all" || phase === "counters") {
+      const skillStats = new Map<string, { demand: number; jobs: Set<string> }>();
+      let offset = 0;
+      const PAGE = 5000;
+      
+      while (true) {
+        const { data: rows } = await sb
+          .from("job_future_skills")
+          .select("canonical_skill_id, job_id")
+          .not("canonical_skill_id", "is", null)
+          .range(offset, offset + PAGE - 1);
+        
+        if (!rows || rows.length === 0) break;
+        
+        for (const r of rows) {
+          if (!skillStats.has(r.canonical_skill_id)) {
+            skillStats.set(r.canonical_skill_id, { demand: 0, jobs: new Set() });
+          }
+          const s = skillStats.get(r.canonical_skill_id)!;
+          s.demand++;
+          if (r.job_id) s.jobs.add(r.job_id);
         }
+        
+        if (rows.length < PAGE) break;
+        offset += PAGE;
       }
-    }
-
-    // Insert in batches
-    for (let i = 0; i < newLinks.length; i += BATCH) {
-      const batch = newLinks.slice(i, i + BATCH);
-      const { error: insertErr } = await sb.from("job_future_skills").insert(batch);
-      if (insertErr) {
-        console.error(`Insert batch ${i} error:`, insertErr.message);
-        // Try individually
-        for (const item of batch) {
-          const { error: sErr } = await sb.from("job_future_skills").insert(item);
-          if (!sErr) fuzzyLinked++;
-        }
-      } else {
-        fuzzyLinked += batch.length;
+      
+      let updated = 0;
+      for (const [sid, stats] of skillStats) {
+        await sb.from("canonical_future_skills")
+          .update({ demand_count: stats.demand, job_count: stats.jobs.size })
+          .eq("id", sid);
+        updated++;
       }
-    }
-    console.log(`Step 3: Fuzzy-inserted ${fuzzyLinked} new job_future_skills links`);
-
-    // Step 4: Recalculate job_count and demand_count for all canonical skills
-    const { data: counts, error: cntErr } = await sb
-      .from("job_future_skills")
-      .select("canonical_skill_id, job_id")
-      .not("canonical_skill_id", "is", null);
-    
-    if (cntErr) throw cntErr;
-
-    const skillStats = new Map<string, { demand: number; jobs: Set<string> }>();
-    for (const row of counts) {
-      if (!skillStats.has(row.canonical_skill_id)) {
-        skillStats.set(row.canonical_skill_id, { demand: 0, jobs: new Set() });
-      }
-      const s = skillStats.get(row.canonical_skill_id)!;
-      s.demand++;
-      if (row.job_id) s.jobs.add(row.job_id);
+      
+      results.counters_updated = updated;
+      console.log(`Counters updated: ${updated}`);
     }
 
-    let countersUpdated = 0;
-    for (const [skillId, stats] of skillStats) {
-      const { error: upErr } = await sb
-        .from("canonical_future_skills")
-        .update({ demand_count: stats.demand, job_count: stats.jobs.size })
-        .eq("id", skillId);
-      if (!upErr) countersUpdated++;
-    }
-    console.log(`Step 4: Updated counters for ${countersUpdated} canonical skills`);
-
-    return json({
-      exact_linked: exactLinked,
-      fuzzy_new_links: fuzzyLinked,
-      counters_updated: countersUpdated,
-      total_canonical: canonSkills.length,
-    });
+    return json(results);
   } catch (e) {
     console.error("Error:", e);
     return json({ error: e instanceof Error ? e.message : "Unknown" }, 500);
