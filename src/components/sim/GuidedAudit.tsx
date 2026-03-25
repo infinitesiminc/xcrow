@@ -582,7 +582,7 @@ export default function GuidedAudit({
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.3 }}
               className="mx-auto mb-3 w-20 h-20 rounded-full overflow-hidden"
-              style={{ border: "2px solid hsl(262 80% 55% / 0.5)", boxShadow: "0 0 20px hsl(262 80% 55% / 0.3)" }}
+              style={{ border: "2px solid hsl(var(--sentinel-glow) / 0.5)", boxShadow: "0 0 20px hsl(var(--sentinel-glow) / 0.3)" }}
             >
               <img src={completionImageUrl} alt="Sentinel portrait" className="w-full h-full object-cover" />
             </motion.div>
