@@ -7,7 +7,7 @@ import type { FutureSkill } from "@/hooks/use-future-skills";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { X, Swords, ScrollText, Users, BookOpen, Compass } from "lucide-react";
+import { X, ScrollText, Users, BookOpen, Compass } from "lucide-react";
 import BossBanner from "@/components/territory/BossBanner";
 import SimulatorModal from "@/components/SimulatorModal";
 import type { SimLaunchRequest } from "@/components/territory/SkillLaunchCard";
@@ -27,7 +27,7 @@ import type { RoleResult } from "@/components/InlineRoleCarousel";
 import type { EdgeContext } from "@/components/HumanEdgesCard";
 
 import CompactHUD from "@/components/territory/CompactHUD";
-import MyRolesPanel from "@/components/territory/MyRolesPanel";
+
 import AlliesPanel from "@/components/territory/AlliesPanel";
 import CodexPanel from "@/components/territory/CodexPanel";
 import ScoutPanel from "@/components/territory/ScoutPanel";
@@ -74,7 +74,6 @@ function buildEmptySkills(taxonomy: TaxonomySkill[]): SkillXP[] {
 const TAB_ITEMS = [
   { key: "table" as const, icon: ScrollText, label: "Skill Forge" },
   { key: "scout" as const, icon: Compass, label: "Scout" },
-  { key: "roles" as const, icon: Swords, label: "Kingdoms" },
   { key: "codex" as const, icon: BookOpen, label: "Codex" },
   { key: "allies" as const, icon: Users, label: "Allies" },
 ] as const;
@@ -100,10 +99,10 @@ const MapPage = () => {
 
   const [selectedRole, setSelectedRole] = useState<RoleResult | null>(null);
   const [activeEdge, setActiveEdge] = useState<EdgeContext | null>(null);
-  const [activeTab, setActiveTab] = useState<"table" | "scout" | "roles" | "codex" | "allies">("table");
+  const [activeTab, setActiveTab] = useState<"table" | "scout" | "codex" | "allies">("table");
   const [mapFocusSkillId, setMapFocusSkillId] = useState<string | null>(null);
   const [forgeFocusSkillId, setForgeFocusSkillId] = useState<string | null>(null);
-  const [myRolesTab, setMyRolesTab] = useState<"saved" | "practiced">("saved");
+  
   const [drawerSkill, setDrawerSkill] = useState<FutureSkill | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
 
@@ -267,10 +266,9 @@ const MapPage = () => {
 
   const chatViewCtx = useMemo(() => ({
     page: "map" as const,
-    activePanel: activeTab === "roles" ? "kingdoms" : activeTab === "allies" ? "allies" : activeTab === "codex" ? "codex" : "territory",
+    activePanel: activeTab === "scout" ? "scout" : activeTab === "allies" ? "allies" : activeTab === "codex" ? "codex" : "territory",
     selectedRole: selectedRole ? { title: selectedRole.title, company: selectedRole.company, jobId: selectedRole.jobId } : null,
-    selectedTab: activeTab === "roles" ? myRolesTab : undefined,
-  }), [selectedRole, activeTab, myRolesTab]);
+  }), [selectedRole, activeTab]);
   useChatViewContext(chatViewCtx as any, [chatViewCtx]);
 
   return (
@@ -342,14 +340,7 @@ const MapPage = () => {
               }}
             />
           ) : activeTab === "scout" && isSignedIn ? (
-            <ScoutPanel />
-          ) : activeTab === "roles" && isSignedIn ? (
-            <MyRolesPanel
-              onSelectRole={(role) => { setSelectedRole(role); setActiveTab("table"); }}
-              onAskChat={(prompt) => { setChatDockOpen(true); chatSendMessage(prompt); }}
-              onTabChange={setMyRolesTab}
-              onLaunchSim={handleLaunchSim}
-            />
+            <ScoutPanel onOpenRole={(role) => setSelectedRole(role)} />
           ) : activeTab === "codex" && isSignedIn ? (
             <CodexPanel />
           ) : activeTab === "allies" && isSignedIn ? (
