@@ -172,11 +172,10 @@ export default function BossCinematicIntro({
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.6 }}
-                className="text-lg font-bold"
+                className="text-lg font-bold text-foreground"
                 style={{
                   fontFamily: "'Cinzel', serif",
-                  color: `hsl(${hue > 30 ? 0 : hue} 70% 60%)`,
-                  textShadow: `0 0 12px hsl(${hue} 70% 50% / 0.4)`,
+                  textShadow: `0 0 12px hsl(var(--primary) / 0.4)`,
                 }}
               >
                 {name}
