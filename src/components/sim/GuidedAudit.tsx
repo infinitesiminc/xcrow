@@ -780,7 +780,7 @@ export default function GuidedAudit({
             <div>
               <span
                 className="text-[15px] font-bold drop-shadow-[0_0_8px_rgba(139,92,246,0.4)]"
-                style={{ fontFamily: "'Cinzel', serif", color: "hsl(262 80% 75%)" }}
+                style={{ fontFamily: "'Cinzel', serif", color: "hsl(var(--sentinel-text))" }}
               >
                 🔮 Sentinel's Sanctum
               </span>
