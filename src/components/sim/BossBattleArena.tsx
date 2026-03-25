@@ -528,9 +528,9 @@ export default function BossBattleArena({
           {checkpoints.map((cp, i) => {
             const done = revealed[cp.id];
             const isCurrent = i === currentStep;
-            let bg = "hsl(262 30% 20%)";
+            let bg = "hsl(var(--sentinel-surface))";
             if (done) bg = verdicts[cp.id] === cp.correctVerdict ? "hsl(142 60% 50%)" : "hsl(0 60% 55%)";
-            else if (isCurrent) bg = "hsl(262 80% 55%)";
+            else if (isCurrent) bg = "hsl(var(--sentinel-glow))";
             return (
               <motion.div
                 key={i}
