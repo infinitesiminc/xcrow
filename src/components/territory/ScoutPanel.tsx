@@ -56,8 +56,15 @@ interface BrowseJob {
   company_id: string | null;
 }
 
+export interface KingdomContextData {
+  tier?: string;
+  xp?: number;
+  questsCompleted?: number;
+  totalQuests?: number;
+}
+
 interface Props {
-  onOpenRole?: (role: RoleResult) => void;
+  onOpenRole?: (role: RoleResult, kingdomContext?: KingdomContextData) => void;
 }
 
 /* ── Tier Meta ── */
@@ -458,7 +465,7 @@ function BrowseSubTab({ onOpenRole }: { onOpenRole?: (role: RoleResult) => void 
    SUB-TAB 3: My Kingdoms (tracked progression)
    ════════════════════════════════════════════ */
 
-function KingdomsSubTab({ onOpenRole }: { onOpenRole?: (role: RoleResult) => void }) {
+function KingdomsSubTab({ onOpenRole }: { onOpenRole?: (role: RoleResult, kingdomContext?: KingdomContextData) => void }) {
   const { user } = useAuth();
   const [kingdoms, setKingdoms] = useState<Kingdom[]>([]);
   const [loading, setLoading] = useState(true);
@@ -598,6 +605,11 @@ function KingdomsSubTab({ onOpenRole }: { onOpenRole?: (role: RoleResult) => voi
               company: k.company || null,
               jobId: k.key,
               logo: null, location: null, country: null, workMode: null, seniority: null, augmented: 0, risk: 0,
+            }, {
+              tier: k.tier,
+              xp: k.xp,
+              questsCompleted: k.questsCompleted,
+              totalQuests: k.totalQuests,
             })}
           >
             <div className="flex items-center gap-2.5">

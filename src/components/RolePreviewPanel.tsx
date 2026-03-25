@@ -26,10 +26,18 @@ function taskChipStyle(aiScore: number) {
   return { badge: "bg-emerald-500/15 text-emerald-400", accent: "text-emerald-400" };
 }
 
+interface KingdomContext {
+  tier?: string;
+  xp?: number;
+  questsCompleted?: number;
+  totalQuests?: number;
+}
+
 interface RolePreviewPanelProps {
   role: RoleResult;
   onClose: () => void;
   edgeContext?: EdgeContext | null;
+  kingdomContext?: KingdomContext | null;
 }
 
 const TASK_ICON_MAP: [RegExp, React.ComponentType<any>][] = [
@@ -72,7 +80,7 @@ interface TaskCluster {
 
 type PanelView = "details" | "simulation" | "enlarged";
 
-export default function RolePreviewPanel({ role, onClose, edgeContext }: RolePreviewPanelProps) {
+export default function RolePreviewPanel({ role, onClose, edgeContext, kingdomContext }: RolePreviewPanelProps) {
   const navigate = useNavigate();
   const { user, openAuthModal } = useAuth();
   const [tasks, setTasks] = useState<TaskCluster[]>([]);
@@ -412,6 +420,30 @@ export default function RolePreviewPanel({ role, onClose, edgeContext }: RolePre
 
       {/* Content — Expandable task cards */}
       <div className="flex-1 overflow-y-auto p-4 scrollbar-thin">
+        {/* Kingdom context banner */}
+        {kingdomContext && kingdomContext.tier && (
+          <div
+            className="mb-3 px-3 py-2.5 rounded-xl flex items-center gap-3"
+            style={{
+              background: "hsl(var(--filigree) / 0.08)",
+              border: "1px solid hsl(var(--filigree) / 0.15)",
+            }}
+          >
+            <div className="flex items-center gap-1.5">
+              <Shield className="h-3.5 w-3.5" style={{ color: kingdomContext.tier === "conquered" ? "hsl(45 93% 47%)" : kingdomContext.tier === "fortified" ? "hsl(142 71% 45%)" : kingdomContext.tier === "contested" ? "hsl(var(--primary))" : "hsl(var(--muted-foreground))" }} />
+              <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: kingdomContext.tier === "conquered" ? "hsl(45 93% 47%)" : kingdomContext.tier === "fortified" ? "hsl(142 71% 45%)" : kingdomContext.tier === "contested" ? "hsl(var(--primary))" : "hsl(var(--muted-foreground))" }}>
+                {kingdomContext.tier}
+              </span>
+            </div>
+            {(kingdomContext.questsCompleted ?? 0) > 0 && (
+              <>
+                <span className="text-[10px] text-muted-foreground">{kingdomContext.questsCompleted}/{kingdomContext.totalQuests} quests</span>
+                <span className="text-[10px] font-medium" style={{ color: "hsl(var(--filigree-glow))" }}>{kingdomContext.xp} XP</span>
+              </>
+            )}
+          </div>
+        )}
+
         {loading ? (
           <div className="flex items-center justify-center py-8"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></div>
         ) : (
@@ -554,24 +586,14 @@ export default function RolePreviewPanel({ role, onClose, edgeContext }: RolePre
                                     );
                                   })()}
 
-                                  {/* Future preview + Practice CTA */}
+                                   {/* Future preview (read-only in overlay) */}
                                   <FutureTaskPreview
                                     taskName={t.cluster_name}
                                     jobTitle={role.title}
                                     company={role.company || undefined}
                                     aiExposureScore={score}
                                     description={t.description || undefined}
-                                    onStartSim={() => startSimulation(t)}
                                   />
-                                  <Button
-                                    size="sm"
-                                    variant={done ? "secondary" : "default"}
-                                    className="w-full h-8 text-xs rounded-lg gap-1.5"
-                                    onClick={() => startSimulation(t)}
-                                  >
-                                    <Play className="h-3 w-3" />
-                                    {done ? "Practice Again" : "Practice Now"}
-                                  </Button>
                                 </div>
                               </motion.div>
                             )}
@@ -632,7 +654,7 @@ export default function RolePreviewPanel({ role, onClose, edgeContext }: RolePre
         <button
           onClick={() => {
             onClose();
-            navigate(`/role/${encodeURIComponent(role.title)}${role.company ? `?company=${encodeURIComponent(role.company)}` : ""}`);
+            navigate(`/analysis?title=${encodeURIComponent(role.title)}${role.company ? `&company=${encodeURIComponent(role.company)}` : ""}`);
           }}
           className="flex-1 flex items-center justify-center gap-2 rounded-xl bg-primary text-primary-foreground py-2 text-sm font-medium hover:bg-primary/90 transition-colors"
         >
