@@ -433,7 +433,7 @@ export default function BossBattleArena({
           transition={{ delay: 0.5, type: "spring" }}
           className="text-center"
         >
-          <h3 className="text-xl font-bold" style={{ fontFamily: "'Cinzel', serif", color: "hsl(45 90% 65%)", textShadow: "0 0 20px hsl(45 90% 55% / 0.4)" }}>
+          <h3 className="text-xl font-bold" style={{ fontFamily: "'Cinzel', serif", color: "hsl(var(--filigree-glow))", textShadow: "0 0 20px hsl(var(--filigree-glow) / 0.4)" }}>
             {titles[tier]}
           </h3>
           <p className="text-3xl font-bold mt-2" style={{ fontFamily: "'Cinzel', serif", color: "hsl(262 80% 75%)" }}>
