@@ -225,10 +225,7 @@ export async function matchJobsForUser(
   }
 
   // Step 2: Get task clusters for those jobs (paginated)
-  const allClusters = await fetchAll<{ job_id: string; cluster_name: string; skill_names: string[] | null }>(
-    "job_task_clusters",
-    "job_id, cluster_name, skill_names",
-  );
+  const allClusters = await fetchAllClusters();
 
   const jobClusterMap = new Map<string, string[]>();
   for (const cluster of allClusters) {
