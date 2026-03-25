@@ -7,7 +7,7 @@ import type { FutureSkill } from "@/hooks/use-future-skills";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { X, Swords, ScrollText, Users, BookOpen } from "lucide-react";
+import { X, Swords, ScrollText, Users, BookOpen, Compass } from "lucide-react";
 import BossBanner from "@/components/territory/BossBanner";
 import SimulatorModal from "@/components/SimulatorModal";
 import type { SimLaunchRequest } from "@/components/territory/SkillLaunchCard";
@@ -30,6 +30,7 @@ import CompactHUD from "@/components/territory/CompactHUD";
 import MyRolesPanel from "@/components/territory/MyRolesPanel";
 import AlliesPanel from "@/components/territory/AlliesPanel";
 import CodexPanel from "@/components/territory/CodexPanel";
+import ScoutPanel from "@/components/territory/ScoutPanel";
 
 import { useSkills } from "@/hooks/use-skills";
 import SkillDetailDrawer from "@/components/territory/SkillDetailDrawer";
@@ -72,6 +73,7 @@ function buildEmptySkills(taxonomy: TaxonomySkill[]): SkillXP[] {
 
 const TAB_ITEMS = [
   { key: "table" as const, icon: ScrollText, label: "Skill Forge" },
+  { key: "scout" as const, icon: Compass, label: "Scout" },
   { key: "roles" as const, icon: Swords, label: "Kingdoms" },
   { key: "codex" as const, icon: BookOpen, label: "Codex" },
   { key: "allies" as const, icon: Users, label: "Allies" },
@@ -98,7 +100,7 @@ const MapPage = () => {
 
   const [selectedRole, setSelectedRole] = useState<RoleResult | null>(null);
   const [activeEdge, setActiveEdge] = useState<EdgeContext | null>(null);
-  const [activeTab, setActiveTab] = useState<"table" | "roles" | "codex" | "allies">("table");
+  const [activeTab, setActiveTab] = useState<"table" | "scout" | "roles" | "codex" | "allies">("table");
   const [mapFocusSkillId, setMapFocusSkillId] = useState<string | null>(null);
   const [forgeFocusSkillId, setForgeFocusSkillId] = useState<string | null>(null);
   const [myRolesTab, setMyRolesTab] = useState<"saved" | "practiced">("saved");
@@ -339,6 +341,8 @@ const MapPage = () => {
                 setDrawerOpen(true);
               }}
             />
+          ) : activeTab === "scout" && isSignedIn ? (
+            <ScoutPanel />
           ) : activeTab === "roles" && isSignedIn ? (
             <MyRolesPanel
               onSelectRole={(role) => { setSelectedRole(role); setActiveTab("table"); }}
