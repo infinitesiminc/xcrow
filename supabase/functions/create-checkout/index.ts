@@ -28,7 +28,7 @@ serve(async (req) => {
     let body: any = {};
     try { body = await req.json(); } catch {}
     // Default to Student Pro Monthly if no priceId provided
-    const priceId = body.priceId || "price_1TChXtGqMIbud5Ha7Rubrrg9";
+    const priceId = body.priceId || "price_1TEvG0GqMIbud5Ha8h085MFj";
 
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
       apiVersion: "2025-08-27.basil",
