@@ -706,8 +706,8 @@ export default function BossBattleArena({
                           onClick={() => handleVerdict(checkpoint.id, v)}
                           className="flex-1 py-2 px-2 rounded-lg text-[11px] font-semibold capitalize transition-all"
                           style={{
-                            background: selected ? cfg.bg : "hsl(262 30% 15%)",
-                            border: `1.5px solid ${selected ? cfg.border : "hsl(262 60% 40% / 0.15)"}`,
+                            background: selected ? cfg.bg : "hsl(var(--sentinel-surface-deep))",
+                            border: `1.5px solid ${selected ? cfg.border : "hsl(var(--sentinel-border) / 0.15)"}`,
                             color: selected ? cfg.text : "hsl(var(--muted-foreground))",
                             boxShadow: selected ? cfg.glow : "none",
                           }}
