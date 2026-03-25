@@ -254,7 +254,7 @@ function CheckpointChat({ checkpoint }: { checkpoint: AuditCheckpoint }) {
           </div>
         )}
       </div>
-      <div className="px-2 py-2 flex gap-1.5" style={{ borderTop: "1px solid hsl(262 60% 40% / 0.15)" }}>
+      <div className="px-2 py-2 flex gap-1.5" style={{ borderTop: "1px solid hsl(var(--sentinel-border) / 0.15)" }}>
         <input
           value={input}
           onChange={e => setInput(e.target.value)}
