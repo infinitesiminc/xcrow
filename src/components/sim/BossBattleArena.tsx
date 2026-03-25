@@ -344,8 +344,8 @@ export default function BossBattleArena({
                     key={v.label}
                     className="flex-1 py-1.5 rounded-md text-center text-[10px] font-semibold"
                     style={{
-                      background: v.label === "Critical" ? "hsl(0 60% 55% / 0.15)" : "hsl(262 30% 15%)",
-                      border: `1px solid ${v.label === "Critical" ? "hsl(0 60% 55% / 0.4)" : "hsl(262 60% 40% / 0.15)"}`,
+                      background: v.label === "Critical" ? "hsl(0 60% 55% / 0.15)" : "hsl(var(--sentinel-surface-deep))",
+                      border: `1px solid ${v.label === "Critical" ? "hsl(0 60% 55% / 0.4)" : "hsl(var(--sentinel-border) / 0.15)"}`,
                       color: v.label === "Critical" ? v.color : "hsl(var(--muted-foreground))",
                     }}
                   >
