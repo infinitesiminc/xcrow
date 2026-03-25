@@ -611,7 +611,7 @@ export default function BossBattleArena({
           animate={{ opacity: [0.03, 0.08, 0.03] }}
           transition={{ duration: 4, repeat: Infinity }}
         >
-          <span className="text-5xl sm:text-7xl font-black" style={{ fontFamily: "'Cinzel', serif", color: "hsl(262 60% 50%)" }}>
+          <span className="text-5xl sm:text-7xl font-black" style={{ fontFamily: "'Cinzel', serif", color: "hsl(var(--sentinel))" }}>
             VS
           </span>
         </motion.div>
