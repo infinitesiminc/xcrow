@@ -65,6 +65,8 @@ export interface KingdomContextData {
 
 interface Props {
   onOpenRole?: (role: RoleResult, kingdomContext?: KingdomContextData) => void;
+  activeSubTab?: SubTab;
+  onSubTabChange?: (tab: SubTab) => void;
 }
 
 /* ── Tier Meta ── */
@@ -76,9 +78,15 @@ const TIER_META: Record<KingdomTier, { icon: React.ElementType; label: string; c
   conquered: { icon: Crown, label: "CONQUERED", color: "hsl(45 93% 47%)" },
 };
 
-export default function ScoutPanel({ onOpenRole }: Props) {
+export default function ScoutPanel({ onOpenRole, activeSubTab, onSubTabChange }: Props) {
   const { user } = useAuth();
-  const [subTab, setSubTab] = useState<SubTab>("matched");
+  const [internalSubTab, setInternalSubTab] = useState<SubTab>("matched");
+  const subTab = activeSubTab ?? internalSubTab;
+
+  const handleSubTabChange = (tab: SubTab) => {
+    if (onSubTabChange) onSubTabChange(tab);
+    else setInternalSubTab(tab);
+  };
 
   if (!user) {
     return (
@@ -103,7 +111,7 @@ export default function ScoutPanel({ onOpenRole }: Props) {
         ]).map(t => (
           <button
             key={t.key}
-            onClick={() => setSubTab(t.key)}
+            onClick={() => handleSubTabChange(t.key)}
             className="flex items-center gap-1 px-3 py-1.5 rounded-md text-[11px] font-medium transition-all flex-1 justify-center"
             style={{
               fontFamily: "'Cinzel', serif",
@@ -140,8 +148,8 @@ function MatchedSubTab({ onOpenRole }: { onOpenRole?: (role: RoleResult) => void
   const [sort, setSort] = useState<SortMode>("match");
   const [expanded, setExpanded] = useState<string | null>(null);
 
-  const loadMatchedJobs = useCallback(async (userId: string) => {
-    setLoading(true);
+  const loadMatchedJobs = useCallback(async (userId: string, options?: { silent?: boolean }) => {
+    if (!options?.silent) setLoading(true);
     try {
       const profile = await buildUserProfile(userId);
       const results = await matchJobsForUser(profile, 100);
@@ -150,7 +158,7 @@ function MatchedSubTab({ onOpenRole }: { onOpenRole?: (role: RoleResult) => void
       console.error("Scout match error:", e);
       setCandidates([]);
     } finally {
-      setLoading(false);
+      if (!options?.silent) setLoading(false);
     }
   }, []);
 
@@ -165,8 +173,8 @@ function MatchedSubTab({ onOpenRole }: { onOpenRole?: (role: RoleResult) => void
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if ((event === "SIGNED_IN" || event === "TOKEN_REFRESHED") && session?.user?.id) {
-        void loadMatchedJobs(session.user.id);
+      if (event === "SIGNED_IN" && session?.user?.id) {
+        void loadMatchedJobs(session.user.id, { silent: true });
       }
       if (event === "SIGNED_OUT") {
         setCandidates([]);

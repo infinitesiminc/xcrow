@@ -101,6 +101,7 @@ const MapPage = () => {
   const [selectedKingdomCtx, setSelectedKingdomCtx] = useState<{ tier?: string; xp?: number; questsCompleted?: number; totalQuests?: number } | null>(null);
   const [activeEdge, setActiveEdge] = useState<EdgeContext | null>(null);
   const [activeTab, setActiveTab] = useState<"table" | "scout" | "codex" | "allies">("table");
+  const [scoutSubTab, setScoutSubTab] = useState<"matched" | "browse" | "kingdoms">("matched");
   const [mapFocusSkillId, setMapFocusSkillId] = useState<string | null>(null);
   const [forgeFocusSkillId, setForgeFocusSkillId] = useState<string | null>(null);
   
@@ -341,7 +342,11 @@ const MapPage = () => {
               }}
             />
           ) : activeTab === "scout" && isSignedIn ? (
-            <ScoutPanel onOpenRole={(role, kCtx) => { setSelectedRole(role); setSelectedKingdomCtx(kCtx || null); }} />
+            <ScoutPanel
+              activeSubTab={scoutSubTab}
+              onSubTabChange={setScoutSubTab}
+              onOpenRole={(role, kCtx) => { setSelectedRole(role); setSelectedKingdomCtx(kCtx || null); }}
+            />
           ) : activeTab === "codex" && isSignedIn ? (
             <CodexPanel />
           ) : activeTab === "allies" && isSignedIn ? (
