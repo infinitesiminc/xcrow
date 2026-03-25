@@ -746,8 +746,8 @@ export default function GuidedAudit({
       <div
         className="rounded-xl p-3.5 relative overflow-hidden"
         style={{
-          background: "linear-gradient(135deg, hsl(262 40% 15% / 0.6), hsl(270 30% 10% / 0.8))",
-          border: "1px solid hsl(262 60% 40% / 0.25)",
+          background: "linear-gradient(135deg, hsl(var(--sentinel-surface-deep) / 0.6), hsl(var(--sentinel-surface) / 0.8))",
+          border: "1px solid hsl(var(--sentinel-border) / 0.25)",
           boxShadow: "inset 0 1px 0 hsl(var(--emboss-light)), 0 0 20px hsl(262 80% 55% / 0.08)",
         }}
       >
