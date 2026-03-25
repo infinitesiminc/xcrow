@@ -762,7 +762,7 @@ export default function GuidedAudit({
             transition={{ duration: 3 + i, repeat: Infinity, delay: i * 0.7 }}
             style={{
               width: 3, height: 3,
-              background: "hsl(262 80% 70%)",
+              background: "hsl(var(--sentinel-text))",
               right: `${20 + i * 25}%`,
               top: `${30 + i * 15}%`,
             }}
