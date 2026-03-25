@@ -6,7 +6,7 @@ import { motion } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import {
   Map, Sword, Shield, Star, Crown, Sparkles, ArrowRight,
-  Compass, Target, Zap, Trophy, ChevronDown, Users,
+  Compass, Target, Zap, Trophy, ChevronDown, Users, Swords,
 } from "lucide-react";
 import { useNavigate, Navigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
