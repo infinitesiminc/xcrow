@@ -862,7 +862,7 @@ export default function GuidedAudit({
               <button
                 onClick={() => setShowHint(prev => ({ ...prev, [checkpoint.id]: true }))}
                 className="text-[13px] mt-2 flex items-center gap-1 transition-colors hover:brightness-125"
-                style={{ color: "hsl(262 80% 70%)" }}
+                style={{ color: "hsl(var(--sentinel-text))" }}
               >
                 <Sparkles className="h-3 w-3" /> Need a hint?
               </button>
