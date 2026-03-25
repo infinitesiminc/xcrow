@@ -501,7 +501,7 @@ export default function BossBattleArena({
     >
       {/* Job context bar */}
       {(jobTitle || scenarioContext) && (
-        <div className="flex items-center justify-center gap-2 py-1.5 px-4 shrink-0" style={{ borderBottom: "1px solid hsl(262 40% 20% / 0.2)" }}>
+        <div className="flex items-center justify-center gap-2 py-1.5 px-4 shrink-0" style={{ borderBottom: "1px solid hsl(var(--sentinel-border) / 0.2)" }}>
           <span className="text-[10px] text-muted-foreground truncate max-w-md text-center">
             {scenarioContext || (
               <>
