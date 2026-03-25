@@ -206,6 +206,29 @@ const Index = () => {
           </motion.div>
         </section>
 
+        {/* ═══ LIVE JOB CONTEXT — Company Logo Strip ═══ */}
+        <section className="py-12 px-4 overflow-hidden">
+          <div className="max-w-5xl mx-auto">
+            <motion.div {...fade()} className="text-center mb-6">
+              <p className="text-xs font-mono uppercase tracking-[0.2em] text-muted-foreground mb-1">Live Job Intelligence</p>
+              <h2 className="font-fantasy text-xl md:text-2xl font-bold">
+                Built from <span style={{ color: "hsl(var(--filigree-glow))" }}>100,000+</span> Real Roles
+              </h2>
+              <p className="text-muted-foreground text-sm mt-2 max-w-lg mx-auto">
+                Every skill, quest, and simulation is generated from live job postings at companies like these — not textbooks.
+              </p>
+            </motion.div>
+            <motion.div {...fade(0.15)}>
+              <CompanyMarquee
+                rows={[
+                  ["Google", "Microsoft", "Amazon", "Apple", "Meta", "Deloitte", "McKinsey", "JPMorgan", "Goldman Sachs", "Stripe"],
+                  ["Salesforce", "Adobe", "Netflix", "Spotify", "Shopify", "Airbnb", "Uber", "Tesla", "NVIDIA", "IBM"],
+                ]}
+              />
+            </motion.div>
+          </div>
+        </section>
+
         {/* ═══ HOW IT WORKS — 3-Step Loop ═══ */}
         <section className="py-20 px-4">
           <div className="max-w-5xl mx-auto">
