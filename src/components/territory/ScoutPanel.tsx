@@ -133,25 +133,42 @@ function MatchedSubTab({ onOpenRole }: { onOpenRole?: (role: RoleResult) => void
   const [sort, setSort] = useState<SortMode>("match");
   const [expanded, setExpanded] = useState<string | null>(null);
 
+  const loadMatchedJobs = useCallback(async (userId: string) => {
+    setLoading(true);
+    try {
+      const profile = await buildUserProfile(userId);
+      const results = await matchJobsForUser(profile, 100);
+      setCandidates(results);
+    } catch (e) {
+      console.error("Scout match error:", e);
+      setCandidates([]);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
-    if (!user) { setLoading(false); return; }
-    let cancelled = false;
-    (async () => {
-      setLoading(true);
-      try {
-        const profile = await buildUserProfile(user.id);
-        if (cancelled) return;
-        const results = await matchJobsForUser(profile, 100);
-        if (cancelled) return;
-        setCandidates(results);
-      } catch (e) {
-        console.error("Scout match error:", e);
-      } finally {
-        if (!cancelled) setLoading(false);
+    if (!user?.id) {
+      setCandidates([]);
+      setLoading(false);
+      return;
+    }
+    void loadMatchedJobs(user.id);
+  }, [user?.id, loadMatchedJobs]);
+
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if ((event === "SIGNED_IN" || event === "TOKEN_REFRESHED") && session?.user?.id) {
+        void loadMatchedJobs(session.user.id);
       }
-    })();
-    return () => { cancelled = true; };
-  }, [user]);
+      if (event === "SIGNED_OUT") {
+        setCandidates([]);
+        setLoading(false);
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, [loadMatchedJobs]);
 
   const filtered = useMemo(() => {
     let list = candidates;
