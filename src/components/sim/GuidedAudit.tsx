@@ -346,7 +346,7 @@ function RubricResults({ scores }: { scores: Record<string, { score: number; not
               </span>
               <span className="text-[13px] font-mono font-bold" style={{ color }}>{pct}%</span>
             </div>
-            <div className="h-2 rounded-full overflow-hidden mb-1.5" style={{ background: "hsl(262 30% 18%)", border: "1px solid hsl(262 60% 40% / 0.15)" }}>
+            <div className="h-2 rounded-full overflow-hidden mb-1.5" style={{ background: "hsl(var(--sentinel-surface-deep))", border: "1px solid hsl(var(--sentinel-border) / 0.15)" }}>
               <motion.div
                 initial={{ width: 0 }}
                 animate={{ width: `${pct}%` }}
