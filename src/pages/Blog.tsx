@@ -51,6 +51,7 @@ const ARTICLES = [
 export default function Blog() {
   return (
     <>
+      <SEOHead title="Blog" description="Dispatches from the AI frontier — skill trends, career strategy, and product updates from the Xcrow.ai team." path="/blog" />
       <Navbar />
       <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
         <motion.section initial="hidden" animate="visible" className="pt-28 pb-20 px-6">

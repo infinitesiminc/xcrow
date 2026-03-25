@@ -3,6 +3,7 @@
  * Authenticated users who completed onboarding redirect to /map.
  */
 import { motion } from "framer-motion";
+import SEOHead from "@/components/SEOHead";
 import { useAuth } from "@/contexts/AuthContext";
 import {
   Map, Sword, Shield, Star, Crown, Sparkles, ArrowRight,

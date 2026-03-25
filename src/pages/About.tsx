@@ -95,6 +95,7 @@ export default function About() {
 
   return (
     <>
+      <SEOHead title="About" description="Why 183 skills matter and how Xcrow.ai helps students and professionals get AI-ready through gamified skill building." path="/about" />
       <Navbar />
       <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
 

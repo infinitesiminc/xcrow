@@ -57,6 +57,7 @@ const Contact = () => {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
+      <SEOHead title="Contact" description="Get in touch with Xcrow.ai — partnerships, demos, and support for schools, enterprises, and investors." path="/contact" />
       <div className="mx-auto max-w-5xl px-4 py-16 sm:py-24">
 
         {/* ═══ HEADER ═══ */}

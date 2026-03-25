@@ -85,6 +85,7 @@ export default function Pricing() {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
+      <SEOHead title="Pricing" description="Free to start. Champion plan for unlimited quests, full territory access, and AI Career Scout." path="/pricing" />
 
       {/* ═══ HERO ═══ */}
       <motion.section className="relative py-24 px-6 text-center overflow-hidden" initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fade}>
