@@ -24,6 +24,13 @@ const CATEGORIES: Record<string, { bg: string; text: string }> = {
 
 const ARTICLES = [
   {
+    title: "Why the 183 Skills Are Critical for Everyone",
+    excerpt: "AI isn't replacing jobs — it's replacing tasks. The 183 future skills are the new literacy. Here's why they matter for every professional, student, and leader.",
+    date: "Mar 2026",
+    category: "Intel",
+    href: "/blog/why-183-skills",
+  },
+  {
     title: "Which Kingdoms Are Most Exposed to AI? A Task-Level Analysis",
     excerpt: "We analyzed 33,000+ quest clusters to map AI exposure across industries. Here's what the data shows about the future of work.",
     date: "Mar 2026",
