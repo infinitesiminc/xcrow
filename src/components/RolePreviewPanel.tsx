@@ -664,15 +664,21 @@ export default function RolePreviewPanel({ role, onClose, edgeContext, kingdomCo
         )}
       </div>
 
-      {/* Footer — single primary CTA to expand into full quest log */}
-      <div className="p-3 border-t border-border shrink-0 flex gap-2">
-        <button onClick={toggleBookmark} className="h-9 px-3 rounded-xl border border-border flex items-center gap-1.5 text-xs hover:bg-muted/30 transition-colors">
+      {/* Footer — single primary CTA with RPG styling */}
+      <div className="p-3 shrink-0 flex gap-2" style={{ borderTop: "1px solid hsl(var(--filigree) / 0.2)" }}>
+        <button onClick={toggleBookmark} className="h-9 px-3 rounded-xl flex items-center gap-1.5 text-xs hover:bg-muted/30 transition-colors"
+          style={{ border: "1px solid hsl(var(--filigree) / 0.15)" }}>
           {isBookmarked ? <BookmarkCheck className="h-3.5 w-3.5 text-primary" /> : <Bookmark className="h-3.5 w-3.5 text-muted-foreground" />}
           {isBookmarked ? "Saved" : "Save"}
         </button>
         <button
           onClick={() => setView("enlarged")}
-          className="flex-1 flex items-center justify-center gap-2 rounded-xl bg-primary text-primary-foreground py-2 text-sm font-medium hover:bg-primary/90 transition-colors"
+          className="flex-1 flex items-center justify-center gap-2 rounded-xl bg-primary text-primary-foreground py-2 text-sm font-bold hover:bg-primary/90 transition-colors"
+          style={{
+            fontFamily: "'Cinzel', serif",
+            letterSpacing: "0.04em",
+            boxShadow: "0 4px 16px hsl(var(--primary) / 0.3), inset 0 1px 0 hsl(var(--emboss-light))",
+          }}
         >
           <Maximize2 className="h-4 w-4" /> Mission Briefing <ArrowRight className="h-4 w-4" />
         </button>
