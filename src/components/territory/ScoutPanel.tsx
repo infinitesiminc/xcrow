@@ -3,6 +3,7 @@
  * Pure discovery — no simulation launching from this view.
  */
 import { useState, useEffect, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Compass, TrendingUp, MapPin, Building2, Search, Loader2, Shield, Zap, Users, ChevronDown, Star, Bookmark } from "lucide-react";
 import { Input } from "@/components/ui/input";
