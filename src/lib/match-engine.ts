@@ -151,20 +151,35 @@ export async function buildUserProfile(userId: string): Promise<UserProfile> {
 /**
  * Helper to paginate a supabase query to avoid the 1000-row default limit.
  */
-async function fetchAll<T>(
-  tableName: string,
-  select: string,
-  filters?: (q: any) => any,
-): Promise<T[]> {
+async function fetchAllSkillLinks(): Promise<{ job_id: string; canonical_skill_id: string }[]> {
   const PAGE = 1000;
-  const all: T[] = [];
+  const all: any[] = [];
   let from = 0;
   while (true) {
-    let q = supabase.from(tableName).select(select).range(from, from + PAGE - 1);
-    if (filters) q = filters(q);
-    const { data, error } = await q;
+    const { data, error } = await supabase
+      .from("job_future_skills")
+      .select("job_id, canonical_skill_id")
+      .not("canonical_skill_id", "is", null)
+      .range(from, from + PAGE - 1);
     if (error || !data || data.length === 0) break;
-    all.push(...(data as T[]));
+    all.push(...data);
+    if (data.length < PAGE) break;
+    from += PAGE;
+  }
+  return all;
+}
+
+async function fetchAllClusters(): Promise<{ job_id: string; cluster_name: string; skill_names: string[] | null }[]> {
+  const PAGE = 1000;
+  const all: any[] = [];
+  let from = 0;
+  while (true) {
+    const { data, error } = await supabase
+      .from("job_task_clusters")
+      .select("job_id, cluster_name, skill_names")
+      .range(from, from + PAGE - 1);
+    if (error || !data || data.length === 0) break;
+    all.push(...data);
     if (data.length < PAGE) break;
     from += PAGE;
   }
