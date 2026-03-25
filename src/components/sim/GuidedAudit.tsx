@@ -216,9 +216,9 @@ function CheckpointChat({ checkpoint }: { checkpoint: AuditCheckpoint }) {
         boxShadow: "inset 0 1px 0 hsl(var(--emboss-light))",
       }}
     >
-      <div className="px-3 py-2 flex items-center gap-1.5" style={{ borderBottom: "1px solid hsl(262 60% 40% / 0.15)" }}>
-        <HelpCircle className="h-3 w-3" style={{ color: "hsl(262 80% 70%)" }} />
-        <span className="text-[13px] font-semibold" style={{ color: "hsl(262 80% 70%)", fontFamily: "'Cinzel', serif" }}>
+      <div className="px-3 py-2 flex items-center gap-1.5" style={{ borderBottom: "1px solid hsl(var(--sentinel-border) / 0.15)" }}>
+        <HelpCircle className="h-3 w-3" style={{ color: "hsl(var(--sentinel-text))" }} />
+        <span className="text-[13px] font-semibold" style={{ color: "hsl(var(--sentinel-text))", fontFamily: "'Cinzel', serif" }}>
           📚 Sanctum Library
         </span>
       </div>
