@@ -1283,8 +1283,8 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                     <div className="relative z-10 flex flex-col items-center gap-6">
                       {/* Rotating rune ring */}
                       <div className="relative w-28 h-28 flex items-center justify-center">
-                        <motion.div
-                          className="absolute inset-0 rounded-full border-2 border-[hsl(262_80%_55%/0.5)]"
+                      <motion.div
+                          className="absolute inset-0 rounded-full border-2 border-primary/50"
                           animate={{ rotate: 360 }}
                           transition={{ duration: 6, repeat: Infinity, ease: "linear" }}
                           style={{
@@ -1293,7 +1293,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                           }}
                         />
                         <motion.div
-                          className="absolute inset-2 rounded-full border border-[hsl(262_80%_55%/0.3)]"
+                          className="absolute inset-2 rounded-full border border-primary/30"
                           animate={{ rotate: -360 }}
                           transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
                           style={{ borderStyle: "dotted" }}
@@ -1304,7 +1304,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                             opacity: [0.8, 1, 0.8],
                           }}
                           transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-                          className="text-5xl drop-shadow-[0_0_24px_hsl(262_80%_55%/0.6)]"
+                          className="text-5xl drop-shadow-[0_0_24px_hsl(var(--primary)/0.6)]"
                         >
                           ⚔️
                         </motion.div>
