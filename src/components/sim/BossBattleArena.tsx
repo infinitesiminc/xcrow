@@ -649,7 +649,7 @@ export default function BossBattleArena({
                     animate={{ y: ["-100%", "200%"] }}
                     transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
                   />
-                  <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: "hsl(262 80% 70%)", fontFamily: "'Cinzel', serif" }}>
+                  <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: "hsl(var(--sentinel-text))", fontFamily: "'Cinzel', serif" }}>
                     🔮 Oracle:{" "}
                   </span>
                   <span className="text-[12px] text-foreground/80 leading-relaxed">{checkpoint.aiClaim}</span>
