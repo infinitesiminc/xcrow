@@ -42,7 +42,7 @@ export default function BossCinematicIntro({
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       style={{
-        background: `radial-gradient(ellipse at center, hsl(${hue} 40% 8%), hsl(0 0% 2%))`,
+        background: `radial-gradient(ellipse at center, hsl(var(--sentinel-arena-bg)), hsl(var(--background)))`,
       }}
     >
       {/* Ambient particles — colored by boss hue */}
