@@ -239,9 +239,9 @@ export default function RolePreviewPanel({ role, onClose, edgeContext, kingdomCo
     setExpandedTask(prev => prev === taskName ? null : taskName);
   };
 
-  // Simulation overlay
+  // Simulation overlay — rendered inside the parent overlay container
   const simulationOverlay = view === "simulation" && simTask && (
-    <div className="fixed inset-0 z-[100] bg-background flex flex-col">
+    <div className="h-full bg-background flex flex-col">
       <div className="flex-1 overflow-hidden">
         <SimulatorModal
           open={true}
@@ -261,13 +261,13 @@ export default function RolePreviewPanel({ role, onClose, edgeContext, kingdomCo
     </div>
   );
 
-  // Enlarged overlay (full-screen)
+  // Enlarged view — rendered inside the parent overlay container
   const completedCount = tasks.filter(t => completedTasks.has(t.cluster_name)).length;
   const enlargedOverlay = (
-    <div className="fixed inset-0 z-[100] bg-background overflow-y-auto">
-      <div className="sticky top-0 z-20 bg-background/95 backdrop-blur-md border-b border-border px-4 py-3 flex items-center justify-between">
-        <button onClick={onClose} className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
-          <ChevronLeft className="h-4 w-4" /> Back to chat
+    <div className="h-full bg-background overflow-y-auto flex flex-col">
+      <div className="sticky top-0 z-20 bg-background/95 backdrop-blur-md border-b border-border px-4 py-3 flex items-center justify-between shrink-0">
+        <button onClick={() => setView("details")} className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
+          <ChevronLeft className="h-4 w-4" /> Back
         </button>
         <span className="text-sm font-semibold text-foreground truncate max-w-[200px]">{role.title}</span>
         <button onClick={toggleBookmark} className="p-2 rounded-lg hover:bg-muted/30 transition-colors">
@@ -375,7 +375,12 @@ export default function RolePreviewPanel({ role, onClose, edgeContext, kingdomCo
   );
 
   if (view === "enlarged" || view === "simulation") {
-    return <>{view === "enlarged" && enlargedOverlay}{simulationOverlay}</>;
+    return (
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.2 }} className="h-full flex flex-col overflow-hidden">
+        {view === "enlarged" && enlargedOverlay}
+        {simulationOverlay}
+      </motion.div>
+    );
   }
 
   // ── Details view — expandable task cards ──
@@ -639,7 +644,7 @@ export default function RolePreviewPanel({ role, onClose, edgeContext, kingdomCo
         )}
       </div>
 
-      {/* Footer */}
+      {/* Footer — single primary CTA to expand into full quest log */}
       <div className="p-3 border-t border-border shrink-0 flex gap-2">
         <button onClick={toggleBookmark} className="h-9 px-3 rounded-xl border border-border flex items-center gap-1.5 text-xs hover:bg-muted/30 transition-colors">
           {isBookmarked ? <BookmarkCheck className="h-3.5 w-3.5 text-primary" /> : <Bookmark className="h-3.5 w-3.5 text-muted-foreground" />}
@@ -647,18 +652,9 @@ export default function RolePreviewPanel({ role, onClose, edgeContext, kingdomCo
         </button>
         <button
           onClick={() => setView("enlarged")}
-          className="flex-1 flex items-center justify-center gap-2 rounded-xl border border-border text-foreground py-2 text-sm font-medium hover:bg-muted/30 transition-colors"
-        >
-          <Maximize2 className="h-4 w-4" /> Full View
-        </button>
-        <button
-          onClick={() => {
-            onClose();
-            navigate(`/analysis?title=${encodeURIComponent(role.title)}${role.company ? `&company=${encodeURIComponent(role.company)}` : ""}`);
-          }}
           className="flex-1 flex items-center justify-center gap-2 rounded-xl bg-primary text-primary-foreground py-2 text-sm font-medium hover:bg-primary/90 transition-colors"
         >
-          Deep Dive <ArrowRight className="h-4 w-4" />
+          <Maximize2 className="h-4 w-4" /> Mission Briefing <ArrowRight className="h-4 w-4" />
         </button>
       </div>
     </motion.div>
