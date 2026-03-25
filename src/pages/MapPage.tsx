@@ -341,6 +341,8 @@ const MapPage = () => {
                 setDrawerOpen(true);
               }}
             />
+          ) : activeTab === "scout" && isSignedIn ? (
+            <ScoutPanel />
           ) : activeTab === "roles" && isSignedIn ? (
             <MyRolesPanel
               onSelectRole={(role) => { setSelectedRole(role); setActiveTab("table"); }}
