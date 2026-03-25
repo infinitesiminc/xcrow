@@ -12,3 +12,7 @@ Allow: /
 
 User-agent: *
 Allow: /
+Disallow: /admin
+Disallow: /school
+
+Sitemap: https://xcrow.ai/sitemap.xml
