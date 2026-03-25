@@ -261,7 +261,7 @@ function CheckpointChat({ checkpoint }: { checkpoint: AuditCheckpoint }) {
           onKeyDown={e => e.key === "Enter" && !e.shiftKey && sendMessage()}
           placeholder="Consult the archives…"
           className="flex-1 rounded-lg px-3 py-1.5 text-[15px] outline-none focus:ring-1 focus:ring-primary/30"
-          style={{ background: "hsl(262 30% 15%)", border: "1px solid hsl(262 60% 40% / 0.15)" }}
+          style={{ background: "hsl(var(--sentinel-surface-deep))", border: "1px solid hsl(var(--sentinel-border) / 0.15)" }}
         />
         <Button size="icon" onClick={sendMessage} disabled={isStreaming || !input.trim()} className="h-7 w-7 rounded-lg shrink-0">
           <Send className="h-3 w-3" />
