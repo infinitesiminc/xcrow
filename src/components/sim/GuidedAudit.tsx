@@ -752,7 +752,7 @@ export default function GuidedAudit({
         }}
       >
         {/* Animated glow orb */}
-        <div className="absolute -top-8 -right-8 w-24 h-24 rounded-full opacity-15 blur-2xl" style={{ background: "hsl(262 80% 55%)" }} />
+        <div className="absolute -top-8 -right-8 w-24 h-24 rounded-full opacity-15 blur-2xl" style={{ background: "hsl(var(--sentinel-glow))" }} />
         {/* Floating particles */}
         {[0, 1, 2].map(i => (
           <motion.div
