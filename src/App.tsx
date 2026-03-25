@@ -112,6 +112,7 @@ function AuthGate({ children }: { children: React.ReactNode }) {
 }
 
 const App = () => (
+  <HelmetProvider>
   <QueryClientProvider client={queryClient}>
     <BrowserRouter>
       <AuthProvider>
