@@ -289,7 +289,7 @@ function JobCard({
                   className="text-[11px] h-7 flex-1 font-fantasy"
                   onClick={(e) => {
                     e.stopPropagation();
-                    // TODO: Navigate to role detail or add to campaign
+                    navigate(`/analysis?title=${encodeURIComponent(job.title)}${job.company ? `&company=${encodeURIComponent(job.company)}` : ""}`);
                   }}
                 >
                   <Star className="h-3 w-3 mr-1" />
