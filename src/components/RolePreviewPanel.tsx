@@ -26,10 +26,18 @@ function taskChipStyle(aiScore: number) {
   return { badge: "bg-emerald-500/15 text-emerald-400", accent: "text-emerald-400" };
 }
 
+interface KingdomContext {
+  tier?: string;
+  xp?: number;
+  questsCompleted?: number;
+  totalQuests?: number;
+}
+
 interface RolePreviewPanelProps {
   role: RoleResult;
   onClose: () => void;
   edgeContext?: EdgeContext | null;
+  kingdomContext?: KingdomContext | null;
 }
 
 const TASK_ICON_MAP: [RegExp, React.ComponentType<any>][] = [
