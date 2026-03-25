@@ -671,7 +671,7 @@ export default function BossBattleArena({
                   <button
                     onClick={() => setShowHint(prev => ({ ...prev, [checkpoint.id]: true }))}
                     className="text-[11px] flex items-center gap-1 hover:brightness-125"
-                    style={{ color: "hsl(262 80% 70%)" }}
+                    style={{ color: "hsl(var(--sentinel-text))" }}
                   >
                     <Sparkles className="h-3 w-3" /> Hint
                   </button>
