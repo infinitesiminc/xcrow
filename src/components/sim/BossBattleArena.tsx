@@ -362,7 +362,7 @@ export default function BossBattleArena({
             <motion.div
               initial={{ x: -10, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ delay: 0.8 }}
               className="rounded-lg px-3 py-2.5 space-y-1.5"
-              style={{ background: "hsl(262 30% 14%)", borderLeft: "2px solid hsl(142 60% 50% / 0.5)" }}
+              style={{ background: "hsl(var(--sentinel-surface-deep))", borderLeft: "2px solid hsl(142 60% 50% / 0.5)" }}
             >
               <span className="text-[10px] font-bold uppercase tracking-wider flex items-center gap-1.5"
                 style={{ color: "hsl(142 60% 50%)", fontFamily: "'Cinzel', serif" }}
