@@ -449,7 +449,7 @@ const MapPage = () => {
                 </button>
               </div>
               <div className="flex-1 overflow-hidden">
-                <RolePreviewPanel role={selectedRole} onClose={() => setSelectedRole(null)} edgeContext={activeEdge} />
+                <RolePreviewPanel role={selectedRole} onClose={() => { setSelectedRole(null); setSelectedKingdomCtx(null); }} edgeContext={activeEdge} kingdomContext={selectedKingdomCtx} />
               </div>
             </motion.div>
           </motion.div>
