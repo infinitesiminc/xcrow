@@ -698,7 +698,7 @@ export default function GuidedAudit({
             size="sm"
             onClick={handleRestart}
             className="gap-1.5 text-[13px] rounded-xl"
-            style={{ fontFamily: "'Cinzel', serif", borderColor: "hsl(262 60% 40% / 0.3)", color: "hsl(262 80% 70%)" }}
+            style={{ fontFamily: "'Cinzel', serif", borderColor: "hsl(var(--sentinel-border) / 0.3)", color: "hsl(var(--sentinel-text))" }}
           >
             <RotateCcw className="h-3 w-3" /> 🔮 Begin New Vigil
           </Button>
