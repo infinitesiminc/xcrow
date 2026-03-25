@@ -528,13 +528,12 @@ export default function RolePreviewPanel({ role, onClose, edgeContext, kingdomCo
                           initial={{ opacity: 0, y: 6 }}
                           animate={{ opacity: 1, y: 0 }}
                           transition={{ delay: i * 0.03 }}
-                          className={`rounded-xl border transition-all overflow-hidden ${
-                            isEdgeTask
-                              ? "border-primary/40 ring-1 ring-primary/20 bg-primary/5"
-                              : isExpanded
-                              ? "border-border bg-muted/20"
-                              : "border-border/50 bg-muted/10 hover:border-border"
-                          }`}
+                          className={`rounded-xl transition-all overflow-hidden ${isEdgeTask ? "ring-1 ring-primary/20" : ""}`}
+                          style={{
+                            background: isExpanded ? "hsl(var(--filigree) / 0.06)" : "hsl(var(--filigree) / 0.03)",
+                            border: isEdgeTask ? "1px solid hsl(var(--primary) / 0.4)" : "1px solid hsl(var(--filigree) / 0.12)",
+                            boxShadow: "inset 0 1px 0 hsl(var(--emboss-light))",
+                          }}
                         >
                           {/* Clickable pill header */}
                           <button
