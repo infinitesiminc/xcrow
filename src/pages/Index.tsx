@@ -271,7 +271,7 @@ const Index = () => {
         </section>
 
         {/* ═══ BOSS BATTLE SHOWCASE ═══ */}
-        <section className="py-20 px-4" style={{ background: "hsl(var(--secondary) / 0.4)" }}>
+        <section className="py-20 px-4">
           <div className="max-w-5xl mx-auto">
             <motion.div {...fade()} className="text-center mb-10">
               <p className="text-xs font-mono uppercase tracking-[0.2em] text-muted-foreground mb-2">Level 2 — Boss Battles</p>
