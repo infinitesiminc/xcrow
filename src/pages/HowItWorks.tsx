@@ -3,6 +3,7 @@
  * Narrative: What are they, why they matter, how the engine helps you acquire them.
  */
 import { motion } from "framer-motion";
+import SEOHead from "@/components/SEOHead";
 import { useNavigate } from "react-router-dom";
 import {
   ArrowRight, Play, Sparkles, Search, Zap, BookOpen,
