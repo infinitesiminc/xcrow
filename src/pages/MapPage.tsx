@@ -98,6 +98,7 @@ const MapPage = () => {
   );
 
   const [selectedRole, setSelectedRole] = useState<RoleResult | null>(null);
+  const [selectedKingdomCtx, setSelectedKingdomCtx] = useState<{ tier?: string; xp?: number; questsCompleted?: number; totalQuests?: number } | null>(null);
   const [activeEdge, setActiveEdge] = useState<EdgeContext | null>(null);
   const [activeTab, setActiveTab] = useState<"table" | "scout" | "codex" | "allies">("table");
   const [mapFocusSkillId, setMapFocusSkillId] = useState<string | null>(null);
