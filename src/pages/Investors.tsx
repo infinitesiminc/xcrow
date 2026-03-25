@@ -43,7 +43,7 @@ const PRODUCT_FEATURES = [
 
 const TRACTION = [
   { value: "183", label: "Future Skills Mapped" },
-  { value: "50+", label: "Roles Analyzed" },
+  { value: "100,000+", label: "Roles Analyzed" },
   { value: "8", label: "Skill Territories" },
   { value: "3", label: "School Pilots" },
   { value: "1,200+", label: "Tasks Catalogued" },
