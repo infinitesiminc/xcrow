@@ -236,8 +236,8 @@ function CheckpointChat({ checkpoint }: { checkpoint: AuditCheckpoint }) {
               className={`inline-block max-w-[90%] rounded-lg px-3 py-2 text-left`}
               style={
                 msg.role === "user"
-                  ? { background: "hsl(262 60% 50% / 0.15)", border: "1px solid hsl(262 60% 50% / 0.25)" }
-                  : { background: "hsl(262 30% 18%)", border: "1px solid hsl(262 60% 40% / 0.15)", borderLeft: "2px solid hsl(262 80% 60% / 0.3)" }
+                  ? { background: "hsl(var(--sentinel) / 0.15)", border: "1px solid hsl(var(--sentinel) / 0.25)" }
+                  : { background: "hsl(var(--sentinel-surface-deep))", border: "1px solid hsl(var(--sentinel-border) / 0.15)", borderLeft: "2px solid hsl(var(--sentinel-glow) / 0.3)" }
               }
             >
               {msg.role === "assistant" ? (
