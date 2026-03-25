@@ -683,8 +683,8 @@ export default function GuidedAudit({
         <div
           className="rounded-xl p-4"
           style={{
-            background: "linear-gradient(135deg, hsl(262 30% 12%), hsl(var(--surface-stone)))",
-            border: "1px solid hsl(262 60% 40% / 0.2)",
+            background: "linear-gradient(135deg, hsl(var(--sentinel-surface)), hsl(var(--surface-stone)))",
+            border: "1px solid hsl(var(--sentinel-border) / 0.2)",
             boxShadow: "inset 0 1px 0 hsl(var(--emboss-light)), 0 2px 8px hsl(var(--emboss-shadow))",
           }}
         >
