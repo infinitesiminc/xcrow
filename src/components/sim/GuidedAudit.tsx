@@ -572,7 +572,7 @@ export default function GuidedAudit({
             animate={{ scale: 1.5, opacity: 0.15 }}
             transition={{ duration: 1.2 }}
             className="absolute inset-0 mx-auto w-32 h-32 rounded-full"
-            style={{ background: "radial-gradient(circle, hsl(262 80% 55%), transparent 70%)", top: "-16px" }}
+            style={{ background: "radial-gradient(circle, hsl(var(--sentinel-glow)), transparent 70%)", top: "-16px" }}
           />
 
           {/* Portrait image (if loaded) */}
