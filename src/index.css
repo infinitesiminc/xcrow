@@ -182,6 +182,16 @@
     --emboss-light: 0 0% 100% / 0.05;
     --emboss-shadow: 0 0% 0% / 0.4;
 
+    /* ── Sentinel / L2 battle tokens (dark) ── */
+    --sentinel: 262 80% 55%;
+    --sentinel-surface: 262 30% 12%;
+    --sentinel-surface-deep: 262 30% 14%;
+    --sentinel-border: 262 60% 40%;
+    --sentinel-text: 262 80% 70%;
+    --sentinel-glow: 262 80% 55%;
+    --sentinel-arena-bg: 262 40% 8%;
+    --sentinel-arena-fg: 0 0% 90%;
+
     --sidebar-background: 240 10% 9%;
     --sidebar-foreground: 220 8% 78%;
     --sidebar-primary: 262 83% 62%;
