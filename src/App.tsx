@@ -41,6 +41,7 @@ const HowItWorks = lazy(() => import("./pages/HowItWorks.tsx"));
 const Professionals = lazy(() => import("./pages/Professionals.tsx"));
 const SkillsCodex = lazy(() => import("./pages/Skills.tsx"));
 const Competition = lazy(() => import("./pages/Competition.tsx"));
+const Investors = lazy(() => import("./pages/Investors.tsx"));
 
 // Admin (lazy)
 const HRLayout = lazy(() => import("./layouts/HRLayout.tsx"));
