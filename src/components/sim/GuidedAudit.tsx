@@ -773,7 +773,7 @@ export default function GuidedAudit({
           <div className="flex items-center gap-2.5">
             <div
               className="h-8 w-8 rounded-lg flex items-center justify-center"
-              style={{ background: "hsl(262 60% 50% / 0.15)", border: "1px solid hsl(262 60% 50% / 0.25)" }}
+              style={{ background: "hsl(var(--sentinel) / 0.15)", border: "1px solid hsl(var(--sentinel) / 0.25)" }}
             >
               <Eye className="h-4 w-4" style={{ color: "hsl(262 80% 70%)" }} />
             </div>
