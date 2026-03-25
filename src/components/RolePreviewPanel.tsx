@@ -264,12 +264,14 @@ export default function RolePreviewPanel({ role, onClose, edgeContext, kingdomCo
   // Enlarged view — rendered inside the parent overlay container
   const completedCount = tasks.filter(t => completedTasks.has(t.cluster_name)).length;
   const enlargedOverlay = (
-    <div className="h-full bg-background overflow-y-auto flex flex-col">
-      <div className="sticky top-0 z-20 bg-background/95 backdrop-blur-md border-b border-border px-4 py-3 flex items-center justify-between shrink-0">
-        <button onClick={() => setView("details")} className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
+    <div className="h-full overflow-y-auto flex flex-col" style={{ background: "hsl(var(--surface-stone))" }}>
+      <div className="sticky top-0 z-20 backdrop-blur-md px-4 py-3 flex items-center justify-between shrink-0"
+        style={{ background: "hsl(var(--surface-stone) / 0.95)", borderBottom: "1px solid hsl(var(--filigree) / 0.2)" }}>
+        <button onClick={() => setView("details")} className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+          style={{ fontFamily: "'Cinzel', serif" }}>
           <ChevronLeft className="h-4 w-4" /> Back
         </button>
-        <span className="text-sm font-semibold text-foreground truncate max-w-[200px]">{role.title}</span>
+        <span className="text-sm font-bold text-foreground truncate max-w-[200px]" style={{ fontFamily: "'Cinzel', serif" }}>{role.title}</span>
         <button onClick={toggleBookmark} className="p-2 rounded-lg hover:bg-muted/30 transition-colors">
           {isBookmarked ? <BookmarkCheck className="h-4 w-4 text-primary" /> : <Bookmark className="h-4 w-4 text-muted-foreground" />}
         </button>
@@ -279,33 +281,33 @@ export default function RolePreviewPanel({ role, onClose, edgeContext, kingdomCo
         <div className="flex items-center gap-4 mb-6">
           <ReadinessRing readiness={readiness} size={64} />
           <div className="min-w-0 flex-1">
-            <h1 className="text-lg font-display font-bold text-foreground leading-snug">{role.title}</h1>
+            <h1 className="text-lg font-bold text-foreground leading-snug" style={{ fontFamily: "'Cinzel', serif", textShadow: "0 0 12px hsl(var(--filigree-glow) / 0.15)" }}>{role.title}</h1>
             {role.company && <p className="text-sm text-muted-foreground">at {role.company}</p>}
           </div>
         </div>
 
         {completedCount > 0 && (
-          <div className="mb-4">
-            <div className="flex justify-between text-[10px] text-muted-foreground mb-1">
-              <span>Progress</span>
-              <span>{completedCount}/{tasks.length} practiced</span>
+          <div className="mb-4 p-3 rounded-xl" style={{ background: "hsl(var(--filigree) / 0.06)", border: "1px solid hsl(var(--filigree) / 0.12)" }}>
+            <div className="flex justify-between text-[10px] text-muted-foreground mb-1.5">
+              <span className="uppercase tracking-wider" style={{ fontFamily: "'Cinzel', serif" }}>Conquest Progress</span>
+              <span>{completedCount}/{tasks.length} battles won</span>
             </div>
-            <div className="h-1.5 rounded-full bg-secondary overflow-hidden">
+            <div className="h-1.5 rounded-full overflow-hidden" style={{ background: "hsl(var(--filigree) / 0.1)" }}>
               <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${(completedCount / tasks.length) * 100}%` }} />
             </div>
           </div>
         )}
 
         {edgeContext && edgeTaskSet.size > 0 && (
-          <div className="flex items-center gap-2 mb-4 px-3 py-2 rounded-xl bg-primary/10 border border-primary/20">
+          <div className="flex items-center gap-2 mb-4 px-3 py-2 rounded-xl bg-primary/10" style={{ border: "1px solid hsl(var(--primary) / 0.2)" }}>
             <Sparkles className="h-3.5 w-3.5 text-primary shrink-0" />
             <p className="text-[11px] text-primary font-medium">
-              Exploring <span className="font-bold">{edgeContext.label}</span> — {edgeTaskSet.size} task{edgeTaskSet.size > 1 ? "s" : ""} build{edgeTaskSet.size === 1 ? "s" : ""} this edge
+              Exploring <span className="font-bold">{edgeContext.label}</span> — {edgeTaskSet.size} battle{edgeTaskSet.size > 1 ? "s" : ""} forge{edgeTaskSet.size === 1 ? "s" : ""} this edge
             </p>
           </div>
         )}
 
-        <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">Tasks & AI Impact</h3>
+        <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-3" style={{ fontFamily: "'Cinzel', serif" }}>Battles & Threat Level</h3>
         <div className="space-y-3">
           {[...tasks]
             .sort((a, b) => {
@@ -326,29 +328,34 @@ export default function RolePreviewPanel({ role, onClose, edgeContext, kingdomCo
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.04 }}
-                className={`group rounded-xl border bg-card hover:border-primary/30 transition-all overflow-hidden ${isEdgeTask ? "border-primary/40 ring-1 ring-primary/20" : "border-border/50"}`}
+                className={`group rounded-xl overflow-hidden ${isEdgeTask ? "ring-1 ring-primary/20" : ""}`}
+                style={{
+                  background: "hsl(var(--surface-stone))",
+                  border: isEdgeTask ? "1px solid hsl(var(--primary) / 0.4)" : "1px solid hsl(var(--filigree) / 0.15)",
+                  boxShadow: "inset 0 1px 0 hsl(var(--emboss-light)), 0 2px 8px hsl(var(--emboss-shadow))",
+                }}
               >
                 <div className="h-1" style={{ background: isEdgeTask ? `hsl(var(--primary))` : `linear-gradient(90deg, hsl(${taskHue} 60% 50%), hsl(${(taskHue + 40) % 360} 50% 45%))` }} />
                 <div className="p-4">
                   <div className="flex items-start gap-3">
                     <div className="mt-0.5 h-8 w-8 rounded-lg flex items-center justify-center shrink-0"
-                      style={{ background: `hsl(${taskHue} 40% 15%)` }}>
+                      style={{ background: `hsl(${taskHue} 40% 15%)`, border: "1px solid hsl(var(--filigree) / 0.1)" }}>
                       <TaskIcon className="h-4 w-4" style={{ color: `hsl(${taskHue} 60% 65%)` }} />
                     </div>
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2 mb-1">
                         {isEdgeTask && <Sparkles className="h-3.5 w-3.5 text-primary shrink-0" />}
-                        <h4 className="text-sm font-semibold text-foreground leading-snug">{t.cluster_name}</h4>
+                        <h4 className="text-sm font-bold text-foreground leading-snug" style={{ fontFamily: "'Cinzel', serif" }}>{t.cluster_name}</h4>
                         {done && <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400 shrink-0" />}
                       </div>
                       {t.description && <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2">{t.description}</p>}
                     </div>
                     <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full shrink-0 ${style.badge}`}>{score}%</span>
                   </div>
-                  <div className="flex items-center justify-between mt-3 pt-3 border-t border-border/30">
+                  <div className="flex items-center justify-between mt-3 pt-3" style={{ borderTop: "1px solid hsl(var(--filigree) / 0.1)" }}>
                     <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
-                      {t.ai_state && <span className="px-2 py-0.5 rounded-full bg-muted/40">{t.ai_state}</span>}
-                      {t.impact_level && <span className="px-2 py-0.5 rounded-full bg-muted/40">{t.impact_level}</span>}
+                      {t.ai_state && <span className="px-2 py-0.5 rounded-full" style={{ background: "hsl(var(--filigree) / 0.08)" }}>{t.ai_state}</span>}
+                      {t.impact_level && <span className="px-2 py-0.5 rounded-full" style={{ background: "hsl(var(--filigree) / 0.08)" }}>{t.impact_level}</span>}
                     </div>
                     <div className="flex items-center gap-2">
                       <FutureTaskPreview
@@ -360,7 +367,11 @@ export default function RolePreviewPanel({ role, onClose, edgeContext, kingdomCo
                         onStartSim={() => startSimulation(t)}
                       />
                       <Button size="sm" variant={done ? "secondary" : "default"} className="h-7 text-xs rounded-full gap-1"
-                        onClick={() => startSimulation(t)}>
+                        style={{ fontFamily: "'Cinzel', serif", letterSpacing: "0.03em" }}
+                        onClick={() => {
+                          if (!user) { openAuthModal(); return; }
+                          startSimulation(t);
+                        }}>
                         <Play className="h-3 w-3" />{done ? "Retry" : "Practice"}
                       </Button>
                     </div>
