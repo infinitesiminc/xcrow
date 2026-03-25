@@ -264,12 +264,14 @@ export default function RolePreviewPanel({ role, onClose, edgeContext, kingdomCo
   // Enlarged view — rendered inside the parent overlay container
   const completedCount = tasks.filter(t => completedTasks.has(t.cluster_name)).length;
   const enlargedOverlay = (
-    <div className="h-full bg-background overflow-y-auto flex flex-col">
-      <div className="sticky top-0 z-20 bg-background/95 backdrop-blur-md border-b border-border px-4 py-3 flex items-center justify-between shrink-0">
-        <button onClick={() => setView("details")} className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
+    <div className="h-full overflow-y-auto flex flex-col" style={{ background: "hsl(var(--surface-stone))" }}>
+      <div className="sticky top-0 z-20 backdrop-blur-md px-4 py-3 flex items-center justify-between shrink-0"
+        style={{ background: "hsl(var(--surface-stone) / 0.95)", borderBottom: "1px solid hsl(var(--filigree) / 0.2)" }}>
+        <button onClick={() => setView("details")} className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+          style={{ fontFamily: "'Cinzel', serif" }}>
           <ChevronLeft className="h-4 w-4" /> Back
         </button>
-        <span className="text-sm font-semibold text-foreground truncate max-w-[200px]">{role.title}</span>
+        <span className="text-sm font-bold text-foreground truncate max-w-[200px]" style={{ fontFamily: "'Cinzel', serif" }}>{role.title}</span>
         <button onClick={toggleBookmark} className="p-2 rounded-lg hover:bg-muted/30 transition-colors">
           {isBookmarked ? <BookmarkCheck className="h-4 w-4 text-primary" /> : <Bookmark className="h-4 w-4 text-muted-foreground" />}
         </button>
@@ -279,33 +281,33 @@ export default function RolePreviewPanel({ role, onClose, edgeContext, kingdomCo
         <div className="flex items-center gap-4 mb-6">
           <ReadinessRing readiness={readiness} size={64} />
           <div className="min-w-0 flex-1">
-            <h1 className="text-lg font-display font-bold text-foreground leading-snug">{role.title}</h1>
+            <h1 className="text-lg font-bold text-foreground leading-snug" style={{ fontFamily: "'Cinzel', serif", textShadow: "0 0 12px hsl(var(--filigree-glow) / 0.15)" }}>{role.title}</h1>
             {role.company && <p className="text-sm text-muted-foreground">at {role.company}</p>}
           </div>
         </div>
 
         {completedCount > 0 && (
-          <div className="mb-4">
-            <div className="flex justify-between text-[10px] text-muted-foreground mb-1">
-              <span>Progress</span>
-              <span>{completedCount}/{tasks.length} practiced</span>
+          <div className="mb-4 p-3 rounded-xl" style={{ background: "hsl(var(--filigree) / 0.06)", border: "1px solid hsl(var(--filigree) / 0.12)" }}>
+            <div className="flex justify-between text-[10px] text-muted-foreground mb-1.5">
+              <span className="uppercase tracking-wider" style={{ fontFamily: "'Cinzel', serif" }}>Conquest Progress</span>
+              <span>{completedCount}/{tasks.length} battles won</span>
             </div>
-            <div className="h-1.5 rounded-full bg-secondary overflow-hidden">
+            <div className="h-1.5 rounded-full overflow-hidden" style={{ background: "hsl(var(--filigree) / 0.1)" }}>
               <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${(completedCount / tasks.length) * 100}%` }} />
             </div>
           </div>
         )}
 
         {edgeContext && edgeTaskSet.size > 0 && (
-          <div className="flex items-center gap-2 mb-4 px-3 py-2 rounded-xl bg-primary/10 border border-primary/20">
+          <div className="flex items-center gap-2 mb-4 px-3 py-2 rounded-xl bg-primary/10" style={{ border: "1px solid hsl(var(--primary) / 0.2)" }}>
             <Sparkles className="h-3.5 w-3.5 text-primary shrink-0" />
             <p className="text-[11px] text-primary font-medium">
-              Exploring <span className="font-bold">{edgeContext.label}</span> — {edgeTaskSet.size} task{edgeTaskSet.size > 1 ? "s" : ""} build{edgeTaskSet.size === 1 ? "s" : ""} this edge
+              Exploring <span className="font-bold">{edgeContext.label}</span> — {edgeTaskSet.size} battle{edgeTaskSet.size > 1 ? "s" : ""} forge{edgeTaskSet.size === 1 ? "s" : ""} this edge
             </p>
           </div>
         )}
 
-        <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">Tasks & AI Impact</h3>
+        <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-3" style={{ fontFamily: "'Cinzel', serif" }}>Battles & Threat Level</h3>
         <div className="space-y-3">
           {[...tasks]
             .sort((a, b) => {
@@ -326,29 +328,34 @@ export default function RolePreviewPanel({ role, onClose, edgeContext, kingdomCo
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.04 }}
-                className={`group rounded-xl border bg-card hover:border-primary/30 transition-all overflow-hidden ${isEdgeTask ? "border-primary/40 ring-1 ring-primary/20" : "border-border/50"}`}
+                className={`group rounded-xl overflow-hidden ${isEdgeTask ? "ring-1 ring-primary/20" : ""}`}
+                style={{
+                  background: "hsl(var(--surface-stone))",
+                  border: isEdgeTask ? "1px solid hsl(var(--primary) / 0.4)" : "1px solid hsl(var(--filigree) / 0.15)",
+                  boxShadow: "inset 0 1px 0 hsl(var(--emboss-light)), 0 2px 8px hsl(var(--emboss-shadow))",
+                }}
               >
                 <div className="h-1" style={{ background: isEdgeTask ? `hsl(var(--primary))` : `linear-gradient(90deg, hsl(${taskHue} 60% 50%), hsl(${(taskHue + 40) % 360} 50% 45%))` }} />
                 <div className="p-4">
                   <div className="flex items-start gap-3">
                     <div className="mt-0.5 h-8 w-8 rounded-lg flex items-center justify-center shrink-0"
-                      style={{ background: `hsl(${taskHue} 40% 15%)` }}>
+                      style={{ background: `hsl(${taskHue} 40% 15%)`, border: "1px solid hsl(var(--filigree) / 0.1)" }}>
                       <TaskIcon className="h-4 w-4" style={{ color: `hsl(${taskHue} 60% 65%)` }} />
                     </div>
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2 mb-1">
                         {isEdgeTask && <Sparkles className="h-3.5 w-3.5 text-primary shrink-0" />}
-                        <h4 className="text-sm font-semibold text-foreground leading-snug">{t.cluster_name}</h4>
+                        <h4 className="text-sm font-bold text-foreground leading-snug" style={{ fontFamily: "'Cinzel', serif" }}>{t.cluster_name}</h4>
                         {done && <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400 shrink-0" />}
                       </div>
                       {t.description && <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2">{t.description}</p>}
                     </div>
                     <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full shrink-0 ${style.badge}`}>{score}%</span>
                   </div>
-                  <div className="flex items-center justify-between mt-3 pt-3 border-t border-border/30">
+                  <div className="flex items-center justify-between mt-3 pt-3" style={{ borderTop: "1px solid hsl(var(--filigree) / 0.1)" }}>
                     <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
-                      {t.ai_state && <span className="px-2 py-0.5 rounded-full bg-muted/40">{t.ai_state}</span>}
-                      {t.impact_level && <span className="px-2 py-0.5 rounded-full bg-muted/40">{t.impact_level}</span>}
+                      {t.ai_state && <span className="px-2 py-0.5 rounded-full" style={{ background: "hsl(var(--filigree) / 0.08)" }}>{t.ai_state}</span>}
+                      {t.impact_level && <span className="px-2 py-0.5 rounded-full" style={{ background: "hsl(var(--filigree) / 0.08)" }}>{t.impact_level}</span>}
                     </div>
                     <div className="flex items-center gap-2">
                       <FutureTaskPreview
@@ -360,7 +367,11 @@ export default function RolePreviewPanel({ role, onClose, edgeContext, kingdomCo
                         onStartSim={() => startSimulation(t)}
                       />
                       <Button size="sm" variant={done ? "secondary" : "default"} className="h-7 text-xs rounded-full gap-1"
-                        onClick={() => startSimulation(t)}>
+                        style={{ fontFamily: "'Cinzel', serif", letterSpacing: "0.03em" }}
+                        onClick={() => {
+                          if (!user) { openAuthModal(); return; }
+                          startSimulation(t);
+                        }}>
                         <Play className="h-3 w-3" />{done ? "Retry" : "Practice"}
                       </Button>
                     </div>
@@ -385,16 +396,22 @@ export default function RolePreviewPanel({ role, onClose, edgeContext, kingdomCo
 
   // ── Details view — expandable task cards ──
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.2 }} className="h-full flex flex-col bg-card overflow-hidden">
-      {/* Compact header */}
-      <div className="px-3 py-2.5 shrink-0 border-b border-border/50" style={{ background: `linear-gradient(135deg, hsl(${hue1} 50% 10%) 0%, hsl(${hue2} 40% 8%) 100%)` }}>
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.2 }} className="h-full flex flex-col overflow-hidden"
+      style={{ background: "hsl(var(--surface-stone))" }}>
+      {/* Compact header — stone texture with filigree border */}
+      <div className="px-3 py-2.5 shrink-0" style={{
+        background: `linear-gradient(135deg, hsl(${hue1} 50% 10%) 0%, hsl(${hue2} 40% 8%) 100%)`,
+        borderBottom: "1px solid hsl(var(--filigree) / 0.2)",
+        boxShadow: "inset 0 -1px 0 hsl(var(--emboss-shadow))",
+      }}>
         <div className="flex items-center gap-2.5">
           {logoUrl && (
-            <img src={logoUrl} alt="" className="h-7 w-7 rounded-md object-contain bg-muted/20 p-0.5 shrink-0"
+            <img src={logoUrl} alt="" className="h-7 w-7 rounded-md object-contain p-0.5 shrink-0"
+              style={{ background: "hsl(var(--filigree) / 0.08)", border: "1px solid hsl(var(--filigree) / 0.12)" }}
               onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
           )}
           <div className="min-w-0 flex-1">
-            <h2 className="text-sm font-bold text-foreground leading-snug truncate">{role.title}</h2>
+            <h2 className="text-sm font-bold text-foreground leading-snug truncate" style={{ fontFamily: "'Cinzel', serif" }}>{role.title}</h2>
             <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
               {role.company && <span>{role.company}</span>}
               {role.location && <span className="flex items-center gap-0.5"><MapPin className="h-2.5 w-2.5" />{role.location}</span>}
@@ -414,11 +431,11 @@ export default function RolePreviewPanel({ role, onClose, edgeContext, kingdomCo
         </div>
         {role.augmented > 0 && (
           <div className="mt-2 flex items-center gap-2">
-            <div className="flex-1 h-1 rounded-full bg-muted/30 overflow-hidden">
+            <div className="flex-1 h-1 rounded-full overflow-hidden" style={{ background: "hsl(var(--filigree) / 0.12)" }}>
               <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${role.augmented}%` }} />
             </div>
             <span className="text-[11px] font-semibold text-primary">{role.augmented}%</span>
-            <span className="text-[10px] text-muted-foreground uppercase tracking-wide">AI</span>
+            <span className="text-[10px] text-muted-foreground uppercase tracking-wider" style={{ fontFamily: "'Cinzel', serif" }}>Threat</span>
           </div>
         )}
       </div>
@@ -432,11 +449,15 @@ export default function RolePreviewPanel({ role, onClose, edgeContext, kingdomCo
             style={{
               background: "hsl(var(--filigree) / 0.08)",
               border: "1px solid hsl(var(--filigree) / 0.15)",
+              boxShadow: "inset 0 1px 0 hsl(var(--emboss-light))",
             }}
           >
             <div className="flex items-center gap-1.5">
               <Shield className="h-3.5 w-3.5" style={{ color: kingdomContext.tier === "conquered" ? "hsl(45 93% 47%)" : kingdomContext.tier === "fortified" ? "hsl(142 71% 45%)" : kingdomContext.tier === "contested" ? "hsl(var(--primary))" : "hsl(var(--muted-foreground))" }} />
-              <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: kingdomContext.tier === "conquered" ? "hsl(45 93% 47%)" : kingdomContext.tier === "fortified" ? "hsl(142 71% 45%)" : kingdomContext.tier === "contested" ? "hsl(var(--primary))" : "hsl(var(--muted-foreground))" }}>
+              <span className="text-[10px] font-bold uppercase tracking-widest" style={{
+                fontFamily: "'Cinzel', serif",
+                color: kingdomContext.tier === "conquered" ? "hsl(45 93% 47%)" : kingdomContext.tier === "fortified" ? "hsl(142 71% 45%)" : kingdomContext.tier === "contested" ? "hsl(var(--primary))" : "hsl(var(--muted-foreground))"
+              }}>
                 {kingdomContext.tier}
               </span>
             </div>
@@ -483,7 +504,7 @@ export default function RolePreviewPanel({ role, onClose, edgeContext, kingdomCo
               <div>
                 <div className="flex items-center gap-2 mb-3">
                   <Layers className="h-4 w-4 text-primary" />
-                  <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{tasks.length} tasks analyzed</h4>
+                  <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-widest" style={{ fontFamily: "'Cinzel', serif" }}>{tasks.length} Battles Mapped</h4>
                 </div>
 
                 <div className="space-y-2">
@@ -507,13 +528,12 @@ export default function RolePreviewPanel({ role, onClose, edgeContext, kingdomCo
                           initial={{ opacity: 0, y: 6 }}
                           animate={{ opacity: 1, y: 0 }}
                           transition={{ delay: i * 0.03 }}
-                          className={`rounded-xl border transition-all overflow-hidden ${
-                            isEdgeTask
-                              ? "border-primary/40 ring-1 ring-primary/20 bg-primary/5"
-                              : isExpanded
-                              ? "border-border bg-muted/20"
-                              : "border-border/50 bg-muted/10 hover:border-border"
-                          }`}
+                          className={`rounded-xl transition-all overflow-hidden ${isEdgeTask ? "ring-1 ring-primary/20" : ""}`}
+                          style={{
+                            background: isExpanded ? "hsl(var(--filigree) / 0.06)" : "hsl(var(--filigree) / 0.03)",
+                            border: isEdgeTask ? "1px solid hsl(var(--primary) / 0.4)" : "1px solid hsl(var(--filigree) / 0.12)",
+                            boxShadow: "inset 0 1px 0 hsl(var(--emboss-light))",
+                          }}
                         >
                           {/* Clickable pill header */}
                           <button
@@ -633,8 +653,8 @@ export default function RolePreviewPanel({ role, onClose, edgeContext, kingdomCo
 
             {/* Role summary — below tasks */}
             {summary && (
-              <div className={tasks.length > 0 ? "mt-5 pt-4 border-t border-border/30" : "mb-4"}>
-                <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">About this role</h3>
+              <div className={tasks.length > 0 ? "mt-5 pt-4" : "mb-4"} style={tasks.length > 0 ? { borderTop: "1px solid hsl(var(--filigree) / 0.12)" } : undefined}>
+                <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-2" style={{ fontFamily: "'Cinzel', serif" }}>Kingdom Lore</h3>
                 <div className="text-sm text-foreground/80 leading-relaxed prose prose-sm prose-invert max-w-none">
                   <ReactMarkdown>{summary}</ReactMarkdown>
                 </div>
@@ -644,15 +664,21 @@ export default function RolePreviewPanel({ role, onClose, edgeContext, kingdomCo
         )}
       </div>
 
-      {/* Footer — single primary CTA to expand into full quest log */}
-      <div className="p-3 border-t border-border shrink-0 flex gap-2">
-        <button onClick={toggleBookmark} className="h-9 px-3 rounded-xl border border-border flex items-center gap-1.5 text-xs hover:bg-muted/30 transition-colors">
+      {/* Footer — single primary CTA with RPG styling */}
+      <div className="p-3 shrink-0 flex gap-2" style={{ borderTop: "1px solid hsl(var(--filigree) / 0.2)" }}>
+        <button onClick={toggleBookmark} className="h-9 px-3 rounded-xl flex items-center gap-1.5 text-xs hover:bg-muted/30 transition-colors"
+          style={{ border: "1px solid hsl(var(--filigree) / 0.15)" }}>
           {isBookmarked ? <BookmarkCheck className="h-3.5 w-3.5 text-primary" /> : <Bookmark className="h-3.5 w-3.5 text-muted-foreground" />}
           {isBookmarked ? "Saved" : "Save"}
         </button>
         <button
           onClick={() => setView("enlarged")}
-          className="flex-1 flex items-center justify-center gap-2 rounded-xl bg-primary text-primary-foreground py-2 text-sm font-medium hover:bg-primary/90 transition-colors"
+          className="flex-1 flex items-center justify-center gap-2 rounded-xl bg-primary text-primary-foreground py-2 text-sm font-bold hover:bg-primary/90 transition-colors"
+          style={{
+            fontFamily: "'Cinzel', serif",
+            letterSpacing: "0.04em",
+            boxShadow: "0 4px 16px hsl(var(--primary) / 0.3), inset 0 1px 0 hsl(var(--emboss-light))",
+          }}
         >
           <Maximize2 className="h-4 w-4" /> Mission Briefing <ArrowRight className="h-4 w-4" />
         </button>
