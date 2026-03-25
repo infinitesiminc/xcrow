@@ -653,8 +653,8 @@ export default function RolePreviewPanel({ role, onClose, edgeContext, kingdomCo
 
             {/* Role summary — below tasks */}
             {summary && (
-              <div className={tasks.length > 0 ? "mt-5 pt-4 border-t border-border/30" : "mb-4"}>
-                <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">About this role</h3>
+              <div className={tasks.length > 0 ? "mt-5 pt-4" : "mb-4"} style={tasks.length > 0 ? { borderTop: "1px solid hsl(var(--filigree) / 0.12)" } : undefined}>
+                <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-2" style={{ fontFamily: "'Cinzel', serif" }}>Kingdom Lore</h3>
                 <div className="text-sm text-foreground/80 leading-relaxed prose prose-sm prose-invert max-w-none">
                   <ReactMarkdown>{summary}</ReactMarkdown>
                 </div>
