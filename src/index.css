@@ -320,6 +320,16 @@ html:not(.light):not(.parchment) {
   --emboss-light: 0 0% 100% / 0.5;
   --emboss-shadow: 30 20% 30% / 0.12;
 
+  /* ── Sentinel / L2 battle tokens (parchment) ── */
+  --sentinel: 262 55% 45%;
+  --sentinel-surface: 262 12% 85%;
+  --sentinel-surface-deep: 262 10% 80%;
+  --sentinel-border: 262 25% 65%;
+  --sentinel-text: 262 55% 38%;
+  --sentinel-glow: 262 65% 50%;
+  --sentinel-arena-bg: 262 8% 90%;
+  --sentinel-arena-fg: 262 15% 15%;
+
   --sidebar-background: 35 20% 90%;
   --sidebar-foreground: 30 15% 20%;
   --sidebar-primary: 262 70% 48%;
