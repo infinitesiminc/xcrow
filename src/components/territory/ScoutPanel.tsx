@@ -465,7 +465,7 @@ function BrowseSubTab({ onOpenRole }: { onOpenRole?: (role: RoleResult) => void 
    SUB-TAB 3: My Kingdoms (tracked progression)
    ════════════════════════════════════════════ */
 
-function KingdomsSubTab({ onOpenRole }: { onOpenRole?: (role: RoleResult) => void }) {
+function KingdomsSubTab({ onOpenRole }: { onOpenRole?: (role: RoleResult, kingdomContext?: KingdomContextData) => void }) {
   const { user } = useAuth();
   const [kingdoms, setKingdoms] = useState<Kingdom[]>([]);
   const [loading, setLoading] = useState(true);
