@@ -98,8 +98,19 @@ export const GTC_TOOLS: GTCTool[] = [
   // ═══════════════════════════════════════════
   // DATA PLATFORMS
   // ═══════════════════════════════════════════
-  { name: "Snowflake", company: "Snowflake", category: "data-platforms", version: "2025", description: "Cloud data platform with Cortex AI for analytics, ML, and LLM-powered queries.", icon: "❄️", url: "https://snowflake.com", type: "learnable", maturity: "ga", pricing: "Paid", useCases: ["data-warehouse", "analytics", "ml"] },
-  { name: "Databricks", company: "Databricks", category: "data-platforms", version: "2025", description: "Unified data + AI lakehouse platform with MosaicML training capabilities.", icon: "🧱", url: "https://databricks.com", type: "learnable", maturity: "ga", pricing: "Paid", useCases: ["data-lakehouse", "ml-training", "analytics"] },
+  { name: "Snowflake", company: "Snowflake", category: "data-platforms", version: "2025", description: "Cloud data platform with Cortex AI for analytics, ML, and LLM-powered queries.", icon: "❄️", url: "https://snowflake.com", type: "learnable", maturity: "ga", pricing: "Paid", useCases: ["data-warehouse", "analytics", "ml"], products: [
+    { name: "Snowflake Cortex", description: "AI/ML engine for LLM-powered queries and predictions inside Snowflake.", type: "learnable", useCases: ["analytics", "llm"] },
+    { name: "Snowpark", description: "Developer framework for building data pipelines in Python, Java, and Scala.", type: "learnable", useCases: ["data-engineering"] },
+    { name: "Streamlit", description: "Python framework for building interactive data apps and dashboards.", type: "learnable", url: "https://streamlit.io", useCases: ["data-apps", "visualization"] },
+    { name: "Arctic", description: "Open-source enterprise LLM optimized for SQL and coding tasks.", type: "learnable", useCases: ["coding", "sql"] },
+  ] },
+  { name: "Databricks", company: "Databricks", category: "data-platforms", version: "2025", description: "Unified data + AI lakehouse platform with MosaicML training capabilities.", icon: "🧱", url: "https://databricks.com", type: "learnable", maturity: "ga", pricing: "Paid", useCases: ["data-lakehouse", "ml-training", "analytics"], products: [
+    { name: "Delta Lake", description: "Open-source storage layer for reliable data lakes with ACID transactions.", type: "learnable", useCases: ["data-lake", "reliability"] },
+    { name: "Unity Catalog", description: "Unified governance for data, analytics, and AI assets across clouds.", type: "learnable", useCases: ["governance", "cataloging"] },
+    { name: "MLflow", description: "Open-source platform for ML lifecycle: tracking, packaging, and deployment.", type: "learnable", url: "https://mlflow.org", useCases: ["mlops", "experiment-tracking"] },
+    { name: "MosaicML", description: "Efficient LLM pre-training and fine-tuning at scale.", type: "reference", useCases: ["training", "fine-tuning"] },
+    { name: "Databricks SQL", description: "Serverless SQL analytics on lakehouse data.", type: "learnable", useCases: ["analytics", "sql"] },
+  ] },
   { name: "BigQuery", company: "Google", category: "data-platforms", version: "2025", description: "Serverless analytics data warehouse — now GPU-accelerated with NVIDIA KUDF.", icon: "📈", url: "https://cloud.google.com/bigquery", type: "learnable", maturity: "ga", pricing: "Paid", useCases: ["analytics", "data-warehouse", "ml"] },
   { name: "KUDF", company: "NVIDIA", category: "data-platforms", version: "GA", description: "GPU-accelerated data frames for structured data — 5x+ speedups over CPU Spark/Pandas.", icon: "📊", type: "reference", maturity: "ga", pricing: "Open Source", useCases: ["data-processing", "acceleration"] },
   { name: "KVS", company: "NVIDIA", category: "data-platforms", version: "GA", description: "GPU-accelerated vector stores for semantic search across PDFs, video, and speech.", icon: "🔍", type: "reference", maturity: "ga", pricing: "Open Source", useCases: ["vector-search", "rag", "semantic-search"] },
