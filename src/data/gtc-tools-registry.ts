@@ -113,12 +113,25 @@ export const GTC_TOOLS: GTCTool[] = [
   // ═══════════════════════════════════════════
   // CODING AGENTS
   // ═══════════════════════════════════════════
-  { name: "Cursor", company: "Anysphere", category: "coding-agents", version: "1.0", description: "AI-first code editor — chat with your codebase, generate and refactor code inline.", icon: "✏️", url: "https://cursor.com", type: "learnable", maturity: "ga", pricing: "Freemium", useCases: ["software-development", "code-review", "refactoring"] },
+  { name: "Cursor", company: "Anysphere", category: "coding-agents", version: "1.0", description: "AI-first code editor — chat with your codebase, generate and refactor code inline.", icon: "✏️", url: "https://cursor.com", type: "learnable", maturity: "ga", pricing: "Freemium", useCases: ["software-development", "code-review", "refactoring"], products: [
+    { name: "Cursor Tab", description: "Inline AI code completion and next-edit prediction.", type: "learnable" },
+    { name: "Cursor Chat", description: "Codebase-aware AI chat for debugging and architecture.", type: "learnable" },
+    { name: "Cursor Composer", description: "Multi-file agentic editing from natural language.", type: "learnable" },
+  ] },
   { name: "Claude Code", company: "Anthropic", category: "coding-agents", version: "GA", description: "Terminal-based agentic coder — reads files, compiles, tests, and iterates autonomously.", icon: "🔨", url: "https://docs.anthropic.com/en/docs/claude-code", type: "learnable", maturity: "ga", pricing: "Paid", useCases: ["software-development", "testing", "devops"] },
   { name: "Codex", company: "OpenAI", category: "coding-agents", version: "2025", description: "Cloud-based AI coding agent for parallel task execution and PR generation.", icon: "👨‍💻", type: "learnable", maturity: "ga", pricing: "Paid", useCases: ["software-development", "automation", "code-review"] },
-  { name: "GitHub Copilot", company: "GitHub", category: "coding-agents", version: "X", description: "AI pair programmer integrated into VS Code, JetBrains, and CLI workflows.", icon: "🐙", url: "https://github.com/features/copilot", type: "learnable", maturity: "ga", pricing: "Freemium", useCases: ["software-development", "code-completion", "documentation"] },
+  { name: "GitHub Copilot", company: "GitHub", category: "coding-agents", version: "X", description: "AI pair programmer integrated into VS Code, JetBrains, and CLI workflows.", icon: "🐙", url: "https://github.com/features/copilot", type: "learnable", maturity: "ga", pricing: "Freemium", useCases: ["software-development", "code-completion", "documentation"], products: [
+    { name: "Copilot Chat", description: "AI coding assistant chat integrated into your IDE.", type: "learnable" },
+    { name: "Copilot Workspace", description: "Agent that plans, implements, and tests changes from issues.", type: "learnable" },
+    { name: "Copilot Code Review", description: "AI-powered pull request reviews and suggestions.", type: "learnable" },
+    { name: "Copilot CLI", description: "Terminal assistant for shell commands and git operations.", type: "learnable" },
+  ] },
   { name: "Windsurf", company: "Codeium", category: "coding-agents", version: "2025", description: "AI-powered IDE with deep codebase understanding and flow-state coding.", icon: "🏄", url: "https://codeium.com/windsurf", type: "learnable", maturity: "ga", pricing: "Freemium", useCases: ["software-development", "refactoring"] },
-  { name: "Lovable", company: "Lovable", category: "coding-agents", version: "2025", description: "AI full-stack app builder — describe what you want, get a deployed web app.", icon: "💜", url: "https://lovable.dev", type: "learnable", maturity: "ga", pricing: "Freemium", useCases: ["app-development", "prototyping", "no-code"] },
+  { name: "Lovable", company: "Lovable", category: "coding-agents", version: "2025", description: "AI full-stack app builder — describe what you want, get a deployed web app.", icon: "💜", url: "https://lovable.dev", type: "learnable", maturity: "ga", pricing: "Freemium", useCases: ["app-development", "prototyping", "no-code"], products: [
+    { name: "Lovable Builder", description: "AI app builder — describe features, get deployed React apps.", type: "learnable", url: "https://lovable.dev" },
+    { name: "Lovable Cloud", description: "Integrated backend with database, auth, and edge functions.", type: "learnable" },
+    { name: "Lovable Publish", description: "One-click deployment to custom domains.", type: "learnable" },
+  ] },
 
   // ═══════════════════════════════════════════
   // AGENTIC FRAMEWORKS
