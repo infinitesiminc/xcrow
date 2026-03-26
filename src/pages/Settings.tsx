@@ -41,7 +41,6 @@ type SectionKey = typeof NAV_ITEMS[number]["key"];
 
 export default function Settings() {
   const { user, loading: authLoading, signOut, profile, refreshProfile, plan, subscriptionEnd, schoolName, isPro } = useAuth();
-  const { mode: playMode, setMode: setPlayMode } = usePlayMode();
   const { balance: creditBalance } = useCredits();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
