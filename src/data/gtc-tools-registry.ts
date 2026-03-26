@@ -24,6 +24,14 @@ export type ToolCategory =
 export type ToolMaturity = "ga" | "preview" | "beta" | "research";
 export type ToolType = "learnable" | "reference";
 
+export interface ToolProduct {
+  name: string;
+  description: string;
+  type: ToolType;
+  url?: string;
+  useCases?: string[];
+}
+
 export interface GTCTool {
   name: string;
   company: string;
@@ -43,15 +51,29 @@ export interface GTCTool {
   skillMappings?: string[];
   /** Use-case tags for enterprise filtering */
   useCases?: string[];
+  /** Sub-products within the platform */
+  products?: ToolProduct[];
 }
 
 export const GTC_TOOLS: GTCTool[] = [
   // ═══════════════════════════════════════════
   // FOUNDATION MODELS
   // ═══════════════════════════════════════════
-  { name: "ChatGPT", company: "OpenAI", category: "foundation-models", version: "GPT-5", description: "Flagship conversational AI with reasoning, vision, and tool-use capabilities.", icon: "💬", url: "https://chat.openai.com", type: "learnable", maturity: "ga", pricing: "Freemium", useCases: ["content-creation", "analysis", "coding", "research"] },
+  { name: "ChatGPT", company: "OpenAI", category: "foundation-models", version: "GPT-5", description: "Flagship conversational AI with reasoning, vision, and tool-use capabilities.", icon: "💬", url: "https://chat.openai.com", type: "learnable", maturity: "ga", pricing: "Freemium", useCases: ["content-creation", "analysis", "coding", "research"], products: [
+    { name: "ChatGPT", description: "Conversational AI interface for reasoning, writing, and analysis.", type: "learnable", url: "https://chat.openai.com" },
+    { name: "GPT-5 API", description: "API access to GPT-5 for building custom applications.", type: "learnable", url: "https://platform.openai.com" },
+    { name: "DALL-E 3", description: "Text-to-image generation integrated into ChatGPT.", type: "learnable" },
+    { name: "Whisper", description: "Speech-to-text transcription and translation model.", type: "learnable" },
+    { name: "Codex", description: "Cloud-based AI coding agent for parallel task execution.", type: "learnable" },
+    { name: "Sora", description: "Text-to-video generation model for creative content.", type: "learnable", url: "https://openai.com/sora" },
+  ] },
   { name: "Claude", company: "Anthropic", category: "foundation-models", version: "Claude 4 Opus", description: "Safety-focused reasoning model excelling at long-context analysis, coding, and nuanced tasks.", icon: "🟠", url: "https://claude.ai", type: "learnable", maturity: "ga", pricing: "Freemium", useCases: ["analysis", "coding", "writing", "research"] },
-  { name: "Gemini", company: "Google", category: "foundation-models", version: "Gemini 2.5 Pro", description: "Multimodal model with native image, video, and code understanding across Google's ecosystem.", icon: "✨", url: "https://gemini.google.com", type: "learnable", maturity: "ga", pricing: "Freemium", useCases: ["multimodal", "analysis", "coding", "search"] },
+  { name: "Gemini", company: "Google", category: "foundation-models", version: "Gemini 2.5 Pro", description: "Multimodal model with native image, video, and code understanding across Google's ecosystem.", icon: "✨", url: "https://gemini.google.com", type: "learnable", maturity: "ga", pricing: "Freemium", useCases: ["multimodal", "analysis", "coding", "search"], products: [
+    { name: "Gemini App", description: "Conversational AI assistant with deep Google Workspace integration.", type: "learnable", url: "https://gemini.google.com" },
+    { name: "Gemini API", description: "Developer API for building with Gemini models.", type: "learnable", url: "https://ai.google.dev" },
+    { name: "AI Studio", description: "Rapid prototyping environment for prompt engineering and model testing.", type: "learnable", url: "https://aistudio.google.com" },
+    { name: "NotebookLM", description: "AI research assistant that analyzes uploaded documents.", type: "learnable", url: "https://notebooklm.google.com" },
+  ] },
   { name: "Llama", company: "Meta", category: "foundation-models", version: "Llama 4", description: "Open-weight frontier model family for self-hosted and fine-tuned deployments.", icon: "🦙", url: "https://llama.meta.com", type: "learnable", maturity: "ga", pricing: "Open Source", useCases: ["self-hosted", "fine-tuning", "enterprise-ai"] },
   { name: "Mistral", company: "Mistral AI", category: "foundation-models", version: "Mistral Large 2", description: "European open-source LLM with strong multilingual and reasoning capabilities.", icon: "🌬️", url: "https://mistral.ai", type: "learnable", maturity: "ga", pricing: "Open Source", useCases: ["multilingual", "enterprise-ai", "self-hosted"] },
   { name: "Nemotron", company: "NVIDIA", category: "foundation-models", version: "Nemotron 4", description: "Open frontier reasoning models for language, vision, RAG, safety, and speech.", icon: "🤖", type: "reference", maturity: "ga", pricing: "Open Source", useCases: ["enterprise-ai", "rag", "safety"] },
@@ -81,8 +103,19 @@ export const GTC_TOOLS: GTCTool[] = [
   // ═══════════════════════════════════════════
   // DATA PLATFORMS
   // ═══════════════════════════════════════════
-  { name: "Snowflake", company: "Snowflake", category: "data-platforms", version: "2025", description: "Cloud data platform with Cortex AI for analytics, ML, and LLM-powered queries.", icon: "❄️", url: "https://snowflake.com", type: "learnable", maturity: "ga", pricing: "Paid", useCases: ["data-warehouse", "analytics", "ml"] },
-  { name: "Databricks", company: "Databricks", category: "data-platforms", version: "2025", description: "Unified data + AI lakehouse platform with MosaicML training capabilities.", icon: "🧱", url: "https://databricks.com", type: "learnable", maturity: "ga", pricing: "Paid", useCases: ["data-lakehouse", "ml-training", "analytics"] },
+  { name: "Snowflake", company: "Snowflake", category: "data-platforms", version: "2025", description: "Cloud data platform with Cortex AI for analytics, ML, and LLM-powered queries.", icon: "❄️", url: "https://snowflake.com", type: "learnable", maturity: "ga", pricing: "Paid", useCases: ["data-warehouse", "analytics", "ml"], products: [
+    { name: "Snowflake Cortex", description: "AI/ML engine for LLM-powered queries and predictions inside Snowflake.", type: "learnable", useCases: ["analytics", "llm"] },
+    { name: "Snowpark", description: "Developer framework for building data pipelines in Python, Java, and Scala.", type: "learnable", useCases: ["data-engineering"] },
+    { name: "Streamlit", description: "Python framework for building interactive data apps and dashboards.", type: "learnable", url: "https://streamlit.io", useCases: ["data-apps", "visualization"] },
+    { name: "Arctic", description: "Open-source enterprise LLM optimized for SQL and coding tasks.", type: "learnable", useCases: ["coding", "sql"] },
+  ] },
+  { name: "Databricks", company: "Databricks", category: "data-platforms", version: "2025", description: "Unified data + AI lakehouse platform with MosaicML training capabilities.", icon: "🧱", url: "https://databricks.com", type: "learnable", maturity: "ga", pricing: "Paid", useCases: ["data-lakehouse", "ml-training", "analytics"], products: [
+    { name: "Delta Lake", description: "Open-source storage layer for reliable data lakes with ACID transactions.", type: "learnable", useCases: ["data-lake", "reliability"] },
+    { name: "Unity Catalog", description: "Unified governance for data, analytics, and AI assets across clouds.", type: "learnable", useCases: ["governance", "cataloging"] },
+    { name: "MLflow", description: "Open-source platform for ML lifecycle: tracking, packaging, and deployment.", type: "learnable", url: "https://mlflow.org", useCases: ["mlops", "experiment-tracking"] },
+    { name: "MosaicML", description: "Efficient LLM pre-training and fine-tuning at scale.", type: "reference", useCases: ["training", "fine-tuning"] },
+    { name: "Databricks SQL", description: "Serverless SQL analytics on lakehouse data.", type: "learnable", useCases: ["analytics", "sql"] },
+  ] },
   { name: "BigQuery", company: "Google", category: "data-platforms", version: "2025", description: "Serverless analytics data warehouse — now GPU-accelerated with NVIDIA KUDF.", icon: "📈", url: "https://cloud.google.com/bigquery", type: "learnable", maturity: "ga", pricing: "Paid", useCases: ["analytics", "data-warehouse", "ml"] },
   { name: "KUDF", company: "NVIDIA", category: "data-platforms", version: "GA", description: "GPU-accelerated data frames for structured data — 5x+ speedups over CPU Spark/Pandas.", icon: "📊", type: "reference", maturity: "ga", pricing: "Open Source", useCases: ["data-processing", "acceleration"] },
   { name: "KVS", company: "NVIDIA", category: "data-platforms", version: "GA", description: "GPU-accelerated vector stores for semantic search across PDFs, video, and speech.", icon: "🔍", type: "reference", maturity: "ga", pricing: "Open Source", useCases: ["vector-search", "rag", "semantic-search"] },
@@ -132,9 +165,18 @@ export const GTC_TOOLS: GTCTool[] = [
   // ═══════════════════════════════════════════
   // ENTERPRISE AI PLATFORMS
   // ═══════════════════════════════════════════
-  { name: "Salesforce Einstein", company: "Salesforce", category: "enterprise-ai", version: "GPT", description: "AI-powered CRM with conversational agents, predictive analytics, and workflow automation.", icon: "💼", url: "https://www.salesforce.com/artificial-intelligence/", type: "learnable", maturity: "ga", pricing: "Paid", useCases: ["crm", "sales", "customer-service", "automation"] },
+  { name: "Salesforce Einstein", company: "Salesforce", category: "enterprise-ai", version: "GPT", description: "AI-powered CRM with conversational agents, predictive analytics, and workflow automation.", icon: "💼", url: "https://www.salesforce.com/artificial-intelligence/", type: "learnable", maturity: "ga", pricing: "Paid", useCases: ["crm", "sales", "customer-service", "automation"], products: [
+    { name: "Einstein GPT", description: "Generative AI for CRM — auto-generates emails, summaries, and insights.", type: "learnable", useCases: ["sales", "content-creation"] },
+    { name: "Agentforce", description: "Autonomous AI agents for sales, service, and marketing workflows.", type: "learnable", useCases: ["automation", "agents"] },
+    { name: "Data Cloud", description: "Real-time customer data platform unifying all data sources.", type: "learnable", useCases: ["data-integration", "analytics"] },
+    { name: "Flow Orchestration", description: "Visual workflow builder for automating business processes.", type: "learnable", useCases: ["workflow-automation"] },
+  ] },
   { name: "Palantir AIP", company: "Palantir", category: "enterprise-ai", version: "2025", description: "AI platform for airgapped/sovereign deployments and operational decision-making.", icon: "👁️", url: "https://www.palantir.com/aip/", type: "reference", maturity: "ga", pricing: "Enterprise", useCases: ["defense", "government", "operations", "analytics"] },
-  { name: "IBM watsonx", company: "IBM", category: "enterprise-ai", version: "2025", description: "Enterprise AI and data platform — GPU-accelerated with foundation model studio.", icon: "🏢", url: "https://www.ibm.com/watsonx", type: "learnable", maturity: "ga", pricing: "Paid", useCases: ["enterprise-ai", "governance", "data-management"] },
+  { name: "IBM watsonx", company: "IBM", category: "enterprise-ai", version: "2025", description: "Enterprise AI and data platform — GPU-accelerated with foundation model studio.", icon: "🏢", url: "https://www.ibm.com/watsonx", type: "learnable", maturity: "ga", pricing: "Paid", useCases: ["enterprise-ai", "governance", "data-management"], products: [
+    { name: "watsonx.ai", description: "Foundation model studio for training, tuning, and deploying AI models.", type: "learnable", useCases: ["model-training", "fine-tuning"] },
+    { name: "watsonx.data", description: "Open lakehouse architecture for analytics and AI workloads.", type: "learnable", useCases: ["data-lakehouse", "analytics"] },
+    { name: "watsonx.governance", description: "AI governance toolkit for monitoring, compliance, and risk management.", type: "learnable", useCases: ["governance", "compliance"] },
+  ] },
   { name: "ServiceNow AI Agents", company: "ServiceNow", category: "enterprise-ai", version: "2025", description: "AI agents for IT service management, HR, and enterprise workflow automation.", icon: "⚡", url: "https://www.servicenow.com", type: "learnable", maturity: "ga", pricing: "Paid", useCases: ["itsm", "workflow-automation", "hr"] },
   { name: "SAP Joule", company: "SAP", category: "enterprise-ai", version: "2025", description: "AI copilot embedded across SAP's ERP, supply chain, and HR modules.", icon: "🔷", url: "https://www.sap.com/products/artificial-intelligence.html", type: "learnable", maturity: "ga", pricing: "Paid", useCases: ["erp", "supply-chain", "hr", "finance"] },
 
