@@ -384,16 +384,16 @@ export default function FutureIsland({ island, skillLookup, level2SkillIds, leve
             </TooltipTrigger>
             <TooltipContent side="top" className="max-w-[240px]">
               <p className="font-semibold text-xs">
-                {isBossCompleted && <span className="text-amber-400 mr-1">👑</span>}
+                {isBossCompleted && <span className="text-amber-400 mr-1">★</span>}
                 {skill.name}
               </p>
               {skill.description && (
                 <p className="text-xs text-muted-foreground mt-0.5">{skill.description}</p>
               )}
               <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground">
-                <span>📈 {skill.demandCount} demand</span>
-                <span>💼 {skill.jobCount} roles</span>
-                {isBossCompleted && <span className="text-amber-400">👑 Conquered</span>}
+                <span>{skill.demandCount} demand</span>
+                <span>{skill.jobCount} roles</span>
+                {isBossCompleted && <span className="text-amber-400">★ Conquered</span>}
               </div>
             </TooltipContent>
           </Tooltip>
