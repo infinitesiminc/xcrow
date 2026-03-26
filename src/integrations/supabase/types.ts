@@ -1099,6 +1099,57 @@ export type Database = {
         }
         Relationships: []
       }
+      prompt_attempts: {
+        Row: {
+          ai_feedback: string | null
+          created_at: string
+          difficulty: string
+          id: string
+          improved_prompt: string | null
+          scenario_prompt: string
+          score_clarity: number
+          score_output_quality: number
+          score_specificity: number
+          score_technique: number
+          skill_id: string
+          total_score: number | null
+          user_id: string
+          user_prompt: string
+        }
+        Insert: {
+          ai_feedback?: string | null
+          created_at?: string
+          difficulty?: string
+          id?: string
+          improved_prompt?: string | null
+          scenario_prompt: string
+          score_clarity?: number
+          score_output_quality?: number
+          score_specificity?: number
+          score_technique?: number
+          skill_id: string
+          total_score?: number | null
+          user_id: string
+          user_prompt: string
+        }
+        Update: {
+          ai_feedback?: string | null
+          created_at?: string
+          difficulty?: string
+          id?: string
+          improved_prompt?: string | null
+          scenario_prompt?: string
+          score_clarity?: number
+          score_output_quality?: number
+          score_specificity?: number
+          score_technique?: number
+          skill_id?: string
+          total_score?: number | null
+          user_id?: string
+          user_prompt?: string
+        }
+        Relationships: []
+      }
       referrals: {
         Row: {
           created_at: string
