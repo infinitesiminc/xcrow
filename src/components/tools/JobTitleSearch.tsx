@@ -183,185 +183,191 @@ export default function JobTitleSearch({ onSelectTool }: Props) {
         )}
 
         {!loading && results.length > 0 && (
-          <motion.div key="results" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="space-y-1.5">
+          <motion.div key="results" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
             {/* Summary */}
-            <div className="flex items-center gap-3 pb-2">
+            <div className="flex items-center gap-3">
               <p className="text-xs" style={{ color: "hsl(var(--muted-foreground))" }}>
                 <span className="font-bold" style={{ color: "hsl(var(--foreground))" }}>{results.length} tools</span> recommended for "<span className="font-medium">{searchedTitle}</span>"
                 {jobCount > 0 && <span> · based on {jobCount} real job listings</span>}
               </p>
             </div>
 
-            {/* Tool list */}
-            {results.map((item, i) => {
-              const cfg = CATEGORY_CONFIG[item.tool.category];
-              const inStack = isInStack(item.tool.name);
-              const isExpanded = expandedTool === item.tool.name;
-              const relevancePercent = Math.round((item.score / maxScore) * 100);
+            {/* Card grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              {results.map((item, i) => {
+                const cfg = CATEGORY_CONFIG[item.tool.category];
+                const inStack = isInStack(item.tool.name);
+                const isExpanded = expandedTool === item.tool.name;
+                const relevancePercent = Math.round((item.score / maxScore) * 100);
 
-              return (
-                <motion.div
-                  key={item.tool.name}
-                  initial={{ opacity: 0, y: 6 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: i * 0.03 }}
-                  className="rounded-xl overflow-hidden transition-all"
-                  style={{
-                    background: "hsl(var(--card))",
-                    border: `1px solid ${inStack ? "hsl(45, 90%, 55%, 0.35)" : "hsl(var(--border) / 0.2)"}`,
-                  }}
-                >
-                  {/* Main row */}
-                  <div
-                    className="flex items-center gap-3 px-4 py-3 cursor-pointer hover:bg-muted/5 transition-colors"
+                return (
+                  <motion.div
+                    key={item.tool.name}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: i * 0.03 }}
+                    className="rounded-xl overflow-hidden transition-all flex flex-col cursor-pointer group"
+                    style={{
+                      background: "hsl(var(--card))",
+                      border: `1px solid ${inStack ? "hsl(45, 90%, 55%, 0.35)" : "hsl(var(--border) / 0.2)"}`,
+                    }}
                     onClick={() => setExpandedTool(isExpanded ? null : item.tool.name)}
                   >
-                    {/* Rank */}
-                    <span className="text-[10px] font-bold w-5 text-center shrink-0" style={{ color: "hsl(var(--muted-foreground))" }}>
-                      {i + 1}
-                    </span>
-
-                    {/* Icon */}
-                    <span className="text-xl shrink-0">{item.tool.icon}</span>
-
-                    {/* Name + company */}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm font-bold truncate" style={{ color: "hsl(var(--foreground))" }}>
-                          {item.tool.name}
-                        </span>
-                        <span className="text-[9px] px-1.5 py-0.5 rounded-full shrink-0" style={{ background: cfg?.color + "22", color: cfg?.color }}>
-                          {cfg?.label || item.tool.category}
-                        </span>
+                    {/* Card body */}
+                    <div className="p-4 flex-1 space-y-2.5">
+                      {/* Top row: icon + rank + category */}
+                      <div className="flex items-start justify-between">
+                        <div className="flex items-center gap-2.5">
+                          <span className="text-2xl">{item.tool.icon}</span>
+                          <div>
+                            <h3 className="text-sm font-bold leading-tight" style={{ color: "hsl(var(--foreground))" }}>
+                              {item.tool.name}
+                            </h3>
+                            <p className="text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>
+                              {item.tool.company}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-1.5 shrink-0">
+                          <span className="text-[9px] font-bold w-5 h-5 rounded-full flex items-center justify-center"
+                            style={{ background: "hsl(var(--primary) / 0.1)", color: "hsl(var(--primary))" }}>
+                            {i + 1}
+                          </span>
+                        </div>
                       </div>
-                      <p className="text-[10px] truncate" style={{ color: "hsl(var(--muted-foreground))" }}>
-                        {item.tool.company}
-                      </p>
-                    </div>
 
-                    {/* Relevance bar */}
-                    <div className="w-20 shrink-0 hidden sm:block">
-                      <div className="h-1.5 rounded-full overflow-hidden" style={{ background: "hsl(var(--muted) / 0.15)" }}>
-                        <div className="h-full rounded-full transition-all" style={{ width: `${relevancePercent}%`, background: "hsl(var(--primary))" }} />
+                      {/* Category badge */}
+                      <span className="text-[9px] px-1.5 py-0.5 rounded-full inline-block" style={{ background: cfg?.color + "22", color: cfg?.color }}>
+                        {cfg?.label || item.tool.category}
+                      </span>
+
+                      {/* Description (truncated) */}
+                      <p className="text-[11px] line-clamp-2 leading-relaxed" style={{ color: "hsl(var(--foreground) / 0.7)" }}>
+                        {item.tool.description}
+                      </p>
+
+                      {/* Relevance bar */}
+                      <div>
+                        <div className="h-1.5 rounded-full overflow-hidden" style={{ background: "hsl(var(--muted) / 0.12)" }}>
+                          <div className="h-full rounded-full transition-all" style={{ width: `${relevancePercent}%`, background: "hsl(var(--primary))" }} />
+                        </div>
+                        <p className="text-[9px] mt-0.5" style={{ color: "hsl(var(--muted-foreground))" }}>
+                          {relevancePercent}% relevance
+                        </p>
                       </div>
-                      <p className="text-[9px] text-right mt-0.5" style={{ color: "hsl(var(--muted-foreground))" }}>
-                        {relevancePercent}% match
-                      </p>
-                    </div>
 
-                    {/* Add button */}
-                    <button
-                      onClick={e => { e.stopPropagation(); toggleTool(item.tool.name); }}
-                      className="shrink-0 p-1.5 rounded-lg transition-all"
-                      style={{
-                        background: inStack ? "hsl(45, 90%, 55%, 0.15)" : "hsl(var(--muted) / 0.1)",
-                        color: inStack ? "hsl(45, 90%, 55%)" : "hsl(var(--muted-foreground))",
-                      }}
-                    >
-                      {inStack ? <Check className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
-                    </button>
-
-                    {/* Expand chevron */}
-                    <div className="shrink-0">
-                      {isExpanded ? <ChevronUp className="h-3.5 w-3.5" style={{ color: "hsl(var(--muted-foreground))" }} />
-                        : <ChevronDown className="h-3.5 w-3.5" style={{ color: "hsl(var(--muted-foreground))" }} />}
-                    </div>
-                  </div>
-
-                  {/* Expanded detail */}
-                  <AnimatePresence>
-                    {isExpanded && (
-                      <motion.div
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: "auto", opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        className="overflow-hidden"
-                      >
-                        <div className="px-4 pb-4 pt-1 space-y-3 border-t" style={{ borderColor: "hsl(var(--border) / 0.15)" }}>
-                          {/* Description */}
-                          <p className="text-xs leading-relaxed" style={{ color: "hsl(var(--foreground) / 0.8)" }}>
-                            {item.tool.description}
-                          </p>
-
-                          {/* Version */}
-                          {item.tool.version && (
-                            <span className="text-[9px] px-2 py-0.5 rounded font-mono inline-block"
-                              style={{ background: "hsl(var(--muted) / 0.15)", color: "hsl(var(--muted-foreground))" }}>
-                              {item.tool.version}
+                      {/* Top matched skills (compact) */}
+                      {item.matchedSkills.length > 0 && (
+                        <div className="flex flex-wrap gap-1">
+                          {item.matchedSkills.slice(0, 3).map(s => (
+                            <span key={s} className="text-[9px] px-1.5 py-0.5 rounded-full"
+                              style={{ background: "hsl(var(--primary) / 0.08)", color: "hsl(var(--primary))" }}>
+                              {s}
+                            </span>
+                          ))}
+                          {item.matchedSkills.length > 3 && (
+                            <span className="text-[9px] px-1.5 py-0.5 rounded-full"
+                              style={{ background: "hsl(var(--muted) / 0.1)", color: "hsl(var(--muted-foreground))" }}>
+                              +{item.matchedSkills.length - 3}
                             </span>
                           )}
+                        </div>
+                      )}
+                    </div>
 
-                          {/* Product suite */}
-                          {item.tool.products && item.tool.products.length > 0 && (
-                            <div>
-                              <p className="text-[10px] uppercase tracking-wider font-bold mb-1.5" style={{ color: "hsl(var(--muted-foreground))" }}>
-                                Product Suite
-                              </p>
-                              <div className="grid grid-cols-2 gap-1.5">
-                                {item.tool.products.slice(0, 6).map(p => (
-                                  <div key={p.name} className="px-2.5 py-1.5 rounded-lg text-[10px]"
-                                    style={{ background: "hsl(var(--muted) / 0.08)", border: "1px solid hsl(var(--border) / 0.15)" }}>
-                                    <span className="font-medium" style={{ color: "hsl(var(--foreground))" }}>{p.name}</span>
-                                    <span className="block mt-0.5" style={{ color: "hsl(var(--muted-foreground))" }}>{p.description}</span>
-                                  </div>
-                                ))}
-                              </div>
-                            </div>
-                          )}
+                    {/* Card footer */}
+                    <div className="px-4 pb-3 flex items-center gap-2">
+                      <button
+                        onClick={e => { e.stopPropagation(); toggleTool(item.tool.name); }}
+                        className="flex-1 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider flex items-center justify-center gap-1 transition-all"
+                        style={{
+                          background: inStack ? "hsl(45, 90%, 55%, 0.15)" : "hsl(var(--muted) / 0.08)",
+                          border: `1px solid ${inStack ? "hsl(45, 90%, 55%, 0.3)" : "hsl(var(--border) / 0.2)"}`,
+                          color: inStack ? "hsl(45, 90%, 55%)" : "hsl(var(--foreground) / 0.7)",
+                        }}
+                      >
+                        {inStack ? <><Check className="h-3 w-3" /> In Stack</> : <><Plus className="h-3 w-3" /> Add</>}
+                      </button>
+                      {item.tool.type === "learnable" && (
+                        <button
+                          onClick={e => { e.stopPropagation(); onSelectTool?.(item.tool.name); }}
+                          className="py-1.5 px-3 rounded-lg text-[10px] font-bold uppercase tracking-wider flex items-center gap-1"
+                          style={{
+                            background: "linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary) / 0.8))",
+                            color: "hsl(var(--primary-foreground))",
+                          }}
+                        >
+                          <Sparkles className="h-3 w-3" /> Practice
+                        </button>
+                      )}
+                    </div>
 
-                          {/* Matched skills */}
-                          {item.matchedSkills.length > 0 && (
-                            <div>
-                              <p className="text-[10px] uppercase tracking-wider font-bold mb-1.5" style={{ color: "hsl(var(--muted-foreground))" }}>
-                                Why this tool
-                              </p>
-                              <div className="flex flex-wrap gap-1">
-                                {item.matchedSkills.map(s => (
-                                  <span key={s} className="text-[9px] px-2 py-0.5 rounded-full"
-                                    style={{ background: "hsl(var(--primary) / 0.1)", color: "hsl(var(--primary))" }}>
-                                    {s}
-                                  </span>
-                                ))}
-                              </div>
-                            </div>
-                          )}
-
-                          {/* Actions */}
-                          <div className="flex items-center gap-2 pt-1">
-                            <button
-                              onClick={() => toggleTool(item.tool.name)}
-                              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all"
-                              style={{
-                                background: inStack ? "hsl(45, 90%, 55%, 0.15)" : "linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary) / 0.8))",
-                                color: inStack ? "hsl(45, 90%, 55%)" : "hsl(var(--primary-foreground))",
-                                border: inStack ? "1px solid hsl(45, 90%, 55%, 0.3)" : "none",
-                              }}
-                            >
-                              {inStack ? <><Check className="h-3 w-3" /> In Stack</> : <><Plus className="h-3 w-3" /> Add to Stack</>}
-                            </button>
-                            {item.tool.type === "learnable" && (
-                              <button
-                                onClick={() => onSelectTool?.(item.tool.name)}
-                                className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider"
-                                style={{ background: "hsl(var(--muted) / 0.1)", border: "1px solid hsl(var(--border) / 0.2)", color: "hsl(var(--foreground) / 0.7)" }}
-                              >
-                                <Sparkles className="h-3 w-3" /> Practice
-                              </button>
+                    {/* Expanded detail overlay */}
+                    <AnimatePresence>
+                      {isExpanded && (
+                        <motion.div
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: "auto", opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          className="overflow-hidden"
+                        >
+                          <div className="px-4 pb-4 pt-2 space-y-3 border-t" style={{ borderColor: "hsl(var(--border) / 0.15)" }}>
+                            {item.tool.version && (
+                              <span className="text-[9px] px-2 py-0.5 rounded font-mono inline-block"
+                                style={{ background: "hsl(var(--muted) / 0.15)", color: "hsl(var(--muted-foreground))" }}>
+                                {item.tool.version}
+                              </span>
                             )}
+
+                            {item.tool.products && item.tool.products.length > 0 && (
+                              <div>
+                                <p className="text-[10px] uppercase tracking-wider font-bold mb-1.5" style={{ color: "hsl(var(--muted-foreground))" }}>
+                                  Product Suite
+                                </p>
+                                <div className="space-y-1">
+                                  {item.tool.products.slice(0, 4).map(p => (
+                                    <div key={p.name} className="px-2.5 py-1.5 rounded-lg text-[10px]"
+                                      style={{ background: "hsl(var(--muted) / 0.08)", border: "1px solid hsl(var(--border) / 0.12)" }}>
+                                      <span className="font-medium" style={{ color: "hsl(var(--foreground))" }}>{p.name}</span>
+                                      <span className="block mt-0.5" style={{ color: "hsl(var(--muted-foreground))" }}>{p.description}</span>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+
+                            {item.matchedSkills.length > 3 && (
+                              <div>
+                                <p className="text-[10px] uppercase tracking-wider font-bold mb-1.5" style={{ color: "hsl(var(--muted-foreground))" }}>
+                                  All matched skills
+                                </p>
+                                <div className="flex flex-wrap gap-1">
+                                  {item.matchedSkills.map(s => (
+                                    <span key={s} className="text-[9px] px-1.5 py-0.5 rounded-full"
+                                      style={{ background: "hsl(var(--primary) / 0.1)", color: "hsl(var(--primary))" }}>
+                                      {s}
+                                    </span>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+
                             {item.tool.url && (
                               <a href={item.tool.url} target="_blank" rel="noopener noreferrer"
-                                className="p-1.5 rounded-lg" style={{ color: "hsl(var(--muted-foreground))" }}>
-                                <ExternalLink className="h-3.5 w-3.5" />
+                                onClick={e => e.stopPropagation()}
+                                className="flex items-center gap-1 text-[10px] font-medium"
+                                style={{ color: "hsl(var(--primary))" }}>
+                                <ExternalLink className="h-3 w-3" /> Visit website
                               </a>
                             )}
                           </div>
-                        </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </motion.div>
-              );
-            })}
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </motion.div>
+                );
+              })}
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
