@@ -209,7 +209,18 @@ const MapPage = () => {
       }
       setSkillGrowthMap(growthMap);
 
-      // Track which skills have completed L2 boss battles
+      // Compute average automation degree from sim scores
+      if (sims.length > 0) {
+        const scores = sims.map(s => {
+          const risk = ((s.tool_awareness_score || 50) + (s.adaptive_thinking_score || 50)) / 2;
+          const aug = ((s.human_value_add_score || 50) + (s.domain_judgment_score || 50)) / 2;
+          return Math.round(risk * 0.6 + aug * 0.4);
+        });
+        const avgScore = scores.reduce((a, b) => a + b, 0) / scores.length;
+        const lvl = avgScore >= 80 ? 5 : avgScore >= 60 ? 4 : avgScore >= 40 ? 3 : avgScore >= 20 ? 2 : 1;
+        setAvgDegreeLevel(lvl);
+      }
+
       // Superadmins always see bosses as available for repeated testing
       const l2Completed = new Set<string>();
       if (!isSuperAdmin) {
