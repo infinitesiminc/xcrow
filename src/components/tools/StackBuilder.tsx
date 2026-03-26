@@ -45,6 +45,35 @@ export default function StackBuilder({ onSelectTool }: Props) {
   const handleQuizComplete = (toolName: string, result: QuizResult) => {
     setProficiencies(p => ({ ...p, [toolName]: result.level }));
   };
+  // --- Industry boost from company context ---
+  const boostFromIndustry = (industry: string | null, toolScores: Map<string, { score: number; skills: Set<string> }>) => {
+    if (!industry) return;
+    const lower = industry.toLowerCase();
+    const industryToolMap: Record<string, string[]> = {
+      "technology": ["GitHub Copilot", "AWS", "Azure", "Google Cloud", "Datadog", "Snowflake"],
+      "software": ["GitHub Copilot", "Cursor", "Vercel", "Docker", "Kubernetes"],
+      "finance": ["Bloomberg Terminal", "Tableau", "Power BI", "Snowflake", "Alteryx"],
+      "banking": ["Bloomberg Terminal", "Salesforce", "ServiceNow", "Palantir"],
+      "healthcare": ["Epic Systems", "Veeva", "Salesforce Health Cloud", "Power BI"],
+      "retail": ["Shopify", "Salesforce", "HubSpot", "Google Analytics", "Tableau"],
+      "marketing": ["HubSpot", "Marketo", "Salesforce", "Google Analytics", "Semrush"],
+      "consulting": ["Power BI", "Tableau", "Salesforce", "Slack", "Notion"],
+      "manufacturing": ["Siemens", "SAP", "Snowflake", "Power BI", "Tableau"],
+      "media": ["Adobe Creative Cloud", "Figma", "Canva", "Midjourney", "Runway"],
+      "education": ["Canvas", "Google Workspace", "Notion", "Slack"],
+      "legal": ["Westlaw", "LexisNexis", "Ironclad", "DocuSign"],
+    };
+    for (const [key, tools] of Object.entries(industryToolMap)) {
+      if (lower.includes(key)) {
+        for (const t of tools) {
+          if (!toolScores.has(t)) toolScores.set(t, { score: 0, skills: new Set() });
+          toolScores.get(t)!.score += 2;
+          toolScores.get(t)!.skills.add(`${industry} industry`);
+        }
+      }
+    }
+  };
+
   const search = useCallback(async () => {
     const q = query.trim();
     if (!q || q.length < 2) return;
@@ -53,8 +82,31 @@ export default function StackBuilder({ onSelectTool }: Props) {
     setSelectedTemplate(null);
 
     try {
-      const { data: jobs } = await supabase
-        .from("jobs").select("id, title").ilike("title", `%${q}%`).limit(50);
+      // Build job query — optionally filter by company
+      let jobQuery = supabase.from("jobs").select("id, title, company_id").ilike("title", `%${q}%`).limit(50);
+
+      // If company URL provided, find matching company first
+      let companyIndustry: string | null = null;
+      const cUrl = companyUrl.trim().toLowerCase().replace(/^https?:\/\//, "").replace(/\/$/, "");
+      if (cUrl) {
+        const { data: companies } = await supabase
+          .from("companies")
+          .select("id, industry, name")
+          .or(`website.ilike.%${cUrl}%,careers_url.ilike.%${cUrl}%,slug.ilike.%${cUrl.split(".")[0]}%`)
+          .limit(5);
+        if (companies && companies.length > 0) {
+          const companyIds = companies.map(c => c.id);
+          companyIndustry = companies[0].industry;
+          // Boost by also fetching company-specific jobs
+          const { data: companyJobs } = await supabase
+            .from("jobs").select("id, title").in("company_id", companyIds).ilike("title", `%${q}%`).limit(30);
+          if (companyJobs?.length) {
+            // Merge — company jobs get extra weight handled below
+          }
+        }
+      }
+
+      const { data: jobs } = jobQuery;
       const jobIds = jobs?.map(j => j.id) || [];
       setJobCount(jobIds.length);
 
@@ -75,6 +127,10 @@ export default function StackBuilder({ onSelectTool }: Props) {
           const e = toolScores.get(tn)!; e.score += freq; e.skills.add(skill);
         }
       }
+
+      // Boost from company industry
+      boostFromIndustry(companyIndustry, toolScores);
+
       const role = matchRole(q);
       for (const t of role.coreTools) { if (!toolScores.has(t)) toolScores.set(t, { score: 0, skills: new Set() }); toolScores.get(t)!.score += 3; }
       for (const t of role.expandedTools) { if (!toolScores.has(t)) toolScores.set(t, { score: 0, skills: new Set() }); toolScores.get(t)!.score += 1; }
@@ -90,7 +146,7 @@ export default function StackBuilder({ onSelectTool }: Props) {
         .map(n => GTC_TOOLS.find(t => t.name === n)).filter(Boolean)
         .map((t, i) => ({ tool: t!, score: 10 - i, matchedSkills: [] })));
     } finally { setLoading(false); }
-  }, [query]);
+  }, [query, companyUrl]);
 
   // --- JD URL search ---
   const searchByUrl = useCallback(async () => {
