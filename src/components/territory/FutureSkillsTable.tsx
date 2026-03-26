@@ -479,7 +479,7 @@ export default function FutureSkillsTable({ skills, onSkillClick, skillGrowthMap
                       {/* Name + domain pill */}
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-1.5">
-                          {isBookmarked && <span className="text-[8px] ml-auto order-last" style={{ color: "hsl(var(--filigree-glow))" }}>⭐</span>}
+                          {isBookmarked && <Star className="h-3 w-3 ml-auto order-last" style={{ color: "hsl(var(--filigree-glow))" }} />}
                           <SkillIcon skill={skill} />
                           <span className="font-medium text-foreground truncate text-[13px]" style={{ fontFamily: "'Cinzel', serif" }}>{skill.name}</span>
                         </div>
