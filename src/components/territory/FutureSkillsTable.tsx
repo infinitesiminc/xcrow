@@ -581,7 +581,7 @@ export default function FutureSkillsTable({ skills, onSkillClick, skillGrowthMap
                                   className="w-full px-2 py-1.5 rounded-md text-[10px] font-bold uppercase tracking-wider transition-all hover:brightness-110"
                                   style={{ background: "linear-gradient(135deg, hsl(45 93% 58%), hsl(45 93% 48%))", color: "hsl(var(--background))", fontFamily: "'Cinzel', serif" }}
                                 >
-                                  ⚔️ Level 2 Quest
+                                  <Swords className="h-3 w-3 inline mr-1" />Level 2 Quest
                                 </button>
                               </>
                             ) : (
