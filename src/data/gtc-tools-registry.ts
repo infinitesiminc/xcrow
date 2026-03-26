@@ -238,7 +238,12 @@ export const GTC_TOOLS: GTCTool[] = [
   // ═══════════════════════════════════════════
   // CYBERSECURITY
   // ═══════════════════════════════════════════
-  { name: "CrowdStrike Falcon", company: "CrowdStrike", category: "cybersecurity", version: "2025", description: "AI-native endpoint protection and threat intelligence platform.", icon: "🛡️", url: "https://www.crowdstrike.com", type: "learnable", maturity: "ga", pricing: "Paid", useCases: ["endpoint-security", "threat-detection", "incident-response"] },
+  { name: "CrowdStrike Falcon", company: "CrowdStrike", category: "cybersecurity", version: "2025", description: "AI-native endpoint protection and threat intelligence platform.", icon: "🛡️", url: "https://www.crowdstrike.com", type: "learnable", maturity: "ga", pricing: "Paid", useCases: ["endpoint-security", "threat-detection", "incident-response"], products: [
+    { name: "Falcon Prevent", description: "Next-gen antivirus with AI-powered malware prevention.", type: "learnable" },
+    { name: "Falcon Insight XDR", description: "Extended detection and response across endpoints and cloud.", type: "learnable" },
+    { name: "Charlotte AI", description: "Conversational AI for security operations and threat hunting.", type: "learnable" },
+    { name: "Falcon Cloud Security", description: "Cloud workload protection and posture management.", type: "learnable" },
+  ] },
   { name: "Confidential Computing", company: "NVIDIA", category: "cybersecurity", version: "GA", description: "GPU-level encryption — even the cloud operator cannot see your data or models.", icon: "🔐", type: "reference", maturity: "ga", pricing: "Enterprise", useCases: ["data-privacy", "compliance", "regulated-industries"] },
 
   // ═══════════════════════════════════════════
