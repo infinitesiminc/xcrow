@@ -18,7 +18,6 @@ import { User, Menu, X, Compass, Shield, Map, Settings, LogOut, Trophy, Graduati
 
 export default function Navbar() {
   const { user, signOut, openAuthModal, isSuperAdmin, isSchoolAdmin, profile } = useAuth();
-  const { balance: creditBalance } = useCredits();
   useAdaptiveModeNudge();
   const navigate = useNavigate();
   const location = useLocation();
