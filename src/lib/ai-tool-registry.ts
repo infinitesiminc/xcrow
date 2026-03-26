@@ -54,13 +54,27 @@ export const AI_TOOL_REGISTRY: AIToolInfo[] = [
   { name: "Figma AI", pattern: /\bFigma\s*AI\b/gi, description: "AI-powered layout generation and design suggestions.", category: "design", company: "Figma" },
   { name: "Canva AI", pattern: /\bCanva\s*AI\b/gi, description: "AI tools for images, copy, and presentations.", category: "design", company: "Canva" },
 
-  // Data
+  // Data & BI
   { name: "Tableau", pattern: /\bTableau\b/gi, description: "AI-powered data visualization and analytics dashboards.", category: "data", company: "Salesforce", url: "https://tableau.com" },
-  { name: "Power BI", pattern: /\bPower\s*BI\b/gi, description: "Business analytics with AI-assisted data modeling.", category: "data", company: "Microsoft" },
+  { name: "Power BI", pattern: /\bPower\s*BI\b/gi, description: "Business intelligence with AI Copilot for report building.", category: "data", company: "Microsoft" },
+  { name: "Looker", pattern: /\bLooker\b/gi, description: "Semantic data platform with AI-powered exploration.", category: "data", company: "Google" },
+  { name: "ThoughtSpot", pattern: /\bThoughtSpot\b/gi, description: "AI-powered search and analytics — ask questions, get charts.", category: "data", company: "ThoughtSpot" },
 
   // Writing
   { name: "Grammarly", pattern: /\bGrammarly\b/gi, description: "AI writing assistant for grammar, clarity, and tone.", category: "writing", company: "Grammarly", url: "https://grammarly.com" },
   { name: "Jasper", pattern: /\bJasper\b/gi, description: "AI content platform for brand-consistent marketing copy.", category: "writing", company: "Jasper AI", url: "https://jasper.ai" },
+
+  // Enterprise & Productivity
+  { name: "Microsoft 365 Copilot", pattern: /\bMicrosoft\s*365?\s*Copilot\b/gi, description: "AI copilot across Word, Excel, PowerPoint, and Outlook.", category: "productivity", company: "Microsoft" },
+  { name: "Notion AI", pattern: /\bNotion\s*AI\b/gi, description: "AI writing, summarization, and Q&A in Notion.", category: "productivity", company: "Notion", url: "https://notion.so" },
+  { name: "Slack AI", pattern: /\bSlack\s*AI\b/gi, description: "AI-powered channel summaries and search in Slack.", category: "productivity", company: "Salesforce" },
+  { name: "HubSpot AI", pattern: /\bHubSpot\s*(?:AI)?\b/gi, description: "AI-powered CRM with marketing automation and lead scoring.", category: "productivity", company: "HubSpot" },
+  { name: "Gong", pattern: /\bGong\b/gi, description: "Revenue intelligence — AI analysis of sales calls and deals.", category: "data", company: "Gong" },
+  { name: "Workday AI", pattern: /\bWorkday\b/gi, description: "AI-powered HCM for talent, workforce planning, and payroll.", category: "productivity", company: "Workday" },
+  { name: "Harvey AI", pattern: /\bHarvey\b/gi, description: "AI legal assistant for contract analysis and research.", category: "productivity", company: "Harvey" },
+  { name: "Zendesk AI", pattern: /\bZendesk\b/gi, description: "AI-powered customer support and ticket automation.", category: "productivity", company: "Zendesk" },
+  { name: "Gainsight", pattern: /\bGainsight\b/gi, description: "AI-driven customer success — health scoring and churn prediction.", category: "data", company: "Gainsight" },
+  { name: "Anaplan", pattern: /\bAnaplan\b/gi, description: "Connected planning platform for FP&A and forecasting.", category: "data", company: "Anaplan" },
 ];
 
 // Build a single regex that matches any tool name (longest match first)

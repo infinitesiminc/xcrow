@@ -121,6 +121,51 @@ export const TOOL_WORKFLOW_MAP: Record<string, WorkflowStage> = {
   "Isaac Lab": "build",
   "Groot": "build",
   "Alpamo": "deploy",
+
+  // HR & Talent
+  "Workday AI": "automate",
+  "Eightfold AI": "analyze",
+  "HireVue": "analyze",
+  "Lattice": "analyze",
+  "Deel": "automate",
+
+  // Finance & Ops
+  "Workiva": "analyze",
+  "Coupa": "automate",
+  "Stampli": "automate",
+  "Brex AI": "automate",
+  "Anaplan": "analyze",
+
+  // Legal & Compliance
+  "Harvey AI": "research",
+  "Ironclad": "automate",
+  "DocuSign IAM": "automate",
+  "Relativity": "research",
+
+  // Customer Platforms
+  "Zendesk AI": "automate",
+  "Intercom Fin": "automate",
+  "Freshworks": "automate",
+  "Gainsight": "analyze",
+
+  // Marketing & RevOps
+  "HubSpot AI": "automate",
+  "Gong": "analyze",
+  "6sense": "research",
+  "Adobe Marketo": "automate",
+  "Clari": "analyze",
+
+  // Productivity
+  "Microsoft 365 Copilot": "create",
+  "Notion AI": "create",
+  "Slack AI": "create",
+  "Asana AI": "automate",
+
+  // BI & Visualization
+  "Tableau": "analyze",
+  "Power BI": "analyze",
+  "Looker": "analyze",
+  "ThoughtSpot": "analyze",
 };
 
 /** Role archetypes with recommended tools (ordered by priority) */
@@ -138,7 +183,7 @@ export const ROLE_RECOMMENDATIONS: RoleRecommendation[] = [
     aliases: ["product manager", "pm", "product lead", "product owner"],
     description: "Ship better products faster with AI-powered research, prototyping, and analytics.",
     coreTools: ["ChatGPT", "Perplexity", "Figma AI", "NotebookLM", "Lovable", "Canva AI"],
-    expandedTools: ["Claude", "Gemini", "Snowflake", "Midjourney", "LangChain"],
+    expandedTools: ["Claude", "Gemini", "Snowflake", "Midjourney", "LangChain", "Notion AI", "Asana AI"],
   },
   {
     role: "Software Engineer",
@@ -152,7 +197,7 @@ export const ROLE_RECOMMENDATIONS: RoleRecommendation[] = [
     aliases: ["data scientist", "data analyst", "ml engineer", "machine learning", "analytics"],
     description: "From data exploration to model deployment — accelerate every step of the ML lifecycle.",
     coreTools: ["Databricks", "Snowflake", "PyTorch", "Hugging Face", "ChatGPT", "Weights & Biases"],
-    expandedTools: ["BigQuery", "Claude", "Fireworks AI", "Kubernetes", "LangChain", "NotebookLM"],
+    expandedTools: ["BigQuery", "Claude", "Fireworks AI", "Kubernetes", "LangChain", "Tableau", "Power BI"],
   },
   {
     role: "Designer",
@@ -165,15 +210,15 @@ export const ROLE_RECOMMENDATIONS: RoleRecommendation[] = [
     role: "Marketing Manager",
     aliases: ["marketing", "growth", "content", "brand", "digital marketing", "social media"],
     description: "Create campaigns, analyze performance, and generate content at scale.",
-    coreTools: ["ChatGPT", "Canva AI", "Midjourney", "Perplexity", "Claude", "DALL-E"],
-    expandedTools: ["Runway", "NotebookLM", "Salesforce Einstein", "Figma AI", "Gemini"],
+    coreTools: ["HubSpot AI", "ChatGPT", "Canva AI", "Adobe Marketo", "6sense", "Gong"],
+    expandedTools: ["Midjourney", "Perplexity", "Claude", "Clari", "Tableau", "Runway"],
   },
   {
     role: "Operations Manager",
     aliases: ["operations", "ops", "supply chain", "logistics", "program manager"],
     description: "Automate workflows, optimize processes, and make data-driven operational decisions.",
-    coreTools: ["ChatGPT", "SAP Joule", "ServiceNow AI Agents", "Perplexity", "NotebookLM", "Snowflake"],
-    expandedTools: ["Claude", "Salesforce Einstein", "IBM watsonx", "cuOpt", "Gemini"],
+    coreTools: ["ChatGPT", "SAP Joule", "ServiceNow AI Agents", "Asana AI", "NotebookLM", "Snowflake"],
+    expandedTools: ["Claude", "Salesforce Einstein", "IBM watsonx", "cuOpt", "Coupa", "Power BI"],
   },
   {
     role: "Cybersecurity Analyst",
@@ -181,6 +226,41 @@ export const ROLE_RECOMMENDATIONS: RoleRecommendation[] = [
     description: "Detect threats, respond to incidents, and protect infrastructure with AI-powered security.",
     coreTools: ["CrowdStrike Falcon", "ChatGPT", "Perplexity", "Claude", "Palantir AIP", "Confidential Computing"],
     expandedTools: ["NotebookLM", "Gemini", "LangChain", "Kubernetes"],
+  },
+  {
+    role: "HR Manager",
+    aliases: ["hr", "human resources", "talent", "recruiter", "people ops", "people operations", "hrbp", "talent acquisition"],
+    description: "Transform hiring, performance, and workforce planning with AI-powered people tools.",
+    coreTools: ["Workday AI", "Eightfold AI", "HireVue", "Lattice", "ChatGPT", "Deel"],
+    expandedTools: ["Claude", "Notion AI", "Slack AI", "Microsoft 365 Copilot", "Perplexity"],
+  },
+  {
+    role: "Finance Manager",
+    aliases: ["finance", "accountant", "controller", "cfo", "fp&a", "financial analyst", "treasurer", "accounts payable"],
+    description: "Automate financial workflows, forecasting, and compliance with AI-powered finance tools.",
+    coreTools: ["Anaplan", "Workiva", "Coupa", "Stampli", "Brex AI", "ChatGPT"],
+    expandedTools: ["Claude", "Power BI", "Tableau", "SAP Joule", "Microsoft 365 Copilot", "Snowflake"],
+  },
+  {
+    role: "Legal Counsel",
+    aliases: ["legal", "lawyer", "counsel", "attorney", "paralegal", "compliance", "regulatory"],
+    description: "Accelerate contract review, legal research, and compliance with AI legal tools.",
+    coreTools: ["Harvey AI", "Ironclad", "DocuSign IAM", "Relativity", "ChatGPT", "Claude"],
+    expandedTools: ["Perplexity", "NotebookLM", "Microsoft 365 Copilot", "Notion AI"],
+  },
+  {
+    role: "Customer Success Manager",
+    aliases: ["customer success", "csm", "account manager", "client success", "customer experience", "cx"],
+    description: "Drive retention, reduce churn, and expand accounts with AI-powered customer intelligence.",
+    coreTools: ["Gainsight", "Zendesk AI", "Intercom Fin", "Salesforce Einstein", "ChatGPT", "Gong"],
+    expandedTools: ["Claude", "HubSpot AI", "Slack AI", "Freshworks", "Perplexity"],
+  },
+  {
+    role: "Sales Representative",
+    aliases: ["sales", "account executive", "ae", "sdr", "bdr", "sales rep", "business development"],
+    description: "Close more deals with AI-powered revenue intelligence, prospecting, and conversation analysis.",
+    coreTools: ["Gong", "Salesforce Einstein", "6sense", "HubSpot AI", "Clari", "ChatGPT"],
+    expandedTools: ["Claude", "Perplexity", "LinkedIn Sales Navigator", "Microsoft 365 Copilot"],
   },
   {
     role: "Student",
