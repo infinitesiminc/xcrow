@@ -18,12 +18,20 @@ import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover
 import type { CanonicalSkillGrowth } from "@/pages/MapPage";
 import { getSkillRune } from "@/lib/skill-runes";
 
-/** Inline skill badge — skill number from DB */
+/** Inline skill rune — mini SVG icon from the rune generator */
 function SkillIcon({ skill }: { skill: FutureSkill }) {
-  if (skill.skillNumber == null) return null;
+  const territory = getTerritory(skill.category as FutureSkillCategory);
   return (
-    <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded-md shrink-0 bg-primary/15 text-primary">
-      #{skill.skillNumber}
+    <span className="shrink-0 inline-flex items-center justify-center w-5 h-5">
+      <svg viewBox="-7 -7 14 14" width={18} height={18}>
+        <path
+          d={getSkillRune(skill.id, skill.category)}
+          fill="none"
+          stroke={territory.hsl}
+          strokeWidth={0.8}
+          transform="scale(0.7)"
+        />
+      </svg>
     </span>
   );
 }
