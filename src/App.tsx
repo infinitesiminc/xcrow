@@ -164,6 +164,7 @@ const App = () => (
               <Route path="/investors" element={<Investors />} />
               <Route path="/sponsor" element={<AuthGate><Navbar /><SponsorDashboard /><Footer /></AuthGate>} />
               <Route path="/tools" element={<><Navbar /><ToolAtlas /></>} />
+              <Route path="/org-stack" element={<OrgStack />} />
               {/* Redirects — old routes all go to feed */}
               <Route path="/practice" element={<Navigate to="/" replace />} />
               <Route path="/simulations" element={<Navigate to="/" replace />} />
