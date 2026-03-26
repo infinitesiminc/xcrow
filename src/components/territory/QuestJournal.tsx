@@ -278,7 +278,7 @@ export default function QuestJournal({
                   style={{ borderTop: "1px solid hsl(var(--border) / 0.15)" }}
                 >
                   <div className="flex items-center gap-1 text-muted-foreground">
-                    <Eye className="h-3 w-3" />
+                    <Search className="h-3 w-3" />
                     <span className="font-bold text-foreground">{territoriesScouted.size}</span>/8 territories
                   </div>
                   <div className="flex items-center gap-1 text-muted-foreground">
