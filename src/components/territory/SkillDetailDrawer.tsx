@@ -644,3 +644,65 @@ function StatCard({ label, value }: { label: string; value: string | number }) {
     </div>
   );
 }
+
+/* ── Three-Ring Growth Display — Castle visualization ── */
+function ThreeRingDisplay({ growth }: { growth: GrowthDimensions }) {
+  const size = 120;
+  const center = size / 2;
+  const rings = [
+    { r: 52, score: growth.foundation.tier === "widely_taught" ? 80 : growth.foundation.tier === "growing" ? 50 : 20, color: "hsl(var(--muted-foreground))", label: DIMENSION_INFO.foundation.label, emoji: DIMENSION_INFO.foundation.emoji, status: growth.foundation.label },
+    { r: 42, score: growth.aiMastery.score, color: "hsl(var(--primary))", label: DIMENSION_INFO.aiMastery.label, emoji: DIMENSION_INFO.aiMastery.emoji, status: growth.aiMastery.label },
+    { r: 32, score: growth.humanEdge.score, color: "hsl(45 93% 58%)", label: DIMENSION_INFO.humanEdge.label, emoji: DIMENSION_INFO.humanEdge.emoji, status: growth.humanEdge.label },
+  ];
+
+  return (
+    <div className="flex flex-col items-center gap-1">
+      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
+        {rings.map((ring, i) => {
+          const circumference = 2 * Math.PI * ring.r;
+          const filled = (ring.score / 100) * circumference;
+          return (
+            <g key={i}>
+              {/* Background ring */}
+              <circle
+                cx={center} cy={center} r={ring.r}
+                fill="none" stroke="white" strokeWidth={3} opacity={0.08}
+              />
+              {/* Filled arc */}
+              <motion.circle
+                cx={center} cy={center} r={ring.r}
+                fill="none" stroke={ring.color} strokeWidth={3}
+                strokeLinecap="round"
+                strokeDasharray={`${filled} ${circumference - filled}`}
+                strokeDashoffset={circumference * 0.25}
+                initial={{ strokeDasharray: `0 ${circumference}` }}
+                animate={{ strokeDasharray: `${filled} ${circumference - filled}` }}
+                transition={{ duration: 1.2, delay: 0.3 + i * 0.2, ease: "easeOut" }}
+                style={{ filter: ring.score >= 40 ? `drop-shadow(0 0 4px ${ring.color})` : "none" }}
+              />
+            </g>
+          );
+        })}
+        {/* Center filled rings count */}
+        <text x={center} y={center - 4} textAnchor="middle" dominantBaseline="central"
+          style={{ fontSize: "20px", fontWeight: 700, fill: "white", fontFamily: "'Cinzel', serif" }}>
+          {growth.filledRings}/3
+        </text>
+        <text x={center} y={center + 12} textAnchor="middle"
+          style={{ fontSize: "8px", fill: "rgba(255,255,255,0.6)", textTransform: "uppercase", letterSpacing: "0.1em" }}>
+          Rings
+        </text>
+      </svg>
+
+      {/* Legend below rings */}
+      <div className="flex gap-3 text-[9px]">
+        {rings.map((ring, i) => (
+          <div key={i} className="flex items-center gap-1" style={{ color: "rgba(255,255,255,0.7)" }}>
+            <div className="w-1.5 h-1.5 rounded-full" style={{ background: ring.color }} />
+            <span>{ring.emoji} {ring.status}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
