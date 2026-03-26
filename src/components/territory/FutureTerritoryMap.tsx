@@ -21,6 +21,7 @@ import { generateNPCSpawns, type NPCSpawn, type WanderingNPC } from "@/lib/wande
 import { getNPCAvatar } from "@/lib/npc-avatar-pool";
 
 import GuardianEncounter from "./GuardianEncounter";
+import GuardianTrial from "./GuardianTrial";
 import NPCEncounter from "./NPCEncounter";
 import RoleNPCEncounter from "./RoleNPCEncounter";
 
