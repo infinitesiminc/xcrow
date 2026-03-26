@@ -420,7 +420,7 @@ export default function FutureSkillsTable({ skills, onSkillClick, skillGrowthMap
                     onClick={() => { setDomainFilter(prev => prev === d.fullCategory ? null : d.fullCategory); setChartOpen(false); }}
                     className="flex items-center gap-1 text-[9px] text-muted-foreground hover:text-foreground transition-colors truncate"
                   >
-                    <span>{d.domain.split(" ")[0]}</span>
+                    <span>{d.domain}</span>
                     <span className="font-mono" style={{ color: "hsl(var(--filigree-glow))" }}>{d.xp}</span>
                   </button>
                 ))}
