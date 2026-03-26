@@ -53,10 +53,10 @@ const INSTITUTION_FEATURES = [
 ];
 
 const FAQS = [
-  { q: "Is the Recruit plan really free?", a: "Yes! You get 3 quests per moon with unlimited kingdom scouting. Recruit allies to earn bonus quests — no cap." },
+  { q: "Is the Recruit plan really free?", a: "Yes! You get 3 quests per moon with unlimited kingdom scouting. Recruit friends to earn free Champion months." },
   { q: "What does Champion unlock?", a: "Champion removes all quest limits, unlocks full 3-ring growth tracking, AI Career Scout, and exportable skill profiles." },
+  { q: "How does the referral program work?", a: "Share your unique invite link. When a friend subscribes to Champion, you both get a free month. No limit on referrals!" },
   { q: "Can my school or company cover this?", a: "Absolutely. If your institution has a license, your admin will invite you and you'll get Champion access automatically." },
-  { q: "How does institutional pricing work?", a: "We customize pricing based on cohort size, programs, and outcomes. Contact our team to discuss — free pilots available." },
   { q: "Can I cancel anytime?", a: "Yes. Cancel from settings and keep access until the end of your billing period." },
 ];
 
