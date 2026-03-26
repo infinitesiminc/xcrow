@@ -195,7 +195,6 @@ export default function JobTitleSearch({ onSelectTool }: Props) {
               {results.map((item, i) => {
                 const cfg = CATEGORY_CONFIG[item.tool.category];
                 const inStack = isInStack(item.tool.name);
-                const isExpanded = expandedTool === item.tool.name;
                 const relevancePercent = Math.round((item.score / maxScore) * 100);
 
                 return (
@@ -204,16 +203,15 @@ export default function JobTitleSearch({ onSelectTool }: Props) {
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: i * 0.03 }}
-                    className="rounded-xl overflow-hidden transition-all flex flex-col cursor-pointer group"
+                    className="rounded-xl overflow-hidden transition-all flex flex-col cursor-pointer group hover:shadow-lg"
                     style={{
                       background: "hsl(var(--card))",
                       border: `1px solid ${inStack ? "hsl(45, 90%, 55%, 0.35)" : "hsl(var(--border) / 0.2)"}`,
                     }}
-                    onClick={() => setExpandedTool(isExpanded ? null : item.tool.name)}
+                    onClick={() => onSelectTool?.(item.tool.name)}
                   >
                     {/* Card body */}
                     <div className="p-4 flex-1 space-y-2.5">
-                      {/* Top row: icon + rank + category */}
                       <div className="flex items-start justify-between">
                         <div className="flex items-center gap-2.5">
                           <span className="text-2xl">{item.tool.icon}</span>
@@ -226,25 +224,20 @@ export default function JobTitleSearch({ onSelectTool }: Props) {
                             </p>
                           </div>
                         </div>
-                        <div className="flex items-center gap-1.5 shrink-0">
-                          <span className="text-[9px] font-bold w-5 h-5 rounded-full flex items-center justify-center"
-                            style={{ background: "hsl(var(--primary) / 0.1)", color: "hsl(var(--primary))" }}>
-                            {i + 1}
-                          </span>
-                        </div>
+                        <span className="text-[9px] font-bold w-5 h-5 rounded-full flex items-center justify-center shrink-0"
+                          style={{ background: "hsl(var(--primary) / 0.1)", color: "hsl(var(--primary))" }}>
+                          {i + 1}
+                        </span>
                       </div>
 
-                      {/* Category badge */}
                       <span className="text-[9px] px-1.5 py-0.5 rounded-full inline-block" style={{ background: cfg?.color + "22", color: cfg?.color }}>
                         {cfg?.label || item.tool.category}
                       </span>
 
-                      {/* Description (truncated) */}
                       <p className="text-[11px] line-clamp-2 leading-relaxed" style={{ color: "hsl(var(--foreground) / 0.7)" }}>
                         {item.tool.description}
                       </p>
 
-                      {/* Relevance bar */}
                       <div>
                         <div className="h-1.5 rounded-full overflow-hidden" style={{ background: "hsl(var(--muted) / 0.12)" }}>
                           <div className="h-full rounded-full transition-all" style={{ width: `${relevancePercent}%`, background: "hsl(var(--primary))" }} />
@@ -254,7 +247,6 @@ export default function JobTitleSearch({ onSelectTool }: Props) {
                         </p>
                       </div>
 
-                      {/* Top matched skills (compact) */}
                       {item.matchedSkills.length > 0 && (
                         <div className="flex flex-wrap gap-1">
                           {item.matchedSkills.slice(0, 3).map(s => (
@@ -299,69 +291,6 @@ export default function JobTitleSearch({ onSelectTool }: Props) {
                         </button>
                       )}
                     </div>
-
-                    {/* Expanded detail overlay */}
-                    <AnimatePresence>
-                      {isExpanded && (
-                        <motion.div
-                          initial={{ height: 0, opacity: 0 }}
-                          animate={{ height: "auto", opacity: 1 }}
-                          exit={{ height: 0, opacity: 0 }}
-                          className="overflow-hidden"
-                        >
-                          <div className="px-4 pb-4 pt-2 space-y-3 border-t" style={{ borderColor: "hsl(var(--border) / 0.15)" }}>
-                            {item.tool.version && (
-                              <span className="text-[9px] px-2 py-0.5 rounded font-mono inline-block"
-                                style={{ background: "hsl(var(--muted) / 0.15)", color: "hsl(var(--muted-foreground))" }}>
-                                {item.tool.version}
-                              </span>
-                            )}
-
-                            {item.tool.products && item.tool.products.length > 0 && (
-                              <div>
-                                <p className="text-[10px] uppercase tracking-wider font-bold mb-1.5" style={{ color: "hsl(var(--muted-foreground))" }}>
-                                  Product Suite
-                                </p>
-                                <div className="space-y-1">
-                                  {item.tool.products.slice(0, 4).map(p => (
-                                    <div key={p.name} className="px-2.5 py-1.5 rounded-lg text-[10px]"
-                                      style={{ background: "hsl(var(--muted) / 0.08)", border: "1px solid hsl(var(--border) / 0.12)" }}>
-                                      <span className="font-medium" style={{ color: "hsl(var(--foreground))" }}>{p.name}</span>
-                                      <span className="block mt-0.5" style={{ color: "hsl(var(--muted-foreground))" }}>{p.description}</span>
-                                    </div>
-                                  ))}
-                                </div>
-                              </div>
-                            )}
-
-                            {item.matchedSkills.length > 3 && (
-                              <div>
-                                <p className="text-[10px] uppercase tracking-wider font-bold mb-1.5" style={{ color: "hsl(var(--muted-foreground))" }}>
-                                  All matched skills
-                                </p>
-                                <div className="flex flex-wrap gap-1">
-                                  {item.matchedSkills.map(s => (
-                                    <span key={s} className="text-[9px] px-1.5 py-0.5 rounded-full"
-                                      style={{ background: "hsl(var(--primary) / 0.1)", color: "hsl(var(--primary))" }}>
-                                      {s}
-                                    </span>
-                                  ))}
-                                </div>
-                              </div>
-                            )}
-
-                            {item.tool.url && (
-                              <a href={item.tool.url} target="_blank" rel="noopener noreferrer"
-                                onClick={e => e.stopPropagation()}
-                                className="flex items-center gap-1 text-[10px] font-medium"
-                                style={{ color: "hsl(var(--primary))" }}>
-                                <ExternalLink className="h-3 w-3" /> Visit website
-                              </a>
-                            )}
-                          </div>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
                   </motion.div>
                 );
               })}
