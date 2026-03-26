@@ -420,12 +420,6 @@ const MapPage = () => {
                 }}
               />
             )
-          ) : activeTab === "scout" && isSignedIn ? (
-            <ScoutPanel
-              activeSubTab={scoutSubTab}
-              onSubTabChange={setScoutSubTab}
-              onOpenRole={(role, kCtx) => { setSelectedRole(role); setSelectedKingdomCtx(kCtx || null); }}
-            />
           ) : activeTab === "codex" && isSignedIn ? (
             <CodexPanel />
           ) : activeTab === "allies" && isSignedIn ? (
