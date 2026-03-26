@@ -4,7 +4,7 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Crown, Users, Copy, Check, Gift } from "lucide-react";
+import { Crown, Users, Copy, Check, Gift, Sparkles } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -19,16 +19,17 @@ interface UpgradeModalProps {
 
 export default function UpgradeModal({ open, onOpenChange, type, used, limit }: UpgradeModalProps) {
   const navigate = useNavigate();
-  const { user, profile } = useAuth();
+  const { user } = useAuth();
   const { toast } = useToast();
   const [copied, setCopied] = useState(false);
   const [referralCode, setReferralCode] = useState<string | null>(null);
   const [loadingCode, setLoadingCode] = useState(false);
+  const [loadingCheckout, setLoadingCheckout] = useState(false);
 
-  const label = type === "analysis" ? "role analyses" : "simulations";
+  const label = type === "analysis" ? "role analyses" : "quests";
   const usageText = used !== undefined && limit !== undefined
-    ? `You've used ${used} of ${limit} free ${label} this month.`
-    : `You've reached your free ${label} limit for this month.`;
+    ? `You've used ${used} of ${limit} free ${label} this moon.`
+    : `You've reached your free ${label} limit for this moon.`;
 
   const loadReferralCode = async () => {
     if (referralCode || !user) return;
@@ -42,7 +43,6 @@ export default function UpgradeModal({ open, onOpenChange, type, used, limit }: 
     setLoadingCode(false);
   };
 
-  // Load code when modal opens
   if (open && !referralCode && !loadingCode && user) {
     loadReferralCode();
   }
@@ -55,33 +55,81 @@ export default function UpgradeModal({ open, onOpenChange, type, used, limit }: 
     if (!inviteLink) return;
     await navigator.clipboard.writeText(inviteLink);
     setCopied(true);
-    toast({ title: "Invite link copied!", description: "Share it with friends to earn +2 simulations each." });
+    toast({ title: "Invite link copied!", description: "Share it with friends — you both earn a free month." });
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleUpgrade = async () => {
+    if (!user) return;
+    setLoadingCheckout(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("create-checkout");
+      if (error) throw error;
+      if (data?.url) window.open(data.url, "_blank");
+    } catch (err) {
+      console.error("Checkout error:", err);
+    } finally {
+      setLoadingCheckout(false);
+    }
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
-            <Gift className="h-6 w-6 text-primary" />
+          <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full"
+            style={{ background: "hsl(var(--territory-strategic) / 0.12)" }}>
+            <Crown className="h-6 w-6" style={{ color: "hsl(var(--territory-strategic))" }} />
           </div>
-          <DialogTitle className="text-center text-lg">
-            Want more simulations?
+          <DialogTitle className="text-center text-lg" style={{ fontFamily: "'Cinzel', serif" }}>
+            Ascend to Champion
           </DialogTitle>
           <DialogDescription className="text-center text-sm text-muted-foreground">
             {usageText}
           </DialogDescription>
         </DialogHeader>
 
+        {/* Champion benefits */}
+        <div className="rounded-lg border p-4 space-y-2" style={{ borderColor: "hsl(var(--territory-strategic) / 0.2)", background: "hsl(var(--territory-strategic) / 0.04)" }}>
+          <p className="text-sm font-semibold text-foreground flex items-center gap-1.5">
+            <Sparkles className="h-4 w-4" style={{ color: "hsl(var(--territory-strategic))" }} />
+            Champion Pass — $12/month
+          </p>
+          <ul className="text-xs text-muted-foreground space-y-1.5">
+            {["Unlimited quests & boss battles", "Full territory with 3-ring growth", "AI Career Scout", "Exportable skill profile"].map(f => (
+              <li key={f} className="flex items-center gap-2">
+                <Check className="h-3 w-3 shrink-0" style={{ color: "hsl(var(--territory-strategic))" }} />
+                {f}
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        {/* Upgrade CTA */}
+        <Button
+          size="lg"
+          className="w-full gap-1.5"
+          disabled={loadingCheckout}
+          onClick={handleUpgrade}
+          style={{ boxShadow: "0 0 20px hsl(var(--territory-strategic) / 0.25)" }}
+        >
+          <Crown className="h-4 w-4" /> {loadingCheckout ? "Loading..." : "Upgrade Now"}
+        </Button>
+
+        <div className="relative flex items-center gap-3 py-1">
+          <div className="flex-1 h-px bg-border" />
+          <span className="text-xs text-muted-foreground">or share & earn</span>
+          <div className="flex-1 h-px bg-border" />
+        </div>
+
         {/* Invite section */}
         <div className="rounded-lg border bg-muted/30 p-4 space-y-3">
           <div className="flex items-center gap-2 text-sm font-medium">
-            <Users className="h-4 w-4 text-primary" />
-            Invite friends — earn +2 sims each
+            <Gift className="h-4 w-4 text-primary" />
+            Recruit friends — earn free months
           </div>
           <p className="text-xs text-muted-foreground">
-            Every friend who joins gives you both +2 bonus simulations per month. No limit!
+            Every friend who subscribes to Champion gives you both a free month. No limit!
           </p>
           {referralCode && (
             <Button
@@ -96,32 +144,14 @@ export default function UpgradeModal({ open, onOpenChange, type, used, limit }: 
           )}
         </div>
 
-        <div className="relative flex items-center gap-3 py-1">
-          <div className="flex-1 h-px bg-border" />
-          <span className="text-xs text-muted-foreground">or</span>
-          <div className="flex-1 h-px bg-border" />
-        </div>
-
-        <div className="flex flex-col gap-2.5">
-          <Button
-            size="lg"
-            className="w-full gap-1.5"
-            onClick={() => {
-              onOpenChange(false);
-              navigate("/pricing");
-            }}
-          >
-            <Crown className="h-4 w-4" /> Upgrade to Pro — Unlimited
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="w-full text-muted-foreground"
-            onClick={() => onOpenChange(false)}
-          >
-            Maybe later
-          </Button>
-        </div>
+        <Button
+          variant="ghost"
+          size="sm"
+          className="w-full text-muted-foreground"
+          onClick={() => onOpenChange(false)}
+        >
+          Maybe later
+        </Button>
       </DialogContent>
     </Dialog>
   );
