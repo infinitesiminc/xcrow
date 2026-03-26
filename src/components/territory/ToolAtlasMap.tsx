@@ -5,8 +5,10 @@
  */
 import { useState, useRef, useCallback, useMemo, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ExternalLink, X, Sparkles, Eye, ZoomIn, ZoomOut, Maximize2 } from "lucide-react";
+import { ExternalLink, X, Sparkles, Eye, ZoomIn, ZoomOut, Maximize2, Plus, Check, Package } from "lucide-react";
 import { GTC_TOOLS, CATEGORY_CONFIG, type ToolCategory, type GTCTool } from "@/data/gtc-tools-registry";
+import { getSkillsForTool } from "@/data/tool-skill-mappings";
+import { useMyStack } from "@/hooks/use-my-stack";
 
 /* ── Layout constants ── */
 const NODE_RADIUS = 22;
