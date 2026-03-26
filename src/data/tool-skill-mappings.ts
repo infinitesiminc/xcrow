@@ -458,7 +458,6 @@ export const JOB_SKILL_TO_TOOLS: Record<string, string[]> = {
 
   // ── Finance ──
   "Financial Analysis": ["Anaplan", "Power BI", "ChatGPT", "Snowflake"],
-  "Financial Modeling": ["Anaplan", "Power BI", "ChatGPT", "Snowflake"],
   "Financial Reporting": ["Workiva", "Power BI", "Anaplan"],
   "Budgeting": ["Anaplan", "Brex AI", "Workiva"],
   "Accounts Payable": ["Stampli", "Coupa", "SAP Joule"],
