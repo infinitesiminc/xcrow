@@ -123,6 +123,11 @@ const MapPage = () => {
   const handleLaunchSim = useCallback((req: PendingSimLaunch) => setActiveSim(req), []);
   const handleCloseSim = useCallback(() => setActiveSim(null), []);
 
+  // Prompt Lab overlay state
+  const [activePromptLab, setActivePromptLab] = useState<PromptLabRequest | null>(null);
+  const handleLaunchPromptLab = useCallback((req: PromptLabRequest) => setActivePromptLab(req), []);
+  const handleClosePromptLab = useCallback(() => setActivePromptLab(null), []);
+
   const displaySkills = useMemo(
     () => (realSkills.length > 0 ? realSkills : buildEmptySkills(taxonomy)),
     [realSkills, taxonomy]
