@@ -83,6 +83,7 @@ export default function FutureTerritoryMap({ skills, focusSkillId, level2SkillId
   const [highlightedSkillId, setHighlightedSkillId] = useState<string | null>(null);
   const [activeGuardian, setActiveGuardian] = useState<TerritoryGuardian | null>(null);
   const [activeNPC, setActiveNPC] = useState<{ npc: WanderingNPC; territory: FutureSkillCategory } | null>(null);
+  const [hoverPreview, setHoverPreview] = useState<{ type: "guardian" | "npc"; id: string; name: string; title: string; src: string; x: number; y: number; hue: number } | null>(null);
   const npcSpawns = useMemo(() => generateNPCSpawns(), []);
   const dragRef = useRef<{ startX: number; startY: number; tx: number; ty: number } | null>(null);
   const isDragging = useRef(false);
@@ -320,8 +321,10 @@ export default function FutureTerritoryMap({ skills, focusSkillId, level2SkillId
             const gy = island.cy - island.radius * 0.45;
             return (
               <g key={`guard-${guardian.id}`} className="cursor-pointer"
-                onClick={(e) => { e.stopPropagation(); if (!isDragging.current) { setActiveGuardian(guardian); setActiveNPC(null); } }}>
-                {/* Rhombus shape for guardian */}
+                onClick={(e) => { e.stopPropagation(); if (!isDragging.current) { setActiveGuardian(guardian); setActiveNPC(null); setHoverPreview(null); } }}
+                onMouseEnter={() => setHoverPreview({ type: "guardian", id: guardian.id, name: guardian.name, title: guardian.title, src: GUARDIAN_MAP_AVATARS[guardian.id] || guardIronclad, x: gx, y: gy, hue: guardian.hue })}
+                onMouseLeave={() => setHoverPreview(p => p?.id === guardian.id ? null : p)}
+              >
                 <motion.polygon
                   points={`${gx},${gy - 18} ${gx + 18},${gy} ${gx},${gy + 18} ${gx - 18},${gy}`}
                   fill={`hsl(${guardian.hue} 40% 15%)`}
@@ -331,7 +334,6 @@ export default function FutureTerritoryMap({ skills, focusSkillId, level2SkillId
                   transition={{ delay: 0.8, type: "spring" }}
                   style={{ transformOrigin: `${gx}px ${gy}px` }}
                 />
-                {/* Pulsing rhombus outline */}
                 <motion.polygon
                   points={`${gx},${gy - 22} ${gx + 22},${gy} ${gx},${gy + 22} ${gx - 22},${gy}`}
                   fill="none" stroke={`hsl(${guardian.hue} 50% 45%)`}
@@ -358,8 +360,10 @@ export default function FutureTerritoryMap({ skills, focusSkillId, level2SkillId
             const ny = island.cy + spawn.offsetY;
             return (
               <g key={`npc-${spawn.npc.id}`} className="cursor-pointer"
-                onClick={(e) => { e.stopPropagation(); if (!isDragging.current) { setActiveNPC({ npc: spawn.npc, territory: island.category }); setActiveGuardian(null); } }}>
-                {/* Hexagon shape for NPC */}
+                onClick={(e) => { e.stopPropagation(); if (!isDragging.current) { setActiveNPC({ npc: spawn.npc, territory: island.category }); setActiveGuardian(null); setHoverPreview(null); } }}
+                onMouseEnter={() => setHoverPreview({ type: "npc", id: spawn.npc.id, name: spawn.npc.name, title: spawn.npc.title, src: NPC_MAP_AVATARS[spawn.npc.id] || npcMerchant, x: nx, y: ny, hue: 200 })}
+                onMouseLeave={() => setHoverPreview(p => p?.id === spawn.npc.id ? null : p)}
+              >
                 {(() => {
                   const r = 15;
                   const hexPoints = Array.from({ length: 6 }, (_, i) => {
@@ -389,6 +393,46 @@ export default function FutureTerritoryMap({ skills, focusSkillId, level2SkillId
             );
           })}
         </svg>
+
+        {/* Hover preview tooltip */}
+        <AnimatePresence>
+          {hoverPreview && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.85, y: 8 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.85, y: 8 }}
+              transition={{ duration: 0.15 }}
+              className="absolute z-20 pointer-events-none"
+              style={{
+                left: hoverPreview.x * transform.scale + transform.x,
+                top: hoverPreview.y * transform.scale + transform.y - 90,
+                transform: "translateX(-50%)",
+              }}
+            >
+              <div
+                className="rounded-lg overflow-hidden text-center"
+                style={{
+                  width: 100,
+                  background: `linear-gradient(135deg, hsl(${hoverPreview.hue} 30% 10% / 0.95), hsl(${hoverPreview.hue} 20% 14% / 0.95))`,
+                  border: `1.5px solid hsl(${hoverPreview.hue} 45% 40%)`,
+                  boxShadow: `0 4px 20px hsl(${hoverPreview.hue} 50% 20% / 0.5)`,
+                }}
+              >
+                <img
+                  src={hoverPreview.src}
+                  alt={hoverPreview.name}
+                  className="w-full h-[72px] object-cover"
+                />
+                <div className="px-1.5 py-1.5">
+                  <p className="text-[9px] font-bold truncate" style={{ fontFamily: "'Cinzel', serif", color: `hsl(${hoverPreview.hue} 45% 72%)` }}>
+                    {hoverPreview.name}
+                  </p>
+                  <p className="text-[7px] text-muted-foreground truncate">{hoverPreview.title}</p>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Guardian Encounter Panel */}
         {activeGuardian && (
