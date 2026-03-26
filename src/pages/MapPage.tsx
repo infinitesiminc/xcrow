@@ -7,7 +7,7 @@ import type { FutureSkill } from "@/hooks/use-future-skills";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { X, ScrollText, Users, BookOpen, Compass, PanelLeftClose, PanelLeftOpen } from "lucide-react";
+import { X, ScrollText, Users, BookOpen, Compass, PanelLeftClose, PanelLeftOpen, Save } from "lucide-react";
 import BossBanner from "@/components/territory/BossBanner";
 import SimulatorModal from "@/components/SimulatorModal";
 import type { SimLaunchRequest, PromptLabRequest } from "@/components/territory/SkillLaunchCard";
@@ -15,6 +15,7 @@ import PromptLab from "@/components/sim/PromptLab";
 import { preloadTerritoryImages } from "@/lib/territory-hero-images";
 import CreditGate from "@/components/CreditGate";
 import { Coins } from "lucide-react";
+import { useSimCheckpoints, type SimCheckpoint } from "@/hooks/use-sim-checkpoints";
 
 /** IDs of skills where user has completed a L2 boss battle */
 type Level2CompletedIds = Set<string>;
