@@ -45,6 +45,9 @@ export default function RoleStackHero({ userRole, onSelectTool }: Props) {
 
   return (
     <div className="space-y-6">
+      {/* Job title search */}
+      <JobTitleSearch onApplyStack={handleApplyStack} onSelectRole={handleSelectRole} />
+
       {/* Role selector */}
       <div className="flex flex-col sm:flex-row sm:items-end gap-3">
         <div className="flex-1">
