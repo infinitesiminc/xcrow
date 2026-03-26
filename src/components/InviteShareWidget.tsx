@@ -51,12 +51,17 @@ export default function InviteShareWidget({ compact = false, context }: InviteSh
 
   if (!inviteLink) return null;
 
+  // Append context to the edge function URL for richer OG previews
+  const linkWithCtx = context
+    ? `${inviteLink}&ctx=${encodeURIComponent(context)}`
+    : inviteLink;
+
   const shareText = context
     ? `I just ${context} on Xcrow.ai — the AI career game. Join me! 🏰`
     : "Join me on Xcrow.ai — the AI career game that levels up your future skills! 🏰";
 
   const encodedText = encodeURIComponent(shareText);
-  const encodedLink = encodeURIComponent(inviteLink);
+  const encodedLink = encodeURIComponent(linkWithCtx);
 
   const handleCopy = async () => {
     await navigator.clipboard.writeText(inviteLink);
