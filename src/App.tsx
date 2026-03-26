@@ -20,7 +20,7 @@ const Settings = lazy(() => import("./pages/Settings.tsx"));
 const NotFound = lazy(() => import("./pages/NotFound.tsx"));
 
 const CompanyPage = lazy(() => import("./pages/CompanyPage.tsx"));
-const Journey = lazy(() => import("./pages/Journey.tsx"));
+
 const Students = lazy(() => import("./pages/Students.tsx"));
 const Leaderboard = lazy(() => import("./pages/Leaderboard.tsx"));
 const Pricing = lazy(() => import("./pages/Pricing.tsx"));
