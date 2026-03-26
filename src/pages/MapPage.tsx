@@ -38,6 +38,7 @@ import QuestTrackerStrip from "@/components/territory/QuestTrackerStrip";
 
 import AlliesPanel from "@/components/territory/AlliesPanel";
 import CodexPanel from "@/components/territory/CodexPanel";
+import ToolDetailCard from "@/components/territory/ToolDetailCard";
 import ToolsPanel from "@/components/territory/ToolsPanel";
 
 
@@ -152,6 +153,7 @@ const MapPage = () => {
   
   const [drawerSkill, setDrawerSkill] = useState<FutureSkill | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [selectedToolName, setSelectedToolName] = useState<string | null>(null);
 
   const [realSkills, setRealSkills] = useState<SkillXP[]>([]);
   const [targetSkillIds, setTargetSkillIds] = useState<Set<string>>(new Set());
@@ -491,7 +493,24 @@ const MapPage = () => {
                       }}
                     />
                 ) : activeTab === "codex" && isSignedIn ? (
-                  <CodexPanel />
+                  selectedToolName ? (
+                    <ToolDetailCard
+                      toolName={selectedToolName}
+                      onClose={() => setSelectedToolName(null)}
+                      onSkillClick={(skillName) => {
+                        const skill = futureSkills.find(s => s.name === skillName);
+                        if (skill) {
+                          setMapFocusSkillId(skill.id);
+                          setTimeout(() => setMapFocusSkillId(null), 100);
+                          setDrawerSkill(skill);
+                          setDrawerOpen(true);
+                        }
+                        setSelectedToolName(null);
+                      }}
+                    />
+                  ) : (
+                    <CodexPanel onSelectTool={setSelectedToolName} />
+                  )
                 ) : activeTab === "allies" && isSignedIn ? (
                   <AlliesPanel onLaunchSim={handleLaunchSim} />
                 ) : null}

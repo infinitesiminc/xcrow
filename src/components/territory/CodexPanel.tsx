@@ -28,7 +28,11 @@ const DEMO_DROPS: ToolDrop[] = [
   { id: "demo-6", tool_name: "Devin", tool_icon: "🤖", tool_company: "Cognition", related_skills: ["Agentic Coding", "Multi-Agent Orchestration"], completed_at: new Date().toISOString(), job_title: "Engineering Lead", task_name: "Autonomous Bug Fixing" },
 ];
 
-export default function CodexPanel() {
+interface CodexPanelProps {
+  onSelectTool?: (toolName: string) => void;
+}
+
+export default function CodexPanel({ onSelectTool }: CodexPanelProps) {
   const { user } = useAuth();
   const [drops, setDrops] = useState<ToolDrop[]>([]);
   const [loading, setLoading] = useState(true);
@@ -109,7 +113,7 @@ export default function CodexPanel() {
               background: "hsl(var(--primary) / 0.04)",
               border: "1px solid hsl(var(--primary) / 0.12)",
             }}
-            onClick={() => setExpandedId(isExpanded ? null : drop.id)}
+            onClick={() => onSelectTool ? onSelectTool(drop.tool_name) : setExpandedId(isExpanded ? null : drop.id)}
           >
             {/* Collapsed row */}
             <div className="flex items-center gap-2.5 px-3 py-2.5">
