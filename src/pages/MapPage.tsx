@@ -81,10 +81,12 @@ function buildEmptySkills(taxonomy: TaxonomySkill[]): SkillXP[] {
 }
 
 /** Runic SVG icon paths for the 3 tabs */
-const ForgeRuneIcon = ({ size = 22, color = "currentColor" }: { size?: number; color?: string }) => (
+const JournalRuneIcon = ({ size = 22, color = "currentColor" }: { size?: number; color?: string }) => (
   <svg viewBox="-8 -8 16 16" width={size} height={size} fill="none" stroke={color} strokeWidth={1.2} strokeLinecap="round" strokeLinejoin="round">
-    <path d="M0-6 L4-2 L4 4 L0 7 L-4 4 L-4-2Z" />
-    <path d="M0-3 L0 4 M-2.5 0 L2.5 0 M-1.5-2 L1.5 2" />
+    <path d="M-4-6 L4-6 L5-4 L5 5 L-5 5 L-5-4Z" />
+    <path d="M-3-3 L3-3 M-3 0 L1 0 M-3 2.5 L2 2.5" />
+    <circle cx="3" cy="2" r="1.5" />
+    <path d="M-5-6 L-5 5" strokeWidth={1.8} />
   </svg>
 );
 
