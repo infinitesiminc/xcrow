@@ -280,16 +280,16 @@ export default function SkillProgressPanel({
                     {/* Territory header */}
                     <button
                       onClick={() => toggleCategory(category)}
-                      className="w-full flex items-center gap-2 px-3 py-1.5 text-[11px] font-medium transition-colors hover:bg-muted/15"
-                      style={{ borderBottom: "1px solid hsl(var(--border) / 0.2)" }}
+                      className="w-full flex items-center gap-1.5 px-2 py-1 text-[10px] font-medium transition-colors hover:bg-muted/15"
+                      style={{ borderBottom: "1px solid hsl(var(--border) / 0.15)" }}
                     >
-                      <span className="w-2 h-2 rounded-full shrink-0" style={{ background: territory.hsl }} />
+                      <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: territory.hsl }} />
                       <span className="flex-1 text-left truncate" style={{ color: territory.hsl }}>{category}</span>
                       <span className="font-mono text-[9px] text-muted-foreground">{catPracticed}/{catSkills.length}</span>
                       {catXp > 0 && (
-                        <span className="font-mono text-[9px]" style={{ color: "hsl(var(--filigree))" }}>{catXp} XP</span>
+                        <span className="font-mono text-[9px]" style={{ color: "hsl(var(--filigree))" }}>{catXp}</span>
                       )}
-                      <ChevronRight className={`h-3 w-3 text-muted-foreground transition-transform ${isExpanded ? "rotate-90" : ""}`} />
+                      <ChevronRight className={`h-2.5 w-2.5 text-muted-foreground transition-transform ${isExpanded ? "rotate-90" : ""}`} />
                     </button>
 
                     {/* Skill rows */}
