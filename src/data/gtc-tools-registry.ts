@@ -30,8 +30,6 @@ export interface GTCTool {
   url?: string;
   /** Emoji icon for quick visual recognition */
   icon: string;
-  /** Whether Jensen specifically endorsed/uses it */
-  jensenEndorsed?: boolean;
 }
 
 export const GTC_TOOLS: GTCTool[] = [
