@@ -477,7 +477,6 @@ export const JOB_SKILL_TO_TOOLS: Record<string, string[]> = {
   "Regulatory Compliance": ["Harvey AI", "Workiva", "Relativity"],
   "Regulatory Knowledge": ["Harvey AI", "ChatGPT", "Perplexity"],
   "Risk Assessment": ["Harvey AI", "Palantir AIP", "ChatGPT"],
-  "Risk Management": ["Harvey AI", "Palantir AIP", "ChatGPT"],
   "Due Diligence": ["Harvey AI", "Perplexity", "NotebookLM"],
   "Information Security": ["CrowdStrike Falcon", "ChatGPT", "Claude"],
   "Network Security": ["CrowdStrike Falcon", "ChatGPT"],
