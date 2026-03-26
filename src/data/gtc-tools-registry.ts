@@ -74,17 +74,41 @@ export const GTC_TOOLS: GTCTool[] = [
     { name: "Codex", description: "Cloud-based AI coding agent for parallel task execution.", type: "learnable" },
     { name: "Sora", description: "Text-to-video generation model for creative content.", type: "learnable", url: "https://openai.com/sora" },
   ] },
-  { name: "Claude", company: "Anthropic", category: "foundation-models", version: "Claude 4 Opus", description: "Safety-focused reasoning model excelling at long-context analysis, coding, and nuanced tasks.", icon: "🟠", url: "https://claude.ai", type: "learnable", maturity: "ga", pricing: "Freemium", useCases: ["analysis", "coding", "writing", "research"] },
+  { name: "Claude", company: "Anthropic", category: "foundation-models", version: "Claude 4 Opus", description: "Safety-focused reasoning model excelling at long-context analysis, coding, and nuanced tasks.", icon: "🟠", url: "https://claude.ai", type: "learnable", maturity: "ga", pricing: "Freemium", useCases: ["analysis", "coding", "writing", "research"], products: [
+    { name: "Claude.ai", description: "Conversational AI interface for reasoning, writing, and analysis.", type: "learnable", url: "https://claude.ai" },
+    { name: "Claude API", description: "Developer API for building applications with Claude models.", type: "learnable", url: "https://console.anthropic.com" },
+    { name: "Claude Code", description: "Terminal-based agentic coder for autonomous development.", type: "learnable" },
+    { name: "Claude for Enterprise", description: "SSO, audit logs, and admin controls for enterprise deployments.", type: "reference" },
+  ] },
   { name: "Gemini", company: "Google", category: "foundation-models", version: "Gemini 2.5 Pro", description: "Multimodal model with native image, video, and code understanding across Google's ecosystem.", icon: "✨", url: "https://gemini.google.com", type: "learnable", maturity: "ga", pricing: "Freemium", useCases: ["multimodal", "analysis", "coding", "search"], products: [
     { name: "Gemini App", description: "Conversational AI assistant with deep Google Workspace integration.", type: "learnable", url: "https://gemini.google.com" },
     { name: "Gemini API", description: "Developer API for building with Gemini models.", type: "learnable", url: "https://ai.google.dev" },
     { name: "AI Studio", description: "Rapid prototyping environment for prompt engineering and model testing.", type: "learnable", url: "https://aistudio.google.com" },
     { name: "NotebookLM", description: "AI research assistant that analyzes uploaded documents.", type: "learnable", url: "https://notebooklm.google.com" },
   ] },
-  { name: "Llama", company: "Meta", category: "foundation-models", version: "Llama 4", description: "Open-weight frontier model family for self-hosted and fine-tuned deployments.", icon: "🦙", url: "https://llama.meta.com", type: "learnable", maturity: "ga", pricing: "Open Source", useCases: ["self-hosted", "fine-tuning", "enterprise-ai"] },
-  { name: "Mistral", company: "Mistral AI", category: "foundation-models", version: "Mistral Large 2", description: "European open-source LLM with strong multilingual and reasoning capabilities.", icon: "🌬️", url: "https://mistral.ai", type: "learnable", maturity: "ga", pricing: "Open Source", useCases: ["multilingual", "enterprise-ai", "self-hosted"] },
-  { name: "Nemotron", company: "NVIDIA", category: "foundation-models", version: "Nemotron 4", description: "Open frontier reasoning models for language, vision, RAG, safety, and speech.", icon: "🤖", type: "reference", maturity: "ga", pricing: "Open Source", useCases: ["enterprise-ai", "rag", "safety"] },
-  { name: "Cohere", company: "Cohere", category: "foundation-models", version: "Command R+", description: "Enterprise LLM optimized for RAG, search, and business workflows.", icon: "🗣️", url: "https://cohere.com", type: "learnable", maturity: "ga", pricing: "Paid", useCases: ["enterprise-ai", "rag", "search"] },
+  { name: "Llama", company: "Meta", category: "foundation-models", version: "Llama 4", description: "Open-weight frontier model family for self-hosted and fine-tuned deployments.", icon: "🦙", url: "https://llama.meta.com", type: "learnable", maturity: "ga", pricing: "Open Source", useCases: ["self-hosted", "fine-tuning", "enterprise-ai"], products: [
+    { name: "Llama 4 Scout", description: "17B active params, 16 experts — efficient model for broad deployments.", type: "learnable" },
+    { name: "Llama 4 Maverick", description: "17B active params, 128 experts — highest quality open model.", type: "learnable" },
+    { name: "Llama 4 Behemoth", description: "288B active params — frontier-class for the most demanding tasks.", type: "reference" },
+    { name: "Llama Guard", description: "Safety classifier for filtering harmful content in Llama outputs.", type: "learnable" },
+  ] },
+  { name: "Mistral", company: "Mistral AI", category: "foundation-models", version: "Mistral Large 2", description: "European open-source LLM with strong multilingual and reasoning capabilities.", icon: "🌬️", url: "https://mistral.ai", type: "learnable", maturity: "ga", pricing: "Open Source", useCases: ["multilingual", "enterprise-ai", "self-hosted"], products: [
+    { name: "Mistral Large", description: "Flagship reasoning model for complex analysis and coding.", type: "learnable" },
+    { name: "Mistral Small", description: "Cost-efficient model for high-volume, simpler tasks.", type: "learnable" },
+    { name: "Codestral", description: "Code-specialized model for development workflows.", type: "learnable" },
+    { name: "Le Chat", description: "Conversational AI interface for Mistral models.", type: "learnable", url: "https://chat.mistral.ai" },
+  ] },
+  { name: "Nemotron", company: "NVIDIA", category: "foundation-models", version: "Nemotron 4", description: "Open frontier reasoning models for language, vision, RAG, safety, and speech.", icon: "🤖", type: "reference", maturity: "ga", pricing: "Open Source", useCases: ["enterprise-ai", "rag", "safety"], products: [
+    { name: "Nemotron Ultra", description: "Frontier reasoning model for complex enterprise tasks.", type: "reference" },
+    { name: "Nemotron Super", description: "High-performance model balanced for speed and accuracy.", type: "reference" },
+    { name: "Nemotron Nano", description: "Lightweight model for edge and on-device deployment.", type: "reference" },
+  ] },
+  { name: "Cohere", company: "Cohere", category: "foundation-models", version: "Command R+", description: "Enterprise LLM optimized for RAG, search, and business workflows.", icon: "🗣️", url: "https://cohere.com", type: "learnable", maturity: "ga", pricing: "Paid", useCases: ["enterprise-ai", "rag", "search"], products: [
+    { name: "Command R+", description: "Flagship model for RAG, tool use, and complex reasoning.", type: "learnable" },
+    { name: "Command R", description: "Efficient model for retrieval-augmented generation.", type: "learnable" },
+    { name: "Embed", description: "Embedding model for semantic search and classification.", type: "learnable" },
+    { name: "Rerank", description: "Re-ranking model for improving search result relevance.", type: "learnable" },
+  ] },
 
   // ═══════════════════════════════════════════
   // CODING AGENTS
