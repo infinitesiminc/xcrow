@@ -139,11 +139,11 @@ const App = () => (
               <Route path="/cookies" element={<CookiePolicy />} />
               <Route path="/contact" element={<><Navbar /><Contact /><Footer /></>} />
               
-              <Route path="/professionals" element={<Professionals />} />
+              <Route path="/professionals" element={<Navigate to="/tools" replace />} />
               <Route path="/enterprise" element={<Navigate to="/" replace />} />
-              <Route path="/simulation-design" element={<SimulationDesign />} />
+              <Route path="/simulation-design" element={<Navigate to="/" replace />} />
               <Route path="/join" element={<JoinWorkspace />} />
-              <Route path="/score-distributions" element={<><Navbar /><ScoreDistributions /><Footer /></>} />
+              <Route path="/score-distributions" element={<Navigate to="/" replace />} />
               <Route path="/u/:username" element={<PublicProfile />} />
               <Route path="/progression" element={<Navigate to="/how-it-works" replace />} />
               <Route path="/play" element={<Navigate to="/" replace />} />
