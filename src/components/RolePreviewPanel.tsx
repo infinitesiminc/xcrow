@@ -282,7 +282,12 @@ export default function RolePreviewPanel({ role, onClose, edgeContext, kingdomCo
         <div className="flex items-center gap-4 mb-6">
           <ReadinessRing readiness={readiness} size={64} />
           <div className="min-w-0 flex-1">
-            <h1 className="text-lg font-bold text-foreground leading-snug" style={{ fontFamily: "'Cinzel', serif", textShadow: "0 0 12px hsl(var(--filigree-glow) / 0.15)" }}>{role.title}</h1>
+            <div className="flex items-center gap-2 mb-0.5">
+              <h1 className="text-lg font-bold text-foreground leading-snug" style={{ fontFamily: "'Cinzel', serif", textShadow: "0 0 12px hsl(var(--filigree-glow) / 0.15)" }}>{role.title}</h1>
+              {(() => { const d = getAutomationDegree(role.risk, role.augmented); return (
+                <span className={`inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full shrink-0 ${degreeBgClass(d)}`}>{d.emoji} {d.code}</span>
+              ); })()}
+            </div>
             {role.company && <p className="text-sm text-muted-foreground">at {role.company}</p>}
           </div>
         </div>
