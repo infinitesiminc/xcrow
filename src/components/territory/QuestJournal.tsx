@@ -25,35 +25,45 @@ import type { MissionPhase, ScoutedSkill } from "@/hooks/use-scout-mission";
 
 const cinzel = { fontFamily: "'Cinzel', serif" };
 
-const PHASE_META: Record<MissionPhase, { label: string; icon: typeof Eye; color: string; objectives: string[] }> = {
-  scout: {
-    label: "Scout",
-    icon: Eye,
+const PHASE_META: Record<MissionPhase, { label: string; icon: typeof Search; color: string; objectives: string[] }> = {
+  discover: {
+    label: "Discover",
+    icon: Search,
     color: "hsl(var(--primary))",
     objectives: [
       "Talk to role NPCs across territories",
-      "Discover 3+ skills to unlock battles",
+      "Discover 3+ skills to unlock experiments",
       "Visit all 8 territories",
     ],
   },
-  battle: {
-    label: "Battle",
-    icon: Swords,
+  experiment: {
+    label: "Experiment",
+    icon: Beaker,
     color: "hsl(45 90% 55%)",
     objectives: [
-      "Practice scouted skills in simulations",
-      "Conquer 5+ skills to begin territory conquest",
+      "Try scouted skills in guided sims",
+      "Practice 5+ skills to unlock challenges",
       "Earn XP to level up your castles",
     ],
   },
-  conquer: {
-    label: "Conquer",
+  challenge: {
+    label: "Challenge",
+    icon: Swords,
+    color: "hsl(20 85% 55%)",
+    objectives: [
+      "Push into harder simulations",
+      "Conquer 10+ skills to become a master",
+      "Reach Apprentice tier on 3+ skills",
+    ],
+  },
+  master: {
+    label: "Master",
     icon: Crown,
     color: "hsl(280 60% 60%)",
     objectives: [
       "Defeat Territory Guardians",
       "Master all 8 territories",
-      "Reach Legend rank",
+      "Reach Commander rank",
     ],
   },
 };
