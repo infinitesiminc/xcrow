@@ -280,7 +280,7 @@ FORMAT: Mission Control — Multi-Agent Ops
 - Focus on D4-D5 automation scenarios (managed fleet / strategic oversight).
 TONE: Like a flight simulator — high stakes, cool-headed decision making.
 This tier makes them EMPLOYABLE. Most adults can't do this.`,
-  };`
+  };
 
   const tierInstructions = TIER_INSTRUCTIONS[tierKey] || TIER_INSTRUCTIONS.bronze;
 
