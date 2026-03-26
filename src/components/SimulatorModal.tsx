@@ -34,6 +34,8 @@ import {
 
 import GuidedAudit, { type AuditResult, type AuditCheckpoint } from "@/components/sim/GuidedAudit";
 import BossBattleArena from "@/components/sim/BossBattleArena";
+import PromptLab, { type PromptLabResult } from "@/components/sim/PromptLab";
+import DelegationSim, { type DelegationSimResult } from "@/components/sim/DelegationSim";
 
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
