@@ -13,6 +13,8 @@ export interface WanderingNPC {
   name: string;
   title: string;
   emoji: string;
+  /** Lucide icon name for reliable rendering */
+  iconName: "gem" | "eye" | "swords" | "compass" | "hammer" | "scroll-text";
   /** What this NPC offers */
   offering: string;
   /** Greeting line */
@@ -29,6 +31,7 @@ export const WANDERING_NPCS: WanderingNPC[] = [
     name: "Zara the Trader",
     title: "Credit Merchant",
     emoji: "🧙‍♀️",
+    iconName: "gem",
     offering: "Trade credits for skill boosts, hint scrolls, or cosmetic upgrades.",
     greeting: "Psst! Looking for an edge? I've got rare scrolls that might interest you...",
     interactionType: "shop",
@@ -39,6 +42,7 @@ export const WANDERING_NPCS: WanderingNPC[] = [
     name: "The Farseer",
     title: "Market Oracle",
     emoji: "🔮",
+    iconName: "eye",
     offering: "Reveals trending skills, industry demand shifts, and career path predictions.",
     greeting: "I see patterns in the data streams that others miss. Shall I share what I've seen?",
     interactionType: "prophecy",
@@ -49,6 +53,7 @@ export const WANDERING_NPCS: WanderingNPC[] = [
     name: "Echo",
     title: "Shadow Rival",
     emoji: "⚔️",
+    iconName: "swords",
     offering: "Challenges you to a timed skill duel for bonus XP and bragging rights.",
     greeting: "So you think you're ready? Let's see if you can match my score...",
     interactionType: "duel",
@@ -59,6 +64,7 @@ export const WANDERING_NPCS: WanderingNPC[] = [
     name: "Pathfinder Kai",
     title: "Territory Scout",
     emoji: "🗺️",
+    iconName: "compass",
     offering: "Shares intel on unexplored territory skills, recommended learning paths.",
     greeting: "I've mapped every corner of these territories. Want to know what's worth exploring next?",
     interactionType: "intel",
@@ -69,6 +75,7 @@ export const WANDERING_NPCS: WanderingNPC[] = [
     name: "Anvil",
     title: "Skill Forgemaster",
     emoji: "🔨",
+    iconName: "hammer",
     offering: "Upgrades weak skills through targeted practice drills and combo exercises.",
     greeting: "Bring me your weakest skill and I'll temper it into something formidable.",
     interactionType: "upgrade",
@@ -79,6 +86,7 @@ export const WANDERING_NPCS: WanderingNPC[] = [
     name: "Verse",
     title: "Lorekeeper",
     emoji: "📜",
+    iconName: "scroll-text",
     offering: "Tells stories about skill origins, industry lore, and AI history.",
     greeting: "Gather 'round! Let me tell you the tale of how this skill changed an industry forever...",
     interactionType: "story",

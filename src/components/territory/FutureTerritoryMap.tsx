@@ -335,8 +335,8 @@ export default function FutureTerritoryMap({ skills, focusSkillId, level2SkillId
                   style={{ transformOrigin: `${nx}px ${ny}px` }}
                 />
                 <text x={nx} y={ny + 1} textAnchor="middle" dominantBaseline="central"
-                  style={{ fontSize: "11px", pointerEvents: "none" }}>
-                  {spawn.npc.emoji}
+                  style={{ fontSize: "10px", pointerEvents: "none", fill: "hsl(var(--foreground))", fontWeight: 600 }}>
+                  {spawn.npc.name.charAt(0)}
                 </text>
               </g>
             );
