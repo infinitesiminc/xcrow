@@ -2255,7 +2255,19 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                   boxShadow: "inset 0 1px 3px hsl(var(--emboss-shadow))",
                 }}
               />
-              <div className="flex gap-2 shrink-0">
+              <div className="flex gap-1.5 shrink-0">
+                {user && level === 1 && roundCount >= 2 && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleSaveCheckpoint}
+                    disabled={savingCheckpoint}
+                    className="text-xs text-muted-foreground hover:text-foreground h-[40px] px-2.5 rounded-xl"
+                    title="Save checkpoint"
+                  >
+                    <Save className="h-3.5 w-3.5" />
+                  </Button>
+                )}
                 <Button
                   variant="ghost"
                   size="sm"
