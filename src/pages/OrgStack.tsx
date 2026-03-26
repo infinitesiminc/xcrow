@@ -2,7 +2,8 @@ import { useState, useEffect, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { GTC_TOOLS, type GTCTool } from "@/data/gtc-tools-registry";
 import { JOB_SKILL_TO_TOOLS } from "@/data/tool-skill-mappings";
-import { Building2, Search, ChevronRight, Users, Layers, BarChart3, ArrowRight, ExternalLink, Zap } from "lucide-react";
+import { getCompanyConflicts } from "@/data/tool-competition-map";
+import { Building2, Search, ChevronRight, Users, Layers, BarChart3, ArrowRight, ExternalLink, Zap, AlertTriangle, Shield, ShieldCheck } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import SEOHead from "@/components/SEOHead";
@@ -192,15 +193,39 @@ export default function OrgStack() {
     }
   }
 
+  // Competitive conflict detection
+  const conflicts = useMemo(() => {
+    if (!orgData) return { ownTools: [] as string[], conflictedTools: new Map<string, string>() };
+    return getCompanyConflicts(orgData.companyName);
+  }, [orgData]);
+
+  const conflictCount = useMemo(() => {
+    if (!orgData || !conflicts.conflictedTools.size) return 0;
+    let count = 0;
+    for (const [toolName] of orgData.allTools) {
+      if (conflicts.conflictedTools.has(toolName)) count++;
+    }
+    return count;
+  }, [orgData, conflicts]);
+
   // Sorted org-wide tools
   const topTools = useMemo(() => {
     if (!orgData) return [];
     return Array.from(orgData.allTools.entries())
       .map(([name, data]) => ({ name, tool: TOOL_LOOKUP.get(name)!, ...data }))
       .filter(t => t.tool)
-      .sort((a, b) => b.deptCount - a.deptCount || b.score - a.score)
+      .sort((a, b) => {
+        // Own tools first, then conflicts last
+        const aOwn = conflicts.ownTools.includes(a.name) ? -1 : 0;
+        const bOwn = conflicts.ownTools.includes(b.name) ? -1 : 0;
+        if (aOwn !== bOwn) return aOwn - bOwn;
+        const aConflict = conflicts.conflictedTools.has(a.name) ? 1 : 0;
+        const bConflict = conflicts.conflictedTools.has(b.name) ? 1 : 0;
+        if (aConflict !== bConflict) return aConflict - bConflict;
+        return b.deptCount - a.deptCount || b.score - a.score;
+      })
       .slice(0, 30);
-  }, [orgData]);
+  }, [orgData, conflicts]);
 
   // Selected department tools
   const deptTools = useMemo(() => {
@@ -210,8 +235,13 @@ export default function OrgStack() {
     return Array.from(dept.tools.entries())
       .map(([name, data]) => ({ name, tool: TOOL_LOOKUP.get(name)!, ...data }))
       .filter(t => t.tool)
-      .sort((a, b) => b.score - a.score);
-  }, [orgData, selectedDept]);
+      .sort((a, b) => {
+        const aConflict = conflicts.conflictedTools.has(a.name) ? 1 : 0;
+        const bConflict = conflicts.conflictedTools.has(b.name) ? 1 : 0;
+        if (aConflict !== bConflict) return aConflict - bConflict;
+        return b.score - a.score;
+      });
+  }, [orgData, selectedDept, conflicts]);
 
   return (
     <>
@@ -271,6 +301,27 @@ export default function OrgStack() {
             <div className="flex items-center gap-3 py-20 justify-center">
               <div className="h-5 w-5 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: "hsl(var(--primary))", borderTopColor: "transparent" }} />
               <span className="text-sm" style={{ color: "hsl(var(--muted-foreground))" }}>Analyzing organization structure...</span>
+            </div>
+          )}
+
+          {/* Conflict banner */}
+          {orgData && !loading && conflicts.ownTools.length > 0 && (
+            <div className="mb-6 rounded-xl p-3 flex items-start gap-3"
+              style={{ background: "hsl(var(--destructive) / 0.06)", border: "1px solid hsl(var(--destructive) / 0.15)" }}>
+              <AlertTriangle className="h-4 w-4 mt-0.5 flex-shrink-0" style={{ color: "hsl(var(--destructive))" }} />
+              <div>
+                <p className="text-xs font-bold mb-1" style={{ color: "hsl(var(--destructive))" }}>
+                  Competitive Conflict Detection
+                </p>
+                <p className="text-[11px] leading-relaxed" style={{ color: "hsl(var(--foreground) / 0.7)" }}>
+                  {orgData.companyName} builds{" "}
+                  <span className="font-semibold">{conflicts.ownTools.join(", ")}</span>.
+                  {conflictCount > 0 && (
+                    <> Found <span className="font-bold" style={{ color: "hsl(var(--destructive))" }}>{conflictCount} competitor tools</span> in the recommended stack that should be replaced with internal alternatives.</>
+                  )}
+                  {conflictCount === 0 && " No competitor tools detected in the stack."}
+                </p>
+              </div>
             </div>
           )}
 
@@ -344,16 +395,39 @@ export default function OrgStack() {
                     {topTools.map(t => {
                       const maxDepts = orgData.departments.length;
                       const coverage = t.deptCount / Math.max(maxDepts, 1);
+                      const isOwn = conflicts.ownTools.includes(t.name);
+                      const conflictWith = conflicts.conflictedTools.get(t.name);
                       return (
                         <button
                           key={t.name}
                           onClick={() => setSelectedTool(t.tool)}
-                          className="text-left rounded-xl p-3 transition-all hover:scale-[1.02] group"
+                          className="text-left rounded-xl p-3 transition-all hover:scale-[1.02] group relative"
                           style={{
-                            background: `linear-gradient(135deg, hsl(var(--primary) / ${0.04 + coverage * 0.15}), hsl(var(--card)))`,
-                            border: `1px solid hsl(var(--primary) / ${0.1 + coverage * 0.3})`,
+                            background: conflictWith
+                              ? `linear-gradient(135deg, hsl(var(--destructive) / 0.06), hsl(var(--card)))`
+                              : isOwn
+                              ? `linear-gradient(135deg, hsl(142 70% 45% / 0.1), hsl(var(--card)))`
+                              : `linear-gradient(135deg, hsl(var(--primary) / ${0.04 + coverage * 0.15}), hsl(var(--card)))`,
+                            border: conflictWith
+                              ? `1px solid hsl(var(--destructive) / 0.3)`
+                              : isOwn
+                              ? `1px solid hsl(142 70% 45% / 0.3)`
+                              : `1px solid hsl(var(--primary) / ${0.1 + coverage * 0.3})`,
                           }}
                         >
+                          {/* Conflict/Own badge */}
+                          {conflictWith && (
+                            <div className="absolute -top-1.5 -right-1.5 flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[8px] font-bold"
+                              style={{ background: "hsl(var(--destructive))", color: "white" }}>
+                              <AlertTriangle className="h-2.5 w-2.5" /> CONFLICT
+                            </div>
+                          )}
+                          {isOwn && (
+                            <div className="absolute -top-1.5 -right-1.5 flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[8px] font-bold"
+                              style={{ background: "hsl(142 70% 45%)", color: "white" }}>
+                              <ShieldCheck className="h-2.5 w-2.5" /> OWN
+                            </div>
+                          )}
                           <div className="flex items-start justify-between mb-1.5">
                             <span className="text-lg">{t.tool.icon}</span>
                             <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded-md"
@@ -361,14 +435,22 @@ export default function OrgStack() {
                               {t.deptCount}/{maxDepts}
                             </span>
                           </div>
-                          <p className="text-xs font-bold truncate mb-0.5" style={{ color: "hsl(var(--foreground))" }}>{t.name}</p>
+                          <p className="text-xs font-bold truncate mb-0.5" style={{ color: conflictWith ? "hsl(var(--destructive))" : "hsl(var(--foreground))" }}>{t.name}</p>
                           <p className="text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>
-                            {Array.from(t.departments).slice(0, 3).join(", ")}
-                            {t.departments.size > 3 && ` +${t.departments.size - 3}`}
+                            {conflictWith
+                              ? `Competes with ${conflictWith}`
+                              : <>
+                                  {Array.from(t.departments).slice(0, 3).join(", ")}
+                                  {t.departments.size > 3 && ` +${t.departments.size - 3}`}
+                                </>
+                            }
                           </p>
                           {/* Coverage bar */}
                           <div className="mt-2 h-1 rounded-full overflow-hidden" style={{ background: "hsl(var(--muted) / 0.2)" }}>
-                            <div className="h-full rounded-full" style={{ width: `${coverage * 100}%`, background: "hsl(var(--primary))" }} />
+                            <div className="h-full rounded-full" style={{
+                              width: `${coverage * 100}%`,
+                              background: conflictWith ? "hsl(var(--destructive) / 0.6)" : isOwn ? "hsl(142 70% 45%)" : "hsl(var(--primary))",
+                            }} />
                           </div>
                         </button>
                       );
@@ -377,35 +459,51 @@ export default function OrgStack() {
                 ) : (
                   /* Department-specific tools */
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
-                    {deptTools.map(t => (
-                      <button
-                        key={t.name}
-                        onClick={() => setSelectedTool(t.tool)}
-                        className="text-left rounded-xl p-3 transition-all hover:scale-[1.02]"
-                        style={{
-                          background: "hsl(var(--card))",
-                          border: "1px solid hsl(var(--border) / 0.15)",
-                        }}
-                      >
-                        <div className="flex items-start justify-between mb-1.5">
-                          <span className="text-lg">{t.tool.icon}</span>
-                          <span className="text-[10px] font-mono px-1.5 py-0.5 rounded-md"
-                            style={{ background: "hsl(var(--muted) / 0.15)", color: "hsl(var(--muted-foreground))" }}>
-                            {t.jobTitles.size} roles
-                          </span>
-                        </div>
-                        <p className="text-xs font-bold truncate mb-0.5" style={{ color: "hsl(var(--foreground))" }}>{t.name}</p>
-                        <p className="text-[10px] line-clamp-2" style={{ color: "hsl(var(--muted-foreground))" }}>
-                          {Array.from(t.skills).slice(0, 3).join(", ")}
-                        </p>
-                        <div className="mt-2 flex items-center gap-1">
-                          <Zap className="h-2.5 w-2.5" style={{ color: "hsl(var(--primary))" }} />
-                          <span className="text-[10px] font-medium" style={{ color: "hsl(var(--primary))" }}>
-                            Relevance: {Math.min(100, Math.round(t.score * 5))}%
-                          </span>
-                        </div>
-                      </button>
-                    ))}
+                    {deptTools.map(t => {
+                      const isOwn = conflicts.ownTools.includes(t.name);
+                      const conflictWith = conflicts.conflictedTools.get(t.name);
+                      return (
+                        <button
+                          key={t.name}
+                          onClick={() => setSelectedTool(t.tool)}
+                          className="text-left rounded-xl p-3 transition-all hover:scale-[1.02] relative"
+                          style={{
+                            background: conflictWith ? "hsl(var(--destructive) / 0.04)" : isOwn ? "hsl(142 70% 45% / 0.06)" : "hsl(var(--card))",
+                            border: conflictWith ? "1px solid hsl(var(--destructive) / 0.25)" : isOwn ? "1px solid hsl(142 70% 45% / 0.25)" : "1px solid hsl(var(--border) / 0.15)",
+                          }}
+                        >
+                          {conflictWith && (
+                            <div className="absolute -top-1.5 -right-1.5 flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[8px] font-bold"
+                              style={{ background: "hsl(var(--destructive))", color: "white" }}>
+                              <AlertTriangle className="h-2.5 w-2.5" /> CONFLICT
+                            </div>
+                          )}
+                          {isOwn && (
+                            <div className="absolute -top-1.5 -right-1.5 flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[8px] font-bold"
+                              style={{ background: "hsl(142 70% 45%)", color: "white" }}>
+                              <ShieldCheck className="h-2.5 w-2.5" /> OWN
+                            </div>
+                          )}
+                          <div className="flex items-start justify-between mb-1.5">
+                            <span className="text-lg">{t.tool.icon}</span>
+                            <span className="text-[10px] font-mono px-1.5 py-0.5 rounded-md"
+                              style={{ background: "hsl(var(--muted) / 0.15)", color: "hsl(var(--muted-foreground))" }}>
+                              {t.jobTitles.size} roles
+                            </span>
+                          </div>
+                          <p className="text-xs font-bold truncate mb-0.5" style={{ color: conflictWith ? "hsl(var(--destructive))" : "hsl(var(--foreground))" }}>{t.name}</p>
+                          <p className="text-[10px] line-clamp-2" style={{ color: "hsl(var(--muted-foreground))" }}>
+                            {conflictWith ? `Competes with ${conflictWith}` : Array.from(t.skills).slice(0, 3).join(", ")}
+                          </p>
+                          <div className="mt-2 flex items-center gap-1">
+                            <Zap className="h-2.5 w-2.5" style={{ color: conflictWith ? "hsl(var(--destructive))" : "hsl(var(--primary))" }} />
+                            <span className="text-[10px] font-medium" style={{ color: conflictWith ? "hsl(var(--destructive))" : "hsl(var(--primary))" }}>
+                              {conflictWith ? "Replace recommended" : `Relevance: ${Math.min(100, Math.round(t.score * 5))}%`}
+                            </span>
+                          </div>
+                        </button>
+                      );
+                    })}
                     {deptTools.length === 0 && (
                       <p className="col-span-full text-center py-12 text-sm" style={{ color: "hsl(var(--muted-foreground))" }}>
                         No tool data for this department yet — skills haven't been extracted for these roles.
@@ -426,6 +524,37 @@ export default function OrgStack() {
                         <p className="text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>{selectedTool.company}</p>
                       </div>
                     </div>
+                    {/* Conflict warning in detail */}
+                    {(() => {
+                      const conflictWith = conflicts.conflictedTools.get(selectedTool.name);
+                      const isOwn = conflicts.ownTools.includes(selectedTool.name);
+                      if (conflictWith) return (
+                        <div className="rounded-lg p-2.5 mb-3 flex items-start gap-2"
+                          style={{ background: "hsl(var(--destructive) / 0.08)", border: "1px solid hsl(var(--destructive) / 0.2)" }}>
+                          <AlertTriangle className="h-3.5 w-3.5 mt-0.5 flex-shrink-0" style={{ color: "hsl(var(--destructive))" }} />
+                          <div>
+                            <p className="text-[11px] font-bold" style={{ color: "hsl(var(--destructive))" }}>Competitor Tool</p>
+                            <p className="text-[10px]" style={{ color: "hsl(var(--foreground) / 0.7)" }}>
+                              Competes with your own product <span className="font-bold">{conflictWith}</span>. Consider using {conflictWith} internally instead.
+                            </p>
+                          </div>
+                        </div>
+                      );
+                      if (isOwn) return (
+                        <div className="rounded-lg p-2.5 mb-3 flex items-start gap-2"
+                          style={{ background: "hsl(142 70% 45% / 0.08)", border: "1px solid hsl(142 70% 45% / 0.2)" }}>
+                          <ShieldCheck className="h-3.5 w-3.5 mt-0.5 flex-shrink-0" style={{ color: "hsl(142 70% 45%)" }} />
+                          <div>
+                            <p className="text-[11px] font-bold" style={{ color: "hsl(142 70% 45%)" }}>Your Product</p>
+                            <p className="text-[10px]" style={{ color: "hsl(var(--foreground) / 0.7)" }}>
+                              Built by {orgData.companyName}. Prioritize internal adoption.
+                            </p>
+                          </div>
+                        </div>
+                      );
+                      return null;
+                    })()}
+
                     <p className="text-xs mb-3 leading-relaxed" style={{ color: "hsl(var(--foreground) / 0.7)" }}>
                       {selectedTool.description}
                     </p>
