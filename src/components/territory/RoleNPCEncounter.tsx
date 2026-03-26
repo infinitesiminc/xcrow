@@ -107,7 +107,7 @@ function StreamingText({ text, isComplete }: { text: string; isComplete: boolean
 
   if (isComplete) {
     return (
-      <div className="prose prose-sm prose-invert max-w-none [&>p]:m-0 [&>ul]:mt-1 [&>ul]:mb-0 text-inherit">
+      <div className="prose prose-sm prose-invert max-w-none [&>p]:mb-2.5 [&>p:last-child]:mb-0 [&>ul]:mt-1 [&>ul]:mb-2 [&>ol]:mt-1 [&>ol]:mb-2 text-inherit leading-relaxed">
         <ReactMarkdown>{text}</ReactMarkdown>
       </div>
     );
