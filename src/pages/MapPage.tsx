@@ -116,7 +116,7 @@ const ToolsRuneIcon = ({ size = 22, color = "currentColor" }: { size?: number; c
 );
 
 const TAB_ITEMS = [
-  { key: "table" as const, RuneIcon: ForgeRuneIcon, label: "Forge" },
+  { key: "table" as const, RuneIcon: JournalRuneIcon, label: "Journal" },
   { key: "codex" as const, RuneIcon: CodexRuneIcon, label: "Codex" },
   { key: "allies" as const, RuneIcon: AlliesRuneIcon, label: "Allies" },
   { key: "tools" as const, RuneIcon: ToolsRuneIcon, label: "Tools" },
