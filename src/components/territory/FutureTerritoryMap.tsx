@@ -22,7 +22,9 @@ import { getNPCAvatar } from "@/lib/npc-avatar-pool";
 
 import GuardianEncounter from "./GuardianEncounter";
 import GuardianTrial from "./GuardianTrial";
+import ConquestCelebration from "./ConquestCelebration";
 import NPCEncounter from "./NPCEncounter";
+import NPCMechanics from "./NPCMechanics";
 import RoleNPCEncounter from "./RoleNPCEncounter";
 
 import { useScoutMission } from "@/hooks/use-scout-mission";
