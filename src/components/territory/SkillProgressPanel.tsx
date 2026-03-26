@@ -451,7 +451,7 @@ export default function SkillProgressPanel({
                   {battleLog.map(entry => {
                     const totalXpEarned = entry.skillsEarned.reduce((s, e) => s + (e.xp || 0), 0);
                     return (
-                      <div key={entry.id} className="px-3 py-2 hover:bg-muted/10 transition-colors">
+                      <div key={entry.id} className="px-2 py-1.5 hover:bg-muted/10 transition-colors">
                         <div className="flex items-center gap-2">
                           <div
                             className="w-5 h-5 rounded-md flex items-center justify-center text-[9px] font-bold shrink-0"
