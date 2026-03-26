@@ -1,5 +1,5 @@
 /**
- * NPC Avatar Pool — 3 portrait variants per wandering NPC archetype.
+ * NPC Avatar Pool — 4 portrait variants per wandering NPC archetype.
  * The spawn system picks a variant based on the hourly seed so users
  * see different faces each session without repetition within a session.
  */
@@ -7,34 +7,40 @@
 import npcMerchant from "@/assets/npc-merchant.png";
 import npcMerchantV2 from "@/assets/npc-merchant-v2.png";
 import npcMerchantV3 from "@/assets/npc-merchant-v3.png";
+import npcMerchantV4 from "@/assets/npc-merchant-v4.png";
 
 import npcOracle from "@/assets/npc-oracle.png";
 import npcOracleV2 from "@/assets/npc-oracle-v2.png";
 import npcOracleV3 from "@/assets/npc-oracle-v3.png";
+import npcOracleV4 from "@/assets/npc-oracle-v4.png";
 
 import npcRival from "@/assets/npc-rival.png";
 import npcRivalV2 from "@/assets/npc-rival-v2.png";
 import npcRivalV3 from "@/assets/npc-rival-v3.png";
+import npcRivalV4 from "@/assets/npc-rival-v4.png";
 
 import npcScout from "@/assets/npc-scout.png";
 import npcScoutV2 from "@/assets/npc-scout-v2.png";
 import npcScoutV3 from "@/assets/npc-scout-v3.png";
+import npcScoutV4 from "@/assets/npc-scout-v4.png";
 
 import npcBlacksmith from "@/assets/npc-blacksmith.png";
 import npcBlacksmithV2 from "@/assets/npc-blacksmith-v2.png";
 import npcBlacksmithV3 from "@/assets/npc-blacksmith-v3.png";
+import npcBlacksmithV4 from "@/assets/npc-blacksmith-v4.png";
 
 import npcBard from "@/assets/npc-bard.png";
 import npcBardV2 from "@/assets/npc-bard-v2.png";
 import npcBardV3 from "@/assets/npc-bard-v3.png";
+import npcBardV4 from "@/assets/npc-bard-v4.png";
 
 export const NPC_AVATAR_POOL: Record<string, string[]> = {
-  merchant:   [npcMerchant, npcMerchantV2, npcMerchantV3],
-  oracle:     [npcOracle, npcOracleV2, npcOracleV3],
-  rival:      [npcRival, npcRivalV2, npcRivalV3],
-  scout:      [npcScout, npcScoutV2, npcScoutV3],
-  blacksmith: [npcBlacksmith, npcBlacksmithV2, npcBlacksmithV3],
-  bard:       [npcBard, npcBardV2, npcBardV3],
+  merchant:   [npcMerchant, npcMerchantV2, npcMerchantV3, npcMerchantV4],
+  oracle:     [npcOracle, npcOracleV2, npcOracleV3, npcOracleV4],
+  rival:      [npcRival, npcRivalV2, npcRivalV3, npcRivalV4],
+  scout:      [npcScout, npcScoutV2, npcScoutV3, npcScoutV4],
+  blacksmith: [npcBlacksmith, npcBlacksmithV2, npcBlacksmithV3, npcBlacksmithV4],
+  bard:       [npcBard, npcBardV2, npcBardV3, npcBardV4],
 };
 
 /**
