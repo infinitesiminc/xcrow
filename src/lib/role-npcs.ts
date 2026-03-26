@@ -61,7 +61,7 @@ export function deptToTerritory(dept: string): FutureSkillCategory {
   if (lower.includes("design") || lower.includes("creat") || lower.includes("market")) return "Creative";
   if (lower.includes("sale") || lower.includes("business") || lower.includes("comm")) return "Communication";
   if (lower.includes("lead") || lower.includes("manag") || lower.includes("people") || lower.includes("hr")) return "Leadership";
-  if (lower.includes("legal") || lower.includes("ethic") || lower.includes("secur") || lower.includes("trust")) return "Ethics";
+  if (lower.includes("legal") || lower.includes("ethic") || lower.includes("secur") || lower.includes("trust")) return "Ethics & Compliance";
   return "Strategic";
 }
 
