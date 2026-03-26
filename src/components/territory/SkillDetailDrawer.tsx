@@ -109,7 +109,7 @@ export default function SkillDetailDrawer({
   const { user } = useAuth();
   const [battleLog, setBattleLog] = useState<BattleEntry[]>([]);
   const [logLoading, setLogLoading] = useState(false);
-  const { skills: allSkills } = useFutureSkills();
+  const { futureSkills: allSkills } = useFutureSkills();
 
   // Focus skill event
   useEffect(() => {
