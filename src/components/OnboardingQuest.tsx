@@ -581,7 +581,7 @@ export default function OnboardingQuest({ open, userId, onComplete }: Onboarding
 
       {/* Step dots */}
       <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-2">
-        {(["intro", "avatar", "username", "launch"] as Step[]).map((s) => (
+        {(["intro", "avatar", "username", "mode", "launch"] as Step[]).map((s) => (
           <div
             key={s}
             className={`h-1.5 rounded-full transition-all duration-300 ${
