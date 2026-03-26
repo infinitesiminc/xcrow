@@ -57,8 +57,24 @@ export default function UsersPage() {
 
   useEffect(() => {
     (async () => {
-      const { data, error } = await supabase.rpc("get_admin_user_stats" as any);
-      if (!error && data) setUsers(data as any as UserRow[]);
+      const [usersRes, seatsRes] = await Promise.all([
+        supabase.rpc("get_admin_user_stats" as any),
+        supabase.from("school_seats" as any).select("user_id, status").eq("status", "active"),
+      ]);
+      
+      const schoolUserIds = new Set(
+        ((seatsRes.data as any[]) || []).map((s: any) => s.user_id).filter(Boolean)
+      );
+      
+      const rawUsers = (usersRes.data || []) as any as UserRow[];
+      // TODO: For champion detection, we'd need Stripe data. 
+      // For now, mark school users and leave rest as free.
+      const enriched = rawUsers.map(u => ({
+        ...u,
+        tier: schoolUserIds.has(u.user_id) ? "school" as const : "free" as const,
+      }));
+      
+      setUsers(enriched);
       setLoading(false);
     })();
   }, []);
