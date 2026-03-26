@@ -5,7 +5,7 @@
  */
 import { useState, useCallback, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, Loader2, X, Plus, Check, ExternalLink, FlaskConical } from "lucide-react";
+import { Search, Loader2, X, Plus, Check, ExternalLink, FlaskConical, Link } from "lucide-react";
 import ToolQuickQuiz, { type QuizResult } from "./ToolQuickQuiz";
 import { supabase } from "@/integrations/supabase/client";
 import { GTC_TOOLS, CATEGORY_CONFIG, type GTCTool } from "@/data/gtc-tools-registry";
