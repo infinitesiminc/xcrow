@@ -235,7 +235,7 @@ export default function ToolAtlas() {
                         }}
                       >
                         {isInStack(selectedTool.name) ? <Check className="h-3.5 w-3.5" /> : <Plus className="h-3.5 w-3.5" />}
-                        {isInStack(selectedTool.name) ? "In My Stack" : "Add to Stack"}
+                        {isInStack(selectedTool.name) ? "Favorited" : "Favorite"}
                       </button>
                       {selectedTool.type === "learnable" && (
                         <button

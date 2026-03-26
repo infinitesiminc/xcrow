@@ -136,7 +136,7 @@ export default function ToolDetailCard({ toolName, onClose, onSkillClick }: Prop
           }}
         >
           {inStack ? <Check className="h-3 w-3" /> : <Plus className="h-3 w-3" />}
-          {inStack ? "In My Stack" : "Add to Stack"}
+          {inStack ? "Favorited" : "Favorite"}
         </button>
         {tool.url && (
           <a
