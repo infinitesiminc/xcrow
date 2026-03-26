@@ -871,11 +871,8 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
     return () => clearTimeout(safetyTimeout);
   }, [phase]);
 
-  // Auto-finish when quest-cleared triggers "completing" phase
-  useEffect(() => {
-    if (phase !== "completing" || !questCleared) return;
-    handleFinish();
-  }, [phase, questCleared]); // eslint-disable-line react-hooks/exhaustive-deps
+  // Keep a stable ref to handleFinish so setTimeout doesn't capture stale closure
+  const handleFinishRef = useRef<() => void>(() => {});
 
   const beginChat = () => {
     if (!session) return;
