@@ -508,7 +508,7 @@ export default function FutureTerritoryMap({ skills, focusSkillId, level2SkillId
           })}
 
           {/* Role NPCs — real jobs as characters + quest waypoint beacon on first */}
-          {roleNPCs.map((role, idx) => {
+          {visibleRoleNPCs.map((role, idx) => {
             const island = layout.find(i => i.category === role.territory);
             if (!island) return null;
             const angle = (Math.PI * 2 * idx) / Math.max(roleNPCs.length, 1) + Math.PI / 4;
