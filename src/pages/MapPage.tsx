@@ -13,6 +13,8 @@ import SimulatorModal from "@/components/SimulatorModal";
 import type { SimLaunchRequest, PromptLabRequest } from "@/components/territory/SkillLaunchCard";
 import PromptLab from "@/components/sim/PromptLab";
 import { preloadTerritoryImages } from "@/lib/territory-hero-images";
+import CreditGate from "@/components/CreditGate";
+import { Coins } from "lucide-react";
 
 /** IDs of skills where user has completed a L2 boss battle */
 type Level2CompletedIds = Set<string>;
@@ -117,12 +119,14 @@ const MapPage = () => {
   const [level2CompletedIds, setLevel2CompletedIds] = useState<Level2CompletedIds>(new Set());
   const [skillGrowthMap, setSkillGrowthMap] = useState<Map<string, CanonicalSkillGrowth>>(new Map());
   const [bossCount, setBossCount] = useState(0);
+  const [avgDegreeLevel, setAvgDegreeLevel] = useState(1);
   const { toast } = useToast();
   const hasShownBossToast = useRef(false);
 
-  // In-place sim overlay state
+  // In-place sim overlay state — gated by credits
   const [activeSim, setActiveSim] = useState<PendingSimLaunch | null>(null);
-  const handleLaunchSim = useCallback((req: PendingSimLaunch) => setActiveSim(req), []);
+  const [pendingSimReq, setPendingSimReq] = useState<PendingSimLaunch | null>(null);
+  const handleLaunchSim = useCallback((req: PendingSimLaunch) => setPendingSimReq(req), []);
   const handleCloseSim = useCallback(() => setActiveSim(null), []);
 
   // Prompt Lab overlay state
@@ -207,7 +211,18 @@ const MapPage = () => {
       }
       setSkillGrowthMap(growthMap);
 
-      // Track which skills have completed L2 boss battles
+      // Compute average automation degree from sim scores
+      if (sims.length > 0) {
+        const scores = sims.map(s => {
+          const risk = ((s.tool_awareness_score || 50) + (s.adaptive_thinking_score || 50)) / 2;
+          const aug = ((s.human_value_add_score || 50) + (s.domain_judgment_score || 50)) / 2;
+          return Math.round(risk * 0.6 + aug * 0.4);
+        });
+        const avgScore = scores.reduce((a, b) => a + b, 0) / scores.length;
+        const lvl = avgScore >= 80 ? 5 : avgScore >= 60 ? 4 : avgScore >= 40 ? 3 : avgScore >= 20 ? 2 : 1;
+        setAvgDegreeLevel(lvl);
+      }
+
       // Superadmins always see bosses as available for repeated testing
       const l2Completed = new Set<string>();
       if (!isSuperAdmin) {
@@ -304,7 +319,7 @@ const MapPage = () => {
           >
         {/* Mini HUD stats row */}
         {displaySkills.length > 0 && (
-          <CompactHUD skills={displaySkills} targetSkillIds={targetSkillIds} userName={userName} />
+          <CompactHUD skills={displaySkills} targetSkillIds={targetSkillIds} userName={userName} avgDegreeLevel={avgDegreeLevel} />
         )}
 
         {/* Tab bar */}
@@ -503,6 +518,69 @@ const MapPage = () => {
               <div className="flex-1 overflow-hidden">
                 <RolePreviewPanel role={selectedRole} onClose={() => { setSelectedRole(null); setSelectedKingdomCtx(null); }} edgeContext={activeEdge} kingdomContext={selectedKingdomCtx} />
               </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Credit Gate overlay — checks before launching sim */}
+      <AnimatePresence>
+        {pendingSimReq && !activeSim && (
+          <motion.div
+            key="credit-gate-overlay"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="fixed inset-0 z-[55] flex items-center justify-center"
+            style={{ background: "hsl(var(--background) / 0.5)", backdropFilter: "blur(4px)" }}
+            onClick={() => setPendingSimReq(null)}
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="rounded-xl p-6 max-w-sm w-full mx-4"
+              style={{
+                background: "hsl(var(--card))",
+                border: "1px solid hsl(var(--filigree) / 0.3)",
+                boxShadow: "0 20px 60px hsl(var(--emboss-shadow))",
+              }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="text-center mb-4">
+                <Coins className="h-8 w-8 mx-auto mb-2" style={{ color: "hsl(var(--filigree-glow))" }} />
+                <h3 className="text-sm font-semibold" style={{ fontFamily: "'Cinzel', serif", color: "hsl(var(--foreground))" }}>
+                  Launch Quest
+                </h3>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {pendingSimReq.taskName || pendingSimReq.jobTitle}
+                </p>
+              </div>
+              <CreditGate
+                action={pendingSimReq.level === 2 ? "simulation_l2" : "simulation_l1"}
+                onProceed={() => {
+                  setActiveSim(pendingSimReq);
+                  setPendingSimReq(null);
+                }}
+                className="w-full"
+              >
+                <button
+                  className="w-full py-2.5 rounded-lg text-sm font-semibold transition-all hover:brightness-110"
+                  style={{
+                    background: "hsl(var(--primary))",
+                    color: "hsl(var(--primary-foreground))",
+                  }}
+                >
+                  Start {pendingSimReq.level === 2 ? "Boss Battle" : "Quest"}
+                </button>
+              </CreditGate>
+              <button
+                onClick={() => setPendingSimReq(null)}
+                className="w-full mt-2 py-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
+              >
+                Cancel
+              </button>
             </motion.div>
           </motion.div>
         )}
