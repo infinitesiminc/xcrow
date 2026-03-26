@@ -244,52 +244,6 @@ export default function FutureTerritoryMap({ skills, focusSkillId, level2SkillId
         {/* Cinematic vignette */}
         <div className="absolute inset-0 map-vignette z-[1]" />
 
-        {/* Full-bleed background texture that extends to panel edges */}
-        <svg className="absolute inset-0 w-full h-full pointer-events-none" preserveAspectRatio="none">
-          <defs>
-            <pattern id="bg-map-texture" x="0" y="0" width="400" height="400" patternUnits="userSpaceOnUse">
-              <g fill="none" stroke="hsl(var(--muted-foreground))" strokeLinecap="round">
-                {/* Horizontal spans — full edge-to-edge */}
-                <path d="M0 80 L50 95 L90 70 L140 85 L185 65 L230 80 L280 60 L330 78 L400 55" strokeWidth="1.2" opacity="0.16" />
-                <path d="M0 150 L55 140 L110 158 L165 138 L220 152 L275 135 L335 148 L400 130" strokeWidth="1" opacity="0.14" />
-                <path d="M0 180 L45 165 L80 190 L130 170 L160 185 L200 160 L250 175 L290 155 L340 170 L400 150" strokeWidth="1.4" opacity="0.2" />
-                <path d="M0 240 L60 228 L120 245 L180 230 L240 248 L300 225 L360 240 L400 232" strokeWidth="0.9" opacity="0.12" />
-                <path d="M0 320 L60 305 L100 330 L150 310 L210 325 L260 300 L310 315 L370 295 L400 310" strokeWidth="1.2" opacity="0.18" />
-                <path d="M0 380 L50 370 L105 388 L160 372 L220 385 L280 368 L340 382 L400 370" strokeWidth="0.8" opacity="0.1" />
-                {/* Vertical spans — full top-to-bottom */}
-                <path d="M60 0 L55 55 L65 110 L58 170 L62 230 L56 290 L63 350 L60 400" strokeWidth="1" opacity="0.14" />
-                <path d="M120 0 L110 50 L125 100 L115 160 L130 220 L118 280 L128 340 L120 400" strokeWidth="1.3" opacity="0.18" />
-                <path d="M200 0 L195 60 L205 120 L198 180 L202 240 L196 300 L204 360 L200 400" strokeWidth="0.9" opacity="0.12" />
-                <path d="M280 0 L290 60 L275 120 L285 180 L270 240 L282 300 L275 360 L285 400" strokeWidth="1.1" opacity="0.15" />
-                <path d="M345 0 L340 50 L348 105 L342 165 L350 225 L338 285 L346 345 L345 400" strokeWidth="0.8" opacity="0.11" />
-                {/* Diagonals — edge-to-edge, matching at tile seams */}
-                <path d="M0 0 L400 400" strokeWidth="0.7" opacity="0.09" />
-                <path d="M400 0 L0 400" strokeWidth="0.7" opacity="0.09" />
-                <path d="M0 200 L200 400" strokeWidth="0.6" opacity="0.08" />
-                <path d="M200 0 L400 200" strokeWidth="0.6" opacity="0.08" />
-                <path d="M400 200 L200 400" strokeWidth="0.6" opacity="0.08" />
-                <path d="M200 0 L0 200" strokeWidth="0.6" opacity="0.08" />
-              </g>
-            </pattern>
-            <linearGradient id="bg-sweep-grad" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0%" stopColor="white" stopOpacity="0" />
-              <stop offset="42%" stopColor="white" stopOpacity="0" />
-              <stop offset="48%" stopColor="white" stopOpacity="1" />
-              <stop offset="50%" stopColor="white" stopOpacity="1" />
-              <stop offset="52%" stopColor="white" stopOpacity="1" />
-              <stop offset="58%" stopColor="white" stopOpacity="0" />
-              <stop offset="100%" stopColor="white" stopOpacity="0" />
-            </linearGradient>
-            <mask id="bg-texture-mask">
-              <rect width="100%" height="100%" fill="black" />
-              <rect width="100%" height="100%" fill="url(#bg-map-texture)" style={{ filter: "brightness(40)" }} />
-            </mask>
-          </defs>
-          <rect width="100%" height="100%" fill="url(#bg-map-texture)" />
-          <g mask="url(#bg-texture-mask)">
-            <rect x="-200%" y="-200%" width="500%" height="500%" fill="url(#bg-sweep-grad)" className="animate-map-sweep" />
-          </g>
-        </svg>
 
         <svg
           viewBox={`0 0 ${FUTURE_MAP_WIDTH} ${FUTURE_MAP_HEIGHT}`}
@@ -313,14 +267,6 @@ export default function FutureTerritoryMap({ skills, focusSkillId, level2SkillId
 
 
 
-          {Array.from({ length: 9 }, (_, i) => {
-            const x = (FUTURE_MAP_WIDTH / 8) * i;
-            return <line key={`gv-${i}`} x1={x} y1={0} x2={x} y2={FUTURE_MAP_HEIGHT} stroke="hsl(var(--border))" strokeWidth={0.3} opacity={0.15} />;
-          })}
-          {Array.from({ length: 6 }, (_, i) => {
-            const y = (FUTURE_MAP_HEIGHT / 5) * i;
-            return <line key={`gh-${i}`} x1={0} y1={y} x2={FUTURE_MAP_WIDTH} y2={y} stroke="hsl(var(--border))" strokeWidth={0.3} opacity={0.15} />;
-          })}
 
           {connections.map((conn, i) => {
             const from = nodePositions.get(conn.from);
