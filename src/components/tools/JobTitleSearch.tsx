@@ -27,7 +27,6 @@ export default function JobTitleSearch({ onSelectTool }: Props) {
   const [results, setResults] = useState<RankedTool[]>([]);
   const [searched, setSearched] = useState(false);
   const [searchedTitle, setSearchedTitle] = useState("");
-  const [expandedTool, setExpandedTool] = useState<string | null>(null);
   const [jobCount, setJobCount] = useState(0);
   const { toggleTool, isInStack } = useMyStack();
 
