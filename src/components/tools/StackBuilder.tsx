@@ -246,7 +246,7 @@ export default function StackBuilder({ onSelectTool }: Props) {
 
   const workflowFilters: { key: FilterMode; label: string; icon: string }[] = [
     { key: "all", label: "All Tools", icon: "🌐" },
-    { key: "in-stack", label: `My Stack (${stackSize})`, icon: "📦" },
+    { key: "in-stack", label: `Favorites (${stackSize})`, icon: "❤️" },
     ...Object.entries(WORKFLOW_STAGES).map(([k, v]) => ({ key: k as FilterMode, label: v.label.split(" ")[0], icon: v.icon })),
   ];
 
