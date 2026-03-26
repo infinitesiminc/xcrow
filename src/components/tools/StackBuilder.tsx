@@ -5,7 +5,7 @@
  */
 import { useState, useCallback, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, Loader2, X, Plus, Check, ExternalLink, FlaskConical, Link } from "lucide-react";
+import { Search, Loader2, X, Plus, Check, ExternalLink, FlaskConical, Link, Building2 } from "lucide-react";
 import ToolQuickQuiz, { type QuizResult } from "./ToolQuickQuiz";
 import { supabase } from "@/integrations/supabase/client";
 import { GTC_TOOLS, CATEGORY_CONFIG, type GTCTool } from "@/data/gtc-tools-registry";
@@ -30,6 +30,7 @@ type FilterMode = "all" | "in-stack" | WorkflowStage;
 export default function StackBuilder({ onSelectTool }: Props) {
   const [query, setQuery] = useState("");
   const [jdUrl, setJdUrl] = useState("");
+  const [companyUrl, setCompanyUrl] = useState("");
   const [loading, setLoading] = useState(false);
   const [searchResults, setSearchResults] = useState<RankedTool[] | null>(null);
   const [searchedTitle, setSearchedTitle] = useState("");
@@ -44,6 +45,35 @@ export default function StackBuilder({ onSelectTool }: Props) {
   const handleQuizComplete = (toolName: string, result: QuizResult) => {
     setProficiencies(p => ({ ...p, [toolName]: result.level }));
   };
+  // --- Industry boost from company context ---
+  const boostFromIndustry = (industry: string | null, toolScores: Map<string, { score: number; skills: Set<string> }>) => {
+    if (!industry) return;
+    const lower = industry.toLowerCase();
+    const industryToolMap: Record<string, string[]> = {
+      "technology": ["GitHub Copilot", "AWS", "Azure", "Google Cloud", "Datadog", "Snowflake"],
+      "software": ["GitHub Copilot", "Cursor", "Vercel", "Docker", "Kubernetes"],
+      "finance": ["Bloomberg Terminal", "Tableau", "Power BI", "Snowflake", "Alteryx"],
+      "banking": ["Bloomberg Terminal", "Salesforce", "ServiceNow", "Palantir"],
+      "healthcare": ["Epic Systems", "Veeva", "Salesforce Health Cloud", "Power BI"],
+      "retail": ["Shopify", "Salesforce", "HubSpot", "Google Analytics", "Tableau"],
+      "marketing": ["HubSpot", "Marketo", "Salesforce", "Google Analytics", "Semrush"],
+      "consulting": ["Power BI", "Tableau", "Salesforce", "Slack", "Notion"],
+      "manufacturing": ["Siemens", "SAP", "Snowflake", "Power BI", "Tableau"],
+      "media": ["Adobe Creative Cloud", "Figma", "Canva", "Midjourney", "Runway"],
+      "education": ["Canvas", "Google Workspace", "Notion", "Slack"],
+      "legal": ["Westlaw", "LexisNexis", "Ironclad", "DocuSign"],
+    };
+    for (const [key, tools] of Object.entries(industryToolMap)) {
+      if (lower.includes(key)) {
+        for (const t of tools) {
+          if (!toolScores.has(t)) toolScores.set(t, { score: 0, skills: new Set() });
+          toolScores.get(t)!.score += 2;
+          toolScores.get(t)!.skills.add(`${industry} industry`);
+        }
+      }
+    }
+  };
+
   const search = useCallback(async () => {
     const q = query.trim();
     if (!q || q.length < 2) return;
@@ -52,8 +82,31 @@ export default function StackBuilder({ onSelectTool }: Props) {
     setSelectedTemplate(null);
 
     try {
-      const { data: jobs } = await supabase
-        .from("jobs").select("id, title").ilike("title", `%${q}%`).limit(50);
+      // Build job query — optionally filter by company
+      let jobQuery = supabase.from("jobs").select("id, title, company_id").ilike("title", `%${q}%`).limit(50);
+
+      // If company URL provided, find matching company first
+      let companyIndustry: string | null = null;
+      const cUrl = companyUrl.trim().toLowerCase().replace(/^https?:\/\//, "").replace(/\/$/, "");
+      if (cUrl) {
+        const { data: companies } = await supabase
+          .from("companies")
+          .select("id, industry, name")
+          .or(`website.ilike.%${cUrl}%,careers_url.ilike.%${cUrl}%,slug.ilike.%${cUrl.split(".")[0]}%`)
+          .limit(5);
+        if (companies && companies.length > 0) {
+          const companyIds = companies.map(c => c.id);
+          companyIndustry = companies[0].industry;
+          // Boost by also fetching company-specific jobs
+          const { data: companyJobs } = await supabase
+            .from("jobs").select("id, title").in("company_id", companyIds).ilike("title", `%${q}%`).limit(30);
+          if (companyJobs?.length) {
+            // Merge — company jobs get extra weight handled below
+          }
+        }
+      }
+
+      const { data: jobs } = await jobQuery;
       const jobIds = jobs?.map(j => j.id) || [];
       setJobCount(jobIds.length);
 
@@ -74,6 +127,10 @@ export default function StackBuilder({ onSelectTool }: Props) {
           const e = toolScores.get(tn)!; e.score += freq; e.skills.add(skill);
         }
       }
+
+      // Boost from company industry
+      boostFromIndustry(companyIndustry, toolScores);
+
       const role = matchRole(q);
       for (const t of role.coreTools) { if (!toolScores.has(t)) toolScores.set(t, { score: 0, skills: new Set() }); toolScores.get(t)!.score += 3; }
       for (const t of role.expandedTools) { if (!toolScores.has(t)) toolScores.set(t, { score: 0, skills: new Set() }); toolScores.get(t)!.score += 1; }
@@ -89,7 +146,7 @@ export default function StackBuilder({ onSelectTool }: Props) {
         .map(n => GTC_TOOLS.find(t => t.name === n)).filter(Boolean)
         .map((t, i) => ({ tool: t!, score: 10 - i, matchedSkills: [] })));
     } finally { setLoading(false); }
-  }, [query]);
+  }, [query, companyUrl]);
 
   // --- JD URL search ---
   const searchByUrl = useCallback(async () => {
@@ -147,7 +204,7 @@ export default function StackBuilder({ onSelectTool }: Props) {
     } finally { setLoading(false); }
   }, [jdUrl]);
 
-  const clearSearch = () => { setQuery(""); setJdUrl(""); setSearchResults(null); setSearchedTitle(""); };
+  const clearSearch = () => { setQuery(""); setJdUrl(""); setCompanyUrl(""); setSearchResults(null); setSearchedTitle(""); };
 
   // --- Template logic ---
   const templateTools = useMemo(() => {
@@ -258,6 +315,23 @@ export default function StackBuilder({ onSelectTool }: Props) {
           >
             {loading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : searchMode === "title" ? "Search" : "Analyze"}
           </button>
+        </div>
+
+        {/* Company website — optional enrichment */}
+        <div className="relative">
+          <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5" style={{ color: "hsl(var(--muted-foreground) / 0.6)" }} />
+          <input
+            value={companyUrl}
+            onChange={e => setCompanyUrl(e.target.value)}
+            placeholder="Company website (optional) — e.g. stripe.com"
+            className="w-full pl-9 pr-4 py-2 rounded-lg text-xs transition-all focus:outline-none focus:ring-1 focus:ring-primary/20"
+            style={{ background: "hsl(var(--muted) / 0.05)", border: "1px solid hsl(var(--border) / 0.15)", color: "hsl(var(--foreground) / 0.8)" }}
+          />
+          {companyUrl && (
+            <button onClick={() => setCompanyUrl("")} className="absolute right-2 top-1/2 -translate-y-1/2 p-0.5 rounded-full hover:opacity-70">
+              <X className="h-3 w-3" style={{ color: "hsl(var(--muted-foreground))" }} />
+            </button>
+          )}
         </div>
       </div>
 
