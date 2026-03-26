@@ -10,9 +10,9 @@ import { type FutureSkill, type FutureSkillCategory } from "@/hooks/use-future-s
 import { supabase } from "@/integrations/supabase/client";
 import type { SimLaunchRequest } from "@/components/territory/SkillLaunchCard";
 import {
-  Eye, Swords, Crown, Compass, ChevronRight, Clock,
+  Search, Swords, Crown, Compass, ChevronRight, Clock,
   Zap, Diamond, Lock, Trophy, Flame, ScrollText, MapPin,
-  CheckCircle2, Circle, Search,
+  CheckCircle2, Circle, Beaker,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { getTerritory, TERRITORY_ORDER } from "@/lib/territory-colors";
