@@ -108,6 +108,7 @@ export default function SkillDetailDrawer({
   level2Xp = 0,
   level1SimsCompleted = 0,
   onLaunchBoss,
+  simScores,
 }: SkillDetailDrawerProps) {
   const navigate = useNavigate();
   const [roles, setRoles] = useState<RoleLink[]>([]);
