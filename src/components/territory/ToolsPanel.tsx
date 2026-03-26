@@ -1,10 +1,10 @@
 /**
- * ToolsPanel — Comprehensive tracker of every AI tool mentioned in Jensen's GTC 2026 keynote.
+ * ToolsPanel — Comprehensive tracker of AI tools from the GTC 2026 keynote.
  * Grouped by company, filterable by category, with search.
  */
 import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, ExternalLink, Star, ChevronDown, ChevronUp } from "lucide-react";
+import { Search, ExternalLink, ChevronDown, ChevronUp } from "lucide-react";
 import { GTC_TOOLS, CATEGORY_CONFIG, type ToolCategory, type GTCTool } from "@/data/gtc-tools-registry";
 
 export default function ToolsPanel() {
