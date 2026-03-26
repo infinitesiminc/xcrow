@@ -4,7 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Loader2, Users, UserPlus, Activity, Zap, Search, ArrowUpDown, Trash2 } from "lucide-react";
+import { Loader2, Users, UserPlus, Activity, Zap, Search, ArrowUpDown, Trash2, Crown } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import {
   AlertDialog,
@@ -53,31 +53,38 @@ export default function UsersPage() {
   const [sortKey, setSortKey] = useState<SortKey>("created_at");
   const [sortAsc, setSortAsc] = useState(false);
   const [deleting, setDeleting] = useState<string | null>(null);
+  const [granting, setGranting] = useState<string | null>(null);
   const { toast } = useToast();
 
-  useEffect(() => {
-    (async () => {
-      const [usersRes, seatsRes] = await Promise.all([
-        supabase.rpc("get_admin_user_stats" as any),
-        supabase.from("school_seats" as any).select("user_id, status").eq("status", "active"),
-      ]);
-      
-      const schoolUserIds = new Set(
-        ((seatsRes.data as any[]) || []).map((s: any) => s.user_id).filter(Boolean)
-      );
-      
-      const rawUsers = (usersRes.data || []) as any as UserRow[];
-      // TODO: For champion detection, we'd need Stripe data. 
-      // For now, mark school users and leave rest as free.
-      const enriched = rawUsers.map(u => ({
-        ...u,
-        tier: schoolUserIds.has(u.user_id) ? "school" as const : "free" as const,
-      }));
-      
-      setUsers(enriched);
-      setLoading(false);
-    })();
-  }, []);
+  const fetchUsers = async () => {
+    const [usersRes, seatsRes, grantsRes] = await Promise.all([
+      supabase.rpc("get_admin_user_stats" as any),
+      supabase.from("school_seats" as any).select("user_id, status").eq("status", "active"),
+      (supabase.from("user_subscriptions" as any) as any)
+        .select("user_id, ends_at, source")
+        .or("ends_at.is.null,ends_at.gt." + new Date().toISOString()),
+    ]);
+    
+    const schoolUserIds = new Set(
+      ((seatsRes.data as any[]) || []).map((s: any) => s.user_id).filter(Boolean)
+    );
+    const grantUserIds = new Set(
+      ((grantsRes.data as any[]) || []).map((g: any) => g.user_id).filter(Boolean)
+    );
+    
+    const rawUsers = (usersRes.data || []) as any as UserRow[];
+    const enriched = rawUsers.map(u => ({
+      ...u,
+      tier: schoolUserIds.has(u.user_id) ? "school" as const
+        : grantUserIds.has(u.user_id) ? "champion" as const
+        : "free" as const,
+    }));
+    
+    setUsers(enriched);
+    setLoading(false);
+  };
+
+  useEffect(() => { fetchUsers(); }, []);
 
   const handleDelete = async (userId: string, name: string) => {
     setDeleting(userId);
@@ -92,6 +99,34 @@ export default function UsersPage() {
       toast({ title: "Delete failed", description: err.message, variant: "destructive" });
     }
     setDeleting(null);
+  };
+
+  const handleGrantChampion = async (userId: string, name: string, currentTier: string) => {
+    setGranting(userId);
+    try {
+      if (currentTier === "champion") {
+        // Revoke: delete active grants
+        await (supabase.from("user_subscriptions" as any) as any)
+          .delete()
+          .eq("user_id", userId)
+          .eq("source", "admin_grant");
+        toast({ title: `Revoked Champion from ${name}` });
+      } else {
+        // Grant: insert unlimited champion
+        await (supabase.from("user_subscriptions" as any) as any)
+          .insert({
+            user_id: userId,
+            source: "admin_grant",
+            plan: "champion",
+            ends_at: null, // unlimited until revoked
+          });
+        toast({ title: `Granted Champion to ${name}` });
+      }
+      await fetchUsers();
+    } catch (err: any) {
+      toast({ title: "Failed", description: err.message, variant: "destructive" });
+    }
+    setGranting(null);
   };
 
   const today = startOfDay(new Date());
@@ -238,7 +273,17 @@ export default function UsersPage() {
                       <TableCell className="text-xs text-muted-foreground">
                         {u.last_active ? format(new Date(u.last_active), "MMM d, yyyy") : "—"}
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="flex items-center gap-1">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className={`h-7 w-7 ${u.tier === "champion" ? "text-amber-500 hover:text-amber-600" : "text-muted-foreground hover:text-amber-500"}`}
+                          title={u.tier === "champion" ? "Revoke Champion" : "Grant Champion"}
+                          onClick={() => handleGrantChampion(u.user_id, u.display_name, u.tier || "free")}
+                          disabled={granting === u.user_id || u.tier === "school"}
+                        >
+                          {granting === u.user_id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Crown className="h-3.5 w-3.5" />}
+                        </Button>
                         <AlertDialog>
                           <AlertDialogTrigger asChild>
                             <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-destructive">

@@ -2118,6 +2118,42 @@ export type Database = {
           },
         ]
       }
+      user_subscriptions: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          ends_at: string | null
+          id: string
+          metadata: Json | null
+          plan: string
+          source: string
+          starts_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          ends_at?: string | null
+          id?: string
+          metadata?: Json | null
+          plan?: string
+          source?: string
+          starts_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          ends_at?: string | null
+          id?: string
+          metadata?: Json | null
+          plan?: string
+          source?: string
+          starts_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_usage: {
         Row: {
           analyses_used: number
@@ -2409,6 +2445,7 @@ export type Database = {
         }
         Returns: undefined
       }
+      has_active_grant: { Args: { _user_id: string }; Returns: boolean }
       has_school_seat: { Args: { _user_id: string }; Returns: boolean }
       increment_usage: {
         Args: { _type: string; _user_id: string }
