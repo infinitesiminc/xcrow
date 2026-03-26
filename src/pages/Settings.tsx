@@ -23,7 +23,7 @@ import { useToast } from "@/hooks/use-toast";
 import {
   Loader2, Save, Trash2, KeyRound, GraduationCap, Briefcase, School,
   User, Lock, AlertOctagon, ArrowLeft, LogOut, Check, CreditCard, Crown,
-  ExternalLink, Compass, Coins,
+  ExternalLink, Compass, Users, Copy, Gift,
 } from "lucide-react";
 import { AVATAR_OPTIONS, getAvatarById } from "@/lib/avatars";
 import { SchoolAutocomplete } from "@/components/SchoolAutocomplete";
