@@ -602,12 +602,31 @@ export default function FutureTerritoryMap({ skills, focusSkillId, level2SkillId
         )}
 
         {/* NPC Encounter Panel */}
-        {activeNPC && (
+        {activeNPC && !npcMechanics && (
           <NPCEncounter
             npc={activeNPC.npc}
             territory={activeNPC.territory}
             onClose={() => setActiveNPC(null)}
-            onInteract={(n) => { setActiveNPC(null); }}
+            onInteract={(n) => {
+              setActiveNPC(null);
+              setNpcMechanics({ npc: n, territory: activeNPC.territory });
+            }}
+          />
+        )}
+
+        {/* NPC Mechanics Panel */}
+        {npcMechanics && (
+          <NPCMechanics
+            npc={npcMechanics.npc}
+            territory={npcMechanics.territory}
+            scoutedSkillCount={mission.scoutedSkills.length}
+            territoriesScouted={mission.territoriesScouted}
+            onClose={() => setNpcMechanics(null)}
+            onFocusTerritory={(cat) => {
+              setNpcMechanics(null);
+              const island = layout.find(i => i.category === cat);
+              if (island) handleIslandClick(cat, island.cx, island.cy);
+            }}
           />
         )}
 
