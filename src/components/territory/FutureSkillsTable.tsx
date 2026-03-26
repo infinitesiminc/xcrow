@@ -245,7 +245,7 @@ export default function FutureSkillsTable({ skills, onSkillClick, skillGrowthMap
     return TERRITORY_ORDER.map(cat => {
       const t = getTerritory(cat);
       return {
-        domain: t.emoji + " " + (cat === "Ethics & Compliance" ? "Ethics" : cat === "Human Edge" ? "Human" : cat),
+        domain: cat === "Ethics & Compliance" ? "Ethics" : cat === "Human Edge" ? "Human" : cat,
         fullCategory: cat,
         xp: domainXp.get(cat) || 0,
         fullMark: maxXp,
