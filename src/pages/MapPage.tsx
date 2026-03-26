@@ -36,7 +36,7 @@ import CompactHUD from "@/components/territory/CompactHUD";
 
 import AlliesPanel from "@/components/territory/AlliesPanel";
 import CodexPanel from "@/components/territory/CodexPanel";
-import ScoutPanel from "@/components/territory/ScoutPanel";
+
 
 import { useSkills } from "@/hooks/use-skills";
 import SkillDetailDrawer from "@/components/territory/SkillDetailDrawer";
