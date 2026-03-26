@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/sidebar";
 
 const items = [
-  { title: "Companies", url: "/admin", icon: Building2 },
+  { title: "Pipeline", url: "/admin", icon: Building2 },
   { title: "Users", url: "/admin/users", icon: Users },
   { title: "Pro Upgrades", url: "/admin/upgrades", icon: Crown },
   { title: "Schools", url: "/admin/schools", icon: GraduationCap },
