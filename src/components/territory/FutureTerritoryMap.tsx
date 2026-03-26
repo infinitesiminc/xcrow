@@ -32,7 +32,8 @@ const NPC_MAP_AVATARS: Record<string, string> = {
 import GuardianEncounter from "./GuardianEncounter";
 import NPCEncounter from "./NPCEncounter";
 import RoleNPCEncounter from "./RoleNPCEncounter";
-import ScoutMissionHUD from "./ScoutMissionHUD";
+import QuestTracker from "./QuestTracker";
+import { useScoutMission } from "@/hooks/use-scout-mission";
 import TerritoryParticles from "./TerritoryParticles";
 import HeroScene from "./HeroScene";
 import { getTerritoryHeroImage } from "@/lib/territory-hero-images";
