@@ -585,7 +585,7 @@ const MapPage = () => {
             setDrawerOpen(true);
           }}
         />
-        {!isSignedIn && <MapIntroGuide />}
+        <MapIntroGuide isSignedIn={isSignedIn} />
       </div>
 
       {/* Role preview overlay */}
