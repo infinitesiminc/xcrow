@@ -390,7 +390,7 @@ export default function FutureTerritoryMap({ skills, focusSkillId, level2SkillId
             return (
               <g key={`npc-${spawn.npc.id}`} className="cursor-pointer"
                 onClick={(e) => { e.stopPropagation(); if (!isDragging.current) { setActiveNPC({ npc: spawn.npc, territory: island.category }); setActiveGuardian(null); setHoverPreview(null); } }}
-                onMouseEnter={() => setHoverPreview({ type: "npc", id: spawn.npc.id, name: spawn.npc.name, title: spawn.npc.title, src: NPC_MAP_AVATARS[spawn.npc.id] || npcMerchant, x: nx, y: ny, hue: 200 })}
+                onMouseEnter={() => setHoverPreview({ type: "npc", id: spawn.npc.id, name: spawn.npc.name, title: spawn.npc.title, src: getNPCAvatar(spawn.npc.id), x: nx, y: ny, hue: 200 })}
                 onMouseLeave={() => setHoverPreview(p => p?.id === spawn.npc.id ? null : p)}
               >
                 {(() => {
