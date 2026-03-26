@@ -6,7 +6,7 @@ import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
-  ShieldCheck, Lock, ArrowRight, Swords, Star, Crown, Medal, Map, Compass,
+  ShieldCheck, Lock, ArrowRight, Swords, Star, Crown, Medal, Map, Compass, Eye,
 } from "lucide-react";
 import {
   SKILL_TAXONOMY,
