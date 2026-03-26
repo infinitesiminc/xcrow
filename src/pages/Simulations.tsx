@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Plus, FileText, MessageSquare, GraduationCap,
   Loader2, Trash2, Play, ChevronDown, ChevronUp, Upload,
-  Sparkles, Clock, Brain, Search, Briefcase,
+  Sparkles, Clock, Brain, Search, Briefcase, Workflow,
   BookOpen, Save,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -19,6 +19,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import SimulatorModal from "@/components/SimulatorModal";
+import AgentPipelineBuilder from "@/components/sim/AgentPipelineBuilder";
 
 interface CustomSim {
   id: string;
@@ -74,7 +75,7 @@ export default function Simulations() {
   const { user } = useAuth();
   const { toast } = useToast();
 
-  const [mainTab, setMainTab] = useState<"library" | "browse">("library");
+  const [mainTab, setMainTab] = useState<"library" | "browse" | "pipeline">("library");
 
   /* ── Library state ── */
   const [sims, setSims] = useState<CustomSim[]>([]);
@@ -310,13 +311,16 @@ export default function Simulations() {
         </div>
 
         {/* Main tabs */}
-        <Tabs value={mainTab} onValueChange={(v) => setMainTab(v as "library" | "browse")} className="mb-6">
+        <Tabs value={mainTab} onValueChange={(v) => setMainTab(v as "library" | "browse" | "pipeline")} className="mb-6">
           <TabsList>
             <TabsTrigger value="library" className="gap-1.5 text-xs">
               <BookOpen className="w-3.5 h-3.5" /> My Library
             </TabsTrigger>
             <TabsTrigger value="browse" className="gap-1.5 text-xs">
               <Briefcase className="w-3.5 h-3.5" /> Browse Jobs
+            </TabsTrigger>
+            <TabsTrigger value="pipeline" className="gap-1.5 text-xs">
+              <Workflow className="w-3.5 h-3.5" /> Pipeline Builder
             </TabsTrigger>
           </TabsList>
 
@@ -534,6 +538,11 @@ export default function Simulations() {
                 )}
               </div>
             </div>
+          </TabsContent>
+
+          {/* ── Pipeline Builder Tab ── */}
+          <TabsContent value="pipeline" className="mt-4">
+            <AgentPipelineBuilder />
           </TabsContent>
         </Tabs>
       </div>
