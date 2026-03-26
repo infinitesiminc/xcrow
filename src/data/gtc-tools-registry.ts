@@ -24,6 +24,14 @@ export type ToolCategory =
 export type ToolMaturity = "ga" | "preview" | "beta" | "research";
 export type ToolType = "learnable" | "reference";
 
+export interface ToolProduct {
+  name: string;
+  description: string;
+  type: ToolType;
+  url?: string;
+  useCases?: string[];
+}
+
 export interface GTCTool {
   name: string;
   company: string;
@@ -43,6 +51,8 @@ export interface GTCTool {
   skillMappings?: string[];
   /** Use-case tags for enterprise filtering */
   useCases?: string[];
+  /** Sub-products within the platform */
+  products?: ToolProduct[];
 }
 
 export const GTC_TOOLS: GTCTool[] = [
