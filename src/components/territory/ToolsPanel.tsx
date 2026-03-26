@@ -83,9 +83,9 @@ export default function ToolsPanel() {
         {/* View mode toggle */}
         <div className="flex gap-1 rounded-md p-0.5" style={{ background: "hsl(var(--muted) / 0.2)" }}>
           {([
-            { key: "all" as ViewMode, label: `All (${GTC_TOOLS.length})`, icon: null },
-            { key: "learnable" as ViewMode, label: `Practice (${learnableCount})`, icon: <Sparkles className="h-2.5 w-2.5" /> },
-            { key: "reference" as ViewMode, label: `Reference (${referenceCount})`, icon: <Eye className="h-2.5 w-2.5" /> },
+            { key: "all" as ViewMode, label: `Explore (${GTC_TOOLS.length})`, icon: null },
+            { key: "learnable" as ViewMode, label: `My Stack (${learnableCount})`, icon: <Sparkles className="h-2.5 w-2.5" /> },
+            { key: "reference" as ViewMode, label: `Infrastructure (${referenceCount})`, icon: <Eye className="h-2.5 w-2.5" /> },
           ]).map(({ key, label, icon }) => (
             <button
               key={key}
