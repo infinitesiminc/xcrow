@@ -325,7 +325,7 @@ export default function FutureTerritoryMap({ skills, focusSkillId, level2SkillId
             const ny = island.cy + spawn.offsetY;
             return (
               <g key={`npc-${spawn.npc.id}`} className="cursor-pointer"
-                onClick={(e) => { e.stopPropagation(); if (!isDragging.current) { setActiveNPC(spawn.npc); setActiveGuardian(null); } }}>
+                onClick={(e) => { e.stopPropagation(); if (!isDragging.current) { setActiveNPC({ npc: spawn.npc, territory: island.category }); setActiveGuardian(null); } }}>
                 <motion.circle cx={nx} cy={ny} r={12}
                   fill="hsl(var(--card))" stroke="hsl(var(--border))"
                   strokeWidth={1.5} strokeDasharray="3 2"
