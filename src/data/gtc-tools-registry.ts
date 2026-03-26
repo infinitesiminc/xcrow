@@ -59,7 +59,14 @@ export const GTC_TOOLS: GTCTool[] = [
   // ═══════════════════════════════════════════
   // FOUNDATION MODELS
   // ═══════════════════════════════════════════
-  { name: "ChatGPT", company: "OpenAI", category: "foundation-models", version: "GPT-5", description: "Flagship conversational AI with reasoning, vision, and tool-use capabilities.", icon: "💬", url: "https://chat.openai.com", type: "learnable", maturity: "ga", pricing: "Freemium", useCases: ["content-creation", "analysis", "coding", "research"] },
+  { name: "ChatGPT", company: "OpenAI", category: "foundation-models", version: "GPT-5", description: "Flagship conversational AI with reasoning, vision, and tool-use capabilities.", icon: "💬", url: "https://chat.openai.com", type: "learnable", maturity: "ga", pricing: "Freemium", useCases: ["content-creation", "analysis", "coding", "research"], products: [
+    { name: "ChatGPT", description: "Conversational AI interface for reasoning, writing, and analysis.", type: "learnable", url: "https://chat.openai.com" },
+    { name: "GPT-5 API", description: "API access to GPT-5 for building custom applications.", type: "learnable", url: "https://platform.openai.com" },
+    { name: "DALL-E 3", description: "Text-to-image generation integrated into ChatGPT.", type: "learnable" },
+    { name: "Whisper", description: "Speech-to-text transcription and translation model.", type: "learnable" },
+    { name: "Codex", description: "Cloud-based AI coding agent for parallel task execution.", type: "learnable" },
+    { name: "Sora", description: "Text-to-video generation model for creative content.", type: "learnable", url: "https://openai.com/sora" },
+  ] },
   { name: "Claude", company: "Anthropic", category: "foundation-models", version: "Claude 4 Opus", description: "Safety-focused reasoning model excelling at long-context analysis, coding, and nuanced tasks.", icon: "🟠", url: "https://claude.ai", type: "learnable", maturity: "ga", pricing: "Freemium", useCases: ["analysis", "coding", "writing", "research"] },
   { name: "Gemini", company: "Google", category: "foundation-models", version: "Gemini 2.5 Pro", description: "Multimodal model with native image, video, and code understanding across Google's ecosystem.", icon: "✨", url: "https://gemini.google.com", type: "learnable", maturity: "ga", pricing: "Freemium", useCases: ["multimodal", "analysis", "coding", "search"] },
   { name: "Llama", company: "Meta", category: "foundation-models", version: "Llama 4", description: "Open-weight frontier model family for self-hosted and fine-tuned deployments.", icon: "🦙", url: "https://llama.meta.com", type: "learnable", maturity: "ga", pricing: "Open Source", useCases: ["self-hosted", "fine-tuning", "enterprise-ai"] },
