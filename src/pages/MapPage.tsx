@@ -36,6 +36,7 @@ import CompactHUD from "@/components/territory/CompactHUD";
 
 import AlliesPanel from "@/components/territory/AlliesPanel";
 import CodexPanel from "@/components/territory/CodexPanel";
+import ToolsPanel from "@/components/territory/ToolsPanel";
 
 
 import { useSkills } from "@/hooks/use-skills";
