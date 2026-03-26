@@ -21,6 +21,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { type FutureSkill, type FutureSkillCategory, FUTURE_CATEGORY_META } from "@/hooks/use-future-skills";
 import { ArrowRight, Briefcase, Zap, Sparkles, Lock, Diamond, Crown, Swords } from "lucide-react";
 import { getTerritory } from "@/lib/territory-colors";
+import { calculateGrowth, DIMENSION_INFO, type GrowthDimensions } from "@/lib/skill-growth";
 
 /* ── Skill Hero Image — direct from storage (pre-generated) ── */
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
@@ -88,6 +89,13 @@ interface SkillDetailDrawerProps {
   level1SimsCompleted?: number;
   /** Launch the L2 boss battle */
   onLaunchBoss?: () => void;
+  /** Sim score averages for growth rings */
+  simScores?: {
+    avgToolAwareness?: number;
+    avgAdaptiveThinking?: number;
+    avgHumanValueAdd?: number;
+    avgDomainJudgment?: number;
+  };
 }
 
 export default function SkillDetailDrawer({
@@ -100,6 +108,7 @@ export default function SkillDetailDrawer({
   level2Xp = 0,
   level1SimsCompleted = 0,
   onLaunchBoss,
+  simScores,
 }: SkillDetailDrawerProps) {
   const navigate = useNavigate();
   const [roles, setRoles] = useState<RoleLink[]>([]);
@@ -180,7 +189,8 @@ export default function SkillDetailDrawer({
 
   if (!skill || !territory) return null;
 
-  // (timeline removed)
+  // Calculate growth dimensions for three-ring visualization
+  const growth = calculateGrowth(skill.avgRelevance ?? 50, level1Xp + level2Xp, simScores);
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -192,14 +202,14 @@ export default function SkillDetailDrawer({
           borderLeft: "1px solid hsl(var(--filigree) / 0.2)",
         }}
       >
-        {/* ── Hero Image Banner ── */}
-        <div className="relative w-full h-32 overflow-hidden shrink-0" style={{ isolation: "isolate" }}>
+        {/* ── Hero Image Banner with Three Rings ── */}
+        <div className="relative w-full h-44 overflow-hidden shrink-0" style={{ isolation: "isolate" }}>
           {heroImage ? (
             <img
               src={heroImage}
               alt={`${skill.name} illustration`}
               className="w-full h-full object-cover transition-opacity duration-700"
-              style={{ filter: "brightness(0.55) saturate(1.1)" }}
+              style={{ filter: "brightness(0.45) saturate(1.1)" }}
             />
           ) : heroLoading ? (
             <div
@@ -212,9 +222,15 @@ export default function SkillDetailDrawer({
               style={{ background: `linear-gradient(135deg, hsl(var(--surface-stone)), hsl(var(--muted) / 0.2))` }}
             />
           )}
+
+          {/* Three-ring growth overlay */}
+          <div className="absolute inset-0 flex items-center justify-center z-[2]">
+            <ThreeRingDisplay growth={growth} />
+          </div>
+
           {/* Gradient fade into content */}
           <div
-            className="absolute inset-x-0 bottom-0 h-16"
+            className="absolute inset-x-0 bottom-0 h-16 z-[3]"
             style={{ background: `linear-gradient(to top, hsl(var(--surface-stone)), transparent)` }}
           />
         </div>
@@ -625,6 +641,68 @@ function StatCard({ label, value }: { label: string; value: string | number }) {
       >
         {label}
       </p>
+    </div>
+  );
+}
+
+/* ── Three-Ring Growth Display — Castle visualization ── */
+function ThreeRingDisplay({ growth }: { growth: GrowthDimensions }) {
+  const size = 120;
+  const center = size / 2;
+  const rings = [
+    { r: 52, score: growth.foundation.tier === "widely_taught" ? 80 : growth.foundation.tier === "growing" ? 50 : 20, color: "hsl(var(--muted-foreground))", label: DIMENSION_INFO.foundation.label, emoji: DIMENSION_INFO.foundation.emoji, status: growth.foundation.label },
+    { r: 42, score: growth.aiMastery.score, color: "hsl(var(--primary))", label: DIMENSION_INFO.aiMastery.label, emoji: DIMENSION_INFO.aiMastery.emoji, status: growth.aiMastery.label },
+    { r: 32, score: growth.humanEdge.score, color: "hsl(45 93% 58%)", label: DIMENSION_INFO.humanEdge.label, emoji: DIMENSION_INFO.humanEdge.emoji, status: growth.humanEdge.label },
+  ];
+
+  return (
+    <div className="flex flex-col items-center gap-1">
+      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
+        {rings.map((ring, i) => {
+          const circumference = 2 * Math.PI * ring.r;
+          const filled = (ring.score / 100) * circumference;
+          return (
+            <g key={i}>
+              {/* Background ring */}
+              <circle
+                cx={center} cy={center} r={ring.r}
+                fill="none" stroke="white" strokeWidth={3} opacity={0.08}
+              />
+              {/* Filled arc */}
+              <motion.circle
+                cx={center} cy={center} r={ring.r}
+                fill="none" stroke={ring.color} strokeWidth={3}
+                strokeLinecap="round"
+                strokeDasharray={`${filled} ${circumference - filled}`}
+                strokeDashoffset={circumference * 0.25}
+                initial={{ strokeDasharray: `0 ${circumference}` }}
+                animate={{ strokeDasharray: `${filled} ${circumference - filled}` }}
+                transition={{ duration: 1.2, delay: 0.3 + i * 0.2, ease: "easeOut" }}
+                style={{ filter: ring.score >= 40 ? `drop-shadow(0 0 4px ${ring.color})` : "none" }}
+              />
+            </g>
+          );
+        })}
+        {/* Center filled rings count */}
+        <text x={center} y={center - 4} textAnchor="middle" dominantBaseline="central"
+          style={{ fontSize: "20px", fontWeight: 700, fill: "white", fontFamily: "'Cinzel', serif" }}>
+          {growth.filledRings}/3
+        </text>
+        <text x={center} y={center + 12} textAnchor="middle"
+          style={{ fontSize: "8px", fill: "rgba(255,255,255,0.6)", textTransform: "uppercase", letterSpacing: "0.1em" }}>
+          Rings
+        </text>
+      </svg>
+
+      {/* Legend below rings */}
+      <div className="flex gap-3 text-[9px]">
+        {rings.map((ring, i) => (
+          <div key={i} className="flex items-center gap-1" style={{ color: "rgba(255,255,255,0.7)" }}>
+            <div className="w-1.5 h-1.5 rounded-full" style={{ background: ring.color }} />
+            <span>{ring.emoji} {ring.status}</span>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
