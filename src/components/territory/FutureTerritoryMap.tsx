@@ -321,8 +321,10 @@ export default function FutureTerritoryMap({ skills, focusSkillId, level2SkillId
             const gy = island.cy - island.radius * 0.45;
             return (
               <g key={`guard-${guardian.id}`} className="cursor-pointer"
-                onClick={(e) => { e.stopPropagation(); if (!isDragging.current) { setActiveGuardian(guardian); setActiveNPC(null); } }}>
-                {/* Rhombus shape for guardian */}
+                onClick={(e) => { e.stopPropagation(); if (!isDragging.current) { setActiveGuardian(guardian); setActiveNPC(null); setHoverPreview(null); } }}
+                onMouseEnter={() => setHoverPreview({ type: "guardian", id: guardian.id, name: guardian.name, title: guardian.title, src: GUARDIAN_MAP_AVATARS[guardian.id] || guardIronclad, x: gx, y: gy, hue: guardian.hue })}
+                onMouseLeave={() => setHoverPreview(p => p?.id === guardian.id ? null : p)}
+              >
                 <motion.polygon
                   points={`${gx},${gy - 18} ${gx + 18},${gy} ${gx},${gy + 18} ${gx - 18},${gy}`}
                   fill={`hsl(${guardian.hue} 40% 15%)`}
@@ -332,7 +334,6 @@ export default function FutureTerritoryMap({ skills, focusSkillId, level2SkillId
                   transition={{ delay: 0.8, type: "spring" }}
                   style={{ transformOrigin: `${gx}px ${gy}px` }}
                 />
-                {/* Pulsing rhombus outline */}
                 <motion.polygon
                   points={`${gx},${gy - 22} ${gx + 22},${gy} ${gx},${gy + 22} ${gx - 22},${gy}`}
                   fill="none" stroke={`hsl(${guardian.hue} 50% 45%)`}
