@@ -369,7 +369,7 @@ export default function SkillProgressPanel({
                                       animate={{ height: "auto", opacity: 1 }}
                                       exit={{ height: 0, opacity: 0 }}
                                       transition={{ duration: 0.15 }}
-                                      className="px-3 pb-2 overflow-hidden"
+                                      className="px-2 pb-1 overflow-hidden"
                                     >
                                       <div
                                         className="rounded-lg p-2 mt-0.5 space-y-1.5"
