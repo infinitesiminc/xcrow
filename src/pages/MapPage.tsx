@@ -417,7 +417,7 @@ const MapPage = () => {
               animate={{ y: 0, opacity: 1 }}
               exit={{ y: "-100%", opacity: 0 }}
               transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-              className="absolute inset-x-0 top-0 z-30 flex flex-col overflow-hidden"
+              className="absolute left-0 top-0 z-30 flex flex-col overflow-hidden w-auto min-w-[320px] max-w-[480px] rounded-br-xl"
               style={{
                 maxHeight: "60%",
                 background: "hsl(var(--surface-stone) / 0.97)",
