@@ -1619,6 +1619,66 @@ export type Database = {
           },
         ]
       }
+      sim_checkpoints: {
+        Row: {
+          company: string | null
+          created_at: string
+          id: string
+          job_title: string
+          level: number
+          messages: Json
+          mode: string
+          objective_fail_counts: Json
+          objective_status: Json
+          round_count: number
+          scaffolding_tiers: Json
+          session_data: Json
+          status: string
+          task_name: string
+          turn_count: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          company?: string | null
+          created_at?: string
+          id?: string
+          job_title: string
+          level?: number
+          messages?: Json
+          mode?: string
+          objective_fail_counts?: Json
+          objective_status?: Json
+          round_count?: number
+          scaffolding_tiers?: Json
+          session_data?: Json
+          status?: string
+          task_name: string
+          turn_count?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          company?: string | null
+          created_at?: string
+          id?: string
+          job_title?: string
+          level?: number
+          messages?: Json
+          mode?: string
+          objective_fail_counts?: Json
+          objective_status?: Json
+          round_count?: number
+          scaffolding_tiers?: Json
+          session_data?: Json
+          status?: string
+          task_name?: string
+          turn_count?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       simulation_queue: {
         Row: {
           attempt_number: number
