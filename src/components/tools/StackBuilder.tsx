@@ -106,7 +106,7 @@ export default function StackBuilder({ onSelectTool }: Props) {
         }
       }
 
-      const { data: jobs } = jobQuery;
+      const { data: jobs } = await jobQuery;
       const jobIds = jobs?.map(j => j.id) || [];
       setJobCount(jobIds.length);
 
