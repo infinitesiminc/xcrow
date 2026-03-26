@@ -62,6 +62,21 @@ export default function UsersPage() {
     })();
   }, []);
 
+  const handleDelete = async (userId: string, name: string) => {
+    setDeleting(userId);
+    try {
+      const { data, error } = await supabase.functions.invoke("admin-delete-user", {
+        body: { user_id: userId },
+      });
+      if (error || data?.error) throw new Error(data?.error || error?.message);
+      setUsers((prev) => prev.filter((u) => u.user_id !== userId));
+      toast({ title: `Deleted ${name}` });
+    } catch (err: any) {
+      toast({ title: "Delete failed", description: err.message, variant: "destructive" });
+    }
+    setDeleting(null);
+  };
+
   const today = startOfDay(new Date());
   const day7 = subDays(today, 7);
   const day30 = subDays(today, 30);
