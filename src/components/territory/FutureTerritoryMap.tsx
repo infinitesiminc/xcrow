@@ -555,9 +555,14 @@ export default function FutureTerritoryMap({ skills, focusSkillId, level2SkillId
         {activeRoleNPC && (
           <RoleNPCEncounter
             role={activeRoleNPC}
-            onClose={() => setActiveRoleNPC(null)}
+            onClose={() => {
+              // Track territory scouted when closing encounter
+              setTerritoriesScouted(prev => new Set([...prev, activeRoleNPC.territory]));
+              setRolesSpokenTo(prev => prev + 1);
+              setActiveRoleNPC(null);
+            }}
             onCollectSkills={(ids) => {
-              // Skills collected — future: persist to user profile
+              setSkillsCollected(prev => prev + ids.length);
               console.log("Collected skills:", ids);
             }}
           />
