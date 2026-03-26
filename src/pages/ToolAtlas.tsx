@@ -64,7 +64,7 @@ export default function ToolAtlas() {
 
           <div className="ml-auto flex items-center gap-2">
             <span className="text-[10px] px-2 py-1 rounded-full" style={{ background: "hsl(45, 90%, 55%, 0.1)", color: "hsl(45, 90%, 55%)" }}>
-              <Package className="inline h-3 w-3 mr-1" />{stackSize} in stack
+              <Package className="inline h-3 w-3 mr-1" />{stackSize} favorited
             </span>
           </div>
         </div>
