@@ -3,7 +3,6 @@
  * Each NPC type opens a distinct mini-interaction panel.
  */
 import { motion } from "framer-motion";
-import { motion } from "framer-motion";
 import { Gem, Eye, Swords, Compass, Hammer, ScrollText, ChevronRight, X, Sparkles, Star, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { WanderingNPC } from "@/lib/wandering-npcs";
