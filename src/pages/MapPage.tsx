@@ -90,6 +90,8 @@ const MapPage = () => {
   const { profile, user, isSuperAdmin } = useAuth();
   const { skills: dbSkills } = useSkills();
   const { futureSkills } = useFutureSkills();
+  const { mode: playMode } = usePlayMode();
+  const isFastTrack = playMode === "fast_track";
 
   const taxonomy: TaxonomySkill[] = useMemo(() =>
     dbSkills.map(s => ({
