@@ -202,9 +202,6 @@ function ToolRow({ tool }: { tool: GTCTool }) {
           <span className="text-[11px] font-semibold truncate" style={{ color: "hsl(var(--foreground))" }}>
             {tool.name}
           </span>
-          {tool.jensenEndorsed && (
-            <Star className="h-2.5 w-2.5 shrink-0 fill-current" style={{ color: "hsl(45, 90%, 55%)" }} />
-          )}
           <span
             className="text-[9px] px-1 py-0 rounded shrink-0"
             style={{ background: catCfg.color + "22", color: catCfg.color }}
