@@ -34,8 +34,8 @@ serve(async (req) => {
     if (!authHeader) throw new Error("No authorization header provided");
 
     const token = authHeader.replace("Bearer ", "");
-    const { data: claimsData, error: claimsError } = await supabaseClient.auth.getClaims(token);
-    if (claimsError || !claimsData?.claims || !claimsData.claims.sub) {
+    const { data: userData, error: userError } = await supabaseClient.auth.getUser(token);
+    if (userError || !userData.user) {
       logStep("No valid user token, returning unsubscribed");
       return new Response(JSON.stringify({ subscribed: false }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -43,7 +43,7 @@ serve(async (req) => {
       });
     }
     
-    const userEmail = claimsData.claims.email as string;
+    const userEmail = userData.user.email;
     if (!userEmail) {
       return new Response(JSON.stringify({ subscribed: false }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
