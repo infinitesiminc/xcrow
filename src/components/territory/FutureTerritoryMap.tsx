@@ -441,7 +441,7 @@ export default function FutureTerritoryMap({ skills, focusSkillId, level2SkillId
             const rx = island.cx + Math.cos(angle) * dist;
             const ry = island.cy + Math.sin(angle) * dist;
             const colors = THREAT_COLORS[role.threatTier];
-            const avatarSrc = ROLE_NPC_AVATARS[role.territory] || roleNpcStrategic;
+            const avatarSrc = ROLE_NPC_AVATARS[role.territory] || ROLE_NPC_AVATARS["Strategic"];
             return (
               <g key={`role-${role.jobId}`} className="cursor-pointer"
                 onClick={(e) => { e.stopPropagation(); if (!isDragging.current) { setActiveRoleNPC(role); setActiveGuardian(null); setActiveNPC(null); setHoverPreview(null); } }}
