@@ -86,7 +86,7 @@ export default function GuardianEncounter({ guardian, onClose, onChallenge }: Gu
                   ],
                 }}
                 transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-                className="w-16 h-16 rounded-xl overflow-hidden shrink-0"
+                className="w-20 h-24 rounded-xl overflow-hidden shrink-0"
                 style={{
                   border: `2px solid hsl(${guardian.hue} 50% 35%)`,
                 }}
