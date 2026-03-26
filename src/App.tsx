@@ -33,14 +33,10 @@ const Terms = lazy(() => import("./pages/Terms.tsx"));
 const CookiePolicy = lazy(() => import("./pages/CookiePolicy.tsx"));
 const Contact = lazy(() => import("./pages/Contact.tsx"));
 
-const SimulationDesign = lazy(() => import("./pages/SimulationDesign.tsx"));
 const JoinWorkspace = lazy(() => import("./pages/JoinWorkspace.tsx"));
-const ScoreDistributions = lazy(() => import("./pages/ScoreDistributions.tsx"));
 const PublicProfile = lazy(() => import("./pages/PublicProfile.tsx"));
 const MapPage = lazy(() => import("./pages/MapPage.tsx"));
-const L2SimFormats = lazy(() => import("./pages/L2SimFormats.tsx"));
 const HowItWorks = lazy(() => import("./pages/HowItWorks.tsx"));
-const Professionals = lazy(() => import("./pages/Professionals.tsx"));
 const SkillsCodex = lazy(() => import("./pages/Skills.tsx"));
 const Competition = lazy(() => import("./pages/Competition.tsx"));
 const Investors = lazy(() => import("./pages/Investors.tsx"));
