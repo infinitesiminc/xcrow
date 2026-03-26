@@ -147,6 +147,20 @@ export default function Navbar() {
         {/* Right side */}
         <div className="flex items-center gap-1.5">
           {user ? (
+            <>
+              {/* Credit balance pill */}
+              <button
+                onClick={() => navigate("/settings?section=subscription")}
+                className="hidden sm:flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold transition-colors hover:bg-secondary/60"
+                style={{
+                  color: "hsl(45 93% 48%)",
+                  background: "hsl(45 93% 48% / 0.08)",
+                  border: "1px solid hsl(45 93% 48% / 0.15)",
+                }}
+              >
+                <Coins className="h-3.5 w-3.5" />
+                {creditBalance}
+              </button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon" className="rounded-full">
