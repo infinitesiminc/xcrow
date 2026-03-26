@@ -183,6 +183,39 @@ export default function ToolAtlas() {
                       );
                     })()}
 
+                    {/* Product Suite */}
+                    {selectedTool.products && selectedTool.products.length > 0 && (
+                      <div>
+                        <h4 className="text-[10px] font-bold uppercase tracking-wider mb-1.5" style={{ color: "hsl(var(--muted-foreground))" }}>
+                          Product Suite · {selectedTool.products.length} products
+                        </h4>
+                        <div className="space-y-1.5">
+                          {selectedTool.products.map(product => (
+                            <div
+                              key={product.name}
+                              className="px-2.5 py-2 rounded-lg"
+                              style={{ background: "hsl(var(--muted) / 0.08)", border: "1px solid hsl(var(--border) / 0.15)" }}
+                            >
+                              <div className="flex items-center justify-between">
+                                <span className="text-[11px] font-semibold" style={{ color: "hsl(var(--foreground))" }}>
+                                  {product.name}
+                                </span>
+                                <span className="text-[9px] px-1.5 py-0.5 rounded-full" style={{
+                                  background: product.type === "learnable" ? "hsl(140, 60%, 45%, 0.15)" : "hsl(var(--muted) / 0.2)",
+                                  color: product.type === "learnable" ? "hsl(140, 60%, 45%)" : "hsl(var(--muted-foreground))",
+                                }}>
+                                  {product.type === "learnable" ? "Hands-on" : "Reference"}
+                                </span>
+                              </div>
+                              <p className="text-[10px] mt-0.5" style={{ color: "hsl(var(--foreground) / 0.6)" }}>
+                                {product.description}
+                              </p>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
                     {/* Use cases */}
                     {selectedTool.useCases && selectedTool.useCases.length > 0 && (
                       <div>
