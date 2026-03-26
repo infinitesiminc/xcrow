@@ -5,7 +5,8 @@
  */
 import { useState, useCallback, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, Loader2, X, Plus, Check, ExternalLink, ChevronDown } from "lucide-react";
+import { Search, Loader2, X, Plus, Check, ExternalLink, FlaskConical } from "lucide-react";
+import ToolQuickQuiz, { type QuizResult } from "./ToolQuickQuiz";
 import { supabase } from "@/integrations/supabase/client";
 import { GTC_TOOLS, CATEGORY_CONFIG, type GTCTool } from "@/data/gtc-tools-registry";
 import { ROLE_RECOMMENDATIONS, matchRole } from "@/data/role-tool-recommendations";
@@ -19,12 +20,6 @@ interface RankedTool {
   matchedSkills: string[];
 }
 
-const PROFICIENCY_LEVELS = [
-  { value: 0, label: "New", color: "hsl(var(--muted-foreground))", emoji: "🔍" },
-  { value: 1, label: "Beginner", color: "hsl(200, 80%, 55%)", emoji: "🌱" },
-  { value: 2, label: "Intermediate", color: "hsl(45, 90%, 55%)", emoji: "⚡" },
-  { value: 3, label: "Advanced", color: "hsl(var(--primary))", emoji: "🏆" },
-] as const;
 
 interface Props {
   onSelectTool?: (toolName: string) => void;
@@ -42,11 +37,10 @@ export default function StackBuilder({ onSelectTool }: Props) {
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
   const { toggleTool, isInStack, stack, stackSize } = useMyStack();
   const [proficiencies, setProficiencies] = useState<Record<string, number>>({});
-  const [openAssessment, setOpenAssessment] = useState<string | null>(null);
+  const [quizTool, setQuizTool] = useState<string | null>(null);
 
-  const setProficiency = (toolName: string, level: number) => {
-    setProficiencies(p => ({ ...p, [toolName]: level }));
-    setOpenAssessment(null);
+  const handleQuizComplete = (toolName: string, result: QuizResult) => {
+    setProficiencies(p => ({ ...p, [toolName]: result.level }));
   };
   const search = useCallback(async () => {
     const q = query.trim();
@@ -269,7 +263,7 @@ export default function StackBuilder({ onSelectTool }: Props) {
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: Math.min(i * 0.02, 0.3) }}
-                className="rounded-xl overflow-hidden flex flex-col cursor-pointer group hover:shadow-lg transition-all"
+                className="rounded-xl overflow-hidden flex flex-col cursor-pointer group hover:shadow-lg transition-all relative"
                 style={{
                   background: "hsl(var(--card))",
                   border: `1px solid ${inStack ? "hsl(45, 90%, 55%, 0.35)" : "hsl(var(--border) / 0.2)"}`,
@@ -367,62 +361,45 @@ export default function StackBuilder({ onSelectTool }: Props) {
                     )}
                   </div>
 
-                  {/* Proficiency self-assessment */}
-                  <div className="relative">
-                    <button
-                      onClick={e => { e.stopPropagation(); setOpenAssessment(openAssessment === item.tool.name ? null : item.tool.name); }}
-                      className="w-full py-1.5 rounded-lg text-[10px] font-medium flex items-center justify-center gap-1.5 transition-all"
-                      style={{
-                        background: proficiencies[item.tool.name] !== undefined
-                          ? PROFICIENCY_LEVELS[proficiencies[item.tool.name]].color + "15"
-                          : "hsl(var(--muted) / 0.05)",
-                        border: `1px solid ${proficiencies[item.tool.name] !== undefined
-                          ? PROFICIENCY_LEVELS[proficiencies[item.tool.name]].color + "30"
-                          : "hsl(var(--border) / 0.15)"}`,
-                        color: proficiencies[item.tool.name] !== undefined
-                          ? PROFICIENCY_LEVELS[proficiencies[item.tool.name]].color
-                          : "hsl(var(--muted-foreground))",
-                      }}
-                    >
-                      {proficiencies[item.tool.name] !== undefined ? (
-                        <>
-                          <span>{PROFICIENCY_LEVELS[proficiencies[item.tool.name]].emoji}</span>
-                          {PROFICIENCY_LEVELS[proficiencies[item.tool.name]].label}
-                        </>
-                      ) : (
-                        <>Rate your proficiency</>
-                      )}
-                      <ChevronDown className="h-3 w-3" />
-                    </button>
+                  {/* Quick proficiency test */}
+                  {(() => {
+                    const LEVELS = [
+                      { label: "New", color: "hsl(var(--muted-foreground))", emoji: "🔍" },
+                      { label: "Beginner", color: "hsl(200, 80%, 55%)", emoji: "🌱" },
+                      { label: "Intermediate", color: "hsl(45, 90%, 55%)", emoji: "⚡" },
+                      { label: "Advanced", color: "hsl(var(--primary))", emoji: "🏆" },
+                    ];
+                    const level = proficiencies[item.tool.name];
+                    const lvl = level !== undefined ? LEVELS[level] : null;
+                    return (
+                      <button
+                        onClick={e => { e.stopPropagation(); setQuizTool(item.tool.name); }}
+                        className="w-full py-1.5 rounded-lg text-[10px] font-medium flex items-center justify-center gap-1.5 transition-all"
+                        style={{
+                          background: lvl ? lvl.color + "15" : "hsl(var(--muted) / 0.05)",
+                          border: `1px solid ${lvl ? lvl.color + "30" : "hsl(var(--border) / 0.15)"}`,
+                          color: lvl ? lvl.color : "hsl(var(--muted-foreground))",
+                        }}
+                      >
+                        {lvl ? (
+                          <><span>{lvl.emoji}</span> {lvl.label}</>
+                        ) : (
+                          <><FlaskConical className="h-3 w-3" /> Test your level</>
+                        )}
+                      </button>
+                    );
+                  })()}
 
-                    <AnimatePresence>
-                      {openAssessment === item.tool.name && (
-                        <motion.div
-                          initial={{ opacity: 0, y: -4, scale: 0.95 }}
-                          animate={{ opacity: 1, y: 0, scale: 1 }}
-                          exit={{ opacity: 0, y: -4, scale: 0.95 }}
-                          className="absolute bottom-full left-0 right-0 mb-1 rounded-lg overflow-hidden z-20 shadow-lg"
-                          style={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border) / 0.3)" }}
-                          onClick={e => e.stopPropagation()}
-                        >
-                          {PROFICIENCY_LEVELS.map(lvl => (
-                            <button
-                              key={lvl.value}
-                              onClick={() => setProficiency(item.tool.name, lvl.value)}
-                              className="w-full px-3 py-2 text-left text-[11px] flex items-center gap-2 transition-all hover:bg-[hsl(var(--muted)/0.1)]"
-                              style={{
-                                color: proficiencies[item.tool.name] === lvl.value ? lvl.color : "hsl(var(--foreground) / 0.8)",
-                                fontWeight: proficiencies[item.tool.name] === lvl.value ? 700 : 400,
-                              }}
-                            >
-                              <span>{lvl.emoji}</span>
-                              <span className="font-medium">{lvl.label}</span>
-                            </button>
-                          ))}
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </div>
+                  {/* Quiz overlay */}
+                  <AnimatePresence>
+                    {quizTool === item.tool.name && (
+                      <ToolQuickQuiz
+                        tool={item.tool}
+                        onComplete={result => handleQuizComplete(item.tool.name, result)}
+                        onClose={() => setQuizTool(null)}
+                      />
+                    )}
+                  </AnimatePresence>
                 </div>
               </motion.div>
             );
