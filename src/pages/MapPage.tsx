@@ -120,7 +120,6 @@ const TAB_ITEMS = [
   { key: "table" as const, RuneIcon: JournalRuneIcon, label: "Journal" },
   { key: "codex" as const, RuneIcon: CodexRuneIcon, label: "Codex" },
   { key: "allies" as const, RuneIcon: AlliesRuneIcon, label: "Allies" },
-  { key: "tools" as const, RuneIcon: ToolsRuneIcon, label: "Tools" },
 ] as const;
 
 type PendingSimLaunch = SimLaunchRequest & { taskName?: string };
