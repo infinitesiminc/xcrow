@@ -84,7 +84,7 @@ export default function GuardianEncounter({ guardian, onClose, onChallenge }: Gu
                 ],
               }}
               transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-              className="w-36 shrink-0 relative"
+              className="w-36 shrink-0 relative pointer-events-none"
               style={{ borderRight: `2px solid hsl(${guardian.hue} 50% 35%)` }}
             >
               <img
