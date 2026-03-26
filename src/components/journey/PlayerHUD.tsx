@@ -42,7 +42,7 @@ interface PlayerHUDProps {
   skillsConquered?: number;
 }
 
-export default function PlayerHUD({ skills, uniqueTasks, isEmpty, targetRoles, targetSkillNames, kingdomTiers = [] }: PlayerHUDProps) {
+export default function PlayerHUD({ skills, uniqueTasks, isEmpty, targetRoles, targetSkillNames, kingdomTiers = [], missionPhase, missionProgress = 0, territoriesScouted = 0, scoutedSkillCount = 0, skillsConquered = 0 }: PlayerHUDProps) {
   const navigate = useNavigate();
 
   const activeSkills = useMemo(() => skills.filter(s => s.xp > 0), [skills]);
