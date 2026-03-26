@@ -378,7 +378,7 @@ const MapPage = () => {
             isFastTrack ? (
               <FastTrackPanel />
             ) : (
-              <FutureSkillsTable
+              <SkillProgressPanel
                 skills={futureSkills}
                 skillGrowthMap={skillGrowthMap}
                 level2SkillIds={level2SkillIds}
