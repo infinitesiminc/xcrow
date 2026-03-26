@@ -244,6 +244,9 @@ export default function Pricing() {
           ))}
         </Accordion>
       </motion.section>
+
+      {/* Employer Sponsorship */}
+      <SponsorLandingSection />
     </div>
   );
 }
