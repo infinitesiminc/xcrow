@@ -23,7 +23,7 @@ type Level2CompletedIds = Set<string>;
 
 import { useFutureSkills } from "@/hooks/use-future-skills";
 import FutureTerritoryMap from "@/components/territory/FutureTerritoryMap";
-import SkillProgressPanel from "@/components/territory/SkillProgressPanel";
+import QuestJournal from "@/components/territory/QuestJournal";
 import MapIntroGuide from "@/components/territory/MapIntroGuide";
 import { getLevel, levelProgress } from "@/lib/skill-map";
 import { TooltipProvider } from "@/components/ui/tooltip";
