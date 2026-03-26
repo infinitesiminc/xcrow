@@ -237,6 +237,31 @@ export default function FutureTerritoryMap({ skills, focusSkillId, level2SkillId
 
   const skillLookup = useMemo(() => new Map(skills.map(s => [s.id, s])), [skills]);
 
+  // Unique companies from role NPCs for filter pills
+  const companyNames = useMemo(() => {
+    const names = new Map<string, number>();
+    for (const r of roleNPCs) {
+      if (r.company) names.set(r.company, (names.get(r.company) || 0) + 1);
+    }
+    return Array.from(names.entries())
+      .sort((a, b) => b[1] - a[1])
+      .map(([name]) => name);
+  }, [roleNPCs]);
+
+  const toggleCompanyFilter = useCallback((company: string) => {
+    setCompanyFilter(prev => {
+      const next = new Set(prev);
+      if (next.has(company)) next.delete(company);
+      else next.add(company);
+      return next;
+    });
+  }, []);
+
+  const visibleRoleNPCs = useMemo(() => {
+    if (companyFilter.size === 0) return roleNPCs;
+    return roleNPCs.filter(r => r.company && companyFilter.has(r.company));
+  }, [roleNPCs, companyFilter]);
+
   // External focus: pan to skill and open drawer
   useEffect(() => {
     if (!focusSkillId) return;
