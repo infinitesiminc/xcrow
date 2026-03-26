@@ -10,6 +10,7 @@ import { type FutureSkill, type FutureSkillCategory } from "@/hooks/use-future-s
 import { type FutureIslandLayout, type FutureNodePosition } from "@/lib/future-territory-layout";
 import TerritoryEmblem from "@/components/TerritoryEmblem";
 import type { CanonicalSkillGrowth } from "@/pages/MapPage";
+import { getSkillRune } from "@/lib/skill-runes";
 
 /**
  * Generate an organic irregular polygon path for territory borders.
