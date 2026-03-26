@@ -1,15 +1,20 @@
 /**
- * NPCEncounter — Pop-up panel when a player clicks a wandering NPC on the map.
- * Each NPC archetype shows different content based on their interactionType.
+ * NPCEncounter — Cinematic fullscreen encounter when a player clicks a wandering NPC.
+ * Mirrors GuardianEncounter pattern with HeroScene backdrop + cinematic dialogue.
  */
 
 import { motion, AnimatePresence } from "framer-motion";
 import { X, ShoppingBag, Eye, Swords, Map, Hammer, BookOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { WanderingNPC } from "@/lib/wandering-npcs";
+import HeroScene from "@/components/territory/HeroScene";
+import { getTerritoryHeroImage } from "@/lib/territory-hero-images";
+import type { FutureSkillCategory } from "@/hooks/use-future-skills";
 
 interface NPCEncounterProps {
   npc: WanderingNPC;
+  /** Territory the NPC spawned in — used for backdrop image */
+  territory?: FutureSkillCategory;
   onClose: () => void;
   onInteract?: (npc: WanderingNPC) => void;
 }
@@ -32,66 +37,180 @@ const INTERACTION_LABELS: Record<string, string> = {
   story: "Hear Tale",
 };
 
-export default function NPCEncounter({ npc, onClose, onInteract }: NPCEncounterProps) {
+/** Each NPC archetype has a distinct hue for theming */
+const NPC_HUES: Record<string, number> = {
+  merchant: 280,   // purple
+  oracle: 220,     // deep blue
+  rival: 0,        // red
+  scout: 150,      // green
+  blacksmith: 25,  // orange
+  bard: 45,        // gold
+};
+
+/** Map NPC archetype to a sensible territory fallback for backdrop */
+const NPC_TERRITORY_FALLBACK: Record<string, FutureSkillCategory> = {
+  merchant: "Strategic",
+  oracle: "Analytical",
+  rival: "Technical",
+  scout: "Leadership",
+  blacksmith: "Technical",
+  bard: "Creative",
+};
+
+const cinzel = { fontFamily: "'Cinzel', serif" };
+
+export default function NPCEncounter({ npc, territory, onClose, onInteract }: NPCEncounterProps) {
   const Icon = INTERACTION_ICONS[npc.interactionType] || BookOpen;
   const label = INTERACTION_LABELS[npc.interactionType] || "Interact";
+  const hue = NPC_HUES[npc.id] ?? 200;
+  const heroTerritory = territory || NPC_TERRITORY_FALLBACK[npc.id] || "Technical";
+  const heroImage = getTerritoryHeroImage(heroTerritory);
 
   return (
     <AnimatePresence>
       <motion.div
-        initial={{ opacity: 0, y: 16, scale: 0.96 }}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
-        exit={{ opacity: 0, y: 16, scale: 0.96 }}
-        transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-        className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 w-[380px] max-w-[88vw]"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.5 }}
+        className="fixed inset-0 z-50 flex items-end justify-center"
       >
-        <div className="rounded-xl border border-border/60 overflow-hidden backdrop-blur-xl bg-card/95 shadow-xl">
-          {/* Header */}
-          <div className="px-4 pt-3 pb-2 flex items-start gap-3">
-            <div className="w-12 h-12 rounded-lg bg-muted/50 flex items-center justify-center text-2xl shrink-0 border border-border/40">
-              {npc.emoji}
+        {/* Fullscreen hero backdrop */}
+        <HeroScene
+          imageUrl={heroImage}
+          intensity="full"
+          camera="ken-burns"
+          overlay="letterbox"
+          hue={hue}
+          className="absolute inset-0"
+        />
+
+        {/* Click-away */}
+        <div className="absolute inset-0 z-[3]" onClick={onClose} />
+
+        {/* Bottom-anchored cinematic dialogue panel */}
+        <motion.div
+          initial={{ opacity: 0, y: 60 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: 60 }}
+          transition={{ duration: 0.5, delay: 0.25, ease: [0.16, 1, 0.3, 1] }}
+          className="relative z-[4] w-full max-w-xl mx-4 mb-8"
+        >
+          <div
+            className="rounded-xl border-2 overflow-hidden backdrop-blur-xl"
+            style={{
+              background: `linear-gradient(135deg, hsl(${hue} 30% 8% / 0.92), hsl(${hue} 20% 12% / 0.92))`,
+              borderColor: `hsl(${hue} 45% 35%)`,
+              boxShadow: `0 0 50px hsl(${hue} 55% 30% / 0.4), inset 0 1px 0 hsl(${hue} 35% 28% / 0.3)`,
+            }}
+          >
+            {/* Header */}
+            <div className="relative px-5 pt-4 pb-2 flex items-start gap-3">
+              <motion.div
+                animate={{
+                  boxShadow: [
+                    `0 0 15px hsl(${hue} 55% 40% / 0.25)`,
+                    `0 0 30px hsl(${hue} 55% 40% / 0.5)`,
+                    `0 0 15px hsl(${hue} 55% 40% / 0.25)`,
+                  ],
+                }}
+                transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                className="w-14 h-14 rounded-xl flex items-center justify-center text-3xl shrink-0"
+                style={{
+                  background: `linear-gradient(135deg, hsl(${hue} 35% 15%), hsl(${hue} 25% 20%))`,
+                  border: `2px solid hsl(${hue} 45% 32%)`,
+                }}
+              >
+                {npc.emoji}
+              </motion.div>
+              <div className="flex-1 min-w-0">
+                <span
+                  className="text-[10px] uppercase tracking-[0.15em] font-medium"
+                  style={{ color: `hsl(${hue} 35% 52%)` }}
+                >
+                  Wandering {npc.title}
+                </span>
+                <h3
+                  className="text-lg font-bold tracking-wide"
+                  style={{ ...cinzel, color: `hsl(${hue} 45% 72%)` }}
+                >
+                  {npc.name}
+                </h3>
+              </div>
+              <button
+                onClick={onClose}
+                className="w-7 h-7 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
+                style={{ background: `hsl(${hue} 20% 16%)` }}
+              >
+                <X size={14} />
+              </button>
             </div>
-            <div className="flex-1 min-w-0">
-              <h3 className="text-sm font-bold text-foreground" style={{ fontFamily: "'Cinzel', serif" }}>
-                {npc.name}
-              </h3>
-              <p className="text-xs text-muted-foreground">{npc.title}</p>
-            </div>
-            <button
-              onClick={onClose}
-              className="w-6 h-6 rounded flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
+
+            {/* Greeting — cinematic quote */}
+            <motion.div
+              initial={{ opacity: 0, x: -8 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.5, duration: 0.45 }}
+              className="px-5 pb-3"
             >
-              <X size={14} />
-            </button>
-          </div>
+              <div
+                className="rounded-lg px-4 py-3 text-sm leading-relaxed"
+                style={{
+                  background: `hsl(${hue} 18% 10% / 0.7)`,
+                  borderLeft: `3px solid hsl(${hue} 45% 42%)`,
+                  color: `hsl(${hue} 12% 80%)`,
+                  fontStyle: "italic",
+                }}
+              >
+                "{npc.greeting}"
+              </div>
+            </motion.div>
 
-          {/* Greeting */}
-          <div className="px-4 pb-2">
-            <div className="rounded-lg bg-muted/30 px-3 py-2 text-sm italic text-muted-foreground border-l-2 border-primary/40">
-              "{npc.greeting}"
-            </div>
-          </div>
-
-          {/* Offering description */}
-          <div className="px-4 pb-3">
-            <p className="text-xs text-muted-foreground/80">{npc.offering}</p>
-          </div>
-
-          {/* Actions */}
-          <div className="px-4 pb-3 flex gap-2">
-            <Button
-              size="sm"
-              className="flex-1 gap-1.5"
-              onClick={() => onInteract?.(npc)}
+            {/* Offering description */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.7, duration: 0.4 }}
+              className="px-5 pb-3"
             >
-              <Icon size={14} />
-              {label}
-            </Button>
-            <Button size="sm" variant="ghost" onClick={onClose}>
-              Walk Away
-            </Button>
+              <p className="text-xs text-muted-foreground leading-relaxed">{npc.offering}</p>
+            </motion.div>
+
+            {/* Actions */}
+            <motion.div
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.85, duration: 0.4 }}
+              className="px-5 pb-4 flex gap-3"
+            >
+              <Button
+                size="lg"
+                className="flex-1 gap-2 text-sm font-semibold"
+                style={{
+                  background: `linear-gradient(135deg, hsl(${hue} 45% 32%), hsl(${hue} 55% 42%))`,
+                  color: "white",
+                  boxShadow: `0 0 25px hsl(${hue} 55% 38% / 0.35)`,
+                }}
+                onClick={() => onInteract?.(npc)}
+              >
+                <Icon size={16} />
+                {label}
+              </Button>
+              <Button
+                size="lg"
+                variant="outline"
+                className="gap-2"
+                style={{
+                  borderColor: `hsl(${hue} 25% 28%)`,
+                  color: `hsl(${hue} 25% 62%)`,
+                }}
+                onClick={onClose}
+              >
+                Walk Away
+              </Button>
+            </motion.div>
           </div>
-        </div>
+        </motion.div>
       </motion.div>
     </AnimatePresence>
   );
