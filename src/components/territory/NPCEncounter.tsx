@@ -4,12 +4,19 @@
  */
 
 import { motion, AnimatePresence } from "framer-motion";
-import { X, ShoppingBag, Eye, Swords, Map, Hammer, BookOpen, Gem, Compass, ScrollText } from "lucide-react";
+import { X, ShoppingBag, Eye, Swords, Map, Hammer, BookOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { WanderingNPC } from "@/lib/wandering-npcs";
 import HeroScene from "@/components/territory/HeroScene";
 import { getTerritoryHeroImage } from "@/lib/territory-hero-images";
 import type { FutureSkillCategory } from "@/hooks/use-future-skills";
+
+import npcMerchant from "@/assets/npc-merchant.png";
+import npcOracle from "@/assets/npc-oracle.png";
+import npcRival from "@/assets/npc-rival.png";
+import npcScout from "@/assets/npc-scout.png";
+import npcBlacksmith from "@/assets/npc-blacksmith.png";
+import npcBard from "@/assets/npc-bard.png";
 
 interface NPCEncounterProps {
   npc: WanderingNPC;
@@ -36,14 +43,14 @@ const INTERACTION_LABELS: Record<string, string> = {
   story: "Hear Tale",
 };
 
-/** Lucide icon components keyed by NPC iconName */
-const NPC_ICON_COMPONENTS: Record<string, typeof Gem> = {
-  gem: Gem,
-  eye: Eye,
-  swords: Swords,
-  compass: Compass,
-  hammer: Hammer,
-  "scroll-text": ScrollText,
+/** Avatar images keyed by NPC id */
+const NPC_AVATARS: Record<string, string> = {
+  merchant: npcMerchant,
+  oracle: npcOracle,
+  rival: npcRival,
+  scout: npcScout,
+  blacksmith: npcBlacksmith,
+  bard: npcBard,
 };
 
 const NPC_HUES: Record<string, number> = {
@@ -72,7 +79,7 @@ export default function NPCEncounter({ npc, territory, onClose, onInteract }: NP
   const hue = NPC_HUES[npc.id] ?? 200;
   const heroTerritory = territory || NPC_TERRITORY_FALLBACK[npc.id] || "Technical";
   const heroImage = getTerritoryHeroImage(heroTerritory);
-  const AvatarIcon = NPC_ICON_COMPONENTS[npc.iconName] || Gem;
+  const avatarSrc = NPC_AVATARS[npc.id] || npcMerchant;
 
   return (
     <AnimatePresence>
@@ -120,13 +127,12 @@ export default function NPCEncounter({ npc, territory, onClose, onInteract }: NP
                   ],
                 }}
                 transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-                className="w-14 h-14 rounded-xl flex items-center justify-center shrink-0"
+                className="w-16 h-16 rounded-xl overflow-hidden shrink-0"
                 style={{
-                  background: `linear-gradient(135deg, hsl(${hue} 35% 15%), hsl(${hue} 25% 20%))`,
                   border: `2px solid hsl(${hue} 45% 32%)`,
                 }}
               >
-                <AvatarIcon size={28} style={{ color: `hsl(${hue} 50% 65%)` }} />
+                <img src={avatarSrc} alt={npc.name} className="w-full h-full object-cover" loading="eager" />
               </motion.div>
               <div className="flex-1 min-w-0">
                 <span
