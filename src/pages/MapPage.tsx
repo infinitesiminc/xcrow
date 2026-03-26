@@ -79,11 +79,35 @@ function buildEmptySkills(taxonomy: TaxonomySkill[]): SkillXP[] {
   }));
 }
 
+/** Runic SVG icon paths for the 3 tabs */
+const ForgeRuneIcon = ({ size = 22, color = "currentColor" }: { size?: number; color?: string }) => (
+  <svg viewBox="-8 -8 16 16" width={size} height={size} fill="none" stroke={color} strokeWidth={1.2} strokeLinecap="round" strokeLinejoin="round">
+    <path d="M0-6 L4-2 L4 4 L0 7 L-4 4 L-4-2Z" />
+    <path d="M0-3 L0 4 M-2.5 0 L2.5 0 M-1.5-2 L1.5 2" />
+  </svg>
+);
+
+const CodexRuneIcon = ({ size = 22, color = "currentColor" }: { size?: number; color?: string }) => (
+  <svg viewBox="-8 -8 16 16" width={size} height={size} fill="none" stroke={color} strokeWidth={1.2} strokeLinecap="round" strokeLinejoin="round">
+    <rect x="-5" y="-6" width="10" height="12" rx="1" />
+    <path d="M-3-3 L3-3 M-3 0 L3 0 M-3 3 L1 3" />
+    <path d="M-5-6 L-5 6" strokeWidth={1.8} />
+  </svg>
+);
+
+const AlliesRuneIcon = ({ size = 22, color = "currentColor" }: { size?: number; color?: string }) => (
+  <svg viewBox="-8 -8 16 16" width={size} height={size} fill="none" stroke={color} strokeWidth={1.2} strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="-3" cy="-3" r="2" />
+    <circle cx="3" cy="-3" r="2" />
+    <path d="M-6 4 Q-3 0 0 2 Q3 0 6 4" />
+    <circle cx="0" cy="-1" r="1.5" />
+  </svg>
+);
+
 const TAB_ITEMS = [
-  { key: "table" as const, icon: ScrollText, label: "Skill Forge" },
-  { key: "scout" as const, icon: Compass, label: "Scout" },
-  { key: "codex" as const, icon: BookOpen, label: "Codex" },
-  { key: "allies" as const, icon: Users, label: "Allies" },
+  { key: "table" as const, RuneIcon: ForgeRuneIcon, label: "Forge" },
+  { key: "codex" as const, RuneIcon: CodexRuneIcon, label: "Codex" },
+  { key: "allies" as const, RuneIcon: AlliesRuneIcon, label: "Allies" },
 ] as const;
 
 type PendingSimLaunch = SimLaunchRequest & { taskName?: string };
