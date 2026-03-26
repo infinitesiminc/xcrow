@@ -284,7 +284,7 @@ export default function Settings() {
             )}
 
             {activeSection === "gameplay" && (
-              <GameplaySection playMode={playMode} setPlayMode={setPlayMode} creditBalance={creditBalance} />
+              <GameplaySection creditBalance={creditBalance} />
             )}
 
             {activeSection === "subscription" && (
