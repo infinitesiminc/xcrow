@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { getAvatarById } from "@/lib/avatars";
 import CreditWallet from "@/components/CreditWallet";
-import { useCredits } from "@/hooks/use-credits";
 import { useAdaptiveModeNudge } from "@/hooks/use-adaptive-mode-nudge";
 import {
   DropdownMenu,
