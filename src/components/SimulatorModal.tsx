@@ -27,7 +27,7 @@ import {
   type SimMode,
   type LearningObjective,
   type SimConfig,
-  type ElevationNarrative,
+  
   type CoachingContext,
   type CompileAuditResult,
 } from "@/lib/simulator";
