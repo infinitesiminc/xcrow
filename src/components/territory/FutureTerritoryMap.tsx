@@ -15,6 +15,10 @@ import {
 } from "@/lib/future-territory-layout";
 import FutureIsland from "./FutureIsland";
 import type { CanonicalSkillGrowth } from "@/pages/MapPage";
+import { getGuardianByCategory, type TerritoryGuardian } from "@/lib/territory-guardians";
+import { generateNPCSpawns, type NPCSpawn, type WanderingNPC } from "@/lib/wandering-npcs";
+import GuardianEncounter from "./GuardianEncounter";
+import NPCEncounter from "./NPCEncounter";
 
 import type { SimLaunchRequest, PromptLabRequest } from "./SkillLaunchCard";
 
@@ -48,6 +52,9 @@ export default function FutureTerritoryMap({ skills, focusSkillId, level2SkillId
   const [transform, setTransform] = useState({ x: 0, y: 0, scale: 1 });
   const [focusedIsland, setFocusedIsland] = useState<FutureSkillCategory | null>(null);
   const [highlightedSkillId, setHighlightedSkillId] = useState<string | null>(null);
+  const [activeGuardian, setActiveGuardian] = useState<TerritoryGuardian | null>(null);
+  const [activeNPC, setActiveNPC] = useState<WanderingNPC | null>(null);
+  const npcSpawns = useMemo(() => generateNPCSpawns(), []);
   const dragRef = useRef<{ startX: number; startY: number; tx: number; ty: number } | null>(null);
   const isDragging = useRef(false);
 
@@ -300,7 +307,81 @@ export default function FutureTerritoryMap({ skills, focusSkillId, level2SkillId
               isFocused={focusedIsland === island.category} highlightedSkillId={highlightedSkillId}
               onIslandClick={handleIslandClick} onSkillClick={handleSkillClick} />
           ))}
+
+          {/* Territory Guardians — one per island */}
+          {layout.map(island => {
+            const guardian = getGuardianByCategory(island.category);
+            if (!guardian) return null;
+            const gx = island.cx + island.radius * 0.55;
+            const gy = island.cy - island.radius * 0.45;
+            return (
+              <g key={`guard-${guardian.id}`} className="cursor-pointer"
+                onClick={(e) => { e.stopPropagation(); if (!isDragging.current) { setActiveGuardian(guardian); setActiveNPC(null); } }}>
+                <motion.circle cx={gx} cy={gy} r={16}
+                  fill={`hsl(${guardian.hue} 40% 15%)`}
+                  stroke={`hsl(${guardian.hue} 50% 45%)`}
+                  strokeWidth={2}
+                  initial={{ scale: 0 }} animate={{ scale: 1 }}
+                  transition={{ delay: 0.8, type: "spring" }}
+                  style={{ transformOrigin: `${gx}px ${gy}px` }}
+                />
+                <motion.circle cx={gx} cy={gy} r={20}
+                  fill="none" stroke={`hsl(${guardian.hue} 50% 45%)`}
+                  strokeWidth={1} opacity={0.4}
+                  animate={{ r: [18, 24, 18], opacity: [0.4, 0.15, 0.4] }}
+                  transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                />
+                <text x={gx} y={gy + 1} textAnchor="middle" dominantBaseline="central"
+                  style={{ fontSize: "14px", pointerEvents: "none" }}>
+                  {guardian.emoji}
+                </text>
+              </g>
+            );
+          })}
+
+          {/* Wandering NPCs */}
+          {npcSpawns.map(spawn => {
+            const island = layout.find(i => i.category === spawn.territory);
+            if (!island) return null;
+            const nx = island.cx + spawn.offsetX;
+            const ny = island.cy + spawn.offsetY;
+            return (
+              <g key={`npc-${spawn.npc.id}`} className="cursor-pointer"
+                onClick={(e) => { e.stopPropagation(); if (!isDragging.current) { setActiveNPC(spawn.npc); setActiveGuardian(null); } }}>
+                <motion.circle cx={nx} cy={ny} r={12}
+                  fill="hsl(var(--card))" stroke="hsl(var(--border))"
+                  strokeWidth={1.5} strokeDasharray="3 2"
+                  initial={{ scale: 0, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  transition={{ delay: 1.2, type: "spring" }}
+                  style={{ transformOrigin: `${nx}px ${ny}px` }}
+                />
+                <text x={nx} y={ny + 1} textAnchor="middle" dominantBaseline="central"
+                  style={{ fontSize: "11px", pointerEvents: "none" }}>
+                  {spawn.npc.emoji}
+                </text>
+              </g>
+            );
+          })}
         </svg>
+
+        {/* Guardian Encounter Panel */}
+        {activeGuardian && (
+          <GuardianEncounter
+            guardian={activeGuardian}
+            onClose={() => setActiveGuardian(null)}
+            onChallenge={(g) => { setActiveGuardian(null); /* TODO: launch guardian challenge */ }}
+          />
+        )}
+
+        {/* NPC Encounter Panel */}
+        {activeNPC && (
+          <NPCEncounter
+            npc={activeNPC}
+            onClose={() => setActiveNPC(null)}
+            onInteract={(n) => { setActiveNPC(null); /* TODO: NPC interaction flow */ }}
+          />
+        )}
 
         {/* Minimap */}
         <div className="absolute bottom-4 left-4 z-10 rounded-lg border border-border/50 bg-card/90 backdrop-blur-md shadow-lg overflow-hidden"
