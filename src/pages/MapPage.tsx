@@ -153,6 +153,7 @@ const MapPage = () => {
   
   const [drawerSkill, setDrawerSkill] = useState<FutureSkill | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [selectedToolName, setSelectedToolName] = useState<string | null>(null);
 
   const [realSkills, setRealSkills] = useState<SkillXP[]>([]);
   const [targetSkillIds, setTargetSkillIds] = useState<Set<string>>(new Set());
