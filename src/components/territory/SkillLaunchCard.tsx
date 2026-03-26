@@ -213,6 +213,35 @@ export default function SkillLaunchCard({
           </button>
 
           {/* Level 2 removed — now a map boss event */}
+
+          {/* Prompt Lab */}
+          <button
+            onClick={() => {
+              if (onLaunchPromptLab) {
+                onLaunchPromptLab({ skillId: skill.id, skillName: skill.name, skillCategory: skill.category });
+                onClose();
+              }
+            }}
+            className="w-full flex items-center gap-2 px-2.5 py-2 rounded-lg text-left transition-all hover:brightness-110 group"
+            style={{
+              background: "hsl(var(--accent) / 0.15)",
+              border: "1px solid hsl(var(--accent) / 0.2)",
+            }}
+          >
+            <div
+              className="w-6 h-6 rounded-md flex items-center justify-center shrink-0"
+              style={{ background: "hsl(var(--accent) / 0.25)" }}
+            >
+              <PenTool className="h-3 w-3 text-accent-foreground" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-[11px] font-bold text-foreground" style={{ fontFamily: "'Cinzel', serif" }}>
+                Prompt Lab
+              </p>
+              <p className="text-[9px] text-muted-foreground">Practice prompt engineering</p>
+            </div>
+            <ArrowRight className="h-3 w-3 text-muted-foreground group-hover:text-accent-foreground shrink-0 transition-colors" />
+          </button>
         </div>
 
         {/* Role context */}
