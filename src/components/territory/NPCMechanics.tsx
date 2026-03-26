@@ -134,7 +134,6 @@ function ScoutIntel({ territoriesScouted, onFocusTerritory }: { territoriesScout
           : "You've explored every territory! Now master them."}
       </p>
       {unexplored.slice(0, 3).map((terr, i) => {
-        const t = getTerritory(terr);
         return (
           <motion.button
             key={terr}
@@ -142,15 +141,11 @@ function ScoutIntel({ territoriesScouted, onFocusTerritory }: { territoriesScout
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: i * 0.1 }}
             onClick={() => onFocusTerritory?.(terr as FutureSkillCategory)}
-            className="w-full text-left rounded-lg p-3 flex items-center gap-3 hover:brightness-110 transition-all"
-            style={{
-              background: `hsl(${t.hue} 20% 10%)`,
-              border: `1px solid hsl(${t.hue} 30% 25%)`,
-            }}
+            className="w-full text-left rounded-lg p-3 flex items-center gap-3 hover:brightness-110 transition-all bg-card border border-border"
           >
-            <MapPin size={14} style={{ color: `hsl(${t.hue} 45% 55%)` }} />
+            <MapPin size={14} className="text-primary/70" />
             <div className="flex-1 min-w-0">
-              <p className="text-xs font-semibold" style={{ color: `hsl(${t.hue} 40% 72%)` }}>{terr}</p>
+              <p className="text-xs font-semibold text-foreground">{terr}</p>
               <p className="text-[10px] text-muted-foreground">Unexplored — talk to NPCs here</p>
             </div>
             <ChevronRight size={12} className="text-muted-foreground" />
