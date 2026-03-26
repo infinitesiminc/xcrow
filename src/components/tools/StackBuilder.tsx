@@ -20,12 +20,6 @@ interface RankedTool {
   matchedSkills: string[];
 }
 
-const PROFICIENCY_LEVELS = [
-  { value: 0, label: "New", color: "hsl(var(--muted-foreground))", emoji: "🔍" },
-  { value: 1, label: "Beginner", color: "hsl(200, 80%, 55%)", emoji: "🌱" },
-  { value: 2, label: "Intermediate", color: "hsl(45, 90%, 55%)", emoji: "⚡" },
-  { value: 3, label: "Advanced", color: "hsl(var(--primary))", emoji: "🏆" },
-] as const;
 
 interface Props {
   onSelectTool?: (toolName: string) => void;
