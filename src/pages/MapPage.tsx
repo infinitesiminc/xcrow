@@ -33,6 +33,7 @@ import type { RoleResult } from "@/components/InlineRoleCarousel";
 import type { EdgeContext } from "@/components/HumanEdgesCard";
 
 import CompactHUD from "@/components/territory/CompactHUD";
+import QuestTrackerStrip from "@/components/territory/QuestTrackerStrip";
 
 import AlliesPanel from "@/components/territory/AlliesPanel";
 import CodexPanel from "@/components/territory/CodexPanel";
