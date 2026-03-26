@@ -85,6 +85,8 @@ interface SimulatorModalProps {
   linkedSkillIds?: string[];
   /** Resume from a saved checkpoint */
   resumeCheckpointId?: string;
+  /** Progressive mastery tier — determines sim format */
+  masteryTier?: "bronze" | "silver" | "gold" | "platinum";
 }
 
 /* ── Objective Checklist (sidebar / inline) ── */
