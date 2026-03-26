@@ -181,7 +181,43 @@ export default function Pricing() {
 
       <Divider />
 
-      {/* ═══ INSTITUTIONS ═══ */}
+      {/* ═══ REFERRAL ENGINE ═══ */}
+      <motion.section className="max-w-4xl mx-auto px-6 py-16 w-full" initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fade}>
+        <div className="text-center mb-10">
+          <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full" style={{ background: "hsl(var(--territory-strategic) / 0.12)" }}>
+            <Gift className="h-6 w-6" style={{ color: "hsl(var(--territory-strategic))" }} />
+          </div>
+          <h2 className="text-2xl md:text-3xl font-bold" style={cinzel}>Recruit & Earn Free Months</h2>
+          <p className="text-muted-foreground mt-2 max-w-lg mx-auto">Every friend who subscribes to Champion gives you both a free month. Build your squad, play for free.</p>
+        </div>
+
+        <div className="grid sm:grid-cols-3 gap-5">
+          {[
+            { icon: <Copy className="h-5 w-5" />, title: "Share Link", desc: "Copy your unique invite link from Settings → Referrals" },
+            { icon: <Users className="h-5 w-5" />, title: "Friend Subscribes", desc: "When they upgrade to Champion ($12/mo)" },
+            { icon: <Crown className="h-5 w-5" />, title: "Both Earn Free Month", desc: "You and your friend each get 1 month free. No limit!" },
+          ].map((step, i) => (
+            <div key={i} className="rounded-lg p-5 text-center" style={stoneCard}>
+              <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-full" style={{ background: "hsl(var(--territory-strategic) / 0.12)" }}>
+                <span style={{ color: "hsl(var(--territory-strategic))" }}>{step.icon}</span>
+              </div>
+              <h3 className="text-sm font-bold mb-1" style={cinzel}>{step.title}</h3>
+              <p className="text-xs text-muted-foreground">{step.desc}</p>
+            </div>
+          ))}
+        </div>
+
+        {user && (
+          <div className="text-center mt-8">
+            <Button size="lg" variant="outline" onClick={() => navigate("/settings?section=referral")}
+              style={{ borderColor: "hsl(var(--territory-strategic) / 0.4)", color: "hsl(var(--territory-strategic))" }}>
+              <Gift className="h-4 w-4 mr-2" /> Get My Invite Link
+            </Button>
+          </div>
+        )}
+      </motion.section>
+
+      <Divider />
       <motion.section className="max-w-5xl mx-auto px-6 py-20 w-full" initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fade}>
         <div className="text-center mb-12">
           <h2 className="text-2xl md:text-3xl font-bold" style={cinzel}>For Institutions</h2>
