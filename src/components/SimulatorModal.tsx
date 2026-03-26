@@ -592,6 +592,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
   const [showObjectives, setShowObjectives] = useState(false);
   const [scaffoldingTiers, setScaffoldingTiers] = useState<Record<string, number>>({});
   const [objectiveFailCounts, setObjectiveFailCounts] = useState<Record<string, number>>({});
+  const [questCleared, setQuestCleared] = useState(false);
   const [showInactivityNudge, setShowInactivityNudge] = useState(false);
   const [activeCheckpointId, setActiveCheckpointId] = useState<string | null>(resumeCheckpointId || null);
 
