@@ -4,6 +4,7 @@ import { motion, AnimatePresence, PanInfo } from "framer-motion";
 import { BarChart3, Zap, Bookmark, Share2, Search, ChevronUp, X, ArrowRight, Globe, MapPin, Laptop, Loader2, Briefcase, Bot, Sparkles, Play, CircleDot, Circle } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { supabase } from "@/integrations/supabase/client";
+import { getAutomationDegree, degreeBgClass } from "@/lib/automation-degree";
 
 interface RoleCard {
   title: string;
