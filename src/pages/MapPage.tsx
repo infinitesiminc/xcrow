@@ -366,6 +366,11 @@ const MapPage = () => {
   }), [selectedRole, activeTab]);
   useChatViewContext(chatViewCtx as any, [chatViewCtx]);
 
+  // Redirect to homepage for onboarding if not completed
+  if (user && profile && !profile.onboardingCompleted) {
+    return <Navigate to="/" replace />;
+  }
+
   return (
     <div className="h-[calc(100vh-3.5rem)] flex flex-col overflow-hidden relative">
       {/* ── Top Strip: always visible — tab icons + toggle ── */}
