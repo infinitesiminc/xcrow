@@ -1,16 +1,14 @@
 import { useState, useEffect } from "react";
-import { Briefcase, Building2, Loader2, GraduationCap, BookOpen, ChevronRight, Search, Target, X } from "lucide-react";
+import { Loader2, GraduationCap, Briefcase, Compass, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
 } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
+import { AVATAR_OPTIONS, type AvatarOption } from "@/lib/avatars";
 
 interface OnboardingModalProps {
   open: boolean;
@@ -18,142 +16,64 @@ interface OnboardingModalProps {
   userId: string;
 }
 
-interface SchoolProgram {
-  program_name: string;
-  department: string | null;
-  degree_type: string | null;
-}
+type PlayerPath = "student" | "professional" | "explorer";
+type Step = "path" | "interests" | "avatar";
 
-interface TargetRole {
-  job_id: string;
-  title: string;
-  company: string | null;
-}
-
-type Step = "role" | "targets" | "program";
+const TERRITORY_OPTIONS = [
+  { id: "Technical", emoji: "⚙️", label: "Technical" },
+  { id: "Creative", emoji: "🎨", label: "Creative" },
+  { id: "Analytical", emoji: "📊", label: "Analytical" },
+  { id: "Strategic", emoji: "♟️", label: "Strategic" },
+  { id: "Communication", emoji: "🗣️", label: "Communication" },
+  { id: "Leadership", emoji: "👑", label: "Leadership" },
+];
 
 export default function OnboardingModal({ open, onComplete, userId }: OnboardingModalProps) {
-  const [step, setStep] = useState<Step>("role");
-  const [jobTitle, setJobTitle] = useState("");
-  const [company, setCompany] = useState("");
+  const [step, setStep] = useState<Step>("path");
+  const [selectedPath, setSelectedPath] = useState<PlayerPath | null>(null);
+  const [interests, setInterests] = useState<Set<string>>(new Set());
+  const [selectedAvatar, setSelectedAvatar] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const { toast } = useToast();
 
-  // Target roles state
-  const [targetRoles, setTargetRoles] = useState<TargetRole[]>([]);
-  const [roleSearch, setRoleSearch] = useState("");
-  const [roleResults, setRoleResults] = useState<TargetRole[]>([]);
-  const [searchingRoles, setSearchingRoles] = useState(false);
-
-  // School-specific state
-  const [schoolSeat, setSchoolSeat] = useState<{ school_id: string; school_name: string } | null>(null);
-  const [programs, setPrograms] = useState<SchoolProgram[]>([]);
-  const [selectedProgram, setSelectedProgram] = useState<string | null>(null);
-  const [programFilter, setProgramFilter] = useState("");
-  const [loadingPrograms, setLoadingPrograms] = useState(false);
-
-  // Check if user has a school seat on mount
-  useEffect(() => {
-    if (!open || !userId) return;
-    (async () => {
-      const { data: seatData } = await supabase
-        .from("school_seats")
-        .select("school_id, school_accounts(name)")
-        .eq("user_id", userId)
-        .eq("status", "active")
-        .limit(1)
-        .maybeSingle();
-
-      if (seatData) {
-        const seat = seatData as any;
-        setSchoolSeat({
-          school_id: seat.school_id,
-          school_name: seat.school_accounts?.name || "Your School",
-        });
-      }
-    })();
-  }, [open, userId]);
-
-  // Search roles for target picker
-  useEffect(() => {
-    if (roleSearch.length < 2) { setRoleResults([]); return; }
-    const timer = setTimeout(async () => {
-      setSearchingRoles(true);
-      const { data } = await supabase
-        .from("jobs")
-        .select("id, title, companies(name)")
-        .ilike("title", `%${roleSearch}%`)
-        .gt("augmented_percent", 0)
-        .limit(8);
-
-      if (data) {
-        const seen = new Set<string>();
-        const unique: TargetRole[] = [];
-        for (const j of data as any[]) {
-          const key = `${j.title}|${j.companies?.name || ""}`.toLowerCase();
-          if (!seen.has(key) && !targetRoles.some(t => t.job_id === j.id)) {
-            seen.add(key);
-            unique.push({ job_id: j.id, title: j.title, company: j.companies?.name || null });
-          }
-        }
-        setRoleResults(unique.slice(0, 5));
-      }
-      setSearchingRoles(false);
-    }, 300);
-    return () => clearTimeout(timer);
-  }, [roleSearch, targetRoles]);
-
-  // Fetch programs when moving to program step
-  useEffect(() => {
-    if (step !== "program" || !schoolSeat) return;
-    setLoadingPrograms(true);
-    (async () => {
-      const { data } = await supabase
-        .from("school_courses")
-        .select("program_name, department, degree_type")
-        .eq("school_id", schoolSeat.school_id)
-        .order("program_name");
-
-      const seen = new Set<string>();
-      const unique: SchoolProgram[] = [];
-      for (const p of (data || []) as SchoolProgram[]) {
-        const key = `${p.program_name}|${p.degree_type}`;
-        if (!seen.has(key)) { seen.add(key); unique.push(p); }
-      }
-      setPrograms(unique);
-      setLoadingPrograms(false);
-    })();
-  }, [step, schoolSeat]);
-
-  const handleRoleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!jobTitle.trim()) return;
-    setStep("targets");
+  const toggleInterest = (id: string) => {
+    setInterests(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else if (next.size < 3) next.add(id);
+      return next;
+    });
   };
 
-  const handleTargetsNext = () => {
-    if (schoolSeat) {
-      setStep("program");
-      return;
+  const handlePathSelect = (path: PlayerPath) => {
+    setSelectedPath(path);
+    if (path === "explorer") {
+      // Skip interests, go to avatar
+      setStep("avatar");
+    } else {
+      setStep("interests");
     }
-    saveProfile();
   };
 
-  const saveProfile = async (programName?: string) => {
-    setSaving(true);
-    const normalizedCompany = company.trim() && !company.trim().startsWith("http") ? `https://${company.trim()}` : company.trim();
+  const handleInterestsNext = () => {
+    setStep("avatar");
+  };
 
-    const updateData: any = {
-      job_title: jobTitle.trim(),
-      company: normalizedCompany || null,
+  const handleFinish = async () => {
+    setSaving(true);
+
+    const careerStage = selectedPath === "student" ? "student" : selectedPath === "professional" ? "professional" : null;
+
+    const updateData: Record<string, unknown> = {
       onboarding_completed: true,
-      target_roles: targetRoles.length > 0 ? targetRoles : [],
+      avatar_id: selectedAvatar || "wolf",
     };
 
-    if (programName) updateData.program_name = programName;
-    if (schoolSeat) {
-      updateData.school_name = schoolSeat.school_name;
-      updateData.career_stage = "student";
+    if (careerStage) updateData.career_stage = careerStage;
+
+    // Store interests as target_roles metadata
+    if (interests.size > 0) {
+      updateData.target_roles = Array.from(interests).map(cat => ({ category: cat }));
     }
 
     const { error } = await supabase
@@ -164,287 +84,218 @@ export default function OnboardingModal({ open, onComplete, userId }: Onboarding
     if (error) {
       toast({ title: "Error", description: "Failed to save profile.", variant: "destructive" });
     } else {
-      onComplete(jobTitle.trim(), normalizedCompany);
+      onComplete("", "");
     }
     setSaving(false);
   };
 
-  const handleProgramSelect = async () => {
-    await saveProfile(selectedProgram || undefined);
-  };
-
   const handleSkip = async () => {
-    if (step === "targets") { handleTargetsNext(); return; }
-    if (step === "program") { await saveProfile(); return; }
+    setSaving(true);
     await supabase
       .from("profiles")
-      .update({
-        onboarding_completed: true,
-        ...(schoolSeat ? { school_name: schoolSeat.school_name, career_stage: "student" } : {}),
-      } as any)
+      .update({ onboarding_completed: true, avatar_id: selectedAvatar || "wolf" })
       .eq("id", userId);
     onComplete("", "");
-  };
-
-  const addTargetRole = (role: TargetRole) => {
-    if (targetRoles.length >= 3) return;
-    setTargetRoles(prev => [...prev, role]);
-    setRoleSearch("");
-    setRoleResults([]);
-  };
-
-  const removeTargetRole = (jobId: string) => {
-    setTargetRoles(prev => prev.filter(r => r.job_id !== jobId));
-  };
-
-  const filteredPrograms = programs.filter(
-    (p) =>
-      p.program_name.toLowerCase().includes(programFilter.toLowerCase()) ||
-      (p.department || "").toLowerCase().includes(programFilter.toLowerCase())
-  );
-
-  const degreeBadgeColor: Record<string, string> = {
-    BS: "bg-[hsl(var(--neon-blue))]/15 text-[hsl(var(--neon-blue))]",
-    BA: "bg-[hsl(var(--neon-cyan))]/15 text-[hsl(var(--neon-cyan))]",
-    MS: "bg-[hsl(var(--neon-purple))]/15 text-[hsl(var(--neon-purple))]",
-    MA: "bg-[hsl(var(--neon-purple))]/15 text-[hsl(var(--neon-purple))]",
-    PhD: "bg-[hsl(var(--neon-pink))]/15 text-[hsl(var(--neon-pink))]",
+    setSaving(false);
   };
 
   return (
     <Dialog open={open} onOpenChange={() => {}}>
-      <DialogContent className="sm:max-w-md p-6" onPointerDownOutside={(e) => e.preventDefault()}>
-        <AnimatePresence mode="wait">
-          {step === "role" && (
-            <motion.div key="role" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.2 }}>
-              <DialogHeader>
-                <DialogTitle className="text-xl font-sans font-bold">
-                  {schoolSeat ? `Welcome, ${schoolSeat.school_name} student!` : "Tell us about your role"}
-                </DialogTitle>
-                <DialogDescription className="text-sm">
-                  {schoolSeat
-                    ? "We'll personalize your learning path based on your interests and program."
-                    : "We'll personalize your experience — auto-analyze your role, tailor recommendations, and track what matters to you."}
-                </DialogDescription>
-              </DialogHeader>
+      <DialogContent className="sm:max-w-md p-0 overflow-hidden border-border/50" onPointerDownOutside={(e) => e.preventDefault()}>
+        {/* Progress dots */}
+        <div className="flex justify-center gap-2 pt-5 pb-1">
+          {(["path", "interests", "avatar"] as Step[]).map((s, i) => (
+            <div
+              key={s}
+              className={`h-1.5 rounded-full transition-all duration-300 ${
+                s === step ? "w-6 bg-primary" : i < ["path", "interests", "avatar"].indexOf(step) ? "w-1.5 bg-primary/50" : "w-1.5 bg-border"
+              }`}
+            />
+          ))}
+        </div>
 
-              <form onSubmit={handleRoleSubmit} className="space-y-4 mt-2">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-foreground">
-                    {schoolSeat ? "What career are you exploring?" : "What's your current job title?"} *
-                  </label>
-                  <div className="relative">
-                    <Briefcase className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <input
-                      type="text"
-                      placeholder={schoolSeat ? "e.g. Software Engineer, Product Manager" : "e.g. Product Manager, Software Engineer"}
-                      value={jobTitle}
-                      onChange={(e) => setJobTitle(e.target.value)}
-                      required
-                      className="w-full rounded-xl border border-input bg-background pl-10 pr-3 py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-ring"
-                      autoFocus
-                    />
-                  </div>
+        <div className="px-6 pb-6">
+          <AnimatePresence mode="wait">
+            {/* Step 1: Pick Your Path */}
+            {step === "path" && (
+              <motion.div
+                key="path"
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -12 }}
+                transition={{ duration: 0.2 }}
+                className="space-y-4"
+              >
+                <div className="text-center space-y-1.5">
+                  <h2 className="text-xl font-bold text-foreground" style={{ fontFamily: "'Cinzel', serif" }}>
+                    Who are you?
+                  </h2>
+                  <p className="text-sm text-muted-foreground">Pick your path to personalize your journey</p>
                 </div>
 
-                {!schoolSeat && (
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium text-foreground">University / School <span className="text-muted-foreground font-normal">(optional)</span></label>
-                    <div className="relative">
-                      <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                      <input
-                        type="text"
-                        placeholder="e.g. MIT, Stanford, University of Lagos"
-                        value={company}
-                        onChange={(e) => setCompany(e.target.value)}
-                        className="w-full rounded-xl border border-input bg-background pl-10 pr-3 py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-ring"
-                      />
-                    </div>
-                    <p className="text-[11px] text-muted-foreground">We'll tailor recommendations to your academic context</p>
-                  </div>
-                )}
-
-                {schoolSeat && (
-                  <div className="rounded-xl border border-primary/20 bg-primary/5 px-3 py-2.5 flex items-center gap-2.5">
-                    <GraduationCap className="h-4 w-4 text-primary shrink-0" />
-                    <div>
-                      <p className="text-xs font-medium text-foreground">{schoolSeat.school_name}</p>
-                      <p className="text-[10px] text-muted-foreground">Your learning path will be tailored to your school's curriculum</p>
-                    </div>
-                  </div>
-                )}
-
-                <div className="flex gap-3 pt-2">
-                  <Button type="button" variant="ghost" className="flex-1" onClick={handleSkip}>
-                    Skip for now
-                  </Button>
-                  <Button type="submit" className="flex-1" disabled={saving || !jobTitle.trim()}>
-                    Next <ChevronRight className="h-3.5 w-3.5 ml-1" />
-                  </Button>
+                <div className="grid gap-2.5">
+                  {([
+                    {
+                      path: "student" as PlayerPath,
+                      icon: GraduationCap,
+                      label: "Student",
+                      desc: "High school or university — exploring future careers",
+                      color: "from-[hsl(var(--neon-blue))] to-[hsl(var(--neon-cyan))]",
+                    },
+                    {
+                      path: "professional" as PlayerPath,
+                      icon: Briefcase,
+                      label: "Professional",
+                      desc: "Working and upskilling — staying ahead of AI",
+                      color: "from-[hsl(var(--neon-purple))] to-[hsl(var(--neon-pink))]",
+                    },
+                    {
+                      path: "explorer" as PlayerPath,
+                      icon: Compass,
+                      label: "Just Exploring",
+                      desc: "Curious about the AI skills landscape",
+                      color: "from-[hsl(var(--neon-green))] to-[hsl(var(--neon-orange))]",
+                    },
+                  ]).map(({ path, icon: Icon, label, desc, color }) => (
+                    <motion.button
+                      key={path}
+                      whileTap={{ scale: 0.97 }}
+                      onClick={() => handlePathSelect(path)}
+                      className="flex items-center gap-3.5 rounded-xl border border-border/50 bg-card hover:border-primary/30 hover:bg-card/80 px-4 py-3.5 text-left transition-all group"
+                    >
+                      <div className={`w-10 h-10 rounded-lg bg-gradient-to-br ${color} flex items-center justify-center shrink-0 opacity-80 group-hover:opacity-100 transition-opacity`}>
+                        <Icon className="h-5 w-5 text-white" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-semibold text-foreground">{label}</p>
+                        <p className="text-[11px] text-muted-foreground leading-tight">{desc}</p>
+                      </div>
+                    </motion.button>
+                  ))}
                 </div>
-              </form>
-            </motion.div>
-          )}
+              </motion.div>
+            )}
 
-          {step === "targets" && (
-            <motion.div key="targets" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} transition={{ duration: 0.2 }}>
-              <DialogHeader>
-                <DialogTitle className="text-xl font-sans font-bold flex items-center gap-2">
-                  <Target className="h-5 w-5 text-primary" />
-                  Set your goals
-                </DialogTitle>
-                <DialogDescription className="text-sm">
-                  Pick 1-3 roles you want to be ready for. We'll build your skill map around these targets.
-                </DialogDescription>
-              </DialogHeader>
+            {/* Step 2: Pick Interests */}
+            {step === "interests" && (
+              <motion.div
+                key="interests"
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -12 }}
+                transition={{ duration: 0.2 }}
+                className="space-y-4"
+              >
+                <div className="text-center space-y-1.5">
+                  <h2 className="text-xl font-bold text-foreground" style={{ fontFamily: "'Cinzel', serif" }}>
+                    What interests you?
+                  </h2>
+                  <p className="text-sm text-muted-foreground">Pick 2–3 areas to explore first</p>
+                </div>
 
-              <div className="mt-3 space-y-3">
-                {/* Selected targets */}
-                {targetRoles.length > 0 && (
-                  <div className="flex flex-wrap gap-2">
-                    {targetRoles.map(role => (
-                      <motion.div
-                        key={role.job_id}
-                        initial={{ opacity: 0, scale: 0.9 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        className="flex items-center gap-1.5 rounded-full border border-primary/25 bg-primary/8 px-3 py-1.5"
+                <div className="grid grid-cols-2 gap-2">
+                  {TERRITORY_OPTIONS.map(({ id, emoji, label }) => {
+                    const active = interests.has(id);
+                    return (
+                      <motion.button
+                        key={id}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={() => toggleInterest(id)}
+                        className={`rounded-xl border px-3 py-3 text-center transition-all ${
+                          active
+                            ? "border-primary bg-primary/10 ring-1 ring-primary/30"
+                            : "border-border/50 bg-card hover:border-border hover:bg-card/80"
+                        }`}
                       >
-                        <span className="text-xs font-medium text-foreground truncate max-w-[140px]">{role.title}</span>
-                        {role.company && <span className="text-[10px] text-muted-foreground">@ {role.company}</span>}
-                        <button onClick={() => removeTargetRole(role.job_id)} className="ml-0.5 hover:text-destructive transition-colors">
-                          <X className="h-3 w-3" />
-                        </button>
-                      </motion.div>
-                    ))}
-                  </div>
-                )}
-
-                {/* Search */}
-                {targetRoles.length < 3 && (
-                  <div className="relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <input
-                      type="text"
-                      placeholder="Search roles… e.g. Product Manager, Data Analyst"
-                      value={roleSearch}
-                      onChange={(e) => setRoleSearch(e.target.value)}
-                      className="w-full rounded-xl border border-input bg-background pl-10 pr-3 py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-ring"
-                      autoFocus
-                    />
-                    {searchingRoles && <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-muted-foreground" />}
-                  </div>
-                )}
-
-                {/* Search results */}
-                {roleResults.length > 0 && (
-                  <div className="max-h-[200px] overflow-y-auto space-y-1 pr-1">
-                    {roleResults.map(role => (
-                      <button
-                        key={role.job_id}
-                        onClick={() => addTargetRole(role)}
-                        className="w-full text-left rounded-xl border border-border/40 bg-card hover:border-primary/30 px-3 py-2.5 transition-all"
-                      >
-                        <p className="text-sm font-medium text-foreground">{role.title}</p>
-                        {role.company && <p className="text-[11px] text-muted-foreground">{role.company}</p>}
-                      </button>
-                    ))}
-                  </div>
-                )}
-
-                {roleSearch.length >= 2 && roleResults.length === 0 && !searchingRoles && (
-                  <p className="text-sm text-muted-foreground text-center py-4">No roles found — try different keywords</p>
-                )}
-
-                <div className="flex gap-3 pt-1">
-                  <Button type="button" variant="ghost" className="flex-1" onClick={handleSkip}>
-                    {targetRoles.length === 0 ? "Skip" : ""}
-                  </Button>
-                  <Button type="button" className="flex-1" disabled={saving} onClick={handleTargetsNext}>
-                    {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-                    {targetRoles.length > 0 ? `Continue (${targetRoles.length} role${targetRoles.length > 1 ? "s" : ""})` : "Continue without goals"}
-                  </Button>
-                </div>
-              </div>
-            </motion.div>
-          )}
-
-          {step === "program" && (
-            <motion.div key="program" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} transition={{ duration: 0.2 }}>
-              <DialogHeader>
-                <DialogTitle className="text-xl font-sans font-bold flex items-center gap-2">
-                  <BookOpen className="h-5 w-5 text-primary" />
-                  Select your program
-                </DialogTitle>
-                <DialogDescription className="text-sm">
-                  Choose your program at {schoolSeat?.school_name} to get curriculum-specific skill recommendations.
-                </DialogDescription>
-              </DialogHeader>
-
-              <div className="mt-3 space-y-3">
-                <input
-                  type="text"
-                  placeholder="Search programs…"
-                  value={programFilter}
-                  onChange={(e) => setProgramFilter(e.target.value)}
-                  className="w-full rounded-xl border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-ring"
-                  autoFocus
-                />
-
-                <div className="max-h-[280px] overflow-y-auto space-y-1.5 pr-1">
-                  {loadingPrograms ? (
-                    <div className="flex items-center justify-center py-8">
-                      <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
-                    </div>
-                  ) : filteredPrograms.length === 0 ? (
-                    <p className="text-sm text-muted-foreground text-center py-6">No programs found</p>
-                  ) : (
-                    filteredPrograms.map((prog) => {
-                      const key = `${prog.program_name}|${prog.degree_type}`;
-                      const isSelected = selectedProgram === prog.program_name;
-                      const badgeClass = degreeBadgeColor[prog.degree_type || ""] || "bg-muted text-muted-foreground";
-
-                      return (
-                        <motion.button
-                          key={key}
-                          type="button"
-                          whileTap={{ scale: 0.98 }}
-                          onClick={() => setSelectedProgram(prog.program_name)}
-                          className={`w-full text-left rounded-xl border px-3 py-2.5 transition-all ${
-                            isSelected
-                              ? "border-primary bg-primary/8 ring-1 ring-primary/30"
-                              : "border-border/40 bg-card hover:border-border hover:bg-card/80"
-                          }`}
-                        >
-                          <div className="flex items-center justify-between">
-                            <span className="text-sm font-medium text-foreground">{prog.program_name}</span>
-                            {prog.degree_type && (
-                              <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${badgeClass}`}>
-                                {prog.degree_type}
-                              </span>
-                            )}
-                          </div>
-                          {prog.department && (
-                            <p className="text-[11px] text-muted-foreground mt-0.5">{prog.department}</p>
-                          )}
-                        </motion.button>
-                      );
-                    })
-                  )}
+                        <span className="text-lg">{emoji}</span>
+                        <p className={`text-xs font-medium mt-0.5 ${active ? "text-primary" : "text-muted-foreground"}`}>
+                          {label}
+                        </p>
+                      </motion.button>
+                    );
+                  })}
                 </div>
 
                 <div className="flex gap-3 pt-1">
-                  <Button type="button" variant="ghost" className="flex-1" onClick={handleSkip}>
+                  <Button type="button" variant="ghost" size="sm" className="flex-1" onClick={() => setStep("avatar")}>
                     Skip
                   </Button>
-                  <Button type="button" className="flex-1" disabled={saving} onClick={handleProgramSelect}>
-                    {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-                    {selectedProgram ? "Start Learning" : "Continue without program"}
+                  <Button
+                    type="button"
+                    size="sm"
+                    className="flex-1"
+                    onClick={handleInterestsNext}
+                    disabled={interests.size < 1}
+                  >
+                    Next ({interests.size}/3)
                   </Button>
                 </div>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+              </motion.div>
+            )}
+
+            {/* Step 3: Choose Avatar */}
+            {step === "avatar" && (
+              <motion.div
+                key="avatar"
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -12 }}
+                transition={{ duration: 0.2 }}
+                className="space-y-4"
+              >
+                <div className="text-center space-y-1.5">
+                  <h2 className="text-xl font-bold text-foreground" style={{ fontFamily: "'Cinzel', serif" }}>
+                    Choose your avatar
+                  </h2>
+                  <p className="text-sm text-muted-foreground">Your identity on the battlefield</p>
+                </div>
+
+                <div className="grid grid-cols-4 gap-2.5">
+                  {AVATAR_OPTIONS.map((avatar) => {
+                    const active = selectedAvatar === avatar.id;
+                    return (
+                      <motion.button
+                        key={avatar.id}
+                        whileTap={{ scale: 0.9 }}
+                        onClick={() => setSelectedAvatar(avatar.id)}
+                        className={`rounded-xl border p-1.5 transition-all ${
+                          active
+                            ? "border-primary ring-2 ring-primary/40 bg-primary/5"
+                            : "border-border/30 bg-card/50 hover:border-border"
+                        }`}
+                      >
+                        <img
+                          src={avatar.src}
+                          alt={avatar.label}
+                          className="w-full aspect-square object-cover rounded-lg"
+                        />
+                        <p className={`text-[9px] font-medium mt-1 truncate ${active ? "text-primary" : "text-muted-foreground"}`}>
+                          {avatar.label}
+                        </p>
+                      </motion.button>
+                    );
+                  })}
+                </div>
+
+                <div className="flex gap-3 pt-1">
+                  <Button type="button" variant="ghost" size="sm" className="flex-1" onClick={handleSkip} disabled={saving}>
+                    Skip
+                  </Button>
+                  <Button
+                    type="button"
+                    size="sm"
+                    className="flex-1"
+                    onClick={handleFinish}
+                    disabled={saving}
+                  >
+                    {saving ? <Loader2 className="h-4 w-4 animate-spin mr-1.5" /> : <Sparkles className="h-3.5 w-3.5 mr-1.5" />}
+                    Enter the Map
+                  </Button>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
       </DialogContent>
     </Dialog>
   );
