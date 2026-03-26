@@ -110,7 +110,7 @@ const MapPage = () => {
   const [selectedKingdomCtx, setSelectedKingdomCtx] = useState<{ tier?: string; xp?: number; questsCompleted?: number; totalQuests?: number } | null>(null);
   const [activeEdge, setActiveEdge] = useState<EdgeContext | null>(null);
   const [activeTab, setActiveTab] = useState<"table" | "scout" | "codex" | "allies">("table");
-  const [panelCollapsed, setPanelCollapsed] = useState(false);
+  const [panelCollapsed, setPanelCollapsed] = useState(true);
   const [scoutSubTab, setScoutSubTab] = useState<"matched" | "browse" | "kingdoms">("matched");
   const [mapFocusSkillId, setMapFocusSkillId] = useState<string | null>(null);
   const [forgeFocusSkillId, setForgeFocusSkillId] = useState<string | null>(null);
