@@ -17,6 +17,17 @@ import FutureIsland from "./FutureIsland";
 import type { CanonicalSkillGrowth } from "@/pages/MapPage";
 import { getGuardianByCategory, type TerritoryGuardian } from "@/lib/territory-guardians";
 import { generateNPCSpawns, type NPCSpawn, type WanderingNPC } from "@/lib/wandering-npcs";
+import npcMerchant from "@/assets/npc-merchant.png";
+import npcOracle from "@/assets/npc-oracle.png";
+import npcRival from "@/assets/npc-rival.png";
+import npcScout from "@/assets/npc-scout.png";
+import npcBlacksmith from "@/assets/npc-blacksmith.png";
+import npcBard from "@/assets/npc-bard.png";
+
+const NPC_MAP_AVATARS: Record<string, string> = {
+  merchant: npcMerchant, oracle: npcOracle, rival: npcRival,
+  scout: npcScout, blacksmith: npcBlacksmith, bard: npcBard,
+};
 import GuardianEncounter from "./GuardianEncounter";
 import NPCEncounter from "./NPCEncounter";
 import TerritoryParticles from "./TerritoryParticles";
@@ -326,7 +337,7 @@ export default function FutureTerritoryMap({ skills, focusSkillId, level2SkillId
             return (
               <g key={`npc-${spawn.npc.id}`} className="cursor-pointer"
                 onClick={(e) => { e.stopPropagation(); if (!isDragging.current) { setActiveNPC({ npc: spawn.npc, territory: island.category }); setActiveGuardian(null); } }}>
-                <motion.circle cx={nx} cy={ny} r={12}
+                <motion.circle cx={nx} cy={ny} r={14}
                   fill="hsl(var(--card))" stroke="hsl(var(--border))"
                   strokeWidth={1.5} strokeDasharray="3 2"
                   initial={{ scale: 0, opacity: 0 }}
@@ -334,10 +345,13 @@ export default function FutureTerritoryMap({ skills, focusSkillId, level2SkillId
                   transition={{ delay: 1.2, type: "spring" }}
                   style={{ transformOrigin: `${nx}px ${ny}px` }}
                 />
-                <text x={nx} y={ny + 1} textAnchor="middle" dominantBaseline="central"
-                  style={{ fontSize: "10px", pointerEvents: "none", fill: "hsl(var(--foreground))", fontWeight: 600 }}>
-                  {spawn.npc.name.charAt(0)}
-                </text>
+                <foreignObject x={nx - 11} y={ny - 11} width={22} height={22} style={{ pointerEvents: "none" }}>
+                  <img
+                    src={NPC_MAP_AVATARS[spawn.npc.id] || npcMerchant}
+                    alt={spawn.npc.name}
+                    style={{ width: 22, height: 22, borderRadius: "50%", objectFit: "cover" }}
+                  />
+                </foreignObject>
               </g>
             );
           })}
