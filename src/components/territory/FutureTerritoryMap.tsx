@@ -17,8 +17,9 @@ import {
 import FutureIsland from "./FutureIsland";
 import type { CanonicalSkillGrowth } from "@/pages/MapPage";
 import { getGuardianByCategory, type TerritoryGuardian } from "@/lib/territory-guardians";
-import { generateNPCSpawns, type NPCSpawn, type WanderingNPC } from "@/lib/wandering-npcs";
+import { generateNPCSpawns, generateUserNPCSpawns, type NPCSpawn, type WanderingNPC } from "@/lib/wandering-npcs";
 import { getNPCAvatar } from "@/lib/npc-avatar-pool";
+import { useAuth } from "@/contexts/AuthContext";
 
 import GuardianEncounter from "./GuardianEncounter";
 import GuardianTrial from "./GuardianTrial";
@@ -91,8 +92,14 @@ export default function FutureTerritoryMap({ skills, focusSkillId, level2SkillId
   const [roleNPCs, setRoleNPCs] = useState<RoleNPC[]>([]);
   const [companyFilter, setCompanyFilter] = useState<Set<string>>(new Set());
   const mission = useScoutMission();
+  const { user } = useAuth();
   const [hoverPreview, setHoverPreview] = useState<{ type: "guardian" | "npc" | "role"; id: string; name: string; title: string; src: string; x: number; y: number; hue: number } | null>(null);
-  const npcSpawns = useMemo(() => generateNPCSpawns(), []);
+  const npcSpawns = useMemo(
+    () => user?.id
+      ? generateUserNPCSpawns(user.id, mission.territoriesScouted)
+      : generateNPCSpawns(),
+    [user?.id, mission.territoriesScouted]
+  );
   const dragRef = useRef<{ startX: number; startY: number; tx: number; ty: number } | null>(null);
   const isDragging = useRef(false);
 
