@@ -29,7 +29,7 @@ interface OnboardingQuestProps {
   onComplete: () => void;
 }
 
-type Step = "intro" | "avatar" | "username" | "launch";
+type Step = "intro" | "avatar" | "username" | "mode" | "launch";
 
 function sanitizeUsername(raw: string): string {
   return raw.toLowerCase().replace(/[^a-z0-9_-]/g, "").slice(0, 24);
