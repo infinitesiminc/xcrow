@@ -160,9 +160,18 @@ export const GTC_TOOLS: GTCTool[] = [
   // ═══════════════════════════════════════════
   // ENTERPRISE AI PLATFORMS
   // ═══════════════════════════════════════════
-  { name: "Salesforce Einstein", company: "Salesforce", category: "enterprise-ai", version: "GPT", description: "AI-powered CRM with conversational agents, predictive analytics, and workflow automation.", icon: "💼", url: "https://www.salesforce.com/artificial-intelligence/", type: "learnable", maturity: "ga", pricing: "Paid", useCases: ["crm", "sales", "customer-service", "automation"] },
+  { name: "Salesforce Einstein", company: "Salesforce", category: "enterprise-ai", version: "GPT", description: "AI-powered CRM with conversational agents, predictive analytics, and workflow automation.", icon: "💼", url: "https://www.salesforce.com/artificial-intelligence/", type: "learnable", maturity: "ga", pricing: "Paid", useCases: ["crm", "sales", "customer-service", "automation"], products: [
+    { name: "Einstein GPT", description: "Generative AI for CRM — auto-generates emails, summaries, and insights.", type: "learnable", useCases: ["sales", "content-creation"] },
+    { name: "Agentforce", description: "Autonomous AI agents for sales, service, and marketing workflows.", type: "learnable", useCases: ["automation", "agents"] },
+    { name: "Data Cloud", description: "Real-time customer data platform unifying all data sources.", type: "learnable", useCases: ["data-integration", "analytics"] },
+    { name: "Flow Orchestration", description: "Visual workflow builder for automating business processes.", type: "learnable", useCases: ["workflow-automation"] },
+  ] },
   { name: "Palantir AIP", company: "Palantir", category: "enterprise-ai", version: "2025", description: "AI platform for airgapped/sovereign deployments and operational decision-making.", icon: "👁️", url: "https://www.palantir.com/aip/", type: "reference", maturity: "ga", pricing: "Enterprise", useCases: ["defense", "government", "operations", "analytics"] },
-  { name: "IBM watsonx", company: "IBM", category: "enterprise-ai", version: "2025", description: "Enterprise AI and data platform — GPU-accelerated with foundation model studio.", icon: "🏢", url: "https://www.ibm.com/watsonx", type: "learnable", maturity: "ga", pricing: "Paid", useCases: ["enterprise-ai", "governance", "data-management"] },
+  { name: "IBM watsonx", company: "IBM", category: "enterprise-ai", version: "2025", description: "Enterprise AI and data platform — GPU-accelerated with foundation model studio.", icon: "🏢", url: "https://www.ibm.com/watsonx", type: "learnable", maturity: "ga", pricing: "Paid", useCases: ["enterprise-ai", "governance", "data-management"], products: [
+    { name: "watsonx.ai", description: "Foundation model studio for training, tuning, and deploying AI models.", type: "learnable", useCases: ["model-training", "fine-tuning"] },
+    { name: "watsonx.data", description: "Open lakehouse architecture for analytics and AI workloads.", type: "learnable", useCases: ["data-lakehouse", "analytics"] },
+    { name: "watsonx.governance", description: "AI governance toolkit for monitoring, compliance, and risk management.", type: "learnable", useCases: ["governance", "compliance"] },
+  ] },
   { name: "ServiceNow AI Agents", company: "ServiceNow", category: "enterprise-ai", version: "2025", description: "AI agents for IT service management, HR, and enterprise workflow automation.", icon: "⚡", url: "https://www.servicenow.com", type: "learnable", maturity: "ga", pricing: "Paid", useCases: ["itsm", "workflow-automation", "hr"] },
   { name: "SAP Joule", company: "SAP", category: "enterprise-ai", version: "2025", description: "AI copilot embedded across SAP's ERP, supply chain, and HR modules.", icon: "🔷", url: "https://www.sap.com/products/artificial-intelligence.html", type: "learnable", maturity: "ga", pricing: "Paid", useCases: ["erp", "supply-chain", "hr", "finance"] },
 
