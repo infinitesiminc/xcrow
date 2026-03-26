@@ -748,7 +748,37 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
     if (coaching) setCoachingContext(coaching);
     else setCoachingContext(null);
     try {
-      if (level === 2) {
+      // Silver tier → PromptLab handles its own compilation
+      if (masteryTier === "silver") {
+        setSession({
+          sessionId: crypto.randomUUID(),
+          systemPrompt: "",
+          openingMessage: "",
+          briefing: `**Silver Tier — Prompt Forge**\n\nWrite prompts for real-world scenarios. Your craft will be evaluated on clarity, specificity, technique, and output quality.`,
+          tips: ["Be specific about output format", "Use role-setting and chain-of-thought"],
+          learningObjectives: [],
+          scenario: { id: crypto.randomUUID(), title: taskName, description: `${taskName} for ${jobTitle}`, slug: "dynamic" },
+          level: 1,
+          config: { minRounds: 3, maxRounds: 3, objectiveCount: 3 },
+        });
+        setPhase("chat");
+      }
+      // Platinum tier → DelegationSim handles its own flow
+      else if (masteryTier === "platinum") {
+        setSession({
+          sessionId: crypto.randomUUID(),
+          systemPrompt: "",
+          openingMessage: "",
+          briefing: `**Platinum Tier — Agent Command**\n\nOversee autonomous AI agents executing "${taskName}". Monitor for anomalies, intervene when necessary, and prove your delegation mastery.`,
+          tips: ["Watch for subtle data errors", "False alarms cost you — intervene wisely"],
+          learningObjectives: [],
+          scenario: { id: crypto.randomUUID(), title: taskName, description: `${taskName} for ${jobTitle}`, slug: "dynamic" },
+          level: 1,
+          config: { minRounds: 6, maxRounds: 6, objectiveCount: 3 },
+        });
+        setPhase("chat");
+      }
+      else if (level === 2) {
         // L2: compile audit checkpoints instead of chat session
         const audit = await compileAudit(taskName, jobTitle, company, futurePrediction, intelContext ?? undefined);
         setAuditData(audit);
