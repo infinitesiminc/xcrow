@@ -1009,7 +1009,9 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
       // Check if all objectives met after this reply
       const nowAllMet = session?.learningObjectives?.every(o => updatedStatus[o.id]) ?? false;
       if (nowAllMet || reply.includes("[ALL_OBJECTIVES_MET]")) {
-        // Victory state — AI message will prompt finish
+        // Victory — lock input and auto-finish after celebration delay
+        setQuestCleared(true);
+        setTimeout(() => handleFinish(), 3000);
       }
 
       // Learn→Apply: every user response advances the round (each response = 1 complete beat)
