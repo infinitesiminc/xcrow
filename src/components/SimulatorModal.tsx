@@ -576,7 +576,7 @@ const UnmetObjectivesReview = ({
 };
 
 /* ── Main Modal ── */
-const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState, taskTrend, taskImpactLevel, mode = "assess", onCompleted, onNextTask, onBackToFeed, onViewTerritory, inline = false, guestMaxTurns, intelContext, onNextBattle, campaignStats, level = 1, futurePrediction, roleChallenge, linkedSkillIds }: SimulatorModalProps) => {
+const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState, taskTrend, taskImpactLevel, mode = "assess", onCompleted, onNextTask, onBackToFeed, onViewTerritory, inline = false, guestMaxTurns, intelContext, onNextBattle, campaignStats, level = 1, futurePrediction, roleChallenge, linkedSkillIds, resumeCheckpointId }: SimulatorModalProps) => {
   const [phase, setPhase] = useState<Phase>("loading");
   const [session, setSession] = useState<SimSession | null>(null);
   const [messages, setMessages] = useState<SimMessage[]>([]);
@@ -591,6 +591,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
   const [scaffoldingTiers, setScaffoldingTiers] = useState<Record<string, number>>({});
   const [objectiveFailCounts, setObjectiveFailCounts] = useState<Record<string, number>>({});
   const [showInactivityNudge, setShowInactivityNudge] = useState(false);
+  const [activeCheckpointId, setActiveCheckpointId] = useState<string | null>(resumeCheckpointId || null);
 
   // L2 Guided Audit state
   const [auditData, setAuditData] = useState<CompileAuditResult | null>(null);
@@ -601,6 +602,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
   const toolMentionComponents = useToolMentionComponents();
   const { toast } = useToast();
   const { setSimActive } = useChatContext();
+  const { saveCheckpoint, loadCheckpoints, deleteCheckpoint, saving: savingCheckpoint } = useSimCheckpoints();
 
   // Hide AI Coach when simulation is active
   useEffect(() => {
