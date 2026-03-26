@@ -2,13 +2,14 @@
  * RoleStackHero — "Your AI Stack for [Role]" personalized tool recommendations.
  * Shows 5-8 core tools as large interactive cards with add-to-stack functionality.
  */
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { motion } from "framer-motion";
 import { Plus, Check, ExternalLink, ChevronDown, ChevronUp, Sparkles } from "lucide-react";
 import { GTC_TOOLS, CATEGORY_CONFIG } from "@/data/gtc-tools-registry";
 import { ROLE_RECOMMENDATIONS, matchRole, type RoleRecommendation } from "@/data/role-tool-recommendations";
 import { getSkillsForTool } from "@/data/tool-skill-mappings";
 import { useMyStack } from "@/hooks/use-my-stack";
+import JobTitleSearch from "./JobTitleSearch";
 
 interface Props {
   userRole?: string;
@@ -20,7 +21,19 @@ export default function RoleStackHero({ userRole, onSelectTool }: Props) {
   const [selectedRole, setSelectedRole] = useState<RoleRecommendation>(recommendation);
   const [showExpanded, setShowExpanded] = useState(false);
   const [showRolePicker, setShowRolePicker] = useState(false);
-  const { toggleTool, isInStack } = useMyStack();
+  const { toggleTool, isInStack, addTool } = useMyStack();
+
+  const handleApplyStack = useCallback((toolNames: string[]) => {
+    toolNames.forEach(name => addTool(name));
+  }, [addTool]);
+
+  const handleSelectRole = useCallback((roleName: string) => {
+    const match = ROLE_RECOMMENDATIONS.find(r => r.role === roleName);
+    if (match) {
+      setSelectedRole(match);
+      setShowRolePicker(false);
+    }
+  }, []);
 
   const coreTools = selectedRole.coreTools
     .map(name => GTC_TOOLS.find(t => t.name === name))
@@ -32,6 +45,9 @@ export default function RoleStackHero({ userRole, onSelectTool }: Props) {
 
   return (
     <div className="space-y-6">
+      {/* Job title search */}
+      <JobTitleSearch onApplyStack={handleApplyStack} onSelectRole={handleSelectRole} />
+
       {/* Role selector */}
       <div className="flex flex-col sm:flex-row sm:items-end gap-3">
         <div className="flex-1">
