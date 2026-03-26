@@ -13,7 +13,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { User, Menu, X, Compass, Shield, Map, Settings, LogOut, Trophy, GraduationCap, Sun, Moon, BookOpen, Coins, Wrench } from "lucide-react";
+import { User, Menu, X, Compass, Shield, Map, Settings, LogOut, Trophy, GraduationCap, Sun, Moon, BookOpen, Coins, Wrench, Sparkles } from "lucide-react";
 
 export default function Navbar() {
   const { user, signOut, openAuthModal, isSuperAdmin, isSchoolAdmin, profile } = useAuth();
@@ -71,7 +71,7 @@ export default function Navbar() {
         { label: "Explore", path: "/", icon: Compass },
         { label: "Tools", path: "/tools", icon: Wrench },
         { label: "How It Works", path: "/how-it-works", icon: BookOpen },
-        { label: "Skills", path: "/skills", icon: BookOpen },
+        { label: "Skills", path: "/skills", icon: Sparkles },
         { label: "Pricing", path: "/pricing", icon: null },
       ];
 
