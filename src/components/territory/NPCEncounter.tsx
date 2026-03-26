@@ -4,7 +4,7 @@
  */
 
 import { motion, AnimatePresence } from "framer-motion";
-import { X, ShoppingBag, Eye, Swords, Map, Hammer, BookOpen } from "lucide-react";
+import { X, ShoppingBag, Eye, Swords, Map, Hammer, BookOpen, Gem, Compass, ScrollText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { WanderingNPC } from "@/lib/wandering-npcs";
 import HeroScene from "@/components/territory/HeroScene";
@@ -13,7 +13,6 @@ import type { FutureSkillCategory } from "@/hooks/use-future-skills";
 
 interface NPCEncounterProps {
   npc: WanderingNPC;
-  /** Territory the NPC spawned in — used for backdrop image */
   territory?: FutureSkillCategory;
   onClose: () => void;
   onInteract?: (npc: WanderingNPC) => void;
@@ -37,17 +36,25 @@ const INTERACTION_LABELS: Record<string, string> = {
   story: "Hear Tale",
 };
 
-/** Each NPC archetype has a distinct hue for theming */
-const NPC_HUES: Record<string, number> = {
-  merchant: 280,   // purple
-  oracle: 220,     // deep blue
-  rival: 0,        // red
-  scout: 150,      // green
-  blacksmith: 25,  // orange
-  bard: 45,        // gold
+/** Lucide icon components keyed by NPC iconName */
+const NPC_ICON_COMPONENTS: Record<string, typeof Gem> = {
+  gem: Gem,
+  eye: Eye,
+  swords: Swords,
+  compass: Compass,
+  hammer: Hammer,
+  "scroll-text": ScrollText,
 };
 
-/** Map NPC archetype to a sensible territory fallback for backdrop */
+const NPC_HUES: Record<string, number> = {
+  merchant: 280,
+  oracle: 220,
+  rival: 0,
+  scout: 150,
+  blacksmith: 25,
+  bard: 45,
+};
+
 const NPC_TERRITORY_FALLBACK: Record<string, FutureSkillCategory> = {
   merchant: "Strategic",
   oracle: "Analytical",
@@ -60,11 +67,12 @@ const NPC_TERRITORY_FALLBACK: Record<string, FutureSkillCategory> = {
 const cinzel = { fontFamily: "'Cinzel', serif" };
 
 export default function NPCEncounter({ npc, territory, onClose, onInteract }: NPCEncounterProps) {
-  const Icon = INTERACTION_ICONS[npc.interactionType] || BookOpen;
+  const ActionIcon = INTERACTION_ICONS[npc.interactionType] || BookOpen;
   const label = INTERACTION_LABELS[npc.interactionType] || "Interact";
   const hue = NPC_HUES[npc.id] ?? 200;
   const heroTerritory = territory || NPC_TERRITORY_FALLBACK[npc.id] || "Technical";
   const heroImage = getTerritoryHeroImage(heroTerritory);
+  const AvatarIcon = NPC_ICON_COMPONENTS[npc.iconName] || Gem;
 
   return (
     <AnimatePresence>
@@ -75,7 +83,6 @@ export default function NPCEncounter({ npc, territory, onClose, onInteract }: NP
         transition={{ duration: 0.5 }}
         className="fixed inset-0 z-50 flex items-end justify-center"
       >
-        {/* Fullscreen hero backdrop */}
         <HeroScene
           imageUrl={heroImage}
           intensity="full"
@@ -85,10 +92,8 @@ export default function NPCEncounter({ npc, territory, onClose, onInteract }: NP
           className="absolute inset-0"
         />
 
-        {/* Click-away */}
         <div className="absolute inset-0 z-[3]" onClick={onClose} />
 
-        {/* Bottom-anchored cinematic dialogue panel */}
         <motion.div
           initial={{ opacity: 0, y: 60 }}
           animate={{ opacity: 1, y: 0 }}
@@ -115,13 +120,13 @@ export default function NPCEncounter({ npc, territory, onClose, onInteract }: NP
                   ],
                 }}
                 transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-                className="w-14 h-14 rounded-xl flex items-center justify-center text-3xl shrink-0"
+                className="w-14 h-14 rounded-xl flex items-center justify-center shrink-0"
                 style={{
                   background: `linear-gradient(135deg, hsl(${hue} 35% 15%), hsl(${hue} 25% 20%))`,
                   border: `2px solid hsl(${hue} 45% 32%)`,
                 }}
               >
-                {npc.emoji}
+                <AvatarIcon size={28} style={{ color: `hsl(${hue} 50% 65%)` }} />
               </motion.div>
               <div className="flex-1 min-w-0">
                 <span
@@ -146,7 +151,7 @@ export default function NPCEncounter({ npc, territory, onClose, onInteract }: NP
               </button>
             </div>
 
-            {/* Greeting — cinematic quote */}
+            {/* Greeting */}
             <motion.div
               initial={{ opacity: 0, x: -8 }}
               animate={{ opacity: 1, x: 0 }}
@@ -166,7 +171,7 @@ export default function NPCEncounter({ npc, territory, onClose, onInteract }: NP
               </div>
             </motion.div>
 
-            {/* Offering description */}
+            {/* Offering */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -193,7 +198,7 @@ export default function NPCEncounter({ npc, territory, onClose, onInteract }: NP
                 }}
                 onClick={() => onInteract?.(npc)}
               >
-                <Icon size={16} />
+                <ActionIcon size={16} />
                 {label}
               </Button>
               <Button
