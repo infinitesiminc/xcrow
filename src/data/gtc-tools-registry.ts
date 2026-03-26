@@ -261,8 +261,19 @@ export const GTC_TOOLS: GTCTool[] = [
     { name: "watsonx.data", description: "Open lakehouse architecture for analytics and AI workloads.", type: "learnable", useCases: ["data-lakehouse", "analytics"] },
     { name: "watsonx.governance", description: "AI governance toolkit for monitoring, compliance, and risk management.", type: "learnable", useCases: ["governance", "compliance"] },
   ] },
-  { name: "ServiceNow AI Agents", company: "ServiceNow", category: "enterprise-ai", version: "2025", description: "AI agents for IT service management, HR, and enterprise workflow automation.", icon: "⚡", url: "https://www.servicenow.com", type: "learnable", maturity: "ga", pricing: "Paid", useCases: ["itsm", "workflow-automation", "hr"] },
-  { name: "SAP Joule", company: "SAP", category: "enterprise-ai", version: "2025", description: "AI copilot embedded across SAP's ERP, supply chain, and HR modules.", icon: "🔷", url: "https://www.sap.com/products/artificial-intelligence.html", type: "learnable", maturity: "ga", pricing: "Paid", useCases: ["erp", "supply-chain", "hr", "finance"] },
+  { name: "ServiceNow AI Agents", company: "ServiceNow", category: "enterprise-ai", version: "2025", description: "AI agents for IT service management, HR, and enterprise workflow automation.", icon: "⚡", url: "https://www.servicenow.com", type: "learnable", maturity: "ga", pricing: "Paid", useCases: ["itsm", "workflow-automation", "hr"], products: [
+    { name: "Now Assist", description: "Generative AI across ITSM, HRSD, and CSM workflows.", type: "learnable" },
+    { name: "Virtual Agent", description: "Conversational AI for employee and customer self-service.", type: "learnable" },
+    { name: "IT Operations Management", description: "AIOps for incident prediction and automated remediation.", type: "learnable" },
+    { name: "HR Service Delivery", description: "AI-powered employee experience and case management.", type: "learnable" },
+  ] },
+  { name: "SAP Joule", company: "SAP", category: "enterprise-ai", version: "2025", description: "AI copilot embedded across SAP's ERP, supply chain, and HR modules.", icon: "🔷", url: "https://www.sap.com/products/artificial-intelligence.html", type: "learnable", maturity: "ga", pricing: "Paid", useCases: ["erp", "supply-chain", "hr", "finance"], products: [
+    { name: "Joule Copilot", description: "Natural language AI assistant embedded across all SAP products.", type: "learnable" },
+    { name: "SAP S/4HANA Cloud", description: "Intelligent ERP with AI-driven finance, procurement, and manufacturing.", type: "learnable" },
+    { name: "SAP SuccessFactors", description: "AI-powered HCM for talent management and workforce analytics.", type: "learnable" },
+    { name: "SAP Ariba", description: "AI procurement network connecting buyers and suppliers.", type: "learnable" },
+    { name: "SAP Integrated Business Planning", description: "AI supply chain planning and demand sensing.", type: "learnable" },
+  ] },
 
   // ═══════════════════════════════════════════
   // DESIGN & MEDIA
