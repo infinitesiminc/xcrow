@@ -140,6 +140,9 @@ const MapPage = () => {
   const { onRolesFoundRef, onRoleSelectRef, sendMessage: chatSendMessage, setIsOpen: setChatDockOpen } = useChatContext();
   const { updatePresence, goOffline, pendingCount, unreadCount } = useFriends();
 
+  // Preload territory backdrop images on mount
+  useEffect(() => { preloadTerritoryImages(); }, []);
+
   useEffect(() => {
     onRoleSelectRef.current = (role: RoleResult) => { setSelectedRole(role); };
     return () => { onRoleSelectRef.current = null; };
