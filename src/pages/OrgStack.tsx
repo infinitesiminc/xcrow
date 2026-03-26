@@ -395,16 +395,39 @@ export default function OrgStack() {
                     {topTools.map(t => {
                       const maxDepts = orgData.departments.length;
                       const coverage = t.deptCount / Math.max(maxDepts, 1);
+                      const isOwn = conflicts.ownTools.includes(t.name);
+                      const conflictWith = conflicts.conflictedTools.get(t.name);
                       return (
                         <button
                           key={t.name}
                           onClick={() => setSelectedTool(t.tool)}
-                          className="text-left rounded-xl p-3 transition-all hover:scale-[1.02] group"
+                          className="text-left rounded-xl p-3 transition-all hover:scale-[1.02] group relative"
                           style={{
-                            background: `linear-gradient(135deg, hsl(var(--primary) / ${0.04 + coverage * 0.15}), hsl(var(--card)))`,
-                            border: `1px solid hsl(var(--primary) / ${0.1 + coverage * 0.3})`,
+                            background: conflictWith
+                              ? `linear-gradient(135deg, hsl(var(--destructive) / 0.06), hsl(var(--card)))`
+                              : isOwn
+                              ? `linear-gradient(135deg, hsl(142 70% 45% / 0.1), hsl(var(--card)))`
+                              : `linear-gradient(135deg, hsl(var(--primary) / ${0.04 + coverage * 0.15}), hsl(var(--card)))`,
+                            border: conflictWith
+                              ? `1px solid hsl(var(--destructive) / 0.3)`
+                              : isOwn
+                              ? `1px solid hsl(142 70% 45% / 0.3)`
+                              : `1px solid hsl(var(--primary) / ${0.1 + coverage * 0.3})`,
                           }}
                         >
+                          {/* Conflict/Own badge */}
+                          {conflictWith && (
+                            <div className="absolute -top-1.5 -right-1.5 flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[8px] font-bold"
+                              style={{ background: "hsl(var(--destructive))", color: "white" }}>
+                              <AlertTriangle className="h-2.5 w-2.5" /> CONFLICT
+                            </div>
+                          )}
+                          {isOwn && (
+                            <div className="absolute -top-1.5 -right-1.5 flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[8px] font-bold"
+                              style={{ background: "hsl(142 70% 45%)", color: "white" }}>
+                              <ShieldCheck className="h-2.5 w-2.5" /> OWN
+                            </div>
+                          )}
                           <div className="flex items-start justify-between mb-1.5">
                             <span className="text-lg">{t.tool.icon}</span>
                             <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded-md"
@@ -412,14 +435,22 @@ export default function OrgStack() {
                               {t.deptCount}/{maxDepts}
                             </span>
                           </div>
-                          <p className="text-xs font-bold truncate mb-0.5" style={{ color: "hsl(var(--foreground))" }}>{t.name}</p>
+                          <p className="text-xs font-bold truncate mb-0.5" style={{ color: conflictWith ? "hsl(var(--destructive))" : "hsl(var(--foreground))" }}>{t.name}</p>
                           <p className="text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>
-                            {Array.from(t.departments).slice(0, 3).join(", ")}
-                            {t.departments.size > 3 && ` +${t.departments.size - 3}`}
+                            {conflictWith
+                              ? `Competes with ${conflictWith}`
+                              : <>
+                                  {Array.from(t.departments).slice(0, 3).join(", ")}
+                                  {t.departments.size > 3 && ` +${t.departments.size - 3}`}
+                                </>
+                            }
                           </p>
                           {/* Coverage bar */}
                           <div className="mt-2 h-1 rounded-full overflow-hidden" style={{ background: "hsl(var(--muted) / 0.2)" }}>
-                            <div className="h-full rounded-full" style={{ width: `${coverage * 100}%`, background: "hsl(var(--primary))" }} />
+                            <div className="h-full rounded-full" style={{
+                              width: `${coverage * 100}%`,
+                              background: conflictWith ? "hsl(var(--destructive) / 0.6)" : isOwn ? "hsl(142 70% 45%)" : "hsl(var(--primary))",
+                            }} />
                           </div>
                         </button>
                       );
