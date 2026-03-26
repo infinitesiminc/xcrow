@@ -478,6 +478,8 @@ const MapPage = () => {
                   <CodexPanel />
                 ) : activeTab === "allies" && isSignedIn ? (
                   <AlliesPanel onLaunchSim={handleLaunchSim} />
+                ) : activeTab === "tools" ? (
+                  <ToolsPanel />
                 ) : null}
               </div>
             </motion.div>
