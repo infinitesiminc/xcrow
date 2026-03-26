@@ -7,7 +7,7 @@ import { useNavigate } from "react-router-dom";
 import SponsorLandingSection from "@/components/pricing/SponsorLandingSection";
 import { motion } from "framer-motion";
 import {
-  Check, ArrowRight, Loader2, HelpCircle, Shield, Crown, Castle,
+  Check, ArrowRight, Loader2, HelpCircle, Shield, Crown, Castle, Users, Gift, Copy,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
