@@ -21,6 +21,7 @@ import { generateNPCSpawns, type NPCSpawn, type WanderingNPC } from "@/lib/wande
 import { getNPCAvatar } from "@/lib/npc-avatar-pool";
 
 import GuardianEncounter from "./GuardianEncounter";
+import GuardianTrial from "./GuardianTrial";
 import NPCEncounter from "./NPCEncounter";
 import RoleNPCEncounter from "./RoleNPCEncounter";
 
@@ -80,6 +81,7 @@ export default function FutureTerritoryMap({ skills, focusSkillId, level2SkillId
   const [focusedIsland, setFocusedIsland] = useState<FutureSkillCategory | null>(null);
   const [highlightedSkillId, setHighlightedSkillId] = useState<string | null>(null);
   const [activeGuardian, setActiveGuardian] = useState<TerritoryGuardian | null>(null);
+  const [trialGuardian, setTrialGuardian] = useState<TerritoryGuardian | null>(null);
   const [activeNPC, setActiveNPC] = useState<{ npc: WanderingNPC; territory: FutureSkillCategory } | null>(null);
   const [activeRoleNPC, setActiveRoleNPC] = useState<RoleNPC | null>(null);
   const [roleNPCs, setRoleNPCs] = useState<RoleNPC[]>([]);
@@ -519,13 +521,26 @@ export default function FutureTerritoryMap({ skills, focusSkillId, level2SkillId
         </AnimatePresence>
 
         {/* Guardian Encounter Panel */}
-        {activeGuardian && (
+        {activeGuardian && !trialGuardian && (
           <GuardianEncounter
             guardian={activeGuardian}
             onClose={() => setActiveGuardian(null)}
-            onChallenge={(g) => { setActiveGuardian(null); }}
+            onChallenge={(g) => { setActiveGuardian(null); setTrialGuardian(g); }}
             onConquerTerritory={(category) => {
               mission.scoutRole(`guardian-${activeGuardian.id}`, category, []);
+            }}
+          />
+        )}
+
+        {/* Guardian Trial */}
+        {trialGuardian && (
+          <GuardianTrial
+            guardian={trialGuardian}
+            onClose={() => setTrialGuardian(null)}
+            onVictory={(guardianId, category) => {
+              mission.conquerSkill();
+              mission.scoutRole(`guardian-${guardianId}`, category, []);
+              setTrialGuardian(null);
             }}
           />
         )}
