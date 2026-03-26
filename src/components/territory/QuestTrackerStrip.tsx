@@ -1,15 +1,16 @@
 /**
  * QuestTrackerStrip — Compact inline quest progress for the map nav bar.
  */
-import { Eye, Swords, Crown, ChevronRight } from "lucide-react";
+import { Search, Beaker, Swords, Crown, ChevronRight } from "lucide-react";
 import { motion } from "framer-motion";
 import type { MissionPhase } from "@/hooks/use-scout-mission";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 
-const PHASES: { key: MissionPhase; label: string; icon: typeof Eye }[] = [
-  { key: "scout", label: "Scout", icon: Eye },
-  { key: "battle", label: "Battle", icon: Swords },
-  { key: "conquer", label: "Conquer", icon: Crown },
+const PHASES: { key: MissionPhase; label: string; icon: typeof Search }[] = [
+  { key: "discover", label: "Discover", icon: Search },
+  { key: "experiment", label: "Experiment", icon: Beaker },
+  { key: "challenge", label: "Challenge", icon: Swords },
+  { key: "master", label: "Master", icon: Crown },
 ];
 
 interface QuestTrackerStripProps {
