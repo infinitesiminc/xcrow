@@ -2244,6 +2244,24 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                 </button>
               </div>
             )}
+            {questCleared ? (
+              <motion.div
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="flex items-center justify-center gap-3 max-w-2xl mx-auto py-3 px-5 rounded-xl"
+                style={{
+                  background: "hsl(142 71% 45% / 0.1)",
+                  border: "1px solid hsl(142 71% 45% / 0.3)",
+                  boxShadow: "0 0 20px hsl(142 71% 45% / 0.15)",
+                }}
+              >
+                <Trophy className="h-5 w-5 text-success" />
+                <span className="text-sm font-bold" style={{ fontFamily: "'Cinzel', serif", color: "hsl(142 71% 45%)" }}>
+                  Quest Complete — Preparing Battle Report…
+                </span>
+                <Loader2 className="h-4 w-4 animate-spin text-success" />
+              </motion.div>
+            ) : (
             <div className="flex items-end gap-3 max-w-2xl mx-auto">
               <textarea
                 value={input}
