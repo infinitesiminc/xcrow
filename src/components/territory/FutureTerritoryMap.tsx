@@ -17,8 +17,9 @@ import {
 import FutureIsland from "./FutureIsland";
 import type { CanonicalSkillGrowth } from "@/pages/MapPage";
 import { getGuardianByCategory, type TerritoryGuardian } from "@/lib/territory-guardians";
-import { generateNPCSpawns, type NPCSpawn, type WanderingNPC } from "@/lib/wandering-npcs";
+import { generateNPCSpawns, generateUserNPCSpawns, type NPCSpawn, type WanderingNPC } from "@/lib/wandering-npcs";
 import { getNPCAvatar } from "@/lib/npc-avatar-pool";
+import { useAuth } from "@/contexts/AuthContext";
 
 import GuardianEncounter from "./GuardianEncounter";
 import GuardianTrial from "./GuardianTrial";
