@@ -283,8 +283,8 @@ export default function Settings() {
               />
             )}
 
-            {activeSection === "gameplay" && (
-              <GameplaySection creditBalance={creditBalance} />
+            {activeSection === "referral" && (
+              <ReferralSection userId={user?.id} />
             )}
 
             {activeSection === "subscription" && (
