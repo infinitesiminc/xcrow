@@ -4,12 +4,19 @@
  */
 
 import { motion, AnimatePresence } from "framer-motion";
-import { X, ShoppingBag, Eye, Swords, Map, Hammer, BookOpen, Gem, Compass, ScrollText } from "lucide-react";
+import { X, ShoppingBag, Eye, Swords, Map, Hammer, BookOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { WanderingNPC } from "@/lib/wandering-npcs";
 import HeroScene from "@/components/territory/HeroScene";
 import { getTerritoryHeroImage } from "@/lib/territory-hero-images";
 import type { FutureSkillCategory } from "@/hooks/use-future-skills";
+
+import npcMerchant from "@/assets/npc-merchant.png";
+import npcOracle from "@/assets/npc-oracle.png";
+import npcRival from "@/assets/npc-rival.png";
+import npcScout from "@/assets/npc-scout.png";
+import npcBlacksmith from "@/assets/npc-blacksmith.png";
+import npcBard from "@/assets/npc-bard.png";
 
 interface NPCEncounterProps {
   npc: WanderingNPC;
