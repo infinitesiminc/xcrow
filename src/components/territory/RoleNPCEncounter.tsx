@@ -3,7 +3,7 @@
  * The role character speaks in first person about how AI is changing their work.
  * Users can ask questions and collect skills.
  */
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, memo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Zap, Shield, TrendingUp, BookOpen, Swords, Award, ChevronRight, Sparkles, Send, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -52,6 +52,77 @@ function RoleAvatar({ title, tier, size = 80 }: { title: string; tier: "thriving
     >
       {initials}
     </div>
+  );
+}
+
+/** Smooth typewriter that reveals text character-by-character using CSS */
+function StreamingText({ text, isComplete }: { text: string; isComplete: boolean }) {
+  const [displayed, setDisplayed] = useState("");
+  const targetRef = useRef(text);
+  const rafRef = useRef<number>(0);
+  const indexRef = useRef(0);
+  const lastTimeRef = useRef(0);
+
+  useEffect(() => {
+    targetRef.current = text;
+  }, [text]);
+
+  useEffect(() => {
+    if (isComplete) {
+      setDisplayed(targetRef.current);
+      cancelAnimationFrame(rafRef.current);
+      return;
+    }
+
+    const tick = (time: number) => {
+      if (!lastTimeRef.current) lastTimeRef.current = time;
+      const elapsed = time - lastTimeRef.current;
+      
+      // Reveal ~2 chars per frame at 60fps (~120 chars/sec) for smooth feel
+      if (elapsed >= 12) {
+        lastTimeRef.current = time;
+        const target = targetRef.current;
+        if (indexRef.current < target.length) {
+          // Reveal 1-3 chars per tick for natural cadence
+          const charsToAdd = Math.min(2, target.length - indexRef.current);
+          indexRef.current += charsToAdd;
+          setDisplayed(target.slice(0, indexRef.current));
+        }
+      }
+      rafRef.current = requestAnimationFrame(tick);
+    };
+
+    rafRef.current = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(rafRef.current);
+  }, [isComplete]);
+
+  // Reset when text starts fresh (new message)
+  useEffect(() => {
+    if (text.length < displayed.length) {
+      indexRef.current = 0;
+      lastTimeRef.current = 0;
+      setDisplayed("");
+    }
+  }, [text]);
+
+  if (isComplete) {
+    return (
+      <div className="prose prose-sm prose-invert max-w-none [&>p]:m-0 [&>ul]:mt-1 [&>ul]:mb-0 text-inherit">
+        <ReactMarkdown>{text}</ReactMarkdown>
+      </div>
+    );
+  }
+
+  return (
+    <span className="whitespace-pre-wrap">
+      {displayed}
+      <motion.span
+        className="inline-block w-[2px] h-[1em] ml-0.5 align-text-bottom"
+        style={{ background: "currentColor" }}
+        animate={{ opacity: [1, 0, 1] }}
+        transition={{ duration: 0.8, repeat: Infinity }}
+      />
+    </span>
   );
 }
 
@@ -353,39 +424,45 @@ export default function RoleNPCEncounter({ role, onClose, onCollectSkills, onExp
               className="flex-1 overflow-y-auto px-5 py-3 space-y-3 min-h-0"
               style={{ maxHeight: "45vh" }}
             >
-              {chatMessages.map((msg, i) => (
-                <motion.div
-                  key={i}
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.25 }}
-                  className={`flex gap-2.5 ${msg.role === "user" ? "flex-row-reverse" : ""}`}
-                >
-                  {msg.role === "assistant" && (
-                    <RoleAvatar title={role.title} tier={role.threatTier} size={32} />
-                  )}
-                  <div
-                    className="rounded-xl px-3.5 py-2.5 text-sm leading-relaxed max-w-[80%]"
-                    style={
-                      msg.role === "assistant"
-                        ? {
-                            background: `hsl(${hue} 18% 10% / 0.7)`,
-                            borderLeft: `2px solid hsl(${colors.bg} / 0.5)`,
-                            color: `hsl(${hue} 12% 82%)`,
-                          }
-                        : {
-                            background: `hsl(${hue} 30% 20% / 0.6)`,
-                            color: `hsl(${hue} 15% 88%)`,
-                            marginLeft: "auto",
-                          }
-                    }
+              {chatMessages.map((msg, i) => {
+                const isLastAssistant = msg.role === "assistant" && i === chatMessages.length - 1;
+                const isCurrentlyStreaming = isLastAssistant && isStreaming;
+                return (
+                  <motion.div
+                    key={i}
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.25 }}
+                    className={`flex gap-2.5 ${msg.role === "user" ? "flex-row-reverse" : ""}`}
                   >
-                    <div className="prose prose-sm prose-invert max-w-none [&>p]:m-0 [&>ul]:mt-1 [&>ul]:mb-0 text-inherit">
-                      <ReactMarkdown>{msg.content}</ReactMarkdown>
+                    {msg.role === "assistant" && (
+                      <RoleAvatar title={role.title} tier={role.threatTier} size={32} />
+                    )}
+                    <div
+                      className="rounded-xl px-3.5 py-2.5 text-sm leading-relaxed max-w-[80%]"
+                      style={
+                        msg.role === "assistant"
+                          ? {
+                              background: `hsl(${hue} 18% 10% / 0.7)`,
+                              borderLeft: `2px solid hsl(${colors.bg} / 0.5)`,
+                              color: `hsl(${hue} 12% 82%)`,
+                            }
+                          : {
+                              background: `hsl(${hue} 30% 20% / 0.6)`,
+                              color: `hsl(${hue} 15% 88%)`,
+                              marginLeft: "auto",
+                            }
+                      }
+                    >
+                      {msg.role === "assistant" ? (
+                        <StreamingText text={msg.content} isComplete={!isCurrentlyStreaming} />
+                      ) : (
+                        <span>{msg.content}</span>
+                      )}
                     </div>
-                  </div>
-                </motion.div>
-              ))}
+                  </motion.div>
+                );
+              })}
               {isStreaming && chatMessages[chatMessages.length - 1]?.role !== "assistant" && (
                 <div className="flex gap-2.5">
                   <RoleAvatar title={role.title} tier={role.threatTier} size={32} />
@@ -394,13 +471,13 @@ export default function RoleNPCEncounter({ role, onClose, onCollectSkills, onExp
                     style={{ background: `hsl(${hue} 18% 10% / 0.7)`, borderLeft: `2px solid hsl(${colors.bg} / 0.5)` }}
                   >
                     <div className="flex gap-1">
-                      {[0, 1, 2].map(i => (
+                      {[0, 1, 2].map(j => (
                         <motion.div
-                          key={i}
+                          key={j}
                           className="w-1.5 h-1.5 rounded-full"
                           style={{ background: `hsl(${colors.bg})` }}
                           animate={{ opacity: [0.3, 1, 0.3] }}
-                          transition={{ duration: 1, repeat: Infinity, delay: i * 0.15 }}
+                          transition={{ duration: 1, repeat: Infinity, delay: j * 0.15 }}
                         />
                       ))}
                     </div>
