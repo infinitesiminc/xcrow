@@ -10,7 +10,13 @@ import { type FutureSkill, type FutureSkillCategory } from "@/hooks/use-future-s
 import { supabase } from "@/integrations/supabase/client";
 import type { SimLaunchRequest } from "@/components/territory/SkillLaunchCard";
 import { Input } from "@/components/ui/input";
-import { ArrowUpDown, Search, Zap, Diamond, Lock } from "lucide-react";
+import { ArrowUpDown, Search, Zap, Diamond, Lock, Star, Swords } from "lucide-react";
+import { getTerritory, TERRITORY_ORDER } from "@/lib/territory-colors";
+import { useAuth } from "@/contexts/AuthContext";
+import { RadarChart, PolarGrid, PolarAngleAxis, Radar, ResponsiveContainer } from "recharts";
+import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
+import type { CanonicalSkillGrowth } from "@/pages/MapPage";
+import { getSkillRune } from "@/lib/skill-runes";
 import { getTerritory, TERRITORY_ORDER } from "@/lib/territory-colors";
 import { useAuth } from "@/contexts/AuthContext";
 import { RadarChart, PolarGrid, PolarAngleAxis, Radar, ResponsiveContainer } from "recharts";
