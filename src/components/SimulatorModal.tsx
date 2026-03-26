@@ -2323,6 +2323,14 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                       </Button>
                     )}
 
+                    {/* ── Invite a friend ── */}
+                    {user && (
+                      <div className="w-full max-w-xs pt-1">
+                        <p className="text-[11px] text-muted-foreground text-center mb-2">Challenge a friend — you both earn a free month</p>
+                        <InviteShareWidget context={`completed a quest on "${taskName}"`} />
+                      </div>
+                    )}
+
                     {/* Dismiss */}
                     <Button
                       variant="ghost"

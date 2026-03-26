@@ -450,6 +450,21 @@ const MapPage = () => {
         {displaySkills.length > 0 && (
           <CompactHUD skills={displaySkills} targetSkillIds={targetSkillIds} userName={userName} avgDegreeLevel={avgDegreeLevel} />
         )}
+        {isSignedIn && (
+          <>
+            <div className="w-px h-4 opacity-30" style={{ background: "hsl(var(--filigree))" }} />
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div>
+                  <InviteShareWidget compact />
+                </div>
+              </TooltipTrigger>
+              <TooltipContent side="bottom" className="text-xs font-semibold" style={{ fontFamily: "'Cinzel', serif" }}>
+                Recruit allies — earn free months
+              </TooltipContent>
+            </Tooltip>
+          </>
+        )}
 
         {/* Expand/collapse toggle */}
         <button
