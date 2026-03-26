@@ -71,6 +71,7 @@ export default function OnboardingQuest({ open, userId, onComplete }: Onboarding
     const updates: any = {
       onboarding_completed: true,
       avatar_id: selectedAvatar,
+      play_mode: playMode,
     };
     if (username.length >= 3 && usernameStatus === "available") {
       updates.username = username;
