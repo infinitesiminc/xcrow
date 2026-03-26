@@ -25,3 +25,11 @@ export const TERRITORY_HERO_IMAGES: Record<string, string> = {
 export function getTerritoryHeroImage(category: string): string | null {
   return TERRITORY_HERO_IMAGES[category] ?? null;
 }
+
+/** Preload all territory images into browser cache */
+export function preloadTerritoryImages() {
+  Object.values(TERRITORY_HERO_IMAGES).forEach(src => {
+    const img = new Image();
+    img.src = src;
+  });
+}
