@@ -19,6 +19,7 @@ import { supabase } from "@/integrations/supabase/client";
 import SimulatorModal from "@/components/SimulatorModal";
 import HeaderVibeImages from "@/components/HeaderVibeImages";
 import { FutureTaskPreview } from "@/components/analysis/FutureTaskPreview";
+import { DegreeBadge } from "@/components/analysis/DegreeBadge";
 
 const isWebsite = (value: string) =>
   /^(https?:\/\/)?([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}(\/.*)?$/.test(value.trim());
