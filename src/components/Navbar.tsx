@@ -151,11 +151,9 @@ export default function Navbar() {
         <div className="flex items-center gap-1.5">
           {user ? (
             <>
-              {/* Credit balance pill */}
-              <button
-                <div className="hidden sm:block">
-                  <CreditWallet />
-                </div>
+              <div className="hidden sm:block">
+                <CreditWallet />
+              </div>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon" className="rounded-full">
