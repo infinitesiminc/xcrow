@@ -113,7 +113,7 @@ export default function CodexPanel({ onSelectTool }: CodexPanelProps) {
               background: "hsl(var(--primary) / 0.04)",
               border: "1px solid hsl(var(--primary) / 0.12)",
             }}
-            onClick={() => setExpandedId(isExpanded ? null : drop.id)}
+            onClick={() => onSelectTool ? onSelectTool(drop.tool_name) : setExpandedId(isExpanded ? null : drop.id)}
           >
             {/* Collapsed row */}
             <div className="flex items-center gap-2.5 px-3 py-2.5">
