@@ -311,13 +311,16 @@ export default function Simulations() {
         </div>
 
         {/* Main tabs */}
-        <Tabs value={mainTab} onValueChange={(v) => setMainTab(v as "library" | "browse")} className="mb-6">
+        <Tabs value={mainTab} onValueChange={(v) => setMainTab(v as "library" | "browse" | "pipeline")} className="mb-6">
           <TabsList>
             <TabsTrigger value="library" className="gap-1.5 text-xs">
               <BookOpen className="w-3.5 h-3.5" /> My Library
             </TabsTrigger>
             <TabsTrigger value="browse" className="gap-1.5 text-xs">
               <Briefcase className="w-3.5 h-3.5" /> Browse Jobs
+            </TabsTrigger>
+            <TabsTrigger value="pipeline" className="gap-1.5 text-xs">
+              <Workflow className="w-3.5 h-3.5" /> Pipeline Builder
             </TabsTrigger>
           </TabsList>
 
