@@ -83,6 +83,7 @@ export default function FutureTerritoryMap({ skills, focusSkillId, level2SkillId
   const [highlightedSkillId, setHighlightedSkillId] = useState<string | null>(null);
   const [activeGuardian, setActiveGuardian] = useState<TerritoryGuardian | null>(null);
   const [activeNPC, setActiveNPC] = useState<{ npc: WanderingNPC; territory: FutureSkillCategory } | null>(null);
+  const [hoverPreview, setHoverPreview] = useState<{ type: "guardian" | "npc"; id: string; name: string; title: string; src: string; x: number; y: number; hue: number } | null>(null);
   const npcSpawns = useMemo(() => generateNPCSpawns(), []);
   const dragRef = useRef<{ startX: number; startY: number; tx: number; ty: number } | null>(null);
   const isDragging = useRef(false);
