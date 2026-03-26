@@ -87,10 +87,40 @@ export default function FutureTerritoryMap({ skills, focusSkillId, level2SkillId
   const [highlightedSkillId, setHighlightedSkillId] = useState<string | null>(null);
   const [activeGuardian, setActiveGuardian] = useState<TerritoryGuardian | null>(null);
   const [activeNPC, setActiveNPC] = useState<{ npc: WanderingNPC; territory: FutureSkillCategory } | null>(null);
-  const [hoverPreview, setHoverPreview] = useState<{ type: "guardian" | "npc"; id: string; name: string; title: string; src: string; x: number; y: number; hue: number } | null>(null);
+  const [activeRoleNPC, setActiveRoleNPC] = useState<RoleNPC | null>(null);
+  const [roleNPCs, setRoleNPCs] = useState<RoleNPC[]>([]);
+  const [hoverPreview, setHoverPreview] = useState<{ type: "guardian" | "npc" | "role"; id: string; name: string; title: string; src: string; x: number; y: number; hue: number } | null>(null);
   const npcSpawns = useMemo(() => generateNPCSpawns(), []);
   const dragRef = useRef<{ startX: number; startY: number; tx: number; ty: number } | null>(null);
   const isDragging = useRef(false);
+
+  // Fetch role NPCs from the DB — sample diverse jobs across departments
+  useEffect(() => {
+    (async () => {
+      const { data: jobs } = await supabase
+        .from("jobs")
+        .select("id, title, department, automation_risk_percent, augmented_percent, slug, companies(name)")
+        .not("automation_risk_percent", "is", null)
+        .not("department", "is", null)
+        .order("imported_at", { ascending: false })
+        .limit(200);
+      if (!jobs?.length) return;
+
+      // Sample up to 3 per territory for variety
+      const perTerritory = new Map<string, RoleNPC[]>();
+      for (const job of jobs) {
+        const npc = jobToRoleNPC(job as any);
+        const key = npc.territory;
+        if (!perTerritory.has(key)) perTerritory.set(key, []);
+        const arr = perTerritory.get(key)!;
+        // Ensure unique titles within territory
+        if (arr.length < 3 && !arr.some(r => r.title === npc.title)) {
+          arr.push(npc);
+        }
+      }
+      setRoleNPCs(Array.from(perTerritory.values()).flat());
+    })();
+  }, []);
 
   const clampTransform = useCallback((x: number, y: number, scale: number) => {
     const container = containerRef.current;
