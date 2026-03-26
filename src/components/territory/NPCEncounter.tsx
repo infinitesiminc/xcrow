@@ -39,15 +39,6 @@ const INTERACTION_LABELS: Record<string, string> = {
   story: "Hear Tale",
 };
 
-/** Avatar images keyed by NPC id */
-const NPC_AVATARS: Record<string, string> = {
-  merchant: npcMerchant,
-  oracle: npcOracle,
-  rival: npcRival,
-  scout: npcScout,
-  blacksmith: npcBlacksmith,
-  bard: npcBard,
-};
 
 const NPC_HUES: Record<string, number> = {
   merchant: 280,
