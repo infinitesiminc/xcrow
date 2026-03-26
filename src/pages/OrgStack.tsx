@@ -193,15 +193,39 @@ export default function OrgStack() {
     }
   }
 
+  // Competitive conflict detection
+  const conflicts = useMemo(() => {
+    if (!orgData) return { ownTools: [] as string[], conflictedTools: new Map<string, string>() };
+    return getCompanyConflicts(orgData.companyName);
+  }, [orgData]);
+
+  const conflictCount = useMemo(() => {
+    if (!orgData || !conflicts.conflictedTools.size) return 0;
+    let count = 0;
+    for (const [toolName] of orgData.allTools) {
+      if (conflicts.conflictedTools.has(toolName)) count++;
+    }
+    return count;
+  }, [orgData, conflicts]);
+
   // Sorted org-wide tools
   const topTools = useMemo(() => {
     if (!orgData) return [];
     return Array.from(orgData.allTools.entries())
       .map(([name, data]) => ({ name, tool: TOOL_LOOKUP.get(name)!, ...data }))
       .filter(t => t.tool)
-      .sort((a, b) => b.deptCount - a.deptCount || b.score - a.score)
+      .sort((a, b) => {
+        // Own tools first, then conflicts last
+        const aOwn = conflicts.ownTools.includes(a.name) ? -1 : 0;
+        const bOwn = conflicts.ownTools.includes(b.name) ? -1 : 0;
+        if (aOwn !== bOwn) return aOwn - bOwn;
+        const aConflict = conflicts.conflictedTools.has(a.name) ? 1 : 0;
+        const bConflict = conflicts.conflictedTools.has(b.name) ? 1 : 0;
+        if (aConflict !== bConflict) return aConflict - bConflict;
+        return b.deptCount - a.deptCount || b.score - a.score;
+      })
       .slice(0, 30);
-  }, [orgData]);
+  }, [orgData, conflicts]);
 
   // Selected department tools
   const deptTools = useMemo(() => {
@@ -211,8 +235,13 @@ export default function OrgStack() {
     return Array.from(dept.tools.entries())
       .map(([name, data]) => ({ name, tool: TOOL_LOOKUP.get(name)!, ...data }))
       .filter(t => t.tool)
-      .sort((a, b) => b.score - a.score);
-  }, [orgData, selectedDept]);
+      .sort((a, b) => {
+        const aConflict = conflicts.conflictedTools.has(a.name) ? 1 : 0;
+        const bConflict = conflicts.conflictedTools.has(b.name) ? 1 : 0;
+        if (aConflict !== bConflict) return aConflict - bConflict;
+        return b.score - a.score;
+      });
+  }, [orgData, selectedDept, conflicts]);
 
   return (
     <>
