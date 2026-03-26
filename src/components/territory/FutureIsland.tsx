@@ -271,7 +271,7 @@ export default function FutureIsland({ island, skillLookup, level2SkillIds, leve
                   </>
                 ) : (
                   <>
-                    {/* Level 1: Glow ring for high-demand */}
+                    {/* Glow ring for high-demand */}
                     {skill.demandCount >= 8 && (
                       <circle
                         cx={node.x}
@@ -280,34 +280,20 @@ export default function FutureIsland({ island, skillLookup, level2SkillIds, leve
                         fill="none"
                         stroke={`hsl(${theme.baseHue} 60% 55%)`}
                         strokeWidth={1.5}
-                        opacity={0.5}
+                        opacity={0.35}
                         filter="url(#future-glow)"
                       />
                     )}
-                    {/* Level 1: Circle body */}
-                    <circle
-                      cx={node.x}
-                      cy={node.y}
-                      r={nodeRadius}
-                      fill={isParchment
-                        ? `hsl(${theme.baseHue} ${25 + intensity * 15}% ${72 + intensity * 8}%)`
-                        : `hsl(${theme.baseHue} ${35 + intensity * 25}% ${18 + intensity * 12}%)`}
-                      stroke={isParchment
-                        ? `hsl(${theme.baseHue} 40% ${40 + intensity * 15}%)`
-                        : `hsl(${theme.baseHue} 50% ${40 + intensity * 20}%)`}
-                      strokeWidth={isHovered ? 3 : 2}
-                      className="transition-all"
-                    />
                   </>
                 )}
-                {/* Runic skill icon */}
+                {/* Runic skill icon — freestanding, no circle */}
                 {isBossCompleted ? (
                   <text
                     x={node.x}
                     y={node.y + 1}
                     textAnchor="middle"
                     dominantBaseline="central"
-                    style={{ fontSize: "11px", pointerEvents: "none", fontFamily: "monospace", fontWeight: 700 }}
+                    style={{ fontSize: "14px", pointerEvents: "none", fontWeight: 700 }}
                     fill="hsl(45 70% 55%)"
                   >
                     ★
@@ -316,14 +302,16 @@ export default function FutureIsland({ island, skillLookup, level2SkillIds, leve
                   <g transform={`translate(${node.x}, ${node.y})`} style={{ pointerEvents: "none" }}>
                     <path
                       d={getSkillRune(skill.id, category)}
-                      fill="none"
+                      fill={isParchment
+                        ? `hsl(${theme.baseHue} 30% ${55 + intensity * 15}% / 0.15)`
+                        : `hsl(${theme.baseHue} 40% ${40 + intensity * 20}% / 0.12)`}
                       stroke={isParchment
                         ? `hsl(${theme.baseHue} 50% 35%)`
                         : `hsl(${theme.baseHue} 55% ${65 + intensity * 15}%)`}
-                      strokeWidth={0.7}
-                      transform="scale(0.55)"
-                      opacity={isHovered ? 1 : 0.85}
-                      style={{ transition: "opacity 0.2s" }}
+                      strokeWidth={isHovered ? 1.2 : 0.9}
+                      transform={`scale(${isHovered ? 1.15 : 1})`}
+                      opacity={isHovered ? 1 : 0.9}
+                      style={{ transition: "opacity 0.2s, transform 0.2s" }}
                     />
                   </g>
                 )}
