@@ -46,10 +46,10 @@ export default function BossBanner({ availableBosses, onLaunchBoss, onDismiss }:
           animate={{ y: 0, opacity: 1 }}
           exit={{ y: -60, opacity: 0 }}
           transition={{ type: "spring", damping: 20, stiffness: 300 }}
-          className="absolute top-3 left-1/2 -translate-x-1/2 z-30 w-[90%] max-w-md"
+          className="absolute top-3 left-1/2 -translate-x-1/2 z-30 w-[90%] max-w-md pointer-events-none"
         >
           <div
-            className="relative rounded-xl px-4 py-3 flex items-center gap-3 overflow-hidden cursor-pointer group"
+            className="relative rounded-xl px-4 py-3 flex items-center gap-3 overflow-hidden cursor-pointer group pointer-events-auto"
             onClick={() => onLaunchBoss(firstBoss.skillId, firstBoss.skill.name)}
             style={{
               background: "linear-gradient(135deg, hsl(262 40% 12% / 0.95), hsl(0 30% 12% / 0.95))",
