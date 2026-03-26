@@ -359,19 +359,30 @@ export default function FutureTerritoryMap({ skills, focusSkillId, level2SkillId
             return (
               <g key={`npc-${spawn.npc.id}`} className="cursor-pointer"
                 onClick={(e) => { e.stopPropagation(); if (!isDragging.current) { setActiveNPC({ npc: spawn.npc, territory: island.category }); setActiveGuardian(null); } }}>
-                <motion.circle cx={nx} cy={ny} r={14}
-                  fill="hsl(var(--card))" stroke="hsl(var(--border))"
-                  strokeWidth={1.5} strokeDasharray="3 2"
-                  initial={{ scale: 0, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  transition={{ delay: 1.2, type: "spring" }}
-                  style={{ transformOrigin: `${nx}px ${ny}px` }}
-                />
+                {/* Hexagon shape for NPC */}
+                {(() => {
+                  const r = 15;
+                  const hexPoints = Array.from({ length: 6 }, (_, i) => {
+                    const angle = (Math.PI / 3) * i - Math.PI / 6;
+                    return `${nx + r * Math.cos(angle)},${ny + r * Math.sin(angle)}`;
+                  }).join(" ");
+                  return (
+                    <motion.polygon
+                      points={hexPoints}
+                      fill="hsl(var(--card))" stroke="hsl(var(--border))"
+                      strokeWidth={1.5} strokeDasharray="3 2"
+                      initial={{ scale: 0, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      transition={{ delay: 1.2, type: "spring" }}
+                      style={{ transformOrigin: `${nx}px ${ny}px` }}
+                    />
+                  );
+                })()}
                 <foreignObject x={nx - 11} y={ny - 11} width={22} height={22} style={{ pointerEvents: "none" }}>
                   <img
                     src={NPC_MAP_AVATARS[spawn.npc.id] || npcMerchant}
                     alt={spawn.npc.name}
-                    style={{ width: 22, height: 22, borderRadius: "50%", objectFit: "cover" }}
+                    style={{ width: 22, height: 22, objectFit: "cover", clipPath: "polygon(50% 0%, 93% 25%, 93% 75%, 50% 100%, 7% 75%, 7% 25%)" }}
                   />
                 </foreignObject>
               </g>
