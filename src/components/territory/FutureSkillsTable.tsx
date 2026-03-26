@@ -17,11 +17,6 @@ import { RadarChart, PolarGrid, PolarAngleAxis, Radar, ResponsiveContainer } fro
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 import type { CanonicalSkillGrowth } from "@/pages/MapPage";
 import { getSkillRune } from "@/lib/skill-runes";
-import { getTerritory, TERRITORY_ORDER } from "@/lib/territory-colors";
-import { useAuth } from "@/contexts/AuthContext";
-import { RadarChart, PolarGrid, PolarAngleAxis, Radar, ResponsiveContainer } from "recharts";
-import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
-import type { CanonicalSkillGrowth } from "@/pages/MapPage";
 
 /** Inline skill badge — skill number from DB */
 function SkillIcon({ skill }: { skill: FutureSkill }) {
