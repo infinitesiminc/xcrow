@@ -506,11 +506,17 @@ export default function FutureTerritoryMap({ skills, focusSkillId, level2SkillId
                   boxShadow: `0 4px 20px hsl(${hoverPreview.hue} 50% 20% / 0.5)`,
                 }}
               >
-                <img
-                  src={hoverPreview.src}
-                  alt={hoverPreview.name}
-                  className="w-full h-[72px] object-cover"
-                />
+                {hoverPreview.src ? (
+                  <img
+                    src={hoverPreview.src}
+                    alt={hoverPreview.name}
+                    className="w-full h-[72px] object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-[48px] flex items-center justify-center text-xl font-black" style={{ fontFamily: "'Cinzel', serif", background: `hsl(${hoverPreview.hue} 30% 12%)`, color: `hsl(${hoverPreview.hue} 45% 60%)` }}>
+                    {hoverPreview.name.split(" ").slice(0, 2).map(w => w[0]).join("")}
+                  </div>
+                )}
                 <div className="px-1.5 py-1.5">
                   <p className="text-[9px] font-bold truncate" style={{ fontFamily: "'Cinzel', serif", color: `hsl(${hoverPreview.hue} 45% 72%)` }}>
                     {hoverPreview.name}
