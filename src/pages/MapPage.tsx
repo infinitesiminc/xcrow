@@ -125,7 +125,7 @@ type PendingSimLaunch = SimLaunchRequest & { taskName?: string };
 
 const MapPage = () => {
   const navigate = useNavigate();
-  const { profile, user, isSuperAdmin } = useAuth();
+  const { profile, user, isSuperAdmin, loading: authLoading } = useAuth();
   const { skills: dbSkills } = useSkills();
   const { futureSkills } = useFutureSkills();
   const mission = useScoutMission();
