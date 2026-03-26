@@ -38,6 +38,7 @@ import HeroScene from "./HeroScene";
 import { getTerritoryHeroImage } from "@/lib/territory-hero-images";
 import { supabase } from "@/integrations/supabase/client";
 import { jobToRoleNPC, THREAT_COLORS, deptToTerritory, type RoleNPC } from "@/lib/role-npcs";
+import { ROLE_NPC_AVATARS } from "@/lib/role-npc-avatars";
 
 import guardIronclad from "@/assets/guardian-ironclad.png";
 import guardLexicon from "@/assets/guardian-lexicon.png";
@@ -435,52 +436,47 @@ export default function FutureTerritoryMap({ skills, focusSkillId, level2SkillId
           {roleNPCs.map((role, idx) => {
             const island = layout.find(i => i.category === role.territory);
             if (!island) return null;
-            // Distribute around island perimeter
             const angle = (Math.PI * 2 * idx) / Math.max(roleNPCs.length, 1) + Math.PI / 4;
             const dist = island.radius * 0.7;
             const rx = island.cx + Math.cos(angle) * dist;
             const ry = island.cy + Math.sin(angle) * dist;
             const colors = THREAT_COLORS[role.threatTier];
-            const initials = role.title.split(" ").slice(0, 2).map(w => w[0]?.toUpperCase() || "").join("");
+            const avatarSrc = ROLE_NPC_AVATARS[role.territory] || ROLE_NPC_AVATARS["Strategic"];
             return (
               <g key={`role-${role.jobId}`} className="cursor-pointer"
                 onClick={(e) => { e.stopPropagation(); if (!isDragging.current) { setActiveRoleNPC(role); setActiveGuardian(null); setActiveNPC(null); setHoverPreview(null); } }}
-                onMouseEnter={() => setHoverPreview({ type: "role", id: role.jobId, name: role.title, title: role.company || role.department, src: "", x: rx, y: ry, hue: 0 })}
+                onMouseEnter={() => setHoverPreview({ type: "role", id: role.jobId, name: role.title, title: role.company || role.department, src: avatarSrc, x: rx, y: ry, hue: 0 })}
                 onMouseLeave={() => setHoverPreview(p => p?.id === role.jobId ? null : p)}
               >
                 {/* Threat aura ring */}
                 <motion.circle
-                  cx={rx} cy={ry} r={16}
+                  cx={rx} cy={ry} r={18}
                   fill="none"
                   stroke={`hsl(${colors.bg})`}
                   strokeWidth={1.5}
                   opacity={0.5}
-                  animate={{ r: [16, 19, 16], opacity: [0.5, 0.2, 0.5] }}
+                  animate={{ r: [18, 22, 18], opacity: [0.5, 0.2, 0.5] }}
                   transition={{ duration: 3, repeat: Infinity, ease: "easeInOut", delay: idx * 0.3 }}
                 />
-                {/* Character circle */}
+                {/* Border circle */}
                 <motion.circle
-                  cx={rx} cy={ry} r={13}
+                  cx={rx} cy={ry} r={14}
                   fill={`hsl(${colors.bg} / 0.15)`}
-                  stroke={`hsl(${colors.bg} / 0.7)`}
+                  stroke={`hsl(${colors.bg} / 0.8)`}
                   strokeWidth={2}
                   initial={{ scale: 0, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
                   transition={{ delay: 1.5 + idx * 0.08, type: "spring" }}
                   style={{ transformOrigin: `${rx}px ${ry}px` }}
                 />
-                {/* Initials */}
-                <text
-                  x={rx} y={ry + 4}
-                  textAnchor="middle"
-                  fontSize={9}
-                  fontWeight="bold"
-                  fontFamily="'Cinzel', serif"
-                  fill={`hsl(${colors.bg})`}
-                  style={{ pointerEvents: "none" }}
-                >
-                  {initials}
-                </text>
+                {/* Avatar image */}
+                <foreignObject x={rx - 12} y={ry - 12} width={24} height={24} style={{ pointerEvents: "none" }}>
+                  <img
+                    src={avatarSrc}
+                    alt={role.title}
+                    style={{ width: 24, height: 24, objectFit: "cover", borderRadius: "50%" }}
+                  />
+                </foreignObject>
               </g>
             );
           })}

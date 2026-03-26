@@ -12,6 +12,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import HeroScene from "@/components/territory/HeroScene";
 import { getTerritoryHeroImage } from "@/lib/territory-hero-images";
 import { type RoleNPC, THREAT_COLORS, TERRITORY_HUES } from "@/lib/role-npcs";
+import { ROLE_NPC_AVATARS } from "@/lib/role-npc-avatars";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import ReactMarkdown from "react-markdown";
@@ -34,23 +35,33 @@ type ChatMsg = { role: "user" | "assistant"; content: string };
 
 const cinzel = { fontFamily: "'Cinzel', serif" };
 
-function RoleAvatar({ title, tier, size = 80 }: { title: string; tier: "thriving" | "adapting" | "threatened"; size?: number }) {
+function RoleAvatar({ title, tier, size = 80, territory }: { title: string; tier: "thriving" | "adapting" | "threatened"; size?: number; territory?: string }) {
   const colors = THREAT_COLORS[tier];
-  const initials = title.split(" ").slice(0, 2).map(w => w[0]?.toUpperCase() || "").join("");
+  const avatarSrc = territory ? ROLE_NPC_AVATARS[territory] : null;
   return (
     <div
-      className="rounded-xl flex items-center justify-center font-black flex-shrink-0"
+      className="rounded-full flex items-center justify-center font-black flex-shrink-0 overflow-hidden"
       style={{
         width: size, height: size,
-        background: `linear-gradient(135deg, hsl(${colors.bg} / 0.3), hsl(${colors.bg} / 0.1))`,
         border: `2px solid hsl(${colors.bg})`,
-        boxShadow: `0 0 30px hsl(${colors.glow} / 0.3)`,
-        ...cinzel,
-        fontSize: size * 0.3,
-        color: `hsl(${colors.bg})`,
+        boxShadow: `0 0 ${size > 40 ? 30 : 12}px hsl(${colors.glow} / 0.3)`,
       }}
     >
-      {initials}
+      {avatarSrc ? (
+        <img src={avatarSrc} alt={title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+      ) : (
+        <div
+          className="w-full h-full flex items-center justify-center"
+          style={{
+            background: `linear-gradient(135deg, hsl(${colors.bg} / 0.3), hsl(${colors.bg} / 0.1))`,
+            ...cinzel,
+            fontSize: size * 0.3,
+            color: `hsl(${colors.bg})`,
+          }}
+        >
+          {title.split(" ").slice(0, 2).map(w => w[0]?.toUpperCase() || "").join("")}
+        </div>
+      )}
     </div>
   );
 }
@@ -305,7 +316,7 @@ export default function RoleNPCEncounter({ role, onClose, onCollectSkills, onExp
           >
             {/* Compact Header */}
             <div className="relative px-5 pt-4 pb-3 flex items-center gap-3 flex-shrink-0">
-              <RoleAvatar title={role.title} tier={role.threatTier} size={52} />
+              <RoleAvatar title={role.title} tier={role.threatTier} territory={role.territory} size={52} />
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-0.5">
                   <span
@@ -443,7 +454,7 @@ export default function RoleNPCEncounter({ role, onClose, onCollectSkills, onExp
                     className={`flex gap-2.5 ${msg.role === "user" ? "flex-row-reverse" : ""}`}
                   >
                     {msg.role === "assistant" && (
-                      <RoleAvatar title={role.title} tier={role.threatTier} size={32} />
+                      <RoleAvatar title={role.title} tier={role.threatTier} territory={role.territory} size={32} />
                     )}
                     <div
                       className="rounded-xl px-3.5 py-2.5 text-sm leading-relaxed max-w-[80%]"
@@ -472,7 +483,7 @@ export default function RoleNPCEncounter({ role, onClose, onCollectSkills, onExp
               })}
               {isStreaming && chatMessages[chatMessages.length - 1]?.role !== "assistant" && (
                 <div className="flex gap-2.5">
-                  <RoleAvatar title={role.title} tier={role.threatTier} size={32} />
+                  <RoleAvatar title={role.title} tier={role.threatTier} territory={role.territory} size={32} />
                   <div
                     className="rounded-xl px-3.5 py-2.5"
                     style={{ background: `hsl(${hue} 18% 10% / 0.7)`, borderLeft: `2px solid hsl(${colors.bg} / 0.5)` }}
