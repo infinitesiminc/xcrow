@@ -49,7 +49,7 @@ const ToolAtlas = lazy(() => import("./pages/ToolAtlas.tsx"));
 const HRLayout = lazy(() => import("./layouts/HRLayout.tsx"));
 const PipelinePage = lazy(() => import("./pages/admin/PipelinePage.tsx"));
 const UsersPage = lazy(() => import("./pages/admin/UsersPage.tsx"));
-const ProUpgradesPage = lazy(() => import("./pages/admin/ProUpgradesPage.tsx"));
+
 const SchoolsPage = lazy(() => import("./pages/admin/SchoolsPage.tsx"));
 const SchoolDetailPage = lazy(() => import("./pages/admin/SchoolDetailPage.tsx"));
 
@@ -172,12 +172,12 @@ const App = () => (
               <Route path="/admin" element={<AdminGate />}>
                 <Route index element={<PipelinePage />} />
                 <Route path="users" element={<UsersPage />} />
-                <Route path="upgrades" element={<ProUpgradesPage />} />
                 <Route path="schools" element={<SchoolsPage />} />
                 <Route path="schools/:schoolId" element={<SchoolDetailPage />} />
                 {/* Legacy redirects */}
                 <Route path="analytics" element={<Navigate to="/admin" replace />} />
-                <Route path="pricing-usage" element={<Navigate to="/admin/upgrades" replace />} />
+                <Route path="upgrades" element={<Navigate to="/admin/users" replace />} />
+                <Route path="pricing-usage" element={<Navigate to="/admin/users" replace />} />
                 <Route path="schools/data-ops" element={<Navigate to="/admin/schools" replace />} />
                 <Route path="schools/skills-gap" element={<Navigate to="/admin/schools" replace />} />
                 <Route path="schools/skill-matrix" element={<Navigate to="/admin/schools" replace />} />

@@ -1,4 +1,4 @@
-import { Building2, Users, Crown, GraduationCap } from "lucide-react";
+import { Building2, Users, GraduationCap } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import {
   Sidebar,
@@ -14,7 +14,6 @@ import {
 const items = [
   { title: "Pipeline", url: "/admin", icon: Building2 },
   { title: "Users", url: "/admin/users", icon: Users },
-  { title: "Pro Upgrades", url: "/admin/upgrades", icon: Crown },
   { title: "Schools", url: "/admin/schools", icon: GraduationCap },
 ];
 
