@@ -48,6 +48,8 @@ import {
   type TaxonomySkill,
 } from "@/lib/skill-map";
 import { calculateGrowth, type GrowthDimensions } from "@/lib/skill-growth";
+import { usePlayMode } from "@/hooks/use-play-mode";
+import FastTrackPanel from "@/components/territory/FastTrackPanel";
 
 /** Aggregated growth data per canonical future skill */
 export interface CanonicalSkillGrowth {
@@ -88,6 +90,8 @@ const MapPage = () => {
   const { profile, user, isSuperAdmin } = useAuth();
   const { skills: dbSkills } = useSkills();
   const { futureSkills } = useFutureSkills();
+  const { mode: playMode } = usePlayMode();
+  const isFastTrack = playMode === "fast_track";
 
   const taxonomy: TaxonomySkill[] = useMemo(() =>
     dbSkills.map(s => ({
@@ -330,21 +334,22 @@ const MapPage = () => {
           {TAB_ITEMS.map(({ key, icon: Icon, label }) => {
             if (key !== "table" && !isSignedIn) return null;
             const isActive = activeTab === key;
+            const displayLabel = key === "table" && isFastTrack ? "Dashboard" : label;
             return (
               <button
                 key={key}
                 onClick={() => setActiveTab(key)}
                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all relative"
                 style={{
-                  fontFamily: "'Cinzel', serif",
-                  letterSpacing: "0.05em",
+                  fontFamily: isFastTrack ? "inherit" : "'Cinzel', serif",
+                  letterSpacing: isFastTrack ? "0.02em" : "0.05em",
                   ...(isActive
                     ? { color: "hsl(var(--filigree-glow))", background: "hsl(var(--filigree) / 0.12)", textShadow: "0 0 8px hsl(var(--filigree-glow) / 0.5)" }
                     : { color: "hsl(var(--muted-foreground))" }),
                 }}
               >
                 <Icon className="h-3 w-3" />
-                {label}
+                {displayLabel}
                 {key === "allies" && (pendingCount + unreadCount) > 0 && (
                   <span
                     className="absolute -top-1 -right-1 w-4 h-4 rounded-full text-[8px] flex items-center justify-center font-bold animate-pulse"
@@ -361,19 +366,23 @@ const MapPage = () => {
         {/* Panel content */}
         <div className="flex-1 overflow-y-auto overflow-x-hidden">
           {activeTab === "table" ? (
-            <FutureSkillsTable
-              skills={futureSkills}
-              skillGrowthMap={skillGrowthMap}
-              level2SkillIds={level2SkillIds}
-              focusSkillId={forgeFocusSkillId}
-              onLaunchSim={handleLaunchSim}
-              onSkillClick={(skill) => {
-                setMapFocusSkillId(skill.id);
-                setTimeout(() => setMapFocusSkillId(null), 100);
-                setDrawerSkill(skill);
-                setDrawerOpen(true);
-              }}
-            />
+            isFastTrack ? (
+              <FastTrackPanel />
+            ) : (
+              <FutureSkillsTable
+                skills={futureSkills}
+                skillGrowthMap={skillGrowthMap}
+                level2SkillIds={level2SkillIds}
+                focusSkillId={forgeFocusSkillId}
+                onLaunchSim={handleLaunchSim}
+                onSkillClick={(skill) => {
+                  setMapFocusSkillId(skill.id);
+                  setTimeout(() => setMapFocusSkillId(null), 100);
+                  setDrawerSkill(skill);
+                  setDrawerOpen(true);
+                }}
+              />
+            )
           ) : activeTab === "scout" && isSignedIn ? (
             <ScoutPanel
               activeSubTab={scoutSubTab}
