@@ -1,6 +1,7 @@
 /**
  * FutureTerritoryMap — Full-screen RPG-style SVG map for the future skills catalogue.
  * 8 island regions with minimap, pan clamping, click-to-zoom, and floating skill launch card.
+ * Now includes Role NPCs — real jobs from the DB that appear as interactive characters.
  */
 
 import { useMemo, useState, useRef, useCallback, useEffect } from "react";
@@ -30,9 +31,12 @@ const NPC_MAP_AVATARS: Record<string, string> = {
 };
 import GuardianEncounter from "./GuardianEncounter";
 import NPCEncounter from "./NPCEncounter";
+import RoleNPCEncounter from "./RoleNPCEncounter";
 import TerritoryParticles from "./TerritoryParticles";
 import HeroScene from "./HeroScene";
 import { getTerritoryHeroImage } from "@/lib/territory-hero-images";
+import { supabase } from "@/integrations/supabase/client";
+import { jobToRoleNPC, THREAT_COLORS, deptToTerritory, type RoleNPC } from "@/lib/role-npcs";
 
 import guardIronclad from "@/assets/guardian-ironclad.png";
 import guardLexicon from "@/assets/guardian-lexicon.png";
@@ -83,10 +87,40 @@ export default function FutureTerritoryMap({ skills, focusSkillId, level2SkillId
   const [highlightedSkillId, setHighlightedSkillId] = useState<string | null>(null);
   const [activeGuardian, setActiveGuardian] = useState<TerritoryGuardian | null>(null);
   const [activeNPC, setActiveNPC] = useState<{ npc: WanderingNPC; territory: FutureSkillCategory } | null>(null);
-  const [hoverPreview, setHoverPreview] = useState<{ type: "guardian" | "npc"; id: string; name: string; title: string; src: string; x: number; y: number; hue: number } | null>(null);
+  const [activeRoleNPC, setActiveRoleNPC] = useState<RoleNPC | null>(null);
+  const [roleNPCs, setRoleNPCs] = useState<RoleNPC[]>([]);
+  const [hoverPreview, setHoverPreview] = useState<{ type: "guardian" | "npc" | "role"; id: string; name: string; title: string; src: string; x: number; y: number; hue: number } | null>(null);
   const npcSpawns = useMemo(() => generateNPCSpawns(), []);
   const dragRef = useRef<{ startX: number; startY: number; tx: number; ty: number } | null>(null);
   const isDragging = useRef(false);
+
+  // Fetch role NPCs from the DB — sample diverse jobs across departments
+  useEffect(() => {
+    (async () => {
+      const { data: jobs } = await supabase
+        .from("jobs")
+        .select("id, title, department, automation_risk_percent, augmented_percent, slug, companies(name)")
+        .not("automation_risk_percent", "is", null)
+        .not("department", "is", null)
+        .order("imported_at", { ascending: false })
+        .limit(200);
+      if (!jobs?.length) return;
+
+      // Sample up to 3 per territory for variety
+      const perTerritory = new Map<string, RoleNPC[]>();
+      for (const job of jobs) {
+        const npc = jobToRoleNPC(job as any);
+        const key = npc.territory;
+        if (!perTerritory.has(key)) perTerritory.set(key, []);
+        const arr = perTerritory.get(key)!;
+        // Ensure unique titles within territory
+        if (arr.length < 3 && !arr.some(r => r.title === npc.title)) {
+          arr.push(npc);
+        }
+      }
+      setRoleNPCs(Array.from(perTerritory.values()).flat());
+    })();
+  }, []);
 
   const clampTransform = useCallback((x: number, y: number, scale: number) => {
     const container = containerRef.current;
@@ -392,6 +426,60 @@ export default function FutureTerritoryMap({ skills, focusSkillId, level2SkillId
               </g>
             );
           })}
+
+          {/* Role NPCs — real jobs as characters */}
+          {roleNPCs.map((role, idx) => {
+            const island = layout.find(i => i.category === role.territory);
+            if (!island) return null;
+            // Distribute around island perimeter
+            const angle = (Math.PI * 2 * idx) / Math.max(roleNPCs.length, 1) + Math.PI / 4;
+            const dist = island.radius * 0.7;
+            const rx = island.cx + Math.cos(angle) * dist;
+            const ry = island.cy + Math.sin(angle) * dist;
+            const colors = THREAT_COLORS[role.threatTier];
+            const initials = role.title.split(" ").slice(0, 2).map(w => w[0]?.toUpperCase() || "").join("");
+            return (
+              <g key={`role-${role.jobId}`} className="cursor-pointer"
+                onClick={(e) => { e.stopPropagation(); if (!isDragging.current) { setActiveRoleNPC(role); setActiveGuardian(null); setActiveNPC(null); setHoverPreview(null); } }}
+                onMouseEnter={() => setHoverPreview({ type: "role", id: role.jobId, name: role.title, title: role.company || role.department, src: "", x: rx, y: ry, hue: 0 })}
+                onMouseLeave={() => setHoverPreview(p => p?.id === role.jobId ? null : p)}
+              >
+                {/* Threat aura ring */}
+                <motion.circle
+                  cx={rx} cy={ry} r={16}
+                  fill="none"
+                  stroke={`hsl(${colors.bg})`}
+                  strokeWidth={1.5}
+                  opacity={0.5}
+                  animate={{ r: [16, 19, 16], opacity: [0.5, 0.2, 0.5] }}
+                  transition={{ duration: 3, repeat: Infinity, ease: "easeInOut", delay: idx * 0.3 }}
+                />
+                {/* Character circle */}
+                <motion.circle
+                  cx={rx} cy={ry} r={13}
+                  fill={`hsl(${colors.bg} / 0.15)`}
+                  stroke={`hsl(${colors.bg} / 0.7)`}
+                  strokeWidth={2}
+                  initial={{ scale: 0, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  transition={{ delay: 1.5 + idx * 0.08, type: "spring" }}
+                  style={{ transformOrigin: `${rx}px ${ry}px` }}
+                />
+                {/* Initials */}
+                <text
+                  x={rx} y={ry + 4}
+                  textAnchor="middle"
+                  fontSize={9}
+                  fontWeight="bold"
+                  fontFamily="'Cinzel', serif"
+                  fill={`hsl(${colors.bg})`}
+                  style={{ pointerEvents: "none" }}
+                >
+                  {initials}
+                </text>
+              </g>
+            );
+          })}
         </svg>
 
         {/* Hover preview tooltip */}
@@ -418,11 +506,17 @@ export default function FutureTerritoryMap({ skills, focusSkillId, level2SkillId
                   boxShadow: `0 4px 20px hsl(${hoverPreview.hue} 50% 20% / 0.5)`,
                 }}
               >
-                <img
-                  src={hoverPreview.src}
-                  alt={hoverPreview.name}
-                  className="w-full h-[72px] object-cover"
-                />
+                {hoverPreview.src ? (
+                  <img
+                    src={hoverPreview.src}
+                    alt={hoverPreview.name}
+                    className="w-full h-[72px] object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-[48px] flex items-center justify-center text-xl font-black" style={{ fontFamily: "'Cinzel', serif", background: `hsl(${hoverPreview.hue} 30% 12%)`, color: `hsl(${hoverPreview.hue} 45% 60%)` }}>
+                    {hoverPreview.name.split(" ").slice(0, 2).map(w => w[0]).join("")}
+                  </div>
+                )}
                 <div className="px-1.5 py-1.5">
                   <p className="text-[9px] font-bold truncate" style={{ fontFamily: "'Cinzel', serif", color: `hsl(${hoverPreview.hue} 45% 72%)` }}>
                     {hoverPreview.name}
@@ -439,7 +533,7 @@ export default function FutureTerritoryMap({ skills, focusSkillId, level2SkillId
           <GuardianEncounter
             guardian={activeGuardian}
             onClose={() => setActiveGuardian(null)}
-            onChallenge={(g) => { setActiveGuardian(null); /* TODO: launch guardian challenge */ }}
+            onChallenge={(g) => { setActiveGuardian(null); }}
           />
         )}
 
@@ -449,7 +543,19 @@ export default function FutureTerritoryMap({ skills, focusSkillId, level2SkillId
             npc={activeNPC.npc}
             territory={activeNPC.territory}
             onClose={() => setActiveNPC(null)}
-            onInteract={(n) => { setActiveNPC(null); /* TODO: NPC interaction flow */ }}
+            onInteract={(n) => { setActiveNPC(null); }}
+          />
+        )}
+
+        {/* Role NPC Encounter */}
+        {activeRoleNPC && (
+          <RoleNPCEncounter
+            role={activeRoleNPC}
+            onClose={() => setActiveRoleNPC(null)}
+            onCollectSkills={(ids) => {
+              // Skills collected — future: persist to user profile
+              console.log("Collected skills:", ids);
+            }}
           />
         )}
 
