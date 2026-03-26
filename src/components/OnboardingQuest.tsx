@@ -93,16 +93,16 @@ export default function OnboardingQuest({ open, userId, onComplete }: Onboarding
     const updates: Record<string, unknown> = {
       onboarding_completed: true,
       avatar_id: selectedAvatar,
-      id: userId,
     };
 
-    if (selectedPath) updates.career_stage = selectedPath === "explorer" ? null : selectedPath;
+    if (selectedPath && selectedPath !== "explorer") updates.career_stage = selectedPath;
     if (interests.size > 0) updates.target_roles = Array.from(interests).map(cat => ({ category: cat }));
     if (username.length >= 3 && usernameStatus === "available") updates.username = username;
 
     const { error } = await supabase
       .from("profiles")
-      .upsert(updates, { onConflict: "id" });
+      .update(updates as any)
+      .eq("id", userId);
 
     if (error) {
       toast({ title: "Error", description: "Failed to save.", variant: "destructive" });
