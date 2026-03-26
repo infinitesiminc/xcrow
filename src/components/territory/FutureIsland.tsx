@@ -10,6 +10,7 @@ import { type FutureSkill, type FutureSkillCategory } from "@/hooks/use-future-s
 import { type FutureIslandLayout, type FutureNodePosition } from "@/lib/future-territory-layout";
 import TerritoryEmblem from "@/components/TerritoryEmblem";
 import type { CanonicalSkillGrowth } from "@/pages/MapPage";
+import { getSkillRune } from "@/lib/skill-runes";
 
 /**
  * Generate an organic irregular polygon path for territory borders.
@@ -299,17 +300,33 @@ export default function FutureIsland({ island, skillLookup, level2SkillIds, leve
                     />
                   </>
                 )}
-                {/* Skill number badge — star for conquered */}
-                <text
-                  x={node.x}
-                  y={node.y + 1}
-                  textAnchor="middle"
-                  dominantBaseline="central"
-                  style={{ fontSize: isBossCompleted ? "11px" : "9px", pointerEvents: "none", fontFamily: "monospace", fontWeight: 700 }}
-                  fill={isBossCompleted ? "hsl(45 70% 55%)" : "hsl(var(--primary))"}
-                >
-                  {isBossCompleted ? "★" : (skill.skillNumber != null ? `#${skill.skillNumber}` : "")}
-                </text>
+                {/* Runic skill icon */}
+                {isBossCompleted ? (
+                  <text
+                    x={node.x}
+                    y={node.y + 1}
+                    textAnchor="middle"
+                    dominantBaseline="central"
+                    style={{ fontSize: "11px", pointerEvents: "none", fontFamily: "monospace", fontWeight: 700 }}
+                    fill="hsl(45 70% 55%)"
+                  >
+                    ★
+                  </text>
+                ) : (
+                  <g transform={`translate(${node.x}, ${node.y})`} style={{ pointerEvents: "none" }}>
+                    <path
+                      d={getSkillRune(skill.id, category)}
+                      fill="none"
+                      stroke={isParchment
+                        ? `hsl(${theme.baseHue} 50% 35%)`
+                        : `hsl(${theme.baseHue} 55% ${65 + intensity * 15}%)`}
+                      strokeWidth={0.7}
+                      transform="scale(0.55)"
+                      opacity={isHovered ? 1 : 0.85}
+                      style={{ transition: "opacity 0.2s" }}
+                    />
+                  </g>
+                )}
 
                 {/* Growth Rings — 3 arcs around the node */}
                 {(() => {
