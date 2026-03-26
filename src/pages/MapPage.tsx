@@ -15,8 +15,6 @@ import SimulatorModal from "@/components/SimulatorModal";
 import type { SimLaunchRequest, PromptLabRequest } from "@/components/territory/SkillLaunchCard";
 import PromptLab from "@/components/sim/PromptLab";
 import { preloadTerritoryImages } from "@/lib/territory-hero-images";
-import CreditGate from "@/components/CreditGate";
-import { Coins } from "lucide-react";
 import { useSimCheckpoints, type SimCheckpoint } from "@/hooks/use-sim-checkpoints";
 
 /** IDs of skills where user has completed a L2 boss battle */
@@ -696,7 +694,6 @@ const MapPage = () => {
               onClick={(e) => e.stopPropagation()}
             >
               <div className="text-center mb-4">
-                <Coins className="h-8 w-8 mx-auto mb-2" style={{ color: "hsl(var(--filigree-glow))" }} />
                 <h3 className="text-sm font-semibold" style={{ fontFamily: "'Cinzel', serif", color: "hsl(var(--foreground))" }}>
                   Launch Quest
                 </h3>
@@ -704,24 +701,19 @@ const MapPage = () => {
                   {pendingSimReq.taskName || pendingSimReq.jobTitle}
                 </p>
               </div>
-              <CreditGate
-                action={pendingSimReq.level === 2 ? "simulation_l2" : "simulation_l1"}
-                onProceed={() => {
+              <button
+                onClick={() => {
                   setActiveSim(pendingSimReq);
                   setPendingSimReq(null);
                 }}
-                className="w-full"
+                className="w-full py-2.5 rounded-lg text-sm font-semibold transition-all hover:brightness-110"
+                style={{
+                  background: "hsl(var(--primary))",
+                  color: "hsl(var(--primary-foreground))",
+                }}
               >
-                <button
-                  className="w-full py-2.5 rounded-lg text-sm font-semibold transition-all hover:brightness-110"
-                  style={{
-                    background: "hsl(var(--primary))",
-                    color: "hsl(var(--primary-foreground))",
-                  }}
-                >
-                  Start {pendingSimReq.level === 2 ? "Boss Battle" : "Quest"}
-                </button>
-              </CreditGate>
+                Start {pendingSimReq.level === 2 ? "Boss Battle" : "Quest"}
+              </button>
               <button
                 onClick={() => setPendingSimReq(null)}
                 className="w-full mt-2 py-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"

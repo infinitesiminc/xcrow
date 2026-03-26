@@ -23,15 +23,14 @@ import { useToast } from "@/hooks/use-toast";
 import {
   Loader2, Save, Trash2, KeyRound, GraduationCap, Briefcase, School,
   User, Lock, AlertOctagon, ArrowLeft, LogOut, Check, CreditCard, Crown,
-  ExternalLink, Compass, Coins,
+  ExternalLink, Compass, Users, Copy, Gift,
 } from "lucide-react";
 import { AVATAR_OPTIONS, getAvatarById } from "@/lib/avatars";
 import { SchoolAutocomplete } from "@/components/SchoolAutocomplete";
-import { useCredits } from "@/hooks/use-credits";
 
 const NAV_ITEMS = [
   { key: "profile", label: "Profile", icon: User },
-  { key: "gameplay", label: "Credits", icon: Coins },
+  { key: "referral", label: "Referrals", icon: Users },
   { key: "subscription", label: "Subscription", icon: CreditCard },
   { key: "security", label: "Security", icon: Lock },
   { key: "danger", label: "Danger Zone", icon: AlertOctagon },
@@ -41,7 +40,6 @@ type SectionKey = typeof NAV_ITEMS[number]["key"];
 
 export default function Settings() {
   const { user, loading: authLoading, signOut, profile, refreshProfile, plan, subscriptionEnd, schoolName, isPro } = useAuth();
-  const { balance: creditBalance } = useCredits();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const { toast } = useToast();
@@ -283,8 +281,8 @@ export default function Settings() {
               />
             )}
 
-            {activeSection === "gameplay" && (
-              <GameplaySection creditBalance={creditBalance} />
+            {activeSection === "referral" && (
+              <ReferralSection userId={user?.id} />
             )}
 
             {activeSection === "subscription" && (
@@ -322,20 +320,91 @@ export default function Settings() {
    Section Components
    ══════════════════════════════════════════════════════ */
 
-function GameplaySection({ creditBalance }: { creditBalance: number }) {
+function ReferralSection({ userId }: { userId?: string }) {
+  const [referralCode, setReferralCode] = useState<string | null>(null);
+  const [referralCount, setReferralCount] = useState(0);
+  const [copied, setCopied] = useState(false);
+  const { toast } = useToast();
+
+  useEffect(() => {
+    if (!userId) return;
+    (async () => {
+      const { data: profile } = await supabase.from("profiles").select("referral_code").eq("id", userId).single();
+      if (profile?.referral_code) setReferralCode(profile.referral_code);
+      const { count } = await supabase.from("referrals").select("*", { count: "exact", head: true }).eq("referrer_id", userId);
+      setReferralCount(count ?? 0);
+    })();
+  }, [userId]);
+
+  const inviteLink = referralCode ? `${window.location.origin}/auth?ref=${referralCode}` : "";
+
+  const handleCopy = async () => {
+    if (!inviteLink) return;
+    await navigator.clipboard.writeText(inviteLink);
+    setCopied(true);
+    toast({ title: "Invite link copied!", description: "Share it with friends to earn free months." });
+    setTimeout(() => setCopied(false), 2000);
+  };
+
   return (
     <div>
-      <h2 className="text-xl font-bold text-foreground mb-1">Credits</h2>
-      <p className="text-sm text-muted-foreground mb-6">View your credit balance and usage.</p>
+      <h2 className="text-xl font-bold text-foreground mb-1">Recruit Your Squad</h2>
+      <p className="text-sm text-muted-foreground mb-6">Invite friends and earn free Champion months. Each successful referral = 1 free month.</p>
 
-      <div className="space-y-6">
-        <div className="rounded-xl border border-border/50 p-5 flex items-center gap-4">
-          <div className="h-12 w-12 rounded-full flex items-center justify-center" style={{ background: "hsl(45 93% 48% / 0.12)" }}>
-            <Coins className="h-6 w-6" style={{ color: "hsl(45 93% 48%)" }} />
+      <div className="space-y-6 max-w-md">
+        {/* Stats */}
+        <div className="grid grid-cols-2 gap-4">
+          <div className="rounded-xl border border-border/50 p-5 text-center">
+            <p className="text-3xl font-bold text-foreground">{referralCount}</p>
+            <p className="text-xs text-muted-foreground mt-1">Friends recruited</p>
           </div>
-          <div>
-            <p className="text-2xl font-bold text-foreground">{creditBalance}</p>
-            <p className="text-xs text-muted-foreground">Credits available</p>
+          <div className="rounded-xl border border-border/50 p-5 text-center">
+            <p className="text-3xl font-bold" style={{ color: "hsl(var(--territory-strategic))" }}>{referralCount}</p>
+            <p className="text-xs text-muted-foreground mt-1">Free months earned</p>
+          </div>
+        </div>
+
+        {/* Share link */}
+        <div className="rounded-xl border border-border/50 p-5 space-y-3">
+          <div className="flex items-center gap-2 text-sm font-medium text-foreground">
+            <Gift className="h-4 w-4" style={{ color: "hsl(var(--territory-strategic))" }} />
+            Your invite link
+          </div>
+          {referralCode ? (
+            <>
+              <div className="flex gap-2">
+                <Input value={inviteLink} readOnly className="text-xs bg-muted/30 flex-1" />
+                <Button size="sm" variant="outline" onClick={handleCopy} className="shrink-0 gap-1.5">
+                  {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+                  {copied ? "Copied!" : "Copy"}
+                </Button>
+              </div>
+              <p className="text-[11px] text-muted-foreground">
+                When a friend signs up and subscribes to Champion, you both get a free month.
+              </p>
+            </>
+          ) : (
+            <p className="text-xs text-muted-foreground">Referral code not yet generated. Complete onboarding to get yours.</p>
+          )}
+        </div>
+
+        {/* How it works */}
+        <div className="rounded-xl border border-border/50 p-5">
+          <p className="text-sm font-medium text-foreground mb-3">How it works</p>
+          <div className="space-y-2.5">
+            {[
+              { step: "1", text: "Share your unique invite link with friends" },
+              { step: "2", text: "They sign up and subscribe to Champion ($12/mo)" },
+              { step: "3", text: "You both get a free month of Champion — no limit!" },
+            ].map(item => (
+              <div key={item.step} className="flex items-start gap-3">
+                <div className="w-6 h-6 rounded-full flex items-center justify-center shrink-0 text-xs font-bold"
+                  style={{ background: "hsl(var(--primary) / 0.1)", color: "hsl(var(--primary))" }}>
+                  {item.step}
+                </div>
+                <p className="text-sm text-muted-foreground">{item.text}</p>
+              </div>
+            ))}
           </div>
         </div>
       </div>

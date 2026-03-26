@@ -7,7 +7,7 @@ import { useNavigate } from "react-router-dom";
 import SponsorLandingSection from "@/components/pricing/SponsorLandingSection";
 import { motion } from "framer-motion";
 import {
-  Check, ArrowRight, Loader2, HelpCircle, Shield, Crown, Castle,
+  Check, ArrowRight, Loader2, HelpCircle, Shield, Crown, Castle, Users, Gift, Copy,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -25,10 +25,11 @@ const stoneCard = {
 };
 
 const FREE_FEATURES = [
-  "3 quests per moon (recruit allies for more!)",
+  "3 quests per moon",
   "Unlimited kingdom scouting",
   "Territory map (view only)",
   "Hall of Champions access",
+  "Recruit friends to earn bonus quests",
 ];
 
 const PRO_FEATURES = [
@@ -52,10 +53,10 @@ const INSTITUTION_FEATURES = [
 ];
 
 const FAQS = [
-  { q: "Is the Recruit plan really free?", a: "Yes! You get 3 quests per moon with unlimited kingdom scouting. Recruit allies to earn bonus quests — no cap." },
+  { q: "Is the Recruit plan really free?", a: "Yes! You get 3 quests per moon with unlimited kingdom scouting. Recruit friends to earn free Champion months." },
   { q: "What does Champion unlock?", a: "Champion removes all quest limits, unlocks full 3-ring growth tracking, AI Career Scout, and exportable skill profiles." },
+  { q: "How does the referral program work?", a: "Share your unique invite link. When a friend subscribes to Champion, you both get a free month. No limit on referrals!" },
   { q: "Can my school or company cover this?", a: "Absolutely. If your institution has a license, your admin will invite you and you'll get Champion access automatically." },
-  { q: "How does institutional pricing work?", a: "We customize pricing based on cohort size, programs, and outcomes. Contact our team to discuss — free pilots available." },
   { q: "Can I cancel anytime?", a: "Yes. Cancel from settings and keep access until the end of your billing period." },
 ];
 
@@ -180,7 +181,43 @@ export default function Pricing() {
 
       <Divider />
 
-      {/* ═══ INSTITUTIONS ═══ */}
+      {/* ═══ REFERRAL ENGINE ═══ */}
+      <motion.section className="max-w-4xl mx-auto px-6 py-16 w-full" initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fade}>
+        <div className="text-center mb-10">
+          <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full" style={{ background: "hsl(var(--territory-strategic) / 0.12)" }}>
+            <Gift className="h-6 w-6" style={{ color: "hsl(var(--territory-strategic))" }} />
+          </div>
+          <h2 className="text-2xl md:text-3xl font-bold" style={cinzel}>Recruit & Earn Free Months</h2>
+          <p className="text-muted-foreground mt-2 max-w-lg mx-auto">Every friend who subscribes to Champion gives you both a free month. Build your squad, play for free.</p>
+        </div>
+
+        <div className="grid sm:grid-cols-3 gap-5">
+          {[
+            { icon: <Copy className="h-5 w-5" />, title: "Share Link", desc: "Copy your unique invite link from Settings → Referrals" },
+            { icon: <Users className="h-5 w-5" />, title: "Friend Subscribes", desc: "When they upgrade to Champion ($12/mo)" },
+            { icon: <Crown className="h-5 w-5" />, title: "Both Earn Free Month", desc: "You and your friend each get 1 month free. No limit!" },
+          ].map((step, i) => (
+            <div key={i} className="rounded-lg p-5 text-center" style={stoneCard}>
+              <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-full" style={{ background: "hsl(var(--territory-strategic) / 0.12)" }}>
+                <span style={{ color: "hsl(var(--territory-strategic))" }}>{step.icon}</span>
+              </div>
+              <h3 className="text-sm font-bold mb-1" style={cinzel}>{step.title}</h3>
+              <p className="text-xs text-muted-foreground">{step.desc}</p>
+            </div>
+          ))}
+        </div>
+
+        {user && (
+          <div className="text-center mt-8">
+            <Button size="lg" variant="outline" onClick={() => navigate("/settings?section=referral")}
+              style={{ borderColor: "hsl(var(--territory-strategic) / 0.4)", color: "hsl(var(--territory-strategic))" }}>
+              <Gift className="h-4 w-4 mr-2" /> Get My Invite Link
+            </Button>
+          </div>
+        )}
+      </motion.section>
+
+      <Divider />
       <motion.section className="max-w-5xl mx-auto px-6 py-20 w-full" initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fade}>
         <div className="text-center mb-12">
           <h2 className="text-2xl md:text-3xl font-bold" style={cinzel}>For Institutions</h2>
