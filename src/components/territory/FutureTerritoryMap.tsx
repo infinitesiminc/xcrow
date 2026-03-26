@@ -89,6 +89,7 @@ export default function FutureTerritoryMap({ skills, focusSkillId, level2SkillId
   const [activeRoleNPC, setActiveRoleNPC] = useState<RoleNPC | null>(null);
   const [conquest, setConquest] = useState<{ guardianName: string; territory: string; hue: number } | null>(null);
   const [roleNPCs, setRoleNPCs] = useState<RoleNPC[]>([]);
+  const [companyFilter, setCompanyFilter] = useState<Set<string>>(new Set());
   const mission = useScoutMission();
   const [hoverPreview, setHoverPreview] = useState<{ type: "guardian" | "npc" | "role"; id: string; name: string; title: string; src: string; x: number; y: number; hue: number } | null>(null);
   const npcSpawns = useMemo(() => generateNPCSpawns(), []);
