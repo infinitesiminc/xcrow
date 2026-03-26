@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useChatContext } from "@/contexts/ChatContext";
 import { motion, AnimatePresence } from "framer-motion";
 import { Send, Loader2, RotateCcw, ChevronDown, ChevronUp, CheckCircle2, X, ArrowRight, Target, Circle, CircleCheck, AlertTriangle, TrendingUp, Trophy, Zap, Map, Star, Lock, Unlock, Sparkles, Compass, Swords, Scroll, Flag, Shield, Flame, Save } from "lucide-react";
+import InviteShareWidget from "@/components/InviteShareWidget";
 import { matchTaskToSkills, SKILL_TAXONOMY, getLevel, getNextLevel, type SkillXP } from "@/lib/skill-map";
 import { calculateSkillXP } from "@/lib/castle-levels";
 import ReactMarkdown from "react-markdown";
