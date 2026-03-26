@@ -496,8 +496,20 @@ export default function FutureTerritoryMap({ skills, focusSkillId, level2SkillId
                     src={avatarSrc}
                     alt={role.title}
                     style={{ width: 24, height: 24, objectFit: "cover", borderRadius: "50%" }}
-                  />
+                   />
                 </foreignObject>
+                {/* Quest waypoint beacon on first unspoken NPC */}
+                {idx === 0 && !mission.rolesSpokenTo.has(role.jobId) && (
+                  <motion.circle
+                    cx={rx} cy={ry} r={26}
+                    fill="none"
+                    stroke="hsl(var(--primary))"
+                    strokeWidth={2}
+                    opacity={0.8}
+                    animate={{ r: [26, 34, 26], opacity: [0.8, 0, 0.8] }}
+                    transition={{ duration: 1.5, repeat: Infinity, ease: "easeOut" }}
+                  />
+                )}
               </g>
             );
           })}
