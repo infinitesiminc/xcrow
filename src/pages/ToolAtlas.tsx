@@ -29,6 +29,7 @@ export default function ToolAtlas() {
 
   const views: { key: ViewMode; label: string; icon: React.ReactNode }[] = [
     { key: "builder", label: "Stack Builder", icon: <Package className="h-3.5 w-3.5" /> },
+    { key: "org-stack", label: "Org Stack", icon: <Building2 className="h-3.5 w-3.5" /> },
     { key: "atlas", label: "Atlas Map", icon: <Map className="h-3.5 w-3.5" /> },
   ];
 
