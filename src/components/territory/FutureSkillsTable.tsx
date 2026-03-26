@@ -561,8 +561,8 @@ export default function FutureSkillsTable({ skills, onSkillClick, skillGrowthMap
                             </button>
                           </PopoverTrigger>
                           <PopoverContent side="top" align="center" className="w-48 p-2.5" style={{ background: "hsl(var(--surface-stone))", border: "1px solid hsl(var(--filigree) / 0.2)" }}>
-                            <div className="text-[10px] font-bold mb-1" style={{ fontFamily: "'Cinzel', serif" }}>
-                              {l2Unlocked ? "✦ Level 2 · Human Edge" : "🔒 Level 2 · Locked"}
+                            <div className="flex items-center gap-1 text-[10px] font-bold mb-1" style={{ fontFamily: "'Cinzel', serif" }}>
+                              {l2Unlocked ? <><Diamond className="h-3 w-3" /> Level 2 · Human Edge</> : <><Lock className="h-3 w-3" /> Level 2 · Locked</>}
                             </div>
                             {l2Unlocked ? (
                               <>
