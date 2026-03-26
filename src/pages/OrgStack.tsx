@@ -304,6 +304,27 @@ export default function OrgStack() {
             </div>
           )}
 
+          {/* Conflict banner */}
+          {orgData && !loading && conflicts.ownTools.length > 0 && (
+            <div className="mb-6 rounded-xl p-3 flex items-start gap-3"
+              style={{ background: "hsl(var(--destructive) / 0.06)", border: "1px solid hsl(var(--destructive) / 0.15)" }}>
+              <AlertTriangle className="h-4 w-4 mt-0.5 flex-shrink-0" style={{ color: "hsl(var(--destructive))" }} />
+              <div>
+                <p className="text-xs font-bold mb-1" style={{ color: "hsl(var(--destructive))" }}>
+                  Competitive Conflict Detection
+                </p>
+                <p className="text-[11px] leading-relaxed" style={{ color: "hsl(var(--foreground) / 0.7)" }}>
+                  {orgData.companyName} builds{" "}
+                  <span className="font-semibold">{conflicts.ownTools.join(", ")}</span>.
+                  {conflictCount > 0 && (
+                    <> Found <span className="font-bold" style={{ color: "hsl(var(--destructive))" }}>{conflictCount} competitor tools</span> in the recommended stack that should be replaced with internal alternatives.</>
+                  )}
+                  {conflictCount === 0 && " No competitor tools detected in the stack."}
+                </p>
+              </div>
+            </div>
+          )}
+
           {orgData && !loading && (
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
 
