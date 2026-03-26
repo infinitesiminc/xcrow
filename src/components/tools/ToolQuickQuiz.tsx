@@ -234,44 +234,61 @@ export default function ToolQuickQuiz({ tool, onComplete, onClose }: Props) {
   const lvl = PROFICIENCY_LEVELS[finalLevel];
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 8, scale: 0.95 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
-      exit={{ opacity: 0, y: 8, scale: 0.95 }}
-      className="absolute inset-0 z-30 rounded-xl flex flex-col"
-      style={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border) / 0.3)" }}
-      onClick={e => e.stopPropagation()}
-    >
-      {/* Header */}
-      <div className="px-3 pt-3 pb-2 flex items-center justify-between">
-        <div className="flex items-center gap-1.5">
-          <span className="text-base">{tool.icon}</span>
-          <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: "hsl(var(--foreground))" }}>
-            Quick Test
-          </span>
-        </div>
-        <div className="flex items-center gap-2">
-          <div className="flex gap-0.5">
-            {questions.map((_, i) => (
-              <div key={i} className="w-4 h-1 rounded-full" style={{
-                background: i < currentQ ? "hsl(var(--primary))" : i === currentQ ? "hsl(var(--primary) / 0.4)" : "hsl(var(--muted) / 0.2)"
-              }} />
-            ))}
-          </div>
-          <button onClick={onClose} className="p-0.5 rounded hover:opacity-70">
-            <X className="h-3 w-3" style={{ color: "hsl(var(--muted-foreground))" }} />
-          </button>
-        </div>
-      </div>
+    <>
+      {/* Backdrop */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="fixed inset-0 z-50"
+        style={{ background: "hsl(var(--background) / 0.7)", backdropFilter: "blur(4px)" }}
+        onClick={onClose}
+      />
 
-      {!finished ? (
-        <div className="flex-1 px-3 pb-3 flex flex-col justify-between">
-          {/* Question */}
-          <div className="space-y-2">
-            <p className="text-[11px] font-semibold leading-snug" style={{ color: "hsl(var(--foreground))" }}>
+      {/* Modal */}
+      <motion.div
+        initial={{ opacity: 0, y: 20, scale: 0.95 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        exit={{ opacity: 0, y: 20, scale: 0.95 }}
+        className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-[min(420px,90vw)] rounded-2xl shadow-2xl flex flex-col"
+        style={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border) / 0.3)" }}
+        onClick={e => e.stopPropagation()}
+      >
+        {/* Header */}
+        <div className="px-5 pt-5 pb-3 flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <span className="text-2xl">{tool.icon}</span>
+            <div>
+              <h3 className="text-sm font-bold" style={{ color: "hsl(var(--foreground))" }}>{tool.name}</h3>
+              <p className="text-[10px] uppercase tracking-wider font-medium" style={{ color: "hsl(var(--muted-foreground))" }}>
+                Quick Test · Q{currentQ + 1}/{questions.length}
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            <div className="flex gap-1">
+              {questions.map((_, i) => (
+                <div key={i} className="w-6 h-1.5 rounded-full transition-all" style={{
+                  background: i < currentQ ? "hsl(var(--primary))" : i === currentQ ? "hsl(var(--primary) / 0.4)" : "hsl(var(--muted) / 0.15)"
+                }} />
+              ))}
+            </div>
+            <button onClick={onClose} className="p-1 rounded-lg hover:opacity-70 transition-all"
+              style={{ background: "hsl(var(--muted) / 0.1)" }}>
+              <X className="h-4 w-4" style={{ color: "hsl(var(--muted-foreground))" }} />
+            </button>
+          </div>
+        </div>
+
+        {!finished ? (
+          <div className="px-5 pb-5 space-y-4">
+            {/* Question */}
+            <p className="text-sm font-semibold leading-snug" style={{ color: "hsl(var(--foreground))" }}>
               {q.question}
             </p>
-            <div className="space-y-1.5">
+
+            {/* Options */}
+            <div className="space-y-2">
               {q.options.map((opt, idx) => {
                 const isCorrectOpt = idx === q.correctIndex;
                 const isSelected = idx === selected;
@@ -280,8 +297,8 @@ export default function ToolQuickQuiz({ tool, onComplete, onClose }: Props) {
                 let color = "hsl(var(--foreground) / 0.8)";
 
                 if (answered) {
-                  if (isCorrectOpt) { bg = "hsl(142, 70%, 45%, 0.12)"; border = "hsl(142, 70%, 45%, 0.3)"; color = "hsl(142, 70%, 45%)"; }
-                  else if (isSelected) { bg = "hsl(0, 70%, 50%, 0.1)"; border = "hsl(0, 70%, 50%, 0.3)"; color = "hsl(0, 70%, 50%)"; }
+                  if (isCorrectOpt) { bg = "hsl(142, 70%, 45%, 0.12)"; border = "hsl(142, 70%, 45%, 0.4)"; color = "hsl(142, 70%, 45%)"; }
+                  else if (isSelected) { bg = "hsl(0, 70%, 50%, 0.1)"; border = "hsl(0, 70%, 50%, 0.35)"; color = "hsl(0, 70%, 50%)"; }
                 }
 
                 return (
@@ -289,48 +306,65 @@ export default function ToolQuickQuiz({ tool, onComplete, onClose }: Props) {
                     key={idx}
                     onClick={() => handleAnswer(idx)}
                     disabled={answered}
-                    className="w-full px-2.5 py-2 rounded-lg text-[10px] text-left flex items-center gap-2 transition-all"
+                    className="w-full px-4 py-3 rounded-xl text-[13px] text-left flex items-center gap-3 transition-all hover:scale-[1.01]"
                     style={{ background: bg, border: `1px solid ${border}`, color }}
                   >
-                    {answered && isCorrectOpt && <Check className="h-3 w-3 shrink-0" />}
-                    {answered && isSelected && !isCorrectOpt && <X className="h-3 w-3 shrink-0" />}
-                    <span className="line-clamp-2">{opt}</span>
+                    {answered && isCorrectOpt && <Check className="h-4 w-4 shrink-0" />}
+                    {answered && isSelected && !isCorrectOpt && <X className="h-4 w-4 shrink-0" />}
+                    {!answered && <span className="w-5 h-5 rounded-full border flex items-center justify-center text-[10px] shrink-0"
+                      style={{ borderColor: "hsl(var(--border) / 0.3)", color: "hsl(var(--muted-foreground))" }}>
+                      {String.fromCharCode(65 + idx)}
+                    </span>}
+                    <span>{opt}</span>
                   </button>
                 );
               })}
             </div>
-          </div>
 
-          {/* Next button */}
-          {answered && (
-            <motion.button
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              onClick={next}
-              className="mt-2 w-full py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider flex items-center justify-center gap-1"
-              style={{ background: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }}
+            {/* Next button */}
+            {answered && (
+              <motion.button
+                initial={{ opacity: 0, y: 4 }}
+                animate={{ opacity: 1, y: 0 }}
+                onClick={next}
+                className="w-full py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-1.5"
+                style={{ background: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }}
+              >
+                {currentQ < questions.length - 1 ? <>Next <ArrowRight className="h-3.5 w-3.5" /></> : "See Result"}
+              </motion.button>
+            )}
+          </div>
+        ) : (
+          /* Result */
+          <div className="px-5 pb-6 flex flex-col items-center text-center gap-3 py-6">
+            <span className="text-5xl">{lvl.emoji}</span>
+            <div>
+              <p className="text-lg font-bold" style={{ color: lvl.color }}>{lvl.label}</p>
+              <p className="text-xs mt-0.5" style={{ color: "hsl(var(--muted-foreground))" }}>
+                {correct}/{questions.length} correct
+              </p>
+            </div>
+            {tool.url && (
+              <a
+                href={tool.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[11px] font-medium underline underline-offset-2"
+                style={{ color: "hsl(var(--primary))" }}
+              >
+                Learn more at {tool.name} →
+              </a>
+            )}
+            <button
+              onClick={onClose}
+              className="mt-2 px-6 py-2 rounded-xl text-xs font-bold"
+              style={{ background: "hsl(var(--muted) / 0.1)", color: "hsl(var(--foreground))" }}
             >
-              {currentQ < questions.length - 1 ? <>Next <ArrowRight className="h-3 w-3" /></> : "See Result"}
-            </motion.button>
-          )}
-        </div>
-      ) : (
-        /* Result */
-        <div className="flex-1 px-3 pb-3 flex flex-col items-center justify-center text-center gap-2">
-          <span className="text-3xl">{lvl.emoji}</span>
-          <p className="text-sm font-bold" style={{ color: lvl.color }}>{lvl.label}</p>
-          <p className="text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>
-            {correct}/{questions.length} correct
-          </p>
-          <button
-            onClick={onClose}
-            className="mt-1 px-4 py-1.5 rounded-lg text-[10px] font-bold"
-            style={{ background: "hsl(var(--muted) / 0.1)", color: "hsl(var(--foreground))" }}
-          >
-            Done
-          </button>
-        </div>
-      )}
-    </motion.div>
+              Done
+            </button>
+          </div>
+        )}
+      </motion.div>
+    </>
   );
 }
