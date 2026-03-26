@@ -229,40 +229,31 @@ export default function SkillProgressPanel({
 
   return (
     <div className="h-full flex flex-col overflow-hidden">
-      {/* Search */}
-      <div className="px-3 py-2 shrink-0">
-        <div className="relative">
-          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+      {/* Search + Summary — compact single row */}
+      <div className="px-2 py-1.5 shrink-0 flex items-center gap-2">
+        <div className="relative flex-1 min-w-0">
+          <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground" />
           <Input
             value={search}
             onChange={e => setSearch(e.target.value)}
-            placeholder="Search skills…"
-            className="h-7 pl-8 text-xs border-border/50"
+            placeholder="Search…"
+            className="h-6 pl-7 text-[10px] border-border/50"
             style={{ background: "hsl(var(--surface-stone))" }}
           />
         </div>
-        {/* Summary bar */}
-        <div className="flex items-center gap-3 mt-1.5 text-[10px] text-muted-foreground">
-          <span className="flex items-center gap-1">
-            <Trophy className="h-3 w-3" style={{ color: "hsl(var(--filigree-glow))" }} />
-            <span className="font-mono">{totalXp.toLocaleString()} XP</span>
-          </span>
-          <span className="flex items-center gap-1">
-            <Flame className="h-3 w-3" style={{ color: "hsl(var(--primary))" }} />
-            <span className="font-mono">{practicedCount}/{skills.length}</span>
-          </span>
-          {/* Mastery ladder legend */}
-          <span className="flex items-center gap-0.5 ml-auto">
-            {MASTERY_TIERS.map(t => (
-              <span
-                key={t.name}
-                className="w-2 h-2 rounded-full"
-                style={{ background: t.color }}
-                title={`${t.name} (${t.minXp}+ XP)`}
-              />
-            ))}
-          </span>
-        </div>
+        <span className="flex items-center gap-1 text-[9px] text-muted-foreground shrink-0">
+          <Trophy className="h-2.5 w-2.5" style={{ color: "hsl(var(--filigree-glow))" }} />
+          <span className="font-mono">{totalXp.toLocaleString()}</span>
+        </span>
+        <span className="flex items-center gap-1 text-[9px] text-muted-foreground shrink-0">
+          <Flame className="h-2.5 w-2.5" style={{ color: "hsl(var(--primary))" }} />
+          <span className="font-mono">{practicedCount}/{skills.length}</span>
+        </span>
+        <span className="flex items-center gap-0.5 shrink-0">
+          {MASTERY_TIERS.map(t => (
+            <span key={t.name} className="w-1.5 h-1.5 rounded-full" style={{ background: t.color }} title={`${t.name} (${t.minXp}+ XP)`} />
+          ))}
+        </span>
       </div>
 
       {/* Scrollable content */}
