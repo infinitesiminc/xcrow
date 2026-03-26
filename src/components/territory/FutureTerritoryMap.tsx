@@ -533,6 +533,9 @@ export default function FutureTerritoryMap({ skills, focusSkillId, level2SkillId
             guardian={activeGuardian}
             onClose={() => setActiveGuardian(null)}
             onChallenge={(g) => { setActiveGuardian(null); }}
+            onConquerTerritory={(category) => {
+              mission.scoutRole(`guardian-${activeGuardian.id}`, category, []);
+            }}
           />
         )}
 
