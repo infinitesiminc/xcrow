@@ -269,7 +269,7 @@ export default function StackBuilder({ onSelectTool }: Props) {
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: Math.min(i * 0.02, 0.3) }}
-                className="rounded-xl overflow-hidden flex flex-col cursor-pointer group hover:shadow-lg transition-all"
+                className="rounded-xl overflow-hidden flex flex-col cursor-pointer group hover:shadow-lg transition-all relative"
                 style={{
                   background: "hsl(var(--card))",
                   border: `1px solid ${inStack ? "hsl(45, 90%, 55%, 0.35)" : "hsl(var(--border) / 0.2)"}`,
