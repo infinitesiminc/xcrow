@@ -367,7 +367,35 @@ const MapPage = () => {
             <AlliesPanel onLaunchSim={handleLaunchSim} />
           ) : null}
         </div>
-      </div>
+
+        {/* Collapse button inside panel */}
+        <button
+          onClick={() => setPanelCollapsed(true)}
+          className="absolute top-2 right-2 z-20 w-7 h-7 rounded-md flex items-center justify-center transition-colors hover:bg-muted/50"
+          style={{ color: "hsl(var(--muted-foreground))" }}
+          title="Collapse panel"
+        >
+          <PanelLeftClose className="h-4 w-4" />
+        </button>
+      </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Expand button when collapsed */}
+      {panelCollapsed && (
+        <button
+          onClick={() => setPanelCollapsed(false)}
+          className="absolute top-2 left-2 z-20 w-9 h-9 rounded-lg flex items-center justify-center backdrop-blur-md border transition-colors hover:bg-muted/30"
+          style={{
+            background: "hsl(var(--card) / 0.85)",
+            borderColor: "hsl(var(--border) / 0.5)",
+            color: "hsl(var(--foreground))",
+          }}
+          title="Show panel"
+        >
+          <PanelLeftOpen className="h-4 w-4" />
+        </button>
+      )}
 
       {/* ── Right: Territory Map ── */}
       <div className="flex-1 relative">
