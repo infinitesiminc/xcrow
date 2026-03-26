@@ -1,7 +1,9 @@
+import { forwardRef } from "react";
 import { Link } from "react-router-dom";
 
-const Footer = () => (
+const Footer = forwardRef<HTMLElement>((_, ref) => (
   <footer
+    ref={ref}
     className="mt-auto"
     style={{
       background: "hsl(var(--surface-stone))",
