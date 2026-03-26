@@ -379,9 +379,10 @@ function ReferralSection({ userId }: { userId?: string }) {
                   {copied ? "Copied!" : "Copy"}
                 </Button>
               </div>
-              <p className="text-[11px] text-muted-foreground">
-                When a friend signs up and subscribes to Champion, you both get a free month.
-              </p>
+              <div className="pt-1">
+                <p className="text-[11px] text-muted-foreground mb-2">Or share directly:</p>
+                <InviteShareWidget />
+              </div>
             </>
           ) : (
             <p className="text-xs text-muted-foreground">Referral code not yet generated. Complete onboarding to get yours.</p>
