@@ -30,7 +30,7 @@ import HeroScene from "./HeroScene";
 import { getTerritoryHeroImage } from "@/lib/territory-hero-images";
 import { supabase } from "@/integrations/supabase/client";
 import { jobToRoleNPC, THREAT_COLORS, deptToTerritory, type RoleNPC } from "@/lib/role-npcs";
-import { ROLE_NPC_AVATARS } from "@/lib/role-npc-avatars";
+import { ROLE_NPC_AVATARS, getRoleNPCAvatar } from "@/lib/role-npc-avatars";
 
 import guardIronclad from "@/assets/guardian-ironclad.png";
 import guardLexicon from "@/assets/guardian-lexicon.png";
