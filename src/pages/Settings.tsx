@@ -31,7 +31,7 @@ import { useCredits } from "@/hooks/use-credits";
 
 const NAV_ITEMS = [
   { key: "profile", label: "Profile", icon: User },
-  { key: "gameplay", label: "Gameplay", icon: Compass },
+  { key: "gameplay", label: "Credits", icon: Coins },
   { key: "subscription", label: "Subscription", icon: CreditCard },
   { key: "security", label: "Security", icon: Lock },
   { key: "danger", label: "Danger Zone", icon: AlertOctagon },
