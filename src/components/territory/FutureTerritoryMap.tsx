@@ -22,7 +22,9 @@ import { getNPCAvatar } from "@/lib/npc-avatar-pool";
 
 import GuardianEncounter from "./GuardianEncounter";
 import GuardianTrial from "./GuardianTrial";
+import ConquestCelebration from "./ConquestCelebration";
 import NPCEncounter from "./NPCEncounter";
+import NPCMechanics from "./NPCMechanics";
 import RoleNPCEncounter from "./RoleNPCEncounter";
 
 import { useScoutMission } from "@/hooks/use-scout-mission";
@@ -83,7 +85,9 @@ export default function FutureTerritoryMap({ skills, focusSkillId, level2SkillId
   const [activeGuardian, setActiveGuardian] = useState<TerritoryGuardian | null>(null);
   const [trialGuardian, setTrialGuardian] = useState<TerritoryGuardian | null>(null);
   const [activeNPC, setActiveNPC] = useState<{ npc: WanderingNPC; territory: FutureSkillCategory } | null>(null);
+  const [npcMechanics, setNpcMechanics] = useState<{ npc: WanderingNPC; territory: FutureSkillCategory } | null>(null);
   const [activeRoleNPC, setActiveRoleNPC] = useState<RoleNPC | null>(null);
+  const [conquest, setConquest] = useState<{ guardianName: string; territory: string; hue: number } | null>(null);
   const [roleNPCs, setRoleNPCs] = useState<RoleNPC[]>([]);
   const mission = useScoutMission();
   const [hoverPreview, setHoverPreview] = useState<{ type: "guardian" | "npc" | "role"; id: string; name: string; title: string; src: string; x: number; y: number; hue: number } | null>(null);
@@ -118,6 +122,31 @@ export default function FutureTerritoryMap({ skills, focusSkillId, level2SkillId
       setRoleNPCs(Array.from(perTerritory.values()).flat());
     })();
   }, []);
+
+  // Auto-pan to first Role NPC on initial load (first 30s hook)
+  const hasAutoPanned = useRef(false);
+  useEffect(() => {
+    if (hasAutoPanned.current || roleNPCs.length === 0 || focusSkillId) return;
+    hasAutoPanned.current = true;
+    const firstRole = roleNPCs[0];
+    const island = layout.find(i => i.category === firstRole.territory);
+    if (!island) return;
+    const container = containerRef.current;
+    if (!container) return;
+    const rect = container.getBoundingClientRect();
+    const svgScale = rect.width / FUTURE_MAP_WIDTH;
+    const angle = (Math.PI * 2 * 0) / Math.max(roleNPCs.length, 1) + Math.PI / 4;
+    const dist = island.radius * 0.7;
+    const rx = island.cx + Math.cos(angle) * dist;
+    const ry = island.cy + Math.sin(angle) * dist;
+    const zoomLevel = 1.8;
+    const targetX = rect.width / 2 - rx * svgScale * zoomLevel;
+    const targetY = rect.height / 2 - ry * svgScale * (FUTURE_MAP_WIDTH / FUTURE_MAP_HEIGHT) * (rect.height / rect.width) * zoomLevel;
+    setTimeout(() => {
+      setTransform({ x: targetX, y: targetY, scale: zoomLevel });
+      setFocusedIsland(firstRole.territory);
+    }, 800);
+  }, [roleNPCs, layout, focusSkillId]);
 
   const clampTransform = useCallback((x: number, y: number, scale: number) => {
     const container = containerRef.current;
@@ -424,7 +453,7 @@ export default function FutureTerritoryMap({ skills, focusSkillId, level2SkillId
             );
           })}
 
-          {/* Role NPCs — real jobs as characters */}
+          {/* Role NPCs — real jobs as characters + quest waypoint beacon on first */}
           {roleNPCs.map((role, idx) => {
             const island = layout.find(i => i.category === role.territory);
             if (!island) return null;
@@ -467,8 +496,20 @@ export default function FutureTerritoryMap({ skills, focusSkillId, level2SkillId
                     src={avatarSrc}
                     alt={role.title}
                     style={{ width: 24, height: 24, objectFit: "cover", borderRadius: "50%" }}
-                  />
+                   />
                 </foreignObject>
+                {/* Quest waypoint beacon on first unspoken NPC */}
+                {idx === 0 && !mission.rolesSpokenTo.has(role.jobId) && (
+                  <motion.circle
+                    cx={rx} cy={ry} r={26}
+                    fill="none"
+                    stroke="hsl(var(--primary))"
+                    strokeWidth={2}
+                    opacity={0.8}
+                    animate={{ r: [26, 34, 26], opacity: [0.8, 0, 0.8] }}
+                    transition={{ duration: 1.5, repeat: Infinity, ease: "easeOut" }}
+                  />
+                )}
               </g>
             );
           })}
@@ -540,18 +581,52 @@ export default function FutureTerritoryMap({ skills, focusSkillId, level2SkillId
             onVictory={(guardianId, category) => {
               mission.conquerSkill();
               mission.scoutRole(`guardian-${guardianId}`, category, []);
+              setConquest({
+                guardianName: trialGuardian.name,
+                territory: trialGuardian.category,
+                hue: trialGuardian.hue,
+              });
               setTrialGuardian(null);
             }}
           />
         )}
 
+        {/* Conquest celebration */}
+        {conquest && (
+          <ConquestCelebration
+            guardianName={conquest.guardianName}
+            territoryName={conquest.territory}
+            hue={conquest.hue}
+            onComplete={() => setConquest(null)}
+          />
+        )}
+
         {/* NPC Encounter Panel */}
-        {activeNPC && (
+        {activeNPC && !npcMechanics && (
           <NPCEncounter
             npc={activeNPC.npc}
             territory={activeNPC.territory}
             onClose={() => setActiveNPC(null)}
-            onInteract={(n) => { setActiveNPC(null); }}
+            onInteract={(n) => {
+              setActiveNPC(null);
+              setNpcMechanics({ npc: n, territory: activeNPC.territory });
+            }}
+          />
+        )}
+
+        {/* NPC Mechanics Panel */}
+        {npcMechanics && (
+          <NPCMechanics
+            npc={npcMechanics.npc}
+            territory={npcMechanics.territory}
+            scoutedSkillCount={mission.scoutedSkills.length}
+            territoriesScouted={mission.territoriesScouted}
+            onClose={() => setNpcMechanics(null)}
+            onFocusTerritory={(cat) => {
+              setNpcMechanics(null);
+              const island = layout.find(i => i.category === cat);
+              if (island) handleIslandClick(cat, island.cx, island.cy);
+            }}
           />
         )}
 
