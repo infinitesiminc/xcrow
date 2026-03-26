@@ -38,6 +38,7 @@ import BossBattleArena from "@/components/sim/BossBattleArena";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useSimCheckpoints } from "@/hooks/use-sim-checkpoints";
 import { useUsageGate } from "@/hooks/use-usage-gate";
 import UpgradeModal from "@/components/UpgradeModal";
 
