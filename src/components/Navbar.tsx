@@ -150,7 +150,7 @@ export default function Navbar() {
           {user ? (
             <>
               <div className="hidden sm:block">
-                <CreditWallet />
+                <SubscriptionBadge />
               </div>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
