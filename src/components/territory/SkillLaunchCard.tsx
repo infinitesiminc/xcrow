@@ -23,6 +23,12 @@ export interface SimLaunchRequest {
   linkedSkillIds?: string[];
 }
 
+export interface PromptLabRequest {
+  skillId: string;
+  skillName: string;
+  skillCategory: string;
+}
+
 interface SkillLaunchCardProps {
   skill: FutureSkill;
   /** Screen-space position (relative to map container) */
