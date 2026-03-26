@@ -77,6 +77,12 @@ export default function ToolAtlas() {
             </div>
           )}
 
+          {view === "org-stack" && (
+            <div className="h-full overflow-y-auto p-4 sm:p-6">
+              <OrgStackMapper />
+            </div>
+          )}
+
           {view === "atlas" && (
             <ToolAtlasMap />
           )}
