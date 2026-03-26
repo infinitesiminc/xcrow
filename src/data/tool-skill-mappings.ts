@@ -106,6 +106,77 @@ export const TOOL_SKILL_MAP: Record<string, string[]> = {
   "cuOpt": ["Supply Chain Optimization", "Logistics AI", "Operations Research"],
 };
 
+/**
+ * JOB_SKILL_TO_TOOLS — Maps real job-level skills (from jobs DB) to tools.
+ * This bridges the gap between skills like "Python", "Data Analysis" etc.
+ * that appear in job_task_clusters.skill_names → actual tools users should learn.
+ */
+export const JOB_SKILL_TO_TOOLS: Record<string, string[]> = {
+  // Programming
+  "Python": ["Cursor", "GitHub Copilot", "Claude Code", "Codex", "PyTorch", "Databricks"],
+  "React": ["Cursor", "GitHub Copilot", "Lovable", "Windsurf"],
+  "TypeScript": ["Cursor", "GitHub Copilot", "Lovable", "Windsurf"],
+  "SQL": ["Snowflake", "Databricks", "BigQuery", "ChatGPT"],
+  "Frontend Development": ["Cursor", "Lovable", "Figma AI", "GitHub Copilot"],
+  "API Design": ["Cursor", "Claude Code", "GitHub Copilot"],
+  "System Design": ["ChatGPT", "Claude", "Cursor"],
+  "Software Architecture": ["Claude", "ChatGPT", "Cursor"],
+  "Distributed Systems": ["Kubernetes", "AWS Bedrock", "Azure AI Foundry"],
+  "Data Modeling": ["Databricks", "Snowflake", "BigQuery"],
+
+  // Data & Analytics
+  "Data Analysis": ["Databricks", "Snowflake", "BigQuery", "ChatGPT", "NotebookLM"],
+  "Data Visualization": ["Databricks", "Canva AI", "Snowflake"],
+  "Data Analytics": ["Databricks", "Snowflake", "BigQuery"],
+  "Statistical Analysis": ["Databricks", "PyTorch", "ChatGPT"],
+
+  // Business & Strategy
+  "Strategic Planning": ["ChatGPT", "Claude", "Perplexity", "NotebookLM"],
+  "Stakeholder Management": ["ChatGPT", "Claude", "Canva AI"],
+  "Communication": ["ChatGPT", "Claude", "Canva AI"],
+  "Market Research": ["Perplexity", "ChatGPT", "NotebookLM"],
+  "Competitive Analysis": ["Perplexity", "ChatGPT", "NotebookLM"],
+  "Product Strategy": ["ChatGPT", "Claude", "Perplexity", "Figma AI"],
+  "Product Thinking": ["ChatGPT", "Claude", "Figma AI"],
+  "Business Acumen": ["ChatGPT", "Claude", "Perplexity"],
+  "Project Management": ["ChatGPT", "Claude", "ServiceNow AI Agents"],
+  "Negotiation": ["ChatGPT", "Claude"],
+  "Prioritization": ["ChatGPT", "Claude"],
+
+  // Research & Writing
+  "Technical Writing": ["ChatGPT", "Claude", "NotebookLM"],
+  "Copywriting": ["ChatGPT", "Claude", "Canva AI"],
+  "Public Speaking": ["ChatGPT", "Claude", "Canva AI"],
+  "User Research": ["Perplexity", "NotebookLM", "ChatGPT"],
+  "Analytical Thinking": ["ChatGPT", "Claude", "Perplexity"],
+  "Critical Thinking": ["Claude", "ChatGPT", "Perplexity"],
+  "Problem Solving": ["ChatGPT", "Claude", "Cursor"],
+
+  // AI-specific
+  "Prompt Engineering": ["ChatGPT", "Claude", "Cursor", "GitHub Copilot", "Gemini", "Midjourney"],
+  "AI Agent Orchestration": ["LangChain", "LangGraph", "CrewAI", "AutoGen", "Open Claw"],
+  "AI System Architecture": ["LangChain", "AWS Bedrock", "Azure AI Foundry", "Google Vertex AI"],
+  "Machine Learning": ["PyTorch", "Hugging Face", "Databricks", "Weights & Biases"],
+  "AI Tool Proficiency": ["ChatGPT", "Claude", "Cursor", "Perplexity"],
+
+  // Design
+  "Prototyping": ["Figma AI", "Lovable", "Canva AI"],
+  "UX Design Intuition": ["Figma AI", "Lovable"],
+  "Wireframing Tools": ["Figma AI", "Canva AI"],
+
+  // People & Soft Skills
+  "Relationship Building": ["ChatGPT", "Salesforce Einstein"],
+  "Empathy": ["ChatGPT", "Claude"],
+  "Mentorship": ["ChatGPT", "Claude"],
+  "Leadership": ["ChatGPT", "Claude"],
+  "A/B Testing": ["Databricks", "Snowflake", "ChatGPT"],
+  "Agile Methodologies": ["ChatGPT", "Claude", "ServiceNow AI Agents"],
+
+  // Domain
+  "Consultative Selling": ["Salesforce Einstein", "ChatGPT", "Claude"],
+  "Emotional Intelligence": ["ChatGPT", "Claude"],
+};
+
 /** Get skills for a tool by name */
 export function getSkillsForTool(toolName: string): string[] {
   return TOOL_SKILL_MAP[toolName] || [];
@@ -118,6 +189,46 @@ export function getToolsForSkill(skillName: string): string[] {
     if (skills.includes(skillName)) tools.push(tool);
   }
   return tools;
+}
+
+/** 
+ * Given an array of real job skills (from DB), return ranked tool recommendations.
+ * Uses JOB_SKILL_TO_TOOLS for direct matches, falls back to TOOL_SKILL_MAP fuzzy.
+ */
+export function recommendToolsForSkills(jobSkills: string[]): { tool: string; score: number; matchedSkills: string[] }[] {
+  const toolScores = new Map<string, { score: number; matched: Set<string> }>();
+
+  for (const skill of jobSkills) {
+    // Direct match from job skill map
+    const directTools = JOB_SKILL_TO_TOOLS[skill];
+    if (directTools) {
+      for (const tool of directTools) {
+        const entry = toolScores.get(tool) || { score: 0, matched: new Set() };
+        entry.score += 2; // Direct match = higher weight
+        entry.matched.add(skill);
+        toolScores.set(tool, entry);
+      }
+      continue;
+    }
+
+    // Fuzzy: check if skill appears in any tool's skill map
+    const lower = skill.toLowerCase();
+    for (const [tool, toolSkills] of Object.entries(TOOL_SKILL_MAP)) {
+      for (const ts of toolSkills) {
+        if (ts.toLowerCase().includes(lower) || lower.includes(ts.toLowerCase())) {
+          const entry = toolScores.get(tool) || { score: 0, matched: new Set() };
+          entry.score += 1;
+          entry.matched.add(skill);
+          toolScores.set(tool, entry);
+          break;
+        }
+      }
+    }
+  }
+
+  return [...toolScores.entries()]
+    .map(([tool, { score, matched }]) => ({ tool, score, matchedSkills: [...matched] }))
+    .sort((a, b) => b.score - a.score);
 }
 
 /** Get all unique skill names across all tools */
