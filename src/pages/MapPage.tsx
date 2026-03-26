@@ -38,6 +38,7 @@ import QuestTrackerStrip from "@/components/territory/QuestTrackerStrip";
 
 import AlliesPanel from "@/components/territory/AlliesPanel";
 import CodexPanel from "@/components/territory/CodexPanel";
+import ToolDetailCard from "@/components/territory/ToolDetailCard";
 import ToolsPanel from "@/components/territory/ToolsPanel";
 
 
