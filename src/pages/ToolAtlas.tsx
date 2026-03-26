@@ -1,24 +1,22 @@
 /**
- * ToolAtlas — Role-first Tools page with three layers:
- * 1. Your Stack (personalized recommendations)
- * 2. Workflow Lanes (browse by task flow)
- * 3. Full Atlas Map (explore everything)
+ * ToolAtlas — Two-layer tools page:
+ * 1. Stack Builder (search, templates, browse, build stack)
+ * 2. Atlas Map (visual exploration)
  */
 import { useState, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Map, LayoutGrid, Package, X, ExternalLink, Sparkles, Plus, Check, Eye } from "lucide-react";
+import { Map, Package, X, ExternalLink, Sparkles, Plus, Check, Eye } from "lucide-react";
 import SEOHead from "@/components/SEOHead";
-import RoleStackHero from "@/components/tools/RoleStackHero";
-import WorkflowLanes from "@/components/tools/WorkflowLanes";
+import StackBuilder from "@/components/tools/StackBuilder";
 import ToolAtlasMap from "@/components/territory/ToolAtlasMap";
 import { GTC_TOOLS, CATEGORY_CONFIG } from "@/data/gtc-tools-registry";
 import { getSkillsForTool } from "@/data/tool-skill-mappings";
 import { useMyStack } from "@/hooks/use-my-stack";
 
-type ViewMode = "stack" | "workflow" | "atlas";
+type ViewMode = "builder" | "atlas";
 
 export default function ToolAtlas() {
-  const [view, setView] = useState<ViewMode>("stack");
+  const [view, setView] = useState<ViewMode>("builder");
   const [selectedToolName, setSelectedToolName] = useState<string | null>(null);
   const { toggleTool, isInStack, stackSize } = useMyStack();
 
@@ -29,8 +27,7 @@ export default function ToolAtlas() {
   }, []);
 
   const views: { key: ViewMode; label: string; icon: React.ReactNode }[] = [
-    { key: "stack", label: "My Stack", icon: <Package className="h-3.5 w-3.5" /> },
-    { key: "workflow", label: "Explore", icon: <LayoutGrid className="h-3.5 w-3.5" /> },
+    { key: "builder", label: "Stack Builder", icon: <Package className="h-3.5 w-3.5" /> },
     { key: "atlas", label: "Atlas Map", icon: <Map className="h-3.5 w-3.5" /> },
   ];
 
@@ -72,15 +69,9 @@ export default function ToolAtlas() {
 
         {/* Content */}
         <div className="flex-1 overflow-hidden relative">
-          {view === "stack" && (
-            <div className="h-full overflow-y-auto p-4 sm:p-6 max-w-5xl mx-auto">
-              <RoleStackHero onSelectTool={handleSelectTool} />
-            </div>
-          )}
-
-          {view === "workflow" && (
-            <div className="h-full overflow-y-auto p-4 sm:p-6 max-w-5xl mx-auto">
-              <WorkflowLanes onSelectTool={handleSelectTool} />
+          {view === "builder" && (
+            <div className="h-full overflow-y-auto p-4 sm:p-6 max-w-6xl mx-auto">
+              <StackBuilder onSelectTool={handleSelectTool} />
             </div>
           )}
 
@@ -88,11 +79,10 @@ export default function ToolAtlas() {
             <ToolAtlasMap />
           )}
 
-          {/* Tool detail slide-over (for stack & workflow views) */}
+          {/* Tool detail slide-over */}
           <AnimatePresence>
             {selectedTool && view !== "atlas" && (
               <>
-                {/* Backdrop */}
                 <motion.div
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
@@ -102,7 +92,6 @@ export default function ToolAtlas() {
                   onClick={() => setSelectedToolName(null)}
                 />
 
-                {/* Panel */}
                 <motion.div
                   initial={{ x: 340 }}
                   animate={{ x: 0 }}
@@ -191,15 +180,10 @@ export default function ToolAtlas() {
                         </h4>
                         <div className="space-y-1.5">
                           {selectedTool.products.map(product => (
-                            <div
-                              key={product.name}
-                              className="px-2.5 py-2 rounded-lg"
-                              style={{ background: "hsl(var(--muted) / 0.08)", border: "1px solid hsl(var(--border) / 0.15)" }}
-                            >
+                            <div key={product.name} className="px-2.5 py-2 rounded-lg"
+                              style={{ background: "hsl(var(--muted) / 0.08)", border: "1px solid hsl(var(--border) / 0.15)" }}>
                               <div className="flex items-center justify-between">
-                                <span className="text-[11px] font-semibold" style={{ color: "hsl(var(--foreground))" }}>
-                                  {product.name}
-                                </span>
+                                <span className="text-[11px] font-semibold" style={{ color: "hsl(var(--foreground))" }}>{product.name}</span>
                                 <span className="text-[9px] px-1.5 py-0.5 rounded-full" style={{
                                   background: product.type === "learnable" ? "hsl(140, 60%, 45%, 0.15)" : "hsl(var(--muted) / 0.2)",
                                   color: product.type === "learnable" ? "hsl(140, 60%, 45%)" : "hsl(var(--muted-foreground))",
@@ -207,9 +191,7 @@ export default function ToolAtlas() {
                                   {product.type === "learnable" ? "Hands-on" : "Reference"}
                                 </span>
                               </div>
-                              <p className="text-[10px] mt-0.5" style={{ color: "hsl(var(--foreground) / 0.6)" }}>
-                                {product.description}
-                              </p>
+                              <p className="text-[10px] mt-0.5" style={{ color: "hsl(var(--foreground) / 0.6)" }}>{product.description}</p>
                             </div>
                           ))}
                         </div>
