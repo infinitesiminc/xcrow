@@ -507,6 +507,93 @@ export default function RoleNPCEncounter({ role, onClose, onCollectSkills, onExp
               </div>
             )}
 
+            {/* Skill Collection — appears after a few exchanges */}
+            <AnimatePresence>
+              {chatMessages.length >= 3 && futureSkills.length > 0 && !collected && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+                  className="overflow-hidden flex-shrink-0"
+                >
+                  <div
+                    className="mx-5 mb-2 rounded-xl px-4 py-3"
+                    style={{
+                      background: `linear-gradient(135deg, hsl(${colors.bg} / 0.08), hsl(${colors.bg} / 0.15))`,
+                      border: `1px solid hsl(${colors.bg} / 0.25)`,
+                    }}
+                  >
+                    <div className="flex items-center justify-between gap-3 mb-2">
+                      <div className="flex items-center gap-1.5">
+                        <Award size={13} style={{ color: `hsl(${colors.bg})` }} />
+                        <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: `hsl(${colors.bg})` }}>
+                          Skills Discovered
+                        </span>
+                      </div>
+                      <Button
+                        size="sm"
+                        className="h-7 gap-1.5 text-[10px] font-bold"
+                        style={{
+                          background: `linear-gradient(135deg, hsl(${colors.bg} / 0.8), hsl(${colors.bg}))`,
+                          color: "white",
+                          boxShadow: `0 0 15px hsl(${colors.glow} / 0.3)`,
+                        }}
+                        onClick={handleCollect}
+                      >
+                        <Sparkles size={10} /> Collect All ({futureSkills.length})
+                      </Button>
+                    </div>
+                    <div className="flex flex-wrap gap-1">
+                      {futureSkills.slice(0, 6).map(skill => (
+                        <span
+                          key={skill.id}
+                          className="text-[9px] px-2 py-0.5 rounded-full"
+                          style={{
+                            background: `hsl(${hue} 18% 12%)`,
+                            border: `1px solid hsl(${colors.bg} / 0.2)`,
+                            color: `hsl(${hue} 15% 70%)`,
+                          }}
+                        >
+                          {skill.icon_emoji || "🎯"} {skill.name}
+                        </span>
+                      ))}
+                      {futureSkills.length > 6 && (
+                        <span className="text-[9px] px-2 py-0.5" style={{ color: `hsl(${hue} 15% 50%)` }}>
+                          +{futureSkills.length - 6} more
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* Collected confirmation */}
+            <AnimatePresence>
+              {collected && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  transition={{ duration: 0.4 }}
+                  className="overflow-hidden flex-shrink-0"
+                >
+                  <div
+                    className="mx-5 mb-2 rounded-xl px-4 py-2.5 flex items-center justify-center gap-2"
+                    style={{
+                      background: `hsl(${colors.bg} / 0.1)`,
+                      border: `1px solid hsl(${colors.bg} / 0.3)`,
+                    }}
+                  >
+                    <Sparkles size={14} style={{ color: `hsl(${colors.bg})` }} />
+                    <span className="text-xs font-bold" style={{ color: `hsl(${colors.bg})` }}>
+                      {futureSkills.length} skills collected!
+                    </span>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
             {/* Input */}
             <div className="px-5 pb-4 pt-2 flex-shrink-0">
               <form
