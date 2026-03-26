@@ -19,6 +19,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import SimulatorModal from "@/components/SimulatorModal";
+import AgentPipelineBuilder from "@/components/sim/AgentPipelineBuilder";
 
 interface CustomSim {
   id: string;
