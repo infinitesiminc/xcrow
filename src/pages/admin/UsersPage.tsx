@@ -56,29 +56,35 @@ export default function UsersPage() {
   const [granting, setGranting] = useState<string | null>(null);
   const { toast } = useToast();
 
-  useEffect(() => {
-    (async () => {
-      const [usersRes, seatsRes] = await Promise.all([
-        supabase.rpc("get_admin_user_stats" as any),
-        supabase.from("school_seats" as any).select("user_id, status").eq("status", "active"),
-      ]);
-      
-      const schoolUserIds = new Set(
-        ((seatsRes.data as any[]) || []).map((s: any) => s.user_id).filter(Boolean)
-      );
-      
-      const rawUsers = (usersRes.data || []) as any as UserRow[];
-      // TODO: For champion detection, we'd need Stripe data. 
-      // For now, mark school users and leave rest as free.
-      const enriched = rawUsers.map(u => ({
-        ...u,
-        tier: schoolUserIds.has(u.user_id) ? "school" as const : "free" as const,
-      }));
-      
-      setUsers(enriched);
-      setLoading(false);
-    })();
-  }, []);
+  const fetchUsers = async () => {
+    const [usersRes, seatsRes, grantsRes] = await Promise.all([
+      supabase.rpc("get_admin_user_stats" as any),
+      supabase.from("school_seats" as any).select("user_id, status").eq("status", "active"),
+      (supabase.from("user_subscriptions" as any) as any)
+        .select("user_id, ends_at, source")
+        .or("ends_at.is.null,ends_at.gt." + new Date().toISOString()),
+    ]);
+    
+    const schoolUserIds = new Set(
+      ((seatsRes.data as any[]) || []).map((s: any) => s.user_id).filter(Boolean)
+    );
+    const grantUserIds = new Set(
+      ((grantsRes.data as any[]) || []).map((g: any) => g.user_id).filter(Boolean)
+    );
+    
+    const rawUsers = (usersRes.data || []) as any as UserRow[];
+    const enriched = rawUsers.map(u => ({
+      ...u,
+      tier: schoolUserIds.has(u.user_id) ? "school" as const
+        : grantUserIds.has(u.user_id) ? "champion" as const
+        : "free" as const,
+    }));
+    
+    setUsers(enriched);
+    setLoading(false);
+  };
+
+  useEffect(() => { fetchUsers(); }, []);
 
   const handleDelete = async (userId: string, name: string) => {
     setDeleting(userId);
