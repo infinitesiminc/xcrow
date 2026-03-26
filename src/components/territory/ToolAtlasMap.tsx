@@ -303,6 +303,10 @@ export default function ToolAtlasMap() {
             <span className="w-2 h-2 rounded-full inline-block" style={{ background: "hsl(var(--muted-foreground))" }} />
             Infrastructure
           </span>
+          <span className="flex items-center gap-1 text-[10px]" style={{ color: "hsl(45, 90%, 55%)" }}>
+            <span className="w-2 h-2 rounded-full inline-block" style={{ background: "hsl(45, 90%, 55%)" }} />
+            My Stack ({stackSize})
+          </span>
         </div>
       </div>
 
