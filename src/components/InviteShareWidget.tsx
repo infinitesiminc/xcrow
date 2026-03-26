@@ -22,8 +22,10 @@ export function useReferralLink() {
       });
   }, [user]);
 
+  // Use the edge function URL so link previews get proper OG meta tags
+  const edgeFnBase = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/invite-og`;
   const inviteLink = referralCode
-    ? `${window.location.origin}/auth?ref=${referralCode}`
+    ? `${edgeFnBase}?ref=${referralCode}`
     : "";
 
   return { referralCode, inviteLink };
@@ -49,15 +51,20 @@ export default function InviteShareWidget({ compact = false, context }: InviteSh
 
   if (!inviteLink) return null;
 
+  // Append context to the edge function URL for richer OG previews
+  const linkWithCtx = context
+    ? `${inviteLink}&ctx=${encodeURIComponent(context)}`
+    : inviteLink;
+
   const shareText = context
     ? `I just ${context} on Xcrow.ai — the AI career game. Join me! 🏰`
     : "Join me on Xcrow.ai — the AI career game that levels up your future skills! 🏰";
 
   const encodedText = encodeURIComponent(shareText);
-  const encodedLink = encodeURIComponent(inviteLink);
+  const encodedLink = encodeURIComponent(linkWithCtx);
 
   const handleCopy = async () => {
-    await navigator.clipboard.writeText(inviteLink);
+    await navigator.clipboard.writeText(linkWithCtx);
     setCopied(true);
     toast({ title: "Invite link copied!", description: "Share it — you both earn a free month." });
     setTimeout(() => setCopied(false), 2000);
@@ -66,7 +73,7 @@ export default function InviteShareWidget({ compact = false, context }: InviteSh
   const handleNativeShare = async () => {
     if (navigator.share) {
       try {
-        await navigator.share({ title: "Xcrow.ai", text: shareText, url: inviteLink });
+        await navigator.share({ title: "Xcrow.ai", text: shareText, url: linkWithCtx });
       } catch {}
     } else {
       handleCopy();
