@@ -32,7 +32,8 @@ const NPC_MAP_AVATARS: Record<string, string> = {
 import GuardianEncounter from "./GuardianEncounter";
 import NPCEncounter from "./NPCEncounter";
 import RoleNPCEncounter from "./RoleNPCEncounter";
-import ScoutMissionHUD from "./ScoutMissionHUD";
+import QuestTracker from "./QuestTracker";
+import { useScoutMission } from "@/hooks/use-scout-mission";
 import TerritoryParticles from "./TerritoryParticles";
 import HeroScene from "./HeroScene";
 import { getTerritoryHeroImage } from "@/lib/territory-hero-images";
@@ -91,9 +92,7 @@ export default function FutureTerritoryMap({ skills, focusSkillId, level2SkillId
   const [activeNPC, setActiveNPC] = useState<{ npc: WanderingNPC; territory: FutureSkillCategory } | null>(null);
   const [activeRoleNPC, setActiveRoleNPC] = useState<RoleNPC | null>(null);
   const [roleNPCs, setRoleNPCs] = useState<RoleNPC[]>([]);
-  const [territoriesScouted, setTerritoriesScouted] = useState<Set<string>>(new Set());
-  const [rolesSpokenTo, setRolesSpokenTo] = useState(0);
-  const [skillsCollected, setSkillsCollected] = useState(0);
+  const mission = useScoutMission();
   const [hoverPreview, setHoverPreview] = useState<{ type: "guardian" | "npc" | "role"; id: string; name: string; title: string; src: string; x: number; y: number; hue: number } | null>(null);
   const npcSpawns = useMemo(() => generateNPCSpawns(), []);
   const dragRef = useRef<{ startX: number; startY: number; tx: number; ty: number } | null>(null);
@@ -552,23 +551,26 @@ export default function FutureTerritoryMap({ skills, focusSkillId, level2SkillId
           <RoleNPCEncounter
             role={activeRoleNPC}
             onClose={() => {
-              // Track territory scouted when closing encounter
-              setTerritoriesScouted(prev => new Set([...prev, activeRoleNPC.territory]));
-              setRolesSpokenTo(prev => prev + 1);
               setActiveRoleNPC(null);
             }}
             onCollectSkills={(ids) => {
-              setSkillsCollected(prev => prev + ids.length);
-              console.log("Collected skills:", ids);
+              mission.scoutRole(
+                activeRoleNPC.jobId,
+                activeRoleNPC.territory,
+                ids.map(id => ({ id, name: id, category: activeRoleNPC.territory }))
+              );
             }}
           />
         )}
 
-        {/* Scout Mission HUD */}
-        <ScoutMissionHUD
-          territoriesScouted={territoriesScouted}
-          rolesSpokenTo={rolesSpokenTo}
-          skillsCollected={skillsCollected}
+        {/* Quest Tracker HUD */}
+        <QuestTracker
+          phase={mission.phase}
+          territoriesScouted={mission.territoriesScouted}
+          rolesSpokenTo={mission.rolesSpokenTo}
+          scoutedSkillCount={mission.scoutedSkills.length}
+          skillsConquered={mission.skillsConquered}
+          missionProgress={mission.missionProgress}
         />
 
         {/* Minimap */}
