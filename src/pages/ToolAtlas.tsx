@@ -3,17 +3,18 @@
  * 1. Stack Builder (search, templates, browse, build stack)
  * 2. Atlas Map (visual exploration)
  */
-import { useState, useCallback } from "react";
+import { useState, useCallback, lazy, Suspense } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Map, Package, X, ExternalLink, Sparkles, Plus, Check, Eye } from "lucide-react";
+import { Map, Package, X, ExternalLink, Sparkles, Plus, Check, Eye, Building2 } from "lucide-react";
 import SEOHead from "@/components/SEOHead";
 import StackBuilder from "@/components/tools/StackBuilder";
 import ToolAtlasMap from "@/components/territory/ToolAtlasMap";
+import OrgStackMapper from "@/components/tools/OrgStackMapper";
 import { GTC_TOOLS, CATEGORY_CONFIG } from "@/data/gtc-tools-registry";
 import { getSkillsForTool } from "@/data/tool-skill-mappings";
 import { useMyStack } from "@/hooks/use-my-stack";
 
-type ViewMode = "builder" | "atlas";
+type ViewMode = "builder" | "atlas" | "org-stack";
 
 export default function ToolAtlas() {
   const [view, setView] = useState<ViewMode>("builder");
