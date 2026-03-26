@@ -73,7 +73,7 @@ export default function InviteShareWidget({ compact = false, context }: InviteSh
   const handleNativeShare = async () => {
     if (navigator.share) {
       try {
-        await navigator.share({ title: "Xcrow.ai", text: shareText, url: inviteLink });
+        await navigator.share({ title: "Xcrow.ai", text: shareText, url: linkWithCtx });
       } catch {}
     } else {
       handleCopy();
