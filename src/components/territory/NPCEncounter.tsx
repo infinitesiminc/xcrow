@@ -11,12 +11,8 @@ import HeroScene from "@/components/territory/HeroScene";
 import { getTerritoryHeroImage } from "@/lib/territory-hero-images";
 import type { FutureSkillCategory } from "@/hooks/use-future-skills";
 
-import npcMerchant from "@/assets/npc-merchant.png";
-import npcOracle from "@/assets/npc-oracle.png";
-import npcRival from "@/assets/npc-rival.png";
-import npcScout from "@/assets/npc-scout.png";
-import npcBlacksmith from "@/assets/npc-blacksmith.png";
-import npcBard from "@/assets/npc-bard.png";
+import { getNPCAvatar } from "@/lib/npc-avatar-pool";
+
 
 interface NPCEncounterProps {
   npc: WanderingNPC;
