@@ -2327,7 +2327,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
         </div>
 
         {/* Input bar — war room command panel */}
-        {phase === "chat" && !error && !(level === 2 && auditData) && (
+        {phase === "chat" && !error && !(level === 2 && auditData) && !isSpecialTier && (
           <motion.div
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
