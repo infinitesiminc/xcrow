@@ -12,6 +12,7 @@ import BossBanner from "@/components/territory/BossBanner";
 import SimulatorModal from "@/components/SimulatorModal";
 import type { SimLaunchRequest, PromptLabRequest } from "@/components/territory/SkillLaunchCard";
 import PromptLab from "@/components/sim/PromptLab";
+import { preloadTerritoryImages } from "@/lib/territory-hero-images";
 
 /** IDs of skills where user has completed a L2 boss battle */
 type Level2CompletedIds = Set<string>;
@@ -139,6 +140,9 @@ const MapPage = () => {
 
   const { onRolesFoundRef, onRoleSelectRef, sendMessage: chatSendMessage, setIsOpen: setChatDockOpen } = useChatContext();
   const { updatePresence, goOffline, pendingCount, unreadCount } = useFriends();
+
+  // Preload territory backdrop images on mount
+  useEffect(() => { preloadTerritoryImages(); }, []);
 
   useEffect(() => {
     onRoleSelectRef.current = (role: RoleResult) => { setSelectedRole(role); };

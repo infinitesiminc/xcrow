@@ -75,7 +75,7 @@ export default function HeroScene({
             willChange: "transform, opacity",
             transformOrigin: "center center",
           }}
-          loading="lazy"
+          loading="eager"
           draggable={false}
         />
       </div>
