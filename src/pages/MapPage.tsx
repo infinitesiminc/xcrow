@@ -359,39 +359,43 @@ const MapPage = () => {
           <CompactHUD skills={displaySkills} targetSkillIds={targetSkillIds} userName={userName} avgDegreeLevel={avgDegreeLevel} />
         )}
 
-        {/* Tab bar */}
+        {/* Icon-only tab bar */}
         <div
-          className="flex items-center gap-1 px-3 py-1.5"
+          className="flex items-center justify-center gap-2 px-3 py-2"
           style={{ borderBottom: "1px solid hsl(var(--filigree) / 0.15)" }}
         >
-          {TAB_ITEMS.map(({ key, icon: Icon, label }) => {
+          {TAB_ITEMS.map(({ key, RuneIcon, label }) => {
             if (key !== "table" && !isSignedIn) return null;
             const isActive = activeTab === key;
-            const displayLabel = key === "table" && isFastTrack ? "Dashboard" : label;
+            const activeColor = "hsl(var(--filigree-glow))";
+            const inactiveColor = "hsl(var(--muted-foreground))";
             return (
-              <button
-                key={key}
-                onClick={() => setActiveTab(key)}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all relative"
-                style={{
-                  fontFamily: isFastTrack ? "inherit" : "'Cinzel', serif",
-                  letterSpacing: isFastTrack ? "0.02em" : "0.05em",
-                  ...(isActive
-                    ? { color: "hsl(var(--filigree-glow))", background: "hsl(var(--filigree) / 0.12)", textShadow: "0 0 8px hsl(var(--filigree-glow) / 0.5)" }
-                    : { color: "hsl(var(--muted-foreground))" }),
-                }}
-              >
-                <Icon className="h-3 w-3" />
-                {displayLabel}
-                {key === "allies" && (pendingCount + unreadCount) > 0 && (
-                  <span
-                    className="absolute -top-1 -right-1 w-4 h-4 rounded-full text-[8px] flex items-center justify-center font-bold animate-pulse"
-                    style={{ background: "hsl(var(--filigree-glow))", color: "hsl(var(--background))" }}
+              <Tooltip key={key}>
+                <TooltipTrigger asChild>
+                  <button
+                    onClick={() => setActiveTab(key)}
+                    className="relative w-10 h-10 rounded-lg flex items-center justify-center transition-all hover:scale-105"
+                    style={{
+                      ...(isActive
+                        ? { background: "hsl(var(--filigree) / 0.12)", boxShadow: `0 0 12px hsl(var(--filigree-glow) / 0.3)` }
+                        : {}),
+                    }}
                   >
-                    {pendingCount + unreadCount}
-                  </span>
-                )}
-              </button>
+                    <RuneIcon size={24} color={isActive ? activeColor : inactiveColor} />
+                    {key === "allies" && (pendingCount + unreadCount) > 0 && (
+                      <span
+                        className="absolute -top-0.5 -right-0.5 w-4 h-4 rounded-full text-[8px] flex items-center justify-center font-bold animate-pulse"
+                        style={{ background: "hsl(var(--filigree-glow))", color: "hsl(var(--background))" }}
+                      >
+                        {pendingCount + unreadCount}
+                      </span>
+                    )}
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="bottom" className="text-xs font-semibold" style={{ fontFamily: "'Cinzel', serif" }}>
+                  {label}
+                </TooltipContent>
+              </Tooltip>
             );
           })}
         </div>
