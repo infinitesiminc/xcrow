@@ -459,35 +459,51 @@ export default function OrgStack() {
                 ) : (
                   /* Department-specific tools */
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
-                    {deptTools.map(t => (
-                      <button
-                        key={t.name}
-                        onClick={() => setSelectedTool(t.tool)}
-                        className="text-left rounded-xl p-3 transition-all hover:scale-[1.02]"
-                        style={{
-                          background: "hsl(var(--card))",
-                          border: "1px solid hsl(var(--border) / 0.15)",
-                        }}
-                      >
-                        <div className="flex items-start justify-between mb-1.5">
-                          <span className="text-lg">{t.tool.icon}</span>
-                          <span className="text-[10px] font-mono px-1.5 py-0.5 rounded-md"
-                            style={{ background: "hsl(var(--muted) / 0.15)", color: "hsl(var(--muted-foreground))" }}>
-                            {t.jobTitles.size} roles
-                          </span>
-                        </div>
-                        <p className="text-xs font-bold truncate mb-0.5" style={{ color: "hsl(var(--foreground))" }}>{t.name}</p>
-                        <p className="text-[10px] line-clamp-2" style={{ color: "hsl(var(--muted-foreground))" }}>
-                          {Array.from(t.skills).slice(0, 3).join(", ")}
-                        </p>
-                        <div className="mt-2 flex items-center gap-1">
-                          <Zap className="h-2.5 w-2.5" style={{ color: "hsl(var(--primary))" }} />
-                          <span className="text-[10px] font-medium" style={{ color: "hsl(var(--primary))" }}>
-                            Relevance: {Math.min(100, Math.round(t.score * 5))}%
-                          </span>
-                        </div>
-                      </button>
-                    ))}
+                    {deptTools.map(t => {
+                      const isOwn = conflicts.ownTools.includes(t.name);
+                      const conflictWith = conflicts.conflictedTools.get(t.name);
+                      return (
+                        <button
+                          key={t.name}
+                          onClick={() => setSelectedTool(t.tool)}
+                          className="text-left rounded-xl p-3 transition-all hover:scale-[1.02] relative"
+                          style={{
+                            background: conflictWith ? "hsl(var(--destructive) / 0.04)" : isOwn ? "hsl(142 70% 45% / 0.06)" : "hsl(var(--card))",
+                            border: conflictWith ? "1px solid hsl(var(--destructive) / 0.25)" : isOwn ? "1px solid hsl(142 70% 45% / 0.25)" : "1px solid hsl(var(--border) / 0.15)",
+                          }}
+                        >
+                          {conflictWith && (
+                            <div className="absolute -top-1.5 -right-1.5 flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[8px] font-bold"
+                              style={{ background: "hsl(var(--destructive))", color: "white" }}>
+                              <AlertTriangle className="h-2.5 w-2.5" /> CONFLICT
+                            </div>
+                          )}
+                          {isOwn && (
+                            <div className="absolute -top-1.5 -right-1.5 flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[8px] font-bold"
+                              style={{ background: "hsl(142 70% 45%)", color: "white" }}>
+                              <ShieldCheck className="h-2.5 w-2.5" /> OWN
+                            </div>
+                          )}
+                          <div className="flex items-start justify-between mb-1.5">
+                            <span className="text-lg">{t.tool.icon}</span>
+                            <span className="text-[10px] font-mono px-1.5 py-0.5 rounded-md"
+                              style={{ background: "hsl(var(--muted) / 0.15)", color: "hsl(var(--muted-foreground))" }}>
+                              {t.jobTitles.size} roles
+                            </span>
+                          </div>
+                          <p className="text-xs font-bold truncate mb-0.5" style={{ color: conflictWith ? "hsl(var(--destructive))" : "hsl(var(--foreground))" }}>{t.name}</p>
+                          <p className="text-[10px] line-clamp-2" style={{ color: "hsl(var(--muted-foreground))" }}>
+                            {conflictWith ? `Competes with ${conflictWith}` : Array.from(t.skills).slice(0, 3).join(", ")}
+                          </p>
+                          <div className="mt-2 flex items-center gap-1">
+                            <Zap className="h-2.5 w-2.5" style={{ color: conflictWith ? "hsl(var(--destructive))" : "hsl(var(--primary))" }} />
+                            <span className="text-[10px] font-medium" style={{ color: conflictWith ? "hsl(var(--destructive))" : "hsl(var(--primary))" }}>
+                              {conflictWith ? "Replace recommended" : `Relevance: ${Math.min(100, Math.round(t.score * 5))}%`}
+                            </span>
+                          </div>
+                        </button>
+                      );
+                    })}
                     {deptTools.length === 0 && (
                       <p className="col-span-full text-center py-12 text-sm" style={{ color: "hsl(var(--muted-foreground))" }}>
                         No tool data for this department yet — skills haven't been extracted for these roles.
