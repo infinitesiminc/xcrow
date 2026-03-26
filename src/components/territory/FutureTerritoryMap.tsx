@@ -413,7 +413,7 @@ export default function FutureTerritoryMap({ skills, focusSkillId, level2SkillId
                 })()}
                 <foreignObject x={nx - 11} y={ny - 11} width={22} height={22} style={{ pointerEvents: "none" }}>
                   <img
-                    src={NPC_MAP_AVATARS[spawn.npc.id] || npcMerchant}
+                    src={getNPCAvatar(spawn.npc.id)}
                     alt={spawn.npc.name}
                     style={{ width: 22, height: 22, objectFit: "cover", clipPath: "polygon(50% 0%, 93% 25%, 93% 75%, 50% 100%, 7% 75%, 7% 25%)" }}
                   />

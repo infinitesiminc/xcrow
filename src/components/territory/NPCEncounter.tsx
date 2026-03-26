@@ -66,7 +66,7 @@ export default function NPCEncounter({ npc, territory, onClose, onInteract }: NP
   const hue = NPC_HUES[npc.id] ?? 200;
   const heroTerritory = territory || NPC_TERRITORY_FALLBACK[npc.id] || "Technical";
   const heroImage = getTerritoryHeroImage(heroTerritory);
-  const avatarSrc = NPC_AVATARS[npc.id] || npcMerchant;
+  const avatarSrc = getNPCAvatar(npc.id);
 
   return (
     <AnimatePresence>
