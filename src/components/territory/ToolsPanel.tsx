@@ -73,7 +73,7 @@ export default function ToolsPanel() {
           </span>
         </div>
         <p className="text-[10px] leading-relaxed" style={{ color: "hsl(var(--muted-foreground))" }}>
-          Every tool mentioned in Jensen Huang's GTC 2026 keynote — the agentic world is here.
+          Every tool from the GTC 2026 keynote — the agentic world is here.
         </p>
 
         {/* Search */}
