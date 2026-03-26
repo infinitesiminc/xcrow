@@ -36,6 +36,15 @@ interface Evaluation {
   improved_prompt: string;
 }
 
+export interface PromptLabResult {
+  totalScore: number;
+  clarity: number;
+  specificity: number;
+  technique: number;
+  outputQuality: number;
+  feedback: string;
+}
+
 interface PromptLabProps {
   open: boolean;
   onClose: () => void;
@@ -44,6 +53,10 @@ interface PromptLabProps {
   skillCategory: string;
   /** Best previous total score for this skill, to determine starting difficulty */
   bestPrevScore?: number;
+  /** When true, renders without its own modal wrapper (embedded in SimulatorModal) */
+  embedded?: boolean;
+  /** Called when user completes a prompt evaluation in embedded mode */
+  onComplete?: (result: PromptLabResult) => void;
 }
 
 const DIFFICULTY_META: Record<Difficulty, { label: string; emoji: string; desc: string }> = {

@@ -46,9 +46,19 @@ const MOCK_STEPS: AgentStep[] = [
   { id: "6", label: "Send to stakeholders", tool: "Email Agent", status: "pending" },
 ];
 
+export interface DelegationSimResult {
+  anomaliesCaught: number;
+  anomaliesTotal: number;
+  falseAlarms: number;
+  interventions: number;
+  delegationConfidence: number;
+}
+
 interface DelegationSimProps {
   taskName?: string;
   onComplete?: (score: OversightScore) => void;
+  /** Callback with mapped result for SimulatorModal integration */
+  onFinish?: (result: DelegationSimResult) => void;
 }
 
 export default function DelegationSim({ taskName = "Quarterly Pricing Review", onComplete }: DelegationSimProps) {
