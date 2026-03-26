@@ -2,7 +2,7 @@
  * NPCMechanics — Actual game mechanics for each Wandering NPC archetype.
  * Each NPC type opens a distinct mini-interaction panel.
  */
-import { useState, useMemo } from "react";
+import { motion } from "framer-motion";
 import { motion } from "framer-motion";
 import { Gem, Eye, Swords, Compass, Hammer, ScrollText, ChevronRight, X, Sparkles, Star, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
