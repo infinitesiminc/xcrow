@@ -29,6 +29,7 @@ type FilterMode = "all" | "in-stack" | WorkflowStage;
 
 export default function StackBuilder({ onSelectTool }: Props) {
   const [query, setQuery] = useState("");
+  const [jdUrl, setJdUrl] = useState("");
   const [loading, setLoading] = useState(false);
   const [searchResults, setSearchResults] = useState<RankedTool[] | null>(null);
   const [searchedTitle, setSearchedTitle] = useState("");
@@ -38,6 +39,7 @@ export default function StackBuilder({ onSelectTool }: Props) {
   const { toggleTool, isInStack, stack, stackSize } = useMyStack();
   const [proficiencies, setProficiencies] = useState<Record<string, number>>({});
   const [quizTool, setQuizTool] = useState<string | null>(null);
+  const [searchMode, setSearchMode] = useState<"title" | "url">("title");
 
   const handleQuizComplete = (toolName: string, result: QuizResult) => {
     setProficiencies(p => ({ ...p, [toolName]: result.level }));
