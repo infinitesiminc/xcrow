@@ -103,14 +103,14 @@ export default function OrgStack() {
       }
 
       // Also get task cluster skill_names
-      const allTaskSkills: { job_id: string; skill_names: string[] | null }[] = [];
+      const allTaskSkills: { job_id: string; skill_names: string[] | null; cluster_name: string }[] = [];
       for (let i = 0; i < jobIds.length; i += batchSize) {
         const batch = jobIds.slice(i, i + batchSize);
         const { data: tasks } = await supabase
           .from("job_task_clusters")
           .select("job_id, skill_names, cluster_name")
           .in("job_id", batch);
-        if (tasks) allTaskSkills.push(...tasks);
+        if (tasks) allTaskSkills.push(...(tasks as any[]));
       }
 
       // Build job → skills map
