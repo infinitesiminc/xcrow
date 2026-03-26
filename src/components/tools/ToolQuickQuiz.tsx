@@ -345,15 +345,13 @@ export default function ToolQuickQuiz({ tool, onComplete, onClose }: Props) {
               </p>
             </div>
             {tool.url && (
-              <a
-                href={tool.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-[11px] font-medium underline underline-offset-2"
+              <button
+                onClick={() => window.open(tool.url, '_blank', 'noopener,noreferrer')}
+                className="text-[11px] font-medium underline underline-offset-2 bg-transparent border-none cursor-pointer p-0"
                 style={{ color: "hsl(var(--primary))" }}
               >
                 Learn more at {tool.name} →
-              </a>
+              </button>
             )}
             <button
               onClick={onClose}
