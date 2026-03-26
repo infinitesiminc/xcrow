@@ -424,39 +424,45 @@ export default function RoleNPCEncounter({ role, onClose, onCollectSkills, onExp
               className="flex-1 overflow-y-auto px-5 py-3 space-y-3 min-h-0"
               style={{ maxHeight: "45vh" }}
             >
-              {chatMessages.map((msg, i) => (
-                <motion.div
-                  key={i}
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.25 }}
-                  className={`flex gap-2.5 ${msg.role === "user" ? "flex-row-reverse" : ""}`}
-                >
-                  {msg.role === "assistant" && (
-                    <RoleAvatar title={role.title} tier={role.threatTier} size={32} />
-                  )}
-                  <div
-                    className="rounded-xl px-3.5 py-2.5 text-sm leading-relaxed max-w-[80%]"
-                    style={
-                      msg.role === "assistant"
-                        ? {
-                            background: `hsl(${hue} 18% 10% / 0.7)`,
-                            borderLeft: `2px solid hsl(${colors.bg} / 0.5)`,
-                            color: `hsl(${hue} 12% 82%)`,
-                          }
-                        : {
-                            background: `hsl(${hue} 30% 20% / 0.6)`,
-                            color: `hsl(${hue} 15% 88%)`,
-                            marginLeft: "auto",
-                          }
-                    }
+              {chatMessages.map((msg, i) => {
+                const isLastAssistant = msg.role === "assistant" && i === chatMessages.length - 1;
+                const isCurrentlyStreaming = isLastAssistant && isStreaming;
+                return (
+                  <motion.div
+                    key={i}
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.25 }}
+                    className={`flex gap-2.5 ${msg.role === "user" ? "flex-row-reverse" : ""}`}
                   >
-                    <div className="prose prose-sm prose-invert max-w-none [&>p]:m-0 [&>ul]:mt-1 [&>ul]:mb-0 text-inherit">
-                      <ReactMarkdown>{msg.content}</ReactMarkdown>
+                    {msg.role === "assistant" && (
+                      <RoleAvatar title={role.title} tier={role.threatTier} size={32} />
+                    )}
+                    <div
+                      className="rounded-xl px-3.5 py-2.5 text-sm leading-relaxed max-w-[80%]"
+                      style={
+                        msg.role === "assistant"
+                          ? {
+                              background: `hsl(${hue} 18% 10% / 0.7)`,
+                              borderLeft: `2px solid hsl(${colors.bg} / 0.5)`,
+                              color: `hsl(${hue} 12% 82%)`,
+                            }
+                          : {
+                              background: `hsl(${hue} 30% 20% / 0.6)`,
+                              color: `hsl(${hue} 15% 88%)`,
+                              marginLeft: "auto",
+                            }
+                      }
+                    >
+                      {msg.role === "assistant" ? (
+                        <StreamingText text={msg.content} isComplete={!isCurrentlyStreaming} />
+                      ) : (
+                        <span>{msg.content}</span>
+                      )}
                     </div>
-                  </div>
-                </motion.div>
-              ))}
+                  </motion.div>
+                );
+              })}
               {isStreaming && chatMessages[chatMessages.length - 1]?.role !== "assistant" && (
                 <div className="flex gap-2.5">
                   <RoleAvatar title={role.title} tier={role.threatTier} size={32} />
@@ -465,13 +471,13 @@ export default function RoleNPCEncounter({ role, onClose, onCollectSkills, onExp
                     style={{ background: `hsl(${hue} 18% 10% / 0.7)`, borderLeft: `2px solid hsl(${colors.bg} / 0.5)` }}
                   >
                     <div className="flex gap-1">
-                      {[0, 1, 2].map(i => (
+                      {[0, 1, 2].map(j => (
                         <motion.div
-                          key={i}
+                          key={j}
                           className="w-1.5 h-1.5 rounded-full"
                           style={{ background: `hsl(${colors.bg})` }}
                           animate={{ opacity: [0.3, 1, 0.3] }}
-                          transition={{ duration: 1, repeat: Infinity, delay: i * 0.15 }}
+                          transition={{ duration: 1, repeat: Infinity, delay: j * 0.15 }}
                         />
                       ))}
                     </div>
