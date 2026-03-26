@@ -40,6 +40,7 @@ export default function OnboardingQuest({ open, userId, onComplete }: Onboarding
   const [step, setStep] = useState<Step>("intro");
   const [selectedAvatar, setSelectedAvatar] = useState<string>("crow");
   const [saving, setSaving] = useState(false);
+  const [playMode, setPlayMode] = useState<"explorer" | "fast_track">("explorer");
 
   // Username state
   const [usernameRaw, setUsernameRaw] = useState("");
