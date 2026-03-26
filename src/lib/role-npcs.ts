@@ -128,6 +128,6 @@ export const TERRITORY_HUES: Record<FutureSkillCategory, number> = {
   "Strategic": 280,
   "Communication": 160,
   "Leadership": 45,
-  "Ethics": 340,
+  "Ethics & Compliance": 340,
   "Human Edge": 190,
 };
