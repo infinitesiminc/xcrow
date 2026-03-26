@@ -36,6 +36,7 @@ import CompactHUD from "@/components/territory/CompactHUD";
 
 import AlliesPanel from "@/components/territory/AlliesPanel";
 import CodexPanel from "@/components/territory/CodexPanel";
+import ToolsPanel from "@/components/territory/ToolsPanel";
 
 
 import { useSkills } from "@/hooks/use-skills";
@@ -104,10 +105,19 @@ const AlliesRuneIcon = ({ size = 22, color = "currentColor" }: { size?: number; 
   </svg>
 );
 
+const ToolsRuneIcon = ({ size = 22, color = "currentColor" }: { size?: number; color?: string }) => (
+  <svg viewBox="-8 -8 16 16" width={size} height={size} fill="none" stroke={color} strokeWidth={1.2} strokeLinecap="round" strokeLinejoin="round">
+    <path d="M-2-6 L2-6 L3-4 L3 2 L0 6 L-3 2 L-3-4Z" />
+    <circle cx="0" cy="-2" r="1.5" />
+    <path d="M-1.5 1 L1.5 1 M0 1 L0 4" />
+  </svg>
+);
+
 const TAB_ITEMS = [
   { key: "table" as const, RuneIcon: ForgeRuneIcon, label: "Forge" },
   { key: "codex" as const, RuneIcon: CodexRuneIcon, label: "Codex" },
   { key: "allies" as const, RuneIcon: AlliesRuneIcon, label: "Allies" },
+  { key: "tools" as const, RuneIcon: ToolsRuneIcon, label: "Tools" },
 ] as const;
 
 type PendingSimLaunch = SimLaunchRequest & { taskName?: string };
@@ -134,7 +144,7 @@ const MapPage = () => {
   const [selectedRole, setSelectedRole] = useState<RoleResult | null>(null);
   const [selectedKingdomCtx, setSelectedKingdomCtx] = useState<{ tier?: string; xp?: number; questsCompleted?: number; totalQuests?: number } | null>(null);
   const [activeEdge, setActiveEdge] = useState<EdgeContext | null>(null);
-  const [activeTab, setActiveTab] = useState<"table" | "codex" | "allies">("table");
+  const [activeTab, setActiveTab] = useState<"table" | "codex" | "allies" | "tools">("table");
   const [panelCollapsed, setPanelCollapsed] = useState(true);
   const [mapFocusSkillId, setMapFocusSkillId] = useState<string | null>(null);
   const [forgeFocusSkillId, setForgeFocusSkillId] = useState<string | null>(null);
@@ -368,7 +378,7 @@ const MapPage = () => {
       >
         {/* Tab icons */}
         {TAB_ITEMS.map(({ key, RuneIcon, label }) => {
-          if (key !== "table" && !isSignedIn) return null;
+          if (key !== "table" && key !== "tools" && !isSignedIn) return null;
           const isActive = activeTab === key && !panelCollapsed;
           const activeColor = "hsl(var(--filigree-glow))";
           const inactiveColor = "hsl(var(--muted-foreground))";
@@ -468,6 +478,8 @@ const MapPage = () => {
                   <CodexPanel />
                 ) : activeTab === "allies" && isSignedIn ? (
                   <AlliesPanel onLaunchSim={handleLaunchSim} />
+                ) : activeTab === "tools" ? (
+                  <ToolsPanel />
                 ) : null}
               </div>
             </motion.div>
