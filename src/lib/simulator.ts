@@ -148,8 +148,9 @@ export async function compileSession(
   futurePrediction?: any,
   roleChallenge?: boolean,
   linkedSkillIds?: string[],
+  masteryTier?: string,
 ): Promise<SimSession> {
-  return simFetch("compile", { taskName, jobTitle, company, difficulty, mode, taskMeta, coaching, intel, level, futurePrediction, roleChallenge, linkedSkillIds });
+  return simFetch("compile", { taskName, jobTitle, company, difficulty, mode, taskMeta, coaching, intel, level, futurePrediction, roleChallenge, linkedSkillIds, masteryTier });
 }
 
 export async function chatTurn(
