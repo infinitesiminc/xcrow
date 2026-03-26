@@ -280,10 +280,25 @@ export const GTC_TOOLS: GTCTool[] = [
   // ═══════════════════════════════════════════
   { name: "Midjourney", company: "Midjourney", category: "design-media", version: "V6.1", description: "AI image generation with photorealistic and artistic output.", icon: "🎨", url: "https://midjourney.com", type: "learnable", maturity: "ga", pricing: "Paid", useCases: ["image-generation", "design", "creative"] },
   { name: "DALL-E", company: "OpenAI", category: "design-media", version: "3", description: "Text-to-image generation integrated into ChatGPT for visual content creation.", icon: "🖼️", type: "learnable", maturity: "ga", pricing: "Freemium", useCases: ["image-generation", "design", "marketing"] },
-  { name: "Runway", company: "Runway", category: "design-media", version: "Gen-3 Alpha", description: "AI video generation and editing — text-to-video, image-to-video, and motion brush.", icon: "🎬", url: "https://runwayml.com", type: "learnable", maturity: "ga", pricing: "Freemium", useCases: ["video-generation", "editing", "creative"] },
+  { name: "Runway", company: "Runway", category: "design-media", version: "Gen-3 Alpha", description: "AI video generation and editing — text-to-video, image-to-video, and motion brush.", icon: "🎬", url: "https://runwayml.com", type: "learnable", maturity: "ga", pricing: "Freemium", useCases: ["video-generation", "editing", "creative"], products: [
+    { name: "Gen-3 Alpha", description: "Text-to-video and image-to-video generation engine.", type: "learnable" },
+    { name: "Motion Brush", description: "Control motion in specific areas of generated video.", type: "learnable" },
+    { name: "Video-to-Video", description: "AI-powered video style transfer and re-rendering.", type: "learnable" },
+    { name: "Green Screen", description: "AI background removal for video content.", type: "learnable" },
+  ] },
   { name: "RTX / DLSS", company: "NVIDIA", category: "design-media", version: "DLSS 5", description: "Neuro rendering — fusion of 3D graphics and generative AI for real-time visuals.", icon: "🎮", url: "https://www.nvidia.com/rtx/", type: "reference", maturity: "ga", pricing: "Free", useCases: ["graphics", "gaming", "rendering"] },
-  { name: "Figma AI", company: "Figma", category: "design-media", version: "2025", description: "AI-powered design tool with auto-layout, content generation, and prototype creation.", icon: "🎯", url: "https://figma.com", type: "learnable", maturity: "ga", pricing: "Freemium", useCases: ["ui-design", "prototyping", "collaboration"] },
-  { name: "Canva AI", company: "Canva", category: "design-media", version: "2025", description: "AI-assisted design platform for presentations, social media, and marketing materials.", icon: "🖌️", url: "https://canva.com", type: "learnable", maturity: "ga", pricing: "Freemium", useCases: ["graphic-design", "marketing", "presentations"] },
+  { name: "Figma AI", company: "Figma", category: "design-media", version: "2025", description: "AI-powered design tool with auto-layout, content generation, and prototype creation.", icon: "🎯", url: "https://figma.com", type: "learnable", maturity: "ga", pricing: "Freemium", useCases: ["ui-design", "prototyping", "collaboration"], products: [
+    { name: "AI Auto Layout", description: "Automatically generate responsive layouts from designs.", type: "learnable" },
+    { name: "AI Content Fill", description: "Generate realistic placeholder content for mockups.", type: "learnable" },
+    { name: "AI Rename", description: "Automatically organize and name layers semantically.", type: "learnable" },
+    { name: "Dev Mode", description: "AI-powered design-to-code handoff with CSS/React output.", type: "learnable" },
+  ] },
+  { name: "Canva AI", company: "Canva", category: "design-media", version: "2025", description: "AI-assisted design platform for presentations, social media, and marketing materials.", icon: "🖌️", url: "https://canva.com", type: "learnable", maturity: "ga", pricing: "Freemium", useCases: ["graphic-design", "marketing", "presentations"], products: [
+    { name: "Magic Design", description: "Generate complete designs from text prompts.", type: "learnable" },
+    { name: "Magic Write", description: "AI copywriter for marketing text and captions.", type: "learnable" },
+    { name: "Magic Eraser", description: "Remove objects from images with AI.", type: "learnable" },
+    { name: "Brand Kit", description: "AI-enforced brand consistency across all designs.", type: "learnable" },
+  ] },
 
   // ═══════════════════════════════════════════
   // SEARCH & RETRIEVAL
