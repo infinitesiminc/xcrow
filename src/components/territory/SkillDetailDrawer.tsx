@@ -336,78 +336,73 @@ export default function SkillDetailDrawer({
             </div>
           </div>
 
-          {/* ── CTA: Start Quest / Boss Battle ── */}
+          {/* ── CTA: Tier-Specific Quest Launch ── */}
           <div className="space-y-2">
-            {/* L1 + L2 XP summary line */}
+            {/* XP summary */}
             <div className="flex items-center gap-3 text-[10px] text-muted-foreground">
               <span className="flex items-center gap-1">
                 <Zap className="h-3 w-3" style={{ color: "hsl(var(--primary))" }} />
-                L1: {level1Xp} XP · {level1SimsCompleted} quests
+                {totalXp} XP · {level1SimsCompleted} quests
               </span>
-              {level2Unlocked && (
-                <span className="flex items-center gap-1">
-                  <Diamond className="h-3 w-3" style={{ color: "hsl(45 93% 58%)" }} />
-                  L2: {level2Xp} XP
-                </span>
-              )}
+              <span className="flex items-center gap-1 px-1.5 py-0.5 rounded text-[8px] font-bold" style={{ background: `${MASTERY_TIERS[currentTierIdx].color}20`, color: MASTERY_TIERS[currentTierIdx].color }}>
+                {MASTERY_TIERS[currentTierIdx].icon} {MASTERY_TIERS[currentTierIdx].name}
+              </span>
             </div>
 
-            {level2Completed ? (
-              <div
-                className="rounded-lg p-3 flex items-center gap-3"
-                style={{
-                  background: "linear-gradient(135deg, hsl(45 30% 15%), hsl(45 20% 10%))",
-                  border: "1.5px solid hsl(45 70% 50%)",
-                }}
-              >
-                <span className="text-lg">👑</span>
-                <div>
-                  <p className="text-xs font-bold" style={{ fontFamily: "'Cinzel', serif", color: "hsl(45 93% 58%)" }}>Boss Conquered</p>
-                  <p className="text-[10px] text-muted-foreground">Human Edge mastered</p>
-                </div>
+            {/* Current tier quest button */}
+            {(() => {
+              const tier = MASTERY_TIERS[currentTierIdx];
+              const tierKey = tierToSimKey(currentTierIdx);
+              const isGold = currentTierIdx === 2;
+              const isPlatinum = currentTierIdx === 3;
+
+              return (
+                <motion.button
+                  onClick={() => {
+                    onOpenChange(false);
+                    window.dispatchEvent(new CustomEvent("launch_skill_sim", {
+                      detail: {
+                        skillId: skill.id,
+                        skillName: skill.name,
+                        level: isGold ? 2 : 1,
+                        masteryTier: tierKey,
+                      },
+                    }));
+                  }}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.97 }}
+                  className="w-full rounded-lg p-3 text-left flex items-center gap-3 group"
+                  style={{
+                    background: isGold
+                      ? "linear-gradient(135deg, hsl(45 30% 12%), hsl(280 30% 12%))"
+                      : isPlatinum
+                      ? "linear-gradient(135deg, hsl(280 30% 12%), hsl(210 30% 12%))"
+                      : `linear-gradient(135deg, hsl(var(--primary) / 0.15), hsl(var(--primary) / 0.08))`,
+                    border: `1.5px solid ${tier.color}50`,
+                    boxShadow: `0 0 16px ${tier.color}15`,
+                  }}
+                >
+                  <Swords className="h-5 w-5 shrink-0" style={{ color: tier.color }} />
+                  <div className="min-w-0">
+                    <p className="text-xs font-bold" style={{ fontFamily: "'Cinzel', serif", color: tier.color }}>
+                      {tier.simLabel}
+                    </p>
+                    <p className="text-[10px] text-muted-foreground">{tier.simDesc}</p>
+                  </div>
+                  <ArrowRight className="h-3.5 w-3.5 shrink-0 ml-auto group-hover:translate-x-0.5 transition-transform" style={{ color: tier.color }} />
+                </motion.button>
+              );
+            })()}
+
+            {/* Show next tier preview if not at max */}
+            {currentTierIdx < MASTERY_TIERS.length - 1 && (
+              <div className="flex items-center gap-2 px-3 py-1.5 rounded-md" style={{ background: "hsl(var(--muted) / 0.08)" }}>
+                <Lock className="h-3 w-3 text-muted-foreground/40" />
+                <span className="text-[9px] text-muted-foreground">
+                  <strong style={{ color: MASTERY_TIERS[currentTierIdx + 1].color }}>{MASTERY_TIERS[currentTierIdx + 1].name}</strong> unlocks at {MASTERY_TIERS[currentTierIdx + 1].minXp} XP — {MASTERY_TIERS[currentTierIdx + 1].simDesc}
+                </span>
               </div>
-            ) : level2Unlocked && onLaunchBoss ? (
-              <motion.button
-                onClick={onLaunchBoss}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.97 }}
-                className="w-full rounded-lg p-3 text-left flex items-center gap-3 group"
-                style={{
-                  background: "linear-gradient(135deg, hsl(45 30% 12%), hsl(280 30% 12%))",
-                  border: "1.5px solid hsl(45 60% 50% / 0.5)",
-                  boxShadow: "0 0 20px hsl(45 93% 58% / 0.1)",
-                }}
-              >
-                <Swords className="h-5 w-5 shrink-0" style={{ color: "hsl(45 93% 58%)" }} />
-                <div className="min-w-0">
-                  <p className="text-xs font-bold" style={{ fontFamily: "'Cinzel', serif", color: "hsl(45 93% 58%)" }}>Boss Battle</p>
-                  <p className="text-[10px] text-muted-foreground">Strategic oversight audit</p>
-                </div>
-                <ArrowRight className="h-3.5 w-3.5 text-amber-400 shrink-0 ml-auto group-hover:translate-x-0.5 transition-transform" />
-              </motion.button>
-            ) : (
-              <motion.button
-                onClick={() => {
-                  onOpenChange(false);
-                  // Dispatch launch for L1
-                  window.dispatchEvent(new CustomEvent("launch_skill_sim", {
-                    detail: { skillId: skill.id, skillName: skill.name, level: 1 },
-                  }));
-                }}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.97 }}
-                className="w-full py-2.5 rounded-lg text-xs font-bold uppercase tracking-wider relative overflow-hidden group"
-                style={{
-                  background: "linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary) / 0.8))",
-                  color: "hsl(var(--foreground))",
-                  boxShadow: "0 4px 16px hsl(var(--primary) / 0.3)",
-                  fontFamily: "'Cinzel', serif",
-                  border: "1px solid hsl(var(--primary) / 0.4)",
-                }}
-              >
-                <Swords className="h-3.5 w-3.5 inline mr-1.5" />
-                Start Quest
-              </motion.button>
+            )}
             )}
           </div>
 
