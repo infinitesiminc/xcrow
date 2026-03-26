@@ -46,7 +46,7 @@ export default function BossBanner({ availableBosses, onLaunchBoss, onDismiss }:
           animate={{ y: 0, opacity: 1 }}
           exit={{ y: -60, opacity: 0 }}
           transition={{ type: "spring", damping: 20, stiffness: 300 }}
-          className="absolute top-3 left-1/2 -translate-x-1/2 z-30 w-[90%] max-w-md"
+          className="absolute top-3 left-1/2 -translate-x-1/2 z-30 w-[90%] max-w-md pointer-events-none"
         >
           <div
             className="relative rounded-xl px-4 py-3 flex items-center gap-3 overflow-hidden cursor-pointer group"
