@@ -357,7 +357,35 @@ export default function FutureTerritoryMap({ skills, focusSkillId, level2SkillId
         {/* Cinematic vignette */}
         <div className="absolute inset-0 map-vignette z-[1]" />
 
-
+        {/* Company filter pills */}
+        {companyNames.length > 0 && (
+          <div className="absolute top-3 left-1/2 -translate-x-1/2 z-10 flex flex-wrap gap-1.5 max-w-[80%] justify-center">
+            {companyNames.slice(0, 12).map(name => {
+              const active = companyFilter.has(name);
+              return (
+                <button
+                  key={name}
+                  onClick={() => toggleCompanyFilter(name)}
+                  className={`px-2.5 py-1 rounded-full text-[10px] font-semibold backdrop-blur-md border transition-all duration-200 ${
+                    active
+                      ? "bg-primary/90 text-primary-foreground border-primary shadow-md shadow-primary/25"
+                      : "bg-card/70 text-muted-foreground border-border/50 hover:bg-card hover:text-foreground"
+                  }`}
+                >
+                  {name}
+                </button>
+              );
+            })}
+            {companyFilter.size > 0 && (
+              <button
+                onClick={() => setCompanyFilter(new Set())}
+                className="px-2 py-1 rounded-full text-[10px] font-medium text-muted-foreground hover:text-foreground transition-colors"
+              >
+                ✕ Clear
+              </button>
+            )}
+          </div>
+        )}
         <svg
           viewBox={`0 0 ${FUTURE_MAP_WIDTH} ${FUTURE_MAP_HEIGHT}`}
           className="w-full h-full relative"
