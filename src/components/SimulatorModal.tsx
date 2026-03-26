@@ -1014,11 +1014,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
       if (nowAllMet || reply.includes("[ALL_OBJECTIVES_MET]")) {
         // Victory — lock input and auto-finish after celebration delay
         setQuestCleared(true);
-        // Use functional ref to avoid stale closure — schedule phase transition directly
-        setTimeout(() => {
-          setPhase("completing");
-          clearInactivityTimer();
-        }, 3000);
+        setTimeout(() => handleFinishRef.current(), 3000);
       }
 
       // Learn→Apply: every user response advances the round (each response = 1 complete beat)
