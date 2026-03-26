@@ -49,13 +49,13 @@ interface SkillLaunchCardProps {
   /** Whether this skill has been scouted via NPC conversation */
   isScouted?: boolean;
   /** Current mission phase — gates tier access */
-  missionPhase?: "scout" | "battle" | "conquer";
+  missionPhase?: "discover" | "experiment" | "challenge" | "master";
 }
 
 export default function SkillLaunchCard({
   skill, x, y, containerWidth, containerHeight,
   level2Unlocked, growth, onClose, onLaunchSim, onLaunchPromptLab,
-  isScouted = true, missionPhase = "battle",
+  isScouted = true, missionPhase = "experiment",
 }: SkillLaunchCardProps) {
   const navigate = useNavigate();
   const [firstRole, setFirstRole] = useState<{ title: string; company: string | null } | null>(null);
