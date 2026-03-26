@@ -1246,17 +1246,23 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
     markCheckpointCompleted();
     setPhase("done");
 
-    // Random Intel Drop — 35% chance on score 50+, generates async
+    // Random Tool Drop — 35% chance on score 50+
     const dropRoll = Math.random();
     if (scores && scores.overall >= 50 && dropRoll < 0.35) {
-      generateElevation(jobTitle, taskName, company)
-        .then(narrative => {
-          const dropXP = 15 + Math.floor(Math.random() * 16); // 15-30 XP
-          setIntelDrop({ summary: narrative.shift_summary, skills: narrative.emerging_skills.slice(0, 3), xp: dropXP });
+      try {
+        const { GTC_TOOLS } = await import("@/data/gtc-tools-registry");
+        const { TOOL_SKILL_MAP } = await import("@/data/tool-skill-mappings");
+        const learnableTools = GTC_TOOLS.filter(t => t.type === "learnable");
+        const tool = learnableTools[Math.floor(Math.random() * learnableTools.length)];
+        if (tool) {
+          const relatedSkills = (TOOL_SKILL_MAP[tool.name] || []).slice(0, 3);
+          const dropXP = 15 + Math.floor(Math.random() * 16);
+          setIntelDrop({ toolName: tool.name, toolIcon: tool.icon, toolCompany: tool.company, relatedSkills, xp: dropXP });
           // Persist to DB
           if (user) {
+            const toolDrop = { type: "tool_drop", tool_name: tool.name, tool_icon: tool.icon, tool_company: tool.company, related_skills: relatedSkills };
             supabase.from("completed_simulations" as any)
-              .update({ elevation_narrative: narrative } as any)
+              .update({ elevation_narrative: toolDrop } as any)
               .eq("user_id", user.id)
               .eq("task_name", taskName)
               .eq("job_title", jobTitle)
@@ -1264,8 +1270,8 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
               .limit(1)
               .then(() => {});
           }
-        })
-        .catch(err => console.error("Intel drop generation failed:", err));
+        }
+      } catch (err) { console.error("Tool drop failed:", err); }
     }
   };
 
