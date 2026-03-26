@@ -581,8 +581,23 @@ export default function FutureTerritoryMap({ skills, focusSkillId, level2SkillId
             onVictory={(guardianId, category) => {
               mission.conquerSkill();
               mission.scoutRole(`guardian-${guardianId}`, category, []);
+              setConquest({
+                guardianName: trialGuardian.name,
+                territory: trialGuardian.category,
+                hue: trialGuardian.hue,
+              });
               setTrialGuardian(null);
             }}
+          />
+        )}
+
+        {/* Conquest celebration */}
+        {conquest && (
+          <ConquestCelebration
+            guardianName={conquest.guardianName}
+            territoryName={conquest.territory}
+            hue={conquest.hue}
+            onComplete={() => setConquest(null)}
           />
         )}
 
