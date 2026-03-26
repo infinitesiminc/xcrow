@@ -1,35 +1,44 @@
 /**
- * OnboardingQuest — Cinematic RPG intro overlay.
- * 4 steps: Mission Intro → Choose Avatar → Set Username → Enter the Map.
+ * OnboardingQuest — Cinematic RPG intro overlay (merged universal flow).
+ * 4 steps: Cinematic Intro → Pick Your Path → Avatar + Username → Enter the Map.
  * Each step features a skill hero image backdrop for immersive atmosphere.
  */
-import { useState, useCallback, useEffect, useRef } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { AVATAR_OPTIONS } from "@/lib/avatars";
-import { Map, ChevronRight, Loader2, AtSign, Check, AlertCircle } from "lucide-react";
+import { Map, ChevronRight, Loader2, AtSign, Check, AlertCircle, GraduationCap, Briefcase, Compass } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import xcrowLogo from "@/assets/xcrow-logo.webp";
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 
-/** One curated hero image per onboarding step for atmosphere */
 const STEP_HERO_IMAGES: Record<string, string> = {
   intro: "complex-threat-modeling",
-  avatar: "ethical-ai-leadership-governance",
-  username: "prompt-engineering",
+  path: "ethical-ai-leadership-governance",
+  avatar: "prompt-engineering",
   launch: "strategic-problem-solving",
 };
+
+type PlayerPath = "student" | "professional" | "explorer";
+type Step = "intro" | "path" | "avatar" | "launch";
+
+const TERRITORY_OPTIONS = [
+  { id: "Technical", emoji: "⚙️", label: "Technical" },
+  { id: "Creative", emoji: "🎨", label: "Creative" },
+  { id: "Analytical", emoji: "📊", label: "Analytical" },
+  { id: "Strategic", emoji: "♟️", label: "Strategic" },
+  { id: "Communication", emoji: "🗣️", label: "Communication" },
+  { id: "Leadership", emoji: "👑", label: "Leadership" },
+];
 
 interface OnboardingQuestProps {
   open: boolean;
   userId: string;
   onComplete: () => void;
 }
-
-type Step = "intro" | "avatar" | "username" | "mode" | "launch";
 
 function sanitizeUsername(raw: string): string {
   return raw.toLowerCase().replace(/[^a-z0-9_-]/g, "").slice(0, 24);
@@ -38,21 +47,20 @@ function sanitizeUsername(raw: string): string {
 export default function OnboardingQuest({ open, userId, onComplete }: OnboardingQuestProps) {
   const { toast } = useToast();
   const [step, setStep] = useState<Step>("intro");
-  const [selectedAvatar, setSelectedAvatar] = useState<string>("crow");
+  const [selectedPath, setSelectedPath] = useState<PlayerPath | null>(null);
+  const [interests, setInterests] = useState<Set<string>>(new Set());
+  const [selectedAvatar, setSelectedAvatar] = useState<string>("wolf");
   const [saving, setSaving] = useState(false);
-  const [playMode, setPlayMode] = useState<"explorer" | "fast_track">("explorer");
 
   // Username state
   const [usernameRaw, setUsernameRaw] = useState("");
   const [usernameStatus, setUsernameStatus] = useState<"idle" | "checking" | "available" | "taken">("idle");
   const username = sanitizeUsername(usernameRaw);
+  const [showUsername, setShowUsername] = useState(false);
 
-  // Check username availability with debounce
+  // Check username availability
   useEffect(() => {
-    if (username.length < 3) {
-      setUsernameStatus("idle");
-      return;
-    }
+    if (username.length < 3) { setUsernameStatus("idle"); return; }
     setUsernameStatus("checking");
     const timer = setTimeout(async () => {
       const { data } = await supabase
@@ -66,18 +74,32 @@ export default function OnboardingQuest({ open, userId, onComplete }: Onboarding
     return () => clearTimeout(timer);
   }, [username, userId]);
 
+  const toggleInterest = (id: string) => {
+    setInterests(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else if (next.size < 3) next.add(id);
+      return next;
+    });
+  };
+
+  const handlePathSelect = (path: PlayerPath) => {
+    setSelectedPath(path);
+    setStep("avatar");
+  };
+
   const handleComplete = useCallback(async () => {
     setSaving(true);
-    const updates: any = {
+    const updates: Record<string, unknown> = {
       onboarding_completed: true,
       avatar_id: selectedAvatar,
-      play_mode: playMode,
+      id: userId,
     };
-    if (username.length >= 3 && usernameStatus === "available") {
-      updates.username = username;
-    }
 
-    updates.id = userId;
+    if (selectedPath) updates.career_stage = selectedPath === "explorer" ? null : selectedPath;
+    if (interests.size > 0) updates.target_roles = Array.from(interests).map(cat => ({ category: cat }));
+    if (username.length >= 3 && usernameStatus === "available") updates.username = username;
+
     const { error } = await supabase
       .from("profiles")
       .upsert(updates, { onConflict: "id" });
@@ -87,9 +109,11 @@ export default function OnboardingQuest({ open, userId, onComplete }: Onboarding
     }
     setSaving(false);
     onComplete();
-  }, [userId, selectedAvatar, username, usernameStatus, onComplete, toast]);
+  }, [userId, selectedAvatar, selectedPath, interests, username, usernameStatus, onComplete, toast]);
 
   if (!open) return null;
+
+  const stepList: Step[] = ["intro", "path", "avatar", "launch"];
 
   return (
     <motion.div
@@ -97,11 +121,9 @@ export default function OnboardingQuest({ open, userId, onComplete }: Onboarding
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       className="fixed inset-0 z-[60] flex items-center justify-center"
-      style={{
-        background: "hsl(var(--background))",
-      }}
+      style={{ background: "hsl(var(--background))" }}
     >
-      {/* Skill hero backdrop — crossfades per step */}
+      {/* Hero backdrop — crossfades per step */}
       <AnimatePresence mode="wait">
         <motion.div
           key={step}
@@ -147,10 +169,7 @@ export default function OnboardingQuest({ open, userId, onComplete }: Onboarding
               transition={{ delay: 0.2, duration: 0.6 }}
               className="relative mx-auto w-24 h-24 mb-6"
             >
-              <div
-                className="absolute inset-0 rounded-full blur-2xl opacity-40"
-                style={{ background: "hsl(var(--filigree-glow) / 0.3)" }}
-              />
+              <div className="absolute inset-0 rounded-full blur-2xl opacity-40" style={{ background: "hsl(var(--filigree-glow) / 0.3)" }} />
               <motion.img
                 src={xcrowLogo}
                 alt="Xcrow"
@@ -183,7 +202,7 @@ export default function OnboardingQuest({ open, userId, onComplete }: Onboarding
               transition={{ delay: 0.8, duration: 0.5 }}
               className="text-sm text-muted-foreground leading-relaxed mb-8 max-w-sm mx-auto"
             >
-              You've been chosen to scout the frontier. Choose your companion and claim your place on the world map.
+              Scout the frontier, conquer skills, and forge your place in the new world.
             </motion.p>
 
             <motion.div
@@ -204,7 +223,7 @@ export default function OnboardingQuest({ open, userId, onComplete }: Onboarding
             >
               <Button
                 size="lg"
-                onClick={() => setStep("avatar")}
+                onClick={() => setStep("path")}
                 className="px-8"
                 style={{ boxShadow: "0 0 20px hsl(var(--filigree-glow) / 0.15)" }}
               >
@@ -215,10 +234,10 @@ export default function OnboardingQuest({ open, userId, onComplete }: Onboarding
           </motion.div>
         )}
 
-        {/* ─── Step 2: Choose Avatar ─── */}
-        {step === "avatar" && (
+        {/* ─── Step 2: Pick Your Path ─── */}
+        {step === "path" && (
           <motion.div
-            key="avatar"
+            key="path"
             initial={{ opacity: 0, x: 40 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -40 }}
@@ -231,13 +250,124 @@ export default function OnboardingQuest({ open, userId, onComplete }: Onboarding
               transition={{ delay: 0.1 }}
               className="text-2xl font-fantasy font-bold text-foreground mb-2"
             >
-              Choose Your Companion
+              Who Are You?
             </motion.h2>
             <motion.p
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.2 }}
               className="text-sm text-muted-foreground mb-6"
+            >
+              Pick your path to shape your journey
+            </motion.p>
+
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.25 }}
+              className="space-y-3 max-w-sm mx-auto"
+            >
+              {([
+                {
+                  path: "student" as PlayerPath,
+                  icon: GraduationCap,
+                  label: "Student",
+                  desc: "High school or university — exploring future careers",
+                  color: "from-[hsl(var(--neon-blue))] to-[hsl(var(--neon-cyan))]",
+                },
+                {
+                  path: "professional" as PlayerPath,
+                  icon: Briefcase,
+                  label: "Professional",
+                  desc: "Working and upskilling — staying ahead of AI",
+                  color: "from-[hsl(var(--neon-purple))] to-[hsl(var(--neon-pink))]",
+                },
+                {
+                  path: "explorer" as PlayerPath,
+                  icon: Compass,
+                  label: "Just Exploring",
+                  desc: "Curious about the AI skills landscape",
+                  color: "from-[hsl(var(--neon-green))] to-[hsl(var(--neon-orange))]",
+                },
+              ]).map(({ path, icon: Icon, label, desc, color }, i) => (
+                <motion.button
+                  key={path}
+                  initial={{ opacity: 0, x: 30 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.3 + i * 0.08 }}
+                  whileTap={{ scale: 0.97 }}
+                  onClick={() => handlePathSelect(path)}
+                  className="w-full flex items-center gap-4 rounded-xl border-2 border-border/40 hover:border-primary/30 bg-card/50 hover:bg-card/80 px-5 py-4 text-left transition-all group backdrop-blur-sm"
+                >
+                  <div className={`w-11 h-11 rounded-lg bg-gradient-to-br ${color} flex items-center justify-center shrink-0 opacity-80 group-hover:opacity-100 transition-opacity`}>
+                    <Icon className="h-5 w-5 text-white" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold text-foreground">{label}</p>
+                    <p className="text-[11px] text-muted-foreground leading-tight">{desc}</p>
+                  </div>
+                </motion.button>
+              ))}
+            </motion.div>
+
+            {/* Interest picks — shown after path selection but before advancing */}
+          </motion.div>
+        )}
+
+        {/* ─── Step 3: Avatar + Optional Username ─── */}
+        {step === "avatar" && (
+          <motion.div
+            key="avatar"
+            initial={{ opacity: 0, x: 40 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -40 }}
+            transition={{ duration: 0.35 }}
+            className="text-center max-w-lg px-6"
+          >
+            {/* Interest picks for non-explorers */}
+            {selectedPath !== "explorer" && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.05 }}
+                className="mb-6"
+              >
+                <h3 className="text-sm font-semibold text-foreground mb-2">What interests you? <span className="text-muted-foreground font-normal">(pick 2–3)</span></h3>
+                <div className="grid grid-cols-3 gap-2 max-w-xs mx-auto">
+                  {TERRITORY_OPTIONS.map(({ id, emoji, label }) => {
+                    const active = interests.has(id);
+                    return (
+                      <button
+                        key={id}
+                        onClick={() => toggleInterest(id)}
+                        className={`rounded-lg border px-2 py-2 text-center transition-all ${
+                          active
+                            ? "border-primary bg-primary/10 ring-1 ring-primary/30"
+                            : "border-border/40 bg-card/50 hover:border-border"
+                        }`}
+                      >
+                        <span className="text-base">{emoji}</span>
+                        <p className={`text-[10px] font-medium mt-0.5 ${active ? "text-primary" : "text-muted-foreground"}`}>{label}</p>
+                      </button>
+                    );
+                  })}
+                </div>
+              </motion.div>
+            )}
+
+            <motion.h2
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+              className="text-2xl font-fantasy font-bold text-foreground mb-2"
+            >
+              Choose Your Companion
+            </motion.h2>
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.2 }}
+              className="text-sm text-muted-foreground mb-5"
             >
               This creature will represent you across the realm
             </motion.p>
@@ -246,7 +376,7 @@ export default function OnboardingQuest({ open, userId, onComplete }: Onboarding
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.25 }}
-              className="grid grid-cols-4 sm:grid-cols-6 gap-2 mb-8 max-w-sm mx-auto"
+              className="grid grid-cols-4 sm:grid-cols-6 gap-2 mb-5 max-w-sm mx-auto"
             >
               {AVATAR_OPTIONS.map((av, i) => {
                 const isSelected = selectedAvatar === av.id;
@@ -288,6 +418,47 @@ export default function OnboardingQuest({ open, userId, onComplete }: Onboarding
               })}
             </motion.div>
 
+            {/* Optional username toggle */}
+            {!showUsername ? (
+              <motion.button
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.5 }}
+                onClick={() => setShowUsername(true)}
+                className="text-[11px] text-muted-foreground hover:text-foreground transition-colors mb-4 inline-block"
+              >
+                + Claim a username
+              </motion.button>
+            ) : (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                className="max-w-xs mx-auto mb-4 space-y-1.5"
+              >
+                <div className="relative">
+                  <AtSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="e.g. darkwolf, skyarcher"
+                    value={usernameRaw}
+                    onChange={(e) => setUsernameRaw(e.target.value)}
+                    className="pl-10 pr-10 text-center"
+                    autoFocus
+                    maxLength={24}
+                  />
+                  <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                    {usernameStatus === "checking" && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
+                    {usernameStatus === "available" && <Check className="h-4 w-4 text-success" />}
+                    {usernameStatus === "taken" && <AlertCircle className="h-4 w-4 text-destructive" />}
+                  </div>
+                </div>
+                {username.length >= 3 && (
+                  <p className={`text-[11px] ${usernameStatus === "taken" ? "text-destructive" : "text-muted-foreground"}`}>
+                    {usernameStatus === "taken" ? "Already taken — try another" : `xcrow.ai/u/${username}`}
+                  </p>
+                )}
+              </motion.div>
+            )}
+
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -295,218 +466,12 @@ export default function OnboardingQuest({ open, userId, onComplete }: Onboarding
             >
               <Button
                 size="lg"
-                onClick={() => setStep("username")}
+                onClick={() => setStep("launch")}
                 disabled={!selectedAvatar}
                 className="px-8"
                 style={{ boxShadow: "0 0 20px hsl(var(--filigree-glow) / 0.15)" }}
               >
                 Summon {AVATAR_OPTIONS.find(a => a.id === selectedAvatar)?.label || "Companion"}
-                <ChevronRight className="h-4 w-4 ml-1" />
-              </Button>
-            </motion.div>
-          </motion.div>
-        )}
-
-        {/* ─── Step 3: Choose Username ─── */}
-        {step === "username" && (
-          <motion.div
-            key="username"
-            initial={{ opacity: 0, x: 40 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -40 }}
-            transition={{ duration: 0.35 }}
-            className="text-center max-w-md px-6"
-          >
-            {/* Show selected avatar small */}
-            <motion.div
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.1 }}
-              className="mx-auto w-16 h-16 mb-4"
-            >
-              <img
-                src={AVATAR_OPTIONS.find(a => a.id === selectedAvatar)?.src}
-                alt="Your companion"
-                className="h-16 w-16 rounded-full object-cover border-2 border-primary/20 drop-shadow-[0_0_12px_hsl(var(--filigree-glow)/0.3)]"
-              />
-            </motion.div>
-
-            <motion.h2
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.15 }}
-              className="text-2xl font-fantasy font-bold text-foreground mb-2"
-            >
-              Claim Your Name
-            </motion.h2>
-            <motion.p
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.25 }}
-              className="text-sm text-muted-foreground mb-6"
-            >
-              Choose a unique name so allies can find and challenge you
-            </motion.p>
-
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 }}
-              className="max-w-xs mx-auto space-y-3"
-            >
-              <div className="relative">
-                <AtSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="e.g. darkwolf, skyarcher"
-                  value={usernameRaw}
-                  onChange={(e) => setUsernameRaw(e.target.value)}
-                  className="pl-10 pr-10 text-center"
-                  autoFocus
-                  maxLength={24}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" && username.length >= 3 && usernameStatus === "available") {
-                      setStep("launch");
-                    }
-                  }}
-                />
-                {/* Status indicator */}
-                <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                  {usernameStatus === "checking" && (
-                    <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-                  )}
-                  {usernameStatus === "available" && (
-                    <Check className="h-4 w-4 text-success" />
-                  )}
-                  {usernameStatus === "taken" && (
-                    <AlertCircle className="h-4 w-4 text-destructive" />
-                  )}
-                </div>
-              </div>
-
-              {/* Live URL preview */}
-              {username.length >= 3 && (
-                <motion.p
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  className={`text-[11px] ${
-                    usernameStatus === "taken" ? "text-destructive" : "text-muted-foreground"
-                  }`}
-                >
-                  {usernameStatus === "taken"
-                    ? "This name is already taken — try another"
-                    : `xcrow.ai/u/${username}`}
-                </motion.p>
-              )}
-
-              <Button
-                size="lg"
-                onClick={() => setStep("mode")}
-                disabled={username.length < 3 || usernameStatus === "taken" || usernameStatus === "checking"}
-                className="w-full"
-                style={{ boxShadow: "0 0 20px hsl(var(--filigree-glow) / 0.15)" }}
-              >
-                Claim Name
-                <ChevronRight className="h-4 w-4 ml-1" />
-              </Button>
-
-              <button
-                onClick={() => setStep("mode")}
-                className="text-[11px] text-muted-foreground hover:text-foreground transition-colors"
-              >
-                Skip — I'll set this later
-              </button>
-            </motion.div>
-          </motion.div>
-        )}
-
-        {/* ─── Step 3.5: Choose Play Mode ─── */}
-        {step === "mode" && (
-          <motion.div
-            key="mode"
-            initial={{ opacity: 0, x: 40 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -40 }}
-            transition={{ duration: 0.35 }}
-            className="text-center max-w-lg px-6"
-          >
-            <motion.h2
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
-              className="text-2xl font-fantasy font-bold text-foreground mb-2"
-            >
-              How Do You Want to Play?
-            </motion.h2>
-            <motion.p
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.2 }}
-              className="text-sm text-muted-foreground mb-6"
-            >
-              You can switch anytime in Settings
-            </motion.p>
-
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.25 }}
-              className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-md mx-auto mb-8"
-            >
-              {/* Explorer Card */}
-              <button
-                onClick={() => setPlayMode("explorer")}
-                className={`relative text-left rounded-xl border-2 p-5 transition-all ${
-                  playMode === "explorer"
-                    ? "border-primary bg-primary/5 ring-1 ring-primary/30"
-                    : "border-border/40 hover:border-border hover:bg-muted/20"
-                }`}
-              >
-                <div className="text-2xl mb-2">🗺️</div>
-                <h3 className="text-sm font-bold text-foreground mb-1">Explorer</h3>
-                <p className="text-xs text-muted-foreground leading-relaxed">
-                  Full RPG experience — lore, guardians, deep sims. Best for 30+ min sessions.
-                </p>
-                {playMode === "explorer" && (
-                  <div className="absolute top-2 right-2 h-5 w-5 rounded-full bg-primary flex items-center justify-center">
-                    <Check className="h-3 w-3 text-primary-foreground" />
-                  </div>
-                )}
-              </button>
-
-              {/* Fast Track Card */}
-              <button
-                onClick={() => setPlayMode("fast_track")}
-                className={`relative text-left rounded-xl border-2 p-5 transition-all ${
-                  playMode === "fast_track"
-                    ? "border-primary bg-primary/5 ring-1 ring-primary/30"
-                    : "border-border/40 hover:border-border hover:bg-muted/20"
-                }`}
-              >
-                <div className="text-2xl mb-2">⚡</div>
-                <h3 className="text-sm font-bold text-foreground mb-1">Fast Track</h3>
-                <p className="text-xs text-muted-foreground leading-relaxed">
-                  Career-focused sprints — targeted skills, compressed sims. Best for 10–20 min.
-                </p>
-                {playMode === "fast_track" && (
-                  <div className="absolute top-2 right-2 h-5 w-5 rounded-full bg-primary flex items-center justify-center">
-                    <Check className="h-3 w-3 text-primary-foreground" />
-                  </div>
-                )}
-              </button>
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.5 }}
-            >
-              <Button
-                size="lg"
-                onClick={() => setStep("launch")}
-                className="px-8"
-                style={{ boxShadow: "0 0 20px hsl(var(--filigree-glow) / 0.15)" }}
-              >
-                Continue
                 <ChevronRight className="h-4 w-4 ml-1" />
               </Button>
             </motion.div>
@@ -529,10 +494,7 @@ export default function OnboardingQuest({ open, userId, onComplete }: Onboarding
               transition={{ delay: 0.1, type: "spring", damping: 12 }}
               className="relative mx-auto w-28 h-28 mb-6"
             >
-              <div
-                className="absolute inset-0 rounded-full blur-2xl opacity-50"
-                style={{ background: "hsl(var(--filigree-glow) / 0.25)" }}
-              />
+              <div className="absolute inset-0 rounded-full blur-2xl opacity-50" style={{ background: "hsl(var(--filigree-glow) / 0.25)" }} />
               <img
                 src={AVATAR_OPTIONS.find(a => a.id === selectedAvatar)?.src}
                 alt="Your companion"
@@ -581,7 +543,7 @@ export default function OnboardingQuest({ open, userId, onComplete }: Onboarding
 
       {/* Step dots */}
       <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-2">
-        {(["intro", "avatar", "username", "mode", "launch"] as Step[]).map((s) => (
+        {stepList.map((s) => (
           <div
             key={s}
             className={`h-1.5 rounded-full transition-all duration-300 ${
