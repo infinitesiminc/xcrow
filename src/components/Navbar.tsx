@@ -68,7 +68,6 @@ export default function Navbar() {
       ]
     : [
         { label: "Explore", path: "/", icon: Compass },
-        { label: "Tools", path: "/tools", icon: Wrench },
         { label: "How It Works", path: "/how-it-works", icon: BookOpen },
         { label: "Skills", path: "/skills", icon: Sparkles },
         { label: "Pricing", path: "/pricing", icon: null },
