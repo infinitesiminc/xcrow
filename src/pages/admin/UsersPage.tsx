@@ -3,7 +3,20 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Users, UserPlus, Activity, Zap, Search, ArrowUpDown } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Loader2, Users, UserPlus, Activity, Zap, Search, ArrowUpDown, Trash2 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import {
   Table,
   TableBody,
@@ -38,6 +51,8 @@ export default function UsersPage() {
   const [search, setSearch] = useState("");
   const [sortKey, setSortKey] = useState<SortKey>("created_at");
   const [sortAsc, setSortAsc] = useState(false);
+  const [deleting, setDeleting] = useState<string | null>(null);
+  const { toast } = useToast();
 
   useEffect(() => {
     (async () => {
@@ -46,6 +61,21 @@ export default function UsersPage() {
       setLoading(false);
     })();
   }, []);
+
+  const handleDelete = async (userId: string, name: string) => {
+    setDeleting(userId);
+    try {
+      const { data, error } = await supabase.functions.invoke("admin-delete-user", {
+        body: { user_id: userId },
+      });
+      if (error || data?.error) throw new Error(data?.error || error?.message);
+      setUsers((prev) => prev.filter((u) => u.user_id !== userId));
+      toast({ title: `Deleted ${name}` });
+    } catch (err: any) {
+      toast({ title: "Delete failed", description: err.message, variant: "destructive" });
+    }
+    setDeleting(null);
+  };
 
   const today = startOfDay(new Date());
   const day7 = subDays(today, 7);
@@ -152,12 +182,13 @@ export default function UsersPage() {
                   <SortableHead label="XP" sortKey="total_xp" current={sortKey} asc={sortAsc} onSort={toggleSort} />
                   <SortableHead label="Joined" sortKey="created_at" current={sortKey} asc={sortAsc} onSort={toggleSort} />
                   <SortableHead label="Last Active" sortKey="last_active" current={sortKey} asc={sortAsc} onSort={toggleSort} />
+                  <TableHead className="text-xs w-[60px]"></TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {filtered.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={8} className="text-center text-muted-foreground py-8">
+                    <TableCell colSpan={9} className="text-center text-muted-foreground py-8">
                       No users found
                     </TableCell>
                   </TableRow>
@@ -186,6 +217,32 @@ export default function UsersPage() {
                       </TableCell>
                       <TableCell className="text-xs text-muted-foreground">
                         {u.last_active ? format(new Date(u.last_active), "MMM d, yyyy") : "—"}
+                      </TableCell>
+                      <TableCell>
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-destructive">
+                              {deleting === u.user_id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />}
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Delete {u.display_name}?</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                This will permanently delete {u.email} and all their data. This action cannot be undone.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancel</AlertDialogCancel>
+                              <AlertDialogAction
+                                onClick={() => handleDelete(u.user_id, u.display_name)}
+                                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                              >
+                                Delete
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
                       </TableCell>
                     </TableRow>
                   ))
