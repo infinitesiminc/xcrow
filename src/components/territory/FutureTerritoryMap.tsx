@@ -335,10 +335,13 @@ export default function FutureTerritoryMap({ skills, focusSkillId, level2SkillId
                   animate={{ r: [18, 24, 18], opacity: [0.4, 0.15, 0.4] }}
                   transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
                 />
-                <text x={gx} y={gy + 1} textAnchor="middle" dominantBaseline="central"
-                  style={{ fontSize: "14px", pointerEvents: "none" }}>
-                  {guardian.emoji}
-                </text>
+                <foreignObject x={gx - 13} y={gy - 13} width={26} height={26} style={{ pointerEvents: "none" }}>
+                  <img
+                    src={GUARDIAN_MAP_AVATARS[guardian.id] || guardIronclad}
+                    alt={guardian.name}
+                    style={{ width: 26, height: 26, borderRadius: "50%", objectFit: "cover" }}
+                  />
+                </foreignObject>
               </g>
             );
           })}
