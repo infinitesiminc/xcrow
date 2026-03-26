@@ -35,23 +35,33 @@ type ChatMsg = { role: "user" | "assistant"; content: string };
 
 const cinzel = { fontFamily: "'Cinzel', serif" };
 
-function RoleAvatar({ title, tier, size = 80 }: { title: string; tier: "thriving" | "adapting" | "threatened"; size?: number }) {
+function RoleAvatar({ title, tier, size = 80, territory }: { title: string; tier: "thriving" | "adapting" | "threatened"; size?: number; territory?: string }) {
   const colors = THREAT_COLORS[tier];
-  const initials = title.split(" ").slice(0, 2).map(w => w[0]?.toUpperCase() || "").join("");
+  const avatarSrc = territory ? ROLE_NPC_AVATARS[territory] : null;
   return (
     <div
-      className="rounded-xl flex items-center justify-center font-black flex-shrink-0"
+      className="rounded-full flex items-center justify-center font-black flex-shrink-0 overflow-hidden"
       style={{
         width: size, height: size,
-        background: `linear-gradient(135deg, hsl(${colors.bg} / 0.3), hsl(${colors.bg} / 0.1))`,
         border: `2px solid hsl(${colors.bg})`,
-        boxShadow: `0 0 30px hsl(${colors.glow} / 0.3)`,
-        ...cinzel,
-        fontSize: size * 0.3,
-        color: `hsl(${colors.bg})`,
+        boxShadow: `0 0 ${size > 40 ? 30 : 12}px hsl(${colors.glow} / 0.3)`,
       }}
     >
-      {initials}
+      {avatarSrc ? (
+        <img src={avatarSrc} alt={title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+      ) : (
+        <div
+          className="w-full h-full flex items-center justify-center"
+          style={{
+            background: `linear-gradient(135deg, hsl(${colors.bg} / 0.3), hsl(${colors.bg} / 0.1))`,
+            ...cinzel,
+            fontSize: size * 0.3,
+            color: `hsl(${colors.bg})`,
+          }}
+        >
+          {title.split(" ").slice(0, 2).map(w => w[0]?.toUpperCase() || "").join("")}
+        </div>
+      )}
     </div>
   );
 }
