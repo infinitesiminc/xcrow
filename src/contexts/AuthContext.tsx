@@ -126,6 +126,22 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         return;
       }
 
+      // Check admin/referral grants
+      const { data: grantData } = await supabase.rpc("has_active_grant" as any, { _user_id: user.id });
+      if (grantData === true) {
+        setPlan("pro");
+        // Get end date of latest grant
+        const { data: grantRow } = await (supabase.from("user_subscriptions" as any) as any)
+          .select("ends_at")
+          .eq("user_id", user.id)
+          .or("ends_at.is.null,ends_at.gt." + new Date().toISOString())
+          .order("ends_at", { ascending: false, nullsFirst: true })
+          .limit(1)
+          .maybeSingle();
+        setSubscriptionEnd(grantRow?.ends_at ?? null);
+        return;
+      }
+
       // Check Stripe subscription (B2C)
       const { data, error } = await supabase.functions.invoke("check-subscription");
       if (!error && data?.subscribed && data?.product_id) {

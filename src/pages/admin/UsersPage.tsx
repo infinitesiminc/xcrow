@@ -273,7 +273,17 @@ export default function UsersPage() {
                       <TableCell className="text-xs text-muted-foreground">
                         {u.last_active ? format(new Date(u.last_active), "MMM d, yyyy") : "—"}
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="flex items-center gap-1">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className={`h-7 w-7 ${u.tier === "champion" ? "text-amber-500 hover:text-amber-600" : "text-muted-foreground hover:text-amber-500"}`}
+                          title={u.tier === "champion" ? "Revoke Champion" : "Grant Champion"}
+                          onClick={() => handleGrantChampion(u.user_id, u.display_name, u.tier || "free")}
+                          disabled={granting === u.user_id || u.tier === "school"}
+                        >
+                          {granting === u.user_id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Crown className="h-3.5 w-3.5" />}
+                        </Button>
                         <AlertDialog>
                           <AlertDialogTrigger asChild>
                             <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-destructive">
