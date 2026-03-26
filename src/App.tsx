@@ -118,6 +118,7 @@ const App = () => (
         <TooltipProvider>
           <Toaster />
           <Sonner />
+          <ErrorBoundary fallbackTitle="The realm encountered an error">
           <Suspense fallback={null}>
             <Routes>
               {/* Public B2C routes */}
