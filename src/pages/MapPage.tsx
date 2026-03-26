@@ -2,6 +2,7 @@
  * MapPage — Split-panel layout: left panel (Forge/Kingdoms/Allies) + right map.
  */
 import { useState, useCallback, useEffect, useMemo, useRef } from "react";
+import { useNavigate, Navigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import type { FutureSkill } from "@/hooks/use-future-skills";
 import { motion, AnimatePresence } from "framer-motion";
