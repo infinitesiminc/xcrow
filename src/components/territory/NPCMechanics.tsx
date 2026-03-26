@@ -170,7 +170,7 @@ function BlacksmithForge() {
         "Bring me your weakest skill. I'll forge it into something stronger through focused practice."
       </p>
       <div className="rounded-lg p-4 text-center" style={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))" }}>
-        <Hammer size={24} className="mx-auto text-orange-400 mb-2" />
+        <Hammer size={24} className="mx-auto text-primary mb-2" />
         <p className="text-xs text-muted-foreground">Complete sims to identify your weakest skills.</p>
         <p className="text-[10px] text-muted-foreground/60 mt-1">Targeted drills unlock after your first sim.</p>
       </div>
