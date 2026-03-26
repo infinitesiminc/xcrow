@@ -860,3 +860,65 @@ html:not(.light):not(.parchment) {
 .animate-territory-float {
   animation: territory-float 3s ease-in-out infinite;
 }
+
+/* ── Phase 5: Visual Immersion — Parallax + Ambient Effects ── */
+
+/* Parallax depth container */
+.parallax-container {
+  perspective: 1200px;
+  transform-style: preserve-3d;
+  overflow: hidden;
+}
+
+.parallax-layer-back {
+  transform: translateZ(-200px) scale(1.16);
+  pointer-events: none;
+}
+
+.parallax-layer-mid {
+  transform: translateZ(-80px) scale(1.066);
+  pointer-events: none;
+}
+
+.parallax-layer-front {
+  transform: translateZ(0px);
+}
+
+/* Ambient fog drift */
+@keyframes fog-drift {
+  0% { transform: translateX(-10%) translateY(0); opacity: 0.12; }
+  50% { transform: translateX(10%) translateY(-5%); opacity: 0.18; }
+  100% { transform: translateX(-10%) translateY(0); opacity: 0.12; }
+}
+.animate-fog-drift {
+  animation: fog-drift 20s ease-in-out infinite;
+}
+
+/* Territory glow pulse for ambient lighting */
+@keyframes territory-glow-pulse {
+  0%, 100% { opacity: 0.15; filter: blur(60px); }
+  50% { opacity: 0.25; filter: blur(80px); }
+}
+.animate-territory-glow {
+  animation: territory-glow-pulse 6s ease-in-out infinite;
+}
+
+/* Cinematic vignette overlay */
+.map-vignette {
+  background: radial-gradient(
+    ellipse at center,
+    transparent 50%,
+    hsl(var(--background) / 0.3) 80%,
+    hsl(var(--background) / 0.7) 100%
+  );
+  pointer-events: none;
+}
+
+/* Particle canvas positioning */
+.particle-canvas {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  mix-blend-mode: screen;
+  opacity: 0.6;
+}
