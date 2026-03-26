@@ -566,15 +566,6 @@ export default function FutureTerritoryMap({ skills, focusSkillId, level2SkillId
           />
         )}
 
-        {/* Quest Tracker HUD */}
-        <QuestTracker
-          phase={mission.phase}
-          territoriesScouted={mission.territoriesScouted}
-          rolesSpokenTo={mission.rolesSpokenTo}
-          scoutedSkillCount={mission.scoutedSkills.length}
-          skillsConquered={mission.skillsConquered}
-          missionProgress={mission.missionProgress}
-        />
 
         {/* Minimap */}
         <div className="absolute bottom-4 left-4 z-10 rounded-lg border border-border/50 bg-card/90 backdrop-blur-md shadow-lg overflow-hidden"
