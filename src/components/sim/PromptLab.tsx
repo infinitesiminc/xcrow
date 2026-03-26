@@ -370,6 +370,16 @@ export default function PromptLab({
     );
   }
 
+  // Modal mode
+  return (
+    <AnimatePresence>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      >
+        <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
         <motion.div
           initial={{ scale: 0.9, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
@@ -386,180 +396,13 @@ export default function PromptLab({
               </span>
             </div>
             <div className="flex items-center gap-2">
-              <button
-                onClick={() => setShowHistory(!showHistory)}
-                className="p-1.5 rounded-lg hover:bg-muted/50 transition-colors"
-              >
+              <button onClick={() => setShowHistory(!showHistory)} className="p-1.5 rounded-lg hover:bg-muted/50 transition-colors">
                 <History className="h-4 w-4 text-muted-foreground" />
               </button>
-              <button onClick={onClose} className="text-xs text-muted-foreground hover:text-foreground">
-                ✕
-              </button>
+              <button onClick={onClose} className="text-xs text-muted-foreground hover:text-foreground">✕</button>
             </div>
           </div>
-
-          <div className="p-5">
-            {/* History panel */}
-            {showHistory && (
-              <HistoryPanel history={history} onClose={() => setShowHistory(false)} />
-            )}
-
-            {!showHistory && (
-              <>
-                {/* Loading */}
-                {phase === "loading" && (
-                  <div className="flex flex-col items-center py-12 gap-3">
-                    <Loader2 className="h-8 w-8 text-primary animate-spin" />
-                    <p className="text-sm text-muted-foreground">Crafting your scenario…</p>
-                  </div>
-                )}
-
-                {/* Scenario briefing */}
-                {(phase === "scenario" || phase === "writing") && scenario && (
-                  <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
-                    <div className="mb-4">
-                      <h3 className="text-base font-bold text-foreground mb-1">{scenario.title}</h3>
-                      <p className="text-sm text-muted-foreground leading-relaxed">{scenario.context}</p>
-                    </div>
-
-                    <div className="rounded-xl border border-primary/20 bg-primary/5 p-3 mb-4">
-                      <div className="flex items-center gap-2 mb-1">
-                        <Target className="h-3.5 w-3.5 text-primary" />
-                        <span className="text-xs font-semibold text-primary uppercase tracking-wide">Your Task</span>
-                      </div>
-                      <p className="text-sm text-foreground">{scenario.task}</p>
-                    </div>
-
-                    {scenario.hint && difficulty === "guided" && (
-                      <div className="rounded-xl border border-amber-500/20 bg-amber-500/5 p-3 mb-4">
-                        <div className="flex items-center gap-2 mb-1">
-                          <Lightbulb className="h-3.5 w-3.5 text-amber-400" />
-                          <span className="text-xs font-semibold text-amber-400 uppercase tracking-wide">Hint</span>
-                        </div>
-                        <p className="text-xs text-muted-foreground">{scenario.hint}</p>
-                      </div>
-                    )}
-
-                    {scenario.ideal_techniques.length > 0 && difficulty !== "open" && (
-                      <div className="flex flex-wrap gap-1.5 mb-4">
-                        {scenario.ideal_techniques.map((t) => (
-                          <span key={t} className="text-[10px] px-2 py-0.5 rounded-full bg-muted text-muted-foreground">
-                            {t}
-                          </span>
-                        ))}
-                      </div>
-                    )}
-
-                    {/* Prompt input */}
-                    <div className="space-y-3">
-                      <Textarea
-                        value={userPrompt}
-                        onChange={(e) => { setUserPrompt(e.target.value); if (phase === "scenario") setPhase("writing"); }}
-                        placeholder="Write your prompt here…"
-                        className="min-h-[120px] text-sm resize-none"
-                      />
-                      <div className="flex items-center justify-between">
-                        <span className="text-[10px] text-muted-foreground">
-                          {userPrompt.length} chars
-                        </span>
-                        <Button
-                          size="sm"
-                          className="gap-1.5 rounded-full"
-                          disabled={userPrompt.trim().length < 10}
-                          onClick={submitPrompt}
-                        >
-                          <Send className="h-3.5 w-3.5" /> Submit
-                        </Button>
-                      </div>
-                    </div>
-                  </motion.div>
-                )}
-
-                {/* Evaluating */}
-                {phase === "evaluating" && (
-                  <div className="flex flex-col items-center py-12 gap-3">
-                    <Sparkles className="h-8 w-8 text-primary animate-pulse" />
-                    <p className="text-sm text-muted-foreground">Evaluating your prompt…</p>
-                  </div>
-                )}
-
-                {/* Result */}
-                {phase === "result" && evaluation && (
-                  <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
-                    {/* Score ring */}
-                    <div className="flex items-center gap-4">
-                      <ScoreRing score={totalScore} />
-                      <div>
-                        <p className="text-lg font-bold text-foreground">
-                          {totalScore >= 80 ? "🏆 Excellent!" : totalScore >= 60 ? "⚡ Good work!" : totalScore >= 40 ? "📈 Getting there" : "🌱 Keep practicing"}
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                          {totalScore}/100 — {DIFFICULTY_META[difficulty].label} difficulty
-                        </p>
-                      </div>
-                    </div>
-
-                    {/* 4 rubric bars */}
-                    <div className="space-y-2">
-                      <RubricBar label="Clarity" score={evaluation.score_clarity} />
-                      <RubricBar label="Specificity" score={evaluation.score_specificity} />
-                      <RubricBar label="Technique" score={evaluation.score_technique} />
-                      <RubricBar label="Output Quality" score={evaluation.score_output_quality} />
-                    </div>
-
-                    {/* Feedback */}
-                    <div className="rounded-xl border border-border/50 bg-muted/30 p-3">
-                      <p className="text-xs font-semibold text-foreground mb-1">Feedback</p>
-                      <p className="text-sm text-muted-foreground leading-relaxed">{evaluation.feedback}</p>
-                    </div>
-
-                    {/* Show improved prompt */}
-                    <button
-                      onClick={() => setShowImproved(!showImproved)}
-                      className="flex items-center gap-1.5 text-xs text-primary font-semibold hover:underline"
-                    >
-                      <ChevronRight className={`h-3 w-3 transition-transform ${showImproved ? "rotate-90" : ""}`} />
-                      {showImproved ? "Hide" : "Show"} improved prompt
-                    </button>
-
-                    {showImproved && (
-                      <motion.div
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: "auto" }}
-                        className="rounded-xl border border-primary/20 bg-primary/5 p-3"
-                      >
-                        <p className="text-xs font-semibold text-primary mb-1">✨ Improved Version</p>
-                        <p className="text-sm text-foreground whitespace-pre-wrap leading-relaxed">
-                          {evaluation.improved_prompt}
-                        </p>
-                      </motion.div>
-                    )}
-
-                    {/* Actions */}
-                    <div className="flex items-center gap-2 pt-2">
-                      <Button size="sm" variant="outline" className="gap-1.5 rounded-full" onClick={generateScenario}>
-                        <RotateCcw className="h-3.5 w-3.5" /> New Scenario
-                      </Button>
-                      {totalScore >= 60 && difficulty !== "open" && (
-                        <Button
-                          size="sm"
-                          className="gap-1.5 rounded-full"
-                          onClick={() => {
-                            setDifficulty(difficulty === "guided" ? "semi-open" : "open");
-                          }}
-                        >
-                          <ArrowRight className="h-3.5 w-3.5" /> Level Up
-                        </Button>
-                      )}
-                      <Button size="sm" variant="ghost" className="rounded-full ml-auto" onClick={onClose}>
-                        Done
-                      </Button>
-                    </div>
-                  </motion.div>
-                )}
-              </>
-            )}
-          </div>
+          {labContent}
         </motion.div>
       </motion.div>
     </AnimatePresence>
