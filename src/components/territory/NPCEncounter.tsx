@@ -127,13 +127,12 @@ export default function NPCEncounter({ npc, territory, onClose, onInteract }: NP
                   ],
                 }}
                 transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-                className="w-14 h-14 rounded-xl flex items-center justify-center shrink-0"
+                className="w-16 h-16 rounded-xl overflow-hidden shrink-0"
                 style={{
-                  background: `linear-gradient(135deg, hsl(${hue} 35% 15%), hsl(${hue} 25% 20%))`,
                   border: `2px solid hsl(${hue} 45% 32%)`,
                 }}
               >
-                <AvatarIcon size={28} style={{ color: `hsl(${hue} 50% 65%)` }} />
+                <img src={avatarSrc} alt={npc.name} className="w-full h-full object-cover" loading="eager" />
               </motion.div>
               <div className="flex-1 min-w-0">
                 <span
