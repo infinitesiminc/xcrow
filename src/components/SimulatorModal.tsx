@@ -738,6 +738,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
     setTurnCount(1);
     setScoreResult(null);
     setObjectiveStatus({});
+    setQuestCleared(false);
     setScaffoldingTiers({});
     setObjectiveFailCounts({});
     setShowInactivityNudge(false);
