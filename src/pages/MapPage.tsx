@@ -366,8 +366,8 @@ const MapPage = () => {
   }), [selectedRole, activeTab]);
   useChatViewContext(chatViewCtx as any, [chatViewCtx]);
 
-  // Redirect to homepage for onboarding if not completed
-  if (user && profile && !profile.onboardingCompleted) {
+  // Redirect to homepage for onboarding if not completed (or profile still loading)
+  if (user && (!profile || !profile.onboardingCompleted)) {
     return <Navigate to="/" replace />;
   }
 
