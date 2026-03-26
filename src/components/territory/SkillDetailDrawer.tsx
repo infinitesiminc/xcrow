@@ -291,7 +291,7 @@ export default function SkillDetailDrawer({
                           boxShadow: isCurrent ? `0 0 8px ${tier.color}60` : "none",
                         }}
                       >
-                        {isReached && <span style={{ color: "hsl(var(--background))" }}>{tier.icon === "★" ? "★" : ""}</span>}
+                        {isReached && <span style={{ color: "hsl(var(--background))", fontSize: "8px" }}>{tier.icon}</span>}
                       </div>
                       {i < MASTERY_TIERS.length - 1 && (
                         <div
