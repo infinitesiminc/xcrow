@@ -55,6 +55,77 @@ function RoleAvatar({ title, tier, size = 80 }: { title: string; tier: "thriving
   );
 }
 
+/** Smooth typewriter that reveals text character-by-character using CSS */
+function StreamingText({ text, isComplete }: { text: string; isComplete: boolean }) {
+  const [displayed, setDisplayed] = useState("");
+  const targetRef = useRef(text);
+  const rafRef = useRef<number>(0);
+  const indexRef = useRef(0);
+  const lastTimeRef = useRef(0);
+
+  useEffect(() => {
+    targetRef.current = text;
+  }, [text]);
+
+  useEffect(() => {
+    if (isComplete) {
+      setDisplayed(targetRef.current);
+      cancelAnimationFrame(rafRef.current);
+      return;
+    }
+
+    const tick = (time: number) => {
+      if (!lastTimeRef.current) lastTimeRef.current = time;
+      const elapsed = time - lastTimeRef.current;
+      
+      // Reveal ~2 chars per frame at 60fps (~120 chars/sec) for smooth feel
+      if (elapsed >= 12) {
+        lastTimeRef.current = time;
+        const target = targetRef.current;
+        if (indexRef.current < target.length) {
+          // Reveal 1-3 chars per tick for natural cadence
+          const charsToAdd = Math.min(2, target.length - indexRef.current);
+          indexRef.current += charsToAdd;
+          setDisplayed(target.slice(0, indexRef.current));
+        }
+      }
+      rafRef.current = requestAnimationFrame(tick);
+    };
+
+    rafRef.current = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(rafRef.current);
+  }, [isComplete]);
+
+  // Reset when text starts fresh (new message)
+  useEffect(() => {
+    if (text.length < displayed.length) {
+      indexRef.current = 0;
+      lastTimeRef.current = 0;
+      setDisplayed("");
+    }
+  }, [text]);
+
+  if (isComplete) {
+    return (
+      <div className="prose prose-sm prose-invert max-w-none [&>p]:m-0 [&>ul]:mt-1 [&>ul]:mb-0 text-inherit">
+        <ReactMarkdown>{text}</ReactMarkdown>
+      </div>
+    );
+  }
+
+  return (
+    <span className="whitespace-pre-wrap">
+      {displayed}
+      <motion.span
+        className="inline-block w-[2px] h-[1em] ml-0.5 align-text-bottom"
+        style={{ background: "currentColor" }}
+        animate={{ opacity: [1, 0, 1] }}
+        transition={{ duration: 0.8, repeat: Infinity }}
+      />
+    </span>
+  );
+}
+
 const QUICK_QUESTIONS = [
   "What does your day look like?",
   "What scares you most about AI?",
