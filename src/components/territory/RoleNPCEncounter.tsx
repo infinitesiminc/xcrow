@@ -12,6 +12,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import HeroScene from "@/components/territory/HeroScene";
 import { getTerritoryHeroImage } from "@/lib/territory-hero-images";
 import { type RoleNPC, THREAT_COLORS, TERRITORY_HUES } from "@/lib/role-npcs";
+import { ROLE_NPC_AVATARS } from "@/components/territory/FutureTerritoryMap";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import ReactMarkdown from "react-markdown";
