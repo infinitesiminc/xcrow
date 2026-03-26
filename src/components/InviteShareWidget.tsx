@@ -22,8 +22,10 @@ export function useReferralLink() {
       });
   }, [user]);
 
+  // Use the edge function URL so link previews get proper OG meta tags
+  const edgeFnBase = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/invite-og`;
   const inviteLink = referralCode
-    ? `${window.location.origin}/auth?ref=${referralCode}`
+    ? `${edgeFnBase}?ref=${referralCode}`
     : "";
 
   return { referralCode, inviteLink };
