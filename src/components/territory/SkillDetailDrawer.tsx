@@ -189,7 +189,8 @@ export default function SkillDetailDrawer({
 
   if (!skill || !territory) return null;
 
-  // (timeline removed)
+  // Calculate growth dimensions for three-ring visualization
+  const growth = calculateGrowth(skill.avgRelevance ?? 50, level1Xp + level2Xp, simScores);
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -201,14 +202,14 @@ export default function SkillDetailDrawer({
           borderLeft: "1px solid hsl(var(--filigree) / 0.2)",
         }}
       >
-        {/* ── Hero Image Banner ── */}
-        <div className="relative w-full h-32 overflow-hidden shrink-0" style={{ isolation: "isolate" }}>
+        {/* ── Hero Image Banner with Three Rings ── */}
+        <div className="relative w-full h-44 overflow-hidden shrink-0" style={{ isolation: "isolate" }}>
           {heroImage ? (
             <img
               src={heroImage}
               alt={`${skill.name} illustration`}
               className="w-full h-full object-cover transition-opacity duration-700"
-              style={{ filter: "brightness(0.55) saturate(1.1)" }}
+              style={{ filter: "brightness(0.45) saturate(1.1)" }}
             />
           ) : heroLoading ? (
             <div
@@ -221,9 +222,15 @@ export default function SkillDetailDrawer({
               style={{ background: `linear-gradient(135deg, hsl(var(--surface-stone)), hsl(var(--muted) / 0.2))` }}
             />
           )}
+
+          {/* Three-ring growth overlay */}
+          <div className="absolute inset-0 flex items-center justify-center z-[2]">
+            <ThreeRingDisplay growth={growth} />
+          </div>
+
           {/* Gradient fade into content */}
           <div
-            className="absolute inset-x-0 bottom-0 h-16"
+            className="absolute inset-x-0 bottom-0 h-16 z-[3]"
             style={{ background: `linear-gradient(to top, hsl(var(--surface-stone)), transparent)` }}
           />
         </div>
