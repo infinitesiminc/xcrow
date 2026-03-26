@@ -37,7 +37,6 @@ export default function JobTitleSearch({ onSelectTool }: Props) {
     setLoading(true);
     setSearched(true);
     setSearchedTitle(q);
-    setExpandedTool(null);
 
     try {
       // Find matching jobs
