@@ -317,7 +317,7 @@ const MapPage = () => {
           >
         {/* Mini HUD stats row */}
         {displaySkills.length > 0 && (
-          <CompactHUD skills={displaySkills} targetSkillIds={targetSkillIds} userName={userName} />
+          <CompactHUD skills={displaySkills} targetSkillIds={targetSkillIds} userName={userName} avgDegreeLevel={avgDegreeLevel} />
         )}
 
         {/* Tab bar */}
