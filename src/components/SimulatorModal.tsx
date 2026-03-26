@@ -763,7 +763,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
         // Boss battles skip briefing — cinematic intro handles the setup
         setPhase("chat");
       } else {
-        const compiled = await compileSession(taskName, jobTitle, company, 3, mode, taskMeta, coaching ?? undefined, intelContext ?? undefined, level, futurePrediction ?? undefined, roleChallenge, linkedSkillIds);
+        const compiled = await compileSession(taskName, jobTitle, company, 3, mode, taskMeta, coaching ?? undefined, intelContext ?? undefined, level, futurePrediction ?? undefined, roleChallenge, linkedSkillIds, masteryTier);
         setSession(compiled);
         setPhase("briefing");
       }
