@@ -41,8 +41,13 @@ export default function StackBuilder({ onSelectTool }: Props) {
   const [filterMode, setFilterMode] = useState<FilterMode>("all");
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
   const { toggleTool, isInStack, stack, stackSize } = useMyStack();
+  const [proficiencies, setProficiencies] = useState<Record<string, number>>({});
+  const [openAssessment, setOpenAssessment] = useState<string | null>(null);
 
-  // --- Search logic ---
+  const setProficiency = (toolName: string, level: number) => {
+    setProficiencies(p => ({ ...p, [toolName]: level }));
+    setOpenAssessment(null);
+  };
   const search = useCallback(async () => {
     const q = query.trim();
     if (!q || q.length < 2) return;
