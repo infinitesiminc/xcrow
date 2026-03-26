@@ -19,7 +19,14 @@ export type ToolCategory =
   | "search-retrieval"
   | "networking-edge"
   | "hardware-compute"
-  | "vertical-industry";
+  | "vertical-industry"
+  | "hr-talent"
+  | "finance-ops"
+  | "legal-compliance"
+  | "customer-platforms"
+  | "marketing-revops"
+  | "productivity"
+  | "bi-visualization";
 
 export type ToolMaturity = "ga" | "preview" | "beta" | "research";
 export type ToolType = "learnable" | "reference";
