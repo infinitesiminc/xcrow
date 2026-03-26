@@ -355,7 +355,8 @@ export default function FutureTerritoryMap({ skills, focusSkillId, level2SkillId
         {/* NPC Encounter Panel */}
         {activeNPC && (
           <NPCEncounter
-            npc={activeNPC}
+            npc={activeNPC.npc}
+            territory={activeNPC.territory}
             onClose={() => setActiveNPC(null)}
             onInteract={(n) => { setActiveNPC(null); /* TODO: NPC interaction flow */ }}
           />
