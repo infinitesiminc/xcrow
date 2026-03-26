@@ -56,7 +56,7 @@ export default function FutureTerritoryMap({ skills, focusSkillId, level2SkillId
   const [focusedIsland, setFocusedIsland] = useState<FutureSkillCategory | null>(null);
   const [highlightedSkillId, setHighlightedSkillId] = useState<string | null>(null);
   const [activeGuardian, setActiveGuardian] = useState<TerritoryGuardian | null>(null);
-  const [activeNPC, setActiveNPC] = useState<WanderingNPC | null>(null);
+  const [activeNPC, setActiveNPC] = useState<{ npc: WanderingNPC; territory: FutureSkillCategory } | null>(null);
   const npcSpawns = useMemo(() => generateNPCSpawns(), []);
   const dragRef = useRef<{ startX: number; startY: number; tx: number; ty: number } | null>(null);
   const isDragging = useRef(false);
@@ -325,7 +325,7 @@ export default function FutureTerritoryMap({ skills, focusSkillId, level2SkillId
             const ny = island.cy + spawn.offsetY;
             return (
               <g key={`npc-${spawn.npc.id}`} className="cursor-pointer"
-                onClick={(e) => { e.stopPropagation(); if (!isDragging.current) { setActiveNPC(spawn.npc); setActiveGuardian(null); } }}>
+                onClick={(e) => { e.stopPropagation(); if (!isDragging.current) { setActiveNPC({ npc: spawn.npc, territory: island.category }); setActiveGuardian(null); } }}>
                 <motion.circle cx={nx} cy={ny} r={12}
                   fill="hsl(var(--card))" stroke="hsl(var(--border))"
                   strokeWidth={1.5} strokeDasharray="3 2"
@@ -355,7 +355,8 @@ export default function FutureTerritoryMap({ skills, focusSkillId, level2SkillId
         {/* NPC Encounter Panel */}
         {activeNPC && (
           <NPCEncounter
-            npc={activeNPC}
+            npc={activeNPC.npc}
+            territory={activeNPC.territory}
             onClose={() => setActiveNPC(null)}
             onInteract={(n) => { setActiveNPC(null); /* TODO: NPC interaction flow */ }}
           />
