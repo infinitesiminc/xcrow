@@ -11,12 +11,8 @@ import HeroScene from "@/components/territory/HeroScene";
 import { getTerritoryHeroImage } from "@/lib/territory-hero-images";
 import type { FutureSkillCategory } from "@/hooks/use-future-skills";
 
-import npcMerchant from "@/assets/npc-merchant.png";
-import npcOracle from "@/assets/npc-oracle.png";
-import npcRival from "@/assets/npc-rival.png";
-import npcScout from "@/assets/npc-scout.png";
-import npcBlacksmith from "@/assets/npc-blacksmith.png";
-import npcBard from "@/assets/npc-bard.png";
+import { getNPCAvatar } from "@/lib/npc-avatar-pool";
+
 
 interface NPCEncounterProps {
   npc: WanderingNPC;
@@ -43,15 +39,6 @@ const INTERACTION_LABELS: Record<string, string> = {
   story: "Hear Tale",
 };
 
-/** Avatar images keyed by NPC id */
-const NPC_AVATARS: Record<string, string> = {
-  merchant: npcMerchant,
-  oracle: npcOracle,
-  rival: npcRival,
-  scout: npcScout,
-  blacksmith: npcBlacksmith,
-  bard: npcBard,
-};
 
 const NPC_HUES: Record<string, number> = {
   merchant: 280,
@@ -79,7 +66,7 @@ export default function NPCEncounter({ npc, territory, onClose, onInteract }: NP
   const hue = NPC_HUES[npc.id] ?? 200;
   const heroTerritory = territory || NPC_TERRITORY_FALLBACK[npc.id] || "Technical";
   const heroImage = getTerritoryHeroImage(heroTerritory);
-  const avatarSrc = NPC_AVATARS[npc.id] || npcMerchant;
+  const avatarSrc = getNPCAvatar(npc.id);
 
   return (
     <AnimatePresence>

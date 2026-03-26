@@ -18,17 +18,8 @@ import FutureIsland from "./FutureIsland";
 import type { CanonicalSkillGrowth } from "@/pages/MapPage";
 import { getGuardianByCategory, type TerritoryGuardian } from "@/lib/territory-guardians";
 import { generateNPCSpawns, type NPCSpawn, type WanderingNPC } from "@/lib/wandering-npcs";
-import npcMerchant from "@/assets/npc-merchant.png";
-import npcOracle from "@/assets/npc-oracle.png";
-import npcRival from "@/assets/npc-rival.png";
-import npcScout from "@/assets/npc-scout.png";
-import npcBlacksmith from "@/assets/npc-blacksmith.png";
-import npcBard from "@/assets/npc-bard.png";
+import { getNPCAvatar } from "@/lib/npc-avatar-pool";
 
-const NPC_MAP_AVATARS: Record<string, string> = {
-  merchant: npcMerchant, oracle: npcOracle, rival: npcRival,
-  scout: npcScout, blacksmith: npcBlacksmith, bard: npcBard,
-};
 import GuardianEncounter from "./GuardianEncounter";
 import NPCEncounter from "./NPCEncounter";
 import RoleNPCEncounter from "./RoleNPCEncounter";
@@ -399,7 +390,7 @@ export default function FutureTerritoryMap({ skills, focusSkillId, level2SkillId
             return (
               <g key={`npc-${spawn.npc.id}`} className="cursor-pointer"
                 onClick={(e) => { e.stopPropagation(); if (!isDragging.current) { setActiveNPC({ npc: spawn.npc, territory: island.category }); setActiveGuardian(null); setHoverPreview(null); } }}
-                onMouseEnter={() => setHoverPreview({ type: "npc", id: spawn.npc.id, name: spawn.npc.name, title: spawn.npc.title, src: NPC_MAP_AVATARS[spawn.npc.id] || npcMerchant, x: nx, y: ny, hue: 200 })}
+                onMouseEnter={() => setHoverPreview({ type: "npc", id: spawn.npc.id, name: spawn.npc.name, title: spawn.npc.title, src: getNPCAvatar(spawn.npc.id), x: nx, y: ny, hue: 200 })}
                 onMouseLeave={() => setHoverPreview(p => p?.id === spawn.npc.id ? null : p)}
               >
                 {(() => {
@@ -422,7 +413,7 @@ export default function FutureTerritoryMap({ skills, focusSkillId, level2SkillId
                 })()}
                 <foreignObject x={nx - 11} y={ny - 11} width={22} height={22} style={{ pointerEvents: "none" }}>
                   <img
-                    src={NPC_MAP_AVATARS[spawn.npc.id] || npcMerchant}
+                    src={getNPCAvatar(spawn.npc.id)}
                     alt={spawn.npc.name}
                     style={{ width: 22, height: 22, objectFit: "cover", clipPath: "polygon(50% 0%, 93% 25%, 93% 75%, 50% 100%, 7% 75%, 7% 25%)" }}
                   />
