@@ -230,6 +230,56 @@ CRITICAL INSTRUCTIONS:
     ? "Future-focused: the task is automated, teach the NEW human oversight role"
     : "Current: teach how to use today's AI tools for this task";
 
+  // Mastery tier instructions — different sim format per tier
+  const tierKey = masteryTier || "bronze";
+  const TIER_INSTRUCTIONS: Record<string, string> = {
+    bronze: `MASTERY TIER: BRONZE — OUTPOST
+This is an INTRODUCTORY quest. The user is learning this skill for the first time.
+FORMAT: Tutorial → A/B Comparison
+- Teach the core concept and prompting technique first
+- Each round: present a scenario, teach the key insight, then offer 2 AI approaches to compare
+- Be encouraging and explanatory — this is their first encounter with this skill
+- Focus on D1-D2 automation scenarios (AI as tool/co-pilot)`,
+    silver: `MASTERY TIER: SILVER — FORTRESS  
+This is a CONTEXT SHIFT challenge. The user already knows the basics and must apply the skill in new contexts.
+FORMAT: Context Shifts → Prompt Remix → Speed Rounds
+CRITICAL DIFFERENCES FROM BRONZE:
+1. Do NOT re-teach the basic concept — the user already passed Bronze
+2. Each round must present a DIFFERENT INDUSTRY or ROLE CONTEXT for the same skill
+3. Scenarios should be more complex — involve cross-functional stakeholders, ambiguous requirements, or competing priorities
+4. At least one round should be a "Prompt Remix" — give the user a mediocre AI prompt and ask which improvement strategy is better
+5. Use tighter time framing: "Under time pressure, which approach wins?"
+6. Focus on D2-D3 automation scenarios (AI as co-pilot/supervised autonomy)
+Example context shifts for "AI Output Quality Auditing": 
+- Round 1: Auditing AI-generated marketing copy for a regulated healthcare company
+- Round 2: Validating AI-produced financial projections for a board presentation
+- Round 3: Reviewing AI-drafted legal contract clauses under deadline`,
+    gold: `MASTERY TIER: GOLD — CITADEL
+This is a BOSS BATTLE / RED TEAM audit. The user is now an expert defender against AI failures.
+FORMAT: Boss Briefing → Red Team Audit → Prompt Surgery
+CRITICAL DIFFERENCES FROM SILVER:
+1. The user is auditing AI CLAIMS and catching failures — not learning techniques
+2. Present scenarios where AI has ALREADY produced output and the user must evaluate it
+3. Each round: show an AI-generated claim/output and ask whether the approach to validate it is sound
+4. Include subtle errors, edge cases, and overconfident AI outputs
+5. One round should involve "Prompt Surgery" — a broken AI workflow that needs fixing
+6. Frame as adversarial: "The AI is confident. Should you trust it?"
+7. Focus on D3-D4 automation scenarios (supervised autonomy / managed fleet)`,
+    platinum: `MASTERY TIER: PLATINUM — GRANDMASTER
+This is an AGENT COMMANDER simulation. The user manages autonomous AI agent workflows.
+FORMAT: Agent Orchestration → Permission Design → Crisis Response
+CRITICAL DIFFERENCES FROM GOLD:
+1. Present multi-agent scenarios where 2-3 AI agents are running concurrent tasks
+2. Each round: an agent requests permissions, reports anomalies, or produces conflicting outputs
+3. The user must decide: Approve/Deny/Scope agent requests, not just evaluate outputs
+4. Include at least one "crisis cascade" — one agent failure triggering chain reactions
+5. Frame as fleet management: "Your agent fleet is running. What's your call, Commander?"
+6. Focus on D4-D5 automation scenarios (managed fleet / strategic oversight)
+7. Reference specific agent capabilities: Computer Use API, autonomous code execution, data pipeline management`,
+  };
+
+  const tierInstructions = TIER_INSTRUCTIONS[tierKey] || TIER_INSTRUCTIONS.bronze;
+
   const prompt = `You are designing a LEARNING simulation about ${isLevel2 ? "the future human role after AI automation" : "AI tools"} for a professional task.
 
 ${dateCtx}
@@ -239,6 +289,7 @@ Task: ${taskName}
 ${aiContext}
 Mode: ${isAssess ? "ASSESS — broad baseline check across the task" : "UPSKILL — deeper practice on specific sub-skills"}
 Level: ${levelLabel} — ${levelDescription}
+${tierInstructions}
 Format: Structured Learn→Apply coaching conversation, exactly ${FIXED_ROUNDS} rounds, ${isAssess ? "~8" : "~12"} minutes
 ${coachingInstructions}
 ${intelInstructions}
@@ -298,7 +349,9 @@ Generate a JSON response:
 
 7. "scenario": { "title": short title, "description": 1-sentence }
 
-${isLevel2 ? '' : '8. "strongerOption": "A" or "B" — which option uses the more effective technique (for internal scoring only, not shown to user)'}
+8. "masteryTier": "${tierKey}"
+
+${isLevel2 ? '' : '9. "strongerOption": "A" or "B" — which option uses the more effective technique (for internal scoring only, not shown to user)'}
 
 Respond ONLY with valid JSON, no markdown.`;
 
