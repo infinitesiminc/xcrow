@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/sidebar";
 
 const items = [
-  { title: "Companies", url: "/admin", icon: Building2 },
+  { title: "Pipeline", url: "/admin", icon: Building2 },
   { title: "Users", url: "/admin/users", icon: Users },
   { title: "Pro Upgrades", url: "/admin/upgrades", icon: Crown },
   { title: "Schools", url: "/admin/schools", icon: GraduationCap },
@@ -23,7 +23,7 @@ export function HRSidebar() {
   const collapsed = state === "collapsed";
 
   return (
-    <Sidebar collapsible="icon" className="border-r border-border">
+    <Sidebar collapsible="icon" className="border-r border-border !h-[calc(100svh-64px)] !top-16">
       <SidebarContent className="pt-2">
         <SidebarGroup>
           <SidebarGroupContent>
