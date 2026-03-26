@@ -8,6 +8,7 @@ import { Crown, Users, Copy, Check, Gift, Sparkles } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import InviteShareWidget from "@/components/InviteShareWidget";
 
 interface UpgradeModalProps {
   open: boolean;
@@ -131,17 +132,7 @@ export default function UpgradeModal({ open, onOpenChange, type, used, limit }: 
           <p className="text-xs text-muted-foreground">
             Every friend who subscribes to Champion gives you both a free month. No limit!
           </p>
-          {referralCode && (
-            <Button
-              variant="outline"
-              size="sm"
-              className="w-full gap-2"
-              onClick={copyLink}
-            >
-              {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
-              {copied ? "Copied!" : "Copy invite link"}
-            </Button>
-          )}
+          <InviteShareWidget />
         </div>
 
         <Button

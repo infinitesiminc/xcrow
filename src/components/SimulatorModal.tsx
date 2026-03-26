@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useChatContext } from "@/contexts/ChatContext";
 import { motion, AnimatePresence } from "framer-motion";
 import { Send, Loader2, RotateCcw, ChevronDown, ChevronUp, CheckCircle2, X, ArrowRight, Target, Circle, CircleCheck, AlertTriangle, TrendingUp, Trophy, Zap, Map, Star, Lock, Unlock, Sparkles, Compass, Swords, Scroll, Flag, Shield, Flame, Save } from "lucide-react";
+import InviteShareWidget from "@/components/InviteShareWidget";
 import { matchTaskToSkills, SKILL_TAXONOMY, getLevel, getNextLevel, type SkillXP } from "@/lib/skill-map";
 import { calculateSkillXP } from "@/lib/castle-levels";
 import ReactMarkdown from "react-markdown";
@@ -2321,6 +2322,14 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                       >
                         <Map className="h-3 w-3" /> View Territory
                       </Button>
+                    )}
+
+                    {/* ── Invite a friend ── */}
+                    {user && (
+                      <div className="w-full max-w-xs pt-1">
+                        <p className="text-[11px] text-muted-foreground text-center mb-2">Challenge a friend — you both earn a free month</p>
+                        <InviteShareWidget context={`completed a quest on "${taskName}"`} />
+                      </div>
                     )}
 
                     {/* Dismiss */}

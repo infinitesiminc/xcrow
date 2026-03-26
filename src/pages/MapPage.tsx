@@ -8,7 +8,8 @@ import type { FutureSkill } from "@/hooks/use-future-skills";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { X, Users, BookOpen, ChevronDown, ChevronUp, Save } from "lucide-react";
+import { X, Users, BookOpen, ChevronDown, ChevronUp, Save, Gift } from "lucide-react";
+import InviteShareWidget from "@/components/InviteShareWidget";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import BossBanner from "@/components/territory/BossBanner";
 import SimulatorModal from "@/components/SimulatorModal";
@@ -448,6 +449,21 @@ const MapPage = () => {
         <div className="w-px h-4 opacity-30" style={{ background: "hsl(var(--filigree))" }} />
         {displaySkills.length > 0 && (
           <CompactHUD skills={displaySkills} targetSkillIds={targetSkillIds} userName={userName} avgDegreeLevel={avgDegreeLevel} />
+        )}
+        {isSignedIn && (
+          <>
+            <div className="w-px h-4 opacity-30" style={{ background: "hsl(var(--filigree))" }} />
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div>
+                  <InviteShareWidget compact />
+                </div>
+              </TooltipTrigger>
+              <TooltipContent side="bottom" className="text-xs font-semibold" style={{ fontFamily: "'Cinzel', serif" }}>
+                Recruit allies — earn free months
+              </TooltipContent>
+            </Tooltip>
+          </>
         )}
 
         {/* Expand/collapse toggle */}
