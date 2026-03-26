@@ -15,7 +15,6 @@ import SimulatorModal from "@/components/SimulatorModal";
 import type { SimLaunchRequest, PromptLabRequest } from "@/components/territory/SkillLaunchCard";
 import PromptLab from "@/components/sim/PromptLab";
 import { preloadTerritoryImages } from "@/lib/territory-hero-images";
-import { useAuth } from "@/contexts/AuthContext";
 import { useSimCheckpoints, type SimCheckpoint } from "@/hooks/use-sim-checkpoints";
 
 /** IDs of skills where user has completed a L2 boss battle */
