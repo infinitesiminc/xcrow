@@ -34,6 +34,12 @@ interface PlayerHUDProps {
   targetSkillNames: Set<string>;
   /** Kingdom tiers from MyRolesPanel for rank calculation */
   kingdomTiers?: KingdomTier[];
+  /** Scout mission state */
+  missionPhase?: "scout" | "battle" | "conquer";
+  missionProgress?: number;
+  territoriesScouted?: number;
+  scoutedSkillCount?: number;
+  skillsConquered?: number;
 }
 
 export default function PlayerHUD({ skills, uniqueTasks, isEmpty, targetRoles, targetSkillNames, kingdomTiers = [] }: PlayerHUDProps) {
