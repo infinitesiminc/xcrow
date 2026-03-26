@@ -73,6 +73,7 @@ export default function ToolAtlasMap() {
   const [zoom, setZoom] = useState(0.6);
   const [isPanning, setIsPanning] = useState(false);
   const panStart = useRef({ x: 0, y: 0, panX: 0, panY: 0 });
+  const { stack, toggleTool, isInStack, stackSize } = useMyStack();
 
   const { nodes, clusters } = useMemo(
     () => computeLayout(GTC_TOOLS, dimensions.width, dimensions.height),
