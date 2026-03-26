@@ -17,6 +17,17 @@ import FutureIsland from "./FutureIsland";
 import type { CanonicalSkillGrowth } from "@/pages/MapPage";
 import { getGuardianByCategory, type TerritoryGuardian } from "@/lib/territory-guardians";
 import { generateNPCSpawns, type NPCSpawn, type WanderingNPC } from "@/lib/wandering-npcs";
+import npcMerchant from "@/assets/npc-merchant.png";
+import npcOracle from "@/assets/npc-oracle.png";
+import npcRival from "@/assets/npc-rival.png";
+import npcScout from "@/assets/npc-scout.png";
+import npcBlacksmith from "@/assets/npc-blacksmith.png";
+import npcBard from "@/assets/npc-bard.png";
+
+const NPC_MAP_AVATARS: Record<string, string> = {
+  merchant: npcMerchant, oracle: npcOracle, rival: npcRival,
+  scout: npcScout, blacksmith: npcBlacksmith, bard: npcBard,
+};
 import GuardianEncounter from "./GuardianEncounter";
 import NPCEncounter from "./NPCEncounter";
 import TerritoryParticles from "./TerritoryParticles";
