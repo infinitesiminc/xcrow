@@ -1426,8 +1426,31 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
               />
             </div>
           )}
+          {/* Silver tier — Prompt Forge (embedded PromptLab) */}
+          {phase === "chat" && !error && masteryTier === "silver" && (
+            <div className="absolute inset-0 z-20 overflow-y-auto">
+              <PromptLab
+                open
+                embedded
+                onClose={() => setPhase("done")}
+                skillId={matchTaskToSkills(taskName, jobTitle)[0] || "prompt-engineering"}
+                skillName={taskName}
+                skillCategory="Technical"
+                onComplete={handlePromptLabComplete}
+              />
+            </div>
+          )}
+          {/* Platinum tier — Agent Delegation Sim */}
+          {phase === "chat" && !error && masteryTier === "platinum" && (
+            <div className="absolute inset-0 z-20 overflow-y-auto p-6">
+              <DelegationSim
+                taskName={taskName}
+                onFinish={handleDelegationComplete}
+              />
+            </div>
+          )}
           {/* Atmospheric vignette for immersion */}
-          {phase === "chat" && !(level === 2 && auditData) && (
+          {phase === "chat" && !(level === 2 && auditData) && !isSpecialTier && (
             <div className="absolute inset-0 pointer-events-none z-0" style={{
               background: "radial-gradient(ellipse at center, transparent 50%, hsl(var(--background) / 0.4) 100%)",
             }} />
