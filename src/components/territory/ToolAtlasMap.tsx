@@ -201,6 +201,7 @@ export default function ToolAtlasMap() {
             const isHovered = hoveredTool === tool.name;
             const isSelected = selectedTool?.name === tool.name;
             const isLearnable = tool.type === "learnable";
+            const inStack = isInStack(tool.name);
             const r = isHovered || isSelected ? NODE_RADIUS + 4 : NODE_RADIUS;
 
             return (
@@ -215,11 +216,15 @@ export default function ToolAtlasMap() {
                 {isLearnable && (
                   <circle cx={x} cy={y} r={r + 6} fill={cfg.color + "15"} />
                 )}
+                {/* Stack highlight ring */}
+                {inStack && (
+                  <circle cx={x} cy={y} r={r + 8} fill="none" stroke="hsl(45, 90%, 55%)" strokeWidth={2} strokeDasharray="4 2" opacity={0.7} />
+                )}
                 {/* Outer ring */}
                 <circle
                   cx={x} cy={y} r={r}
                   fill="hsl(var(--card))"
-                  stroke={isSelected ? "hsl(var(--filigree-glow))" : cfg.color}
+                  stroke={isSelected ? "hsl(var(--filigree-glow))" : inStack ? "hsl(45, 90%, 55%)" : cfg.color}
                   strokeWidth={isSelected ? 2.5 : isHovered ? 2 : 1.2}
                   style={{ transition: "all 0.15s ease" }}
                 />
@@ -229,39 +234,23 @@ export default function ToolAtlasMap() {
                 </text>
                 {/* Label */}
                 {(isHovered || isSelected || zoom > 0.8) && (
-                  <text
-                    x={x}
-                    y={y + r + 14}
-                    textAnchor="middle"
-                    fill="hsl(var(--foreground))"
-                    fontSize={10}
-                    fontWeight={600}
-                  >
+                  <text x={x} y={y + r + 14} textAnchor="middle" fill="hsl(var(--foreground))" fontSize={10} fontWeight={600}>
                     {tool.name}
                   </text>
                 )}
                 {/* Version badge */}
                 {(isHovered || isSelected) && tool.version && (
-                  <text
-                    x={x}
-                    y={y + r + 26}
-                    textAnchor="middle"
-                    fill="hsl(var(--muted-foreground))"
-                    fontSize={8}
-                  >
+                  <text x={x} y={y + r + 26} textAnchor="middle" fill="hsl(var(--muted-foreground))" fontSize={8}>
                     {tool.version}
                   </text>
                 )}
-                {/* Practice dot indicator */}
-                {isLearnable && (
-                  <circle
-                    cx={x + r * 0.7}
-                    cy={y - r * 0.7}
-                    r={4}
-                    fill="hsl(140, 60%, 45%)"
-                    stroke="hsl(var(--card))"
-                    strokeWidth={1.5}
-                  />
+                {/* Practice dot */}
+                {isLearnable && !inStack && (
+                  <circle cx={x + r * 0.7} cy={y - r * 0.7} r={4} fill="hsl(140, 60%, 45%)" stroke="hsl(var(--card))" strokeWidth={1.5} />
+                )}
+                {/* Stack checkmark */}
+                {inStack && (
+                  <circle cx={x + r * 0.7} cy={y - r * 0.7} r={5} fill="hsl(45, 90%, 55%)" stroke="hsl(var(--card))" strokeWidth={1.5} />
                 )}
               </g>
             );
