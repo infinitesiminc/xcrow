@@ -337,113 +337,138 @@ const MapPage = () => {
   useChatViewContext(chatViewCtx as any, [chatViewCtx]);
 
   return (
-    <div className="h-[calc(100vh-3.5rem)] flex overflow-hidden relative">
-      {/* ── Left Panel: HUD + Tabs + Content ── */}
-      <AnimatePresence initial={false}>
-        {!panelCollapsed && (
-          <motion.div
-            key="left-panel"
-            initial={{ width: 0, opacity: 0 }}
-            animate={{ width: 320, opacity: 1 }}
-            exit={{ width: 0, opacity: 0 }}
-            transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-            className="flex flex-col h-full z-10 shrink-0 overflow-hidden"
-            style={{
-              background: "hsl(var(--surface-stone) / 0.97)",
-              borderRight: "1px solid hsl(var(--filigree) / 0.2)",
-              boxShadow: "2px 0 20px hsl(var(--emboss-shadow))",
-            }}
-          >
-        {/* Mini HUD stats row */}
+    <div className="h-[calc(100vh-3.5rem)] flex flex-col overflow-hidden relative">
+      {/* ── Top Strip: always visible — tab icons + toggle ── */}
+      <div
+        className="relative z-20 flex items-center gap-1 px-3 py-1.5 shrink-0"
+        style={{
+          background: "hsl(var(--surface-stone) / 0.97)",
+          borderBottom: "1px solid hsl(var(--filigree) / 0.2)",
+          boxShadow: "0 2px 12px hsl(var(--emboss-shadow))",
+        }}
+      >
+        {/* Tab icons */}
+        {TAB_ITEMS.map(({ key, RuneIcon, label }) => {
+          if (key !== "table" && !isSignedIn) return null;
+          const isActive = activeTab === key && !panelCollapsed;
+          const activeColor = "hsl(var(--filigree-glow))";
+          const inactiveColor = "hsl(var(--muted-foreground))";
+          return (
+            <Tooltip key={key}>
+              <TooltipTrigger asChild>
+                <button
+                  onClick={() => {
+                    if (activeTab === key && !panelCollapsed) {
+                      setPanelCollapsed(true);
+                    } else {
+                      setActiveTab(key);
+                      setPanelCollapsed(false);
+                    }
+                  }}
+                  className="relative w-9 h-9 rounded-lg flex items-center justify-center transition-all hover:scale-105"
+                  style={{
+                    ...(isActive
+                      ? { background: "hsl(var(--filigree) / 0.12)", boxShadow: "0 0 12px hsl(var(--filigree-glow) / 0.3)" }
+                      : {}),
+                  }}
+                >
+                  <RuneIcon size={22} color={isActive ? activeColor : inactiveColor} />
+                  {key === "allies" && (pendingCount + unreadCount) > 0 && (
+                    <span
+                      className="absolute -top-0.5 -right-0.5 w-4 h-4 rounded-full text-[8px] flex items-center justify-center font-bold animate-pulse"
+                      style={{ background: "hsl(var(--filigree-glow))", color: "hsl(var(--background))" }}
+                    >
+                      {pendingCount + unreadCount}
+                    </span>
+                  )}
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="bottom" className="text-xs font-semibold" style={{ fontFamily: "'Cinzel', serif" }}>
+                {label}
+              </TooltipContent>
+            </Tooltip>
+          );
+        })}
+
+        {/* Spacer + mini HUD in strip */}
+        <div className="flex-1" />
         {displaySkills.length > 0 && (
           <CompactHUD skills={displaySkills} targetSkillIds={targetSkillIds} userName={userName} avgDegreeLevel={avgDegreeLevel} />
         )}
 
-        {/* Icon-only tab bar */}
-        <div
-          className="flex items-center justify-center gap-2 px-3 py-2"
-          style={{ borderBottom: "1px solid hsl(var(--filigree) / 0.15)" }}
+        {/* Expand/collapse toggle */}
+        <button
+          onClick={() => setPanelCollapsed(c => !c)}
+          className="w-7 h-7 rounded-md flex items-center justify-center transition-all hover:bg-muted/30"
+          style={{ color: "hsl(var(--muted-foreground))" }}
+          title={panelCollapsed ? "Expand panel" : "Collapse panel"}
         >
-          {TAB_ITEMS.map(({ key, RuneIcon, label }) => {
-            if (key !== "table" && !isSignedIn) return null;
-            const isActive = activeTab === key;
-            const activeColor = "hsl(var(--filigree-glow))";
-            const inactiveColor = "hsl(var(--muted-foreground))";
-            return (
-              <Tooltip key={key}>
-                <TooltipTrigger asChild>
-                  <button
-                    onClick={() => setActiveTab(key)}
-                    className="relative w-10 h-10 rounded-lg flex items-center justify-center transition-all hover:scale-105"
-                    style={{
-                      ...(isActive
-                        ? { background: "hsl(var(--filigree) / 0.12)", boxShadow: `0 0 12px hsl(var(--filigree-glow) / 0.3)` }
-                        : {}),
-                    }}
-                  >
-                    <RuneIcon size={24} color={isActive ? activeColor : inactiveColor} />
-                    {key === "allies" && (pendingCount + unreadCount) > 0 && (
-                      <span
-                        className="absolute -top-0.5 -right-0.5 w-4 h-4 rounded-full text-[8px] flex items-center justify-center font-bold animate-pulse"
-                        style={{ background: "hsl(var(--filigree-glow))", color: "hsl(var(--background))" }}
-                      >
-                        {pendingCount + unreadCount}
-                      </span>
-                    )}
-                  </button>
-                </TooltipTrigger>
-                <TooltipContent side="bottom" className="text-xs font-semibold" style={{ fontFamily: "'Cinzel', serif" }}>
-                  {label}
-                </TooltipContent>
-              </Tooltip>
-            );
-          })}
-        </div>
+          {panelCollapsed ? <ChevronDown className="h-4 w-4" /> : <ChevronUp className="h-4 w-4" />}
+        </button>
+      </div>
 
-        {/* Panel content */}
-        <div className="flex-1 overflow-y-auto overflow-x-hidden">
-          {activeTab === "table" ? (
-            isFastTrack ? (
-              <FastTrackPanel />
-            ) : (
-              <SkillProgressPanel
-                skills={futureSkills}
-                skillGrowthMap={skillGrowthMap}
-                level2SkillIds={level2SkillIds}
-                focusSkillId={forgeFocusSkillId}
-                onLaunchSim={handleLaunchSim}
-                onSkillClick={(skill) => {
-                  setMapFocusSkillId(skill.id);
-                  setTimeout(() => setMapFocusSkillId(null), 100);
-                  setDrawerSkill(skill);
-                  setDrawerOpen(true);
-                }}
-              />
-            )
-          ) : activeTab === "codex" && isSignedIn ? (
-            <CodexPanel />
-          ) : activeTab === "allies" && isSignedIn ? (
-            <AlliesPanel onLaunchSim={handleLaunchSim} />
-          ) : null}
-        </div>
+      {/* ── Overlay panel: drops down over the map ── */}
+      <div className="flex-1 relative overflow-hidden">
+        <AnimatePresence>
+          {!panelCollapsed && (
+            <motion.div
+              key="overlay-panel"
+              initial={{ y: "-100%", opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: "-100%", opacity: 0 }}
+              transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+              className="absolute inset-x-0 top-0 z-30 flex flex-col overflow-hidden"
+              style={{
+                maxHeight: "60%",
+                background: "hsl(var(--surface-stone) / 0.97)",
+                borderBottom: "1px solid hsl(var(--filigree) / 0.2)",
+                boxShadow: "0 8px 32px hsl(var(--emboss-shadow))",
+                backdropFilter: "blur(12px)",
+              }}
+            >
+              <div className="flex-1 overflow-y-auto overflow-x-hidden">
+                {activeTab === "table" ? (
+                  isFastTrack ? (
+                    <FastTrackPanel />
+                  ) : (
+                    <SkillProgressPanel
+                      skills={futureSkills}
+                      skillGrowthMap={skillGrowthMap}
+                      level2SkillIds={level2SkillIds}
+                      focusSkillId={forgeFocusSkillId}
+                      onLaunchSim={handleLaunchSim}
+                      onSkillClick={(skill) => {
+                        setMapFocusSkillId(skill.id);
+                        setTimeout(() => setMapFocusSkillId(null), 100);
+                        setDrawerSkill(skill);
+                        setDrawerOpen(true);
+                      }}
+                    />
+                  )
+                ) : activeTab === "codex" && isSignedIn ? (
+                  <CodexPanel />
+                ) : activeTab === "allies" && isSignedIn ? (
+                  <AlliesPanel onLaunchSim={handleLaunchSim} />
+                ) : null}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
-      </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Single toggle button — always visible at top-left */}
-      <button
-        onClick={() => setPanelCollapsed(c => !c)}
-        className="absolute top-2 left-2 z-20 w-9 h-9 rounded-lg flex items-center justify-center backdrop-blur-md border transition-all hover:bg-muted/30 hover:scale-105"
-        style={{
-          background: "hsl(var(--card) / 0.85)",
-          borderColor: "hsl(var(--border) / 0.5)",
-          color: "hsl(var(--foreground))",
-        }}
-        title={panelCollapsed ? "Show panel" : "Hide panel"}
-      >
-        {panelCollapsed ? <PanelLeftOpen className="h-4 w-4" /> : <PanelLeftClose className="h-4 w-4" />}
-      </button>
+        {/* Click-away backdrop */}
+        <AnimatePresence>
+          {!panelCollapsed && (
+            <motion.div
+              key="backdrop"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 z-20"
+              style={{ background: "hsl(var(--background) / 0.3)" }}
+              onClick={() => setPanelCollapsed(true)}
+            />
+          )}
+        </AnimatePresence>
 
       {/* ── Right: Territory Map ── */}
       <div className="flex-1 relative">
