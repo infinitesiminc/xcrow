@@ -7,7 +7,7 @@ import type { FutureSkill } from "@/hooks/use-future-skills";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { X, ScrollText, Users, BookOpen, Compass } from "lucide-react";
+import { X, ScrollText, Users, BookOpen, Compass, PanelLeftClose, PanelLeftOpen } from "lucide-react";
 import BossBanner from "@/components/territory/BossBanner";
 import SimulatorModal from "@/components/SimulatorModal";
 import type { SimLaunchRequest, PromptLabRequest } from "@/components/territory/SkillLaunchCard";
@@ -102,6 +102,7 @@ const MapPage = () => {
   const [selectedKingdomCtx, setSelectedKingdomCtx] = useState<{ tier?: string; xp?: number; questsCompleted?: number; totalQuests?: number } | null>(null);
   const [activeEdge, setActiveEdge] = useState<EdgeContext | null>(null);
   const [activeTab, setActiveTab] = useState<"table" | "scout" | "codex" | "allies">("table");
+  const [panelCollapsed, setPanelCollapsed] = useState(false);
   const [scoutSubTab, setScoutSubTab] = useState<"matched" | "browse" | "kingdoms">("matched");
   const [mapFocusSkillId, setMapFocusSkillId] = useState<string | null>(null);
   const [forgeFocusSkillId, setForgeFocusSkillId] = useState<string | null>(null);
@@ -280,16 +281,23 @@ const MapPage = () => {
   useChatViewContext(chatViewCtx as any, [chatViewCtx]);
 
   return (
-    <div className="h-[calc(100vh-3.5rem)] flex overflow-hidden">
+    <div className="h-[calc(100vh-3.5rem)] flex overflow-hidden relative">
       {/* ── Left Panel: HUD + Tabs + Content ── */}
-      <div
-        className="flex flex-col w-[420px] min-w-[340px] max-w-[480px] h-full z-10 shrink-0"
-        style={{
-          background: "hsl(var(--surface-stone) / 0.97)",
-          borderRight: "1px solid hsl(var(--filigree) / 0.2)",
-          boxShadow: "2px 0 20px hsl(var(--emboss-shadow))",
-        }}
-      >
+      <AnimatePresence initial={false}>
+        {!panelCollapsed && (
+          <motion.div
+            key="left-panel"
+            initial={{ width: 0, opacity: 0 }}
+            animate={{ width: 420, opacity: 1 }}
+            exit={{ width: 0, opacity: 0 }}
+            transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+            className="flex flex-col h-full z-10 shrink-0 overflow-hidden"
+            style={{
+              background: "hsl(var(--surface-stone) / 0.97)",
+              borderRight: "1px solid hsl(var(--filigree) / 0.2)",
+              boxShadow: "2px 0 20px hsl(var(--emboss-shadow))",
+            }}
+          >
         {/* Mini HUD stats row */}
         {displaySkills.length > 0 && (
           <CompactHUD skills={displaySkills} targetSkillIds={targetSkillIds} userName={userName} />
@@ -359,7 +367,35 @@ const MapPage = () => {
             <AlliesPanel onLaunchSim={handleLaunchSim} />
           ) : null}
         </div>
-      </div>
+
+        {/* Collapse button inside panel */}
+        <button
+          onClick={() => setPanelCollapsed(true)}
+          className="absolute top-2 right-2 z-20 w-7 h-7 rounded-md flex items-center justify-center transition-colors hover:bg-muted/50"
+          style={{ color: "hsl(var(--muted-foreground))" }}
+          title="Collapse panel"
+        >
+          <PanelLeftClose className="h-4 w-4" />
+        </button>
+      </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Expand button when collapsed */}
+      {panelCollapsed && (
+        <button
+          onClick={() => setPanelCollapsed(false)}
+          className="absolute top-2 left-2 z-20 w-9 h-9 rounded-lg flex items-center justify-center backdrop-blur-md border transition-colors hover:bg-muted/30"
+          style={{
+            background: "hsl(var(--card) / 0.85)",
+            borderColor: "hsl(var(--border) / 0.5)",
+            color: "hsl(var(--foreground))",
+          }}
+          title="Show panel"
+        >
+          <PanelLeftOpen className="h-4 w-4" />
+        </button>
+      )}
 
       {/* ── Right: Territory Map ── */}
       <div className="flex-1 relative">
