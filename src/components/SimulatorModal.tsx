@@ -20,7 +20,7 @@ import {
   compileAudit,
   chatTurn,
   scoreSession,
-  generateElevation,
+  
   type SimMessage,
   type SimSession,
   type SimScoreResult,
