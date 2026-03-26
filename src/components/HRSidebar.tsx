@@ -1,4 +1,4 @@
-import { Building2, Users, Crown, GraduationCap } from "lucide-react";
+import { Building2, Users, GraduationCap } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import {
   Sidebar,
