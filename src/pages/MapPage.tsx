@@ -393,6 +393,7 @@ const MapPage = () => {
           level2CompletedIds={level2CompletedIds}
           skillGrowthMap={skillGrowthMap}
           onLaunchSim={handleLaunchSim}
+          onLaunchPromptLab={handleLaunchPromptLab}
           onSkillSelect={(skill) => {
             setActiveTab("table");
             setForgeFocusSkillId(skill.id);
