@@ -61,7 +61,7 @@ interface DelegationSimProps {
   onFinish?: (result: DelegationSimResult) => void;
 }
 
-export default function DelegationSim({ taskName = "Quarterly Pricing Review", onComplete }: DelegationSimProps) {
+export default function DelegationSim({ taskName = "Quarterly Pricing Review", onComplete, onFinish }: DelegationSimProps) {
   const [steps, setSteps] = useState<AgentStep[]>(MOCK_STEPS);
   const [currentStep, setCurrentStep] = useState(-1);
   const [running, setRunning] = useState(false);
