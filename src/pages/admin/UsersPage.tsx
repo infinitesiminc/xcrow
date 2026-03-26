@@ -220,9 +220,12 @@ export default function UsersPage() {
                       </TableCell>
                       <TableCell className="text-xs text-muted-foreground max-w-[180px] truncate">{u.email}</TableCell>
                       <TableCell>
-                        {u.career_stage && (
-                          <Badge variant="secondary" className="text-[10px]">{u.career_stage}</Badge>
-                        )}
+                        <Badge
+                          variant={u.tier === "champion" ? "default" : u.tier === "school" ? "secondary" : "outline"}
+                          className="text-[10px]"
+                        >
+                          {u.tier === "champion" ? "👑 Champion" : u.tier === "school" ? "🎓 School" : "Free"}
+                        </Badge>
                       </TableCell>
                       <TableCell className="text-xs text-muted-foreground">
                         {u.school_name || u.company || "—"}
