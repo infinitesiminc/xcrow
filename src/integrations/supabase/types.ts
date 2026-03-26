@@ -376,6 +376,33 @@ export type Database = {
         }
         Relationships: []
       }
+      credit_ledger: {
+        Row: {
+          created_at: string
+          delta: number
+          id: string
+          metadata: Json | null
+          reason: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          delta: number
+          id?: string
+          metadata?: Json | null
+          reason: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          delta?: number
+          id?: string
+          metadata?: Json | null
+          reason?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       custom_simulations: {
         Row: {
           ai_state: string | null
@@ -1021,6 +1048,7 @@ export type Database = {
           job_title: string | null
           linkedin_url: string | null
           onboarding_completed: boolean
+          play_mode: string
           program_name: string | null
           referral_code: string | null
           school_name: string | null
@@ -1041,6 +1069,7 @@ export type Database = {
           job_title?: string | null
           linkedin_url?: string | null
           onboarding_completed?: boolean
+          play_mode?: string
           program_name?: string | null
           referral_code?: string | null
           school_name?: string | null
@@ -1061,6 +1090,7 @@ export type Database = {
           job_title?: string | null
           linkedin_url?: string | null
           onboarding_completed?: boolean
+          play_mode?: string
           program_name?: string | null
           referral_code?: string | null
           school_name?: string | null
@@ -1963,6 +1993,15 @@ export type Database = {
         Args: { _type: string; _user_id: string }
         Returns: Json
       }
+      deduct_credits: {
+        Args: {
+          _amount: number
+          _metadata?: Json
+          _reason: string
+          _user_id: string
+        }
+        Returns: boolean
+      }
       delete_email: {
         Args: { message_id: number; queue_name: string }
         Returns: boolean
@@ -2002,6 +2041,7 @@ export type Database = {
           task_cluster_count: number
         }[]
       }
+      get_credit_balance: { Args: { _user_id: string }; Returns: number }
       get_friend_activity: {
         Args: { _limit?: number; _user_id: string }
         Returns: {
@@ -2145,6 +2185,15 @@ export type Database = {
           total_questions: number
           user_id: string
         }[]
+      }
+      grant_credits: {
+        Args: {
+          _amount: number
+          _metadata?: Json
+          _reason: string
+          _user_id: string
+        }
+        Returns: undefined
       }
       has_school_seat: { Args: { _user_id: string }; Returns: boolean }
       increment_usage: {

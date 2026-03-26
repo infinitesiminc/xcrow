@@ -5,6 +5,7 @@ import xcrowBattleLogo from "@/assets/xcrow-logo.webp";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { getAvatarById } from "@/lib/avatars";
+import { useCredits } from "@/hooks/use-credits";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,10 +13,11 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { User, Menu, X, Compass, Shield, Map, Settings, LogOut, Trophy, GraduationCap, Sun, Moon, BookOpen } from "lucide-react";
+import { User, Menu, X, Compass, Shield, Map, Settings, LogOut, Trophy, GraduationCap, Sun, Moon, BookOpen, Coins } from "lucide-react";
 
 export default function Navbar() {
   const { user, signOut, openAuthModal, isSuperAdmin, isSchoolAdmin, profile } = useAuth();
+  const { balance: creditBalance } = useCredits();
   const navigate = useNavigate();
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -145,6 +147,20 @@ export default function Navbar() {
         {/* Right side */}
         <div className="flex items-center gap-1.5">
           {user ? (
+            <>
+              {/* Credit balance pill */}
+              <button
+                onClick={() => navigate("/settings?section=subscription")}
+                className="hidden sm:flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold transition-colors hover:bg-secondary/60"
+                style={{
+                  color: "hsl(45 93% 48%)",
+                  background: "hsl(45 93% 48% / 0.08)",
+                  border: "1px solid hsl(45 93% 48% / 0.15)",
+                }}
+              >
+                <Coins className="h-3.5 w-3.5" />
+                {creditBalance}
+              </button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon" className="rounded-full">
@@ -191,6 +207,7 @@ export default function Navbar() {
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
+            </>
           ) : (
             <Button
               size="sm"
