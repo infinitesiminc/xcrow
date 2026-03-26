@@ -1,14 +1,13 @@
 /**
  * RoleNPCEncounter — Cinematic encounter with conversational AI chat.
+ * Split-panel layout: full-height NPC portrait (left) + chat (right).
  * The role character speaks in first person about how AI is changing their work.
- * Users can ask questions and collect skills.
  */
 import { useState, useEffect, useRef, useCallback, memo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Zap, Shield, TrendingUp, BookOpen, Swords, Award, ChevronRight, Sparkles, Send, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import HeroScene from "@/components/territory/HeroScene";
 import { getTerritoryHeroImage } from "@/lib/territory-hero-images";
 import { type RoleNPC, THREAT_COLORS, TERRITORY_HUES } from "@/lib/role-npcs";
@@ -35,37 +34,6 @@ type ChatMsg = { role: "user" | "assistant"; content: string };
 
 const cinzel = { fontFamily: "'Cinzel', serif" };
 
-function RoleAvatar({ title, tier, size = 80, territory }: { title: string; tier: "thriving" | "adapting" | "threatened"; size?: number; territory?: string }) {
-  const colors = THREAT_COLORS[tier];
-  const avatarSrc = territory ? ROLE_NPC_AVATARS[territory] : null;
-  return (
-    <div
-      className="rounded-full flex items-center justify-center font-black flex-shrink-0 overflow-hidden"
-      style={{
-        width: size, height: size,
-        border: `2px solid hsl(${colors.bg})`,
-        boxShadow: `0 0 ${size > 40 ? 30 : 12}px hsl(${colors.glow} / 0.3)`,
-      }}
-    >
-      {avatarSrc ? (
-        <img src={avatarSrc} alt={title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-      ) : (
-        <div
-          className="w-full h-full flex items-center justify-center"
-          style={{
-            background: `linear-gradient(135deg, hsl(${colors.bg} / 0.3), hsl(${colors.bg} / 0.1))`,
-            ...cinzel,
-            fontSize: size * 0.3,
-            color: `hsl(${colors.bg})`,
-          }}
-        >
-          {title.split(" ").slice(0, 2).map(w => w[0]?.toUpperCase() || "").join("")}
-        </div>
-      )}
-    </div>
-  );
-}
-
 /** Smooth typewriter that reveals text character-by-character using CSS */
 function StreamingText({ text, isComplete }: { text: string; isComplete: boolean }) {
   const [displayed, setDisplayed] = useState("");
@@ -89,12 +57,10 @@ function StreamingText({ text, isComplete }: { text: string; isComplete: boolean
       if (!lastTimeRef.current) lastTimeRef.current = time;
       const elapsed = time - lastTimeRef.current;
       
-      // Reveal ~2 chars per frame at 60fps (~120 chars/sec) for smooth feel
       if (elapsed >= 12) {
         lastTimeRef.current = time;
         const target = targetRef.current;
         if (indexRef.current < target.length) {
-          // Reveal 1-3 chars per tick for natural cadence
           const charsToAdd = Math.min(2, target.length - indexRef.current);
           indexRef.current += charsToAdd;
           setDisplayed(target.slice(0, indexRef.current));
@@ -107,7 +73,6 @@ function StreamingText({ text, isComplete }: { text: string; isComplete: boolean
     return () => cancelAnimationFrame(rafRef.current);
   }, [isComplete]);
 
-  // Reset when text starts fresh (new message)
   useEffect(() => {
     if (text.length < displayed.length) {
       indexRef.current = 0;
@@ -154,9 +119,10 @@ export default function RoleNPCEncounter({ role, onClose, onCollectSkills, onExp
   const [chatMessages, setChatMessages] = useState<ChatMsg[]>([]);
   const [inputValue, setInputValue] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
-  const [showSkills, setShowSkills] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  const avatarSrc = role.territory ? ROLE_NPC_AVATARS[role.territory] : null;
 
   // Fetch future skills
   useEffect(() => {
@@ -269,7 +235,6 @@ export default function RoleNPCEncounter({ role, onClose, onCollectSkills, onExp
 
   const handleCollect = () => {
     setCollecting(true);
-    // Stagger animation then mark collected
     setTimeout(() => {
       const ids = futureSkills.map(s => s.id);
       onCollectSkills?.(ids);
@@ -302,40 +267,83 @@ export default function RoleNPCEncounter({ role, onClose, onCollectSkills, onExp
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: 40, scale: 0.95 }}
           transition={{ duration: 0.6, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
-          className="relative z-[4] w-full max-w-2xl mx-4 flex flex-col"
-          style={{ maxHeight: "85vh" }}
+          className="relative z-[4] w-full max-w-4xl mx-4 flex"
+          style={{ height: "min(80vh, 640px)" }}
         >
           <div
-            className="rounded-2xl border-2 overflow-hidden backdrop-blur-xl flex flex-col"
+            className="rounded-2xl border-2 overflow-hidden backdrop-blur-xl flex w-full"
             style={{
               background: `linear-gradient(135deg, hsl(${hue} 30% 6% / 0.95), hsl(${hue} 20% 10% / 0.95))`,
               borderColor: `hsl(${colors.bg})`,
               boxShadow: `0 0 80px hsl(${colors.glow} / 0.3), inset 0 1px 0 hsl(${hue} 35% 28% / 0.3)`,
-              maxHeight: "85vh",
             }}
           >
-            {/* Compact Header */}
-            <div className="relative px-5 pt-4 pb-3 flex items-center gap-3 flex-shrink-0">
-              <RoleAvatar title={role.title} tier={role.threatTier} territory={role.territory} size={52} />
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 mb-0.5">
+            {/* ═══ LEFT: Full-height NPC portrait ═══ */}
+            <div
+              className="relative w-[280px] shrink-0 overflow-hidden hidden md:block"
+              style={{
+                background: `linear-gradient(180deg, hsl(${hue} 25% 8%), hsl(${hue} 20% 4%))`,
+              }}
+            >
+              {/* Portrait image */}
+              {avatarSrc ? (
+                <motion.img
+                  src={avatarSrc}
+                  alt={role.title}
+                  className="absolute inset-0 w-full h-full object-cover"
+                  initial={{ scale: 1.1, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  transition={{ duration: 1.2, ease: "easeOut" }}
+                  style={{
+                    maskImage: "linear-gradient(to bottom, black 70%, transparent 100%)",
+                    WebkitMaskImage: "linear-gradient(to bottom, black 70%, transparent 100%)",
+                  }}
+                />
+              ) : (
+                <div
+                  className="absolute inset-0 flex items-center justify-center"
+                  style={{
+                    background: `radial-gradient(ellipse at center, hsl(${hue} 40% 15%), hsl(${hue} 20% 5%))`,
+                    ...cinzel,
+                    fontSize: 72,
+                    color: `hsl(${hue} 40% 25%)`,
+                  }}
+                >
+                  {role.title.split(" ").slice(0, 2).map(w => w[0]?.toUpperCase() || "").join("")}
+                </div>
+              )}
+
+              {/* Bottom gradient overlay for text */}
+              <div
+                className="absolute inset-x-0 bottom-0 h-48"
+                style={{
+                  background: `linear-gradient(to top, hsl(${hue} 25% 6%), transparent)`,
+                }}
+              />
+
+              {/* Character info overlay */}
+              <div className="absolute inset-x-0 bottom-0 p-4 z-[1]">
+                {/* Threat badge */}
+                <div className="flex items-center gap-2 mb-2">
                   <span
-                    className="text-[9px] uppercase tracking-[0.15em] font-bold px-1.5 py-0.5 rounded-full"
+                    className="text-[8px] uppercase tracking-[0.15em] font-bold px-2 py-0.5 rounded-full"
                     style={{
-                      background: `hsl(${colors.bg} / 0.15)`,
+                      background: `hsl(${colors.bg} / 0.2)`,
                       color: `hsl(${colors.bg})`,
-                      border: `1px solid hsl(${colors.bg} / 0.3)`,
+                      border: `1px solid hsl(${colors.bg} / 0.4)`,
                     }}
                   >
                     {colors.label}
                   </span>
-                  <span className="text-[9px]" style={{ color: `hsl(${hue} 15% 45%)` }}>
+                  <span className="text-[9px]" style={{ color: `hsl(${hue} 15% 50%)` }}>
                     AI Risk {role.automationRisk}%
                   </span>
                 </div>
+
+                {/* Title */}
                 <h2
-                  className="text-base font-black tracking-wide leading-tight truncate"
-                  style={{ ...cinzel, color: `hsl(${hue} 45% 78%)` }}
+                  className="text-sm font-black tracking-wide leading-tight mb-1"
+                  style={{ ...cinzel, color: `hsl(${hue} 45% 80%)` }}
                 >
                   {role.title}
                 </h2>
@@ -344,369 +352,362 @@ export default function RoleNPCEncounter({ role, onClose, onCollectSkills, onExp
                     {role.company} · {role.department}
                   </p>
                 )}
-              </div>
-              <div className="flex items-center gap-1.5 flex-shrink-0">
-                {futureSkills.length > 0 && (
-                  <button
-                    onClick={() => setShowSkills(!showSkills)}
-                    className="w-8 h-8 rounded-lg flex items-center justify-center transition-colors relative"
-                    style={{
-                      background: showSkills ? `hsl(${colors.bg} / 0.2)` : `hsl(${hue} 20% 14%)`,
-                      color: showSkills ? `hsl(${colors.bg})` : `hsl(${hue} 15% 55%)`,
-                    }}
-                  >
-                    <Award size={14} />
-                    <span
-                      className="absolute -top-1 -right-1 text-[8px] font-bold w-4 h-4 rounded-full flex items-center justify-center"
-                      style={{ background: `hsl(${colors.bg})`, color: "white" }}
-                    >
-                      {futureSkills.length}
-                    </span>
-                  </button>
-                )}
-                <button
-                  onClick={onClose}
-                  className="w-8 h-8 rounded-lg flex items-center justify-center transition-colors"
-                  style={{ background: `hsl(${hue} 20% 14%)`, color: `hsl(${hue} 15% 55%)` }}
-                >
-                  <X size={14} />
-                </button>
-              </div>
-            </div>
 
-            {/* Threat gauge */}
-            <div className="px-5 pb-2 flex-shrink-0">
-              <div className="h-1.5 rounded-full overflow-hidden" style={{ background: `hsl(${hue} 15% 15%)` }}>
-                <motion.div
-                  initial={{ width: 0 }}
-                  animate={{ width: `${role.automationRisk}%` }}
-                  transition={{ duration: 1.2, delay: 0.3 }}
-                  className="h-full rounded-full"
-                  style={{ background: `linear-gradient(90deg, hsl(142 70% 45%), hsl(45 90% 50%), hsl(0 70% 50%))` }}
-                />
-              </div>
-            </div>
-
-            {/* Skills Panel (collapsible) */}
-            <AnimatePresence>
-              {showSkills && (
-                <motion.div
-                  initial={{ height: 0, opacity: 0 }}
-                  animate={{ height: "auto", opacity: 1 }}
-                  exit={{ height: 0, opacity: 0 }}
-                  transition={{ duration: 0.3 }}
-                  className="overflow-hidden flex-shrink-0"
-                >
-                  <div className="px-5 pb-3">
-                    <div className="flex flex-wrap gap-1.5 mb-2">
-                      {futureSkills.map(skill => (
-                        <span
-                          key={skill.id}
-                          className="text-[10px] px-2 py-1 rounded-full flex items-center gap-1"
-                          style={{
-                            background: collected ? `hsl(${colors.bg} / 0.12)` : `hsl(${hue} 18% 12%)`,
-                            border: `1px solid ${collected ? `hsl(${colors.bg} / 0.3)` : `hsl(${hue} 20% 18%)`}`,
-                            color: collected ? `hsl(${colors.bg})` : `hsl(${hue} 15% 70%)`,
-                          }}
-                        >
-                          {skill.icon_emoji || "🎯"} {skill.name}
-                          {collected && <Sparkles className="h-2.5 w-2.5" />}
-                        </span>
-                      ))}
-                    </div>
-                    {!collected ? (
-                      <Button
-                        size="sm"
-                        className="w-full gap-1.5 text-xs font-bold"
-                        style={{
-                          background: `linear-gradient(135deg, hsl(${colors.bg} / 0.8), hsl(${colors.bg}))`,
-                          color: "white",
-                        }}
-                        onClick={handleCollect}
-                      >
-                        <Award size={12} /> Collect {futureSkills.length} Skills
-                      </Button>
-                    ) : (
-                      <div className="flex items-center justify-center gap-1.5 text-xs font-bold py-1" style={{ color: `hsl(${colors.bg})` }}>
-                        <Sparkles size={12} /> Skills Collected!
-                      </div>
-                    )}
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-
-            {/* Chat Area */}
-            <div
-              ref={scrollRef}
-              className="flex-1 overflow-y-auto px-5 py-3 space-y-3 min-h-0"
-              style={{ maxHeight: "45vh" }}
-            >
-              {chatMessages.map((msg, i) => {
-                const isLastAssistant = msg.role === "assistant" && i === chatMessages.length - 1;
-                const isCurrentlyStreaming = isLastAssistant && isStreaming;
-                return (
-                  <motion.div
-                    key={i}
-                    initial={{ opacity: 0, y: 8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.25 }}
-                    className={`flex gap-2.5 ${msg.role === "user" ? "flex-row-reverse" : ""}`}
-                  >
-                    {msg.role === "assistant" && (
-                      <RoleAvatar title={role.title} tier={role.threatTier} territory={role.territory} size={32} />
-                    )}
-                    <div
-                      className="rounded-xl px-3.5 py-2.5 text-sm leading-relaxed max-w-[80%]"
-                      style={
-                        msg.role === "assistant"
-                          ? {
-                              background: `hsl(${hue} 18% 10% / 0.7)`,
-                              borderLeft: `2px solid hsl(${colors.bg} / 0.5)`,
-                              color: `hsl(${hue} 12% 82%)`,
-                            }
-                          : {
-                              background: `hsl(${hue} 30% 20% / 0.6)`,
-                              color: `hsl(${hue} 15% 88%)`,
-                              marginLeft: "auto",
-                            }
-                      }
-                    >
-                      {msg.role === "assistant" ? (
-                        <StreamingText text={msg.content} isComplete={!isCurrentlyStreaming} />
-                      ) : (
-                        <span>{msg.content}</span>
-                      )}
-                    </div>
-                  </motion.div>
-                );
-              })}
-              {isStreaming && chatMessages[chatMessages.length - 1]?.role !== "assistant" && (
-                <div className="flex gap-2.5">
-                  <RoleAvatar title={role.title} tier={role.threatTier} territory={role.territory} size={32} />
-                  <div
-                    className="rounded-xl px-3.5 py-2.5"
-                    style={{ background: `hsl(${hue} 18% 10% / 0.7)`, borderLeft: `2px solid hsl(${colors.bg} / 0.5)` }}
-                  >
-                    <div className="flex gap-1">
-                      {[0, 1, 2].map(j => (
-                        <motion.div
-                          key={j}
-                          className="w-1.5 h-1.5 rounded-full"
-                          style={{ background: `hsl(${colors.bg})` }}
-                          animate={{ opacity: [0.3, 1, 0.3] }}
-                          transition={{ duration: 1, repeat: Infinity, delay: j * 0.15 }}
-                        />
-                      ))}
-                    </div>
+                {/* Threat gauge */}
+                <div className="mt-3">
+                  <div className="h-1 rounded-full overflow-hidden" style={{ background: `hsl(${hue} 15% 15%)` }}>
+                    <motion.div
+                      initial={{ width: 0 }}
+                      animate={{ width: `${role.automationRisk}%` }}
+                      transition={{ duration: 1.2, delay: 0.3 }}
+                      className="h-full rounded-full"
+                      style={{ background: `linear-gradient(90deg, hsl(142 70% 45%), hsl(45 90% 50%), hsl(0 70% 50%))` }}
+                    />
                   </div>
                 </div>
-              )}
+
+                {/* Skills count badge */}
+                {futureSkills.length > 0 && (
+                  <div className="mt-3 flex items-center gap-1.5">
+                    <Award size={11} style={{ color: `hsl(${colors.bg})` }} />
+                    <span className="text-[9px] font-semibold" style={{ color: `hsl(${colors.bg})` }}>
+                      {collected ? `${futureSkills.length} skills collected` : `${futureSkills.length} skills to discover`}
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              {/* Subtle animated glow at portrait edge */}
+              <motion.div
+                className="absolute right-0 inset-y-0 w-[2px]"
+                style={{ background: `hsl(${colors.bg})` }}
+                animate={{ opacity: [0.3, 0.6, 0.3] }}
+                transition={{ duration: 3, repeat: Infinity }}
+              />
             </div>
 
-            {/* Quick Questions */}
-            {chatMessages.length <= 2 && (
-              <div className="px-5 pb-2 flex gap-1.5 flex-wrap flex-shrink-0">
-                {QUICK_QUESTIONS.map(q => (
-                  <button
-                    key={q}
-                    onClick={() => sendMessage(q)}
-                    disabled={isStreaming}
-                    className="text-[10px] px-2.5 py-1.5 rounded-full transition-all hover:scale-[1.02]"
+            {/* ═══ RIGHT: Chat panel ═══ */}
+            <div className="flex-1 flex flex-col min-w-0">
+              {/* Mobile header (only shown on small screens) */}
+              <div className="md:hidden relative px-4 pt-3 pb-2 flex items-center gap-3 flex-shrink-0">
+                {avatarSrc ? (
+                  <div
+                    className="w-10 h-10 rounded-full overflow-hidden shrink-0"
                     style={{
-                      background: `hsl(${hue} 20% 12%)`,
-                      border: `1px solid hsl(${hue} 25% 22%)`,
-                      color: `hsl(${hue} 20% 65%)`,
+                      border: `2px solid hsl(${colors.bg})`,
+                      boxShadow: `0 0 12px hsl(${colors.glow} / 0.3)`,
                     }}
                   >
-                    {q}
-                  </button>
-                ))}
+                    <img src={avatarSrc} alt={role.title} className="w-full h-full object-cover" />
+                  </div>
+                ) : (
+                  <div
+                    className="w-10 h-10 rounded-full flex items-center justify-center text-xs font-bold shrink-0"
+                    style={{
+                      background: `hsl(${hue} 30% 12%)`,
+                      color: `hsl(${hue} 40% 60%)`,
+                      border: `2px solid hsl(${colors.bg})`,
+                    }}
+                  >
+                    {role.title.split(" ").slice(0, 2).map(w => w[0]?.toUpperCase() || "").join("")}
+                  </div>
+                )}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-1.5 mb-0.5">
+                    <span
+                      className="text-[8px] uppercase tracking-wider font-bold px-1.5 py-0.5 rounded-full"
+                      style={{
+                        background: `hsl(${colors.bg} / 0.15)`,
+                        color: `hsl(${colors.bg})`,
+                      }}
+                    >
+                      {colors.label}
+                    </span>
+                  </div>
+                  <h2 className="text-xs font-bold truncate" style={{ ...cinzel, color: `hsl(${hue} 45% 78%)` }}>
+                    {role.title}
+                  </h2>
+                </div>
+                <button
+                  onClick={onClose}
+                  className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0"
+                  style={{ background: `hsl(${hue} 20% 14%)`, color: `hsl(${hue} 15% 55%)` }}
+                >
+                  <X size={12} />
+                </button>
               </div>
-            )}
 
-            {/* Skill Collection — appears after a few exchanges */}
-            <AnimatePresence>
-              {chatMessages.length >= 3 && futureSkills.length > 0 && !collected && (
-                <motion.div
-                  initial={{ height: 0, opacity: 0 }}
-                  animate={{ height: "auto", opacity: 1 }}
-                  exit={{ height: 0, opacity: 0 }}
-                  transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-                  className="overflow-hidden flex-shrink-0"
+              {/* Desktop close button */}
+              <div className="hidden md:flex justify-end px-3 pt-3 pb-1 flex-shrink-0">
+                <button
+                  onClick={onClose}
+                  className="w-7 h-7 rounded-lg flex items-center justify-center transition-colors hover:brightness-125"
+                  style={{ background: `hsl(${hue} 20% 14%)`, color: `hsl(${hue} 15% 55%)` }}
                 >
-                  <div
-                    className="mx-5 mb-2 rounded-xl px-4 py-3 relative overflow-hidden"
-                    style={{
-                      background: `linear-gradient(135deg, hsl(${colors.bg} / 0.08), hsl(${colors.bg} / 0.15))`,
-                      border: `1px solid hsl(${colors.bg} / 0.25)`,
-                    }}
-                  >
-                    {/* Shimmer sweep when collecting */}
-                    {collecting && (
-                      <motion.div
-                        className="absolute inset-0 z-0"
-                        initial={{ x: "-100%" }}
-                        animate={{ x: "200%" }}
-                        transition={{ duration: 0.8, ease: "easeInOut" }}
-                        style={{
-                          background: `linear-gradient(90deg, transparent, hsl(${colors.bg} / 0.2), transparent)`,
-                          width: "50%",
-                        }}
-                      />
-                    )}
-                    <div className="flex items-center justify-between gap-3 mb-2 relative z-[1]">
-                      <div className="flex items-center gap-1.5">
-                        <motion.div animate={collecting ? { rotate: [0, 15, -15, 0], scale: [1, 1.2, 1] } : {}} transition={{ duration: 0.5 }}>
-                          <Award size={13} style={{ color: `hsl(${colors.bg})` }} />
-                        </motion.div>
-                        <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: `hsl(${colors.bg})` }}>
-                          {collecting ? "Collecting..." : "Skills Discovered"}
-                        </span>
-                      </div>
-                      <Button
-                        size="sm"
-                        className="h-7 gap-1.5 text-[10px] font-bold"
-                        disabled={collecting}
-                        style={{
-                          background: `linear-gradient(135deg, hsl(${colors.bg} / 0.8), hsl(${colors.bg}))`,
-                          color: "white",
-                          boxShadow: `0 0 15px hsl(${colors.glow} / 0.3)`,
-                        }}
-                        onClick={handleCollect}
-                      >
-                        <Sparkles size={10} /> Collect All ({futureSkills.length})
-                      </Button>
-                    </div>
-                    <div className="flex flex-wrap gap-1 relative z-[1]">
-                      {futureSkills.slice(0, 6).map((skill, i) => (
-                        <motion.span
-                          key={skill.id}
-                          className="text-[9px] px-2 py-0.5 rounded-full"
-                          animate={collecting ? {
-                            scale: [1, 1.15, 0],
-                            opacity: [1, 1, 0],
-                            y: [0, -4, -20],
-                          } : {}}
-                          transition={collecting ? {
-                            duration: 0.5,
-                            delay: i * 0.12,
-                            ease: [0.16, 1, 0.3, 1],
-                          } : {}}
-                          style={{
-                            background: `hsl(${hue} 18% 12%)`,
-                            border: `1px solid hsl(${colors.bg} / 0.2)`,
-                            color: `hsl(${hue} 15% 70%)`,
-                          }}
-                        >
-                          {skill.icon_emoji || "🎯"} {skill.name}
-                        </motion.span>
-                      ))}
-                      {futureSkills.length > 6 && !collecting && (
-                        <span className="text-[9px] px-2 py-0.5" style={{ color: `hsl(${hue} 15% 50%)` }}>
-                          +{futureSkills.length - 6} more
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
+                  <X size={12} />
+                </button>
+              </div>
 
-            {/* Collected celebration */}
-            <AnimatePresence>
-              {collected && (
-                <motion.div
-                  initial={{ height: 0, opacity: 0 }}
-                  animate={{ height: "auto", opacity: 1 }}
-                  transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-                  className="overflow-hidden flex-shrink-0"
-                >
-                  <div
-                    className="mx-5 mb-2 rounded-xl px-4 py-3 relative overflow-hidden"
-                    style={{
-                      background: `linear-gradient(135deg, hsl(${colors.bg} / 0.1), hsl(${colors.bg} / 0.2))`,
-                      border: `1px solid hsl(${colors.bg} / 0.4)`,
-                      boxShadow: `0 0 30px hsl(${colors.glow} / 0.15)`,
-                    }}
-                  >
-                    {/* Burst particles */}
-                    {[...Array(8)].map((_, i) => (
-                      <motion.div
-                        key={i}
-                        className="absolute w-1 h-1 rounded-full"
-                        style={{ background: `hsl(${colors.bg})`, left: "50%", top: "50%" }}
-                        initial={{ x: 0, y: 0, opacity: 1, scale: 1 }}
-                        animate={{
-                          x: Math.cos((i * Math.PI * 2) / 8) * 60,
-                          y: Math.sin((i * Math.PI * 2) / 8) * 30,
-                          opacity: 0,
-                          scale: 0,
-                        }}
-                        transition={{ duration: 0.8, delay: 0.1, ease: "easeOut" }}
-                      />
-                    ))}
-                    <div className="flex items-center justify-center gap-2 relative z-[1]">
-                      <motion.div
-                        initial={{ scale: 0, rotate: -180 }}
-                        animate={{ scale: 1, rotate: 0 }}
-                        transition={{ type: "spring", stiffness: 300, damping: 15, delay: 0.1 }}
-                      >
-                        <Sparkles size={16} style={{ color: `hsl(${colors.bg})` }} />
-                      </motion.div>
-                      <motion.span
-                        initial={{ opacity: 0, x: -10 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: 0.25 }}
-                        className="text-xs font-bold"
-                        style={{ color: `hsl(${colors.bg})` }}
-                      >
-                        {futureSkills.length} skills collected!
-                      </motion.span>
-                      <motion.div
-                        initial={{ scale: 0, rotate: 180 }}
-                        animate={{ scale: 1, rotate: 0 }}
-                        transition={{ type: "spring", stiffness: 300, damping: 15, delay: 0.15 }}
-                      >
-                        <Award size={16} style={{ color: `hsl(${colors.bg})` }} />
-                      </motion.div>
-                    </div>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-
-            {/* Input */}
-            <div className="px-5 pb-4 pt-2 flex-shrink-0">
-              <form
-                onSubmit={e => { e.preventDefault(); sendMessage(inputValue); }}
-                className="flex gap-2"
+              {/* Chat Area */}
+              <div
+                ref={scrollRef}
+                className="flex-1 overflow-y-auto px-4 py-2 space-y-3 min-h-0"
               >
-                <Input
-                  ref={inputRef}
-                  value={inputValue}
-                  onChange={e => setInputValue(e.target.value)}
-                  placeholder={`Ask the ${role.title} anything...`}
-                  disabled={isStreaming}
-                  className="flex-1 text-sm border-none"
-                  style={{
-                    background: `hsl(${hue} 18% 10%)`,
-                    color: `hsl(${hue} 15% 85%)`,
-                  }}
-                />
-                <Button
-                  type="submit"
-                  size="icon"
-                  disabled={isStreaming || !inputValue.trim()}
-                  className="flex-shrink-0"
-                  style={{
-                    background: `hsl(${colors.bg})`,
-                    color: "white",
-                  }}
+                {chatMessages.map((msg, i) => {
+                  const isLastAssistant = msg.role === "assistant" && i === chatMessages.length - 1;
+                  const isCurrentlyStreaming = isLastAssistant && isStreaming;
+                  return (
+                    <motion.div
+                      key={i}
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.25 }}
+                      className={`flex gap-2 ${msg.role === "user" ? "flex-row-reverse" : ""}`}
+                    >
+                      <div
+                        className="rounded-xl px-3.5 py-2.5 text-sm leading-relaxed"
+                        style={
+                          msg.role === "assistant"
+                            ? {
+                                background: `hsl(${hue} 18% 10% / 0.7)`,
+                                borderLeft: `2px solid hsl(${colors.bg} / 0.5)`,
+                                color: `hsl(${hue} 12% 82%)`,
+                                maxWidth: "92%",
+                              }
+                            : {
+                                background: `hsl(${hue} 30% 20% / 0.6)`,
+                                color: `hsl(${hue} 15% 88%)`,
+                                marginLeft: "auto",
+                                maxWidth: "85%",
+                              }
+                        }
+                      >
+                        {msg.role === "assistant" ? (
+                          <StreamingText text={msg.content} isComplete={!isCurrentlyStreaming} />
+                        ) : (
+                          <span>{msg.content}</span>
+                        )}
+                      </div>
+                    </motion.div>
+                  );
+                })}
+                {isStreaming && chatMessages[chatMessages.length - 1]?.role !== "assistant" && (
+                  <div className="flex gap-2">
+                    <div
+                      className="rounded-xl px-3.5 py-2.5"
+                      style={{ background: `hsl(${hue} 18% 10% / 0.7)`, borderLeft: `2px solid hsl(${colors.bg} / 0.5)` }}
+                    >
+                      <div className="flex gap-1">
+                        {[0, 1, 2].map(j => (
+                          <motion.div
+                            key={j}
+                            className="w-1.5 h-1.5 rounded-full"
+                            style={{ background: `hsl(${colors.bg})` }}
+                            animate={{ opacity: [0.3, 1, 0.3] }}
+                            transition={{ duration: 1, repeat: Infinity, delay: j * 0.15 }}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Quick Questions */}
+              {chatMessages.length <= 2 && (
+                <div className="px-4 pb-2 flex gap-1.5 flex-wrap flex-shrink-0">
+                  {QUICK_QUESTIONS.map(q => (
+                    <button
+                      key={q}
+                      onClick={() => sendMessage(q)}
+                      disabled={isStreaming}
+                      className="text-[10px] px-2.5 py-1.5 rounded-full transition-all hover:scale-[1.02]"
+                      style={{
+                        background: `hsl(${hue} 20% 12%)`,
+                        border: `1px solid hsl(${hue} 25% 22%)`,
+                        color: `hsl(${hue} 20% 65%)`,
+                      }}
+                    >
+                      {q}
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              {/* Skill Collection — appears after a few exchanges */}
+              <AnimatePresence>
+                {chatMessages.length >= 3 && futureSkills.length > 0 && !collected && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+                    className="overflow-hidden flex-shrink-0"
+                  >
+                    <div
+                      className="mx-4 mb-2 rounded-xl px-3 py-2.5 relative overflow-hidden"
+                      style={{
+                        background: `linear-gradient(135deg, hsl(${colors.bg} / 0.08), hsl(${colors.bg} / 0.15))`,
+                        border: `1px solid hsl(${colors.bg} / 0.25)`,
+                      }}
+                    >
+                      {collecting && (
+                        <motion.div
+                          className="absolute inset-0 z-0"
+                          initial={{ x: "-100%" }}
+                          animate={{ x: "200%" }}
+                          transition={{ duration: 0.8, ease: "easeInOut" }}
+                          style={{
+                            background: `linear-gradient(90deg, transparent, hsl(${colors.bg} / 0.2), transparent)`,
+                            width: "50%",
+                          }}
+                        />
+                      )}
+                      <div className="flex items-center justify-between gap-2 mb-1.5 relative z-[1]">
+                        <div className="flex items-center gap-1.5">
+                          <motion.div animate={collecting ? { rotate: [0, 15, -15, 0], scale: [1, 1.2, 1] } : {}} transition={{ duration: 0.5 }}>
+                            <Award size={12} style={{ color: `hsl(${colors.bg})` }} />
+                          </motion.div>
+                          <span className="text-[9px] font-bold uppercase tracking-wider" style={{ color: `hsl(${colors.bg})` }}>
+                            {collecting ? "Collecting..." : "Skills Discovered"}
+                          </span>
+                        </div>
+                        <Button
+                          size="sm"
+                          className="h-6 gap-1 text-[9px] font-bold px-2"
+                          disabled={collecting}
+                          style={{
+                            background: `linear-gradient(135deg, hsl(${colors.bg} / 0.8), hsl(${colors.bg}))`,
+                            color: "white",
+                            boxShadow: `0 0 12px hsl(${colors.glow} / 0.3)`,
+                          }}
+                          onClick={handleCollect}
+                        >
+                          <Sparkles size={9} /> Collect ({futureSkills.length})
+                        </Button>
+                      </div>
+                      <div className="flex flex-wrap gap-1 relative z-[1]">
+                        {futureSkills.slice(0, 6).map((skill, i) => (
+                          <motion.span
+                            key={skill.id}
+                            className="text-[8px] px-1.5 py-0.5 rounded-full"
+                            animate={collecting ? {
+                              scale: [1, 1.15, 0],
+                              opacity: [1, 1, 0],
+                              y: [0, -4, -20],
+                            } : {}}
+                            transition={collecting ? {
+                              duration: 0.5,
+                              delay: i * 0.12,
+                              ease: [0.16, 1, 0.3, 1],
+                            } : {}}
+                            style={{
+                              background: `hsl(${hue} 18% 12%)`,
+                              border: `1px solid hsl(${colors.bg} / 0.2)`,
+                              color: `hsl(${hue} 15% 70%)`,
+                            }}
+                          >
+                            {skill.icon_emoji || "🎯"} {skill.name}
+                          </motion.span>
+                        ))}
+                        {futureSkills.length > 6 && !collecting && (
+                          <span className="text-[8px] px-1.5 py-0.5" style={{ color: `hsl(${hue} 15% 50%)` }}>
+                            +{futureSkills.length - 6} more
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              {/* Collected celebration */}
+              <AnimatePresence>
+                {collected && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+                    className="overflow-hidden flex-shrink-0"
+                  >
+                    <div
+                      className="mx-4 mb-2 rounded-xl px-3 py-2 relative overflow-hidden"
+                      style={{
+                        background: `linear-gradient(135deg, hsl(${colors.bg} / 0.1), hsl(${colors.bg} / 0.2))`,
+                        border: `1px solid hsl(${colors.bg} / 0.4)`,
+                        boxShadow: `0 0 20px hsl(${colors.glow} / 0.15)`,
+                      }}
+                    >
+                      {[...Array(8)].map((_, i) => (
+                        <motion.div
+                          key={i}
+                          className="absolute w-1 h-1 rounded-full"
+                          style={{ background: `hsl(${colors.bg})`, left: "50%", top: "50%" }}
+                          initial={{ x: 0, y: 0, opacity: 1, scale: 1 }}
+                          animate={{
+                            x: Math.cos((i * Math.PI * 2) / 8) * 50,
+                            y: Math.sin((i * Math.PI * 2) / 8) * 25,
+                            opacity: 0,
+                            scale: 0,
+                          }}
+                          transition={{ duration: 0.8, delay: 0.1, ease: "easeOut" }}
+                        />
+                      ))}
+                      <div className="flex items-center justify-center gap-2 relative z-[1]">
+                        <motion.div
+                          initial={{ scale: 0, rotate: -180 }}
+                          animate={{ scale: 1, rotate: 0 }}
+                          transition={{ type: "spring", stiffness: 300, damping: 15, delay: 0.1 }}
+                        >
+                          <Sparkles size={14} style={{ color: `hsl(${colors.bg})` }} />
+                        </motion.div>
+                        <motion.span
+                          initial={{ opacity: 0, x: -10 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: 0.25 }}
+                          className="text-xs font-bold"
+                          style={{ color: `hsl(${colors.bg})` }}
+                        >
+                          {futureSkills.length} skills collected!
+                        </motion.span>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              {/* Input */}
+              <div className="px-4 pb-3 pt-2 flex-shrink-0">
+                <form
+                  onSubmit={e => { e.preventDefault(); sendMessage(inputValue); }}
+                  className="flex gap-2"
                 >
-                  <Send size={14} />
-                </Button>
-              </form>
+                  <Input
+                    ref={inputRef}
+                    value={inputValue}
+                    onChange={e => setInputValue(e.target.value)}
+                    placeholder={`Ask the ${role.title} anything...`}
+                    disabled={isStreaming}
+                    className="flex-1 text-sm border-none"
+                    style={{
+                      background: `hsl(${hue} 18% 10%)`,
+                      color: `hsl(${hue} 15% 85%)`,
+                    }}
+                  />
+                  <Button
+                    type="submit"
+                    size="icon"
+                    disabled={isStreaming || !inputValue.trim()}
+                    className="flex-shrink-0"
+                    style={{
+                      background: `hsl(${colors.bg})`,
+                      color: "white",
+                    }}
+                  >
+                    <Send size={14} />
+                  </Button>
+                </form>
+              </div>
             </div>
           </div>
         </motion.div>
