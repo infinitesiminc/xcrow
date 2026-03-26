@@ -400,7 +400,7 @@ export default function OnboardingQuest({ open, userId, onComplete }: Onboarding
 
               <Button
                 size="lg"
-                onClick={() => setStep("launch")}
+                onClick={() => setStep("mode")}
                 disabled={username.length < 3 || usernameStatus === "taken" || usernameStatus === "checking"}
                 className="w-full"
                 style={{ boxShadow: "0 0 20px hsl(var(--filigree-glow) / 0.15)" }}
@@ -410,11 +410,105 @@ export default function OnboardingQuest({ open, userId, onComplete }: Onboarding
               </Button>
 
               <button
-                onClick={() => setStep("launch")}
+                onClick={() => setStep("mode")}
                 className="text-[11px] text-muted-foreground hover:text-foreground transition-colors"
               >
                 Skip — I'll set this later
               </button>
+            </motion.div>
+          </motion.div>
+        )}
+
+        {/* ─── Step 3.5: Choose Play Mode ─── */}
+        {step === "mode" && (
+          <motion.div
+            key="mode"
+            initial={{ opacity: 0, x: 40 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -40 }}
+            transition={{ duration: 0.35 }}
+            className="text-center max-w-lg px-6"
+          >
+            <motion.h2
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+              className="text-2xl font-fantasy font-bold text-foreground mb-2"
+            >
+              How Do You Want to Play?
+            </motion.h2>
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.2 }}
+              className="text-sm text-muted-foreground mb-6"
+            >
+              You can switch anytime in Settings
+            </motion.p>
+
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.25 }}
+              className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-md mx-auto mb-8"
+            >
+              {/* Explorer Card */}
+              <button
+                onClick={() => setPlayMode("explorer")}
+                className={`relative text-left rounded-xl border-2 p-5 transition-all ${
+                  playMode === "explorer"
+                    ? "border-primary bg-primary/5 ring-1 ring-primary/30"
+                    : "border-border/40 hover:border-border hover:bg-muted/20"
+                }`}
+              >
+                <div className="text-2xl mb-2">🗺️</div>
+                <h3 className="text-sm font-bold text-foreground mb-1">Explorer</h3>
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  Full RPG experience — lore, guardians, deep sims. Best for 30+ min sessions.
+                </p>
+                {playMode === "explorer" && (
+                  <div className="absolute top-2 right-2 h-5 w-5 rounded-full bg-primary flex items-center justify-center">
+                    <Check className="h-3 w-3 text-primary-foreground" />
+                  </div>
+                )}
+              </button>
+
+              {/* Fast Track Card */}
+              <button
+                onClick={() => setPlayMode("fast_track")}
+                className={`relative text-left rounded-xl border-2 p-5 transition-all ${
+                  playMode === "fast_track"
+                    ? "border-primary bg-primary/5 ring-1 ring-primary/30"
+                    : "border-border/40 hover:border-border hover:bg-muted/20"
+                }`}
+              >
+                <div className="text-2xl mb-2">⚡</div>
+                <h3 className="text-sm font-bold text-foreground mb-1">Fast Track</h3>
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  Career-focused sprints — targeted skills, compressed sims. Best for 10–20 min.
+                </p>
+                {playMode === "fast_track" && (
+                  <div className="absolute top-2 right-2 h-5 w-5 rounded-full bg-primary flex items-center justify-center">
+                    <Check className="h-3 w-3 text-primary-foreground" />
+                  </div>
+                )}
+              </button>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.5 }}
+            >
+              <Button
+                size="lg"
+                onClick={() => setStep("launch")}
+                className="px-8"
+                style={{ boxShadow: "0 0 20px hsl(var(--filigree-glow) / 0.15)" }}
+              >
+                Continue
+                <ChevronRight className="h-4 w-4 ml-1" />
+              </Button>
             </motion.div>
           </motion.div>
         )}
