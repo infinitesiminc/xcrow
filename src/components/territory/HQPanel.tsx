@@ -444,12 +444,8 @@ export default function HQPanel({ onSelectRole }: HQPanelProps) {
             No Kingdoms Yet
           </h3>
           <p className="text-[11px] text-muted-foreground mb-3">
-            Ask the AI Coach to discover roles and claim your first kingdom
+            Explore the World Map to discover roles and claim your first kingdom
           </p>
-          <Button size="sm" onClick={() => { setChatDockOpen(true); chatSendMessage("Help me find my first kingdom"); }}>
-            <Sparkles className="h-3.5 w-3.5 mr-1.5" />
-            Ask AI Coach
-          </Button>
         </div>
       )}
     </div>
