@@ -104,6 +104,51 @@ export const TOOL_SKILL_MAP: Record<string, string[]> = {
   "Bionemо": ["Computational Biology", "Drug Discovery AI", "Molecular Design"],
   "Parabricks": ["Genomics AI", "Clinical AI"],
   "cuOpt": ["Supply Chain Optimization", "Logistics AI", "Operations Research"],
+
+  // HR & Talent
+  "Workday AI": ["HR AI Automation", "Workforce Planning", "Talent Acquisition AI", "Payroll Automation"],
+  "Eightfold AI": ["Talent Intelligence", "Skills-Based Hiring", "DEI Analytics", "Internal Mobility"],
+  "HireVue": ["AI-Powered Interviewing", "Candidate Assessment", "Structured Hiring"],
+  "Lattice": ["Performance Management AI", "Employee Engagement", "Compensation Intelligence"],
+  "Deel": ["Global Payroll", "Compliance Automation", "Contractor Management"],
+
+  // Finance & Ops
+  "Workiva": ["Financial Reporting AI", "Audit Automation", "ESG Compliance", "SEC Filing"],
+  "Coupa": ["Procurement AI", "Spend Analytics", "Invoice Automation", "Supply Chain Finance"],
+  "Stampli": ["Accounts Payable Automation", "Invoice Processing", "Payment Workflows"],
+  "Brex AI": ["Expense Management AI", "Corporate Card Intelligence", "Budget Tracking"],
+  "Anaplan": ["Financial Planning & Analysis", "Revenue Forecasting", "Scenario Modeling"],
+
+  // Legal & Compliance
+  "Harvey AI": ["AI Legal Research", "Contract Analysis", "Due Diligence Automation", "Regulatory Intelligence"],
+  "Ironclad": ["Contract Lifecycle Management", "AI Contract Drafting", "Negotiation Automation"],
+  "DocuSign IAM": ["Agreement Management", "E-Signature Workflows", "Contract Data Extraction"],
+  "Relativity": ["E-Discovery", "Litigation Support", "Compliance Investigation"],
+
+  // Customer Platforms
+  "Zendesk AI": ["AI Customer Support", "Ticket Automation", "Sentiment Analysis", "Self-Service AI"],
+  "Intercom Fin": ["Conversational AI", "Customer Service Automation", "Knowledge Base AI"],
+  "Freshworks": ["CX Automation", "IT Service Management", "Sales AI"],
+  "Gainsight": ["Customer Success AI", "Churn Prediction", "Health Scoring", "Expansion Intelligence"],
+
+  // Marketing & RevOps
+  "HubSpot AI": ["Marketing Automation AI", "CRM Intelligence", "Content Generation", "Lead Scoring"],
+  "Gong": ["Revenue Intelligence", "Sales Conversation AI", "Deal Forecasting", "Coaching AI"],
+  "6sense": ["Account-Based Marketing", "Intent Data Analysis", "Demand Generation AI"],
+  "Adobe Marketo": ["Marketing Automation", "Lead Management", "Campaign Orchestration"],
+  "Clari": ["Revenue Operations AI", "Pipeline Intelligence", "Forecast Accuracy"],
+
+  // Productivity
+  "Microsoft 365 Copilot": ["AI-Augmented Writing", "Spreadsheet AI", "Presentation AI", "Email Automation"],
+  "Notion AI": ["Knowledge Management with AI", "AI Writing Assistant", "Project Documentation"],
+  "Slack AI": ["Communication Intelligence", "Channel Summarization", "Workflow Automation"],
+  "Asana AI": ["AI Project Management", "Resource Planning", "Goal Tracking"],
+
+  // BI & Visualization
+  "Tableau": ["Data Visualization", "Dashboard Design", "AI-Powered Analytics"],
+  "Power BI": ["Business Intelligence", "DAX & Data Modeling", "Report Automation"],
+  "Looker": ["Semantic Data Modeling", "Embedded Analytics", "Data Exploration"],
+  "ThoughtSpot": ["Search-Driven Analytics", "Self-Service BI", "Natural Language Queries"],
 };
 
 /**
