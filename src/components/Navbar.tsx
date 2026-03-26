@@ -5,7 +5,7 @@ import xcrowBattleLogo from "@/assets/xcrow-logo.webp";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { getAvatarById } from "@/lib/avatars";
-import CreditWallet from "@/components/CreditWallet";
+import SubscriptionBadge from "@/components/SubscriptionBadge";
 import {
   DropdownMenu,
   DropdownMenuContent,
