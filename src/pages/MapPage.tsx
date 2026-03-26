@@ -12,6 +12,7 @@ import BossBanner from "@/components/territory/BossBanner";
 import SimulatorModal from "@/components/SimulatorModal";
 import type { SimLaunchRequest, PromptLabRequest } from "@/components/territory/SkillLaunchCard";
 import PromptLab from "@/components/sim/PromptLab";
+import { preloadTerritoryImages } from "@/lib/territory-hero-images";
 
 /** IDs of skills where user has completed a L2 boss battle */
 type Level2CompletedIds = Set<string>;
