@@ -67,129 +67,138 @@ export default function GuardianEncounter({ guardian, onClose, onChallenge }: Gu
           className="relative z-[4] w-full max-w-2xl mx-4 mb-8"
         >
           <div
-            className="rounded-xl border-2 overflow-hidden backdrop-blur-xl"
+            className="rounded-xl border-2 overflow-hidden backdrop-blur-xl flex"
             style={{
               background: `linear-gradient(135deg, hsl(${guardian.hue} 30% 8% / 0.92), hsl(${guardian.hue} 20% 12% / 0.92))`,
               borderColor: `hsl(${guardian.hue} 50% 40%)`,
               boxShadow: `0 0 60px hsl(${guardian.hue} 60% 30% / 0.5), inset 0 1px 0 hsl(${guardian.hue} 40% 30% / 0.3)`,
             }}
           >
-            {/* Header */}
-            <div className="relative px-6 pt-5 pb-3 flex items-start gap-4">
-              {/* Guardian emoji avatar with glow */}
-              <motion.div
-                animate={{
-                  boxShadow: [
-                    `0 0 20px hsl(${guardian.hue} 60% 40% / 0.3)`,
-                    `0 0 40px hsl(${guardian.hue} 60% 40% / 0.6)`,
-                    `0 0 20px hsl(${guardian.hue} 60% 40% / 0.3)`,
-                  ],
-                }}
-                transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-                className="w-20 h-24 rounded-xl overflow-hidden shrink-0"
-                style={{
-                  border: `2px solid hsl(${guardian.hue} 50% 35%)`,
-                }}
-              >
-                <img src={GUARDIAN_AVATARS[guardian.id] || guardIronclad} alt={guardian.name} className="w-full h-full object-cover" loading="eager" />
-              </motion.div>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 mb-0.5">
-                  <Shield className="h-3.5 w-3.5" style={{ color: `hsl(${guardian.hue} 50% 55%)` }} />
-                  <span className="text-[10px] uppercase tracking-[0.15em] font-medium" style={{ color: `hsl(${guardian.hue} 40% 55%)` }}>
-                    Territory Guardian
-                  </span>
-                </div>
-                <h3
-                  className="text-xl font-bold tracking-wide"
-                  style={{ ...cinzel, color: `hsl(${guardian.hue} 50% 75%)` }}
-                >
-                  {guardian.name}
-                </h3>
-                <p className="text-xs text-muted-foreground italic mt-0.5">{guardian.title}</p>
-              </div>
-              <button
-                onClick={onClose}
-                className="w-8 h-8 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
-                style={{ background: `hsl(${guardian.hue} 20% 18%)` }}
-              >
-                <X size={16} />
-              </button>
-            </div>
-
-            {/* Challenge quote — cinematic styling */}
+            {/* Full-height character portrait */}
             <motion.div
-              initial={{ opacity: 0, x: -10 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.6, duration: 0.5 }}
-              className="px-6 pb-4"
+              animate={{
+                boxShadow: [
+                  `4px 0 20px hsl(${guardian.hue} 60% 40% / 0.2)`,
+                  `4px 0 40px hsl(${guardian.hue} 60% 40% / 0.5)`,
+                  `4px 0 20px hsl(${guardian.hue} 60% 40% / 0.2)`,
+                ],
+              }}
+              transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+              className="w-36 shrink-0 relative"
+              style={{ borderRight: `2px solid hsl(${guardian.hue} 50% 35%)` }}
             >
+              <img
+                src={GUARDIAN_AVATARS[guardian.id] || guardIronclad}
+                alt={guardian.name}
+                className="absolute inset-0 w-full h-full object-cover"
+                loading="eager"
+              />
               <div
-                className="rounded-lg px-5 py-4 text-sm leading-relaxed"
-                style={{
-                  background: `hsl(${guardian.hue} 20% 10% / 0.7)`,
-                  borderLeft: `3px solid hsl(${guardian.hue} 50% 45%)`,
-                  color: `hsl(${guardian.hue} 15% 82%)`,
-                  fontStyle: "italic",
-                }}
-              >
-                "{guardian.challengeQuote}"
+                className="absolute inset-0"
+                style={{ background: `linear-gradient(to right, transparent 60%, hsl(${guardian.hue} 30% 8% / 0.4))` }}
+              />
+            </motion.div>
+
+            {/* Content */}
+            <div className="flex-1 min-w-0">
+              {/* Header */}
+              <div className="relative px-5 pt-4 pb-2 flex items-start gap-3">
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-0.5">
+                    <Shield className="h-3.5 w-3.5" style={{ color: `hsl(${guardian.hue} 50% 55%)` }} />
+                    <span className="text-[10px] uppercase tracking-[0.15em] font-medium" style={{ color: `hsl(${guardian.hue} 40% 55%)` }}>
+                      Territory Guardian
+                    </span>
+                  </div>
+                  <h3
+                    className="text-xl font-bold tracking-wide"
+                    style={{ ...cinzel, color: `hsl(${guardian.hue} 50% 75%)` }}
+                  >
+                    {guardian.name}
+                  </h3>
+                  <p className="text-xs text-muted-foreground italic mt-0.5">{guardian.title}</p>
+                </div>
+                <button
+                  onClick={onClose}
+                  className="w-8 h-8 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
+                  style={{ background: `hsl(${guardian.hue} 20% 18%)` }}
+                >
+                  <X size={16} />
+                </button>
               </div>
-            </motion.div>
 
-            {/* Lore */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.8, duration: 0.5 }}
-              className="px-6 pb-4"
-            >
-              <p className="text-xs text-muted-foreground leading-relaxed">
-                {guardian.lore}
-              </p>
-            </motion.div>
-
-            {/* Actions — larger, more dramatic */}
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 1, duration: 0.4 }}
-              className="px-6 pb-5 flex gap-3"
-            >
-              <Button
-                size="lg"
-                className="flex-1 gap-2 text-sm font-semibold"
-                style={{
-                  background: `linear-gradient(135deg, hsl(${guardian.hue} 50% 35%), hsl(${guardian.hue} 60% 45%))`,
-                  color: "white",
-                  boxShadow: `0 0 30px hsl(${guardian.hue} 60% 40% / 0.4)`,
-                }}
-                onClick={() => onChallenge?.(guardian)}
+              {/* Challenge quote */}
+              <motion.div
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.6, duration: 0.5 }}
+                className="px-5 pb-3"
               >
-                <Swords size={18} />
-                Accept Challenge
-              </Button>
-              <Button
-                size="lg"
-                variant="outline"
-                className="gap-2"
-                style={{
-                  borderColor: `hsl(${guardian.hue} 30% 30%)`,
-                  color: `hsl(${guardian.hue} 30% 65%)`,
-                }}
-                onClick={onClose}
-              >
-                <BookOpen size={16} />
-                Later
-              </Button>
-            </motion.div>
+                <div
+                  className="rounded-lg px-4 py-3 text-sm leading-relaxed"
+                  style={{
+                    background: `hsl(${guardian.hue} 20% 10% / 0.7)`,
+                    borderLeft: `3px solid hsl(${guardian.hue} 50% 45%)`,
+                    color: `hsl(${guardian.hue} 15% 82%)`,
+                    fontStyle: "italic",
+                  }}
+                >
+                  "{guardian.challengeQuote}"
+                </div>
+              </motion.div>
 
-            {/* Coaching hint */}
-            <div
-              className="px-6 py-2.5 text-[10px] text-muted-foreground/60 border-t"
-              style={{ borderColor: `hsl(${guardian.hue} 20% 18%)` }}
-            >
-              💡 {guardian.coachingHint}
+              {/* Lore */}
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.8, duration: 0.5 }}
+                className="px-5 pb-3"
+              >
+                <p className="text-xs text-muted-foreground leading-relaxed">{guardian.lore}</p>
+              </motion.div>
+
+              {/* Actions */}
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 1, duration: 0.4 }}
+                className="px-5 pb-4 flex gap-3"
+              >
+                <Button
+                  size="lg"
+                  className="flex-1 gap-2 text-sm font-semibold"
+                  style={{
+                    background: `linear-gradient(135deg, hsl(${guardian.hue} 50% 35%), hsl(${guardian.hue} 60% 45%))`,
+                    color: "white",
+                    boxShadow: `0 0 30px hsl(${guardian.hue} 60% 40% / 0.4)`,
+                  }}
+                  onClick={() => onChallenge?.(guardian)}
+                >
+                  <Swords size={18} />
+                  Accept Challenge
+                </Button>
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className="gap-2"
+                  style={{
+                    borderColor: `hsl(${guardian.hue} 30% 30%)`,
+                    color: `hsl(${guardian.hue} 30% 65%)`,
+                  }}
+                  onClick={onClose}
+                >
+                  <BookOpen size={16} />
+                  Later
+                </Button>
+              </motion.div>
+
+              {/* Coaching hint */}
+              <div
+                className="px-5 py-2 text-[10px] text-muted-foreground/60 border-t"
+                style={{ borderColor: `hsl(${guardian.hue} 20% 18%)` }}
+              >
+                💡 {guardian.coachingHint}
+              </div>
             </div>
           </div>
         </motion.div>

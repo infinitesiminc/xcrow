@@ -109,117 +109,124 @@ export default function NPCEncounter({ npc, territory, onClose, onInteract }: NP
           className="relative z-[4] w-full max-w-xl mx-4 mb-8"
         >
           <div
-            className="rounded-xl border-2 overflow-hidden backdrop-blur-xl"
+            className="rounded-xl border-2 overflow-hidden backdrop-blur-xl flex"
             style={{
               background: `linear-gradient(135deg, hsl(${hue} 30% 8% / 0.92), hsl(${hue} 20% 12% / 0.92))`,
               borderColor: `hsl(${hue} 45% 35%)`,
               boxShadow: `0 0 50px hsl(${hue} 55% 30% / 0.4), inset 0 1px 0 hsl(${hue} 35% 28% / 0.3)`,
             }}
           >
-            {/* Header */}
-            <div className="relative px-5 pt-4 pb-2 flex items-start gap-3">
-              <motion.div
-                animate={{
-                  boxShadow: [
-                    `0 0 15px hsl(${hue} 55% 40% / 0.25)`,
-                    `0 0 30px hsl(${hue} 55% 40% / 0.5)`,
-                    `0 0 15px hsl(${hue} 55% 40% / 0.25)`,
-                  ],
-                }}
-                transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-                className="w-16 h-16 rounded-xl overflow-hidden shrink-0"
-                style={{
-                  border: `2px solid hsl(${hue} 45% 32%)`,
-                }}
-              >
-                <img src={avatarSrc} alt={npc.name} className="w-full h-full object-cover" loading="eager" />
-              </motion.div>
-              <div className="flex-1 min-w-0">
-                <span
-                  className="text-[10px] uppercase tracking-[0.15em] font-medium"
-                  style={{ color: `hsl(${hue} 35% 52%)` }}
-                >
-                  Wandering {npc.title}
-                </span>
-                <h3
-                  className="text-lg font-bold tracking-wide"
-                  style={{ ...cinzel, color: `hsl(${hue} 45% 72%)` }}
-                >
-                  {npc.name}
-                </h3>
-              </div>
-              <button
-                onClick={onClose}
-                className="w-7 h-7 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
-                style={{ background: `hsl(${hue} 20% 16%)` }}
-              >
-                <X size={14} />
-              </button>
-            </div>
-
-            {/* Greeting */}
+            {/* Full-height character portrait */}
             <motion.div
-              initial={{ opacity: 0, x: -8 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.5, duration: 0.45 }}
-              className="px-5 pb-3"
+              animate={{
+                boxShadow: [
+                  `4px 0 15px hsl(${hue} 55% 40% / 0.2)`,
+                  `4px 0 30px hsl(${hue} 55% 40% / 0.45)`,
+                  `4px 0 15px hsl(${hue} 55% 40% / 0.2)`,
+                ],
+              }}
+              transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+              className="w-32 shrink-0 relative"
+              style={{ borderRight: `2px solid hsl(${hue} 45% 32%)` }}
             >
+              <img src={avatarSrc} alt={npc.name} className="absolute inset-0 w-full h-full object-cover" loading="eager" />
               <div
-                className="rounded-lg px-4 py-3 text-sm leading-relaxed"
-                style={{
-                  background: `hsl(${hue} 18% 10% / 0.7)`,
-                  borderLeft: `3px solid hsl(${hue} 45% 42%)`,
-                  color: `hsl(${hue} 12% 80%)`,
-                  fontStyle: "italic",
-                }}
-              >
-                "{npc.greeting}"
+                className="absolute inset-0"
+                style={{ background: `linear-gradient(to right, transparent 60%, hsl(${hue} 30% 8% / 0.4))` }}
+              />
+            </motion.div>
+
+            {/* Content */}
+            <div className="flex-1 min-w-0">
+              {/* Header */}
+              <div className="relative px-5 pt-4 pb-2 flex items-start gap-3">
+                <div className="flex-1 min-w-0">
+                  <span
+                    className="text-[10px] uppercase tracking-[0.15em] font-medium"
+                    style={{ color: `hsl(${hue} 35% 52%)` }}
+                  >
+                    Wandering {npc.title}
+                  </span>
+                  <h3
+                    className="text-lg font-bold tracking-wide"
+                    style={{ ...cinzel, color: `hsl(${hue} 45% 72%)` }}
+                  >
+                    {npc.name}
+                  </h3>
+                </div>
+                <button
+                  onClick={onClose}
+                  className="w-7 h-7 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
+                  style={{ background: `hsl(${hue} 20% 16%)` }}
+                >
+                  <X size={14} />
+                </button>
               </div>
-            </motion.div>
 
-            {/* Offering */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.7, duration: 0.4 }}
-              className="px-5 pb-3"
-            >
-              <p className="text-xs text-muted-foreground leading-relaxed">{npc.offering}</p>
-            </motion.div>
+              {/* Greeting */}
+              <motion.div
+                initial={{ opacity: 0, x: -8 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.5, duration: 0.45 }}
+                className="px-5 pb-3"
+              >
+                <div
+                  className="rounded-lg px-4 py-3 text-sm leading-relaxed"
+                  style={{
+                    background: `hsl(${hue} 18% 10% / 0.7)`,
+                    borderLeft: `3px solid hsl(${hue} 45% 42%)`,
+                    color: `hsl(${hue} 12% 80%)`,
+                    fontStyle: "italic",
+                  }}
+                >
+                  "{npc.greeting}"
+                </div>
+              </motion.div>
 
-            {/* Actions */}
-            <motion.div
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.85, duration: 0.4 }}
-              className="px-5 pb-4 flex gap-3"
-            >
-              <Button
-                size="lg"
-                className="flex-1 gap-2 text-sm font-semibold"
-                style={{
-                  background: `linear-gradient(135deg, hsl(${hue} 45% 32%), hsl(${hue} 55% 42%))`,
-                  color: "white",
-                  boxShadow: `0 0 25px hsl(${hue} 55% 38% / 0.35)`,
-                }}
-                onClick={() => onInteract?.(npc)}
+              {/* Offering */}
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.7, duration: 0.4 }}
+                className="px-5 pb-3"
               >
-                <ActionIcon size={16} />
-                {label}
-              </Button>
-              <Button
-                size="lg"
-                variant="outline"
-                className="gap-2"
-                style={{
-                  borderColor: `hsl(${hue} 25% 28%)`,
-                  color: `hsl(${hue} 25% 62%)`,
-                }}
-                onClick={onClose}
+                <p className="text-xs text-muted-foreground leading-relaxed">{npc.offering}</p>
+              </motion.div>
+
+              {/* Actions */}
+              <motion.div
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.85, duration: 0.4 }}
+                className="px-5 pb-4 flex gap-3"
               >
-                Walk Away
-              </Button>
-            </motion.div>
+                <Button
+                  size="lg"
+                  className="flex-1 gap-2 text-sm font-semibold"
+                  style={{
+                    background: `linear-gradient(135deg, hsl(${hue} 45% 32%), hsl(${hue} 55% 42%))`,
+                    color: "white",
+                    boxShadow: `0 0 25px hsl(${hue} 55% 38% / 0.35)`,
+                  }}
+                  onClick={() => onInteract?.(npc)}
+                >
+                  <ActionIcon size={16} />
+                  {label}
+                </Button>
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className="gap-2"
+                  style={{
+                    borderColor: `hsl(${hue} 25% 28%)`,
+                    color: `hsl(${hue} 25% 62%)`,
+                  }}
+                  onClick={onClose}
+                >
+                  Walk Away
+                </Button>
+              </motion.div>
+            </div>
           </div>
         </motion.div>
       </motion.div>
