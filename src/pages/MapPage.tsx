@@ -366,19 +366,23 @@ const MapPage = () => {
         {/* Panel content */}
         <div className="flex-1 overflow-y-auto overflow-x-hidden">
           {activeTab === "table" ? (
-            <FutureSkillsTable
-              skills={futureSkills}
-              skillGrowthMap={skillGrowthMap}
-              level2SkillIds={level2SkillIds}
-              focusSkillId={forgeFocusSkillId}
-              onLaunchSim={handleLaunchSim}
-              onSkillClick={(skill) => {
-                setMapFocusSkillId(skill.id);
-                setTimeout(() => setMapFocusSkillId(null), 100);
-                setDrawerSkill(skill);
-                setDrawerOpen(true);
-              }}
-            />
+            isFastTrack ? (
+              <FastTrackPanel />
+            ) : (
+              <FutureSkillsTable
+                skills={futureSkills}
+                skillGrowthMap={skillGrowthMap}
+                level2SkillIds={level2SkillIds}
+                focusSkillId={forgeFocusSkillId}
+                onLaunchSim={handleLaunchSim}
+                onSkillClick={(skill) => {
+                  setMapFocusSkillId(skill.id);
+                  setTimeout(() => setMapFocusSkillId(null), 100);
+                  setDrawerSkill(skill);
+                  setDrawerOpen(true);
+                }}
+              />
+            )
           ) : activeTab === "scout" && isSignedIn ? (
             <ScoutPanel
               activeSubTab={scoutSubTab}
