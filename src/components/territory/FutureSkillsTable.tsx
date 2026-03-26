@@ -315,8 +315,9 @@ export default function FutureSkillsTable({ skills, onSkillClick, skillGrowthMap
                   ? { color: "hsl(var(--filigree-glow))", background: "hsl(var(--filigree) / 0.12)" }
                   : { color: "hsl(var(--muted-foreground))" }),
               }}
-            >
-              {f.label} ({f.count})
+              >
+                {f.icon && <f.icon className="h-3 w-3" />}
+                {f.label} ({f.count})
             </button>
           ))}
           {domainFilter && (
