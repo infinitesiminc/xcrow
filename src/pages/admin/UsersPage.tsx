@@ -53,6 +53,7 @@ export default function UsersPage() {
   const [sortKey, setSortKey] = useState<SortKey>("created_at");
   const [sortAsc, setSortAsc] = useState(false);
   const [deleting, setDeleting] = useState<string | null>(null);
+  const [granting, setGranting] = useState<string | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
