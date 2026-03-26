@@ -204,7 +204,7 @@ export default function StackBuilder({ onSelectTool }: Props) {
     } finally { setLoading(false); }
   }, [jdUrl]);
 
-  const clearSearch = () => { setQuery(""); setJdUrl(""); setSearchResults(null); setSearchedTitle(""); };
+  const clearSearch = () => { setQuery(""); setJdUrl(""); setCompanyUrl(""); setSearchResults(null); setSearchedTitle(""); };
 
   // --- Template logic ---
   const templateTools = useMemo(() => {
