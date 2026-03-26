@@ -15,6 +15,10 @@ import {
 } from "@/lib/future-territory-layout";
 import FutureIsland from "./FutureIsland";
 import type { CanonicalSkillGrowth } from "@/pages/MapPage";
+import { getGuardianByCategory, type TerritoryGuardian } from "@/lib/territory-guardians";
+import { generateNPCSpawns, type NPCSpawn, type WanderingNPC } from "@/lib/wandering-npcs";
+import GuardianEncounter from "./GuardianEncounter";
+import NPCEncounter from "./NPCEncounter";
 
 import type { SimLaunchRequest, PromptLabRequest } from "./SkillLaunchCard";
 
