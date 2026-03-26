@@ -533,6 +533,17 @@ const MapPage = () => {
           setDrawerOpen(false);
         } : undefined}
       />
+
+      {/* Prompt Lab overlay */}
+      {activePromptLab && (
+        <PromptLab
+          open={true}
+          onClose={handleClosePromptLab}
+          skillId={activePromptLab.skillId}
+          skillName={activePromptLab.skillName}
+          skillCategory={activePromptLab.skillCategory}
+        />
+      )}
     </div>
   );
 };
