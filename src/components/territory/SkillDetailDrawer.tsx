@@ -21,6 +21,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { type FutureSkill, type FutureSkillCategory, FUTURE_CATEGORY_META } from "@/hooks/use-future-skills";
 import { ArrowRight, Briefcase, Zap, Sparkles, Lock, Diamond, Crown, Swords } from "lucide-react";
 import { getTerritory } from "@/lib/territory-colors";
+import { calculateGrowth, DIMENSION_INFO, type GrowthDimensions } from "@/lib/skill-growth";
 
 /* ── Skill Hero Image — direct from storage (pre-generated) ── */
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
