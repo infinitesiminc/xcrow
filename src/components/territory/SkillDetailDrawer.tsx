@@ -49,12 +49,12 @@ function useSkillHeroImage(skill: FutureSkill | null, open: boolean) {
   return { imageUrl, loading };
 }
 
-/* ── Mastery Tiers — aligned with design doc (Bronze/Silver/Gold/Platinum) ── */
+/* ── Mastery Tiers — student-focused progression ── */
 const MASTERY_TIERS = [
-  { name: "Bronze", label: "Outpost", minXp: 0, color: "hsl(30 60% 50%)", icon: "🏕️", simLabel: "Start Quest", simDesc: "Learn technique + A/B comparison" },
-  { name: "Silver", label: "Fortress", minXp: 150, color: "hsl(210 40% 65%)", icon: "🏰", simLabel: "Context Challenge", simDesc: "Apply skill in varied contexts" },
-  { name: "Gold", label: "Citadel", minXp: 500, color: "hsl(45 90% 55%)", icon: "⚔️", simLabel: "Boss Battle", simDesc: "Audit AI claims & red-team" },
-  { name: "Platinum", label: "Grandmaster", minXp: 1200, color: "hsl(280 70% 60%)", icon: "✨", simLabel: "Agent Command", simDesc: "Orchestrate autonomous agents" },
+  { name: "First Contact", label: "Outpost", minXp: 0, color: "hsl(30 60% 50%)", icon: "🏕️", simLabel: "First Contact", simDesc: "Try the tool on a real task — see what AI can do" },
+  { name: "Apprentice", label: "Fortress", minXp: 150, color: "hsl(210 40% 65%)", icon: "🏰", simLabel: "Apprentice Quest", simDesc: "Guided prompting — learn how to talk to AI" },
+  { name: "Challenger", label: "Citadel", minXp: 500, color: "hsl(45 90% 55%)", icon: "⚔️", simLabel: "Challenger Trial", simDesc: "Spot AI mistakes — learn when to trust AI" },
+  { name: "Commander", label: "Grandmaster", minXp: 1200, color: "hsl(280 70% 60%)", icon: "✨", simLabel: "Agent Command", simDesc: "Chain tools into workflows — lead AI" },
 ] as const;
 
 type MasteryTierName = typeof MASTERY_TIERS[number]["name"];
