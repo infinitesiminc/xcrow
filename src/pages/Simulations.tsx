@@ -539,6 +539,11 @@ export default function Simulations() {
               </div>
             </div>
           </TabsContent>
+
+          {/* ── Pipeline Builder Tab ── */}
+          <TabsContent value="pipeline" className="mt-4">
+            <AgentPipelineBuilder />
+          </TabsContent>
         </Tabs>
       </div>
 
