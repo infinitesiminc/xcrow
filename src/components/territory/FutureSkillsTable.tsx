@@ -535,7 +535,7 @@ export default function FutureSkillsTable({ skills, onSkillClick, skillGrowthMap
                               className="w-full px-2 py-1.5 rounded-md text-[10px] font-bold uppercase tracking-wider transition-all hover:brightness-110"
                               style={{ background: "linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary) / 0.8))", color: "hsl(var(--foreground))", fontFamily: "'Cinzel', serif" }}
                             >
-                              ⚔️ Start Quest
+                              <Swords className="h-3 w-3 inline mr-1" />Start Quest
                             </button>
                           </PopoverContent>
                         </Popover>
