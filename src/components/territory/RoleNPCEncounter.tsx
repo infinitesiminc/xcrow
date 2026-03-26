@@ -525,22 +525,38 @@ export default function RoleNPCEncounter({ role, onClose, onCollectSkills, onExp
                   className="overflow-hidden flex-shrink-0"
                 >
                   <div
-                    className="mx-5 mb-2 rounded-xl px-4 py-3"
+                    className="mx-5 mb-2 rounded-xl px-4 py-3 relative overflow-hidden"
                     style={{
                       background: `linear-gradient(135deg, hsl(${colors.bg} / 0.08), hsl(${colors.bg} / 0.15))`,
                       border: `1px solid hsl(${colors.bg} / 0.25)`,
                     }}
                   >
-                    <div className="flex items-center justify-between gap-3 mb-2">
+                    {/* Shimmer sweep when collecting */}
+                    {collecting && (
+                      <motion.div
+                        className="absolute inset-0 z-0"
+                        initial={{ x: "-100%" }}
+                        animate={{ x: "200%" }}
+                        transition={{ duration: 0.8, ease: "easeInOut" }}
+                        style={{
+                          background: `linear-gradient(90deg, transparent, hsl(${colors.bg} / 0.2), transparent)`,
+                          width: "50%",
+                        }}
+                      />
+                    )}
+                    <div className="flex items-center justify-between gap-3 mb-2 relative z-[1]">
                       <div className="flex items-center gap-1.5">
-                        <Award size={13} style={{ color: `hsl(${colors.bg})` }} />
+                        <motion.div animate={collecting ? { rotate: [0, 15, -15, 0], scale: [1, 1.2, 1] } : {}} transition={{ duration: 0.5 }}>
+                          <Award size={13} style={{ color: `hsl(${colors.bg})` }} />
+                        </motion.div>
                         <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: `hsl(${colors.bg})` }}>
-                          Skills Discovered
+                          {collecting ? "Collecting..." : "Skills Discovered"}
                         </span>
                       </div>
                       <Button
                         size="sm"
                         className="h-7 gap-1.5 text-[10px] font-bold"
+                        disabled={collecting}
                         style={{
                           background: `linear-gradient(135deg, hsl(${colors.bg} / 0.8), hsl(${colors.bg}))`,
                           color: "white",
@@ -551,11 +567,21 @@ export default function RoleNPCEncounter({ role, onClose, onCollectSkills, onExp
                         <Sparkles size={10} /> Collect All ({futureSkills.length})
                       </Button>
                     </div>
-                    <div className="flex flex-wrap gap-1">
-                      {futureSkills.slice(0, 6).map(skill => (
-                        <span
+                    <div className="flex flex-wrap gap-1 relative z-[1]">
+                      {futureSkills.slice(0, 6).map((skill, i) => (
+                        <motion.span
                           key={skill.id}
                           className="text-[9px] px-2 py-0.5 rounded-full"
+                          animate={collecting ? {
+                            scale: [1, 1.15, 0],
+                            opacity: [1, 1, 0],
+                            y: [0, -4, -20],
+                          } : {}}
+                          transition={collecting ? {
+                            duration: 0.5,
+                            delay: i * 0.12,
+                            ease: [0.16, 1, 0.3, 1],
+                          } : {}}
                           style={{
                             background: `hsl(${hue} 18% 12%)`,
                             border: `1px solid hsl(${colors.bg} / 0.2)`,
@@ -563,9 +589,9 @@ export default function RoleNPCEncounter({ role, onClose, onCollectSkills, onExp
                           }}
                         >
                           {skill.icon_emoji || "🎯"} {skill.name}
-                        </span>
+                        </motion.span>
                       ))}
-                      {futureSkills.length > 6 && (
+                      {futureSkills.length > 6 && !collecting && (
                         <span className="text-[9px] px-2 py-0.5" style={{ color: `hsl(${hue} 15% 50%)` }}>
                           +{futureSkills.length - 6} more
                         </span>
@@ -576,26 +602,64 @@ export default function RoleNPCEncounter({ role, onClose, onCollectSkills, onExp
               )}
             </AnimatePresence>
 
-            {/* Collected confirmation */}
+            {/* Collected celebration */}
             <AnimatePresence>
               {collected && (
                 <motion.div
                   initial={{ height: 0, opacity: 0 }}
                   animate={{ height: "auto", opacity: 1 }}
-                  transition={{ duration: 0.4 }}
+                  transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
                   className="overflow-hidden flex-shrink-0"
                 >
                   <div
-                    className="mx-5 mb-2 rounded-xl px-4 py-2.5 flex items-center justify-center gap-2"
+                    className="mx-5 mb-2 rounded-xl px-4 py-3 relative overflow-hidden"
                     style={{
-                      background: `hsl(${colors.bg} / 0.1)`,
-                      border: `1px solid hsl(${colors.bg} / 0.3)`,
+                      background: `linear-gradient(135deg, hsl(${colors.bg} / 0.1), hsl(${colors.bg} / 0.2))`,
+                      border: `1px solid hsl(${colors.bg} / 0.4)`,
+                      boxShadow: `0 0 30px hsl(${colors.glow} / 0.15)`,
                     }}
                   >
-                    <Sparkles size={14} style={{ color: `hsl(${colors.bg})` }} />
-                    <span className="text-xs font-bold" style={{ color: `hsl(${colors.bg})` }}>
-                      {futureSkills.length} skills collected!
-                    </span>
+                    {/* Burst particles */}
+                    {[...Array(8)].map((_, i) => (
+                      <motion.div
+                        key={i}
+                        className="absolute w-1 h-1 rounded-full"
+                        style={{ background: `hsl(${colors.bg})`, left: "50%", top: "50%" }}
+                        initial={{ x: 0, y: 0, opacity: 1, scale: 1 }}
+                        animate={{
+                          x: Math.cos((i * Math.PI * 2) / 8) * 60,
+                          y: Math.sin((i * Math.PI * 2) / 8) * 30,
+                          opacity: 0,
+                          scale: 0,
+                        }}
+                        transition={{ duration: 0.8, delay: 0.1, ease: "easeOut" }}
+                      />
+                    ))}
+                    <div className="flex items-center justify-center gap-2 relative z-[1]">
+                      <motion.div
+                        initial={{ scale: 0, rotate: -180 }}
+                        animate={{ scale: 1, rotate: 0 }}
+                        transition={{ type: "spring", stiffness: 300, damping: 15, delay: 0.1 }}
+                      >
+                        <Sparkles size={16} style={{ color: `hsl(${colors.bg})` }} />
+                      </motion.div>
+                      <motion.span
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: 0.25 }}
+                        className="text-xs font-bold"
+                        style={{ color: `hsl(${colors.bg})` }}
+                      >
+                        {futureSkills.length} skills collected!
+                      </motion.span>
+                      <motion.div
+                        initial={{ scale: 0, rotate: 180 }}
+                        animate={{ scale: 1, rotate: 0 }}
+                        transition={{ type: "spring", stiffness: 300, damping: 15, delay: 0.15 }}
+                      >
+                        <Award size={16} style={{ color: `hsl(${colors.bg})` }} />
+                      </motion.div>
+                    </div>
                   </div>
                 </motion.div>
               )}
