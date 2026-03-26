@@ -92,8 +92,14 @@ export default function FutureTerritoryMap({ skills, focusSkillId, level2SkillId
   const [roleNPCs, setRoleNPCs] = useState<RoleNPC[]>([]);
   const [companyFilter, setCompanyFilter] = useState<Set<string>>(new Set());
   const mission = useScoutMission();
+  const { user } = useAuth();
   const [hoverPreview, setHoverPreview] = useState<{ type: "guardian" | "npc" | "role"; id: string; name: string; title: string; src: string; x: number; y: number; hue: number } | null>(null);
-  const npcSpawns = useMemo(() => generateNPCSpawns(), []);
+  const npcSpawns = useMemo(
+    () => user?.id
+      ? generateUserNPCSpawns(user.id, mission.territoriesScouted)
+      : generateNPCSpawns(),
+    [user?.id, mission.territoriesScouted]
+  );
   const dragRef = useRef<{ startX: number; startY: number; tx: number; ty: number } | null>(null);
   const isDragging = useRef(false);
 
