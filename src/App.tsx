@@ -124,9 +124,9 @@ const App = () => (
               <Route path="/settings" element={<AuthGate><Navbar /><Settings /><Footer /></AuthGate>} />
               <Route path="/company/:slug" element={<><Navbar /><CompanyPage /><Footer /></>} />
               <Route path="/leaderboard" element={<AuthGate><Navbar /><Leaderboard /></AuthGate>} />
-              <Route path="/card-styles" element={<><Navbar /><CardStyleMockup /></>} />
-              <Route path="/l2-formats" element={<><Navbar /><L2SimFormats /></>} />
-              <Route path="/journey" element={<JourneyGate />} />
+              <Route path="/card-styles" element={<Navigate to="/" replace />} />
+              <Route path="/l2-formats" element={<Navigate to="/" replace />} />
+              <Route path="/journey" element={<Navigate to="/map" replace />} />
               <Route path="/students" element={<Students />} />
               
               <Route path="/pricing" element={<><Navbar /><Pricing /><Footer /></>} />
