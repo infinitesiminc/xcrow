@@ -69,9 +69,13 @@ const queryClient = new QueryClient();
 
 /** Route / to the right dashboard per tier */
 function HomeDashboard() {
-  const { user, loading, isSuperAdmin, isSchoolAdmin } = useAuth();
+  const { user, loading, profile, isSuperAdmin, isSchoolAdmin } = useAuth();
   if (loading) return null;
   if (!user) return <Suspense fallback={null}><Navbar /><Index /></Suspense>;
+  // Show onboarding if not completed
+  if (!profile || !profile.onboardingCompleted) {
+    return <Suspense fallback={null}><Navbar /><Index /></Suspense>;
+  }
   if (isSuperAdmin) return <Navigate to="/admin" replace />;
   if (isSchoolAdmin) return <Navigate to="/school" replace />;
   return <Navigate to="/map" replace />;
