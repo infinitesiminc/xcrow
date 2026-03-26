@@ -320,7 +320,7 @@ const MapPage = () => {
           <motion.div
             key="left-panel"
             initial={{ width: 0, opacity: 0 }}
-            animate={{ width: 420, opacity: 1 }}
+            animate={{ width: 320, opacity: 1 }}
             exit={{ width: 0, opacity: 0 }}
             transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
             className="flex flex-col h-full z-10 shrink-0 overflow-hidden"
