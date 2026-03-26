@@ -211,58 +211,49 @@ export default function SkillProgressPanel({
   const SectionHeader = ({ id, icon: Icon, label, count, isOpen }: { id: "skills" | "log"; icon: any; label: string; count?: number; isOpen: boolean }) => (
     <button
       onClick={() => setExpandedSection(prev => prev === id ? null : id)}
-      className="w-full flex items-center gap-2 px-3 py-2 text-xs font-semibold uppercase tracking-widest transition-colors hover:bg-muted/20"
+      className="w-full flex items-center gap-1.5 px-2 py-1 text-[10px] font-semibold uppercase tracking-widest transition-colors hover:bg-muted/20"
       style={{
         fontFamily: "'Cinzel', serif",
         color: isOpen ? "hsl(var(--filigree-glow))" : "hsl(var(--muted-foreground))",
         borderBottom: "1px solid hsl(var(--filigree) / 0.1)",
       }}
     >
-      <Icon className="h-3.5 w-3.5" />
+      <Icon className="h-3 w-3" />
       <span className="flex-1 text-left">{label}</span>
       {count !== undefined && (
-        <span className="font-mono text-[10px]" style={{ color: "hsl(var(--filigree))" }}>{count}</span>
+        <span className="font-mono text-[9px]" style={{ color: "hsl(var(--filigree))" }}>{count}</span>
       )}
-      <ChevronRight className={`h-3 w-3 transition-transform ${isOpen ? "rotate-90" : ""}`} />
+      <ChevronRight className={`h-2.5 w-2.5 transition-transform ${isOpen ? "rotate-90" : ""}`} />
     </button>
   );
 
   return (
     <div className="h-full flex flex-col overflow-hidden">
-      {/* Search */}
-      <div className="px-3 py-2 shrink-0">
-        <div className="relative">
-          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+      {/* Search + Summary — compact single row */}
+      <div className="px-2 py-1.5 shrink-0 flex items-center gap-2">
+        <div className="relative flex-1 min-w-0">
+          <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground" />
           <Input
             value={search}
             onChange={e => setSearch(e.target.value)}
-            placeholder="Search skills…"
-            className="h-7 pl-8 text-xs border-border/50"
+            placeholder="Search…"
+            className="h-6 pl-7 text-[10px] border-border/50"
             style={{ background: "hsl(var(--surface-stone))" }}
           />
         </div>
-        {/* Summary bar */}
-        <div className="flex items-center gap-3 mt-1.5 text-[10px] text-muted-foreground">
-          <span className="flex items-center gap-1">
-            <Trophy className="h-3 w-3" style={{ color: "hsl(var(--filigree-glow))" }} />
-            <span className="font-mono">{totalXp.toLocaleString()} XP</span>
-          </span>
-          <span className="flex items-center gap-1">
-            <Flame className="h-3 w-3" style={{ color: "hsl(var(--primary))" }} />
-            <span className="font-mono">{practicedCount}/{skills.length}</span>
-          </span>
-          {/* Mastery ladder legend */}
-          <span className="flex items-center gap-0.5 ml-auto">
-            {MASTERY_TIERS.map(t => (
-              <span
-                key={t.name}
-                className="w-2 h-2 rounded-full"
-                style={{ background: t.color }}
-                title={`${t.name} (${t.minXp}+ XP)`}
-              />
-            ))}
-          </span>
-        </div>
+        <span className="flex items-center gap-1 text-[9px] text-muted-foreground shrink-0">
+          <Trophy className="h-2.5 w-2.5" style={{ color: "hsl(var(--filigree-glow))" }} />
+          <span className="font-mono">{totalXp.toLocaleString()}</span>
+        </span>
+        <span className="flex items-center gap-1 text-[9px] text-muted-foreground shrink-0">
+          <Flame className="h-2.5 w-2.5" style={{ color: "hsl(var(--primary))" }} />
+          <span className="font-mono">{practicedCount}/{skills.length}</span>
+        </span>
+        <span className="flex items-center gap-0.5 shrink-0">
+          {MASTERY_TIERS.map(t => (
+            <span key={t.name} className="w-1.5 h-1.5 rounded-full" style={{ background: t.color }} title={`${t.name} (${t.minXp}+ XP)`} />
+          ))}
+        </span>
       </div>
 
       {/* Scrollable content */}
@@ -289,16 +280,16 @@ export default function SkillProgressPanel({
                     {/* Territory header */}
                     <button
                       onClick={() => toggleCategory(category)}
-                      className="w-full flex items-center gap-2 px-3 py-1.5 text-[11px] font-medium transition-colors hover:bg-muted/15"
-                      style={{ borderBottom: "1px solid hsl(var(--border) / 0.2)" }}
+                      className="w-full flex items-center gap-1.5 px-2 py-1 text-[10px] font-medium transition-colors hover:bg-muted/15"
+                      style={{ borderBottom: "1px solid hsl(var(--border) / 0.15)" }}
                     >
-                      <span className="w-2 h-2 rounded-full shrink-0" style={{ background: territory.hsl }} />
+                      <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: territory.hsl }} />
                       <span className="flex-1 text-left truncate" style={{ color: territory.hsl }}>{category}</span>
                       <span className="font-mono text-[9px] text-muted-foreground">{catPracticed}/{catSkills.length}</span>
                       {catXp > 0 && (
-                        <span className="font-mono text-[9px]" style={{ color: "hsl(var(--filigree))" }}>{catXp} XP</span>
+                        <span className="font-mono text-[9px]" style={{ color: "hsl(var(--filigree))" }}>{catXp}</span>
                       )}
-                      <ChevronRight className={`h-3 w-3 text-muted-foreground transition-transform ${isExpanded ? "rotate-90" : ""}`} />
+                      <ChevronRight className={`h-2.5 w-2.5 text-muted-foreground transition-transform ${isExpanded ? "rotate-90" : ""}`} />
                     </button>
 
                     {/* Skill rows */}
@@ -325,7 +316,7 @@ export default function SkillProgressPanel({
                                 className="transition-all"
                               >
                                 <div
-                                  className="flex items-center gap-2 px-3 py-1.5 cursor-pointer transition-colors hover:bg-muted/10"
+                                  className="flex items-center gap-1.5 px-2 py-1 cursor-pointer transition-colors hover:bg-muted/10"
                                   style={isFocused ? {
                                     background: "hsl(var(--filigree-glow) / 0.06)",
                                     boxShadow: "inset 2px 0 0 hsl(var(--filigree-glow))",
@@ -378,7 +369,7 @@ export default function SkillProgressPanel({
                                       animate={{ height: "auto", opacity: 1 }}
                                       exit={{ height: 0, opacity: 0 }}
                                       transition={{ duration: 0.15 }}
-                                      className="px-3 pb-2 overflow-hidden"
+                                      className="px-2 pb-1 overflow-hidden"
                                     >
                                       <div
                                         className="rounded-lg p-2 mt-0.5 space-y-1.5"
@@ -460,7 +451,7 @@ export default function SkillProgressPanel({
                   {battleLog.map(entry => {
                     const totalXpEarned = entry.skillsEarned.reduce((s, e) => s + (e.xp || 0), 0);
                     return (
-                      <div key={entry.id} className="px-3 py-2 hover:bg-muted/10 transition-colors">
+                      <div key={entry.id} className="px-2 py-1.5 hover:bg-muted/10 transition-colors">
                         <div className="flex items-center gap-2">
                           <div
                             className="w-5 h-5 rounded-md flex items-center justify-center text-[9px] font-bold shrink-0"
