@@ -213,6 +213,12 @@ export default function FutureTerritoryMap({ skills, focusSkillId, level2SkillId
         onPointerUp={handlePointerUp}
         style={{ cursor: dragRef.current ? "grabbing" : "grab", touchAction: "none" }}
       >
+        {/* Ambient particle effects */}
+        <TerritoryParticles focusedTerritory={focusedIsland} />
+
+        {/* Cinematic vignette */}
+        <div className="absolute inset-0 map-vignette z-[1]" />
+
         {/* Full-bleed background texture that extends to panel edges */}
         <svg className="absolute inset-0 w-full h-full pointer-events-none" preserveAspectRatio="none">
           <defs>
