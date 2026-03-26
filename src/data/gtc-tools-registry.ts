@@ -1,237 +1,180 @@
 /**
- * Every tool, platform, and product mentioned in the GTC 2026 keynote.
- * Grouped by the company that created/maintains it.
- * Source: Full transcript of GTC 2026 keynote, March 2026.
+ * AI Tool Registry — Enterprise-ready tool catalogue.
+ * Covers tools across the modern AI stack: from foundation models to deployment.
+ * Each tool is tagged as "learnable" (users can practice) or "reference" (industry context).
  */
 
 export type ToolCategory =
-  | "llm"
-  | "coding"
-  | "data"
-  | "agentic"
-  | "robotics"
-  | "infrastructure"
-  | "simulation"
-  | "enterprise"
-  | "design"
-  | "search"
-  | "hardware"
-  | "networking"
-  | "cloud"
-  | "security"
-  | "biology"
-  | "automotive";
+  | "foundation-models"
+  | "coding-agents"
+  | "agentic-frameworks"
+  | "data-platforms"
+  | "mlops-infra"
+  | "cloud-ai"
+  | "simulation-digital-twin"
+  | "robotics-physical-ai"
+  | "cybersecurity"
+  | "enterprise-ai"
+  | "design-media"
+  | "search-retrieval"
+  | "networking-edge"
+  | "hardware-compute"
+  | "vertical-industry";
+
+export type ToolMaturity = "ga" | "preview" | "beta" | "research";
+export type ToolType = "learnable" | "reference";
 
 export interface GTCTool {
   name: string;
   company: string;
   category: ToolCategory;
   description: string;
+  /** Latest known version or release name */
+  version?: string;
   url?: string;
-  /** Emoji icon for quick visual recognition */
   icon: string;
+  /** Whether users can practice with this tool or it's industry context */
+  type: ToolType;
+  /** GA, Preview, Beta, or Research */
+  maturity: ToolMaturity;
+  /** Free, Freemium, Paid, Enterprise, Open Source */
+  pricing?: string;
+  /** Skill IDs this tool maps to (from canonical 183 skills) */
+  skillMappings?: string[];
+  /** Use-case tags for enterprise filtering */
+  useCases?: string[];
 }
 
 export const GTC_TOOLS: GTCTool[] = [
-  // ─── NVIDIA ───
-  { name: "CUDA", company: "NVIDIA", category: "infrastructure", description: "GPU computing platform — 20 years of accelerated computing, hundreds of millions of installed GPUs.", icon: "⚡", url: "https://developer.nvidia.com/cuda-toolkit" },
-  { name: "CUDA X Libraries", company: "NVIDIA", category: "infrastructure", description: "100+ domain-specific acceleration libraries — the 'crown jewels' of NVIDIA.", icon: "📚" },
-  { name: "cuDNN", company: "NVIDIA", category: "infrastructure", description: "CUDA Deep Neural Networks library — caused the big bang of modern AI.", icon: "🧠" },
-  { name: "KUDF", company: "NVIDIA", category: "data", description: "GPU-accelerated data frames for structured data. Replaces CPU-bound Spark/Pandas with 5x+ speedups.", icon: "📊" },
-  { name: "KVS", company: "NVIDIA", category: "data", description: "GPU-accelerated vector stores for unstructured/semantic data — PDFs, video, speech.", icon: "🔍" },
-  { name: "RTX / DLSS 5", company: "NVIDIA", category: "design", description: "Neuro rendering — fusion of 3D graphics and generative AI. 'Computer graphics comes to life.'", icon: "🎮", url: "https://www.nvidia.com/rtx/" },
-  { name: "GeForce", company: "NVIDIA", category: "hardware", description: "Consumer GPU — 'NVIDIA's greatest marketing campaign.' 25 years of programmable shaders.", icon: "🖥️" },
-  { name: "Nemo Claw", company: "NVIDIA", category: "agentic", description: "Enterprise-secure Open Claw reference design with policy guardrails, privacy router, and Open Shell.", icon: "🛡️" },
-  { name: "Open Shell", company: "NVIDIA", category: "security", description: "Security layer for Open Claw — policy engine, privacy router for enterprise agentic systems.", icon: "🔒" },
-  { name: "Neimotron 3/4", company: "NVIDIA", category: "llm", description: "Open frontier reasoning models for language, vision, RAG, safety, and speech. Neimotron coalition.", icon: "🤖" },
-  { name: "Cosmos", company: "NVIDIA", category: "simulation", description: "World foundation models — generates synthetic training data for physical AI.", icon: "🌍" },
-  { name: "Groot", company: "NVIDIA", category: "robotics", description: "General-purpose robotics foundation models for reasoning and action generation.", icon: "🦾" },
-  { name: "Alpamo", company: "NVIDIA", category: "automotive", description: "Autonomous vehicle AI — first thinking & reasoning self-driving system. 'The ChatGPT moment for self-driving.'", icon: "🚗" },
-  { name: "Bioneo", company: "NVIDIA", category: "biology", description: "Open models for biology, chemistry, and molecular design.", icon: "🧬" },
-  { name: "Earth 2", company: "NVIDIA", category: "simulation", description: "AI physics models for weather and climate forecasting.", icon: "🌦️" },
-  { name: "Isaac Lab", company: "NVIDIA", category: "robotics", description: "Open-source robot training and evaluation in simulation.", icon: "🤸" },
-  { name: "Newton", company: "NVIDIA", category: "simulation", description: "GPU-accelerated differentiable physics simulation — used to train Disney's Olaf robot.", icon: "🍎" },
-  { name: "Omniverse", company: "NVIDIA", category: "simulation", description: "Digital twin platform — holds virtual replicas from AI factories to entire planets.", icon: "🌐", url: "https://www.nvidia.com/omniverse/" },
-  { name: "DSX", company: "NVIDIA", category: "infrastructure", description: "AI factory management platform — digital twin blueprint for max token throughput.", icon: "🏭" },
-  { name: "Dynamo", company: "NVIDIA", category: "infrastructure", description: "Inference OS for AI factories — disaggregated inference pipeline, 35x performance increase.", icon: "⚙️" },
-  { name: "Aerial / AI RAN", company: "NVIDIA", category: "networking", description: "Platform for reinventing telecom base stations into AI infrastructure.", icon: "📡" },
-  { name: "Max Q", company: "NVIDIA", category: "infrastructure", description: "Dynamic power/cooling optimization — leaves no watt squandered in AI factories.", icon: "🔋" },
-  { name: "Vera CPU", company: "NVIDIA", category: "hardware", description: "Next-gen CPU designed for AI tool use and data processing workloads.", icon: "💾" },
-  { name: "Vera Rubin", company: "NVIDIA", category: "hardware", description: "Next-gen GPU system — 288GB per chip, already up at Microsoft Azure.", icon: "🔥" },
-  { name: "Blackwell / GB300", company: "NVIDIA", category: "hardware", description: "Current-gen AI infrastructure — in full production, shipping at scale.", icon: "⬛" },
-  { name: "Feynman", company: "NVIDIA", category: "hardware", description: "Future GPU architecture — brand new GPU, LP40 LPU, Rosa CPU, Bluefield 5.", icon: "🔮" },
-  { name: "NVLink 72/576", company: "NVIDIA", category: "networking", description: "Scale-up interconnect — copper and optical, connecting GPU racks.", icon: "🔗" },
-  { name: "Spectrum 6", company: "NVIDIA", category: "networking", description: "World's first co-packaged optical networking switch.", icon: "💡" },
-  { name: "cuOpt", company: "NVIDIA", category: "enterprise", description: "Decision optimization library for logistics and supply chain.", icon: "📦" },
-  { name: "cuLitho", company: "NVIDIA", category: "infrastructure", description: "Computational lithography — accelerating chip manufacturing.", icon: "🔬" },
-  { name: "Parabricks", company: "NVIDIA", category: "biology", description: "GPU-accelerated genomics analysis.", icon: "🧪" },
-  { name: "Warp", company: "NVIDIA", category: "simulation", description: "Differentiable physics framework for simulation.", icon: "🌀" },
-  { name: "Confidential Computing", company: "NVIDIA", category: "security", description: "GPU-level encryption — even the cloud operator cannot see your data or models.", icon: "🔐" },
+  // ═══════════════════════════════════════════
+  // FOUNDATION MODELS
+  // ═══════════════════════════════════════════
+  { name: "ChatGPT", company: "OpenAI", category: "foundation-models", version: "GPT-5", description: "Flagship conversational AI with reasoning, vision, and tool-use capabilities.", icon: "💬", url: "https://chat.openai.com", type: "learnable", maturity: "ga", pricing: "Freemium", useCases: ["content-creation", "analysis", "coding", "research"] },
+  { name: "Claude", company: "Anthropic", category: "foundation-models", version: "Claude 4 Opus", description: "Safety-focused reasoning model excelling at long-context analysis, coding, and nuanced tasks.", icon: "🟠", url: "https://claude.ai", type: "learnable", maturity: "ga", pricing: "Freemium", useCases: ["analysis", "coding", "writing", "research"] },
+  { name: "Gemini", company: "Google", category: "foundation-models", version: "Gemini 2.5 Pro", description: "Multimodal model with native image, video, and code understanding across Google's ecosystem.", icon: "✨", url: "https://gemini.google.com", type: "learnable", maturity: "ga", pricing: "Freemium", useCases: ["multimodal", "analysis", "coding", "search"] },
+  { name: "Llama", company: "Meta", category: "foundation-models", version: "Llama 4", description: "Open-weight frontier model family for self-hosted and fine-tuned deployments.", icon: "🦙", url: "https://llama.meta.com", type: "learnable", maturity: "ga", pricing: "Open Source", useCases: ["self-hosted", "fine-tuning", "enterprise-ai"] },
+  { name: "Mistral", company: "Mistral AI", category: "foundation-models", version: "Mistral Large 2", description: "European open-source LLM with strong multilingual and reasoning capabilities.", icon: "🌬️", url: "https://mistral.ai", type: "learnable", maturity: "ga", pricing: "Open Source", useCases: ["multilingual", "enterprise-ai", "self-hosted"] },
+  { name: "Nemotron", company: "NVIDIA", category: "foundation-models", version: "Nemotron 4", description: "Open frontier reasoning models for language, vision, RAG, safety, and speech.", icon: "🤖", type: "reference", maturity: "ga", pricing: "Open Source", useCases: ["enterprise-ai", "rag", "safety"] },
+  { name: "Cohere", company: "Cohere", category: "foundation-models", version: "Command R+", description: "Enterprise LLM optimized for RAG, search, and business workflows.", icon: "🗣️", url: "https://cohere.com", type: "learnable", maturity: "ga", pricing: "Paid", useCases: ["enterprise-ai", "rag", "search"] },
 
-  // ─── OpenAI ───
-  { name: "ChatGPT", company: "OpenAI", category: "llm", description: "Conversational AI — started the generative AI era. ", icon: "💬", url: "https://chat.openai.com" },
-  { name: "GPT o1 / o3", company: "OpenAI", category: "llm", description: "Reasoning AI — reflects, plans, decomposes problems. ", icon: "🧩" },
-  { name: "Codex", company: "OpenAI", category: "coding", description: "AI coding agent — AI coding agent used alongside Claude Code and Cursor.", icon: "👨‍💻" },
+  // ═══════════════════════════════════════════
+  // CODING AGENTS
+  // ═══════════════════════════════════════════
+  { name: "Cursor", company: "Anysphere", category: "coding-agents", version: "1.0", description: "AI-first code editor — chat with your codebase, generate and refactor code inline.", icon: "✏️", url: "https://cursor.com", type: "learnable", maturity: "ga", pricing: "Freemium", useCases: ["software-development", "code-review", "refactoring"] },
+  { name: "Claude Code", company: "Anthropic", category: "coding-agents", version: "GA", description: "Terminal-based agentic coder — reads files, compiles, tests, and iterates autonomously.", icon: "🔨", url: "https://docs.anthropic.com/en/docs/claude-code", type: "learnable", maturity: "ga", pricing: "Paid", useCases: ["software-development", "testing", "devops"] },
+  { name: "Codex", company: "OpenAI", category: "coding-agents", version: "2025", description: "Cloud-based AI coding agent for parallel task execution and PR generation.", icon: "👨‍💻", type: "learnable", maturity: "ga", pricing: "Paid", useCases: ["software-development", "automation", "code-review"] },
+  { name: "GitHub Copilot", company: "GitHub", category: "coding-agents", version: "X", description: "AI pair programmer integrated into VS Code, JetBrains, and CLI workflows.", icon: "🐙", url: "https://github.com/features/copilot", type: "learnable", maturity: "ga", pricing: "Freemium", useCases: ["software-development", "code-completion", "documentation"] },
+  { name: "Windsurf", company: "Codeium", category: "coding-agents", version: "2025", description: "AI-powered IDE with deep codebase understanding and flow-state coding.", icon: "🏄", url: "https://codeium.com/windsurf", type: "learnable", maturity: "ga", pricing: "Freemium", useCases: ["software-development", "refactoring"] },
+  { name: "Lovable", company: "Lovable", category: "coding-agents", version: "2025", description: "AI full-stack app builder — describe what you want, get a deployed web app.", icon: "💜", url: "https://lovable.dev", type: "learnable", maturity: "ga", pricing: "Freemium", useCases: ["app-development", "prototyping", "no-code"] },
 
-  // ─── Anthropic ───
-  { name: "Claude Code", company: "Anthropic", category: "coding", description: "Agentic coding — reads files, compiles, tests, iterates. Revolutionized software engineering.", icon: "🔨", url: "https://claude.ai" },
+  // ═══════════════════════════════════════════
+  // AGENTIC FRAMEWORKS
+  // ═══════════════════════════════════════════
+  { name: "Open Claw", company: "Open Source", category: "agentic-frameworks", version: "1.0", description: "Agentic OS — spawns sub-agents, uses tools, schedules cron jobs. The 'Linux of agents.'", icon: "🦀", type: "learnable", maturity: "ga", pricing: "Open Source", useCases: ["agent-orchestration", "automation", "tool-use"] },
+  { name: "Nemo Claw", company: "NVIDIA", category: "agentic-frameworks", version: "GA", description: "Enterprise-secure Open Claw with policy guardrails, privacy router, and Open Shell.", icon: "🛡️", type: "reference", maturity: "ga", pricing: "Enterprise", useCases: ["enterprise-ai", "security", "compliance"] },
+  { name: "LangChain", company: "LangChain", category: "agentic-frameworks", version: "0.3", description: "Agent orchestration framework — 1B+ downloads for building custom AI pipelines.", icon: "🔗", url: "https://langchain.com", type: "learnable", maturity: "ga", pricing: "Open Source", useCases: ["agent-orchestration", "rag", "tool-use"] },
+  { name: "LangGraph", company: "LangChain", category: "agentic-frameworks", version: "0.2", description: "Stateful multi-agent workflow framework built on LangChain.", icon: "📊", url: "https://langchain.com/langgraph", type: "learnable", maturity: "ga", pricing: "Open Source", useCases: ["multi-agent", "workflow", "state-management"] },
+  { name: "CrewAI", company: "CrewAI", category: "agentic-frameworks", version: "2.0", description: "Multi-agent orchestration — role-based agents collaborating on complex tasks.", icon: "👥", url: "https://crewai.com", type: "learnable", maturity: "ga", pricing: "Open Source", useCases: ["multi-agent", "automation", "research"] },
+  { name: "AutoGen", company: "Microsoft", category: "agentic-frameworks", version: "0.4", description: "Multi-agent conversation framework for building complex AI workflows.", icon: "🔄", url: "https://github.com/microsoft/autogen", type: "learnable", maturity: "ga", pricing: "Open Source", useCases: ["multi-agent", "conversation", "automation"] },
+  { name: "Open Shell", company: "NVIDIA", category: "agentic-frameworks", version: "GA", description: "Security layer for Open Claw — policy engine and privacy router for enterprise agents.", icon: "🔒", type: "reference", maturity: "ga", pricing: "Open Source", useCases: ["security", "policy", "compliance"] },
 
-  // ─── Cursor ───
-  { name: "Cursor", company: "Anysphere", category: "coding", description: "AI-first code editor — chat with your codebase. Part of NVIDIA's Neimotron coalition.", icon: "✏️", url: "https://cursor.com" },
+  // ═══════════════════════════════════════════
+  // DATA PLATFORMS
+  // ═══════════════════════════════════════════
+  { name: "Snowflake", company: "Snowflake", category: "data-platforms", version: "2025", description: "Cloud data platform with Cortex AI for analytics, ML, and LLM-powered queries.", icon: "❄️", url: "https://snowflake.com", type: "learnable", maturity: "ga", pricing: "Paid", useCases: ["data-warehouse", "analytics", "ml"] },
+  { name: "Databricks", company: "Databricks", category: "data-platforms", version: "2025", description: "Unified data + AI lakehouse platform with MosaicML training capabilities.", icon: "🧱", url: "https://databricks.com", type: "learnable", maturity: "ga", pricing: "Paid", useCases: ["data-lakehouse", "ml-training", "analytics"] },
+  { name: "BigQuery", company: "Google", category: "data-platforms", version: "2025", description: "Serverless analytics data warehouse — now GPU-accelerated with NVIDIA KUDF.", icon: "📈", url: "https://cloud.google.com/bigquery", type: "learnable", maturity: "ga", pricing: "Paid", useCases: ["analytics", "data-warehouse", "ml"] },
+  { name: "KUDF", company: "NVIDIA", category: "data-platforms", version: "GA", description: "GPU-accelerated data frames for structured data — 5x+ speedups over CPU Spark/Pandas.", icon: "📊", type: "reference", maturity: "ga", pricing: "Open Source", useCases: ["data-processing", "acceleration"] },
+  { name: "KVS", company: "NVIDIA", category: "data-platforms", version: "GA", description: "GPU-accelerated vector stores for semantic search across PDFs, video, and speech.", icon: "🔍", type: "reference", maturity: "ga", pricing: "Open Source", useCases: ["vector-search", "rag", "semantic-search"] },
 
-  // ─── Open Claw ───
-  { name: "Open Claw", company: "Open Source", category: "agentic", description: "Agentic OS — the 'Linux of agents.' Most popular open-source project in history. Spawns sub-agents, uses tools, schedules cron jobs.", icon: "🦀" },
+  // ═══════════════════════════════════════════
+  // MLOps & INFRASTRUCTURE
+  // ═══════════════════════════════════════════
+  { name: "CUDA", company: "NVIDIA", category: "mlops-infra", version: "13.0", description: "GPU computing platform — 20 years of accelerated computing, billions of GPUs deployed.", icon: "⚡", url: "https://developer.nvidia.com/cuda-toolkit", type: "reference", maturity: "ga", pricing: "Free", useCases: ["gpu-computing", "acceleration"] },
+  { name: "PyTorch", company: "Meta / Linux Foundation", category: "mlops-infra", version: "2.5", description: "Dominant deep learning framework for research and production ML.", icon: "🔥", url: "https://pytorch.org", type: "learnable", maturity: "ga", pricing: "Open Source", useCases: ["ml-training", "research", "model-development"] },
+  { name: "Hugging Face", company: "Hugging Face", category: "mlops-infra", version: "2025", description: "Model hub, Transformers library, and deployment platform. The GitHub of AI models.", icon: "🤗", url: "https://huggingface.co", type: "learnable", maturity: "ga", pricing: "Freemium", useCases: ["model-hub", "fine-tuning", "deployment"] },
+  { name: "Weights & Biases", company: "W&B", category: "mlops-infra", version: "2025", description: "ML experiment tracking, model registry, and production monitoring.", icon: "📉", url: "https://wandb.ai", type: "learnable", maturity: "ga", pricing: "Freemium", useCases: ["experiment-tracking", "monitoring", "mlops"] },
+  { name: "Dynamo", company: "NVIDIA", category: "mlops-infra", version: "GA", description: "Inference OS for AI factories — disaggregated inference pipeline, 35x performance increase.", icon: "⚙️", type: "reference", maturity: "ga", pricing: "Enterprise", useCases: ["inference", "optimization", "scaling"] },
+  { name: "Kubernetes", company: "CNCF", category: "mlops-infra", version: "1.32", description: "Container orchestration standard — foundation for AI workload deployment at scale.", icon: "☸️", type: "learnable", maturity: "ga", pricing: "Open Source", useCases: ["orchestration", "deployment", "scaling"] },
+  { name: "Fireworks AI", company: "Fireworks", category: "mlops-infra", version: "2025", description: "Fast inference platform for deploying open-source and custom models.", icon: "🎆", url: "https://fireworks.ai", type: "learnable", maturity: "ga", pricing: "Paid", useCases: ["inference", "model-serving", "fine-tuning"] },
 
-  // ─── Groq ───
-  { name: "Groq LPU (LP30)", company: "Groq", category: "hardware", description: "Deterministic dataflow processor for ultra-low-latency inference. Integrated with Vera Rubin via Dynamo.", icon: "⚡" },
+  // ═══════════════════════════════════════════
+  // CLOUD AI PLATFORMS
+  // ═══════════════════════════════════════════
+  { name: "Azure AI Foundry", company: "Microsoft", category: "cloud-ai", version: "2025", description: "Azure's unified AI platform for model deployment, fine-tuning, and enterprise AI.", icon: "☁️", url: "https://azure.microsoft.com/en-us/products/ai-studio", type: "learnable", maturity: "ga", pricing: "Paid", useCases: ["model-deployment", "enterprise-ai", "fine-tuning"] },
+  { name: "AWS Bedrock", company: "Amazon", category: "cloud-ai", version: "2025", description: "Managed foundation model service with built-in guardrails and RAG.", icon: "🪨", url: "https://aws.amazon.com/bedrock/", type: "learnable", maturity: "ga", pricing: "Paid", useCases: ["model-deployment", "rag", "enterprise-ai"] },
+  { name: "Google Vertex AI", company: "Google", category: "cloud-ai", version: "2025", description: "End-to-end ML platform for training, tuning, and serving AI models.", icon: "🔺", url: "https://cloud.google.com/vertex-ai", type: "learnable", maturity: "ga", pricing: "Paid", useCases: ["ml-platform", "training", "deployment"] },
+  { name: "Oracle Cloud AI", company: "Oracle", category: "cloud-ai", version: "2025", description: "Enterprise AI cloud hosting OpenAI and Cohere workloads.", icon: "☁️", type: "reference", maturity: "ga", pricing: "Paid", useCases: ["enterprise-ai", "model-hosting"] },
+  { name: "CoreWeave", company: "CoreWeave", category: "cloud-ai", version: "2025", description: "AI-native cloud built solely for GPU workloads — fastest growing AI cloud.", icon: "🚀", type: "reference", maturity: "ga", pricing: "Paid", useCases: ["gpu-cloud", "training", "inference"] },
 
-  // ─── LangChain ───
-  { name: "LangChain", company: "LangChain", category: "agentic", description: "Agent orchestration framework — 1 billion+ downloads for creating custom agents. Neimotron coalition member.", icon: "🔗", url: "https://langchain.com" },
+  // ═══════════════════════════════════════════
+  // SIMULATION & DIGITAL TWINS
+  // ═══════════════════════════════════════════
+  { name: "Omniverse", company: "NVIDIA", category: "simulation-digital-twin", version: "2025", description: "Digital twin platform for simulating AI factories, cities, and industrial systems.", icon: "🌐", url: "https://www.nvidia.com/omniverse/", type: "reference", maturity: "ga", pricing: "Enterprise", useCases: ["digital-twin", "simulation", "industrial"] },
+  { name: "Cosmos", company: "NVIDIA", category: "simulation-digital-twin", version: "GA", description: "World foundation models — generates synthetic training data for physical AI.", icon: "🌍", type: "reference", maturity: "ga", pricing: "Open Source", useCases: ["synthetic-data", "world-models", "training"] },
+  { name: "Newton", company: "NVIDIA", category: "simulation-digital-twin", version: "GA", description: "GPU-accelerated differentiable physics simulation for training robots.", icon: "🍎", type: "reference", maturity: "ga", pricing: "Open Source", useCases: ["physics-simulation", "robotics-training"] },
+  { name: "Earth 2", company: "NVIDIA", category: "simulation-digital-twin", version: "GA", description: "AI physics models for high-resolution weather and climate forecasting.", icon: "🌦️", type: "reference", maturity: "ga", pricing: "Enterprise", useCases: ["climate", "weather", "forecasting"] },
+  { name: "DSX", company: "NVIDIA", category: "simulation-digital-twin", version: "GA", description: "AI factory management platform — digital twin blueprint for infrastructure optimization.", icon: "🏭", type: "reference", maturity: "ga", pricing: "Enterprise", useCases: ["ai-factory", "infrastructure", "optimization"] },
 
-  // ─── Perplexity ───
-  { name: "Perplexity", company: "Perplexity AI", category: "search", description: "AI-powered search with cited answers. ", icon: "🔎", url: "https://perplexity.ai" },
+  // ═══════════════════════════════════════════
+  // ROBOTICS & PHYSICAL AI
+  // ═══════════════════════════════════════════
+  { name: "Isaac Lab", company: "NVIDIA", category: "robotics-physical-ai", version: "2025", description: "Open-source robot training and evaluation in simulation environments.", icon: "🤸", type: "reference", maturity: "ga", pricing: "Open Source", useCases: ["robot-training", "simulation", "reinforcement-learning"] },
+  { name: "Groot", company: "NVIDIA", category: "robotics-physical-ai", version: "N1", description: "Foundation models for humanoid robots — reasoning and action generation.", icon: "🦾", type: "reference", maturity: "preview", pricing: "Enterprise", useCases: ["humanoid-robots", "manipulation", "locomotion"] },
+  { name: "Alpamo", company: "NVIDIA", category: "robotics-physical-ai", version: "GA", description: "Autonomous vehicle AI — first thinking & reasoning self-driving system.", icon: "🚗", type: "reference", maturity: "ga", pricing: "Enterprise", useCases: ["autonomous-driving", "robotaxi"] },
 
-  // ─── Mistral ───
-  { name: "Mistral", company: "Mistral AI", category: "llm", description: "Open-source LLM — Neimotron coalition member, one of the 'incredible companies.'", icon: "🌬️", url: "https://mistral.ai" },
+  // ═══════════════════════════════════════════
+  // CYBERSECURITY
+  // ═══════════════════════════════════════════
+  { name: "CrowdStrike Falcon", company: "CrowdStrike", category: "cybersecurity", version: "2025", description: "AI-native endpoint protection and threat intelligence platform.", icon: "🛡️", url: "https://www.crowdstrike.com", type: "learnable", maturity: "ga", pricing: "Paid", useCases: ["endpoint-security", "threat-detection", "incident-response"] },
+  { name: "Confidential Computing", company: "NVIDIA", category: "cybersecurity", version: "GA", description: "GPU-level encryption — even the cloud operator cannot see your data or models.", icon: "🔐", type: "reference", maturity: "ga", pricing: "Enterprise", useCases: ["data-privacy", "compliance", "regulated-industries"] },
 
-  // ─── Black Forest Labs ───
-  { name: "Black Forest Labs", company: "Black Forest Labs", category: "design", description: "Image generation models — Neimotron coalition member for next-gen visual AI.", icon: "🎨" },
+  // ═══════════════════════════════════════════
+  // ENTERPRISE AI PLATFORMS
+  // ═══════════════════════════════════════════
+  { name: "Salesforce Einstein", company: "Salesforce", category: "enterprise-ai", version: "GPT", description: "AI-powered CRM with conversational agents, predictive analytics, and workflow automation.", icon: "💼", url: "https://www.salesforce.com/artificial-intelligence/", type: "learnable", maturity: "ga", pricing: "Paid", useCases: ["crm", "sales", "customer-service", "automation"] },
+  { name: "Palantir AIP", company: "Palantir", category: "enterprise-ai", version: "2025", description: "AI platform for airgapped/sovereign deployments and operational decision-making.", icon: "👁️", url: "https://www.palantir.com/aip/", type: "reference", maturity: "ga", pricing: "Enterprise", useCases: ["defense", "government", "operations", "analytics"] },
+  { name: "IBM watsonx", company: "IBM", category: "enterprise-ai", version: "2025", description: "Enterprise AI and data platform — GPU-accelerated with foundation model studio.", icon: "🏢", url: "https://www.ibm.com/watsonx", type: "learnable", maturity: "ga", pricing: "Paid", useCases: ["enterprise-ai", "governance", "data-management"] },
+  { name: "ServiceNow AI Agents", company: "ServiceNow", category: "enterprise-ai", version: "2025", description: "AI agents for IT service management, HR, and enterprise workflow automation.", icon: "⚡", url: "https://www.servicenow.com", type: "learnable", maturity: "ga", pricing: "Paid", useCases: ["itsm", "workflow-automation", "hr"] },
+  { name: "SAP Joule", company: "SAP", category: "enterprise-ai", version: "2025", description: "AI copilot embedded across SAP's ERP, supply chain, and HR modules.", icon: "🔷", url: "https://www.sap.com/products/artificial-intelligence.html", type: "learnable", maturity: "ga", pricing: "Paid", useCases: ["erp", "supply-chain", "hr", "finance"] },
 
-  // ─── Google ───
-  { name: "Google BigQuery", company: "Google", category: "data", description: "Analytics data warehouse — now GPU-accelerated with NVIDIA KUDF.", icon: "📈", url: "https://cloud.google.com/bigquery" },
-  { name: "Google Vertex AI", company: "Google", category: "cloud", description: "ML platform — accelerated by NVIDIA for training and inference.", icon: "☁️" },
-  { name: "Google Cloud JAX/XLA", company: "Google", category: "infrastructure", description: "ML framework — NVIDIA is 'incredible on both PyTorch and JAX/XLA.'", icon: "🔧" },
+  // ═══════════════════════════════════════════
+  // DESIGN & MEDIA
+  // ═══════════════════════════════════════════
+  { name: "Midjourney", company: "Midjourney", category: "design-media", version: "V6.1", description: "AI image generation with photorealistic and artistic output.", icon: "🎨", url: "https://midjourney.com", type: "learnable", maturity: "ga", pricing: "Paid", useCases: ["image-generation", "design", "creative"] },
+  { name: "DALL-E", company: "OpenAI", category: "design-media", version: "3", description: "Text-to-image generation integrated into ChatGPT for visual content creation.", icon: "🖼️", type: "learnable", maturity: "ga", pricing: "Freemium", useCases: ["image-generation", "design", "marketing"] },
+  { name: "Runway", company: "Runway", category: "design-media", version: "Gen-3 Alpha", description: "AI video generation and editing — text-to-video, image-to-video, and motion brush.", icon: "🎬", url: "https://runwayml.com", type: "learnable", maturity: "ga", pricing: "Freemium", useCases: ["video-generation", "editing", "creative"] },
+  { name: "RTX / DLSS", company: "NVIDIA", category: "design-media", version: "DLSS 5", description: "Neuro rendering — fusion of 3D graphics and generative AI for real-time visuals.", icon: "🎮", url: "https://www.nvidia.com/rtx/", type: "reference", maturity: "ga", pricing: "Free", useCases: ["graphics", "gaming", "rendering"] },
+  { name: "Figma AI", company: "Figma", category: "design-media", version: "2025", description: "AI-powered design tool with auto-layout, content generation, and prototype creation.", icon: "🎯", url: "https://figma.com", type: "learnable", maturity: "ga", pricing: "Freemium", useCases: ["ui-design", "prototyping", "collaboration"] },
+  { name: "Canva AI", company: "Canva", category: "design-media", version: "2025", description: "AI-assisted design platform for presentations, social media, and marketing materials.", icon: "🖌️", url: "https://canva.com", type: "learnable", maturity: "ga", pricing: "Freemium", useCases: ["graphic-design", "marketing", "presentations"] },
 
-  // ─── Amazon ───
-  { name: "AWS EMR", company: "Amazon", category: "data", description: "Cloud data processing — accelerated by NVIDIA.", icon: "📊" },
-  { name: "AWS SageMaker", company: "Amazon", category: "cloud", description: "ML platform on AWS — NVIDIA deeply integrated.", icon: "☁️" },
-  { name: "AWS Bedrock", company: "Amazon", category: "cloud", description: "Foundation model service — NVIDIA accelerated.", icon: "🪨" },
+  // ═══════════════════════════════════════════
+  // SEARCH & RETRIEVAL
+  // ═══════════════════════════════════════════
+  { name: "Perplexity", company: "Perplexity AI", category: "search-retrieval", version: "2025", description: "AI-powered search engine with cited answers and real-time web knowledge.", icon: "🔎", url: "https://perplexity.ai", type: "learnable", maturity: "ga", pricing: "Freemium", useCases: ["research", "search", "fact-checking"] },
+  { name: "NotebookLM", company: "Google", category: "search-retrieval", version: "2025", description: "AI research assistant that analyzes uploaded documents and generates audio summaries.", icon: "📓", url: "https://notebooklm.google.com", type: "learnable", maturity: "ga", pricing: "Free", useCases: ["research", "document-analysis", "summarization"] },
 
-  // ─── Microsoft ───
-  { name: "Microsoft Azure AI Foundry", company: "Microsoft", category: "cloud", description: "Azure's AI platform — first NVIDIA A100 supercomputer was installed here.", icon: "☁️" },
-  { name: "Bing Search", company: "Microsoft", category: "search", description: "Search engine — accelerated by NVIDIA.", icon: "🔍" },
-  { name: "Azure Confidential Computing", company: "Microsoft", category: "security", description: "Protected deployment of OpenAI and Anthropic models across regions.", icon: "🔐" },
+  // ═══════════════════════════════════════════
+  // NETWORKING & EDGE
+  // ═══════════════════════════════════════════
+  { name: "Aerial AI RAN", company: "NVIDIA", category: "networking-edge", version: "GA", description: "Platform for reinventing telecom base stations into AI-powered infrastructure.", icon: "📡", type: "reference", maturity: "ga", pricing: "Enterprise", useCases: ["telecom", "edge-ai", "5g"] },
+  { name: "Spectrum X", company: "NVIDIA", category: "networking-edge", version: "6", description: "Co-packaged optical networking switch for AI factory interconnects.", icon: "💡", type: "reference", maturity: "ga", pricing: "Enterprise", useCases: ["networking", "data-center", "high-bandwidth"] },
+  { name: "NVLink", company: "NVIDIA", category: "networking-edge", version: "576-GPU", description: "Scale-up GPU interconnect — copper and optical for multi-rack AI systems.", icon: "🔗", type: "reference", maturity: "ga", pricing: "Enterprise", useCases: ["gpu-interconnect", "scaling", "training"] },
 
-  // ─── Meta ───
-  { name: "Meta MSL (Llama)", company: "Meta", category: "llm", description: "Open-source models that have 'reached near the frontier' — chosen NVIDIA platform.", icon: "🦙" },
+  // ═══════════════════════════════════════════
+  // HARDWARE & COMPUTE
+  // ═══════════════════════════════════════════
+  { name: "Blackwell", company: "NVIDIA", category: "hardware-compute", version: "GB300", description: "Current-gen AI GPU — in full production, shipping at scale to every major cloud.", icon: "⬛", type: "reference", maturity: "ga", pricing: "Enterprise", useCases: ["training", "inference", "ai-factory"] },
+  { name: "Vera Rubin", company: "NVIDIA", category: "hardware-compute", version: "2026", description: "Next-gen GPU system — 288GB per chip, already deployed at Microsoft Azure.", icon: "🔥", type: "reference", maturity: "preview", pricing: "Enterprise", useCases: ["training", "inference", "next-gen"] },
+  { name: "Feynman", company: "NVIDIA", category: "hardware-compute", version: "2027", description: "Future GPU architecture with new GPU, LPU, CPU, and networking in one system.", icon: "🔮", type: "reference", maturity: "research", pricing: "Enterprise", useCases: ["future-compute", "ai-factory"] },
+  { name: "Groq LPU", company: "Groq", category: "hardware-compute", version: "LP30", description: "Deterministic dataflow processor for ultra-low-latency inference.", icon: "⚡", url: "https://groq.com", type: "reference", maturity: "ga", pricing: "Paid", useCases: ["inference", "low-latency", "real-time"] },
 
-  // ─── Snowflake ───
-  { name: "Snowflake", company: "Snowflake", category: "data", description: "Cloud data platform — processing structured data at scale, now GPU-accelerated.", icon: "❄️", url: "https://snowflake.com" },
-
-  // ─── Databricks ───
-  { name: "Databricks", company: "Databricks", category: "data", description: "Data + AI platform — part of the structured data ecosystem accelerated by NVIDIA.", icon: "🧱", url: "https://databricks.com" },
-
-  // ─── IBM ───
-  { name: "IBM Watson X Data", company: "IBM", category: "data", description: "Enterprise SQL engine — accelerated with NVIDIA KUDF. '60 years after System 360.'", icon: "🏢" },
-
-  // ─── Palantir ───
-  { name: "Palantir Ontology", company: "Palantir", category: "enterprise", description: "AI platform for airgapped/sovereign deployments — partnered with NVIDIA and Dell.", icon: "👁️" },
-
-  // ─── Dell ───
-  { name: "Dell AI Data Platform", company: "Dell", category: "enterprise", description: "On-prem accelerated data platform integrating KUDF and KVS.", icon: "💻" },
-
-  // ─── Oracle ───
-  { name: "Oracle Cloud", company: "Oracle", category: "cloud", description: "AI cloud — 'NVIDIA was their first AI customer.' Hosts OpenAI and Cohere.", icon: "☁️" },
-
-  // ─── CoreWeave ───
-  { name: "CoreWeave", company: "CoreWeave", category: "cloud", description: "World's first AI-native cloud — built solely to host GPUs. 'Growing incredibly.'", icon: "🚀" },
-
-  // ─── Salesforce ───
-  { name: "Salesforce", company: "Salesforce", category: "enterprise", description: "CRM platform — listed as NVIDIA developer/customer on Google Cloud.", icon: "💼" },
-
-  // ─── Synopsys ───
-  { name: "Synopsys EDA", company: "Synopsys", category: "infrastructure", description: "Electronic design automation — all EDA/CAE workflows accelerated by NVIDIA.", icon: "🔌" },
-
-  // ─── PTC ───
-  { name: "PTC Windchill PLM", company: "PTC", category: "simulation", description: "Product lifecycle management — manages SIM-ready assets for AI factory digital twins.", icon: "📐" },
-
-  // ─── Dassault ───
-  { name: "Dassault 3DEXPERIENCE", company: "Dassault Systèmes", category: "simulation", description: "Model-based systems engineering for AI factory design.", icon: "🏗️" },
-
-  // ─── Siemens ───
-  { name: "Siemens Star-CCM+", company: "Siemens", category: "simulation", description: "Computational fluid dynamics — thermal simulation for AI factory design.", icon: "🌡️" },
-
-  // ─── Cadence ───
-  { name: "Cadence Reality", company: "Cadence", category: "simulation", description: "Internal thermal simulation for AI factory digital twins.", icon: "🔥" },
-
-  // ─── Jacobs ───
-  { name: "Jacobs (Omniverse App)", company: "Jacobs", category: "simulation", description: "Custom Omniverse application for finalizing AI factory design.", icon: "🏢" },
-
-  // ─── Procore ───
-  { name: "Procore", company: "Procore", category: "simulation", description: "Virtual commissioning platform — accelerates AI factory construction time.", icon: "🏗️" },
-
-  // ─── Fedra ───
-  { name: "Fedra AI Agent", company: "Fedra", category: "agentic", description: "Oversees cooling and electrical systems in AI factories via DSX Max Q.", icon: "❄️" },
-
-  // ─── Emerald ───
-  { name: "Emerald AI Agent", company: "Emerald", category: "agentic", description: "Interprets live grid demand/stress signals — dynamically adjusts AI factory power.", icon: "🟢" },
-
-  // ─── Cohere ───
-  { name: "Cohere", company: "Cohere", category: "llm", description: "Enterprise LLM platform — hosted on Oracle Cloud and CoreWeave.", icon: "🗣️", url: "https://cohere.com" },
-
-  // ─── Fireworks ───
-  { name: "Fireworks AI", company: "Fireworks", category: "infrastructure", description: "Fast inference platform — landed on Oracle Cloud with NVIDIA.", icon: "🎆" },
-
-  // ─── Samsung ───
-  { name: "Samsung (Groq LP30 fab)", company: "Samsung", category: "hardware", description: "Manufactures the Groq LP30 chip — ", icon: "🏭" },
-
-  // ─── Skilled AI ───
-  { name: "Skilled AI", company: "Skilled AI", category: "robotics", description: "Uses Isaac Lab + Cosmos to generate robot post-training data with reinforcement learning.", icon: "🤖" },
-
-  // ─── Humanoid ───
-  { name: "Humanoid", company: "Humanoid", category: "robotics", description: "Uses Isaac Lab to train whole-body control and manipulation policies.", icon: "🦿" },
-
-  // ─── Hexagon Robotics ───
-  { name: "Hexagon Robotics", company: "Hexagon", category: "robotics", description: "Uses Isaac Lab for robot training and data generation.", icon: "⬡" },
-
-  // ─── Foxconn ───
-  { name: "Foxconn (Groot)", company: "Foxconn", category: "robotics", description: "Fine-tunes Groot models in Isaac Lab for manufacturing.", icon: "🏭" },
-
-  // ─── Parata AI ───
-  { name: "Parata AI", company: "Parata AI", category: "robotics", description: "Trains operating room assistant robots in Isaac Lab, multiplied with Cosmos world models.", icon: "🏥" },
-
-  // ─── Disney ───
-  { name: "Disney Chamino", company: "Disney", category: "simulation", description: "Physics simulator in Newton + Isaac Lab — trained Olaf to walk in the real world.", icon: "⛄" },
-
-  // ─── BYD / Hyundai / Nissan / Mercedes / Toyota / GM / Uber ───
-  { name: "BYD Robotaxi", company: "BYD", category: "automotive", description: "NVIDIA Alpamo robotaxi-ready platform — 18M cars/year combined with partners.", icon: "🚗" },
-  { name: "Uber Robotaxi Network", company: "Uber", category: "automotive", description: "Deploying robotaxi-ready vehicles across multiple cities via NVIDIA platform.", icon: "🚕" },
-
-  // ─── ABB / Universal Robotics / KUKA ───
-  { name: "ABB Robotics", company: "ABB", category: "robotics", description: "Implementing NVIDIA physical AI models for manufacturing line deployment.", icon: "🦾" },
-  { name: "Universal Robots", company: "Universal Robots", category: "robotics", description: "Collaborative robots with NVIDIA physical AI integration.", icon: "🤖" },
-  { name: "KUKA", company: "KUKA", category: "robotics", description: "Industrial robotics with NVIDIA simulation and AI models.", icon: "🦾" },
-
-  // ─── Caterpillar ───
-  { name: "Caterpillar", company: "Caterpillar", category: "robotics", description: "Heavy machinery — integrating NVIDIA physical AI for autonomous operations.", icon: "🚜" },
-
-  // ─── T-Mobile / Nokia ───
-  { name: "T-Mobile AI RAN", company: "T-Mobile", category: "networking", description: "Converting radio towers into AI-powered robotics infrastructure with NVIDIA Aerial.", icon: "📱" },
-  { name: "Nokia AI RAN", company: "Nokia", category: "networking", description: "Partnership with NVIDIA to reinvent telecom as AI infrastructure.", icon: "📡" },
-
-  // ─── Snapchat ───
-  { name: "Snapchat (BigQuery)", company: "Snap", category: "data", description: "Reduced computing cost by nearly 80% using NVIDIA-accelerated BigQuery.", icon: "👻" },
-
-  // ─── Nestlé ───
-  { name: "Nestlé Supply Chain", company: "Nestlé", category: "enterprise", description: "5x faster supply chain data mart refresh at 83% lower cost with accelerated Watson X.", icon: "🍫" },
-
-  // ─── NTT Data ───
-  { name: "NTT Data (Dell AI)", company: "NTT Data", category: "enterprise", description: "Massive speedups on Dell AI Data Platform with KUDF and KVS.", icon: "📡" },
-
-  // ─── CrowdStrike ───
-  { name: "CrowdStrike", company: "CrowdStrike", category: "security", description: "Cybersecurity — NVIDIA developer/customer on Google Cloud.", icon: "🛡️" },
-
-  // ─── PyTorch ───
-  { name: "PyTorch", company: "Meta / Open Source", category: "infrastructure", description: "'We are the only accelerator incredible on both PyTorch and JAX/XLA.'", icon: "🔥", url: "https://pytorch.org" },
-
-  // ─── Andre Karpathy ───
-  { name: "Research Agent (Karpathy)", company: "Open Source", category: "agentic", description: "Give an AI agent a task, go to sleep — it runs 100 experiments overnight, keeping what works.", icon: "🧪" },
-
-  // ─── SQL ───
-  { name: "SQL", company: "IBM / Standard", category: "data", description: "'One of the most important domain-specific languages of all time' — now used by AI agents, not just humans.", icon: "📝" },
-
-  // ─── Kubernetes ───
-  { name: "Kubernetes", company: "Google / CNCF", category: "infrastructure", description: "Container orchestration — Jensen compares Open Claw's impact to Kubernetes and Linux.", icon: "☸️" },
+  // ═══════════════════════════════════════════
+  // VERTICAL INDUSTRY
+  // ═══════════════════════════════════════════
+  { name: "Bionemо", company: "NVIDIA", category: "vertical-industry", version: "GA", description: "Open models for biology, chemistry, drug discovery, and molecular design.", icon: "🧬", type: "reference", maturity: "ga", pricing: "Open Source", useCases: ["drug-discovery", "genomics", "molecular-design"] },
+  { name: "Parabricks", company: "NVIDIA", category: "vertical-industry", version: "GA", description: "GPU-accelerated genomics analysis for clinical and research applications.", icon: "🧪", type: "reference", maturity: "ga", pricing: "Enterprise", useCases: ["genomics", "clinical", "research"] },
+  { name: "cuOpt", company: "NVIDIA", category: "vertical-industry", version: "GA", description: "Decision optimization for logistics, routing, and supply chain management.", icon: "📦", type: "reference", maturity: "ga", pricing: "Enterprise", useCases: ["logistics", "supply-chain", "optimization"] },
 ];
 
 /** Get unique company names sorted by tool count */
@@ -250,22 +193,31 @@ export function getCategories(): ToolCategory[] {
   return [...cats];
 }
 
+/** Get only learnable tools */
+export function getLearnableTools(): GTCTool[] {
+  return GTC_TOOLS.filter(t => t.type === "learnable");
+}
+
+/** Get tools by category */
+export function getToolsByCategory(category: ToolCategory): GTCTool[] {
+  return GTC_TOOLS.filter(t => t.category === category);
+}
+
 /** Category labels and colors */
-export const CATEGORY_CONFIG: Record<ToolCategory, { label: string; color: string }> = {
-  llm: { label: "LLMs", color: "hsl(280, 70%, 60%)" },
-  coding: { label: "Coding", color: "hsl(200, 80%, 55%)" },
-  data: { label: "Data", color: "hsl(160, 70%, 45%)" },
-  agentic: { label: "Agentic", color: "hsl(30, 90%, 55%)" },
-  robotics: { label: "Robotics", color: "hsl(0, 70%, 55%)" },
-  infrastructure: { label: "Infrastructure", color: "hsl(220, 60%, 50%)" },
-  simulation: { label: "Simulation", color: "hsl(180, 60%, 50%)" },
-  enterprise: { label: "Enterprise", color: "hsl(50, 70%, 50%)" },
-  design: { label: "Design", color: "hsl(310, 60%, 55%)" },
-  search: { label: "Search", color: "hsl(120, 50%, 45%)" },
-  hardware: { label: "Hardware", color: "hsl(240, 40%, 50%)" },
-  networking: { label: "Networking", color: "hsl(190, 60%, 50%)" },
-  cloud: { label: "Cloud", color: "hsl(210, 70%, 60%)" },
-  security: { label: "Security", color: "hsl(350, 60%, 50%)" },
-  biology: { label: "Biology", color: "hsl(140, 60%, 45%)" },
-  automotive: { label: "Automotive", color: "hsl(10, 60%, 50%)" },
+export const CATEGORY_CONFIG: Record<ToolCategory, { label: string; color: string; description: string }> = {
+  "foundation-models": { label: "Foundation Models", color: "hsl(280, 70%, 60%)", description: "LLMs and multimodal AI models" },
+  "coding-agents": { label: "Coding Agents", color: "hsl(200, 80%, 55%)", description: "AI-powered development tools" },
+  "agentic-frameworks": { label: "Agentic Frameworks", color: "hsl(30, 90%, 55%)", description: "Multi-agent orchestration and automation" },
+  "data-platforms": { label: "Data Platforms", color: "hsl(160, 70%, 45%)", description: "Data warehouses, lakehouses, and processing" },
+  "mlops-infra": { label: "MLOps & Infra", color: "hsl(220, 60%, 50%)", description: "ML training, deployment, and operations" },
+  "cloud-ai": { label: "Cloud AI", color: "hsl(210, 70%, 60%)", description: "Managed AI services from major clouds" },
+  "simulation-digital-twin": { label: "Simulation", color: "hsl(180, 60%, 50%)", description: "Digital twins and physics simulation" },
+  "robotics-physical-ai": { label: "Robotics", color: "hsl(0, 70%, 55%)", description: "Physical AI and autonomous systems" },
+  "cybersecurity": { label: "Cybersecurity", color: "hsl(350, 60%, 50%)", description: "AI-powered threat detection and data privacy" },
+  "enterprise-ai": { label: "Enterprise AI", color: "hsl(50, 70%, 50%)", description: "CRM, ERP, and business workflow AI" },
+  "design-media": { label: "Design & Media", color: "hsl(310, 60%, 55%)", description: "Image, video, and creative AI tools" },
+  "search-retrieval": { label: "Search & Retrieval", color: "hsl(120, 50%, 45%)", description: "AI search and document analysis" },
+  "networking-edge": { label: "Networking", color: "hsl(190, 60%, 50%)", description: "AI infrastructure networking and edge" },
+  "hardware-compute": { label: "Hardware", color: "hsl(240, 40%, 50%)", description: "GPUs, accelerators, and compute systems" },
+  "vertical-industry": { label: "Vertical Industry", color: "hsl(140, 60%, 45%)", description: "Domain-specific AI for healthcare, logistics, etc." },
 };
