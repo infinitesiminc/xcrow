@@ -5,7 +5,7 @@ import xcrowBattleLogo from "@/assets/xcrow-logo.webp";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { getAvatarById } from "@/lib/avatars";
-import { useCredits } from "@/hooks/use-credits";
+import CreditWallet from "@/components/CreditWallet";
 import { useAdaptiveModeNudge } from "@/hooks/use-adaptive-mode-nudge";
 import {
   DropdownMenu,
@@ -18,7 +18,6 @@ import { User, Menu, X, Compass, Shield, Map, Settings, LogOut, Trophy, Graduati
 
 export default function Navbar() {
   const { user, signOut, openAuthModal, isSuperAdmin, isSchoolAdmin, profile } = useAuth();
-  const { balance: creditBalance } = useCredits();
   useAdaptiveModeNudge();
   const navigate = useNavigate();
   const location = useLocation();
@@ -150,19 +149,9 @@ export default function Navbar() {
         <div className="flex items-center gap-1.5">
           {user ? (
             <>
-              {/* Credit balance pill */}
-              <button
-                onClick={() => navigate("/settings?section=subscription")}
-                className="hidden sm:flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold transition-colors hover:bg-secondary/60"
-                style={{
-                  color: "hsl(45 93% 48%)",
-                  background: "hsl(45 93% 48% / 0.08)",
-                  border: "1px solid hsl(45 93% 48% / 0.15)",
-                }}
-              >
-                <Coins className="h-3.5 w-3.5" />
-                {creditBalance}
-              </button>
+              <div className="hidden sm:block">
+                <CreditWallet />
+              </div>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon" className="rounded-full">

@@ -376,6 +376,27 @@ export type Database = {
         }
         Relationships: []
       }
+      credit_costs: {
+        Row: {
+          action: string
+          cost: number
+          description: string | null
+          label: string | null
+        }
+        Insert: {
+          action: string
+          cost?: number
+          description?: string | null
+          label?: string | null
+        }
+        Update: {
+          action?: string
+          cost?: number
+          description?: string | null
+          label?: string | null
+        }
+        Relationships: []
+      }
       credit_ledger: {
         Row: {
           created_at: string
@@ -543,6 +564,56 @@ export type Database = {
           used_at?: string | null
         }
         Relationships: []
+      }
+      employer_sponsorships: {
+        Row: {
+          company_id: string | null
+          created_at: string
+          credits_remaining: number
+          expires_at: string | null
+          id: string
+          sponsor_email: string | null
+          sponsor_name: string
+          status: string
+          target_skills: string[] | null
+          target_territories: string[] | null
+          total_credits_granted: number
+        }
+        Insert: {
+          company_id?: string | null
+          created_at?: string
+          credits_remaining?: number
+          expires_at?: string | null
+          id?: string
+          sponsor_email?: string | null
+          sponsor_name: string
+          status?: string
+          target_skills?: string[] | null
+          target_territories?: string[] | null
+          total_credits_granted?: number
+        }
+        Update: {
+          company_id?: string | null
+          created_at?: string
+          credits_remaining?: number
+          expires_at?: string | null
+          id?: string
+          sponsor_email?: string | null
+          sponsor_name?: string
+          status?: string
+          target_skills?: string[] | null
+          target_territories?: string[] | null
+          total_credits_granted?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "employer_sponsorships_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       feature_flags: {
         Row: {
@@ -1821,6 +1892,38 @@ export type Database = {
           unlock_type?: string
         }
         Relationships: []
+      }
+      sponsored_credits: {
+        Row: {
+          credits_granted: number
+          granted_at: string
+          id: string
+          sponsorship_id: string
+          user_id: string
+        }
+        Insert: {
+          credits_granted?: number
+          granted_at?: string
+          id?: string
+          sponsorship_id: string
+          user_id: string
+        }
+        Update: {
+          credits_granted?: number
+          granted_at?: string
+          id?: string
+          sponsorship_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sponsored_credits_sponsorship_id_fkey"
+            columns: ["sponsorship_id"]
+            isOneToOne: false
+            referencedRelation: "employer_sponsorships"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       suppressed_emails: {
         Row: {

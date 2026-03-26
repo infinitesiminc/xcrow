@@ -4,6 +4,7 @@
 import { useState } from "react";
 import SEOHead from "@/components/SEOHead";
 import { useNavigate } from "react-router-dom";
+import SponsorLandingSection from "@/components/pricing/SponsorLandingSection";
 import { motion } from "framer-motion";
 import {
   Check, ArrowRight, Loader2, HelpCircle, Shield, Crown, Castle,
@@ -243,6 +244,9 @@ export default function Pricing() {
           ))}
         </Accordion>
       </motion.section>
+
+      {/* Employer Sponsorship */}
+      <SponsorLandingSection />
     </div>
   );
 }
