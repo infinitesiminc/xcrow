@@ -49,20 +49,26 @@ function useSkillHeroImage(skill: FutureSkill | null, open: boolean) {
   return { imageUrl, loading };
 }
 
-/* ── Mastery Tiers ── */
+/* ── Mastery Tiers — aligned with design doc (Bronze/Silver/Gold/Platinum) ── */
 const MASTERY_TIERS = [
-  { name: "Novice", minXp: 0, color: "hsl(var(--muted-foreground))", icon: "○" },
-  { name: "Apprentice", minXp: 150, color: "hsl(142 60% 50%)", icon: "◐" },
-  { name: "Adept", minXp: 500, color: "hsl(210 80% 60%)", icon: "◑" },
-  { name: "Master", minXp: 1200, color: "hsl(280 70% 60%)", icon: "●" },
-  { name: "Grandmaster", minXp: 2500, color: "hsl(45 90% 60%)", icon: "★" },
+  { name: "Bronze", label: "Outpost", minXp: 0, color: "hsl(30 60% 50%)", icon: "🏕️", simLabel: "Start Quest", simDesc: "Learn technique + A/B comparison" },
+  { name: "Silver", label: "Fortress", minXp: 150, color: "hsl(210 40% 65%)", icon: "🏰", simLabel: "Context Challenge", simDesc: "Apply skill in varied contexts" },
+  { name: "Gold", label: "Citadel", minXp: 500, color: "hsl(45 90% 55%)", icon: "⚔️", simLabel: "Boss Battle", simDesc: "Audit AI claims & red-team" },
+  { name: "Platinum", label: "Grandmaster", minXp: 1200, color: "hsl(280 70% 60%)", icon: "✨", simLabel: "Agent Command", simDesc: "Orchestrate autonomous agents" },
 ] as const;
+
+type MasteryTierName = typeof MASTERY_TIERS[number]["name"];
 
 function getCurrentTier(xp: number) {
   for (let i = MASTERY_TIERS.length - 1; i >= 0; i--) {
     if (xp >= MASTERY_TIERS[i].minXp) return i;
   }
   return 0;
+}
+
+/** Map tier index to the mastery tier key for the sim engine */
+function tierToSimKey(tierIdx: number): "bronze" | "silver" | "gold" | "platinum" {
+  return (["bronze", "silver", "gold", "platinum"] as const)[tierIdx] ?? "bronze";
 }
 
 /* ── Battle log entry ── */
