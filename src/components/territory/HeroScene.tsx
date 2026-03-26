@@ -139,4 +139,6 @@ const HeroScene = forwardRef<HTMLDivElement, HeroSceneProps>(function HeroScene(
       <div className="relative z-[2]">{children}</div>
     </div>
   );
-}
+});
+
+export default HeroScene;
