@@ -91,7 +91,63 @@ export default function StackBuilder({ onSelectTool }: Props) {
     } finally { setLoading(false); }
   }, [query]);
 
-  const clearSearch = () => { setQuery(""); setSearchResults(null); setSearchedTitle(""); };
+  // --- JD URL search ---
+  const searchByUrl = useCallback(async () => {
+    const url = jdUrl.trim();
+    if (!url) return;
+    setLoading(true);
+    setSearchedTitle("Job Description");
+    setSelectedTemplate(null);
+
+    try {
+      const { data, error } = await supabase.functions.invoke("parse-jd", {
+        body: { url },
+      });
+
+      if (error || !data) throw new Error("Failed to parse JD");
+
+      const skills: string[] = [
+        ...(data.skills || []).map((s: any) => (typeof s === "string" ? s : s.name || "")),
+        ...(data.taskClusters || data.task_clusters || []).flatMap((tc: any) => tc.skill_names || []),
+      ].filter(Boolean);
+
+      const title = data.title || data.job_title || "Job Description";
+      setSearchedTitle(title);
+
+      const toolScores = new Map<string, { score: number; skills: Set<string> }>();
+      for (const skill of skills) {
+        for (const tn of JOB_SKILL_TO_TOOLS[skill] || []) {
+          if (!toolScores.has(tn)) toolScores.set(tn, { score: 0, skills: new Set() });
+          const e = toolScores.get(tn)!; e.score += 1; e.skills.add(skill);
+        }
+        // Also try fuzzy match on tool names
+        const lower = skill.toLowerCase();
+        for (const tool of GTC_TOOLS) {
+          if (tool.name.toLowerCase().includes(lower) || lower.includes(tool.name.toLowerCase())) {
+            if (!toolScores.has(tool.name)) toolScores.set(tool.name, { score: 0, skills: new Set() });
+            toolScores.get(tool.name)!.score += 2;
+            toolScores.get(tool.name)!.skills.add(skill);
+          }
+        }
+      }
+
+      // Fallback: also match from title
+      const role = matchRole(title);
+      for (const t of role.coreTools) { if (!toolScores.has(t)) toolScores.set(t, { score: 0, skills: new Set() }); toolScores.get(t)!.score += 3; }
+      for (const t of role.expandedTools) { if (!toolScores.has(t)) toolScores.set(t, { score: 0, skills: new Set() }); toolScores.get(t)!.score += 1; }
+
+      const ranked = Array.from(toolScores.entries())
+        .map(([name, d]) => { const tool = GTC_TOOLS.find(t => t.name === name); return tool ? { tool, score: d.score, matchedSkills: Array.from(d.skills) } : null; })
+        .filter(Boolean) as RankedTool[];
+      ranked.sort((a, b) => b.score - a.score);
+      setSearchResults(ranked.slice(0, 24));
+      setJobCount(0);
+    } catch {
+      setSearchResults(null);
+    } finally { setLoading(false); }
+  }, [jdUrl]);
+
+  const clearSearch = () => { setQuery(""); setJdUrl(""); setSearchResults(null); setSearchedTitle(""); };
 
   // --- Template logic ---
   const templateTools = useMemo(() => {
