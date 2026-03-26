@@ -227,16 +227,8 @@ const BriefingScreen = ({
           transition={{ delay: 0.2, type: "spring", damping: 12 }}
           className="text-3xl mb-3 inline-block drop-shadow-[0_0_8px_rgba(255,255,255,0.3)]"
         >
-          {masteryTier ? ({ bronze: "🏕️", silver: "🏰", gold: "⚔️", platinum: "✨" }[masteryTier] || "📜") : "📜"}
+          📜
         </motion.span>
-        {masteryTier && (
-          <span className="inline-block px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider mb-1" style={{
-            background: { bronze: "hsl(30 60% 50% / 0.15)", silver: "hsl(210 40% 65% / 0.15)", gold: "hsl(45 90% 55% / 0.15)", platinum: "hsl(280 70% 60% / 0.15)" }[masteryTier],
-            color: { bronze: "hsl(30 60% 50%)", silver: "hsl(210 40% 65%)", gold: "hsl(45 90% 55%)", platinum: "hsl(280 70% 60%)" }[masteryTier],
-          }}>
-            {masteryTier} tier
-          </span>
-        )}
         <h3
           className="text-lg sm:text-xl font-bold"
           style={{ fontFamily: "'Cinzel', serif", color: "hsl(var(--foreground))" }}
