@@ -22,7 +22,7 @@ type Level2CompletedIds = Set<string>;
 
 import { useFutureSkills } from "@/hooks/use-future-skills";
 import FutureTerritoryMap from "@/components/territory/FutureTerritoryMap";
-import FutureSkillsTable from "@/components/territory/FutureSkillsTable";
+import SkillProgressPanel from "@/components/territory/SkillProgressPanel";
 import MapIntroGuide from "@/components/territory/MapIntroGuide";
 import { getLevel, levelProgress } from "@/lib/skill-map";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -110,7 +110,7 @@ const MapPage = () => {
   const [selectedKingdomCtx, setSelectedKingdomCtx] = useState<{ tier?: string; xp?: number; questsCompleted?: number; totalQuests?: number } | null>(null);
   const [activeEdge, setActiveEdge] = useState<EdgeContext | null>(null);
   const [activeTab, setActiveTab] = useState<"table" | "scout" | "codex" | "allies">("table");
-  const [panelCollapsed, setPanelCollapsed] = useState(false);
+  const [panelCollapsed, setPanelCollapsed] = useState(true);
   const [scoutSubTab, setScoutSubTab] = useState<"matched" | "browse" | "kingdoms">("matched");
   const [mapFocusSkillId, setMapFocusSkillId] = useState<string | null>(null);
   const [forgeFocusSkillId, setForgeFocusSkillId] = useState<string | null>(null);
@@ -320,7 +320,7 @@ const MapPage = () => {
           <motion.div
             key="left-panel"
             initial={{ width: 0, opacity: 0 }}
-            animate={{ width: 420, opacity: 1 }}
+            animate={{ width: 320, opacity: 1 }}
             exit={{ width: 0, opacity: 0 }}
             transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
             className="flex flex-col h-full z-10 shrink-0 overflow-hidden"
@@ -378,7 +378,7 @@ const MapPage = () => {
             isFastTrack ? (
               <FastTrackPanel />
             ) : (
-              <FutureSkillsTable
+              <SkillProgressPanel
                 skills={futureSkills}
                 skillGrowthMap={skillGrowthMap}
                 level2SkillIds={level2SkillIds}
