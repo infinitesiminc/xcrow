@@ -126,8 +126,6 @@ const MapPage = () => {
   const { profile, user, isSuperAdmin } = useAuth();
   const { skills: dbSkills } = useSkills();
   const { futureSkills } = useFutureSkills();
-  const { mode: playMode } = usePlayMode();
-  const isFastTrack = playMode === "fast_track";
   const mission = useScoutMission();
 
   const taxonomy: TaxonomySkill[] = useMemo(() =>
