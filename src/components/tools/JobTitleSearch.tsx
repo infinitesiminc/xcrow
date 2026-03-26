@@ -3,7 +3,7 @@
  * Queries jobs DB, extracts skills across all matches, maps to tools, ranks by frequency.
  */
 import { useState, useCallback } from "react";
-import { Search, Loader2, X, Plus, Check, ChevronDown, ChevronUp, ExternalLink, Sparkles } from "lucide-react";
+import { Search, Loader2, X, Plus, Check, ExternalLink, Sparkles } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { JOB_SKILL_TO_TOOLS } from "@/data/tool-skill-mappings";
