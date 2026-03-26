@@ -52,7 +52,7 @@ const HeroScene = forwardRef<HTMLDivElement, HeroSceneProps>(function HeroScene(
   className = "",
 }, ref) {
   if (!imageUrl) {
-    return <div className={`relative ${className}`}>{children}</div>;
+    return <div ref={ref} className={`relative ${className}`}>{children}</div>;
   }
 
   const opacity = INTENSITY_OPACITY[intensity];
