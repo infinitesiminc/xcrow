@@ -1,12 +1,14 @@
 /**
- * GuardianEncounter — Cinematic encounter panel when a player clicks a territory guardian.
- * Shows the guardian's lore, challenge quote, and action buttons.
+ * GuardianEncounter — Cinematic fullscreen encounter with territory hero backdrop.
+ * Uses HeroScene for immersive Ken Burns + letterbox cinematic experience.
  */
 
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Swords, BookOpen } from "lucide-react";
+import { X, Swords, BookOpen, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { TerritoryGuardian } from "@/lib/territory-guardians";
+import HeroScene from "@/components/territory/HeroScene";
+import { getTerritoryHeroImage } from "@/lib/territory-hero-images";
 
 interface GuardianEncounterProps {
   guardian: TerritoryGuardian;
@@ -14,116 +16,169 @@ interface GuardianEncounterProps {
   onChallenge?: (guardian: TerritoryGuardian) => void;
 }
 
+const cinzel = { fontFamily: "'Cinzel', serif" };
+
 export default function GuardianEncounter({ guardian, onClose, onChallenge }: GuardianEncounterProps) {
+  const heroImage = getTerritoryHeroImage(guardian.category);
+
   return (
     <AnimatePresence>
       <motion.div
-        initial={{ opacity: 0, y: 20, scale: 0.95 }}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
-        exit={{ opacity: 0, y: 20, scale: 0.95 }}
-        transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-        className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 w-[420px] max-w-[90vw]"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.6 }}
+        className="fixed inset-0 z-50 flex items-end justify-center"
       >
-        <div
-          className="rounded-xl border-2 overflow-hidden backdrop-blur-xl"
-          style={{
-            background: `linear-gradient(135deg, hsl(${guardian.hue} 30% 8% / 0.95), hsl(${guardian.hue} 20% 12% / 0.95))`,
-            borderColor: `hsl(${guardian.hue} 50% 40%)`,
-            boxShadow: `0 0 40px hsl(${guardian.hue} 60% 30% / 0.4), inset 0 1px 0 hsl(${guardian.hue} 40% 30% / 0.3)`,
-          }}
+        {/* Fullscreen hero backdrop */}
+        <HeroScene
+          imageUrl={heroImage}
+          intensity="full"
+          camera="ken-burns"
+          overlay="letterbox"
+          hue={guardian.hue}
+          className="absolute inset-0"
+        />
+
+        {/* Click-away backdrop */}
+        <div className="absolute inset-0 z-[3]" onClick={onClose} />
+
+        {/* Content panel — bottom-anchored cinematic dialogue */}
+        <motion.div
+          initial={{ opacity: 0, y: 60 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: 60 }}
+          transition={{ duration: 0.5, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
+          className="relative z-[4] w-full max-w-2xl mx-4 mb-8"
         >
-          {/* Header */}
-          <div className="relative px-5 pt-4 pb-3 flex items-start gap-3">
-            {/* Guardian emoji avatar */}
-            <div
-              className="w-14 h-14 rounded-lg flex items-center justify-center text-3xl shrink-0"
-              style={{
-                background: `hsl(${guardian.hue} 40% 15%)`,
-                border: `2px solid hsl(${guardian.hue} 50% 35%)`,
-                boxShadow: `0 0 20px hsl(${guardian.hue} 60% 40% / 0.3)`,
-              }}
-            >
-              {guardian.emoji}
-            </div>
-            <div className="flex-1 min-w-0">
-              <h3
-                className="text-base font-bold tracking-wide"
+          <div
+            className="rounded-xl border-2 overflow-hidden backdrop-blur-xl"
+            style={{
+              background: `linear-gradient(135deg, hsl(${guardian.hue} 30% 8% / 0.92), hsl(${guardian.hue} 20% 12% / 0.92))`,
+              borderColor: `hsl(${guardian.hue} 50% 40%)`,
+              boxShadow: `0 0 60px hsl(${guardian.hue} 60% 30% / 0.5), inset 0 1px 0 hsl(${guardian.hue} 40% 30% / 0.3)`,
+            }}
+          >
+            {/* Header */}
+            <div className="relative px-6 pt-5 pb-3 flex items-start gap-4">
+              {/* Guardian emoji avatar with glow */}
+              <motion.div
+                animate={{
+                  boxShadow: [
+                    `0 0 20px hsl(${guardian.hue} 60% 40% / 0.3)`,
+                    `0 0 40px hsl(${guardian.hue} 60% 40% / 0.6)`,
+                    `0 0 20px hsl(${guardian.hue} 60% 40% / 0.3)`,
+                  ],
+                }}
+                transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                className="w-16 h-16 rounded-xl flex items-center justify-center text-4xl shrink-0"
                 style={{
-                  fontFamily: "'Cinzel', serif",
-                  color: `hsl(${guardian.hue} 50% 75%)`,
+                  background: `linear-gradient(135deg, hsl(${guardian.hue} 40% 15%), hsl(${guardian.hue} 30% 20%))`,
+                  border: `2px solid hsl(${guardian.hue} 50% 35%)`,
                 }}
               >
-                {guardian.name}
-              </h3>
-              <p className="text-xs text-muted-foreground italic">{guardian.title}</p>
+                {guardian.emoji}
+              </motion.div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-0.5">
+                  <Shield className="h-3.5 w-3.5" style={{ color: `hsl(${guardian.hue} 50% 55%)` }} />
+                  <span className="text-[10px] uppercase tracking-[0.15em] font-medium" style={{ color: `hsl(${guardian.hue} 40% 55%)` }}>
+                    Territory Guardian
+                  </span>
+                </div>
+                <h3
+                  className="text-xl font-bold tracking-wide"
+                  style={{ ...cinzel, color: `hsl(${guardian.hue} 50% 75%)` }}
+                >
+                  {guardian.name}
+                </h3>
+                <p className="text-xs text-muted-foreground italic mt-0.5">{guardian.title}</p>
+              </div>
+              <button
+                onClick={onClose}
+                className="w-8 h-8 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
+                style={{ background: `hsl(${guardian.hue} 20% 18%)` }}
+              >
+                <X size={16} />
+              </button>
             </div>
-            <button
-              onClick={onClose}
-              className="w-7 h-7 rounded-md flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
-              style={{ background: `hsl(${guardian.hue} 20% 18%)` }}
-            >
-              <X size={14} />
-            </button>
-          </div>
 
-          {/* Challenge quote */}
-          <div className="px-5 pb-3">
+            {/* Challenge quote — cinematic styling */}
+            <motion.div
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.6, duration: 0.5 }}
+              className="px-6 pb-4"
+            >
+              <div
+                className="rounded-lg px-5 py-4 text-sm leading-relaxed"
+                style={{
+                  background: `hsl(${guardian.hue} 20% 10% / 0.7)`,
+                  borderLeft: `3px solid hsl(${guardian.hue} 50% 45%)`,
+                  color: `hsl(${guardian.hue} 15% 82%)`,
+                  fontStyle: "italic",
+                }}
+              >
+                "{guardian.challengeQuote}"
+              </div>
+            </motion.div>
+
+            {/* Lore */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.8, duration: 0.5 }}
+              className="px-6 pb-4"
+            >
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                {guardian.lore}
+              </p>
+            </motion.div>
+
+            {/* Actions — larger, more dramatic */}
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 1, duration: 0.4 }}
+              className="px-6 pb-5 flex gap-3"
+            >
+              <Button
+                size="lg"
+                className="flex-1 gap-2 text-sm font-semibold"
+                style={{
+                  background: `linear-gradient(135deg, hsl(${guardian.hue} 50% 35%), hsl(${guardian.hue} 60% 45%))`,
+                  color: "white",
+                  boxShadow: `0 0 30px hsl(${guardian.hue} 60% 40% / 0.4)`,
+                }}
+                onClick={() => onChallenge?.(guardian)}
+              >
+                <Swords size={18} />
+                Accept Challenge
+              </Button>
+              <Button
+                size="lg"
+                variant="outline"
+                className="gap-2"
+                style={{
+                  borderColor: `hsl(${guardian.hue} 30% 30%)`,
+                  color: `hsl(${guardian.hue} 30% 65%)`,
+                }}
+                onClick={onClose}
+              >
+                <BookOpen size={16} />
+                Later
+              </Button>
+            </motion.div>
+
+            {/* Coaching hint */}
             <div
-              className="rounded-lg px-4 py-3 text-sm italic leading-relaxed"
-              style={{
-                background: `hsl(${guardian.hue} 20% 12%)`,
-                borderLeft: `3px solid hsl(${guardian.hue} 50% 45%)`,
-                color: `hsl(${guardian.hue} 20% 80%)`,
-              }}
+              className="px-6 py-2.5 text-[10px] text-muted-foreground/60 border-t"
+              style={{ borderColor: `hsl(${guardian.hue} 20% 18%)` }}
             >
-              "{guardian.challengeQuote}"
+              💡 {guardian.coachingHint}
             </div>
           </div>
-
-          {/* Lore */}
-          <div className="px-5 pb-3">
-            <p className="text-xs text-muted-foreground leading-relaxed">
-              {guardian.lore}
-            </p>
-          </div>
-
-          {/* Actions */}
-          <div className="px-5 pb-4 flex gap-2">
-            <Button
-              size="sm"
-              className="flex-1 gap-1.5"
-              style={{
-                background: `hsl(${guardian.hue} 50% 35%)`,
-                color: "white",
-              }}
-              onClick={() => onChallenge?.(guardian)}
-            >
-              <Swords size={14} />
-              Accept Challenge
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              className="gap-1.5"
-              style={{
-                borderColor: `hsl(${guardian.hue} 30% 30%)`,
-                color: `hsl(${guardian.hue} 30% 65%)`,
-              }}
-              onClick={onClose}
-            >
-              <BookOpen size={14} />
-              Later
-            </Button>
-          </div>
-
-          {/* Coaching hint (subtle) */}
-          <div
-            className="px-5 py-2 text-[10px] text-muted-foreground/60 border-t"
-            style={{ borderColor: `hsl(${guardian.hue} 20% 20%)` }}
-          >
-            💡 {guardian.coachingHint}
-          </div>
-        </div>
+        </motion.div>
       </motion.div>
     </AnimatePresence>
   );
