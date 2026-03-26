@@ -48,6 +48,8 @@ import {
   type TaxonomySkill,
 } from "@/lib/skill-map";
 import { calculateGrowth, type GrowthDimensions } from "@/lib/skill-growth";
+import { usePlayMode } from "@/hooks/use-play-mode";
+import FastTrackPanel from "@/components/territory/FastTrackPanel";
 
 /** Aggregated growth data per canonical future skill */
 export interface CanonicalSkillGrowth {
