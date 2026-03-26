@@ -6,7 +6,7 @@
  *     <GuardianDialogue />
  *   </HeroScene>
  */
-import { useRef, useEffect, type ReactNode } from "react";
+import { forwardRef, type ReactNode } from "react";
 import { motion } from "framer-motion";
 
 export type HeroIntensity = "full" | "ambient" | "thumbnail";
