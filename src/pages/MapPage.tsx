@@ -523,6 +523,69 @@ const MapPage = () => {
         )}
       </AnimatePresence>
 
+      {/* Credit Gate overlay — checks before launching sim */}
+      <AnimatePresence>
+        {pendingSimReq && !activeSim && (
+          <motion.div
+            key="credit-gate-overlay"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="fixed inset-0 z-[55] flex items-center justify-center"
+            style={{ background: "hsl(var(--background) / 0.5)", backdropFilter: "blur(4px)" }}
+            onClick={() => setPendingSimReq(null)}
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="rounded-xl p-6 max-w-sm w-full mx-4"
+              style={{
+                background: "hsl(var(--card))",
+                border: "1px solid hsl(var(--filigree) / 0.3)",
+                boxShadow: "0 20px 60px hsl(var(--emboss-shadow))",
+              }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="text-center mb-4">
+                <Coins className="h-8 w-8 mx-auto mb-2" style={{ color: "hsl(var(--filigree-glow))" }} />
+                <h3 className="text-sm font-semibold" style={{ fontFamily: "'Cinzel', serif", color: "hsl(var(--foreground))" }}>
+                  Launch Quest
+                </h3>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {pendingSimReq.taskName || pendingSimReq.jobTitle}
+                </p>
+              </div>
+              <CreditGate
+                action={pendingSimReq.level === 2 ? "simulation_l2" : "simulation_l1"}
+                onProceed={() => {
+                  setActiveSim(pendingSimReq);
+                  setPendingSimReq(null);
+                }}
+                className="w-full"
+              >
+                <button
+                  className="w-full py-2.5 rounded-lg text-sm font-semibold transition-all hover:brightness-110"
+                  style={{
+                    background: "hsl(var(--primary))",
+                    color: "hsl(var(--primary-foreground))",
+                  }}
+                >
+                  Start {pendingSimReq.level === 2 ? "Boss Battle" : "Quest"}
+                </button>
+              </CreditGate>
+              <button
+                onClick={() => setPendingSimReq(null)}
+                className="w-full mt-2 py-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
+              >
+                Cancel
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* In-place Sim overlay — preserves map state underneath */}
       <AnimatePresence>
         {activeSim && (
