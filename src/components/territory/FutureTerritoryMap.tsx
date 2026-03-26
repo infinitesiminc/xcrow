@@ -426,6 +426,60 @@ export default function FutureTerritoryMap({ skills, focusSkillId, level2SkillId
               </g>
             );
           })}
+
+          {/* Role NPCs — real jobs as characters */}
+          {roleNPCs.map((role, idx) => {
+            const island = layout.find(i => i.category === role.territory);
+            if (!island) return null;
+            // Distribute around island perimeter
+            const angle = (Math.PI * 2 * idx) / Math.max(roleNPCs.length, 1) + Math.PI / 4;
+            const dist = island.radius * 0.7;
+            const rx = island.cx + Math.cos(angle) * dist;
+            const ry = island.cy + Math.sin(angle) * dist;
+            const colors = THREAT_COLORS[role.threatTier];
+            const initials = role.title.split(" ").slice(0, 2).map(w => w[0]?.toUpperCase() || "").join("");
+            return (
+              <g key={`role-${role.jobId}`} className="cursor-pointer"
+                onClick={(e) => { e.stopPropagation(); if (!isDragging.current) { setActiveRoleNPC(role); setActiveGuardian(null); setActiveNPC(null); setHoverPreview(null); } }}
+                onMouseEnter={() => setHoverPreview({ type: "role", id: role.jobId, name: role.title, title: role.company || role.department, src: "", x: rx, y: ry, hue: 0 })}
+                onMouseLeave={() => setHoverPreview(p => p?.id === role.jobId ? null : p)}
+              >
+                {/* Threat aura ring */}
+                <motion.circle
+                  cx={rx} cy={ry} r={16}
+                  fill="none"
+                  stroke={`hsl(${colors.bg})`}
+                  strokeWidth={1.5}
+                  opacity={0.5}
+                  animate={{ r: [16, 19, 16], opacity: [0.5, 0.2, 0.5] }}
+                  transition={{ duration: 3, repeat: Infinity, ease: "easeInOut", delay: idx * 0.3 }}
+                />
+                {/* Character circle */}
+                <motion.circle
+                  cx={rx} cy={ry} r={13}
+                  fill={`hsl(${colors.bg} / 0.15)`}
+                  stroke={`hsl(${colors.bg} / 0.7)`}
+                  strokeWidth={2}
+                  initial={{ scale: 0, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  transition={{ delay: 1.5 + idx * 0.08, type: "spring" }}
+                  style={{ transformOrigin: `${rx}px ${ry}px` }}
+                />
+                {/* Initials */}
+                <text
+                  x={rx} y={ry + 4}
+                  textAnchor="middle"
+                  fontSize={9}
+                  fontWeight="bold"
+                  fontFamily="'Cinzel', serif"
+                  fill={`hsl(${colors.bg})`}
+                  style={{ pointerEvents: "none" }}
+                >
+                  {initials}
+                </text>
+              </g>
+            );
+          })}
         </svg>
 
         {/* Hover preview tooltip */}
