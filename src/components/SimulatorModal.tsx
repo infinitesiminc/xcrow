@@ -2313,6 +2313,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                 </Button>
               </div>
             </div>
+            )}
           </motion.div>
         )}
     </div>
