@@ -215,6 +215,29 @@ export default function FutureTerritoryMap({ skills, focusSkillId, level2SkillId
         onPointerUp={handlePointerUp}
         style={{ cursor: dragRef.current ? "grabbing" : "grab", touchAction: "none" }}
       >
+        {/* Ambient territory hero background — fades in when a territory is focused */}
+        <AnimatePresence mode="wait">
+          {focusedIsland && (
+            <motion.div
+              key={focusedIsland}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 1.2 }}
+              className="absolute inset-0 z-0"
+            >
+              <HeroScene
+                imageUrl={getTerritoryHeroImage(focusedIsland)}
+                intensity="ambient"
+                camera="ken-burns"
+                overlay="vignette"
+                hue={getGuardianByCategory(focusedIsland)?.hue ?? 220}
+                className="h-full w-full"
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         {/* Ambient particle effects */}
         <TerritoryParticles focusedTerritory={focusedIsland} />
 
