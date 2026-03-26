@@ -2,7 +2,7 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useChatContext } from "@/contexts/ChatContext";
 import { motion, AnimatePresence } from "framer-motion";
-import { Send, Loader2, RotateCcw, ChevronDown, ChevronUp, CheckCircle2, X, ArrowRight, Target, Circle, CircleCheck, AlertTriangle, TrendingUp, Trophy, Zap, Map, Star, Lock, Unlock, Sparkles, Compass, Swords, Scroll, Flag, Shield, Flame } from "lucide-react";
+import { Send, Loader2, RotateCcw, ChevronDown, ChevronUp, CheckCircle2, X, ArrowRight, Target, Circle, CircleCheck, AlertTriangle, TrendingUp, Trophy, Zap, Map, Star, Lock, Unlock, Sparkles, Compass, Swords, Scroll, Flag, Shield, Flame, Save } from "lucide-react";
 import { matchTaskToSkills, SKILL_TAXONOMY, getLevel, getNextLevel, type SkillXP } from "@/lib/skill-map";
 import { calculateSkillXP } from "@/lib/castle-levels";
 import ReactMarkdown from "react-markdown";
@@ -38,6 +38,7 @@ import BossBattleArena from "@/components/sim/BossBattleArena";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useSimCheckpoints } from "@/hooks/use-sim-checkpoints";
 import { useUsageGate } from "@/hooks/use-usage-gate";
 import UpgradeModal from "@/components/UpgradeModal";
 
@@ -82,6 +83,8 @@ interface SimulatorModalProps {
   roleChallenge?: boolean;
   /** Canonical skill IDs linked to this role challenge */
   linkedSkillIds?: string[];
+  /** Resume from a saved checkpoint */
+  resumeCheckpointId?: string;
 }
 
 /* ── Objective Checklist (sidebar / inline) ── */
@@ -573,7 +576,7 @@ const UnmetObjectivesReview = ({
 };
 
 /* ── Main Modal ── */
-const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState, taskTrend, taskImpactLevel, mode = "assess", onCompleted, onNextTask, onBackToFeed, onViewTerritory, inline = false, guestMaxTurns, intelContext, onNextBattle, campaignStats, level = 1, futurePrediction, roleChallenge, linkedSkillIds }: SimulatorModalProps) => {
+const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState, taskTrend, taskImpactLevel, mode = "assess", onCompleted, onNextTask, onBackToFeed, onViewTerritory, inline = false, guestMaxTurns, intelContext, onNextBattle, campaignStats, level = 1, futurePrediction, roleChallenge, linkedSkillIds, resumeCheckpointId }: SimulatorModalProps) => {
   const [phase, setPhase] = useState<Phase>("loading");
   const [session, setSession] = useState<SimSession | null>(null);
   const [messages, setMessages] = useState<SimMessage[]>([]);
@@ -588,6 +591,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
   const [scaffoldingTiers, setScaffoldingTiers] = useState<Record<string, number>>({});
   const [objectiveFailCounts, setObjectiveFailCounts] = useState<Record<string, number>>({});
   const [showInactivityNudge, setShowInactivityNudge] = useState(false);
+  const [activeCheckpointId, setActiveCheckpointId] = useState<string | null>(resumeCheckpointId || null);
 
   // L2 Guided Audit state
   const [auditData, setAuditData] = useState<CompileAuditResult | null>(null);
@@ -598,6 +602,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
   const toolMentionComponents = useToolMentionComponents();
   const { toast } = useToast();
   const { setSimActive } = useChatContext();
+  const { saveCheckpoint, loadCheckpoints, deleteCheckpoint, saving: savingCheckpoint } = useSimCheckpoints();
 
   // Hide AI Coach when simulation is active
   useEffect(() => {
@@ -789,9 +794,67 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
     startCompile(coaching);
   }, [scoreResult, startCompile]);
 
+  // Resume from checkpoint if provided
   useEffect(() => {
-    if (open) startCompile();
+    if (!open) return;
+    if (resumeCheckpointId && user) {
+      (async () => {
+        const checkpoints = await loadCheckpoints();
+        const cp = checkpoints.find(c => c.id === resumeCheckpointId);
+        if (cp) {
+          // Restore state from checkpoint
+          setMessages(cp.messages);
+          setRoundCount(cp.roundCount);
+          setTurnCount(cp.turnCount);
+          setObjectiveStatus(cp.objectiveStatus);
+          setScaffoldingTiers(cp.scaffoldingTiers);
+          setObjectiveFailCounts(cp.objectiveFailCounts);
+          setActiveCheckpointId(cp.id);
+          // Restore session from stored data
+          if (cp.sessionData?.sessionId) {
+            setSession(cp.sessionData as SimSession);
+          }
+          setPhase("chat");
+          toast({ title: "Checkpoint restored ⚔️", description: `Resuming quest ${cp.taskName} at round ${cp.roundCount}` });
+          return;
+        }
+        // Fallback: normal compile
+        startCompile();
+      })();
+    } else {
+      startCompile();
+    }
   }, [open]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Save checkpoint handler
+  const handleSaveCheckpoint = useCallback(async () => {
+    const cpId = await saveCheckpoint({
+      taskName,
+      jobTitle,
+      company,
+      level,
+      mode,
+      roundCount,
+      turnCount,
+      messages,
+      objectiveStatus,
+      scaffoldingTiers,
+      objectiveFailCounts,
+      session,
+    });
+    if (cpId) {
+      setActiveCheckpointId(cpId);
+      toast({ title: "Quest saved! 📜", description: "You can resume this quest later from the map." });
+    }
+  }, [taskName, jobTitle, company, level, mode, roundCount, turnCount, messages, objectiveStatus, scaffoldingTiers, objectiveFailCounts, session, saveCheckpoint, toast]);
+
+  // Mark checkpoint as completed when sim finishes
+  const markCheckpointCompleted = useCallback(() => {
+    if (activeCheckpointId) {
+      deleteCheckpoint(activeCheckpointId);
+      setActiveCheckpointId(null);
+    }
+  }, [activeCheckpointId, deleteCheckpoint]);
 
   // Safety timeout: if stuck in loading for >50s, show error
   useEffect(() => {
@@ -1061,6 +1124,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
         console.error("Failed to save completion:", err);
       }
     }
+    markCheckpointCompleted();
     setPhase("done");
 
     // Random Intel Drop — 35% chance on score 50+, generates async
@@ -2191,7 +2255,19 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
                   boxShadow: "inset 0 1px 3px hsl(var(--emboss-shadow))",
                 }}
               />
-              <div className="flex gap-2 shrink-0">
+              <div className="flex gap-1.5 shrink-0">
+                {user && level === 1 && roundCount >= 2 && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleSaveCheckpoint}
+                    disabled={savingCheckpoint}
+                    className="text-xs text-muted-foreground hover:text-foreground h-[40px] px-2.5 rounded-xl"
+                    title="Save checkpoint"
+                  >
+                    <Save className="h-3.5 w-3.5" />
+                  </Button>
+                )}
                 <Button
                   variant="ghost"
                   size="sm"

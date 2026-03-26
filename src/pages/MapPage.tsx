@@ -7,7 +7,7 @@ import type { FutureSkill } from "@/hooks/use-future-skills";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { X, ScrollText, Users, BookOpen, Compass, PanelLeftClose, PanelLeftOpen } from "lucide-react";
+import { X, ScrollText, Users, BookOpen, Compass, PanelLeftClose, PanelLeftOpen, Save } from "lucide-react";
 import BossBanner from "@/components/territory/BossBanner";
 import SimulatorModal from "@/components/SimulatorModal";
 import type { SimLaunchRequest, PromptLabRequest } from "@/components/territory/SkillLaunchCard";
@@ -15,6 +15,7 @@ import PromptLab from "@/components/sim/PromptLab";
 import { preloadTerritoryImages } from "@/lib/territory-hero-images";
 import CreditGate from "@/components/CreditGate";
 import { Coins } from "lucide-react";
+import { useSimCheckpoints, type SimCheckpoint } from "@/hooks/use-sim-checkpoints";
 
 /** IDs of skills where user has completed a L2 boss battle */
 type Level2CompletedIds = Set<string>;
@@ -132,6 +133,14 @@ const MapPage = () => {
   const [pendingSimReq, setPendingSimReq] = useState<PendingSimLaunch | null>(null);
   const handleLaunchSim = useCallback((req: PendingSimLaunch) => setPendingSimReq(req), []);
   const handleCloseSim = useCallback(() => setActiveSim(null), []);
+
+  // Saved checkpoints
+  const { loadCheckpoints } = useSimCheckpoints();
+  const [savedCheckpoints, setSavedCheckpoints] = useState<SimCheckpoint[]>([]);
+  useEffect(() => {
+    if (!user) return;
+    loadCheckpoints().then(setSavedCheckpoints);
+  }, [user, loadCheckpoints, activeSim]); // reload after sim closes
 
   // Prompt Lab overlay state
   const [activePromptLab, setActivePromptLab] = useState<PromptLabRequest | null>(null);
@@ -427,6 +436,36 @@ const MapPage = () => {
 
       {/* ── Right: Territory Map ── */}
       <div className="flex-1 relative">
+        {/* Saved Checkpoints Banner */}
+        {savedCheckpoints.length > 0 && (
+          <div className="absolute top-2 left-1/2 -translate-x-1/2 z-10 flex gap-2">
+            {savedCheckpoints.slice(0, 2).map(cp => (
+              <button
+                key={cp.id}
+                onClick={() => {
+                  setActiveSim({
+                    jobTitle: cp.jobTitle,
+                    taskName: cp.taskName,
+                    company: cp.company || undefined,
+                    level: cp.level as 1 | 2,
+                    resumeCheckpointId: cp.id,
+                  } as any);
+                }}
+                className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs backdrop-blur-md transition-all hover:scale-105"
+                style={{
+                  background: "hsl(var(--card) / 0.9)",
+                  border: "1px solid hsl(var(--primary) / 0.3)",
+                  boxShadow: "0 2px 8px hsl(var(--primary) / 0.15)",
+                }}
+              >
+                <Save className="h-3 w-3 text-primary" />
+                <span className="font-medium text-foreground truncate max-w-[140px]">{cp.taskName}</span>
+                <span className="text-muted-foreground">R{cp.roundCount}</span>
+              </button>
+            ))}
+          </div>
+        )}
+
         {/* Boss Battle Banner */}
         {bossCount > 0 && (
           <BossBanner
@@ -633,6 +672,7 @@ const MapPage = () => {
                 onBackToFeed={handleCloseSim}
                 roleChallenge={activeSim.roleChallenge}
                 linkedSkillIds={activeSim.linkedSkillIds}
+                resumeCheckpointId={(activeSim as any).resumeCheckpointId}
               />
             </motion.div>
           </motion.div>
