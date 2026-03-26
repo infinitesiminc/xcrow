@@ -18,7 +18,7 @@ const RoleDeepDive = lazy(() => import("./pages/RoleDeepDive.tsx"));
 const Auth = lazy(() => import("./pages/Auth.tsx"));
 const Settings = lazy(() => import("./pages/Settings.tsx"));
 const NotFound = lazy(() => import("./pages/NotFound.tsx"));
-const CardStyleMockup = lazy(() => import("./pages/CardStyleMockup.tsx"));
+
 const CompanyPage = lazy(() => import("./pages/CompanyPage.tsx"));
 const Journey = lazy(() => import("./pages/Journey.tsx"));
 const Students = lazy(() => import("./pages/Students.tsx"));
