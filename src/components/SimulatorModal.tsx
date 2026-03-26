@@ -794,9 +794,67 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
     startCompile(coaching);
   }, [scoreResult, startCompile]);
 
+  // Resume from checkpoint if provided
   useEffect(() => {
-    if (open) startCompile();
+    if (!open) return;
+    if (resumeCheckpointId && user) {
+      (async () => {
+        const checkpoints = await loadCheckpoints();
+        const cp = checkpoints.find(c => c.id === resumeCheckpointId);
+        if (cp) {
+          // Restore state from checkpoint
+          setMessages(cp.messages);
+          setRoundCount(cp.roundCount);
+          setTurnCount(cp.turnCount);
+          setObjectiveStatus(cp.objectiveStatus);
+          setScaffoldingTiers(cp.scaffoldingTiers);
+          setObjectiveFailCounts(cp.objectiveFailCounts);
+          setActiveCheckpointId(cp.id);
+          // Restore session from stored data
+          if (cp.sessionData?.sessionId) {
+            setSession(cp.sessionData as SimSession);
+          }
+          setPhase("chat");
+          toast({ title: "Checkpoint restored ⚔️", description: `Resuming quest ${cp.taskName} at round ${cp.roundCount}` });
+          return;
+        }
+        // Fallback: normal compile
+        startCompile();
+      })();
+    } else {
+      startCompile();
+    }
   }, [open]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Save checkpoint handler
+  const handleSaveCheckpoint = useCallback(async () => {
+    const cpId = await saveCheckpoint({
+      taskName,
+      jobTitle,
+      company,
+      level,
+      mode,
+      roundCount,
+      turnCount,
+      messages,
+      objectiveStatus,
+      scaffoldingTiers,
+      objectiveFailCounts,
+      session,
+    });
+    if (cpId) {
+      setActiveCheckpointId(cpId);
+      toast({ title: "Quest saved! 📜", description: "You can resume this quest later from the map." });
+    }
+  }, [taskName, jobTitle, company, level, mode, roundCount, turnCount, messages, objectiveStatus, scaffoldingTiers, objectiveFailCounts, session, saveCheckpoint, toast]);
+
+  // Mark checkpoint as completed when sim finishes
+  const markCheckpointCompleted = useCallback(() => {
+    if (activeCheckpointId) {
+      deleteCheckpoint(activeCheckpointId);
+      setActiveCheckpointId(null);
+    }
+  }, [activeCheckpointId, deleteCheckpoint]);
 
   // Safety timeout: if stuck in loading for >50s, show error
   useEffect(() => {
