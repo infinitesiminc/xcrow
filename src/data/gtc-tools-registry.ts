@@ -198,9 +198,24 @@ export const GTC_TOOLS: GTCTool[] = [
   // ═══════════════════════════════════════════
   // CLOUD AI PLATFORMS
   // ═══════════════════════════════════════════
-  { name: "Azure AI Foundry", company: "Microsoft", category: "cloud-ai", version: "2025", description: "Azure's unified AI platform for model deployment, fine-tuning, and enterprise AI.", icon: "☁️", url: "https://azure.microsoft.com/en-us/products/ai-studio", type: "learnable", maturity: "ga", pricing: "Paid", useCases: ["model-deployment", "enterprise-ai", "fine-tuning"] },
-  { name: "AWS Bedrock", company: "Amazon", category: "cloud-ai", version: "2025", description: "Managed foundation model service with built-in guardrails and RAG.", icon: "🪨", url: "https://aws.amazon.com/bedrock/", type: "learnable", maturity: "ga", pricing: "Paid", useCases: ["model-deployment", "rag", "enterprise-ai"] },
-  { name: "Google Vertex AI", company: "Google", category: "cloud-ai", version: "2025", description: "End-to-end ML platform for training, tuning, and serving AI models.", icon: "🔺", url: "https://cloud.google.com/vertex-ai", type: "learnable", maturity: "ga", pricing: "Paid", useCases: ["ml-platform", "training", "deployment"] },
+  { name: "Azure AI Foundry", company: "Microsoft", category: "cloud-ai", version: "2025", description: "Azure's unified AI platform for model deployment, fine-tuning, and enterprise AI.", icon: "☁️", url: "https://azure.microsoft.com/en-us/products/ai-studio", type: "learnable", maturity: "ga", pricing: "Paid", useCases: ["model-deployment", "enterprise-ai", "fine-tuning"], products: [
+    { name: "Azure OpenAI Service", description: "Managed access to GPT-5 and DALL-E with enterprise security.", type: "learnable" },
+    { name: "AI Studio", description: "Visual IDE for building, evaluating, and deploying AI models.", type: "learnable" },
+    { name: "Prompt Flow", description: "Orchestration engine for chaining LLM calls and tools.", type: "learnable" },
+    { name: "Content Safety", description: "AI content moderation and harmful content detection.", type: "learnable" },
+  ] },
+  { name: "AWS Bedrock", company: "Amazon", category: "cloud-ai", version: "2025", description: "Managed foundation model service with built-in guardrails and RAG.", icon: "🪨", url: "https://aws.amazon.com/bedrock/", type: "learnable", maturity: "ga", pricing: "Paid", useCases: ["model-deployment", "rag", "enterprise-ai"], products: [
+    { name: "Bedrock Models", description: "Access to Claude, Llama, Mistral, and other foundation models.", type: "learnable" },
+    { name: "Bedrock Agents", description: "Build autonomous agents that execute multi-step tasks.", type: "learnable" },
+    { name: "Bedrock Knowledge Bases", description: "Managed RAG with automatic chunking and vector storage.", type: "learnable" },
+    { name: "Bedrock Guardrails", description: "Content filters and safety policies for AI outputs.", type: "learnable" },
+  ] },
+  { name: "Google Vertex AI", company: "Google", category: "cloud-ai", version: "2025", description: "End-to-end ML platform for training, tuning, and serving AI models.", icon: "🔺", url: "https://cloud.google.com/vertex-ai", type: "learnable", maturity: "ga", pricing: "Paid", useCases: ["ml-platform", "training", "deployment"], products: [
+    { name: "Vertex AI Studio", description: "Prototyping and testing environment for Gemini models.", type: "learnable" },
+    { name: "Vertex AI Agent Builder", description: "Build grounded AI agents with search and conversation.", type: "learnable" },
+    { name: "Vertex AI Pipelines", description: "Managed ML pipeline orchestration with Kubeflow.", type: "learnable" },
+    { name: "Vertex AI Search", description: "Enterprise search powered by foundation models.", type: "learnable" },
+  ] },
   { name: "Oracle Cloud AI", company: "Oracle", category: "cloud-ai", version: "2025", description: "Enterprise AI cloud hosting OpenAI and Cohere workloads.", icon: "☁️", type: "reference", maturity: "ga", pricing: "Paid", useCases: ["enterprise-ai", "model-hosting"] },
   { name: "CoreWeave", company: "CoreWeave", category: "cloud-ai", version: "2025", description: "AI-native cloud built solely for GPU workloads — fastest growing AI cloud.", icon: "🚀", type: "reference", maturity: "ga", pricing: "Paid", useCases: ["gpu-cloud", "training", "inference"] },
 
