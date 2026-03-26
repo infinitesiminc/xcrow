@@ -126,7 +126,7 @@ export default function NPCEncounter({ npc, territory, onClose, onInteract }: NP
                 ],
               }}
               transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-              className="w-32 shrink-0 relative"
+              className="w-32 shrink-0 relative pointer-events-none"
               style={{ borderRight: `2px solid hsl(${hue} 45% 32%)` }}
             >
               <img src={avatarSrc} alt={npc.name} className="absolute inset-0 w-full h-full object-cover" loading="eager" />
