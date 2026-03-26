@@ -521,13 +521,26 @@ export default function FutureTerritoryMap({ skills, focusSkillId, level2SkillId
         </AnimatePresence>
 
         {/* Guardian Encounter Panel */}
-        {activeGuardian && (
+        {activeGuardian && !trialGuardian && (
           <GuardianEncounter
             guardian={activeGuardian}
             onClose={() => setActiveGuardian(null)}
-            onChallenge={(g) => { setActiveGuardian(null); }}
+            onChallenge={(g) => { setActiveGuardian(null); setTrialGuardian(g); }}
             onConquerTerritory={(category) => {
               mission.scoutRole(`guardian-${activeGuardian.id}`, category, []);
+            }}
+          />
+        )}
+
+        {/* Guardian Trial */}
+        {trialGuardian && (
+          <GuardianTrial
+            guardian={trialGuardian}
+            onClose={() => setTrialGuardian(null)}
+            onVictory={(guardianId, category) => {
+              mission.conquerSkill();
+              mission.scoutRole(`guardian-${guardianId}`, category, []);
+              setTrialGuardian(null);
             }}
           />
         )}
