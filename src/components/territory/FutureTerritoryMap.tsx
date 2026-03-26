@@ -30,7 +30,7 @@ import HeroScene from "./HeroScene";
 import { getTerritoryHeroImage } from "@/lib/territory-hero-images";
 import { supabase } from "@/integrations/supabase/client";
 import { jobToRoleNPC, THREAT_COLORS, deptToTerritory, type RoleNPC } from "@/lib/role-npcs";
-import { ROLE_NPC_AVATARS } from "@/lib/role-npc-avatars";
+import { ROLE_NPC_AVATARS, getRoleNPCAvatar } from "@/lib/role-npc-avatars";
 
 import guardIronclad from "@/assets/guardian-ironclad.png";
 import guardLexicon from "@/assets/guardian-lexicon.png";
@@ -431,7 +431,7 @@ export default function FutureTerritoryMap({ skills, focusSkillId, level2SkillId
             const rx = island.cx + Math.cos(angle) * dist;
             const ry = island.cy + Math.sin(angle) * dist;
             const colors = THREAT_COLORS[role.threatTier];
-            const avatarSrc = ROLE_NPC_AVATARS[role.territory] || ROLE_NPC_AVATARS["Strategic"];
+            const avatarSrc = getRoleNPCAvatar(role.territory, idx);
             return (
               <g key={`role-${role.jobId}`} className="cursor-pointer"
                 onClick={(e) => { e.stopPropagation(); if (!isDragging.current) { setActiveRoleNPC(role); setActiveGuardian(null); setActiveNPC(null); setHoverPreview(null); } }}
