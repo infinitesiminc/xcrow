@@ -16,7 +16,7 @@ import {
 import FutureIsland from "./FutureIsland";
 import type { CanonicalSkillGrowth } from "@/pages/MapPage";
 
-import type { SimLaunchRequest } from "./SkillLaunchCard";
+import type { SimLaunchRequest, PromptLabRequest } from "./SkillLaunchCard";
 
 interface FutureTerritoryMapProps {
   skills: FutureSkill[];
@@ -26,6 +26,7 @@ interface FutureTerritoryMapProps {
   skillGrowthMap?: Map<string, CanonicalSkillGrowth>;
   onSkillSelect?: (skill: FutureSkill) => void;
   onLaunchSim?: (req: SimLaunchRequest) => void;
+  onLaunchPromptLab?: (req: PromptLabRequest) => void;
 }
 
 const ISLAND_COLORS: Record<string, string> = {
@@ -39,7 +40,7 @@ const ISLAND_COLORS: Record<string, string> = {
   "Communication & Collaboration": "hsl(var(--primary))",
 };
 
-export default function FutureTerritoryMap({ skills, focusSkillId, level2SkillIds, level2CompletedIds, skillGrowthMap, onSkillSelect, onLaunchSim }: FutureTerritoryMapProps) {
+export default function FutureTerritoryMap({ skills, focusSkillId, level2SkillIds, level2CompletedIds, skillGrowthMap, onSkillSelect, onLaunchSim, onLaunchPromptLab }: FutureTerritoryMapProps) {
   const layout = useMemo(() => buildFutureMapLayout(skills), [skills]);
   const connections = useMemo(() => buildFutureConnections(layout), [layout]);
 

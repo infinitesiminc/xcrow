@@ -10,7 +10,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { X, ScrollText, Users, BookOpen, Compass } from "lucide-react";
 import BossBanner from "@/components/territory/BossBanner";
 import SimulatorModal from "@/components/SimulatorModal";
-import type { SimLaunchRequest } from "@/components/territory/SkillLaunchCard";
+import type { SimLaunchRequest, PromptLabRequest } from "@/components/territory/SkillLaunchCard";
+import PromptLab from "@/components/sim/PromptLab";
 
 /** IDs of skills where user has completed a L2 boss battle */
 type Level2CompletedIds = Set<string>;
@@ -121,6 +122,11 @@ const MapPage = () => {
   const [activeSim, setActiveSim] = useState<PendingSimLaunch | null>(null);
   const handleLaunchSim = useCallback((req: PendingSimLaunch) => setActiveSim(req), []);
   const handleCloseSim = useCallback(() => setActiveSim(null), []);
+
+  // Prompt Lab overlay state
+  const [activePromptLab, setActivePromptLab] = useState<PromptLabRequest | null>(null);
+  const handleLaunchPromptLab = useCallback((req: PromptLabRequest) => setActivePromptLab(req), []);
+  const handleClosePromptLab = useCallback(() => setActivePromptLab(null), []);
 
   const displaySkills = useMemo(
     () => (realSkills.length > 0 ? realSkills : buildEmptySkills(taxonomy)),
@@ -387,6 +393,7 @@ const MapPage = () => {
           level2CompletedIds={level2CompletedIds}
           skillGrowthMap={skillGrowthMap}
           onLaunchSim={handleLaunchSim}
+          onLaunchPromptLab={handleLaunchPromptLab}
           onSkillSelect={(skill) => {
             setActiveTab("table");
             setForgeFocusSkillId(skill.id);
@@ -527,6 +534,17 @@ const MapPage = () => {
           setDrawerOpen(false);
         } : undefined}
       />
+
+      {/* Prompt Lab overlay */}
+      {activePromptLab && (
+        <PromptLab
+          open={true}
+          onClose={handleClosePromptLab}
+          skillId={activePromptLab.skillId}
+          skillName={activePromptLab.skillName}
+          skillCategory={activePromptLab.skillCategory}
+        />
+      )}
     </div>
   );
 };

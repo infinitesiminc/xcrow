@@ -5,7 +5,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Zap, Diamond, ArrowRight, X } from "lucide-react";
+import { Zap, Diamond, ArrowRight, X, PenTool } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { type FutureSkill } from "@/hooks/use-future-skills";
 import { getTerritory } from "@/lib/territory-colors";
@@ -23,6 +23,12 @@ export interface SimLaunchRequest {
   linkedSkillIds?: string[];
 }
 
+export interface PromptLabRequest {
+  skillId: string;
+  skillName: string;
+  skillCategory: string;
+}
+
 interface SkillLaunchCardProps {
   skill: FutureSkill;
   /** Screen-space position (relative to map container) */
@@ -34,13 +40,13 @@ interface SkillLaunchCardProps {
   level2Unlocked?: boolean;
   growth?: CanonicalSkillGrowth | null;
   onClose: () => void;
-  /** If provided, launches sim in-place instead of navigating */
   onLaunchSim?: (req: SimLaunchRequest) => void;
+  onLaunchPromptLab?: (req: PromptLabRequest) => void;
 }
 
 export default function SkillLaunchCard({
   skill, x, y, containerWidth, containerHeight,
-  level2Unlocked, growth, onClose, onLaunchSim,
+  level2Unlocked, growth, onClose, onLaunchSim, onLaunchPromptLab,
 }: SkillLaunchCardProps) {
   const navigate = useNavigate();
   const [firstRole, setFirstRole] = useState<{ title: string; company: string | null } | null>(null);
@@ -207,6 +213,35 @@ export default function SkillLaunchCard({
           </button>
 
           {/* Level 2 removed — now a map boss event */}
+
+          {/* Prompt Lab */}
+          <button
+            onClick={() => {
+              if (onLaunchPromptLab) {
+                onLaunchPromptLab({ skillId: skill.id, skillName: skill.name, skillCategory: skill.category });
+                onClose();
+              }
+            }}
+            className="w-full flex items-center gap-2 px-2.5 py-2 rounded-lg text-left transition-all hover:brightness-110 group"
+            style={{
+              background: "hsl(var(--accent) / 0.15)",
+              border: "1px solid hsl(var(--accent) / 0.2)",
+            }}
+          >
+            <div
+              className="w-6 h-6 rounded-md flex items-center justify-center shrink-0"
+              style={{ background: "hsl(var(--accent) / 0.25)" }}
+            >
+              <PenTool className="h-3 w-3 text-accent-foreground" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-[11px] font-bold text-foreground" style={{ fontFamily: "'Cinzel', serif" }}>
+                Prompt Lab
+              </p>
+              <p className="text-[9px] text-muted-foreground">Practice prompt engineering</p>
+            </div>
+            <ArrowRight className="h-3 w-3 text-muted-foreground group-hover:text-accent-foreground shrink-0 transition-colors" />
+          </button>
         </div>
 
         {/* Role context */}
