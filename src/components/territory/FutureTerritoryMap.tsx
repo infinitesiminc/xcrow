@@ -394,6 +394,46 @@ export default function FutureTerritoryMap({ skills, focusSkillId, level2SkillId
           })}
         </svg>
 
+        {/* Hover preview tooltip */}
+        <AnimatePresence>
+          {hoverPreview && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.85, y: 8 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.85, y: 8 }}
+              transition={{ duration: 0.15 }}
+              className="absolute z-20 pointer-events-none"
+              style={{
+                left: hoverPreview.x * transform.scale + transform.x,
+                top: hoverPreview.y * transform.scale + transform.y - 90,
+                transform: "translateX(-50%)",
+              }}
+            >
+              <div
+                className="rounded-lg overflow-hidden text-center"
+                style={{
+                  width: 100,
+                  background: `linear-gradient(135deg, hsl(${hoverPreview.hue} 30% 10% / 0.95), hsl(${hoverPreview.hue} 20% 14% / 0.95))`,
+                  border: `1.5px solid hsl(${hoverPreview.hue} 45% 40%)`,
+                  boxShadow: `0 4px 20px hsl(${hoverPreview.hue} 50% 20% / 0.5)`,
+                }}
+              >
+                <img
+                  src={hoverPreview.src}
+                  alt={hoverPreview.name}
+                  className="w-full h-[72px] object-cover"
+                />
+                <div className="px-1.5 py-1.5">
+                  <p className="text-[9px] font-bold truncate" style={{ fontFamily: "'Cinzel', serif", color: `hsl(${hoverPreview.hue} 45% 72%)` }}>
+                    {hoverPreview.name}
+                  </p>
+                  <p className="text-[7px] text-muted-foreground truncate">{hoverPreview.title}</p>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         {/* Guardian Encounter Panel */}
         {activeGuardian && (
           <GuardianEncounter
