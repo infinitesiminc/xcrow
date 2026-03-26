@@ -1591,7 +1591,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
               )}
 
 
-              {phase === "chat" && !error && !(level === 2 && auditData) && (
+              {phase === "chat" && !error && !(level === 2 && auditData) && !isSpecialTier && (
                 <div className="max-w-2xl mx-auto space-y-4">
                   {messages.map((msg, i) => {
                     const isUser = msg.role === "user";
