@@ -94,12 +94,25 @@ export const WANDERING_NPCS: WanderingNPC[] = [
   },
 ];
 
+export type NPCActivationRule = "proactive" | "reactive" | "provocative" | "ambient" | "passive";
+
+/** When and how each NPC archetype activates */
+export const NPC_BEHAVIORS: Record<NPCArchetype, { rule: NPCActivationRule; description: string }> = {
+  scout:      { rule: "proactive",   description: "Greets first, suggests unexplored territories" },
+  oracle:     { rule: "ambient",     description: "Drops lore toasts periodically" },
+  rival:      { rule: "provocative", description: "Interrupts after idle time" },
+  merchant:   { rule: "reactive",    description: "Appears after milestone completions" },
+  blacksmith: { rule: "reactive",    description: "Appears after practicing skills" },
+  bard:       { rule: "ambient",     description: "Shares lore in the background" },
+};
+
 export interface NPCSpawn {
   npc: WanderingNPC;
   territory: FutureSkillCategory;
   /** Offset from territory center (px in SVG coords) */
   offsetX: number;
   offsetY: number;
+  activationRule: NPCActivationRule;
 }
 
 const ALL_TERRITORIES: FutureSkillCategory[] = [
@@ -107,12 +120,52 @@ const ALL_TERRITORIES: FutureSkillCategory[] = [
   "Leadership", "Creative", "Ethics & Compliance", "Human Edge",
 ];
 
+/** Simple string hash for deterministic seeding */
+function hashCode(str: string): number {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    const ch = str.charCodeAt(i);
+    hash = ((hash << 5) - hash) + ch;
+    hash |= 0; // Convert to 32bit integer
+  }
+  return Math.abs(hash);
+}
+
+/** Pick a territory the user hasn't explored yet */
+function pickUnexplored(
+  exploredTerritories: Set<string>,
+  seed: number,
+  index: number
+): FutureSkillCategory {
+  const unexplored = ALL_TERRITORIES.filter(t => !exploredTerritories.has(t));
+  if (unexplored.length === 0) return ALL_TERRITORIES[seed % ALL_TERRITORIES.length];
+  const seededRand = Math.sin(seed * 9301 + index * 4919) * 10000;
+  return unexplored[Math.floor(Math.abs(seededRand - Math.floor(seededRand)) * unexplored.length)];
+}
+
 /**
- * Generate NPC spawns for the current session.
- * Uses a session seed so NPCs stay consistent during a visit but change between sessions.
+ * Generate NPC spawns for a specific user session.
+ * Uses userId + date for per-user daily-stable layouts.
+ * Falls back to hourly global seed for anonymous users.
  */
 export function generateNPCSpawns(seed?: number): NPCSpawn[] {
-  const s = seed ?? Math.floor(Date.now() / (1000 * 60 * 60)); // changes hourly
+  const s = seed ?? Math.floor(Date.now() / (1000 * 60 * 60));
+  return generateNPCSpawnsInternal(s, new Set());
+}
+
+/**
+ * Generate user-aware NPC spawns with progress biasing.
+ * NPCs prefer territories the user hasn't explored yet.
+ */
+export function generateUserNPCSpawns(
+  userId: string,
+  exploredTerritories: Set<string>
+): NPCSpawn[] {
+  const seed = hashCode(userId + new Date().toDateString());
+  return generateNPCSpawnsInternal(seed, exploredTerritories);
+}
+
+function generateNPCSpawnsInternal(s: number, exploredTerritories: Set<string>): NPCSpawn[] {
   const seededRand = (i: number) => {
     const x = Math.sin(s * 9301 + i * 7919) * 10000;
     return x - Math.floor(x);
@@ -130,13 +183,22 @@ export function generateNPCSpawns(seed?: number): NPCSpawn[] {
   const usedIds = new Set<string>();
   const usedTerritories = new Set<string>();
 
-  for (let i = 0; i < count && spawns.length < count; i++) {
+  for (let i = 0; i < count * 3 && spawns.length < count; i++) {
     const npcIdx = Math.floor(seededRand(i * 13 + 1) * pool.length);
     const npc = pool[npcIdx];
     if (usedIds.has(npc.id)) continue;
 
-    const terrIdx = Math.floor(seededRand(i * 17 + 3) * ALL_TERRITORIES.length);
-    const territory = ALL_TERRITORIES[terrIdx];
+    // Pick territory — bias toward unexplored if user has progress
+    let territory: FutureSkillCategory;
+    const candidateIdx = Math.floor(seededRand(i * 17 + 3) * ALL_TERRITORIES.length);
+    const candidate = ALL_TERRITORIES[candidateIdx];
+
+    if (exploredTerritories.size > 0 && exploredTerritories.has(candidate)) {
+      territory = pickUnexplored(exploredTerritories, s, i);
+    } else {
+      territory = candidate;
+    }
+
     if (usedTerritories.has(territory)) continue;
 
     usedIds.add(npc.id);
@@ -147,6 +209,7 @@ export function generateNPCSpawns(seed?: number): NPCSpawn[] {
       territory,
       offsetX: (seededRand(i * 23 + 5) - 0.5) * 80,
       offsetY: (seededRand(i * 29 + 7) - 0.5) * 60,
+      activationRule: NPC_BEHAVIORS[npc.id].rule,
     });
   }
 
