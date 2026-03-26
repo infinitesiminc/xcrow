@@ -35,7 +35,7 @@ interface PlayerHUDProps {
   /** Kingdom tiers from MyRolesPanel for rank calculation */
   kingdomTiers?: KingdomTier[];
   /** Scout mission state */
-  missionPhase?: "scout" | "battle" | "conquer";
+  missionPhase?: "discover" | "experiment" | "challenge" | "master";
   missionProgress?: number;
   territoriesScouted?: number;
   scoutedSkillCount?: number;
