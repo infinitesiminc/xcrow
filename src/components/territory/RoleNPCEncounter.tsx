@@ -316,7 +316,7 @@ export default function RoleNPCEncounter({ role, onClose, onCollectSkills, onExp
           >
             {/* Compact Header */}
             <div className="relative px-5 pt-4 pb-3 flex items-center gap-3 flex-shrink-0">
-              <RoleAvatar title={role.title} tier={role.threatTier} size={52} />
+              <RoleAvatar title={role.title} tier={role.threatTier} territory={role.territory} size={52} />
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-0.5">
                   <span
@@ -454,7 +454,7 @@ export default function RoleNPCEncounter({ role, onClose, onCollectSkills, onExp
                     className={`flex gap-2.5 ${msg.role === "user" ? "flex-row-reverse" : ""}`}
                   >
                     {msg.role === "assistant" && (
-                      <RoleAvatar title={role.title} tier={role.threatTier} size={32} />
+                      <RoleAvatar title={role.title} tier={role.threatTier} territory={role.territory} size={32} />
                     )}
                     <div
                       className="rounded-xl px-3.5 py-2.5 text-sm leading-relaxed max-w-[80%]"
@@ -483,7 +483,7 @@ export default function RoleNPCEncounter({ role, onClose, onCollectSkills, onExp
               })}
               {isStreaming && chatMessages[chatMessages.length - 1]?.role !== "assistant" && (
                 <div className="flex gap-2.5">
-                  <RoleAvatar title={role.title} tier={role.threatTier} size={32} />
+                  <RoleAvatar title={role.title} tier={role.threatTier} territory={role.territory} size={32} />
                   <div
                     className="rounded-xl px-3.5 py-2.5"
                     style={{ background: `hsl(${hue} 18% 10% / 0.7)`, borderLeft: `2px solid hsl(${colors.bg} / 0.5)` }}
