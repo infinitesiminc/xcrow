@@ -271,6 +271,13 @@ export default function FutureIsland({ island, skillLookup, level2SkillIds, leve
                   </>
                 ) : (
                   <>
+                    {/* Invisible hit area for clicks */}
+                    <circle
+                      cx={node.x}
+                      cy={node.y}
+                      r={nodeRadius}
+                      fill="transparent"
+                    />
                     {/* Glow ring for high-demand */}
                     {skill.demandCount >= 8 && (
                       <circle
