@@ -120,7 +120,6 @@ const TAB_ITEMS = [
   { key: "table" as const, RuneIcon: JournalRuneIcon, label: "Journal" },
   { key: "codex" as const, RuneIcon: CodexRuneIcon, label: "Codex" },
   { key: "allies" as const, RuneIcon: AlliesRuneIcon, label: "Allies" },
-  { key: "tools" as const, RuneIcon: ToolsRuneIcon, label: "Tools" },
 ] as const;
 
 type PendingSimLaunch = SimLaunchRequest & { taskName?: string };
@@ -382,7 +381,7 @@ const MapPage = () => {
       >
         {/* Tab icons */}
         {TAB_ITEMS.map(({ key, RuneIcon, label }) => {
-          if (key !== "table" && key !== "tools" && !isSignedIn) return null;
+          if (key !== "table" && !isSignedIn) return null;
           const isActive = activeTab === key && !panelCollapsed;
           const activeColor = "hsl(var(--filigree-glow))";
           const inactiveColor = "hsl(var(--muted-foreground))";
@@ -495,8 +494,6 @@ const MapPage = () => {
                   <CodexPanel />
                 ) : activeTab === "allies" && isSignedIn ? (
                   <AlliesPanel onLaunchSim={handleLaunchSim} />
-                ) : activeTab === "tools" ? (
-                  <ToolsPanel />
                 ) : null}
               </div>
             </motion.div>
