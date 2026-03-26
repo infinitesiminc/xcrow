@@ -5,8 +5,10 @@
  */
 import { useState, useRef, useCallback, useMemo, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ExternalLink, X, Sparkles, Eye, ZoomIn, ZoomOut, Maximize2 } from "lucide-react";
+import { ExternalLink, X, Sparkles, Eye, ZoomIn, ZoomOut, Maximize2, Plus, Check, Package } from "lucide-react";
 import { GTC_TOOLS, CATEGORY_CONFIG, type ToolCategory, type GTCTool } from "@/data/gtc-tools-registry";
+import { getSkillsForTool } from "@/data/tool-skill-mappings";
+import { useMyStack } from "@/hooks/use-my-stack";
 
 /* ── Layout constants ── */
 const NODE_RADIUS = 22;
@@ -71,6 +73,7 @@ export default function ToolAtlasMap() {
   const [zoom, setZoom] = useState(0.6);
   const [isPanning, setIsPanning] = useState(false);
   const panStart = useRef({ x: 0, y: 0, panX: 0, panY: 0 });
+  const { stack, toggleTool, isInStack, stackSize } = useMyStack();
 
   const { nodes, clusters } = useMemo(
     () => computeLayout(GTC_TOOLS, dimensions.width, dimensions.height),
@@ -198,6 +201,7 @@ export default function ToolAtlasMap() {
             const isHovered = hoveredTool === tool.name;
             const isSelected = selectedTool?.name === tool.name;
             const isLearnable = tool.type === "learnable";
+            const inStack = isInStack(tool.name);
             const r = isHovered || isSelected ? NODE_RADIUS + 4 : NODE_RADIUS;
 
             return (
@@ -212,11 +216,15 @@ export default function ToolAtlasMap() {
                 {isLearnable && (
                   <circle cx={x} cy={y} r={r + 6} fill={cfg.color + "15"} />
                 )}
+                {/* Stack highlight ring */}
+                {inStack && (
+                  <circle cx={x} cy={y} r={r + 8} fill="none" stroke="hsl(45, 90%, 55%)" strokeWidth={2} strokeDasharray="4 2" opacity={0.7} />
+                )}
                 {/* Outer ring */}
                 <circle
                   cx={x} cy={y} r={r}
                   fill="hsl(var(--card))"
-                  stroke={isSelected ? "hsl(var(--filigree-glow))" : cfg.color}
+                  stroke={isSelected ? "hsl(var(--filigree-glow))" : inStack ? "hsl(45, 90%, 55%)" : cfg.color}
                   strokeWidth={isSelected ? 2.5 : isHovered ? 2 : 1.2}
                   style={{ transition: "all 0.15s ease" }}
                 />
@@ -226,39 +234,23 @@ export default function ToolAtlasMap() {
                 </text>
                 {/* Label */}
                 {(isHovered || isSelected || zoom > 0.8) && (
-                  <text
-                    x={x}
-                    y={y + r + 14}
-                    textAnchor="middle"
-                    fill="hsl(var(--foreground))"
-                    fontSize={10}
-                    fontWeight={600}
-                  >
+                  <text x={x} y={y + r + 14} textAnchor="middle" fill="hsl(var(--foreground))" fontSize={10} fontWeight={600}>
                     {tool.name}
                   </text>
                 )}
                 {/* Version badge */}
                 {(isHovered || isSelected) && tool.version && (
-                  <text
-                    x={x}
-                    y={y + r + 26}
-                    textAnchor="middle"
-                    fill="hsl(var(--muted-foreground))"
-                    fontSize={8}
-                  >
+                  <text x={x} y={y + r + 26} textAnchor="middle" fill="hsl(var(--muted-foreground))" fontSize={8}>
                     {tool.version}
                   </text>
                 )}
-                {/* Practice dot indicator */}
-                {isLearnable && (
-                  <circle
-                    cx={x + r * 0.7}
-                    cy={y - r * 0.7}
-                    r={4}
-                    fill="hsl(140, 60%, 45%)"
-                    stroke="hsl(var(--card))"
-                    strokeWidth={1.5}
-                  />
+                {/* Practice dot */}
+                {isLearnable && !inStack && (
+                  <circle cx={x + r * 0.7} cy={y - r * 0.7} r={4} fill="hsl(140, 60%, 45%)" stroke="hsl(var(--card))" strokeWidth={1.5} />
+                )}
+                {/* Stack checkmark */}
+                {inStack && (
+                  <circle cx={x + r * 0.7} cy={y - r * 0.7} r={5} fill="hsl(45, 90%, 55%)" stroke="hsl(var(--card))" strokeWidth={1.5} />
                 )}
               </g>
             );
@@ -310,6 +302,10 @@ export default function ToolAtlasMap() {
           <span className="flex items-center gap-1 text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>
             <span className="w-2 h-2 rounded-full inline-block" style={{ background: "hsl(var(--muted-foreground))" }} />
             Infrastructure
+          </span>
+          <span className="flex items-center gap-1 text-[10px]" style={{ color: "hsl(45, 90%, 55%)" }}>
+            <span className="w-2 h-2 rounded-full inline-block" style={{ background: "hsl(45, 90%, 55%)" }} />
+            My Stack ({stackSize})
           </span>
         </div>
       </div>
@@ -406,8 +402,44 @@ export default function ToolAtlasMap() {
                 </div>
               )}
 
+              {/* Skills this tool trains */}
+              {(() => {
+                const skills = getSkillsForTool(selectedTool.name);
+                if (!skills.length) return null;
+                return (
+                  <div>
+                    <h4 className="text-[10px] font-bold uppercase tracking-wider mb-1.5" style={{ color: "hsl(var(--muted-foreground))" }}>
+                      Skills You'll Build
+                    </h4>
+                    <div className="space-y-1">
+                      {skills.map(skill => (
+                        <div key={skill} className="flex items-center gap-2 px-2 py-1 rounded-md" style={{ background: "hsl(var(--muted) / 0.1)" }}>
+                          <span className="text-[10px]">🎯</span>
+                          <span className="text-[11px] font-medium" style={{ color: "hsl(var(--foreground) / 0.85)" }}>{skill}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })()}
+
               {/* CTA */}
               <div className="space-y-2 pt-2">
+                {/* Add to Stack */}
+                <button
+                  onClick={() => toggleTool(selectedTool.name)}
+                  className="w-full py-2 rounded-lg text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 transition-all"
+                  style={{
+                    background: isInStack(selectedTool.name) ? "hsl(45, 90%, 55%, 0.15)" : "hsl(var(--muted) / 0.15)",
+                    border: `1px solid ${isInStack(selectedTool.name) ? "hsl(45, 90%, 55%, 0.4)" : "hsl(var(--filigree) / 0.2)"}`,
+                    color: isInStack(selectedTool.name) ? "hsl(45, 90%, 55%)" : "hsl(var(--foreground))",
+                    fontFamily: "'Cinzel', serif",
+                  }}
+                >
+                  {isInStack(selectedTool.name) ? <Check className="h-3.5 w-3.5" /> : <Plus className="h-3.5 w-3.5" />}
+                  {isInStack(selectedTool.name) ? "In My Stack" : "Add to Stack"}
+                </button>
+
                 {selectedTool.type === "learnable" && (
                   <button
                     className="w-full py-2 rounded-lg text-xs font-bold uppercase tracking-wider"
