@@ -721,6 +721,7 @@ const MapPage = () => {
                 jobTitle={activeSim.jobTitle}
                 company={activeSim.company}
                 level={activeSim.level || 1}
+                masteryTier={(activeSim as any).masteryTier}
                 inline
                 onCompleted={handleCloseSim}
                 onBackToFeed={handleCloseSim}
