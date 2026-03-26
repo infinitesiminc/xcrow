@@ -315,8 +315,8 @@ export default function FutureIsland({ island, skillLookup, level2SkillIds, leve
                       stroke={isParchment
                         ? `hsl(${theme.baseHue} 50% 35%)`
                         : `hsl(${theme.baseHue} 55% ${65 + intensity * 15}%)`}
-                      strokeWidth={isHovered ? 1.2 : 0.9}
-                      transform={`scale(${isHovered ? 1.15 : 1})`}
+                      strokeWidth={isHovered ? 1.8 : 1.4}
+                      transform={`scale(${isHovered ? 1.8 : 1.5})`}
                       opacity={isHovered ? 1 : 0.9}
                       style={{ transition: "opacity 0.2s, transform 0.2s" }}
                     />
