@@ -402,8 +402,44 @@ export default function ToolAtlasMap() {
                 </div>
               )}
 
+              {/* Skills this tool trains */}
+              {(() => {
+                const skills = getSkillsForTool(selectedTool.name);
+                if (!skills.length) return null;
+                return (
+                  <div>
+                    <h4 className="text-[10px] font-bold uppercase tracking-wider mb-1.5" style={{ color: "hsl(var(--muted-foreground))" }}>
+                      Skills You'll Build
+                    </h4>
+                    <div className="space-y-1">
+                      {skills.map(skill => (
+                        <div key={skill} className="flex items-center gap-2 px-2 py-1 rounded-md" style={{ background: "hsl(var(--muted) / 0.1)" }}>
+                          <span className="text-[10px]">🎯</span>
+                          <span className="text-[11px] font-medium" style={{ color: "hsl(var(--foreground) / 0.85)" }}>{skill}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })()}
+
               {/* CTA */}
               <div className="space-y-2 pt-2">
+                {/* Add to Stack */}
+                <button
+                  onClick={() => toggleTool(selectedTool.name)}
+                  className="w-full py-2 rounded-lg text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 transition-all"
+                  style={{
+                    background: isInStack(selectedTool.name) ? "hsl(45, 90%, 55%, 0.15)" : "hsl(var(--muted) / 0.15)",
+                    border: `1px solid ${isInStack(selectedTool.name) ? "hsl(45, 90%, 55%, 0.4)" : "hsl(var(--filigree) / 0.2)"}`,
+                    color: isInStack(selectedTool.name) ? "hsl(45, 90%, 55%)" : "hsl(var(--foreground))",
+                    fontFamily: "'Cinzel', serif",
+                  }}
+                >
+                  {isInStack(selectedTool.name) ? <Check className="h-3.5 w-3.5" /> : <Plus className="h-3.5 w-3.5" />}
+                  {isInStack(selectedTool.name) ? "In My Stack" : "Add to Stack"}
+                </button>
+
                 {selectedTool.type === "learnable" && (
                   <button
                     className="w-full py-2 rounded-lg text-xs font-bold uppercase tracking-wider"
