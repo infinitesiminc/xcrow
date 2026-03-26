@@ -8,6 +8,7 @@ import { Crown, Users, Copy, Check, Gift, Sparkles } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import InviteShareWidget from "@/components/InviteShareWidget";
 
 interface UpgradeModalProps {
   open: boolean;
