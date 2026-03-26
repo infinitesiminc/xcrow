@@ -633,6 +633,7 @@ const MapPage = () => {
                 onBackToFeed={handleCloseSim}
                 roleChallenge={activeSim.roleChallenge}
                 linkedSkillIds={activeSim.linkedSkillIds}
+                resumeCheckpointId={(activeSim as any).resumeCheckpointId}
               />
             </motion.div>
           </motion.div>
