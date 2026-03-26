@@ -128,6 +128,7 @@ const MapPage = () => {
   const { futureSkills } = useFutureSkills();
   const { mode: playMode } = usePlayMode();
   const isFastTrack = playMode === "fast_track";
+  const mission = useScoutMission();
 
   const taxonomy: TaxonomySkill[] = useMemo(() =>
     dbSkills.map(s => ({
