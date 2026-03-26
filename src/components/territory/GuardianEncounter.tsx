@@ -10,6 +10,21 @@ import type { TerritoryGuardian } from "@/lib/territory-guardians";
 import HeroScene from "@/components/territory/HeroScene";
 import { getTerritoryHeroImage } from "@/lib/territory-hero-images";
 
+import guardIronclad from "@/assets/guardian-ironclad.png";
+import guardLexicon from "@/assets/guardian-lexicon.png";
+import guardSovereign from "@/assets/guardian-sovereign.png";
+import guardHerald from "@/assets/guardian-herald.png";
+import guardCrownweaver from "@/assets/guardian-crownweaver.png";
+import guardPrisma from "@/assets/guardian-prisma.png";
+import guardAegis from "@/assets/guardian-aegis.png";
+import guardKindred from "@/assets/guardian-kindred.png";
+
+const GUARDIAN_AVATARS: Record<string, string> = {
+  ironclad: guardIronclad, lexicon: guardLexicon, sovereign: guardSovereign,
+  herald: guardHerald, crownweaver: guardCrownweaver, prisma: guardPrisma,
+  aegis: guardAegis, kindred: guardKindred,
+};
+
 interface GuardianEncounterProps {
   guardian: TerritoryGuardian;
   onClose: () => void;
