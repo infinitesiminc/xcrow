@@ -316,7 +316,7 @@ export default function SkillProgressPanel({
                                 className="transition-all"
                               >
                                 <div
-                                  className="flex items-center gap-2 px-3 py-1.5 cursor-pointer transition-colors hover:bg-muted/10"
+                                  className="flex items-center gap-1.5 px-2 py-1 cursor-pointer transition-colors hover:bg-muted/10"
                                   style={isFocused ? {
                                     background: "hsl(var(--filigree-glow) / 0.06)",
                                     boxShadow: "inset 2px 0 0 hsl(var(--filigree-glow))",
