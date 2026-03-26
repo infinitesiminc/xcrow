@@ -188,8 +188,8 @@ const MapPage = () => {
   // Wire events from SkillDetailDrawer
   useEffect(() => {
     const handleLaunchFromDrawer = (e: Event) => {
-      const { skillId, skillName, level } = (e as CustomEvent).detail;
-      handleLaunchSim({ jobTitle: skillName, taskName: skillName, skillId, level });
+      const { skillId, skillName, level, masteryTier } = (e as CustomEvent).detail;
+      handleLaunchSim({ jobTitle: skillName, taskName: skillName, skillId, level, masteryTier });
     };
     const handleOpenDrawer = (e: Event) => {
       const { skillId } = (e as CustomEvent).detail;
