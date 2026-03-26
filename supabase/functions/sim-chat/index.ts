@@ -161,7 +161,7 @@ function aiStateDescription(taskMeta?: any): string {
 // ─── COMPILE ───
 
 async function handleCompile(payload: any, apiKey: string) {
-  const { taskName, jobTitle, company, difficulty = 3, mode = "assess", taskMeta, coaching, intel, level = 1, futurePrediction, roleChallenge, linkedSkillIds } = payload;
+  const { taskName, jobTitle, company, difficulty = 3, mode = "assess", taskMeta, coaching, intel, level = 1, futurePrediction, roleChallenge, linkedSkillIds, masteryTier } = payload;
   const aiContext = aiStateDescription(taskMeta);
   const toolVersions = await fetchToolVersions();
   const dateCtx = currentDateContext(toolVersions);
