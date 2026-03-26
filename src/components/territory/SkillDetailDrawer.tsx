@@ -89,6 +89,13 @@ interface SkillDetailDrawerProps {
   level1SimsCompleted?: number;
   /** Launch the L2 boss battle */
   onLaunchBoss?: () => void;
+  /** Sim score averages for growth rings */
+  simScores?: {
+    avgToolAwareness?: number;
+    avgAdaptiveThinking?: number;
+    avgHumanValueAdd?: number;
+    avgDomainJudgment?: number;
+  };
 }
 
 export default function SkillDetailDrawer({
