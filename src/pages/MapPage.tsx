@@ -334,21 +334,22 @@ const MapPage = () => {
           {TAB_ITEMS.map(({ key, icon: Icon, label }) => {
             if (key !== "table" && !isSignedIn) return null;
             const isActive = activeTab === key;
+            const displayLabel = key === "table" && isFastTrack ? "Dashboard" : label;
             return (
               <button
                 key={key}
                 onClick={() => setActiveTab(key)}
                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all relative"
                 style={{
-                  fontFamily: "'Cinzel', serif",
-                  letterSpacing: "0.05em",
+                  fontFamily: isFastTrack ? "inherit" : "'Cinzel', serif",
+                  letterSpacing: isFastTrack ? "0.02em" : "0.05em",
                   ...(isActive
                     ? { color: "hsl(var(--filigree-glow))", background: "hsl(var(--filigree) / 0.12)", textShadow: "0 0 8px hsl(var(--filigree-glow) / 0.5)" }
                     : { color: "hsl(var(--muted-foreground))" }),
                 }}
               >
                 <Icon className="h-3 w-3" />
-                {label}
+                {displayLabel}
                 {key === "allies" && (pendingCount + unreadCount) > 0 && (
                   <span
                     className="absolute -top-1 -right-1 w-4 h-4 rounded-full text-[8px] flex items-center justify-center font-bold animate-pulse"
