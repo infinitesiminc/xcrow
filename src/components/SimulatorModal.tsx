@@ -980,6 +980,84 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
 
 
 
+  // Handle Silver (PromptLab) completion
+  const handlePromptLabComplete = async (result: PromptLabResult) => {
+    const overallPct = result.totalScore;
+    const scores: SimScoreResult = {
+      overall: overallPct,
+      categories: [
+        { name: "AI Tool Awareness", score: result.technique * 4, feedback: "Prompt technique mastery" },
+        { name: "Human Value-Add", score: result.outputQuality * 4, feedback: "Output quality judgment" },
+        { name: "Adaptive Thinking", score: result.clarity * 4, feedback: "Prompt clarity" },
+        { name: "Domain Judgment", score: result.specificity * 4, feedback: "Domain specificity" },
+      ],
+      summary: result.feedback,
+    };
+    setScoreResult(scores);
+    const skillIds = matchTaskToSkills(taskName, jobTitle);
+    const xpPerSkill = calculateSkillXP(overallPct, false);
+    const skillsEarnedData = skillIds.map(id => ({ skill_id: id, xp: xpPerSkill }));
+    setEarnedSkills(skillIds.map(id => {
+      const tax = SKILL_TAXONOMY.find(s => s.id === id);
+      return { skill_id: id, xp: xpPerSkill, name: tax?.name || id, levelBefore: "Novice", levelAfter: "Novice", leveledUp: false };
+    }));
+    if (user) {
+      try {
+        await supabase.from("completed_simulations").insert({
+          user_id: user.id, task_name: taskName, job_title: jobTitle, company: company || null,
+          rounds_completed: 1, correct_answers: overallPct >= 60 ? 1 : 0, total_questions: 1,
+          experience_level: mode, tool_awareness_score: scores.categories[0].score,
+          human_value_add_score: scores.categories[1].score, adaptive_thinking_score: scores.categories[2].score,
+          domain_judgment_score: scores.categories[3].score, skills_earned: skillsEarnedData, sim_level: 1,
+        } as any);
+        onCompleted?.();
+        await simGate.increment();
+      } catch (err) { console.error("Failed to save prompt lab result:", err); }
+    }
+    setPhase("done");
+  };
+
+  // Handle Platinum (DelegationSim) completion
+  const handleDelegationComplete = async (result: DelegationSimResult) => {
+    const overallPct = result.delegationConfidence;
+    const catchRate = Math.round((result.anomaliesCaught / Math.max(1, result.anomaliesTotal)) * 100);
+    const scores: SimScoreResult = {
+      overall: overallPct,
+      categories: [
+        { name: "AI Tool Awareness", score: catchRate, feedback: `Detected ${result.anomaliesCaught}/${result.anomaliesTotal} anomalies` },
+        { name: "Human Value-Add", score: Math.max(0, 100 - result.falseAlarms * 20), feedback: `${result.falseAlarms} false alarms` },
+        { name: "Adaptive Thinking", score: overallPct, feedback: "Delegation confidence" },
+        { name: "Domain Judgment", score: Math.min(100, overallPct + 10), feedback: "Strategic oversight" },
+      ],
+      summary: `Agent fleet oversight: ${result.anomaliesCaught}/${result.anomaliesTotal} anomalies caught, ${result.falseAlarms} false alarms, ${result.delegationConfidence}% confidence.`,
+    };
+    setScoreResult(scores);
+    const skillIds = matchTaskToSkills(taskName, jobTitle);
+    const xpPerSkill = calculateSkillXP(overallPct, false);
+    const skillsEarnedData = skillIds.map(id => ({ skill_id: id, xp: xpPerSkill }));
+    setEarnedSkills(skillIds.map(id => {
+      const tax = SKILL_TAXONOMY.find(s => s.id === id);
+      return { skill_id: id, xp: xpPerSkill, name: tax?.name || id, levelBefore: "Novice", levelAfter: "Novice", leveledUp: false };
+    }));
+    if (user) {
+      try {
+        await supabase.from("completed_simulations").insert({
+          user_id: user.id, task_name: taskName, job_title: jobTitle, company: company || null,
+          rounds_completed: result.anomaliesTotal, correct_answers: result.anomaliesCaught,
+          total_questions: result.anomaliesTotal, experience_level: mode,
+          tool_awareness_score: scores.categories[0].score, human_value_add_score: scores.categories[1].score,
+          adaptive_thinking_score: scores.categories[2].score, domain_judgment_score: scores.categories[3].score,
+          skills_earned: skillsEarnedData, sim_level: 1,
+        } as any);
+        onCompleted?.();
+        await simGate.increment();
+      } catch (err) { console.error("Failed to save delegation result:", err); }
+    }
+    setPhase("done");
+  };
+
+  // Helper: is this a special-format tier that bypasses A/B chat?
+  const isSpecialTier = masteryTier === "silver" || masteryTier === "platinum";
 
   // Compute current target objective (first unmet)
   const currentTargetObjectiveId = session?.learningObjectives?.find(o => !objectiveStatus[o.id])?.id;
