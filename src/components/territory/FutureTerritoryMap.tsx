@@ -16,7 +16,7 @@ import {
 import FutureIsland from "./FutureIsland";
 import type { CanonicalSkillGrowth } from "@/pages/MapPage";
 
-import type { SimLaunchRequest } from "./SkillLaunchCard";
+import type { SimLaunchRequest, PromptLabRequest } from "./SkillLaunchCard";
 
 interface FutureTerritoryMapProps {
   skills: FutureSkill[];
@@ -26,6 +26,7 @@ interface FutureTerritoryMapProps {
   skillGrowthMap?: Map<string, CanonicalSkillGrowth>;
   onSkillSelect?: (skill: FutureSkill) => void;
   onLaunchSim?: (req: SimLaunchRequest) => void;
+  onLaunchPromptLab?: (req: PromptLabRequest) => void;
 }
 
 const ISLAND_COLORS: Record<string, string> = {
