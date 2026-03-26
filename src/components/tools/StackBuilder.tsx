@@ -316,6 +316,23 @@ export default function StackBuilder({ onSelectTool }: Props) {
             {loading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : searchMode === "title" ? "Search" : "Analyze"}
           </button>
         </div>
+
+        {/* Company website — optional enrichment */}
+        <div className="relative">
+          <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5" style={{ color: "hsl(var(--muted-foreground) / 0.6)" }} />
+          <input
+            value={companyUrl}
+            onChange={e => setCompanyUrl(e.target.value)}
+            placeholder="Company website (optional) — e.g. stripe.com"
+            className="w-full pl-9 pr-4 py-2 rounded-lg text-xs transition-all focus:outline-none focus:ring-1 focus:ring-primary/20"
+            style={{ background: "hsl(var(--muted) / 0.05)", border: "1px solid hsl(var(--border) / 0.15)", color: "hsl(var(--foreground) / 0.8)" }}
+          />
+          {companyUrl && (
+            <button onClick={() => setCompanyUrl("")} className="absolute right-2 top-1/2 -translate-y-1/2 p-0.5 rounded-full hover:opacity-70">
+              <X className="h-3 w-3" style={{ color: "hsl(var(--muted-foreground))" }} />
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Role templates row */}
