@@ -27,7 +27,6 @@ import {
 } from "lucide-react";
 import { AVATAR_OPTIONS, getAvatarById } from "@/lib/avatars";
 import { SchoolAutocomplete } from "@/components/SchoolAutocomplete";
-import { SchoolAutocomplete } from "@/components/SchoolAutocomplete";
 
 const NAV_ITEMS = [
   { key: "profile", label: "Profile", icon: User },
