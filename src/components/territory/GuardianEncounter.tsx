@@ -29,6 +29,8 @@ interface GuardianEncounterProps {
   guardian: TerritoryGuardian;
   onClose: () => void;
   onChallenge?: (guardian: TerritoryGuardian) => void;
+  /** Called when guardian is defeated — marks territory as conquered */
+  onConquerTerritory?: (category: string) => void;
 }
 
 const cinzel = { fontFamily: "'Cinzel', serif" };
