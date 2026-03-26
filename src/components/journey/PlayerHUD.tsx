@@ -15,7 +15,7 @@ import {
 } from "@/lib/skill-map";
 import { getCastleState, type CastleTier } from "@/lib/castle-levels";
 import { getPlayerRank, PLAYER_RANKS, type KingdomTier } from "@/lib/progression";
-import type { TargetRole } from "@/pages/Journey";
+import type { TargetRole } from "@/types/journey";
 
 const RANK_ICONS = [Swords, Medal, Star, Crown, Crown] as const;
 const RANK_COLORS = [

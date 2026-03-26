@@ -18,9 +18,9 @@ const RoleDeepDive = lazy(() => import("./pages/RoleDeepDive.tsx"));
 const Auth = lazy(() => import("./pages/Auth.tsx"));
 const Settings = lazy(() => import("./pages/Settings.tsx"));
 const NotFound = lazy(() => import("./pages/NotFound.tsx"));
-const CardStyleMockup = lazy(() => import("./pages/CardStyleMockup.tsx"));
+
 const CompanyPage = lazy(() => import("./pages/CompanyPage.tsx"));
-const Journey = lazy(() => import("./pages/Journey.tsx"));
+
 const Students = lazy(() => import("./pages/Students.tsx"));
 const Leaderboard = lazy(() => import("./pages/Leaderboard.tsx"));
 const Pricing = lazy(() => import("./pages/Pricing.tsx"));
@@ -33,14 +33,10 @@ const Terms = lazy(() => import("./pages/Terms.tsx"));
 const CookiePolicy = lazy(() => import("./pages/CookiePolicy.tsx"));
 const Contact = lazy(() => import("./pages/Contact.tsx"));
 
-const SimulationDesign = lazy(() => import("./pages/SimulationDesign.tsx"));
 const JoinWorkspace = lazy(() => import("./pages/JoinWorkspace.tsx"));
-const ScoreDistributions = lazy(() => import("./pages/ScoreDistributions.tsx"));
 const PublicProfile = lazy(() => import("./pages/PublicProfile.tsx"));
 const MapPage = lazy(() => import("./pages/MapPage.tsx"));
-const L2SimFormats = lazy(() => import("./pages/L2SimFormats.tsx"));
 const HowItWorks = lazy(() => import("./pages/HowItWorks.tsx"));
-const Professionals = lazy(() => import("./pages/Professionals.tsx"));
 const SkillsCodex = lazy(() => import("./pages/Skills.tsx"));
 const Competition = lazy(() => import("./pages/Competition.tsx"));
 const Investors = lazy(() => import("./pages/Investors.tsx"));
@@ -70,13 +66,6 @@ const SchoolAnalytics = lazy(() => import("./pages/school/SchoolAnalytics.tsx"))
 
 const queryClient = new QueryClient();
 
-/** Redirect /journey to / for signed-in users */
-function JourneyGate() {
-  const { user, loading } = useAuth();
-  if (loading) return null;
-  if (user) return <Navigate to="/" replace />;
-  return <Suspense fallback={null}><Journey /></Suspense>;
-}
 
 /** Route / to the right dashboard per tier */
 function HomeDashboard() {
@@ -135,9 +124,9 @@ const App = () => (
               <Route path="/settings" element={<AuthGate><Navbar /><Settings /><Footer /></AuthGate>} />
               <Route path="/company/:slug" element={<><Navbar /><CompanyPage /><Footer /></>} />
               <Route path="/leaderboard" element={<AuthGate><Navbar /><Leaderboard /></AuthGate>} />
-              <Route path="/card-styles" element={<><Navbar /><CardStyleMockup /></>} />
-              <Route path="/l2-formats" element={<><Navbar /><L2SimFormats /></>} />
-              <Route path="/journey" element={<JourneyGate />} />
+              <Route path="/card-styles" element={<Navigate to="/" replace />} />
+              <Route path="/l2-formats" element={<Navigate to="/" replace />} />
+              <Route path="/journey" element={<Navigate to="/map" replace />} />
               <Route path="/students" element={<Students />} />
               
               <Route path="/pricing" element={<><Navbar /><Pricing /><Footer /></>} />
@@ -150,11 +139,11 @@ const App = () => (
               <Route path="/cookies" element={<CookiePolicy />} />
               <Route path="/contact" element={<><Navbar /><Contact /><Footer /></>} />
               
-              <Route path="/professionals" element={<Professionals />} />
+              <Route path="/professionals" element={<Navigate to="/tools" replace />} />
               <Route path="/enterprise" element={<Navigate to="/" replace />} />
-              <Route path="/simulation-design" element={<SimulationDesign />} />
+              <Route path="/simulation-design" element={<Navigate to="/" replace />} />
               <Route path="/join" element={<JoinWorkspace />} />
-              <Route path="/score-distributions" element={<><Navbar /><ScoreDistributions /><Footer /></>} />
+              <Route path="/score-distributions" element={<Navigate to="/" replace />} />
               <Route path="/u/:username" element={<PublicProfile />} />
               <Route path="/progression" element={<Navigate to="/how-it-works" replace />} />
               <Route path="/play" element={<Navigate to="/" replace />} />

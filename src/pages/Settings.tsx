@@ -27,12 +27,11 @@ import {
 } from "lucide-react";
 import { AVATAR_OPTIONS, getAvatarById } from "@/lib/avatars";
 import { SchoolAutocomplete } from "@/components/SchoolAutocomplete";
-import { usePlayMode, type PlayMode } from "@/hooks/use-play-mode";
 import { useCredits } from "@/hooks/use-credits";
 
 const NAV_ITEMS = [
   { key: "profile", label: "Profile", icon: User },
-  { key: "gameplay", label: "Gameplay", icon: Compass },
+  { key: "gameplay", label: "Credits", icon: Coins },
   { key: "subscription", label: "Subscription", icon: CreditCard },
   { key: "security", label: "Security", icon: Lock },
   { key: "danger", label: "Danger Zone", icon: AlertOctagon },
@@ -42,7 +41,6 @@ type SectionKey = typeof NAV_ITEMS[number]["key"];
 
 export default function Settings() {
   const { user, loading: authLoading, signOut, profile, refreshProfile, plan, subscriptionEnd, schoolName, isPro } = useAuth();
-  const { mode: playMode, setMode: setPlayMode } = usePlayMode();
   const { balance: creditBalance } = useCredits();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -286,7 +284,7 @@ export default function Settings() {
             )}
 
             {activeSection === "gameplay" && (
-              <GameplaySection playMode={playMode} setPlayMode={setPlayMode} creditBalance={creditBalance} />
+              <GameplaySection creditBalance={creditBalance} />
             )}
 
             {activeSection === "subscription" && (
@@ -324,18 +322,13 @@ export default function Settings() {
    Section Components
    ══════════════════════════════════════════════════════ */
 
-function GameplaySection({ playMode, setPlayMode, creditBalance }: {
-  playMode: PlayMode;
-  setPlayMode: (m: PlayMode) => void;
-  creditBalance: number;
-}) {
+function GameplaySection({ creditBalance }: { creditBalance: number }) {
   return (
     <div>
-      <h2 className="text-xl font-bold text-foreground mb-1">Gameplay</h2>
-      <p className="text-sm text-muted-foreground mb-6">Control your play style and view your credit balance.</p>
+      <h2 className="text-xl font-bold text-foreground mb-1">Credits</h2>
+      <p className="text-sm text-muted-foreground mb-6">View your credit balance and usage.</p>
 
       <div className="space-y-6">
-        {/* Credit balance */}
         <div className="rounded-xl border border-border/50 p-5 flex items-center gap-4">
           <div className="h-12 w-12 rounded-full flex items-center justify-center" style={{ background: "hsl(45 93% 48% / 0.12)" }}>
             <Coins className="h-6 w-6" style={{ color: "hsl(45 93% 48%)" }} />
@@ -344,50 +337,6 @@ function GameplaySection({ playMode, setPlayMode, creditBalance }: {
             <p className="text-2xl font-bold text-foreground">{creditBalance}</p>
             <p className="text-xs text-muted-foreground">Credits available</p>
           </div>
-        </div>
-
-        <Separator />
-
-        {/* Play mode toggle */}
-        <div>
-          <Label className="text-xs uppercase tracking-wider text-muted-foreground mb-3 block">Play Mode</Label>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <button
-              onClick={() => setPlayMode("explorer")}
-              className={`relative text-left rounded-xl border-2 p-4 transition-all ${
-                playMode === "explorer"
-                  ? "border-primary bg-primary/5 ring-1 ring-primary/30"
-                  : "border-border/40 hover:border-border hover:bg-muted/20"
-              }`}
-            >
-              <div className="text-xl mb-1">🗺️</div>
-              <h3 className="text-sm font-bold text-foreground mb-0.5">Explorer</h3>
-              <p className="text-xs text-muted-foreground">Full RPG — lore, guardians, deep sims. 30+ min sessions.</p>
-              {playMode === "explorer" && (
-                <div className="absolute top-2 right-2 h-5 w-5 rounded-full bg-primary flex items-center justify-center">
-                  <Check className="h-3 w-3 text-primary-foreground" />
-                </div>
-              )}
-            </button>
-            <button
-              onClick={() => setPlayMode("fast_track")}
-              className={`relative text-left rounded-xl border-2 p-4 transition-all ${
-                playMode === "fast_track"
-                  ? "border-primary bg-primary/5 ring-1 ring-primary/30"
-                  : "border-border/40 hover:border-border hover:bg-muted/20"
-              }`}
-            >
-              <div className="text-xl mb-1">⚡</div>
-              <h3 className="text-sm font-bold text-foreground mb-0.5">Fast Track</h3>
-              <p className="text-xs text-muted-foreground">Career sprints — targeted skills, 10–20 min sessions.</p>
-              {playMode === "fast_track" && (
-                <div className="absolute top-2 right-2 h-5 w-5 rounded-full bg-primary flex items-center justify-center">
-                  <Check className="h-3 w-3 text-primary-foreground" />
-                </div>
-              )}
-            </button>
-          </div>
-          <p className="text-[11px] text-muted-foreground mt-2">Changes apply immediately. Your progress carries over between modes.</p>
         </div>
       </div>
     </div>
