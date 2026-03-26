@@ -5,7 +5,7 @@
  */
 import { useState, useCallback, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, Loader2, X, Plus, Check, Sparkles, Filter, Package } from "lucide-react";
+import { Search, Loader2, X, Plus, Check, ExternalLink, ChevronDown } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { GTC_TOOLS, CATEGORY_CONFIG, type GTCTool } from "@/data/gtc-tools-registry";
 import { ROLE_RECOMMENDATIONS, matchRole } from "@/data/role-tool-recommendations";
