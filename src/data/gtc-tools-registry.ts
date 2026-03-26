@@ -336,44 +336,147 @@ export const GTC_TOOLS: GTCTool[] = [
     { name: "Workday Adaptive Planning", description: "Workforce planning and financial planning with AI forecasting.", type: "learnable", useCases: ["workforce-planning", "forecasting"] },
     { name: "Workday Illuminate", description: "AI agents embedded across Workday for natural language queries and automation.", type: "learnable", useCases: ["ai-assistant", "automation"] },
   ] },
-  { name: "Eightfold AI", company: "Eightfold", category: "hr-talent", version: "2025", description: "Talent intelligence platform using deep learning for hiring, retention, and upskilling.", icon: "🎯", url: "https://eightfold.ai", type: "learnable", maturity: "ga", pricing: "Enterprise", useCases: ["talent-intelligence", "skills-matching", "dei"] },
-  { name: "HireVue", company: "HireVue", category: "hr-talent", version: "2025", description: "AI video interviewing and assessment platform for structured, bias-reduced hiring.", icon: "🎥", url: "https://www.hirevue.com", type: "learnable", maturity: "ga", pricing: "Paid", useCases: ["interviewing", "assessment", "screening"] },
-  { name: "Lattice", company: "Lattice", category: "hr-talent", version: "2025", description: "AI-powered people management — performance reviews, engagement, and compensation.", icon: "📐", url: "https://lattice.com", type: "learnable", maturity: "ga", pricing: "Paid", useCases: ["performance-management", "engagement", "compensation"] },
-  { name: "Deel", company: "Deel", category: "hr-talent", version: "2025", description: "Global HR platform with AI for payroll, compliance, and contractor management across 150+ countries.", icon: "🌍", url: "https://www.deel.com", type: "learnable", maturity: "ga", pricing: "Paid", useCases: ["global-payroll", "compliance", "contractor-management"] },
+  { name: "Eightfold AI", company: "Eightfold", category: "hr-talent", version: "2025", description: "Talent intelligence platform using deep learning for hiring, retention, and upskilling.", icon: "🎯", url: "https://eightfold.ai", type: "learnable", maturity: "ga", pricing: "Enterprise", useCases: ["talent-intelligence", "skills-matching", "dei"], products: [
+    { name: "Talent Acquisition", description: "AI matching engine for candidate sourcing and screening.", type: "learnable" },
+    { name: "Talent Management", description: "Internal mobility, succession planning, and career pathing.", type: "learnable" },
+    { name: "Workforce Exchange", description: "Talent marketplace connecting job seekers with employers.", type: "learnable" },
+  ] },
+  { name: "HireVue", company: "HireVue", category: "hr-talent", version: "2025", description: "AI video interviewing and assessment platform for structured, bias-reduced hiring.", icon: "🎥", url: "https://www.hirevue.com", type: "learnable", maturity: "ga", pricing: "Paid", useCases: ["interviewing", "assessment", "screening"], products: [
+    { name: "Video Interviewing", description: "On-demand and live AI-assisted video interviews.", type: "learnable" },
+    { name: "Assessments", description: "Game-based and coding assessments for candidate evaluation.", type: "learnable" },
+    { name: "Interview Builder", description: "Structured interview question generator with competency mapping.", type: "learnable" },
+  ] },
+  { name: "Lattice", company: "Lattice", category: "hr-talent", version: "2025", description: "AI-powered people management — performance reviews, engagement, and compensation.", icon: "📐", url: "https://lattice.com", type: "learnable", maturity: "ga", pricing: "Paid", useCases: ["performance-management", "engagement", "compensation"], products: [
+    { name: "Performance", description: "AI-assisted performance reviews and continuous feedback.", type: "learnable" },
+    { name: "Engagement", description: "Pulse surveys and sentiment analysis for employee engagement.", type: "learnable" },
+    { name: "Compensation", description: "Pay equity analysis and compensation benchmarking.", type: "learnable" },
+    { name: "OKRs & Goals", description: "Goal setting and tracking aligned to company objectives.", type: "learnable" },
+  ] },
+  { name: "Deel", company: "Deel", category: "hr-talent", version: "2025", description: "Global HR platform with AI for payroll, compliance, and contractor management across 150+ countries.", icon: "🌍", url: "https://www.deel.com", type: "learnable", maturity: "ga", pricing: "Paid", useCases: ["global-payroll", "compliance", "contractor-management"], products: [
+    { name: "Deel Payroll", description: "Automated global payroll across 150+ countries.", type: "learnable" },
+    { name: "Deel EOR", description: "Employer of Record for hiring without local entities.", type: "learnable" },
+    { name: "Deel Contractor", description: "Compliant contractor payments and agreements.", type: "learnable" },
+    { name: "Deel AI", description: "HR knowledge assistant for compliance and policy questions.", type: "learnable" },
+  ] },
 
   // ═══════════════════════════════════════════
   // FINANCE & OPERATIONS
   // ═══════════════════════════════════════════
-  { name: "Workiva", company: "Workiva", category: "finance-ops", version: "2025", description: "AI-powered financial reporting, audit, and ESG compliance platform.", icon: "📋", url: "https://www.workiva.com", type: "learnable", maturity: "ga", pricing: "Enterprise", useCases: ["financial-reporting", "audit", "esg", "compliance"] },
-  { name: "Coupa", company: "Coupa", category: "finance-ops", version: "2025", description: "AI-driven business spend management — procurement, invoicing, and supply chain finance.", icon: "💰", url: "https://www.coupa.com", type: "learnable", maturity: "ga", pricing: "Enterprise", useCases: ["procurement", "invoicing", "spend-management"] },
-  { name: "Stampli", company: "Stampli", category: "finance-ops", version: "2025", description: "AI-powered accounts payable automation — invoice processing, approvals, and payments.", icon: "📨", url: "https://www.stampli.com", type: "learnable", maturity: "ga", pricing: "Paid", useCases: ["accounts-payable", "invoice-processing", "payments"] },
-  { name: "Brex AI", company: "Brex", category: "finance-ops", version: "2025", description: "AI-native corporate card and spend management with automated expense categorization.", icon: "💳", url: "https://www.brex.com", type: "learnable", maturity: "ga", pricing: "Freemium", useCases: ["expense-management", "corporate-cards", "budgeting"] },
-  { name: "Anaplan", company: "Anaplan", category: "finance-ops", version: "2025", description: "Connected planning platform with AI for FP&A, sales planning, and supply chain.", icon: "📊", url: "https://www.anaplan.com", type: "learnable", maturity: "ga", pricing: "Enterprise", useCases: ["financial-planning", "forecasting", "scenario-analysis"] },
+  { name: "Workiva", company: "Workiva", category: "finance-ops", version: "2025", description: "AI-powered financial reporting, audit, and ESG compliance platform.", icon: "📋", url: "https://www.workiva.com", type: "learnable", maturity: "ga", pricing: "Enterprise", useCases: ["financial-reporting", "audit", "esg", "compliance"], products: [
+    { name: "SEC Reporting", description: "XBRL-tagged SEC filings with automated cross-referencing.", type: "learnable" },
+    { name: "SOX Compliance", description: "Internal controls documentation and testing workflows.", type: "learnable" },
+    { name: "ESG Reporting", description: "Sustainability and ESG disclosure management.", type: "learnable" },
+    { name: "Audit Management", description: "Collaborative audit workpapers and evidence management.", type: "learnable" },
+  ] },
+  { name: "Coupa", company: "Coupa", category: "finance-ops", version: "2025", description: "AI-driven business spend management — procurement, invoicing, and supply chain finance.", icon: "💰", url: "https://www.coupa.com", type: "learnable", maturity: "ga", pricing: "Enterprise", useCases: ["procurement", "invoicing", "spend-management"], products: [
+    { name: "Procurement", description: "AI-powered sourcing, contracts, and purchase orders.", type: "learnable" },
+    { name: "Invoice Management", description: "Automated invoice capture, matching, and approvals.", type: "learnable" },
+    { name: "Spend Analysis", description: "AI categorization and benchmarking of enterprise spend.", type: "learnable" },
+    { name: "Supply Chain Design", description: "Digital twin modeling for supply chain optimization.", type: "learnable" },
+  ] },
+  { name: "Stampli", company: "Stampli", category: "finance-ops", version: "2025", description: "AI-powered accounts payable automation — invoice processing, approvals, and payments.", icon: "📨", url: "https://www.stampli.com", type: "learnable", maturity: "ga", pricing: "Paid", useCases: ["accounts-payable", "invoice-processing", "payments"], products: [
+    { name: "Billy the Bot", description: "AI assistant that learns coding, routing, and approval patterns.", type: "learnable" },
+    { name: "Invoice Processing", description: "OCR and AI extraction for invoice data capture.", type: "learnable" },
+    { name: "Direct Pay", description: "Integrated payment execution across ACH, check, and card.", type: "learnable" },
+  ] },
+  { name: "Brex AI", company: "Brex", category: "finance-ops", version: "2025", description: "AI-native corporate card and spend management with automated expense categorization.", icon: "💳", url: "https://www.brex.com", type: "learnable", maturity: "ga", pricing: "Freemium", useCases: ["expense-management", "corporate-cards", "budgeting"], products: [
+    { name: "Brex Cards", description: "Corporate cards with AI-powered expense categorization.", type: "learnable" },
+    { name: "Brex Empower", description: "Spend management with pre-approval workflows and budgets.", type: "learnable" },
+    { name: "Brex AI Assistant", description: "Natural language queries for spend data and policy questions.", type: "learnable" },
+  ] },
+  { name: "Anaplan", company: "Anaplan", category: "finance-ops", version: "2025", description: "Connected planning platform with AI for FP&A, sales planning, and supply chain.", icon: "📊", url: "https://www.anaplan.com", type: "learnable", maturity: "ga", pricing: "Enterprise", useCases: ["financial-planning", "forecasting", "scenario-analysis"], products: [
+    { name: "Financial Planning", description: "Budgeting, forecasting, and what-if scenario modeling.", type: "learnable" },
+    { name: "Sales Planning", description: "Territory, quota, and capacity planning with AI.", type: "learnable" },
+    { name: "Supply Chain Planning", description: "Demand sensing, inventory optimization, and S&OP.", type: "learnable" },
+    { name: "PlanIQ", description: "Machine learning forecasting engine for predictive planning.", type: "learnable" },
+  ] },
 
   // ═══════════════════════════════════════════
   // LEGAL & COMPLIANCE
   // ═══════════════════════════════════════════
-  { name: "Harvey AI", company: "Harvey", category: "legal-compliance", version: "2025", description: "AI legal assistant for contract analysis, due diligence, and regulatory research.", icon: "⚖️", url: "https://www.harvey.ai", type: "learnable", maturity: "ga", pricing: "Enterprise", useCases: ["contract-analysis", "due-diligence", "legal-research"] },
-  { name: "Ironclad", company: "Ironclad", category: "legal-compliance", version: "2025", description: "AI-powered contract lifecycle management — drafting, negotiation, and compliance tracking.", icon: "📜", url: "https://ironcladapp.com", type: "learnable", maturity: "ga", pricing: "Paid", useCases: ["contract-management", "drafting", "negotiation"] },
-  { name: "DocuSign IAM", company: "DocuSign", category: "legal-compliance", version: "2025", description: "Intelligent agreement management with AI extraction, analysis, and e-signature workflows.", icon: "✍️", url: "https://www.docusign.com", type: "learnable", maturity: "ga", pricing: "Paid", useCases: ["e-signature", "agreement-management", "extraction"] },
-  { name: "Relativity", company: "Relativity", category: "legal-compliance", version: "2025", description: "AI-powered e-discovery and compliance platform for litigation and investigations.", icon: "🔍", url: "https://www.relativity.com", type: "learnable", maturity: "ga", pricing: "Enterprise", useCases: ["e-discovery", "litigation", "compliance"] },
+  { name: "Harvey AI", company: "Harvey", category: "legal-compliance", version: "2025", description: "AI legal assistant for contract analysis, due diligence, and regulatory research.", icon: "⚖️", url: "https://www.harvey.ai", type: "learnable", maturity: "ga", pricing: "Enterprise", useCases: ["contract-analysis", "due-diligence", "legal-research"], products: [
+    { name: "Harvey Assistant", description: "Conversational AI for legal research and memo drafting.", type: "learnable" },
+    { name: "Harvey Due Diligence", description: "AI-powered document review for M&A transactions.", type: "learnable" },
+    { name: "Harvey Vault", description: "Secure knowledge base with firm-specific AI training.", type: "learnable" },
+  ] },
+  { name: "Ironclad", company: "Ironclad", category: "legal-compliance", version: "2025", description: "AI-powered contract lifecycle management — drafting, negotiation, and compliance tracking.", icon: "📜", url: "https://ironcladapp.com", type: "learnable", maturity: "ga", pricing: "Paid", useCases: ["contract-management", "drafting", "negotiation"], products: [
+    { name: "Ironclad AI", description: "AI contract drafting and clause suggestions.", type: "learnable" },
+    { name: "Workflow Designer", description: "Visual contract approval and review workflows.", type: "learnable" },
+    { name: "Repository", description: "Searchable contract repository with AI extraction.", type: "learnable" },
+  ] },
+  { name: "DocuSign IAM", company: "DocuSign", category: "legal-compliance", version: "2025", description: "Intelligent agreement management with AI extraction, analysis, and e-signature workflows.", icon: "✍️", url: "https://www.docusign.com", type: "learnable", maturity: "ga", pricing: "Paid", useCases: ["e-signature", "agreement-management", "extraction"], products: [
+    { name: "eSignature", description: "Electronic signature workflows for any document.", type: "learnable" },
+    { name: "CLM", description: "Contract lifecycle management with AI-powered analysis.", type: "learnable" },
+    { name: "Maestro", description: "Workflow orchestration for complex agreement processes.", type: "learnable" },
+    { name: "ID Verification", description: "Identity verification integrated into signing flows.", type: "learnable" },
+  ] },
+  { name: "Relativity", company: "Relativity", category: "legal-compliance", version: "2025", description: "AI-powered e-discovery and compliance platform for litigation and investigations.", icon: "🔍", url: "https://www.relativity.com", type: "learnable", maturity: "ga", pricing: "Enterprise", useCases: ["e-discovery", "litigation", "compliance"], products: [
+    { name: "RelativityOne", description: "Cloud e-discovery platform for document review.", type: "learnable" },
+    { name: "aiR for Review", description: "AI that reviews documents and makes coding decisions.", type: "learnable" },
+    { name: "Trace", description: "Proactive compliance monitoring for communications.", type: "learnable" },
+  ] },
 
   // ═══════════════════════════════════════════
   // CUSTOMER PLATFORMS
   // ═══════════════════════════════════════════
-  { name: "Zendesk AI", company: "Zendesk", category: "customer-platforms", version: "2025", description: "AI-powered customer support with autonomous agents, ticket routing, and sentiment analysis.", icon: "💬", url: "https://www.zendesk.com", type: "learnable", maturity: "ga", pricing: "Paid", useCases: ["customer-support", "ticketing", "self-service"] },
-  { name: "Intercom Fin", company: "Intercom", category: "customer-platforms", version: "2025", description: "AI customer service agent that resolves issues autonomously across chat, email, and phone.", icon: "💭", url: "https://www.intercom.com", type: "learnable", maturity: "ga", pricing: "Paid", useCases: ["customer-service", "chatbot", "knowledge-base"] },
-  { name: "Freshworks", company: "Freshworks", category: "customer-platforms", version: "Freddy AI", description: "AI-powered CX suite spanning support, sales, and IT service management.", icon: "🍊", url: "https://www.freshworks.com", type: "learnable", maturity: "ga", pricing: "Freemium", useCases: ["customer-support", "sales", "itsm"] },
-  { name: "Gainsight", company: "Gainsight", category: "customer-platforms", version: "2025", description: "AI-driven customer success platform — health scoring, churn prediction, and expansion signals.", icon: "📈", url: "https://www.gainsight.com", type: "learnable", maturity: "ga", pricing: "Enterprise", useCases: ["customer-success", "churn-prediction", "retention"] },
+  { name: "Zendesk AI", company: "Zendesk", category: "customer-platforms", version: "2025", description: "AI-powered customer support with autonomous agents, ticket routing, and sentiment analysis.", icon: "💬", url: "https://www.zendesk.com", type: "learnable", maturity: "ga", pricing: "Paid", useCases: ["customer-support", "ticketing", "self-service"], products: [
+    { name: "AI Agents", description: "Autonomous bots that resolve customer issues end-to-end.", type: "learnable" },
+    { name: "Agent Copilot", description: "AI assistant that helps human agents with suggestions and drafts.", type: "learnable" },
+    { name: "AI-Powered Insights", description: "Sentiment analysis and intent detection across tickets.", type: "learnable" },
+    { name: "Knowledge Base", description: "AI-curated self-service help center with gap detection.", type: "learnable" },
+  ] },
+  { name: "Intercom Fin", company: "Intercom", category: "customer-platforms", version: "2025", description: "AI customer service agent that resolves issues autonomously across chat, email, and phone.", icon: "💭", url: "https://www.intercom.com", type: "learnable", maturity: "ga", pricing: "Paid", useCases: ["customer-service", "chatbot", "knowledge-base"], products: [
+    { name: "Fin AI Agent", description: "Autonomous AI that resolves 50%+ of support queries.", type: "learnable" },
+    { name: "Fin AI Copilot", description: "AI assistant for support agents with instant answers.", type: "learnable" },
+    { name: "Workflows", description: "Visual automation builder for routing and triage.", type: "learnable" },
+    { name: "Outbound", description: "Proactive messaging for onboarding and engagement.", type: "learnable" },
+  ] },
+  { name: "Freshworks", company: "Freshworks", category: "customer-platforms", version: "Freddy AI", description: "AI-powered CX suite spanning support, sales, and IT service management.", icon: "🍊", url: "https://www.freshworks.com", type: "learnable", maturity: "ga", pricing: "Freemium", useCases: ["customer-support", "sales", "itsm"], products: [
+    { name: "Freshdesk", description: "AI-powered helpdesk with omnichannel ticketing.", type: "learnable" },
+    { name: "Freshsales", description: "CRM with AI lead scoring and deal management.", type: "learnable" },
+    { name: "Freshservice", description: "IT service management with AI incident resolution.", type: "learnable" },
+    { name: "Freddy AI", description: "Generative AI assistant across all Freshworks products.", type: "learnable" },
+  ] },
+  { name: "Gainsight", company: "Gainsight", category: "customer-platforms", version: "2025", description: "AI-driven customer success platform — health scoring, churn prediction, and expansion signals.", icon: "📈", url: "https://www.gainsight.com", type: "learnable", maturity: "ga", pricing: "Enterprise", useCases: ["customer-success", "churn-prediction", "retention"], products: [
+    { name: "CS Cloud", description: "Customer success platform with health scores and playbooks.", type: "learnable" },
+    { name: "PX (Product Experience)", description: "In-app engagement and product analytics.", type: "learnable" },
+    { name: "Digital Hub", description: "Scaled digital customer success programs.", type: "learnable" },
+    { name: "Staircase AI", description: "AI sentiment analysis from customer communications.", type: "learnable" },
+  ] },
 
   // ═══════════════════════════════════════════
   // MARKETING & REVOPS
   // ═══════════════════════════════════════════
-  { name: "HubSpot AI", company: "HubSpot", category: "marketing-revops", version: "Breeze", description: "AI-powered CRM with marketing automation, content generation, and lead scoring.", icon: "🧡", url: "https://www.hubspot.com", type: "learnable", maturity: "ga", pricing: "Freemium", useCases: ["marketing-automation", "crm", "content", "lead-scoring"] },
-  { name: "Gong", company: "Gong", category: "marketing-revops", version: "2025", description: "Revenue intelligence — AI analysis of sales calls, deal forecasting, and coaching insights.", icon: "🔔", url: "https://www.gong.io", type: "learnable", maturity: "ga", pricing: "Paid", useCases: ["revenue-intelligence", "sales-analytics", "coaching"] },
-  { name: "6sense", company: "6sense", category: "marketing-revops", version: "2025", description: "AI-powered ABM and intent data platform for identifying in-market buyers.", icon: "🎯", url: "https://6sense.com", type: "learnable", maturity: "ga", pricing: "Enterprise", useCases: ["abm", "intent-data", "demand-gen"] },
-  { name: "Adobe Marketo", company: "Adobe", category: "marketing-revops", version: "2025", description: "Enterprise marketing automation with AI-powered lead management and campaign orchestration.", icon: "🅰️", url: "https://business.adobe.com/products/marketo/adobe-marketo.html", type: "learnable", maturity: "ga", pricing: "Enterprise", useCases: ["marketing-automation", "lead-management", "campaigns"] },
-  { name: "Clari", company: "Clari", category: "marketing-revops", version: "2025", description: "Revenue operations platform with AI for pipeline inspection, forecasting, and deal intelligence.", icon: "🔮", url: "https://www.clari.com", type: "learnable", maturity: "ga", pricing: "Enterprise", useCases: ["revenue-ops", "forecasting", "pipeline-management"] },
+  { name: "HubSpot AI", company: "HubSpot", category: "marketing-revops", version: "Breeze", description: "AI-powered CRM with marketing automation, content generation, and lead scoring.", icon: "🧡", url: "https://www.hubspot.com", type: "learnable", maturity: "ga", pricing: "Freemium", useCases: ["marketing-automation", "crm", "content", "lead-scoring"], products: [
+    { name: "Breeze Copilot", description: "AI assistant across CRM for content, emails, and reports.", type: "learnable" },
+    { name: "Breeze Agents", description: "Autonomous agents for social, prospecting, and content.", type: "learnable" },
+    { name: "Marketing Hub", description: "Email, ads, social, and campaign automation.", type: "learnable" },
+    { name: "Sales Hub", description: "Pipeline management, sequences, and deal tracking.", type: "learnable" },
+    { name: "Service Hub", description: "Ticketing, knowledge base, and customer portal.", type: "learnable" },
+  ] },
+  { name: "Gong", company: "Gong", category: "marketing-revops", version: "2025", description: "Revenue intelligence — AI analysis of sales calls, deal forecasting, and coaching insights.", icon: "🔔", url: "https://www.gong.io", type: "learnable", maturity: "ga", pricing: "Paid", useCases: ["revenue-intelligence", "sales-analytics", "coaching"], products: [
+    { name: "Gong Engage", description: "AI-powered sales engagement and outreach sequencing.", type: "learnable" },
+    { name: "Gong Forecast", description: "AI deal forecasting with pipeline inspection.", type: "learnable" },
+    { name: "Gong Insights", description: "Conversation intelligence and coaching recommendations.", type: "learnable" },
+    { name: "Gong Data Engine", description: "Revenue data platform unifying customer interactions.", type: "learnable" },
+  ] },
+  { name: "6sense", company: "6sense", category: "marketing-revops", version: "2025", description: "AI-powered ABM and intent data platform for identifying in-market buyers.", icon: "🎯", url: "https://6sense.com", type: "learnable", maturity: "ga", pricing: "Enterprise", useCases: ["abm", "intent-data", "demand-gen"], products: [
+    { name: "Revenue AI", description: "Predictive analytics for account identification and scoring.", type: "learnable" },
+    { name: "Intent Data", description: "Buying signal detection across the web.", type: "learnable" },
+    { name: "Conversational Email", description: "AI-generated personalized email sequences.", type: "learnable" },
+  ] },
+  { name: "Adobe Marketo", company: "Adobe", category: "marketing-revops", version: "2025", description: "Enterprise marketing automation with AI-powered lead management and campaign orchestration.", icon: "🅰️", url: "https://business.adobe.com/products/marketo/adobe-marketo.html", type: "learnable", maturity: "ga", pricing: "Enterprise", useCases: ["marketing-automation", "lead-management", "campaigns"], products: [
+    { name: "Marketo Engage", description: "Marketing automation with lead nurturing and scoring.", type: "learnable" },
+    { name: "Adobe Sensei", description: "AI for predictive audiences and content personalization.", type: "learnable" },
+    { name: "Dynamic Chat", description: "Conversational marketing with AI chatbots.", type: "learnable" },
+    { name: "Account Profiling", description: "Ideal customer profile matching and account scoring.", type: "learnable" },
+  ] },
+  { name: "Clari", company: "Clari", category: "marketing-revops", version: "2025", description: "Revenue operations platform with AI for pipeline inspection, forecasting, and deal intelligence.", icon: "🔮", url: "https://www.clari.com", type: "learnable", maturity: "ga", pricing: "Enterprise", useCases: ["revenue-ops", "forecasting", "pipeline-management"], products: [
+    { name: "Revenue Forecasting", description: "AI-powered forecast calls with confidence scoring.", type: "learnable" },
+    { name: "Pipeline Inspection", description: "Deal-level insights and risk detection.", type: "learnable" },
+    { name: "Revenue Intelligence", description: "Activity capture and relationship mapping.", type: "learnable" },
+    { name: "Mutual Action Plans", description: "Collaborative deal rooms for buyer-seller alignment.", type: "learnable" },
+  ] },
 
   // ═══════════════════════════════════════════
   // PRODUCTIVITY & COLLABORATION
@@ -384,17 +487,51 @@ export const GTC_TOOLS: GTCTool[] = [
     { name: "Copilot in Teams", description: "Meeting summaries, action items, and real-time translation.", type: "learnable", useCases: ["meetings", "collaboration"] },
     { name: "Copilot in Outlook", description: "Draft emails, summarize threads, and schedule meetings.", type: "learnable", useCases: ["email", "scheduling"] },
   ] },
-  { name: "Notion AI", company: "Notion", category: "productivity", version: "Q&A", description: "AI writing, summarization, and Q&A across your team's knowledge base.", icon: "📝", url: "https://notion.so", type: "learnable", maturity: "ga", pricing: "Freemium", useCases: ["knowledge-management", "writing", "project-management"] },
-  { name: "Slack AI", company: "Salesforce", category: "productivity", version: "2025", description: "AI-powered channel summaries, search answers, and workflow automation in Slack.", icon: "💬", url: "https://slack.com", type: "learnable", maturity: "ga", pricing: "Paid", useCases: ["communication", "search", "workflow-automation"] },
-  { name: "Asana AI", company: "Asana", category: "productivity", version: "2025", description: "AI work management — smart status updates, goal tracking, and resource allocation.", icon: "📋", url: "https://asana.com", type: "learnable", maturity: "ga", pricing: "Paid", useCases: ["project-management", "goal-tracking", "resource-planning"] },
+  { name: "Notion AI", company: "Notion", category: "productivity", version: "Q&A", description: "AI writing, summarization, and Q&A across your team's knowledge base.", icon: "📝", url: "https://notion.so", type: "learnable", maturity: "ga", pricing: "Freemium", useCases: ["knowledge-management", "writing", "project-management"], products: [
+    { name: "Notion AI Writer", description: "Draft, edit, and summarize content inline.", type: "learnable" },
+    { name: "Notion AI Q&A", description: "Ask questions across your entire workspace knowledge.", type: "learnable" },
+    { name: "Databases", description: "Relational databases with AI-powered properties and views.", type: "learnable" },
+    { name: "Projects", description: "Project management with sprints, timelines, and Gantt charts.", type: "learnable" },
+  ] },
+  { name: "Slack AI", company: "Salesforce", category: "productivity", version: "2025", description: "AI-powered channel summaries, search answers, and workflow automation in Slack.", icon: "💬", url: "https://slack.com", type: "learnable", maturity: "ga", pricing: "Paid", useCases: ["communication", "search", "workflow-automation"], products: [
+    { name: "Channel Recaps", description: "AI summaries of channel conversations you missed.", type: "learnable" },
+    { name: "Search Answers", description: "Natural language search with AI-generated answers.", type: "learnable" },
+    { name: "Workflow Builder", description: "No-code automation for recurring team processes.", type: "learnable" },
+    { name: "Huddles", description: "Audio-first conversations with AI meeting notes.", type: "learnable" },
+  ] },
+  { name: "Asana AI", company: "Asana", category: "productivity", version: "2025", description: "AI work management — smart status updates, goal tracking, and resource allocation.", icon: "📋", url: "https://asana.com", type: "learnable", maturity: "ga", pricing: "Paid", useCases: ["project-management", "goal-tracking", "resource-planning"], products: [
+    { name: "Smart Status", description: "AI-generated project status updates from task progress.", type: "learnable" },
+    { name: "Smart Fields", description: "AI-powered custom fields that auto-categorize work.", type: "learnable" },
+    { name: "Goals", description: "Company and team OKR tracking with AI insights.", type: "learnable" },
+    { name: "Portfolios", description: "Cross-project visibility and resource planning.", type: "learnable" },
+  ] },
 
   // ═══════════════════════════════════════════
   // BI & VISUALIZATION
   // ═══════════════════════════════════════════
-  { name: "Tableau", company: "Salesforce", category: "bi-visualization", version: "2025", description: "AI-powered data visualization with natural language queries and automated insights.", icon: "📊", url: "https://www.tableau.com", type: "learnable", maturity: "ga", pricing: "Paid", useCases: ["data-visualization", "dashboards", "analytics"] },
-  { name: "Power BI", company: "Microsoft", category: "bi-visualization", version: "Copilot", description: "Business intelligence with AI Copilot for natural language report building and DAX generation.", icon: "📈", url: "https://powerbi.microsoft.com", type: "learnable", maturity: "ga", pricing: "Freemium", useCases: ["data-visualization", "reporting", "dashboards"] },
-  { name: "Looker", company: "Google", category: "bi-visualization", version: "2025", description: "Semantic data platform with AI-powered exploration and embedded analytics.", icon: "👀", url: "https://cloud.google.com/looker", type: "learnable", maturity: "ga", pricing: "Paid", useCases: ["data-modeling", "dashboards", "embedded-analytics"] },
-  { name: "ThoughtSpot", company: "ThoughtSpot", category: "bi-visualization", version: "Spotter", description: "AI-powered search and analytics — ask questions in natural language, get instant charts.", icon: "💡", url: "https://www.thoughtspot.com", type: "learnable", maturity: "ga", pricing: "Paid", useCases: ["search-analytics", "self-service-bi", "natural-language"] },
+  { name: "Tableau", company: "Salesforce", category: "bi-visualization", version: "2025", description: "AI-powered data visualization with natural language queries and automated insights.", icon: "📊", url: "https://www.tableau.com", type: "learnable", maturity: "ga", pricing: "Paid", useCases: ["data-visualization", "dashboards", "analytics"], products: [
+    { name: "Tableau Desktop", description: "Self-service analytics and drag-and-drop visualization.", type: "learnable" },
+    { name: "Tableau Cloud", description: "Hosted analytics platform with collaboration features.", type: "learnable" },
+    { name: "Tableau Pulse", description: "AI-powered metrics monitoring with natural language insights.", type: "learnable" },
+    { name: "Tableau Agent", description: "Autonomous AI analyst that proactively surfaces insights.", type: "learnable" },
+  ] },
+  { name: "Power BI", company: "Microsoft", category: "bi-visualization", version: "Copilot", description: "Business intelligence with AI Copilot for natural language report building and DAX generation.", icon: "📈", url: "https://powerbi.microsoft.com", type: "learnable", maturity: "ga", pricing: "Freemium", useCases: ["data-visualization", "reporting", "dashboards"], products: [
+    { name: "Power BI Desktop", description: "Free desktop tool for data modeling and report authoring.", type: "learnable" },
+    { name: "Power BI Service", description: "Cloud-based sharing, collaboration, and scheduled refresh.", type: "learnable" },
+    { name: "Copilot in Power BI", description: "Natural language report creation and DAX formula generation.", type: "learnable" },
+    { name: "Paginated Reports", description: "Pixel-perfect operational reports for printing and export.", type: "learnable" },
+  ] },
+  { name: "Looker", company: "Google", category: "bi-visualization", version: "2025", description: "Semantic data platform with AI-powered exploration and embedded analytics.", icon: "👀", url: "https://cloud.google.com/looker", type: "learnable", maturity: "ga", pricing: "Paid", useCases: ["data-modeling", "dashboards", "embedded-analytics"], products: [
+    { name: "LookML", description: "Semantic modeling language for defining metrics and dimensions.", type: "learnable" },
+    { name: "Looker Studio", description: "Self-service dashboards and reporting (formerly Data Studio).", type: "learnable" },
+    { name: "Embedded Analytics", description: "White-label analytics embedded in your applications.", type: "learnable" },
+  ] },
+  { name: "ThoughtSpot", company: "ThoughtSpot", category: "bi-visualization", version: "Spotter", description: "AI-powered search and analytics — ask questions in natural language, get instant charts.", icon: "💡", url: "https://www.thoughtspot.com", type: "learnable", maturity: "ga", pricing: "Paid", useCases: ["search-analytics", "self-service-bi", "natural-language"], products: [
+    { name: "Spotter", description: "AI analyst agent that proactively finds insights.", type: "learnable" },
+    { name: "Search", description: "Natural language search for instant data answers.", type: "learnable" },
+    { name: "Liveboards", description: "Interactive dashboards with drill-down and filtering.", type: "learnable" },
+    { name: "Embedded Analytics", description: "Developer toolkit for embedding search analytics.", type: "learnable" },
+  ] },
 ];
 
 /** Get unique company names sorted by tool count */
