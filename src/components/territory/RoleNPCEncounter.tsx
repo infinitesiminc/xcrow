@@ -254,10 +254,17 @@ export default function RoleNPCEncounter({ role, onClose, onCollectSkills, onExp
     }
   }, [chatMessages, isStreaming, role]);
 
+  const [collecting, setCollecting] = useState(false);
+
   const handleCollect = () => {
-    const ids = futureSkills.map(s => s.id);
-    onCollectSkills?.(ids);
-    setCollected(true);
+    setCollecting(true);
+    // Stagger animation then mark collected
+    setTimeout(() => {
+      const ids = futureSkills.map(s => s.id);
+      onCollectSkills?.(ids);
+      setCollected(true);
+      setCollecting(false);
+    }, futureSkills.length * 150 + 600);
   };
 
   return (
