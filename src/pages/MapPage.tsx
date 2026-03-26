@@ -2,6 +2,7 @@
  * MapPage — Split-panel layout: left panel (Forge/Kingdoms/Allies) + right map.
  */
 import { useState, useCallback, useEffect, useMemo, useRef } from "react";
+import { useNavigate, Navigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import type { FutureSkill } from "@/hooks/use-future-skills";
 import { motion, AnimatePresence } from "framer-motion";
@@ -123,6 +124,7 @@ const TAB_ITEMS = [
 type PendingSimLaunch = SimLaunchRequest & { taskName?: string };
 
 const MapPage = () => {
+  const navigate = useNavigate();
   const { profile, user, isSuperAdmin } = useAuth();
   const { skills: dbSkills } = useSkills();
   const { futureSkills } = useFutureSkills();
@@ -363,6 +365,11 @@ const MapPage = () => {
     selectedRole: selectedRole ? { title: selectedRole.title, company: selectedRole.company, jobId: selectedRole.jobId } : null,
   }), [selectedRole, activeTab]);
   useChatViewContext(chatViewCtx as any, [chatViewCtx]);
+
+  // Redirect to homepage for onboarding if not completed
+  if (user && profile && !profile.onboardingCompleted) {
+    return <Navigate to="/" replace />;
+  }
 
   return (
     <div className="h-[calc(100vh-3.5rem)] flex flex-col overflow-hidden relative">
