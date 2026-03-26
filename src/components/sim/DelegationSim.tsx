@@ -95,6 +95,18 @@ export default function DelegationSim({ taskName = "Quarterly Pricing Review", o
     if (nextIdx >= MOCK_STEPS.length) {
       setRunning(false);
       setCompleted(true);
+      // Fire finish callback with mapped scores
+      const finalScore: DelegationSimResult = {
+        anomaliesCaught: Array.from(interventions).filter(id => MOCK_STEPS.find(s => s.id === id)?.hasAnomaly).length,
+        anomaliesTotal: MOCK_STEPS.filter(s => s.hasAnomaly).length,
+        falseAlarms,
+        interventions: interventions.size,
+        delegationConfidence: Math.max(0, Math.round(
+          ((Array.from(interventions).filter(id => MOCK_STEPS.find(s => s.id === id)?.hasAnomaly).length / Math.max(1, MOCK_STEPS.filter(s => s.hasAnomaly).length)) * 70) -
+          (falseAlarms * 10) + 30
+        )),
+      };
+      onFinish?.(finalScore);
     }
   }, [currentStep, interventions]);
 
