@@ -4,7 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Loader2, Users, UserPlus, Activity, Zap, Search, ArrowUpDown, Trash2 } from "lucide-react";
+import { Loader2, Users, UserPlus, Activity, Zap, Search, ArrowUpDown, Trash2, Crown } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import {
   AlertDialog,
