@@ -299,16 +299,16 @@ export default function FutureIsland({ island, skillLookup, level2SkillIds, leve
                     />
                   </>
                 )}
-                {/* Skill number badge — crown for conquered */}
+                {/* Skill number badge — star for conquered */}
                 <text
                   x={node.x}
                   y={node.y + 1}
                   textAnchor="middle"
                   dominantBaseline="central"
-                  style={{ fontSize: isBossCompleted ? "16px" : "9px", pointerEvents: "none", fontFamily: "monospace", fontWeight: 700 }}
-                  fill={isBossCompleted ? undefined : "hsl(var(--primary))"}
+                  style={{ fontSize: isBossCompleted ? "11px" : "9px", pointerEvents: "none", fontFamily: "monospace", fontWeight: 700 }}
+                  fill={isBossCompleted ? "hsl(45 70% 55%)" : "hsl(var(--primary))"}
                 >
-                  {isBossCompleted ? "👑" : (skill.skillNumber != null ? `#${skill.skillNumber}` : "")}
+                  {isBossCompleted ? "★" : (skill.skillNumber != null ? `#${skill.skillNumber}` : "")}
                 </text>
 
                 {/* Growth Rings — 3 arcs around the node */}
