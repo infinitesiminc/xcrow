@@ -1178,7 +1178,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
 
   // Compute skills earned for this simulation
   const [earnedSkills, setEarnedSkills] = useState<{ skill_id: string; xp: number; name: string; levelBefore: string; levelAfter: string; leveledUp: boolean }[]>([]);
-  const [intelDrop, setIntelDrop] = useState<{ summary: string; skills: string[]; xp: number } | null>(null);
+  const [intelDrop, setIntelDrop] = useState<{ toolName: string; toolIcon: string; toolCompany: string; relatedSkills: string[]; xp: number } | null>(null);
   const [intelDropRevealed, setIntelDropRevealed] = useState(false);
 
   const handleFinish = async () => {
