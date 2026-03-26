@@ -402,8 +402,7 @@ export default function SkillDetailDrawer({
                   <strong style={{ color: MASTERY_TIERS[currentTierIdx + 1].color }}>{MASTERY_TIERS[currentTierIdx + 1].name}</strong> unlocks at {MASTERY_TIERS[currentTierIdx + 1].minXp} XP — {MASTERY_TIERS[currentTierIdx + 1].simDesc}
                 </span>
               </div>
-            )}
-            )}
+          </div>
           </div>
 
           <Separator style={{ background: "hsl(var(--filigree) / 0.1)" }} />
