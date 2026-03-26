@@ -250,10 +250,12 @@ export default function QuestJournal({
               <div className="px-3 py-2 space-y-2">
                 {/* Phase objectives */}
                 {phaseMeta.objectives.map((obj, i) => {
-                  const isDone = missionPhase === "scout"
+                  const isDone = missionPhase === "discover"
                     ? (i === 0 ? scoutedSkills.length > 0 : i === 1 ? scoutedSkills.length >= 3 : territoriesScouted.size >= 8)
-                    : missionPhase === "battle"
+                    : missionPhase === "experiment"
                     ? (i === 0 ? battleLog.length > 0 : i === 1 ? skillsConquered >= 5 : false)
+                    : missionPhase === "challenge"
+                    ? (i === 0 ? skillsConquered >= 5 : i === 1 ? skillsConquered >= 10 : false)
                     : (i === 0 ? skillsConquered > 0 : false);
 
                   return (
