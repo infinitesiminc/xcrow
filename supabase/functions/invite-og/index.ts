@@ -1,7 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 const SITE = "https://xcrow.ai";
-const OG_IMAGE = `${SITE}/og-invite.png`;
+const OG_IMAGE = `${SITE}/og-invite.jpg`;
 
 serve((req) => {
   const url = new URL(req.url);
@@ -22,10 +22,12 @@ serve((req) => {
 <meta property="og:title" content="${esc(title)}">
 <meta property="og:description" content="${esc(desc)}">
 <meta property="og:url" content="${esc(authUrl)}">
+<meta property="og:site_name" content="Xcrow.ai">
 <meta property="og:image" content="${OG_IMAGE}">
+<meta property="og:image:secure_url" content="${OG_IMAGE}">
+<meta property="og:image:type" content="image/jpeg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:site_name" content="Xcrow.ai">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:site" content="@xcrowai">
 <meta name="twitter:title" content="${esc(title)}">
