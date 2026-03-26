@@ -3,7 +3,7 @@
  * The role character speaks in first person about how AI is changing their work.
  * Users can ask questions and collect skills.
  */
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, memo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Zap, Shield, TrendingUp, BookOpen, Swords, Award, ChevronRight, Sparkles, Send, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
