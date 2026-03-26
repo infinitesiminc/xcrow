@@ -470,8 +470,7 @@ const MapPage = () => {
           )}
         </AnimatePresence>
 
-      {/* ── Right: Territory Map ── */}
-      <div className="flex-1 relative">
+        {/* ── Territory Map ── */}
         {/* Saved Checkpoints Banner */}
         {savedCheckpoints.length > 0 && (
           <div className="absolute top-2 left-1/2 -translate-x-1/2 z-10 flex gap-2">
