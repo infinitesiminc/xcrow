@@ -32,6 +32,7 @@ const NPC_MAP_AVATARS: Record<string, string> = {
 import GuardianEncounter from "./GuardianEncounter";
 import NPCEncounter from "./NPCEncounter";
 import RoleNPCEncounter from "./RoleNPCEncounter";
+import ScoutMissionHUD from "./ScoutMissionHUD";
 import TerritoryParticles from "./TerritoryParticles";
 import HeroScene from "./HeroScene";
 import { getTerritoryHeroImage } from "@/lib/territory-hero-images";
@@ -89,6 +90,9 @@ export default function FutureTerritoryMap({ skills, focusSkillId, level2SkillId
   const [activeNPC, setActiveNPC] = useState<{ npc: WanderingNPC; territory: FutureSkillCategory } | null>(null);
   const [activeRoleNPC, setActiveRoleNPC] = useState<RoleNPC | null>(null);
   const [roleNPCs, setRoleNPCs] = useState<RoleNPC[]>([]);
+  const [territoriesScouted, setTerritoriesScouted] = useState<Set<string>>(new Set());
+  const [rolesSpokenTo, setRolesSpokenTo] = useState(0);
+  const [skillsCollected, setSkillsCollected] = useState(0);
   const [hoverPreview, setHoverPreview] = useState<{ type: "guardian" | "npc" | "role"; id: string; name: string; title: string; src: string; x: number; y: number; hue: number } | null>(null);
   const npcSpawns = useMemo(() => generateNPCSpawns(), []);
   const dragRef = useRef<{ startX: number; startY: number; tx: number; ty: number } | null>(null);
@@ -551,13 +555,25 @@ export default function FutureTerritoryMap({ skills, focusSkillId, level2SkillId
         {activeRoleNPC && (
           <RoleNPCEncounter
             role={activeRoleNPC}
-            onClose={() => setActiveRoleNPC(null)}
+            onClose={() => {
+              // Track territory scouted when closing encounter
+              setTerritoriesScouted(prev => new Set([...prev, activeRoleNPC.territory]));
+              setRolesSpokenTo(prev => prev + 1);
+              setActiveRoleNPC(null);
+            }}
             onCollectSkills={(ids) => {
-              // Skills collected — future: persist to user profile
+              setSkillsCollected(prev => prev + ids.length);
               console.log("Collected skills:", ids);
             }}
           />
         )}
+
+        {/* Scout Mission HUD */}
+        <ScoutMissionHUD
+          territoriesScouted={territoriesScouted}
+          rolesSpokenTo={rolesSpokenTo}
+          skillsCollected={skillsCollected}
+        />
 
         {/* Minimap */}
         <div className="absolute bottom-4 left-4 z-10 rounded-lg border border-border/50 bg-card/90 backdrop-blur-md shadow-lg overflow-hidden"
