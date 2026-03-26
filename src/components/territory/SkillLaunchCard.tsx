@@ -11,12 +11,16 @@ import { type FutureSkill } from "@/hooks/use-future-skills";
 import { getTerritory } from "@/lib/territory-colors";
 import type { CanonicalSkillGrowth } from "@/pages/MapPage";
 
+export type MasteryTier = "bronze" | "silver" | "gold" | "platinum";
+
 export interface SimLaunchRequest {
   jobTitle: string;
   taskName?: string;
   company?: string;
   skillId?: string;
   level?: 1 | 2;
+  /** Progressive mastery tier — determines sim format */
+  masteryTier?: MasteryTier;
   /** When true, sim spans the role's breadth (multiple skill domains) */
   roleChallenge?: boolean;
   /** Canonical skill IDs linked to this role challenge */
