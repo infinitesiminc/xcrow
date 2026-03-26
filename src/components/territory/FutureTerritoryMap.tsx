@@ -1,6 +1,7 @@
 /**
  * FutureTerritoryMap — Full-screen RPG-style SVG map for the future skills catalogue.
  * 8 island regions with minimap, pan clamping, click-to-zoom, and floating skill launch card.
+ * Now includes Role NPCs — real jobs from the DB that appear as interactive characters.
  */
 
 import { useMemo, useState, useRef, useCallback, useEffect } from "react";
@@ -30,9 +31,12 @@ const NPC_MAP_AVATARS: Record<string, string> = {
 };
 import GuardianEncounter from "./GuardianEncounter";
 import NPCEncounter from "./NPCEncounter";
+import RoleNPCEncounter from "./RoleNPCEncounter";
 import TerritoryParticles from "./TerritoryParticles";
 import HeroScene from "./HeroScene";
 import { getTerritoryHeroImage } from "@/lib/territory-hero-images";
+import { supabase } from "@/integrations/supabase/client";
+import { jobToRoleNPC, THREAT_COLORS, deptToTerritory, type RoleNPC } from "@/lib/role-npcs";
 
 import guardIronclad from "@/assets/guardian-ironclad.png";
 import guardLexicon from "@/assets/guardian-lexicon.png";
