@@ -224,6 +224,74 @@ export const GTC_TOOLS: GTCTool[] = [
   { name: "Bionemо", company: "NVIDIA", category: "vertical-industry", version: "GA", description: "Open models for biology, chemistry, drug discovery, and molecular design.", icon: "🧬", type: "reference", maturity: "ga", pricing: "Open Source", useCases: ["drug-discovery", "genomics", "molecular-design"] },
   { name: "Parabricks", company: "NVIDIA", category: "vertical-industry", version: "GA", description: "GPU-accelerated genomics analysis for clinical and research applications.", icon: "🧪", type: "reference", maturity: "ga", pricing: "Enterprise", useCases: ["genomics", "clinical", "research"] },
   { name: "cuOpt", company: "NVIDIA", category: "vertical-industry", version: "GA", description: "Decision optimization for logistics, routing, and supply chain management.", icon: "📦", type: "reference", maturity: "ga", pricing: "Enterprise", useCases: ["logistics", "supply-chain", "optimization"] },
+
+  // ═══════════════════════════════════════════
+  // HR & TALENT
+  // ═══════════════════════════════════════════
+  { name: "Workday AI", company: "Workday", category: "hr-talent", version: "2025", description: "AI-powered HCM platform for talent acquisition, workforce planning, and payroll.", icon: "👤", url: "https://www.workday.com", type: "learnable", maturity: "ga", pricing: "Enterprise", useCases: ["hcm", "talent-acquisition", "workforce-planning", "payroll"], products: [
+    { name: "Workday Recruiting", description: "AI-powered candidate sourcing, screening, and interview scheduling.", type: "learnable", useCases: ["recruiting", "sourcing"] },
+    { name: "Workday Adaptive Planning", description: "Workforce planning and financial planning with AI forecasting.", type: "learnable", useCases: ["workforce-planning", "forecasting"] },
+    { name: "Workday Illuminate", description: "AI agents embedded across Workday for natural language queries and automation.", type: "learnable", useCases: ["ai-assistant", "automation"] },
+  ] },
+  { name: "Eightfold AI", company: "Eightfold", category: "hr-talent", version: "2025", description: "Talent intelligence platform using deep learning for hiring, retention, and upskilling.", icon: "🎯", url: "https://eightfold.ai", type: "learnable", maturity: "ga", pricing: "Enterprise", useCases: ["talent-intelligence", "skills-matching", "dei"] },
+  { name: "HireVue", company: "HireVue", category: "hr-talent", version: "2025", description: "AI video interviewing and assessment platform for structured, bias-reduced hiring.", icon: "🎥", url: "https://www.hirevue.com", type: "learnable", maturity: "ga", pricing: "Paid", useCases: ["interviewing", "assessment", "screening"] },
+  { name: "Lattice", company: "Lattice", category: "hr-talent", version: "2025", description: "AI-powered people management — performance reviews, engagement, and compensation.", icon: "📐", url: "https://lattice.com", type: "learnable", maturity: "ga", pricing: "Paid", useCases: ["performance-management", "engagement", "compensation"] },
+  { name: "Deel", company: "Deel", category: "hr-talent", version: "2025", description: "Global HR platform with AI for payroll, compliance, and contractor management across 150+ countries.", icon: "🌍", url: "https://www.deel.com", type: "learnable", maturity: "ga", pricing: "Paid", useCases: ["global-payroll", "compliance", "contractor-management"] },
+
+  // ═══════════════════════════════════════════
+  // FINANCE & OPERATIONS
+  // ═══════════════════════════════════════════
+  { name: "Workiva", company: "Workiva", category: "finance-ops", version: "2025", description: "AI-powered financial reporting, audit, and ESG compliance platform.", icon: "📋", url: "https://www.workiva.com", type: "learnable", maturity: "ga", pricing: "Enterprise", useCases: ["financial-reporting", "audit", "esg", "compliance"] },
+  { name: "Coupa", company: "Coupa", category: "finance-ops", version: "2025", description: "AI-driven business spend management — procurement, invoicing, and supply chain finance.", icon: "💰", url: "https://www.coupa.com", type: "learnable", maturity: "ga", pricing: "Enterprise", useCases: ["procurement", "invoicing", "spend-management"] },
+  { name: "Stampli", company: "Stampli", category: "finance-ops", version: "2025", description: "AI-powered accounts payable automation — invoice processing, approvals, and payments.", icon: "📨", url: "https://www.stampli.com", type: "learnable", maturity: "ga", pricing: "Paid", useCases: ["accounts-payable", "invoice-processing", "payments"] },
+  { name: "Brex AI", company: "Brex", category: "finance-ops", version: "2025", description: "AI-native corporate card and spend management with automated expense categorization.", icon: "💳", url: "https://www.brex.com", type: "learnable", maturity: "ga", pricing: "Freemium", useCases: ["expense-management", "corporate-cards", "budgeting"] },
+  { name: "Anaplan", company: "Anaplan", category: "finance-ops", version: "2025", description: "Connected planning platform with AI for FP&A, sales planning, and supply chain.", icon: "📊", url: "https://www.anaplan.com", type: "learnable", maturity: "ga", pricing: "Enterprise", useCases: ["financial-planning", "forecasting", "scenario-analysis"] },
+
+  // ═══════════════════════════════════════════
+  // LEGAL & COMPLIANCE
+  // ═══════════════════════════════════════════
+  { name: "Harvey AI", company: "Harvey", category: "legal-compliance", version: "2025", description: "AI legal assistant for contract analysis, due diligence, and regulatory research.", icon: "⚖️", url: "https://www.harvey.ai", type: "learnable", maturity: "ga", pricing: "Enterprise", useCases: ["contract-analysis", "due-diligence", "legal-research"] },
+  { name: "Ironclad", company: "Ironclad", category: "legal-compliance", version: "2025", description: "AI-powered contract lifecycle management — drafting, negotiation, and compliance tracking.", icon: "📜", url: "https://ironcladapp.com", type: "learnable", maturity: "ga", pricing: "Paid", useCases: ["contract-management", "drafting", "negotiation"] },
+  { name: "DocuSign IAM", company: "DocuSign", category: "legal-compliance", version: "2025", description: "Intelligent agreement management with AI extraction, analysis, and e-signature workflows.", icon: "✍️", url: "https://www.docusign.com", type: "learnable", maturity: "ga", pricing: "Paid", useCases: ["e-signature", "agreement-management", "extraction"] },
+  { name: "Relativity", company: "Relativity", category: "legal-compliance", version: "2025", description: "AI-powered e-discovery and compliance platform for litigation and investigations.", icon: "🔍", url: "https://www.relativity.com", type: "learnable", maturity: "ga", pricing: "Enterprise", useCases: ["e-discovery", "litigation", "compliance"] },
+
+  // ═══════════════════════════════════════════
+  // CUSTOMER PLATFORMS
+  // ═══════════════════════════════════════════
+  { name: "Zendesk AI", company: "Zendesk", category: "customer-platforms", version: "2025", description: "AI-powered customer support with autonomous agents, ticket routing, and sentiment analysis.", icon: "💬", url: "https://www.zendesk.com", type: "learnable", maturity: "ga", pricing: "Paid", useCases: ["customer-support", "ticketing", "self-service"] },
+  { name: "Intercom Fin", company: "Intercom", category: "customer-platforms", version: "2025", description: "AI customer service agent that resolves issues autonomously across chat, email, and phone.", icon: "💭", url: "https://www.intercom.com", type: "learnable", maturity: "ga", pricing: "Paid", useCases: ["customer-service", "chatbot", "knowledge-base"] },
+  { name: "Freshworks", company: "Freshworks", category: "customer-platforms", version: "Freddy AI", description: "AI-powered CX suite spanning support, sales, and IT service management.", icon: "🍊", url: "https://www.freshworks.com", type: "learnable", maturity: "ga", pricing: "Freemium", useCases: ["customer-support", "sales", "itsm"] },
+  { name: "Gainsight", company: "Gainsight", category: "customer-platforms", version: "2025", description: "AI-driven customer success platform — health scoring, churn prediction, and expansion signals.", icon: "📈", url: "https://www.gainsight.com", type: "learnable", maturity: "ga", pricing: "Enterprise", useCases: ["customer-success", "churn-prediction", "retention"] },
+
+  // ═══════════════════════════════════════════
+  // MARKETING & REVOPS
+  // ═══════════════════════════════════════════
+  { name: "HubSpot AI", company: "HubSpot", category: "marketing-revops", version: "Breeze", description: "AI-powered CRM with marketing automation, content generation, and lead scoring.", icon: "🧡", url: "https://www.hubspot.com", type: "learnable", maturity: "ga", pricing: "Freemium", useCases: ["marketing-automation", "crm", "content", "lead-scoring"] },
+  { name: "Gong", company: "Gong", category: "marketing-revops", version: "2025", description: "Revenue intelligence — AI analysis of sales calls, deal forecasting, and coaching insights.", icon: "🔔", url: "https://www.gong.io", type: "learnable", maturity: "ga", pricing: "Paid", useCases: ["revenue-intelligence", "sales-analytics", "coaching"] },
+  { name: "6sense", company: "6sense", category: "marketing-revops", version: "2025", description: "AI-powered ABM and intent data platform for identifying in-market buyers.", icon: "🎯", url: "https://6sense.com", type: "learnable", maturity: "ga", pricing: "Enterprise", useCases: ["abm", "intent-data", "demand-gen"] },
+  { name: "Adobe Marketo", company: "Adobe", category: "marketing-revops", version: "2025", description: "Enterprise marketing automation with AI-powered lead management and campaign orchestration.", icon: "🅰️", url: "https://business.adobe.com/products/marketo/adobe-marketo.html", type: "learnable", maturity: "ga", pricing: "Enterprise", useCases: ["marketing-automation", "lead-management", "campaigns"] },
+  { name: "Clari", company: "Clari", category: "marketing-revops", version: "2025", description: "Revenue operations platform with AI for pipeline inspection, forecasting, and deal intelligence.", icon: "🔮", url: "https://www.clari.com", type: "learnable", maturity: "ga", pricing: "Enterprise", useCases: ["revenue-ops", "forecasting", "pipeline-management"] },
+
+  // ═══════════════════════════════════════════
+  // PRODUCTIVITY & COLLABORATION
+  // ═══════════════════════════════════════════
+  { name: "Microsoft 365 Copilot", company: "Microsoft", category: "productivity", version: "2025", description: "AI copilot across Word, Excel, PowerPoint, Outlook, and Teams for enterprise productivity.", icon: "Ⓜ️", url: "https://www.microsoft.com/microsoft-365/copilot", type: "learnable", maturity: "ga", pricing: "Paid", useCases: ["document-creation", "email", "presentations", "spreadsheets"], products: [
+    { name: "Copilot in Word", description: "Draft, rewrite, and summarize documents with AI.", type: "learnable", useCases: ["writing", "summarization"] },
+    { name: "Copilot in Excel", description: "Analyze data, create formulas, and generate insights from spreadsheets.", type: "learnable", useCases: ["analytics", "formulas"] },
+    { name: "Copilot in Teams", description: "Meeting summaries, action items, and real-time translation.", type: "learnable", useCases: ["meetings", "collaboration"] },
+    { name: "Copilot in Outlook", description: "Draft emails, summarize threads, and schedule meetings.", type: "learnable", useCases: ["email", "scheduling"] },
+  ] },
+  { name: "Notion AI", company: "Notion", category: "productivity", version: "Q&A", description: "AI writing, summarization, and Q&A across your team's knowledge base.", icon: "📝", url: "https://notion.so", type: "learnable", maturity: "ga", pricing: "Freemium", useCases: ["knowledge-management", "writing", "project-management"] },
+  { name: "Slack AI", company: "Salesforce", category: "productivity", version: "2025", description: "AI-powered channel summaries, search answers, and workflow automation in Slack.", icon: "💬", url: "https://slack.com", type: "learnable", maturity: "ga", pricing: "Paid", useCases: ["communication", "search", "workflow-automation"] },
+  { name: "Asana AI", company: "Asana", category: "productivity", version: "2025", description: "AI work management — smart status updates, goal tracking, and resource allocation.", icon: "📋", url: "https://asana.com", type: "learnable", maturity: "ga", pricing: "Paid", useCases: ["project-management", "goal-tracking", "resource-planning"] },
+
+  // ═══════════════════════════════════════════
+  // BI & VISUALIZATION
+  // ═══════════════════════════════════════════
+  { name: "Tableau", company: "Salesforce", category: "bi-visualization", version: "2025", description: "AI-powered data visualization with natural language queries and automated insights.", icon: "📊", url: "https://www.tableau.com", type: "learnable", maturity: "ga", pricing: "Paid", useCases: ["data-visualization", "dashboards", "analytics"] },
+  { name: "Power BI", company: "Microsoft", category: "bi-visualization", version: "Copilot", description: "Business intelligence with AI Copilot for natural language report building and DAX generation.", icon: "📈", url: "https://powerbi.microsoft.com", type: "learnable", maturity: "ga", pricing: "Freemium", useCases: ["data-visualization", "reporting", "dashboards"] },
+  { name: "Looker", company: "Google", category: "bi-visualization", version: "2025", description: "Semantic data platform with AI-powered exploration and embedded analytics.", icon: "👀", url: "https://cloud.google.com/looker", type: "learnable", maturity: "ga", pricing: "Paid", useCases: ["data-modeling", "dashboards", "embedded-analytics"] },
+  { name: "ThoughtSpot", company: "ThoughtSpot", category: "bi-visualization", version: "Spotter", description: "AI-powered search and analytics — ask questions in natural language, get instant charts.", icon: "💡", url: "https://www.thoughtspot.com", type: "learnable", maturity: "ga", pricing: "Paid", useCases: ["search-analytics", "self-service-bi", "natural-language"] },
 ];
 
 /** Get unique company names sorted by tool count */
