@@ -19,6 +19,7 @@ import { supabase } from "@/integrations/supabase/client";
 import SimulatorModal from "@/components/SimulatorModal";
 import HeaderVibeImages from "@/components/HeaderVibeImages";
 import { FutureTaskPreview } from "@/components/analysis/FutureTaskPreview";
+import { DegreeBadge } from "@/components/analysis/DegreeBadge";
 
 const isWebsite = (value: string) =>
   /^(https?:\/\/)?([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}(\/.*)?$/.test(value.trim());
@@ -312,7 +313,10 @@ const Analysis = () => {
         <div className="flex items-center gap-4 mb-6">
           <ReadinessRing readiness={readiness} size={64} />
           <div className="min-w-0 flex-1">
-            <h1 className="text-lg font-display font-bold text-foreground leading-snug">{result.jobTitle}</h1>
+            <div className="flex items-center gap-2 mb-0.5">
+              <h1 className="text-lg font-display font-bold text-foreground leading-snug">{result.jobTitle}</h1>
+              <DegreeBadge automationRisk={riskPercent} augmented={augmentedPercent} variant="inline" />
+            </div>
             {company && !isWebsite(company) && <p className="text-sm text-muted-foreground">Kingdom of {company}</p>}
           </div>
           <div className="flex gap-4 shrink-0">
@@ -334,6 +338,11 @@ const Analysis = () => {
             </div>
           </div>
         )}
+
+        {/* Automation Degree */}
+        <div className="mb-5">
+          <DegreeBadge automationRisk={riskPercent} augmented={augmentedPercent} variant="hero" />
+        </div>
 
         {focusedTask && !showAllTasks && (() => {
           const aiScore = focusedTask.aiExposureScore ?? 50;
