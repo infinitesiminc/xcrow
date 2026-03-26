@@ -871,6 +871,9 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
     return () => clearTimeout(safetyTimeout);
   }, [phase]);
 
+  // Keep a stable ref to handleFinish so setTimeout doesn't capture stale closure
+  const handleFinishRef = useRef<() => void>(() => {});
+
   const beginChat = () => {
     if (!session) return;
     if (level === 2 && auditData) {
@@ -1011,7 +1014,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
       if (nowAllMet || reply.includes("[ALL_OBJECTIVES_MET]")) {
         // Victory — lock input and auto-finish after celebration delay
         setQuestCleared(true);
-        setTimeout(() => handleFinish(), 3000);
+        setTimeout(() => handleFinishRef.current(), 3000);
       }
 
       // Learn→Apply: every user response advances the round (each response = 1 complete beat)
@@ -1155,6 +1158,9 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
         .catch(err => console.error("Intel drop generation failed:", err));
     }
   };
+
+  // Keep ref up to date so setTimeout always calls latest version
+  handleFinishRef.current = handleFinish;
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {
