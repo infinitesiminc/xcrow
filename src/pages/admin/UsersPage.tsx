@@ -101,6 +101,34 @@ export default function UsersPage() {
     setDeleting(null);
   };
 
+  const handleGrantChampion = async (userId: string, name: string, currentTier: string) => {
+    setGranting(userId);
+    try {
+      if (currentTier === "champion") {
+        // Revoke: delete active grants
+        await (supabase.from("user_subscriptions" as any) as any)
+          .delete()
+          .eq("user_id", userId)
+          .eq("source", "admin_grant");
+        toast({ title: `Revoked Champion from ${name}` });
+      } else {
+        // Grant: insert unlimited champion
+        await (supabase.from("user_subscriptions" as any) as any)
+          .insert({
+            user_id: userId,
+            source: "admin_grant",
+            plan: "champion",
+            ends_at: null, // unlimited until revoked
+          });
+        toast({ title: `Granted Champion to ${name}` });
+      }
+      await fetchUsers();
+    } catch (err: any) {
+      toast({ title: "Failed", description: err.message, variant: "destructive" });
+    }
+    setGranting(null);
+  };
+
   const today = startOfDay(new Date());
   const day7 = subDays(today, 7);
   const day30 = subDays(today, 30);
