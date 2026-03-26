@@ -46,6 +46,10 @@ interface SkillLaunchCardProps {
   onClose: () => void;
   onLaunchSim?: (req: SimLaunchRequest) => void;
   onLaunchPromptLab?: (req: PromptLabRequest) => void;
+  /** Whether this skill has been scouted via NPC conversation */
+  isScouted?: boolean;
+  /** Current mission phase — gates tier access */
+  missionPhase?: "scout" | "battle" | "conquer";
 }
 
 export default function SkillLaunchCard({
