@@ -138,9 +138,18 @@ export const GTC_TOOLS: GTCTool[] = [
   // ═══════════════════════════════════════════
   { name: "Open Claw", company: "Open Source", category: "agentic-frameworks", version: "1.0", description: "Agentic OS — spawns sub-agents, uses tools, schedules cron jobs. The 'Linux of agents.'", icon: "🦀", type: "learnable", maturity: "ga", pricing: "Open Source", useCases: ["agent-orchestration", "automation", "tool-use"] },
   { name: "Nemo Claw", company: "NVIDIA", category: "agentic-frameworks", version: "GA", description: "Enterprise-secure Open Claw with policy guardrails, privacy router, and Open Shell.", icon: "🛡️", type: "reference", maturity: "ga", pricing: "Enterprise", useCases: ["enterprise-ai", "security", "compliance"] },
-  { name: "LangChain", company: "LangChain", category: "agentic-frameworks", version: "0.3", description: "Agent orchestration framework — 1B+ downloads for building custom AI pipelines.", icon: "🔗", url: "https://langchain.com", type: "learnable", maturity: "ga", pricing: "Open Source", useCases: ["agent-orchestration", "rag", "tool-use"] },
+  { name: "LangChain", company: "LangChain", category: "agentic-frameworks", version: "0.3", description: "Agent orchestration framework — 1B+ downloads for building custom AI pipelines.", icon: "🔗", url: "https://langchain.com", type: "learnable", maturity: "ga", pricing: "Open Source", useCases: ["agent-orchestration", "rag", "tool-use"], products: [
+    { name: "LangChain Core", description: "Base abstractions and expression language for building chains.", type: "learnable" },
+    { name: "LangSmith", description: "Observability, testing, and evaluation platform for LLM apps.", type: "learnable", url: "https://smith.langchain.com" },
+    { name: "LangGraph", description: "Stateful multi-agent workflow framework.", type: "learnable" },
+    { name: "LangServe", description: "Deploy LangChain chains as REST APIs.", type: "learnable" },
+  ] },
   { name: "LangGraph", company: "LangChain", category: "agentic-frameworks", version: "0.2", description: "Stateful multi-agent workflow framework built on LangChain.", icon: "📊", url: "https://langchain.com/langgraph", type: "learnable", maturity: "ga", pricing: "Open Source", useCases: ["multi-agent", "workflow", "state-management"] },
-  { name: "CrewAI", company: "CrewAI", category: "agentic-frameworks", version: "2.0", description: "Multi-agent orchestration — role-based agents collaborating on complex tasks.", icon: "👥", url: "https://crewai.com", type: "learnable", maturity: "ga", pricing: "Open Source", useCases: ["multi-agent", "automation", "research"] },
+  { name: "CrewAI", company: "CrewAI", category: "agentic-frameworks", version: "2.0", description: "Multi-agent orchestration — role-based agents collaborating on complex tasks.", icon: "👥", url: "https://crewai.com", type: "learnable", maturity: "ga", pricing: "Open Source", useCases: ["multi-agent", "automation", "research"], products: [
+    { name: "CrewAI Framework", description: "Open-source Python framework for multi-agent orchestration.", type: "learnable" },
+    { name: "CrewAI Enterprise", description: "Managed platform with monitoring, deployment, and team features.", type: "learnable" },
+    { name: "CrewAI Flows", description: "Visual workflow builder for designing agent pipelines.", type: "learnable" },
+  ] },
   { name: "AutoGen", company: "Microsoft", category: "agentic-frameworks", version: "0.4", description: "Multi-agent conversation framework for building complex AI workflows.", icon: "🔄", url: "https://github.com/microsoft/autogen", type: "learnable", maturity: "ga", pricing: "Open Source", useCases: ["multi-agent", "conversation", "automation"] },
   { name: "Open Shell", company: "NVIDIA", category: "agentic-frameworks", version: "GA", description: "Security layer for Open Claw — policy engine and privacy router for enterprise agents.", icon: "🔒", type: "reference", maturity: "ga", pricing: "Open Source", useCases: ["security", "policy", "compliance"] },
 
