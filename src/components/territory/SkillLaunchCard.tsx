@@ -40,8 +40,8 @@ interface SkillLaunchCardProps {
   level2Unlocked?: boolean;
   growth?: CanonicalSkillGrowth | null;
   onClose: () => void;
-  /** If provided, launches sim in-place instead of navigating */
   onLaunchSim?: (req: SimLaunchRequest) => void;
+  onLaunchPromptLab?: (req: PromptLabRequest) => void;
 }
 
 export default function SkillLaunchCard({
