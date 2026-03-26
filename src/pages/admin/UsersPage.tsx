@@ -41,6 +41,7 @@ interface UserRow {
   total_analyses: number;
   total_xp: number;
   last_active: string | null;
+  tier?: "free" | "champion" | "school";
 }
 
 type SortKey = "created_at" | "total_sims" | "total_xp" | "last_active" | "display_name";
