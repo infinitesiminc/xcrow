@@ -568,6 +568,13 @@ export default function FutureTerritoryMap({ skills, focusSkillId, level2SkillId
           />
         )}
 
+        {/* Scout Mission HUD */}
+        <ScoutMissionHUD
+          territoriesScouted={territoriesScouted}
+          rolesSpokenTo={rolesSpokenTo}
+          skillsCollected={skillsCollected}
+        />
+
         {/* Minimap */}
         <div className="absolute bottom-4 left-4 z-10 rounded-lg border border-border/50 bg-card/90 backdrop-blur-md shadow-lg overflow-hidden"
           style={{ width: MINIMAP_W, height: MINIMAP_H }}>
