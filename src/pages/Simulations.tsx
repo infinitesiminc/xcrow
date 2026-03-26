@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Plus, FileText, MessageSquare, GraduationCap,
   Loader2, Trash2, Play, ChevronDown, ChevronUp, Upload,
-  Sparkles, Clock, Brain, Search, Briefcase,
+  Sparkles, Clock, Brain, Search, Briefcase, Workflow,
   BookOpen, Save,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
