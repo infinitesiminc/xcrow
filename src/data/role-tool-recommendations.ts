@@ -121,6 +121,51 @@ export const TOOL_WORKFLOW_MAP: Record<string, WorkflowStage> = {
   "Isaac Lab": "build",
   "Groot": "build",
   "Alpamo": "deploy",
+
+  // HR & Talent
+  "Workday AI": "automate",
+  "Eightfold AI": "analyze",
+  "HireVue": "analyze",
+  "Lattice": "analyze",
+  "Deel": "automate",
+
+  // Finance & Ops
+  "Workiva": "analyze",
+  "Coupa": "automate",
+  "Stampli": "automate",
+  "Brex AI": "automate",
+  "Anaplan": "analyze",
+
+  // Legal & Compliance
+  "Harvey AI": "research",
+  "Ironclad": "automate",
+  "DocuSign IAM": "automate",
+  "Relativity": "research",
+
+  // Customer Platforms
+  "Zendesk AI": "automate",
+  "Intercom Fin": "automate",
+  "Freshworks": "automate",
+  "Gainsight": "analyze",
+
+  // Marketing & RevOps
+  "HubSpot AI": "automate",
+  "Gong": "analyze",
+  "6sense": "research",
+  "Adobe Marketo": "automate",
+  "Clari": "analyze",
+
+  // Productivity
+  "Microsoft 365 Copilot": "create",
+  "Notion AI": "create",
+  "Slack AI": "create",
+  "Asana AI": "automate",
+
+  // BI & Visualization
+  "Tableau": "analyze",
+  "Power BI": "analyze",
+  "Looker": "analyze",
+  "ThoughtSpot": "analyze",
 };
 
 /** Role archetypes with recommended tools (ordered by priority) */
