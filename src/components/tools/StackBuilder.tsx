@@ -5,7 +5,7 @@
  */
 import { useState, useCallback, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, Loader2, X, Plus, Check, ExternalLink, FlaskConical } from "lucide-react";
+import { Search, Loader2, X, Plus, Check, ExternalLink, FlaskConical, Link } from "lucide-react";
 import ToolQuickQuiz, { type QuizResult } from "./ToolQuickQuiz";
 import { supabase } from "@/integrations/supabase/client";
 import { GTC_TOOLS, CATEGORY_CONFIG, type GTCTool } from "@/data/gtc-tools-registry";
@@ -29,6 +29,7 @@ type FilterMode = "all" | "in-stack" | WorkflowStage;
 
 export default function StackBuilder({ onSelectTool }: Props) {
   const [query, setQuery] = useState("");
+  const [jdUrl, setJdUrl] = useState("");
   const [loading, setLoading] = useState(false);
   const [searchResults, setSearchResults] = useState<RankedTool[] | null>(null);
   const [searchedTitle, setSearchedTitle] = useState("");
@@ -38,6 +39,7 @@ export default function StackBuilder({ onSelectTool }: Props) {
   const { toggleTool, isInStack, stack, stackSize } = useMyStack();
   const [proficiencies, setProficiencies] = useState<Record<string, number>>({});
   const [quizTool, setQuizTool] = useState<string | null>(null);
+  const [searchMode, setSearchMode] = useState<"title" | "url">("title");
 
   const handleQuizComplete = (toolName: string, result: QuizResult) => {
     setProficiencies(p => ({ ...p, [toolName]: result.level }));
@@ -89,7 +91,63 @@ export default function StackBuilder({ onSelectTool }: Props) {
     } finally { setLoading(false); }
   }, [query]);
 
-  const clearSearch = () => { setQuery(""); setSearchResults(null); setSearchedTitle(""); };
+  // --- JD URL search ---
+  const searchByUrl = useCallback(async () => {
+    const url = jdUrl.trim();
+    if (!url) return;
+    setLoading(true);
+    setSearchedTitle("Job Description");
+    setSelectedTemplate(null);
+
+    try {
+      const { data, error } = await supabase.functions.invoke("parse-jd", {
+        body: { url },
+      });
+
+      if (error || !data) throw new Error("Failed to parse JD");
+
+      const skills: string[] = [
+        ...(data.skills || []).map((s: any) => (typeof s === "string" ? s : s.name || "")),
+        ...(data.taskClusters || data.task_clusters || []).flatMap((tc: any) => tc.skill_names || []),
+      ].filter(Boolean);
+
+      const title = data.title || data.job_title || "Job Description";
+      setSearchedTitle(title);
+
+      const toolScores = new Map<string, { score: number; skills: Set<string> }>();
+      for (const skill of skills) {
+        for (const tn of JOB_SKILL_TO_TOOLS[skill] || []) {
+          if (!toolScores.has(tn)) toolScores.set(tn, { score: 0, skills: new Set() });
+          const e = toolScores.get(tn)!; e.score += 1; e.skills.add(skill);
+        }
+        // Also try fuzzy match on tool names
+        const lower = skill.toLowerCase();
+        for (const tool of GTC_TOOLS) {
+          if (tool.name.toLowerCase().includes(lower) || lower.includes(tool.name.toLowerCase())) {
+            if (!toolScores.has(tool.name)) toolScores.set(tool.name, { score: 0, skills: new Set() });
+            toolScores.get(tool.name)!.score += 2;
+            toolScores.get(tool.name)!.skills.add(skill);
+          }
+        }
+      }
+
+      // Fallback: also match from title
+      const role = matchRole(title);
+      for (const t of role.coreTools) { if (!toolScores.has(t)) toolScores.set(t, { score: 0, skills: new Set() }); toolScores.get(t)!.score += 3; }
+      for (const t of role.expandedTools) { if (!toolScores.has(t)) toolScores.set(t, { score: 0, skills: new Set() }); toolScores.get(t)!.score += 1; }
+
+      const ranked = Array.from(toolScores.entries())
+        .map(([name, d]) => { const tool = GTC_TOOLS.find(t => t.name === name); return tool ? { tool, score: d.score, matchedSkills: Array.from(d.skills) } : null; })
+        .filter(Boolean) as RankedTool[];
+      ranked.sort((a, b) => b.score - a.score);
+      setSearchResults(ranked.slice(0, 24));
+      setJobCount(0);
+    } catch {
+      setSearchResults(null);
+    } finally { setLoading(false); }
+  }, [jdUrl]);
+
+  const clearSearch = () => { setQuery(""); setJdUrl(""); setSearchResults(null); setSearchedTitle(""); };
 
   // --- Template logic ---
   const templateTools = useMemo(() => {
@@ -138,29 +196,69 @@ export default function StackBuilder({ onSelectTool }: Props) {
   return (
     <div className="space-y-5">
       {/* Search bar */}
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4" style={{ color: "hsl(var(--muted-foreground))" }} />
-        <input
-          value={query}
-          onChange={e => { setQuery(e.target.value); if (e.target.value.length < 2) setSearchResults(null); }}
-          onKeyDown={e => e.key === "Enter" && search()}
-          placeholder="Search by job title for personalized recommendations..."
-          className="w-full pl-10 pr-24 py-3 rounded-xl text-sm transition-all focus:outline-none focus:ring-2 focus:ring-primary/30"
-          style={{ background: "hsl(var(--muted) / 0.08)", border: "1px solid hsl(var(--border) / 0.3)", color: "hsl(var(--foreground))" }}
-        />
-        {query && (
-          <button onClick={clearSearch} className="absolute right-20 top-1/2 -translate-y-1/2 p-1 rounded-full hover:opacity-70">
-            <X className="h-3.5 w-3.5" style={{ color: "hsl(var(--muted-foreground))" }} />
+      <div className="space-y-2">
+        {/* Mode toggle */}
+        <div className="flex gap-1">
+          <button
+            onClick={() => setSearchMode("title")}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-medium transition-all"
+            style={{
+              background: searchMode === "title" ? "hsl(var(--primary) / 0.12)" : "transparent",
+              color: searchMode === "title" ? "hsl(var(--primary))" : "hsl(var(--muted-foreground))",
+              border: `1px solid ${searchMode === "title" ? "hsl(var(--primary) / 0.3)" : "transparent"}`,
+            }}
+          >
+            <Search className="h-3 w-3" /> Job Title
           </button>
-        )}
-        <button
-          onClick={search}
-          disabled={loading || query.trim().length < 2}
-          className="absolute right-2 top-1/2 -translate-y-1/2 px-4 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-all disabled:opacity-40"
-          style={{ background: "linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary) / 0.8))", color: "hsl(var(--primary-foreground))" }}
-        >
-          {loading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : "Search"}
-        </button>
+          <button
+            onClick={() => setSearchMode("url")}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-medium transition-all"
+            style={{
+              background: searchMode === "url" ? "hsl(var(--primary) / 0.12)" : "transparent",
+              color: searchMode === "url" ? "hsl(var(--primary))" : "hsl(var(--muted-foreground))",
+              border: `1px solid ${searchMode === "url" ? "hsl(var(--primary) / 0.3)" : "transparent"}`,
+            }}
+          >
+            <Link className="h-3 w-3" /> JD URL
+          </button>
+        </div>
+
+        {/* Input */}
+        <div className="relative">
+          {searchMode === "title" ? (
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4" style={{ color: "hsl(var(--muted-foreground))" }} />
+          ) : (
+            <Link className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4" style={{ color: "hsl(var(--muted-foreground))" }} />
+          )}
+          <input
+            value={searchMode === "title" ? query : jdUrl}
+            onChange={e => {
+              if (searchMode === "title") {
+                setQuery(e.target.value);
+                if (e.target.value.length < 2) setSearchResults(null);
+              } else {
+                setJdUrl(e.target.value);
+              }
+            }}
+            onKeyDown={e => e.key === "Enter" && (searchMode === "title" ? search() : searchByUrl())}
+            placeholder={searchMode === "title" ? "Search by job title for personalized recommendations..." : "Paste a job description URL to extract tool recommendations..."}
+            className="w-full pl-10 pr-24 py-3 rounded-xl text-sm transition-all focus:outline-none focus:ring-2 focus:ring-primary/30"
+            style={{ background: "hsl(var(--muted) / 0.08)", border: "1px solid hsl(var(--border) / 0.3)", color: "hsl(var(--foreground))" }}
+          />
+          {(query || jdUrl) && (
+            <button onClick={clearSearch} className="absolute right-20 top-1/2 -translate-y-1/2 p-1 rounded-full hover:opacity-70">
+              <X className="h-3.5 w-3.5" style={{ color: "hsl(var(--muted-foreground))" }} />
+            </button>
+          )}
+          <button
+            onClick={searchMode === "title" ? search : searchByUrl}
+            disabled={loading || (searchMode === "title" ? query.trim().length < 2 : jdUrl.trim().length < 5)}
+            className="absolute right-2 top-1/2 -translate-y-1/2 px-4 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-all disabled:opacity-40"
+            style={{ background: "linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary) / 0.8))", color: "hsl(var(--primary-foreground))" }}
+          >
+            {loading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : searchMode === "title" ? "Search" : "Analyze"}
+          </button>
+        </div>
       </div>
 
       {/* Role templates row */}
