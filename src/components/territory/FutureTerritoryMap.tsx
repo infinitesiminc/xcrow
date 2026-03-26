@@ -105,19 +105,21 @@ export default function FutureTerritoryMap({ skills, focusSkillId, level2SkillId
         .not("automation_risk_percent", "is", null)
         .not("department", "is", null)
         .order("imported_at", { ascending: false })
-        .limit(200);
+        .limit(400);
       if (!jobs?.length) return;
 
-      // Sample up to 3 per territory for variety
+      // Sample up to 5 per territory, max 2 roles per company, unique titles
       const perTerritory = new Map<string, RoleNPC[]>();
+      const companyCount = new Map<string, number>();
       for (const job of jobs) {
         const npc = jobToRoleNPC(job as any);
         const key = npc.territory;
         if (!perTerritory.has(key)) perTerritory.set(key, []);
         const arr = perTerritory.get(key)!;
-        // Ensure unique titles within territory
-        if (arr.length < 3 && !arr.some(r => r.title === npc.title)) {
+        const cc = companyCount.get(npc.company) || 0;
+        if (arr.length < 5 && !arr.some(r => r.title === npc.title) && cc < 2) {
           arr.push(npc);
+          if (npc.company) companyCount.set(npc.company, cc + 1);
         }
       }
       setRoleNPCs(Array.from(perTerritory.values()).flat());
