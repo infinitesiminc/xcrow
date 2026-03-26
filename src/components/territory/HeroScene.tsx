@@ -58,7 +58,7 @@ const HeroScene = forwardRef<HTMLDivElement, HeroSceneProps>(function HeroScene(
   const opacity = INTENSITY_OPACITY[intensity];
 
   return (
-    <div className={`relative overflow-hidden ${className}`}>
+    <div ref={ref} className={`relative overflow-hidden ${className}`}>
       {/* Image layer */}
       <div className="absolute inset-0 z-0">
         <motion.img
