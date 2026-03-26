@@ -230,53 +230,57 @@ CRITICAL INSTRUCTIONS:
     ? "Future-focused: the task is automated, teach the NEW human oversight role"
     : "Current: teach how to use today's AI tools for this task";
 
-  // Mastery tier instructions — different sim format per tier
+  // Mastery tier instructions — student-focused progression
   const tierKey = masteryTier || "bronze";
   const TIER_INSTRUCTIONS: Record<string, string> = {
-    bronze: `MASTERY TIER: BRONZE — OUTPOST
-This is an INTRODUCTORY quest. The user is learning this skill for the first time.
-FORMAT: Tutorial → A/B Comparison
-- Teach the core concept and prompting technique first
-- Each round: present a scenario, teach the key insight, then offer 2 AI approaches to compare
-- Be encouraging and explanatory — this is their first encounter with this skill
-- Focus on D1-D2 automation scenarios (AI as tool/co-pilot)`,
-    silver: `MASTERY TIER: SILVER — FORTRESS  
-This is a CONTEXT SHIFT challenge. The user already knows the basics and must apply the skill in new contexts.
-FORMAT: Context Shifts → Prompt Remix → Speed Rounds
-CRITICAL DIFFERENCES FROM BRONZE:
-1. Do NOT re-teach the basic concept — the user already passed Bronze
-2. Each round must present a DIFFERENT INDUSTRY or ROLE CONTEXT for the same skill
-3. Scenarios should be more complex — involve cross-functional stakeholders, ambiguous requirements, or competing priorities
-4. At least one round should be a "Prompt Remix" — give the user a mediocre AI prompt and ask which improvement strategy is better
-5. Use tighter time framing: "Under time pressure, which approach wins?"
-6. Focus on D2-D3 automation scenarios (AI as co-pilot/supervised autonomy)
-Example context shifts for "AI Output Quality Auditing": 
-- Round 1: Auditing AI-generated marketing copy for a regulated healthcare company
-- Round 2: Validating AI-produced financial projections for a board presentation
-- Round 3: Reviewing AI-drafted legal contract clauses under deadline`,
-    gold: `MASTERY TIER: GOLD — CITADEL
-This is a BOSS BATTLE / RED TEAM audit. The user is now an expert defender against AI failures.
-FORMAT: Boss Briefing → Red Team Audit → Prompt Surgery
-CRITICAL DIFFERENCES FROM SILVER:
-1. The user is auditing AI CLAIMS and catching failures — not learning techniques
-2. Present scenarios where AI has ALREADY produced output and the user must evaluate it
-3. Each round: show an AI-generated claim/output and ask whether the approach to validate it is sound
-4. Include subtle errors, edge cases, and overconfident AI outputs
-5. One round should involve "Prompt Surgery" — a broken AI workflow that needs fixing
-6. Frame as adversarial: "The AI is confident. Should you trust it?"
-7. Focus on D3-D4 automation scenarios (supervised autonomy / managed fleet)`,
-    platinum: `MASTERY TIER: PLATINUM — GRANDMASTER
-This is an AGENT COMMANDER simulation. The user manages autonomous AI agent workflows.
-FORMAT: Agent Orchestration → Permission Design → Crisis Response
-CRITICAL DIFFERENCES FROM GOLD:
-1. Present multi-agent scenarios where 2-3 AI agents are running concurrent tasks
-2. Each round: an agent requests permissions, reports anomalies, or produces conflicting outputs
-3. The user must decide: Approve/Deny/Scope agent requests, not just evaluate outputs
-4. Include at least one "crisis cascade" — one agent failure triggering chain reactions
-5. Frame as fleet management: "Your agent fleet is running. What's your call, Commander?"
-6. Focus on D4-D5 automation scenarios (managed fleet / strategic oversight)
-7. Reference specific agent capabilities: Computer Use API, autonomous code execution, data pipeline management`,
-  };
+    bronze: `MASTERY TIER: FIRST CONTACT — DISCOVERY
+This is a DISCOVERY quest. The user may have NEVER used this AI tool before. Assume ZERO prior AI knowledge.
+FORMAT: Show → React → Judge
+- Round structure: You SHOW the user what an AI tool does on a real task, then ask them to JUDGE the result.
+- Beat 1: Present a relatable task (homework, job application, creative project). Show what happens when you feed it to an AI tool. Display the AI's actual output.
+- Beat 2: Ask "Was this output good or bad? Why?" with 2 concrete observations to pick from.
+- Be warm, encouraging, and use simple language — no jargon like "zero-shot" or "chain-of-thought".
+- Name SPECIFIC tools students know (ChatGPT, Gemini, Grammarly, Canva AI, Notion AI) not obscure enterprise tools.
+- Focus on building INTUITION: "AI is good at X but struggles with Y"
+- Each round should reveal a different AI strength or weakness.
+TONE: Like a cool older student showing you a trick, not a professor lecturing.
+IMPORTANT: Options should be observations about the AI output ("The AI nailed the structure but missed the nuance" vs "The AI got everything right"), NOT technique comparisons.`,
+    silver: `MASTERY TIER: APPRENTICE — GUIDED PROMPTING
+This user has tried AI tools but doesn't know HOW to get good results consistently. They need scaffolded practice.
+FORMAT: Template → Remix → Compare
+- Round structure: Give the user a PROMPT TEMPLATE with blanks, let them see the result, then ask which IMPROVEMENT would make it better.
+- Beat 1: Show a mediocre prompt and its mediocre output. Then show a BETTER prompt (with specific improvements highlighted) and its superior output.
+- Beat 2: Ask "Which improvement made the biggest difference?" with 2 specific prompt techniques to choose from.
+- Teach ONE prompting technique per round: role-setting, adding examples, specifying format, adding constraints.
+- Use before/after reveals: "Here's what a vague prompt gets you → here's what a specific prompt gets you"
+- Language should be practical: "Add this line to get better results" not "employ chain-of-thought reasoning"
+- Focus on MUSCLE MEMORY: repeat patterns the user can copy into their own work.
+TONE: Like a study buddy sharing cheat codes, not a textbook.
+IMPORTANT: Both options should be prompt improvements, not "use AI vs don't use AI".`,
+    gold: `MASTERY TIER: CHALLENGER — CRITICAL THINKING
+The user can get good AI results. Now they need to learn WHEN TO TRUST and when to push back.
+FORMAT: Detective Game — Spot the BS
+- Round structure: Show AI-generated content that looks polished but contains SUBTLE errors. User must catch them.
+- Beat 1: Present a realistic scenario where AI produced confident-looking output (essay, analysis, code, recommendation).
+- Beat 2: Ask "What's wrong here?" with 2 potential issues to identify — one is the real problem, one is a red herring.
+- Include hallucinations, outdated facts, logical gaps, and overconfident claims.
+- Frame as detective work: "The AI sounds sure. But is it right?"
+- Teach verification habits: cross-referencing, source-checking, logical consistency tests.
+- Focus on D3 automation scenarios (supervised autonomy).
+TONE: Like a mentor teaching street smarts — "Here's how the real world works."`,
+    platinum: `MASTERY TIER: COMMANDER — AI LEADERSHIP
+The user can use and evaluate AI. Now they learn to ORCHESTRATE multiple tools into workflows.
+FORMAT: Mission Control — Multi-Agent Ops
+- Round structure: Present scenarios where 2-3 AI agents/tools must work together. User decides how to chain them.
+- Beat 1: Present a complex task that needs multiple AI tools in sequence (e.g., research → draft → design → review).
+- Beat 2: Ask "How should you chain these tools?" with 2 workflow options.
+- Include agent permission decisions, conflict resolution between AI outputs, and workflow optimization.
+- Frame as leadership: "You're the boss. Your AI team awaits orders."
+- One round should involve a "cascade failure" — one tool's mistake flowing into the next.
+- Focus on D4-D5 automation scenarios (managed fleet / strategic oversight).
+TONE: Like a flight simulator — high stakes, cool-headed decision making.
+This tier makes them EMPLOYABLE. Most adults can't do this.`,
+  };`
 
   const tierInstructions = TIER_INSTRUCTIONS[tierKey] || TIER_INSTRUCTIONS.bronze;
 
