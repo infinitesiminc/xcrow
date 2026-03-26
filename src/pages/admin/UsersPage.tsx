@@ -193,7 +193,7 @@ export default function UsersPage() {
                 <TableRow>
                   <SortableHead label="Name" sortKey="display_name" current={sortKey} asc={sortAsc} onSort={toggleSort} />
                   <TableHead className="text-xs">Email</TableHead>
-                  <TableHead className="text-xs">Stage</TableHead>
+                  <TableHead className="text-xs">Tier</TableHead>
                   <TableHead className="text-xs">School / Company</TableHead>
                   <SortableHead label="Sims" sortKey="total_sims" current={sortKey} asc={sortAsc} onSort={toggleSort} />
                   <SortableHead label="XP" sortKey="total_xp" current={sortKey} asc={sortAsc} onSort={toggleSort} />
