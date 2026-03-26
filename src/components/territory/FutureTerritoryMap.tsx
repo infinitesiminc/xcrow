@@ -453,7 +453,7 @@ export default function FutureTerritoryMap({ skills, focusSkillId, level2SkillId
             );
           })}
 
-          {/* Role NPCs — real jobs as characters */}
+          {/* Role NPCs — real jobs as characters + quest waypoint beacon on first */}
           {roleNPCs.map((role, idx) => {
             const island = layout.find(i => i.category === role.territory);
             if (!island) return null;
