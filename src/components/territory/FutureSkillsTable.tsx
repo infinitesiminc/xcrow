@@ -302,8 +302,8 @@ export default function FutureSkillsTable({ skills, onSkillClick, skillGrowthMap
         <div className="flex gap-1 flex-wrap">
           {([
             { key: "all" as FilterMode, label: "All", count: skills.length },
-            { key: "bookmarked" as FilterMode, label: "⭐ Saved", count: bookmarkedCount },
-            { key: "practiced" as FilterMode, label: "⚔️ Practiced", count: practicedCount },
+            { key: "bookmarked" as FilterMode, label: "Saved", count: bookmarkedCount, icon: Star },
+            { key: "practiced" as FilterMode, label: "Practiced", count: practicedCount, icon: Swords },
           ]).map(f => (
             <button
               key={f.key}
