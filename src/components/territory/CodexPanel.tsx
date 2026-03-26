@@ -19,6 +19,15 @@ interface ToolDrop {
   task_name: string;
 }
 
+const DEMO_DROPS: ToolDrop[] = [
+  { id: "demo-1", tool_name: "Cursor", tool_icon: "⌨️", tool_company: "Anysphere", related_skills: ["AI Code Audit", "Prompt Engineering", "Agentic Coding"], completed_at: new Date().toISOString(), job_title: "Software Engineer", task_name: "Code Review Automation" },
+  { id: "demo-2", tool_name: "Claude", tool_icon: "🧠", tool_company: "Anthropic", related_skills: ["Prompt Engineering", "AI Output Evaluation"], completed_at: new Date().toISOString(), job_title: "Product Manager", task_name: "PRD Drafting" },
+  { id: "demo-3", tool_name: "Midjourney", tool_icon: "🎨", tool_company: "Midjourney Inc.", related_skills: ["AI-Augmented Design", "Prompt Engineering"], completed_at: new Date().toISOString(), job_title: "UX Designer", task_name: "Visual Concept Generation" },
+  { id: "demo-4", tool_name: "Perplexity", tool_icon: "🔍", tool_company: "Perplexity AI", related_skills: ["AI-Powered Research", "Information Synthesis"], completed_at: new Date().toISOString(), job_title: "Market Analyst", task_name: "Competitive Intelligence" },
+  { id: "demo-5", tool_name: "Copilot", tool_icon: "✈️", tool_company: "Microsoft", related_skills: ["Workflow Automation", "AI Integration"], completed_at: new Date().toISOString(), job_title: "Data Analyst", task_name: "Report Automation" },
+  { id: "demo-6", tool_name: "Devin", tool_icon: "🤖", tool_company: "Cognition", related_skills: ["Agentic Coding", "Multi-Agent Orchestration"], completed_at: new Date().toISOString(), job_title: "Engineering Lead", task_name: "Autonomous Bug Fixing" },
+];
+
 export default function CodexPanel() {
   const { user } = useAuth();
   const [drops, setDrops] = useState<ToolDrop[]>([]);
@@ -26,7 +35,7 @@ export default function CodexPanel() {
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!user) { setLoading(false); return; }
+    if (!user) { setDrops(DEMO_DROPS); setLoading(false); return; }
     supabase
       .from("completed_simulations")
       .select("id, job_title, task_name, completed_at, elevation_narrative")
@@ -52,7 +61,7 @@ export default function CodexPanel() {
             });
           }
         }
-        setDrops(parsed);
+        setDrops(parsed.length > 0 ? parsed : DEMO_DROPS);
         setLoading(false);
       });
   }, [user]);
@@ -64,25 +73,6 @@ export default function CodexPanel() {
           <Wrench className="h-5 w-5 text-primary/40 mx-auto animate-pulse" />
           <p className="text-xs text-muted-foreground">Loading Arsenal…</p>
         </div>
-      </div>
-    );
-  }
-
-  if (drops.length === 0) {
-    return (
-      <div className="flex flex-col items-center justify-center py-16 px-6 text-center">
-        <div
-          className="w-14 h-14 rounded-2xl flex items-center justify-center mb-4"
-          style={{ background: "hsl(var(--primary) / 0.08)", border: "1px solid hsl(var(--primary) / 0.15)" }}
-        >
-          <Wrench className="h-6 w-6 text-primary/50" />
-        </div>
-        <h3 className="text-sm font-display font-bold text-foreground mb-1" style={{ fontFamily: "'Cinzel', serif" }}>
-          The Arsenal Awaits
-        </h3>
-        <p className="text-xs text-muted-foreground max-w-[260px] leading-relaxed">
-          Complete battles to discover surprise AI Tool Drops — unlock tools and navigate to related skills to master them.
-        </p>
       </div>
     );
   }
