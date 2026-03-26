@@ -527,7 +527,7 @@ export default function FutureTerritoryMap({ skills, focusSkillId, level2SkillId
           <GuardianEncounter
             guardian={activeGuardian}
             onClose={() => setActiveGuardian(null)}
-            onChallenge={(g) => { setActiveGuardian(null); /* TODO: launch guardian challenge */ }}
+            onChallenge={(g) => { setActiveGuardian(null); }}
           />
         )}
 
@@ -537,7 +537,19 @@ export default function FutureTerritoryMap({ skills, focusSkillId, level2SkillId
             npc={activeNPC.npc}
             territory={activeNPC.territory}
             onClose={() => setActiveNPC(null)}
-            onInteract={(n) => { setActiveNPC(null); /* TODO: NPC interaction flow */ }}
+            onInteract={(n) => { setActiveNPC(null); }}
+          />
+        )}
+
+        {/* Role NPC Encounter */}
+        {activeRoleNPC && (
+          <RoleNPCEncounter
+            role={activeRoleNPC}
+            onClose={() => setActiveRoleNPC(null)}
+            onCollectSkills={(ids) => {
+              // Skills collected — future: persist to user profile
+              console.log("Collected skills:", ids);
+            }}
           />
         )}
 
