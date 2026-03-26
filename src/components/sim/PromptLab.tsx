@@ -140,14 +140,21 @@ export default function PromptLab({
       });
 
       if (res.error) throw new Error(res.error.message);
-      setEvaluation(res.data);
+      const evalData = res.data as Evaluation;
+      setEvaluation(evalData);
       setPhase("result");
-    } catch (err: any) {
-      console.error(err);
-      toast({ title: "Evaluation failed", description: err.message, variant: "destructive" });
-      setPhase("writing");
-    }
-  };
+
+      // Fire embedded completion callback
+      if (onComplete && evalData) {
+        onComplete({
+          totalScore: evalData.score_clarity + evalData.score_specificity + evalData.score_technique + evalData.score_output_quality,
+          clarity: evalData.score_clarity,
+          specificity: evalData.score_specificity,
+          technique: evalData.score_technique,
+          outputQuality: evalData.score_output_quality,
+          feedback: evalData.feedback,
+        });
+      }
 
   // Fetch history
   const fetchHistory = useCallback(async () => {
