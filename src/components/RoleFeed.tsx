@@ -360,7 +360,12 @@ function RoleDetailOverlay({ role, onClose }: { role: RoleCard; onClose: () => v
                     <img src={role.logo} alt={role.company || ''} className="h-10 w-10 rounded-lg object-contain bg-white/10 p-1 shrink-0" onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
                   )}
                   <div className="min-w-0">
-                    <h2 className="text-lg font-display font-bold text-white leading-snug truncate">{role.title}</h2>
+                    <div className="flex items-center gap-2">
+                      <h2 className="text-lg font-display font-bold text-white leading-snug truncate">{role.title}</h2>
+                      {(() => { const d = getAutomationDegree(role.risk, role.augmented); return (
+                        <span className={`inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full shrink-0 ${degreeBgClass(d)}`}>{d.emoji} {d.code}</span>
+                      ); })()}
+                    </div>
                     <p className="text-xs text-white/60 truncate">
                       {[role.company, role.location].filter(Boolean).join(" · ")}
                     </p>
