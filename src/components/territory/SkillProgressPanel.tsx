@@ -211,19 +211,19 @@ export default function SkillProgressPanel({
   const SectionHeader = ({ id, icon: Icon, label, count, isOpen }: { id: "skills" | "log"; icon: any; label: string; count?: number; isOpen: boolean }) => (
     <button
       onClick={() => setExpandedSection(prev => prev === id ? null : id)}
-      className="w-full flex items-center gap-2 px-3 py-2 text-xs font-semibold uppercase tracking-widest transition-colors hover:bg-muted/20"
+      className="w-full flex items-center gap-1.5 px-2 py-1 text-[10px] font-semibold uppercase tracking-widest transition-colors hover:bg-muted/20"
       style={{
         fontFamily: "'Cinzel', serif",
         color: isOpen ? "hsl(var(--filigree-glow))" : "hsl(var(--muted-foreground))",
         borderBottom: "1px solid hsl(var(--filigree) / 0.1)",
       }}
     >
-      <Icon className="h-3.5 w-3.5" />
+      <Icon className="h-3 w-3" />
       <span className="flex-1 text-left">{label}</span>
       {count !== undefined && (
-        <span className="font-mono text-[10px]" style={{ color: "hsl(var(--filigree))" }}>{count}</span>
+        <span className="font-mono text-[9px]" style={{ color: "hsl(var(--filigree))" }}>{count}</span>
       )}
-      <ChevronRight className={`h-3 w-3 transition-transform ${isOpen ? "rotate-90" : ""}`} />
+      <ChevronRight className={`h-2.5 w-2.5 transition-transform ${isOpen ? "rotate-90" : ""}`} />
     </button>
   );
 
