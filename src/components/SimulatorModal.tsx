@@ -1124,6 +1124,7 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
         console.error("Failed to save completion:", err);
       }
     }
+    markCheckpointCompleted();
     setPhase("done");
 
     // Random Intel Drop — 35% chance on score 50+, generates async
