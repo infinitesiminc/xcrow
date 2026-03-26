@@ -339,6 +339,11 @@ const Analysis = () => {
           </div>
         )}
 
+        {/* Automation Degree */}
+        <div className="mb-5">
+          <DegreeBadge automationRisk={riskPercent} augmented={augmentedPercent} variant="hero" />
+        </div>
+
         {focusedTask && !showAllTasks && (() => {
           const aiScore = focusedTask.aiExposureScore ?? 50;
           const style = taskChipStyle(aiScore);
