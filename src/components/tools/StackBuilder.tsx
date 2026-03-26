@@ -30,6 +30,7 @@ type FilterMode = "all" | "in-stack" | WorkflowStage;
 export default function StackBuilder({ onSelectTool }: Props) {
   const [query, setQuery] = useState("");
   const [jdUrl, setJdUrl] = useState("");
+  const [companyUrl, setCompanyUrl] = useState("");
   const [loading, setLoading] = useState(false);
   const [searchResults, setSearchResults] = useState<RankedTool[] | null>(null);
   const [searchedTitle, setSearchedTitle] = useState("");
