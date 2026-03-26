@@ -563,11 +563,14 @@ export default function FutureTerritoryMap({ skills, focusSkillId, level2SkillId
           />
         )}
 
-        {/* Scout Mission HUD */}
-        <ScoutMissionHUD
-          territoriesScouted={territoriesScouted}
-          rolesSpokenTo={rolesSpokenTo}
-          skillsCollected={skillsCollected}
+        {/* Quest Tracker HUD */}
+        <QuestTracker
+          phase={mission.phase}
+          territoriesScouted={mission.territoriesScouted}
+          rolesSpokenTo={mission.rolesSpokenTo}
+          scoutedSkillCount={mission.scoutedSkills.length}
+          skillsConquered={mission.skillsConquered}
+          missionProgress={mission.missionProgress}
         />
 
         {/* Minimap */}
