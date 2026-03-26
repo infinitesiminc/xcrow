@@ -23,10 +23,10 @@ export interface CastleState {
 
 export const CASTLE_TIERS = [
   { tier: "ruins" as const, threshold: 0, label: "Ruins", emoji: "🏚️" },
-  { tier: "outpost" as const, threshold: 150, label: "Outpost", emoji: "🏕️" },
-  { tier: "fortress" as const, threshold: 500, label: "Fortress", emoji: "🏰" },
-  { tier: "citadel" as const, threshold: 1200, label: "Citadel", emoji: "⚔️" },
-  { tier: "grandmaster" as const, threshold: 2500, label: "Grandmaster", emoji: "✨" },
+  { tier: "outpost" as const, threshold: 150, label: "First Contact", emoji: "🏕️" },
+  { tier: "fortress" as const, threshold: 500, label: "Apprentice", emoji: "🏰" },
+  { tier: "citadel" as const, threshold: 1200, label: "Challenger", emoji: "⚔️" },
+  { tier: "grandmaster" as const, threshold: 2500, label: "Commander", emoji: "✨" },
 ] as const;
 
 export const UNLOCK_THRESHOLD = 150; // XP needed to unlock (claim) a castle
