@@ -35,7 +35,7 @@ interface GuardianEncounterProps {
 
 const cinzel = { fontFamily: "'Cinzel', serif" };
 
-export default function GuardianEncounter({ guardian, onClose, onChallenge }: GuardianEncounterProps) {
+export default function GuardianEncounter({ guardian, onClose, onChallenge, onConquerTerritory }: GuardianEncounterProps) {
   const heroImage = getTerritoryHeroImage(guardian.category);
 
   return (

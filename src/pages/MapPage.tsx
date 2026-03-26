@@ -736,7 +736,7 @@ const MapPage = () => {
                 level={activeSim.level || 1}
                 masteryTier={(activeSim as any).masteryTier}
                 inline
-                onCompleted={handleCloseSim}
+                onCompleted={() => { mission.conquerSkill(); handleCloseSim(); }}
                 onBackToFeed={handleCloseSim}
                 roleChallenge={activeSim.roleChallenge}
                 linkedSkillIds={activeSim.linkedSkillIds}
