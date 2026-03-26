@@ -41,6 +41,7 @@ interface UserRow {
   total_analyses: number;
   total_xp: number;
   last_active: string | null;
+  tier?: "free" | "champion" | "school";
 }
 
 type SortKey = "created_at" | "total_sims" | "total_xp" | "last_active" | "display_name";
@@ -56,8 +57,24 @@ export default function UsersPage() {
 
   useEffect(() => {
     (async () => {
-      const { data, error } = await supabase.rpc("get_admin_user_stats" as any);
-      if (!error && data) setUsers(data as any as UserRow[]);
+      const [usersRes, seatsRes] = await Promise.all([
+        supabase.rpc("get_admin_user_stats" as any),
+        supabase.from("school_seats" as any).select("user_id, status").eq("status", "active"),
+      ]);
+      
+      const schoolUserIds = new Set(
+        ((seatsRes.data as any[]) || []).map((s: any) => s.user_id).filter(Boolean)
+      );
+      
+      const rawUsers = (usersRes.data || []) as any as UserRow[];
+      // TODO: For champion detection, we'd need Stripe data. 
+      // For now, mark school users and leave rest as free.
+      const enriched = rawUsers.map(u => ({
+        ...u,
+        tier: schoolUserIds.has(u.user_id) ? "school" as const : "free" as const,
+      }));
+      
+      setUsers(enriched);
       setLoading(false);
     })();
   }, []);
@@ -176,7 +193,7 @@ export default function UsersPage() {
                 <TableRow>
                   <SortableHead label="Name" sortKey="display_name" current={sortKey} asc={sortAsc} onSort={toggleSort} />
                   <TableHead className="text-xs">Email</TableHead>
-                  <TableHead className="text-xs">Stage</TableHead>
+                  <TableHead className="text-xs">Tier</TableHead>
                   <TableHead className="text-xs">School / Company</TableHead>
                   <SortableHead label="Sims" sortKey="total_sims" current={sortKey} asc={sortAsc} onSort={toggleSort} />
                   <SortableHead label="XP" sortKey="total_xp" current={sortKey} asc={sortAsc} onSort={toggleSort} />
@@ -203,9 +220,12 @@ export default function UsersPage() {
                       </TableCell>
                       <TableCell className="text-xs text-muted-foreground max-w-[180px] truncate">{u.email}</TableCell>
                       <TableCell>
-                        {u.career_stage && (
-                          <Badge variant="secondary" className="text-[10px]">{u.career_stage}</Badge>
-                        )}
+                        <Badge
+                          variant={u.tier === "champion" ? "default" : u.tier === "school" ? "secondary" : "outline"}
+                          className="text-[10px]"
+                        >
+                          {u.tier === "champion" ? "👑 Champion" : u.tier === "school" ? "🎓 School" : "Free"}
+                        </Badge>
                       </TableCell>
                       <TableCell className="text-xs text-muted-foreground">
                         {u.school_name || u.company || "—"}

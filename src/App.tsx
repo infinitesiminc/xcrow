@@ -48,15 +48,10 @@ const ToolAtlas = lazy(() => import("./pages/ToolAtlas.tsx"));
 // Admin (lazy)
 const HRLayout = lazy(() => import("./layouts/HRLayout.tsx"));
 const PipelinePage = lazy(() => import("./pages/admin/PipelinePage.tsx"));
-const TaskAnalyticsPage = lazy(() => import("./pages/admin/TaskAnalyticsPage.tsx"));
-const SchoolsPage = lazy(() => import("./pages/admin/SchoolsPage.tsx"));
-const SchoolDataOpsPage = lazy(() => import("./pages/admin/SchoolDataOpsPage.tsx"));
-const SchoolSkillsGapPage = lazy(() => import("./pages/admin/SchoolSkillsGapPage.tsx"));
-const SchoolDetailPage = lazy(() => import("./pages/admin/SchoolDetailPage.tsx"));
-
-const SkillMatrixPage = lazy(() => import("./pages/admin/SkillMatrixPage.tsx"));
-const PricingUsagePage = lazy(() => import("./pages/admin/PricingUsagePage.tsx"));
 const UsersPage = lazy(() => import("./pages/admin/UsersPage.tsx"));
+const ProUpgradesPage = lazy(() => import("./pages/admin/ProUpgradesPage.tsx"));
+const SchoolsPage = lazy(() => import("./pages/admin/SchoolsPage.tsx"));
+const SchoolDetailPage = lazy(() => import("./pages/admin/SchoolDetailPage.tsx"));
 
 // School admin (lazy)
 const SchoolLayout = lazy(() => import("./layouts/SchoolLayout.tsx"));
@@ -173,17 +168,19 @@ const App = () => (
                 <Route path="analytics" element={<SchoolAnalytics />} />
               </Route>
 
-              {/* Superadmin content pipeline */}
+              {/* Superadmin */}
               <Route path="/admin" element={<AdminGate />}>
                 <Route index element={<PipelinePage />} />
-                <Route path="analytics" element={<TaskAnalyticsPage />} />
-                <Route path="pricing-usage" element={<PricingUsagePage />} />
                 <Route path="users" element={<UsersPage />} />
+                <Route path="upgrades" element={<ProUpgradesPage />} />
                 <Route path="schools" element={<SchoolsPage />} />
-                <Route path="schools/data-ops" element={<SchoolDataOpsPage />} />
-                <Route path="schools/skills-gap" element={<SchoolSkillsGapPage />} />
-                <Route path="schools/skill-matrix" element={<SkillMatrixPage />} />
                 <Route path="schools/:schoolId" element={<SchoolDetailPage />} />
+                {/* Legacy redirects */}
+                <Route path="analytics" element={<Navigate to="/admin" replace />} />
+                <Route path="pricing-usage" element={<Navigate to="/admin/upgrades" replace />} />
+                <Route path="schools/data-ops" element={<Navigate to="/admin/schools" replace />} />
+                <Route path="schools/skills-gap" element={<Navigate to="/admin/schools" replace />} />
+                <Route path="schools/skill-matrix" element={<Navigate to="/admin/schools" replace />} />
               </Route>
 
               <Route path="*" element={<NotFound />} />
