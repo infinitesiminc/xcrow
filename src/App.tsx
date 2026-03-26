@@ -44,6 +44,7 @@ const Professionals = lazy(() => import("./pages/Professionals.tsx"));
 const SkillsCodex = lazy(() => import("./pages/Skills.tsx"));
 const Competition = lazy(() => import("./pages/Competition.tsx"));
 const Investors = lazy(() => import("./pages/Investors.tsx"));
+const SponsorDashboard = lazy(() => import("./pages/SponsorDashboard.tsx"));
 
 // Admin (lazy)
 const HRLayout = lazy(() => import("./layouts/HRLayout.tsx"));
@@ -159,6 +160,7 @@ const App = () => (
               <Route path="/skills" element={<SkillsCodex />} />
               <Route path="/competition" element={<><Navbar /><Competition /><Footer /></>} />
               <Route path="/investors" element={<Investors />} />
+              <Route path="/sponsor" element={<AuthGate><Navbar /><SponsorDashboard /><Footer /></AuthGate>} />
               {/* Redirects — old routes all go to feed */}
               <Route path="/practice" element={<Navigate to="/" replace />} />
               <Route path="/simulations" element={<Navigate to="/" replace />} />
