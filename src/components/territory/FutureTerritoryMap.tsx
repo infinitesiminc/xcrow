@@ -34,6 +34,21 @@ import TerritoryParticles from "./TerritoryParticles";
 import HeroScene from "./HeroScene";
 import { getTerritoryHeroImage } from "@/lib/territory-hero-images";
 
+import guardIronclad from "@/assets/guardian-ironclad.png";
+import guardLexicon from "@/assets/guardian-lexicon.png";
+import guardSovereign from "@/assets/guardian-sovereign.png";
+import guardHerald from "@/assets/guardian-herald.png";
+import guardCrownweaver from "@/assets/guardian-crownweaver.png";
+import guardPrisma from "@/assets/guardian-prisma.png";
+import guardAegis from "@/assets/guardian-aegis.png";
+import guardKindred from "@/assets/guardian-kindred.png";
+
+const GUARDIAN_MAP_AVATARS: Record<string, string> = {
+  ironclad: guardIronclad, lexicon: guardLexicon, sovereign: guardSovereign,
+  herald: guardHerald, crownweaver: guardCrownweaver, prisma: guardPrisma,
+  aegis: guardAegis, kindred: guardKindred,
+};
+
 import type { SimLaunchRequest, PromptLabRequest } from "./SkillLaunchCard";
 
 interface FutureTerritoryMapProps {
@@ -320,10 +335,13 @@ export default function FutureTerritoryMap({ skills, focusSkillId, level2SkillId
                   animate={{ r: [18, 24, 18], opacity: [0.4, 0.15, 0.4] }}
                   transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
                 />
-                <text x={gx} y={gy + 1} textAnchor="middle" dominantBaseline="central"
-                  style={{ fontSize: "14px", pointerEvents: "none" }}>
-                  {guardian.emoji}
-                </text>
+                <foreignObject x={gx - 13} y={gy - 13} width={26} height={26} style={{ pointerEvents: "none" }}>
+                  <img
+                    src={GUARDIAN_MAP_AVATARS[guardian.id] || guardIronclad}
+                    alt={guardian.name}
+                    style={{ width: 26, height: 26, borderRadius: "50%", objectFit: "cover" }}
+                  />
+                </foreignObject>
               </g>
             );
           })}
