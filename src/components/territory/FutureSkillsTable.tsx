@@ -10,19 +10,28 @@ import { type FutureSkill, type FutureSkillCategory } from "@/hooks/use-future-s
 import { supabase } from "@/integrations/supabase/client";
 import type { SimLaunchRequest } from "@/components/territory/SkillLaunchCard";
 import { Input } from "@/components/ui/input";
-import { ArrowUpDown, Search, Zap, Diamond, Lock } from "lucide-react";
+import { ArrowUpDown, Search, Zap, Diamond, Lock, Star, Swords } from "lucide-react";
 import { getTerritory, TERRITORY_ORDER } from "@/lib/territory-colors";
 import { useAuth } from "@/contexts/AuthContext";
 import { RadarChart, PolarGrid, PolarAngleAxis, Radar, ResponsiveContainer } from "recharts";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 import type { CanonicalSkillGrowth } from "@/pages/MapPage";
+import { getSkillRune } from "@/lib/skill-runes";
 
-/** Inline skill badge — skill number from DB */
+/** Inline skill rune — mini SVG icon from the rune generator */
 function SkillIcon({ skill }: { skill: FutureSkill }) {
-  if (skill.skillNumber == null) return null;
+  const territory = getTerritory(skill.category as FutureSkillCategory);
   return (
-    <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded-md shrink-0 bg-primary/15 text-primary">
-      #{skill.skillNumber}
+    <span className="shrink-0 inline-flex items-center justify-center w-5 h-5">
+      <svg viewBox="-7 -7 14 14" width={18} height={18}>
+        <path
+          d={getSkillRune(skill.id, skill.category)}
+          fill="none"
+          stroke={territory.hsl}
+          strokeWidth={0.8}
+          transform="scale(0.7)"
+        />
+      </svg>
     </span>
   );
 }
@@ -236,7 +245,7 @@ export default function FutureSkillsTable({ skills, onSkillClick, skillGrowthMap
     return TERRITORY_ORDER.map(cat => {
       const t = getTerritory(cat);
       return {
-        domain: t.emoji + " " + (cat === "Ethics & Compliance" ? "Ethics" : cat === "Human Edge" ? "Human" : cat),
+        domain: cat === "Ethics & Compliance" ? "Ethics" : cat === "Human Edge" ? "Human" : cat,
         fullCategory: cat,
         xp: domainXp.get(cat) || 0,
         fullMark: maxXp,
@@ -293,8 +302,8 @@ export default function FutureSkillsTable({ skills, onSkillClick, skillGrowthMap
         <div className="flex gap-1 flex-wrap">
           {([
             { key: "all" as FilterMode, label: "All", count: skills.length },
-            { key: "bookmarked" as FilterMode, label: "⭐ Saved", count: bookmarkedCount },
-            { key: "practiced" as FilterMode, label: "⚔️ Practiced", count: practicedCount },
+            { key: "bookmarked" as FilterMode, label: "Saved", count: bookmarkedCount, icon: Star },
+            { key: "practiced" as FilterMode, label: "Practiced", count: practicedCount, icon: Swords },
           ]).map(f => (
             <button
               key={f.key}
@@ -306,8 +315,9 @@ export default function FutureSkillsTable({ skills, onSkillClick, skillGrowthMap
                   ? { color: "hsl(var(--filigree-glow))", background: "hsl(var(--filigree) / 0.12)" }
                   : { color: "hsl(var(--muted-foreground))" }),
               }}
-            >
-              {f.label} ({f.count})
+              >
+                {f.icon && <f.icon className="h-3 w-3" />}
+                {f.label} ({f.count})
             </button>
           ))}
           {domainFilter && (
@@ -410,7 +420,7 @@ export default function FutureSkillsTable({ skills, onSkillClick, skillGrowthMap
                     onClick={() => { setDomainFilter(prev => prev === d.fullCategory ? null : d.fullCategory); setChartOpen(false); }}
                     className="flex items-center gap-1 text-[9px] text-muted-foreground hover:text-foreground transition-colors truncate"
                   >
-                    <span>{d.domain.split(" ")[0]}</span>
+                    <span>{d.domain}</span>
                     <span className="font-mono" style={{ color: "hsl(var(--filigree-glow))" }}>{d.xp}</span>
                   </button>
                 ))}
@@ -469,7 +479,7 @@ export default function FutureSkillsTable({ skills, onSkillClick, skillGrowthMap
                       {/* Name + domain pill */}
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-1.5">
-                          {isBookmarked && <span className="text-[8px] ml-auto order-last" style={{ color: "hsl(var(--filigree-glow))" }}>⭐</span>}
+                          {isBookmarked && <Star className="h-3 w-3 ml-auto order-last" style={{ color: "hsl(var(--filigree-glow))" }} />}
                           <SkillIcon skill={skill} />
                           <span className="font-medium text-foreground truncate text-[13px]" style={{ fontFamily: "'Cinzel', serif" }}>{skill.name}</span>
                         </div>
@@ -509,7 +519,7 @@ export default function FutureSkillsTable({ skills, onSkillClick, skillGrowthMap
                             </button>
                           </PopoverTrigger>
                           <PopoverContent side="top" align="center" className="w-48 p-2.5" style={{ background: "hsl(var(--surface-stone))", border: "1px solid hsl(var(--filigree) / 0.2)" }}>
-                            <div className="text-[10px] font-bold mb-1" style={{ fontFamily: "'Cinzel', serif" }}>⚡ Level 1 · AI Mastery</div>
+                            <div className="flex items-center gap-1 text-[10px] font-bold mb-1" style={{ fontFamily: "'Cinzel', serif" }}><Zap className="h-3 w-3" /> Level 1 · AI Mastery</div>
                             <div className="flex items-center gap-2 mb-1.5">
                               <div className="flex-1 h-1.5 rounded-full overflow-hidden" style={{ background: "hsl(var(--muted) / 0.4)" }}>
                                 <div className="h-full rounded-full" style={{ width: `${Math.min(100, ((growth?.level1Xp ?? 0) / 500) * 100)}%`, background: "hsl(var(--primary))" }} />
@@ -525,7 +535,7 @@ export default function FutureSkillsTable({ skills, onSkillClick, skillGrowthMap
                               className="w-full px-2 py-1.5 rounded-md text-[10px] font-bold uppercase tracking-wider transition-all hover:brightness-110"
                               style={{ background: "linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary) / 0.8))", color: "hsl(var(--foreground))", fontFamily: "'Cinzel', serif" }}
                             >
-                              ⚔️ Start Quest
+                              <Swords className="h-3 w-3 inline mr-1" />Start Quest
                             </button>
                           </PopoverContent>
                         </Popover>
@@ -551,8 +561,8 @@ export default function FutureSkillsTable({ skills, onSkillClick, skillGrowthMap
                             </button>
                           </PopoverTrigger>
                           <PopoverContent side="top" align="center" className="w-48 p-2.5" style={{ background: "hsl(var(--surface-stone))", border: "1px solid hsl(var(--filigree) / 0.2)" }}>
-                            <div className="text-[10px] font-bold mb-1" style={{ fontFamily: "'Cinzel', serif" }}>
-                              {l2Unlocked ? "✦ Level 2 · Human Edge" : "🔒 Level 2 · Locked"}
+                            <div className="flex items-center gap-1 text-[10px] font-bold mb-1" style={{ fontFamily: "'Cinzel', serif" }}>
+                              {l2Unlocked ? <><Diamond className="h-3 w-3" /> Level 2 · Human Edge</> : <><Lock className="h-3 w-3" /> Level 2 · Locked</>}
                             </div>
                             {l2Unlocked ? (
                               <>
@@ -571,7 +581,7 @@ export default function FutureSkillsTable({ skills, onSkillClick, skillGrowthMap
                                   className="w-full px-2 py-1.5 rounded-md text-[10px] font-bold uppercase tracking-wider transition-all hover:brightness-110"
                                   style={{ background: "linear-gradient(135deg, hsl(45 93% 58%), hsl(45 93% 48%))", color: "hsl(var(--background))", fontFamily: "'Cinzel', serif" }}
                                 >
-                                  ⚔️ Level 2 Quest
+                                  <Swords className="h-3 w-3 inline mr-1" />Level 2 Quest
                                 </button>
                               </>
                             ) : (
