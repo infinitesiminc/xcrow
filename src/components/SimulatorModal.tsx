@@ -1163,6 +1163,9 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
     }
   };
 
+  // Keep ref up to date so setTimeout always calls latest version
+  handleFinishRef.current = handleFinish;
+
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
