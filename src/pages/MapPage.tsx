@@ -378,7 +378,7 @@ const MapPage = () => {
       >
         {/* Tab icons */}
         {TAB_ITEMS.map(({ key, RuneIcon, label }) => {
-          if (key !== "table" && !isSignedIn) return null;
+          if (key !== "table" && key !== "tools" && !isSignedIn) return null;
           const isActive = activeTab === key && !panelCollapsed;
           const activeColor = "hsl(var(--filigree-glow))";
           const inactiveColor = "hsl(var(--muted-foreground))";
