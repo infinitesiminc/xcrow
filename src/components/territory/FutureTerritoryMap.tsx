@@ -321,7 +321,9 @@ export default function FutureTerritoryMap({ skills, focusSkillId, level2SkillId
             return (
               <g key={`guard-${guardian.id}`} className="cursor-pointer"
                 onClick={(e) => { e.stopPropagation(); if (!isDragging.current) { setActiveGuardian(guardian); setActiveNPC(null); } }}>
-                <motion.circle cx={gx} cy={gy} r={16}
+                {/* Rhombus shape for guardian */}
+                <motion.polygon
+                  points={`${gx},${gy - 18} ${gx + 18},${gy} ${gx},${gy + 18} ${gx - 18},${gy}`}
                   fill={`hsl(${guardian.hue} 40% 15%)`}
                   stroke={`hsl(${guardian.hue} 50% 45%)`}
                   strokeWidth={2}
@@ -329,17 +331,19 @@ export default function FutureTerritoryMap({ skills, focusSkillId, level2SkillId
                   transition={{ delay: 0.8, type: "spring" }}
                   style={{ transformOrigin: `${gx}px ${gy}px` }}
                 />
-                <motion.circle cx={gx} cy={gy} r={20}
+                {/* Pulsing rhombus outline */}
+                <motion.polygon
+                  points={`${gx},${gy - 22} ${gx + 22},${gy} ${gx},${gy + 22} ${gx - 22},${gy}`}
                   fill="none" stroke={`hsl(${guardian.hue} 50% 45%)`}
                   strokeWidth={1} opacity={0.4}
-                  animate={{ r: [18, 24, 18], opacity: [0.4, 0.15, 0.4] }}
+                  animate={{ opacity: [0.4, 0.15, 0.4] }}
                   transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
                 />
                 <foreignObject x={gx - 13} y={gy - 13} width={26} height={26} style={{ pointerEvents: "none" }}>
                   <img
                     src={GUARDIAN_MAP_AVATARS[guardian.id] || guardIronclad}
                     alt={guardian.name}
-                    style={{ width: 26, height: 26, borderRadius: "50%", objectFit: "cover" }}
+                    style={{ width: 26, height: 26, borderRadius: "2px", objectFit: "cover", clipPath: "polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)" }}
                   />
                 </foreignObject>
               </g>
@@ -355,19 +359,30 @@ export default function FutureTerritoryMap({ skills, focusSkillId, level2SkillId
             return (
               <g key={`npc-${spawn.npc.id}`} className="cursor-pointer"
                 onClick={(e) => { e.stopPropagation(); if (!isDragging.current) { setActiveNPC({ npc: spawn.npc, territory: island.category }); setActiveGuardian(null); } }}>
-                <motion.circle cx={nx} cy={ny} r={14}
-                  fill="hsl(var(--card))" stroke="hsl(var(--border))"
-                  strokeWidth={1.5} strokeDasharray="3 2"
-                  initial={{ scale: 0, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  transition={{ delay: 1.2, type: "spring" }}
-                  style={{ transformOrigin: `${nx}px ${ny}px` }}
-                />
+                {/* Hexagon shape for NPC */}
+                {(() => {
+                  const r = 15;
+                  const hexPoints = Array.from({ length: 6 }, (_, i) => {
+                    const angle = (Math.PI / 3) * i - Math.PI / 6;
+                    return `${nx + r * Math.cos(angle)},${ny + r * Math.sin(angle)}`;
+                  }).join(" ");
+                  return (
+                    <motion.polygon
+                      points={hexPoints}
+                      fill="hsl(var(--card))" stroke="hsl(var(--border))"
+                      strokeWidth={1.5} strokeDasharray="3 2"
+                      initial={{ scale: 0, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      transition={{ delay: 1.2, type: "spring" }}
+                      style={{ transformOrigin: `${nx}px ${ny}px` }}
+                    />
+                  );
+                })()}
                 <foreignObject x={nx - 11} y={ny - 11} width={22} height={22} style={{ pointerEvents: "none" }}>
                   <img
                     src={NPC_MAP_AVATARS[spawn.npc.id] || npcMerchant}
                     alt={spawn.npc.name}
-                    style={{ width: 22, height: 22, borderRadius: "50%", objectFit: "cover" }}
+                    style={{ width: 22, height: 22, objectFit: "cover", clipPath: "polygon(50% 0%, 93% 25%, 93% 75%, 50% 100%, 7% 75%, 7% 25%)" }}
                   />
                 </foreignObject>
               </g>
