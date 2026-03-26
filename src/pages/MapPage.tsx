@@ -281,16 +281,23 @@ const MapPage = () => {
   useChatViewContext(chatViewCtx as any, [chatViewCtx]);
 
   return (
-    <div className="h-[calc(100vh-3.5rem)] flex overflow-hidden">
+    <div className="h-[calc(100vh-3.5rem)] flex overflow-hidden relative">
       {/* ── Left Panel: HUD + Tabs + Content ── */}
-      <div
-        className="flex flex-col w-[420px] min-w-[340px] max-w-[480px] h-full z-10 shrink-0"
-        style={{
-          background: "hsl(var(--surface-stone) / 0.97)",
-          borderRight: "1px solid hsl(var(--filigree) / 0.2)",
-          boxShadow: "2px 0 20px hsl(var(--emboss-shadow))",
-        }}
-      >
+      <AnimatePresence initial={false}>
+        {!panelCollapsed && (
+          <motion.div
+            key="left-panel"
+            initial={{ width: 0, opacity: 0 }}
+            animate={{ width: 420, opacity: 1 }}
+            exit={{ width: 0, opacity: 0 }}
+            transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+            className="flex flex-col h-full z-10 shrink-0 overflow-hidden"
+            style={{
+              background: "hsl(var(--surface-stone) / 0.97)",
+              borderRight: "1px solid hsl(var(--filigree) / 0.2)",
+              boxShadow: "2px 0 20px hsl(var(--emboss-shadow))",
+            }}
+          >
         {/* Mini HUD stats row */}
         {displaySkills.length > 0 && (
           <CompactHUD skills={displaySkills} targetSkillIds={targetSkillIds} userName={userName} />
