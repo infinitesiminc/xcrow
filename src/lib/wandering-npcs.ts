@@ -13,6 +13,8 @@ export interface WanderingNPC {
   name: string;
   title: string;
   emoji: string;
+  /** Lucide icon name for reliable rendering */
+  iconName: "gem" | "eye" | "swords" | "compass" | "hammer" | "scroll-text";
   /** What this NPC offers */
   offering: string;
   /** Greeting line */
