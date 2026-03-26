@@ -19,6 +19,7 @@ import { getGuardianByCategory, type TerritoryGuardian } from "@/lib/territory-g
 import { generateNPCSpawns, type NPCSpawn, type WanderingNPC } from "@/lib/wandering-npcs";
 import GuardianEncounter from "./GuardianEncounter";
 import NPCEncounter from "./NPCEncounter";
+import TerritoryParticles from "./TerritoryParticles";
 
 import type { SimLaunchRequest, PromptLabRequest } from "./SkillLaunchCard";
 
