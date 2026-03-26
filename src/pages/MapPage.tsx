@@ -134,6 +134,14 @@ const MapPage = () => {
   const handleLaunchSim = useCallback((req: PendingSimLaunch) => setPendingSimReq(req), []);
   const handleCloseSim = useCallback(() => setActiveSim(null), []);
 
+  // Saved checkpoints
+  const { loadCheckpoints } = useSimCheckpoints();
+  const [savedCheckpoints, setSavedCheckpoints] = useState<SimCheckpoint[]>([]);
+  useEffect(() => {
+    if (!user) return;
+    loadCheckpoints().then(setSavedCheckpoints);
+  }, [user, loadCheckpoints, activeSim]); // reload after sim closes
+
   // Prompt Lab overlay state
   const [activePromptLab, setActivePromptLab] = useState<PromptLabRequest | null>(null);
   const handleLaunchPromptLab = useCallback((req: PromptLabRequest) => setActivePromptLab(req), []);
