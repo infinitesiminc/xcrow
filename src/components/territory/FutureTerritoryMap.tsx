@@ -267,14 +267,6 @@ export default function FutureTerritoryMap({ skills, focusSkillId, level2SkillId
 
 
 
-          {Array.from({ length: 9 }, (_, i) => {
-            const x = (FUTURE_MAP_WIDTH / 8) * i;
-            return <line key={`gv-${i}`} x1={x} y1={0} x2={x} y2={FUTURE_MAP_HEIGHT} stroke="hsl(var(--border))" strokeWidth={0.3} opacity={0.15} />;
-          })}
-          {Array.from({ length: 6 }, (_, i) => {
-            const y = (FUTURE_MAP_HEIGHT / 5) * i;
-            return <line key={`gh-${i}`} x1={0} y1={y} x2={FUTURE_MAP_WIDTH} y2={y} stroke="hsl(var(--border))" strokeWidth={0.3} opacity={0.15} />;
-          })}
 
           {connections.map((conn, i) => {
             const from = nodePositions.get(conn.from);
