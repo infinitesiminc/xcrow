@@ -1,29 +1,21 @@
-import { Building2, BarChart3, Database, GraduationCap, GitCompareArrows, DollarSign, Brain, Users } from "lucide-react";
+import { Building2, Users, Crown, GraduationCap } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import {
   Sidebar,
   SidebarContent,
   SidebarGroup,
   SidebarGroupContent,
-  SidebarGroupLabel,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
 
-const mainItems = [
+const items = [
   { title: "Companies", url: "/admin", icon: Building2 },
-  { title: "Task Analytics", url: "/admin/analytics", icon: BarChart3 },
-  { title: "Pricing & Usage", url: "/admin/pricing-usage", icon: DollarSign },
   { title: "Users", url: "/admin/users", icon: Users },
-];
-
-const schoolItems = [
-  { title: "Data Ops", url: "/admin/schools/data-ops", icon: Database },
-  { title: "Skills Gap", url: "/admin/schools/skills-gap", icon: GitCompareArrows },
-  { title: "Skill Matrix", url: "/admin/schools/skill-matrix", icon: Brain },
-  { title: "Accounts", url: "/admin/schools", icon: GraduationCap },
+  { title: "Pro Upgrades", url: "/admin/upgrades", icon: Crown },
+  { title: "Schools", url: "/admin/schools", icon: GraduationCap },
 ];
 
 export function HRSidebar() {
@@ -34,47 +26,14 @@ export function HRSidebar() {
     <Sidebar collapsible="icon" className="border-r border-border">
       <SidebarContent className="pt-4">
         <SidebarGroup>
-          <SidebarGroupLabel className="flex items-center gap-2">
-            {!collapsed && <span>Admin</span>}
-          </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {mainItems.map((item) => (
+              {items.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
                     <NavLink
                       to={item.url}
                       end={item.url === "/admin"}
-                      className="hover:bg-muted/50"
-                      activeClassName="bg-muted text-primary font-medium"
-                    >
-                      <item.icon className="mr-2 h-4 w-4" />
-                      {!collapsed && <span>{item.title}</span>}
-                    </NavLink>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-
-        <SidebarGroup>
-          <SidebarGroupLabel className="flex items-center gap-2">
-            {!collapsed && (
-              <>
-                <GraduationCap className="h-3.5 w-3.5" />
-                <span>Schools</span>
-              </>
-            )}
-          </SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {schoolItems.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
-                    <NavLink
-                      to={item.url}
-                      end
                       className="hover:bg-muted/50"
                       activeClassName="bg-muted text-primary font-medium"
                     >
