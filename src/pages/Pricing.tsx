@@ -25,10 +25,11 @@ const stoneCard = {
 };
 
 const FREE_FEATURES = [
-  "3 quests per moon (recruit allies for more!)",
+  "3 quests per moon",
   "Unlimited kingdom scouting",
   "Territory map (view only)",
   "Hall of Champions access",
+  "Recruit friends to earn bonus quests",
 ];
 
 const PRO_FEATURES = [
