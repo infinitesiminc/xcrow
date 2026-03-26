@@ -871,6 +871,12 @@ const SimulatorModal = ({ open, onClose, taskName, jobTitle, company, taskState,
     return () => clearTimeout(safetyTimeout);
   }, [phase]);
 
+  // Auto-finish when quest-cleared triggers "completing" phase
+  useEffect(() => {
+    if (phase !== "completing" || !questCleared) return;
+    handleFinish();
+  }, [phase, questCleared]); // eslint-disable-line react-hooks/exhaustive-deps
+
   const beginChat = () => {
     if (!session) return;
     if (level === 2 && auditData) {
