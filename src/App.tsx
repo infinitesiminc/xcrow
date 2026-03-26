@@ -49,7 +49,7 @@ const ToolAtlas = lazy(() => import("./pages/ToolAtlas.tsx"));
 const HRLayout = lazy(() => import("./layouts/HRLayout.tsx"));
 const PipelinePage = lazy(() => import("./pages/admin/PipelinePage.tsx"));
 const UsersPage = lazy(() => import("./pages/admin/UsersPage.tsx"));
-const ProUpgradesPage = lazy(() => import("./pages/admin/ProUpgradesPage.tsx"));
+
 const SchoolsPage = lazy(() => import("./pages/admin/SchoolsPage.tsx"));
 const SchoolDetailPage = lazy(() => import("./pages/admin/SchoolDetailPage.tsx"));
 
