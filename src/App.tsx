@@ -9,6 +9,7 @@ import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { ChatProvider } from "@/contexts/ChatContext";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import ErrorBoundary from "@/components/ErrorBoundary";
 
 
 // Lazy-load all page components
@@ -117,6 +118,7 @@ const App = () => (
         <TooltipProvider>
           <Toaster />
           <Sonner />
+          <ErrorBoundary fallbackTitle="The realm encountered an error">
           <Suspense fallback={null}>
             <Routes>
               {/* Public B2C routes */}
@@ -187,6 +189,7 @@ const App = () => (
               <Route path="*" element={<NotFound />} />
             </Routes>
           </Suspense>
+          </ErrorBoundary>
           
         </TooltipProvider>
         </ChatProvider>
