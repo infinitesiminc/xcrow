@@ -519,7 +519,7 @@ export default function FutureSkillsTable({ skills, onSkillClick, skillGrowthMap
                             </button>
                           </PopoverTrigger>
                           <PopoverContent side="top" align="center" className="w-48 p-2.5" style={{ background: "hsl(var(--surface-stone))", border: "1px solid hsl(var(--filigree) / 0.2)" }}>
-                            <div className="text-[10px] font-bold mb-1" style={{ fontFamily: "'Cinzel', serif" }}>⚡ Level 1 · AI Mastery</div>
+                            <div className="flex items-center gap-1 text-[10px] font-bold mb-1" style={{ fontFamily: "'Cinzel', serif" }}><Zap className="h-3 w-3" /> Level 1 · AI Mastery</div>
                             <div className="flex items-center gap-2 mb-1.5">
                               <div className="flex-1 h-1.5 rounded-full overflow-hidden" style={{ background: "hsl(var(--muted) / 0.4)" }}>
                                 <div className="h-full rounded-full" style={{ width: `${Math.min(100, ((growth?.level1Xp ?? 0) / 500) * 100)}%`, background: "hsl(var(--primary))" }} />
