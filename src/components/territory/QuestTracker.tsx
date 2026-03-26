@@ -109,14 +109,14 @@ export default function QuestTracker({
           {/* Stats */}
           <div className="flex items-center gap-3 text-[11px]">
             <div className="flex items-center gap-1 text-muted-foreground">
-              <Eye className="h-3 w-3" />
+              <Search className="h-3 w-3" />
               <span className="font-semibold text-foreground">{territoriesScouted.size}</span>
               <span>/8</span>
             </div>
             <div className="flex items-center gap-1 text-muted-foreground">
               <Award className="h-3 w-3" />
               <span className="font-semibold text-foreground">{scoutedSkillCount}</span>
-              <span>scouted</span>
+              <span>discovered</span>
             </div>
             <div className="flex items-center gap-1 text-muted-foreground">
               <Swords className="h-3 w-3" />
