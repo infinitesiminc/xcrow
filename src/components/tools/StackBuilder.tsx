@@ -336,30 +336,93 @@ export default function StackBuilder({ onSelectTool }: Props) {
                 </div>
 
                 {/* Footer */}
-                <div className="px-4 pb-3 flex items-center gap-2">
-                  <button
-                    onClick={e => { e.stopPropagation(); toggleTool(item.tool.name); }}
-                    className="flex-1 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider flex items-center justify-center gap-1 transition-all"
-                    style={{
-                      background: inStack ? "hsl(45, 90%, 55%, 0.15)" : "hsl(var(--muted) / 0.08)",
-                      border: `1px solid ${inStack ? "hsl(45, 90%, 55%, 0.3)" : "hsl(var(--border) / 0.2)"}`,
-                      color: inStack ? "hsl(45, 90%, 55%)" : "hsl(var(--foreground) / 0.7)",
-                    }}
-                  >
-                    {inStack ? <><Check className="h-3 w-3" /> In Stack</> : <><Plus className="h-3 w-3" /> Add</>}
-                  </button>
-                  {item.tool.type === "learnable" && (
+                <div className="px-4 pb-3 space-y-2">
+                  <div className="flex items-center gap-2">
                     <button
-                      onClick={e => { e.stopPropagation(); onSelectTool?.(item.tool.name); }}
-                      className="py-1.5 px-3 rounded-lg text-[10px] font-bold uppercase tracking-wider flex items-center gap-1"
+                      onClick={e => { e.stopPropagation(); toggleTool(item.tool.name); }}
+                      className="flex-1 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider flex items-center justify-center gap-1 transition-all"
                       style={{
-                        background: "linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary) / 0.8))",
-                        color: "hsl(var(--primary-foreground))",
+                        background: inStack ? "hsl(45, 90%, 55%, 0.15)" : "hsl(var(--muted) / 0.08)",
+                        border: `1px solid ${inStack ? "hsl(45, 90%, 55%, 0.3)" : "hsl(var(--border) / 0.2)"}`,
+                        color: inStack ? "hsl(45, 90%, 55%)" : "hsl(var(--foreground) / 0.7)",
                       }}
                     >
-                      <Sparkles className="h-3 w-3" /> Practice
+                      {inStack ? <><Check className="h-3 w-3" /> In Stack</> : <><Plus className="h-3 w-3" /> Add</>}
                     </button>
-                  )}
+                    {item.tool.url && (
+                      <a
+                        href={item.tool.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={e => e.stopPropagation()}
+                        className="py-1.5 px-2.5 rounded-lg text-[10px] font-bold flex items-center gap-1 transition-all hover:opacity-80"
+                        style={{
+                          background: "hsl(var(--muted) / 0.08)",
+                          border: "1px solid hsl(var(--border) / 0.2)",
+                          color: "hsl(var(--foreground) / 0.7)",
+                        }}
+                      >
+                        <ExternalLink className="h-3 w-3" /> Try it
+                      </a>
+                    )}
+                  </div>
+
+                  {/* Proficiency self-assessment */}
+                  <div className="relative">
+                    <button
+                      onClick={e => { e.stopPropagation(); setOpenAssessment(openAssessment === item.tool.name ? null : item.tool.name); }}
+                      className="w-full py-1.5 rounded-lg text-[10px] font-medium flex items-center justify-center gap-1.5 transition-all"
+                      style={{
+                        background: proficiencies[item.tool.name] !== undefined
+                          ? PROFICIENCY_LEVELS[proficiencies[item.tool.name]].color + "15"
+                          : "hsl(var(--muted) / 0.05)",
+                        border: `1px solid ${proficiencies[item.tool.name] !== undefined
+                          ? PROFICIENCY_LEVELS[proficiencies[item.tool.name]].color + "30"
+                          : "hsl(var(--border) / 0.15)"}`,
+                        color: proficiencies[item.tool.name] !== undefined
+                          ? PROFICIENCY_LEVELS[proficiencies[item.tool.name]].color
+                          : "hsl(var(--muted-foreground))",
+                      }}
+                    >
+                      {proficiencies[item.tool.name] !== undefined ? (
+                        <>
+                          <span>{PROFICIENCY_LEVELS[proficiencies[item.tool.name]].emoji}</span>
+                          {PROFICIENCY_LEVELS[proficiencies[item.tool.name]].label}
+                        </>
+                      ) : (
+                        <>Rate your proficiency</>
+                      )}
+                      <ChevronDown className="h-3 w-3" />
+                    </button>
+
+                    <AnimatePresence>
+                      {openAssessment === item.tool.name && (
+                        <motion.div
+                          initial={{ opacity: 0, y: -4, scale: 0.95 }}
+                          animate={{ opacity: 1, y: 0, scale: 1 }}
+                          exit={{ opacity: 0, y: -4, scale: 0.95 }}
+                          className="absolute bottom-full left-0 right-0 mb-1 rounded-lg overflow-hidden z-20 shadow-lg"
+                          style={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border) / 0.3)" }}
+                          onClick={e => e.stopPropagation()}
+                        >
+                          {PROFICIENCY_LEVELS.map(lvl => (
+                            <button
+                              key={lvl.value}
+                              onClick={() => setProficiency(item.tool.name, lvl.value)}
+                              className="w-full px-3 py-2 text-left text-[11px] flex items-center gap-2 transition-all hover:bg-[hsl(var(--muted)/0.1)]"
+                              style={{
+                                color: proficiencies[item.tool.name] === lvl.value ? lvl.color : "hsl(var(--foreground) / 0.8)",
+                                fontWeight: proficiencies[item.tool.name] === lvl.value ? 700 : 400,
+                              }}
+                            >
+                              <span>{lvl.emoji}</span>
+                              <span className="font-medium">{lvl.label}</span>
+                            </button>
+                          ))}
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
                 </div>
               </motion.div>
             );
