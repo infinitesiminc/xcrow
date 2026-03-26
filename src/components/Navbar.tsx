@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { getAvatarById } from "@/lib/avatars";
 import { useCredits } from "@/hooks/use-credits";
+import { useAdaptiveModeNudge } from "@/hooks/use-adaptive-mode-nudge";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -18,6 +19,7 @@ import { User, Menu, X, Compass, Shield, Map, Settings, LogOut, Trophy, Graduati
 export default function Navbar() {
   const { user, signOut, openAuthModal, isSuperAdmin, isSchoolAdmin, profile } = useAuth();
   const { balance: creditBalance } = useCredits();
+  useAdaptiveModeNudge();
   const navigate = useNavigate();
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
