@@ -75,7 +75,7 @@ export default function Simulations() {
   const { user } = useAuth();
   const { toast } = useToast();
 
-  const [mainTab, setMainTab] = useState<"library" | "browse">("library");
+  const [mainTab, setMainTab] = useState<"library" | "browse" | "pipeline">("library");
 
   /* ── Library state ── */
   const [sims, setSims] = useState<CustomSim[]>([]);
