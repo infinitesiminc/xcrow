@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { CheckCircle2, Crown } from "lucide-react";
+import { CheckCircle2, Crown, Lock, Eye } from "lucide-react";
 import { rpgIcon } from "@/lib/rpg-icons";
 import { TaskAnalysis } from "@/types/analysis";
 import { ThreatBar } from "./ThreatBar";
@@ -17,9 +17,11 @@ interface BattleChooserProps {
   remainingCount: number;
   onChoose: (task: TaskAnalysis) => void;
   isFinalBattle: boolean;
+  /** Set of scouted skill IDs — unscouted tasks are locked */
+  scoutedSkillIds?: Set<string>;
 }
 
-export function BattleChooser({ choices, conqueredNames, remainingCount, onChoose, isFinalBattle }: BattleChooserProps) {
+export function BattleChooser({ choices, conqueredNames, remainingCount, onChoose, isFinalBattle, scoutedSkillIds }: BattleChooserProps) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 16 }}
@@ -60,6 +62,9 @@ export function BattleChooser({ choices, conqueredNames, remainingCount, onChoos
         {choices.map((task, i) => {
           const isConquered = conqueredNames.has(task.name);
           const score = task.aiExposureScore ?? 50;
+          // Check if scouted — if scoutedSkillIds not provided, all are unlocked
+          const isScouted = !scoutedSkillIds || scoutedSkillIds.has(task.name.toLowerCase().replace(/\s+/g, "-"));
+          const isLocked = !isScouted && !isConquered;
 
           return (
             <motion.button
@@ -67,13 +72,18 @@ export function BattleChooser({ choices, conqueredNames, remainingCount, onChoos
               initial={{ opacity: 0, y: 20, scale: 0.95 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               transition={{ delay: i * 0.12, type: "spring", damping: 20 }}
-              onClick={() => onChoose(task)}
-              className="group relative rounded-xl p-5 text-left transition-all hover:scale-[1.02] active:scale-[0.98]"
+              onClick={() => !isLocked && onChoose(task)}
+              disabled={isLocked}
+              className="group relative rounded-xl p-5 text-left transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:scale-100"
               style={{
                 ...fantasyCard,
                 ...(isConquered && {
                   border: "1px solid hsl(var(--success) / 0.3)",
                   background: "linear-gradient(135deg, hsl(var(--surface-stone)), hsl(var(--success) / 0.06))",
+                }),
+                ...(isLocked && {
+                  border: "1px dashed hsl(var(--border) / 0.3)",
+                  background: "hsl(var(--surface-stone) / 0.5)",
                 }),
               }}
             >
@@ -82,36 +92,50 @@ export function BattleChooser({ choices, conqueredNames, remainingCount, onChoos
                   <CheckCircle2 className="h-4 w-4 text-success" />
                 </div>
               )}
+              {isLocked && (
+                <div className="absolute top-3 right-3">
+                  <Lock className="h-4 w-4 text-muted-foreground/40" />
+                </div>
+              )}
 
               <h3
                 className="text-sm font-bold mb-2 pr-6 group-hover:text-primary transition-colors"
-                style={{ fontFamily: "'Cinzel', serif", color: "hsl(var(--card-foreground))" }}
+                style={{ fontFamily: "'Cinzel', serif", color: isLocked ? "hsl(var(--muted-foreground))" : "hsl(var(--card-foreground))" }}
               >
                 {task.name}
               </h3>
 
-              {task.description && (
-                <p className="text-[11px] leading-relaxed mb-3 line-clamp-2" style={{ color: "hsl(var(--muted-foreground))" }}>
-                  {task.description}
-                </p>
+              {isLocked ? (
+                <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground/50 mt-2">
+                  <Eye className="h-3 w-3" />
+                  <span>Scout from a role NPC to unlock</span>
+                </div>
+              ) : (
+                <>
+                  {task.description && (
+                    <p className="text-[11px] leading-relaxed mb-3 line-clamp-2" style={{ color: "hsl(var(--muted-foreground))" }}>
+                      {task.description}
+                    </p>
+                  )}
+
+                  {/* Threat bar */}
+                  <div className="mb-3">
+                    <span
+                      className="text-[10px] uppercase tracking-wider mb-1 block"
+                      style={{ color: "hsl(var(--filigree))", fontFamily: "'Cinzel', serif" }}
+                    >
+                      Enemy Strength
+                    </span>
+                    <ThreatBar score={score} />
+                  </div>
+
+                  {/* CTA hint */}
+                  <div className="flex items-center gap-1.5 text-[10px] font-medium text-primary/70 group-hover:text-primary transition-colors">
+                    {(() => { const { Icon } = rpgIcon(isConquered ? "battle" : "engage"); return <Icon className="h-3 w-3" />; })()}
+                    {isConquered ? "Reconquer" : "Engage"}
+                  </div>
+                </>
               )}
-
-              {/* Threat bar */}
-              <div className="mb-3">
-                <span
-                  className="text-[10px] uppercase tracking-wider mb-1 block"
-                  style={{ color: "hsl(var(--filigree))", fontFamily: "'Cinzel', serif" }}
-                >
-                  Enemy Strength
-                </span>
-                <ThreatBar score={score} />
-              </div>
-
-              {/* CTA hint */}
-              <div className="flex items-center gap-1.5 text-[10px] font-medium text-primary/70 group-hover:text-primary transition-colors">
-                {(() => { const { Icon, emoji } = rpgIcon(isConquered ? "battle" : "engage"); return <Icon className="h-3 w-3" />; })()}
-                {isConquered ? "Reconquer" : "Engage"}
-              </div>
             </motion.button>
           );
         })}
