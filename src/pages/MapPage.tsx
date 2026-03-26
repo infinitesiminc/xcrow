@@ -464,9 +464,6 @@ const MapPage = () => {
             >
               <div className="flex-1 overflow-y-auto overflow-x-hidden">
                 {activeTab === "table" ? (
-                  isFastTrack ? (
-                    <FastTrackPanel />
-                  ) : (
                     <QuestJournal
                       skills={futureSkills}
                       skillGrowthMap={skillGrowthMap}
@@ -485,7 +482,6 @@ const MapPage = () => {
                         setDrawerOpen(true);
                       }}
                     />
-                  )
                 ) : activeTab === "codex" && isSignedIn ? (
                   <CodexPanel />
                 ) : activeTab === "allies" && isSignedIn ? (
