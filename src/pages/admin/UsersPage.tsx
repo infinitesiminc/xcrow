@@ -182,6 +182,7 @@ export default function UsersPage() {
                   <SortableHead label="XP" sortKey="total_xp" current={sortKey} asc={sortAsc} onSort={toggleSort} />
                   <SortableHead label="Joined" sortKey="created_at" current={sortKey} asc={sortAsc} onSort={toggleSort} />
                   <SortableHead label="Last Active" sortKey="last_active" current={sortKey} asc={sortAsc} onSort={toggleSort} />
+                  <TableHead className="text-xs w-[60px]"></TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
