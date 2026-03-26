@@ -180,9 +180,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return () => authSub.unsubscribe();
   }, [fetchProfile]);
 
-  // Check subscription when user changes
+  // Check subscription when user changes + periodic refresh every 5 min
   useEffect(() => {
-    if (user) checkSubscription();
+    if (!user) return;
+    checkSubscription();
+    const interval = setInterval(checkSubscription, 5 * 60 * 1000);
+    return () => clearInterval(interval);
   }, [user, checkSubscription]);
 
   // Check school admin status

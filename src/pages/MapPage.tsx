@@ -124,7 +124,7 @@ type PendingSimLaunch = SimLaunchRequest & { taskName?: string };
 
 const MapPage = () => {
   const navigate = useNavigate();
-  const { profile, user, isSuperAdmin, loading: authLoading } = useAuth();
+  const { profile, user, isSuperAdmin, loading: authLoading, refreshSubscription } = useAuth();
   const { skills: dbSkills } = useSkills();
   const { futureSkills } = useFutureSkills();
   const mission = useScoutMission();
@@ -195,6 +195,16 @@ const MapPage = () => {
 
   // Preload territory backdrop images on mount
   useEffect(() => { preloadTerritoryImages(); }, []);
+
+  // Handle checkout success redirect — refresh subscription status
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("checkout") === "success") {
+      refreshSubscription();
+      toast({ title: "⚔️ Champion Pass activated!", description: "Welcome to the Champion ranks. All quests are unlocked." });
+      window.history.replaceState({}, "", "/map");
+    }
+  }, [refreshSubscription, toast]);
 
   // Wire events from SkillDetailDrawer
   useEffect(() => {
