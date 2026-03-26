@@ -250,7 +250,7 @@ export default function ToolQuickQuiz({ tool, onComplete, onClose }: Props) {
         initial={{ opacity: 0, y: 20, scale: 0.95 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
         exit={{ opacity: 0, y: 20, scale: 0.95 }}
-        className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-[min(420px,90vw)] rounded-2xl shadow-2xl flex flex-col"
+        className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-[min(420px,90vw)] max-h-[85vh] overflow-y-auto rounded-2xl shadow-2xl flex flex-col"
         style={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border) / 0.3)" }}
         onClick={e => e.stopPropagation()}
       >
