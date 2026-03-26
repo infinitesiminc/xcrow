@@ -10,7 +10,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { X, ScrollText, Users, BookOpen, Compass } from "lucide-react";
 import BossBanner from "@/components/territory/BossBanner";
 import SimulatorModal from "@/components/SimulatorModal";
-import type { SimLaunchRequest } from "@/components/territory/SkillLaunchCard";
+import type { SimLaunchRequest, PromptLabRequest } from "@/components/territory/SkillLaunchCard";
+import PromptLab from "@/components/sim/PromptLab";
 
 /** IDs of skills where user has completed a L2 boss battle */
 type Level2CompletedIds = Set<string>;
