@@ -46,7 +46,7 @@ const Competition = lazy(() => import("./pages/Competition.tsx"));
 const Investors = lazy(() => import("./pages/Investors.tsx"));
 const SponsorDashboard = lazy(() => import("./pages/SponsorDashboard.tsx"));
 const ToolAtlas = lazy(() => import("./pages/ToolAtlas.tsx"));
-const OrgStack = lazy(() => import("./pages/OrgStack.tsx"));
+
 
 // Admin (lazy)
 const HRLayout = lazy(() => import("./layouts/HRLayout.tsx"));
