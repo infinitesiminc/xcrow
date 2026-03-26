@@ -43,11 +43,10 @@ export default function StackBuilder({ onSelectTool }: Props) {
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
   const { toggleTool, isInStack, stack, stackSize } = useMyStack();
   const [proficiencies, setProficiencies] = useState<Record<string, number>>({});
-  const [openAssessment, setOpenAssessment] = useState<string | null>(null);
+  const [quizTool, setQuizTool] = useState<string | null>(null);
 
-  const setProficiency = (toolName: string, level: number) => {
-    setProficiencies(p => ({ ...p, [toolName]: level }));
-    setOpenAssessment(null);
+  const handleQuizComplete = (toolName: string, result: QuizResult) => {
+    setProficiencies(p => ({ ...p, [toolName]: result.level }));
   };
   const search = useCallback(async () => {
     const q = query.trim();
