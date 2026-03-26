@@ -178,8 +178,19 @@ export const GTC_TOOLS: GTCTool[] = [
   // ═══════════════════════════════════════════
   { name: "CUDA", company: "NVIDIA", category: "mlops-infra", version: "13.0", description: "GPU computing platform — 20 years of accelerated computing, billions of GPUs deployed.", icon: "⚡", url: "https://developer.nvidia.com/cuda-toolkit", type: "reference", maturity: "ga", pricing: "Free", useCases: ["gpu-computing", "acceleration"] },
   { name: "PyTorch", company: "Meta / Linux Foundation", category: "mlops-infra", version: "2.5", description: "Dominant deep learning framework for research and production ML.", icon: "🔥", url: "https://pytorch.org", type: "learnable", maturity: "ga", pricing: "Open Source", useCases: ["ml-training", "research", "model-development"] },
-  { name: "Hugging Face", company: "Hugging Face", category: "mlops-infra", version: "2025", description: "Model hub, Transformers library, and deployment platform. The GitHub of AI models.", icon: "🤗", url: "https://huggingface.co", type: "learnable", maturity: "ga", pricing: "Freemium", useCases: ["model-hub", "fine-tuning", "deployment"] },
-  { name: "Weights & Biases", company: "W&B", category: "mlops-infra", version: "2025", description: "ML experiment tracking, model registry, and production monitoring.", icon: "📉", url: "https://wandb.ai", type: "learnable", maturity: "ga", pricing: "Freemium", useCases: ["experiment-tracking", "monitoring", "mlops"] },
+  { name: "Hugging Face", company: "Hugging Face", category: "mlops-infra", version: "2025", description: "Model hub, Transformers library, and deployment platform. The GitHub of AI models.", icon: "🤗", url: "https://huggingface.co", type: "learnable", maturity: "ga", pricing: "Freemium", useCases: ["model-hub", "fine-tuning", "deployment"], products: [
+    { name: "Hub", description: "Repository for 500K+ models, datasets, and Spaces apps.", type: "learnable" },
+    { name: "Transformers", description: "Python library for state-of-the-art NLP, vision, and audio models.", type: "learnable" },
+    { name: "Inference Endpoints", description: "Managed model deployment on dedicated infrastructure.", type: "learnable" },
+    { name: "Spaces", description: "Host and share ML demo apps with Gradio or Streamlit.", type: "learnable" },
+    { name: "AutoTrain", description: "No-code fine-tuning for custom models.", type: "learnable" },
+  ] },
+  { name: "Weights & Biases", company: "W&B", category: "mlops-infra", version: "2025", description: "ML experiment tracking, model registry, and production monitoring.", icon: "📉", url: "https://wandb.ai", type: "learnable", maturity: "ga", pricing: "Freemium", useCases: ["experiment-tracking", "monitoring", "mlops"], products: [
+    { name: "W&B Experiments", description: "Track, compare, and visualize ML training runs.", type: "learnable" },
+    { name: "W&B Sweeps", description: "Automated hyperparameter optimization.", type: "learnable" },
+    { name: "W&B Model Registry", description: "Version, stage, and deploy models to production.", type: "learnable" },
+    { name: "W&B Weave", description: "Tracing and evaluation framework for LLM applications.", type: "learnable" },
+  ] },
   { name: "Dynamo", company: "NVIDIA", category: "mlops-infra", version: "GA", description: "Inference OS for AI factories — disaggregated inference pipeline, 35x performance increase.", icon: "⚙️", type: "reference", maturity: "ga", pricing: "Enterprise", useCases: ["inference", "optimization", "scaling"] },
   { name: "Kubernetes", company: "CNCF", category: "mlops-infra", version: "1.32", description: "Container orchestration standard — foundation for AI workload deployment at scale.", icon: "☸️", type: "learnable", maturity: "ga", pricing: "Open Source", useCases: ["orchestration", "deployment", "scaling"] },
   { name: "Fireworks AI", company: "Fireworks", category: "mlops-infra", version: "2025", description: "Fast inference platform for deploying open-source and custom models.", icon: "🎆", url: "https://fireworks.ai", type: "learnable", maturity: "ga", pricing: "Paid", useCases: ["inference", "model-serving", "fine-tuning"] },
