@@ -117,12 +117,14 @@ const MapPage = () => {
   const [level2CompletedIds, setLevel2CompletedIds] = useState<Level2CompletedIds>(new Set());
   const [skillGrowthMap, setSkillGrowthMap] = useState<Map<string, CanonicalSkillGrowth>>(new Map());
   const [bossCount, setBossCount] = useState(0);
+  const [avgDegreeLevel, setAvgDegreeLevel] = useState(1);
   const { toast } = useToast();
   const hasShownBossToast = useRef(false);
 
-  // In-place sim overlay state
+  // In-place sim overlay state — gated by credits
   const [activeSim, setActiveSim] = useState<PendingSimLaunch | null>(null);
-  const handleLaunchSim = useCallback((req: PendingSimLaunch) => setActiveSim(req), []);
+  const [pendingSimReq, setPendingSimReq] = useState<PendingSimLaunch | null>(null);
+  const handleLaunchSim = useCallback((req: PendingSimLaunch) => setPendingSimReq(req), []);
   const handleCloseSim = useCallback(() => setActiveSim(null), []);
 
   // Prompt Lab overlay state
