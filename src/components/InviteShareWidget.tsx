@@ -64,7 +64,7 @@ export default function InviteShareWidget({ compact = false, context }: InviteSh
   const encodedLink = encodeURIComponent(linkWithCtx);
 
   const handleCopy = async () => {
-    await navigator.clipboard.writeText(inviteLink);
+    await navigator.clipboard.writeText(linkWithCtx);
     setCopied(true);
     toast({ title: "Invite link copied!", description: "Share it — you both earn a free month." });
     setTimeout(() => setCopied(false), 2000);
