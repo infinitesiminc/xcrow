@@ -142,7 +142,7 @@ export default function PlayerHUD({ skills, uniqueTasks, isEmpty, targetRoles, t
           <div className="flex items-center gap-2 mb-1.5">
             <Compass className="h-3.5 w-3.5" style={{ color: "hsl(45, 60%, 55%)" }} />
             <span className="text-[10px] font-bold uppercase tracking-[0.1em]" style={{ color: "hsl(45, 60%, 55%)" }}>
-              {missionPhase === "scout" ? "Scouting" : missionPhase === "battle" ? "Battling" : "Conquering"}
+              {missionPhase === "discover" ? "Discovering" : missionPhase === "experiment" ? "Experimenting" : missionPhase === "challenge" ? "Challenging" : "Mastering"}
             </span>
             <span className="ml-auto text-[11px] font-mono font-bold" style={{ color: "hsl(45, 60%, 55%)" }}>
               {missionProgress}%

@@ -238,8 +238,8 @@ export default function SkillLaunchCard({
                 <ArrowRight className="h-3 w-3 text-muted-foreground group-hover:text-primary shrink-0 transition-colors" />
               </button>
 
-              {/* Prompt Lab — only in battle+ phase */}
-              {(missionPhase === "battle" || missionPhase === "conquer") && (
+              {/* Prompt Lab — only in experiment+ phase */}
+              {(missionPhase !== "discover") && (
                 <button
                   onClick={() => {
                     if (onLaunchPromptLab) {

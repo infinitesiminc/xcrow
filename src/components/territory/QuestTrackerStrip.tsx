@@ -99,14 +99,15 @@ export default function QuestTrackerStrip({
           Scout the AI Frontier
         </p>
         <div className="flex items-center gap-3 text-[11px] text-muted-foreground">
-          <span><Eye className="inline h-3 w-3 mr-0.5" /><strong className="text-foreground">{territoriesScouted.size}</strong>/8 territories</span>
+          <span><Search className="inline h-3 w-3 mr-0.5" /><strong className="text-foreground">{territoriesScouted.size}</strong>/8 territories</span>
           <span><Swords className="inline h-3 w-3 mr-0.5" /><strong className="text-foreground">{skillsConquered}</strong> conquered</span>
         </div>
         <p className="text-[10px] text-muted-foreground mt-1.5 flex items-center gap-1">
           <ChevronRight className="h-3 w-3 text-primary" />
-          {phase === "scout" && "Talk to NPCs to scout 3+ skills and unlock battles"}
-          {phase === "battle" && "Practice skills in sims — conquer 5+ to begin conquest"}
-          {phase === "conquer" && "Master territories and defeat all 8 Guardians"}
+          {phase === "discover" && "Talk to NPCs to discover 3+ skills and unlock experiments"}
+          {phase === "experiment" && "Try skills in guided sims — practice 5+ to unlock challenges"}
+          {phase === "challenge" && "Push deeper — conquer 10+ skills to become a master"}
+          {phase === "master" && "Master territories and defeat all Guardians"}
         </p>
       </TooltipContent>
     </Tooltip>

@@ -296,7 +296,7 @@ export default function QuestJournal({
         </AnimatePresence>
 
         {/* ═══ Intel Collected ═══ */}
-        <SectionHeader id="intel" icon={Eye} label="Intel Collected" badge={`${scoutedSkills.length} skills`} isOpen={expandedSection === "intel"} />
+        <SectionHeader id="intel" icon={Search} label="Intel Collected" badge={`${scoutedSkills.length} skills`} isOpen={expandedSection === "intel"} />
         <AnimatePresence>
           {expandedSection === "intel" && (
             <motion.div

@@ -149,13 +149,16 @@ export default function QuestTracker({
           }}
         >
           <ChevronRight className="h-3 w-3 text-primary" />
-          {phase === "scout" && (
-            <span>Talk to role characters across territories to discover skills. <strong className="text-foreground">Scout 3+ skills</strong> to unlock battles.</span>
+          {phase === "discover" && (
+            <span>Talk to role characters across territories to discover skills. <strong className="text-foreground">Discover 3+ skills</strong> to unlock experiments.</span>
           )}
-          {phase === "battle" && (
-            <span>Practice scouted skills in simulations. <strong className="text-foreground">Conquer 5+ skills</strong> to begin territory conquest.</span>
+          {phase === "experiment" && (
+            <span>Try scouted skills in guided sims. <strong className="text-foreground">Practice 5+ skills</strong> to unlock challenges.</span>
           )}
-          {phase === "conquer" && (
+          {phase === "challenge" && (
+            <span>Push deeper into harder sims. <strong className="text-foreground">Conquer 10+ skills</strong> to become a master.</span>
+          )}
+          {phase === "master" && (
             <span>Master territories and defeat Guardians. <strong className="text-foreground">Conquer all 8 territories</strong> to complete the mission.</span>
           )}
         </div>
