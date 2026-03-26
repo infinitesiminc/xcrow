@@ -8,7 +8,7 @@ import { Gem, Eye, Swords, Compass, Hammer, ScrollText, ChevronRight, X, Sparkle
 import { Button } from "@/components/ui/button";
 import type { WanderingNPC } from "@/lib/wandering-npcs";
 import type { FutureSkillCategory } from "@/hooks/use-future-skills";
-import { TERRITORY_ORDER, getTerritory } from "@/lib/territory-colors";
+import { TERRITORY_ORDER } from "@/lib/territory-colors";
 
 interface NPCMechanicsProps {
   npc: WanderingNPC;
