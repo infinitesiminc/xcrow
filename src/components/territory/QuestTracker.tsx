@@ -3,15 +3,16 @@
  * Shows the single overarching "Scout the AI Frontier" mission with phase indicators.
  */
 import { motion, AnimatePresence } from "framer-motion";
-import { Compass, Swords, Crown, Award, Eye, ChevronRight } from "lucide-react";
+import { Compass, Search, Beaker, Swords, Crown, Award, ChevronRight } from "lucide-react";
 import type { MissionPhase } from "@/hooks/use-scout-mission";
 
 const cinzel = { fontFamily: "'Cinzel', serif" };
 
 const PHASES: { key: MissionPhase; label: string; icon: typeof Compass; emoji: string }[] = [
-  { key: "scout", label: "Scout", icon: Eye, emoji: "👁️" },
-  { key: "battle", label: "Battle", icon: Swords, emoji: "⚔️" },
-  { key: "conquer", label: "Conquer", icon: Crown, emoji: "👑" },
+  { key: "discover", label: "Discover", icon: Search, emoji: "🔍" },
+  { key: "experiment", label: "Experiment", icon: Beaker, emoji: "🧪" },
+  { key: "challenge", label: "Challenge", icon: Swords, emoji: "⚔️" },
+  { key: "master", label: "Master", icon: Crown, emoji: "👑" },
 ];
 
 interface QuestTrackerProps {
