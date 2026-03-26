@@ -524,6 +524,37 @@ export default function OrgStack() {
                         <p className="text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>{selectedTool.company}</p>
                       </div>
                     </div>
+                    {/* Conflict warning in detail */}
+                    {(() => {
+                      const conflictWith = conflicts.conflictedTools.get(selectedTool.name);
+                      const isOwn = conflicts.ownTools.includes(selectedTool.name);
+                      if (conflictWith) return (
+                        <div className="rounded-lg p-2.5 mb-3 flex items-start gap-2"
+                          style={{ background: "hsl(var(--destructive) / 0.08)", border: "1px solid hsl(var(--destructive) / 0.2)" }}>
+                          <AlertTriangle className="h-3.5 w-3.5 mt-0.5 flex-shrink-0" style={{ color: "hsl(var(--destructive))" }} />
+                          <div>
+                            <p className="text-[11px] font-bold" style={{ color: "hsl(var(--destructive))" }}>Competitor Tool</p>
+                            <p className="text-[10px]" style={{ color: "hsl(var(--foreground) / 0.7)" }}>
+                              Competes with your own product <span className="font-bold">{conflictWith}</span>. Consider using {conflictWith} internally instead.
+                            </p>
+                          </div>
+                        </div>
+                      );
+                      if (isOwn) return (
+                        <div className="rounded-lg p-2.5 mb-3 flex items-start gap-2"
+                          style={{ background: "hsl(142 70% 45% / 0.08)", border: "1px solid hsl(142 70% 45% / 0.2)" }}>
+                          <ShieldCheck className="h-3.5 w-3.5 mt-0.5 flex-shrink-0" style={{ color: "hsl(142 70% 45%)" }} />
+                          <div>
+                            <p className="text-[11px] font-bold" style={{ color: "hsl(142 70% 45%)" }}>Your Product</p>
+                            <p className="text-[10px]" style={{ color: "hsl(var(--foreground) / 0.7)" }}>
+                              Built by {orgData.companyName}. Prioritize internal adoption.
+                            </p>
+                          </div>
+                        </div>
+                      );
+                      return null;
+                    })()}
+
                     <p className="text-xs mb-3 leading-relaxed" style={{ color: "hsl(var(--foreground) / 0.7)" }}>
                       {selectedTool.description}
                     </p>
