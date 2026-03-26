@@ -3,15 +3,16 @@
  * Shows the single overarching "Scout the AI Frontier" mission with phase indicators.
  */
 import { motion, AnimatePresence } from "framer-motion";
-import { Compass, Swords, Crown, Award, Eye, ChevronRight } from "lucide-react";
+import { Compass, Search, Beaker, Swords, Crown, Award, ChevronRight } from "lucide-react";
 import type { MissionPhase } from "@/hooks/use-scout-mission";
 
 const cinzel = { fontFamily: "'Cinzel', serif" };
 
 const PHASES: { key: MissionPhase; label: string; icon: typeof Compass; emoji: string }[] = [
-  { key: "scout", label: "Scout", icon: Eye, emoji: "👁️" },
-  { key: "battle", label: "Battle", icon: Swords, emoji: "⚔️" },
-  { key: "conquer", label: "Conquer", icon: Crown, emoji: "👑" },
+  { key: "discover", label: "Discover", icon: Search, emoji: "🔍" },
+  { key: "experiment", label: "Experiment", icon: Beaker, emoji: "🧪" },
+  { key: "challenge", label: "Challenge", icon: Swords, emoji: "⚔️" },
+  { key: "master", label: "Master", icon: Crown, emoji: "👑" },
 ];
 
 interface QuestTrackerProps {
@@ -108,14 +109,14 @@ export default function QuestTracker({
           {/* Stats */}
           <div className="flex items-center gap-3 text-[11px]">
             <div className="flex items-center gap-1 text-muted-foreground">
-              <Eye className="h-3 w-3" />
+              <Search className="h-3 w-3" />
               <span className="font-semibold text-foreground">{territoriesScouted.size}</span>
               <span>/8</span>
             </div>
             <div className="flex items-center gap-1 text-muted-foreground">
               <Award className="h-3 w-3" />
               <span className="font-semibold text-foreground">{scoutedSkillCount}</span>
-              <span>scouted</span>
+              <span>discovered</span>
             </div>
             <div className="flex items-center gap-1 text-muted-foreground">
               <Swords className="h-3 w-3" />
@@ -148,13 +149,16 @@ export default function QuestTracker({
           }}
         >
           <ChevronRight className="h-3 w-3 text-primary" />
-          {phase === "scout" && (
-            <span>Talk to role characters across territories to discover skills. <strong className="text-foreground">Scout 3+ skills</strong> to unlock battles.</span>
+          {phase === "discover" && (
+            <span>Talk to role characters across territories to discover skills. <strong className="text-foreground">Discover 3+ skills</strong> to unlock experiments.</span>
           )}
-          {phase === "battle" && (
-            <span>Practice scouted skills in simulations. <strong className="text-foreground">Conquer 5+ skills</strong> to begin territory conquest.</span>
+          {phase === "experiment" && (
+            <span>Try scouted skills in guided sims. <strong className="text-foreground">Practice 5+ skills</strong> to unlock challenges.</span>
           )}
-          {phase === "conquer" && (
+          {phase === "challenge" && (
+            <span>Push deeper into harder sims. <strong className="text-foreground">Conquer 10+ skills</strong> to become a master.</span>
+          )}
+          {phase === "master" && (
             <span>Master territories and defeat Guardians. <strong className="text-foreground">Conquer all 8 territories</strong> to complete the mission.</span>
           )}
         </div>

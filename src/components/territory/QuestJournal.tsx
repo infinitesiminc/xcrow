@@ -10,9 +10,9 @@ import { type FutureSkill, type FutureSkillCategory } from "@/hooks/use-future-s
 import { supabase } from "@/integrations/supabase/client";
 import type { SimLaunchRequest } from "@/components/territory/SkillLaunchCard";
 import {
-  Eye, Swords, Crown, Compass, ChevronRight, Clock,
+  Search, Swords, Crown, Compass, ChevronRight, Clock,
   Zap, Diamond, Lock, Trophy, Flame, ScrollText, MapPin,
-  CheckCircle2, Circle, Search,
+  CheckCircle2, Circle, Beaker,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { getTerritory, TERRITORY_ORDER } from "@/lib/territory-colors";
@@ -25,35 +25,45 @@ import type { MissionPhase, ScoutedSkill } from "@/hooks/use-scout-mission";
 
 const cinzel = { fontFamily: "'Cinzel', serif" };
 
-const PHASE_META: Record<MissionPhase, { label: string; icon: typeof Eye; color: string; objectives: string[] }> = {
-  scout: {
-    label: "Scout",
-    icon: Eye,
+const PHASE_META: Record<MissionPhase, { label: string; icon: typeof Search; color: string; objectives: string[] }> = {
+  discover: {
+    label: "Discover",
+    icon: Search,
     color: "hsl(var(--primary))",
     objectives: [
       "Talk to role NPCs across territories",
-      "Discover 3+ skills to unlock battles",
+      "Discover 3+ skills to unlock experiments",
       "Visit all 8 territories",
     ],
   },
-  battle: {
-    label: "Battle",
-    icon: Swords,
+  experiment: {
+    label: "Experiment",
+    icon: Beaker,
     color: "hsl(45 90% 55%)",
     objectives: [
-      "Practice scouted skills in simulations",
-      "Conquer 5+ skills to begin territory conquest",
+      "Try scouted skills in guided sims",
+      "Practice 5+ skills to unlock challenges",
       "Earn XP to level up your castles",
     ],
   },
-  conquer: {
-    label: "Conquer",
+  challenge: {
+    label: "Challenge",
+    icon: Swords,
+    color: "hsl(20 85% 55%)",
+    objectives: [
+      "Push into harder simulations",
+      "Conquer 10+ skills to become a master",
+      "Reach Apprentice tier on 3+ skills",
+    ],
+  },
+  master: {
+    label: "Master",
     icon: Crown,
     color: "hsl(280 60% 60%)",
     objectives: [
       "Defeat Territory Guardians",
       "Master all 8 territories",
-      "Reach Legend rank",
+      "Reach Commander rank",
     ],
   },
 };
@@ -240,10 +250,12 @@ export default function QuestJournal({
               <div className="px-3 py-2 space-y-2">
                 {/* Phase objectives */}
                 {phaseMeta.objectives.map((obj, i) => {
-                  const isDone = missionPhase === "scout"
+                  const isDone = missionPhase === "discover"
                     ? (i === 0 ? scoutedSkills.length > 0 : i === 1 ? scoutedSkills.length >= 3 : territoriesScouted.size >= 8)
-                    : missionPhase === "battle"
+                    : missionPhase === "experiment"
                     ? (i === 0 ? battleLog.length > 0 : i === 1 ? skillsConquered >= 5 : false)
+                    : missionPhase === "challenge"
+                    ? (i === 0 ? skillsConquered >= 5 : i === 1 ? skillsConquered >= 10 : false)
                     : (i === 0 ? skillsConquered > 0 : false);
 
                   return (
@@ -266,7 +278,7 @@ export default function QuestJournal({
                   style={{ borderTop: "1px solid hsl(var(--border) / 0.15)" }}
                 >
                   <div className="flex items-center gap-1 text-muted-foreground">
-                    <Eye className="h-3 w-3" />
+                    <Search className="h-3 w-3" />
                     <span className="font-bold text-foreground">{territoriesScouted.size}</span>/8 territories
                   </div>
                   <div className="flex items-center gap-1 text-muted-foreground">
@@ -284,7 +296,7 @@ export default function QuestJournal({
         </AnimatePresence>
 
         {/* ═══ Intel Collected ═══ */}
-        <SectionHeader id="intel" icon={Eye} label="Intel Collected" badge={`${scoutedSkills.length} skills`} isOpen={expandedSection === "intel"} />
+        <SectionHeader id="intel" icon={Search} label="Intel Collected" badge={`${scoutedSkills.length} skills`} isOpen={expandedSection === "intel"} />
         <AnimatePresence>
           {expandedSection === "intel" && (
             <motion.div
