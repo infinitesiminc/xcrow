@@ -1,5 +1,5 @@
 /**
- * Every tool, platform, and product mentioned in Jensen Huang's GTC 2026 keynote.
+ * Every tool, platform, and product mentioned in the GTC 2026 keynote.
  * Grouped by the company that created/maintains it.
  * Source: Full transcript of GTC 2026 keynote, March 2026.
  */
@@ -30,8 +30,6 @@ export interface GTCTool {
   url?: string;
   /** Emoji icon for quick visual recognition */
   icon: string;
-  /** Whether Jensen specifically endorsed/uses it */
-  jensenEndorsed?: boolean;
 }
 
 export const GTC_TOOLS: GTCTool[] = [
@@ -71,18 +69,18 @@ export const GTC_TOOLS: GTCTool[] = [
   { name: "Confidential Computing", company: "NVIDIA", category: "security", description: "GPU-level encryption — even the cloud operator cannot see your data or models.", icon: "🔐" },
 
   // ─── OpenAI ───
-  { name: "ChatGPT", company: "OpenAI", category: "llm", description: "Conversational AI — started the generative AI era. 'Everybody should be using it every morning.'", icon: "💬", url: "https://chat.openai.com", jensenEndorsed: true },
-  { name: "GPT o1 / o3", company: "OpenAI", category: "llm", description: "Reasoning AI — reflects, plans, decomposes problems. 'Made generative AI trustworthy and grounded.'", icon: "🧩" },
-  { name: "Codex", company: "OpenAI", category: "coding", description: "AI coding agent — '100% of NVIDIA uses it' alongside Claude Code and Cursor.", icon: "👨‍💻", jensenEndorsed: true },
+  { name: "ChatGPT", company: "OpenAI", category: "llm", description: "Conversational AI — started the generative AI era. ", icon: "💬", url: "https://chat.openai.com" },
+  { name: "GPT o1 / o3", company: "OpenAI", category: "llm", description: "Reasoning AI — reflects, plans, decomposes problems. ", icon: "🧩" },
+  { name: "Codex", company: "OpenAI", category: "coding", description: "AI coding agent — AI coding agent used alongside Claude Code and Cursor.", icon: "👨‍💻" },
 
   // ─── Anthropic ───
-  { name: "Claude Code", company: "Anthropic", category: "coding", description: "Agentic coding — reads files, compiles, tests, iterates. 'Revolutionized software engineering.'", icon: "🔨", url: "https://claude.ai", jensenEndorsed: true },
+  { name: "Claude Code", company: "Anthropic", category: "coding", description: "Agentic coding — reads files, compiles, tests, iterates. Revolutionized software engineering.", icon: "🔨", url: "https://claude.ai" },
 
   // ─── Cursor ───
-  { name: "Cursor", company: "Anysphere", category: "coding", description: "AI-first code editor — chat with your codebase. Part of NVIDIA's Neimotron coalition.", icon: "✏️", url: "https://cursor.com", jensenEndorsed: true },
+  { name: "Cursor", company: "Anysphere", category: "coding", description: "AI-first code editor — chat with your codebase. Part of NVIDIA's Neimotron coalition.", icon: "✏️", url: "https://cursor.com" },
 
   // ─── Open Claw ───
-  { name: "Open Claw", company: "Open Source", category: "agentic", description: "Agentic OS — the 'Linux of agents.' Most popular open-source project in history. Spawns sub-agents, uses tools, schedules cron jobs.", icon: "🦀", jensenEndorsed: true },
+  { name: "Open Claw", company: "Open Source", category: "agentic", description: "Agentic OS — the 'Linux of agents.' Most popular open-source project in history. Spawns sub-agents, uses tools, schedules cron jobs.", icon: "🦀" },
 
   // ─── Groq ───
   { name: "Groq LPU (LP30)", company: "Groq", category: "hardware", description: "Deterministic dataflow processor for ultra-low-latency inference. Integrated with Vera Rubin via Dynamo.", icon: "⚡" },
@@ -91,7 +89,7 @@ export const GTC_TOOLS: GTCTool[] = [
   { name: "LangChain", company: "LangChain", category: "agentic", description: "Agent orchestration framework — 1 billion+ downloads for creating custom agents. Neimotron coalition member.", icon: "🔗", url: "https://langchain.com" },
 
   // ─── Perplexity ───
-  { name: "Perplexity", company: "Perplexity AI", category: "search", description: "AI-powered search with cited answers. 'Everybody use it. It is so good.'", icon: "🔎", url: "https://perplexity.ai", jensenEndorsed: true },
+  { name: "Perplexity", company: "Perplexity AI", category: "search", description: "AI-powered search with cited answers. ", icon: "🔎", url: "https://perplexity.ai" },
 
   // ─── Mistral ───
   { name: "Mistral", company: "Mistral AI", category: "llm", description: "Open-source LLM — Neimotron coalition member, one of the 'incredible companies.'", icon: "🌬️", url: "https://mistral.ai" },
@@ -175,7 +173,7 @@ export const GTC_TOOLS: GTCTool[] = [
   { name: "Fireworks AI", company: "Fireworks", category: "infrastructure", description: "Fast inference platform — landed on Oracle Cloud with NVIDIA.", icon: "🎆" },
 
   // ─── Samsung ───
-  { name: "Samsung (Groq LP30 fab)", company: "Samsung", category: "hardware", description: "Manufactures the Groq LP30 chip — 'cranking as hard as they can.'", icon: "🏭" },
+  { name: "Samsung (Groq LP30 fab)", company: "Samsung", category: "hardware", description: "Manufactures the Groq LP30 chip — ", icon: "🏭" },
 
   // ─── Skilled AI ───
   { name: "Skilled AI", company: "Skilled AI", category: "robotics", description: "Uses Isaac Lab + Cosmos to generate robot post-training data with reinforcement learning.", icon: "🤖" },

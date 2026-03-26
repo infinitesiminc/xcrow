@@ -1,10 +1,10 @@
 /**
- * ToolsPanel — Comprehensive tracker of every AI tool mentioned in Jensen's GTC 2026 keynote.
+ * ToolsPanel — Comprehensive tracker of AI tools from the GTC 2026 keynote.
  * Grouped by company, filterable by category, with search.
  */
 import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, ExternalLink, Star, ChevronDown, ChevronUp } from "lucide-react";
+import { Search, ExternalLink, ChevronDown, ChevronUp } from "lucide-react";
 import { GTC_TOOLS, CATEGORY_CONFIG, type ToolCategory, type GTCTool } from "@/data/gtc-tools-registry";
 
 export default function ToolsPanel() {
@@ -73,7 +73,7 @@ export default function ToolsPanel() {
           </span>
         </div>
         <p className="text-[10px] leading-relaxed" style={{ color: "hsl(var(--muted-foreground))" }}>
-          Every tool mentioned in Jensen Huang's GTC 2026 keynote — the agentic world is here.
+          Every tool from the GTC 2026 keynote — the agentic world is here.
         </p>
 
         {/* Search */}
@@ -202,9 +202,6 @@ function ToolRow({ tool }: { tool: GTCTool }) {
           <span className="text-[11px] font-semibold truncate" style={{ color: "hsl(var(--foreground))" }}>
             {tool.name}
           </span>
-          {tool.jensenEndorsed && (
-            <Star className="h-2.5 w-2.5 shrink-0 fill-current" style={{ color: "hsl(45, 90%, 55%)" }} />
-          )}
           <span
             className="text-[9px] px-1 py-0 rounded shrink-0"
             style={{ background: catCfg.color + "22", color: catCfg.color }}
