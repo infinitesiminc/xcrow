@@ -22,6 +22,7 @@ const DOMAIN_MAP: Record<string, string> = {
   apple: 'apple.com',
   nvidia: 'nvidia.com',
   stripe: 'stripe.com',
+  spotify: 'spotify.com',
   deloitte: 'deloitte.com',
   // Universities
   ucla: 'ucla.edu',
