@@ -112,7 +112,7 @@ export default function SkillDetailDrawer({
   onLaunchBoss,
   simScores,
 }: SkillDetailDrawerProps) {
-  const { user } = useAuth();
+  const { user, isSuperAdmin } = useAuth();
   const [battleLog, setBattleLog] = useState<BattleEntry[]>([]);
   const [logLoading, setLogLoading] = useState(false);
   const { futureSkills: allSkills } = useFutureSkills();
