@@ -112,7 +112,7 @@ export default function SkillDetailDrawer({
   onLaunchBoss,
   simScores,
 }: SkillDetailDrawerProps) {
-  const { user } = useAuth();
+  const { user, isSuperAdmin } = useAuth();
   const [battleLog, setBattleLog] = useState<BattleEntry[]>([]);
   const [logLoading, setLogLoading] = useState(false);
   const { futureSkills: allSkills } = useFutureSkills();
@@ -393,6 +393,40 @@ export default function SkillDetailDrawer({
                 </motion.button>
               );
             })()}
+
+            {/* Superadmin: test any tier */}
+            {isSuperAdmin && (
+              <div className="space-y-1">
+                <span className="text-[8px] uppercase tracking-wider text-muted-foreground/50 font-mono">⚡ Dev — Launch Any Tier</span>
+                <div className="flex gap-1.5">
+                  {MASTERY_TIERS.map((t, i) => (
+                    <button
+                      key={t.name}
+                      onClick={() => {
+                        onOpenChange(false);
+                        window.dispatchEvent(new CustomEvent("launch_skill_sim", {
+                          detail: {
+                            skillId: skill.id,
+                            skillName: skill.name,
+                            level: i === 2 ? 2 : 1,
+                            masteryTier: tierToSimKey(i),
+                          },
+                        }));
+                      }}
+                      className="flex-1 text-[9px] font-bold py-1.5 rounded-md transition-colors hover:brightness-125"
+                      style={{
+                        background: `${t.color}20`,
+                        color: t.color,
+                        border: `1px solid ${t.color}40`,
+                        fontFamily: "'Cinzel', serif",
+                      }}
+                    >
+                      {t.icon} {t.name}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* Show next tier preview if not at max */}
             {currentTierIdx < MASTERY_TIERS.length - 1 && (
