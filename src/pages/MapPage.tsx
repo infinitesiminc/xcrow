@@ -7,7 +7,7 @@ import type { FutureSkill } from "@/hooks/use-future-skills";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { X, Users, BookOpen, PanelLeftClose, PanelLeftOpen, Save } from "lucide-react";
+import { X, Users, BookOpen, ChevronDown, ChevronUp, Save } from "lucide-react";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import BossBanner from "@/components/territory/BossBanner";
 import SimulatorModal from "@/components/SimulatorModal";
