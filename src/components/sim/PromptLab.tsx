@@ -74,7 +74,7 @@ function getDifficulty(bestScore?: number): Difficulty {
 type Phase = "loading" | "scenario" | "writing" | "evaluating" | "result";
 
 export default function PromptLab({
-  open, onClose, skillId, skillName, skillCategory, bestPrevScore,
+  open, onClose, skillId, skillName, skillCategory, bestPrevScore, embedded, onComplete,
 }: PromptLabProps) {
   const { user } = useAuth();
   const { toast } = useToast();
