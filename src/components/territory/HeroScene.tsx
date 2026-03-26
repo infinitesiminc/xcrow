@@ -42,7 +42,7 @@ const INTENSITY_OPACITY: Record<HeroIntensity, number> = {
   thumbnail: 0.3,
 };
 
-export default function HeroScene({
+const HeroScene = forwardRef<HTMLDivElement, HeroSceneProps>(function HeroScene({
   imageUrl,
   intensity = "full",
   camera = "ken-burns",
@@ -50,7 +50,7 @@ export default function HeroScene({
   hue = 220,
   children,
   className = "",
-}: HeroSceneProps) {
+}, ref) {
   if (!imageUrl) {
     return <div className={`relative ${className}`}>{children}</div>;
   }
