@@ -86,13 +86,12 @@ export default function GuardianEncounter({ guardian, onClose, onChallenge }: Gu
                   ],
                 }}
                 transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-                className="w-16 h-16 rounded-xl flex items-center justify-center text-4xl shrink-0"
+                className="w-16 h-16 rounded-xl overflow-hidden shrink-0"
                 style={{
-                  background: `linear-gradient(135deg, hsl(${guardian.hue} 40% 15%), hsl(${guardian.hue} 30% 20%))`,
                   border: `2px solid hsl(${guardian.hue} 50% 35%)`,
                 }}
               >
-                {guardian.emoji}
+                <img src={GUARDIAN_AVATARS[guardian.id] || guardIronclad} alt={guardian.name} className="w-full h-full object-cover" loading="eager" />
               </motion.div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-0.5">
