@@ -196,29 +196,69 @@ export default function StackBuilder({ onSelectTool }: Props) {
   return (
     <div className="space-y-5">
       {/* Search bar */}
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4" style={{ color: "hsl(var(--muted-foreground))" }} />
-        <input
-          value={query}
-          onChange={e => { setQuery(e.target.value); if (e.target.value.length < 2) setSearchResults(null); }}
-          onKeyDown={e => e.key === "Enter" && search()}
-          placeholder="Search by job title for personalized recommendations..."
-          className="w-full pl-10 pr-24 py-3 rounded-xl text-sm transition-all focus:outline-none focus:ring-2 focus:ring-primary/30"
-          style={{ background: "hsl(var(--muted) / 0.08)", border: "1px solid hsl(var(--border) / 0.3)", color: "hsl(var(--foreground))" }}
-        />
-        {query && (
-          <button onClick={clearSearch} className="absolute right-20 top-1/2 -translate-y-1/2 p-1 rounded-full hover:opacity-70">
-            <X className="h-3.5 w-3.5" style={{ color: "hsl(var(--muted-foreground))" }} />
+      <div className="space-y-2">
+        {/* Mode toggle */}
+        <div className="flex gap-1">
+          <button
+            onClick={() => setSearchMode("title")}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-medium transition-all"
+            style={{
+              background: searchMode === "title" ? "hsl(var(--primary) / 0.12)" : "transparent",
+              color: searchMode === "title" ? "hsl(var(--primary))" : "hsl(var(--muted-foreground))",
+              border: `1px solid ${searchMode === "title" ? "hsl(var(--primary) / 0.3)" : "transparent"}`,
+            }}
+          >
+            <Search className="h-3 w-3" /> Job Title
           </button>
-        )}
-        <button
-          onClick={search}
-          disabled={loading || query.trim().length < 2}
-          className="absolute right-2 top-1/2 -translate-y-1/2 px-4 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-all disabled:opacity-40"
-          style={{ background: "linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary) / 0.8))", color: "hsl(var(--primary-foreground))" }}
-        >
-          {loading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : "Search"}
-        </button>
+          <button
+            onClick={() => setSearchMode("url")}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-medium transition-all"
+            style={{
+              background: searchMode === "url" ? "hsl(var(--primary) / 0.12)" : "transparent",
+              color: searchMode === "url" ? "hsl(var(--primary))" : "hsl(var(--muted-foreground))",
+              border: `1px solid ${searchMode === "url" ? "hsl(var(--primary) / 0.3)" : "transparent"}`,
+            }}
+          >
+            <Link className="h-3 w-3" /> JD URL
+          </button>
+        </div>
+
+        {/* Input */}
+        <div className="relative">
+          {searchMode === "title" ? (
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4" style={{ color: "hsl(var(--muted-foreground))" }} />
+          ) : (
+            <Link className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4" style={{ color: "hsl(var(--muted-foreground))" }} />
+          )}
+          <input
+            value={searchMode === "title" ? query : jdUrl}
+            onChange={e => {
+              if (searchMode === "title") {
+                setQuery(e.target.value);
+                if (e.target.value.length < 2) setSearchResults(null);
+              } else {
+                setJdUrl(e.target.value);
+              }
+            }}
+            onKeyDown={e => e.key === "Enter" && (searchMode === "title" ? search() : searchByUrl())}
+            placeholder={searchMode === "title" ? "Search by job title for personalized recommendations..." : "Paste a job description URL to extract tool recommendations..."}
+            className="w-full pl-10 pr-24 py-3 rounded-xl text-sm transition-all focus:outline-none focus:ring-2 focus:ring-primary/30"
+            style={{ background: "hsl(var(--muted) / 0.08)", border: "1px solid hsl(var(--border) / 0.3)", color: "hsl(var(--foreground))" }}
+          />
+          {(query || jdUrl) && (
+            <button onClick={clearSearch} className="absolute right-20 top-1/2 -translate-y-1/2 p-1 rounded-full hover:opacity-70">
+              <X className="h-3.5 w-3.5" style={{ color: "hsl(var(--muted-foreground))" }} />
+            </button>
+          )}
+          <button
+            onClick={searchMode === "title" ? search : searchByUrl}
+            disabled={loading || (searchMode === "title" ? query.trim().length < 2 : jdUrl.trim().length < 5)}
+            className="absolute right-2 top-1/2 -translate-y-1/2 px-4 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-all disabled:opacity-40"
+            style={{ background: "linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary) / 0.8))", color: "hsl(var(--primary-foreground))" }}
+          >
+            {loading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : searchMode === "title" ? "Search" : "Analyze"}
+          </button>
+        </div>
       </div>
 
       {/* Role templates row */}
