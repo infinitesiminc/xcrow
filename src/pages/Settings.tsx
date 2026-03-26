@@ -285,6 +285,10 @@ export default function Settings() {
               />
             )}
 
+            {activeSection === "gameplay" && (
+              <GameplaySection playMode={playMode} setPlayMode={setPlayMode} creditBalance={creditBalance} />
+            )}
+
             {activeSection === "subscription" && (
               <SubscriptionSection
                 plan={plan}
