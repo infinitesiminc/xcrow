@@ -20,6 +20,8 @@ import { generateNPCSpawns, type NPCSpawn, type WanderingNPC } from "@/lib/wande
 import GuardianEncounter from "./GuardianEncounter";
 import NPCEncounter from "./NPCEncounter";
 import TerritoryParticles from "./TerritoryParticles";
+import HeroScene from "./HeroScene";
+import { getTerritoryHeroImage } from "@/lib/territory-hero-images";
 
 import type { SimLaunchRequest, PromptLabRequest } from "./SkillLaunchCard";
 
