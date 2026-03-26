@@ -493,7 +493,24 @@ const MapPage = () => {
                       }}
                     />
                 ) : activeTab === "codex" && isSignedIn ? (
-                  <CodexPanel />
+                  selectedToolName ? (
+                    <ToolDetailCard
+                      toolName={selectedToolName}
+                      onClose={() => setSelectedToolName(null)}
+                      onSkillClick={(skillName) => {
+                        const skill = futureSkills.find(s => s.name === skillName);
+                        if (skill) {
+                          setMapFocusSkillId(skill.id);
+                          setTimeout(() => setMapFocusSkillId(null), 100);
+                          setDrawerSkill(skill);
+                          setDrawerOpen(true);
+                        }
+                        setSelectedToolName(null);
+                      }}
+                    />
+                  ) : (
+                    <CodexPanel onSelectTool={setSelectedToolName} />
+                  )
                 ) : activeTab === "allies" && isSignedIn ? (
                   <AlliesPanel onLaunchSim={handleLaunchSim} />
                 ) : null}
