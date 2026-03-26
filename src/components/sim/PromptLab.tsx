@@ -155,8 +155,13 @@ export default function PromptLab({
           feedback: evalData.feedback,
         });
       }
+    } catch (err: any) {
+      console.error(err);
+      toast({ title: "Evaluation failed", description: err.message, variant: "destructive" });
+      setPhase("writing");
+    }
+  };
 
-  // Fetch history
   const fetchHistory = useCallback(async () => {
     if (!user) return;
     const { data } = await supabase
