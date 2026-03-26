@@ -7,7 +7,8 @@ import type { FutureSkill } from "@/hooks/use-future-skills";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { X, ScrollText, Users, BookOpen, Compass, PanelLeftClose, PanelLeftOpen, Save } from "lucide-react";
+import { X, Users, BookOpen, PanelLeftClose, PanelLeftOpen, Save } from "lucide-react";
+import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import BossBanner from "@/components/territory/BossBanner";
 import SimulatorModal from "@/components/SimulatorModal";
 import type { SimLaunchRequest, PromptLabRequest } from "@/components/territory/SkillLaunchCard";
@@ -35,7 +36,7 @@ import CompactHUD from "@/components/territory/CompactHUD";
 
 import AlliesPanel from "@/components/territory/AlliesPanel";
 import CodexPanel from "@/components/territory/CodexPanel";
-import ScoutPanel from "@/components/territory/ScoutPanel";
+
 
 import { useSkills } from "@/hooks/use-skills";
 import SkillDetailDrawer from "@/components/territory/SkillDetailDrawer";
@@ -78,11 +79,35 @@ function buildEmptySkills(taxonomy: TaxonomySkill[]): SkillXP[] {
   }));
 }
 
+/** Runic SVG icon paths for the 3 tabs */
+const ForgeRuneIcon = ({ size = 22, color = "currentColor" }: { size?: number; color?: string }) => (
+  <svg viewBox="-8 -8 16 16" width={size} height={size} fill="none" stroke={color} strokeWidth={1.2} strokeLinecap="round" strokeLinejoin="round">
+    <path d="M0-6 L4-2 L4 4 L0 7 L-4 4 L-4-2Z" />
+    <path d="M0-3 L0 4 M-2.5 0 L2.5 0 M-1.5-2 L1.5 2" />
+  </svg>
+);
+
+const CodexRuneIcon = ({ size = 22, color = "currentColor" }: { size?: number; color?: string }) => (
+  <svg viewBox="-8 -8 16 16" width={size} height={size} fill="none" stroke={color} strokeWidth={1.2} strokeLinecap="round" strokeLinejoin="round">
+    <rect x="-5" y="-6" width="10" height="12" rx="1" />
+    <path d="M-3-3 L3-3 M-3 0 L3 0 M-3 3 L1 3" />
+    <path d="M-5-6 L-5 6" strokeWidth={1.8} />
+  </svg>
+);
+
+const AlliesRuneIcon = ({ size = 22, color = "currentColor" }: { size?: number; color?: string }) => (
+  <svg viewBox="-8 -8 16 16" width={size} height={size} fill="none" stroke={color} strokeWidth={1.2} strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="-3" cy="-3" r="2" />
+    <circle cx="3" cy="-3" r="2" />
+    <path d="M-6 4 Q-3 0 0 2 Q3 0 6 4" />
+    <circle cx="0" cy="-1" r="1.5" />
+  </svg>
+);
+
 const TAB_ITEMS = [
-  { key: "table" as const, icon: ScrollText, label: "Skill Forge" },
-  { key: "scout" as const, icon: Compass, label: "Scout" },
-  { key: "codex" as const, icon: BookOpen, label: "Codex" },
-  { key: "allies" as const, icon: Users, label: "Allies" },
+  { key: "table" as const, RuneIcon: ForgeRuneIcon, label: "Forge" },
+  { key: "codex" as const, RuneIcon: CodexRuneIcon, label: "Codex" },
+  { key: "allies" as const, RuneIcon: AlliesRuneIcon, label: "Allies" },
 ] as const;
 
 type PendingSimLaunch = SimLaunchRequest & { taskName?: string };
@@ -109,9 +134,8 @@ const MapPage = () => {
   const [selectedRole, setSelectedRole] = useState<RoleResult | null>(null);
   const [selectedKingdomCtx, setSelectedKingdomCtx] = useState<{ tier?: string; xp?: number; questsCompleted?: number; totalQuests?: number } | null>(null);
   const [activeEdge, setActiveEdge] = useState<EdgeContext | null>(null);
-  const [activeTab, setActiveTab] = useState<"table" | "scout" | "codex" | "allies">("table");
+  const [activeTab, setActiveTab] = useState<"table" | "codex" | "allies">("table");
   const [panelCollapsed, setPanelCollapsed] = useState(true);
-  const [scoutSubTab, setScoutSubTab] = useState<"matched" | "browse" | "kingdoms">("matched");
   const [mapFocusSkillId, setMapFocusSkillId] = useState<string | null>(null);
   const [forgeFocusSkillId, setForgeFocusSkillId] = useState<string | null>(null);
   
@@ -307,7 +331,7 @@ const MapPage = () => {
 
   const chatViewCtx = useMemo(() => ({
     page: "map" as const,
-    activePanel: activeTab === "scout" ? "scout" : activeTab === "allies" ? "allies" : activeTab === "codex" ? "codex" : "territory",
+    activePanel: activeTab === "allies" ? "allies" : activeTab === "codex" ? "codex" : "territory",
     selectedRole: selectedRole ? { title: selectedRole.title, company: selectedRole.company, jobId: selectedRole.jobId } : null,
   }), [selectedRole, activeTab]);
   useChatViewContext(chatViewCtx as any, [chatViewCtx]);
@@ -335,39 +359,43 @@ const MapPage = () => {
           <CompactHUD skills={displaySkills} targetSkillIds={targetSkillIds} userName={userName} avgDegreeLevel={avgDegreeLevel} />
         )}
 
-        {/* Tab bar */}
+        {/* Icon-only tab bar */}
         <div
-          className="flex items-center gap-1 px-3 py-1.5"
+          className="flex items-center justify-center gap-2 px-3 py-2"
           style={{ borderBottom: "1px solid hsl(var(--filigree) / 0.15)" }}
         >
-          {TAB_ITEMS.map(({ key, icon: Icon, label }) => {
+          {TAB_ITEMS.map(({ key, RuneIcon, label }) => {
             if (key !== "table" && !isSignedIn) return null;
             const isActive = activeTab === key;
-            const displayLabel = key === "table" && isFastTrack ? "Dashboard" : label;
+            const activeColor = "hsl(var(--filigree-glow))";
+            const inactiveColor = "hsl(var(--muted-foreground))";
             return (
-              <button
-                key={key}
-                onClick={() => setActiveTab(key)}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all relative"
-                style={{
-                  fontFamily: isFastTrack ? "inherit" : "'Cinzel', serif",
-                  letterSpacing: isFastTrack ? "0.02em" : "0.05em",
-                  ...(isActive
-                    ? { color: "hsl(var(--filigree-glow))", background: "hsl(var(--filigree) / 0.12)", textShadow: "0 0 8px hsl(var(--filigree-glow) / 0.5)" }
-                    : { color: "hsl(var(--muted-foreground))" }),
-                }}
-              >
-                <Icon className="h-3 w-3" />
-                {displayLabel}
-                {key === "allies" && (pendingCount + unreadCount) > 0 && (
-                  <span
-                    className="absolute -top-1 -right-1 w-4 h-4 rounded-full text-[8px] flex items-center justify-center font-bold animate-pulse"
-                    style={{ background: "hsl(var(--filigree-glow))", color: "hsl(var(--background))" }}
+              <Tooltip key={key}>
+                <TooltipTrigger asChild>
+                  <button
+                    onClick={() => setActiveTab(key)}
+                    className="relative w-10 h-10 rounded-lg flex items-center justify-center transition-all hover:scale-105"
+                    style={{
+                      ...(isActive
+                        ? { background: "hsl(var(--filigree) / 0.12)", boxShadow: `0 0 12px hsl(var(--filigree-glow) / 0.3)` }
+                        : {}),
+                    }}
                   >
-                    {pendingCount + unreadCount}
-                  </span>
-                )}
-              </button>
+                    <RuneIcon size={24} color={isActive ? activeColor : inactiveColor} />
+                    {key === "allies" && (pendingCount + unreadCount) > 0 && (
+                      <span
+                        className="absolute -top-0.5 -right-0.5 w-4 h-4 rounded-full text-[8px] flex items-center justify-center font-bold animate-pulse"
+                        style={{ background: "hsl(var(--filigree-glow))", color: "hsl(var(--background))" }}
+                      >
+                        {pendingCount + unreadCount}
+                      </span>
+                    )}
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="bottom" className="text-xs font-semibold" style={{ fontFamily: "'Cinzel', serif" }}>
+                  {label}
+                </TooltipContent>
+              </Tooltip>
             );
           })}
         </div>
@@ -392,12 +420,6 @@ const MapPage = () => {
                 }}
               />
             )
-          ) : activeTab === "scout" && isSignedIn ? (
-            <ScoutPanel
-              activeSubTab={scoutSubTab}
-              onSubTabChange={setScoutSubTab}
-              onOpenRole={(role, kCtx) => { setSelectedRole(role); setSelectedKingdomCtx(kCtx || null); }}
-            />
           ) : activeTab === "codex" && isSignedIn ? (
             <CodexPanel />
           ) : activeTab === "allies" && isSignedIn ? (
