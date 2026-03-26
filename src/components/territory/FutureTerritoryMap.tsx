@@ -81,6 +81,7 @@ export default function FutureTerritoryMap({ skills, focusSkillId, level2SkillId
   const [focusedIsland, setFocusedIsland] = useState<FutureSkillCategory | null>(null);
   const [highlightedSkillId, setHighlightedSkillId] = useState<string | null>(null);
   const [activeGuardian, setActiveGuardian] = useState<TerritoryGuardian | null>(null);
+  const [trialGuardian, setTrialGuardian] = useState<TerritoryGuardian | null>(null);
   const [activeNPC, setActiveNPC] = useState<{ npc: WanderingNPC; territory: FutureSkillCategory } | null>(null);
   const [activeRoleNPC, setActiveRoleNPC] = useState<RoleNPC | null>(null);
   const [roleNPCs, setRoleNPCs] = useState<RoleNPC[]>([]);
